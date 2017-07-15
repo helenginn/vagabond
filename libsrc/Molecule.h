@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <vector>
 #include "mat3x3.h"
+#include "shared_ptrs.h"
 
 struct vec3;
 
@@ -21,10 +22,7 @@ public:
 	void addModel(ModelPtr model);
 	void addAtom(AtomPtr atom);
 
-	void setReal2HKL(mat3x3 mat);
-	void setHKL2Real(mat3x3 mat);
-
-	void calculateMillers(FFTPtr fft);
+	void addToMap(FFTPtr fft, mat3x3 _real2hkl);
 
 	long int atomCount()
 	{
@@ -32,8 +30,6 @@ public:
 	}
 
 private:
-	mat3x3 _hkl2real;
-	mat3x3 _real2hkl;
 	std::vector<ModelPtr> models;
 	std::vector<AtomPtr> atoms;
 };

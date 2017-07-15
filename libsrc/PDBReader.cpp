@@ -15,6 +15,7 @@
 #include <vector>
 #include "Shouter.h"
 #include "mat3x3.h"
+#include "Crystal.h"
 
 PDBReader::PDBReader()
 {
@@ -70,8 +71,8 @@ void PDBReader::getSymmetry(std::string line)
 	mat3x3 hkl2real = mat3x3_from_unit_cell(a, b, c, alpha, beta, gamma);
 	mat3x3 real2hkl = mat3x3_inverse(hkl2real);
 
-	myMolecule->setHKL2Real(hkl2real);
-	myMolecule->setReal2HKL(real2hkl);
+	myCrystal->setHKL2Real(hkl2real);
+	myCrystal->setReal2HKL(real2hkl);
 
 	_foundCrystal = true;
 }
@@ -106,8 +107,9 @@ void PDBReader::setFilename(std::string file)
 	filename = file;
 }
 
-MoleculePtr PDBReader::getMolecule()
+CrystalPtr PDBReader::getCrystal()
 {
+	myCrystal = CrystalPtr(new Crystal());
 	myMolecule = MoleculePtr(new Molecule());
 
 	parse();
@@ -119,7 +121,9 @@ MoleculePtr PDBReader::getMolecule()
 					  "unit cell dimensions and space group.");
 	}
 
+	myCrystal->addMolecule(myMolecule);
+
 	std::cout << "Atoms: " << myMolecule->atomCount() << std::endl;
 
-	return myMolecule;
+	return myCrystal;
 }

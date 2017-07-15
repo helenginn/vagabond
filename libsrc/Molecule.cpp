@@ -24,40 +24,10 @@ void Molecule::addAtom(AtomPtr atom)
 	atoms.push_back(atom);
 }
 
-void Molecule::calculateMillers(FFTPtr fft)
+void Molecule::addToMap(FFTPtr fft, mat3x3 _real2hkl)
 {
-	double sampling = 3.0;
-	fft->setSampling(sampling);
-
-	vec3 bounds = empty_vec3();
-	bounds.x = mat3x3_length(_hkl2real, 0);
-	bounds.y = mat3x3_length(_hkl2real, 1);
-	bounds.z = mat3x3_length(_hkl2real, 2);
-
-	double largest = std::max(bounds.x, bounds.y);
-	largest = std::max(largest, bounds.z);
-	largest *= sampling;
-
-	fft->create(largest, largest, largest);
-	fft->setScale(0, largest);
-	fft->setScale(1, largest);
-	fft->setScale(2, largest);
-
-	mat3x3 sample2hkl = _real2hkl;
-	mat3x3_scale(&sample2hkl, 1 / sampling, 1 / sampling, 1 / sampling);
-
 	for (int i = 0; i < atomCount(); i++)
 	{
-		atoms[i]->addToMap(fft, sample2hkl);
+		atoms[i]->addToMap(fft, _real2hkl);
 	}
-}
-
-void Molecule::setReal2HKL(mat3x3 mat)
-{
-	_real2hkl = mat;
-}
-
-void Molecule::setHKL2Real(mat3x3 mat)
-{
-	_hkl2real = mat;
 }

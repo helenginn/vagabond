@@ -14,6 +14,9 @@
 class cFFTW3d;
 typedef std::shared_ptr<cFFTW3d> FFTPtr;
 
+class Crystal;
+typedef std::shared_ptr<Crystal> CrystalPtr;
+
 class Molecule;
 typedef std::shared_ptr<Molecule> MoleculePtr;
 

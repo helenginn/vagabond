@@ -20,13 +20,9 @@ void Atom::addConnection(ModelPtr model)
 
 void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 {
-	double sampling = fft->getSampling();
-	
-	double xPos = getPosition().x * sampling;
-	double yPos = getPosition().y * sampling;
-	double zPos = getPosition().z * sampling;
-
-	std::cout << "pos = " << xPos << ", " << yPos << ", " << zPos << std::endl;
+	double xPos = getPosition().x;
+	double yPos = getPosition().y;
+	double zPos = getPosition().z;
 
 	for (int k = -1; k < 2; k++)
 	{
@@ -34,12 +30,10 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 		{
 			for (int i = -1; i < 2; i++)
 			{
-				vec3 pos = make_vec3(xPos + (double)i,
-									 yPos + (double)j,
-									 zPos + (double)k);
+				vec3 pos = make_vec3(xPos + 0.2 * double(i),
+									 yPos + 0.2 * double(j),
+									 zPos + 0.2 * double(k));
 				mat3x3_mult_vec(unit_cell, &pos);
-
-				std::cout << "pos after = " << pos.x << ", " << pos.y << ", " << pos.z << std::endl;
 
 				double val = 4 - abs(i) - abs(j) - abs(k);
 				fft->setReal(pos.x, pos.y, pos.z, val);

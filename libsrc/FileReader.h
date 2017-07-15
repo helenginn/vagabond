@@ -11,7 +11,6 @@
 
 #include <iostream>
 #include <string>
-#include "Definitions.h"
 #include <vector>
 
 namespace FileReader

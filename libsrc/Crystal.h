@@ -22,9 +22,21 @@ public:
 		_molecules.push_back(molecule);
 	}
 
+	long int moleculeCount()
+	{
+		return _molecules.size();
+	}
+
+	MoleculePtr molecule(long int i)
+	{
+		return _molecules[i];
+	}
+
 	void setReal2HKL(mat3x3 mat);
 	void setHKL2Real(mat3x3 mat);
 
+	void calculateMillers(FFTPtr fft);
+	void writeCalcMillersToFile(FFTPtr fft, double resolution = 1.0);
 
 private:
 	std::vector<MoleculePtr> _molecules;

@@ -19,11 +19,12 @@ public:
 
 	PDBReader();
 	void setFilename(std::string);
-	MoleculePtr getMolecule();
+	CrystalPtr getCrystal();
 
 private:
 	std::string filename;
 	MoleculePtr myMolecule;
+	CrystalPtr myCrystal;
 
 	void getSymmetry(std::string line);
 	void addAtom(std::string line);

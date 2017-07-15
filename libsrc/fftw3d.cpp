@@ -13,6 +13,7 @@
 #include <time.h>
 #include <math.h>
 #include "fftw3d.h"
+#include "mat3x3.h"
 #include <iostream>
 
 cFFTW3d::cFFTW3d()
@@ -192,8 +193,6 @@ double cFFTW3d::getReal(long index)
 
 void cFFTW3d::setReal(double xfrac, double yfrac, double zfrac, double real)
 {
-	std::cout << "Setting frac (" << xfrac << ", " << yfrac << ", " << zfrac << ");" << std::endl;
-
 	while (xfrac < 0) xfrac += 1;
 	while (xfrac >= 1) xfrac -= 1;
 
@@ -203,13 +202,11 @@ void cFFTW3d::setReal(double xfrac, double yfrac, double zfrac, double real)
 	while (zfrac < 0) zfrac += 1;
 	while (zfrac >= 1) zfrac -= 1;
 	
-	double x = xfrac * scales[0];
-	double y = yfrac * scales[1];
-	double z = zfrac * scales[2];
+	double x = xfrac * nx;
+	double y = yfrac * ny;
+	double z = zfrac * nz;
 
 	long index = element(x + 0.5, y + 0.5, z + 0.5);
-
-	std::cout << "Setting (" << x << ", " << y << ", " << z << ");" << std::endl;
 
 	data[index][0] = real;
 	data[index][1] = 0;
@@ -244,8 +241,9 @@ void cFFTW3d::createFFTWplan(int nthreads, unsigned fftw_flags, int verbose)
 	 */
     if (verbose)
     {
-        printf("\tUsing nthreads = %i\n",nthreads);
-		printf("\tFFT dimensions: %li x %li x %li\n", nx,ny,nz);
+		printf("\tUsing nthreads = %i\n",nthreads);
+		printf("\tFFT dimensions: %li x %li x %li (unit scales %.2f x %.2f x %.2f Å)\n", nx,ny,nz,
+			   scales[0], scales[1], scales[2]);
 	}
 
 	if (fftwf_init_threads() == 0)
@@ -299,14 +297,14 @@ void cFFTW3d::createFFTWplan(int nthreads, unsigned fftw_flags, int verbose)
         printf("\tCreating forwards plan....\n");
     }
 
-	plan = fftwf_plan_dft_3d(nx, ny, nz, data, data, 1, fftw_flags);
+	plan = fftwf_plan_dft_3d((int)nx, (int)ny, (int)nz, data, data, 1, fftw_flags);
 
     if(verbose)
     {
         printf("\tCreating inverse plan....\n");
 	}
     
-    iplan = fftwf_plan_dft_3d(nx, ny, nz, data, data, -1, fftw_flags);
+    iplan = fftwf_plan_dft_3d((int)nx, (int)ny, (int)nz, data, data, -1, fftw_flags);
 	
 	
 	
