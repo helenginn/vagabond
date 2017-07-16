@@ -82,17 +82,14 @@ FFTPtr Element::getDistribution()
 			for (double z = -radius; z <= radius; z += scale)
 			{
 				double zfrac = z / (2 * radius);
-				double xAng = x * scale + 0.5;
-				double yAng = y * scale + 0.5;
-				double zAng = z * scale + 0.5;
 
-				double distSq = xAng * xAng + yAng * yAng + zAng * zAng;
+				double distSq = x * x + y * y + z * z;
 
 				double val = 0;
 
 				if (distSq < radiusSq)
 				{
-					val = _density * (1 - distSq);
+					val = (1 - distSq);
 				}
 
 				_shape->setReal(xfrac, yfrac, zfrac, val);

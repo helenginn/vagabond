@@ -31,9 +31,9 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 	FFTPtr atomDist = _element->getDistribution();
 
 	FFTPtr modelDist = connections[0]->getDistribution();
-
-	cFFTW3d::multiply(modelDist, atomDist, 1, 0, 0, 0, 1);
+	cFFTW3d::multiply(modelDist, atomDist);
 	modelDist->fft(1);
+
 
 	double xPos = getPosition().x;
 	double yPos = getPosition().y;

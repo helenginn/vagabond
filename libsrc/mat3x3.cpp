@@ -29,9 +29,9 @@ void mat3x3_mult_vec(struct mat3x3 mat, struct vec3 *vec)
 {
 	struct vec3 v;
 
-	v.x += mat.vals[0] * vec->x + mat.vals[1] * vec->y + mat.vals[2] * vec->z;
-	v.y += mat.vals[3] * vec->x + mat.vals[4] * vec->y + mat.vals[5] * vec->z;
-	v.z += mat.vals[6] * vec->x + mat.vals[7] * vec->y + mat.vals[8] * vec->z;
+	v.x = mat.vals[0] * vec->x + mat.vals[1] * vec->y + mat.vals[2] * vec->z;
+	v.y = mat.vals[3] * vec->x + mat.vals[4] * vec->y + mat.vals[5] * vec->z;
+	v.z = mat.vals[6] * vec->x + mat.vals[7] * vec->y + mat.vals[8] * vec->z;
 
 	memcpy(vec, &v.x, sizeof(double) * 3);
 }

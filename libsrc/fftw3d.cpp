@@ -585,11 +585,8 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst,
 						fftwf_operation *op, int scale, double addX,
 						double addY, double addZ, bool sameScale)
 {
-	double nnEdit = fftEdit->nn;
-	double nnConst = fftConst->nn;
-
-	cFFTW3d *fftSmall = (nnEdit > nnConst) ? &*fftConst : &*fftEdit;
-	cFFTW3d *fftBig = (nnEdit >= nnConst) ? &*fftEdit : &*fftConst;
+	cFFTW3d *fftSmall = &*fftConst;
+	cFFTW3d *fftBig = &*fftEdit;
 
 	double division = 1.;
 
@@ -598,17 +595,29 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst,
 		division = 1 / pow(2, scale);
 	}
 
-	for (double k = 0; k < fftSmall->nz; k += 1/(double)scale)
+	double step = 1;
+
+	if (!sameScale)
 	{
-		for (double j = 0; j < fftSmall->ny; j += 1/(double)scale)
+		step = 1 / (double)scale;
+	}
+
+	for (double k = 0; k < fftSmall->nz; k += step)
+	{
+		for (double j = 0; j < fftSmall->ny; j += step)
 		{
-			for (double i = 0; i < fftSmall->nx; i += 1/(double)scale)
+			for (double i = 0; i < fftSmall->nx; i += step)
 			{
 				long int small_index = fftSmall->element(i, j, k);
 
-				long big_index = fftSmall->equivalentIndexFor(fftBig, i, j, k,
-															  addX, addY, addZ,
-															  sameScale);
+				long int big_index = small_index;
+
+				if (!sameScale)
+				{
+					big_index = fftSmall->equivalentIndexFor(fftBig, i, j, k,
+															 addX, addY, addZ,
+															 sameScale);
+				}
 
 				/* we need to shift everything back a bit because the small map
 				 is centred at the origin */
@@ -689,6 +698,8 @@ void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, fftwf_complex *resu
 
 void fftwf_add(fftwf_complex comp1, fftwf_complex comp2, fftwf_complex *result)
 {
+//	std::cout << "Real: (" << comp1[0] << " + " << comp2[0] << "), ";
+//	std::cout << "Imag: " <<comp1[1] << " + " << comp2[1] << std::endl;
 	(*result)[0] = comp1[0] + comp2[0];
 	(*result)[1] = comp1[1] + comp2[1];
 }

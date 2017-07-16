@@ -78,8 +78,7 @@ public:
 						 double addX = 0, double addY = 0, double addZ = 0,
 						 bool sameScale = false)
 	{
-		operation(fftEdit, fftConst, fftwf_product, scale, addX, addY, addZ,
-				  sameScale);
+		operation(fftEdit, fftConst, fftwf_product, scale, addX, addY, addZ, true);
 	}
 
 	static void operation(FFTPtr fftEdit, FFTPtr fftConst,
