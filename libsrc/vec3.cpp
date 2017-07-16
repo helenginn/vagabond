@@ -8,6 +8,7 @@
 
 #include "vec3.h"
 #include "string.h"
+#include <math.h>
 
 struct vec3 empty_vec3()
 {
@@ -15,6 +16,11 @@ struct vec3 empty_vec3()
 	memset(&vec.x, 0, 3 * sizeof(double));
 
 	return vec;
+}
+
+double vec3_length(vec3 &vec)
+{
+	return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
 
 struct vec3 make_vec3(double x, double y, double z)

@@ -14,6 +14,7 @@
 #include <math.h>
 #include "fftw3d.h"
 #include "mat3x3.h"
+#include "vec3.h"
 #include <iostream>
 
 cFFTW3d::cFFTW3d()
@@ -80,6 +81,31 @@ long cFFTW3d::element(long x, long y, long z)
 	while (z >= nz) z -= nz;
 
 	return x + nx*y + (nx*ny)*z;
+}
+
+void cFFTW3d::collapseFrac(double *xfrac, double *yfrac, double *zfrac)
+{
+	while (*xfrac < 0) *xfrac += 1;
+	while (*xfrac >= 1) *xfrac -= 1;
+
+	while (*yfrac < 0) *yfrac += 1;
+	while (*yfrac >= 1) *yfrac -= 1;
+
+	while (*zfrac < 0) *zfrac += 1;
+	while (*zfrac >= 1) *zfrac -= 1;
+}
+
+long cFFTW3d::elementFromFrac(double xfrac, double yfrac, double zfrac)
+{
+	collapseFrac(&xfrac, &yfrac, &zfrac);
+
+	double x = xfrac * nx;
+	double y = yfrac * ny;
+	double z = zfrac * nz;
+
+	long index = element(x + 0.5, y + 0.5, z + 0.5);
+
+	return index;
 }
 
 
@@ -193,20 +219,7 @@ double cFFTW3d::getReal(long index)
 
 void cFFTW3d::setReal(double xfrac, double yfrac, double zfrac, double real)
 {
-	while (xfrac < 0) xfrac += 1;
-	while (xfrac >= 1) xfrac -= 1;
-
-	while (yfrac < 0) yfrac += 1;
-	while (yfrac >= 1) yfrac -= 1;
-
-	while (zfrac < 0) zfrac += 1;
-	while (zfrac >= 1) zfrac -= 1;
-	
-	double x = xfrac * nx;
-	double y = yfrac * ny;
-	double z = zfrac * nz;
-
-	long index = element(x + 0.5, y + 0.5, z + 0.5);
+	long index = elementFromFrac(xfrac, yfrac, zfrac);
 
 	data[index][0] = real;
 	data[index][1] = 0;
@@ -221,7 +234,7 @@ void cFFTW3d::multiplyAll(float value)
     }
 }
 
-void cFFTW3d::createFFTWplan(int nthreads, unsigned fftw_flags, int verbose)
+void cFFTW3d::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
 {
 
 	char	wisdomFile[2048];
@@ -553,7 +566,129 @@ void cFFTW3d::maxreal2(char *mask=NULL) {
     }
 }
 
-void writePhaToResolution(double res)
+void cFFTW3d::setMat(mat3x3 mat, double sampleScale)
 {
+	_basis = mat;
+	mat3x3_scale(&_basis, sampleScale, sampleScale, sampleScale);
+	scales[0] = mat3x3_length(_basis, 0);
+	scales[1] = mat3x3_length(_basis, 1);
+	scales[2] = mat3x3_length(_basis, 2);
 
+	_inverse = mat3x3_inverse(_basis);
+}
+
+/*  For multiplying point-wise
+ *
+ *
+ */
+void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst,
+						fftwf_operation *op, int scale, double addX,
+						double addY, double addZ, bool sameScale)
+{
+	double nnEdit = fftEdit->nn;
+	double nnConst = fftConst->nn;
+
+	cFFTW3d *fftSmall = (nnEdit > nnConst) ? &*fftConst : &*fftEdit;
+	cFFTW3d *fftBig = (nnEdit >= nnConst) ? &*fftEdit : &*fftConst;
+
+	double division = 1.;
+
+	if (scale > 1)
+	{
+		division = 1 / pow(2, scale);
+	}
+
+	for (double k = 0; k < fftSmall->nz; k += 1/(double)scale)
+	{
+		for (double j = 0; j < fftSmall->ny; j += 1/(double)scale)
+		{
+			for (double i = 0; i < fftSmall->nx; i += 1/(double)scale)
+			{
+				long int small_index = fftSmall->element(i, j, k);
+
+				long big_index = fftSmall->equivalentIndexFor(fftBig, i, j, k,
+															  addX, addY, addZ,
+															  sameScale);
+
+				/* we need to shift everything back a bit because the small map
+				 is centred at the origin */
+
+				fftwf_complex *small_value = &fftSmall->data[small_index];
+				fftwf_complex *big_value = &fftBig->data[big_index];
+				fftwf_complex product;
+
+				(*op)(*big_value, *small_value, &product);
+
+				fftEdit->setElement(big_index, product);
+			}
+		}
+	}
+}
+
+/* To find the same equivalent index bearing in mind the change-of-basis.
+ * Assuming that both are centred at the origin. In terms of fractional
+ * coordinates but this may need changing when use becomes clear.
+ */
+long int cFFTW3d::equivalentIndexFor(cFFTW3d *other, double realX, double realY,
+									 double realZ, double addX, double addY,
+									 double addZ, bool sameScale)
+{
+	if (realX > (nx - 1) / 2) realX -= nx;
+	if (realY > (nx - 1) / 2) realY -= ny;
+	if (realZ > (nx - 1) / 2) realZ -= nz;
+
+	vec3 pos = make_vec3(realX, realY, realZ);
+
+	if (!sameScale)
+	{
+		/* Get this into Angstrom units */
+		mat3x3_mult_vec(_basis, &pos);
+
+		/* Get this into integer units on the other's scale */
+		mat3x3 inverse = other->getBasisInverse();
+		mat3x3_mult_vec(inverse, &pos);
+	}
+
+	collapseFrac(&addX, &addY, &addZ);
+
+	addX *= other->nx; addY *= other->ny; addZ *= other->nz;
+	pos.x += addX + 0.5; pos.y += addY + 0.5; pos.z += addZ + 0.5;
+
+	long int index = other->element(pos.x, pos.y, pos.z);
+
+	return index;
+}
+
+void cFFTW3d::printSlice()
+{
+	for (int j = 0; j < ny; j++)
+	{
+		std::cout << "| ";
+		for (int i = 0; i < nx; i++)
+		{
+			std::string symbol = " ";
+			double value = getReal(element(i, j, 0));
+			if (value > 0.2) symbol = ".";
+			if (value > 0.4) symbol = ":";
+			if (value > 0.6) symbol = "*";
+			if (value > 0.8) symbol = "#";
+
+			std::cout << symbol;
+		}
+
+		std::cout << " |" << std::endl;
+	}
+	std::cout << std::endl;
+}
+
+void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, fftwf_complex *result)
+{
+	(*result)[0] = comp1[0] * comp2[0] - comp1[1] * comp2[1];
+	(*result)[1] = 2 * comp1[0] * comp2[1];
+}
+
+void fftwf_add(fftwf_complex comp1, fftwf_complex comp2, fftwf_complex *result)
+{
+	(*result)[0] = comp1[0] + comp2[0];
+	(*result)[1] = comp1[1] + comp2[1];
 }

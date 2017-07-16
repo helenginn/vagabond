@@ -26,7 +26,7 @@ int main(int argc, const char * argv[]) {
 
 	FFTPtr fft = FFTPtr(new cFFTW3d());
 	crystal->calculateMillers(fft);
-	crystal->writeCalcMillersToFile(fft);
+	crystal->writeCalcMillersToFile(fft, 1.0);
 
 
 	fft->fft(1);

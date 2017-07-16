@@ -27,25 +27,13 @@ struct mat3x3 make_mat3x3()
 
 void mat3x3_mult_vec(struct mat3x3 mat, struct vec3 *vec)
 {
-	struct vec3 other = empty_vec3();
-	double *old = &vec->x;
-	double *ptr = &other.x;
-	int offset = 0;
+	struct vec3 v;
 
-	while (offset < 9)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			double oldI = old[i];
-			double matI = mat.vals[i + offset];
-			*ptr += oldI * matI;
-		}
+	v.x += mat.vals[0] * vec->x + mat.vals[1] * vec->y + mat.vals[2] * vec->z;
+	v.y += mat.vals[3] * vec->x + mat.vals[4] * vec->y + mat.vals[5] * vec->z;
+	v.z += mat.vals[6] * vec->x + mat.vals[7] * vec->y + mat.vals[8] * vec->z;
 
-		ptr++;
-		offset += 3;
-	}
-
-	memcpy(vec, &other.x, sizeof(double) * 3);
+	memcpy(vec, &v.x, sizeof(double) * 3);
 }
 
 double mat3x3_determinant(mat3x3 &mat)

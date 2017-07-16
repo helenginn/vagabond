@@ -11,6 +11,10 @@
 
 #include <memory>
 
+#define ATOM_MAX_RADIUS (2.0)
+#define ATOM_SAMPLING (1. / 4.)
+#define PROTEIN_SAMPLING (1. / 3.)
+
 class cFFTW3d;
 typedef std::shared_ptr<cFFTW3d> FFTPtr;
 
@@ -23,6 +27,8 @@ typedef std::shared_ptr<Molecule> MoleculePtr;
 class Atom;
 typedef std::shared_ptr<Atom> AtomPtr;
 
+class Element;
+typedef std::shared_ptr<Element> ElementPtr;
 
 class Model;
 class Absolute;

@@ -22,7 +22,7 @@ public:
 	void addModel(ModelPtr model);
 	void addAtom(AtomPtr atom);
 
-	void addToMap(FFTPtr fft, mat3x3 _real2hkl);
+	void addToMap(FFTPtr fft, mat3x3 _real2frac);
 
 	long int atomCount()
 	{

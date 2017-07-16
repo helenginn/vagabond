@@ -24,21 +24,23 @@ PDBReader::PDBReader()
 
 void PDBReader::addAtom(std::string line)
 {
-	std::string xData, yData, zData, element, bFactor;
+	std::string xData, yData, zData, element, bFactor, occupancy;
 
 	xData = line.substr(30, 8);
 	yData = line.substr(38, 8);
 	zData = line.substr(46, 8);
-	bFactor = line.substr(54, 8);
+	occupancy = line.substr(54, 6);
+	bFactor = line.substr(60, 6);
 	element = line.substr(77, 1);
 
 	double xValue = atof(xData.c_str());
 	double yValue = atof(yData.c_str());
 	double zValue = atof(zData.c_str());
 	double bFacValue = atof(bFactor.c_str());
+	double occValue = atof(occupancy.c_str());
 
 	vec3 vec = make_vec3(xValue, yValue, zValue);
-	AbsolutePtr abs = AbsolutePtr(new Absolute(vec, bFacValue));
+	AbsolutePtr abs = AbsolutePtr(new Absolute(vec, bFacValue, element, occValue));
 	abs->addToMolecule(myMolecule);
 }
 
@@ -84,7 +86,7 @@ void PDBReader::parseLine(std::string line)
 		getSymmetry(line);
 	}
 
-	if (line.substr(0, 6) == "ATOM  ")
+	if (line.substr(0, 6) == "ATOM  " || line.substr(0, 6) == "HETATM")
 	{
 		addAtom(line);
 	}

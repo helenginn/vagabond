@@ -17,10 +17,12 @@
 // Anything which is capable of predicting electron positions.
 //
 
-class Model
+class Model : public std::enable_shared_from_this<Model>
 {
 public:
-	
+	virtual FFTPtr getDistribution() = 0;
+
+	virtual void addToMolecule(MoleculePtr molecule);
 
 private:
 	std::vector<AtomPtr> atoms;

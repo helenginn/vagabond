@@ -42,7 +42,7 @@ private:
 	std::vector<MoleculePtr> _molecules;
 
 	mat3x3 _hkl2real;
-	mat3x3 _real2hkl;
+	mat3x3 _real2frac;
 
 };
 

@@ -12,15 +12,22 @@
 #include <stdio.h>
 #include "Model.h"
 #include "vec3.h"
+#include <string>
 
-class Absolute : public Model, public std::enable_shared_from_this<Absolute>
+class Absolute : public Model
 {
 public:
-	Absolute(vec3 pos, double bFac);
+	Absolute(vec3 pos, double bFac, std::string element, double occValue);
 
-	void addToMolecule(MoleculePtr molecule);
+
+// Model virtual functions:
+	virtual FFTPtr getDistribution();
+	virtual void addToMolecule(MoleculePtr molecule);
+
 private:
 	AtomPtr _atom;
+	std::string _element;
+	double _occupancy;
 
 	vec3 position;
 	double bFactor;

@@ -14,10 +14,11 @@
 #include <iomanip>
 #include <math.h>
 #include <fstream>
+#include <time.h>
 
 void Crystal::setReal2HKL(mat3x3 mat)
 {
-	_real2hkl = mat;
+	_real2frac = mat;
 }
 
 void Crystal::setHKL2Real(mat3x3 mat)
@@ -27,30 +28,35 @@ void Crystal::setHKL2Real(mat3x3 mat)
 
 void Crystal::calculateMillers(FFTPtr fft)
 {
-	double sampling = 3.0;
-	double unitScale = 1 / sampling;
+	double sampling = 1 / PROTEIN_SAMPLING;
 	fft->setSampling(sampling);
 
-	vec3 bounds = empty_vec3();
-	bounds.x = mat3x3_length(_hkl2real, 0) * sampling;
-	bounds.y = mat3x3_length(_hkl2real, 1) * sampling;
-	bounds.z = mat3x3_length(_hkl2real, 2) * sampling;
+	vec3 uc_dims = empty_vec3();
+	vec3 fft_dims = empty_vec3();
+	uc_dims.x = mat3x3_length(_hkl2real, 0) * sampling;
+	uc_dims.y = mat3x3_length(_hkl2real, 1) * sampling;
+	uc_dims.z = mat3x3_length(_hkl2real, 2) * sampling;
 
-	double largest = std::max(bounds.x, bounds.y);
-	largest = std::max(largest, bounds.z);
-	bounds.x = largest; bounds.y = largest; bounds.z = largest;
-	largest *= sampling;
-	largest = (int)largest;
+	double largest = std::max(uc_dims.x, uc_dims.y);
+	largest = std::max(largest, uc_dims.z);
 
-	fft->create(bounds.x, bounds.y, bounds.z);
-	fft->setScale(0, unitScale);
-	fft->setScale(1, unitScale);
-	fft->setScale(2, unitScale);
+	fft_dims.x = largest; fft_dims.y = largest; fft_dims.z = largest;
+
+	fft->create(fft_dims.x, fft_dims.y, fft_dims.z);
+	double scaling = 1 / largest;
+
+	fft->setMat(_hkl2real, scaling);
+
+	time_t start = time(NULL);
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
-		molecule(i)->addToMap(fft, _real2hkl);
+		molecule(i)->addToMap(fft, _real2frac);
 	}
+
+	time_t end = time(NULL);
+
+	std::cout << "Added atoms: " << (end - start) << " seconds." << std::endl;
 
 	fft->createFFTWplan(8);
 	fft->fft(1);
@@ -75,8 +81,16 @@ void Crystal::writeCalcMillersToFile(FFTPtr fft, double resolution)
 	{
 		for (int j = -bLimit; j < bLimit; j++)
 		{
-			for (int k = -cLimit; k < cLimit; k++)
+			for (int k = 0; k < cLimit; k++)
 			{
+				vec3 pos = make_vec3(i, j, k);
+				mat3x3_mult_vec(_real2frac, &pos);
+
+				if (vec3_length(pos) > dStar)
+				{
+					continue;
+				}
+
 				file << std::fixed << std::setprecision(1)
 				<< std::setw(4) << i
 				<< std::setw(4) << j

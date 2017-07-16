@@ -18,6 +18,8 @@
 class Atom
 {
 public:
+	Atom();
+
 	void addConnection(ModelPtr model);
 
 	vec3 getPosition()
@@ -30,10 +32,16 @@ public:
 		_position = pos;
 	}
 
+	void setElement(ElementPtr element)
+	{
+		_element = element;
+	}
+
 	void addToMap(FFTPtr fft, mat3x3 unit_cell);
 
 private:
 	std::vector<ModelPtr> connections;
+	ElementPtr _element;
 
 	vec3 _position;
 };

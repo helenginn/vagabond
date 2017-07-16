@@ -24,10 +24,10 @@ void Molecule::addAtom(AtomPtr atom)
 	atoms.push_back(atom);
 }
 
-void Molecule::addToMap(FFTPtr fft, mat3x3 _real2hkl)
+void Molecule::addToMap(FFTPtr fft, mat3x3 _real2frac)
 {
 	for (int i = 0; i < atomCount(); i++)
 	{
-		atoms[i]->addToMap(fft, _real2hkl);
+		atoms[i]->addToMap(fft, _real2frac);
 	}
 }

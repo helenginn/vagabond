@@ -24,5 +24,6 @@ void mat3x3_mult_vec(struct mat3x3 mat, struct vec3 *vec);
 void mat3x3_scale(mat3x3 *mat, double a, double b, double c);
 double mat3x3_length(mat3x3 &mat, int index);
 mat3x3 mat3x3_transpose(mat3x3 &mat);
+double mat3x3_determinant(mat3x3 &mat);
 
 #endif /* defined(__vagabond__mat3x3__) */

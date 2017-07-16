@@ -7,3 +7,12 @@
 //
 
 #include "Model.h"
+#include "shared_ptrs.h"
+#include "Molecule.h"
+#include "Atom.h"
+
+
+void Model::addToMolecule(MoleculePtr molecule)
+{
+	molecule->addModel(shared_from_this());
+}
