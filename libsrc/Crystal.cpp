@@ -58,6 +58,7 @@ void Crystal::calculateMillers(FFTPtr fft)
 
 	std::cout << "Added atoms: " << (end - start) << " seconds." << std::endl;
 
+	fft->multiplyAll(0.1);
 	fft->createFFTWplan(8);
 	fft->fft(1);
 }

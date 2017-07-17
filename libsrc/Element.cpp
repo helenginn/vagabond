@@ -89,7 +89,7 @@ FFTPtr Element::getDistribution()
 
 				if (distSq < radiusSq)
 				{
-					val = (1 - distSq);
+					val = _density / 20 * (1 - distSq);
 				}
 
 				_shape->setReal(xfrac, yfrac, zfrac, val);
