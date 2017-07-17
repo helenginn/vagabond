@@ -602,6 +602,9 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst,
 		step = 1 / (double)scale;
 	}
 
+	mat3x3 inverse = fftBig->getBasisInverse();
+	mat3x3 transform = mat3x3_mult_mat3x3(inverse, fftSmall->getBasis());
+
 	for (double k = 0; k < fftSmall->nz; k += step)
 	{
 		for (double j = 0; j < fftSmall->ny; j += step)
@@ -615,7 +618,8 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst,
 				if (!sameScale)
 				{
 					big_index = fftSmall->equivalentIndexFor(fftBig, i, j, k,
-															 addX, addY, addZ,
+															 transform, addX,
+															 addY, addZ,
 															 sameScale);
 				}
 
@@ -639,8 +643,8 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst,
  * coordinates but this may need changing when use becomes clear.
  */
 long int cFFTW3d::equivalentIndexFor(cFFTW3d *other, double realX, double realY,
-									 double realZ, double addX, double addY,
-									 double addZ, bool sameScale)
+									 double realZ, mat3x3 transform, double addX,
+									 double addY, double addZ, bool sameScale)
 {
 	if (realX > (nx - 1) / 2) realX -= nx;
 	if (realY > (nx - 1) / 2) realY -= ny;
@@ -651,11 +655,7 @@ long int cFFTW3d::equivalentIndexFor(cFFTW3d *other, double realX, double realY,
 	if (!sameScale)
 	{
 		/* Get this into Angstrom units */
-		mat3x3_mult_vec(_basis, &pos);
-
-		/* Get this into integer units on the other's scale */
-		mat3x3 inverse = other->getBasisInverse();
-		mat3x3_mult_vec(inverse, &pos);
+		mat3x3_mult_vec(transform, &pos);
 	}
 
 	collapseFrac(&addX, &addY, &addZ);

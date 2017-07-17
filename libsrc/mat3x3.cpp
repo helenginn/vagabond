@@ -36,6 +36,25 @@ void mat3x3_mult_vec(struct mat3x3 mat, struct vec3 *vec)
 	memcpy(vec, &v.x, sizeof(double) * 3);
 }
 
+mat3x3 mat3x3_mult_mat3x3(struct mat3x3 m1, struct mat3x3 m2)
+{
+	struct mat3x3 m;
+
+	m.vals[0] = m1.vals[0] * m2.vals[0] + m1.vals[1] * m2.vals[3] + m1.vals[2] * m2.vals[6];
+	m.vals[1] = m1.vals[0] * m2.vals[1] + m1.vals[1] * m2.vals[4] + m1.vals[2] * m2.vals[7];
+	m.vals[2] = m1.vals[0] * m2.vals[2] + m1.vals[1] * m2.vals[5] + m1.vals[2] * m2.vals[8];
+
+	m.vals[3] = m1.vals[3] * m2.vals[0] + m1.vals[4] * m2.vals[3] + m1.vals[5] * m2.vals[6];
+	m.vals[4] = m1.vals[3] * m2.vals[1] + m1.vals[4] * m2.vals[4] + m1.vals[5] * m2.vals[7];
+	m.vals[5] = m1.vals[3] * m2.vals[2] + m1.vals[4] * m2.vals[5] + m1.vals[5] * m2.vals[8];
+
+	m.vals[6] = m1.vals[6] * m2.vals[0] + m1.vals[7] * m2.vals[3] + m1.vals[8] * m2.vals[6];
+	m.vals[7] = m1.vals[6] * m2.vals[1] + m1.vals[7] * m2.vals[4] + m1.vals[8] * m2.vals[7];
+	m.vals[8] = m1.vals[6] * m2.vals[2] + m1.vals[7] * m2.vals[5] + m1.vals[8] * m2.vals[8];
+
+	return m;
+}
+
 double mat3x3_determinant(mat3x3 &mat)
 {
 	double a = mat.vals[0];

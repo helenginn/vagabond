@@ -87,6 +87,7 @@ public:
 						  bool sameScale = false);
 
 	long int equivalentIndexFor(cFFTW3d *other, double realX, double realY, double realZ,
+								mat3x3 transform,
 								double addX = 0, double addY = 0, double addZ = 0,
 								bool sameScale = false);
 	long int elementFromFrac(double xFrac, double yFrac, double zFrac);
