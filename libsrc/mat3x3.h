@@ -10,6 +10,8 @@
 #define __vagabond__mat3x3__
 
 #include <stdio.h>
+#include "vec3.h"
+#include <string.h>
 
 struct mat3x3
 {
@@ -20,7 +22,20 @@ struct mat3x3
 mat3x3 mat3x3_inverse(mat3x3 &mat);
 mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double beta, double gamma);
 mat3x3 make_mat3x3();
-void mat3x3_mult_vec(struct mat3x3 mat, struct vec3 *vec);
+
+inline void mat3x3_mult_vec(struct mat3x3 mat, struct vec3 *vec)
+{
+	struct vec2 v;
+
+	v.x = mat.vals[0] * vec->x + mat.vals[1] * vec->y + mat.vals[2] * vec->z;
+	v.y = mat.vals[3] * vec->x + mat.vals[4] * vec->y + mat.vals[5] * vec->z;
+	vec->z = mat.vals[6] * vec->x + mat.vals[7] * vec->y + mat.vals[8] * vec->z;
+
+	memcpy(vec, &v.x, sizeof(double) * 2);
+}
+
+vec3 mat3x3_mult_vec(struct mat3x3 mat, struct vec3 vec);
+
 void mat3x3_scale(mat3x3 *mat, double a, double b, double c);
 double mat3x3_length(mat3x3 &mat, int index);
 mat3x3 mat3x3_transpose(mat3x3 &mat);

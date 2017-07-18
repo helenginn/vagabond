@@ -49,8 +49,6 @@ FFTPtr Absolute::getDistribution()
 	fft->create(2 * radius / scale);
 	fft->setScales(scale);
 
-	double B = bFactor * 8 * M_PI;
-
 	for (double x = -radius; x <= radius; x += scale)
 	{
 		double xfrac = x / (2 * radius);
@@ -68,7 +66,7 @@ FFTPtr Absolute::getDistribution()
 
 				double distSq = xAng * xAng + yAng * yAng + zAng * zAng;
 
-				double value = _occupancy * exp((-0.25) * B * distSq);
+				double value = _occupancy * exp((-0.25) * bFactor * distSq);
 
 				fft->setReal(xfrac, yfrac, zfrac, value);
 			}

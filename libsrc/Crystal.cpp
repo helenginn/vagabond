@@ -15,6 +15,7 @@
 #include <math.h>
 #include <fstream>
 #include <time.h>
+#include "BucketUniform.h"
 
 void Crystal::setReal2HKL(mat3x3 mat)
 {
@@ -28,6 +29,8 @@ void Crystal::setHKL2Real(mat3x3 mat)
 
 void Crystal::calculateMillers(FFTPtr fft)
 {
+	clock_t start = clock();
+
 	double sampling = 1 / PROTEIN_SAMPLING;
 	fft->setSampling(sampling);
 
@@ -43,24 +46,39 @@ void Crystal::calculateMillers(FFTPtr fft)
 	fft_dims.x = largest; fft_dims.y = largest; fft_dims.z = largest;
 
 	fft->create(fft_dims.x, fft_dims.y, fft_dims.z);
+	fft->setupMask();
+
 	double scaling = 1 / largest;
 
 	fft->setMat(_hkl2real, scaling);
 
-	time_t start = time(NULL);
+	clock_t end = clock();
+
+	std::cout << "Set up map: " << (end - start) / (double)CLOCKS_PER_SEC << " seconds." << std::endl;
+
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		molecule(i)->addToMap(fft, _real2frac);
 	}
 
-	time_t end = time(NULL);
+	end = clock();
+	std::cout << "Added atoms: " << (end - start) / (double)CLOCKS_PER_SEC << " seconds." << std::endl;
 
-	std::cout << "Added atoms: " << (end - start) << " seconds." << std::endl;
+	BucketPtr bucket = BucketPtr(new BucketUniform());
+	bucket->addSolvent(fft);
 
-	fft->multiplyAll(0.1);
+	end = clock();
+	std::cout << "Added solvent: " << (end - start) / (double)CLOCKS_PER_SEC << " seconds." << std::endl;
+
+//	fft->multiplyAll(0.1);
 	fft->createFFTWplan(8);
 	fft->fft(1);
+
+	end = clock();
+
+	std::cout << "Finished: " << (end - start) / (double)CLOCKS_PER_SEC << " seconds." << std::endl;
+
 }
 
 void Crystal::writeCalcMillersToFile(FFTPtr fft, double resolution)

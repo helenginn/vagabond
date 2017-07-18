@@ -23,16 +23,6 @@ double vec3_length(vec3 &vec)
 	return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
 
-struct vec3 make_vec3(double x, double y, double z)
-{
-	struct vec3 vec;
-	vec.x = x;
-	vec.y = y;
-	vec.z = z;
-
-	return vec;
-}
-
 struct vec3 vec3_subtract_vec3(vec3 &aVec, vec3 &bVec)
 {
 	struct vec3 vec;

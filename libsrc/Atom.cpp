@@ -29,11 +29,10 @@ void Atom::addConnection(ModelPtr model)
 void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 {
 	FFTPtr atomDist = _element->getDistribution();
+	atomDist->printSlice();
 
 	FFTPtr modelDist = connections[0]->getDistribution();
 	cFFTW3d::multiply(modelDist, atomDist);
-	modelDist->fft(1);
-
 
 	double xPos = getPosition().x;
 	double yPos = getPosition().y;
@@ -42,5 +41,5 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 	vec3 pos = make_vec3(xPos, yPos, zPos);
 	mat3x3_mult_vec(unit_cell, &pos);
 
-	cFFTW3d::add(fft, modelDist, 2, pos.x, pos.y, pos.z);
+	cFFTW3d::add(fft, modelDist, 2, pos.x, pos.y, pos.z, false, MaskProtein);
 }

@@ -14,7 +14,7 @@
 #include "mat3x3.h"
 #include "shared_ptrs.h"
 
-#define    FFTW_DATA_TYPE fftwf_complex
+#define FFTW_DATA_TYPE fftwf_complex
 
 #define FFTW_INDEX_LOOP(a) for(long p=0; p<(a).nn; p++)
 #define FFTW_SPACE_LOOP(a) for(long z=0;z<(a).nz;z++)for(long y=0;y<(a).ny;y++)for(long x=0;x<(a).nx;x++)
@@ -26,11 +26,11 @@
 #define CPLX_ABS(__data, __p) sqrt( __data[__p][0]*__data[__p][0] + __data[__p][1]*__data[__p][1] )
 #define CPLX_PHASE(__data, __p) atan2( __data[__p][1], __data[__p][0] )
 
-typedef void (fftwf_operation) (fftwf_complex, fftwf_complex, fftwf_complex*);
-
-void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, fftwf_complex *result);
-void fftwf_add(fftwf_complex comp1, fftwf_complex comp2, fftwf_complex *result);
-
+inline void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, float *result)
+{
+	result[0] = comp1[0] * comp2[0] - comp1[1] * comp2[1];
+	result[1] = 2 * comp1[0] * comp2[1];
+}
 
 class cFFTW3d {
     
@@ -41,7 +41,37 @@ public:
     
     void create(long);
     void create(long, long, long);
-    long element(long, long, long);
+
+	void setupMask();
+
+	void setMask(long i, MaskType value)
+	{
+		mask[i] = value;
+	}
+
+	MaskType getMask(long i)
+	{
+		return mask[i];
+	}
+
+	long element(long x, long y, long z)
+	{
+		while (x < 0) x += nx;
+		while (x >= nx) x -= nx;
+
+		while (y < 0) y += ny;
+		while (y >= ny) y -= ny;
+
+		while (z < 0) z += nz;
+		while (z >= nz) z -= nz;
+
+		return x + nx*y + (nx*ny)*z;
+	}
+
+	long quickElement(long x, long y, long z)
+	{
+		return x + nx*y + (nx*ny)*z;
+	}
     
     void createFFTWplan(int nthreads=1, int verbose=1, unsigned fftw_flags=FFTW_MEASURE);
     void fft(int direction);
@@ -68,9 +98,9 @@ public:
 
 	static void add(FFTPtr fftEdit, FFTPtr fftConst, int scale = 1,
 					double addX = 0, double addY = 0, double addZ = 0,
-					bool sameScale = false)
+					bool sameScale = false, MaskType type = MaskUnchecked)
 	{
-		operation(fftEdit, fftConst, fftwf_add, scale, addX, addY, addZ);
+		operation(fftEdit, fftConst, scale, addX, addY, addZ, false, type);
 	}
 
 
@@ -78,13 +108,12 @@ public:
 						 double addX = 0, double addY = 0, double addZ = 0,
 						 bool sameScale = false)
 	{
-		operation(fftEdit, fftConst, fftwf_product, scale, addX, addY, addZ, true);
+		operation(fftEdit, fftConst, scale, addX, addY, addZ, true);
 	}
 
-	static void operation(FFTPtr fftEdit, FFTPtr fftConst,
-						  fftwf_operation *op, int scale = 1,
+	static void operation(FFTPtr fftEdit, FFTPtr fftConst, int scale = 1,
 						  double addX = 0, double addY = 0, double addZ = 0,
-						  bool sameScale = false);
+						  bool sameScale = false, MaskType type = MaskUnchecked);
 
 	long int equivalentIndexFor(cFFTW3d *other, double realX, double realY, double realZ,
 								mat3x3 transform,
@@ -92,10 +121,10 @@ public:
 								bool sameScale = false);
 	long int elementFromFrac(double xFrac, double yFrac, double zFrac);
 
-	void setElement(long int index, fftwf_complex value)
+	inline void setElement(long int index, float real, float imag)
 	{
-		data[index][0] = value[0];
-		data[index][1] = value[1];
+		data[index][0] = real;
+		data[index][1] = imag;
 	}
 
 	double getScale(int dim)
@@ -140,6 +169,7 @@ public:
     long nx,ny,nz,nn;
 	double _sampling; // in 1/A
     fftwf_complex *data;
+	MaskType *mask; // not char due to cpu speed
 
 	double scales[3];
     

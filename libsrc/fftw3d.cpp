@@ -17,6 +17,15 @@
 #include "vec3.h"
 #include <iostream>
 
+inline void fftwf_add(fftwf_complex comp1, fftwf_complex comp2, float *result)
+{
+	result[0] = comp1[0];
+	result[1] = comp1[1];
+	result[0] += comp2[0];
+	result[1] += comp2[1];
+}
+
+
 cFFTW3d::cFFTW3d()
 {
 	nx = 0;
@@ -64,24 +73,15 @@ void cFFTW3d::create(long nnx, long nny, long nnz)
 	memset(data, 0, sizeof(FFTW_DATA_TYPE) * nn);
 }
 
+void cFFTW3d::setupMask()
+{
+	mask = (MaskType *) calloc(nn, sizeof(MaskType));
+}
 
 /*
  *	Convert 3D (xyz) triple into 1D array index
  *	x is fastest axis, z is slowest axis
  */
-long cFFTW3d::element(long x, long y, long z)
-{
-	while (x < 0) x += nx;
-	while (x >= nx) x -= nx;
-
-	while (y < 0) y += ny;
-	while (y >= ny) y -= ny;
-
-	while (z < 0) z += nz;
-	while (z >= nz) z -= nz;
-
-	return x + nx*y + (nx*ny)*z;
-}
 
 void cFFTW3d::collapseFrac(double *xfrac, double *yfrac, double *zfrac)
 {
@@ -282,18 +282,20 @@ void cFFTW3d::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
     	strcat(wisdomFile,"/.fftw3_wisdom");
 	}
 
-    if(verbose)
+    if (verbose)
     {
         printf("\tImporting FFTW wisdom from %s\n",wisdomFile);
 	}
 
     fp = fopen(wisdomFile, "r");
+
 	if (fp != NULL)
     {
 		if (!fftwf_import_wisdom_from_file(fp) )
         {
 			printf("\t\tError reading wisdom!\n");
 		}
+
         fclose(fp); 	/* be sure to close the file! */
 	}
 	else
@@ -579,11 +581,9 @@ void cFFTW3d::setMat(mat3x3 mat, double sampleScale)
 
 /*  For multiplying point-wise
  *
- *
  */
-void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst,
-						fftwf_operation *op, int scale, double addX,
-						double addY, double addZ, bool sameScale)
+void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
+						double addY, double addZ, bool sameScale, MaskType type)
 {
 	cFFTW3d *fftSmall = &*fftConst;
 	cFFTW3d *fftBig = &*fftEdit;
@@ -605,13 +605,16 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst,
 	mat3x3 inverse = fftBig->getBasisInverse();
 	mat3x3 transform = mat3x3_mult_mat3x3(inverse, fftSmall->getBasis());
 
+	fftSmall->collapseFrac(&addX, &addY, &addZ);
+	addX *= fftBig->nx; addY *= fftBig->ny; addZ *= fftBig->nz;
+
 	for (double k = 0; k < fftSmall->nz; k += step)
 	{
 		for (double j = 0; j < fftSmall->ny; j += step)
 		{
 			for (double i = 0; i < fftSmall->nx; i += step)
 			{
-				long int small_index = fftSmall->element(i, j, k);
+				long int small_index = fftSmall->quickElement(i, j, k);
 
 				long int big_index = small_index;
 
@@ -626,13 +629,28 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst,
 				/* we need to shift everything back a bit because the small map
 				 is centred at the origin */
 
-				fftwf_complex *small_value = &fftSmall->data[small_index];
-				fftwf_complex *big_value = &fftBig->data[big_index];
-				fftwf_complex product;
+				/* These are not functions because it's faster this way */
+				float real, imag;
 
-				(*op)(*big_value, *small_value, &product);
+				if (!sameScale)
+				{
+					real = fftSmall->data[small_index][0] + fftBig->data[big_index][0];
+					imag = fftSmall->data[small_index][1] + fftBig->data[big_index][1];
+				}
+				else
+				{
+					real = fftBig->data[big_index][0] * fftSmall->data[small_index][0]
+					- fftBig->data[big_index][1] * fftSmall->data[small_index][1];
+					imag = fftBig->data[big_index][0] * fftSmall->data[small_index][1]
+					+ fftBig->data[big_index][1] * fftSmall->data[small_index][0];
+				}
 
-				fftEdit->setElement(big_index, product);
+				fftEdit->setElement(big_index, real, imag);
+
+				if (type != MaskUnchecked && real > 0.05)
+				{
+					fftEdit->setMask(big_index, type);
+				}
 			}
 		}
 	}
@@ -646,9 +664,12 @@ long int cFFTW3d::equivalentIndexFor(cFFTW3d *other, double realX, double realY,
 									 double realZ, mat3x3 transform, double addX,
 									 double addY, double addZ, bool sameScale)
 {
-	if (realX > (nx - 1) / 2) realX -= nx;
-	if (realY > (nx - 1) / 2) realY -= ny;
-	if (realZ > (nx - 1) / 2) realZ -= nz;
+	if (realX > (nx - 1) / 2)
+		realX -= nx;
+	if (realY > (ny - 1) / 2)
+		realY -= ny;
+	if (realZ > (nz - 1) / 2)
+		realZ -= nz;
 
 	vec3 pos = make_vec3(realX, realY, realZ);
 
@@ -658,9 +679,6 @@ long int cFFTW3d::equivalentIndexFor(cFFTW3d *other, double realX, double realY,
 		mat3x3_mult_vec(transform, &pos);
 	}
 
-	collapseFrac(&addX, &addY, &addZ);
-
-	addX *= other->nx; addY *= other->ny; addZ *= other->nz;
 	pos.x += addX + 0.5; pos.y += addY + 0.5; pos.z += addZ + 0.5;
 
 	long int index = other->element(pos.x, pos.y, pos.z);
@@ -690,16 +708,3 @@ void cFFTW3d::printSlice()
 	std::cout << std::endl;
 }
 
-void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, fftwf_complex *result)
-{
-	(*result)[0] = comp1[0] * comp2[0] - comp1[1] * comp2[1];
-	(*result)[1] = 2 * comp1[0] * comp2[1];
-}
-
-void fftwf_add(fftwf_complex comp1, fftwf_complex comp2, fftwf_complex *result)
-{
-//	std::cout << "Real: (" << comp1[0] << " + " << comp2[0] << "), ";
-//	std::cout << "Imag: " <<comp1[1] << " + " << comp2[1] << std::endl;
-	(*result)[0] = comp1[0] + comp2[0];
-	(*result)[1] = comp1[1] + comp2[1];
-}

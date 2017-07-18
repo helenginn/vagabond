@@ -13,13 +13,14 @@
 #include <string>
 #include <vector>
 #include "shared_ptrs.h"
+#include "ScatterFactors.h"
 
 class Element
 {
 public:
 	static void setupElements();
 
-	Element(std::string symbol, std::string name, double covRadius, double mass);
+	Element(std::string symbol, std::string name);
 	static ElementPtr getElement(std::string symbol);
 	FFTPtr getDistribution();
 
@@ -33,26 +34,14 @@ public:
 		return _name;
 	}
 
-	double getCovalentRadius()
-	{
-		return _covRadius;
-	}
-
 
 private:
 	std::string _symbol;
 	std::string _name;
-	double _covRadius;
-	double _mass;
-	double _density;
+	float _scattering[ScatterFactors::numScatter];
 	FFTPtr _shape;
 
 	static std::vector<ElementPtr> elements;
-
-	void setCovalentRadius(double radius)
-	{
-		_covRadius = radius;
-	}
 
 	void setSymbol(std::string symbol)
 	{

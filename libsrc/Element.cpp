@@ -15,20 +15,37 @@ std::vector<ElementPtr> Element::elements;
 
 void Element::setupElements()
 {
-	elements.push_back(ElementPtr(new Element("C", "carbon", 0.70, 6)));
-	elements.push_back(ElementPtr(new Element("N", "nitrogen", 0.65, 7)));
-	elements.push_back(ElementPtr(new Element("O", "oxygen", 0.60, 8)));
-	elements.push_back(ElementPtr(new Element("S", "sulphur", 1.00, 16)));
+	elements.push_back(ElementPtr(new Element("C", "carbon")));
+	elements.push_back(ElementPtr(new Element("N", "nitrogen")));
+	elements.push_back(ElementPtr(new Element("O", "oxygen")));
+	elements.push_back(ElementPtr(new Element("S", "sulphur")));
 }
 
-Element::Element(std::string symbol, std::string name, double covRadius,
-				 double mass)
+Element::Element(std::string symbol, std::string name)
 {
 	_symbol = symbol;
 	_name = name;
-	_covRadius = covRadius;
-	_mass = mass;
-	_density = _mass / pow(_covRadius, 3);
+
+	if (_symbol == "C")
+	{
+		memcpy(_scattering, ScatterFactors::cScatter, ScatterFactors::numScatter * sizeof(float));
+	}
+	else if (_symbol == "N")
+	{
+		memcpy(_scattering, ScatterFactors::nScatter, ScatterFactors::numScatter * sizeof(float));
+	}
+	else if (symbol == "O")
+	{
+		memcpy(_scattering, ScatterFactors::oScatter, ScatterFactors::numScatter * sizeof(float));
+	}
+	else if (_symbol == "S")
+	{
+		memcpy(_scattering, ScatterFactors::sScatter, ScatterFactors::numScatter * sizeof(float));
+	}
+	else
+	{
+		memset(_scattering, 0, ScatterFactors::numScatter * sizeof(float));
+	}
 }
 
 ElementPtr Element::getElement(std::string symbol)
@@ -69,7 +86,14 @@ FFTPtr Element::getDistribution()
 	_shape->create(2 * radius / scale);
 	_shape->setScales(scale);
 
-	double radiusSq = _covRadius * _covRadius;
+	if (_scattering[0] <= 0)
+	{
+		shout_at_user("Helen needs to add your element\n" \
+					  + _symbol + " to the list of atoms.\n" \
+					  "Sorry!\n");
+	}
+
+	int totalScatterPoints = ScatterFactors::numScatter;
 
 	for (double x = -radius; x <= radius; x += scale)
 	{
@@ -83,21 +107,37 @@ FFTPtr Element::getDistribution()
 			{
 				double zfrac = z / (2 * radius);
 
+				double xp = x + scale / 2;
+				double yp = y + scale / 2;
+				double zp = z + scale / 2;
+
+			//	double distSq = xp * xp + yp * yp + zp * zp;
 				double distSq = x * x + y * y + z * z;
+				double dist = sqrt(distSq);
 
 				double val = 0;
 
-				if (distSq < radiusSq)
+				if (distSq <= 0.005)
 				{
-					val = _density / 20 * (1 - distSq);
+					val = _scattering[0];
 				}
 
-				_shape->setReal(xfrac, yfrac, zfrac, val);
+				for (int i = 0; i < totalScatterPoints - 1; i++)
+				{
+					if ((dist >= ScatterFactors::dScatter[i] &&
+						dist < ScatterFactors::dScatter[i + 1]))
+					{
+						val = (_scattering[i]);
+						break;
+					}
+				}
+
+				long int element = _shape->elementFromFrac(xfrac, yfrac, zfrac);
+				_shape->setElement(element, val, 0);
 			}
 		}
 	}
 
-	_shape->createFFTWplan(1, false);
-	_shape->fft(1);
+	_shape->createFFTWplan(1);
 	return _shape;
 }
