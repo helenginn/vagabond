@@ -13,7 +13,7 @@ void BucketUniform::addSolvent(FFTPtr map)
 {
 	Bucket::findBulkSolvent(map);
 
-	double trialDensity = 0.161;
+	double trialDensity = 0.0;
 
 	/* now the map's mask is set to highlight solvent */
 
@@ -22,7 +22,7 @@ void BucketUniform::addSolvent(FFTPtr map)
 		MaskType mask = map->getMask(i);
 		if (mask == MaskEmpty)
 		{
-	//		map->setElement(i, trialDensity, 0);
+			map->setElement(i, trialDensity, 0);
 		}
 	}
 }

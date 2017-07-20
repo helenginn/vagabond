@@ -108,6 +108,18 @@ long cFFTW3d::elementFromFrac(double xfrac, double yfrac, double zfrac)
 	return index;
 }
 
+long cFFTW3d::elementFromUncorrectedFrac(double xfrac, double yfrac, double zfrac)
+{
+	collapseFrac(&xfrac, &yfrac, &zfrac);
+
+	double x = xfrac * nx;
+	double y = yfrac * ny;
+	double z = zfrac * nz;
+
+	long index = element(x, y, z);
+
+	return index;
+}
 
 /*
  *	Shift the array in 3D by (nx,ny,nz) pixels
@@ -202,7 +214,7 @@ double cFFTW3d::getIntensity(long x, long y, long z)
 {
 	long index = element(x, y, z);
 
-	return sqrt(data[index][0] * data[index][0] + data[index][1] * data[index][1]);
+	return 1e-7 * (data[index][0] * data[index][0] + data[index][1] * data[index][1]);
 }
 
 double cFFTW3d::getReal(long x, long y, long z)
@@ -606,7 +618,11 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 	mat3x3 transform = mat3x3_mult_mat3x3(inverse, fftSmall->getBasis());
 
 	fftSmall->collapseFrac(&addX, &addY, &addZ);
-	addX *= fftBig->nx; addY *= fftBig->ny; addZ *= fftBig->nz;
+	addX *= (double)fftBig->nx;
+	addY *= (double)fftBig->ny;
+	addZ *= (double)fftBig->nz;
+
+	//addX += PROTEIN_SAMPLING; addY += PROTEIN_SAMPLING; addZ += PROTEIN_SAMPLING;
 
 	for (double k = 0; k < fftSmall->nz; k += step)
 	{
@@ -620,7 +636,9 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 
 				if (!sameScale)
 				{
-					big_index = fftSmall->equivalentIndexFor(fftBig, i, j, k,
+					big_index = fftSmall->equivalentIndexFor(fftBig, i + step / 2,
+															 j + step / 2,
+															 k + step / 2,
 															 transform, addX,
 															 addY, addZ,
 															 sameScale);
@@ -634,8 +652,8 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 
 				if (!sameScale)
 				{
-					real = fftSmall->data[small_index][0] + fftBig->data[big_index][0];
-					imag = fftSmall->data[small_index][1] + fftBig->data[big_index][1];
+					real = fftSmall->data[small_index][0] * division + fftBig->data[big_index][0];
+					imag = fftSmall->data[small_index][1] * division + fftBig->data[big_index][1];
 				}
 				else
 				{
@@ -665,11 +683,11 @@ long int cFFTW3d::equivalentIndexFor(cFFTW3d *other, double realX, double realY,
 									 double addY, double addZ, bool sameScale)
 {
 	if (realX > (nx - 1) / 2)
-		realX -= nx;
+		realX -= (double)nx;
 	if (realY > (ny - 1) / 2)
-		realY -= ny;
+		realY -= (double)ny;
 	if (realZ > (nz - 1) / 2)
-		realZ -= nz;
+		realZ -= (double)nz;
 
 	vec3 pos = make_vec3(realX, realY, realZ);
 
@@ -679,14 +697,14 @@ long int cFFTW3d::equivalentIndexFor(cFFTW3d *other, double realX, double realY,
 		mat3x3_mult_vec(transform, &pos);
 	}
 
-	pos.x += addX + 0.5; pos.y += addY + 0.5; pos.z += addZ + 0.5;
+	pos.x += addX; pos.y += addY; pos.z += addZ;
 
 	long int index = other->element(pos.x, pos.y, pos.z);
 
 	return index;
 }
 
-void cFFTW3d::printSlice()
+void cFFTW3d::printSlice(bool amplitude)
 {
 	for (int j = 0; j < ny; j++)
 	{
@@ -695,10 +713,16 @@ void cFFTW3d::printSlice()
 		{
 			std::string symbol = " ";
 			double value = getReal(element(i, j, 0));
-			if (value > 0.2) symbol = ".";
-			if (value > 0.4) symbol = ":";
-			if (value > 0.6) symbol = "*";
-			if (value > 0.8) symbol = "#";
+
+			if (amplitude)
+			{
+				value = sqrt(getIntensity(i, j, 0));
+			}
+
+			if (value > 0.1) symbol = ".";
+			if (value > 0.2) symbol = ":";
+			if (value > 0.4) symbol = "*";
+			if (value > 0.6) symbol = "#";
 
 			std::cout << symbol;
 		}

@@ -12,7 +12,7 @@
 #include <memory>
 
 #define ATOM_MAX_RADIUS (2.0)
-#define ATOM_SAMPLING (1. / 5.)
+#define ATOM_SAMPLING (1. / 4.)
 #define PROTEIN_SAMPLING (1. / 3.)
 #define WATER_RADIUS 1.4
 

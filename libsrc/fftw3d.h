@@ -72,7 +72,9 @@ public:
 	{
 		return x + nx*y + (nx*ny)*z;
 	}
-    
+
+	long elementFromUncorrectedFrac(double xfrac, double yfrac, double zfrac);
+
     void createFFTWplan(int nthreads=1, int verbose=1, unsigned fftw_flags=FFTW_MEASURE);
     void fft(int direction);
     
@@ -163,7 +165,7 @@ public:
 		return _inverse;
 	}
 
-	void printSlice();
+	void printSlice(bool amplitude = false);
 
 public:
     long nx,ny,nz,nn;

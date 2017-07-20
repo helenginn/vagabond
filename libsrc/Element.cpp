@@ -10,6 +10,8 @@
 #include <math.h>
 #include "Shouter.h"
 #include "fftw3d.h"
+#include <stdlib.h>
+#include <iostream>
 
 std::vector<ElementPtr> Element::elements;
 
@@ -83,8 +85,11 @@ FFTPtr Element::getDistribution()
 	double radius = ATOM_MAX_RADIUS; // Angs^-1.
 
 	_shape = FFTPtr(new cFFTW3d());
-	_shape->create(2 * radius / scale);
+	int n = 2 * radius / scale;
+	_shape->create(n);
 	_shape->setScales(scale);
+	double sampling = 1 / (ATOM_SAMPLING * n);
+	double switch_sampling = sampling / scale;
 
 	if (_scattering[0] <= 0)
 	{
@@ -94,7 +99,7 @@ FFTPtr Element::getDistribution()
 	}
 
 	int totalScatterPoints = ScatterFactors::numScatter;
-
+	
 	for (double x = -radius; x <= radius; x += scale)
 	{
 		double xfrac = x / (2 * radius);
@@ -107,37 +112,41 @@ FFTPtr Element::getDistribution()
 			{
 				double zfrac = z / (2 * radius);
 
-				double xp = x + scale / 2;
-				double yp = y + scale / 2;
-				double zp = z + scale / 2;
+				double xAng = x + scale / 2;
+				double yAng = y + scale / 2;
+				double zAng = z + scale / 2;
 
-			//	double distSq = xp * xp + yp * yp + zp * zp;
-				double distSq = x * x + y * y + z * z;
+				double distSq = switch_sampling * switch_sampling *
+				//(xAng * xAng + yAng * yAng + zAng * zAng);
+				x * x + y * y + z * z;
+
 				double dist = sqrt(distSq);
 
 				double val = 0;
-
-				if (distSq <= 0.005)
-				{
-					val = _scattering[0];
-				}
 
 				for (int i = 0; i < totalScatterPoints - 1; i++)
 				{
 					if ((dist >= ScatterFactors::dScatter[i] &&
 						dist < ScatterFactors::dScatter[i + 1]))
 					{
-						val = (_scattering[i]);
+						double interpolateToNext = (ScatterFactors::dScatter[i] - dist);
+						interpolateToNext /= fabs(ScatterFactors::dScatter[i + 1] - ScatterFactors::dScatter[i]);
+						val = (_scattering[i] + interpolateToNext * (_scattering[i] - _scattering[i + 1]));
+						val *= scale;
 						break;
 					}
 				}
 
-				long int element = _shape->elementFromFrac(xfrac, yfrac, zfrac);
-				_shape->setElement(element, val, 0);
+	//			std::cout << dist << ", " << val << std::endl;
+
+				_shape->setReal(xfrac, yfrac, zfrac, val);
 			}
 		}
 	}
 
-	_shape->createFFTWplan(1);
+	std::cout << "Made my first " << _name << std::endl;
+	_shape->createFFTWplan(1, false);
+	_shape->printSlice();
+
 	return _shape;
 }

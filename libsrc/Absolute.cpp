@@ -13,6 +13,7 @@
 #include <math.h>
 #include "fftw3d.h"
 #include "Element.h"
+#include <iostream>
 
 Absolute::Absolute(vec3 pos, double bFac, std::string element, double occValue)
 {
@@ -46,8 +47,11 @@ FFTPtr Absolute::getDistribution()
 	double radius = ATOM_MAX_RADIUS; // Angs^-1.
 
 	FFTPtr fft = FFTPtr(new cFFTW3d());
-	fft->create(2 * radius / scale);
+	int n = 2 * radius / scale;
+	fft->create(n);
 	fft->setScales(scale);
+	double sampling = 1 / (ATOM_SAMPLING * n);
+	double switch_sampling = sampling / scale;
 
 	for (double x = -radius; x <= radius; x += scale)
 	{
@@ -60,13 +64,17 @@ FFTPtr Absolute::getDistribution()
 			for (double z = -radius; z <= radius; z += scale)
 			{
 				double zfrac = z / (2 * radius);
-				double xAng = x * scale;
-				double yAng = y * scale;
-				double zAng = z * scale;
 
-				double distSq = xAng * xAng + yAng * yAng + zAng * zAng;
+				double xAng = x + scale / 2;
+				double yAng = y + scale / 2;
+				double zAng = z + scale / 2;
 
-				double value = _occupancy * exp((-0.25) * bFactor * distSq);
+				double distSq = switch_sampling * switch_sampling *
+			//	(xAng * xAng + yAng * yAng + zAng * zAng);
+				x * x + y * y + z * z;
+
+				double value = exp((-0.25) * bFactor * distSq);
+				value *= _occupancy;
 
 				fft->setReal(xfrac, yfrac, zfrac, value);
 			}
@@ -74,6 +82,6 @@ FFTPtr Absolute::getDistribution()
 	}
 
 	fft->createFFTWplan(1, false);
-
+	
 	return fft;
 }
