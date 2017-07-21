@@ -32,7 +32,7 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 
 	FFTPtr modelDist = connections[0]->getDistribution();
 	cFFTW3d::multiply(modelDist, atomDist);
-	modelDist->printSlice();
+//	modelDist->printSlice();
 	modelDist->fft(1);
 
 	double xPos = getPosition().x;

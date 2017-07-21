@@ -12,6 +12,7 @@
 namespace ScatterFactors
 {
 	extern const float dScatter[];
+	extern const float hScatter[];
 	extern const float nScatter[];
 	extern const float cScatter[];
 	extern const float oScatter[];

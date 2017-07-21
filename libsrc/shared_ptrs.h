@@ -14,7 +14,7 @@
 #define ATOM_MAX_RADIUS (2.0)
 #define ATOM_SAMPLING (1. / 4.)
 #define PROTEIN_SAMPLING (1. / 3.)
-#define WATER_RADIUS 1.4
+#define WATER_RADIUS 0.6
 
 class cFFTW3d;
 typedef std::shared_ptr<cFFTW3d> FFTPtr;

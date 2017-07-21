@@ -17,6 +17,7 @@ std::vector<ElementPtr> Element::elements;
 
 void Element::setupElements()
 {
+	elements.push_back(ElementPtr(new Element("H", "hydrogen")));
 	elements.push_back(ElementPtr(new Element("C", "carbon")));
 	elements.push_back(ElementPtr(new Element("N", "nitrogen")));
 	elements.push_back(ElementPtr(new Element("O", "oxygen")));
@@ -28,7 +29,11 @@ Element::Element(std::string symbol, std::string name)
 	_symbol = symbol;
 	_name = name;
 
-	if (_symbol == "C")
+	if (_symbol == "H")
+	{
+		memcpy(_scattering, ScatterFactors::hScatter, ScatterFactors::numScatter * sizeof(float));
+	}
+	else if (_symbol == "C")
 	{
 		memcpy(_scattering, ScatterFactors::cScatter, ScatterFactors::numScatter * sizeof(float));
 	}
@@ -88,8 +93,8 @@ FFTPtr Element::getDistribution()
 	int n = 2 * radius / scale;
 	_shape->create(n);
 	_shape->setScales(scale);
-	double sampling = 1 / (ATOM_SAMPLING * n);
-	double switch_sampling = sampling / scale;
+	double sampling = 1 / (scale * n);
+	double switch_sampling = sampling / scale / 3;
 
 	if (_scattering[0] <= 0)
 	{
@@ -112,13 +117,12 @@ FFTPtr Element::getDistribution()
 			{
 				double zfrac = z / (2 * radius);
 
-				double xAng = x + scale / 2;
-				double yAng = y + scale / 2;
-				double zAng = z + scale / 2;
+				double xAng = x * switch_sampling;
+				double yAng = y * switch_sampling;
+				double zAng = z * switch_sampling;
 
-				double distSq = switch_sampling * switch_sampling *
-				//(xAng * xAng + yAng * yAng + zAng * zAng);
-				x * x + y * y + z * z;
+				double distSq =	(xAng * xAng + yAng * yAng + zAng * zAng);
+				//x * x + y * y + z * z;
 
 				double dist = sqrt(distSq);
 
@@ -146,7 +150,7 @@ FFTPtr Element::getDistribution()
 
 	std::cout << "Made my first " << _name << std::endl;
 	_shape->createFFTWplan(1, false);
-	_shape->printSlice();
+	//_shape->printSlice();
 
 	return _shape;
 }

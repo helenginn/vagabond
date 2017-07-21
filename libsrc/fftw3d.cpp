@@ -591,6 +591,8 @@ void cFFTW3d::setMat(mat3x3 mat, double sampleScale)
 	_inverse = mat3x3_inverse(_basis);
 }
 
+
+
 /*  For multiplying point-wise
  *
  */
@@ -622,7 +624,9 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 	addY *= (double)fftBig->ny;
 	addZ *= (double)fftBig->nz;
 
-	//addX += PROTEIN_SAMPLING; addY += PROTEIN_SAMPLING; addZ += PROTEIN_SAMPLING;
+	addX += PROTEIN_SAMPLING / 2;
+	addY += PROTEIN_SAMPLING / 2;
+	addZ += PROTEIN_SAMPLING / 2;
 
 	for (double k = 0; k < fftSmall->nz; k += step)
 	{
@@ -650,6 +654,10 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 				/* These are not functions because it's faster this way */
 				float real, imag;
 
+				/* Add real only (for reals!!) */
+
+
+
 				if (!sameScale)
 				{
 					real = fftSmall->data[small_index][0] * division + fftBig->data[big_index][0];
@@ -665,7 +673,7 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 
 				fftEdit->setElement(big_index, real, imag);
 
-				if (type != MaskUnchecked && real > 0.05)
+				if (type != MaskUnchecked && real > 1.5)
 				{
 					fftEdit->setMask(big_index, type);
 				}

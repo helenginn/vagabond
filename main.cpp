@@ -21,7 +21,7 @@ int main(int argc, const char * argv[]) {
 	CrystalPtr crystal;
 
 	PDBReader pdb = PDBReader();
-	pdb.setFilename("5i40_final.pdb");
+	pdb.setFilename("5i40_H.pdb");
 	crystal = pdb.getCrystal();
 
 	FFTPtr fft = FFTPtr(new cFFTW3d());
