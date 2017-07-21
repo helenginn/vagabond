@@ -669,6 +669,7 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 			{
 				long int small_index = fftSmall->quickElement(i, j, k);
 
+				vec3 small_pos = make_vec3(i, j, k);
 				long int big_index = small_index;
 
 				if (!sameScale)
@@ -689,12 +690,10 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 
 				/* Add real only (for reals!!) */
 
-
-
 				if (!sameScale)
 				{
-					real = fftSmall->data[small_index][0] * division + fftBig->data[big_index][0];
-					imag = fftSmall->data[small_index][1] * division + fftBig->data[big_index][1];
+					real = fftSmall->interpolate(small_pos, 0) * division + fftBig->data[big_index][0];
+					imag = fftSmall->interpolate(small_pos, 1) * division + fftBig->data[big_index][1];
 				}
 				else
 				{
