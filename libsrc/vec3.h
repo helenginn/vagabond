@@ -36,6 +36,7 @@ inline vec3 make_vec3(double x, double y, double z)
 	return vec;
 }
 
+struct vec3 vec3_add_vec3(vec3 &aVec, vec3 &bVec);
 struct vec3 vec3_subtract_vec3(vec3 &aVec, vec3 &bVec);
 void vec3_mult(vec3 *aVec, double mult);
 

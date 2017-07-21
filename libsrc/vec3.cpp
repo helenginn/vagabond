@@ -33,6 +33,16 @@ struct vec3 vec3_subtract_vec3(vec3 &aVec, vec3 &bVec)
 	return vec;
 }
 
+struct vec3 vec3_add_vec3(vec3 &aVec, vec3 &bVec)
+{
+	struct vec3 vec;
+	vec.x = aVec.x + bVec.x;
+	vec.y = aVec.y + bVec.y;
+	vec.z = aVec.z + bVec.z;
+
+	return vec;
+}
+
 void vec3_mult(vec3 *aVec, double mult)
 {
 	aVec->x *= mult;
