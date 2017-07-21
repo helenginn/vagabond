@@ -760,10 +760,14 @@ void cFFTW3d::printSlice(bool amplitude)
 				value = sqrt(getIntensity(i, j, 0));
 			}
 
-			if (value > 0.1) symbol = ".";
-			if (value > 0.2) symbol = ":";
-			if (value > 0.4) symbol = "*";
-			if (value > 0.6) symbol = "#";
+			if (value > 0.5) symbol = ".";
+			if (value > 0.5) symbol = ":";
+			if (value > 1.0) symbol = "\"";
+			if (value > 2.0) symbol = "*";
+			if (value > 4.0) symbol = "x";
+			if (value > 8.0) symbol = "H";
+			if (value > 16.0) symbol = "#";
+			if (value > 25.0) symbol = "@";
 
 			std::cout << symbol;
 		}
