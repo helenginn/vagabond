@@ -630,85 +630,142 @@ double cFFTW3d::interpolate(vec3 vox000, bool im)
  *
  */
 void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
-						double addY, double addZ, bool sameScale, MaskType type)
+						double addY, double addZ, bool isMultiply, MaskType type)
 {
-	cFFTW3d *fftSmall = &*fftConst;
-	cFFTW3d *fftBig = &*fftEdit;
+	/* I rarely comment something so heavily but I will get confused if
+	 * I don't, this time, as I can't soak the protocol into the variable
+	 * names. Bear in mind the three coordinate systems:
+	 * (a) Angstroms
+	 * (b) Crystal voxels
+	 * (c) Atom voxels */
 
-	double division = 1.;
+	cFFTW3d *fftAtom = &*fftConst;
+	cFFTW3d *fftCrystal = &*fftEdit;
 
-	if (scale > 1)
+	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
+	cFFTW3d::collapseFrac(&addX, &addY, &addZ);
+
+	/* Multiply by the relative dimensions of the crystal */
+	double multX = addX * fftCrystal->nx;
+	double multY = addY * fftCrystal->ny;
+	double multZ = addZ * fftCrystal->nz;
+
+	/* Get the remainder after subtracting a number of whole voxels */
+	vec3 atomOffset;
+	atomOffset.x = fmod(multX, 1.);
+	atomOffset.y = fmod(multY, 1.);
+	atomOffset.z = fmod(multZ, 1.);
+
+	/* Store the non-remainder whole voxel values for way later. */
+	vec3 atomWholeCoords = make_vec3((int)multX, (int)multY, (int)multZ);
+
+	/* Prepare a matrix to convert crystal voxels into atomic voxels */
+	mat3x3 crystal2AtomVox = mat3x3_mult_mat3x3(fftAtom->getBasisInverse(),
+												fftCrystal->getBasis());
+
+	
+
+	/* Prepare a matrix to convert atomic voxels into crystal voxels */
+	mat3x3 atomVox2Crystal = mat3x3_mult_mat3x3(fftCrystal->getBasisInverse(),
+												fftAtom->getBasis());
+
+	/* Apply this offset and reverse it. This small offset must be added
+	 * to all future atomic coordinates prior to interpolation. This
+	 * is therefore now in atom voxels.*/
+	mat3x3_mult_vec(crystal2AtomVox, &atomOffset);
+	vec3_mult(&atomOffset, -1);
+
+	/* Find the limits of the atom voxels in crystal voxels */
+	vec3 atomLimit = make_vec3(fftAtom->nx, fftAtom->ny, fftAtom->nz);
+	mat3x3_mult_vec(atomVox2Crystal, &atomLimit);
+
+	/* Convert the limits into equivalent voxel limits for the crystal map */
+	/* Add a buffer of 1 voxel to ensure we do not lose the edges. */
+	atomLimit.x += 1.0; atomLimit.y += 1.0; atomLimit.z += 1.0;
+
+	/* We loop around these crystal voxel limits now (ss -> ms -> fs).
+	 * We also discard any which happen to go over the limits of our atom voxels
+	 * which may occur due to the buffer added above. */
+
+	for (int k = 0; k < atomLimit.z; k++)
 	{
-		division = 1 / pow(2, scale);
-	}
-
-	double step = 1;
-
-	if (!sameScale)
-	{
-		step = 1 / (double)scale;
-	}
-
-	mat3x3 inverse = fftBig->getBasisInverse();
-	mat3x3 transform = mat3x3_mult_mat3x3(inverse, fftSmall->getBasis());
-
-	fftSmall->collapseFrac(&addX, &addY, &addZ);
-	addX *= (double)fftBig->nx;
-	addY *= (double)fftBig->ny;
-	addZ *= (double)fftBig->nz;
-
-	addX += PROTEIN_SAMPLING / 2;
-	addY += PROTEIN_SAMPLING / 2;
-	addZ += PROTEIN_SAMPLING / 2;
-
-	for (double k = 0; k < fftSmall->nz; k += step)
-	{
-		for (double j = 0; j < fftSmall->ny; j += step)
+		for (int j = 0; j < atomLimit.y; j++)
 		{
-			for (double i = 0; i < fftSmall->nx; i += step)
+			for (int i = 0; i < atomLimit.x; i++)
 			{
-				long int small_index = fftSmall->quickElement(i, j, k);
+				/* Position currently in voxel coords - change to atom. */
+				vec3 pos = make_vec3(i, j, k);
+				mat3x3_mult_vec(crystal2AtomVox, &pos);
 
-				long int big_index = small_index;
+				/* Now we must find the relative crystal voxel to write this
+				 * density value to, given that the atom is wrapped around
+				 * the origin (center). This should work regardless of odd/
+				 * even dimension lengths. */
 
-				if (!sameScale)
+				double wrapped_i = pos.x;
+				if (wrapped_i > (fftAtom->nx - 1) / 2)
 				{
-					big_index = fftSmall->equivalentIndexFor(fftBig, i + step / 2,
-															 j + step / 2,
-															 k + step / 2,
-															 transform, addX,
-															 addY, addZ,
-															 sameScale);
+					wrapped_i -= (double)fftAtom->nx;
 				}
 
-				/* we need to shift everything back a bit because the small map
-				 is centred at the origin */
-
-				/* These are not functions because it's faster this way */
-				float real, imag;
-
-				/* Add real only (for reals!!) */
-
-
-
-				if (!sameScale)
+				double wrapped_j = pos.y;
+				if (wrapped_j > (fftAtom->ny - 1) / 2)
 				{
-					real = fftSmall->data[small_index][0] * division + fftBig->data[big_index][0];
-					imag = fftSmall->data[small_index][1] * division + fftBig->data[big_index][1];
+					wrapped_j -= (double)fftAtom->ny;
+				}
+
+				double wrapped_k = pos.z;
+				if (wrapped_k > (fftAtom->nz - 1) / 2)
+				{
+					wrapped_k -= (double)fftAtom->nz;
+				}
+
+				/* Wrapped around voxels are in atom coordinates */
+				vec3 wrapped = make_vec3(wrapped_i, wrapped_j, wrapped_k);
+
+				/* We add the tiny offset which resulted from the atom
+				 * falling between two voxels, in atomic voxels */
+				vec3 offsetPos = wrapped;//vec3_add_vec3(wrapped, atomOffset);
+
+				/* Find the interpolated value which offsetPos falls on */
+				double atomReal = fftAtom->interpolate(offsetPos, 0);
+				double atomImag = fftAtom->interpolate(offsetPos, 1);
+
+				/* We now convert from atom voxels to crystal voxels */
+				mat3x3_mult_vec(atomVox2Crystal, &wrapped);
+
+				/* We add the atom offset so we don't end up with thousands
+				 * of atoms at the very centre of our map */
+				vec3 finalCrystalVox = vec3_add_vec3(wrapped, atomWholeCoords);
+
+				/* Get the index of this final crystal voxel. */
+				long crystalIndex = fftCrystal->element(finalCrystalVox.x,
+														finalCrystalVox.y,
+														finalCrystalVox.z);
+
+				if (isMultiply)
+				{
+					double xtalReal = fftCrystal->data[crystalIndex][0];
+					double xtalImag = fftCrystal->data[crystalIndex][1];
+
+					// (a + bi)(c + di)
+
+					double newReal = xtalReal * atomReal - xtalImag * atomImag;
+					double newImag = xtalReal * atomImag + atomReal * xtalImag;
+
+					fftCrystal->data[crystalIndex][0] = newReal;
+					fftCrystal->data[crystalIndex][1] = newImag;
 				}
 				else
 				{
-					real = fftBig->data[big_index][0] * fftSmall->data[small_index][0]
-					- fftBig->data[big_index][1] * fftSmall->data[small_index][1];
-					imag = fftBig->data[big_index][0] * fftSmall->data[small_index][1]
-					+ fftBig->data[big_index][1] * fftSmall->data[small_index][0];
-				}
+					/* Add the density to the real value of the crystal voxel.*/
+					fftCrystal->data[crystalIndex][0] += atomReal;
+					fftCrystal->data[crystalIndex][1] += atomImag;
 
-				fftEdit->setElement(big_index, real, imag);
-
-				if (type != MaskUnchecked && real > 1.5)
-				{
-					fftEdit->setMask(big_index, type);
+					if (type != MaskUnchecked && atomReal > 1.5)
+					{
+						fftEdit->setMask(crystalIndex, type);
+					}
 				}
 			}
 		}
