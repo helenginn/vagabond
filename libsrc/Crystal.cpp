@@ -50,7 +50,7 @@ void Crystal::calculateMillers(FFTPtr fft)
 
 	double scaling = 1 / largest;
 
-	fft->setMat(_hkl2real, scaling);
+	fft->setBasis(_hkl2real, scaling);
 
 	clock_t end = clock();
 

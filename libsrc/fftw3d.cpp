@@ -580,7 +580,7 @@ void cFFTW3d::maxreal2(char *mask=NULL) {
     }
 }
 
-void cFFTW3d::setMat(mat3x3 mat, double sampleScale)
+void cFFTW3d::setBasis(mat3x3 mat, double sampleScale)
 {
 	_basis = mat;
 	mat3x3_scale(&_basis, sampleScale, sampleScale, sampleScale);

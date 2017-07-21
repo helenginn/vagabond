@@ -136,7 +136,7 @@ public:
 		return scales[dim];
 	}
 
-	void setMat(mat3x3 mat, double sampleScale);
+	void setBasis(mat3x3 mat, double sampleScale);
 
 	void setScales(double val)
 	{
@@ -179,7 +179,12 @@ public:
     
 private:
     fftwf_plan plan, iplan;
-	mat3x3 _basis, _inverse;
+
+	/* Transformation from FFT voxel basis vectors into Angstroms */
+	mat3x3 _basis;
+
+	/* Transformation from Angstroms into basis vectors for FFT voxels */
+	mat3x3 _inverse;
     
 };
 
