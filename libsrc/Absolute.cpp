@@ -65,12 +65,7 @@ FFTPtr Absolute::getDistribution()
 			{
 				double zfrac = z / (2 * radius);
 
-				double xAng = x + scale / 2;
-				double yAng = y + scale / 2;
-				double zAng = z + scale / 2;
-
 				double distSq = switch_sampling * switch_sampling *
-			//	(xAng * xAng + yAng * yAng + zAng * zAng);
 				x * x + y * y + z * z;
 
 				double value = exp((-0.25) * bFactor * distSq);
