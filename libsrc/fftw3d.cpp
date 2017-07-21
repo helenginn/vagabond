@@ -591,6 +591,39 @@ void cFFTW3d::setMat(mat3x3 mat, double sampleScale)
 	_inverse = mat3x3_inverse(_basis);
 }
 
+double cFFTW3d::interpolate(vec3 vox000, bool im)
+{
+	vec3 remain = make_vec3(fmod(vox000.x, 1), fmod(vox000.y, 1),
+							fmod(vox000.z, 1));
+
+	long int idx000 = element(vox000.x, vox000.y, vox000.z);
+
+	return data[idx000][im];
+
+	long int idx100 = element(vox000.x + 1, vox000.y, vox000.z);
+	long int idx010 = element(vox000.x, vox000.y + 1, vox000.z);
+	long int idx110 = element(vox000.x + 1, vox000.y + 1, vox000.z);
+	long int idx001 = element(vox000.x, vox000.y, vox000.z + 1);
+	long int idx101 = element(vox000.x + 1, vox000.y, vox000.z + 1);
+	long int idx011 = element(vox000.x, vox000.y + 1, vox000.z + 1);
+	long int idx111 = element(vox000.x + 1, vox000.y + 1, vox000.z + 1);
+
+	double val00 = data[idx000][im] * (1 - remain.x) +
+	data[idx100][im] * remain.x;
+	double val01 = data[idx001][im] * (1 - remain.x) +
+	data[idx101][im] * remain.x;
+	double val10 = data[idx010][im] * (1 - remain.x) +
+	data[idx110][im] * remain.x;
+	double val11 = data[idx011][im] * (1 - remain.x) +
+	data[idx111][im] * remain.x;
+
+	double val0 = val00 * (1 - remain.y) + val10 * remain.y;
+	double val1 = val01 * (1 - remain.y) + val11 * remain.y;
+
+	double value = val0 * (1 - remain.z) + val1 * remain.z;
+
+	return value;
+}
 
 
 /*  For multiplying point-wise

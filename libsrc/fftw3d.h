@@ -98,6 +98,8 @@ public:
 
     void speedTest(int);
 
+	double interpolate(vec3 fractionalVoxel, bool imaginary = false);
+
 	static void add(FFTPtr fftEdit, FFTPtr fftConst, int scale = 1,
 					double addX = 0, double addY = 0, double addZ = 0,
 					bool sameScale = false, MaskType type = MaskUnchecked)
