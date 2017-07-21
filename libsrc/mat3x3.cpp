@@ -89,13 +89,13 @@ mat3x3 mat3x3_inverse(mat3x3 &mat)
 	mat3x3 inv;
 
 	inv.vals[0] = (e * i - f * h) / det;
-	inv.vals[3] = -(d * i - f * g) / det;
-	inv.vals[6] = (d * h - e * g) / det;
-	inv.vals[1] = - (b * i - c * h) / det;
+	inv.vals[1] = -(d * i - f * g) / det;
+	inv.vals[2] = (d * h - e * g) / det;
+	inv.vals[3] = - (b * i - c * h) / det;
 	inv.vals[4] = (a * i - c * g) / det;
-	inv.vals[7] = - (a * h - b * g) / det;
-	inv.vals[2] = (b * f - c * e) / det;
-	inv.vals[5] = - (a * f - c * d) / det;
+	inv.vals[5] = - (a * h - b * g) / det;
+	inv.vals[6] = (b * f - c * e) / det;
+	inv.vals[7] = - (a * f - c * d) / det;
 	inv.vals[8] = (a * e - b * d) / det;
 
 	return inv;
@@ -114,13 +114,13 @@ mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double 
 
 	mat3x3 mat;
 	mat.vals[0] = a;
-	mat.vals[3] = 0;
-	mat.vals[6] = 0;
-	mat.vals[1] = cosC * b;
+	mat.vals[1] = 0;
+	mat.vals[2] = 0;
+	mat.vals[3] = cosC * b;
 	mat.vals[4] = sinC * b;
-	mat.vals[7] = 0;
-	mat.vals[2] = cosB * c;
-	mat.vals[5] = c * (cosA - cosB * cosC) / sinC;
+	mat.vals[5] = 0;
+	mat.vals[6] = cosB * c;
+	mat.vals[7] = c * (cosA - cosB * cosC) / sinC;
 	mat.vals[8] = volume / (a * b * sinC);
 
 	return mat;
