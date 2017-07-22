@@ -47,7 +47,8 @@ void Options::run()
 	if (!datasets.size())
 	{
 		std::cout << "Warning: You have not specified any data sources!" << std::endl;
-		std::cout << "         At the moment, you can't anyway." << std::endl;
+		std::cout << "\te.g. --with-mtz=xxxx.mtz\n" << std::endl;
+		std::cout << "I will just have a look at your models now." << std::endl;
 		std::cout << std::endl;
 
 		outputCrystalInfo();
