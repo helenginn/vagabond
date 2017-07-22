@@ -13,6 +13,10 @@
 
 #define ATOM_MAX_RADIUS (2.0)
 #define ATOM_SAMPLING (1. / 4.)
+
+#define MAX_SCATTERING_DSTAR 6
+#define ATOM_SAMPLING_DSTAR (1. / 4.)
+#define ATOM_SAMPLING_COUNT (16)
 #define PROTEIN_SAMPLING (1. / 4.)
 #define WATER_RADIUS 0.6
 
