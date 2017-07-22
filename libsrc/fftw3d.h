@@ -180,8 +180,6 @@ public:
     fftwf_complex *data;
 	MaskType *mask; // not char due to cpu speed
 
-	double scales[3];
-    
 private:
     fftwf_plan plan, iplan;
 	bool _made_plan;
@@ -191,7 +189,9 @@ private:
 
 	/* Transformation from Angstroms into basis vectors for FFT voxels */
 	mat3x3 _inverse;
-    
+
+	double scales[3];
+
 };
 
 #endif /* fftw3d_h */
