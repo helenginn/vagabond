@@ -15,7 +15,7 @@
  * must be treated separately for speed issues */
 void Bucket::makeCheckingShifts(FFTPtr map)
 {
-	double waterRadius = WATER_RADIUS;
+/*	double waterRadius = WATER_RADIUS;
 	mat3x3 rebase = map->getBasisInverse();
 
 	for (double k = -waterRadius; k < waterRadius; k += ATOM_SAMPLING)
@@ -30,6 +30,7 @@ void Bucket::makeCheckingShifts(FFTPtr map)
 			}
 		}
 	}
+ */
 }
 
 void Bucket::findBulkSolvent(FFTPtr map)
