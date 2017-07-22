@@ -395,14 +395,6 @@ void cFFTW3d::fft(int direction)
 		printf("Error: Undefined FFTW direction\n");
 		exit(1);
 	}
-
-	scales[0] = 1 / (nx * scales[0]);
-	scales[1] = 1 / (ny * scales[1]);
-	scales[2] = 1 / (nz * scales[2]);
-
-	mat3x3 tmp = _inverse;
-	_inverse = _basis;
-	_basis = tmp;
 }
 
 void cFFTW3d::speedTest(int nit){
