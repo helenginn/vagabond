@@ -43,9 +43,6 @@ void Absolute::addToMolecule(MoleculePtr molecule)
  */
 FFTPtr Absolute::getDistribution(FFTPtr *reuse)
 {
-	double scale = ATOM_SAMPLING;
-	double radius = ATOM_MAX_RADIUS; // Angs^-1.
-
 	if (!(*reuse))
 	{
 		(*reuse) = FFTPtr(new cFFTW3d());
@@ -53,11 +50,12 @@ FFTPtr Absolute::getDistribution(FFTPtr *reuse)
 
 	FFTPtr fft = *reuse;
 
-	int n = 2 * radius / scale;
+	double scale = ATOM_SAMPLING_DSTAR;
+	double n = ATOM_SAMPLING_COUNT;
+	double radius = scale * n;
+
 	fft->create(n);
 	fft->setScales(scale);
-	double sampling = 1 / (ATOM_SAMPLING * n);
-	double switch_sampling = sampling / scale;
 
 	for (double x = -radius; x <= radius; x += scale)
 	{
@@ -71,8 +69,11 @@ FFTPtr Absolute::getDistribution(FFTPtr *reuse)
 			{
 				double zfrac = z / (2 * radius);
 
-				double distSq = switch_sampling * switch_sampling *
-				x * x + y * y + z * z;
+				double xAng = x / radius * MAX_SCATTERING_DSTAR;
+				double yAng = y / radius * MAX_SCATTERING_DSTAR;
+				double zAng = z / radius * MAX_SCATTERING_DSTAR;
+
+				double distSq =	(xAng * xAng + yAng * yAng + zAng * zAng);
 
 				double value = exp((-0.25) * bFactor * distSq);
 				value *= _occupancy;
