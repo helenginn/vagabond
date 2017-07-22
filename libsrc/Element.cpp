@@ -86,15 +86,14 @@ FFTPtr Element::getDistribution()
 		return _shape;
 	}
 
-	double scale = ATOM_SAMPLING;
-	double radius = ATOM_MAX_RADIUS; // Angs^-1.
-
+	double scale = ATOM_SAMPLING_DSTAR;
 	_shape = FFTPtr(new cFFTW3d());
-	int n = 2 * radius / scale;
+	double n = ATOM_SAMPLING_COUNT;
+	double radius = scale * n;
+
 	_shape->create(n);
 	_shape->setScales(scale);
-	double sampling = 1 / (scale * n);
-	double switch_sampling = sampling / scale / 3;
+//	double sampling = 1 / (scale * n);
 
 	if (_scattering[0] <= 0)
 	{
@@ -117,13 +116,11 @@ FFTPtr Element::getDistribution()
 			{
 				double zfrac = z / (2 * radius);
 
-				double xAng = x * switch_sampling;
-				double yAng = y * switch_sampling;
-				double zAng = z * switch_sampling;
+				double xAng = x / radius * MAX_SCATTERING_DSTAR;
+				double yAng = y / radius * MAX_SCATTERING_DSTAR;
+				double zAng = z / radius * MAX_SCATTERING_DSTAR;
 
 				double distSq =	(xAng * xAng + yAng * yAng + zAng * zAng);
-				//x * x + y * y + z * z;
-
 				double dist = sqrt(distSq);
 
 				double val = 0;
@@ -141,15 +138,12 @@ FFTPtr Element::getDistribution()
 					}
 				}
 
-	//			std::cout << dist << ", " << val << std::endl;
-
 				_shape->setReal(xfrac, yfrac, zfrac, val);
 			}
 		}
 	}
 
 	_shape->createFFTWplan(1, false);
-	//_shape->printSlice();
 
 	return _shape;
 }
