@@ -33,6 +33,7 @@ cFFTW3d::cFFTW3d()
 	nz = 0;
 	nn = 0;
 	data = NULL;
+	_made_plan = false;
 }
 
 
@@ -248,6 +249,10 @@ void cFFTW3d::multiplyAll(float value)
 
 void cFFTW3d::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
 {
+	if (_made_plan)
+	{
+	//	return;
+	}
 
 	char	wisdomFile[2048];
 	FILE	*fp;
@@ -366,6 +371,8 @@ void cFFTW3d::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
 			printf("\t\tCould not open FFTW wisdom file %s\n",wisdomFile);
 		}
 	}
+
+	_made_plan = true;
 }
 
 
@@ -377,7 +384,7 @@ void cFFTW3d::fft(int direction)
 {
 	if(direction == 1)
 	{
-    	fftwf_execute(plan); 
+    	fftwf_execute(plan);
 	}
     else if (direction == -1)
 	{

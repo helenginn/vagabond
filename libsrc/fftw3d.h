@@ -184,6 +184,7 @@ public:
     
 private:
     fftwf_plan plan, iplan;
+	bool _made_plan;
 
 	/* Transformation from FFT voxel basis vectors into Angstroms */
 	mat3x3 _basis;
