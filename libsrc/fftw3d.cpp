@@ -361,7 +361,7 @@ void cFFTW3d::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
 		{
 			if (!fftwf_import_wisdom_from_file(fp) )
 			{
-				printf("\t\tError reading wisdom!\n");
+			//	printf("\t\tError reading wisdom!\n");
 			}
 
 			fclose(fp); 	/* be sure to close the file! */
