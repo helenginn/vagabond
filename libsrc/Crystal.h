@@ -13,8 +13,12 @@
 #include <vector>
 #include "shared_ptrs.h"
 #include "mat3x3.h"
+#include "Object.h"
+#include "fftw3d.h"
+#include <string>
+#include "maths.h"
 
-class Crystal
+class Crystal : public Object
 {
 public:
 	void addMolecule(MoleculePtr molecule)
@@ -35,15 +39,28 @@ public:
 	void setReal2HKL(mat3x3 mat);
 	void setHKL2Real(mat3x3 mat);
 
-	void calculateMillers(FFTPtr fft);
-	void writeCalcMillersToFile(FFTPtr fft, double resolution = 1.0);
+	void calculateMillers();
+	void writeCalcMillersToFile(double resolution = 1.0);
 
+	void scaleToDiffraction(DiffractionPtr data);
+	double rFactorWithDiffraction(DiffractionPtr data);
+	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
+								bool verbose = false);
+	void transplantAmplitudes(DiffractionPtr data);
+
+	void setFilename(std::string file)
+	{
+		_filename = file;
+	}
+	
 private:
 	std::vector<MoleculePtr> _molecules;
+	std::string _filename;
 
 	mat3x3 _hkl2real;
 	mat3x3 _real2frac;
 
+	FFTPtr fft;
 };
 
 #endif /* defined(__vagabond__Crystal__) */

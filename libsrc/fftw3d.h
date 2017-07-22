@@ -85,6 +85,11 @@ public:
 	double getReal(long index);
 	double getReal(long x, long y, long z);
 
+	double getImaginary(long index)
+	{
+		return data[index][1];
+	}
+
 	double getIntensity(long x, long y, long z);
 	double getPhase(long x, long y, long z);
 	void setReal(double xfrac, double yfrac, double zfrac, double real);

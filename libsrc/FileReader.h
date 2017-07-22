@@ -23,5 +23,7 @@ namespace FileReader
 };
 
 void read_file(const char *name, char **buffer, int *length);
+std::string getFilename(std::string filename);
+std::string getBaseFilename(std::string filename);
 
 #endif /* defined(__GameDriver__FileReader__) */

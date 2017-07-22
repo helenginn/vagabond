@@ -214,7 +214,7 @@ double cFFTW3d::getIntensity(long x, long y, long z)
 {
 	long index = element(x, y, z);
 
-	return 1e-7 * (data[index][0] * data[index][0] + data[index][1] * data[index][1]);
+	return (data[index][0] * data[index][0] + data[index][1] * data[index][1]);
 }
 
 double cFFTW3d::getReal(long x, long y, long z)
@@ -347,9 +347,25 @@ void cFFTW3d::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
         }
 
 		fftwf_export_wisdom_to_file(fp);
-	}
 
-	fclose(fp);	
+		fclose(fp);
+
+		fp = fopen(wisdomFile, "r");
+
+		if (fp != NULL)
+		{
+			if (!fftwf_import_wisdom_from_file(fp) )
+			{
+				printf("\t\tError reading wisdom!\n");
+			}
+
+			fclose(fp); 	/* be sure to close the file! */
+		}
+		else
+		{
+			printf("\t\tCould not open FFTW wisdom file %s\n",wisdomFile);
+		}
+	}
 }
 
 
@@ -599,7 +615,7 @@ double cFFTW3d::interpolate(vec3 vox000, bool im)
 	long int idx000 = element(vox000.x, vox000.y, vox000.z);
 
 	return data[idx000][im];
-
+/*
 	long int idx100 = element(vox000.x + 1, vox000.y, vox000.z);
 	long int idx010 = element(vox000.x, vox000.y + 1, vox000.z);
 	long int idx110 = element(vox000.x + 1, vox000.y + 1, vox000.z);
@@ -622,7 +638,7 @@ double cFFTW3d::interpolate(vec3 vox000, bool im)
 
 	double value = val0 * (1 - remain.z) + val1 * remain.z;
 
-	return value;
+	return value;*/
 }
 
 
@@ -692,8 +708,10 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 
 				if (!sameScale)
 				{
-					real = fftSmall->interpolate(small_pos, 0) * division + fftBig->data[big_index][0];
-					imag = fftSmall->interpolate(small_pos, 1) * division + fftBig->data[big_index][1];
+					real = fftSmall->data[small_index][0] * division +
+					fftBig->data[big_index][0];
+					imag = fftSmall->data[small_index][1] * division +
+					fftBig->data[big_index][1];
 				}
 				else
 				{
@@ -705,7 +723,7 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 
 				fftEdit->setElement(big_index, real, imag);
 
-				if (type != MaskUnchecked && real > 1.5)
+				if (type != MaskUnchecked && real > 1.0)
 				{
 					fftEdit->setMask(big_index, type);
 				}

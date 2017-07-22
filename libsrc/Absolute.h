@@ -21,7 +21,7 @@ public:
 
 
 // Model virtual functions:
-	virtual FFTPtr getDistribution();
+	virtual FFTPtr getDistribution(FFTPtr *reuse = NULL);
 	virtual void addToMolecule(MoleculePtr molecule);
 
 private:

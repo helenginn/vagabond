@@ -10,6 +10,7 @@
 #define __vagabond__vec3__
 
 #include <stdio.h>
+#include <math.h>
 
 struct vec3
 {

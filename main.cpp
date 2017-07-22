@@ -11,25 +11,15 @@
 #include "PDBReader.h"
 #include "shared_ptrs.h"
 #include "Crystal.h"
-#include <math.h>
 #include <iomanip>
+#include "Options.h"
 
-int main(int argc, const char * argv[]) {
-	// insert code here...
-	std::cout << "Hello, World!\n";
+int main(int argc, const char * argv[])
+{
+	/* Options are parsed and will generate the objects needed */
 
-	CrystalPtr crystal;
-
-	PDBReader pdb = PDBReader();
-	pdb.setFilename("5i40_H.pdb");
-	crystal = pdb.getCrystal();
-
-	FFTPtr fft = FFTPtr(new cFFTW3d());
-	crystal->calculateMillers(fft);
-	crystal->writeCalcMillersToFile(fft, 1.0);
-
-
-	fft->fft(1);
+	Options options(argc, argv);
+	options.run();
 
     return 0;
 }

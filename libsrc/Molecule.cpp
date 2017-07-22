@@ -28,6 +28,7 @@ void Molecule::addToMap(FFTPtr fft, mat3x3 _real2frac)
 {
 	for (int i = 0; i < atomCount(); i++)
 	{
-		atoms[i]->addToMap(fft, _real2frac);
+		FFTPtr modelDist = FFTPtr();
+		atoms[i]->addToMap(fft, modelDist, _real2frac);
 	}
 }

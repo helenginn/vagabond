@@ -41,12 +41,18 @@ void Absolute::addToMolecule(MoleculePtr molecule)
 /*  Absolute distribution only needs to be the blurring due to the atomic
  *  B factor. The position should be provided by a different function.
  */
-FFTPtr Absolute::getDistribution()
+FFTPtr Absolute::getDistribution(FFTPtr *reuse)
 {
 	double scale = ATOM_SAMPLING;
 	double radius = ATOM_MAX_RADIUS; // Angs^-1.
 
-	FFTPtr fft = FFTPtr(new cFFTW3d());
+	if (!(*reuse))
+	{
+		(*reuse) = FFTPtr(new cFFTW3d());
+	}
+
+	FFTPtr fft = *reuse;
+
 	int n = 2 * radius / scale;
 	fft->create(n);
 	fft->setScales(scale);

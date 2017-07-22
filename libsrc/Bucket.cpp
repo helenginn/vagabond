@@ -77,6 +77,4 @@ void Bucket::findBulkSolvent(FFTPtr map)
 			}
 		}
 	}
-
-	std::cout << "Set " << count << " voxels to empty." << std::endl;
 }

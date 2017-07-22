@@ -13,7 +13,7 @@
 
 #define ATOM_MAX_RADIUS (2.0)
 #define ATOM_SAMPLING (1. / 4.)
-#define PROTEIN_SAMPLING (1. / 3.)
+#define PROTEIN_SAMPLING (1. / 4.)
 #define WATER_RADIUS 0.6
 
 class cFFTW3d;
@@ -42,6 +42,16 @@ class BucketUniform;
 
 typedef std::shared_ptr<Bucket> BucketPtr;
 typedef std::shared_ptr<BucketUniform> BucketUniformPtr;
+
+class Dataset;
+class Diffraction;
+class DiffractionMtz;
+typedef std::shared_ptr<Dataset> DatasetPtr;
+typedef std::shared_ptr<Diffraction> DiffractionPtr;
+typedef std::shared_ptr<DiffractionMtz> DiffractionMtzPtr;
+
+class Object;
+typedef std::shared_ptr<Object> ObjectPtr;
 
 typedef enum
 {

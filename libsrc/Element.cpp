@@ -148,7 +148,6 @@ FFTPtr Element::getDistribution()
 		}
 	}
 
-	std::cout << "Made my first " << _name << std::endl;
 	_shape->createFFTWplan(1, false);
 	//_shape->printSlice();
 

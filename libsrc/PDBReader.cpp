@@ -94,6 +94,11 @@ void PDBReader::parseLine(std::string line)
 
 void PDBReader::parse()
 {
+	if (!FileReader::exists(filename))
+	{
+		shout_at_user("Cannot open file " + filename + ".");
+	}
+
 	std::string pdbContents = FileReader::get_file_contents(filename.c_str());
 
 	std::vector<std::string> lines = FileReader::split(pdbContents, '\n');
@@ -111,9 +116,15 @@ void PDBReader::setFilename(std::string file)
 
 CrystalPtr PDBReader::getCrystal()
 {
+	if (myCrystal)
+	{
+		return myCrystal;
+	}
+
 	myCrystal = CrystalPtr(new Crystal());
 	myMolecule = MoleculePtr(new Molecule());
 
+	myCrystal->setFilename(getBaseFilename(filename));
 	parse();
 
 	if (!_foundCrystal)
@@ -124,8 +135,6 @@ CrystalPtr PDBReader::getCrystal()
 	}
 
 	myCrystal->addMolecule(myMolecule);
-
-	std::cout << "Atoms: " << myMolecule->atomCount() << std::endl;
 
 	return myCrystal;
 }

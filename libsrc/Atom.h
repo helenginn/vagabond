@@ -37,7 +37,8 @@ public:
 		_element = element;
 	}
 
-	void addToMap(FFTPtr fft, mat3x3 unit_cell);
+	/* Returns a FFT for the model dist, for reuse */
+	FFTPtr addToMap(FFTPtr fft, FFTPtr reuseModelDist, mat3x3 unit_cell);
 
 private:
 	std::vector<ModelPtr> connections;

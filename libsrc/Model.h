@@ -20,7 +20,7 @@
 class Model : public std::enable_shared_from_this<Model>
 {
 public:
-	virtual FFTPtr getDistribution() = 0;
+	virtual FFTPtr getDistribution(FFTPtr *reuse = NULL) = 0;
 
 	virtual void addToMolecule(MoleculePtr molecule);
 
