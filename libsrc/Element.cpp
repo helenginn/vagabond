@@ -86,13 +86,12 @@ FFTPtr Element::getDistribution()
 		return _shape;
 	}
 
-	double scale = ATOM_SAMPLING_DSTAR;
 	_shape = FFTPtr(new cFFTW3d());
-	double n = ATOM_SAMPLING_COUNT;
-	double radius = scale * n;
+	double n = ATOM_SAMPLING_COUNT / PROTEIN_SAMPLING;
+	double scale = MAX_SCATTERING_DSTAR / n;
 
 	_shape->create(n);
-	_shape->setScales(scale);
+	_shape->setScales(scale * PROTEIN_SAMPLING);
 //	double sampling = 1 / (scale * n);
 
 	if (_scattering[0] <= 0)
@@ -104,21 +103,16 @@ FFTPtr Element::getDistribution()
 
 	int totalScatterPoints = ScatterFactors::numScatter;
 	
-	for (double x = -radius; x <= radius; x += scale)
+	for (double x = -0.5; x <= 0.5; x += 1 / n)
 	{
-		double xfrac = x / (2 * radius);
-
-		for (double y = -radius; y <= radius; y += scale)
+		for (double y = -0.5; y <= 0.5; y += 1 / n)
 		{
-			double yfrac = y / (2 * radius);
-
-			for (double z = -radius; z <= radius; z += scale)
+			for (double z = -0.5; z <= 0.5; z += 1 / n)
 			{
-				double zfrac = z / (2 * radius);
-
-				double xAng = x / radius * MAX_SCATTERING_DSTAR;
-				double yAng = y / radius * MAX_SCATTERING_DSTAR;
-				double zAng = z / radius * MAX_SCATTERING_DSTAR;
+				double mod = MAX_SCATTERING_DSTAR * 2;
+				double xAng = x * mod;
+				double yAng = y * mod;
+				double zAng = z * mod;
 
 				double distSq =	(xAng * xAng + yAng * yAng + zAng * zAng);
 				double dist = sqrt(distSq);
@@ -133,12 +127,11 @@ FFTPtr Element::getDistribution()
 						double interpolateToNext = (ScatterFactors::dScatter[i] - dist);
 						interpolateToNext /= fabs(ScatterFactors::dScatter[i + 1] - ScatterFactors::dScatter[i]);
 						val = (_scattering[i] + interpolateToNext * (_scattering[i] - _scattering[i + 1]));
-						val *= scale;
 						break;
 					}
 				}
 
-				_shape->setReal(xfrac, yfrac, zfrac, val);
+				_shape->setReal(x, y, z, val);
 			}
 		}
 	}

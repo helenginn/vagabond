@@ -39,7 +39,7 @@ private:
 	std::string _symbol;
 	std::string _name;
 	float _scattering[ScatterFactors::numScatter];
-	FFTPtr _shape;
+	FFTPtr _fft;
 
 	static std::vector<ElementPtr> elements;
 
