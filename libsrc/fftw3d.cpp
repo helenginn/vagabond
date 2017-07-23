@@ -684,12 +684,9 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 	addY *= (double)fftBig->ny;
 	addZ *= (double)fftBig->nz;
 
-	if (!sameScale)
-	{
-		addX += PROTEIN_SAMPLING;
-		addY += PROTEIN_SAMPLING;
-		addZ += PROTEIN_SAMPLING;
-	}
+	addX += PROTEIN_SAMPLING; // plus 0.5 minus equivalent voxel in small fft?
+	addY += PROTEIN_SAMPLING;
+	addZ += PROTEIN_SAMPLING;
 
 	for (double k = 0; k < fftSmall->nz; k += step)
 	{

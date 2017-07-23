@@ -41,7 +41,7 @@ FFTPtr Atom::addToMap(FFTPtr fft, FFTPtr reuseModelDist, mat3x3 unit_cell)
 	vec3 pos = make_vec3(xPos, yPos, zPos);
 	mat3x3_mult_vec(unit_cell, &pos);
 
-	cFFTW3d::add(fft, reuseModelDist, 3, pos.x, pos.y, pos.z, false, MaskProtein);
+	cFFTW3d::add(fft, reuseModelDist, 2, pos.x, pos.y, pos.z, false, MaskProtein);
 
 	return reuseModelDist;
 }
