@@ -98,7 +98,7 @@ void DiffractionMtz::load()
 	MtzResLimits(mtz, &minRes, &maxRes);
 
 	CMtz::MTZXTAL **xtals = MtzXtals(mtz);
-	float *cell;
+	float cell[6];
 	ccp4_lrcell(xtals[0], cell);
 
 	int largest = 0;
