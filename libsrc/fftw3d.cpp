@@ -44,10 +44,14 @@ cFFTW3d::cFFTW3d(long n)
 
 
 cFFTW3d::~cFFTW3d() 
-{	
+{
+	if (_made_plan)
+	{
+		fftwf_destroy_plan(plan);
+		fftwf_destroy_plan(iplan);
+	}
+	
 	fftwf_free(data); data = NULL;
-	fftwf_destroy_plan(plan);
-	fftwf_destroy_plan(iplan);
 	fftwf_cleanup_threads();
 }	
 
@@ -616,8 +620,8 @@ void cFFTW3d::setBasis(mat3x3 mat, double sampleScale)
 
 double cFFTW3d::interpolate(vec3 vox000, bool im)
 {
-	vec3 remain = make_vec3(fmod(vox000.x, 1), fmod(vox000.y, 1),
-							fmod(vox000.z, 1));
+//	vec3 remain = make_vec3(fmod(vox000.x, 1), fmod(vox000.y, 1),
+//							fmod(vox000.z, 1));
 
 	long int idx000 = element(vox000.x, vox000.y, vox000.z);
 
@@ -680,9 +684,12 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 	addY *= (double)fftBig->ny;
 	addZ *= (double)fftBig->nz;
 
-	addX += PROTEIN_SAMPLING / 2;
-	addY += PROTEIN_SAMPLING / 2;
-	addZ += PROTEIN_SAMPLING / 2;
+	if (!sameScale)
+	{
+		addX += PROTEIN_SAMPLING;
+		addY += PROTEIN_SAMPLING;
+		addZ += PROTEIN_SAMPLING;
+	}
 
 	for (double k = 0; k < fftSmall->nz; k += step)
 	{
@@ -692,7 +699,6 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 			{
 				long int small_index = fftSmall->quickElement(i, j, k);
 
-				vec3 small_pos = make_vec3(i, j, k);
 				long int big_index = small_index;
 
 				if (!sameScale)
