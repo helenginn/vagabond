@@ -50,35 +50,28 @@ FFTPtr Absolute::getDistribution(FFTPtr *reuse)
 
 	FFTPtr fft = *reuse;
 
-	double scale = ATOM_SAMPLING_DSTAR;
 	double n = ATOM_SAMPLING_COUNT;
-	double radius = scale * n;
-
+	double scale = 1 / (2.0 * MAX_SCATTERING_DSTAR);
 	fft->create(n);
 	fft->setScales(scale);
 
-	for (double x = -radius; x <= radius; x += scale)
+	for (double x = -0.5; x <= 0.5; x += 1 / n)
 	{
-		double xfrac = x / (2 * radius);
-
-		for (double y = -radius; y <= radius; y += scale)
+		for (double y = -0.5; y <= 0.5; y += 1 / n)
 		{
-			double yfrac = y / (2 * radius);
-
-			for (double z = -radius; z <= radius; z += scale)
+			for (double z = -0.5; z <= 0.5; z += 1 / n)
 			{
-				double zfrac = z / (2 * radius);
-
-				double xAng = x / radius * MAX_SCATTERING_DSTAR;
-				double yAng = y / radius * MAX_SCATTERING_DSTAR;
-				double zAng = z / radius * MAX_SCATTERING_DSTAR;
+				double mod = MAX_SCATTERING_DSTAR * 2;
+				double xAng = x * mod;
+				double yAng = y * mod;
+				double zAng = z * mod;
 
 				double distSq =	(xAng * xAng + yAng * yAng + zAng * zAng);
 
 				double value = exp((-0.25) * bFactor * distSq);
 				value *= _occupancy;
 
-				fft->setReal(xfrac, yfrac, zfrac, value);
+				fft->setReal(x, y, z, value);
 			}
 		}
 	}
