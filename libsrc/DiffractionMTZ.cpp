@@ -78,9 +78,9 @@ void DiffractionMtz::load()
 
 	if (!col_sigf)
 	{
-		std::cout << "Warning: I could not find your sigma/error column in\n"
-					 "         " << _filename << " - please label as SIGF or SIGFP."
-		<< std::endl << std::endl;
+		warn_user("I could not find your sigma/error column in\n"
+				  + _filename + " - please label as SIGF or SIGFP.\n"
+				  "I can do without and will keep going.");
 	}
 
 	CMtz::MTZCOL *col_h = MtzColLookup(mtz, "H");
