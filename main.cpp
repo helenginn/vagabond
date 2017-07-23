@@ -6,12 +6,10 @@
 //  Copyright (c) 2017 Strubi. All rights reserved.
 //
 
-#include <iostream>
 #include "libsrc/fftw3d.h"
 #include "PDBReader.h"
 #include "shared_ptrs.h"
 #include "Crystal.h"
-#include <iomanip>
 #include "Options.h"
 
 int main(int argc, const char * argv[])
