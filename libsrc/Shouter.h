@@ -13,5 +13,7 @@
 #include <string>
 
 void shout_at_user(std::string fix_me_message);
+void shout_at_helen(std::string fix_me_message);
+void warn_user(std::string cautionary_tale);
 
 #endif /* defined(__vagabond__Shouter__) */
