@@ -15,14 +15,14 @@
  * must be treated separately for speed issues */
 void Bucket::makeCheckingShifts(FFTPtr map)
 {
-/*	double waterRadius = WATER_RADIUS;
+	double waterRadius = WATER_RADIUS;
 	mat3x3 rebase = map->getBasisInverse();
 
-	for (double k = -waterRadius; k < waterRadius; k += ATOM_SAMPLING)
+	for (double k = -waterRadius; k < waterRadius; k += PROTEIN_SAMPLING)
 	{
-		for (double j = -waterRadius; j < waterRadius; j += ATOM_SAMPLING)
+		for (double j = -waterRadius; j < waterRadius; j += PROTEIN_SAMPLING)
 		{
-			for (double i = -waterRadius; i < waterRadius; i += ATOM_SAMPLING)
+			for (double i = -waterRadius; i < waterRadius; i += PROTEIN_SAMPLING)
 			{
 				vec3 pos = make_vec3(i, j, k);
 				mat3x3_mult_vec(rebase, &pos);
@@ -30,7 +30,6 @@ void Bucket::makeCheckingShifts(FFTPtr map)
 			}
 		}
 	}
- */
 }
 
 void Bucket::findBulkSolvent(FFTPtr map)
