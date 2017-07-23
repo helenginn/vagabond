@@ -7,3 +7,51 @@
 //
 
 #include "Distributor.h"
+#include "fftw3d.h"
+
+
+
+FFTPtr Distributor::prepareDistribution(get_voxel_value *voxel_value,
+										bool fftNow)
+{
+	if (_calculated)
+	{
+		return _fft;
+	}
+
+	_fft = FFTPtr(new cFFTW3d());
+	double n = ATOM_SAMPLING_COUNT;
+	double scale = MAX_SCATTERING_DSTAR / n;
+
+	_fft->create(n);
+	_fft->setScales(scale);
+
+	for (double x = -0.5; x <= 0.5; x += 1 / n)
+	{
+		for (double y = -0.5; y <= 0.5; y += 1 / n)
+		{
+			for (double z = -0.5; z <= 0.5; z += 1 / n)
+			{
+				double mod = MAX_SCATTERING_DSTAR * 2;
+				double xAng = x * mod;
+				double yAng = y * mod;
+				double zAng = z * mod;
+
+				double val = (*voxel_value)(this, xAng, yAng, zAng);
+
+				_fft->setReal(x, y, z, val);
+			}
+		}
+	}
+
+	_fft->createFFTWplan(1, false);
+
+	if (fftNow)
+	{
+		_fft->fft(1);
+	}
+
+	_calculated = true;
+	
+	return _fft;
+}

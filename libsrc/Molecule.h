@@ -13,6 +13,7 @@
 #include <vector>
 #include "mat3x3.h"
 #include "shared_ptrs.h"
+#include <string>
 
 struct vec3;
 
@@ -24,14 +25,35 @@ public:
 
 	void addToMap(FFTPtr fft, mat3x3 _real2frac);
 
+	virtual void summary();
+	virtual void tieAtomsUp() {};
+
 	long int atomCount()
 	{
 		return atoms.size();
 	}
 
+	void setChainID(std::string chain)
+	{
+		_chainID = chain;
+	}
+
+	std::string getChainID()
+	{
+		return _chainID;
+	}
+
+	std::string className()
+	{
+		return "Molecule";
+	}
+
 private:
 	std::vector<ModelPtr> models;
 	std::vector<AtomPtr> atoms;
+
+
+	std::string _chainID;
 };
 
 #endif /* defined(__vagabond__Molecule__) */

@@ -23,13 +23,22 @@ public:
 
 private:
 	std::string filename;
-	MoleculePtr myMolecule;
-	CrystalPtr myCrystal;
+
+	/* Keep track of what we're dealing with */
+	MoleculePtr _myMolecule;
+	PolymerPtr _myPolymer;
+	CrystalPtr _myCrystal;
+	MonomerPtr _myMonomer;
+	std::string _myChain;
+	int _residueNum;
 
 	void getSymmetry(std::string line);
-	void addAtom(std::string line);
+	AbsolutePtr makeAtom(std::string line);
 	void parseLine(std::string line);
 	void parse();
+	void validateMolecule(AbsolutePtr atom);
+	void validateResidue(AbsolutePtr atom);
+	void addAtomToMolecule(std::string line);
 
 	bool _foundCrystal;
 };

@@ -13,9 +13,9 @@
 #include <string>
 #include <vector>
 #include "shared_ptrs.h"
-#include "ScatterFactors.h"
+#include "Distributor.h"
 
-class Element
+class Element : public Distributor
 {
 public:
 	static void setupElements();
@@ -34,12 +34,14 @@ public:
 		return _name;
 	}
 
+protected:
+	static double getVoxelValue(void *obj, double x, double y, double z);
 
 private:
 	std::string _symbol;
 	std::string _name;
-	float _scattering[ScatterFactors::numScatter];
-	FFTPtr _shape;
+	float _scattering[62];
+	FFTPtr _fft;
 
 	static std::vector<ElementPtr> elements;
 

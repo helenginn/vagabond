@@ -22,6 +22,11 @@ public:
 		_filename = filename;
 	}
 
+	std::string getFilename()
+	{
+		return _filename;
+	}
+
 	virtual void load() = 0;
 
 	FFTPtr getFFT()

@@ -14,13 +14,17 @@
 #include <vector>
 #include "vec3.h"
 #include "mat3x3.h"
+#include <string>
 
-class Atom
+class Atom : public std::enable_shared_from_this<Atom>
 {
 public:
 	Atom();
 
-	void addConnection(ModelPtr model);
+	void setModel(ModelPtr model);
+
+	bool isBackbone();
+	bool isBackboneAndSidechain();
 
 	vec3 getPosition()
 	{
@@ -37,12 +41,29 @@ public:
 		_element = element;
 	}
 
+	void setMonomer(MonomerPtr monomer)
+	{
+		_monomer = monomer;
+	}
+
+	void setAtomName(std::string name)
+	{
+		_atomName = name;
+	}
+
+	std::string getAtomName()
+	{
+		return _atomName;
+	}
+
 	/* Returns a FFT for the model dist, for reuse */
-	FFTPtr addToMap(FFTPtr fft, FFTPtr reuseModelDist, mat3x3 unit_cell);
+	void addToMap(FFTPtr fft, mat3x3 unit_cell);
 
 private:
-	std::vector<ModelPtr> connections;
+	ModelPtr _model;
 	ElementPtr _element;
+	std::string _atomName;
+	MonomerWkr _monomer;
 
 	vec3 _position;
 };

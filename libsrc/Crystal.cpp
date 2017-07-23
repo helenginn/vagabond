@@ -6,7 +6,6 @@
 //  Copyright (c) 2017 Strubi. All rights reserved.
 //
 
-#include "Molecule.h"
 #include "Crystal.h"
 #include "fftw3d.h"
 #include "vec3.h"
@@ -19,7 +18,44 @@
 #include "../libccp4/cmtzlib.h"
 #include "Shouter.h"
 #include "Diffraction.h"
+#include "Polymer.h"
 
+void Crystal::summary()
+{
+	std::cout << "|----------------" << std::endl;
+	std::cout << "| Crystal summary (" << _filename << "): " << std::endl;
+	std::cout << "|----------------" << std::endl;
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (i > 0)
+		{
+			std::cout << "|-------" << std::endl;
+		}
+		molecule(i)->summary();
+	}
+
+	std::cout << "|----------------\n" << std::endl;
+}
+
+void Crystal::tieAtomsUp()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		molecule(i)->tieAtomsUp();
+	}
+}
+
+void Crystal::addMolecule(MoleculePtr molecule)
+{
+	if (molecule->getChainID().length() <= 0)
+	{
+		shout_at_helen("Monomer chain ID is missing while trying\n"\
+					   "to interpret PDB file.");
+	}
+	
+	_molecules[molecule->getChainID()] = molecule;
+}
 
 void Crystal::setReal2HKL(mat3x3 mat)
 {
@@ -175,9 +211,16 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 	fft->multiplyAll(scale);
 }
 
-double Crystal::rFactorWithDiffraction(DiffractionPtr data)
+double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 {
 	double rFactor = valueWithDiffraction(data, &r_factor);
+
+	if (verbose)
+	{
+		std::cout << "Rfactor for crystal (" << _filename << ") against data ("
+		<< data->getFilename() << ") of " << std::setprecision(3)
+		<< rFactor * 100 << "%." << std::endl;
+	}
 
 	return rFactor;
 }

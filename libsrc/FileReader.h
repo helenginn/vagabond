@@ -26,4 +26,9 @@ void read_file(const char *name, char **buffer, int *length);
 std::string getFilename(std::string filename);
 std::string getBaseFilename(std::string filename);
 
+/* Random string things */
+
+void trim(std::string& str);
+void to_lower(std::string &str);
+
 #endif /* defined(__GameDriver__FileReader__) */

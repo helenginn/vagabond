@@ -20,19 +20,19 @@ Atom::Atom()
 
 }
 
-void Atom::addConnection(ModelPtr model)
+void Atom::setModel(ModelPtr model)
 {
-	connections.push_back(model);
+	_model = model;
 }
 
 
-FFTPtr Atom::addToMap(FFTPtr fft, FFTPtr reuseModelDist, mat3x3 unit_cell)
+void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 {
 	FFTPtr atomDist = _element->getDistribution();
-
-	connections[0]->getDistribution(&reuseModelDist);
-	cFFTW3d::multiply(reuseModelDist, atomDist);
-	reuseModelDist->fft(1);
+	
+	FFTPtr modelDist = _model->getDistribution();
+	cFFTW3d::multiply(modelDist, atomDist);
+	modelDist->fft(1);
 
 	double xPos = getPosition().x;
 	double yPos = getPosition().y;
@@ -41,7 +41,22 @@ FFTPtr Atom::addToMap(FFTPtr fft, FFTPtr reuseModelDist, mat3x3 unit_cell)
 	vec3 pos = make_vec3(xPos, yPos, zPos);
 	mat3x3_mult_vec(unit_cell, &pos);
 
-	cFFTW3d::add(fft, reuseModelDist, 2, pos.x, pos.y, pos.z, false, MaskProtein);
+	cFFTW3d::add(fft, modelDist, 2, pos.x, pos.y, pos.z, false, MaskProtein);
+}
 
-	return reuseModelDist;
+bool Atom::isBackbone()
+{
+	if (_atomName == "C") return true;
+	if (_atomName == "H") return true;
+	if (_atomName == "N") return true;
+	if (_atomName == "H") return true;
+
+	return false;
+}
+
+bool Atom::isBackboneAndSidechain()
+{
+	if (_atomName == "CA") return true;
+
+	return false;
 }

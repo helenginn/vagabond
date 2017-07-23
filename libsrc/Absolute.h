@@ -13,6 +13,7 @@
 #include "Model.h"
 #include "vec3.h"
 #include <string>
+#include "FileReader.h"
 
 class Absolute : public Model
 {
@@ -21,16 +22,59 @@ public:
 
 
 // Model virtual functions:
-	virtual FFTPtr getDistribution(FFTPtr *reuse = NULL);
+	virtual FFTPtr getDistribution();
 	virtual void addToMolecule(MoleculePtr molecule);
+	virtual void addToMonomer(MonomerPtr monomer);
 
+	void setIdentity(int resNumValue, std::string chainID,
+					 std::string resName, std::string atomName)
+	{
+		_resNum = resNumValue;
+		_chainID = chainID;
+		_resName = resName;
+		_atomName = atomName;
+
+		trim(_chainID); trim(_atomName);
+
+		trim(_resName); to_lower(_resName);
+	}
+
+	int getResNum()
+	{
+		return _resNum;
+	}
+
+	std::string getResName()
+	{
+		return _resName;
+	}
+
+	std::string getChainID()
+	{
+		return _chainID + (_hetatm ? "_hetatm" : "");
+	}
+
+	void setHeteroAtom(bool hetatm)
+	{
+		_hetatm = hetatm;
+	}
+
+	bool isHeteroAtom()
+	{
+		return _hetatm;
+	}
 private:
 	AtomPtr _atom;
 	std::string _element;
 	double _occupancy;
+	std::string _chainID, _resName, _atomName;
+	int _resNum;
+	bool _hetatm;
 
 	vec3 position;
 	double bFactor;
+
+	void makeAtom();
 };
 
 #endif /* defined(__vagabond__Absolute__) */

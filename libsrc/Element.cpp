@@ -12,6 +12,7 @@
 #include "fftw3d.h"
 #include <stdlib.h>
 #include <iostream>
+#include "ScatterFactors.h"
 
 std::vector<ElementPtr> Element::elements;
 
@@ -75,68 +76,33 @@ ElementPtr Element::getElement(std::string symbol)
 	return ElementPtr();
 }
 
-
-/*  Problems: value needs to be proportional to the density of the atom
- *  Need to do a better calculation of actual voxels.
- */
-FFTPtr Element::getDistribution()
+double Element::getVoxelValue(void *object, double x, double y, double z)
 {
-	if (_shape)
-	{
-		return _shape;
-	}
-
-	_shape = FFTPtr(new cFFTW3d());
-	double n = ATOM_SAMPLING_COUNT / PROTEIN_SAMPLING;
-	double scale = MAX_SCATTERING_DSTAR / n;
-
-	_shape->create(n);
-	_shape->setScales(scale * PROTEIN_SAMPLING);
-//	double sampling = 1 / (scale * n);
-
-	if (_scattering[0] <= 0)
-	{
-		shout_at_user("Helen needs to add your element\n" \
-					  + _symbol + " to the list of atoms.\n" \
-					  "Sorry!\n");
-	}
-
+	Element *me = static_cast<Element *>(object);
 	int totalScatterPoints = ScatterFactors::numScatter;
-	
-	for (double x = -0.5; x <= 0.5; x += 1 / n)
+
+	double distSq =	(x * x + y * y + z * z);
+	double dist = sqrt(distSq);
+	dist *= PROTEIN_SAMPLING;
+
+	double val = 0;
+
+	for (int i = 0; i < totalScatterPoints - 1; i++)
 	{
-		for (double y = -0.5; y <= 0.5; y += 1 / n)
+		if ((dist >= ScatterFactors::dScatter[i] &&
+			 dist < ScatterFactors::dScatter[i + 1]))
 		{
-			for (double z = -0.5; z <= 0.5; z += 1 / n)
-			{
-				double mod = MAX_SCATTERING_DSTAR * 2;
-				double xAng = x * mod;
-				double yAng = y * mod;
-				double zAng = z * mod;
-
-				double distSq =	(xAng * xAng + yAng * yAng + zAng * zAng);
-				double dist = sqrt(distSq);
-
-				double val = 0;
-
-				for (int i = 0; i < totalScatterPoints - 1; i++)
-				{
-					if ((dist >= ScatterFactors::dScatter[i] &&
-						dist < ScatterFactors::dScatter[i + 1]))
-					{
-						double interpolateToNext = (ScatterFactors::dScatter[i] - dist);
-						interpolateToNext /= fabs(ScatterFactors::dScatter[i + 1] - ScatterFactors::dScatter[i]);
-						val = (_scattering[i] + interpolateToNext * (_scattering[i] - _scattering[i + 1]));
-						break;
-					}
-				}
-
-				_shape->setReal(x, y, z, val);
-			}
+			double interpolateToNext = (ScatterFactors::dScatter[i] - dist);
+			interpolateToNext /= fabs(ScatterFactors::dScatter[i + 1] - ScatterFactors::dScatter[i]);
+			val = (me->_scattering[i] + interpolateToNext * (me->_scattering[i] - me->_scattering[i + 1]));
+			break;
 		}
 	}
 
-	_shape->createFFTWplan(1, false);
+	return val;
+}
 
-	return _shape;
+FFTPtr Element::getDistribution()
+{
+	return prepareDistribution(getVoxelValue);
 }

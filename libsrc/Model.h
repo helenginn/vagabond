@@ -12,7 +12,7 @@
 #include "shared_ptrs.h"
 #include <stdio.h>
 #include <vector>
-
+#include "Distributor.h"
 
 // Anything which is capable of predicting electron positions.
 //
@@ -20,8 +20,9 @@
 class Model : public std::enable_shared_from_this<Model>
 {
 public:
-	virtual FFTPtr getDistribution(FFTPtr *reuse = NULL) = 0;
+	virtual FFTPtr getDistribution() = 0;
 
+	virtual void addToMonomer(MonomerPtr monomer);
 	virtual void addToMolecule(MoleculePtr molecule);
 
 private:

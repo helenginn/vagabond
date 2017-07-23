@@ -36,6 +36,8 @@ Options::Options(int argc, const char **argv)
 
 void Options::run()
 {
+	std::cout << "Vagabond at your service.\n" << std::endl;
+
 	parse();
 
 	if (!crystals.size())
@@ -59,14 +61,15 @@ void Options::run()
 		if (crystals.size() == 1)
 		{
 			crystals[0]->scaleToDiffraction(diffractions[0]);
-			double rFac = crystals[0]->rFactorWithDiffraction(diffractions[0]);
+			double rFac = crystals[0]->rFactorWithDiffraction(diffractions[0],
+															  true);
 
-			std::cout << "Crystal has R factor with data of " <<
-			std::setprecision(3) << rFac * 100 << "%." << std::endl;
 			crystals[0]->transplantAmplitudes(diffractions[0]);
 			crystals[0]->writeCalcMillersToFile();
 		}
 	}
+
+	std::cout << std::endl;
 }
 
 void Options::parse()

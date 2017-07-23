@@ -16,15 +16,16 @@
 #include "Object.h"
 #include "fftw3d.h"
 #include <string>
+#include <map>
 #include "maths.h"
+#include "Molecule.h"
+
+typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
 class Crystal : public Object
 {
 public:
-	void addMolecule(MoleculePtr molecule)
-	{
-		_molecules.push_back(molecule);
-	}
+	void addMolecule(MoleculePtr molecule);
 
 	long int moleculeCount()
 	{
@@ -33,7 +34,19 @@ public:
 
 	MoleculePtr molecule(long int i)
 	{
-		return _molecules[i];
+		MoleculeMap::iterator it = _molecules.begin();
+		std::advance(it, i);
+		return it->second;
+	}
+
+	MoleculePtr molecule(std::string chain)
+	{
+		if (_molecules.count(chain))
+		{
+			return _molecules[chain];
+		}
+
+		return MoleculePtr();
 	}
 
 	void setReal2HKL(mat3x3 mat);
@@ -43,19 +56,23 @@ public:
 	void writeCalcMillersToFile(double resolution = 1.0);
 
 	void scaleToDiffraction(DiffractionPtr data);
-	double rFactorWithDiffraction(DiffractionPtr data);
+	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
 	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 								bool verbose = false);
 	void transplantAmplitudes(DiffractionPtr data);
+	void summary();
 
+	void tieAtomsUp();
+	
 	void setFilename(std::string file)
 	{
 		_filename = file;
 	}
 	
 private:
-	std::vector<MoleculePtr> _molecules;
+	MoleculeMap _molecules;
 	std::string _filename;
+
 
 	mat3x3 _hkl2real;
 	mat3x3 _real2frac;

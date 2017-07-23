@@ -28,7 +28,12 @@ void Molecule::addToMap(FFTPtr fft, mat3x3 _real2frac)
 {
 	for (int i = 0; i < atomCount(); i++)
 	{
-		FFTPtr modelDist = FFTPtr();
-		atoms[i]->addToMap(fft, modelDist, _real2frac);
+		atoms[i]->addToMap(fft, _real2frac);
 	}
+}
+
+void Molecule::summary()
+{
+	std::cout << "| I am chain " << getChainID() << std::endl;
+	std::cout << "| Atoms: " << atomCount() << std::endl;
 }
