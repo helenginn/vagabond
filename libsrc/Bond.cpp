@@ -15,11 +15,10 @@ Bond::Bond(AtomPtr major, AtomPtr minor)
 {
 	_major = major;
 	_minor = minor;
-}
-
-void Bond::setup()
-{
-	getMinor()->setModel(shared_from_this());
+	_torsionBasis = make_mat3x3();
+	_torsionRadians = 0;
+	_bondLength = 0;
+	_minorGeometry = BondGeometryTetrahedral;
 
 	vec3 majorPos = getMajor()->getPosition();
 	vec3 minorPos = getMinor()->getPosition();
@@ -28,9 +27,22 @@ void Bond::setup()
 	_bondLength = vec3_length(difference);
 }
 
+void Bond::setup()
+{
+	getMinor()->setModel(shared_from_this());
+}
+
+/* Do I really need this? */
+void Bond::addDownstreamAtom(AtomPtr down)
+{
+	_downstreamAtoms.push_back(down);
+}
+
 void Bond::setAlignmentAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
 {
-
+	_heavyAlign = heavyAlign;
+	_lightAlign = lightAlign;
+	
 }
 
 double Bond::getVoxelValue(void *obj, double x, double y, double z)

@@ -12,7 +12,14 @@
 #include <stdio.h>
 #include "Model.h"
 #include <vector>
+#include "mat3x3.h"
 #include "Distributor.h"
+
+typedef enum
+{
+	BondGeometryNone,
+	BondGeometryTetrahedral,
+} BondGeometryType;
 
 class Bond : public Model, public Distributor
 {
@@ -50,12 +57,14 @@ public:
 		static_cast<Bond *>(object)->_bondLength = length;
 	}
 
+	void addDownstreamAtom(AtomPtr influenced);
 	void setAlignmentAtoms(AtomPtr heavyAlign, AtomPtr lightAlign);
 	virtual FFTPtr getDistribution();
 public:
 	static double getVoxelValue(void *obj, double x, double y, double z);
 
 private:
+	BondGeometryType _minorGeometry;
 
 	AtomWkr _major;
 	AtomWkr _minor;
@@ -64,8 +73,11 @@ private:
 	AtomWkr _lightAlign;
 
 	double _bondLength;
+	double _torsionRadians;
 
-//	std::vector<AtomWkr> _dependencies;
+	mat3x3 _torsionBasis;
+
+	std::vector<AtomWkr> _downstreamAtoms;
 };
 
 #endif /* defined(__vagabond__Bond__) */
