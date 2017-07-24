@@ -16,8 +16,8 @@
 #define PROTEIN_SAMPLING (1. / 3.)
 #define WATER_RADIUS 0.6
 
-class cFFTW3d;
-typedef std::shared_ptr<cFFTW3d> FFTPtr;
+class FFT;
+typedef std::shared_ptr<FFT> FFTPtr;
 
 class Crystal;
 typedef std::shared_ptr<Crystal> CrystalPtr;

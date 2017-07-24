@@ -69,7 +69,7 @@ void Crystal::setHKL2Real(mat3x3 mat)
 
 void Crystal::calculateMillers()
 {
-	fft = FFTPtr(new cFFTW3d());
+	fft = FFTPtr(new FFT());
 
 	vec3 uc_dims = empty_vec3();
 	vec3 fft_dims = empty_vec3();

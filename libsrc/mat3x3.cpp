@@ -165,3 +165,35 @@ double mat3x3_length(mat3x3 &mat, int index)
 
 	return sqrt(sqLength);
 }
+
+
+mat3x3 mat3x3_unit_vec_rotation(vec3 axis, double radians)
+{
+	mat3x3 mat;
+
+	double x = axis.x;
+	double x2 = axis.x * axis.x;
+
+	double y = axis.y;
+	double y2 = axis.y * axis.y;
+
+	double z = axis.z;
+	double z2 = axis.z * axis.z;
+
+	double cosa = cos(radians);
+	double sina = sin(radians);
+
+	mat.vals[0] = cosa + x2 * (1 - cosa);
+	mat.vals[1] = x * y * (1 - cosa) - z * sina;
+	mat.vals[2] = x * z * (1 - cosa) + y * sina;
+
+	mat.vals[3] = y * x * (1 - cosa) + z * sina;
+	mat.vals[4] = cosa + y2 * (1 - cosa);
+	mat.vals[5] = z * y * (1 - cosa) - x * sina;
+
+	mat.vals[6] = z * x * (1 - cosa) - y * sina;
+	mat.vals[7] = z * y * (1 - cosa) + x * sina;
+	mat.vals[8] = cosa + z2 * (1 - cosa);
+
+	return mat;
+}

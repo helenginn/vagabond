@@ -18,7 +18,7 @@ FFTPtr Distributor::prepareDistribution(double n, double scale, void *object,
 		return _fft;
 	}
 
-	_fft = FFTPtr(new cFFTW3d());
+	_fft = FFTPtr(new FFT());
 	_fft->create(n);
 	_fft->setScales(scale);
 

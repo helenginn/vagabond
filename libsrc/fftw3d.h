@@ -32,13 +32,13 @@ inline void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, float *resul
 	result[1] = 2 * comp1[0] * comp2[1];
 }
 
-class cFFTW3d {
+class FFT {
     
 public:
-    cFFTW3d();
-	cFFTW3d(cFFTW3d &other);
-	cFFTW3d(long);
-    ~cFFTW3d();
+    FFT();
+	FFT(FFT &other);
+	FFT(long);
+    ~FFT();
     
     void create(long);
     void create(long, long, long);
@@ -98,10 +98,6 @@ public:
     void setAll(float);
     void multiplyAll(float);
 
-    void maxreal(void);
-    void maxreal(char *);
-    void maxreal2(char *);
-
     void speedTest(int);
 
 	double interpolate(vec3 fractionalVoxel, bool imaginary = false);
@@ -127,7 +123,7 @@ public:
 
 	void normalise();
 
-	long int equivalentIndexFor(cFFTW3d *other, double realX, double realY, double realZ,
+	long int equivalentIndexFor(FFT *other, double realX, double realY, double realZ,
 								mat3x3 transform,
 								double addX = 0, double addY = 0, double addZ = 0,
 								bool sameScale = false);

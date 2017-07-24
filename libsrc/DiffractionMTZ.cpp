@@ -123,7 +123,7 @@ void DiffractionMtz::load()
 					  "Do you have a unit cell and some reflections?");
 	}
 
-	fft = FFTPtr(new cFFTW3d());
+	fft = FFTPtr(new FFT());
 	fft->create(largest);
 	fft->multiplyAll(nan(" "));
 

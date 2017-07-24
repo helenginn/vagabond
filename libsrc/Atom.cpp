@@ -35,9 +35,9 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 {
 	FFTPtr atomDist = _element->getDistribution();
 	FFTPtr modelDist = getBlur();
-	FFTPtr modified = std::make_shared<cFFTW3d>(*modelDist);
+	FFTPtr modified = std::make_shared<FFT>(*modelDist);
 
-	cFFTW3d::multiply(modified, atomDist);
+	FFT::multiply(modified, atomDist);
 	modified->fft(1);
 
 	double xPos = getPosition().x;
@@ -47,7 +47,7 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 	vec3 pos = make_vec3(xPos, yPos, zPos);
 	mat3x3_mult_vec(unit_cell, &pos);
 
-	cFFTW3d::add(fft, modified, 2, pos.x, pos.y, pos.z, false, MaskProtein);
+	FFT::add(fft, modified, 2, pos.x, pos.y, pos.z, false, MaskProtein);
 }
 
 bool Atom::isBackbone()

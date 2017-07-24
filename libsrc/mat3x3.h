@@ -41,5 +41,6 @@ double mat3x3_length(mat3x3 &mat, int index);
 mat3x3 mat3x3_transpose(mat3x3 &mat);
 double mat3x3_determinant(mat3x3 &mat);
 mat3x3 mat3x3_mult_mat3x3(struct mat3x3 m1, struct mat3x3 m2);
+mat3x3 mat3x3_unit_vec_rotation(vec3 axis, double radians);
 
 #endif /* defined(__vagabond__mat3x3__) */

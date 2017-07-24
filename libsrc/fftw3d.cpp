@@ -26,7 +26,7 @@ inline void fftwf_add(fftwf_complex comp1, fftwf_complex comp2, float *result)
 }
 
 
-cFFTW3d::cFFTW3d()
+FFT::FFT()
 {
 	nx = 0;
 	ny = 0;
@@ -38,13 +38,13 @@ cFFTW3d::cFFTW3d()
 }
 
 
-cFFTW3d::cFFTW3d(long n)
+FFT::FFT(long n)
 {
 	create(n);
 }
 
 
-cFFTW3d::~cFFTW3d() 
+FFT::~FFT() 
 {
 	if (_made_plan)
 	{
@@ -56,12 +56,12 @@ cFFTW3d::~cFFTW3d()
 	fftwf_cleanup_threads();
 }	
 
-void cFFTW3d::create(long n)
+void FFT::create(long n)
 {
 	create(n,n,n);
 }
 
-cFFTW3d::cFFTW3d(cFFTW3d &other)
+FFT::FFT(FFT &other)
 {
 	nx = other.nx;
 	ny = other.ny;
@@ -93,7 +93,7 @@ cFFTW3d::cFFTW3d(cFFTW3d &other)
 }
 
 
-void cFFTW3d::create(long nnx, long nny, long nnz)
+void FFT::create(long nnx, long nny, long nnz)
 {
 	nx = nnx;
 	ny = nny;
@@ -111,7 +111,7 @@ void cFFTW3d::create(long nnx, long nny, long nnz)
 	memset(data, 0, sizeof(FFTW_DATA_TYPE) * nn);
 }
 
-void cFFTW3d::setupMask()
+void FFT::setupMask()
 {
 	mask = (MaskType *) calloc(nn, sizeof(MaskType));
 }
@@ -121,7 +121,7 @@ void cFFTW3d::setupMask()
  *	x is fastest axis, z is slowest axis
  */
 
-void cFFTW3d::collapseFrac(double *xfrac, double *yfrac, double *zfrac)
+void FFT::collapseFrac(double *xfrac, double *yfrac, double *zfrac)
 {
 	while (*xfrac < 0) *xfrac += 1;
 	while (*xfrac >= 1) *xfrac -= 1;
@@ -133,7 +133,7 @@ void cFFTW3d::collapseFrac(double *xfrac, double *yfrac, double *zfrac)
 	while (*zfrac >= 1) *zfrac -= 1;
 }
 
-long cFFTW3d::elementFromFrac(double xfrac, double yfrac, double zfrac)
+long FFT::elementFromFrac(double xfrac, double yfrac, double zfrac)
 {
 	collapseFrac(&xfrac, &yfrac, &zfrac);
 
@@ -146,7 +146,7 @@ long cFFTW3d::elementFromFrac(double xfrac, double yfrac, double zfrac)
 	return index;
 }
 
-long cFFTW3d::elementFromUncorrectedFrac(double xfrac, double yfrac, double zfrac)
+long FFT::elementFromUncorrectedFrac(double xfrac, double yfrac, double zfrac)
 {
 	collapseFrac(&xfrac, &yfrac, &zfrac);
 
@@ -163,7 +163,7 @@ long cFFTW3d::elementFromUncorrectedFrac(double xfrac, double yfrac, double zfra
  *	Shift the array in 3D by (nx,ny,nz) pixels
  *	Wrap around at the edges
  */
-void cFFTW3d::shift(long sx, long sy, long sz)
+void FFT::shift(long sx, long sy, long sz)
 {    
     printf("Shift: (%li, %li, %li)\n", sx, sy, sz);
 	
@@ -205,7 +205,7 @@ void cFFTW3d::shift(long sx, long sy, long sz)
 }
 
 
-void cFFTW3d::shiftToCorner(void)
+void FFT::shiftToCorner(void)
 {
     long sx,sy,sz;
     sx = -nx/2;
@@ -216,7 +216,7 @@ void cFFTW3d::shiftToCorner(void)
     
 }
 
-void cFFTW3d::shiftToCenter(void)
+void FFT::shiftToCenter(void)
 {
     long sx,sy,sz;
     sx = nx/2;
@@ -226,7 +226,7 @@ void cFFTW3d::shiftToCenter(void)
     shift(sx,sy,sz);
 }
 
-void cFFTW3d::setAll(float value)
+void FFT::setAll(float value)
 {
     for(long i=0; i<nn; i++) 
     {
@@ -235,7 +235,7 @@ void cFFTW3d::setAll(float value)
     }
 }
 
-double cFFTW3d::getPhase(long x, long y, long z)
+double FFT::getPhase(long x, long y, long z)
 {
 	long index = element(x, y, z);
 
@@ -248,26 +248,26 @@ double cFFTW3d::getPhase(long x, long y, long z)
 	return degrees;
 }
 
-double cFFTW3d::getIntensity(long x, long y, long z)
+double FFT::getIntensity(long x, long y, long z)
 {
 	long index = element(x, y, z);
 
 	return (data[index][0] * data[index][0] + data[index][1] * data[index][1]);
 }
 
-double cFFTW3d::getReal(long x, long y, long z)
+double FFT::getReal(long x, long y, long z)
 {
 	long index = element(x, y, z);
 
 	return data[index][0];
 }
 
-double cFFTW3d::getReal(long index)
+double FFT::getReal(long index)
 {
 	return data[index][0];
 }
 
-void cFFTW3d::setReal(double xfrac, double yfrac, double zfrac, double real)
+void FFT::setReal(double xfrac, double yfrac, double zfrac, double real)
 {
 	long index = elementFromFrac(xfrac, yfrac, zfrac);
 
@@ -275,7 +275,7 @@ void cFFTW3d::setReal(double xfrac, double yfrac, double zfrac, double real)
 	data[index][1] = 0;
 }
 
-void cFFTW3d::multiplyAll(float value)
+void FFT::multiplyAll(float value)
 {
     for(long i=0; i<nn; i++)
     {
@@ -284,7 +284,7 @@ void cFFTW3d::multiplyAll(float value)
     }
 }
 
-void cFFTW3d::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
+void FFT::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
 {
 	if (_made_plan)
 	{
@@ -417,7 +417,7 @@ void cFFTW3d::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
 /*
  *	Do the FFT
  */
-void cFFTW3d::fft(int direction)
+void FFT::fft(int direction)
 {
 	if(direction == 1)
 	{
@@ -434,7 +434,7 @@ void cFFTW3d::fft(int direction)
 	}
 }
 
-void cFFTW3d::speedTest(int nit){
+void FFT::speedTest(int nit){
     clock_t			start, start2;
     time_t			startt, endt;
     float			dt;
@@ -473,174 +473,7 @@ void cFFTW3d::speedTest(int nit){
     printf("%li^3 FFT/iFFT pair average (human time): %3.3f sec\n",nx, dt/(float) nit);
 }
 
-
-/*
- *  Compute and apply phase factor that maximises reality of the current iterate
- *  Allow for passing of a mask to specify region to be integrated
- */
-void cFFTW3d::maxreal(void) {
-    maxreal(NULL);
-}
-
-/*
- *  Maximise reality
- *  (vector sum and rotation maxtrix)
- */
-void cFFTW3d::maxreal(char *mask=NULL) {
-    
-    float		temp_re, temp_im, temp_sq;
-    float       sum_re, sum_im;
-    float       corr_re, corr_im;
-    float		temp1, temp2;
-    float       phase_avg, phase_correction;
-    
-    /*
-     *	Average phase factor (weighted by amplitude to avoid averaging poorly defined weak phases)
-     *  Avoid 'if mask==NULL' within loop (put this outside the loop)
-     *  Compute average phase directly, or sum up the complex vectors (faster).
-     *  Let the compiler optimise redundant variables.
-     */
-    temp1 = 0;
-    temp2 = 0;
-    sum_re = 0;
-    sum_im = 0;
-    // Unmasked version (all data)
-    if(mask == NULL ) {
-        FFTW_INDEX_LOOP_PRIVATE {
-            temp_re = data[p][0];
-            temp_im = data[p][1];
-            temp_sq = temp_re*temp_re + temp_im*temp_im;
-            
-            // Weighted by amplitude
-            //sum_re += temp_re;
-            //sum_im += temp_im;
-            
-            // Weighted by intensity
-            sum_re += temp_re*sqrtf(temp_sq);
-            sum_im += temp_im*sqrtf(temp_sq);
-        }
-    }
-    // Masked version (average where mask != 0)
-    else {
-        FFTW_INDEX_LOOP_PRIVATE {
-            if(mask[p] != 0) {
-                temp_re = data[p][0];
-                temp_im = data[p][1];
-                temp_sq = temp_re*temp_re + temp_im*temp_im;
-
-                // Weighted by amplitude
-                //sum_re += temp_re;
-                //sum_im += temp_im;
-
-                // Weighted by intensity
-                sum_re += temp_re*sqrtf(temp_sq);
-                sum_im += temp_im*sqrtf(temp_sq);
-            }
-        }
-    }
-    phase_avg = atan2f(sum_im, sum_re);
-    //printf("%f\n",phase_avg);
-
-    
-    phase_correction = phase_avg;
-    corr_re = cosf(phase_correction);
-    corr_im = sinf(phase_correction);
-    
-    
-    /*
-     *	Apply phase factor required to obtain maximum reality
-     */
-    FFTW_INDEX_LOOP_PRIVATE {
-        temp_re = data[p][0];
-        temp_im = data[p][1];
-
-        // Complex multiplication (no in-loop atan2, sin, cos)
-        data[p][0] = temp_re*corr_re + temp_im*corr_im;
-        data[p][1] = -temp_re*corr_im + temp_im*corr_re;
-    }
-}
-
-
-/*
- *  Maximise reality
- *  (explicit phase calculation)
- */
-void cFFTW3d::maxreal2(char *mask=NULL) {
-    
-    float		temp_re, temp_im;
-    float       sum_re, sum_im;
-    float       corr_re, corr_im;
-    float		temp1, temp2;
-    float       phase_avg, phase_correction, phase_new;
-    float       phase, intensity, amplitude;
-    
-    /*
-     *	Average phase factor (weighted by amplitude to avoid averaging poorly defined weak phases)
-     *  Avoid 'if mask==NULL' within loop (put this outside the loop)
-     *  Compute average phase directly
-     *  Redundant variables optimised out by the compiler
-     */
-    temp1 = 0;
-    temp2 = 0;
-    sum_re = 0;
-    sum_im = 0;
-    // Unmasked version (all data)
-    if(mask == NULL ) {
-        FFTW_INDEX_LOOP_PRIVATE {
-            temp_re = data[p][0];
-            temp_im = data[p][1];
-            
-            phase = atan2f(temp_im, temp_re);
-            intensity = temp_re*temp_re + temp_im*temp_im;
-            amplitude = sqrtf(intensity);
-            
-            temp1 += phase*intensity;
-            temp2 += intensity;
-        }
-    }
-    // Masked version (average where mask != 0)
-    else {
-        FFTW_INDEX_LOOP_PRIVATE {
-            if(mask[p] != 0) {
-                temp_re = data[p][0];
-                temp_im = data[p][1];
-                
-                phase = atan2f(temp_im, temp_re);
-                intensity = temp_re*temp_re + temp_im*temp_im;
-                amplitude = sqrtf(intensity);
-                temp1 += phase*amplitude;
-                temp2 += amplitude;
-            }
-        }
-    }
-    phase_avg = temp1 / temp2;
-    //printf("%f\n",phase_avg);
-    
-    
-    phase_correction = phase_avg;
-    corr_re = cosf(phase_correction);
-    corr_im = sinf(phase_correction);
-    
-    
-    /*
-     *	Apply phase factor required to obtain maximum reality
-     */
-    FFTW_INDEX_LOOP_PRIVATE {
-        temp_re = data[p][0];
-        temp_im = data[p][1];
-        
-        phase = atan2f(temp_im, temp_re);
-        intensity = temp_re*temp_re + temp_im*temp_im;
-        amplitude = sqrtf(intensity);
-        
-        // Use phase angle
-        phase_new = phase + phase_correction;
-        data[p][0] = amplitude * cosf(phase_new);
-        data[p][1] = amplitude * sinf(phase_new);
-    }
-}
-
-void cFFTW3d::setBasis(mat3x3 mat, double sampleScale)
+void FFT::setBasis(mat3x3 mat, double sampleScale)
 {
 	_basis = mat;
 	mat3x3_scale(&_basis, sampleScale, sampleScale, sampleScale);
@@ -651,7 +484,7 @@ void cFFTW3d::setBasis(mat3x3 mat, double sampleScale)
 	_inverse = mat3x3_inverse(_basis);
 }
 
-double cFFTW3d::interpolate(vec3 vox000, bool im)
+double FFT::interpolate(vec3 vox000, bool im)
 {
 //	vec3 remain = make_vec3(fmod(vox000.x, 1), fmod(vox000.y, 1),
 //							fmod(vox000.z, 1));
@@ -689,11 +522,11 @@ double cFFTW3d::interpolate(vec3 vox000, bool im)
 /*  For multiplying point-wise
  *
  */
-void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
+void FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 						double addY, double addZ, bool sameScale, MaskType type)
 {
-	cFFTW3d *fftSmall = &*fftConst;
-	cFFTW3d *fftBig = &*fftEdit;
+	FFT *fftSmall = &*fftConst;
+	FFT *fftBig = &*fftEdit;
 
 	double division = 1.;
 
@@ -782,7 +615,7 @@ void cFFTW3d::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
  * Assuming that both are centred at the origin. In terms of fractional
  * coordinates but this may need changing when use becomes clear.
  */
-long int cFFTW3d::equivalentIndexFor(cFFTW3d *other, double realX, double realY,
+long int FFT::equivalentIndexFor(FFT *other, double realX, double realY,
 									 double realZ, mat3x3 transform, double addX,
 									 double addY, double addZ, bool sameScale)
 {
@@ -808,7 +641,7 @@ long int cFFTW3d::equivalentIndexFor(cFFTW3d *other, double realX, double realY,
 	return index;
 }
 
-void cFFTW3d::printSlice(bool amplitude)
+void FFT::printSlice(bool amplitude)
 {
 	for (int j = 0; j < ny; j++)
 	{

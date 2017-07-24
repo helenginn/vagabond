@@ -30,7 +30,7 @@ protected:
 
 	FFTPtr getDistributionCopy()
 	{
-		return std::make_shared<cFFTW3d>(*_fft);
+		return std::make_shared<FFT>(*_fft);
 	}
 
 	FFTPtr prepareDistribution(double n, double scale, void *object,

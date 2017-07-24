@@ -217,14 +217,14 @@ void PDBReader::parseLine(std::string line)
 
 void PDBReader::parse()
 {
-	if (!FileReader::exists(filename))
+	if (!file_exists(filename))
 	{
 		shout_at_user("Cannot open file " + filename + ".");
 	}
 
-	std::string pdbContents = FileReader::get_file_contents(filename.c_str());
+	std::string pdbContents = get_file_contents(filename);
 
-	std::vector<std::string> lines = FileReader::split(pdbContents, '\n');
+	std::vector<std::string> lines = split(pdbContents, '\n');
 
 	for (int i = 0; i < lines.size(); i++)
 	{

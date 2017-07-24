@@ -14,7 +14,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-std::vector<std::string> &FileReader::split(const std::string &s, char delim, std::vector<std::string> &elems) {
+std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
     std::stringstream ss(s);
     std::string item;
     while (std::getline(ss, item, delim)) {
@@ -23,19 +23,19 @@ std::vector<std::string> &FileReader::split(const std::string &s, char delim, st
     return elems;
 }
 
-std::vector<std::string> FileReader::split(const std::string &s, char delim) {
+std::vector<std::string> split(const std::string &s, char delim) {
     std::vector<std::string> elems;
     split(s, delim, elems);
     return elems;
 }
 
-bool FileReader::exists(const std::string& name)
+bool file_exists(const std::string& name)
 {
 	struct stat buffer;
 	return (stat(name.c_str(), &buffer) == 0);
 }
 
-std::string FileReader::get_file_contents(const char *filename)
+std::string get_file_contents(std::string filename)
 {
     std::ifstream in(filename, std::ios::in | std::ios::binary);
     
@@ -55,38 +55,6 @@ std::string FileReader::get_file_contents(const char *filename)
     throw(errno);
 }
 
-void read_file(const char *name, char **buffer, int *length)
-{
-    FILE *file;
-    unsigned long file_length;
-    
-    file = fopen(name, "rb");
-    if (!file)
-    {
-        fprintf(stderr, "Unable to open file %s", name);
-        return;
-    }
-    
-    /* Get file length, return to beginning */
-    fseek(file, 0, SEEK_END);
-    file_length = ftell(file);
-    *length = (int)file_length;
-    fseek(file, 0, SEEK_SET);
-    
-    /* Allocate memory */
-    (*buffer) = (char *) malloc(file_length + 1);
-    
-    if (!(*buffer))
-    {
-        fprintf(stderr, "Memory error!");
-        fclose(file);
-        return;
-    }
-    
-    /* Read file contents into buffer */
-    fread(*buffer, file_length, 1, file);
-    fclose(file);
-}
 
 std::string getFilename(std::string filename)
 {

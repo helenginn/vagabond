@@ -13,16 +13,11 @@
 #include <string>
 #include <vector>
 
-namespace FileReader
-{
-    std::string get_file_contents(const char *filename);
-    
-    std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems);
-    std::vector<std::string> split(const std::string &s, char delim);
-    bool exists(const std::string& name);
-};
+std::string get_file_contents(std::string filename);
 
-void read_file(const char *name, char **buffer, int *length);
+std::vector<std::string> split(const std::string &s, char delim);
+bool file_exists(const std::string& name);
+
 std::string getFilename(std::string filename);
 std::string getBaseFilename(std::string filename);
 

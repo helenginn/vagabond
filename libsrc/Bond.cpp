@@ -71,7 +71,7 @@ FFTPtr Bond::getDistribution()
 	prepareDistribution(n, scale, this, &getVoxelValue);
 	FFTPtr mine = getDistributionCopy();
 	mine->fft(1);
-	cFFTW3d::multiply(mine, inherited);
+	FFT::multiply(mine, inherited);
 
 	return mine;
 }
