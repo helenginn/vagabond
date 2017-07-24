@@ -28,7 +28,7 @@ void Knotter::tie()
 	std::string residue = monomer->getIdentifier();
 	int resNum = monomer->getResidueNum();
 
-//	if (resNum != 58)
+	if (resNum != 58)
 	{
 		return;
 	}

@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include "shared_ptrs.h"
+#include "fftw3d.h"
 
 typedef double(get_voxel_value)(void *obj, double x, double y, double z);
 
@@ -25,11 +26,18 @@ public:
 	virtual FFTPtr getDistribution() = 0;
 
 protected:
-	FFTPtr _fft;
 	bool _calculated;
 
-	FFTPtr prepareDistribution(get_voxel_value *func,
-							   bool fftNow = false);
+	FFTPtr getDistributionCopy()
+	{
+		return std::make_shared<cFFTW3d>(*_fft);
+	}
+
+	FFTPtr prepareDistribution(double n, double scale, void *object,
+							   get_voxel_value *voxel_value);
+
+private:
+	FFTPtr _fft;
 };
 
 #endif /* defined(__vagabond__Distributor__) */

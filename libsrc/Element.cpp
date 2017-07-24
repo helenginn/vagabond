@@ -104,5 +104,8 @@ double Element::getVoxelValue(void *object, double x, double y, double z)
 
 FFTPtr Element::getDistribution()
 {
-	return prepareDistribution(getVoxelValue);
+	double n = ATOM_SAMPLING_COUNT;
+	double scale = MAX_SCATTERING_DSTAR / n;
+
+	return prepareDistribution(n, scale, this, getVoxelValue);
 }

@@ -14,8 +14,9 @@
 #include "vec3.h"
 #include <string>
 #include "FileReader.h"
+#include "Distributor.h"
 
-class Absolute : public Model
+class Absolute : public Model, public Distributor
 {
 public:
 	Absolute(vec3 pos, double bFac, std::string element, double occValue);
@@ -63,6 +64,9 @@ public:
 	{
 		return _hetatm;
 	}
+protected:
+	static double getExpValue(void *object, double x, double y, double z);
+
 private:
 	AtomPtr _atom;
 	std::string _element;

@@ -33,6 +33,7 @@ cFFTW3d::cFFTW3d()
 	nz = 0;
 	nn = 0;
 	data = NULL;
+	mask = NULL;
 	_made_plan = false;
 }
 
@@ -59,6 +60,38 @@ void cFFTW3d::create(long n)
 {
 	create(n,n,n);
 }
+
+cFFTW3d::cFFTW3d(cFFTW3d &other)
+{
+	nx = other.nx;
+	ny = other.ny;
+	nz = other.nz;
+	nn = other.nn;
+
+	memcpy(scales, other.scales, 3 * sizeof(double));
+	mask = NULL;
+	data = NULL;
+
+	if (other.data)
+	{
+		data = (FFTW_DATA_TYPE *)fftwf_malloc(nn * sizeof(FFTW_DATA_TYPE));
+		memcpy(data, other.data, nn * sizeof(FFTW_DATA_TYPE));
+	}
+
+	if (other.mask)
+	{
+		mask = (MaskType *)malloc(nn * sizeof(MaskType));
+		memcpy(mask, other.mask, nn * sizeof(MaskType));
+	}
+
+	_made_plan = false;
+
+	createFFTWplan(1, false);
+
+	_basis = other._basis;
+	_inverse = other._inverse;
+}
+
 
 void cFFTW3d::create(long nnx, long nny, long nnz)
 {
@@ -255,7 +288,7 @@ void cFFTW3d::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
 {
 	if (_made_plan)
 	{
-	//	return;
+		return;
 	}
 
 	char	wisdomFile[2048];

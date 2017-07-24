@@ -45,42 +45,28 @@ void Absolute::addToMolecule(MoleculePtr molecule)
 	Model::addToMolecule(molecule);
 }
 
+double Absolute::getExpValue(void *object, double x, double y, double z)
+{
+	Absolute *me = static_cast<Absolute *>(object);
+	double distSq =	(x * x + y * y + z * z);
+
+	double bf = me->bFactor;
+	double exponent = (-0.25) * bf * distSq;
+	double value = exp(exponent);
+	value *= me->_occupancy;
+
+	return value;
+}
+
 /*  Absolute distribution only needs to be the blurring due to the atomic
- *  B factor. The position should be provided by a different function.
- */
+ *  B factor. The position should be provided by a different function. */
+
 FFTPtr Absolute::getDistribution()
 {
-	FFTPtr fft = FFTPtr(new cFFTW3d());
-
 	double n = ATOM_SAMPLING_COUNT;
 	double scale = 1 / (2.0 * MAX_SCATTERING_DSTAR);
-	fft->create(n);
-	fft->setScales(scale);
 
-	for (double x = -0.5; x <= 0.5; x += 1 / n)
-	{
-		for (double y = -0.5; y <= 0.5; y += 1 / n)
-		{
-			for (double z = -0.5; z <= 0.5; z += 1 / n)
-			{
-				double mod = MAX_SCATTERING_DSTAR * 2;
-				double xAng = x * mod;
-				double yAng = y * mod;
-				double zAng = z * mod;
-
-				double distSq =	(xAng * xAng + yAng * yAng + zAng * zAng);
-
-				double value = exp((-0.25) * bFactor * distSq);
-				value *= _occupancy;
-
-				fft->setReal(x, y, z, value);
-			}
-		}
-	}
-
-	fft->createFFTWplan(1, false);
-
-	return fft;
+	return prepareDistribution(n, scale, this, Absolute::getExpValue);
 }
 
 void Absolute::addToMonomer(MonomerPtr monomer)

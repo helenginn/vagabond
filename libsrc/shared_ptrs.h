@@ -12,7 +12,7 @@
 #include <memory>
 
 #define MAX_SCATTERING_DSTAR 3.0
-#define ATOM_SAMPLING_COUNT (18)
+#define ATOM_SAMPLING_COUNT (16)
 #define PROTEIN_SAMPLING (1. / 3.)
 #define WATER_RADIUS 0.6
 

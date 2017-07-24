@@ -22,6 +22,7 @@ public:
 	Atom();
 
 	void setModel(ModelPtr model);
+	FFTPtr getBlur();
 
 	bool isBackbone();
 	bool isBackboneAndSidechain();

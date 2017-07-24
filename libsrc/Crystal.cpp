@@ -71,14 +71,11 @@ void Crystal::calculateMillers()
 {
 	fft = FFTPtr(new cFFTW3d());
 
-	double sampling = 1 / PROTEIN_SAMPLING;
-	fft->setSampling(sampling);
-
 	vec3 uc_dims = empty_vec3();
 	vec3 fft_dims = empty_vec3();
-	uc_dims.x = mat3x3_length(_hkl2real, 0) * sampling;
-	uc_dims.y = mat3x3_length(_hkl2real, 1) * sampling;
-	uc_dims.z = mat3x3_length(_hkl2real, 2) * sampling;
+	uc_dims.x = mat3x3_length(_hkl2real, 0) / PROTEIN_SAMPLING;
+	uc_dims.y = mat3x3_length(_hkl2real, 1) / PROTEIN_SAMPLING;
+	uc_dims.z = mat3x3_length(_hkl2real, 2) / PROTEIN_SAMPLING;
 
 	double largest = std::max(uc_dims.x, uc_dims.y);
 	largest = std::max(largest, uc_dims.z);
@@ -218,7 +215,7 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 	if (verbose)
 	{
 		std::cout << "Rfactor for crystal (" << _filename << ") against data ("
-		<< data->getFilename() << ") of " << std::setprecision(3)
+		<< data->getFilename() << ") of " << std::setprecision(5)
 		<< rFactor * 100 << "%." << std::endl;
 	}
 

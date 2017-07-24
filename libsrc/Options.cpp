@@ -64,7 +64,7 @@ void Options::run()
 			double rFac = crystals[0]->rFactorWithDiffraction(diffractions[0],
 															  true);
 
-			crystals[0]->transplantAmplitudes(diffractions[0]);
+		//	crystals[0]->transplantAmplitudes(diffractions[0]);
 			crystals[0]->writeCalcMillersToFile();
 		}
 	}

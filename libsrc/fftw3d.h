@@ -36,7 +36,8 @@ class cFFTW3d {
     
 public:
     cFFTW3d();
-    cFFTW3d(long);
+	cFFTW3d(cFFTW3d &other);
+	cFFTW3d(long);
     ~cFFTW3d();
     
     void create(long);
@@ -124,6 +125,8 @@ public:
 						  double addX = 0, double addY = 0, double addZ = 0,
 						  bool sameScale = false, MaskType type = MaskUnchecked);
 
+	void normalise();
+
 	long int equivalentIndexFor(cFFTW3d *other, double realX, double realY, double realZ,
 								mat3x3 transform,
 								double addX = 0, double addY = 0, double addZ = 0,
@@ -152,16 +155,6 @@ public:
 		_inverse = mat3x3_inverse(_basis);
 	}
 
-	void setSampling(double sampling)
-	{
-		_sampling = sampling;
-	}
-
-	double getSampling()
-	{
-		return _sampling;
-	}
-
 	mat3x3 getBasis()
 	{
 		return _basis;
@@ -176,7 +169,6 @@ public:
 
 public:
     long nx,ny,nz,nn;
-	double _sampling; // in 1/A
     fftwf_complex *data;
 	MaskType *mask; // not char due to cpu speed
 

@@ -21,7 +21,7 @@ void DiffractionMtz::load()
 	/* Assume that the filename is an MTZ file! */
 
 	CMtz::MTZ *mtz = CMtz::MtzGet(_filename.c_str(), 0);
-	int spgNum = MtzSpacegroupNumber(mtz);
+//	int spgNum = MtzSpacegroupNumber(mtz);
 
 	if (mtz == NULL)
 		return;
@@ -98,7 +98,7 @@ void DiffractionMtz::load()
 	MtzResLimits(mtz, &minRes, &maxRes);
 
 	CMtz::MTZXTAL **xtals = MtzXtals(mtz);
-	float *cell;
+	float *cell = (float *)malloc(sizeof(float) * 6);
 	ccp4_lrcell(xtals[0], cell);
 
 	int largest = 0;
@@ -112,6 +112,10 @@ void DiffractionMtz::load()
 			largest = indexLimit;
 		}
 	}
+
+	largest *= 2;
+	largest += 1;
+	std::cout << "Largest: " << largest << std::endl;
 
 	if (largest == 0)
 	{

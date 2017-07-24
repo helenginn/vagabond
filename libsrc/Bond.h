@@ -12,8 +12,9 @@
 #include <stdio.h>
 #include "Model.h"
 #include <vector>
+#include "Distributor.h"
 
-class Bond : public Model
+class Bond : public Model, public Distributor
 {
 public:
 	Bond(AtomPtr major, AtomPtr minor);
@@ -28,7 +29,28 @@ public:
 	{
 		return _minor.lock();
 	}
-	
+
+	AtomPtr getHeavyAlign()
+	{
+		return _heavyAlign.lock();
+	}
+
+	AtomPtr getLightAlign()
+	{
+		return _lightAlign.lock();
+	}
+
+	static double getBondLength(void *object)
+	{
+		return static_cast<Bond *>(object)->_bondLength;
+	}
+
+	static void setBondLength(void *object, double length)
+	{
+		static_cast<Bond *>(object)->_bondLength = length;
+	}
+
+	void setAlignmentAtoms(AtomPtr heavyAlign, AtomPtr lightAlign);
 	virtual FFTPtr getDistribution();
 public:
 	static double getVoxelValue(void *obj, double x, double y, double z);
@@ -37,6 +59,11 @@ private:
 
 	AtomWkr _major;
 	AtomWkr _minor;
+
+	AtomWkr _heavyAlign;
+	AtomWkr _lightAlign;
+
+	double _bondLength;
 
 //	std::vector<AtomWkr> _dependencies;
 };
