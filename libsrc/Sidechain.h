@@ -10,41 +10,11 @@
 #define __vagabond__Sidechain__
 
 #include <stdio.h>
-#include "Monomer.h"
+#include "AtomGroup.h"
 
-class Sidechain
+class Sidechain : public AtomGroup
 {
-public:
-	void setMonomer(MonomerPtr monomer)
-	{
-		_monomer = monomer;
-	}
 
-	MonomerPtr getMonomer()
-	{
-		return _monomer.lock();
-	}
-
-	void addAtom(AtomPtr atom)
-	{
-		_atoms.push_back(atom);
-	}
-
-	long atomCount()
-	{
-		return _atoms.size();
-	}
-
-	AtomPtr atom(int i)
-	{
-		return _atoms[i];
-	}
-
-	AtomPtr findAtom(std::string atomType);
-private:
-	MonomerWkr _monomer;
-
-	std::vector<AtomPtr> _atoms;
 };
 
 #endif /* defined(__vagabond__Sidechain__) */

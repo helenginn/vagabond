@@ -9,15 +9,3 @@
 #include "Sidechain.h"
 #include "Atom.h"
 
-AtomPtr Sidechain::findAtom(std::string atomType)
-{
-	for (int i = 0; i < atomCount(); i++)
-	{
-		if (atom(i)->getAtomName() == atomType)
-		{
-			return atom(i);
-		}
-	}
-
-	return AtomPtr();
-}

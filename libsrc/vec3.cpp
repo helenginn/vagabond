@@ -23,12 +23,24 @@ double vec3_length(vec3 &vec)
 	return sqrt(vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
 
-struct vec3 vec3_subtract_vec3(vec3 &aVec, vec3 &bVec)
+double vec3_sqlength(vec3 &vec)
+{
+	return (vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
+}
+
+void vec3_set_length(vec3 *vec, double length)
+{
+	double now = vec3_length(*vec);
+	vec3_mult(vec, length / now);
+}
+
+
+struct vec3 vec3_subtract_vec3(vec3 &to, vec3 &from)
 {
 	struct vec3 vec;
-	vec.x = aVec.x - bVec.x;
-	vec.y = aVec.y - bVec.y;
-	vec.z = aVec.z - bVec.z;
+	vec.x = to.x - from.x;
+	vec.y = to.y - from.y;
+	vec.z = to.z - from.z;
 
 	return vec;
 }
@@ -48,6 +60,13 @@ void vec3_mult(vec3 *aVec, double mult)
 	aVec->x *= mult;
 	aVec->y *= mult;
 	aVec->z *= mult;
+}
+
+double vec3_dot_vec3(vec3 &aVec, vec3 &bVec)
+{
+	double dot_prod = aVec.x * bVec.x + aVec.y * bVec.y + aVec.z * bVec.z;
+
+	return dot_prod;
 }
 
 double vec3_angle_with_vec3(vec3 &aVec, vec3 &bVec)
@@ -74,3 +93,4 @@ vec3 vec3_cross_vec3(vec3 &aVec, vec3 &bVec)
 
 	return make_vec3(new_h, new_k, new_l);
 }
+

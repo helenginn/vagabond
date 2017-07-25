@@ -10,6 +10,7 @@
 #define __vagabond__Bond__
 
 #include <stdio.h>
+#include <string>
 #include "Model.h"
 #include <vector>
 #include "mat3x3.h"
@@ -25,7 +26,7 @@ class Bond : public Model, public Distributor
 {
 public:
 	Bond(AtomPtr major, AtomPtr minor);
-	void setup();
+	void activate();
 
 	AtomPtr getMajor()
 	{
@@ -57,10 +58,25 @@ public:
 		static_cast<Bond *>(object)->_bondLength = length;
 	}
 
-	void addDownstreamAtom(AtomPtr influenced);
-	void setAlignmentAtoms(AtomPtr heavyAlign, AtomPtr lightAlign);
+	double getTorsion()
+	{
+		return _torsionRadians;
+	}
+
+	mat3x3 getTorsionBasis()
+	{
+		return _torsionBasis;
+	}
+
+	void setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign);
 	virtual FFTPtr getDistribution();
-public:
+	virtual vec3 getPosition();
+
+	virtual std::string getClassName()
+	{
+		return "Bond";
+	}
+protected:
 	static double getVoxelValue(void *obj, double x, double y, double z);
 
 private:
@@ -75,9 +91,19 @@ private:
 	double _bondLength;
 	double _torsionRadians;
 
-	mat3x3 _torsionBasis;
+	bool _activated;
 
-	std::vector<AtomWkr> _downstreamAtoms;
+	/* Bond direction only used when a torsion angle can't be
+	 * calculated because it's connected to an Absolute PDB.
+	 * Otherwise use as a reference for torsion matrix updates. */
+	vec3 _bondDirection;
+
+	/* Will aim to define torsion basis as:
+	   x: along line of 0º torsion angle.
+	   y: completes the right-handed coordinate system
+	   z: along bond direction, from heavy-to-light alignment atoms.
+	 */
+	mat3x3 _torsionBasis;
 };
 
 #endif /* defined(__vagabond__Bond__) */

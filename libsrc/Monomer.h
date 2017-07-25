@@ -31,6 +31,11 @@ public:
 		return _identifier;
 	}
 
+	BackbonePtr getBackbone()
+	{
+		return _backbone;
+	}
+
 	void setResidueNum(int n)
 	{
 		_residueNum = n;

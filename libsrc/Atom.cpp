@@ -31,6 +31,20 @@ FFTPtr Atom::getBlur()
 	return modelDist;
 }
 
+double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell)
+{
+	FFTPtr atomDist = _element->getDistribution();
+	FFTPtr modified = std::make_shared<FFT>(*atomDist);
+	modified->fft(1);
+
+	vec3 pos = getPosition();
+	mat3x3_mult_vec(unit_cell, &pos);
+
+	double score = FFT::score(fft, modified, pos);
+
+	return score;
+}
+
 void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 {
 	FFTPtr atomDist = _element->getDistribution();
@@ -40,14 +54,15 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 	FFT::multiply(modified, atomDist);
 	modified->fft(1);
 
-	double xPos = getPosition().x;
-	double yPos = getPosition().y;
-	double zPos = getPosition().z;
-
-	vec3 pos = make_vec3(xPos, yPos, zPos);
+	vec3 pos = getPosition();
 	mat3x3_mult_vec(unit_cell, &pos);
 
 	FFT::add(fft, modified, 2, pos.x, pos.y, pos.z, false, MaskProtein);
+}
+
+vec3 Atom::getPosition()
+{
+	return _model->getPosition();
 }
 
 bool Atom::isBackbone()

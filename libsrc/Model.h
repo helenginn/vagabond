@@ -25,6 +25,8 @@ public:
 	virtual void addToMonomer(MonomerPtr monomer);
 	virtual void addToMolecule(MoleculePtr molecule);
 
+	virtual std::string getClassName() = 0;
+	virtual vec3 getPosition() = 0;
 private:
 	std::vector<AtomPtr> atoms;
 };

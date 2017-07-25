@@ -9,6 +9,7 @@
 #include "Knotter.h"
 #include "Shouter.h"
 #include "Sidechain.h"
+#include "BackBone.h"
 #include "Monomer.h"
 #include <iostream>
 #include "Atom.h"
@@ -55,9 +56,11 @@ void Knotter::tie()
 void Knotter::makeSerine()
 {
 	MonomerPtr monomer = _sidechain->getMonomer();
+	BackbonePtr backbone = monomer->getBackbone();
 	std::string residue = monomer->getIdentifier();
 	//int resNum = monomer->getResidueNum();
 
+	AtomPtr nSpine = backbone->findAtom("N");
 	AtomPtr cAlpha = _sidechain->findAtom("CA");
 	AtomPtr cBeta = _sidechain->findAtom("CB");
 	AtomPtr hBeta2 = _sidechain->findAtom("HB2");
@@ -77,9 +80,11 @@ void Knotter::makeSerine()
 	}
 
 	BondPtr ca2cb = BondPtr(new Bond(cAlpha, cBeta));
-	ca2cb->setup();
+	ca2cb->setTorsionAtoms(nSpine, oGamma);
 
 	BondPtr cb2og = BondPtr(new Bond(cBeta, oGamma));
-	cb2og->setup();
+
+	cb2og->activate();
+	ca2cb->activate();
 
 }

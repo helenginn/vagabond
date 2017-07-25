@@ -197,3 +197,99 @@ mat3x3 mat3x3_unit_vec_rotation(vec3 axis, double radians)
 
 	return mat;
 }
+
+
+mat3x3 mat3x3_ortho_axes(vec3 cVec)
+{
+	vec3_set_length(&cVec, 1);
+	vec3 bVec = make_vec3(1, 0, cVec.x / cVec.z);
+	vec3_set_length(&bVec, 1);
+	vec3 aVec = vec3_cross_vec3(bVec, cVec);
+
+	mat3x3 mat;
+	memcpy(&mat.vals[0], &aVec, 3 * sizeof(double));
+	memcpy(&mat.vals[3], &bVec, 3 * sizeof(double));
+	memcpy(&mat.vals[6], &cVec, 3 * sizeof(double));
+
+	return mat;
+}
+
+mat3x3 mat3x3_rhbasis(vec3 aVec, vec3 bVec)
+{
+	vec3_set_length(&aVec, 1);
+	vec3_set_length(&bVec, 1);
+	vec3 cVec = vec3_cross_vec3(aVec, bVec);
+	vec3_set_length(&cVec, 1);
+
+	mat3x3 mat;
+	memcpy(&mat.vals[0], &aVec, 3 * sizeof(double));
+	memcpy(&mat.vals[3], &cVec, 3 * sizeof(double));
+	memcpy(&mat.vals[6], &bVec, 3 * sizeof(double));
+
+	return mat3x3_transpose(mat);
+}
+
+
+
+/* Rotate vector (vec1) around axis (axis) by angle theta. Find value of
+ * theta for which the angle between (vec1) and (vec2) is minimised. */
+mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis)
+{
+	/* Let's have unit vectors */
+	vec3_set_length(&vec1, 1);
+	vec3_set_length(&vec2, 1);
+	vec3_set_length(&axis, 1);
+
+	/* Redeclaring these to try and maintain readability and
+	 * check-ability against the maths I wrote down */
+	double a = vec2.x; double b = vec2.y; double c = vec2.z;
+	double p = vec1.x; double q = vec1.y; double r = vec1.z;
+	double x = axis.x; double y = axis.y; double z = axis.z;
+
+	/* Components in handwritten maths online when I upload it */
+	double A = a*(p*x*x - p + x*y*q + x*z*r) +
+	b*(p*x*y + q*y*y - q + r*y*z) +
+	c*(p*x*z + q*y*z + r*z*z - r);
+
+	double B = a*(y*r - z*q) + b*(p*z - r*x) + c*(q*x - p*y);
+
+	double tan_theta = - B / A;
+	double theta = atan(tan_theta);
+
+	/* Now we have two possible solutions, theta or theta+pi
+	 * and we need to work out which one. This could potentially be
+	 * simplified - do we really need so many cos/sins? maybe check
+	 * the 2nd derivative instead? */
+	double cc = cos(theta);
+	double C = 1 - cc;
+	double s = sin(theta);
+	double occ = -cc;
+	double oC = 1 - occ;
+	double os = -s;
+
+	double pPrime = (x*x*C+cc)*p + (x*y*C-z*s)*q + (x*z*C+y*s)*r;
+	double qPrime = (y*x*C+z*s)*p + (y*y*C+cc)*q + (y*z*C-x*s)*r;
+	double rPrime = (z*x*C-y*s)*p + (z*y*C+x*s)*q + (z*z*C+cc)*r;
+
+	double pDbPrime = (x*x*oC+occ)*p + (x*y*oC-z*os)*q + (x*z*oC+y*os)*r;
+	double qDbPrime = (y*x*oC+z*os)*p + (y*y*oC+occ)*q + (y*z*oC-x*os)*r;
+	double rDbPrime = (z*x*oC-y*os)*p + (z*y*oC+x*os)*q + (z*z*oC+occ)*r;
+
+	double cosAlpha = pPrime * a + qPrime * b + rPrime * c;
+	double cosAlphaOther = pDbPrime * a + qDbPrime * b + rDbPrime * c;
+
+	int addPi = (cosAlphaOther > cosAlpha);
+	double bestAngle = theta + addPi * M_PI;
+
+	/* Don't return an identity matrix which has been rotated by
+	 * theta around "axis", but do assign it to twizzle. */
+	return mat3x3_unit_vec_rotation(axis, bestAngle);
+}
+
+vec3 axis(mat3x3 me, int i)
+{
+	vec3 axis;
+	memcpy(&axis, &me.vals[i * 3], 3 * sizeof(double));
+
+	return axis;
+}

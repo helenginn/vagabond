@@ -18,7 +18,7 @@
 
 Absolute::Absolute(vec3 pos, double bFac, std::string element, double occValue)
 {
-	position = pos;
+	_position = pos;
 	bFactor = bFac;
 	_element = element;
 	_occupancy = occValue;
@@ -33,7 +33,6 @@ void Absolute::makeAtom()
 	myAtom->setElement(element);
 	myAtom->setAtomName(_atomName);
 
-	myAtom->setPosition(position);
 	_atom = myAtom;
 }
 
@@ -76,4 +75,9 @@ void Absolute::addToMonomer(MonomerPtr monomer)
 	monomer->getPolymer()->addAtom(_atom);
 
 	Model::addToMonomer(monomer);
+}
+
+vec3 Absolute::getPosition()
+{
+	return _position;
 }

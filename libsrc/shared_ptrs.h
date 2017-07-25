@@ -73,6 +73,23 @@ typedef std::shared_ptr<DiffractionMtz> DiffractionMtzPtr;
 class Object;
 typedef std::shared_ptr<Object> ObjectPtr;
 
+class RefinementGridSearch;
+class RefinementStepSearch;
+class RefinementStrategy;
+class NelderMead;
+typedef std::shared_ptr<RefinementStepSearch> RefinementStepSearchPtr;
+typedef std::shared_ptr<RefinementGridSearch> RefinementGridSearchPtr;
+typedef std::shared_ptr<RefinementStrategy> RefinementStrategyPtr;
+typedef std::shared_ptr<NelderMead> NelderMeadPtr;
+
+class CSV;
+class PNGFile;
+class TextManager;
+typedef std::shared_ptr<PNGFile> PNGFilePtr;
+typedef std::shared_ptr<TextManager> TextManagerPtr;
+typedef std::shared_ptr<CSV> CSVPtr;
+
+
 typedef enum
 {
 	MaskUnchecked = 0,

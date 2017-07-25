@@ -10,30 +10,11 @@
 #define __vagabond__Backbone__
 
 #include <stdio.h>
-#include "Monomer.h"
+#include "AtomGroup.h"
 
-class Backbone
+class Backbone : public AtomGroup
 {
-public:
-	void setMonomer(MonomerPtr monomer)
-	{
-		_monomer = monomer;
-	}
 
-	MonomerPtr getMonomer()
-	{
-		return _monomer.lock();
-	}
-
-	void addAtom(AtomPtr atom)
-	{
-		_atoms.push_back(atom);
-	}
-	
-private:
-	MonomerWkr _monomer;
-
-	std::vector<AtomPtr> _atoms;
 };
 
 #endif /* defined(__vagabond__Backbone__) */

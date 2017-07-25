@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
+#include <iomanip>
 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
     std::stringstream ss(s);
@@ -93,4 +94,32 @@ void trim(std::string &str)
 void to_lower(std::string &str)
 {
 	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
+}
+
+
+std::string i_to_str(int val)
+{
+	std::ostringstream ss;
+	ss << val;
+	std::string temp = ss.str();
+
+	return temp;
+}
+
+std::string f_to_str(double val, int precision)
+{
+	std::ostringstream ss;
+	if (precision > 0)
+	{
+		ss << std::fixed << std::setprecision(precision);
+	}
+	else if (precision < 0)
+	{
+		ss << std::fixed;
+	}
+
+	ss << val;
+	std::string temp = ss.str();
+
+	return temp;
 }

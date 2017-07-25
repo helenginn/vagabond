@@ -3,7 +3,7 @@
  *	A simple object wrapper for 3D FFTs
  *
  *  Created by Anton Barty on 26/07/11.
- *  Copyright 2011 Anton Barty. All rights reserved.
+ *  Copyright 2011 Anton Barty, 2017 Helen Ginn. All rights reserved.
  *
  */
 
@@ -486,13 +486,11 @@ void FFT::setBasis(mat3x3 mat, double sampleScale)
 
 double FFT::interpolate(vec3 vox000, bool im)
 {
-//	vec3 remain = make_vec3(fmod(vox000.x, 1), fmod(vox000.y, 1),
-//							fmod(vox000.z, 1));
+	vec3 remain = make_vec3(fmod(vox000.x, 1), fmod(vox000.y, 1),
+							fmod(vox000.z, 1));
 
 	long int idx000 = element(vox000.x, vox000.y, vox000.z);
 
-	return data[idx000][im];
-/*
 	long int idx100 = element(vox000.x + 1, vox000.y, vox000.z);
 	long int idx010 = element(vox000.x, vox000.y + 1, vox000.z);
 	long int idx110 = element(vox000.x + 1, vox000.y + 1, vox000.z);
@@ -515,9 +513,43 @@ double FFT::interpolate(vec3 vox000, bool im)
 
 	double value = val0 * (1 - remain.z) + val1 * remain.z;
 
-	return value;*/
+	return value;
 }
 
+double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
+{
+	mat3x3 inverse = fftCrystal->getBasisInverse();
+	mat3x3 transform = mat3x3_mult_mat3x3(inverse, fftThing->getBasis());
+
+	double sum = 0;
+
+	for (double k = 0; k < fftThing->nz; k += 1)
+	{
+		for (double j = 0; j < fftThing->ny; j += 1)
+		{
+			for (double i = 0; i < fftThing->nx; i += 1)
+			{
+				long int small_index = fftThing->quickElement(i, j, k);
+
+				long big_index = fftThing->equivalentIndexFor(&*fftCrystal,
+															  i + 1 / 2,
+															 j + 1 / 2,
+															 k + 1 / 2,
+															 transform, pos.x,
+															 pos.y, pos.z,
+															 false);
+
+
+				double crystal = fftCrystal->data[big_index][0];
+				double thing = fftThing->data[small_index][0];
+
+				sum += crystal * thing;
+			}
+		}
+	}
+
+	return sum;
+}
 
 /*  For multiplying point-wise
  *

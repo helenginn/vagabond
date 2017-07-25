@@ -24,6 +24,7 @@ public:
 
 // Model virtual functions:
 	virtual FFTPtr getDistribution();
+	virtual vec3 getPosition();
 	virtual void addToMolecule(MoleculePtr molecule);
 	virtual void addToMonomer(MonomerPtr monomer);
 
@@ -64,6 +65,11 @@ public:
 	{
 		return _hetatm;
 	}
+
+	virtual std::string getClassName()
+	{
+		return "Absolute";
+	}
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 
@@ -75,7 +81,7 @@ private:
 	int _resNum;
 	bool _hetatm;
 
-	vec3 position;
+	vec3 _position;
 	double bFactor;
 
 	void makeAtom();

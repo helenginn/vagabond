@@ -27,15 +27,7 @@ public:
 	bool isBackbone();
 	bool isBackboneAndSidechain();
 
-	vec3 getPosition()
-	{
-		return _position;
-	}
-
-	void setPosition(vec3 pos)
-	{
-		_position = pos;
-	}
+	vec3 getPosition();
 
 	void setElement(ElementPtr element)
 	{
@@ -57,6 +49,14 @@ public:
 		return _atomName;
 	}
 
+	ModelPtr getModel()
+	{
+		return _model;
+	}
+
+	/* Fit with FFT for the element dist only */
+	double scoreWithMap(FFTPtr fft, mat3x3 unit_cell);
+
 	/* Returns a FFT for the model dist, for reuse */
 	void addToMap(FFTPtr fft, mat3x3 unit_cell);
 
@@ -65,8 +65,6 @@ private:
 	ElementPtr _element;
 	std::string _atomName;
 	MonomerWkr _monomer;
-
-	vec3 _position;
 };
 
 #endif /* defined(__vagabond__Atom__) */

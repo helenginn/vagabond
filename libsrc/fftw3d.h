@@ -121,6 +121,8 @@ public:
 						  double addX = 0, double addY = 0, double addZ = 0,
 						  bool sameScale = false, MaskType type = MaskUnchecked);
 
+	static double score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 position);
+
 	void normalise();
 
 	long int equivalentIndexFor(FFT *other, double realX, double realY, double realZ,
