@@ -50,6 +50,12 @@ public:
 		mask[i] = value;
 	}
 
+	MaskType getMask(long x, long y, long z)
+	{
+		long elem = element(x, y, z);
+		return mask[elem];
+	}
+
 	MaskType getMask(long i)
 	{
 		return mask[i];

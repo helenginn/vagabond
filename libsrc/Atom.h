@@ -54,6 +54,11 @@ public:
 		return _model;
 	}
 
+	ElementPtr getElement()
+	{
+		return _element;
+	}
+
 	/* Fit with FFT for the element dist only */
 	double scoreWithMap(FFTPtr fft, mat3x3 unit_cell);
 

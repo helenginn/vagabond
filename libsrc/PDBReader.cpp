@@ -36,7 +36,7 @@ AbsolutePtr PDBReader::makeAtom(std::string line)
 	std::string xData, yData, zData, element, bFactor, occupancy;
 	std::string resNum, chainID, atomName, resName;
 
-	atomName = line.substr(13, 4);
+	atomName = line.substr(11, 5);
 	resName = line.substr(17, 3);
 	chainID = line.substr(21, 2);
 	resNum = line.substr(23, 7);

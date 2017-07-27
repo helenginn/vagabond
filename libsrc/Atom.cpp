@@ -34,13 +34,14 @@ FFTPtr Atom::getBlur()
 double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell)
 {
 	FFTPtr atomDist = _element->getDistribution();
-	FFTPtr modified = std::make_shared<FFT>(*atomDist);
-	modified->fft(1);
+	FFTPtr modelDist = getBlur();
+	FFT::multiply(modelDist, atomDist);
+	modelDist->fft(1);
 
 	vec3 pos = getPosition();
 	mat3x3_mult_vec(unit_cell, &pos);
 
-	double score = FFT::score(fft, modified, pos);
+	double score = FFT::score(fft, modelDist, pos);
 
 	return score;
 }

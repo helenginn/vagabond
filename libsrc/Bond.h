@@ -15,6 +15,7 @@
 #include <vector>
 #include "mat3x3.h"
 #include "Distributor.h"
+#include <iostream>
 
 typedef enum
 {
@@ -22,11 +23,11 @@ typedef enum
 	BondGeometryTetrahedral,
 } BondGeometryType;
 
-class Bond : public Model, public Distributor
+class Bond : public Model
 {
 public:
 	Bond(AtomPtr major, AtomPtr minor);
-	void activate();
+	void activate(AtomGroupPtr group = AtomGroupPtr());
 
 	AtomPtr getMajor()
 	{
@@ -76,6 +77,47 @@ public:
 	{
 		return "Bond";
 	}
+
+	static double getTorsion(void *object)
+	{
+		return static_cast<Bond *>(object)->_torsionRadians;
+	}
+
+	static void setTorsion(void *object, double value)
+	{
+		static_cast<Bond *>(object)->_torsionRadians = value;
+	}
+
+	int downstreamAtomCount()
+	{
+		return _downstreamAtoms.size();
+	}
+
+	AtomPtr downstreamAtom(int i)
+	{
+		return _downstreamAtoms[i].lock();
+	}
+
+	int downstreamAtomNum(AtomPtr atom)
+	{
+		for (int i = 0; i < _downstreamAtoms.size(); i++)
+		{
+			if (_downstreamAtoms[i].lock() == atom)
+			{
+				return i;
+			}
+		}
+
+		return -1;
+	}
+
+	bool isUsingTorsion()
+	{
+		return _usingTorsion;
+	}
+
+	bool isNotJustForHydrogens();
+	
 protected:
 	static double getVoxelValue(void *obj, double x, double y, double z);
 
@@ -104,6 +146,9 @@ private:
 	   z: along bond direction, from heavy-to-light alignment atoms.
 	 */
 	mat3x3 _torsionBasis;
+	mat3x3 makeTorsionBasis(vec3 _specificDirection, double *angle = NULL);
+
+	bool _usingTorsion;
 };
 
 #endif /* defined(__vagabond__Bond__) */

@@ -27,6 +27,7 @@ public:
 private:
 	SidechainPtr _sidechain;
 
+	void makeValine();
 	void makeSerine();
 
 };

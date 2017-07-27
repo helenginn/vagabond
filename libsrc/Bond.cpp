@@ -11,9 +11,12 @@
 #include "fftw3d.h"
 #include <iostream>
 #include "Shouter.h"
+#include "AtomGroup.h"
+#include "Element.h"
 
 Bond::Bond(AtomPtr major, AtomPtr minor)
 {
+	_usingTorsion = false;
 	_activated = false;
 	_major = major;
 	_minor = minor;
@@ -30,60 +33,34 @@ Bond::Bond(AtomPtr major, AtomPtr minor)
 	_bondDirection = difference;
 
 	std::cout << "Bond length: " << _bondLength << " Å." << std::endl;
+
+	ModelPtr upModel = getMajor()->getModel();
+
+	if (upModel->getClassName() == "Bond")
+	{
+		upModel->addDownstreamAtom(minor);
+	}
+
 }
 
-void Bond::activate()
+void Bond::activate(AtomGroupPtr group)
 {
 	getMinor()->setModel(shared_from_this());
+
+	if (group)
+	{
+		BondPtr myself = std::static_pointer_cast<Bond>(shared_from_this());
+		group->addBond(myself);
+	}
 	_activated = true;
 }
 
-void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
+mat3x3 Bond::makeTorsionBasis(vec3 _specificDirection, double *newAngle)
 {
-	if (_activated)
-	{
-		warn_user("Warning - setting torsion atoms *after* activation");
-	}
-
-	_heavyAlign = heavyAlign;
-	_lightAlign = lightAlign;
-
-	/* Make torsion basis.
-	 * Make any starting set of angles with correct Z axis. */
-/*
-	mat3x3 tempBasis = mat3x3_ortho_axes(_bondDirection);
-	mat3x3_mult_vec(tempBasis, &relHeavy);
-	relHeavy.z = 0;
-	vec3_set_length(&relHeavy, 1);
-
-	vec3 xOld = make_vec3(1, 0, 0);;// mat3x3_axis(tempBasis, 0);
-	vec3 zAxis = make_vec3(0, 0, 1);
-	mat3x3 extra = mat3x3_closest_rot_mat(xOld, relHeavy, zAxis);
-	_torsionBasis = mat3x3_mult_mat3x3(extra, tempBasis);
-
-	vec3 relLight = vec3_subtract_vec3(lightPos, majorPos);
-	mat3x3_mult_vec(tempBasis, &relLight);
-	relLight.z = 0;
-	vec3_set_length(&relLight, 1);
-
-	double angle = vec3_angle_with_vec3(relHeavy, relLight);
-
-	vec3 recross = vec3_cross_vec3(relHeavy, relLight);
-	double cosine = vec3_cosine_with_vec3(recross, _bondDirection);
-
-	if (cosine < 0)
-	{
-		angle += M_PI;
-	}
-
-	std::cout << "Torsion angle: " << angle * 180 / M_PI << "º."<< std::endl;
-	_torsionRadians = angle;*/
-
-
-	vec3 pPos = heavyAlign->getPosition();
+	vec3 pPos = _heavyAlign.lock()->getPosition();
 	vec3 aPos = getMajor()->getPosition();
 	vec3 bPos = getMinor()->getPosition();
-	vec3 lPos = lightAlign->getPosition();
+	vec3 lPos = _lightAlign.lock()->getPosition();
 
 	vec3 a2p = vec3_subtract_vec3(pPos, aPos);
 	vec3 a2l = vec3_subtract_vec3(lPos, aPos);
@@ -121,6 +98,21 @@ void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
 
 	std::cout << "Torsion angle: " << angle * 180 / M_PI << "º."<< std::endl;
 	_torsionRadians = angle;
+
+	return test;
+}
+
+void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
+{
+	_heavyAlign = heavyAlign;
+	_lightAlign = lightAlign;
+
+	/* Make torsion basis.
+	 * Make any starting set of angles with correct Z axis. */
+
+	makeTorsionBasis(_bondDirection);
+
+	_usingTorsion = true;
 }
 
 double Bond::getVoxelValue(void *obj, double x, double y, double z)
@@ -177,6 +169,16 @@ vec3 Bond::getPosition()
 	double torsionAngle = prevBond->getTorsion(); // my torsion angle!
 	mat3x3 torsionBasis = prevBond->getTorsionBasis(); // my torsion vectors!
 	double ratio = 1./3.; // replace me. My x/z ratio!
+	double torsionNumber = prevBond->downstreamAtomNum(getMinor());
+	double totalAtoms = prevBond->downstreamAtomCount();
+
+	if (torsionNumber < 0)
+	{
+		shout_at_helen("Something has gone horrendously wrong\n"\
+					   "in the calculation of torsion angle.");
+	}
+
+	torsionAngle += deg2rad(360) * torsionNumber / totalAtoms;
 
 	/* Calculate the right ratio of x-to-z from the major atom. */
 	vec3 atomWrtMajor = make_vec3(1, 0, ratio);
@@ -197,4 +199,23 @@ vec3 Bond::getPosition()
 	vec3 final = vec3_add_vec3(majorPos, atomWrtMajor);
 
 	return final;
+}
+
+bool Bond::isNotJustForHydrogens()
+{
+	if (getMinor()->getElement()->electronCount() <= 1)
+	{
+		return false;
+	}
+
+	for (int i = 0; i < downstreamAtomCount(); i++)
+	{
+		AtomPtr atom = downstreamAtom(i);
+		if (atom->getElement()->electronCount() > 1)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }

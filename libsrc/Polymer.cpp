@@ -7,6 +7,7 @@
 //
 
 #include "Polymer.h"
+#include "Sidechain.h"
 #include "Monomer.h"
 #include <iostream>
 
@@ -36,4 +37,24 @@ void Polymer::summary()
 	Molecule::summary();
 	std::cout << "| I am a polymer with " << monomerCount() << " monomers." << std::endl;
 
+}
+
+void Polymer::refine(CrystalPtr target)
+{
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		MonomerPtr monomer = getMonomer(i);
+
+		if (!monomer)
+		{
+			continue;
+		}
+
+		SidechainPtr victim = monomer->getSidechain();
+
+		if (victim && victim->canRefine())
+		{
+			victim->refine(target);
+		}
+	}
 }

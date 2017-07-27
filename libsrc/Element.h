@@ -20,7 +20,7 @@ class Element : public Distributor
 public:
 	static void setupElements();
 
-	Element(std::string symbol, std::string name);
+	Element(std::string symbol, std::string name, double electrons);
 	static ElementPtr getElement(std::string symbol);
 	FFTPtr getDistribution();
 
@@ -34,12 +34,19 @@ public:
 		return _name;
 	}
 
+	double electronCount()
+	{
+		return _electrons;
+	}
+	
 protected:
 	static double getVoxelValue(void *obj, double x, double y, double z);
 
 private:
 	std::string _symbol;
 	std::string _name;
+	double _electrons;
+	
 	float _scattering[62];
 	FFTPtr _fft;
 

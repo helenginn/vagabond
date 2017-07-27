@@ -32,6 +32,7 @@ private:
     
     Getter afterCycleFunction;
     void *afterCycleObject;
+
 public:
     RefinementStepSearch() : RefinementStrategy()
     {

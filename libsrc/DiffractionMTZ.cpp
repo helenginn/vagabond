@@ -14,6 +14,21 @@
 #include <vector>
 #include "fftw3d.h"
 
+void getCol(std::vector<std::string> names, CMtz::MTZ *mtz,
+			CMtz::MTZCOL **column)
+{
+
+	for (int i = 0; i < names.size(); i++)
+	{
+		*column = MtzColLookup(mtz, names[i].c_str());
+
+		if (*column)
+		{
+			break;
+		}
+	}
+}
+
 void DiffractionMtz::load()
 {
 	syminfoCheck();
@@ -41,45 +56,42 @@ void DiffractionMtz::load()
 
 	CMtz::MTZCOL *col_f = NULL;
 	CMtz::MTZCOL *col_sigf = NULL;
+	CMtz::MTZCOL *col_rfree = NULL;
 
 	std::vector<std::string> ampNames;
 	ampNames.push_back("F");
 	ampNames.push_back("FP");
 
-	std::vector<std::string> errNames;
-	errNames.push_back("SIGF");
-	errNames.push_back("SIGFP");
-
-	for (int i = 0; i < ampNames.size(); i++)
-	{
-		col_f = MtzColLookup(mtz, ampNames[i].c_str());
-
-		if (col_f)
-		{
-			break;
-		}
-	}
-
-	for (int i = 0; i < errNames.size(); i++)
-	{
-		col_sigf = MtzColLookup(mtz, errNames[i].c_str());
-
-		if (col_sigf)
-		{
-			break;
-		}
-	}
-
+	getCol(ampNames, mtz, &col_f);
 	if (!col_f)
 	{
 		shout_at_user("I could not find your amplitude column in\n"
 					  + _filename + " - please label as F or FP.");
 	}
 
+	std::vector<std::string> errNames;
+	errNames.push_back("SIGF");
+	errNames.push_back("SIGFP");
+
+	getCol(errNames, mtz, &col_sigf);
 	if (!col_sigf)
 	{
 		warn_user("I could not find your sigma/error column in\n"
 				  + _filename + " - please label as SIGF or SIGFP.\n"
+				  "I can do without and will keep going.");
+	}
+
+
+	std::vector<std::string> rFreeNames;
+	rFreeNames.push_back("RFREE");
+	rFreeNames.push_back("FREE");
+
+	getCol(rFreeNames, mtz, &col_rfree);
+
+	if (!col_rfree)
+	{
+		warn_user("I could not find your R-free-flag column in\n"
+				  + _filename + " - please label as FREE or RFREE.\n"
 				  "I can do without and will keep going.");
 	}
 
@@ -115,8 +127,7 @@ void DiffractionMtz::load()
 
 	largest *= 2;
 	largest += 1;
-	std::cout << "Largest: " << largest << std::endl;
-
+	
 	if (largest == 0)
 	{
 		shout_at_user("Problem determining resolution limits.\n"\
@@ -126,8 +137,10 @@ void DiffractionMtz::load()
 	fft = FFTPtr(new FFT());
 	fft->create(largest);
 	fft->multiplyAll(nan(" "));
+	fft->setupMask();
 
 	int count = 0;
+	int maskCount = 0;
 
 	for (int i = 0; i < mtz->nref_filein * mtz->ncol_read; i += mtz->ncol_read)
 	{
@@ -137,16 +150,25 @@ void DiffractionMtz::load()
 		int k = adata[col_k->source - 1];
 		int l = adata[col_l->source - 1];
 		float amplitude = adata[col_f->source - 1];
+		float flag = adata[col_rfree->source - 1];
+		MaskType mask = (flag <= 0.1) ? MaskFree : MaskWork;
 
 		long element = fft->element(h, k, l);
 		fft->data[element][0] = amplitude;
 		fft->data[element][1] = 0;
+		fft->mask[element] = mask;
 
 		count++;
+
+		if (mask == MaskFree)
+		{
+			maskCount++;
+		}
 	}
 
 	std::cout << "Loaded " << count << " reflections into"\
 	" memory from " << _filename << "." << std::endl << std::endl;
+	std::cout << "Counted " << maskCount << " free reflections." << std::endl;
 
 }
 

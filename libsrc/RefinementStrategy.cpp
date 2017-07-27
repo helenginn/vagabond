@@ -51,13 +51,13 @@ RefinementStrategyPtr RefinementStrategy::userChosenStrategy()
     return strategy;
 }
 
-void RefinementStrategy::addParameter(void *object, Getter getter, Setter setter, double stepSize, double stepConvergence, std::string tag)
+void RefinementStrategy::addParameter(void *object, Getter getter, Setter setter, double stepSize, double otherValue, std::string tag)
 {
     objects.push_back(object);
     getters.push_back(getter);
     setters.push_back(setter);
     stepSizes.push_back(stepSize);
-    stepConvergences.push_back(stepConvergence);
+    otherValues.push_back(otherValue);
     
     if (!tag.length())
     {
@@ -112,6 +112,11 @@ void RefinementStrategy::refine()
 
 void RefinementStrategy::reportProgress(double score)
 {
+	if (!_verbose)
+	{
+		return;
+	}
+
     std::cout << "Cycle " << cycleNum << "\t";
     
     for (int i = 0; i < objects.size(); i++)
@@ -120,7 +125,7 @@ void RefinementStrategy::reportProgress(double score)
         std::cout << std::setprecision(5) << objectValue << "\t";
     }
 
-    std::cout << " - score: ";
+    std::cout << " - score:\t";
     std::cout << score << std::endl;
 
     cycleNum++;

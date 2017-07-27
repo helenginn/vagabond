@@ -13,6 +13,7 @@
 #include "DiffractionMtz.h"
 #include "Shouter.h"
 #include <iomanip>
+#include "Polymer.h"
 
 Options::Options(int argc, const char **argv)
 {
@@ -60,12 +61,24 @@ void Options::run()
 	{
 		if (crystals.size() == 1)
 		{
-			crystals[0]->scaleToDiffraction(diffractions[0]);
-			double rFac = crystals[0]->rFactorWithDiffraction(diffractions[0],
-															  true);
+			int prop = 2;
+			/* sandbox */
+			DiffractionPtr data = diffractions[0];
+			crystals[0]->realSpaceClutter();
+			crystals[0]->transplantAmplitudes(data, prop, prop-1);
+			MoleculePtr molecule = crystals[0]->molecule("A");
 
-			crystals[0]->transplantAmplitudes(diffractions[0]);
+			for (int i = 0; i < 5; i++)
+			{
+				molecule->refine(crystals[0]);
+				crystals[0]->realSpaceClutter();
+				crystals[0]->transplantAmplitudes(data, prop, prop-1);
+
+			}
+
+			crystals[0]->fourierTransform(1);
 			crystals[0]->writeCalcMillersToFile();
+
 		}
 	}
 
@@ -124,7 +137,8 @@ void Options::outputCrystalInfo()
 
 	for (int i = 0; i < crystals.size(); i++)
 	{
-		crystals[i]->calculateMillers();
+		crystals[i]->realSpaceClutter();
+		crystals[i]->fourierTransform(1);
 		crystals[i]->writeCalcMillersToFile();
 	}
 }

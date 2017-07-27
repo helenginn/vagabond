@@ -34,6 +34,7 @@ private:
     int gridJumps;
     std::vector<double> orderedResults;
     std::vector<ParamList> orderedParams;
+	static int _refine_counter; /* thread care! */
 
 public:
     RefinementGridSearch() : RefinementStrategy()

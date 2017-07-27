@@ -36,6 +36,11 @@ public:
 		return _backbone;
 	}
 
+	SidechainPtr getSidechain()
+	{
+		return _sidechain;
+	}
+
 	void setResidueNum(int n)
 	{
 		_residueNum = n;

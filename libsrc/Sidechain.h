@@ -11,10 +11,28 @@
 
 #include <stdio.h>
 #include "AtomGroup.h"
+#include "Sampler.h"
 
-class Sidechain : public AtomGroup
+class Sidechain : public AtomGroup, public Sampler
 {
+public:
+	Sidechain()
+	{
+		_canRefine = false;
+	}
 
+	void refine(CrystalPtr target);
+	bool canRefine()
+	{
+		return _canRefine;
+	}
+
+	void setCanRefine(bool canRefine)
+	{
+		_canRefine = canRefine;
+	}
+private:
+	bool _canRefine;
 };
 
 #endif /* defined(__vagabond__Sidechain__) */

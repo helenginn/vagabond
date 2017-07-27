@@ -16,6 +16,9 @@
 #define PROTEIN_SAMPLING (1. / 3.)
 #define WATER_RADIUS 0.6
 
+#define deg2rad(a) ((a) * M_PI / 180)
+#define rad2deg(a) ((a) / M_PI * 180)
+
 class FFT;
 typedef std::shared_ptr<FFT> FFTPtr;
 
@@ -29,8 +32,10 @@ class Monomer;
 typedef std::shared_ptr<Monomer> MonomerPtr;
 typedef std::weak_ptr<Monomer> MonomerWkr;
 
+class AtomGroup;
 class Backbone;
 typedef std::shared_ptr<Backbone> BackbonePtr;
+typedef std::shared_ptr<AtomGroup> AtomGroupPtr;
 
 class Sidechain;
 typedef std::shared_ptr<Sidechain> SidechainPtr;
@@ -89,12 +94,17 @@ typedef std::shared_ptr<PNGFile> PNGFilePtr;
 typedef std::shared_ptr<TextManager> TextManagerPtr;
 typedef std::shared_ptr<CSV> CSVPtr;
 
+class Sampler;
+typedef std::shared_ptr<Sampler> SamplerPtr;
 
 typedef enum
 {
 	MaskUnchecked = 0,
 	MaskProtein = 1,
 	MaskEmpty = 2,
+
+	MaskFree = 8,
+	MaskWork = 9,
 } MaskType;
 
 #endif

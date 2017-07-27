@@ -17,7 +17,7 @@
 // Anything which is capable of predicting electron positions.
 //
 
-class Model : public std::enable_shared_from_this<Model>
+class Model : public std::enable_shared_from_this<Model>, public Distributor
 {
 public:
 	virtual FFTPtr getDistribution() = 0;
@@ -27,6 +27,15 @@ public:
 
 	virtual std::string getClassName() = 0;
 	virtual vec3 getPosition() = 0;
+
+	void addDownstreamAtom(AtomPtr atom)
+	{
+		_downstreamAtoms.push_back(atom);
+	}
+
+	FFTPtr getZeroDistribution();
+
+	std::vector<AtomWkr> _downstreamAtoms;
 private:
 	std::vector<AtomPtr> atoms;
 };

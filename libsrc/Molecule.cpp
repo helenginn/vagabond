@@ -37,3 +37,8 @@ void Molecule::summary()
 	std::cout << "| I am chain " << getChainID() << std::endl;
 	std::cout << "| Atoms: " << atomCount() << std::endl;
 }
+
+void Molecule::refine(CrystalPtr target)
+{
+
+}

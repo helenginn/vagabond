@@ -18,17 +18,18 @@ std::vector<ElementPtr> Element::elements;
 
 void Element::setupElements()
 {
-	elements.push_back(ElementPtr(new Element("H", "hydrogen")));
-	elements.push_back(ElementPtr(new Element("C", "carbon")));
-	elements.push_back(ElementPtr(new Element("N", "nitrogen")));
-	elements.push_back(ElementPtr(new Element("O", "oxygen")));
-	elements.push_back(ElementPtr(new Element("S", "sulphur")));
+	elements.push_back(ElementPtr(new Element("H", "hydrogen", 1)));
+	elements.push_back(ElementPtr(new Element("C", "carbon", 6)));
+	elements.push_back(ElementPtr(new Element("N", "nitrogen", 7)));
+	elements.push_back(ElementPtr(new Element("O", "oxygen", 8)));
+	elements.push_back(ElementPtr(new Element("S", "sulphur", 16)));
 }
 
-Element::Element(std::string symbol, std::string name)
+Element::Element(std::string symbol, std::string name, double electrons)
 {
 	_symbol = symbol;
 	_name = name;
+	_electrons = electrons;
 
 	if (_symbol == "H")
 	{

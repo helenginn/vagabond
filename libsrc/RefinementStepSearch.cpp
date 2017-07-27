@@ -30,8 +30,8 @@ double RefinementStepSearch::minimizeTwoParameters(int whichParam1, int whichPar
     double *meanStep1 = &stepSizes[whichParam1];
     double *meanStep2 = &stepSizes[whichParam2];
     
-    if (*meanStep1 < stepConvergences[whichParam1] &&
-        *meanStep2 < stepConvergences[whichParam2])
+    if (*meanStep1 < otherValues[whichParam1] &&
+        *meanStep2 < otherValues[whichParam2])
         return 1;
 
     int j = 0;
@@ -103,7 +103,7 @@ double RefinementStepSearch::minimizeParameter(int whichParam, double *bestScore
     
     double step = stepSizes[whichParam];
     
-    if (step < stepConvergences[whichParam])
+    if (step < otherValues[whichParam])
         return 1;
     
     Getter getter = getters[whichParam];

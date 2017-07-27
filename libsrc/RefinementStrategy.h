@@ -52,10 +52,11 @@ protected:
     std::vector<Getter> getters;
     std::vector<Setter> setters;
     std::vector<double> stepSizes;
-    std::vector<double> stepConvergences;
+    std::vector<double> otherValues;
     std::vector<std::string> tags;
     std::vector<double> startingValues;
     double startingScore;
+	bool _verbose;
     
     void reportProgress(double score);
     void finish();
@@ -66,6 +67,7 @@ public:
         maxCycles = 30;
         cycleNum = 0;
         startingScore = 0;
+		_verbose = false;
 		_changed = -1;
 		finishFunction = NULL;
     };
@@ -75,8 +77,8 @@ public:
     virtual void refine();
 	void resetToInitialParameters();
     
-    void addParameter(void *object, Getter getter, Setter setter, double stepSize, double stepConvergence, std::string tag = "");
-    void addCoupledParameter(void *object, Getter getter, Setter setter, double stepSize, double stepConvergence, std::string tag = "");
+    void addParameter(void *object, Getter getter, Setter setter, double stepSize, double otherValue, std::string tag = "");
+    void addCoupledParameter(void *object, Getter getter, Setter setter, double stepSize, double otherValue, std::string tag = "");
     
     void setEvaluationFunction(Getter function, void *evaluatedObject)
     {
@@ -87,6 +89,11 @@ public:
 	void setFinishFunction(Getter finishFunc)
 	{
 		finishFunction = finishFunc;
+	}
+
+	void setVerbose(bool value)
+	{
+		_verbose = value;
 	}
     
 	bool didChange()
@@ -115,7 +122,7 @@ public:
         setters.clear();
         objects.clear();
         stepSizes.clear();
-        stepConvergences.clear();
+        otherValues.clear();
         tags.clear();
     }
 };

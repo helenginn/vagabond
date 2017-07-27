@@ -16,6 +16,8 @@
 #include "mat3x3.h"
 #include "vec3.h"
 #include <iostream>
+#include <vector>
+#include "maths.h"
 
 inline void fftwf_add(fftwf_complex comp1, fftwf_complex comp2, float *result)
 {
@@ -381,6 +383,7 @@ void FFT::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
 	 *	Export wisdom to file 
 	 */
 	fp = fopen(wisdomFile, "w");
+
 	if (fp != NULL)
     {
         if(verbose)
@@ -398,7 +401,6 @@ void FFT::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
 		{
 			if (!fftwf_import_wisdom_from_file(fp) )
 			{
-			//	printf("\t\tError reading wisdom!\n");
 			}
 
 			fclose(fp); 	/* be sure to close the file! */
@@ -521,7 +523,17 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
 	mat3x3 inverse = fftCrystal->getBasisInverse();
 	mat3x3 transform = mat3x3_mult_mat3x3(inverse, fftThing->getBasis());
 
-	double sum = 0;
+	fftCrystal->collapseFrac(&pos.x, &pos.y, &pos.z);
+	pos.x *= (double)fftCrystal->nx;
+	pos.y *= (double)fftCrystal->ny;
+	pos.z *= (double)fftCrystal->nz;
+	pos.x += PROTEIN_SAMPLING;
+	pos.y += PROTEIN_SAMPLING;
+	pos.z += PROTEIN_SAMPLING;
+
+	std::vector<double> crystalVals, thingVals;
+	crystalVals.resize(fftThing->nn);
+	thingVals.resize(fftThing->nn);
 
 	for (double k = 0; k < fftThing->nz; k += 1)
 	{
@@ -543,12 +555,15 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
 				double crystal = fftCrystal->data[big_index][0];
 				double thing = fftThing->data[small_index][0];
 
-				sum += crystal * thing;
+				crystalVals.push_back(crystal);
+				thingVals.push_back(thing);
 			}
 		}
 	}
 
-	return sum;
+	double correl = correlation(crystalVals, thingVals);
+	
+	return correl;
 }
 
 /*  For multiplying point-wise

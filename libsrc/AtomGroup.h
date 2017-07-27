@@ -43,9 +43,26 @@ public:
 	{
 		return _atoms[i];
 	}
+
+	void addBond(BondPtr bond)
+	{
+		_bonds.push_back(bond);
+	}
+
+	int bondCount()
+	{
+		return _bonds.size();
+	}
+
+	BondPtr bond(int i)
+	{
+		return _bonds[i];
+	}
+
 private:
 	MonomerWkr _monomer;
 
+	std::vector<BondPtr> _bonds;
 	std::vector<AtomPtr> _atoms;
 private:
 	

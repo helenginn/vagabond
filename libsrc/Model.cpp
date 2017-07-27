@@ -24,5 +24,18 @@ void Model::addToMonomer(MonomerPtr monomer)
 	PolymerPtr polymer = monomer->getPolymer();
 	MoleculePtr molecule = std::static_pointer_cast<Molecule>(polymer);
 	molecule->addModel(shared_from_this());
+}
 
+double returnOne(void *object, double x, double y, double z)
+{
+	return 1;
+}
+
+FFTPtr Model::getZeroDistribution()
+{
+	double n = ATOM_SAMPLING_COUNT;
+	double scale = 1 / (2.0 * MAX_SCATTERING_DSTAR);
+	prepareDistribution(n, scale, this, &returnOne);
+
+	return getDistributionCopy();
 }

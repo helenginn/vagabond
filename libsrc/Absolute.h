@@ -16,7 +16,7 @@
 #include "FileReader.h"
 #include "Distributor.h"
 
-class Absolute : public Model, public Distributor
+class Absolute : public Model
 {
 public:
 	Absolute(vec3 pos, double bFac, std::string element, double occValue);

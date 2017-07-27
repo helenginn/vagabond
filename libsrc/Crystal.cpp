@@ -67,44 +67,51 @@ void Crystal::setHKL2Real(mat3x3 mat)
 	_hkl2real = mat;
 }
 
-void Crystal::calculateMillers()
+void Crystal::realSpaceClutter()
 {
-	fft = FFTPtr(new FFT());
+	if (!_fft)
+	{
+		_fft = FFTPtr(new FFT());
 
-	vec3 uc_dims = empty_vec3();
-	vec3 fft_dims = empty_vec3();
-	uc_dims.x = mat3x3_length(_hkl2real, 0) / PROTEIN_SAMPLING;
-	uc_dims.y = mat3x3_length(_hkl2real, 1) / PROTEIN_SAMPLING;
-	uc_dims.z = mat3x3_length(_hkl2real, 2) / PROTEIN_SAMPLING;
+		vec3 uc_dims = empty_vec3();
+		vec3 fft_dims = empty_vec3();
+		uc_dims.x = mat3x3_length(_hkl2real, 0) / PROTEIN_SAMPLING;
+		uc_dims.y = mat3x3_length(_hkl2real, 1) / PROTEIN_SAMPLING;
+		uc_dims.z = mat3x3_length(_hkl2real, 2) / PROTEIN_SAMPLING;
 
-	double largest = std::max(uc_dims.x, uc_dims.y);
-	largest = std::max(largest, uc_dims.z);
+		double largest = std::max(uc_dims.x, uc_dims.y);
+		largest = std::max(largest, uc_dims.z);
 
-	fft_dims.x = largest; fft_dims.y = largest; fft_dims.z = largest;
+		fft_dims.x = largest; fft_dims.y = largest; fft_dims.z = largest;
 
-	fft->create(fft_dims.x, fft_dims.y, fft_dims.z);
-	fft->setupMask();
+		_fft->create(fft_dims.x, fft_dims.y, fft_dims.z);
+		_fft->setupMask();
 
-	double scaling = 1 / largest;
+		double scaling = 1 / largest;
 
-	fft->setBasis(_hkl2real, scaling);
+		_fft->setBasis(_hkl2real, scaling);
+	}
+	else
+	{
+		_fft->setAll(0);
+	}
+
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
-		molecule(i)->addToMap(fft, _real2frac);
+		molecule(i)->addToMap(_fft, _real2frac);
 	}
 
 //	BucketPtr bucket = BucketPtr(new BucketUniform());
 //	bucket->addSolvent(fft);
 
-	fft->createFFTWplan(8, false);
-	fft->fft(1);
-	fft->multiplyAll(1e-4);
+	_fft->createFFTWplan(8, false);
+	_fft->multiplyAll(1e-4);
 }
 
 void Crystal::writeCalcMillersToFile(double resolution)
 {
-	if (!fft)
+	if (!_fft)
 	{
 		shout_at_user("There is likely a bug. Cannot write\n"\
 					  "calculated Miller list until it has\n"\
@@ -135,6 +142,9 @@ void Crystal::writeCalcMillersToFile(double resolution)
 				vec3 pos = make_vec3(i, j, k);
 				mat3x3_mult_vec(_real2frac, &pos);
 
+				double intensity = _fft->getIntensity(i, j, k) * 1e-11;
+				double amplitude = sqrt(intensity);
+
 				if (vec3_length(pos) > dStar)
 				{
 					continue;
@@ -144,9 +154,9 @@ void Crystal::writeCalcMillersToFile(double resolution)
 				<< std::setw(4) << i
 				<< std::setw(4) << j
 				<< std::setw(4) << k
-				<< std::setw(8) << std::right << sqrt(fft->getIntensity(i, j, k))
+				<< std::setw(8) << std::right << amplitude
 				<<  " 1.0000  " <<
-				std::setw(5) << std::right << fft->getPhase(i, j, k)
+				std::setw(5) << std::right << _fft->getPhase(i, j, k)
 				<< std::setw(8) << 1000 << std::endl;
 			}
 		}
@@ -160,15 +170,15 @@ void Crystal::writeCalcMillersToFile(double resolution)
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 									 bool verbose)
 {
-	if (!fft || !fft->nn)
+	if (!_fft || !_fft->nn)
 	{
-		calculateMillers();
+		realSpaceClutter();
 	}
 
 	FFTPtr fftData = data->getFFT();
-	double nLimit = std::min(fftData->nx, fft->nx);
+	double nLimit = std::min(fftData->nx, _fft->nx);
 	nLimit /= 2;
-	std::vector<double> set1, set2;
+	std::vector<double> set1, set2, free1, free2;
 
 	/* symmetry issues */
 	for (int i = -nLimit; i < nLimit; i++)
@@ -178,61 +188,79 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 			for (int k = 0; k < nLimit; k++)
 			{
 				double amp1 = sqrt(fftData->getIntensity(i, j, k));
-				double amp2 = sqrt(fft->getIntensity(i, j, k));
+				double amp2 = sqrt(_fft->getIntensity(i, j, k));
+
+				int isFree = fftData->getMask(i, j, k) == MaskFree;
 
 				if (amp1 != amp1 || amp2 != amp2)
 				{
 					continue;
 				}
 
-				if (verbose)
+				if (!isFree)
 				{
-					std::cout << i << " " << j << " " << k
-					<< " " << amp1 << " " << amp2 << std::endl;
+					set1.push_back(amp1);
+					set2.push_back(amp2);
 				}
-
-				set1.push_back(amp1);
-				set2.push_back(amp2);
+				else
+				{
+					free1.push_back(amp1);
+					free2.push_back(amp2);
+				}
 			}
 		}
 	}
 
-	double value = (*op)(set1, set2);
+	double working = (*op)(set1, set2);
 
-	return value;
+	if (verbose)
+	{
+		double free = (*op)(free1, free2);
+		
+		std::cout << "Working set value: " << std::setprecision(5)
+		<< working << std::endl;
+		std::cout << "Free set value: " << free << std::endl;
+	}
+
+	return working;
 }
 
 void Crystal::scaleToDiffraction(DiffractionPtr data)
 {
 	double scale = 1 / valueWithDiffraction(data, &scale_factor);
-	fft->multiplyAll(scale);
+	_fft->multiplyAll(scale);
 }
 
 double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 {
-	double rFactor = valueWithDiffraction(data, &r_factor);
+	double rFactor = valueWithDiffraction(data, &r_factor, verbose);
 
-	if (verbose)
+/*	if (verbose)
 	{
 		std::cout << "Rfactor for crystal (" << _filename << ") against data ("
 		<< data->getFilename() << ") of " << std::setprecision(5)
 		<< rFactor * 100 << "%." << std::endl;
-	}
+	}*/
 
 	return rFactor;
 }
 
-void Crystal::transplantAmplitudes(DiffractionPtr data)
+void Crystal::transplantAmplitudes(DiffractionPtr data, double partsFo,
+								   double partsFc)
 {
-	if (!fft || !fft->nn)
+	if (!_fft || !_fft->nn)
 	{
-		calculateMillers();
+		realSpaceClutter();
 	}
+
+	fourierTransform(1);
+
+	rFactorWithDiffraction(data, true);
 
 	std::cout << "Replacing Fc with Fo." << std::endl;
 
 	FFTPtr fftData = data->getFFT();
-	double nLimit = std::min(fftData->nx, fft->nx);
+	double nLimit = std::min(fftData->nx, _fft->nx);
 	nLimit /= 2;
 	std::vector<double> set1, set2;
 
@@ -244,18 +272,31 @@ void Crystal::transplantAmplitudes(DiffractionPtr data)
 			for (int k = 0; k < nLimit; k++)
 			{
 				double amp = sqrt(fftData->getIntensity(i, j, k));
+				bool isRfree = fftData->getMask(i, j, k);
+
+				if (amp != amp || isRfree)
+				{
+					continue;
+				}
 
 				vec2 complex;
-				long index = fft->element(i, j, k);
-				complex.x = fft->getReal(index);
-				complex.y = fft->getImaginary(index);
+				long index = _fft->element(i, j, k);
+				complex.x = _fft->getReal(index);
+				complex.y = _fft->getImaginary(index);
+				double old_amp = sqrt(complex.x * complex.x +
+									  complex.y * complex.y);
 
-				amp /= sqrt(complex.x * complex.x + complex.y * complex.y);
-				complex.x *= amp;
-				complex.y *= amp;
+				double new_amp = partsFo * amp - partsFc * old_amp;
+				new_amp /= old_amp;
 
-				fft->setElement(index, complex.x, complex.y);
+				complex.x *= new_amp;
+				complex.y *= new_amp;
+
+				_fft->setElement(index, complex.x, complex.y);
 			}
 		}
 	}
+
+	fourierTransform(-1);
+
 }

@@ -22,12 +22,16 @@
 #include "CSV.h"
 #include <iostream>
 #include <iomanip>
+#include "FileReader.h"
+
+int RefinementGridSearch::_refine_counter = 0;
 
 void RefinementGridSearch::recursiveEvaluation(ParamList referenceList, ParamList workingList, ResultMap *results)
 {
     size_t paramCount = objects.size();
     size_t workingCount = workingList.size();
-    
+	double grid_length = otherValues[workingCount];
+
     if (workingCount < paramCount)
     {
         if (workingCount == 1)
@@ -35,7 +39,7 @@ void RefinementGridSearch::recursiveEvaluation(ParamList referenceList, ParamLis
        //     std::cout << "." << std::flush;
         }
         
-        for (int i = -gridLength / 2; i <= (int)(gridLength / 2 + 0.5); i++)
+        for (int i = -grid_length / 2; i <= (int)(grid_length / 2 + 0.5); i++)
         {
             double mean = referenceList[workingCount];
             double step = stepSizes[workingCount];
@@ -82,16 +86,17 @@ void RefinementGridSearch::refine()
     
     recursiveEvaluation(currentValues, ParamList(), &results);
 
-    double minResult = FLT_MAX;
+    double minResult = (*evaluationFunction)(evaluateObject);
     ParamList minParams;
-    
-    
+	bool changed = false;
+
     for (ResultMap::iterator it = results.begin(); it != results.end(); it++)
     {
         if (it->second < minResult)
         {
             minResult = it->second;
             minParams = it->first;
+			changed = true;
         }
         
         std::vector<double> result = it->first;
@@ -99,22 +104,27 @@ void RefinementGridSearch::refine()
         
         csv->addEntry(result);
     }
-    
-    std::cout << "Setting params ";
-    
-    for (int i = 0; i < minParams.size(); i++)
-    {
-        Setter setter = setters[i];
-        (*setter)(objects[i], minParams[i]);
-        
-        std::cout << tags[i] << " = " << minParams[i] << ", ";
-    }
-    
-    double val = (*evaluationFunction)(evaluateObject);
-    std::cout << "score = " << val << std::endl;
-    
-    csv->writeToFile(jobName + "_gridsearch.csv");
-    
+
+	if (changed)
+	{
+		std::cout << "Setting params ";
+
+		for (int i = 0; i < minParams.size(); i++)
+		{
+			Setter setter = setters[i];
+			(*setter)(objects[i], minParams[i]);
+
+			std::cout << tags[i] << " = " << minParams[i] << ", ";
+		}
+
+		double val = (*evaluationFunction)(evaluateObject);
+		std::cout << "score = " << val << std::endl;
+	}
+
+    csv->writeToFile(jobName + "_gridsearch_" + i_to_str(_refine_counter)
+					 + ".csv");
+	_refine_counter++;
+
     finish();
 }
 

@@ -65,7 +65,8 @@ FFTPtr Absolute::getDistribution()
 	double n = ATOM_SAMPLING_COUNT;
 	double scale = 1 / (2.0 * MAX_SCATTERING_DSTAR);
 
-	return prepareDistribution(n, scale, this, Absolute::getExpValue);
+	prepareDistribution(n, scale, this, Absolute::getExpValue);
+	return getDistributionCopy();
 }
 
 void Absolute::addToMonomer(MonomerPtr monomer)
