@@ -9,6 +9,14 @@
 #include "vec3.h"
 #include "string.h"
 #include <math.h>
+#include <iostream>
+
+
+void vec3_desc(vec3 vec)
+{
+	std::cout << "(" << vec.x << ", " << vec.y <<
+	", " << vec.z << ")" << std::endl;
+}
 
 struct vec3 empty_vec3()
 {

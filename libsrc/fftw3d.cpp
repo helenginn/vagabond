@@ -277,6 +277,13 @@ void FFT::setReal(double xfrac, double yfrac, double zfrac, double real)
 	data[index][1] = 0;
 }
 
+void FFT::addToReal(double xfrac, double yfrac, double zfrac, double real)
+{
+	long index = elementFromFrac(xfrac, yfrac, zfrac);
+
+	data[index][0] += real;
+}
+
 void FFT::multiplyAll(float value)
 {
     for(long i=0; i<nn; i++)

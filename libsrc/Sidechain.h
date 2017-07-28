@@ -21,7 +21,7 @@ public:
 		_canRefine = false;
 	}
 
-	void refine(CrystalPtr target);
+	void refine(CrystalPtr target, RefinementType rType);
 	bool canRefine()
 	{
 		return _canRefine;

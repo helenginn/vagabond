@@ -8,6 +8,7 @@
 
 #include "Sampler.h"
 #include "RefinementGridSearch.h"
+#include "RefinementNelderMead.h"
 #include "Bond.h"
 #include "Atom.h"
 #include "Crystal.h"
@@ -18,17 +19,32 @@ Sampler::Sampler()
 
 }
 
+void Sampler::setupGrid()
+{
+	_strategy = RefinementStrategyPtr(new RefinementGridSearch());
+	_strategy->setEvaluationFunction(Sampler::score, this);
+}
+
+void Sampler::setupNelderMead()
+{
+	_strategy = RefinementStrategyPtr(new NelderMead());
+	_strategy->setEvaluationFunction(Sampler::score, this);
+}
+
 void Sampler::addTorsion(BondPtr bond, double range, double interval)
 {
-	if (!_strategy)
-	{
-		_strategy = RefinementStrategyPtr(new RefinementGridSearch());
-		_strategy->setEvaluationFunction(Sampler::score, this);
-	}
-
 	double number = fabs(range / interval);
 	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
 							interval, number, "torsion");
+
+	_bonds.push_back(bond);
+}
+
+void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
+{
+	double number = fabs(range / interval);
+	_strategy->addParameter(&*bond, Bond::getTorsionBlur, Bond::setTorsionBlur,
+							interval, number, "blur");
 
 	_bonds.push_back(bond);
 }
@@ -74,6 +90,8 @@ double Sampler::getScore()
 		double next_score = _sampled[i]->scoreWithMap(_fft, _real2hkl);
 		score *= next_score;
 	}
+
+	score = pow(score, 1 / (double)_sampled.size());
 
 	return -score;
 }

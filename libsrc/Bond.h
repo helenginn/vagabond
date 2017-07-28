@@ -23,11 +23,20 @@ typedef enum
 	BondGeometryTetrahedral,
 } BondGeometryType;
 
+typedef struct
+{
+	mat3x3 basis;
+	vec3 start;
+	double torsion;
+	double occupancy;
+} BondSample;
+
 class Bond : public Model
 {
 public:
 	Bond(AtomPtr major, AtomPtr minor);
-	void activate(AtomGroupPtr group = AtomGroupPtr());
+	void activate(AtomGroupPtr group = AtomGroupPtr(),
+				  AbsolutePtr inherit = AbsolutePtr());
 
 	AtomPtr getMajor()
 	{
@@ -71,11 +80,23 @@ public:
 
 	void setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign);
 	virtual FFTPtr getDistribution();
-	virtual vec3 getPosition();
+	virtual vec3 getStaticPosition();
+	std::vector<BondSample> getManyPositions();
+	std::vector<BondSample> sampleMyPositions();
 
 	virtual std::string getClassName()
 	{
 		return "Bond";
+	}
+
+	static void setTorsionBlur(void *object, double value)
+	{
+		static_cast<Bond *>(object)->_torsionBlur = value;
+	}
+
+	static double getTorsionBlur(void *object)
+	{
+		return static_cast<Bond *>(object)->_torsionBlur;
 	}
 
 	static double getTorsion(void *object)
@@ -117,7 +138,26 @@ public:
 	}
 
 	bool isNotJustForHydrogens();
-	
+
+	double getAtomicAngle()
+	{
+		switch (_minorGeometry)
+		{
+			case BondGeometryTetrahedral:
+				return 1./3.;
+				break;
+
+			default:
+				return 1./3.;
+                break;
+		}
+	}
+
+	void setAbsoluteInheritance(AbsolutePtr abs)
+	{
+		_absInherit = abs;
+	}
+
 protected:
 	static double getVoxelValue(void *obj, double x, double y, double z);
 
@@ -132,6 +172,7 @@ private:
 
 	double _bondLength;
 	double _torsionRadians;
+	double _torsionBlur;
 
 	bool _activated;
 
@@ -146,9 +187,16 @@ private:
 	   z: along bond direction, from heavy-to-light alignment atoms.
 	 */
 	mat3x3 _torsionBasis;
-	mat3x3 makeTorsionBasis(vec3 _specificDirection, double *angle = NULL);
+	mat3x3 makeTorsionBasis(vec3 _specificDirection, vec3 hPos, vec3 maPos,
+							vec3 miPos, vec3 lPos, double *newAngle = NULL);
+
+	vec3 positionFromTorsion(mat3x3 torsionBasis, double angle,
+							 double ratio, vec3 start, vec3 *heavy = NULL,
+							 mat3x3 *myBasis = NULL);
 
 	bool _usingTorsion;
+
+	AbsolutePtr _absInherit;
 };
 
 #endif /* defined(__vagabond__Bond__) */

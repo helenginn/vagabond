@@ -14,15 +14,33 @@
 #include "Monomer.h"
 #include "FileReader.h"
 
-void Sidechain::refine(CrystalPtr target)
+void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
+	if (rType == RefinementBroad)
+	{
+		setupGrid();
+	}
+	else
+	{
+		setupGrid();
+//		setupNelderMead();
+	}
+
 	int resNum = getMonomer()->getResidueNum();
 
 	for (int i = 0; i < bondCount(); i++)
 	{
 		if (bond(i)->isNotJustForHydrogens() && bond(i)->isUsingTorsion())
 		{
-			addTorsion(bond(i), deg2rad(60), deg2rad(1.0));
+			if (rType == RefinementBroad)
+			{
+				addTorsion(bond(i), deg2rad(30), deg2rad(2.0));
+			}
+			else if (rType == RefinementFine)
+			{
+				addTorsion(bond(i), deg2rad(20.0), deg2rad(0.2));
+				addTorsionBlur(bond(i), deg2rad(3.0), deg2rad(0.2));
+			}
 		}
 	}
 

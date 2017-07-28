@@ -9,6 +9,7 @@
 #include "Polymer.h"
 #include "Sidechain.h"
 #include "Monomer.h"
+#include "Sampler.h"
 #include <iostream>
 
 void Polymer::addMonomer(MonomerPtr monomer)
@@ -39,7 +40,7 @@ void Polymer::summary()
 
 }
 
-void Polymer::refine(CrystalPtr target)
+void Polymer::refine(CrystalPtr target, RefinementType rType)
 {
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -54,7 +55,7 @@ void Polymer::refine(CrystalPtr target)
 
 		if (victim && victim->canRefine())
 		{
-			victim->refine(target);
+			victim->refine(target, rType);
 		}
 	}
 }

@@ -61,19 +61,25 @@ void Options::run()
 	{
 		if (crystals.size() == 1)
 		{
-			int prop = 2;
+			int prop = 3;
 			/* sandbox */
 			DiffractionPtr data = diffractions[0];
 			crystals[0]->realSpaceClutter();
 			crystals[0]->transplantAmplitudes(data, prop, prop-1);
 			MoleculePtr molecule = crystals[0]->molecule("A");
-
-			for (int i = 0; i < 5; i++)
+			/*
+			for (int i = 0; i < 1; i++)
 			{
-				molecule->refine(crystals[0]);
+				molecule->refine(crystals[0], RefinementBroad);
 				crystals[0]->realSpaceClutter();
 				crystals[0]->transplantAmplitudes(data, prop, prop-1);
-
+			}
+*/
+			for (int i = 0; i < 4; i++)
+			{
+				molecule->refine(crystals[0], RefinementFine);
+				crystals[0]->realSpaceClutter();
+				crystals[0]->transplantAmplitudes(data, prop, prop-1);
 			}
 
 			crystals[0]->fourierTransform(1);

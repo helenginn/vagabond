@@ -21,7 +21,7 @@ public:
 	void addMonomer(MonomerPtr monomer);
 	virtual void summary();
 	virtual void tieAtomsUp();
-	virtual void refine(CrystalPtr target);
+	virtual void refine(CrystalPtr target, RefinementType rType);
 
 	void addUnknownMonomers(int number)
 	{

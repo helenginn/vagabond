@@ -63,7 +63,7 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 
 vec3 Atom::getPosition()
 {
-	return _model->getPosition();
+	return _model->getStaticPosition();
 }
 
 bool Atom::isBackbone()

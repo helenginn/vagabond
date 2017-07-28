@@ -18,4 +18,6 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2);
 
 typedef double (*two_dataset_op)(std::vector<double>&, std::vector<double>&);
 
+double normal_distribution(double x, double mean, double sigma);
+
 #endif /* defined(__vagabond__maths__) */

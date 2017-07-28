@@ -18,6 +18,12 @@
 /* More of an abstraction, but will take a series of (bond) parameters,
  * take a target function, and supply them to a refinement strategy. */
 
+typedef enum
+{
+	RefinementBroad = 0,
+	RefinementFine = 1
+} RefinementType;
+
 class Sampler
 {
 public:
@@ -25,8 +31,12 @@ public:
 
 	void addSampled(AtomPtr atom);
 	void addTorsion(BondPtr bond, double range, double interval);
+	void addTorsionBlur(BondPtr bond, double range, double interval);
 	void setCrystal(CrystalPtr crystal);
 	void sample();
+
+	void setupGrid();
+	void setupNelderMead();
 
 	static double score(void *object)
 	{

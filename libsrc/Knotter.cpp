@@ -8,6 +8,7 @@
 
 #include "Knotter.h"
 #include "Shouter.h"
+#include "Absolute.h"
 #include "Sidechain.h"
 #include "BackBone.h"
 #include "Monomer.h"
@@ -31,6 +32,11 @@ void Knotter::tie()
 
 	bool convertable = false;
 
+	if (resNum < 23 || resNum > 104)
+	{
+		return;
+	}
+
 	if (residue == "ser")
 	{
 		convertable = true;
@@ -45,12 +51,12 @@ void Knotter::tie()
 
 	if (convertable)
 	{
-		std::cout << "Knotter is converting residue: " << residue
+		std::cout << "Knotter is tying up residue: " << residue
 		<< resNum << std::endl;
 	}
 	else
 	{
-		std::cout << "Knotter doesn't know how to tie up " << residue << std::endl;
+//		std::cout << "Knotter doesn't know how to tie up " << residue << std::endl;
 	}
 }
 
@@ -70,6 +76,8 @@ void Knotter::makeSerine()
 	AtomPtr oGamma = _sidechain->findAtom("OG");
 	AtomPtr hGamma = _sidechain->findAtom("HG");
 
+	AbsolutePtr inherit = std::static_pointer_cast<Absolute>(cAlpha->getModel());
+
 	if (!hBeta2 || !hBeta3 || !hGamma)
 	{
 		warn_user("Missing some hydrogens in " + residue + ", continuing.");
@@ -83,20 +91,21 @@ void Knotter::makeSerine()
 
 	BondPtr ca2cb = BondPtr(new Bond(cAlpha, cBeta));
 	Bond::setBondLength(&*ca2cb, 1.52293);
+	Bond::setTorsionBlur(&*ca2cb, deg2rad(1.0));
 	ca2cb->setTorsionAtoms(nSpine, oGamma);
-	ca2cb->activate(_sidechain);
+	ca2cb->activate(_sidechain, inherit);
 
 	BondPtr cb2og = BondPtr(new Bond(cBeta, oGamma));
 	Bond::setBondLength(&*cb2og, 1.41884);
-	cb2og->activate(_sidechain);
+	cb2og->activate(_sidechain, inherit);
 
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate(_sidechain, inherit);
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate(_sidechain, inherit);
 
 	BondPtr og2hg = BondPtr(new Bond(oGamma, hGamma));
-	og2hg->activate(_sidechain);
+	og2hg->activate(_sidechain, inherit);
 }
 
 void Knotter::makeValine()
@@ -119,6 +128,8 @@ void Knotter::makeValine()
 	AtomPtr hGamma22 = _sidechain->findAtom("HG22");
 	AtomPtr hGamma23 = _sidechain->findAtom("HG23");
 
+	AbsolutePtr inherit = std::static_pointer_cast<Absolute>(cAlpha->getModel());
+
 	if (!hBeta || !hGamma11 || !hGamma12 || !hGamma13 || !hGamma21
 		|| !hGamma22 || !hGamma23)
 	{
@@ -132,29 +143,31 @@ void Knotter::makeValine()
 	}
 
 	BondPtr ca2cb = BondPtr(new Bond(cAlpha, cBeta));
+	Bond::setBondLength(&*ca2cb, 1.52349);
 	ca2cb->setTorsionAtoms(nSpine, cGamma1);
-	ca2cb->activate(_sidechain);
+	Bond::setTorsionBlur(&*ca2cb, deg2rad(2.0));
+	ca2cb->activate(_sidechain, inherit);
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma1));
-	cb2cg1->activate(_sidechain);
+	cb2cg1->activate(_sidechain, inherit);
 
 	BondPtr cg1hg11 = BondPtr(new Bond(cGamma1, hGamma11));
-	cg1hg11->activate(_sidechain);
+	cg1hg11->activate(_sidechain, inherit);
 	BondPtr cg1hg12 = BondPtr(new Bond(cGamma1, hGamma12));
-	cg1hg12->activate(_sidechain);
+	cg1hg12->activate(_sidechain, inherit);
 	BondPtr cg1hg13 = BondPtr(new Bond(cGamma1, hGamma13));
-	cg1hg13->activate(_sidechain);
+	cg1hg13->activate(_sidechain, inherit);
 
 	BondPtr cb2cg2 = BondPtr(new Bond(cBeta, cGamma2));
-	cb2cg2->activate(_sidechain);
+	cb2cg2->activate(_sidechain, inherit);
 	BondPtr cb2hb = BondPtr(new Bond(cBeta, hBeta));
-	cb2hb->activate(_sidechain);
+	cb2hb->activate(_sidechain, inherit);
 
 	BondPtr cg2hg21 = BondPtr(new Bond(cGamma2, hGamma21));
-	cg2hg21->activate(_sidechain);
+	cg2hg21->activate(_sidechain, inherit);
 	BondPtr cg2hg22 = BondPtr(new Bond(cGamma2, hGamma22));
-	cg2hg22->activate(_sidechain);
+	cg2hg22->activate(_sidechain, inherit);
 	BondPtr cg2hg23 = BondPtr(new Bond(cGamma2, hGamma23));
-	cg2hg23->activate(_sidechain);
+	cg2hg23->activate(_sidechain, inherit);
 
 }

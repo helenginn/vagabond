@@ -38,7 +38,7 @@ void Molecule::summary()
 	std::cout << "| Atoms: " << atomCount() << std::endl;
 }
 
-void Molecule::refine(CrystalPtr target)
+void Molecule::refine(CrystalPtr target, RefinementType rType)
 {
 
 }

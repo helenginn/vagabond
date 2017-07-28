@@ -78,7 +78,7 @@ void Absolute::addToMonomer(MonomerPtr monomer)
 	Model::addToMonomer(monomer);
 }
 
-vec3 Absolute::getPosition()
+vec3 Absolute::getStaticPosition()
 {
 	return _position;
 }

@@ -13,6 +13,7 @@
 #include <vector>
 #include "mat3x3.h"
 #include "shared_ptrs.h"
+#include "Sampler.h"
 #include <string>
 
 struct vec3;
@@ -27,7 +28,7 @@ public:
 
 	virtual void summary();
 	virtual void tieAtomsUp() {};
-	virtual void refine(CrystalPtr target);
+	virtual void refine(CrystalPtr target, RefinementType rType);
 
 	long int atomCount()
 	{

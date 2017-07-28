@@ -24,7 +24,7 @@ public:
 
 // Model virtual functions:
 	virtual FFTPtr getDistribution();
-	virtual vec3 getPosition();
+	virtual vec3 getStaticPosition();
 	virtual void addToMolecule(MoleculePtr molecule);
 	virtual void addToMonomer(MonomerPtr monomer);
 
