@@ -32,6 +32,8 @@ private:
 	std::vector<DatasetPtr> datasets;
 	std::vector<DiffractionPtr> diffractions;
 
+	int _numCycles;
+	bool _tie;
 };
 
 #endif /* defined(__vagabond__Options__) */

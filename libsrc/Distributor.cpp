@@ -28,10 +28,9 @@ FFTPtr Distributor::prepareDistribution(double n, double scale, void *object,
 		{
 			for (double z = -0.5; z <= 0.5; z += 1 / n)
 			{
-				double mod = MAX_SCATTERING_DSTAR * 2;
-				double xAng = x * mod;
-				double yAng = y * mod;
-				double zAng = z * mod;
+				double xAng = x * _fft->getScale(0);
+				double yAng = y * _fft->getScale(1);
+				double zAng = z * _fft->getScale(2);
 
 				double val = (*voxel_value)(object, xAng, yAng, zAng);
 

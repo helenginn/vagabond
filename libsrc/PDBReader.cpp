@@ -28,7 +28,7 @@ AbsolutePtr PDBReader::makeAtom(std::string line)
 	if (line.length() < 78)
 	{
 		shout_at_user("This ATOM line in the PDB\n"\
-					  "is less than 80 characters and must be\n"\
+					  "is less than 78 characters and might be\n"\
 					  "non-standard. Please check the formatting\n"\
 					  "of this line.\n\n" + line);
 	}
@@ -56,6 +56,7 @@ AbsolutePtr PDBReader::makeAtom(std::string line)
 
 	vec3 vec = make_vec3(xValue, yValue, zValue);
 	AbsolutePtr abs = AbsolutePtr(new Absolute(vec, bFacValue, element, occValue));
+	_myAbsolute = abs;
 	abs->setIdentity(resNumValue, chainID, resName, atomName);
 
 	if (line.substr(0, 6) == "HETATM")
@@ -145,7 +146,59 @@ void PDBReader::validateResidue(AbsolutePtr atom)
 	_myMonomer->setResidueNum(_residueNum);
 	_myMonomer->setIdentifier(atom->getResName());
 	_myPolymer->addMonomer(_myMonomer);
+}
 
+void PDBReader::addAnisotropicBFactors(std::string line)
+{
+	if (line.length() < 70)
+	{
+		shout_at_user("This ANISOU line in the PDB\n"\
+					  "is less than 70 characters and might be\n"\
+					  "non-standard. Please check the formatting\n"\
+					  "of this line.\n\n" + line);
+	}
+
+	std::string u11, u12, u13, u22, u23, u33;
+	std::string resNum, chainID, atomName, resName;
+
+	atomName = line.substr(11, 5);
+	resName = line.substr(17, 3);
+	chainID = line.substr(21, 2);
+	resNum = line.substr(23, 7);
+	u11 = line.substr(28, 7);
+	u22 = line.substr(35, 7);
+	u33 = line.substr(42, 7);
+	u12 = line.substr(49, 7);
+	u13 = line.substr(56, 7);
+	u23 = line.substr(63, 7);
+
+	double u11_val = atof(u11.c_str());
+	double u12_val = atof(u12.c_str());
+	double u13_val = atof(u13.c_str());
+	double u22_val = atof(u22.c_str());
+	double u23_val = atof(u23.c_str());
+	double u33_val = atof(u33.c_str());
+
+	const double scale = 1 / 10e3;
+	mat3x3 tensor = make_mat3x3();
+	tensor.vals[0] = u11_val * scale;
+	tensor.vals[1] = u12_val * scale;
+	tensor.vals[2] = u13_val * scale;
+	tensor.vals[3] = u12_val * scale;
+	tensor.vals[4] = u22_val * scale;
+	tensor.vals[5] = u23_val * scale;
+	tensor.vals[6] = u13_val * scale;
+	tensor.vals[7] = u23_val * scale;
+	tensor.vals[8] = u33_val * scale;
+
+	if (_myAbsolute)
+	{
+		_myAbsolute->setTensor(tensor);
+	}
+	else
+	{
+		warn_user("Unassigned anisotropic B factors.");
+	}
 }
 
 void PDBReader::addAtomToMolecule(std::string line)
@@ -213,6 +266,11 @@ void PDBReader::parseLine(std::string line)
 	{
 		addAtomToMolecule(line);
 	}
+
+	if (line.substr(0, 6) == "ANISOU")
+	{
+		addAnisotropicBFactors(line);
+	}
 }
 
 void PDBReader::parse()
@@ -237,7 +295,7 @@ void PDBReader::setFilename(std::string file)
 	filename = file;
 }
 
-CrystalPtr PDBReader::getCrystal()
+CrystalPtr PDBReader::getCrystal(bool tie)
 {
 	if (_myCrystal)
 	{
@@ -263,7 +321,10 @@ CrystalPtr PDBReader::getCrystal()
 					  "unit cell dimensions and space group.");
 	}
 
-	_myCrystal->tieAtomsUp();
+	if (tie)
+	{
+		_myCrystal->tieAtomsUp();
+	}
 
 	return _myCrystal;
 }

@@ -62,7 +62,7 @@ public:
 	}
 
 	void realSpaceClutter();
-	void writeCalcMillersToFile(double resolution = 1.0);
+	void writeCalcMillersToFile(DiffractionPtr data, double resolution = 1.0);
 
 	void fourierTransform(int dir)
 	{

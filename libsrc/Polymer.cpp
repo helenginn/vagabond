@@ -59,3 +59,25 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 		}
 	}
 }
+
+void Polymer::makePDB()
+{
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		MonomerPtr monomer = getMonomer(i);
+
+		if (!monomer)
+		{
+			continue;
+		}
+
+		SidechainPtr victim = monomer->getSidechain();
+
+		if (victim && victim->canRefine())
+		{
+			victim->getPDBContribution();
+		}
+	}
+
+}
+

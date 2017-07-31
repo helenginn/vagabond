@@ -19,16 +19,20 @@
 Absolute::Absolute(vec3 pos, double bFac, std::string element, double occValue)
 {
 	_position = pos;
-	bFactor = bFac;
+	_bFactor = bFac;
 	_element = element;
 	_occupancy = occValue;
 	_hetatm = false;
+	_usingTensor = false;
+	_tensor = make_mat3x3();
 }
 
 void Absolute::makeAtom()
 {
 	AtomPtr myAtom = AtomPtr(new Atom());
 	myAtom->setModel(shared_from_this());
+	myAtom->setInitialPosition(_position);
+	myAtom->setInitialBFactor(_bFactor);
 	ElementPtr element = Element::getElement(_element);
 	myAtom->setElement(element);
 	myAtom->setAtomName(_atomName);
@@ -47,9 +51,24 @@ void Absolute::addToMolecule(MoleculePtr molecule)
 double Absolute::getExpValue(void *object, double x, double y, double z)
 {
 	Absolute *me = static_cast<Absolute *>(object);
+	double aniso = 0;
+
+	if (me->_usingTensor)
+	{
+		vec3 recipVec = make_vec3(x, y, z);
+		mat3x3_mult_vec(me->_tensor, &recipVec);
+		recipVec.x *= x;
+		recipVec.y *= y;
+		recipVec.z *= z;
+		double multByTranspose = recipVec.x + recipVec.y + recipVec.z;
+		aniso = exp((2 * M_PI * M_PI) * -(multByTranspose));
+
+		return aniso * me->_occupancy;
+	}
+
 	double distSq =	(x * x + y * y + z * z);
 
-	double bf = me->bFactor;
+	double bf = me->_bFactor;
 	double exponent = (-0.25) * bf * distSq;
 	double value = exp(exponent);
 	value *= me->_occupancy;
@@ -63,9 +82,10 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 FFTPtr Absolute::getDistribution()
 {
 	double n = ATOM_SAMPLING_COUNT;
-	double scale = 1 / (2.0 * MAX_SCATTERING_DSTAR);
+	double scale = 2 * MAX_SCATTERING_DSTAR;
 
 	prepareDistribution(n, scale, this, Absolute::getExpValue);
+
 	return getDistributionCopy();
 }
 

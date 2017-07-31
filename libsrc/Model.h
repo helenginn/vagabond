@@ -28,10 +28,7 @@ public:
 	virtual std::string getClassName() = 0;
 	virtual vec3 getStaticPosition() = 0;
 
-	void addDownstreamAtom(AtomPtr atom)
-	{
-		_downstreamAtoms.push_back(atom);
-	}
+	void addDownstreamAtom(AtomPtr atom);
 
 	FFTPtr getZeroDistribution();
 

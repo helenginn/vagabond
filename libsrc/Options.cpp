@@ -17,6 +17,9 @@
 
 Options::Options(int argc, const char **argv)
 {
+	_numCycles = 6;
+	_tie = true;
+
 	/* Note that argv includes our program name */
 
 	std::cout << std::endl;
@@ -61,29 +64,31 @@ void Options::run()
 	{
 		if (crystals.size() == 1)
 		{
-			int prop = 3;
+			int prop = 2;
 			/* sandbox */
 			DiffractionPtr data = diffractions[0];
 			crystals[0]->realSpaceClutter();
-			crystals[0]->transplantAmplitudes(data, prop, prop-1);
+			crystals[0]->transplantAmplitudes(data, prop, prop -1);
 			MoleculePtr molecule = crystals[0]->molecule("A");
+			molecule->tiedUpScattering();
 			/*
 			for (int i = 0; i < 1; i++)
 			{
 				molecule->refine(crystals[0], RefinementBroad);
 				crystals[0]->realSpaceClutter();
 				crystals[0]->transplantAmplitudes(data, prop, prop-1);
-			}
-*/
-			for (int i = 0; i < 4; i++)
+			}*/
+
+			for (int i = 0; i < _numCycles; i++)
 			{
 				molecule->refine(crystals[0], RefinementFine);
 				crystals[0]->realSpaceClutter();
 				crystals[0]->transplantAmplitudes(data, prop, prop-1);
 			}
 
-			crystals[0]->fourierTransform(1);
-			crystals[0]->writeCalcMillersToFile();
+			crystals[0]->molecule(0)->makePDB();
+
+			crystals[0]->writeCalcMillersToFile(data);
 
 		}
 	}
@@ -105,10 +110,10 @@ void Options::parse()
 
 			PDBReader pdb = PDBReader();
 			pdb.setFilename(pdb_name);
-			ObjectPtr crystal = std::static_pointer_cast<Object>(pdb.getCrystal());
+			CrystalPtr crystal = pdb.getCrystal(_tie);
 
 			objects.push_back(crystal);
-			crystals.push_back(pdb.getCrystal());
+			crystals.push_back(crystal);
 		}
 
 		prefix = "--with-mtz=";
@@ -128,6 +133,21 @@ void Options::parse()
 			datasets.push_back(diffraction);
 			diffractions.push_back(diffraction);
 		}
+
+		prefix = "--num-cycles=";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			std::string result = arg.substr(prefix.size());
+			_numCycles = atoi(result.c_str());
+		}
+
+		prefix = "--no-tie";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			_tie = false;
+		}
 	}
 }
 
@@ -138,13 +158,11 @@ void Options::outputCrystalInfo()
 		return;
 	}
 
-	std::cout << "Converting " << crystals.size() <<
-	" pdbs to reflection list." << std::endl << std::endl;
+	shout_at_user("Sorry I do actually need a data set.");
 
 	for (int i = 0; i < crystals.size(); i++)
 	{
 		crystals[i]->realSpaceClutter();
 		crystals[i]->fourierTransform(1);
-		crystals[i]->writeCalcMillersToFile();
 	}
 }

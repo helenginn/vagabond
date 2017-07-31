@@ -19,7 +19,7 @@ public:
 
 	PDBReader();
 	void setFilename(std::string);
-	CrystalPtr getCrystal();
+	CrystalPtr getCrystal(bool tie = true);
 
 private:
 	std::string filename;
@@ -30,6 +30,7 @@ private:
 	CrystalPtr _myCrystal;
 	MonomerPtr _myMonomer;
 	std::string _myChain;
+	AbsolutePtr _myAbsolute;
 	int _residueNum;
 
 	void getSymmetry(std::string line);
@@ -39,6 +40,7 @@ private:
 	void validateMolecule(AbsolutePtr atom);
 	void validateResidue(AbsolutePtr atom);
 	void addAtomToMolecule(std::string line);
+	void addAnisotropicBFactors(std::string line);
 
 	bool _foundCrystal;
 };

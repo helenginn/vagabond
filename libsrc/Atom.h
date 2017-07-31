@@ -65,11 +65,33 @@ public:
 	/* Returns a FFT for the model dist, for reuse */
 	void addToMap(FFTPtr fft, mat3x3 unit_cell);
 
+	void setInitialPosition(vec3 pos)
+	{
+		_initialPosition = pos;
+	}
+
+	vec3 getInitialPosition()
+	{
+		return _initialPosition;
+	}
+
+	double getInitialBFactor()
+	{
+		return _initialB;
+	}
+
+	void setInitialBFactor(double b)
+	{
+		_initialB = b;
+	}
+
 private:
 	ModelPtr _model;
 	ElementPtr _element;
 	std::string _atomName;
 	MonomerWkr _monomer;
+	vec3 _initialPosition;
+	double _initialB;
 };
 
 #endif /* defined(__vagabond__Atom__) */

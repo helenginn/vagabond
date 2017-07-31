@@ -59,6 +59,9 @@ public:
 		return _bonds[i];
 	}
 
+	double totalElectrons();
+
+	void getPDBContribution();
 private:
 	MonomerWkr _monomer;
 

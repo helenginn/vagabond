@@ -27,9 +27,11 @@ public:
 private:
 	SidechainPtr _sidechain;
 
+	void makeCysteine();
 	void makeValine();
 	void makeSerine();
-
+	void makeLysine();
+	void makeThreonine();
 };
 
 

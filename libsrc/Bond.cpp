@@ -15,6 +15,8 @@
 #include "Element.h"
 #include "Absolute.h"
 #include "maths.h"
+#include <sstream>
+#include <iomanip>
 
 Bond::Bond(AtomPtr major, AtomPtr minor)
 {
@@ -24,9 +26,13 @@ Bond::Bond(AtomPtr major, AtomPtr minor)
 	_minor = minor;
 	_torsionBasis = make_mat3x3();
 	_torsionRadians = 0;
+	_torsionBlurFromPrev = 0;
+	_bendBlur = 0;
 	_torsionBlur = 0;
 	_bondLength = 0;
-	_minorGeometry = BondGeometryTetrahedral;
+	_changedPos = true;
+	_changedSamples = true;
+	_lastPosition = make_vec3(0, 0, 0);
 
 	vec3 majorPos = getMajor()->getPosition();
 	vec3 minorPos = getMinor()->getPosition();
@@ -35,15 +41,31 @@ Bond::Bond(AtomPtr major, AtomPtr minor)
 	_bondLength = vec3_length(difference);
 	_bondDirection = difference;
 
-	std::cout << "Bond length = " << _bondLength << " Å." << std::endl;
+//	std::cout << "Bond length, from " << getMajor()->getAtomName()
+// << " to " << getMinor()->getAtomName() << " = " << _bondLength << " Å." << std::endl;
 
 	ModelPtr upModel = getMajor()->getModel();
 
 	if (upModel->getClassName() == "Bond")
 	{
-		upModel->addDownstreamAtom(minor);
+		std::static_pointer_cast<Bond>(upModel)->addDownstreamAtom(minor);
 	}
 
+}
+
+void Bond::addDownstreamAtom(AtomPtr atom)
+{
+	_downstreamAtoms.push_back(atom);
+	vec3 pos = atom->getPosition();
+	vec3 start = getMinor()->getPosition();
+	vec3 diff = vec3_subtract_vec3(pos, start);
+
+	double angle = vec3_angle_with_vec3(_bondDirection, diff);
+	angle -= M_PI / 2;
+	double ratio = sin(angle);
+
+	_downRatios.push_back(ratio);
+//	std::cout << "Ratio: " << ratio << std::endl;
 }
 
 void Bond::activate(AtomGroupPtr group, AbsolutePtr inherit)
@@ -62,9 +84,10 @@ void Bond::activate(AtomGroupPtr group, AbsolutePtr inherit)
 	}
 
 	_activated = true;
+
 }
 
-mat3x3 Bond::makeTorsionBasis(vec3 _specificDirection, vec3 hPos, vec3 maPos,
+mat3x3 Bond::makeTorsionBasis(vec3 hPos, vec3 maPos,
 							  vec3 miPos, vec3 lPos, double *newAngle)
 {
 	vec3 a2p = vec3_subtract_vec3(hPos, maPos);
@@ -84,8 +107,7 @@ mat3x3 Bond::makeTorsionBasis(vec3 _specificDirection, vec3 hPos, vec3 maPos,
 	vec3 heavy_join = vec3_add_vec3(maPos, a2bp);
 	vec3 light_join = vec3_add_vec3(maPos, a2bl);
 
-	vec3 reverse_bond = _bondDirection;
-	vec3_mult(&reverse_bond, -1);
+	vec3 reverse_bond = vec3_subtract_vec3(miPos, maPos);
 	vec3 xNew = vec3_subtract_vec3(hPos, heavy_join);
 	vec3 light = vec3_subtract_vec3(lPos, light_join);
 	mat3x3 test = mat3x3_rhbasis(xNew, reverse_bond);
@@ -100,7 +122,7 @@ mat3x3 Bond::makeTorsionBasis(vec3 _specificDirection, vec3 hPos, vec3 maPos,
 
 		if (cosine > 0)
 		{
-			angle += M_PI;
+			angle *= -1;
 		}
 
 		*newAngle = angle;
@@ -122,8 +144,10 @@ void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
 	vec3 miPos = getMinor()->getPosition();
 	vec3 lPos = _lightAlign.lock()->getPosition();
 
-	makeTorsionBasis(_bondDirection, hPos, maPos,
-					 miPos, lPos, &_torsionRadians);
+	makeTorsionBasis(hPos, maPos, miPos, lPos, &_torsionRadians);
+
+//	std::cout << "Torsion, on bond " << getMajor()->getAtomName() << " to " <<
+//	getMinor()->getAtomName() << " is " << rad2deg(_torsionRadians) << "º" << std::endl;
 
 	_usingTorsion = true;
 }
@@ -140,13 +164,49 @@ double Bond::getVoxelValue(void *obj, double x, double y, double z)
 	return 0;
 }
 
+std::string Bond::getPDBContribution()
+{
+	std::vector<BondSample> positions = getManyPositions();
+	AtomPtr atom = getMinor();
+	std::string atomName = atom->getAtomName();
+	ElementPtr element = atom->getElement();
+	std::string residueName = "LYS";
+
+	for (int i = 0; i < positions.size(); i++)
+	{
+		vec3 placement = positions[i].start;
+		double occupancy = positions[i].occupancy;
+
+		std::cout << "ATOM  ";
+		std::cout << "  500 ";
+		std::cout << std::setfill(' ') << std::setw(4) << atomName;
+		std::cout << " ";
+		std::cout << std::setw(3) << residueName;
+		std::cout << " A";
+		std::cout << "  71";
+		std::cout << "    ";
+		std::cout << std::fixed << std::setw(8) << std::setprecision(3) << placement.x;
+		std::cout << std::setw(8) << std::setprecision(3) << placement.y;
+		std::cout << std::setw(8) << std::setprecision(3) << placement.z;
+		std::cout << std::setw(6) << std::setprecision(2) << occupancy;
+		std::cout << std::setw(6) << std::setprecision(2) << _absInherit->getBFactor();
+		std::cout << "          ";
+		std::cout << std::setw(2) << element->getSymbol();
+		std::cout << "  " << std::endl;;
+	}
+
+	return std::string();
+}
+
 FFTPtr Bond::getDistribution()
 {
 	std::vector<BondSample> positions = getManyPositions();
 	vec3 absolute = getMinor()->getPosition();
 
 	double n = ATOM_SAMPLING_COUNT;
-	double scale = 1 / (2.0 * MAX_SCATTERING_DSTAR);
+	double scale = 1 / (2 * MAX_SCATTERING_DSTAR);
+
+	double realScale = 1 / (scale * n);
 
 	FFTPtr fft = FFTPtr(new FFT());
 	fft->create(n);
@@ -158,37 +218,25 @@ FFTPtr Bond::getDistribution()
 		vec3 relative = vec3_subtract_vec3(absolute, placement);
 		double occupancy = positions[i].occupancy;
 
-		vec3_mult(&relative, 1 / scale);
+		vec3_mult(&relative, 1 / realScale);
 
 		fft->addToReal(relative.x, relative.y, relative.z, occupancy);
 	}
 
 	fft->createFFTWplan(1, false);
 	fft->fft(1);
+	fft->invertScale();
 
 	FFTPtr fftAbs = _absInherit->getDistribution();
 	FFT::multiply(fftAbs, fft);
+	FFTPtr check = std::make_shared<FFT>(*fftAbs);
+	check->fft(1);
 
 	return fftAbs;
-
-	/* Getting the distribution for the 'major' atom */
-
-	FFTPtr inherited = getMajor()->getBlur();
-
-
-	/* Deal with a needed width of 4.0 Å for now */
-
-	prepareDistribution(n, scale, this, &getVoxelValue);
-	FFTPtr mine = getDistributionCopy();
-	mine->fft(1);
-	FFT::multiply(mine, inherited);
-
-	return mine;
 }
 
 vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
-							   double ratio, vec3 start, vec3 *heavyPtr,
-							   mat3x3 *myBasis)
+							   double ratio, vec3 start)
 {
 	double myLength = getBondLength(this);     // my bond length!
 
@@ -210,43 +258,41 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 	/* Add this to the major atom position! */
 	vec3 final = vec3_add_vec3(start, atomWrtMajor);
 
-	if (myBasis && heavyPtr)
-	{
-		vec3 heavy = *heavyPtr;
-		vec3 none = make_vec3(0, 0, 0);
-
-		*myBasis = makeTorsionBasis(atomWrtMajor, heavy, start, final,
-										   none);
-	}
-
 	return final;
 }
 
-std::vector<BondSample> Bond::sampleMyPositions()
+std::vector<BondSample> Bond::sampleMyAngles(double angle, double sigma,
+											 double interval)
 {
-	double interval = deg2rad(0.5);
 	double sum = 0;
-	double sigma = fabs(_torsionBlur);
+	sigma = fabs(sigma);
 
 	std::vector<BondSample> samples;
 
-	if (_torsionBlur <= interval)
+	if (sigma <= 0)
 	{
 		BondSample sample;
 		sample.occupancy = 1;
-		sample.torsion = _torsionRadians;
+		sample.torsion = angle;
 		samples.push_back(sample);
 
 		return samples;
 	}
 
-	for (double ang = -sigma; ang <= sigma; ang += interval)
+	if (sigma <= interval)
 	{
-		double relFreq = normal_distribution(ang, 0, sigma);
+		interval = sigma;
+	}
+
+	samples.reserve(sigma * 2 / interval + 1);
+
+	for (double ang = -2 * sigma; ang <= 2 * sigma; ang += interval)
+	{
+		double relFreq = normal_distribution(ang, sigma);
 		sum += relFreq;
 		BondSample sample;
 		sample.occupancy = relFreq;
-		sample.torsion = ang + _torsionRadians;
+		sample.torsion = ang + angle;
 		samples.push_back(sample);
 	}
 
@@ -258,8 +304,25 @@ std::vector<BondSample> Bond::sampleMyPositions()
 	return samples;
 }
 
-std::vector<BondSample> Bond::getManyPositions()
+std::vector<BondSample> Bond::getCorrelatedAngles(BondSample prev,
+												  double lastTorsion,
+												  double angle, double blur)
 {
+	double addBlur = (prev.torsion - lastTorsion) * _torsionBlurFromPrev;
+	double newBlur = _torsionRadians + addBlur;
+
+	std::vector<BondSample> set = sampleMyAngles(newBlur, blur);
+
+	return set;
+}
+
+std::vector<BondSample> Bond::getManyPositions(bool staticAtom)
+{
+	if (!_changedSamples && !staticAtom)
+	{
+//		return _lastSamples;
+	}
+
 	vec3 majorPos = getMajor()->getPosition();
 	ModelPtr model = getMajor()->getModel();
 
@@ -270,63 +333,127 @@ std::vector<BondSample> Bond::getManyPositions()
 		/* We must be connected to something else, oh well */
 		/* Torsion basis must be the same. */
 
-		std::vector<BondSample> torsionsOnly = sampleMyPositions();
-		vec3 majorPos = getMajor()->getPosition();
-		vec3 start = vec3_subtract_vec3(majorPos, _bondDirection);
+		std::vector<BondSample> newSamples;
 
-		for (int i = 0; i < torsionsOnly.size(); i++)
+		double spread = staticAtom ? 0 : _torsionBlur;
+		std::vector<BondSample> torsionsOnly = sampleMyAngles(_torsionRadians,
+															  spread);
+		spread = staticAtom ? 0 : _bendBlur;
+		std::vector<BondSample> myBendings = sampleMyAngles(0, _bendBlur,
+															ANGLE_SAMPLING);
+
+
+		vec3 heavyPos = getHeavyAlign()->getPosition();
+		vec3 majorPos = getMajor()->getPosition();
+		vec3 none = {0, 0, 1};
+		if (!_bendToAtom.lock())
 		{
-			torsionsOnly[i].basis = _torsionBasis;
-			torsionsOnly[i].start = start;
+			shout_at_helen("Need to specify which atom you bend to\n"\
+						   "if you want to bend the bond.");
 		}
 
-		return torsionsOnly;
+		vec3 bendToPos = _bendToAtom.lock()->getPosition();
+		vec3 toBendDir = vec3_subtract_vec3(majorPos, bendToPos);
+
+		for (int j = 0; j < myBendings.size(); j++)
+		{
+			vec3 cross = vec3_cross_vec3(_bondDirection, toBendDir);
+			vec3_set_length(&cross, 1);
+			mat3x3 bend = mat3x3_unit_vec_rotation(cross, myBendings[j].torsion);
+			vec3 newDirection = _bondDirection;
+			mat3x3_mult_vec(bend, &newDirection);
+			vec3 start = vec3_subtract_vec3(majorPos, newDirection);
+
+			mat3x3 newBasis = makeTorsionBasis(heavyPos, majorPos, start, none);
+
+			for (int i = 0; i < torsionsOnly.size(); i++)
+			{
+				BondSample newSample;
+				newSample.basis = newBasis;
+				newSample.start = start;
+				newSample.torsion = torsionsOnly[i].torsion;
+				newSample.occupancy = torsionsOnly[i].occupancy *
+				myBendings[j].occupancy;
+				newSamples.push_back(newSample);
+			}
+		}
+
+	//	_lastSamples = newSamples;
+		_changedSamples = false;
+
+		return newSamples;
 	}
 
 	BondPtr prevBond = std::static_pointer_cast<Bond>(model);
-	std::vector<BondSample> prevSamples = prevBond->getManyPositions();
-	double ratio = prevBond->getAtomicAngle();
+	std::vector<BondSample> prevSamples = prevBond->getManyPositions(staticAtom);
 	AtomPtr prevMajor = prevBond->getMajor();
+	double meanLastTorsion = prevBond->getTorsion();
 
-	std::vector<BondSample> newSamples, mySamples;
-	BondSample aSample;
-	aSample.torsion = _torsionRadians;
-	aSample.occupancy = 1;
-	mySamples.push_back(aSample);
+	std::vector<BondSample> newSamples, myTorsions, myBendings;
+
+	double spread = staticAtom ? 0 : _bendBlur;
+	myBendings = sampleMyAngles(0, spread, ANGLE_SAMPLING);
+	double torsionNumber = prevBond->downstreamAtomNum(getMinor());
+	double totalAtoms = prevBond->downstreamAtomCount();
 
 	for (int i = 0; i < prevSamples.size(); i++)
 	{
+		spread = staticAtom ? 0 : _torsionBlur;
+		myTorsions = getCorrelatedAngles(prevSamples[i], meanLastTorsion,
+										 _torsionRadians, spread);
+
 		double torsionAngle = prevSamples[i].torsion;
 		mat3x3 oldBasis = prevSamples[i].basis;
 
-		double torsionNumber = prevBond->downstreamAtomNum(getMinor());
-		double totalAtoms = prevBond->downstreamAtomCount();
+		double ratio = prevBond->getGeomRatio(torsionNumber);
 
 		if (torsionNumber < 0)
 		{
 			shout_at_helen("Something has gone horrendously wrong\n"\
-						   "in the calculation of torsion angle.");
+						   "in the calculation of torsion angle.\n" +
+						   description());
 		}
 
 		vec3 heavy = prevMajor->getPosition();
 		torsionAngle += deg2rad(360) * torsionNumber / totalAtoms;
 
 		mat3x3 newBasis;
-		vec3 final = positionFromTorsion(oldBasis, torsionAngle, ratio,
-										 majorPos, &heavy, &newBasis);
 
-		for (int j = 0; j < mySamples.size(); j++)
+		/* Prepping for bending */
+		vec3 zAxis = {0, 0, 1};
+		mat3x3_mult_vec(oldBasis, &zAxis);
+		const vec3 none = {0, 0, 1};
+
+		/* do the bendy thing */
+
+		for (int j = 0; j < myBendings.size(); j++)
 		{
-			BondSample nextSample;
-			nextSample.basis = newBasis;
-			nextSample.start = final;
-			nextSample.torsion = mySamples[j].torsion;
-			nextSample.occupancy = mySamples[j].occupancy *
-			prevSamples[i].occupancy;
+			vec3 torsionPos = positionFromTorsion(oldBasis, torsionAngle,
+												  ratio, majorPos);
 
-			newSamples.push_back(nextSample);
+			vec3 cross = vec3_cross_vec3(torsionPos, zAxis);
+			vec3_set_length(&cross, 1);
+			mat3x3 bend = mat3x3_unit_vec_rotation(cross, myBendings[j].torsion);
+			mat3x3_mult_vec(bend, &torsionPos);
+
+			newBasis = makeTorsionBasis(heavy, majorPos, torsionPos, none);
+
+			for (int k = 0; k < myTorsions.size(); k++)
+			{
+				BondSample nextSample;
+				nextSample.basis = newBasis;
+				nextSample.start = torsionPos;
+				nextSample.torsion = myTorsions[k].torsion;
+				nextSample.occupancy = myTorsions[k].occupancy *
+				myBendings[j].occupancy * prevSamples[i].occupancy;
+
+				newSamples.push_back(nextSample);
+			}
 		}
 	}
+
+//	_lastSamples = newSamples;
+	_changedSamples = false;
 
 	return newSamples;
 }
@@ -334,43 +461,21 @@ std::vector<BondSample> Bond::getManyPositions()
 /* This gets the position of the minor atom. */
 vec3 Bond::getStaticPosition()
 {
-	vec3 majorPos = getMajor()->getPosition();
-	ModelPtr model = getMajor()->getModel();
-
-	if (model->getClassName() != "Bond")
+	if (!_changedPos)
 	{
-		/* We must be connected to something else, oh well */
-
-		return vec3_subtract_vec3(majorPos, _bondDirection);
+		return _lastPosition;
 	}
 
-	BondPtr prevBond = std::static_pointer_cast<Bond>(model);
-
-	double torsionAngle = prevBond->getTorsion(); // my torsion angle!
-	mat3x3 torsionBasis = prevBond->getTorsionBasis(); // my torsion vectors!
-	double ratio = prevBond->getAtomicAngle(); // replace me. My x/z ratio!
-	double torsionNumber = prevBond->downstreamAtomNum(getMinor());
-	double totalAtoms = prevBond->downstreamAtomCount();
-
-	if (torsionNumber < 0)
-	{
-		shout_at_helen("Something has gone horrendously wrong\n"\
-					   "in the calculation of torsion angle.");
-	}
-
-	torsionAngle += deg2rad(360) * torsionNumber / totalAtoms;
-
-	vec3 final = positionFromTorsion(torsionBasis, torsionAngle, ratio,
-									majorPos);
-
-	return final;
+	_lastPosition = getManyPositions(true)[0].start;
+	_changedPos = false;
+	return _lastPosition;
 }
 
 bool Bond::isNotJustForHydrogens()
 {
-	if (getMinor()->getElement()->electronCount() <= 1)
+	if (getMinor()->getElement()->electronCount() > 1)
 	{
-		return false;
+		return true;
 	}
 
 	for (int i = 0; i < downstreamAtomCount(); i++)
@@ -383,4 +488,90 @@ bool Bond::isNotJustForHydrogens()
 	}
 
 	return false;
+}
+
+void Bond::propagateChange()
+{
+	_changedPos = true;
+	_changedSamples = true;
+
+	for (int i = 0; i < downstreamAtomCount(); i++)
+	{
+		BondPtr bond;
+		bond = std::static_pointer_cast<Bond>(downstreamAtom(i)->getModel());
+		bond->propagateChange();
+	}
+}
+
+std::string Bond::description()
+{
+	std::ostringstream stream;
+	stream << "Bond: connects " << getMajor()->getAtomName() << " to "
+	<< getMinor()->getAtomName() << std::endl;
+	stream << "Bond length: " << _bondLength << " Å" << std::endl;
+	stream << "Bond torsion angle: " << rad2deg(_torsionRadians) << std::endl;
+	stream << "Bond downstream atoms (" << downstreamAtomCount() << "):" << std::endl;
+
+	for (int i = 0; i < downstreamAtomCount(); i++)
+	{
+		stream << "\t" << downstreamAtom(i)->getAtomName() << std::endl;
+	}
+
+	return stream.str();
+}
+
+ModelPtr Bond::getParentModel()
+{
+	AtomPtr atom = getMajor();
+	ModelPtr model = atom->getModel();
+	return model;
+}
+
+double Bond::getBendAngle(void *object)
+{
+	Bond *bond = static_cast<Bond *>(object);
+	AtomPtr atom = bond->getMajor();
+	ModelPtr model = atom->getModel();
+
+	if (model->getClassName() != "Bond")
+	{
+		shout_at_helen("Helen should never have let this happen.\n"\
+					   "Helen has tried to refine a bend connected\n"\
+					   "to something that is not a bond.");
+	}
+
+	BondPtr newBond = std::static_pointer_cast<Bond>(model);
+	int i = newBond->downstreamAtomNum(bond->getMinor());
+
+	if (i >= 0)
+	{
+		double ratio = newBond->getGeomRatio(i);
+		double angle = asin(ratio) + M_PI / 2;
+		return angle;
+	}
+
+	return 0;
+}
+
+void Bond::setBendAngle(void *object, double value)
+{
+	Bond *bond = static_cast<Bond *>(object);
+	AtomPtr atom = bond->getMajor();
+	ModelPtr model = atom->getModel();
+
+	if (model->getClassName() != "Bond")
+	{
+		shout_at_helen("Helen should never have let this happen.\n"\
+					   "Helen has tried to refine a bend connected\n"\
+					   "to something that is not a bond.");
+	}
+
+	BondPtr newBond = std::static_pointer_cast<Bond>(model);
+	int i = newBond->downstreamAtomNum(bond->getMinor());
+
+	if (i >= 0)
+	{
+		double ratio = sin(value - M_PI / 2);
+		newBond->setGeomRatio(i, ratio);
+	}
 }

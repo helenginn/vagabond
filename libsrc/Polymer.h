@@ -22,6 +22,7 @@ public:
 	virtual void summary();
 	virtual void tieAtomsUp();
 	virtual void refine(CrystalPtr target, RefinementType rType);
+	virtual void makePDB();
 
 	void addUnknownMonomers(int number)
 	{

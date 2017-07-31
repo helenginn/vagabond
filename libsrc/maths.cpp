@@ -68,6 +68,11 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2)
 
 	for (int i = 0; i < vec1.size(); i++)
 	{
+		if (vec1[i] != vec1[i] || vec2[i] != vec2[i])
+		{
+			continue;
+		}
+
 		double addition = vec1[i];
 		sum_x += vec1[i];;
 
@@ -89,6 +94,11 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2)
 
 	for (int i = 0; i < vec1.size(); i++)
 	{
+		if (vec1[i] != vec1[i] || vec2[i] != vec2[i])
+		{
+			continue;
+		}
+
 		double addition = (vec1[i] - mean_x) * (vec2[i] - mean_y);
 		sum_x_y_minus_mean_x_y += addition;
 
@@ -110,13 +120,3 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2)
 	return r;
 }
 
-
-double normal_distribution(double x, double mean, double sigma)
-{
-	double power = 0 - pow((x - mean), 2) / (2 * sigma * sigma);
-	double exp = pow(M_E, power);
-
-	double denominator = sigma * sqrt(2 * M_PI);
-
-	return exp / denominator;
-}

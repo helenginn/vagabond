@@ -45,6 +45,17 @@ public:
 
 	void setupMask();
 
+	double sumAll()
+	{
+		double reals = 0;
+		for (int i = 0; i < nn; i++)
+		{
+			reals += data[i][0];
+		}
+
+		return reals / (double)nn;
+	}
+
 	void setMask(long i, MaskType value)
 	{
 		mask[i] = value;
@@ -159,6 +170,8 @@ public:
 		_basis = mat3x3_from_unit_cell(val, val, val, 90., 90., 90.);
 		_inverse = mat3x3_inverse(_basis);
 	}
+
+	void invertScale();
 
 	mat3x3 getBasis()
 	{

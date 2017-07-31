@@ -106,10 +106,9 @@ void Crystal::realSpaceClutter()
 //	bucket->addSolvent(fft);
 
 	_fft->createFFTWplan(8, false);
-	_fft->multiplyAll(1e-4);
 }
 
-void Crystal::writeCalcMillersToFile(double resolution)
+void Crystal::writeCalcMillersToFile(DiffractionPtr data, double resolution)
 {
 	if (!_fft)
 	{
@@ -117,6 +116,10 @@ void Crystal::writeCalcMillersToFile(double resolution)
 					  "calculated Miller list until it has\n"\
 					  "been generated!");
 	}
+
+	realSpaceClutter();
+	fourierTransform(1);
+	scaleToDiffraction(data);
 
 	double dStar = 1 / resolution;
 
@@ -128,9 +131,17 @@ void Crystal::writeCalcMillersToFile(double resolution)
 	double bLimit = bLength * dStar;
 	double cLimit = cLength * dStar;
 
-	std::string phaFile = _filename + ".vbond.pha";
-	std::ofstream file;
-	file.open(phaFile);
+	std::string fc = _filename + "_fc.vbond.pha";
+	std::ofstream fcFile;
+	fcFile.open(fc);
+
+	std::string fofc = _filename + "_fofc.vbond.pha";
+	std::ofstream fofcFile;
+	fofcFile.open(fofc);
+
+	std::string twofofc = _filename + "_2fofc.vbond.pha";
+	std::ofstream twofofcFile;
+	twofofcFile.open(twofofc);
 
 	/* symmetry issues */
 	for (int i = -aLimit; i < aLimit; i++)
@@ -142,29 +153,58 @@ void Crystal::writeCalcMillersToFile(double resolution)
 				vec3 pos = make_vec3(i, j, k);
 				mat3x3_mult_vec(_real2frac, &pos);
 
-				double intensity = _fft->getIntensity(i, j, k) * 1e-11;
-				double amplitude = sqrt(intensity);
+				double intensity = _fft->getIntensity(i, j, k);
+				double calcAmp = sqrt(intensity);
+
+				double foInt = data->getFFT()->getIntensity(i, j, k);
+				double foAmp = sqrt(foInt);
 
 				if (vec3_length(pos) > dStar)
 				{
 					continue;
 				}
 
-				file << std::fixed << std::setprecision(1)
+				fcFile << std::fixed << std::setprecision(1)
 				<< std::setw(4) << i
 				<< std::setw(4) << j
 				<< std::setw(4) << k
-				<< std::setw(8) << std::right << amplitude
-				<<  " 1.0000  " <<
+				<< std::setw(8) << std::right;
+
+				fofcFile << std::fixed << std::setprecision(1)
+				<< std::setw(4) << i
+				<< std::setw(4) << j
+				<< std::setw(4) << k
+				<< std::setw(8) << std::right;
+
+
+				twofofcFile << std::fixed << std::setprecision(1)
+				<< std::setw(4) << i
+				<< std::setw(4) << j
+				<< std::setw(4) << k
+				<< std::setw(8) << std::right;
+
+				fcFile << calcAmp;
+				fofcFile << foAmp - calcAmp;
+				twofofcFile << 2 * foAmp - calcAmp;
+
+				fcFile <<  " 1.0000  " <<
+				std::setw(5) << std::right << _fft->getPhase(i, j, k)
+				<< std::setw(8) << 1000 << std::endl;
+				fofcFile <<  " 1.0000  " <<
+				std::setw(5) << std::right << _fft->getPhase(i, j, k)
+				<< std::setw(8) << 1000 << std::endl;
+				twofofcFile <<  " 1.0000  " <<
 				std::setw(5) << std::right << _fft->getPhase(i, j, k)
 				<< std::setw(8) << 1000 << std::endl;
 			}
 		}
 	}
 
-	file.close();
+	fcFile.close();
+	fofcFile.close();
+	twofofcFile.close();
 
-	std::cout << "Written " << phaFile << " from crystal." << std::endl;
+	std::cout << "Written pha files from crystal." << std::endl;
 }
 
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
@@ -255,6 +295,7 @@ void Crystal::transplantAmplitudes(DiffractionPtr data, double partsFo,
 
 	fourierTransform(1);
 
+	scaleToDiffraction(data);
 	rFactorWithDiffraction(data, true);
 
 	std::cout << "Replacing Fc with Fo." << std::endl;
@@ -272,7 +313,7 @@ void Crystal::transplantAmplitudes(DiffractionPtr data, double partsFo,
 			for (int k = 0; k < nLimit; k++)
 			{
 				double amp = sqrt(fftData->getIntensity(i, j, k));
-				bool isRfree = fftData->getMask(i, j, k);
+				bool isRfree = fftData->getMask(i, j, k) == MaskFree;
 
 				if (amp != amp || isRfree)
 				{

@@ -9,6 +9,8 @@
 #include "shared_ptrs.h"
 #include "Molecule.h"
 #include "Atom.h"
+#include "Element.h"
+#include "Model.h"
 #include <float.h>
 #include <iostream>
 #include "fftw3d.h"
@@ -42,3 +44,38 @@ void Molecule::refine(CrystalPtr target, RefinementType rType)
 {
 
 }
+
+void Molecule::makePDB()
+{
+
+}
+
+double Molecule::tiedUpScattering()
+{
+	double total = 0;
+	double some = 0;
+	double someCount = 0;
+	double someTotal = 0;
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atoms[i]->getModel()->getClassName() == "Bond")
+		{
+			some += atoms[i]->getElement()->electronCount();
+			someCount++;
+		}
+
+		total += atoms[i]->getElement()->electronCount();
+		someTotal++;
+	}
+
+	double scatterFrac = sqrt(some / total);
+
+	std::cout << "Tied up atoms: " << someCount << " out of "
+	<< someTotal << std::endl;
+	std::cout << "Scattering fraction: " << scatterFrac * 100
+	<< "\%" << std::endl;
+
+	return scatterFrac;
+}
+

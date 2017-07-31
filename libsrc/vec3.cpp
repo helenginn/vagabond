@@ -10,12 +10,16 @@
 #include "string.h"
 #include <math.h>
 #include <iostream>
+#include <sstream>
 
 
-void vec3_desc(vec3 vec)
+std::string vec3_desc(vec3 vec)
 {
-	std::cout << "(" << vec.x << ", " << vec.y <<
-	", " << vec.z << ")" << std::endl;
+	std::ostringstream str;
+	str << "(" << vec.x << ", " << vec.y <<
+	", " << vec.z << ")";
+
+	return str.str();
 }
 
 struct vec3 empty_vec3()
@@ -36,13 +40,6 @@ double vec3_sqlength(vec3 &vec)
 	return (vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
 
-void vec3_set_length(vec3 *vec, double length)
-{
-	double now = vec3_length(*vec);
-	vec3_mult(vec, length / now);
-}
-
-
 struct vec3 vec3_subtract_vec3(vec3 &to, vec3 &from)
 {
 	struct vec3 vec;
@@ -61,13 +58,6 @@ struct vec3 vec3_add_vec3(vec3 &aVec, vec3 &bVec)
 	vec.z = aVec.z + bVec.z;
 
 	return vec;
-}
-
-void vec3_mult(vec3 *aVec, double mult)
-{
-	aVec->x *= mult;
-	aVec->y *= mult;
-	aVec->z *= mult;
 }
 
 double vec3_dot_vec3(vec3 &aVec, vec3 &bVec)

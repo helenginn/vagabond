@@ -34,7 +34,7 @@ double returnOne(void *object, double x, double y, double z)
 FFTPtr Model::getZeroDistribution()
 {
 	double n = ATOM_SAMPLING_COUNT;
-	double scale = 1 / (2.0 * MAX_SCATTERING_DSTAR);
+	double scale = 2 * MAX_SCATTERING_DSTAR;
 	prepareDistribution(n, scale, this, &returnOne);
 
 	return getDistributionCopy();

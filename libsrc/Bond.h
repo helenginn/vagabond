@@ -78,12 +78,11 @@ public:
 		return _torsionBasis;
 	}
 
+
 	void setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign);
 	virtual FFTPtr getDistribution();
 	virtual vec3 getStaticPosition();
-	std::vector<BondSample> getManyPositions();
-	std::vector<BondSample> sampleMyPositions();
-
+	std::vector<BondSample> getManyPositions(bool staticAtom = false);
 	virtual std::string getClassName()
 	{
 		return "Bond";
@@ -92,6 +91,7 @@ public:
 	static void setTorsionBlur(void *object, double value)
 	{
 		static_cast<Bond *>(object)->_torsionBlur = value;
+		static_cast<Bond *>(object)->propagateChange();
 	}
 
 	static double getTorsionBlur(void *object)
@@ -107,7 +107,40 @@ public:
 	static void setTorsion(void *object, double value)
 	{
 		static_cast<Bond *>(object)->_torsionRadians = value;
+		static_cast<Bond *>(object)->propagateChange();
 	}
+
+	static double getTorsionNextBlur(void *object)
+	{
+		return static_cast<Bond *>(object)->_torsionBlurFromPrev;
+	}
+
+	static void setTorsionNextBlur(void *object, double value)
+	{
+		static_cast<Bond *>(object)->_torsionBlurFromPrev = value;
+		static_cast<Bond *>(object)->propagateChange();
+	}
+
+	static double getBendBlur(void *object)
+	{
+		return static_cast<Bond *>(object)->_bendBlur;
+	}
+
+	static void setBendBlur(void *object, double value)
+	{
+		static_cast<Bond *>(object)->_bendBlur = value;
+		static_cast<Bond *>(object)->propagateChange();
+	}
+
+	static double getBendAngle(void *object);
+	static void setBendAngle(void *object, double value);
+
+	void setBendTowards(AtomWkr bendToAtom)
+	{
+		_bendToAtom = bendToAtom;
+	}
+
+	void addDownstreamAtom(AtomPtr atom);
 
 	int downstreamAtomCount()
 	{
@@ -139,18 +172,14 @@ public:
 
 	bool isNotJustForHydrogens();
 
-	double getAtomicAngle()
+	double getGeomRatio(int i)
 	{
-		switch (_minorGeometry)
-		{
-			case BondGeometryTetrahedral:
-				return 1./3.;
-				break;
+		return _downRatios[i];
+	}
 
-			default:
-				return 1./3.;
-                break;
-		}
+	void setGeomRatio(int i, double value)
+	{
+		_downRatios[i] = value;
 	}
 
 	void setAbsoluteInheritance(AbsolutePtr abs)
@@ -158,21 +187,26 @@ public:
 		_absInherit = abs;
 	}
 
+	std::string description();
+	std::string getPDBContribution();
+	ModelPtr getParentModel();
+
 protected:
 	static double getVoxelValue(void *obj, double x, double y, double z);
 
 private:
-	BondGeometryType _minorGeometry;
-
 	AtomWkr _major;
 	AtomWkr _minor;
 
 	AtomWkr _heavyAlign;
 	AtomWkr _lightAlign;
+	AtomWkr _bendToAtom;
 
 	double _bondLength;
 	double _torsionRadians;
 	double _torsionBlur;
+	double _torsionBlurFromPrev;
+	double _bendBlur;
 
 	bool _activated;
 
@@ -181,20 +215,32 @@ private:
 	 * Otherwise use as a reference for torsion matrix updates. */
 	vec3 _bondDirection;
 
+	std::vector<double> _downRatios;
+
 	/* Will aim to define torsion basis as:
 	   x: along line of 0º torsion angle.
 	   y: completes the right-handed coordinate system
 	   z: along bond direction, from heavy-to-light alignment atoms.
 	 */
 	mat3x3 _torsionBasis;
-	mat3x3 makeTorsionBasis(vec3 _specificDirection, vec3 hPos, vec3 maPos,
+	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
 							vec3 miPos, vec3 lPos, double *newAngle = NULL);
 
 	vec3 positionFromTorsion(mat3x3 torsionBasis, double angle,
-							 double ratio, vec3 start, vec3 *heavy = NULL,
-							 mat3x3 *myBasis = NULL);
+							 double ratio, vec3 start);
+	std::vector<BondSample> sampleMyAngles(double angle, double sigma,
+										   double interval = ANGLE_SAMPLING);
+	std::vector<BondSample> getCorrelatedAngles(BondSample prev,
+												double lastTorsion,
+												double angle, double blur);
 
+	void propagateChange();
 	bool _usingTorsion;
+
+	/* Flag to say whether recalculation should occur */
+	bool _changedPos, _changedSamples;
+	vec3 _lastPosition;
+	std::vector<BondSample> _lastSamples;
 
 	AbsolutePtr _absInherit;
 };

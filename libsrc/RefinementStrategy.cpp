@@ -82,14 +82,14 @@ void RefinementStrategy::refine()
         jobName = "Refinement procedure for " + i_to_str((int)objects.size()) + " objects";
     }
     
-    std::cout << "--- " << jobName << " ---";
+ //   std::cout << "--- " << jobName << " ---";
     
     if (tags.size() == 0)
     {
 		std::cout << " No parameters to refine! Exiting." << std::endl;
         return;
     }
-    
+/*
     std::cout << " Refining ";
     
     for (int i = 0; i < tags.size() - 1; i++)
@@ -98,9 +98,9 @@ void RefinementStrategy::refine()
     }
     
     std::cout << tags[tags.size() - 1] << " --- " << std::endl;
-    
+    */
     startingScore = (*evaluationFunction)(evaluateObject);
-    
+
     for (int i = 0; i < objects.size(); i++)
     {
         double objectValue = (*getters[i])(objects[i]);

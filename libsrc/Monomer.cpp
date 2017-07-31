@@ -50,6 +50,7 @@ void Monomer::addAtom(AtomPtr atom)
 	}
 }
 
+
 void Monomer::tieAtomsUp()
 {
 	KnotterPtr knotter = KnotterPtr(new Knotter());

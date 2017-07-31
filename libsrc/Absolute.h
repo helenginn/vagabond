@@ -56,6 +56,22 @@ public:
 		return _chainID + (_hetatm ? "_hetatm" : "");
 	}
 
+	void setBFactor(double bfac)
+	{
+		_bFactor = bfac;
+	}
+
+	void setTensor(mat3x3 tensor)
+	{
+		_tensor = tensor;
+		_usingTensor = true;
+	}
+
+	double getBFactor()
+	{
+		return _bFactor;
+	}
+
 	void setHeteroAtom(bool hetatm)
 	{
 		_hetatm = hetatm;
@@ -80,9 +96,11 @@ private:
 	std::string _chainID, _resName, _atomName;
 	int _resNum;
 	bool _hetatm;
+	bool _usingTensor;
+	mat3x3 _tensor;
 
 	vec3 _position;
-	double bFactor;
+	double _bFactor;
 
 	void makeAtom();
 };

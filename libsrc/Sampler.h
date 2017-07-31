@@ -32,6 +32,10 @@ public:
 	void addSampled(AtomPtr atom);
 	void addTorsion(BondPtr bond, double range, double interval);
 	void addTorsionBlur(BondPtr bond, double range, double interval);
+	void addTorsionNextBlur(BondPtr bond, double range, double interval);
+	void addBondLength(BondPtr bond, double range, double interval);
+	void addBendBlur(BondPtr bond, double range, double interval);
+	void addBendAngle(BondPtr bond, double range, double interval);
 	void setCrystal(CrystalPtr crystal);
 	void sample();
 
@@ -52,6 +56,11 @@ public:
 	{
 		return _sampled.size();
 	}
+
+	void setMock()
+	{
+		_mock = true;
+	}
 private:
 	double getScore();
 
@@ -59,6 +68,7 @@ private:
 	std::vector<AtomPtr> _unsampled;
 	std::vector<BondPtr> _bonds;
 	FFTPtr _fft;
+	bool _mock;
 	mat3x3 _real2hkl;
 
 	std::string _jobName;

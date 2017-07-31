@@ -46,7 +46,8 @@ protected:
     std::string jobName;
     int cycleNum;
 	int _changed;
-    
+	bool _mock;
+
     std::vector<int> couplings;
     std::vector<void *> objects;
     std::vector<Getter> getters;
@@ -60,6 +61,7 @@ protected:
     
     void reportProgress(double score);
     void finish();
+
 public:
     RefinementStrategy()
     {
@@ -70,6 +72,7 @@ public:
 		_verbose = false;
 		_changed = -1;
 		finishFunction = NULL;
+		_mock = false;
     };
     
     static RefinementStrategyPtr userChosenStrategy();
@@ -100,7 +103,12 @@ public:
 	{
 		return (_changed == 1);
 	}
-    
+
+	void isMock()
+	{
+		_mock = true;
+	}
+	
     void setCycles(int num)
     {
         maxCycles = num;

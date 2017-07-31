@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#include <string>
 
 struct vec3
 {
@@ -57,12 +58,26 @@ inline bool vec2_less_vec2(vec2 x, vec2 y)
 double vec3_sqlength(vec3 &vec);
 struct vec3 vec3_add_vec3(vec3 &aVec, vec3 &bVec);
 struct vec3 vec3_subtract_vec3(vec3 &to, vec3 &from);
-void vec3_mult(vec3 *aVec, double mult);
 double vec3_dot_vec3(vec3 &aVec, vec3 &bVec);
 double vec3_angle_with_vec3(vec3 &aVec, vec3 &bVec);
 double vec3_cosine_with_vec3(vec3 &aVec, vec3 &bVec);
 vec3 vec3_cross_vec3(vec3 &aVec, vec3 &bVec);
 
-void vec3_desc(vec3 vec);
+std::string vec3_desc(vec3 vec);
+
+
+inline void vec3_mult(vec3 *aVec, double mult)
+{
+	aVec->x *= mult;
+	aVec->y *= mult;
+	aVec->z *= mult;
+}
+
+
+inline void vec3_set_length(vec3 *vec, double length)
+{
+	double now = vec3_length(*vec);
+	vec3_mult(vec, length / now);
+}
 
 #endif /* defined(__vagabond__vec3__) */

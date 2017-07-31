@@ -493,6 +493,11 @@ void FFT::setBasis(mat3x3 mat, double sampleScale)
 	_inverse = mat3x3_inverse(_basis);
 }
 
+void FFT::invertScale()
+{
+	setBasis(_inverse, 1);
+}
+
 double FFT::interpolate(vec3 vox000, bool im)
 {
 	vec3 remain = make_vec3(fmod(vox000.x, 1), fmod(vox000.y, 1),
@@ -539,8 +544,9 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
 	pos.z += PROTEIN_SAMPLING;
 
 	std::vector<double> crystalVals, thingVals;
-	crystalVals.resize(fftThing->nn);
-	thingVals.resize(fftThing->nn);
+	crystalVals.reserve(fftThing->nn);
+	thingVals.reserve(fftThing->nn);
+	double sum = 0;
 
 	for (double k = 0; k < fftThing->nz; k += 1)
 	{
@@ -562,6 +568,7 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
 				double crystal = fftCrystal->data[big_index][0];
 				double thing = fftThing->data[small_index][0];
 
+				sum += crystal * thing;
 				crystalVals.push_back(crystal);
 				thingVals.push_back(thing);
 			}
@@ -569,7 +576,7 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
 	}
 
 	double correl = correlation(crystalVals, thingVals);
-	
+
 	return correl;
 }
 
@@ -582,7 +589,10 @@ void FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 	FFT *fftSmall = &*fftConst;
 	FFT *fftBig = &*fftEdit;
 
-	double division = 1.;
+	double volume = fftSmall->getScale(0) * fftSmall->getScale(1)
+	* fftSmall->getScale(2);
+
+	double division = volume;
 
 	if (scale > 1)
 	{

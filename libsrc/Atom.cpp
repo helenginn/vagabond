@@ -17,7 +17,8 @@
 
 Atom::Atom()
 {
-
+	_initialPosition = make_vec3(0, 0, 0);
+	_initialB = 0;
 }
 
 void Atom::setModel(ModelPtr model)
@@ -37,6 +38,7 @@ double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell)
 	FFTPtr modelDist = getBlur();
 	FFT::multiply(modelDist, atomDist);
 	modelDist->fft(1);
+	modelDist->invertScale();
 
 	vec3 pos = getPosition();
 	mat3x3_mult_vec(unit_cell, &pos);
@@ -49,11 +51,11 @@ double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell)
 void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 {
 	FFTPtr atomDist = _element->getDistribution();
-	FFTPtr modelDist = getBlur();
-	FFTPtr modified = std::make_shared<FFT>(*modelDist);
+	FFTPtr modified = getBlur();
 
 	FFT::multiply(modified, atomDist);
 	modified->fft(1);
+	modified->invertScale();
 
 	vec3 pos = getPosition();
 	mat3x3_mult_vec(unit_cell, &pos);

@@ -30,7 +30,7 @@ void RefinementGridSearch::recursiveEvaluation(ParamList referenceList, ParamLis
 {
     size_t paramCount = objects.size();
     size_t workingCount = workingList.size();
-	double grid_length = otherValues[workingCount];
+	double grid_length = stepSizes[workingCount] / otherValues[workingCount];
 
     if (workingCount < paramCount)
     {
@@ -42,7 +42,7 @@ void RefinementGridSearch::recursiveEvaluation(ParamList referenceList, ParamLis
         for (int i = -grid_length / 2; i <= (int)(grid_length / 2 + 0.5); i++)
         {
             double mean = referenceList[workingCount];
-            double step = stepSizes[workingCount];
+            double step = otherValues[workingCount];
             double value = mean + i * step;
             
             ParamList extended = workingList;
@@ -112,7 +112,15 @@ void RefinementGridSearch::refine()
 		for (int i = 0; i < minParams.size(); i++)
 		{
 			Setter setter = setters[i];
-			(*setter)(objects[i], minParams[i]);
+
+			if (!_mock)
+			{
+				(*setter)(objects[i], minParams[i]);
+			}
+			else
+			{
+				(*setter)(objects[i], currentValues[i]);
+			}
 
 			std::cout << tags[i] << " = " << minParams[i] << ", ";
 		}
