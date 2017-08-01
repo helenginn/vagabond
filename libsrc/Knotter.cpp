@@ -37,15 +37,11 @@ void Knotter::tie()
 		return;
 	}
 
-	if (resNum != 71)
-	{
-		return;
-	}
 
 	if (residue == "lys")
 	{
-		convertable = true;
-		makeLysine();
+	//	convertable = true;
+	//	makeLysine();
 	}
 
 	if (residue == "ser")
@@ -56,8 +52,8 @@ void Knotter::tie()
 
 	if (residue == "cys")
 	{
-	//	convertable = true;
-	//	makeCysteine();
+		convertable = true;
+		makeCysteine();
 	}
 
 	if (residue == "val")

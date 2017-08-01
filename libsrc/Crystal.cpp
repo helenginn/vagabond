@@ -208,17 +208,21 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, double resolution)
 }
 
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
-									 bool verbose)
+									 bool verbose, double lowRes, double highRes)
 {
 	if (!_fft || !_fft->nn)
 	{
 		realSpaceClutter();
+		scaleToDiffraction(data);
 	}
 
 	FFTPtr fftData = data->getFFT();
 	double nLimit = std::min(fftData->nx, _fft->nx);
 	nLimit /= 2;
 	std::vector<double> set1, set2, free1, free2;
+
+	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
+	double maxRes = (highRes == 0 ? FLT_MAX : 1 / highRes);
 
 	/* symmetry issues */
 	for (int i = -nLimit; i < nLimit; i++)
@@ -227,6 +231,15 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 		{
 			for (int k = 0; k < nLimit; k++)
 			{
+				vec3 ijk = make_vec3(i, j, k);
+				mat3x3_mult_vec(_real2frac, &ijk);
+				double length = vec3_length(ijk);
+
+				if (length < minRes || length > maxRes)
+				{
+					continue;
+				}
+
 				double amp1 = sqrt(fftData->getIntensity(i, j, k));
 				double amp2 = sqrt(_fft->getIntensity(i, j, k));
 
@@ -257,30 +270,76 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 	{
 		double free = (*op)(free1, free2);
 		
-		std::cout << "Working set value: " << std::setprecision(5)
-		<< working << std::endl;
-		std::cout << "Free set value: " << free << std::endl;
+		std::cout << "R values: " << std::setprecision(5)
+		<< working;
+		std::cout << ", " << free << std::endl;
 	}
 
 	return working;
+}
+
+void Crystal::applyScaleFactor(double scale, double lowRes, double highRes)
+{
+	double nLimit = _fft->nx;
+	nLimit /= 2;
+	std::vector<double> set1, set2, free1, free2;
+
+	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
+	double maxRes = (highRes == 0 ? FLT_MAX : 1 / highRes);
+
+	/* symmetry issues */
+	for (int i = -nLimit; i < nLimit; i++)
+	{
+		for (int j = -nLimit; j < nLimit; j++)
+		{
+			for (int k = 0; k < nLimit; k++)
+			{
+				vec3 ijk = make_vec3(i, j, k);
+				mat3x3_mult_vec(_real2frac, &ijk);
+				double length = vec3_length(ijk);
+				long element = _fft->element(i, j, k);
+
+				if (length < minRes || length > maxRes)
+				{
+					continue;
+				}
+
+				double real = _fft->getReal(element);
+				double imag = _fft->getImaginary(element);
+
+				if (real != real || imag != imag)
+				{
+					continue;
+				}
+
+				real *= scale;
+				imag *= scale;
+
+				_fft->setElement(element, real, imag);
+			}
+		}
+	}
 }
 
 void Crystal::scaleToDiffraction(DiffractionPtr data)
 {
 	double scale = 1 / valueWithDiffraction(data, &scale_factor);
 	_fft->multiplyAll(scale);
+
+	std::vector<double> bins;
+	generateResolutionBins(0, 1.5, 15, &bins);
+
+	for (int i = 0; i < bins.size() - 1; i++)
+	{
+		double scale = 1 / valueWithDiffraction(data, &scale_factor, false,
+										     	bins[i], bins[i + 1]);
+		applyScaleFactor(scale, bins[i], bins[i + 1]);
+	}
 }
 
 double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 {
 	double rFactor = valueWithDiffraction(data, &r_factor, verbose);
-
-/*	if (verbose)
-	{
-		std::cout << "Rfactor for crystal (" << _filename << ") against data ("
-		<< data->getFilename() << ") of " << std::setprecision(5)
-		<< rFactor * 100 << "%." << std::endl;
-	}*/
 
 	return rFactor;
 }
@@ -339,5 +398,18 @@ void Crystal::transplantAmplitudes(DiffractionPtr data, double partsFo,
 	}
 
 	fourierTransform(-1);
+}
 
+void Crystal::tiedUpScattering()
+{
+	double tied = 0;
+	double total = 0;
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		molecule(i)->tiedUpScattering(&tied, &total);
+	}
+
+	std::cout << "Tied up " << tied << " electrons out of " << total << " (";
+	std::cout << 100. * sqrt(tied / total) << "%)." << std::endl;
 }

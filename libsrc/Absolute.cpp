@@ -21,6 +21,7 @@ Absolute::Absolute(vec3 pos, double bFac, std::string element, double occValue)
 	_position = pos;
 	_bFactor = bFac;
 	_element = element;
+	trim(_element);
 	_occupancy = occValue;
 	_hetatm = false;
 	_usingTensor = false;

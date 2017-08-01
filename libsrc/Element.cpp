@@ -23,6 +23,7 @@ void Element::setupElements()
 	elements.push_back(ElementPtr(new Element("N", "nitrogen", 7)));
 	elements.push_back(ElementPtr(new Element("O", "oxygen", 8)));
 	elements.push_back(ElementPtr(new Element("S", "sulphur", 16)));
+	elements.push_back(ElementPtr(new Element("CL", "chlorine", 17)));
 }
 
 Element::Element(std::string symbol, std::string name, double electrons)
@@ -50,6 +51,10 @@ Element::Element(std::string symbol, std::string name, double electrons)
 	else if (_symbol == "S")
 	{
 		memcpy(_scattering, ScatterFactors::sScatter, ScatterFactors::numScatter * sizeof(float));
+	}
+	else if (_symbol == "CL")
+	{
+		memcpy(_scattering, ScatterFactors::clScatter, ScatterFactors::numScatter * sizeof(float));
 	}
 	else
 	{

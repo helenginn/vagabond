@@ -45,7 +45,7 @@ AbsolutePtr PDBReader::makeAtom(std::string line)
 	zData = line.substr(46, 8);
 	occupancy = line.substr(54, 6);
 	bFactor = line.substr(60, 6);
-	element = line.substr(77, 1);
+	element = line.substr(76, 2);
 
 	double xValue = atof(xData.c_str());
 	double yValue = atof(yData.c_str());

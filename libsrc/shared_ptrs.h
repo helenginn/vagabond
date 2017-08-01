@@ -10,6 +10,7 @@
 #define vagabond_shared_ptrs_h
 
 #include <memory>
+#include <math.h>
 
 #define CH2E_CH2E_LENGTH 1.530
 

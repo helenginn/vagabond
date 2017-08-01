@@ -64,13 +64,13 @@ void Options::run()
 	{
 		if (crystals.size() == 1)
 		{
-			int prop = 2;
+			int prop = 3;
 			/* sandbox */
 			DiffractionPtr data = diffractions[0];
 			crystals[0]->realSpaceClutter();
 			crystals[0]->transplantAmplitudes(data, prop, prop -1);
+			crystals[0]->tiedUpScattering();
 			MoleculePtr molecule = crystals[0]->molecule("A");
-			molecule->tiedUpScattering();
 			/*
 			for (int i = 0; i < 1; i++)
 			{
@@ -86,9 +86,9 @@ void Options::run()
 				crystals[0]->transplantAmplitudes(data, prop, prop-1);
 			}
 
-			crystals[0]->molecule(0)->makePDB();
+//			crystals[0]->molecule(0)->makePDB();
 
-			crystals[0]->writeCalcMillersToFile(data);
+			crystals[0]->writeCalcMillersToFile(data, 1.7);
 
 		}
 	}
@@ -100,6 +100,7 @@ void Options::parse()
 {
 	for (int i = 0; i < arguments.size(); i++)
 	{
+		bool understood = false;
 		std::string arg = arguments[i];
 
 		std::string prefix("--with-pdb=");
@@ -114,6 +115,7 @@ void Options::parse()
 
 			objects.push_back(crystal);
 			crystals.push_back(crystal);
+			understood = true;
 		}
 
 		prefix = "--with-mtz=";
@@ -132,6 +134,7 @@ void Options::parse()
 			objects.push_back(diffraction);
 			datasets.push_back(diffraction);
 			diffractions.push_back(diffraction);
+			understood = true;
 		}
 
 		prefix = "--num-cycles=";
@@ -140,6 +143,7 @@ void Options::parse()
 		{
 			std::string result = arg.substr(prefix.size());
 			_numCycles = atoi(result.c_str());
+			understood = true;
 		}
 
 		prefix = "--no-tie";
@@ -147,6 +151,13 @@ void Options::parse()
 		if (!arg.compare(0, prefix.size(), prefix))
 		{
 			_tie = false;
+			understood = true;
+		}
+
+		if (!understood)
+		{
+			warn_user("I did not understand your command:\n\t"\
+					  + arg);
 		}
 	}
 }

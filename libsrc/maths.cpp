@@ -46,7 +46,7 @@ double r_factor(std::vector<double> &set1, std::vector<double> &set2)
 			double amp_y = (set2[i]);
 
 			numerator += fabs(amp_y - amp_x);
-			denominator += fabs((amp_x + amp_y) / 2);
+			denominator += fabs(amp_x);
 		}
 	}
 
@@ -120,3 +120,36 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2)
 	return r;
 }
 
+void generateResolutionBins(double minD, double maxD,
+							int binCount, std::vector<double> *bins)
+{
+	double minRadius = (minD == 0) ? 0 : 1 / minD;
+	double maxRadius = 1 / maxD;
+
+	if (maxD <= 0)
+	{
+		std::cout << "Warning: maximum resolution set to 0. Ignoring.";
+		return;
+	}
+
+	double maxVolume = pow(maxRadius, 3);
+	double minVolume = pow(minRadius, 3);
+	double totalVolume = maxVolume - minVolume;
+
+	double eachVolume = totalVolume / binCount;
+
+	double r1 = minRadius;
+	double r2 = 0;
+
+	bins->push_back(1 / r1);
+
+	for (int i = 0; i < binCount; i++)
+	{
+		double r2_cubed = pow(r1, 3) + eachVolume;
+		r2 = cbrt(r2_cubed);
+
+		bins->push_back(1 / r2);
+
+		r1 = r2;
+	}
+}

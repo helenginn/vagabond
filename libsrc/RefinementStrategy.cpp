@@ -147,11 +147,12 @@ void RefinementStrategy::finish()
         double reduction = (startingScore - endScore) / startingScore;
         
         std::cout << "Reduction ";
-        
+		double rad2degscale = (_toDegrees ? rad2deg(1) : 1);
+
         if (reduction == reduction)
         {
             std::cout << "by " << std::fixed << std::setprecision(4) <<
-            reduction * 100 << "% ";
+            -reduction * 100 << "% ";
         }
         
         std::cout << "for " << jobName << ": ";
@@ -159,7 +160,8 @@ void RefinementStrategy::finish()
         for (int i = 0; i < objects.size(); i++)
         {
             double objectValue = (*getters[i])(objects[i]);
-            std::cout << tags[i] << "=" << objectValue << ", ";
+            std::cout << tags[i] << "=" << objectValue * rad2degscale <<
+			(_toDegrees ? "º" : "") << ", ";
         }
 
 		std::cout << "(" << startingScore << " to " << endScore << ")" << std::endl;

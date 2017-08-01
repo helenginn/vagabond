@@ -36,8 +36,8 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		}
 	}*/
 
-	const char *atoms[] = {"CB", "CG", "CD", "CE"};
-	std::vector<std::string> atomStrs(atoms, atoms+4);
+	const char *atoms[] = {"CB", "CG", "CG1", "CG2", "CD", "CE", "NZ", "OG1"};
+	std::vector<std::string> atomStrs(atoms, atoms+8);
 /*
 	if (resNum == 104)
 	{
@@ -72,14 +72,14 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 		BondPtr bond = std::static_pointer_cast<Bond>(myAtom->getModel());
 
-		if (!bond->isUsingTorsion())
+		if (!bond->isNotJustForHydrogens())
 		{
 			continue;
 		}
 
 		std::string preAtom = bond->getMajor()->getAtomName();
 
-		if (preAtom != "CA")
+		if (preAtom != "CA" && bond->isUsingTorsion())
 		{
 			setupNelderMead();
 			addTorsionNextBlur(bond, 0.1, deg2rad(0.1));
@@ -120,11 +120,12 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		if (preModel->getClassName() == "Bond")
 		{
 			setupNelderMead();
+			reportInDegrees();
 
 			BondPtr preBond = std::static_pointer_cast<Bond>(preModel);
 
-			addBendAngle(bond, deg2rad(0.5), deg2rad(0.1));
-			addBendBlur(bond, deg2rad(0.3), deg2rad(0.1));
+			addBendAngle(bond, deg2rad(0.2), deg2rad(0.1));
+			addBendBlur(bond, deg2rad(0.05), deg2rad(0.1));
 
 			addSampled(bond->getMinor());
 
@@ -133,20 +134,23 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 			sample();
 		}
 
-		setupNelderMead();
-
-		addTorsion(bond, deg2rad(1.0), deg2rad(0.2));
-		addTorsionBlur(bond, deg2rad(1.5), deg2rad(0.2));
-
-		for (int j = 0; j < bond->downstreamAtomCount(); j++)
+		if (bond->isUsingTorsion())
 		{
-			addSampled(bond->downstreamAtom(j));
+			setupNelderMead();
+			reportInDegrees();
+
+			addTorsion(bond, deg2rad(0.5), deg2rad(0.2));
+			addTorsionBlur(bond, deg2rad(0.5), deg2rad(0.2));
+
+			for (int j = 0; j < bond->downstreamAtomCount(); j++)
+			{
+				addSampled(bond->downstreamAtom(j));
+			}
+
+			setJobName("torsion_" + preAtom + "_" + atom + "_" + i_to_str(resNum));
+			setCrystal(target);
+			sample();
 		}
-
-		setJobName("torsion_" + preAtom + "_" + atom + "_" + i_to_str(resNum));
-		setCrystal(target);
-		sample();
-
 
 	}
 

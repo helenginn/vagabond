@@ -29,7 +29,7 @@ public:
 	virtual void summary();
 	virtual void tieAtomsUp() {};
 	virtual void refine(CrystalPtr target, RefinementType rType);
-	double tiedUpScattering();
+	void tiedUpScattering(double *tied, double *all);
 	virtual void makePDB();
 
 	long int atomCount()

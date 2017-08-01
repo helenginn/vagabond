@@ -47,6 +47,7 @@ protected:
     int cycleNum;
 	int _changed;
 	bool _mock;
+	bool _toDegrees;
 
     std::vector<int> couplings;
     std::vector<void *> objects;
@@ -73,10 +74,15 @@ public:
 		_changed = -1;
 		finishFunction = NULL;
 		_mock = false;
+		_toDegrees = false;
     };
     
     static RefinementStrategyPtr userChosenStrategy();
-    
+
+	void reportInDegrees()
+	{
+		_toDegrees = true;
+	}
     virtual void refine();
 	void resetToInitialParameters();
     

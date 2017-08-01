@@ -50,7 +50,7 @@ void Molecule::makePDB()
 
 }
 
-double Molecule::tiedUpScattering()
+void Molecule::tiedUpScattering(double *tied, double *all)
 {
 	double total = 0;
 	double some = 0;
@@ -71,11 +71,7 @@ double Molecule::tiedUpScattering()
 
 	double scatterFrac = sqrt(some / total);
 
-	std::cout << "Tied up atoms: " << someCount << " out of "
-	<< someTotal << std::endl;
-	std::cout << "Scattering fraction: " << scatterFrac * 100
-	<< "\%" << std::endl;
-
-	return scatterFrac;
+	*tied += some;
+	*all += total;
 }
 

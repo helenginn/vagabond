@@ -61,6 +61,7 @@ public:
 		return _fft;
 	}
 
+	void tiedUpScattering();
 	void realSpaceClutter();
 	void writeCalcMillersToFile(DiffractionPtr data, double resolution = 1.0);
 
@@ -72,9 +73,11 @@ public:
 	void scaleToDiffraction(DiffractionPtr data);
 	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
 	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
-								bool verbose = false);
+								bool verbose = false, double lowRes = 0,
+								double highRes = 0);
 	void transplantAmplitudes(DiffractionPtr data, double partsFo = 2,
 							  double partsFc = 1);
+	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);
 	
 	void summary();
 

@@ -13,6 +13,7 @@
 #include <vector>
 #include "mat3x3.h"
 #include "shared_ptrs.h"
+#include "RefinementStrategy.h"
 #include <string>
 
 /* More of an abstraction, but will take a series of (bond) parameters,
@@ -41,6 +42,11 @@ public:
 
 	void setupGrid();
 	void setupNelderMead();
+
+	void reportInDegrees()
+	{
+		_strategy->reportInDegrees();
+	}
 
 	static double score(void *object)
 	{
