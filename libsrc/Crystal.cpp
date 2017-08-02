@@ -327,7 +327,7 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 	_fft->multiplyAll(scale);
 
 	std::vector<double> bins;
-	generateResolutionBins(0, 1.5, 15, &bins);
+	generateResolutionBins(0, 1.0, 15, &bins);
 
 	for (int i = 0; i < bins.size() - 1; i++)
 	{

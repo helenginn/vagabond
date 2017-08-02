@@ -88,7 +88,7 @@ void Options::run()
 
 //			crystals[0]->molecule(0)->makePDB();
 
-			crystals[0]->writeCalcMillersToFile(data, 1.7);
+			crystals[0]->writeCalcMillersToFile(data, 1.0);
 
 		}
 	}

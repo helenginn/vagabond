@@ -103,6 +103,8 @@ public:
 	double getReal(long index);
 	double getReal(long x, long y, long z);
 
+	double getImaginary(long x, long y, long z);
+
 	double getImaginary(long index)
 	{
 		return data[index][1];
@@ -113,6 +115,7 @@ public:
 	void setReal(double xfrac, double yfrac, double zfrac, double real);
 	void addToReal(double xfrac, double yfrac, double zfrac, double real);
 	static void collapseFrac(double *xfrac, double *yfrac, double *zfrac);
+	static void multiply(FFTPtr fftEdit, FFTPtr fftConst);
     void setAll(float);
     void multiplyAll(float);
 
@@ -125,14 +128,6 @@ public:
 					bool sameScale = false, MaskType type = MaskUnchecked)
 	{
 		operation(fftEdit, fftConst, scale, addX, addY, addZ, false, type);
-	}
-
-
-	static void multiply(FFTPtr fftEdit, FFTPtr fftConst, int scale = 1,
-						 double addX = 0, double addY = 0, double addZ = 0,
-						 bool sameScale = false)
-	{
-		operation(fftEdit, fftConst, scale, addX, addY, addZ, true);
 	}
 
 	static void operation(FFTPtr fftEdit, FFTPtr fftConst, int scale = 1,

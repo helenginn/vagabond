@@ -167,7 +167,7 @@ long FFT::elementFromUncorrectedFrac(double xfrac, double yfrac, double zfrac)
  */
 void FFT::shift(long sx, long sy, long sz)
 {    
-    printf("Shift: (%li, %li, %li)\n", sx, sy, sz);
+  //  printf("Shift: (%li, %li, %li)\n", sx, sy, sz);
 	
 	long	x1,y1,z1;
 	long	e0,e1;
@@ -262,6 +262,13 @@ double FFT::getReal(long x, long y, long z)
 	long index = element(x, y, z);
 
 	return data[index][0];
+}
+
+double FFT::getImaginary(long x, long y, long z)
+{
+	long index = element(x, y, z);
+
+	return data[index][1];
 }
 
 double FFT::getReal(long index)
@@ -580,46 +587,156 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
 	return correl;
 }
 
+
 /*  For multiplying point-wise
  *
  */
 void FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
-						double addY, double addZ, bool sameScale, MaskType type)
+						double addY, double addZ, bool isMultiply, MaskType type)
+{
+	/* I rarely comment something so heavily but I will get confused if
+	 * I don't, this time, as I can't soak the protocol into the variable
+	 * names. Bear in mind the three coordinate systems:
+	 * (a) Angstroms
+	 * (b) Crystal voxels
+	 * (c) Atom voxels */
+
+	FFT *fftAtom = &*fftConst;
+	FFT *fftCrystal = &*fftEdit;
+	double volume = fftAtom->getScale(0) * fftAtom->getScale(1)
+	* fftAtom->getScale(2);
+
+
+	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
+	FFT::collapseFrac(&addX, &addY, &addZ);
+
+	/* Multiply by the relative dimensions of the crystal */
+	double multX = addX * fftCrystal->nx;
+	double multY = addY * fftCrystal->ny;
+	double multZ = addZ * fftCrystal->nz;
+
+	/* Get the remainder after subtracting a number of whole voxels */
+	vec3 atomOffset;
+	atomOffset.x = fmod(multX, 1.);
+	atomOffset.y = fmod(multY, 1.);
+	atomOffset.z = fmod(multZ, 1.);
+
+	/* Store the non-remainder whole voxel values for way later. */
+	vec3 atomWholeCoords = make_vec3((int)multX, (int)multY, (int)multZ);
+
+	/* Prepare a matrix to convert crystal voxels into atomic voxels */
+	mat3x3 crystal2AtomVox = mat3x3_mult_mat3x3(fftAtom->getBasisInverse(),
+												fftCrystal->getBasis());
+
+
+
+	/* Prepare a matrix to convert atomic voxels into crystal voxels */
+	mat3x3 atomVox2Crystal = mat3x3_mult_mat3x3(fftCrystal->getBasisInverse(),
+												fftAtom->getBasis());
+
+	/* Apply this offset and reverse it. This small offset must be added
+	 * to all future atomic coordinates prior to interpolation. This
+	 * is therefore now in atom voxels.*/
+	mat3x3_mult_vec(crystal2AtomVox, &atomOffset);
+	vec3_mult(&atomOffset, -1);
+
+	fftAtom->shiftToCenter();
+
+	vec3 shift = make_vec3((double)(-fftAtom->nx) * 0.5,
+						   (double)(-fftAtom->ny) * 0.5,
+						   (double)(-fftAtom->nz) * 0.5);
+	mat3x3_mult_vec(atomVox2Crystal, &shift);
+	vec3 shiftRemainder = make_vec3(fmod(shift.x, 1),
+									fmod(shift.y, 1),
+									fmod(shift.z, 1));
+	vec3 wholeShiftOnly = make_vec3(shift.x - shiftRemainder.x,
+									shift.y - shiftRemainder.y,
+									shift.z - shiftRemainder.z);
+
+	vec3 cornerCrystal = vec3_add_vec3(wholeShiftOnly, atomWholeCoords);
+	atomOffset = vec3_subtract_vec3(atomOffset, shiftRemainder);
+
+	/* We loop around these crystal voxel limits now (ss -> ms -> fs).
+	 * We also discard any which happen to go over the limits of our atom voxels
+	 * which may occur due to the buffer added above. */
+
+	vec3 atomPos = make_vec3(0, 0, 0);
+	for (int k = 0; ; k++)
+	{
+		for (int j = 0; ; j++)
+		{
+			for (int i = 0; ; i++)
+			{
+				/* Position currently in voxel coords - change to atom. */
+				vec3 crystalPos = make_vec3(i, j, k);
+				atomPos = mat3x3_mult_vec(crystal2AtomVox, crystalPos);
+				vec3 pos = atomPos;
+				//pos.x += 1; pos.y += 1, pos.z += 1;
+
+				/* Now we must find the relative crystal voxel to write this
+				 * density value to, given that the atom is wrapped around
+				 * the origin (center). This should work regardless of odd/
+				 * even dimension lengths. */
+
+				/* We add the tiny offset which resulted from the atom
+				 * falling between two voxels, in atomic voxels */
+				vec3 offsetPos = vec3_add_vec3(pos, atomOffset);
+		//		offsetPos.x -= 2.0; offsetPos.y -= 2.0; offsetPos.z -= 2.0;
+
+				/* Find the interpolated value which offsetPos falls on */
+				double atomReal = fftAtom->interpolate(offsetPos, 0);
+				double atomImag = fftAtom->interpolate(offsetPos, 1);
+
+				/* We now convert from atom voxels to crystal voxels */
+				mat3x3_mult_vec(atomVox2Crystal, &pos);
+
+				/* We add the atom offset so we don't end up with thousands
+				 * of atoms at the very centre of our map */
+				vec3 nearlyCrystalVox = vec3_add_vec3(crystalPos, cornerCrystal);
+				vec3 finalCrystalVox = (nearlyCrystalVox);
+
+				/* Get the index of this final crystal voxel. */
+				long crystalIndex = fftCrystal->element(finalCrystalVox.x,
+														finalCrystalVox.y,
+														finalCrystalVox.z);
+
+				/* Add the density to the real value of the crystal voxel.*/
+				fftCrystal->data[crystalIndex][0] += atomReal * volume;
+				fftCrystal->data[crystalIndex][1] += atomImag * volume;
+
+				if (type != MaskUnchecked && atomReal > 1.5)
+				{
+					fftEdit->setMask(crystalIndex, type);
+				}
+
+				if (atomPos.x > fftAtom->nx)
+				{
+					break;
+				}
+			}
+
+			if (atomPos.y > fftAtom->ny)
+			{
+				break;
+			}
+		}
+
+		if (atomPos.z > fftAtom->nz)
+		{
+			break;
+		}
+	}
+}
+
+/*  For multiplying point-wise
+ *
+ */
+ void FFT::multiply(FFTPtr fftEdit, FFTPtr fftConst)
 {
 	FFT *fftSmall = &*fftConst;
 	FFT *fftBig = &*fftEdit;
 
-	double volume = fftSmall->getScale(0) * fftSmall->getScale(1)
-	* fftSmall->getScale(2);
-
-	double division = volume;
-
-	if (scale > 1)
-	{
-		division = 1 / pow(2, scale);
-	}
-
 	double step = 1;
-
-	if (!sameScale)
-	{
-		step = 1 / (double)scale;
-	}
-
-	mat3x3 inverse = fftBig->getBasisInverse();
-	mat3x3 transform = mat3x3_mult_mat3x3(inverse, fftSmall->getBasis());
-
-	fftSmall->collapseFrac(&addX, &addY, &addZ);
-	addX *= (double)fftBig->nx;
-	addY *= (double)fftBig->ny;
-	addZ *= (double)fftBig->nz;
-
-	if (!sameScale)
-	{
-		addX += PROTEIN_SAMPLING;
-		addY += PROTEIN_SAMPLING;
-		addZ += PROTEIN_SAMPLING;
-	}
 
 	for (double k = 0; k < fftSmall->nz; k += step)
 	{
@@ -627,53 +744,20 @@ void FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 		{
 			for (double i = 0; i < fftSmall->nx; i += step)
 			{
-				long int small_index = fftSmall->quickElement(i, j, k);
+				long int index = fftSmall->quickElement(i, j, k);
 
-				long int big_index = small_index;
-
-				if (!sameScale)
-				{
-					big_index = fftSmall->equivalentIndexFor(fftBig, i + step / 2,
-															 j + step / 2,
-															 k + step / 2,
-															 transform, addX,
-															 addY, addZ,
-															 sameScale);
-				}
-
-				/* we need to shift everything back a bit because the small map
-				 is centred at the origin */
-
-				/* These are not functions because it's faster this way */
 				float real, imag;
+				real = fftBig->data[index][0] * fftSmall->data[index][0]
+				- fftBig->data[index][1] * fftSmall->data[index][1];
+				imag = fftBig->data[index][0] * fftSmall->data[index][1]
+				+ fftBig->data[index][1] * fftSmall->data[index][0];
 
-				/* Add real only (for reals!!) */
-
-				if (!sameScale)
-				{
-					real = fftSmall->data[small_index][0] * division +
-					fftBig->data[big_index][0];
-					imag = fftSmall->data[small_index][1] * division +
-					fftBig->data[big_index][1];
-				}
-				else
-				{
-					real = fftBig->data[big_index][0] * fftSmall->data[small_index][0]
-					- fftBig->data[big_index][1] * fftSmall->data[small_index][1];
-					imag = fftBig->data[big_index][0] * fftSmall->data[small_index][1]
-					+ fftBig->data[big_index][1] * fftSmall->data[small_index][0];
-				}
-
-				fftEdit->setElement(big_index, real, imag);
-
-				if (type != MaskUnchecked && real > 1.0)
-				{
-					fftEdit->setMask(big_index, type);
-				}
+				fftEdit->setElement(index, real, imag);
 			}
 		}
 	}
 }
+
 
 /* To find the same equivalent index bearing in mind the change-of-basis.
  * Assuming that both are centred at the origin. In terms of fractional
