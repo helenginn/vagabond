@@ -94,23 +94,27 @@ public:
 
 	static void setTorsionBlur(void *object, double value)
 	{
-		static_cast<Bond *>(object)->_torsionBlur = value;
+		Bond *bond = static_cast<Bond *>(object);
+		bond->_torsionBlurs[bond->_activeGroup] = value;
 		static_cast<Bond *>(object)->propagateChange();
 	}
 
 	static double getTorsionBlur(void *object)
 	{
-		return static_cast<Bond *>(object)->_torsionBlur;
+		Bond *bond = static_cast<Bond *>(object);
+		return bond->_torsionBlurs[bond->_activeGroup];
 	}
 
 	static double getTorsion(void *object)
 	{
-		return static_cast<Bond *>(object)->_torsionAngles[0];
+		Bond *bond = static_cast<Bond *>(object);
+		return bond->_torsionAngles[bond->_activeGroup];
 	}
 
 	static void setTorsion(void *object, double value)
 	{
-		static_cast<Bond *>(object)->_torsionAngles[0] = value;
+		Bond *bond = static_cast<Bond *>(object);
+		bond->_torsionAngles[bond->_activeGroup] = value;
 		static_cast<Bond *>(object)->propagateChange();
 	}
 
@@ -201,6 +205,11 @@ public:
 		_absInherit = abs;
 	}
 
+	void changeActiveGroup(int newGroup)
+	{
+		_activeGroup = newGroup;
+	}
+
 	std::string description();
 	std::string getPDBContribution();
 	ModelPtr getParentModel();
@@ -219,12 +228,12 @@ private:
 	AtomWkr _bendToAtom;
 
 	double _bondLength;
-	std::vector<double> _torsionAngles;
-	double _torsionBlur;
+	std::vector<double> _torsionAngles, _torsionBlurs;
 	double _torsionBlurFromPrev;
 	double _bendBlur;
 
 	bool _activated;
+	int _activeGroup;
 
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();

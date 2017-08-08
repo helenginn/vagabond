@@ -24,11 +24,12 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	_activated = false;
 	_major = major;
 	_minor = minor;
+	_activeGroup = 0;
 	_torsionBasis = make_mat3x3();
 	_torsionAngles.push_back(0);
 	_torsionBlurFromPrev = 0;
 	_bendBlur = 0;
-	_torsionBlur = 0;
+	_torsionBlurs.push_back(0);
 	_bondLength = 0;
 	_changedPos = true;
 	_changedSamples = true;
@@ -407,7 +408,7 @@ std::vector<BondSample> Bond::getManyPositions(bool staticAtom,
 
 		std::vector<BondSample> newSamples;
 
-		double spread = staticAtom ? 0 : _torsionBlur;
+		double spread = staticAtom ? 0 : _torsionBlurs[group];
 		std::vector<BondSample> torsionsOnly, myBendings;
 		torsionsOnly = sampleMyAngles(_torsionAngles[group], spread, singleState);
 		spread = staticAtom ? 0 : _bendBlur;
@@ -474,7 +475,7 @@ std::vector<BondSample> Bond::getManyPositions(bool staticAtom,
 
 	for (int i = 0; i < prevSamples.size(); i++)
 	{
-		spread = staticAtom ? 0 : _torsionBlur;
+		spread = staticAtom ? 0 : _torsionBlurs[group];
 		myTorsions = getCorrelatedAngles(prevSamples[i], meanLastTorsion,
 										 _torsionAngles[group], spread,
 										 singleState);
