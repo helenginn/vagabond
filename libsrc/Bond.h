@@ -31,10 +31,12 @@ typedef struct
 	double occupancy;
 } BondSample;
 
+typedef std::vector<AtomWkr> AtomList;
+
 class Bond : public Model
 {
 public:
-	Bond(AtomPtr major, AtomPtr minor);
+	Bond(AtomPtr major, AtomPtr minor, int group = 0);
 	void activate(AtomGroupPtr group = AtomGroupPtr(),
 				  AbsolutePtr inherit = AbsolutePtr());
 
@@ -68,9 +70,9 @@ public:
 		static_cast<Bond *>(object)->_bondLength = length;
 	}
 
-	double getTorsion()
+	double getTorsion(int group)
 	{
-		return _torsionAngle;
+		return _torsionAngles[group];
 	}
 
 	mat3x3 getTorsionBasis()
@@ -83,7 +85,8 @@ public:
 	virtual FFTPtr getDistribution();
 	virtual vec3 getStaticPosition();
 	std::vector<BondSample> getManyPositions(bool staticAtom = false,
-											 bool singleState = false);
+											 bool singleState = false,
+											 int torsionGroup = 0);
 	virtual std::string getClassName()
 	{
 		return "Bond";
@@ -102,12 +105,12 @@ public:
 
 	static double getTorsion(void *object)
 	{
-		return static_cast<Bond *>(object)->_torsionAngle;
+		return static_cast<Bond *>(object)->_torsionAngles[0];
 	}
 
 	static void setTorsion(void *object, double value)
 	{
-		static_cast<Bond *>(object)->_torsionAngle = value;
+		static_cast<Bond *>(object)->_torsionAngles[0] = value;
 		static_cast<Bond *>(object)->propagateChange();
 	}
 
@@ -141,28 +144,38 @@ public:
 		_bendToAtom = bendToAtom;
 	}
 
-	void addDownstreamAtom(AtomPtr atom);
+	void addDownstreamAtom(AtomPtr atom, int group);
 
-	int downstreamAtomCount()
+	int downstreamAtomCount(int group)
+	{
+		return _downstreamAtoms[group].size();
+	}
+
+	int downstreamAtomGroupCount()
 	{
 		return _downstreamAtoms.size();
 	}
 
-	AtomPtr downstreamAtom(int i)
+	AtomPtr downstreamAtom(int group, int i)
 	{
-		return _downstreamAtoms[i].lock();
+		return _downstreamAtoms[group][i].lock();
 	}
 
-	int downstreamAtomNum(AtomPtr atom)
+	int downstreamAtomNum(AtomPtr atom, int *group)
 	{
-		for (int i = 0; i < _downstreamAtoms.size(); i++)
+		for (int j = 0; j < _downstreamAtoms.size(); j++)
 		{
-			if (_downstreamAtoms[i].lock() == atom)
+			for (int i = 0; i < _downstreamAtoms[j].size(); i++)
 			{
-				return i;
+				if (_downstreamAtoms[j][i].lock() == atom)
+				{
+					*group = j;
+					return i;
+				}
 			}
 		}
 
+		*group = -1;
 		return -1;
 	}
 
@@ -199,12 +212,14 @@ private:
 	AtomWkr _major;
 	AtomWkr _minor;
 
+	std::vector<AtomList> _downstreamAtoms;
+
 	AtomWkr _heavyAlign;
 	AtomWkr _lightAlign;
 	AtomWkr _bendToAtom;
 
 	double _bondLength;
-	double _torsionAngle;
+	std::vector<double> _torsionAngles;
 	double _torsionBlur;
 	double _torsionBlurFromPrev;
 	double _bendBlur;
@@ -214,7 +229,7 @@ private:
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();
 	/* And a given bond angle for downstream atom n */
-	void deriveBondAngle(int n);
+	void deriveBondAngle(int group, int n);
 
 	/* Bond direction only used when a torsion angle can't be
 	 * calculated because it's connected to an Absolute PDB.
@@ -239,7 +254,8 @@ private:
 	std::vector<BondSample> getCorrelatedAngles(BondSample prev,
 												double lastTorsion,
 												double angle, double blur,
-												bool singleState = false);
+												bool singleState = false,
+												int group = 0);
 
 	void propagateChange();
 	bool _usingTorsion;
