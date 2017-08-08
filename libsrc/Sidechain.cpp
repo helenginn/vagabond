@@ -84,9 +84,9 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 			setupNelderMead();
 			addTorsionNextBlur(bond, 0.1, deg2rad(0.1));
 
-			for (int j = 0; j < bond->downstreamAtomCount(); j++)
+			for (int j = 0; j < bond->downstreamAtomCount(0); j++)
 			{
-				addSampled(bond->downstreamAtom(j));
+				addSampled(bond->downstreamAtom(0, j));
 			}
 
 			setJobName("compensate_" + preAtom + "_" + atom + "_" + i_to_str(resNum));
@@ -124,8 +124,8 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 			BondPtr preBond = std::static_pointer_cast<Bond>(preModel);
 
-			addBendAngle(bond, deg2rad(0.1), deg2rad(0.1));
-			addBendBlur(bond, deg2rad(0.02), deg2rad(0.01));
+			addBendAngle(bond, deg2rad(0.2), deg2rad(0.1));
+			addBendBlur(bond, deg2rad(0.05), deg2rad(0.01));
 
 			addSampled(bond->getMinor());
 
@@ -139,12 +139,12 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 			setupNelderMead();
 			reportInDegrees();
 
-			addTorsion(bond, deg2rad(0.5), deg2rad(0.2));
-			addTorsionBlur(bond, deg2rad(0.5), deg2rad(0.2));
+			addTorsion(bond, deg2rad(1.0), deg2rad(0.2));
+			addTorsionBlur(bond, deg2rad(1.0), deg2rad(0.2));
 
-			for (int j = 0; j < bond->downstreamAtomCount(); j++)
+			for (int j = 0; j < bond->downstreamAtomCount(0); j++)
 			{
-				addSampled(bond->downstreamAtom(j));
+				addSampled(bond->downstreamAtom(0, j));
 			}
 
 			setJobName("torsion_" + preAtom + "_" + atom + "_" + i_to_str(resNum));
