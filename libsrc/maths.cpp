@@ -55,11 +55,31 @@ double r_factor(std::vector<double> &set1, std::vector<double> &set2)
 	return rfactor;
 }
 
-double correlation(std::vector<double> &vec1, std::vector<double> &vec2)
+double mean(std::vector<double> &vec1)
+{
+	double sum_x = 0;
+	double sum_weight = 0;
+	for (int i = 0; i < vec1.size(); i++)
+	{
+		if (vec1[i] != vec1[i])
+		{
+			continue;
+		}
+
+		sum_x += vec1[i];
+
+		sum_weight++;
+	}
+	
+	return sum_x / sum_weight;
+}
+
+double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
+				   std::vector<double> *weights)
 {
 	double sum_x = 0;
 	double sum_y = 0;
-	double num = 0;
+	double sum_weight = 0;
 
 	if (!vec1.size() || !vec2.size())
 	{
@@ -68,22 +88,32 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2)
 
 	for (int i = 0; i < vec1.size(); i++)
 	{
-		if (vec1[i] != vec1[i] || vec2[i] != vec2[i])
+		double weight = 1;
+		if (weights)
+		{
+			weight = (*weights)[i];
+		}
+
+		if (vec1[i] != vec1[i] || vec2[i] != vec2[i] || weight != weight)
 		{
 			continue;
 		}
 
 		double addition = vec1[i];
-		sum_x += vec1[i];;
+		sum_x += vec1[i] * weight;
 
 		addition = vec2[i];
-		sum_y += addition;
+		sum_y += addition * weight;
 
-		num++;
+//		std::cout << vec1[i] << "\t" << vec2[i] << std::endl;
+
+		sum_weight += weight;
 	}
 
-	double mean_x = sum_x / num;
-	double mean_y = sum_y / num;
+//	exit(1);
+
+	double mean_x = sum_x / sum_weight;
+	double mean_y = sum_y / sum_weight;
 
 	if (mean_x != mean_x || mean_y != mean_y)
 		return 0;
@@ -94,25 +124,31 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2)
 
 	for (int i = 0; i < vec1.size(); i++)
 	{
-		if (vec1[i] != vec1[i] || vec2[i] != vec2[i])
+		double weight = 1;
+		if (weights)
+		{
+			weight = (*weights)[i];
+		}
+
+		if (vec1[i] != vec1[i] || vec2[i] != vec2[i] || weight != weight)
 		{
 			continue;
 		}
 
 		double addition = (vec1[i] - mean_x) * (vec2[i] - mean_y);
-		sum_x_y_minus_mean_x_y += addition;
+		sum_x_y_minus_mean_x_y += addition * weight;
 
 		addition = pow(vec1[i] - mean_x, 2);
-		sum_x_minus_mean_x_sq += addition;
+		sum_x_minus_mean_x_sq += addition * weight;
 
 		addition = pow(vec2[i] - mean_y, 2);
-		sum_y_minus_mean_y_sq += addition;
+		sum_y_minus_mean_y_sq += addition * weight;
 
 	}
 
-	sum_x_y_minus_mean_x_y /= num;
-	sum_x_minus_mean_x_sq /= num;
-	sum_y_minus_mean_y_sq /= num;
+	sum_x_y_minus_mean_x_y /= sum_weight;
+	sum_x_minus_mean_x_sq /= sum_weight;
+	sum_y_minus_mean_y_sq /= sum_weight;
 
 	double r = sum_x_y_minus_mean_x_y
 	/ (sqrt(sum_x_minus_mean_x_sq) * sqrt(sum_y_minus_mean_y_sq));

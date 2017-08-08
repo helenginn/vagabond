@@ -539,21 +539,32 @@ double FFT::interpolate(vec3 vox000, bool im)
 
 double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
 {
+	return operation(fftCrystal, fftThing, pos, true);
+
 	mat3x3 inverse = fftCrystal->getBasisInverse();
 	mat3x3 transform = mat3x3_mult_mat3x3(inverse, fftThing->getBasis());
+	fftThing->shift(fftThing->nx / 2, fftThing->ny / 2, fftThing->nz / 2);
 
 	fftCrystal->collapseFrac(&pos.x, &pos.y, &pos.z);
 	pos.x *= (double)fftCrystal->nx;
 	pos.y *= (double)fftCrystal->ny;
 	pos.z *= (double)fftCrystal->nz;
-	pos.x += PROTEIN_SAMPLING;
-	pos.y += PROTEIN_SAMPLING;
-	pos.z += PROTEIN_SAMPLING;
+	pos.x += 0.5;
+	pos.y += 0.5;
+	pos.z += 0.5;
 
-	std::vector<double> crystalVals, thingVals;
+	std::vector<double> crystalVals, thingVals, quickVals, weights;
 	crystalVals.reserve(fftThing->nn);
 	thingVals.reserve(fftThing->nn);
-	double sum = 0;
+	weights.reserve(fftThing->nn);
+	quickVals.reserve(fftThing->nn);
+
+	for (int i = 0; i < fftThing->nn; i++)
+	{
+		quickVals.push_back(fftThing->data[i][0]);
+	}
+
+	double meanVal = mean(quickVals);
 
 	for (double k = 0; k < fftThing->nz; k += 1)
 	{
@@ -564,9 +575,9 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
 				long int small_index = fftThing->quickElement(i, j, k);
 
 				long big_index = fftThing->equivalentIndexFor(&*fftCrystal,
-															  i + 1 / 2,
-															 j + 1 / 2,
-															 k + 1 / 2,
+															  i - fftThing->nx/2,
+															  j - fftThing->ny/2,
+															  k - fftThing->nz/2,
 															 transform, pos.x,
 															 pos.y, pos.z,
 															 false);
@@ -574,10 +585,15 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
 
 				double crystal = fftCrystal->data[big_index][0];
 				double thing = fftThing->data[small_index][0];
+				double weight = thing;
 
-				sum += crystal * thing;
-				crystalVals.push_back(crystal);
-				thingVals.push_back(thing);
+				if (thing > meanVal / 10)
+				{
+					crystalVals.push_back(crystal);
+					thingVals.push_back(thing);
+					weights.push_back(weight);
+				}
+
 			}
 		}
 	}
@@ -605,7 +621,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	FFT *fftCrystal = &*fftEdit;
 	double volume = fftAtom->getScale(0) * fftAtom->getScale(1)
 	* fftAtom->getScale(2);
-
 
 	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
 	FFT::collapseFrac(&add.x, &add.y, &add.z);
@@ -660,9 +675,22 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	 * We also discard any which happen to go over the limits of our atom voxels
 	 * which may occur due to the buffer added above. */
 
-	std::vector<double> crystalVals, thingVals;
+	std::vector<double> crystalVals, thingVals, quickVals;
 	crystalVals.reserve(fftAtom->nn); // may be over-estimate, nm.
 	thingVals.reserve(fftAtom->nn);
+
+	quickVals.reserve(fftAtom->nn);
+
+	if (scoreMe)
+	{
+		for (int i = 0; i < fftAtom->nn; i++)
+		{
+			quickVals.push_back(fftAtom->data[i][0]);
+		}
+	}
+
+	double meanVal = mean(quickVals);
+	int count = 0;
 
 	vec3 atomPos = make_vec3(0, 0, 0);
 	for (int k = 0; ; k++)
@@ -675,7 +703,11 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				vec3 crystalPos = make_vec3(i, j, k);
 				atomPos = mat3x3_mult_vec(crystal2AtomVox, crystalPos);
 				vec3 pos = atomPos;
-				//pos.x += 1; pos.y += 1, pos.z += 1;
+
+				if (atomPos.x > fftAtom->nx)
+				{
+					break;
+				}
 
 				/* Now we must find the relative crystal voxel to write this
 				 * density value to, given that the atom is wrapped around
@@ -688,7 +720,20 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 				/* Find the interpolated value which offsetPos falls on */
 				double atomReal = fftAtom->interpolate(offsetPos, 0);
-				double atomImag = fftAtom->interpolate(offsetPos, 1);
+				double atomImag = 0;
+
+				if (!scoreMe)
+				{
+					atomImag = fftAtom->interpolate(offsetPos, 1);
+				}
+				else
+				{
+					if (atomReal < meanVal / 10)
+					{
+						continue;
+					}
+
+				}
 
 				/* We now convert from atom voxels to crystal voxels */
 				mat3x3_mult_vec(atomVox2Crystal, &pos);
@@ -703,28 +748,18 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 														finalCrystalVox.y,
 														finalCrystalVox.z);
 
+				count++;
+
 				if (scoreMe)
 				{
 					crystalVals.push_back(fftCrystal->getReal(crystalIndex));
 					thingVals.push_back(atomReal);
-
-					if (atomPos.x > fftAtom->nx)
-					{
-						break;
-					}
-
-					continue;
 				}
 				else
 				{
 					/* Add the density to the real value of the crystal voxel.*/
 					fftCrystal->data[crystalIndex][0] += atomReal * volume;
 					fftCrystal->data[crystalIndex][1] += atomImag * volume;
-
-					if (atomPos.x > fftAtom->nx)
-					{
-						break;
-					}
 				}
 			}
 
@@ -739,6 +774,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 			break;
 		}
 	}
+
+	//std::cout << "Num: " << count << std::endl;
 
 	if (!scoreMe)
 	{
