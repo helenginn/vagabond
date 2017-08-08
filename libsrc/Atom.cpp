@@ -14,12 +14,31 @@
 #include "Model.h"
 #include <iostream>
 #include "Element.h"
+#include "Monomer.h"
+#include "Polymer.h"
 
 Atom::Atom()
 {
 	_initialPosition = make_vec3(0, 0, 0);
 	_initialB = 0;
 	_geomType = AtomUnassigned;
+}
+
+Atom::Atom(Atom &other)
+{
+	_initialPosition = other._initialPosition;
+	_initialB = other._initialB;
+	_geomType = other._geomType;
+	_element = other._element;
+	_atomName = other._atomName;
+	_model = other._model;
+	_monomer = other._monomer;
+}
+
+void Atom::inheritParents()
+{
+	getMonomer()->addAtom(shared_from_this());
+	getMonomer()->getPolymer()->addAtom(shared_from_this());
 }
 
 void Atom::setModel(ModelPtr model)

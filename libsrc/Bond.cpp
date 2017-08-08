@@ -52,7 +52,43 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	{
 		std::static_pointer_cast<Bond>(upModel)->addDownstreamAtom(minor, group);
 	}
+}
 
+Bond::Bond(Bond &other)
+{
+	/*_usingTorsion = false;
+	_activated = false;
+	_major = major;
+	_minor = minor;
+	_activeGroup = 0;
+	_torsionBasis = make_mat3x3();
+	_torsionAngles.push_back(0);
+	_torsionBlurFromPrev = 0;
+	_bendBlur = 0;
+	_torsionBlurs.push_back(0);
+	_bondLength = 0;
+	_changedPos = true;
+	_changedSamples = true;
+	_lastPosition = make_vec3(0, 0, 0);
+
+	vec3 majorPos = getMajor()->getPosition();
+	vec3 minorPos = getMinor()->getPosition();
+
+	vec3 difference = vec3_subtract_vec3(majorPos, minorPos);
+	_bondLength = vec3_length(difference);
+
+	deriveBondLength();
+	vec3_set_length(&difference, _bondLength);
+
+	_bondDirection = difference;
+
+	ModelPtr upModel = getMajor()->getModel();
+
+	if (upModel->getClassName() == "Bond")
+	{
+		std::static_pointer_cast<Bond>(upModel)->addDownstreamAtom(minor, group);
+	}*/
+	
 }
 
 void Bond::deriveBondLength()
@@ -93,6 +129,8 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group)
 	while (_downstreamAtoms.size() <= group)
 	{
 		_downstreamAtoms.push_back(AtomList());
+		_torsionAngles.push_back(0);
+		_torsionBlurs.push_back(0);
 	}
 
 	_downstreamAtoms[group].push_back(atom);
@@ -657,4 +695,43 @@ void Bond::setBendAngle(void *object, double value)
 	}
 
 	static_cast<Bond *>(object)->propagateChange();
+}
+
+bool Bond::splitBond()
+{
+	duplicateDownstream(std::static_pointer_cast<Bond>(shared_from_this()));
+
+	return true;
+}
+
+void Bond::duplicateDownstream(BondPtr newBranch)
+{
+	ModelPtr model = getParentModel();
+
+	if (model->getClassName() != "Bond")
+	{
+		return;
+	}
+
+	BondPtr duplBond = BondPtr(new Bond(*this));
+	AtomPtr duplAtom = AtomPtr(new Atom(*getMinor()));
+	duplAtom->inheritParents();
+	duplAtom->setModel(duplBond);
+
+	int groups = newBranch->downstreamAtomGroupCount();
+	newBranch->addDownstreamAtom(duplAtom, groups);
+
+	for (int i = 0; i < downstreamAtomCount(0); i++)
+	{
+		ModelPtr model = downstreamAtom(0, i)->getModel();
+
+		if (model->getClassName() != "Bond")
+		{
+			continue;
+		}
+
+		BondPtr bond = std::static_pointer_cast<Bond>(model);
+
+		bond->duplicateDownstream(duplBond);
+	}
 }

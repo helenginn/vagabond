@@ -21,6 +21,7 @@ class Atom : public std::enable_shared_from_this<Atom>
 {
 public:
 	Atom();
+	Atom(Atom &other);
 
 	void setModel(ModelPtr model);
 	FFTPtr getBlur();
@@ -87,12 +88,17 @@ public:
 	}
 
 	void findAtomType(std::string resName);
+	void inheritParents();
 
 	AtomType getGeomType()
 	{
 		return _geomType;
 	}
 
+	MonomerPtr getMonomer()
+	{
+		return _monomer.lock();
+	}
 private:
 	ModelPtr _model;
 	ElementPtr _element;

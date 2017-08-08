@@ -28,6 +28,7 @@ void Monomer::addAtom(AtomPtr atom)
 {
 	_atoms.push_back(atom);
 	atom->setMonomer(shared_from_this());
+	
 
 	bool isBoth = atom->isBackboneAndSidechain();
 

@@ -37,6 +37,7 @@ class Bond : public Model
 {
 public:
 	Bond(AtomPtr major, AtomPtr minor, int group = 0);
+	Bond(Bond &other);
 	void activate(AtomGroupPtr group = AtomGroupPtr(),
 				  AbsolutePtr inherit = AbsolutePtr());
 
@@ -213,6 +214,7 @@ public:
 	std::string description();
 	std::string getPDBContribution();
 	ModelPtr getParentModel();
+	bool splitBond();
 
 protected:
 	static double getVoxelValue(void *obj, double x, double y, double z);
@@ -266,6 +268,7 @@ private:
 												bool singleState = false,
 												int group = 0);
 
+	void duplicateDownstream(BondPtr newBranch);
 	void propagateChange();
 	bool _usingTorsion;
 
