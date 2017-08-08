@@ -123,16 +123,14 @@ public:
 
 	double interpolate(vec3 fractionalVoxel, bool imaginary = false);
 
-	static void add(FFTPtr fftEdit, FFTPtr fftConst, int scale = 1,
-					double addX = 0, double addY = 0, double addZ = 0,
-					bool sameScale = false, MaskType type = MaskUnchecked)
+	static void add(FFTPtr fftEdit, FFTPtr fftConst,
+					vec3 add, bool sameScale = false)
 	{
-		operation(fftEdit, fftConst, scale, addX, addY, addZ, false, type);
+		operation(fftEdit, fftConst, add);
 	}
 
-	static void operation(FFTPtr fftEdit, FFTPtr fftConst, int scale = 1,
-						  double addX = 0, double addY = 0, double addZ = 0,
-						  bool sameScale = false, MaskType type = MaskUnchecked);
+	static double operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
+							bool scoreMe = false);
 
 	static double score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 position);
 

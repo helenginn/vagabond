@@ -15,6 +15,7 @@
 #include "vec3.h"
 #include "mat3x3.h"
 #include <string>
+#include "../libinfo/GeomTable.h"
 
 class Atom : public std::enable_shared_from_this<Atom>
 {
@@ -85,6 +86,13 @@ public:
 		_initialB = b;
 	}
 
+	void findAtomType(std::string resName);
+
+	AtomType getGeomType()
+	{
+		return _geomType;
+	}
+
 private:
 	ModelPtr _model;
 	ElementPtr _element;
@@ -92,6 +100,8 @@ private:
 	MonomerWkr _monomer;
 	vec3 _initialPosition;
 	double _initialB;
+
+	AtomType _geomType;
 };
 
 #endif /* defined(__vagabond__Atom__) */

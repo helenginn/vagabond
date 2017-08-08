@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <vector>
 #include <math.h>
+#include <stdlib.h>
 
 double scale_factor(std::vector<double> &set1, std::vector<double> &set2);
 double r_factor(std::vector<double> &set1, std::vector<double> &set2);
@@ -31,6 +32,24 @@ inline double normal_distribution(double x, double sigma)
 	double denominator = sigma * sqrt(2 * M_PI);
 
 	return exp / denominator;
+}
+
+inline double random_norm_dist(double x, double sigma)
+{
+	const int tries = 10;
+	double total = 0;
+
+	for (int i = 0; i < tries; i++)
+	{
+		total += rand() / (double)RAND_MAX;
+	}
+
+	total -= tries * 0.5;
+
+	total *= sigma;
+	total += x;
+
+	return total;
 }
 
 #endif /* defined(__vagabond__maths__) */

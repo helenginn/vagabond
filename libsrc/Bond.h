@@ -70,7 +70,7 @@ public:
 
 	double getTorsion()
 	{
-		return _torsionRadians;
+		return _torsionAngle;
 	}
 
 	mat3x3 getTorsionBasis()
@@ -82,7 +82,8 @@ public:
 	void setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign);
 	virtual FFTPtr getDistribution();
 	virtual vec3 getStaticPosition();
-	std::vector<BondSample> getManyPositions(bool staticAtom = false);
+	std::vector<BondSample> getManyPositions(bool staticAtom = false,
+											 bool singleState = false);
 	virtual std::string getClassName()
 	{
 		return "Bond";
@@ -101,12 +102,12 @@ public:
 
 	static double getTorsion(void *object)
 	{
-		return static_cast<Bond *>(object)->_torsionRadians;
+		return static_cast<Bond *>(object)->_torsionAngle;
 	}
 
 	static void setTorsion(void *object, double value)
 	{
-		static_cast<Bond *>(object)->_torsionRadians = value;
+		static_cast<Bond *>(object)->_torsionAngle = value;
 		static_cast<Bond *>(object)->propagateChange();
 	}
 
@@ -117,7 +118,7 @@ public:
 
 	static void setTorsionNextBlur(void *object, double value)
 	{
-		static_cast<Bond *>(object)->_torsionBlurFromPrev = value;
+		static_cast<Bond *>(object)->_torsionBlurFromPrev = std::max(-1., -fabs(value));
 		static_cast<Bond *>(object)->propagateChange();
 	}
 
@@ -203,12 +204,17 @@ private:
 	AtomWkr _bendToAtom;
 
 	double _bondLength;
-	double _torsionRadians;
+	double _torsionAngle;
 	double _torsionBlur;
 	double _torsionBlurFromPrev;
 	double _bendBlur;
 
 	bool _activated;
+
+	/* Grab bond length from the atom types of major/minor */
+	void deriveBondLength();
+	/* And a given bond angle for downstream atom n */
+	void deriveBondAngle(int n);
 
 	/* Bond direction only used when a torsion angle can't be
 	 * calculated because it's connected to an Absolute PDB.
@@ -229,10 +235,11 @@ private:
 	vec3 positionFromTorsion(mat3x3 torsionBasis, double angle,
 							 double ratio, vec3 start);
 	std::vector<BondSample> sampleMyAngles(double angle, double sigma,
-										   double interval = ANGLE_SAMPLING);
+										   bool singleState = false);
 	std::vector<BondSample> getCorrelatedAngles(BondSample prev,
 												double lastTorsion,
-												double angle, double blur);
+												double angle, double blur,
+												bool singleState = false);
 
 	void propagateChange();
 	bool _usingTorsion;

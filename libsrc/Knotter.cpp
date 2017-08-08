@@ -32,16 +32,15 @@ void Knotter::tie()
 
 	bool convertable = false;
 
-	if (resNum < 24 || resNum > 120)
+	if (resNum != 86)
 	{
 		return;
 	}
 
-
 	if (residue == "lys")
 	{
-	//	convertable = true;
-	//	makeLysine();
+		convertable = true;
+		makeLysine();
 	}
 
 	if (residue == "ser")
@@ -109,13 +108,11 @@ void Knotter::makeLysine()
 	AbsolutePtr inherit = std::static_pointer_cast<Absolute>(cAlpha->getModel());
 
 	BondPtr ca2cb = BondPtr(new Bond(cAlpha, cBeta));
-	Bond::setBondLength(&*ca2cb, 1.516);
 	ca2cb->setBendTowards(hBackbone);
 	ca2cb->setTorsionAtoms(nSpine, cGamma);
 	ca2cb->activate(_sidechain, inherit);
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
-	Bond::setBondLength(&*cb2cg, CH2E_CH2E_LENGTH);
 	cb2cg->setTorsionAtoms(cAlpha, cDelta);
 	cb2cg->activate(_sidechain, inherit);
 
@@ -123,7 +120,6 @@ void Knotter::makeLysine()
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
 
 	BondPtr cg2cd = BondPtr(new Bond(cGamma, cDelta));
-	Bond::setBondLength(&*cg2cd, CH2E_CH2E_LENGTH);
 	cg2cd->setTorsionAtoms(cBeta, cEpsilon);
 	cg2cd->activate(_sidechain, inherit);
 
@@ -131,7 +127,6 @@ void Knotter::makeLysine()
 	BondPtr cg2hg3 = BondPtr(new Bond(cGamma, hGamma3));
 
 	BondPtr cd2ce = BondPtr(new Bond(cDelta, cEpsilon));
-	Bond::setBondLength(&*cd2ce, CH2E_CH2E_LENGTH);
 	cd2ce->setTorsionAtoms(cGamma, nOmega);
 	cd2ce->activate(_sidechain, inherit);
 
@@ -139,7 +134,6 @@ void Knotter::makeLysine()
 	BondPtr cd2hd3 = BondPtr(new Bond(cDelta, hDelta3));
 
 	BondPtr ce2nz = BondPtr(new Bond(cEpsilon, nOmega));
-	Bond::setBondLength(&*ce2nz, 1.489);
 	ce2nz->activate(_sidechain, inherit);
 
 	BondPtr ce2he2 = BondPtr(new Bond(cEpsilon, hEpsilon2));

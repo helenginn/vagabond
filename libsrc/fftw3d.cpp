@@ -591,8 +591,8 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
 /*  For multiplying point-wise
  *
  */
-void FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
-						double addY, double addZ, bool isMultiply, MaskType type)
+double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
+					  bool scoreMe)
 {
 	/* I rarely comment something so heavily but I will get confused if
 	 * I don't, this time, as I can't soak the protocol into the variable
@@ -608,12 +608,12 @@ void FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 
 
 	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
-	FFT::collapseFrac(&addX, &addY, &addZ);
+	FFT::collapseFrac(&add.x, &add.y, &add.z);
 
 	/* Multiply by the relative dimensions of the crystal */
-	double multX = addX * fftCrystal->nx;
-	double multY = addY * fftCrystal->ny;
-	double multZ = addZ * fftCrystal->nz;
+	double multX = add.x * fftCrystal->nx;
+	double multY = add.y * fftCrystal->ny;
+	double multZ = add.z * fftCrystal->nz;
 
 	/* Get the remainder after subtracting a number of whole voxels */
 	vec3 atomOffset;
@@ -660,6 +660,10 @@ void FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 	 * We also discard any which happen to go over the limits of our atom voxels
 	 * which may occur due to the buffer added above. */
 
+	std::vector<double> crystalVals, thingVals;
+	crystalVals.reserve(fftAtom->nn); // may be over-estimate, nm.
+	thingVals.reserve(fftAtom->nn);
+
 	vec3 atomPos = make_vec3(0, 0, 0);
 	for (int k = 0; ; k++)
 	{
@@ -681,7 +685,6 @@ void FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 				/* We add the tiny offset which resulted from the atom
 				 * falling between two voxels, in atomic voxels */
 				vec3 offsetPos = vec3_add_vec3(pos, atomOffset);
-		//		offsetPos.x -= 2.0; offsetPos.y -= 2.0; offsetPos.z -= 2.0;
 
 				/* Find the interpolated value which offsetPos falls on */
 				double atomReal = fftAtom->interpolate(offsetPos, 0);
@@ -700,18 +703,28 @@ void FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 														finalCrystalVox.y,
 														finalCrystalVox.z);
 
-				/* Add the density to the real value of the crystal voxel.*/
-				fftCrystal->data[crystalIndex][0] += atomReal * volume;
-				fftCrystal->data[crystalIndex][1] += atomImag * volume;
-
-				if (type != MaskUnchecked && atomReal > 1.5)
+				if (scoreMe)
 				{
-					fftEdit->setMask(crystalIndex, type);
+					crystalVals.push_back(fftCrystal->getReal(crystalIndex));
+					thingVals.push_back(atomReal);
+
+					if (atomPos.x > fftAtom->nx)
+					{
+						break;
+					}
+
+					continue;
 				}
-
-				if (atomPos.x > fftAtom->nx)
+				else
 				{
-					break;
+					/* Add the density to the real value of the crystal voxel.*/
+					fftCrystal->data[crystalIndex][0] += atomReal * volume;
+					fftCrystal->data[crystalIndex][1] += atomImag * volume;
+
+					if (atomPos.x > fftAtom->nx)
+					{
+						break;
+					}
 				}
 			}
 
@@ -726,6 +739,15 @@ void FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, int scale, double addX,
 			break;
 		}
 	}
+
+	if (!scoreMe)
+	{
+		return 0;
+	}
+
+	double correl = correlation(crystalVals, thingVals);
+
+	return correl;
 }
 
 /*  For multiplying point-wise
@@ -804,14 +826,14 @@ void FFT::printSlice(bool amplitude)
 				value = sqrt(getIntensity(i, j, 0));
 			}
 
-			if (value > 0.1) symbol = ".";
-			if (value > 0.2) symbol = ":";
-			if (value > 0.4) symbol = "\"";
-			if (value > 0.8) symbol = "*";
-			if (value > 3.0) symbol = "x";
-			if (value > 8.0) symbol = "H";
-			if (value > 16.0) symbol = "#";
-			if (value > 25.0) symbol = "@";
+			if (value > 0.01) symbol = ".";
+			if (value > 0.02) symbol = ":";
+			if (value > 0.04) symbol = "\"";
+			if (value > 0.08) symbol = "*";
+			if (value > 0.16) symbol = "x";
+			if (value > 0.32) symbol = "H";
+			if (value > 0.64) symbol = "#";
+			if (value > 1.00) symbol = "@";
 
 			std::cout << symbol;
 		}

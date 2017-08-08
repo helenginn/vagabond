@@ -19,6 +19,7 @@ Atom::Atom()
 {
 	_initialPosition = make_vec3(0, 0, 0);
 	_initialB = 0;
+	_geomType = AtomUnassigned;
 }
 
 void Atom::setModel(ModelPtr model)
@@ -60,7 +61,7 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell)
 	vec3 pos = getPosition();
 	mat3x3_mult_vec(unit_cell, &pos);
 
-	FFT::add(fft, modified, 2, pos.x, pos.y, pos.z, false, MaskProtein);
+	FFT::add(fft, modified, pos);
 }
 
 vec3 Atom::getPosition()
@@ -83,4 +84,33 @@ bool Atom::isBackboneAndSidechain()
 	if (_atomName == "CA") return true;
 
 	return false;
+}
+
+/* Convert to lookup table */
+void Atom::findAtomType(std::string resName)
+{
+	if (_atomName == "CA" && resName != "gly")
+	{
+		_geomType = AtomCH1E;
+	}
+	else if (_atomName == "CB" && resName == "thr")
+	{
+		_geomType = AtomCH1E;
+	}
+	else if (_atomName == "CG2" && resName == "thr")
+	{
+		_geomType = AtomCH3E;
+	}
+	else if (_atomName == "OG1" && resName == "thr")
+	{
+		_geomType = AtomOH1;
+	}
+	else if (_element->getSymbol() == "C" && resName == "lys")
+	{
+		_geomType = AtomCH2E;
+	}
+	else if (_element->getSymbol() == "N" && resName == "lys")
+	{
+		_geomType = AtomNH3;
+	}
 }

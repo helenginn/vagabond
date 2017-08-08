@@ -86,7 +86,7 @@ void Options::run()
 				crystals[0]->transplantAmplitudes(data, prop, prop-1);
 			}
 
-//			crystals[0]->molecule(0)->makePDB();
+			crystals[0]->molecule(0)->makePDB();
 
 			crystals[0]->writeCalcMillersToFile(data, 1.0);
 

@@ -124,8 +124,8 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 			BondPtr preBond = std::static_pointer_cast<Bond>(preModel);
 
-			addBendAngle(bond, deg2rad(0.2), deg2rad(0.1));
-			addBendBlur(bond, deg2rad(0.05), deg2rad(0.1));
+			addBendAngle(bond, deg2rad(0.1), deg2rad(0.1));
+			addBendBlur(bond, deg2rad(0.02), deg2rad(0.01));
 
 			addSampled(bond->getMinor());
 

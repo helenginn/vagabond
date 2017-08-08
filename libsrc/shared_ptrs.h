@@ -12,13 +12,12 @@
 #include <memory>
 #include <math.h>
 
-#define CH2E_CH2E_LENGTH 1.530
 
 #define ANGLE_SAMPLING deg2rad(4.0)
 
 
 #define MAX_SCATTERING_DSTAR 4.00
-#define ATOM_SAMPLING_COUNT (28)
+#define ATOM_SAMPLING_COUNT (36)
 #define PROTEIN_SAMPLING (1. / 3.)
 #define WATER_RADIUS 0.6
 

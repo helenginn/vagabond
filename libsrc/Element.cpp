@@ -51,6 +51,11 @@ Element::Element(std::string symbol, std::string name, double electrons)
 	else if (_symbol == "S")
 	{
 		memcpy(_scattering, ScatterFactors::sScatter, ScatterFactors::numScatter * sizeof(float));
+
+		for (int i = 0; i < ScatterFactors::numScatter; i++)
+		{
+			_scattering[i] *= 16 / 16;
+		}
 	}
 	else if (_symbol == "CL")
 	{

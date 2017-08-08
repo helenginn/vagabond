@@ -37,6 +37,7 @@ void Absolute::makeAtom()
 	ElementPtr element = Element::getElement(_element);
 	myAtom->setElement(element);
 	myAtom->setAtomName(_atomName);
+	myAtom->findAtomType(_resName);
 
 	_atom = myAtom;
 }
