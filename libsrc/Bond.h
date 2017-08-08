@@ -51,6 +51,13 @@ public:
 		return _minor.lock();
 	}
 
+	void setMajor(AtomPtr newMajor)
+	{
+		_major = newMajor;
+	}
+
+	void setMinor(AtomPtr newMinor);
+
 	AtomPtr getHeavyAlign()
 	{
 		return _heavyAlign.lock();
@@ -191,14 +198,14 @@ public:
 
 	bool isNotJustForHydrogens();
 
-	double getGeomRatio(int i)
+	double getGeomRatio(int n, int i)
 	{
-		return _downRatios[i];
+		return _downRatios[n][i];
 	}
 
-	void setGeomRatio(int i, double value)
+	void setGeomRatio(int n, int i, double value)
 	{
-		_downRatios[i] = value;
+		_downRatios[n][i] = value;
 	}
 
 	void setAbsoluteInheritance(AbsolutePtr abs)
@@ -206,7 +213,7 @@ public:
 		_absInherit = abs;
 	}
 
-	void changeActiveGroup(int newGroup)
+	void setActiveGroup(int newGroup)
 	{
 		_activeGroup = newGroup;
 	}
@@ -231,6 +238,8 @@ private:
 
 	double _bondLength;
 	std::vector<double> _torsionAngles, _torsionBlurs;
+	std::vector<std::vector<double> > _downRatios;
+
 	double _torsionBlurFromPrev;
 	double _bendBlur;
 
@@ -247,7 +256,6 @@ private:
 	 * Otherwise use as a reference for torsion matrix updates. */
 	vec3 _bondDirection;
 
-	std::vector<double> _downRatios;
 
 	/* Will aim to define torsion basis as:
 	   x: along line of 0º torsion angle.
@@ -268,7 +276,7 @@ private:
 												bool singleState = false,
 												int group = 0);
 
-	void duplicateDownstream(BondPtr newBranch);
+	void duplicateDownstream(BondPtr newBranch, int groupNum);
 	void propagateChange();
 	bool _usingTorsion;
 

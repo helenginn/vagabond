@@ -152,6 +152,12 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 			sample();
 		}
 
+		if (preAtom == "CG")
+		{
+			bond->splitBond();
+			return;
+		}
+
 	}
 
 
