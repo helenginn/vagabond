@@ -243,18 +243,6 @@ void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
 	_usingTorsion = true;
 }
 
-double Bond::getVoxelValue(void *obj, double x, double y, double z)
-{
-	double distSq = x * x + y * y + z * z;
-
-	if (sqrt(distSq) < 0.16)
-	{
-		return 1;
-	}
-
-	return 0;
-}
-
 std::string Bond::getPDBContribution()
 {
 	AtomPtr atom = getMinor();

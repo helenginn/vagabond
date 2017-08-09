@@ -238,7 +238,6 @@ public:
 	bool splitBond();
 
 protected:
-	static double getVoxelValue(void *obj, double x, double y, double z);
 
 private:
 	AtomWkr _major;
