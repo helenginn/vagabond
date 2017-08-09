@@ -31,6 +31,20 @@ typedef struct
 	double occupancy;
 } BondSample;
 
+typedef struct
+{
+	AtomWkr atom;
+	double geomRatio;
+} AtomValue;
+
+typedef struct
+{
+	std::vector<AtomValue> atoms;
+	double torsionAngle;
+	double torsionBlur;
+	double occupancy;
+} BondGroup;
+
 typedef std::vector<AtomWkr> AtomList;
 
 class Bond : public Model
@@ -237,11 +251,16 @@ private:
 	AtomWkr _bendToAtom;
 
 	double _bondLength;
+
+	/* Bond groups */
+	std::vector<BondGroup> bondGroups;
+
+	/* To be "bond-grouped" */
 	std::vector<double> _torsionAngles, _torsionBlurs;
 	std::vector<std::vector<double> > _downRatios;
-
 	double _torsionBlurFromPrev;
 	double _bendBlur;
+	/* END: To be "bond-grouped" */
 
 	bool _activated;
 	int _activeGroup;

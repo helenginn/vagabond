@@ -735,9 +735,6 @@ bool Bond::splitBond()
 
 void Bond::duplicateDownstream(BondPtr newBranch, int groupNum)
 {
-//	BondPtr upBranch;
-//    upBranch = std::static_pointer_cast<Bond>(newBranch->getParentModel());
-
 	ModelPtr model = getParentModel();
 
 	if (model->getClassName() != "Bond")
