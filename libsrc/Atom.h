@@ -62,7 +62,9 @@ public:
 	}
 
 	/* Fit with FFT for the element dist only */
-	double scoreWithMap(FFTPtr fft, mat3x3 unit_cell);
+	double scoreWithMap(FFTPtr fft, mat3x3 unit_cell,
+						std::vector<double> *xs = NULL,
+						std::vector<double> *ys = NULL);
 
 	/* Returns a FFT for the model dist, for reuse */
 	void addToMap(FFTPtr fft, mat3x3 unit_cell);

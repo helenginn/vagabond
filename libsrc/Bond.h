@@ -16,6 +16,7 @@
 #include "mat3x3.h"
 #include "Distributor.h"
 #include <iostream>
+#include "Atom.h"
 
 typedef enum
 {
@@ -44,8 +45,6 @@ typedef struct
 	double torsionBlur;
 	double occupancy;
 } BondGroup;
-
-typedef std::vector<AtomWkr> AtomList;
 
 class Bond : public Model
 {
@@ -94,7 +93,7 @@ public:
 
 	double getTorsion(int group)
 	{
-		return _torsionAngles[group];
+		return _bondGroups[group].torsionAngle;
 	}
 
 	mat3x3 getTorsionBasis()
@@ -117,29 +116,37 @@ public:
 	static void setTorsionBlur(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		bond->_torsionBlurs[bond->_activeGroup] = value;
+		bond->_bondGroups[bond->_activeGroup].torsionBlur = value;
 		static_cast<Bond *>(object)->propagateChange();
 	}
 
 	static double getTorsionBlur(void *object)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		return bond->_torsionBlurs[bond->_activeGroup];
+		return bond->_bondGroups[bond->_activeGroup].torsionBlur;
 	}
 
 	static double getTorsion(void *object)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		return bond->_torsionAngles[bond->_activeGroup];
+		return bond->_bondGroups[bond->_activeGroup].torsionAngle;
 	}
 
 	static void setTorsion(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		bond->_torsionAngles[bond->_activeGroup] = value;
+		bond->_bondGroups[bond->_activeGroup].torsionAngle = value;
 		static_cast<Bond *>(object)->propagateChange();
 	}
 
+	static double getOccupancy(void *object)
+	{
+		Bond *bond = static_cast<Bond *>(object);
+		return bond->_bondGroups[bond->_activeGroup].occupancy;
+	}
+
+	static void setOccupancy(void *object, double value);
+	
 	static double getTorsionNextBlur(void *object)
 	{
 		return static_cast<Bond *>(object)->_torsionBlurFromPrev;
@@ -174,26 +181,26 @@ public:
 
 	int downstreamAtomCount(int group)
 	{
-		return _downstreamAtoms[group].size();
+		return _bondGroups[group].atoms.size();
 	}
 
 	int downstreamAtomGroupCount()
 	{
-		return _downstreamAtoms.size();
+		return _bondGroups.size();
 	}
 
 	AtomPtr downstreamAtom(int group, int i)
 	{
-		return _downstreamAtoms[group][i].lock();
+		return _bondGroups[group].atoms[i].atom.lock();
 	}
 
 	int downstreamAtomNum(AtomPtr atom, int *group)
 	{
-		for (int j = 0; j < _downstreamAtoms.size(); j++)
+		for (int j = 0; j < downstreamAtomGroupCount(); j++)
 		{
-			for (int i = 0; i < _downstreamAtoms[j].size(); i++)
+			for (int i = 0; i < downstreamAtomCount(j); i++)
 			{
-				if (_downstreamAtoms[j][i].lock() == atom)
+				if (downstreamAtom(j, i) == atom)
 				{
 					*group = j;
 					return i;
@@ -214,12 +221,12 @@ public:
 
 	double getGeomRatio(int n, int i)
 	{
-		return _downRatios[n][i];
+		return _bondGroups[n].atoms[i].geomRatio;
 	}
 
 	void setGeomRatio(int n, int i, double value)
 	{
-		_downRatios[n][i] = value;
+		_bondGroups[n].atoms[i].geomRatio = value;
 	}
 
 	void setAbsoluteInheritance(AbsolutePtr abs)
@@ -229,7 +236,16 @@ public:
 
 	void setActiveGroup(int newGroup)
 	{
+		if (getMajor()->getAtomName() == "CB")
+		{
+	//		std::cout << "setting active group to " << newGroup << std::endl;
+		}
 		_activeGroup = newGroup;
+	}
+
+	int getActiveGroup()
+	{
+		return _activeGroup;
 	}
 
 	std::string description();
@@ -243,8 +259,6 @@ private:
 	AtomWkr _major;
 	AtomWkr _minor;
 
-	std::vector<AtomList> _downstreamAtoms;
-
 	AtomWkr _heavyAlign;
 	AtomWkr _lightAlign;
 	AtomWkr _bendToAtom;
@@ -252,15 +266,10 @@ private:
 	double _bondLength;
 
 	/* Bond groups */
-	std::vector<BondGroup> bondGroups;
+	std::vector<BondGroup> _bondGroups;
 
-	/* To be "bond-grouped" */
-	std::vector<double> _torsionAngles, _torsionBlurs;
-	std::vector<std::vector<double> > _downRatios;
 	double _torsionBlurFromPrev;
 	double _bendBlur;
-	/* END: To be "bond-grouped" */
-
 	bool _activated;
 	int _activeGroup;
 

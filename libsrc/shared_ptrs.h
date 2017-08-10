@@ -11,7 +11,7 @@
 
 #include <memory>
 #include <math.h>
-
+#include <vector>
 
 #define ANGLE_SAMPLING deg2rad(4.0)
 
@@ -101,6 +101,8 @@ typedef std::shared_ptr<CSV> CSVPtr;
 
 class Sampler;
 typedef std::shared_ptr<Sampler> SamplerPtr;
+
+typedef std::vector<AtomWkr> AtomList;
 
 typedef enum
 {

@@ -26,14 +26,18 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	_minor = minor;
 	_activeGroup = 0;
 	_torsionBasis = make_mat3x3();
-	_torsionAngles.push_back(0);
-	_torsionBlurs.push_back(0);
 	_torsionBlurFromPrev = 0;
 	_bendBlur = 0;
 	_bondLength = 0;
 	_changedPos = true;
 	_changedSamples = true;
 	_lastPosition = make_vec3(0, 0, 0);
+
+	BondGroup aGroup;
+	aGroup.torsionAngle = 0;
+	aGroup.torsionBlur = 0;
+	aGroup.occupancy = 1;
+	_bondGroups.push_back(aGroup);
 
 	vec3 majorPos = getMajor()->getPosition();
 	vec3 minorPos = getMinor()->getPosition();
@@ -62,10 +66,10 @@ Bond::Bond(Bond &other)
 	_minor = other._minor;
 	_activeGroup = other._activeGroup;
 	_torsionBasis = other._torsionBasis;
-	_torsionAngles = other._torsionAngles;
+	_bondGroups = other._bondGroups;
+
 	_torsionBlurFromPrev = 0;
 	_bendBlur = 0;
-	_torsionBlurs = std::vector<double>(1, 0);
 	_bondLength = other._bondLength;
 	_changedPos = true;
 	_changedSamples = true;
@@ -118,15 +122,14 @@ void Bond::deriveBondAngle(int group, int n)
 
 void Bond::addDownstreamAtom(AtomPtr atom, int group)
 {
-	while (_downstreamAtoms.size() <= group)
+	while (_bondGroups.size() <= group)
 	{
-		_downstreamAtoms.push_back(AtomList());
-		_torsionAngles.push_back(0);
-		_torsionBlurs.push_back(0);
-		_downRatios.push_back(std::vector<double>());
+		BondGroup newGroup;
+		newGroup.torsionAngle = 0;
+		newGroup.torsionBlur = 0;
+		newGroup.occupancy = 1;
+		_bondGroups.push_back(newGroup);
 	}
-
-	_downstreamAtoms[group].push_back(atom);
 
 	vec3 pos = atom->getInitialPosition();
 	vec3 start = getMinor()->getInitialPosition();
@@ -136,9 +139,15 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group)
 	angle -= M_PI / 2;
 	double ratio = sin(angle);
 
-	_downRatios[group].push_back(ratio);
+	AtomValue newAtom;
+	newAtom.atom = atom;
+	newAtom.geomRatio = ratio;
+	_bondGroups[group].atoms.push_back(newAtom);
 
-	deriveBondAngle(_downRatios.size() - 1, _downRatios[group].size() - 1);
+	int totalAtoms = _bondGroups[group].atoms.size();
+	int totalGroups = downstreamAtomGroupCount();
+
+	deriveBondAngle(totalGroups - 1, totalAtoms - 1);
 }
 
 void Bond::setMinor(AtomPtr newMinor)
@@ -235,10 +244,7 @@ void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
 	vec3 miPos = getMinor()->getPosition();
 	vec3 lPos = _lightAlign.lock()->getPosition();
 
-	makeTorsionBasis(hPos, maPos, miPos, lPos, &_torsionAngles[0]);
-
-//	std::cout << "Torsion, on bond " << getMajor()->getAtomName() << " to " <<
-//	getMinor()->getAtomName() << " is " << rad2deg(_torsionAngle) << "º" << std::endl;
+	makeTorsionBasis(hPos, maPos, miPos, lPos, &_bondGroups[0].torsionAngle);
 
 	_usingTorsion = true;
 }
@@ -288,7 +294,7 @@ std::string Bond::getPDBContribution()
 
 FFTPtr Bond::getDistribution()
 {
-	std::vector<BondSample> positions = getManyPositions();
+	std::vector<BondSample> positions = getManyPositions(false, false, _activeGroup);
 	vec3 absolute = getMinor()->getPosition();
 
 	double n = ATOM_SAMPLING_COUNT;
@@ -418,7 +424,8 @@ std::vector<BondSample> Bond::getCorrelatedAngles(BondSample prev,
 												  bool singleState, int group)
 {
 	double addBlur = (prev.torsion - lastTorsion) * _torsionBlurFromPrev;
-	double newBlur = _torsionAngles[group] + addBlur;
+	double absAngle = _bondGroups[group].torsionAngle;
+	double newBlur = absAngle + addBlur;
 
 	std::vector<BondSample> set = sampleMyAngles(newBlur, blur, singleState);
 
@@ -446,9 +453,9 @@ std::vector<BondSample> Bond::getManyPositions(bool staticAtom,
 
 		std::vector<BondSample> newSamples;
 
-		double spread = staticAtom ? 0 : _torsionBlurs[group];
+		double spread = staticAtom ? 0 : _bondGroups[group].torsionBlur;
 		std::vector<BondSample> torsionsOnly, myBendings;
-		torsionsOnly = sampleMyAngles(_torsionAngles[group], spread, singleState);
+		torsionsOnly = sampleMyAngles(_bondGroups[group].torsionAngle, spread, singleState);
 		spread = staticAtom ? 0 : _bendBlur;
 
 		myBendings = sampleMyAngles(0, spread, singleState);
@@ -488,7 +495,6 @@ std::vector<BondSample> Bond::getManyPositions(bool staticAtom,
 			}
 		}
 
-	//	_lastSamples = newSamples;
 		_changedSamples = false;
 
 		return newSamples;
@@ -498,6 +504,8 @@ std::vector<BondSample> Bond::getManyPositions(bool staticAtom,
 	int myGroup = -1;
 	double torsionNumber = prevBond->downstreamAtomNum(getMinor(), &myGroup);
 	double totalAtoms = prevBond->downstreamAtomCount(myGroup);
+	int lastGroup = prevBond->getActiveGroup();
+	prevBond->setActiveGroup(myGroup);
 
 	std::vector<BondSample> prevSamples = prevBond->getManyPositions(staticAtom,
 																	 singleState,
@@ -513,15 +521,16 @@ std::vector<BondSample> Bond::getManyPositions(bool staticAtom,
 
 	for (int i = 0; i < prevSamples.size(); i++)
 	{
-		spread = staticAtom ? 0 : _torsionBlurs[group];
+		spread = staticAtom ? 0 : _bondGroups[_activeGroup].torsionBlur;
 		myTorsions = getCorrelatedAngles(prevSamples[i], meanLastTorsion,
-										 _torsionAngles[group], spread,
-										 singleState);
+										 _bondGroups[_activeGroup].torsionAngle,
+										 spread, singleState, _activeGroup);
 
 		double torsionAngle = prevSamples[i].torsion;
 		mat3x3 oldBasis = prevSamples[i].basis;
 
 		double ratio = prevBond->getGeomRatio(myGroup, torsionNumber);
+		double occupancy = getOccupancy(&*prevBond);
 
 		if (torsionNumber < 0)
 		{
@@ -561,12 +570,14 @@ std::vector<BondSample> Bond::getManyPositions(bool staticAtom,
 				nextSample.start = torsionPos;
 				nextSample.torsion = myTorsions[k].torsion;
 				nextSample.occupancy = myTorsions[k].occupancy *
-				myBendings[j].occupancy * prevSamples[i].occupancy;
+				myBendings[j].occupancy * prevSamples[i].occupancy * occupancy;
 
 				newSamples.push_back(nextSample);
 			}
 		}
 	}
+
+	prevBond->setActiveGroup(lastGroup);
 
 //	_lastSamples = newSamples;
 	_changedSamples = false;
@@ -628,7 +639,7 @@ std::string Bond::description()
 	stream << "Bond: connects " << getMajor()->getAtomName() << " to "
 	<< getMinor()->getAtomName() << std::endl;
 	stream << "Bond length: " << _bondLength << " Å" << std::endl;
-	stream << "Bond torsion angle: " << rad2deg(_torsionAngles[0]) << std::endl;
+	stream << "Bond torsion angle: " << rad2deg(_bondGroups[0].torsionAngle) << std::endl;
 	stream << "Bond downstream groups: (" << downstreamAtomGroupCount() << "):" << std::endl;
 	stream << "Bond downstream atoms (first) (" << downstreamAtomCount(0) << "):" << std::endl;
 
@@ -704,10 +715,13 @@ bool Bond::splitBond()
 {
 	BondPtr me = std::static_pointer_cast<Bond>(shared_from_this());
 	BondPtr parent = std::static_pointer_cast<Bond>(getParentModel());
-	int last = downstreamAtomGroupCount();
+	int last = parent->downstreamAtomGroupCount();
 	me->duplicateDownstream(parent, last);
+	double occ = getOccupancy(&*parent);
 	parent->setActiveGroup(last);
 	double torsion = getTorsion(&*parent);
+
+	std::cout << "Splitting bond... new torsions " << rad2deg(torsion);
 	torsion += deg2rad(180);
 
 	if (torsion > deg2rad(360))
@@ -715,8 +729,12 @@ bool Bond::splitBond()
 		torsion -= deg2rad(360);
 	}
 
-	parent->setTorsion(this, torsion);
+	std::cout << "º and " << rad2deg(torsion) << "º." << std::endl;
+
+	setOccupancy(&*parent, occ / 2);
+	setTorsion(&*parent, torsion);
 	parent->setActiveGroup(0);
+	setOccupancy(&*parent, occ / 2);
 
 	return true;
 }
@@ -760,11 +778,29 @@ void Bond::duplicateDownstream(BondPtr newBranch, int groupNum)
 	{
 		BondPtr nextBond = std::static_pointer_cast<Bond>(downstreamAtom(0, i)->getModel());
 
-		if (model->getClassName() != "Bond")
+		if (nextBond->getClassName() != "Bond")
 		{
 			continue;
 		}
 
 		nextBond->duplicateDownstream(duplBond, 0);
 	}
+}
+
+void Bond::setOccupancy(void *object, double value)
+{
+	Bond *bond = static_cast<Bond *>(object);
+	bond->_bondGroups[bond->_activeGroup].occupancy = value;
+
+	double occTotal = 0;
+
+	for (int i = 0; i < bond->downstreamAtomGroupCount() - 1; i++)
+	{
+		occTotal += bond->_bondGroups[i].occupancy;
+	}
+
+	int last = bond->downstreamAtomGroupCount() - 1;
+	bond->_bondGroups[last].occupancy = 1 - occTotal;
+
+	static_cast<Bond *>(object)->propagateChange();
 }

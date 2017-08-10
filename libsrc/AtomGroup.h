@@ -18,6 +18,7 @@ class AtomGroup
 {
 public:
 	AtomPtr findAtom(std::string atomType);
+	AtomList findAtoms(std::string atomType);
 
 	void setMonomer(MonomerPtr monomer)
 	{

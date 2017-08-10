@@ -24,6 +24,21 @@ AtomPtr AtomGroup::findAtom(std::string atomType)
 	return AtomPtr();
 }
 
+AtomList AtomGroup::findAtoms(std::string atomType)
+{
+	AtomList list;
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->getAtomName() == atomType)
+		{
+			list.push_back(atom(i));
+		}
+	}
+
+	return list;
+}
+
 double AtomGroup::totalElectrons()
 {
 	double total = 0;

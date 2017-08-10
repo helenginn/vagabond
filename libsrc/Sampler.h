@@ -37,11 +37,17 @@ public:
 	void addBondLength(BondPtr bond, double range, double interval);
 	void addBendBlur(BondPtr bond, double range, double interval);
 	void addBendAngle(BondPtr bond, double range, double interval);
+	void addOccupancy(BondPtr bond, double range, double interval);
 	void setCrystal(CrystalPtr crystal);
 	void sample();
 
 	void setupGrid();
 	void setupNelderMead();
+
+	void setJointSampling()
+	{
+		_joint = true;
+	}
 
 	void reportInDegrees()
 	{
@@ -76,6 +82,7 @@ private:
 	FFTPtr _fft;
 	bool _mock;
 	mat3x3 _real2hkl;
+	bool _joint;
 
 	std::string _jobName;
 

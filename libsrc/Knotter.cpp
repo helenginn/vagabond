@@ -32,7 +32,7 @@ void Knotter::tie()
 
 	bool convertable = false;
 
-	if (resNum != 86)
+	if (resNum != 62)
 	{
 		return;
 	}

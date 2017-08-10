@@ -537,70 +537,10 @@ double FFT::interpolate(vec3 vox000, bool im)
 	return value;
 }
 
-double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
+double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos,
+				  std::vector<double> *xs, std::vector<double> *ys)
 {
-	return operation(fftCrystal, fftThing, pos, true);
-
-	mat3x3 inverse = fftCrystal->getBasisInverse();
-	mat3x3 transform = mat3x3_mult_mat3x3(inverse, fftThing->getBasis());
-	fftThing->shift(fftThing->nx / 2, fftThing->ny / 2, fftThing->nz / 2);
-
-	fftCrystal->collapseFrac(&pos.x, &pos.y, &pos.z);
-	pos.x *= (double)fftCrystal->nx;
-	pos.y *= (double)fftCrystal->ny;
-	pos.z *= (double)fftCrystal->nz;
-	pos.x += 0.5;
-	pos.y += 0.5;
-	pos.z += 0.5;
-
-	std::vector<double> crystalVals, thingVals, quickVals, weights;
-	crystalVals.reserve(fftThing->nn);
-	thingVals.reserve(fftThing->nn);
-	weights.reserve(fftThing->nn);
-	quickVals.reserve(fftThing->nn);
-
-	for (int i = 0; i < fftThing->nn; i++)
-	{
-		quickVals.push_back(fftThing->data[i][0]);
-	}
-
-	double meanVal = mean(quickVals);
-
-	for (double k = 0; k < fftThing->nz; k += 1)
-	{
-		for (double j = 0; j < fftThing->ny; j += 1)
-		{
-			for (double i = 0; i < fftThing->nx; i += 1)
-			{
-				long int small_index = fftThing->quickElement(i, j, k);
-
-				long big_index = fftThing->equivalentIndexFor(&*fftCrystal,
-															  i - fftThing->nx/2,
-															  j - fftThing->ny/2,
-															  k - fftThing->nz/2,
-															 transform, pos.x,
-															 pos.y, pos.z,
-															 false);
-
-
-				double crystal = fftCrystal->data[big_index][0];
-				double thing = fftThing->data[small_index][0];
-				double weight = thing;
-
-				if (thing > meanVal / 10)
-				{
-					crystalVals.push_back(crystal);
-					thingVals.push_back(thing);
-					weights.push_back(weight);
-				}
-
-			}
-		}
-	}
-
-	double correl = correlation(crystalVals, thingVals);
-
-	return correl;
+	return operation(fftCrystal, fftThing, pos, true, xs, ys);
 }
 
 
@@ -608,7 +548,8 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos)
  *
  */
 double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
-					  bool scoreMe)
+					  bool scoreMe, std::vector<double> *xs,
+					  std::vector<double> *ys)
 {
 	/* I rarely comment something so heavily but I will get confused if
 	 * I don't, this time, as I can't soak the protocol into the variable
@@ -780,6 +721,12 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	if (!scoreMe)
 	{
 		return 0;
+	}
+
+	if (xs && ys)
+	{
+		*xs = crystalVals;
+		*ys = thingVals;
 	}
 
 	double correl = correlation(crystalVals, thingVals);

@@ -17,6 +17,7 @@
 Sampler::Sampler()
 {
 	_mock = false;
+	_joint = false;
 }
 
 void Sampler::setupGrid()
@@ -31,6 +32,16 @@ void Sampler::setupNelderMead()
 	_strategy->setEvaluationFunction(Sampler::score, this);
 	_strategy->setCycles(10);
 
+}
+
+void Sampler::addOccupancy(BondPtr bond, double range, double interval)
+{
+	//	double number = fabs(range / interval);
+	_strategy->addParameter(&*bond, Bond::getOccupancy, Bond::setOccupancy,
+							range, interval,
+							"occupancy");
+
+	_bonds.push_back(bond);
 }
 
 void Sampler::addTorsion(BondPtr bond, double range, double interval)
@@ -140,8 +151,10 @@ void Sampler::sample()
 	_strategy->setJobName(_jobName);
 	_strategy->refine();
 	_strategy = RefinementStrategyPtr();
+	_bonds.clear();
 	_sampled.clear();
 	_unsampled.clear();
+	_joint = false;
 }
 
 
@@ -149,13 +162,37 @@ double Sampler::getScore()
 {
 	double score = 1;
 
-	for (int i = 0; i < _sampled.size(); i++)
+	std::vector<double> xTots, yTots;
+	std::vector<double> xs, ys;
+
+	std::vector<double> *xPtr = NULL;
+	std::vector<double> *yPtr = NULL;
+
+	if (_joint)
 	{
-		double next_score = _sampled[i]->scoreWithMap(_fft, _real2hkl);
-		score *= next_score;
+		xPtr = &xs;
+		yPtr = &ys;
 	}
 
-//	score = pow(score, 1 / (double)_sampled.size());
+	for (int i = 0; i < _sampled.size(); i++)
+	{
+		double next_score = _sampled[i]->scoreWithMap(_fft, _real2hkl, xPtr, yPtr);
+		score *= next_score;
+
+		if (_joint)
+		{
+			xTots.reserve(xTots.size() + xs.size());
+			yTots.reserve(yTots.size() + ys.size());
+			xTots.insert(xTots.end(), xs.begin(), xs.end());
+			yTots.insert(yTots.end(), ys.begin(), ys.end());
+		}
+	}
+
+	if (_joint)
+	{
+		double val = correlation(xTots, yTots);
+		return -val;
+	}
 
 	return -score;
 }

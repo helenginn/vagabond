@@ -130,9 +130,12 @@ public:
 	}
 
 	static double operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
-							bool scoreMe = false);
+							bool scoreMe = false, std::vector<double> *xs = NULL,
+							std::vector<double> *ys = NULL);
 
-	static double score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 position);
+	static double score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 position,
+						std::vector<double> *xs = NULL,
+						std::vector<double> *ys = NULL);
 
 	void normalise();
 
