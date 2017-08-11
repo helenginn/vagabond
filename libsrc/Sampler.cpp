@@ -148,6 +148,7 @@ void Sampler::sample()
 		_strategy->isMock();
 		_mock = false;
 	}
+
 	_strategy->setJobName(_jobName);
 	_strategy->refine();
 	_strategy = RefinementStrategyPtr();

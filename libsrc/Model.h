@@ -29,6 +29,8 @@ public:
 	virtual vec3 getStaticPosition() = 0;
 
 	FFTPtr getZeroDistribution();
+protected:
+	virtual void propagateChange();
 private:
 	std::vector<AtomPtr> atoms;
 };

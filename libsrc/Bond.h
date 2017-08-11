@@ -28,6 +28,7 @@ typedef struct
 {
 	mat3x3 basis;
 	vec3 start;
+	vec3 old_start;
 	double torsion;
 	double occupancy;
 } BondSample;
@@ -44,6 +45,9 @@ typedef struct
 	double torsionAngle;
 	double torsionBlur;
 	double occupancy;
+	std::vector<BondSample> storedSamples;
+	std::vector<AtomWkr> extraTorsionSamples;
+	bool _changedSamples;
 } BondGroup;
 
 class Bond : public Model
@@ -96,18 +100,11 @@ public:
 		return _bondGroups[group].torsionAngle;
 	}
 
-	mat3x3 getTorsionBasis()
-	{
-		return _torsionBasis;
-	}
-
-
 	void setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign);
 	virtual FFTPtr getDistribution();
 	virtual vec3 getStaticPosition();
 	std::vector<BondSample> getManyPositions(bool staticAtom = false,
-											 bool singleState = false,
-											 int torsionGroup = 0);
+											 bool singleState = false);
 	virtual std::string getClassName()
 	{
 		return "Bond";
@@ -236,11 +233,8 @@ public:
 
 	void setActiveGroup(int newGroup)
 	{
-		if (getMajor()->getAtomName() == "CB")
-		{
-	//		std::cout << "setting active group to " << newGroup << std::endl;
-		}
 		_activeGroup = newGroup;
+		propagateChange();
 	}
 
 	int getActiveGroup()
@@ -252,6 +246,31 @@ public:
 	std::string getPDBContribution();
 	ModelPtr getParentModel();
 	bool splitBond();
+
+	void setFixed(bool fixed)
+	{
+		_fixed = fixed;
+	}
+
+	bool isFixed()
+	{
+		return _fixed;
+	}
+
+	void addExtraTorsionSample(AtomPtr atom, int group)
+	{
+		_bondGroups[group].extraTorsionSamples.push_back(atom);
+	}
+
+	int extraTorsionSampleCount(int group)
+	{
+		return _bondGroups[group].extraTorsionSamples.size();
+	}
+
+	AtomPtr extraTorsionSample(int group, int i)
+	{
+		return _bondGroups[group].extraTorsionSamples[i].lock();
+	}
 
 protected:
 
@@ -267,11 +286,13 @@ private:
 
 	/* Bond groups */
 	std::vector<BondGroup> _bondGroups;
+	std::vector<AtomWkr> _extraTorsionSamples;
 
 	double _torsionBlurFromPrev;
 	double _bendBlur;
 	bool _activated;
 	int _activeGroup;
+	bool _fixed;
 
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();
@@ -289,7 +310,6 @@ private:
 	   y: completes the right-handed coordinate system
 	   z: along bond direction, from heavy-to-light alignment atoms.
 	 */
-	mat3x3 _torsionBasis;
 	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
 							vec3 miPos, vec3 lPos, double *newAngle = NULL);
 
@@ -304,13 +324,12 @@ private:
 												int group = 0);
 
 	void duplicateDownstream(BondPtr newBranch, int groupNum);
-	void propagateChange();
+	virtual void propagateChange();
 	bool _usingTorsion;
 
 	/* Flag to say whether recalculation should occur */
 	bool _changedPos, _changedSamples;
 	vec3 _lastPosition;
-	std::vector<BondSample> _lastSamples;
 
 	AbsolutePtr _absInherit;
 };

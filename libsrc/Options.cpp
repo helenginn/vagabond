@@ -79,6 +79,13 @@ void Options::run()
 				crystals[0]->transplantAmplitudes(data, prop, prop-1);
 			}*/
 
+			if (_numCycles > 0)
+			{
+			molecule->refine(crystals[0], RefinementBroad);
+			crystals[0]->realSpaceClutter();
+			crystals[0]->transplantAmplitudes(data, prop, prop-1);
+			}
+
 			for (int i = 0; i < _numCycles; i++)
 			{
 				molecule->refine(crystals[0], RefinementFine);

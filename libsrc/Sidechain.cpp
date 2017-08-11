@@ -37,15 +37,15 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 			AtomPtr myAtom = myAtoms[j].lock();
 			BondPtr bond = std::static_pointer_cast<Bond>(myAtom->getModel());
 
-			if (!bond->isNotJustForHydrogens())
+			if (!bond->isNotJustForHydrogens() || bond->isFixed())
 			{
 				continue;
 			}
 
-			std::string preAtom = bond->getMajor()->getAtomName();
+			std::string majorAtom = bond->getMajor()->getAtomName();
 			int groups = bond->downstreamAtomGroupCount();
 
-			if (preAtom != "CA" && bond->isUsingTorsion()
+			if (majorAtom != "CA" && bond->isUsingTorsion()
 				&& (rType == RefinementFine))
 			{
 
@@ -61,7 +61,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 						addSampled(bond->downstreamAtom(k, j));
 					}
 
-					setJobName("compensate_" + preAtom + "_"
+					setJobName("compensate_" + majorAtom + "_"
 							   + atom + "_" + i_to_str(resNum));
 					setCrystal(target);
 					sample();
@@ -84,7 +84,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 				addSampled(bond->getMinor());
 
-				setJobName("bend_" + preAtom + "_" + atom + "_" + i_to_str(resNum));
+				setJobName("bend_" + majorAtom + "_" + atom + "_" + i_to_str(resNum));
 				setCrystal(target);
 				sample();
 			}
@@ -121,7 +121,12 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 						addSampled(bond->downstreamAtom(k, j));
 					}
 
-					setJobName("torsion_" + preAtom + "_" + atom + "_g" +
+					for (int j = 0; j < bond->extraTorsionSampleCount(k); j++)
+					{
+						addSampled(bond->extraTorsionSample(k, j));
+					}
+
+					setJobName("torsion_" + majorAtom + "_" + atom + "_g" +
 							   i_to_str(k) + "_" + i_to_str(resNum));
 					setCrystal(target);
 					sample();
@@ -156,10 +161,9 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 			}
 
-			if (preAtom == "CB" && myAtoms.size() <= 1)
+			if (_resNum == 62 && majorAtom == "CB" && myAtoms.size() <= 1)
 			{
 				bond->splitBond();
-//				int newGroup = bond->downstreamAtomGroupCount() - 1;
 
 				refine(target, RefinementBroad);
 			}

@@ -13,6 +13,7 @@
 #include <string>
 #include "shared_ptrs.h"
 #include <vector>
+#include "Sidechain.h"
 
 class Monomer : public std::enable_shared_from_this<Monomer>
 {
@@ -44,6 +45,7 @@ public:
 	void setResidueNum(int n)
 	{
 		_residueNum = n;
+		_sidechain->setResNum(_residueNum);
 	}
 
 	int getResidueNum()

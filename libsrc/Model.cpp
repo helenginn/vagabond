@@ -39,3 +39,8 @@ FFTPtr Model::getZeroDistribution()
 
 	return getDistributionCopy();
 }
+
+void Model::propagateChange()
+{
+	
+}

@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <map>
+#include <string>
 
 typedef enum
 {
@@ -19,12 +20,18 @@ typedef enum
 	AtomCH1E,
 	AtomCH2E,
 	AtomCH3E,
+	AtomC5,
+	AtomCRH,
+	AtomCR1H,
+	AtomCR1E,
+	AtomNH1,
 	AtomNH3,
 	AtomOH1,
 } AtomType;
 
 typedef std::pair<AtomType, AtomType> AtomPair;
 typedef std::pair<AtomPair, AtomType> AtomTrio;
+typedef std::pair<std::string, std::string> AtomIdentity;
 
 class GeomTable
 {
@@ -37,16 +44,19 @@ public:
 	GeomTable();
 	double getBondLength(AtomType atom1, AtomType atom2);
 	double getBondAngle(AtomType atom1, AtomType atom2, AtomType atom3);
+	AtomType getType(std::string, std::string);
 
 private:
 	void addBondAngle(AtomType atom1, AtomType atom2,
 					  AtomType atom3, double angle);
-
+	void addIdentityToType(std::string, std::string, AtomType type);
 	void addBondLength(AtomType atom1, AtomType atom2, double length);
+
 	static GeomTable _geomTable;
 
 	std::map<AtomPair, double> _bondLengths;
 	std::map<AtomTrio, double> _bondAngles;
+	std::map<AtomIdentity, AtomType> _identityToType;
 };
 
 

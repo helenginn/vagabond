@@ -32,6 +32,7 @@ private:
 	void makeSerine();
 	void makeLysine();
 	void makeThreonine();
+	void makeHistidine();
 };
 
 

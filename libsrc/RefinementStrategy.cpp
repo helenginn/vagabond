@@ -137,7 +137,17 @@ void RefinementStrategy::finish()
 
     if (endScore >= startingScore || endScore != endScore)
     {
-        std::cout << "No change for " << jobName << " (" << startingScore << ")" << std::endl;
+		double rad2degscale = (_toDegrees ? rad2deg(1) : 1);
+		std::cout << "No change for " << jobName << " ";
+
+		for (int i = 0; i < objects.size(); i++)
+		{
+			double objectValue = (*getters[i])(objects[i]);
+			std::cout << tags[i] << "=" << objectValue * rad2degscale <<
+			(_toDegrees ? "º" : "") << ", ";
+		}
+
+		std::cout << " (" << startingScore << ")" << std::endl;
 
 		resetToInitialParameters();
 		_changed = 0;

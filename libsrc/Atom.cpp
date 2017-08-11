@@ -109,28 +109,5 @@ bool Atom::isBackboneAndSidechain()
 /* Convert to lookup table */
 void Atom::findAtomType(std::string resName)
 {
-	if (_atomName == "CA" && resName != "gly")
-	{
-		_geomType = AtomCH1E;
-	}
-	else if (_atomName == "CB" && resName == "thr")
-	{
-		_geomType = AtomCH1E;
-	}
-	else if (_atomName == "CG2" && resName == "thr")
-	{
-		_geomType = AtomCH3E;
-	}
-	else if (_atomName == "OG1" && resName == "thr")
-	{
-		_geomType = AtomOH1;
-	}
-	else if (_element->getSymbol() == "C" && resName == "lys")
-	{
-		_geomType = AtomCH2E;
-	}
-	else if (_element->getSymbol() == "N" && resName == "lys")
-	{
-		_geomType = AtomNH3;
-	}
+	_geomType = GeomTable::getGeomTable().getType(resName, _atomName);
 }

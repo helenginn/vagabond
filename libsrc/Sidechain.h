@@ -31,8 +31,14 @@ public:
 	{
 		_canRefine = canRefine;
 	}
+
+	void setResNum(int resNum)
+	{
+		_resNum = resNum;
+	}
 private:
 	bool _canRefine;
+	int _resNum;
 };
 
 #endif /* defined(__vagabond__Sidechain__) */
