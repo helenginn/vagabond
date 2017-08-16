@@ -107,7 +107,7 @@ void RefinementGridSearch::refine()
 
 	if (changed)
 	{
-		std::cout << "Setting params ";
+	//	std::cout << "Setting params ";
 		double rad2degscale = (_toDegrees ? rad2deg(1) : 1);
 
 		for (int i = 0; i < minParams.size(); i++)
@@ -123,12 +123,12 @@ void RefinementGridSearch::refine()
 				(*setter)(objects[i], currentValues[i]);
 			}
 
-			std::cout << tags[i] << "=" << minParams[i] * rad2degscale <<
-			(_toDegrees ? "º" : "") << ", ";
+		//	std::cout << tags[i] << "=" << minParams[i] * rad2degscale <<
+		//	(_toDegrees ? "º" : "") << ", ";
 		}
 
 		double val = (*evaluationFunction)(evaluateObject);
-		std::cout << "score = " << val << std::endl;
+	//	std::cout << "score = " << val << std::endl;
 	}
 
     csv->writeToFile(jobName + "_gridsearch_" + i_to_str(_refine_counter)

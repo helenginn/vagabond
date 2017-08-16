@@ -39,7 +39,7 @@ FFTPtr Distributor::prepareDistribution(double n, double scale, void *object,
 		}
 	}
 
-	_fft->createFFTWplan(1, false);
+	_fft->createFFTWplan(1);
 
 	_calculated = true;
 	

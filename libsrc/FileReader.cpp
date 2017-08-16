@@ -96,6 +96,10 @@ void to_lower(std::string &str)
 	std::transform(str.begin(), str.end(), str.begin(), ::tolower);
 }
 
+void to_upper(std::string &str)
+{
+	std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+}
 
 std::string i_to_str(int val)
 {

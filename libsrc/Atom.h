@@ -89,8 +89,14 @@ public:
 		_initialB = b;
 	}
 
+	void setAtomNum(int atomNum)
+	{
+		_atomNum = atomNum;
+	}
+
 	void findAtomType(std::string resName);
 	void inheritParents();
+	std::string pdbLineBeginning();
 
 	AtomType getGeomType()
 	{
@@ -108,6 +114,7 @@ private:
 	MonomerWkr _monomer;
 	vec3 _initialPosition;
 	double _initialB;
+	int _atomNum;
 
 	AtomType _geomType;
 };

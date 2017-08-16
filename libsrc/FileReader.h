@@ -28,5 +28,6 @@ std::string f_to_str(double val, int precision);
 
 void trim(std::string& str);
 void to_lower(std::string &str);
+void to_upper(std::string &str);
 
 #endif /* defined(__GameDriver__FileReader__) */

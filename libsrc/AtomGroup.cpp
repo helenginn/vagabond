@@ -53,17 +53,10 @@ double AtomGroup::totalElectrons()
 
 void AtomGroup::getPDBContribution()
 {
-	for (int i = 0; i < atomCount(); i++)
+	for (int i = 0; i < bondCount(); i++)
 	{
-		ModelPtr model = atom(i)->getModel();
-
-		if (model->getClassName() == "Bond")
-		{
-			BondPtr bond = std::static_pointer_cast<Bond>(model);
-
-
-			bond->getPDBContribution();
-		}
+		BondPtr aBond = bond(i);
+		aBond->getPDBContribution();
 	}
 
 }

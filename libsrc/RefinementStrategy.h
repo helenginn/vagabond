@@ -139,6 +139,11 @@ public:
         otherValues.clear();
         tags.clear();
     }
+
+	int parameterCount()
+	{
+		return getters.size();
+	}
 };
 
 #endif /* defined(__cppxfel__RefinementStrategy__) */

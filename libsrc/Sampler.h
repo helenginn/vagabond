@@ -73,6 +73,10 @@ public:
 	{
 		_mock = true;
 	}
+protected:
+	void setupDoubleTorsion(BondPtr bond, int k, int bondNum, int resNum,
+							double range, double interval);
+
 private:
 	double getScore();
 

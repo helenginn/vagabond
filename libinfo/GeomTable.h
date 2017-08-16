@@ -27,6 +27,8 @@ typedef enum
 	AtomNH1,
 	AtomNH3,
 	AtomOH1,
+	AtomO,
+	AtomSM,
 } AtomType;
 
 typedef std::pair<AtomType, AtomType> AtomPair;

@@ -29,12 +29,13 @@ public:
 	virtual void addToMonomer(MonomerPtr monomer);
 
 	void setIdentity(int resNumValue, std::string chainID,
-					 std::string resName, std::string atomName)
+					 std::string resName, std::string atomName, int atomNum)
 	{
 		_resNum = resNumValue;
 		_chainID = chainID;
 		_resName = resName;
 		_atomName = atomName;
+		_atomNum = atomNum;
 
 		trim(_chainID); trim(_atomName);
 
@@ -94,7 +95,7 @@ private:
 	std::string _element;
 	double _occupancy;
 	std::string _chainID, _resName, _atomName;
-	int _resNum;
+	int _resNum, _atomNum;
 	bool _hetatm;
 	bool _usingTensor;
 	mat3x3 _tensor;

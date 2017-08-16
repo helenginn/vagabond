@@ -23,9 +23,16 @@ public:
 		_sidechain = sidechain;
 	}
 
+	void setBackbone(BackbonePtr backbone)
+	{
+		_backbone = backbone;
+	}
+
 	void tie();
+	void tieTowardsCTerminus();
 private:
 	SidechainPtr _sidechain;
+	BackbonePtr _backbone;
 
 	void makeCysteine();
 	void makeValine();
@@ -33,6 +40,7 @@ private:
 	void makeLysine();
 	void makeThreonine();
 	void makeHistidine();
+	void makeMethionine();
 };
 
 

@@ -16,6 +16,9 @@
 #include "Element.h"
 #include "Monomer.h"
 #include "Polymer.h"
+#include <iomanip>
+#include "FileReader.h"
+#include <sstream>
 
 Atom::Atom()
 {
@@ -94,7 +97,7 @@ bool Atom::isBackbone()
 	if (_atomName == "C") return true;
 	if (_atomName == "H") return true;
 	if (_atomName == "N") return true;
-	if (_atomName == "H") return true;
+	if (_atomName == "O") return true;
 
 	return false;
 }
@@ -102,6 +105,7 @@ bool Atom::isBackbone()
 bool Atom::isBackboneAndSidechain()
 {
 	if (_atomName == "CA") return true;
+	if (_atomName == "HA") return true;
 
 	return false;
 }
@@ -110,4 +114,23 @@ bool Atom::isBackboneAndSidechain()
 void Atom::findAtomType(std::string resName)
 {
 	_geomType = GeomTable::getGeomTable().getType(resName, _atomName);
+}
+
+std::string Atom::pdbLineBeginning()
+{
+	std::string residueName = getMonomer()->getIdentifier();
+	int resNum = getMonomer()->getResidueNum();
+	to_upper(residueName);
+	std::ostringstream line;
+
+	line << "ATOM  ";
+	line << std::setfill(' ') << std::setw(5) << std::fixed << _atomNum;
+	line << std::setfill(' ') << std::setw(4) << _atomName;
+	line << "  ";
+	line << std::setw(3) << residueName;
+	line << " A";
+	line << std::setfill(' ') << std::setw(4) << resNum;
+	line << "    ";
+
+	return line.str();
 }

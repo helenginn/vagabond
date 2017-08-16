@@ -18,6 +18,10 @@
 #include <iostream>
 #include <vector>
 #include "maths.h"
+#include "FileReader.h"
+#include <sys/stat.h>
+
+std::deque<FourierDimension> FFT::_dimensions;
 
 inline void fftwf_add(fftwf_complex comp1, fftwf_complex comp2, float *result)
 {
@@ -36,7 +40,7 @@ FFT::FFT()
 	nn = 0;
 	data = NULL;
 	mask = NULL;
-	_made_plan = false;
+	_myDims = NULL;
 }
 
 
@@ -46,17 +50,11 @@ FFT::FFT(long n)
 }
 
 
-FFT::~FFT() 
+FFT::~FFT()
 {
-	if (_made_plan)
-	{
-		fftwf_destroy_plan(plan);
-		fftwf_destroy_plan(iplan);
-	}
-	
 	fftwf_free(data); data = NULL;
 	fftwf_cleanup_threads();
-}	
+}
 
 void FFT::create(long n)
 {
@@ -86,9 +84,7 @@ FFT::FFT(FFT &other)
 		memcpy(mask, other.mask, nn * sizeof(MaskType));
 	}
 
-	_made_plan = false;
-
-	createFFTWplan(1, false);
+	_myDims = other._myDims;
 
 	_basis = other._basis;
 	_inverse = other._inverse;
@@ -107,7 +103,7 @@ void FFT::create(long nnx, long nny, long nnz)
 	if(!data)
 	{
 		printf("ERROR in fftwData: Malloc failed\n");
-		exit(1); 
+		exit(1);
 	}
 
 	memset(data, 0, sizeof(FFTW_DATA_TYPE) * nn);
@@ -161,17 +157,60 @@ long FFT::elementFromUncorrectedFrac(double xfrac, double yfrac, double zfrac)
 	return index;
 }
 
+void FFT::shiftToCentre()
+{
+	int	x1, y1, z1;
+	int	e0, e1;
+	int sx = nx / 2;
+	int sy = ny / 2;
+	int sz = nz / 2;
+
+	int copyLength = sx;
+	fftwf_complex *temp =  (FFTW_DATA_TYPE*) fftwf_malloc(nn*sizeof(FFTW_DATA_TYPE));
+
+	for (int z0 = 0; z0 < nz; z0++)
+	{
+		z1 = z0 + sz;
+		if (z1 < 0) z1 += nz;
+		if (z1 >= nz) z1 -= nz;
+
+		for (int y0 = 0; y0 < ny; y0++)
+		{
+			y1 = y0 + sy;
+			if (y1 < 0) y1 += ny;
+			if (y1 >= ny) y1 -= ny;
+
+			for (int x0 = 0; x0 < nx; x0 += copyLength)
+			{
+				x1 = x0 + sx;
+				if(x1 < 0) x1 += nx;
+				if(x1 >= nx) x1 -= nx;
+
+				e0 = element(x0,y0,z0);
+				e1 = element(x1,y1,z1);
+
+				int size = sizeof(FFTW_DATA_TYPE) * copyLength;
+
+				memcpy(&temp[e0], &data[e1], size);
+			}
+		}
+	}
+
+	fftwf_free(data);
+	data = temp;
+}
+
 /*
  *	Shift the array in 3D by (nx,ny,nz) pixels
  *	Wrap around at the edges
  */
 void FFT::shift(long sx, long sy, long sz)
-{    
-  //  printf("Shift: (%li, %li, %li)\n", sx, sy, sz);
-	
+{
+	//  printf("Shift: (%li, %li, %li)\n", sx, sy, sz);
+
 	long	x1,y1,z1;
 	long	e0,e1;
-	
+
 	fftwf_complex *temp =  (FFTW_DATA_TYPE*) fftwf_malloc(nn*sizeof(FFTW_DATA_TYPE));
 
 	for(long z0=0; z0<nz; z0++)
@@ -179,7 +218,7 @@ void FFT::shift(long sx, long sy, long sz)
 		z1 = z0 + sz;
 		if (z1 < 0) z1 += nz;
 		if (z1 >= nz) z1 -= nz;
-		
+
 		for(long y0=0; y0<ny; y0++)
 		{
 			y1 = y0 + sy;
@@ -191,50 +230,50 @@ void FFT::shift(long sx, long sy, long sz)
 				x1 = x0 + sx;
 				if(x1 < 0) x1 += nx;
 				if(x1 >= nx) x1 -= nx;
-				
+
 				e0 = element(x0,y0,z0);
-                e1 = element(x1,y1,z1);
-				
-                
-                temp[e0][0] = data[e1][0];
-                temp[e0][1] = data[e1][1];
+				e1 = element(x1,y1,z1);
+
+
+				temp[e0][0] = data[e1][0];
+				temp[e0][1] = data[e1][1];
 			}
 		}
 	}
-	
-    fftwf_free(data);
-    data = temp;
+
+	fftwf_free(data);
+	data = temp;
 }
 
 
 void FFT::shiftToCorner(void)
 {
-    long sx,sy,sz;
-    sx = -nx/2;
-    sy = -ny/2;
-    sz = -nz/2;
-    
-    shift(sx,sy,sz);
-    
+	long sx,sy,sz;
+	sx = -nx/2;
+	sy = -ny/2;
+	sz = -nz/2;
+
+	shift(sx,sy,sz);
+
 }
 
 void FFT::shiftToCenter(void)
 {
-    long sx,sy,sz;
-    sx = nx/2;
-    sy = ny/2;
-    sz = nz/2;
-    
-    shift(sx,sy,sz);
+	long sx,sy,sz;
+	sx = nx/2;
+	sy = ny/2;
+	sz = nz/2;
+
+	shift(sx,sy,sz);
 }
 
 void FFT::setAll(float value)
 {
-    for(long i=0; i<nn; i++) 
-    {
-        data[i][0] = value;
-        data[i][1] = value;
-    }
+	for(long i=0; i<nn; i++)
+	{
+		data[i][0] = value;
+		data[i][1] = value;
+	}
 }
 
 double FFT::getPhase(long x, long y, long z)
@@ -293,139 +332,83 @@ void FFT::addToReal(double xfrac, double yfrac, double zfrac, double real)
 
 void FFT::multiplyAll(float value)
 {
-    for(long i=0; i<nn; i++)
-    {
-        data[i][0] *= value;
-        data[i][1] *= value;
-    }
+	for(long i=0; i<nn; i++)
+	{
+		data[i][0] *= value;
+		data[i][1] *= value;
+	}
 }
 
-void FFT::createFFTWplan(int nthreads, int verbose, unsigned fftw_flags)
+void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 {
-	if (_made_plan)
+	char	wisdomFile[128];
+	wisdomFile[0] = 0;
+
+	for (int i = 0; i < _dimensions.size(); i++)
 	{
-		return;
+		if (_dimensions[i].nx == nx
+			&& _dimensions[i].ny == ny
+			&& _dimensions[i].nz == nz)
+		{
+			_myDims = &_dimensions[i];
+			return;
+		}
 	}
 
-	char	wisdomFile[2048];
-	FILE	*fp;
 
-	/*	
+	/*
 	 *	Sanity check
 	 */
 	if (nx<=0 || ny<=0 || nz<=0)
-    {
+	{
 		printf("Illogical FFT dimensions: %li x %li x %li\n", nx,ny,nz);
 		exit(1);
 	}
 
-	/* 
-	 * 	Threads
-	 */
-    if (verbose)
-    {
-		printf("\tUsing nthreads = %i\n",nthreads);
-		printf("\tFFT dimensions: %li x %li x %li (unit scales %.2f x %.2f x %.2f Å)\n", nx,ny,nz,
-			   scales[0], scales[1], scales[2]);
-	}
-
 	if (fftwf_init_threads() == 0)
-    {
+	{
 		printf("\t\tCould not initialise threads\n");
 		exit(1);
 	}
 
-	fftwf_plan_with_nthreads(nthreads);	
-	
-	/* 
-	 *	Read Wisdom from file 
-	 *	Size of fftwf_complex used to determine whether we are using fftwf_ or fftwf_ 
+	fftwf_plan_with_nthreads(nthreads);
+
+	/*
+	 *	Read Wisdom from file
+	 *	Size of fftwf_complex used to determine whether we are using fftwf_ or fftwf_
 	 */
-    
-	strcpy(wisdomFile,getenv("HOME"));
+
 	if (sizeof(FFTW_DATA_TYPE) == 2*sizeof(float))
-    { 
-		strcat(wisdomFile,"/.fftw3f_wisdom");
-	}
-    else if (sizeof(FFTW_DATA_TYPE) == 2*sizeof(double)) 
 	{
-    	strcat(wisdomFile,"/.fftw3_wisdom");
+		strcat(wisdomFile,".fftw3f_wisdom");
+	}
+	else if (sizeof(FFTW_DATA_TYPE) == 2*sizeof(double))
+	{
+		strcat(wisdomFile,".fftw3_wisdom");
 	}
 
-    if (verbose)
-    {
-        printf("\tImporting FFTW wisdom from %s\n",wisdomFile);
+	fftwf_import_wisdom_from_filename(wisdomFile);
+
+	//		printf("Error reading wisdom!\n");
+
+	FourierDimension dims;
+	dims.nx = nx; dims.ny = ny; dims.nz = nz;
+	_dimensions.push_back(dims);
+	_myDims = &_dimensions[_dimensions.size() - 1];
+
+	/* Generate FFTW plans */
+	_myDims->plan = fftwf_plan_dft_3d((int)nx, (int)ny, (int)nz, data, data, 1, fftw_flags);
+	_myDims->iplan = fftwf_plan_dft_3d((int)nx, (int)ny, (int)nz, data, data, -1, fftw_flags);
+
+
+	/*  Export wisdom to file */
+	int success = fftwf_export_wisdom_to_filename(wisdomFile);
+
+	if (!success)
+	{
+		printf("\t\tCould not export wisdom to %s\n",wisdomFile);
 	}
 
-    fp = fopen(wisdomFile, "r");
-
-	if (fp != NULL)
-    {
-		if (!fftwf_import_wisdom_from_file(fp) )
-        {
-			printf("\t\tError reading wisdom!\n");
-		}
-
-        fclose(fp); 	/* be sure to close the file! */
-	}
-	else
-    {
-		printf("\t\tCould not open FFTW wisdom file %s\n",wisdomFile);
-	}
-	
-	
-	/* 
-	 *	Generate FFTW plans 
-	 */ 
-    if(verbose)
-    {
-        printf("\tCreating forwards plan....\n");
-    }
-
-	plan = fftwf_plan_dft_3d((int)nx, (int)ny, (int)nz, data, data, 1, fftw_flags);
-
-    if(verbose)
-    {
-        printf("\tCreating inverse plan....\n");
-	}
-    
-    iplan = fftwf_plan_dft_3d((int)nx, (int)ny, (int)nz, data, data, -1, fftw_flags);
-	
-	
-	
-	/* 
-	 *	Export wisdom to file 
-	 */
-	fp = fopen(wisdomFile, "w");
-
-	if (fp != NULL)
-    {
-        if(verbose)
-        {
-            printf("\tExporting accumulated wisdom to file %s\n",wisdomFile);
-        }
-
-		fftwf_export_wisdom_to_file(fp);
-
-		fclose(fp);
-
-		fp = fopen(wisdomFile, "r");
-
-		if (fp != NULL)
-		{
-			if (!fftwf_import_wisdom_from_file(fp) )
-			{
-			}
-
-			fclose(fp); 	/* be sure to close the file! */
-		}
-		else
-		{
-			printf("\t\tCould not open FFTW wisdom file %s\n",wisdomFile);
-		}
-	}
-
-	_made_plan = true;
 }
 
 
@@ -437,11 +420,11 @@ void FFT::fft(int direction)
 {
 	if(direction == 1)
 	{
-    	fftwf_execute(plan);
+    	fftwf_execute_dft(_myDims->plan, data, data);
 	}
     else if (direction == -1)
 	{
-    	fftwf_execute(iplan); 
+    	fftwf_execute_dft(_myDims->iplan, data, data);
 	}
     else
     {
@@ -450,44 +433,6 @@ void FFT::fft(int direction)
 	}
 }
 
-void FFT::speedTest(int nit){
-    clock_t			start, start2;
-    time_t			startt, endt;
-    float			dt;
-    float           avg_t;
-    
-    
-    printf("\nCalculating timing for %i FFT/iFFT pairs\n",nit);
-    start = clock();
-    time(&startt);
-    
-    for(long it=1; it<=nit; it++) {
-        FFTW_INDEX_LOOP_PRIVATE {
-            data[p][0] = 1.0;
-            data[p][1] = 0.0;
-        }
-        
-        start2 = clock();
-        fftwf_execute(plan);
-        fftwf_execute(iplan);
-        
-        time(&endt);
-        dt = endt-startt;
-        //dt = difftime(endt,startt);
-        printf("\t%li : %li^3 FFT/iFFT pair took %3.2f sec\n",it,nx, dt/it);
-        
-        //avg_t = (float)(clock()-start2);
-        //printf("\t%i : %i^3 FFT/iFFT pair took %3.2f sec\n",it,nn, (clock()-start2)/(float)CLOCKS_PER_SEC);
-    }
-    
-    time(&endt);
-    dt = endt-startt;
-    //dt = difftime(endt,startt);
-    avg_t = (clock()-start)/ nit;
-    avg_t = avg_t / ((float)CLOCKS_PER_SEC);
-    printf("%li^3 FFT/iFFT pair average (CPU time): %3.3f sec\n",nx, avg_t);
-    printf("%li^3 FFT/iFFT pair average (human time): %3.3f sec\n",nx, dt/(float) nit);
-}
 
 void FFT::setBasis(mat3x3 mat, double sampleScale)
 {
@@ -507,8 +452,9 @@ void FFT::invertScale()
 
 double FFT::interpolate(vec3 vox000, bool im)
 {
-	vec3 remain = make_vec3(fmod(vox000.x, 1), fmod(vox000.y, 1),
-							fmod(vox000.z, 1));
+	vec3 remain = make_vec3(vox000.x - (double)((int)vox000.x),
+							vox000.y - (double)((int)vox000.y),
+							vox000.z - (double)((int)vox000.z));
 
 	long int idx000 = element(vox000.x, vox000.y, vox000.z);
 
@@ -596,12 +542,13 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	mat3x3_mult_vec(crystal2AtomVox, &atomOffset);
 	vec3_mult(&atomOffset, -1);
 
-	fftAtom->shiftToCenter();
+	fftAtom->shiftToCentre();
 
 	vec3 shift = make_vec3((double)(-fftAtom->nx) * 0.5,
 						   (double)(-fftAtom->ny) * 0.5,
 						   (double)(-fftAtom->nz) * 0.5);
 	mat3x3_mult_vec(atomVox2Crystal, &shift);
+
 	vec3 shiftRemainder = make_vec3(fmod(shift.x, 1),
 									fmod(shift.y, 1),
 									fmod(shift.z, 1));
@@ -742,57 +689,16 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	FFT *fftSmall = &*fftConst;
 	FFT *fftBig = &*fftEdit;
 
-	double step = 1;
-
-	for (double k = 0; k < fftSmall->nz; k += step)
+	for (long int i = 0; i < fftSmall->nn; i++)
 	{
-		for (double j = 0; j < fftSmall->ny; j += step)
-		{
-			for (double i = 0; i < fftSmall->nx; i += step)
-			{
-				long int index = fftSmall->quickElement(i, j, k);
+		float real = fftBig->data[i][0] * fftSmall->data[i][0]
+		- fftBig->data[i][1] * fftSmall->data[i][1];
+		fftBig->data[i][0] = real;
 
-				float real, imag;
-				real = fftBig->data[index][0] * fftSmall->data[index][0]
-				- fftBig->data[index][1] * fftSmall->data[index][1];
-				imag = fftBig->data[index][0] * fftSmall->data[index][1]
-				+ fftBig->data[index][1] * fftSmall->data[index][0];
-
-				fftEdit->setElement(index, real, imag);
-			}
-		}
+		float imag = fftBig->data[i][0] * fftSmall->data[i][1]
+		+ fftBig->data[i][1] * fftSmall->data[i][0];
+		fftBig->data[i][1] = imag;
 	}
-}
-
-
-/* To find the same equivalent index bearing in mind the change-of-basis.
- * Assuming that both are centred at the origin. In terms of fractional
- * coordinates but this may need changing when use becomes clear.
- */
-long int FFT::equivalentIndexFor(FFT *other, double realX, double realY,
-									 double realZ, mat3x3 transform, double addX,
-									 double addY, double addZ, bool sameScale)
-{
-	if (realX > (nx - 1) / 2)
-		realX -= (double)nx;
-	if (realY > (ny - 1) / 2)
-		realY -= (double)ny;
-	if (realZ > (nz - 1) / 2)
-		realZ -= (double)nz;
-
-	vec3 pos = make_vec3(realX, realY, realZ);
-
-	if (!sameScale)
-	{
-		/* Get this into Angstrom units */
-		mat3x3_mult_vec(transform, &pos);
-	}
-
-	pos.x += addX; pos.y += addY; pos.z += addZ;
-
-	long int index = other->element(pos.x, pos.y, pos.z);
-
-	return index;
 }
 
 void FFT::printSlice(bool amplitude)

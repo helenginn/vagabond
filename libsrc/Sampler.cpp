@@ -13,12 +13,80 @@
 #include "Atom.h"
 #include "Crystal.h"
 #include "Element.h"
+#include "FileReader.h"
 
 Sampler::Sampler()
 {
 	_mock = false;
 	_joint = false;
 }
+
+
+void Sampler::setupDoubleTorsion(BondPtr bond, int k, int bondNum, int resNum,
+								 double range, double interval)
+{
+	bond->setActiveGroup(k);
+
+	setupGrid();
+	reportInDegrees();
+
+	addTorsion(bond, deg2rad(range), deg2rad(interval));
+
+	for (int j = 0; j < bond->downstreamAtomCount(k); j++)
+	{
+		addSampled(bond->downstreamAtom(k, j));
+	}
+
+	for (int j = 0; j < bond->extraTorsionSampleCount(k); j++)
+	{
+		addSampled(bond->extraTorsionSample(k, j));
+	}
+
+	for (int i = 0; i < bondNum; i++)
+	{
+		if (!bond->downstreamAtomGroupCount() || !bond->downstreamAtomCount(0) ||
+			!bond->isUsingTorsion() || bond->isFixed() || !bond->isNotJustForHydrogens())
+		{
+			break;
+		}
+
+		AtomPtr nextAtom = bond->downstreamAtom(k, 0);
+		BondPtr nextBond;
+
+		if (nextAtom)
+		{
+			nextBond = std::static_pointer_cast<Bond>(nextAtom->getModel());
+
+			if (nextBond->isUsingTorsion() && !nextBond->isFixed()
+				&& nextBond->isNotJustForHydrogens())
+			{
+				addTorsion(nextBond, deg2rad(range), deg2rad(interval));
+
+				for (int j = 0; j < nextBond->downstreamAtomCount(0); j++)
+				{
+					addSampled(nextBond->downstreamAtom(0, j));
+				}
+
+				for (int j = 0; j < nextBond->extraTorsionSampleCount(0); j++)
+				{
+					addSampled(nextBond->extraTorsionSample(0, j));
+				}
+			}
+		}
+
+		if (!nextBond)
+		{
+			break;
+		}
+
+		bond = nextBond;
+	}
+
+	setJobName("torsion_double_" + bond->getMajor()->getAtomName() + "_" +
+			   bond->getMinor()->getAtomName() + "_g" +
+			   i_to_str(k) + "_" + i_to_str(resNum));
+}
+
 
 void Sampler::setupGrid()
 {
@@ -47,9 +115,10 @@ void Sampler::addOccupancy(BondPtr bond, double range, double interval)
 void Sampler::addTorsion(BondPtr bond, double range, double interval)
 {
 //	double number = fabs(range / interval);
+	std::string num = i_to_str(_strategy->parameterCount() + 1);
 	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
 							range, interval,
-							"torsion");
+							"torsion_" + num);
 
 	_bonds.push_back(bond);
 }
@@ -178,6 +247,9 @@ double Sampler::getScore()
 	for (int i = 0; i < _sampled.size(); i++)
 	{
 		double next_score = _sampled[i]->scoreWithMap(_fft, _real2hkl, xPtr, yPtr);
+
+		next_score += 1;
+
 		score *= next_score;
 
 		if (_joint)
@@ -195,5 +267,5 @@ double Sampler::getScore()
 		return -val;
 	}
 
-	return -score;
+	return -fabs(score);
 }

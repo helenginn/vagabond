@@ -54,7 +54,7 @@ Element::Element(std::string symbol, std::string name, double electrons)
 
 		for (int i = 0; i < ScatterFactors::numScatter; i++)
 		{
-			_scattering[i] *= 16 / 16;
+			_scattering[i] += 0.2;
 		}
 	}
 	else if (_symbol == "CL")
@@ -118,5 +118,6 @@ FFTPtr Element::getDistribution()
 	double n = ATOM_SAMPLING_COUNT;
 	double scale = 2 * MAX_SCATTERING_DSTAR;
 
-	return prepareDistribution(n, scale, this, getVoxelValue);
+	prepareDistribution(n, scale, this, getVoxelValue);
+	return getDistributionCopy();
 }

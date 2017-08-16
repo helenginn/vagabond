@@ -11,6 +11,7 @@
 #define fftw3d_h
 
 #include <fftw3.h>
+#include <deque>
 #include "mat3x3.h"
 #include "shared_ptrs.h"
 
@@ -31,6 +32,15 @@ inline void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, float *resul
 	result[0] = comp1[0] * comp2[0] - comp1[1] * comp2[1];
 	result[1] = 2 * comp1[0] * comp2[1];
 }
+
+typedef struct
+{
+	int nx;
+	int ny;
+	int nz;
+	fftwf_plan plan;
+	fftwf_plan iplan;
+} FourierDimension;
 
 class FFT {
     
@@ -93,12 +103,13 @@ public:
 
 	long elementFromUncorrectedFrac(double xfrac, double yfrac, double zfrac);
 
-    void createFFTWplan(int nthreads=1, int verbose=1, unsigned fftw_flags=FFTW_MEASURE);
+	void createFFTWplan(int nthreads, unsigned fftw_flags = FFTW_MEASURE);
     void fft(int direction);
     
     void shift(long, long, long);
     void shiftToCorner(void);
     void shiftToCenter(void);
+	void shiftToCentre();
 
 	double getReal(long index);
 	double getReal(long x, long y, long z);
@@ -119,8 +130,6 @@ public:
     void setAll(float);
     void multiplyAll(float);
 
-    void speedTest(int);
-
 	double interpolate(vec3 fractionalVoxel, bool imaginary = false);
 
 	static void add(FFTPtr fftEdit, FFTPtr fftConst,
@@ -139,10 +148,6 @@ public:
 
 	void normalise();
 
-	long int equivalentIndexFor(FFT *other, double realX, double realY, double realZ,
-								mat3x3 transform,
-								double addX = 0, double addY = 0, double addZ = 0,
-								bool sameScale = false);
 	long int elementFromFrac(double xFrac, double yFrac, double zFrac);
 
 	inline void setElement(long int index, float real, float imag)
@@ -189,15 +194,15 @@ public:
 	double scales[3];
     
 private:
-    fftwf_plan plan, iplan;
-	bool _made_plan;
+	FourierDimension *_myDims;
 
 	/* Transformation from FFT voxel basis vectors into Angstroms */
 	mat3x3 _basis;
 
 	/* Transformation from Angstroms into basis vectors for FFT voxels */
 	mat3x3 _inverse;
-    
+
+	static std::deque<FourierDimension> _dimensions;
 };
 
 #endif /* fftw3d_h */

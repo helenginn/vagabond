@@ -13,7 +13,7 @@
 #include <math.h>
 #include <vector>
 
-#define ANGLE_SAMPLING deg2rad(4.0)
+#define ANGLE_SAMPLING deg2rad(8.0)
 
 
 #define MAX_SCATTERING_DSTAR 4.00

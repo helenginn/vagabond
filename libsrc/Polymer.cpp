@@ -11,6 +11,8 @@
 #include "Monomer.h"
 #include "Sampler.h"
 #include <iostream>
+#include "Backbone.h"
+#include "Shouter.h"
 
 void Polymer::addMonomer(MonomerPtr monomer)
 {
@@ -42,6 +44,9 @@ void Polymer::summary()
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
 {
+	time_t wall_start;
+	time(&wall_start);
+
 	for (int i = 0; i < monomerCount(); i++)
 	{
 		MonomerPtr monomer = getMonomer(i);
@@ -51,6 +56,14 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 			continue;
 		}
 
+		BackbonePtr backbone = monomer->getBackbone();
+
+		if (backbone)
+		{
+			backbone->refine(target, rType);
+		}
+
+
 		SidechainPtr victim = monomer->getSidechain();
 
 		if (victim && victim->canRefine())
@@ -58,6 +71,9 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 			victim->refine(target, rType);
 		}
 	}
+
+	shout_timer(wall_start, "refinement");
+
 }
 
 void Polymer::makePDB()
@@ -75,6 +91,7 @@ void Polymer::makePDB()
 
 		if (victim && victim->canRefine())
 		{
+			monomer->getBackbone()->getPDBContribution();
 			victim->getPDBContribution();
 		}
 	}

@@ -34,6 +34,7 @@ void Absolute::makeAtom()
 	myAtom->setModel(shared_from_this());
 	myAtom->setInitialPosition(_position);
 	myAtom->setInitialBFactor(_bFactor);
+	myAtom->setAtomNum(_atomNum);
 	ElementPtr element = Element::getElement(_element);
 	myAtom->setElement(element);
 	myAtom->setAtomName(_atomName);

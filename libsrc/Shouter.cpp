@@ -8,6 +8,7 @@
 
 #include "Shouter.h"
 #include <iostream>
+#include <time.h>
 
 void shout_at_user(std::string fix_me_message)
 {
@@ -43,4 +44,16 @@ void shout_at_helen(std::string fix_me_message)
 void warn_user(std::string cautionary_tale)
 {
 	std::cout << "*** Warning: " << cautionary_tale << " ***\n" << std::endl;
+}
+
+void shout_timer(time_t wall_start, std::string job)
+{
+	time_t wall_end;
+	time(&wall_end);
+
+	time_t diff = wall_end - wall_start;
+	time_t seconds = (diff % 60);
+	time_t minutes = (diff - seconds) / 60;
+
+	std::cout << "~ Clock time for " << job << ": " << minutes << "m" << seconds << "s. ~" << std::endl;
 }

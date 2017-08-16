@@ -105,7 +105,7 @@ void Crystal::realSpaceClutter()
 //	BucketPtr bucket = BucketPtr(new BucketUniform());
 //	bucket->addSolvent(fft);
 
-	_fft->createFFTWplan(8, false);
+	_fft->createFFTWplan(8);
 }
 
 void Crystal::writeCalcMillersToFile(DiffractionPtr data, double resolution)
@@ -339,7 +339,11 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 
 double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 {
+	std::cout << "*******************************" << std::endl;
+
 	double rFactor = valueWithDiffraction(data, &r_factor, verbose);
+
+	std::cout << "*******************************" << std::endl;
 
 	return rFactor;
 }
@@ -357,7 +361,7 @@ void Crystal::transplantAmplitudes(DiffractionPtr data, double partsFo,
 	scaleToDiffraction(data);
 	rFactorWithDiffraction(data, true);
 
-	std::cout << "Replacing Fc with Fo." << std::endl;
+	std::cout << "Combining model with data information." << std::endl;
 
 	FFTPtr fftData = data->getFFT();
 	double nLimit = std::min(fftData->nx, _fft->nx);
@@ -388,6 +392,15 @@ void Crystal::transplantAmplitudes(DiffractionPtr data, double partsFo,
 
 				double new_amp = partsFo * amp - partsFc * old_amp;
 				new_amp /= old_amp;
+
+				vec3 ijk = make_vec3(i, j, k);
+				mat3x3_mult_vec(_real2frac, &ijk);
+				double length = vec3_length(ijk);
+
+				if (length > 1 / 1.4)
+				{
+				//	new_amp = 0;
+				}
 
 				complex.x *= new_amp;
 				complex.y *= new_amp;

@@ -21,7 +21,11 @@ Monomer::Monomer()
 void Monomer::setup()
 {
 	_backbone->setMonomer(shared_from_this());
+	_backbone->setPolymer(getPolymer());
+	_backbone->setResNum(_residueNum);
 	_sidechain->setMonomer(shared_from_this());
+	_sidechain->setResNum(_residueNum);
+
 }
 
 void Monomer::addAtom(AtomPtr atom)
@@ -55,7 +59,13 @@ void Monomer::addAtom(AtomPtr atom)
 void Monomer::tieAtomsUp()
 {
 	KnotterPtr knotter = KnotterPtr(new Knotter());
-	knotter->setSidechain(_sidechain);
 
+	if (getResidueNum() >= 120)
+	{
+		knotter->setBackbone(_backbone);
+		knotter->tieTowardsCTerminus();
+	}
+
+	knotter->setSidechain(_sidechain);
 	knotter->tie();
 }

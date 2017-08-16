@@ -18,12 +18,6 @@
 #include <iostream>
 #include "Atom.h"
 
-typedef enum
-{
-	BondGeometryNone,
-	BondGeometryTetrahedral,
-} BondGeometryType;
-
 typedef struct
 {
 	mat3x3 basis;
@@ -33,10 +27,18 @@ typedef struct
 	double occupancy;
 } BondSample;
 
+typedef enum
+{
+	BondSampleThorough,
+	BondSampleStatic,
+	BondSampleMonteCarlo
+} BondSampleStyle;
+
 typedef struct
 {
 	AtomWkr atom;
 	double geomRatio;
+	double circlePortion;
 } AtomValue;
 
 typedef struct
@@ -46,6 +48,8 @@ typedef struct
 	double torsionBlur;
 	double occupancy;
 	std::vector<BondSample> storedSamples;
+	std::vector<BondSample> staticSample;
+	std::vector<BondSample> singleStateSample;
 	std::vector<AtomWkr> extraTorsionSamples;
 	bool _changedSamples;
 } BondGroup;
@@ -56,7 +60,7 @@ public:
 	Bond(AtomPtr major, AtomPtr minor, int group = 0);
 	Bond(Bond &other);
 	void activate(AtomGroupPtr group = AtomGroupPtr(),
-				  AbsolutePtr inherit = AbsolutePtr());
+				  AtomPtr inherit = AtomPtr());
 
 	AtomPtr getMajor()
 	{
@@ -103,8 +107,7 @@ public:
 	void setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign);
 	virtual FFTPtr getDistribution();
 	virtual vec3 getStaticPosition();
-	std::vector<BondSample> getManyPositions(bool staticAtom = false,
-											 bool singleState = false);
+	std::vector<BondSample> *getManyPositions(BondSampleStyle style);
 	virtual std::string getClassName()
 	{
 		return "Bond";
@@ -151,8 +154,9 @@ public:
 
 	static void setTorsionNextBlur(void *object, double value)
 	{
-		static_cast<Bond *>(object)->_torsionBlurFromPrev = std::max(-1., -fabs(value));
-		static_cast<Bond *>(object)->propagateChange();
+		Bond *bond = static_cast<Bond *>(object);
+		bond->_torsionBlurFromPrev = std::max(-1., -fabs(value));
+		bond->propagateChange();
 	}
 
 	static double getBendBlur(void *object)
@@ -221,12 +225,17 @@ public:
 		return _bondGroups[n].atoms[i].geomRatio;
 	}
 
+	double getCirclePortion(int n, int i)
+	{
+		return _bondGroups[n].atoms[i].circlePortion;
+	}
+
 	void setGeomRatio(int n, int i, double value)
 	{
 		_bondGroups[n].atoms[i].geomRatio = value;
 	}
 
-	void setAbsoluteInheritance(AbsolutePtr abs)
+	void setAbsoluteInheritance(AtomPtr abs)
 	{
 		_absInherit = abs;
 	}
@@ -243,6 +252,7 @@ public:
 	}
 
 	std::string description();
+	std::string shortDesc();
 	std::string getPDBContribution();
 	ModelPtr getParentModel();
 	bool splitBond();
@@ -303,7 +313,7 @@ private:
 	 * calculated because it's connected to an Absolute PDB.
 	 * Otherwise use as a reference for torsion matrix updates. */
 	vec3 _bondDirection;
-
+	mat3x3 _torsionBasis;
 
 	/* Will aim to define torsion basis as:
 	   x: along line of 0º torsion angle.
@@ -329,9 +339,11 @@ private:
 
 	/* Flag to say whether recalculation should occur */
 	bool _changedPos, _changedSamples;
-	vec3 _lastPosition;
 
-	AbsolutePtr _absInherit;
+	AbsolutePtr getAbsInheritance();
+
+	AtomPtr _absInherit;
+	FFTPtr _fftAbs;
 };
 
 #endif /* defined(__vagabond__Bond__) */

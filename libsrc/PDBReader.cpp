@@ -34,8 +34,9 @@ AbsolutePtr PDBReader::makeAtom(std::string line)
 	}
 
 	std::string xData, yData, zData, element, bFactor, occupancy;
-	std::string resNum, chainID, atomName, resName;
+	std::string resNum, chainID, atomName, atomNum, resName;
 
+	atomNum = line.substr(6, 5);
 	atomName = line.substr(11, 5);
 	resName = line.substr(17, 3);
 	chainID = line.substr(21, 2);
@@ -53,11 +54,12 @@ AbsolutePtr PDBReader::makeAtom(std::string line)
 	double bFacValue = atof(bFactor.c_str());
 	double occValue = atof(occupancy.c_str());
 	double resNumValue = atoi(resNum.c_str());
+	double atomNumValue = atoi(atomNum.c_str());
 
 	vec3 vec = make_vec3(xValue, yValue, zValue);
 	AbsolutePtr abs = AbsolutePtr(new Absolute(vec, bFacValue, element, occValue));
 	_myAbsolute = abs;
-	abs->setIdentity(resNumValue, chainID, resName, atomName);
+	abs->setIdentity(resNumValue, chainID, resName, atomName, atomNumValue);
 
 	if (line.substr(0, 6) == "HETATM")
 	{
@@ -142,10 +144,10 @@ void PDBReader::validateResidue(AbsolutePtr atom)
 
 	_residueNum = atom->getResNum();
 	_myMonomer = MonomerPtr(new Monomer());
-	_myMonomer->setup();
 	_myMonomer->setResidueNum(_residueNum);
 	_myMonomer->setIdentifier(atom->getResName());
 	_myPolymer->addMonomer(_myMonomer);
+	_myMonomer->setup();
 }
 
 void PDBReader::addAnisotropicBFactors(std::string line)
