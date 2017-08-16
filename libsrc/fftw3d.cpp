@@ -549,15 +549,25 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 						   (double)(-fftAtom->nz) * 0.5);
 	mat3x3_mult_vec(atomVox2Crystal, &shift);
 
+	/* In crystal voxels */
 	vec3 shiftRemainder = make_vec3(fmod(shift.x, 1),
 									fmod(shift.y, 1),
 									fmod(shift.z, 1));
-	vec3 wholeShiftOnly = make_vec3(shift.x - shiftRemainder.x,
-									shift.y - shiftRemainder.y,
-									shift.z - shiftRemainder.z);
+
+	vec3 wholeShiftOnly = make_vec3(shift.x - shiftRemainder.x - 1,
+									shift.y - shiftRemainder.y - 1,
+									shift.z - shiftRemainder.z - 1);
+
+	shiftRemainder.x = 1 + shiftRemainder.x;
+	shiftRemainder.y = 1 + shiftRemainder.y;
+	shiftRemainder.z = 1 + shiftRemainder.z;
+	mat3x3_mult_vec(crystal2AtomVox, &shiftRemainder);
+	vec3_mult(&shiftRemainder, -1);
 
 	vec3 cornerCrystal = vec3_add_vec3(wholeShiftOnly, atomWholeCoords);
-	atomOffset = vec3_subtract_vec3(atomOffset, shiftRemainder);
+	atomOffset = vec3_add_vec3(atomOffset, shiftRemainder);
+
+//	std::cout << vec3_desc(atomOffset) << " " << vec3_desc(cornerCrystal) << std::endl;
 
 	/* We loop around these crystal voxel limits now (ss -> ms -> fs).
 	 * We also discard any which happen to go over the limits of our atom voxels
@@ -610,6 +620,10 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				double atomReal = fftAtom->interpolate(offsetPos, 0);
 				double atomImag = 0;
 
+				if (offsetPos.x < 0) offsetPos.x += fftAtom->nx;
+				if (offsetPos.y < 0) offsetPos.y += fftAtom->ny;
+				if (offsetPos.z < 0) offsetPos.z += fftAtom->nz;
+
 				if (!scoreMe)
 				{
 					atomImag = fftAtom->interpolate(offsetPos, 1);
@@ -623,13 +637,9 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 				}
 
-				/* We now convert from atom voxels to crystal voxels */
-				mat3x3_mult_vec(atomVox2Crystal, &pos);
-
 				/* We add the atom offset so we don't end up with thousands
 				 * of atoms at the very centre of our map */
-				vec3 nearlyCrystalVox = vec3_add_vec3(crystalPos, cornerCrystal);
-				vec3 finalCrystalVox = (nearlyCrystalVox);
+				vec3 finalCrystalVox = vec3_add_vec3(crystalPos, cornerCrystal);
 
 				/* Get the index of this final crystal voxel. */
 				long crystalIndex = fftCrystal->element(finalCrystalVox.x,
