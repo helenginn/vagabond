@@ -13,12 +13,20 @@
 #include <iostream>
 #include "Monomer.h"
 #include "FileReader.h"
+#include "Absolute.h"
 
 void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
 	int resNum = getMonomer()->getResidueNum();
 
-	const char *atoms[] = {"CB", "OG", "CG", "SD", "CG1", "CG2", "CD", "CE", "NZ", "OG1"};
+	if (!isTied())
+	{
+		return;
+	}
+
+	_timesRefined++;
+
+	const char *atoms[] = {"CA", "CB", "OG", "CG", "SD", "CG1", "CG2", "CD", "CE", "NZ", "OG1"};
 	std::vector<std::string> atomStrs(atoms, atoms+8);
 
 	for (int i = 0; i < atomStrs.size(); i++)
@@ -34,10 +42,36 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		for (int j = 0; j < myAtoms.size(); j++)
 		{
 			AtomPtr myAtom = myAtoms[j].lock();
-			BondPtr bond = std::static_pointer_cast<Bond>(myAtom->getModel());
+			ModelPtr model = myAtom->getModel();
+
+			if (model->getClassName() == "Absolute")
+			{
+				if (_timesRefined > 0)
+				{
+					continue;
+				}
+				setupNelderMead();
+				AbsolutePtr abs = std::static_pointer_cast<Absolute>(model);
+				addAbsolutePosition(abs, 0.05, 0.01);
+				addSampled(myAtom);
+				setJobName("absolute_" + myAtom->getAtomName() + "_" + i_to_str(resNum));
+				setCrystal(target);
+				sample();
+				continue;
+				
+				setupNelderMead();
+				addAbsoluteBFactor(abs, 0.05, 0.01);
+				addSampled(myAtom);
+				setJobName("bFactor_" + myAtom->getAtomName() + "_" + i_to_str(resNum));
+				setCrystal(target);
+				sample();
+				continue;
+			}
+
+			BondPtr bond = std::static_pointer_cast<Bond>(model);
 			std::string majorAtom = bond->getMajor()->getAtomName();
 
-			if (_resNum == 120 && majorAtom == "CG" && myAtoms.size() <= 1)
+			if (false && _resNum == 120 && majorAtom == "CG" && myAtoms.size() <= 1)
 			{
 				bond->splitBond();
 				ModelPtr upModel = bond->getParentModel();
@@ -99,19 +133,26 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 			ModelPtr preModel = bond->getParentModel();
 
-			if (false && preModel->getClassName() == "Bond" && (rType == RefinementFine))
+			if (false && resNum == 120 && majorAtom == "CA")
 			{
-				setupNelderMead();
+				setupGrid();
 				reportInDegrees();
 
-				BondPtr preBond = std::static_pointer_cast<Bond>(preModel);
+				addTorsion(bond, deg2rad(20), deg2rad(0.25));
+				addTorsionBlur(bond, deg2rad(16), deg2rad(0.4));
 
-		//		addBendAngle(bond, deg2rad(0.2), deg2rad(0.1));
-		//		addBendBlur(bond, deg2rad(0.05), deg2rad(0.01));
+				for (int j = 0; j < bond->downstreamAtomCount(0); j++)
+				{
+					addSampled(bond->downstreamAtom(0, j));
+				}
 
-				addSampled(bond->getMinor());
+				for (int j = 0; j < bond->extraTorsionSampleCount(0); j++)
+				{
+					addSampled(bond->extraTorsionSample(0, j));
+				}
 
-				setJobName("bend_" + majorAtom + "_" + atom + "_" + i_to_str(resNum));
+				setJobName("test_" + majorAtom + "_" + atom + "_g" +
+						   i_to_str(0) + "_" + i_to_str(resNum));
 				setCrystal(target);
 				sample();
 			}
@@ -122,11 +163,11 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 				{
 					for (int k = 0; k < groups; k++)
 					{
-						setupDoubleTorsion(bond, k, 1, resNum, 360, 8);
+						setupDoubleTorsion(bond, k, 0, resNum, 360, 8);
 						setCrystal(target);
 						sample();
 
-						setupDoubleTorsion(bond, k, 1, resNum, 30, 2);
+						setupDoubleTorsion(bond, k, 0, resNum, 30, 2);
 						setCrystal(target);
 						sample();
 					}
@@ -140,7 +181,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 						setupGrid();
 						reportInDegrees();
 
-						addTorsion(bond, deg2rad(0.5), deg2rad(0.2));
+						addTorsion(bond, deg2rad(1.5), deg2rad(0.2));
 						addTorsionBlur(bond, deg2rad(0.2), deg2rad(0.1));
 
 						for (int j = 0; j < bond->downstreamAtomCount(k); j++)

@@ -143,6 +143,8 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, double resolution)
 	std::ofstream twofofcFile;
 	twofofcFile.open(twofofc);
 
+	FFTPtr fftData = data->getFFT();
+
 	/* symmetry issues */
 	for (int i = -aLimit; i < aLimit; i++)
 	{
@@ -156,7 +158,7 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, double resolution)
 				double intensity = _fft->getIntensity(i, j, k);
 				double calcAmp = sqrt(intensity);
 
-				double foInt = data->getFFT()->getIntensity(i, j, k);
+				double foInt = fftData->getIntensity(i, j, k);
 				double foAmp = sqrt(foInt);
 
 				if (vec3_length(pos) > dStar)
@@ -348,8 +350,8 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 	return rFactor;
 }
 
-void Crystal::transplantAmplitudes(DiffractionPtr data, double partsFo,
-								   double partsFc)
+void Crystal::getDataInformation(DiffractionPtr data, double partsFo,
+								 double partsFc)
 {
 	if (!_fft || !_fft->nn)
 	{

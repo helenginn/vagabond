@@ -64,36 +64,39 @@ void Options::run()
 	{
 		if (crystals.size() == 1)
 		{
-			int prop = 3;
+			double propFo = 4;
+			double propFc = 3.2;
 
 			/* sandbox */
 			DiffractionPtr data = diffractions[0];
+			if (_tie)
+			{
+				crystals[0]->tieAtomsUp();
+			}
+
 			crystals[0]->realSpaceClutter();
-			crystals[0]->transplantAmplitudes(data, prop, prop -1);
+			crystals[0]->getDataInformation(data, propFo, propFc);
+
 			crystals[0]->tiedUpScattering();
 			MoleculePtr molecule = crystals[0]->molecule("A");
 
-			if (_numCycles > 0)
+			if (false && _numCycles > 0)
 			{
 				molecule->refine(crystals[0], RefinementBroad);
 				crystals[0]->realSpaceClutter();
-				crystals[0]->transplantAmplitudes(data, prop, prop-1);
+				crystals[0]->getDataInformation(data, propFo, propFc);
 			}
 
 			for (int i = 0; i < _numCycles; i++)
 			{
 				molecule->refine(crystals[0], RefinementFine);
 				crystals[0]->realSpaceClutter();
-				crystals[0]->transplantAmplitudes(data, prop, prop-1);
+				crystals[0]->getDataInformation(data, propFo, propFc);
 
-				if (i % 2 == 0 || true)
-				{
-					continue;
-				}
-
+				continue;
 				molecule->refine(crystals[0], RefinementBroad);
 				crystals[0]->realSpaceClutter();
-				crystals[0]->transplantAmplitudes(data, prop, prop-1);
+				crystals[0]->getDataInformation(data, propFo, propFc);
 			}
 
 			crystals[0]->molecule(0)->makePDB();
@@ -121,7 +124,7 @@ void Options::parse()
 
 			PDBReader pdb = PDBReader();
 			pdb.setFilename(pdb_name);
-			CrystalPtr crystal = pdb.getCrystal(_tie);
+			CrystalPtr crystal = pdb.getCrystal();
 
 			objects.push_back(crystal);
 			crystals.push_back(crystal);

@@ -6,6 +6,8 @@
 //  Copyright (c) 2017 Strubi. All rights reserved.
 //
 
+// (1) Acta Crystallographica Section D: Biological Crystallography, 63(5), 611-620.
+
 #define CH2E_CH2E_LENGTH (1.520)
 #define CH2E_NH3_LENGTH  (1.489)
 #define CH1E_OH1_LENGTH  (1.433)
@@ -13,10 +15,10 @@
 #define CH1E_CH2E_LENGTH (1.530)
 #define CH1E_CH3E_LENGTH (1.521)
 #define CH1E_CH1E_LENGTH (1.540)
-#define C_CH1E_LENGTH    (1.525)
-#define CH1E_NH1_LENGTH  (1.458)
-#define C_NH1_LENGTH     (1.329)
-#define C_O_LENGTH       (1.231)
+#define C_CH1E_LENGTH    (1.523) // // 1.525 - Engh&Huber, 1.523 - ref1.
+#define CH1E_NH1_LENGTH  (1.455) // 1.458 - Engh&Huber, 1.455 - ref1.
+#define C_NH1_LENGTH     (1.332) // 1.329 - E&H - used ref1.
+#define C_O_LENGTH       (1.231) // agrees with ref1.
 #define CH2E_SM_LENGTH   (1.803)
 #define CH3E_SM_LENGTH   (1.791)
 #define C5_CH2E_LENGTH   (1.497)
@@ -40,13 +42,13 @@
 #define CR1E_C5_NH1_ANGLE    105.2
 #define C5_CH2E_CH1E_ANGLE   113.8
 #define C5_CR1H_NH1_ANGLE    107.2
-#define CH2E_SM_CH3E_ANGLE   100.9
-#define CH2E_CH2E_SM_ANGLE   112.7
-#define CH1E_C_NH1_ANGLE     116.2
-#define CH1E_C_O_ANGLE       120.8
-#define NH1_C_O_ANGLE        123.0
-#define C_CH1E_NH1_ANGLE     111.2
-#define NH1_CH1E_CH2E_ANGLE  110.5
+#define CH2E_SM_CH3E_ANGLE   100.2
+#define CH2E_CH2E_SM_ANGLE   112.4// looks wrong
+#define CH1E_C_NH1_ANGLE     117.2
+#define CH1E_C_O_ANGLE       120.1
+#define NH1_C_O_ANGLE        122.7
+#define C_CH1E_NH1_ANGLE     111.0 // ref1 says too high! 111.2 - E&H
+#define NH1_CH1E_CH2E_ANGLE  110.6
 #define C_NH1_CH1E_ANGLE     121.7
 
 #include "shared_ptrs.h"
@@ -200,9 +202,9 @@ GeomTable::GeomTable()
 	addIdentityToType("ser", "C", AtomC);
 	addIdentityToType("ser", "O", AtomO);
 	addIdentityToType("ser", "N", AtomNH1);
-	addIdentityToType("ser", "CA", AtomCH1E);
-	addIdentityToType("ser", "CB", AtomCH2E);
-	addIdentityToType("ser", "OG", AtomOH1);
+	addIdentityToType("ser", "CA", AtomSerCA);
+	addIdentityToType("ser", "CB", AtomSerCB);
+	addIdentityToType("ser", "OG", AtomSerOG);
 
 	addIdentityToType("val", "C", AtomC);
 	addIdentityToType("val", "O", AtomO);
@@ -215,12 +217,12 @@ GeomTable::GeomTable()
 	addIdentityToType("lys", "C", AtomC);
 	addIdentityToType("lys", "O", AtomO);
 	addIdentityToType("lys", "N", AtomNH1);
-	addIdentityToType("lys", "CA", AtomCH1E);
-	addIdentityToType("lys", "CB", AtomCH2E);
-	addIdentityToType("lys", "CG", AtomCH2E);
-	addIdentityToType("lys", "CD", AtomCH2E);
-	addIdentityToType("lys", "CE", AtomCH2E);
-	addIdentityToType("lys", "NZ", AtomNH3);
+	addIdentityToType("lys", "CA", AtomLysCA);
+	addIdentityToType("lys", "CB", AtomLysCB);
+	addIdentityToType("lys", "CG", AtomLysCG);
+	addIdentityToType("lys", "CD", AtomLysCD);
+	addIdentityToType("lys", "CE", AtomLysCE);
+	addIdentityToType("lys", "NZ", AtomLysNZ);
 
 	addIdentityToType("his", "C", AtomC);
 	addIdentityToType("his", "O", AtomO);
@@ -236,11 +238,67 @@ GeomTable::GeomTable()
 	addIdentityToType("met", "C", AtomC);
 	addIdentityToType("met", "O", AtomO);
 	addIdentityToType("met", "N", AtomNH1);
-	addIdentityToType("met", "CA", AtomCH1E);
-	addIdentityToType("met", "CB", AtomCH2E);
-	addIdentityToType("met", "CG", AtomCH2E);
-	addIdentityToType("met", "SD", AtomSM);
-	addIdentityToType("met", "CE", AtomCH3E);
+	addIdentityToType("met", "CA", AtomMetCA);
+	addIdentityToType("met", "CB", AtomMetCB);
+	addIdentityToType("met", "CG", AtomMetCG);
+	addIdentityToType("met", "SD", AtomMetSD);
+	addIdentityToType("met", "CE", AtomMetCE);
+
+	addIdentityToType("phe", "C", AtomC);
+	addIdentityToType("phe", "O", AtomO);
+	addIdentityToType("phe", "N", AtomNH1);
+	addIdentityToType("phe", "CA", AtomCH1E);
+	addIdentityToType("phe", "CB", AtomCH2E);
+
+	addBondLength(AtomC, AtomMetCA, 1.525);
+	addBondLength(AtomNH1, AtomMetCA, 1.459);
+	addBondLength(AtomMetCA, AtomMetCB, 1.535);
+	addBondLength(AtomMetCB, AtomMetCG, 1.509);
+	addBondLength(AtomMetCG, AtomMetSD, 1.807);
+	addBondLength(AtomMetSD, AtomMetCE, 1.774);
+
+
+	addBondAngle(AtomNH1, AtomMetCA, AtomC, C_CH1E_NH1_ANGLE);
+	addBondAngle(AtomMetCA, AtomC, AtomO, CH1E_C_O_ANGLE);
+	addBondAngle(AtomC, AtomNH1, AtomMetCA, C_NH1_CH1E_ANGLE);
+	addBondAngle(AtomMetCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
+	addBondAngle(AtomNH1, AtomMetCA, AtomMetCB, 110.5);
+	addBondAngle(AtomMetCA, AtomMetCB, AtomC, 110.1);
+	addBondAngle(AtomMetCA, AtomMetCB, AtomMetCG, 114.1);
+	addBondAngle(AtomMetCB, AtomMetCG, AtomMetSD, 112.7);
+	addBondAngle(AtomMetCG, AtomMetSD, AtomMetCE, 100.9);
+
+	addBondLength(AtomC, AtomLysCA, 1.525);
+	addBondLength(AtomNH1, AtomLysCA, 1.459);
+	addBondLength(AtomLysCA, AtomLysCB, 1.535);
+	addBondLength(AtomLysCB, AtomLysCG, 1.521);
+	addBondLength(AtomLysCG, AtomLysCD, 1.520);
+	addBondLength(AtomLysCD, AtomLysCE, 1.508);
+	addBondLength(AtomLysCE, AtomLysNZ, 1.486);
+
+	addBondAngle(AtomNH1, AtomLysCA, AtomC, C_CH1E_NH1_ANGLE);
+	addBondAngle(AtomLysCA, AtomC, AtomO, CH1E_C_O_ANGLE);
+	addBondAngle(AtomC, AtomNH1, AtomLysCA, C_NH1_CH1E_ANGLE);
+	addBondAngle(AtomLysCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
+	addBondAngle(AtomNH1, AtomLysCA, AtomLysCB, 110.6);
+	addBondAngle(AtomLysCB, AtomLysCA, AtomC, 110.4);
+	addBondAngle(AtomLysCA, AtomLysCB, AtomLysCG, 113.4);
+	addBondAngle(AtomLysCB, AtomLysCG, AtomLysCD, 111.6);
+	addBondAngle(AtomLysCG, AtomLysCD, AtomLysCE, 111.9);
+	addBondAngle(AtomLysCD, AtomLysCE, AtomLysNZ, 111.7);
+
+	addBondLength(AtomC, AtomSerCA, 1.525);
+	addBondLength(AtomNH1, AtomSerCA, 1.459);
+	addBondLength(AtomSerCA, AtomSerCB, 1.525);
+	addBondLength(AtomSerCB, AtomSerOG, 1.418);
+
+	addBondAngle(AtomNH1, AtomSerCA, AtomC, C_CH1E_NH1_ANGLE);
+	addBondAngle(AtomSerCA, AtomC, AtomO, CH1E_C_O_ANGLE);
+	addBondAngle(AtomC, AtomNH1, AtomSerCA, C_NH1_CH1E_ANGLE);
+	addBondAngle(AtomSerCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
+	addBondAngle(AtomNH1, AtomSerCA, AtomSerCB, 110.5);
+	addBondAngle(AtomSerCB, AtomSerCA, AtomC, 110.1);
+	addBondAngle(AtomSerCA, AtomSerCB, AtomSerOG, 111.2);
 
 }
 

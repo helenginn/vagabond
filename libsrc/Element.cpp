@@ -18,52 +18,27 @@ std::vector<ElementPtr> Element::elements;
 
 void Element::setupElements()
 {
-	elements.push_back(ElementPtr(new Element("H", "hydrogen", 1)));
-	elements.push_back(ElementPtr(new Element("C", "carbon", 6)));
-	elements.push_back(ElementPtr(new Element("N", "nitrogen", 7)));
-	elements.push_back(ElementPtr(new Element("O", "oxygen", 8)));
-	elements.push_back(ElementPtr(new Element("S", "sulphur", 16)));
-	elements.push_back(ElementPtr(new Element("CL", "chlorine", 17)));
+	elements.push_back(ElementPtr(new Element("H", "hydrogen", 1, ScatterFactors::hScatter)));
+	elements.push_back(ElementPtr(new Element("C", "carbon", 6,  ScatterFactors::cScatter)));
+	elements.push_back(ElementPtr(new Element("N", "nitrogen", 7,  ScatterFactors::nScatter)));
+	elements.push_back(ElementPtr(new Element("O", "oxygen", 8,  ScatterFactors::oScatter)));
+	elements.push_back(ElementPtr(new Element("S", "sulphur", 16,  ScatterFactors::sScatter)));
+	elements.push_back(ElementPtr(new Element("CL", "chlorine", 17,  ScatterFactors::clScatter)));
 }
 
-Element::Element(std::string symbol, std::string name, double electrons)
+Element::Element(std::string symbol, std::string name, double electrons, const float *scatter)
 {
 	_symbol = symbol;
 	_name = name;
 	_electrons = electrons;
+	memcpy(_scattering, scatter, ScatterFactors::numScatter * sizeof(float));
 
-	if (_symbol == "H")
+	if (_symbol == "S")
 	{
-		memcpy(_scattering, ScatterFactors::hScatter, ScatterFactors::numScatter * sizeof(float));
-	}
-	else if (_symbol == "C")
-	{
-		memcpy(_scattering, ScatterFactors::cScatter, ScatterFactors::numScatter * sizeof(float));
-	}
-	else if (_symbol == "N")
-	{
-		memcpy(_scattering, ScatterFactors::nScatter, ScatterFactors::numScatter * sizeof(float));
-	}
-	else if (symbol == "O")
-	{
-		memcpy(_scattering, ScatterFactors::oScatter, ScatterFactors::numScatter * sizeof(float));
-	}
-	else if (_symbol == "S")
-	{
-		memcpy(_scattering, ScatterFactors::sScatter, ScatterFactors::numScatter * sizeof(float));
-
 		for (int i = 0; i < ScatterFactors::numScatter; i++)
 		{
 			_scattering[i] += 0.2;
 		}
-	}
-	else if (_symbol == "CL")
-	{
-		memcpy(_scattering, ScatterFactors::clScatter, ScatterFactors::numScatter * sizeof(float));
-	}
-	else
-	{
-		memset(_scattering, 0, ScatterFactors::numScatter * sizeof(float));
 	}
 }
 

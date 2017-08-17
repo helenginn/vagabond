@@ -74,8 +74,35 @@ double mean(std::vector<double> &vec1)
 	return sum_x / sum_weight;
 }
 
+double weightedMapScore(std::vector<double> &vec1, std::vector<double> &vec2)
+{
+	double sum_xy = 0;
+	double sum_weight = 0;
+
+	if (!vec1.size() || !vec2.size())
+	{
+		return 0;
+	}
+
+	for (int i = 0; i < vec1.size(); i++)
+	{
+		if (vec1[i] != vec1[i] || vec2[i] != vec2[i])
+		{
+			continue;
+		}
+
+		double addition = vec1[i] * vec2[i];
+		double weight = vec2[i] * vec2[i];
+
+		sum_xy += addition;
+		sum_weight += weight;
+	}
+
+	return sum_xy / sum_weight;
+}
+
 double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
-				   std::vector<double> *weights)
+				   double cutoff)
 {
 	double sum_x = 0;
 	double sum_y = 0;
@@ -89,12 +116,13 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
 	for (int i = 0; i < vec1.size(); i++)
 	{
 		double weight = 1;
-		if (weights)
-		{
-			weight = (*weights)[i];
-		}
 
 		if (vec1[i] != vec1[i] || vec2[i] != vec2[i] || weight != weight)
+		{
+			continue;
+		}
+
+		if (vec2[i] <= cutoff)
 		{
 			continue;
 		}
@@ -105,12 +133,8 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
 		addition = vec2[i];
 		sum_y += addition * weight;
 
-//		std::cout << vec1[i] << "\t" << vec2[i] << std::endl;
-
 		sum_weight += weight;
 	}
-
-//	exit(1);
 
 	double mean_x = sum_x / sum_weight;
 	double mean_y = sum_y / sum_weight;
@@ -125,12 +149,13 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
 	for (int i = 0; i < vec1.size(); i++)
 	{
 		double weight = 1;
-		if (weights)
-		{
-			weight = (*weights)[i];
-		}
 
 		if (vec1[i] != vec1[i] || vec2[i] != vec2[i] || weight != weight)
+		{
+			continue;
+		}
+
+		if (vec2[i] < cutoff)
 		{
 			continue;
 		}

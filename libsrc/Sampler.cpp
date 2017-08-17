@@ -14,6 +14,7 @@
 #include "Crystal.h"
 #include "Element.h"
 #include "FileReader.h"
+#include "Absolute.h"
 
 Sampler::Sampler()
 {
@@ -29,6 +30,10 @@ void Sampler::setupDoubleTorsion(BondPtr bond, int k, int bondNum, int resNum,
 
 	setupGrid();
 	reportInDegrees();
+
+	setJobName("torsion_double_" + bond->getMajor()->getAtomName() + "_" +
+			   bond->getMinor()->getAtomName() + "_g" +
+			   i_to_str(k) + "_" + i_to_str(resNum));
 
 	addTorsion(bond, deg2rad(range), deg2rad(interval));
 
@@ -50,13 +55,27 @@ void Sampler::setupDoubleTorsion(BondPtr bond, int k, int bondNum, int resNum,
 			break;
 		}
 
-		AtomPtr nextAtom = bond->downstreamAtom(k, 0);
-		BondPtr nextBond;
+		int trial = 0;
+		AtomPtr nextAtom = bond->downstreamAtom(k, trial);
+		int totalAtoms = bond->downstreamAtomCount(k);
+
+		BondPtr nextBond = std::static_pointer_cast<Bond>(nextAtom->getModel());
+
+		while (nextAtom &&
+			   (!nextBond->isNotJustForHydrogens() || nextBond->isFixed() ||
+				!nextBond->isUsingTorsion()))
+		{
+			trial++;
+			if (trial >= totalAtoms)
+			{
+				break;
+			}
+			nextAtom = bond->downstreamAtom(k, trial);
+			nextBond = std::static_pointer_cast<Bond>(nextAtom->getModel());
+		}
 
 		if (nextAtom)
 		{
-			nextBond = std::static_pointer_cast<Bond>(nextAtom->getModel());
-
 			if (nextBond->isUsingTorsion() && !nextBond->isFixed()
 				&& nextBond->isNotJustForHydrogens())
 			{
@@ -81,10 +100,6 @@ void Sampler::setupDoubleTorsion(BondPtr bond, int k, int bondNum, int resNum,
 
 		bond = nextBond;
 	}
-
-	setJobName("torsion_double_" + bond->getMajor()->getAtomName() + "_" +
-			   bond->getMinor()->getAtomName() + "_g" +
-			   i_to_str(k) + "_" + i_to_str(resNum));
 }
 
 
@@ -189,6 +204,37 @@ void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 	_bonds.push_back(bond);
 }
 
+
+void Sampler::addAbsolutePosition(AbsolutePtr abs, double range, double interval)
+{
+	if (abs->getClassName() != "Absolute")
+	{
+		return;
+	}
+
+	//	double number = fabs(range / interval);
+	_strategy->addParameter(&*abs, Absolute::getPosX, Absolute::setPosX,
+							range, interval, "pos_x");
+	_strategy->addParameter(&*abs, Absolute::getPosY, Absolute::setPosY,
+							range, interval, "pos_y");
+	_strategy->addParameter(&*abs, Absolute::getPosZ, Absolute::setPosZ,
+							range, interval, "pos_z");
+}
+
+
+void Sampler::addAbsoluteBFactor(AbsolutePtr abs, double range, double interval)
+{
+	if (abs->getClassName() != "Absolute")
+	{
+		return;
+	}
+
+	//	double number = fabs(range / interval);
+	_strategy->addParameter(&*abs, Absolute::getB, Absolute::setB,
+							range, interval, "bfactor");
+}
+
+
 void Sampler::addSampled(AtomPtr atom)
 {
 	double electrons = atom->getElement()->electronCount();
@@ -200,6 +246,13 @@ void Sampler::addSampled(AtomPtr atom)
 	}
 	else
 	{
+		for (int i = 0; i < sampleSize(); i++)
+		{
+			if (_sampled[i] == atom)
+			{
+				return;
+			}
+		}
 		_sampled.push_back(atom);
 	}
 }
@@ -217,6 +270,23 @@ void Sampler::sample()
 		_strategy->isMock();
 		_mock = false;
 	}
+/*
+	std::cout << "Refining bonds ";
+
+	for (int i = 0; i < _bonds.size(); i++)
+	{
+		std::cout << _bonds[i]->shortDesc() << " (" <<
+		rad2deg(_bonds[i]->getTorsion(0)) << "º) ";
+	}
+
+	std::cout << "against atoms ";
+
+	for (int i = 0; i < sampleSize(); i++)
+	{
+		std::cout << _sampled[i]->getAtomName() << " ";
+	}
+
+	std::cout << std::endl;*/
 
 	_strategy->setJobName(_jobName);
 	_strategy->refine();
@@ -230,42 +300,34 @@ void Sampler::sample()
 
 double Sampler::getScore()
 {
-	double score = 1;
+	if (!_sampled.size())
+	{
+		return 0;
+	}
 
-	std::vector<double> xTots, yTots;
 	std::vector<double> xs, ys;
 
-	std::vector<double> *xPtr = NULL;
-	std::vector<double> *yPtr = NULL;
+	double n = 36;
+	double scales = 0.33;
+	FFTPtr segment = FFTPtr(new FFT());
+	segment->create(n);
+	segment->setScales(scales);
+	mat3x3 basis = make_mat3x3();
+	double toReal = 1/(scales*n);
+	mat3x3_scale(&basis, toReal, toReal, toReal);
 
-	if (_joint)
-	{
-		xPtr = &xs;
-		yPtr = &ys;
-	}
+	vec3 offset = _sampled[0]->getPosition();
 
 	for (int i = 0; i < _sampled.size(); i++)
 	{
-		double next_score = _sampled[i]->scoreWithMap(_fft, _real2hkl, xPtr, yPtr);
-
-		next_score += 1;
-
-		score *= next_score;
-
-		if (_joint)
-		{
-			xTots.reserve(xTots.size() + xs.size());
-			yTots.reserve(yTots.size() + ys.size());
-			xTots.insert(xTots.end(), xs.begin(), xs.end());
-			yTots.insert(yTots.end(), ys.begin(), ys.end());
-		}
+		_sampled[i]->addToMap(segment, basis, offset);
 	}
 
-	if (_joint)
-	{
-		double val = correlation(xTots, yTots);
-		return -val;
-	}
+	mat3x3_mult_vec(_real2hkl, &offset);
+	double cutoff = FFT::score(_fft, segment, offset, &xs, &ys);
 
-	return -fabs(score);
+	double correl = correlation(xs, ys, cutoff);
+	double mult = weightedMapScore(xs, ys);
+
+	return -correl;
 }

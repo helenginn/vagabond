@@ -10,6 +10,7 @@
 #include "Monomer.h"
 #include "Bond.h"
 #include "Atom.h"
+#include "Absolute.h"
 #include "FileReader.h"
 
 void Backbone::refine(CrystalPtr target, RefinementType rType)
@@ -18,6 +19,14 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 	{
 	//	return;
 	}
+
+
+	if (!isTied())
+	{
+		return;
+	}
+
+	_timesRefined ++;
 
 	int resNum = getMonomer()->getResidueNum();
 
@@ -37,11 +46,30 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 		for (int j = 0; j < myAtoms.size(); j++)
 		{
 			AtomPtr myAtom = myAtoms[j].lock();
-
 			ModelPtr model = myAtom->getModel();
 
-			if (model->getClassName() != "Bond")
+			if (model->getClassName() == "Absolute")
 			{
+				if (_timesRefined > 1)
+				{
+					continue;
+				}
+
+				setupNelderMead();
+				AbsolutePtr abs = std::static_pointer_cast<Absolute>(model);
+				addAbsolutePosition(abs, 0.01, 0.01);
+				addSampled(myAtom);
+				setJobName("absolute_" + myAtom->getAtomName() + "_" + i_to_str(resNum));
+				setCrystal(target);
+				sample();
+				continue;
+
+				setupNelderMead();
+				addAbsoluteBFactor(abs, 0.05, 0.01);
+				addSampled(myAtom);
+				setJobName("bFactor_" + myAtom->getAtomName() + "_" + i_to_str(resNum));
+				setCrystal(target);
+				sample();
 				continue;
 			}
 
@@ -104,15 +132,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				{
 					for (int k = 0; k < groups; k++)
 					{
-						setupDoubleTorsion(bond, k, 1, resNum, 360, 8);
+						setupDoubleTorsion(bond, k, 0, resNum, 360, 1);
 						setCrystal(target);
 						sample();
-
-						setupDoubleTorsion(bond, k, 1, resNum, 30, 2);
-						setCrystal(target);
-						sample();
-
 					}
+
 				}
 				else
 				{

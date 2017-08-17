@@ -75,7 +75,7 @@ public:
 	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 								bool verbose = false, double lowRes = 0,
 								double highRes = 0);
-	void transplantAmplitudes(DiffractionPtr data, double partsFo = 2,
+	void getDataInformation(DiffractionPtr data, double partsFo = 2,
 							  double partsFc = 1);
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);
 	

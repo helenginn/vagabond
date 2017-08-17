@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include "Dataset.h"
+#include "fftw3d.h"
 #include "shared_ptrs.h"
 #include <string>
 

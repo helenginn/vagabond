@@ -38,6 +38,8 @@ public:
 	void addBendBlur(BondPtr bond, double range, double interval);
 	void addBendAngle(BondPtr bond, double range, double interval);
 	void addOccupancy(BondPtr bond, double range, double interval);
+	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
+	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
 	void setCrystal(CrystalPtr crystal);
 	void sample();
 

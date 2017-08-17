@@ -186,7 +186,6 @@ public:
 
 	void printSlice(bool amplitude = false);
 
-public:
     long nx,ny,nz,nn;
     fftwf_complex *data;
 	MaskType *mask; // not char due to cpu speed

@@ -17,6 +17,7 @@
 #include "vec3.h"
 #include <iostream>
 #include <vector>
+#include <algorithm>
 #include "maths.h"
 #include "FileReader.h"
 #include <sys/stat.h>
@@ -167,6 +168,7 @@ void FFT::shiftToCentre()
 
 	int copyLength = sx;
 	fftwf_complex *temp =  (FFTW_DATA_TYPE*) fftwf_malloc(nn*sizeof(FFTW_DATA_TYPE));
+	memset(temp, 0, nn*sizeof(FFTW_DATA_TYPE));
 
 	for (int z0 = 0; z0 < nz; z0++)
 	{
@@ -549,7 +551,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 						   (double)(-fftAtom->nz) * 0.5);
 	mat3x3_mult_vec(atomVox2Crystal, &shift);
 
-	/* In crystal voxels */
+	/* In crystal voxels at the moment */
 	vec3 shiftRemainder = make_vec3(fmod(shift.x, 1),
 									fmod(shift.y, 1),
 									fmod(shift.z, 1));
@@ -561,33 +563,31 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	shiftRemainder.x = 1 + shiftRemainder.x;
 	shiftRemainder.y = 1 + shiftRemainder.y;
 	shiftRemainder.z = 1 + shiftRemainder.z;
+
+	/* The crystal voxels must be converted to atomic voxels to determine
+	 * final offset for atom sampling. */
+
 	mat3x3_mult_vec(crystal2AtomVox, &shiftRemainder);
 	vec3_mult(&shiftRemainder, -1);
 
+	/* Corner of atom as whole value offset in the crystal coordinates. */
 	vec3 cornerCrystal = vec3_add_vec3(wholeShiftOnly, atomWholeCoords);
+
+	/* Fractional offset in atomic coordinates. */
 	atomOffset = vec3_add_vec3(atomOffset, shiftRemainder);
 
-//	std::cout << vec3_desc(atomOffset) << " " << vec3_desc(cornerCrystal) << std::endl;
-
 	/* We loop around these crystal voxel limits now (ss -> ms -> fs).
-	 * We also discard any which happen to go over the limits of our atom voxels
-	 * which may occur due to the buffer added above. */
+	 * We also break the loop if it exceeds the limits of our atom voxels
+	 * during the loop itself. */
 
-	std::vector<double> crystalVals, thingVals, quickVals;
+	std::vector<double> crystalVals, thingVals;
 	crystalVals.reserve(fftAtom->nn); // may be over-estimate, nm.
 	thingVals.reserve(fftAtom->nn);
 
-	quickVals.reserve(fftAtom->nn);
+	std::vector<double> orderedVals;
+	double sumVals = 0;
 
-	if (scoreMe)
-	{
-		for (int i = 0; i < fftAtom->nn; i++)
-		{
-			quickVals.push_back(fftAtom->data[i][0]);
-		}
-	}
-
-	double meanVal = mean(quickVals);
+	/* Temp calculation of mean... delete me... */
 	int count = 0;
 
 	vec3 atomPos = make_vec3(0, 0, 0);
@@ -616,8 +616,23 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				 * falling between two voxels, in atomic voxels */
 				vec3 offsetPos = vec3_add_vec3(pos, atomOffset);
 
+				if (fftAtom->getReal(offsetPos.x, offsetPos.y, offsetPos.y) == 0)
+				{
+					continue;
+				}
+
 				/* Find the interpolated value which offsetPos falls on */
-				double atomReal = fftAtom->interpolate(offsetPos, 0);
+				double atomReal = 0;
+
+				//if (!scoreMe)
+				{
+					atomReal = fftAtom->interpolate(offsetPos, 0);
+				}
+/*				else
+				{
+					atomReal = fftAtom->getReal(offsetPos.x, offsetPos.y, offsetPos.z);
+				}*/
+
 				double atomImag = 0;
 
 				if (offsetPos.x < 0) offsetPos.x += fftAtom->nx;
@@ -627,14 +642,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				if (!scoreMe)
 				{
 					atomImag = fftAtom->interpolate(offsetPos, 1);
-				}
-				else
-				{
-					if (atomReal < meanVal / 10)
-					{
-						continue;
-					}
-
 				}
 
 				/* We add the atom offset so we don't end up with thousands
@@ -652,6 +659,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				{
 					crystalVals.push_back(fftCrystal->getReal(crystalIndex));
 					thingVals.push_back(atomReal);
+					orderedVals.push_back(atomReal);
+					sumVals += atomReal;
 				}
 				else
 				{
@@ -686,9 +695,23 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 		*ys = thingVals;
 	}
 
-	double correl = correlation(crystalVals, thingVals);
+	std::sort(orderedVals.begin(), orderedVals.end(), std::greater<double>());
+	double percentileVal = sumVals * 0.98;
+	double cumulative = 0;
+	double cutoff = 0;
 
-	return correl;
+	for (int i = 0; i < orderedVals.size(); i++)
+	{
+		cumulative += orderedVals[i];
+
+		if (cumulative > percentileVal)
+		{
+			cutoff = orderedVals[i - 1];
+			break;
+		}
+	}
+
+	return cutoff;
 }
 
 /*  For multiplying point-wise

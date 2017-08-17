@@ -63,11 +63,26 @@ public:
 	double totalElectrons();
 
 	void getPDBContribution();
+
+	void setTied()
+	{
+		_beenTied = true;
+	}
+protected:
+	AtomGroup();
+	int _timesRefined;
+
+	bool isTied()
+	{
+		return _beenTied;
+	}
 private:
 	MonomerWkr _monomer;
 
 	std::vector<BondPtr> _bonds;
 	std::vector<AtomPtr> _atoms;
+
+	bool _beenTied;
 private:
 	
 };

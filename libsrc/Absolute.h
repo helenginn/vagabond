@@ -83,6 +83,55 @@ public:
 		return _hetatm;
 	}
 
+	static void setPosX(void *object, double x)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		abs->_position.x = x;
+	}
+
+	static void setPosY(void *object, double y)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		abs->_position.y = y;
+	}
+
+	static double getPosZ(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->_position.z;
+	}
+
+	static double getPosX(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->_position.x;
+	}
+
+	static double getPosY(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->_position.y;
+	}
+
+	static void setPosZ(void *object, double z)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		abs->_position.z = z;
+	}
+
+	static double getB(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->_bFactor;
+	}
+
+	static void setB(void *object, double b)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		abs->_bFactor = b;
+		abs->_calculated = false;
+	}
+
 	virtual std::string getClassName()
 	{
 		return "Absolute";

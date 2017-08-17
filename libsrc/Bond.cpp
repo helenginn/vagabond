@@ -285,8 +285,8 @@ void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
 	/* Make torsion basis.
 	 * Make any starting set of angles with correct Z axis. */
 
-	vec3 hPos = _heavyAlign.lock()->getInitialPosition();
-	vec3 maPos = getMajor()->getInitialPosition();
+	vec3 hPos = _heavyAlign.lock()->getPosition();
+	vec3 maPos = getMajor()->getPosition();
 	vec3 miPos = getMinor()->getInitialPosition();
 	vec3 lPos = _lightAlign.lock()->getInitialPosition();
 
@@ -434,13 +434,13 @@ std::vector<BondSample> Bond::sampleMyAngles(double angle, double sigma,
 
 	if (sigma <= interval)
 	{
-		interval = sigma;
+		interval = sigma * 0.8;
 	}
 
 	samples.reserve(sigma * 2 / interval + 1);
 	int count = 0;
 
-	for (double ang = -1.0 * sigma; ang <= 1.0 * sigma; ang += interval)
+	for (double ang = -2.0 * sigma; ang <= 2.0 * sigma; ang += interval)
 	{
 		double relFreq = normal_distribution(ang, sigma);
 		sum += relFreq;
@@ -568,7 +568,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 
 	std::vector<BondSample> *prevSamples = prevBond->getManyPositions(style);
 
-	if (prevSamples->size() > 5000)
+	if (prevSamples->size() > 2000)
 	{
 		style = BondSampleMonteCarlo;
 		monteCarlo = true;
@@ -585,7 +585,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 
 	for (int i = 0; i < prevSamples->size(); i++)
 	{
-		if (monteCarlo && i > 2000)
+		if (monteCarlo && i > 5000)
 		{
 			break;
 		}
@@ -693,6 +693,11 @@ bool Bond::isNotJustForHydrogens()
 	if (getMinor()->getElement()->electronCount() > 1)
 	{
 		return true;
+	}
+
+	if (downstreamAtomCount(0) == 0)
+	{
+		return false;
 	}
 
 	for (int i = 0; i < downstreamAtomCount(0); i++)

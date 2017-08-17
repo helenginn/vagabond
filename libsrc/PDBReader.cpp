@@ -297,7 +297,7 @@ void PDBReader::setFilename(std::string file)
 	filename = file;
 }
 
-CrystalPtr PDBReader::getCrystal(bool tie)
+CrystalPtr PDBReader::getCrystal()
 {
 	if (_myCrystal)
 	{
@@ -321,11 +321,6 @@ CrystalPtr PDBReader::getCrystal(bool tie)
 		shout_at_user("PDB file does not contain the CRYST1\n" \
 					  "entry line which has details about the\n" \
 					  "unit cell dimensions and space group.");
-	}
-
-	if (tie)
-	{
-		_myCrystal->tieAtomsUp();
 	}
 
 	return _myCrystal;

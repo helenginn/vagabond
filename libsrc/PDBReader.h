@@ -19,7 +19,7 @@ public:
 
 	PDBReader();
 	void setFilename(std::string);
-	CrystalPtr getCrystal(bool tie = true);
+	CrystalPtr getCrystal();
 
 private:
 	std::string filename;

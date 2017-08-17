@@ -29,6 +29,11 @@ typedef enum
 	AtomOH1,
 	AtomO,
 	AtomSM,
+
+	AtomMetCA, AtomMetCB, AtomMetCG, AtomMetSD, AtomMetCE,
+	AtomLysCA, AtomLysCB, AtomLysCG, AtomLysCD, AtomLysCE, AtomLysNZ,
+	AtomSerCA, AtomSerCB, AtomSerOG,
+
 } AtomType;
 
 typedef std::pair<AtomType, AtomType> AtomPair;

@@ -40,6 +40,7 @@ private:
 	void makeLysine();
 	void makeThreonine();
 	void makeHistidine();
+	void makePhenylalanine();
 	void makeMethionine();
 };
 

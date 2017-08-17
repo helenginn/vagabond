@@ -58,5 +58,11 @@ void AtomGroup::getPDBContribution()
 		BondPtr aBond = bond(i);
 		aBond->getPDBContribution();
 	}
+}
 
+
+AtomGroup::AtomGroup()
+{
+	_beenTied = false;
+	_timesRefined = 0;
 }

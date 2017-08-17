@@ -137,6 +137,7 @@ void RefinementStrategy::finish()
 
     if (endScore >= startingScore || endScore != endScore)
     {
+		resetToInitialParameters();
 		double rad2degscale = (_toDegrees ? rad2deg(1) : 1);
 		std::cout << "No change for " << jobName << " ";
 
@@ -149,7 +150,6 @@ void RefinementStrategy::finish()
 
 		std::cout << " (" << startingScore << ")" << std::endl;
 
-		resetToInitialParameters();
 		_changed = 0;
     }
     else
