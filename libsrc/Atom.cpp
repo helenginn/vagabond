@@ -99,6 +99,7 @@ bool Atom::isBackbone()
 	if (_atomName == "H") return true;
 	if (_atomName == "N") return true;
 	if (_atomName == "O") return true;
+	if (_atomName == "HA2") return true;
 
 	return false;
 }

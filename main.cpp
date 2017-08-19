@@ -11,10 +11,13 @@
 #include "shared_ptrs.h"
 #include "Crystal.h"
 #include "Options.h"
+#include "Sandbox.h"
 
 int main(int argc, const char * argv[])
 {
 	/* Options are parsed and will generate the objects needed */
+
+	//outputTorsionStuff();
 
 	Options options(argc, argv);
 	options.run();

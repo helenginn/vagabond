@@ -589,13 +589,19 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 	/* Temp calculation of mean... delete me... */
 	int count = 0;
+	double step = 1;
+
+	if (scoreMe)
+	{
+		step = 1;
+	}
 
 	vec3 atomPos = make_vec3(0, 0, 0);
-	for (int k = 0; ; k++)
+	for (double k = 0; ; k += step)
 	{
-		for (int j = 0; ; j++)
+		for (double j = 0; ; j += step)
 		{
-			for (int i = 0; ; i++)
+			for (double i = 0; ; i += step)
 			{
 				/* Position currently in voxel coords - change to atom. */
 				vec3 crystalPos = make_vec3(i, j, k);
@@ -624,14 +630,12 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				/* Find the interpolated value which offsetPos falls on */
 				double atomReal = 0;
 
-				//if (!scoreMe)
+				atomReal = fftAtom->interpolate(offsetPos, 0);
+
+				if (atomReal != atomReal)
 				{
-					atomReal = fftAtom->interpolate(offsetPos, 0);
+					std::cout << "WTF" << std::endl;
 				}
-/*				else
-				{
-					atomReal = fftAtom->getReal(offsetPos.x, offsetPos.y, offsetPos.z);
-				}*/
 
 				double atomImag = 0;
 
@@ -657,7 +661,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 				if (scoreMe)
 				{
-					crystalVals.push_back(fftCrystal->getReal(crystalIndex));
+					double realCryst = fftCrystal->interpolate(finalCrystalVox);
+					crystalVals.push_back(realCryst);
 					thingVals.push_back(atomReal);
 					orderedVals.push_back(atomReal);
 					sumVals += atomReal;

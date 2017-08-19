@@ -105,34 +105,43 @@ void RefinementGridSearch::refine()
         csv->addEntry(result);
     }
 
-	if (changed)
+	for (int i = 0; i < minParams.size(); i++)
 	{
-	//	std::cout << "Setting params ";
-		double rad2degscale = (_toDegrees ? rad2deg(1) : 1);
+		Setter setter = setters[i];
 
-		for (int i = 0; i < minParams.size(); i++)
+		if (!_mock && changed)
 		{
-			Setter setter = setters[i];
-
-			if (!_mock)
-			{
-				(*setter)(objects[i], minParams[i]);
-			}
-			else
-			{
-				(*setter)(objects[i], currentValues[i]);
-			}
-
-		//	std::cout << tags[i] << "=" << minParams[i] * rad2degscale <<
-		//	(_toDegrees ? "º" : "") << ", ";
+			(*setter)(objects[i], minParams[i]);
 		}
-
-		double val = (*evaluationFunction)(evaluateObject);
-	//	std::cout << "score = " << val << std::endl;
+		else
+		{
+			(*setter)(objects[i], currentValues[i]);
+		}
 	}
 
-    csv->writeToFile(jobName + "_gridsearch_" + i_to_str(_refine_counter)
-					 + ".csv");
+	if (tags.size() == 2)
+	{
+		int stride = stepSizes[0] / otherValues[0];
+
+		std::map<std::string, std::string> plotMap;
+		plotMap["filename"] = jobName + "_gridsearch_" + i_to_str(_refine_counter);
+		plotMap["height"] = "800";
+		plotMap["width"] = "800";
+		plotMap["xHeader0"] = tags[0];
+		plotMap["yHeader0"] = tags[1];
+		plotMap["zHeader0"] = "result";
+
+		plotMap["xTitle0"] = tags[0];
+		plotMap["yTitle0"] = tags[1];
+		plotMap["style0"] = "heatmap";
+		plotMap["stride"] = i_to_str(stride);
+
+		csv->plotPNG(plotMap);
+	}
+	else
+	{
+		csv->writeToFile(jobName + "_gridsearch.csv");
+	}
 	_refine_counter++;
 
     finish();

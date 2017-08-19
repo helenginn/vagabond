@@ -250,6 +250,8 @@ GeomTable::GeomTable()
 	addIdentityToType("phe", "CA", AtomCH1E);
 	addIdentityToType("phe", "CB", AtomCH2E);
 
+	addIdentityToType("ile", "N", AtomNH1);
+
 	addBondLength(AtomC, AtomMetCA, 1.525);
 	addBondLength(AtomNH1, AtomMetCA, 1.459);
 	addBondLength(AtomMetCA, AtomMetCB, 1.535);
@@ -265,7 +267,7 @@ GeomTable::GeomTable()
 	addBondAngle(AtomNH1, AtomMetCA, AtomMetCB, 110.5);
 	addBondAngle(AtomMetCA, AtomMetCB, AtomC, 110.1);
 	addBondAngle(AtomMetCA, AtomMetCB, AtomMetCG, 114.1);
-	addBondAngle(AtomMetCB, AtomMetCG, AtomMetSD, 112.7);
+	addBondAngle(AtomMetCB, AtomMetCG, AtomMetSD, 116.0);
 	addBondAngle(AtomMetCG, AtomMetSD, AtomMetCE, 100.9);
 
 	addBondLength(AtomC, AtomLysCA, 1.525);

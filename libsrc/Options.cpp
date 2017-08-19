@@ -92,11 +92,6 @@ void Options::run()
 				molecule->refine(crystals[0], RefinementFine);
 				crystals[0]->realSpaceClutter();
 				crystals[0]->getDataInformation(data, propFo, propFc);
-
-				continue;
-				molecule->refine(crystals[0], RefinementBroad);
-				crystals[0]->realSpaceClutter();
-				crystals[0]->getDataInformation(data, propFo, propFc);
 			}
 
 			crystals[0]->molecule(0)->makePDB();

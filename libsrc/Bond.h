@@ -155,6 +155,7 @@ public:
 	static void setTorsionNextBlur(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
+		if (value > 0) value = 0;
 		bond->_torsionBlurFromPrev = std::max(-1., -fabs(value));
 		bond->propagateChange();
 	}
@@ -242,6 +243,10 @@ public:
 
 	void setActiveGroup(int newGroup)
 	{
+		if (_activeGroup == newGroup)
+		{
+			return;
+		}
 		_activeGroup = newGroup;
 		propagateChange();
 	}
@@ -327,11 +332,10 @@ private:
 							 double ratio, vec3 start);
 	std::vector<BondSample> sampleMyAngles(double angle, double sigma,
 										   bool singleState = false);
-	std::vector<BondSample> getCorrelatedAngles(BondSample prev,
-												double lastTorsion,
-												double angle, double blur,
-												bool singleState = false,
-												int group = 0);
+	std::vector<BondSample>getCorrelatedAngles(vec3 myCurrentPos, mat3x3 basis,
+											   vec3 start, vec3 end,
+											   double absAngle, double blur,
+											   bool singleState);
 
 	void duplicateDownstream(BondPtr newBranch, int groupNum);
 	virtual void propagateChange();

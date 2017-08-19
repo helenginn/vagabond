@@ -17,6 +17,9 @@
 #include "Bond.h"
 #include "Polymer.h"
 
+#define DEFAULT_PEPTIDE_BLUR 0
+#define DEFAULT_RAMACHANDRAN_BLUR 0
+
 void Knotter::tieTowardsCTerminus()
 {
 	if (!_backbone)
@@ -27,18 +30,30 @@ void Knotter::tieTowardsCTerminus()
 					   "What an idiot. Haha!");
 	}
 
+
+
 	PolymerPtr polymer = _backbone->getPolymer();
 	int resNum = _backbone->getResNum();
 	BackbonePtr prevBackbone, nextBackbone;
 
 	if (resNum > 1)
 	{
-		prevBackbone = polymer->getMonomer(resNum - 2)->getBackbone(); // one before
+		MonomerPtr monomer = polymer->getMonomer(resNum - 2);
+
+		if (monomer)
+		{
+		prevBackbone = monomer->getBackbone(); // one before
+		}
 	}
 
 	if (resNum < polymer->monomerCount())
 	{
-		nextBackbone = polymer->getMonomer(resNum)->getBackbone(); // one before
+		MonomerPtr monomer = polymer->getMonomer(resNum);
+
+		if (monomer)
+		{
+			nextBackbone = monomer->getBackbone(); // one before
+		}
 	}
 
 	AtomPtr prevCarbonylCarbon;
@@ -50,6 +65,17 @@ void Knotter::tieTowardsCTerminus()
 	AtomPtr nSpine = _backbone->findAtom("N");
 	AtomPtr cAlpha = _backbone->findAtom("CA");
 	AtomPtr hAlpha = _backbone->findAtom("HA");
+
+	if (_backbone->getMonomer()->getIdentifier() == "gly")
+	{
+		hAlpha = _backbone->findAtom("HA2");
+	}
+
+	if (_backbone->getMonomer()->getIdentifier() == "pro")
+	{
+		return;
+	}
+
 	AtomPtr carbonylCarbon = _backbone->findAtom("C");
 	AtomPtr carbonylOxygen = _backbone->findAtom("O");
 	AtomPtr nHydrogen = _backbone->findAtom("H");
@@ -72,9 +98,11 @@ void Knotter::tieTowardsCTerminus()
 
 	nSpine2cAlpha->setBendTowards(nHydrogen);
 	nSpine2cAlpha->activate(_backbone, inherit);
+	Bond::setTorsionBlur(&*nSpine2cAlpha, deg2rad(DEFAULT_RAMACHANDRAN_BLUR));
 	nSpine2cAlpha->addExtraTorsionSample(carbonylOxygen, 0);
 
 	BondPtr cAlpha2Carbonyl = BondPtr(new Bond(cAlpha, carbonylCarbon));
+	Bond::setTorsionBlur(&*cAlpha2Carbonyl, deg2rad(DEFAULT_RAMACHANDRAN_BLUR));
 	cAlpha2Carbonyl->setTorsionAtoms(nSpine, carbonylOxygen);
 	cAlpha2Carbonyl->activate(_backbone, inherit);
 
@@ -82,13 +110,15 @@ void Knotter::tieTowardsCTerminus()
 	cAlpha2hAlpha->activate(_backbone, inherit);
 
 	BondPtr carbonyl2oxy = BondPtr(new Bond(carbonylCarbon, carbonylOxygen));
+	Bond::setTorsionBlur(&*cAlpha2Carbonyl, deg2rad(DEFAULT_PEPTIDE_BLUR));
 	carbonyl2oxy->activate(_backbone, inherit);
 
 	if (nextBackbone)
 	{
 		BondPtr carbonyl2nextN = BondPtr(new Bond(carbonylCarbon, nextNSpine));
+		Bond::setTorsionBlur(&*carbonyl2nextN, deg2rad(DEFAULT_RAMACHANDRAN_BLUR));
 		carbonyl2nextN->setTorsionAtoms(cAlpha, nextCalpha);
-
+/*
 		if (nextCalpha)
 		{
 			cAlpha2Carbonyl->addExtraTorsionSample(nextCalpha, 0);
@@ -98,7 +128,7 @@ void Knotter::tieTowardsCTerminus()
 		{
 			nSpine2cAlpha->addExtraTorsionSample(nextNSpine, 0);
 		}
-
+*/
 		carbonyl2nextN->activate(_backbone, inherit);
 	}
 

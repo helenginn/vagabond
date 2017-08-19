@@ -89,11 +89,8 @@ void Polymer::makePDB()
 
 		SidechainPtr victim = monomer->getSidechain();
 
-		if (victim && victim->canRefine())
-		{
-			monomer->getBackbone()->getPDBContribution();
-			victim->getPDBContribution();
-		}
+		monomer->getBackbone()->getPDBContribution();
+		victim->getPDBContribution();
 	}
 
 }

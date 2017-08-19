@@ -136,6 +136,11 @@ public:
 	{
 		return "Absolute";
 	}
+
+	AtomPtr getAtom()
+	{
+		return _atom;
+	}
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 

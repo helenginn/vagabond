@@ -317,7 +317,13 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
     const int yIntervals = 5;
     const double xAxis = 0.8;
     const double yAxis = 0.7;
-    
+	double fastStride = 0;
+
+	if (properties.count("stride"))
+	{
+		fastStride = atoi(properties["stride"].c_str());
+	}
+
     std::string filename = "graph_test.png";
     
     if (properties.count("filename"))
@@ -341,10 +347,19 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
         
         std::string xHeader = properties["x" + headerKey];
         std::string yHeader = properties["y" + headerKey];
-        
+
         int xCol = findHeader(xHeader);
         int yCol = findHeader(yHeader);
-        
+
+		int zCol = 0;
+		bool hasZ = properties.count("z" + headerKey);
+
+		if (hasZ)
+		{
+			std::string zHeader = properties["z" + headerKey];
+			zCol = findHeader(zHeader);
+		}
+
         if (xCol < 0 || yCol < 0)
         {
             std::cout << "Cannot draw graph. Headers incompatible: " << xHeader << ", " << yHeader << std::endl;
@@ -356,18 +371,27 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
         std::string roundKey = "round" + i_to_str(count);
         double minX = -FLT_MAX;
         double minY = -FLT_MAX;
+		double minZ = -FLT_MAX;
         double maxX = FLT_MAX;
         double maxY = FLT_MAX;
+		double maxZ = FLT_MAX;
         bool round = (properties.count(roundKey) > 0);
         
         if (properties.count("x" + minKey)) minX = atof(properties["x" + minKey].c_str());
         if (properties.count("y" + minKey)) minY = atof(properties["y" + minKey].c_str());
+		if (properties.count("z" + minKey)) minZ = atof(properties["z" + minKey].c_str());
         if (properties.count("x" + maxKey)) maxX = atof(properties["x" + maxKey].c_str());
         if (properties.count("y" + maxKey)) maxY = atof(properties["y" + maxKey].c_str());
-        
+		if (properties.count("z" + maxKey)) maxZ = atof(properties["z" + maxKey].c_str());
+
         if (minX == -FLT_MAX || maxX == FLT_MAX) minMaxCol(xCol, &minX, &maxX, false);
         if (minY == -FLT_MAX || maxY == FLT_MAX) minMaxCol(yCol, &minY, &maxY, round);
-        
+
+		if (hasZ)
+		{
+			if (minZ == -FLT_MAX || maxZ == FLT_MAX) minMaxCol(zCol, &minZ, &maxZ, round);
+		}
+
         if (count == 0)
         {
             // draw X axis
@@ -431,7 +455,7 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
             {
                 style = GraphStyleLine;
             }
-            else if (properties[styleKey] == "line")
+            else if (properties[styleKey] == "heatmap")
             {
                 style = GraphStyleHeatMap;
             }
@@ -477,7 +501,7 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
             points.push_back(make_vec2(entries[i][xCol], entries[i][yCol]));
         }
         
-        if (style != GraphStyleScatter)
+        if (style != GraphStyleScatter && style != GraphStyleHeatMap)
         {
             std::sort(points.begin(), points.end(), vec2_less_vec2);
         }
@@ -490,7 +514,10 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
         
         double lastX = (points[0].x - minX) / (maxX - minX);
         double lastY = (points[0].y - minY) / (maxY - minY);
-        
+		double xBlockSize = xAxis * width / (double)fastStride + 1.5;
+		int yNumber = entries.size() / (double)fastStride;
+		double yBlockSize = yAxis * height / yNumber + 1.5;
+
         for (int i = 0; i < points.size(); i++)
         {
             double x = points[i].x;
@@ -519,6 +546,35 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
                 lastX = xProp;
                 lastY = yProp;
             }
+			else if (style == GraphStyleHeatMap)
+			{
+				double zValue = entries[i][zCol];
+				double propZ = (zValue - minZ) / (maxZ - minZ);
+
+				if (propZ < 0.5)
+				{
+					/* we go blue. propZ now % blue. */
+					propZ = (0.5 - propZ) / 0.5;
+					red = propZ * 255;
+					green = propZ * 255;
+					blue = 0;
+				}
+				else if (propZ >= 0.5) /* We go red. */
+				{
+					propZ = (propZ - 0.5) / 0.5;
+					red = 0;
+					green = propZ * 255;
+					blue = propZ * 255;
+				}
+
+				for (int j = yProp - yBlockSize; j < yProp; j++)
+				{
+					for (int k = xProp - xBlockSize; k < xProp; k++)
+				{
+						png->setPixelColourRelative(k, j, red, green, blue);
+					}
+				}
+			}
         }
         
         count++;

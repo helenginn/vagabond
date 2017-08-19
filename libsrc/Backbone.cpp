@@ -26,12 +26,10 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 		return;
 	}
 
-	_timesRefined ++;
-
 	int resNum = getMonomer()->getResidueNum();
 
-	const char *atoms[] = {"N", "CA", "C"};
-	std::vector<std::string> atomStrs(atoms, atoms+3);
+	const char *atoms[] = {"CA", "N", "C"};
+	std::vector<std::string> atomStrs(atoms, atoms+2);
 
 	for (int i = 0; i < atomStrs.size(); i++)
 	{
@@ -50,89 +48,54 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 			if (model->getClassName() == "Absolute")
 			{
-				if (_timesRefined > 1)
-				{
-					continue;
-				}
-
-				setupNelderMead();
-				AbsolutePtr abs = std::static_pointer_cast<Absolute>(model);
-				addAbsolutePosition(abs, 0.01, 0.01);
-				addSampled(myAtom);
-				setJobName("absolute_" + myAtom->getAtomName() + "_" + i_to_str(resNum));
-				setCrystal(target);
-				sample();
-				continue;
-
-				setupNelderMead();
-				addAbsoluteBFactor(abs, 0.05, 0.01);
-				addSampled(myAtom);
-				setJobName("bFactor_" + myAtom->getAtomName() + "_" + i_to_str(resNum));
-				setCrystal(target);
-				sample();
 				continue;
 			}
 
 			BondPtr bond = std::static_pointer_cast<Bond>(model);
+			std::string majorAtom = bond->getMajor()->getAtomName();
 
 			if (!bond->isNotJustForHydrogens() || bond->isFixed())
 			{
 				continue;
 			}
 
-			std::string majorAtom = bond->getMajor()->getAtomName();
 			int groups = bond->downstreamAtomGroupCount();
+
 
 			if (bond->isUsingTorsion() && (rType == RefinementFine))
 			{
 				for (int k = 0; k < groups; k++)
 				{
 					bond->setActiveGroup(k);
-					setupGrid();
-					Bond::setTorsionNextBlur(&*bond, 0.5);
-					addTorsionNextBlur(bond, 1.0, 0.02);
-					addSampled(bond->getMinor());
+					setupNelderMead();
+					reportInDegrees();
+
+					addTorsionBlur(bond, deg2rad(0.1), deg2rad(0.1));
 
 					for (int j = 0; j < bond->downstreamAtomCount(k); j++)
 					{
 						addSampled(bond->downstreamAtom(k, j));
 					}
 
-					setJobName("compensate_" + majorAtom + "_"
+					setJobName("blur_" + majorAtom + "_"
 							   + atom + "_" + i_to_str(resNum));
 					setCrystal(target);
 					sample();
 				}
 
-//				bond->setActiveGroup(0);
+				bond->setActiveGroup(0);
 			}
 
-			ModelPtr preModel = bond->getParentModel();
-/*
-			if (preModel->getClassName() == "Bond" && (rType == RefinementFine))
-			{
-				setupNelderMead();
-				reportInDegrees();
-
-				BondPtr preBond = std::static_pointer_cast<Bond>(preModel);
-
-				addBendAngle(bond, deg2rad(0.2), deg2rad(0.1));
-				addBendBlur(bond, deg2rad(0.05), deg2rad(0.01));
-
-				addSampled(bond->getMinor());
-
-				setJobName("bend_" + majorAtom + "_" + atom + "_" + i_to_str(resNum));
-				setCrystal(target);
-				sample();
-			}
-*/
 			if (bond->isUsingTorsion() && bond->isNotJustForHydrogens())
 			{
 				if (rType == RefinementBroad)
 				{
 					for (int k = 0; k < groups; k++)
 					{
-						setupDoubleTorsion(bond, k, 0, resNum, 360, 1);
+						setupDoubleTorsion(bond, k, 1, resNum, 360, 8);
+						setCrystal(target);
+						sample();
+						setupDoubleTorsion(bond, k, 1, resNum, 16, 1);
 						setCrystal(target);
 						sample();
 					}
@@ -154,11 +117,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 						}
 
 						reportInDegrees();
+						setScoreType(ScoreTypeCorrel);
 
 						if (rType == RefinementFine)
 						{
-							addTorsion(bond, deg2rad(0.5), deg2rad(0.2));
-							addTorsionBlur(bond, deg2rad(0.2), deg2rad(0.2));
+							addTorsion(bond, deg2rad(0.2), deg2rad(0.4));
 						}
 						else
 						{

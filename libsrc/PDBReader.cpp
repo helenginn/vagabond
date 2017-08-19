@@ -123,7 +123,9 @@ void PDBReader::validateResidue(AbsolutePtr atom)
 	if (difference < 0)
 	{
 		warn_user("Residue number going backwards in PDB. "\
-				  "Will try to cope. Will probably fail.");
+				  "Will try to cope. Will probably fail."\
+				  "residue " + i_to_str(atom->getResNum())
+				  + " vs " + i_to_str(_residueNum));
 	}
 
 	/* All set up already, no problem. */

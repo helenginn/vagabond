@@ -25,6 +25,12 @@ typedef enum
 	RefinementFine = 1
 } RefinementType;
 
+typedef enum
+{
+	ScoreTypeCorrel = 0,
+	ScoreTypeMultiply = 1,
+} ScoreType;
+
 class Sampler
 {
 public:
@@ -75,6 +81,11 @@ public:
 	{
 		_mock = true;
 	}
+
+	void setScoreType(ScoreType type)
+	{
+		_scoreType = type;
+	}
 protected:
 	void setupDoubleTorsion(BondPtr bond, int k, int bondNum, int resNum,
 							double range, double interval);
@@ -91,6 +102,7 @@ private:
 	bool _joint;
 
 	std::string _jobName;
+	ScoreType _scoreType;
 
 	RefinementStrategyPtr _strategy;
 };

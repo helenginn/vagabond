@@ -20,6 +20,7 @@ Sampler::Sampler()
 {
 	_mock = false;
 	_joint = false;
+	_scoreType = ScoreTypeMultiply;
 }
 
 
@@ -133,23 +134,15 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 	std::string num = i_to_str(_strategy->parameterCount() + 1);
 	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
 							range, interval,
-							"torsion_" + num);
+							bond->shortDesc() + "-torsion");
 
 	_bonds.push_back(bond);
 }
 
 void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
 {
-//	double number = fabs(range / interval);
 	_strategy->addParameter(&*bond, Bond::getTorsionBlur, Bond::setTorsionBlur,
-							range, interval, "torsion_blur");
-
-	double blurNow = Bond::getTorsionBlur(&*bond);
-
-	if (blurNow < range / 2)
-	{
-		Bond::setTorsionBlur(&*bond, range / 2);
-	}
+							range, interval, bond->shortDesc() + "-tblur");
 
 	_bonds.push_back(bond);
 }
@@ -192,11 +185,6 @@ void Sampler::addBendBlur(BondPtr bond, double range, double interval)
 
 void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 {
-	if (bond->getParentModel()->getClassName() != "Bond")
-	{
-		return;
-	}
-
 	//	double number = fabs(range / interval);
 	_strategy->addParameter(&*bond, Bond::getBendAngle, Bond::setBendAngle,
 							range, interval, "bend");
@@ -288,8 +276,13 @@ void Sampler::sample()
 
 	std::cout << std::endl;*/
 
-	_strategy->setJobName(_jobName);
-	_strategy->refine();
+	if (sampleSize())
+	{
+		_strategy->setJobName(_jobName);
+		_strategy->refine();
+	}
+
+	_scoreType = ScoreTypeCorrel;
 	_strategy = RefinementStrategyPtr();
 	_bonds.clear();
 	_sampled.clear();
@@ -307,7 +300,7 @@ double Sampler::getScore()
 
 	std::vector<double> xs, ys;
 
-	double n = 36;
+	double n = 32;
 	double scales = 0.33;
 	FFTPtr segment = FFTPtr(new FFT());
 	segment->create(n);
@@ -326,8 +319,14 @@ double Sampler::getScore()
 	mat3x3_mult_vec(_real2hkl, &offset);
 	double cutoff = FFT::score(_fft, segment, offset, &xs, &ys);
 
-	double correl = correlation(xs, ys, cutoff);
-	double mult = weightedMapScore(xs, ys);
-
-	return -correl;
+	if (_scoreType == ScoreTypeCorrel)
+	{
+		double correl = correlation(xs, ys, cutoff);
+		return -correl;
+	}
+	else
+	{
+		double mult = weightedMapScore(xs, ys);
+		return -mult;
+	}
 }
