@@ -22,6 +22,7 @@ typedef struct
 {
 	mat3x3 basis;
 	vec3 start;
+	vec3 fake_start;
 	vec3 old_start;
 	double torsion;
 	double occupancy;
@@ -155,8 +156,7 @@ public:
 	static void setTorsionNextBlur(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		if (value > 0) value = 0;
-		bond->_torsionBlurFromPrev = std::max(-1., -fabs(value));
+		bond->_torsionBlurFromPrev = value;
 		bond->propagateChange();
 	}
 
@@ -332,10 +332,11 @@ private:
 							 double ratio, vec3 start);
 	std::vector<BondSample> sampleMyAngles(double angle, double sigma,
 										   bool singleState = false);
-	std::vector<BondSample>getCorrelatedAngles(vec3 myCurrentPos, mat3x3 basis,
-											   vec3 start, vec3 end,
-											   double absAngle, double blur,
-											   bool singleState);
+	std::vector<BondSample> getCorrectedAngles(std::vector<BondSample> *prevs,
+											   double circleAdd,
+											   double myTorsion, double ratio,
+											   double *transferBlur);
+
 
 	void duplicateDownstream(BondPtr newBranch, int groupNum);
 	virtual void propagateChange();

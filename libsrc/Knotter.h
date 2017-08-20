@@ -34,6 +34,7 @@ private:
 	SidechainPtr _sidechain;
 	BackbonePtr _backbone;
 
+	void makeGlycine();
 	void makeCysteine();
 	void makeValine();
 	void makeSerine();

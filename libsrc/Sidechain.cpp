@@ -78,7 +78,6 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 						bond->setActiveGroup(k);
 
 						setupNelderMead();
-						setScoreType(ScoreTypeCorrel);
 						reportInDegrees();
 
 						addTorsion(bond, deg2rad(0.2), deg2rad(0.5));
@@ -102,15 +101,15 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 					bond->setActiveGroup(0);
 				}
 
-				if (bond->isUsingTorsion() && (rType == RefinementFine))
+				if (false && bond->isUsingTorsion() && (rType == RefinementFine))
 				{
 					for (int k = 0; k < groups; k++)
 					{
 						bond->setActiveGroup(k);
-						setupGrid();
-						reportInDegrees();
+						setupNelderMead();
 
-						addTorsionBlur(bond, deg2rad(0.2), deg2rad(0.2));
+						addTorsionNextBlur(bond, 0.2, 0.5);
+					//	addTorsionBlur(bond, deg2rad(12.0), deg2rad(0.5));
 
 						for (int j = 0; j < bond->downstreamAtomCount(k); j++)
 						{

@@ -99,7 +99,7 @@ bool Atom::isBackbone()
 	if (_atomName == "H") return true;
 	if (_atomName == "N") return true;
 	if (_atomName == "O") return true;
-	if (_atomName == "HA2") return true;
+	if (_atomName == "HA3") return true;
 
 	return false;
 }
@@ -108,6 +108,7 @@ bool Atom::isBackboneAndSidechain()
 {
 	if (_atomName == "CA") return true;
 	if (_atomName == "HA") return true;
+	if (_atomName == "HA2") return true;
 
 	return false;
 }

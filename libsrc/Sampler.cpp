@@ -20,7 +20,7 @@ Sampler::Sampler()
 {
 	_mock = false;
 	_joint = false;
-	_scoreType = ScoreTypeMultiply;
+	_scoreType = ScoreTypeCorrel;
 }
 
 

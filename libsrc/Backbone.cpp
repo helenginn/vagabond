@@ -62,15 +62,14 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			int groups = bond->downstreamAtomGroupCount();
 
 
-			if (bond->isUsingTorsion() && (rType == RefinementFine))
+			if (false && bond->isUsingTorsion() && (rType == RefinementFine))
 			{
 				for (int k = 0; k < groups; k++)
 				{
 					bond->setActiveGroup(k);
 					setupNelderMead();
-					reportInDegrees();
 
-					addTorsionBlur(bond, deg2rad(0.1), deg2rad(0.1));
+					addTorsionNextBlur(bond, 0.2, 0.5);
 
 					for (int j = 0; j < bond->downstreamAtomCount(k); j++)
 					{

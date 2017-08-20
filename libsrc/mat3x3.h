@@ -46,6 +46,7 @@ mat3x3 mat3x3_mult_mat3x3(struct mat3x3 m1, struct mat3x3 m2);
 mat3x3 mat3x3_unit_vec_rotation(vec3 axis, double radians);
 mat3x3 mat3x3_ortho_axes(vec3 cVec);
 mat3x3 mat3x3_rhbasis(vec3 aVec, vec3 bVec);
-mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis);
+mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis,
+							  double *best = NULL);
 
 #endif /* defined(__vagabond__mat3x3__) */

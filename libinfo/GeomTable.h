@@ -30,6 +30,7 @@ typedef enum
 	AtomO,
 	AtomSM,
 
+	AtomGlyCA,
 	AtomMetCA, AtomMetCB, AtomMetCG, AtomMetSD, AtomMetCE,
 	AtomLysCA, AtomLysCB, AtomLysCG, AtomLysCD, AtomLysCE, AtomLysNZ,
 	AtomSerCA, AtomSerCB, AtomSerOG,

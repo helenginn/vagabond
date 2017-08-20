@@ -250,7 +250,25 @@ GeomTable::GeomTable()
 	addIdentityToType("phe", "CA", AtomCH1E);
 	addIdentityToType("phe", "CB", AtomCH2E);
 
+	addIdentityToType("ile", "C", AtomC);
+	addIdentityToType("ile", "O", AtomO);
 	addIdentityToType("ile", "N", AtomNH1);
+	addIdentityToType("ile", "CA", AtomCH1E);
+
+	addIdentityToType("ala", "C", AtomC);
+	addIdentityToType("ala", "O", AtomO);
+	addIdentityToType("ala", "N", AtomNH1);
+	addIdentityToType("ala", "CA", AtomCH1E);
+
+	addIdentityToType("leu", "C", AtomC);
+	addIdentityToType("leu", "O", AtomO);
+	addIdentityToType("leu", "N", AtomNH1);
+	addIdentityToType("leu", "CA", AtomCH1E);
+
+	addIdentityToType("gly", "C", AtomC);
+	addIdentityToType("gly", "O", AtomO);
+	addIdentityToType("gly", "N", AtomNH1);
+	addIdentityToType("gly", "CA", AtomGlyCA);
 
 	addBondLength(AtomC, AtomMetCA, 1.525);
 	addBondLength(AtomNH1, AtomMetCA, 1.459);
@@ -258,8 +276,6 @@ GeomTable::GeomTable()
 	addBondLength(AtomMetCB, AtomMetCG, 1.509);
 	addBondLength(AtomMetCG, AtomMetSD, 1.807);
 	addBondLength(AtomMetSD, AtomMetCE, 1.774);
-
-
 	addBondAngle(AtomNH1, AtomMetCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomMetCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomMetCA, C_NH1_CH1E_ANGLE);
@@ -269,6 +285,14 @@ GeomTable::GeomTable()
 	addBondAngle(AtomMetCA, AtomMetCB, AtomMetCG, 114.1);
 	addBondAngle(AtomMetCB, AtomMetCG, AtomMetSD, 116.0);
 	addBondAngle(AtomMetCG, AtomMetSD, AtomMetCE, 100.9);
+
+	addBondLength(AtomC, AtomGlyCA, 1.514);
+	addBondLength(AtomNH1, AtomGlyCA, 1.456);
+
+	addBondAngle(AtomNH1, AtomGlyCA, AtomC, 113.1);
+	addBondAngle(AtomGlyCA, AtomC, AtomNH1, 116.2);
+	addBondAngle(AtomGlyCA, AtomC, AtomO, 120.6);
+	addBondAngle(AtomGlyCA, AtomNH1, AtomC, 122.3);
 
 	addBondLength(AtomC, AtomLysCA, 1.525);
 	addBondLength(AtomNH1, AtomLysCA, 1.459);
