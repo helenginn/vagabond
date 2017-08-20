@@ -99,12 +99,10 @@ void Bond::deriveBondLength()
 	if (length > 0)
 	{
 		_bondLength = length;
-	//	std::cout << "Setting bond length to " << _bondLength << " Å." << std::endl;
 	}
 	else if (getMinor()->getElement()->electronCount() <= 1)
 	{
 		_bondLength = 0.967;
-	//	std::cout << "Setting bond length to " << _bondLength << " Å." << std::endl;
 	}
 	else
 	{
@@ -139,8 +137,6 @@ void Bond::deriveBondAngle(int group, int n)
 	{
 		double ratio = tan(angle - M_PI / 2);
 		setGeomRatio(group, n, ratio);
-
-//		std::cout << "Setting angle to " << rad2deg(angle) << std::endl;
 	}
 }
 
@@ -155,9 +151,6 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group)
 		newGroup._changedSamples = true;
 		_bondGroups.push_back(newGroup);
 	}
-
-//	std::cout << "Adding " << atom->getAtomName() << " to "
-//	<< getMinor()->getAtomName() << " (group " << group << ")" << std::endl;
 
 	vec3 pos = atom->getInitialPosition();
 	vec3 start = getMinor()->getInitialPosition();
@@ -303,7 +296,6 @@ std::string Bond::getPDBContribution()
 	AtomPtr atom = getMinor();
 	std::string atomName = atom->getAtomName();
 	ElementPtr element = atom->getElement();
-	std::string residueName = "LYS";
 
 	int tries = 10;
 
@@ -338,11 +330,6 @@ FFTPtr Bond::getDistribution()
 	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
 	vec3 absolute = getMinor()->getPosition();
 
-	if (positions->size() <= 0)
-	{
-		std::cout << "Positions: " << positions->size() << std::endl;
-	}
-
 	double n = ATOM_SAMPLING_COUNT;
 	double scale = 1 / (2 * MAX_SCATTERING_DSTAR);
 
@@ -364,11 +351,6 @@ FFTPtr Bond::getDistribution()
 		}
 
 		vec3_mult(&relative, 1 / realLimits);
-
-		if (getMinor()->getAtomName() == "CG")
-		{
-		//	std::cout << vec3_desc(relative) << std::endl;
-		}
 
 		fft->addToReal(relative.x, relative.y, relative.z, occupancy);
 	}
@@ -484,7 +466,7 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 	{
 		double torsionAngle = (*prevs)[i].torsion + circleAdd;
 		mat3x3 oldBasis = (*prevs)[i].basis;
-		vec3 prevMinorPos = (*prevs)[i].fake_start;
+		vec3 prevMinorPos = (*prevs)[i].start;
 		vec3 prevHeavyPos = (*prevs)[i].old_start;
 
 		vec3 myCurrentPos = positionFromTorsion(oldBasis, torsionAngle,
@@ -498,53 +480,19 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		vec3 nextBondVec = vec3_subtract_vec3(nextCurrentPos, myCurrentPos);
 		vec3 myBondVec = vec3_subtract_vec3(myCurrentPos, prevMinorPos);
 		vec3 nextPerfectVec = vec3_subtract_vec3(nextPos, myPerfectPos);
-		vec3 desiredPos = vec3_subtract_vec3(nextPos, myCurrentPos);
 		vec3_set_length(&myBondVec, 1);
 		vec3_set_length(&nextPerfectVec, 1);
 
 		double rotAngle = 0;
-		double posCompensation = 0;
 		mat3x3_closest_rot_mat(nextBondVec, nextPerfectVec, myBondVec, &rotAngle);
-		mat3x3_closest_rot_mat(nextBondVec, desiredPos, myBondVec, &posCompensation);
 
 		if (rotAngle != rotAngle)
 		{
 			rotAngle = 0;
 		}
 
-		if (posCompensation != posCompensation)
-		{
-			posCompensation = 0;
-		}
-
-		mat3x3 correlBasis = mat3x3_rhbasis(nextBondVec, myBondVec);
-		mat3x3 invBasis = mat3x3_inverse(correlBasis);
-
-		vec3 vec2Current = vec3_subtract_vec3(myCurrentPos, nextCurrentPos);
-		vec3 zeroAngle = vec3_subtract_vec3(myCurrentPos, nextPos);
-
-		mat3x3_mult_vec(invBasis, &vec2Current);
-		mat3x3_mult_vec(invBasis, &zeroAngle);
-
-		vec3 zOnly = make_vec3(zeroAngle.x, 0, vec2Current.z);
-		vec2Current.z = 0; zeroAngle.z = 0;
-
-		vec3 zBasis = make_vec3(invBasis.vals[2], invBasis.vals[5], invBasis.vals[8]);
-
-		//double posCompensation = vec3_angle_with_vec3(zeroAngle, vec2Current);
-		double posUncompensated = vec3_angle_with_vec3(zeroAngle, zOnly);
-
 		double undoBlur = 0;
-
-		if (posCompensation > 0)
-		{
-			undoBlur = std::min(posCompensation, rotAngle);
-		}
-		else if (posCompensation < 0)
-		{
-			undoBlur = std::max(posCompensation, rotAngle);
-		}
-
+		undoBlur = rotAngle;
 		undoBlur *= _torsionBlurFromPrev;
 /*
 		std::cout << "Angles:\t" << rad2deg(posCompensation)
@@ -643,7 +591,6 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 				BondSample newSample;
 				newSample.basis = newBasis;
 				newSample.start = start;
-				newSample.fake_start = start;
 				newSample.old_start = majorPos;
 				newSample.torsion = torsionsOnly[i].torsion;
 				newSample.occupancy = torsionsOnly[i].occupancy *
@@ -771,7 +718,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 
 		vec3 prevHeavyPos = (*prevSamples)[i].old_start;
 		mat3x3 oldBasis = (*prevSamples)[i].basis;
-		vec3 prevMinorPos = (*prevSamples)[i].fake_start;
+		vec3 prevMinorPos = (*prevSamples)[i].start;
 		vec3 myCurrentPos = positionFromTorsion(oldBasis, currentTorsion,
 												ratio, prevMinorPos);
 
@@ -783,37 +730,19 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 		mat3x3 newBasis = makeTorsionBasis(prevHeavyPos, prevMinorPos,
 										   myCurrentPos, none);
 
-		vec3 modCurrent = myCurrentPos;
-		vec3 modPrevMinor = prevMinorPos;
-
-		if (usingCompensation)
-		{
-			vec3 nextStart = myTorsions[i].start;
-			modCurrent = vec3_subtract_vec3(myCurrentPos, nextStart);
-			modPrevMinor = modPrevMinor = vec3_subtract_vec3(prevMinorPos, nextStart);
-
-			mat3x3_mult_vec(myTorsions[i].basis, &modCurrent);
-			mat3x3_mult_vec(myTorsions[i].basis, &modPrevMinor);
-			modCurrent = vec3_add_vec3(modCurrent, nextStart);
-			modPrevMinor = vec3_add_vec3(modPrevMinor, nextStart);
-		}
-
-		newBasis = mat3x3_mult_mat3x3(myTorsions[i].basis, newBasis);
-
 		/* do the bendy thing */
 
 		for (int j = 0; j < myBendings.size(); j++)
 		{
-			vec3 cross = vec3_cross_vec3(modCurrent, zAxis);
+			vec3 cross = vec3_cross_vec3(myCurrentPos, zAxis);
 			vec3_set_length(&cross, 1);
 			mat3x3 bend = mat3x3_unit_vec_rotation(cross, myBendings[j].torsion);
-			mat3x3_mult_vec(bend, &modCurrent);
+			mat3x3_mult_vec(bend, &myCurrentPos);
 
 			BondSample nextSample;
 			nextSample.basis = newBasis;
 			nextSample.start = myCurrentPos;
-			nextSample.fake_start = modCurrent;
-			nextSample.old_start = modPrevMinor;
+			nextSample.old_start = prevMinorPos;
 			nextSample.torsion = myTorsions[i].torsion;
 			nextSample.occupancy = myTorsions[i].occupancy *
 			myBendings[j].occupancy * (*prevSamples)[i].occupancy * occupancy;

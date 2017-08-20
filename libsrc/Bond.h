@@ -22,7 +22,6 @@ typedef struct
 {
 	mat3x3 basis;
 	vec3 start;
-	vec3 fake_start;
 	vec3 old_start;
 	double torsion;
 	double occupancy;
