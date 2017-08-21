@@ -147,15 +147,15 @@ public:
 
 	static void setOccupancy(void *object, double value);
 	
-	static double getTorsionNextBlur(void *object)
+	static double getDampening(void *object)
 	{
-		return static_cast<Bond *>(object)->_torsionBlurFromPrev;
+		return static_cast<Bond *>(object)->_dampening;
 	}
 
-	static void setTorsionNextBlur(void *object, double value)
+	static void setDampening(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		bond->_torsionBlurFromPrev = value;
+		bond->_dampening = value;
 		bond->propagateChange();
 	}
 
@@ -302,7 +302,7 @@ private:
 	std::vector<BondGroup> _bondGroups;
 	std::vector<AtomWkr> _extraTorsionSamples;
 
-	double _torsionBlurFromPrev;
+	double _dampening;
 	double _bendBlur;
 	bool _activated;
 	int _activeGroup;

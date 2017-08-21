@@ -13,6 +13,7 @@
 #include <iostream>
 #include "Backbone.h"
 #include "Shouter.h"
+#include <fstream>
 
 void Polymer::addMonomer(MonomerPtr monomer)
 {
@@ -78,6 +79,9 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 void Polymer::makePDB()
 {
+	std::ofstream file;
+	file.open("test.pdb");
+
 	for (int i = 0; i < monomerCount(); i++)
 	{
 		MonomerPtr monomer = getMonomer(i);
@@ -89,9 +93,12 @@ void Polymer::makePDB()
 
 		SidechainPtr victim = monomer->getSidechain();
 
-		monomer->getBackbone()->getPDBContribution();
-		victim->getPDBContribution();
+		file << monomer->getBackbone()->getPDBContribution();
+		file << victim->getPDBContribution();
 	}
 
+	file.close();
+
+	std::cout << "Written PDB to test.pdb." << std::endl;
 }
 

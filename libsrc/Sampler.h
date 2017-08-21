@@ -29,6 +29,7 @@ typedef enum
 {
 	ScoreTypeCorrel = 0,
 	ScoreTypeMultiply = 1,
+	ScoreTypeRFactor = 2,
 } ScoreType;
 
 class Sampler
@@ -39,7 +40,7 @@ public:
 	void addSampled(AtomPtr atom);
 	void addTorsion(BondPtr bond, double range, double interval);
 	void addTorsionBlur(BondPtr bond, double range, double interval);
-	void addTorsionNextBlur(BondPtr bond, double range, double interval);
+	void addDampening(BondPtr bond, double range, double interval);
 	void addBondLength(BondPtr bond, double range, double interval);
 	void addBendBlur(BondPtr bond, double range, double interval);
 	void addBendAngle(BondPtr bond, double range, double interval);

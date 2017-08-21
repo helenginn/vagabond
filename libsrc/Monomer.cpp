@@ -60,7 +60,7 @@ void Monomer::tieAtomsUp()
 {
 	KnotterPtr knotter = KnotterPtr(new Knotter());
 
-	if (getResidueNum() >= 110 && getResidueNum() <= 124)
+	if (getResidueNum() >= 104 && getResidueNum() <= 124)
 	{
 		knotter->setBackbone(_backbone);
 		knotter->tieTowardsCTerminus();

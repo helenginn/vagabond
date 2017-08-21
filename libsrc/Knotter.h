@@ -34,15 +34,21 @@ private:
 	SidechainPtr _sidechain;
 	BackbonePtr _backbone;
 
+	void makeAlanine();
 	void makeGlycine();
 	void makeCysteine();
 	void makeValine();
 	void makeSerine();
 	void makeLysine();
+	void makeLeucine();
+	void makeIsoleucine();
 	void makeThreonine();
 	void makeHistidine();
+	void makeTyrosine();
+	void makeAspartate();
 	void makePhenylalanine();
 	void makeMethionine();
+	void makeProline();
 };
 
 

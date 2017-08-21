@@ -11,13 +11,19 @@
 #include <vector>
 #include <iostream>
 
-double scale_factor(std::vector<double> &set1, std::vector<double> &set2)
+double scale_factor_cutoff(std::vector<double> &set1, std::vector<double> &set2,
+					double cutoff)
 {
 	double x_squared = 0;
 	double x_y = 0;
 
 	for (int i = 0; i < set1.size(); i++)
 	{
+		if (set2[i] <= cutoff)
+		{
+			continue;
+		}
+
 		if (set1[i] == set1[i] && set2[i] == set2[i])
 		{
 			x_squared += set1[i] * set2[i];
@@ -33,6 +39,12 @@ double scale_factor(std::vector<double> &set1, std::vector<double> &set2)
 	return grad;
 }
 
+double scale_factor(std::vector<double> &set1, std::vector<double> &set2)
+{
+	return scale_factor_cutoff(set1, set2);
+}
+
+
 double r_factor(std::vector<double> &set1, std::vector<double> &set2)
 {
 	double numerator = 0;
@@ -44,6 +56,36 @@ double r_factor(std::vector<double> &set1, std::vector<double> &set2)
 		{
 			double amp_x = (set1[i]);
 			double amp_y = (set2[i]);
+
+			numerator += fabs(amp_y - amp_x);
+			denominator += fabs(amp_x);
+		}
+	}
+
+	double rfactor = numerator / denominator;
+
+	return rfactor;
+}
+
+double scaled_r_factor(std::vector<double> &set1, std::vector<double> &set2,
+					   double cutoff)
+{
+	double scale = scale_factor(set1, set2);
+
+	double numerator = 0;
+	double denominator = 0;
+
+	for (int i = 0; i < set1.size(); i++)
+	{
+		if (set2[i] <= cutoff)
+		{
+			continue;
+		}
+
+		if (set1[i] == set1[i] && set2[i] == set2[i])
+		{
+			double amp_x = (set1[i]);
+			double amp_y = (set2[i]) / scale;
 
 			numerator += fabs(amp_y - amp_x);
 			denominator += fabs(amp_x);

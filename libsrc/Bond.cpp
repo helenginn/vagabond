@@ -28,7 +28,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	_major = major;
 	_minor = minor;
 	_activeGroup = 0;
-	_torsionBlurFromPrev = 1.0;
+	_dampening = 0.6;
 	_bendBlur = 0;
 	_bondLength = 0;
 	_changedPos = true;
@@ -76,7 +76,7 @@ Bond::Bond(Bond &other)
 	_bondGroups = other._bondGroups;
 	_fixed = other._fixed;
 
-	_torsionBlurFromPrev = -0;
+	_dampening = -0;
 	_bendBlur = 0;
 	_bondLength = other._bondLength;
 	_changedPos = true;
@@ -85,7 +85,6 @@ Bond::Bond(Bond &other)
 	_absInherit = other._absInherit;
 	_heavyAlign = other._heavyAlign;
 	_lightAlign = other._lightAlign;
-	_bendToAtom = other._bendToAtom;
 }
 
 void Bond::deriveBondLength()
@@ -146,7 +145,7 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group)
 	{
 		BondGroup newGroup;
 		newGroup.torsionAngle = 0;
-		newGroup.torsionBlur = deg2rad(0.5);
+		newGroup.torsionBlur = 0;
 		newGroup.occupancy = 1;
 		newGroup._changedSamples = true;
 		_bondGroups.push_back(newGroup);
@@ -304,6 +303,8 @@ std::string Bond::getPDBContribution()
 		tries = 1;
 	}
 
+	std::ostringstream stream;
+
 	for (int i = 0; i < tries; i++)
 	{
 		std::vector<BondSample> *positions = getManyPositions(BondSampleMonteCarlo);
@@ -311,18 +312,18 @@ std::string Bond::getPDBContribution()
 		vec3 placement = (*positions)[0].start;
 		double occupancy = (*positions)[0].occupancy;
 
-		std::cout << atom->pdbLineBeginning();
-		std::cout << std::fixed << std::setw(8) << std::setprecision(3) << placement.x;
-		std::cout << std::setw(8) << std::setprecision(3) << placement.y;
-		std::cout << std::setw(8) << std::setprecision(3) << placement.z;
-		std::cout << std::setw(6) << std::setprecision(2) << occupancy / double(tries);
-		std::cout << std::setw(6) << std::setprecision(2) << getAbsInheritance()->getBFactor();
-		std::cout << "          ";
-		std::cout << std::setw(2) << element->getSymbol();
-		std::cout << "  " << std::endl;;
+		stream << atom->pdbLineBeginning();
+		stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.x;
+		stream << std::setw(8) << std::setprecision(3) << placement.y;
+		stream << std::setw(8) << std::setprecision(3) << placement.z;
+		stream << std::setw(6) << std::setprecision(2) << occupancy / double(tries);
+		stream << std::setw(6) << std::setprecision(2) << getAbsInheritance()->getBFactor();
+		stream << "          ";
+		stream << std::setw(2) << element->getSymbol();
+		stream << "  " << std::endl;;
 	}
 
-	return std::string();
+	return stream.str();
 }
 
 FFTPtr Bond::getDistribution()
@@ -493,7 +494,7 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 
 		double undoBlur = 0;
 		undoBlur = rotAngle;
-		undoBlur *= _torsionBlurFromPrev;
+		undoBlur *= _dampening;
 /*
 		std::cout << "Angles:\t" << rad2deg(posCompensation)
 		<< "\t" << rad2deg(rotAngle) << std::endl;
@@ -562,27 +563,15 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 
 		vec3 heavyPos = getHeavyAlign()->getPosition();
 		vec3 none = {0, 0, 1};
-		if (!_bendToAtom.lock())
-		{
-			shout_at_helen("Need to specify which atom you bend to\n"\
-						   "if you want to bend the bond.");
-		}
 
-		vec3 bendToPos = _bendToAtom.lock()->getPosition();
-		vec3 toBendDir = vec3_subtract_vec3(majorPos, bendToPos);
 
 		for (int j = 0; j < myBendings.size(); j++)
 		{
 			vec3 initPos = getMinor()->getInitialPosition();
 			vec3 bondDir = vec3_subtract_vec3(majorPos, initPos);
 
-			vec3 cross = vec3_cross_vec3(bondDir, toBendDir);
-			vec3_set_length(&cross, 1);
-			mat3x3 bend = mat3x3_unit_vec_rotation(cross, myBendings[j].torsion);
-			vec3 newDirection = bondDir;
 			vec3_set_length(&bondDir, _bondLength);
-			mat3x3_mult_vec(bend, &newDirection);
-			vec3 start = vec3_subtract_vec3(majorPos, newDirection);
+			vec3 start = vec3_subtract_vec3(majorPos, bondDir);
 
 			mat3x3 newBasis = makeTorsionBasis(heavyPos, majorPos, start, none);
 

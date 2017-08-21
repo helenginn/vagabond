@@ -62,10 +62,12 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 				{
 					for (int k = 0; k < groups; k++)
 					{
+						setupGrid();
 						setupDoubleTorsion(bond, k, 0, resNum, 360, 8);
 						setCrystal(target);
 						sample();
 
+						setupGrid();
 						setupDoubleTorsion(bond, k, 0, resNum, 30, 2);
 						setCrystal(target);
 						sample();
@@ -75,25 +77,9 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 				{
 					for (int k = 0; k < groups; k++)
 					{
-						bond->setActiveGroup(k);
-
 						setupNelderMead();
-						reportInDegrees();
-
-						addTorsion(bond, deg2rad(0.2), deg2rad(0.5));
-
-						for (int j = 0; j < bond->downstreamAtomCount(k); j++)
-						{
-							addSampled(bond->downstreamAtom(k, j));
-						}
-
-						for (int j = 0; j < bond->extraTorsionSampleCount(k); j++)
-						{
-							addSampled(bond->extraTorsionSample(k, j));
-						}
-
-						setJobName("torsion_" + majorAtom + "_" + atom + "_g" +
-								   i_to_str(k) + "_" + i_to_str(resNum));
+						setupNelderMead();
+						setupDoubleTorsion(bond, k, 5, resNum, 0.2, 0.1);
 						setCrystal(target);
 						sample();
 					}
@@ -108,7 +94,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 						bond->setActiveGroup(k);
 						setupNelderMead();
 
-						addTorsionNextBlur(bond, 0.2, 0.5);
+						addDampening(bond, 0.2, 0.5);
 					//	addTorsionBlur(bond, deg2rad(12.0), deg2rad(0.5));
 
 						for (int j = 0; j < bond->downstreamAtomCount(k); j++)

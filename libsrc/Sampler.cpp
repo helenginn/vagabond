@@ -29,8 +29,8 @@ void Sampler::setupDoubleTorsion(BondPtr bond, int k, int bondNum, int resNum,
 {
 	bond->setActiveGroup(k);
 
-	setupGrid();
 	reportInDegrees();
+	setScoreType(ScoreTypeRFactor);
 
 	setJobName("torsion_double_" + bond->getMajor()->getAtomName() + "_" +
 			   bond->getMinor()->getAtomName() + "_g" +
@@ -114,7 +114,7 @@ void Sampler::setupNelderMead()
 {
 	_strategy = RefinementStrategyPtr(new NelderMead());
 	_strategy->setEvaluationFunction(Sampler::score, this);
-	_strategy->setCycles(10);
+	_strategy->setCycles(20);
 
 }
 
@@ -134,7 +134,7 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 	std::string num = i_to_str(_strategy->parameterCount() + 1);
 	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
 							range, interval,
-							bond->shortDesc() + "-torsion");
+							"t" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }
@@ -142,7 +142,7 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
 {
 	_strategy->addParameter(&*bond, Bond::getTorsionBlur, Bond::setTorsionBlur,
-							range, interval, bond->shortDesc() + "-tblur");
+							range, interval, "b" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }
@@ -157,11 +157,11 @@ void Sampler::addBondLength(BondPtr bond, double range, double interval)
 	_bonds.push_back(bond);
 }
 
-void Sampler::addTorsionNextBlur(BondPtr bond, double range, double interval)
+void Sampler::addDampening(BondPtr bond, double range, double interval)
 {
 //	double number = fabs(range / interval);
-	_strategy->addParameter(&*bond, Bond::getTorsionNextBlur,
-							Bond::setTorsionNextBlur, range,
+	_strategy->addParameter(&*bond, Bond::getDampening,
+							Bond::setDampening, range,
 							interval, "torsion_next_blur");
 
 	_bonds.push_back(bond);
@@ -323,6 +323,11 @@ double Sampler::getScore()
 	{
 		double correl = correlation(xs, ys, cutoff);
 		return -correl;
+	}
+	else if (_scoreType == ScoreTypeRFactor)
+	{
+		double rFactor = scaled_r_factor(xs, ys, cutoff);
+		return rFactor;
 	}
 	else
 	{

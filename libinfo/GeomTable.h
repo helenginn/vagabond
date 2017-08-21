@@ -31,9 +31,19 @@ typedef enum
 	AtomSM,
 
 	AtomGlyCA,
+	AtomAlaCA, AtomAlaCB,
+	AtomLeuCA, AtomLeuCB, AtomLeuCG, AtomLeuCD1, AtomLeuCD2,
+	AtomPheCA, AtomPheCB, AtomPheCG, AtomPheCD1, AtomPheCD2, AtomPheCE1, AtomPheCE2, AtomPheCZ,
+	AtomTyrCA, AtomTyrCB, AtomTyrCG, AtomTyrCD1, AtomTyrCD2, AtomTyrCE1, AtomTyrCE2, AtomTyrCZ, AtomTyrOH,
+	AtomHisCA, AtomHisCB, AtomHisCG, AtomHisCE1, AtomHisCD2, AtomHisND1, AtomHisNE2,
 	AtomMetCA, AtomMetCB, AtomMetCG, AtomMetSD, AtomMetCE,
 	AtomLysCA, AtomLysCB, AtomLysCG, AtomLysCD, AtomLysCE, AtomLysNZ,
 	AtomSerCA, AtomSerCB, AtomSerOG,
+	AtomThrCA, AtomThrCB, AtomThrOG1, AtomThrCG2,
+	AtomValCA, AtomValCB, AtomValCG1, AtomValCG2,
+	AtomAspCA, AtomAspCB, AtomAspCG, AtomAspOD1, AtomAspOD2,
+	AtomIleCA, AtomIleCB, AtomIleCG1, AtomIleCG2, AtomIleCD1,
+	AtomProCA, AtomProCB, AtomProCG, AtomProCD,
 
 } AtomType;
 

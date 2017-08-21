@@ -62,7 +62,7 @@ public:
 
 	double totalElectrons();
 
-	void getPDBContribution();
+	std::string getPDBContribution();
 
 	void setTied()
 	{

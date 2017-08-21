@@ -10,6 +10,7 @@
 #include "Atom.h"
 #include "Element.h"
 #include "Bond.h"
+#include <sstream>
 
 AtomPtr AtomGroup::findAtom(std::string atomType)
 {
@@ -51,13 +52,17 @@ double AtomGroup::totalElectrons()
 	return total;
 }
 
-void AtomGroup::getPDBContribution()
+std::string AtomGroup::getPDBContribution()
 {
+	std::ostringstream stream;
+
 	for (int i = 0; i < bondCount(); i++)
 	{
 		BondPtr aBond = bond(i);
-		aBond->getPDBContribution();
+		stream << aBond->getPDBContribution();
 	}
+
+	return stream.str();
 }
 
 
