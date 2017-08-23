@@ -69,7 +69,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	vec3_set_length(&difference, _bondLength);
 
 	_bondDirection = difference;
-	aGroup.magicAxis = make_vec3(1, 0, 0);
+	aGroup.magicAxis = _bondDirection;
 	deriveBondLength();
 
 	ModelPtr upModel = getMajor()->getModel();
@@ -469,7 +469,6 @@ vec3 Bond::getFixedAxis(vec3 axis, double hRot, double kRot)
 	vec3 xAxis = make_vec3(1, 0, 0);
 	vec3 yAxis = make_vec3(0, 1, 0);
 	mat3x3 smallRotH = mat3x3_unit_vec_rotation(xAxis, hRot);
-	mat3x3_mult_vec(smallRotH, &yAxis);
 	mat3x3 smallRotK = mat3x3_unit_vec_rotation(yAxis, kRot);
 	mat3x3 smallRots = mat3x3_mult_mat3x3(smallRotK, smallRotH);
 	mat3x3 magicMat = mat3x3_mult_mat3x3(smallRots, magicAxisChecks[_currentCheck]);
@@ -537,10 +536,7 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		vec3 nextPerfectVec = vec3_subtract_vec3(nextPos, myPerfectPos);
 		vec3 nextDifference = vec3_subtract_vec3(myPerfectPos, myCurrentPos);
 		mat3x3_mult_vec(magicMat, &nextDifference);
-		double notX = sqrt(nextDifference.y * nextDifference.y
-								+ nextDifference.z * nextDifference.z);
-		double tanX = nextDifference.x / notX;
-		double diffValue = cos(atan(tanX));
+		double diffValue = exp(-nextDifference.x);
 
 		if (diffValue != diffValue)
 		{
@@ -563,8 +559,11 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		undoBlur *= diffValue;
 		undoBlur *= _dampening;
 
+		double addBlur = _bondGroups[_activeGroup].torsionBlur;
+		addBlur *= diffValue;
+
 		BondSample simple;
-		simple.torsion = myTorsion + undoBlur;
+		simple.torsion = myTorsion + undoBlur;// + addBlur;
 		simple.occupancy = 1;
 		simple.basis = make_mat3x3();
 		simple.start = nextCurrentPos;
@@ -854,11 +853,6 @@ void Bond::propagateChange()
 {
 	_changedPos = true;
 	_changedSamples = true;
-
-	if (_blocked)
-	{
-		return;
-	}
 
 	for (int j = 0; j < downstreamAtomGroupCount(); j++)
 	{

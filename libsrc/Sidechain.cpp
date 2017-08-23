@@ -58,19 +58,24 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 			for (int k = 0; k < groups; k++)
 			{
+				if (rType != RefinementModelOnly)
+				{
+					break;
+				}
+
 				setupNelderMead();
 				bond->setBlocked(true);
 				addMagicAxis(bond, deg2rad(20.0), deg2rad(1.0));
-				if (rType == RefinementFineBlur)
-				{
-			//		addDampening(bond, 0.1, 0.1);
-				}
-
-				setJobName("comp_axis_" + bond->shortDesc());
+				setJobName("magic_axis_" + bond->shortDesc());
 				addSampledAtoms(shared_from_this());
 				setScoreType(ScoreTypeModelRMSD);
 				bond->resetAxis();
 				sample();
+			}
+
+			if (rType == RefinementModelOnly)
+			{
+				continue;
 			}
 
 			for (int k = 0; k < groups; k++)

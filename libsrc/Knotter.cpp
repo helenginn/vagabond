@@ -86,7 +86,6 @@ void Knotter::tieTowardsCTerminus()
 	AtomPtr inherit = nSpine;
 
 	BondPtr nSpine2cAlpha = BondPtr(new Bond(nSpine, cAlpha));
-	Bond::setTorsionBlur(&*nSpine2cAlpha, deg2rad(0.05));
 
 	if (prevCarbonylCarbon)
 	{
@@ -116,7 +115,6 @@ void Knotter::tieTowardsCTerminus()
 	if (nextBackbone)
 	{
 		BondPtr carbonyl2nextN = BondPtr(new Bond(carbonylCarbon, nextNSpine));
-		Bond::setTorsionBlur(&*carbonyl2nextN, deg2rad(0.05));
 		carbonyl2nextN->setTorsionAtoms(cAlpha, nextCalpha);
 		carbonyl2nextN->activate(_backbone, inherit);
 	}

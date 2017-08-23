@@ -15,7 +15,6 @@
 
 #define ANGLE_SAMPLING deg2rad(4.0)
 
-
 #define MAX_SCATTERING_DSTAR 4.00
 #define ATOM_SAMPLING_COUNT (36)
 #define PROTEIN_SAMPLING (1. / 3.)
@@ -23,6 +22,8 @@
 
 #define deg2rad(a) ((a) * M_PI / 180)
 #define rad2deg(a) ((a) / M_PI * 180)
+
+#define ToBondPtr(a) (std::static_pointer_cast<Bond>((a)))
 
 class FFT;
 typedef std::shared_ptr<FFT> FFTPtr;

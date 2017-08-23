@@ -90,6 +90,12 @@ void Options::run()
 
 			int count = 0;
 
+			molecule->refine(crystals[0], RefinementModelOnly);
+			crystals[0]->realSpaceClutter();
+			crystals[0]->getDataInformation(data, propFo, propFc);
+			crystals[0]->molecule(0)->makePDB("refine_model_" + i_to_str(count) + ".pdb");
+			crystals[0]->molecule(0)->graph("graph_" + i_to_str(count) + "_model");
+
 			for (int i = 0; i < _numCycles; i++)
 			{
 				count++;

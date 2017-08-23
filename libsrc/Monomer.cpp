@@ -12,6 +12,7 @@
 #include "Atom.h"
 #include "Knotter.h"
 #include "Bond.h"
+#include "shared_ptrs.h"
 
 Monomer::Monomer()
 {
@@ -61,12 +62,20 @@ void Monomer::tieAtomsUp()
 {
 	KnotterPtr knotter = KnotterPtr(new Knotter());
 
-	if (getResidueNum() >= 89 && getResidueNum() <= 124)
+	const int start = 89;
+
+	if (getResidueNum() >= start && getResidueNum() <= 124)
 	{
 		knotter->setBackbone(_backbone);
 		knotter->tieTowardsCTerminus();
 		knotter->setSidechain(_sidechain);
 		knotter->tie();
+
+		if (getResidueNum() == start)
+		{
+			BondPtr bond = ToBondPtr(getBackbone()->findAtom("CA")->getModel());
+			Bond::setTorsionBlur(&*bond, deg2rad(0.5));
+		}
 
 		_backbone->setTied();
 		_sidechain->setTied();

@@ -24,6 +24,7 @@ typedef enum
 	RefinementBroad = 0,
 	RefinementFine = 1,
 	RefinementFineBlur = 2,
+	RefinementModelOnly = 3,
 } RefinementType;
 
 typedef enum

@@ -64,21 +64,17 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 			for (int k = 0; k < groups; k++)
 			{
-				setupGrid();
-				bond->setBlocked(true);
-				addMagicAxisBroad(bond);
-				setJobName("magic_broad_axis_" + bond->shortDesc());
-				addSampledCAs(getPolymer(), resNum, resNum + 8);
-				setScoreType(ScoreTypeModelRMSD);
-				sample();
-				bond->resetAxis();
+				if (rType != RefinementModelOnly)
+				{
+					break;
+				}
 
-				setupGrid();
+				setupNelderMead();
 				bond->setBlocked(true);
 				addMagicAxis(bond, deg2rad(20.0), deg2rad(2.0));
-				if (rType == RefinementFine)
+				if (rType == RefinementModelOnly)
 				{
-				//	addDampening(bond, 0.1, 0.1);
+					addDampening(bond, 0.1, 0.1);
 				}
 
 				setJobName("magic_axis_" + bond->shortDesc());
@@ -86,6 +82,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				setScoreType(ScoreTypeModelRMSD);
 				sample();
 				bond->resetAxis();
+			}
+
+			if (rType == RefinementModelOnly)
+			{
+				continue;
 			}
 
 			for (int k = 0; k < groups; k++)

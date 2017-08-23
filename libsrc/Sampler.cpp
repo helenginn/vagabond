@@ -344,6 +344,7 @@ double Sampler::getScore()
 	if (_scoreType == ScoreTypeModelRMSD)
 	{
 		double score = 0;
+		double count = 0;
 
 		for (int i = 0; i < sampleSize(); i++)
 		{
@@ -356,9 +357,10 @@ double Sampler::getScore()
 
 			BondPtr bond = std::static_pointer_cast<Bond>(model);
 			score += bond->getMeanSquareDeviation();
+			count++;
 		}
 
-		return score;
+		return score / count;
 	}
 
 	std::vector<double> xs, ys;
