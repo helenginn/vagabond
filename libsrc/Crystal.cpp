@@ -117,6 +117,7 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, double resolution)
 					  "been generated!");
 	}
 
+	_fft->setAll(0);
 	realSpaceClutter();
 	fourierTransform(1);
 	scaleToDiffraction(data);

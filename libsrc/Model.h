@@ -14,6 +14,22 @@
 #include <vector>
 #include "Distributor.h"
 
+typedef struct
+{
+	mat3x3 basis;
+	vec3 start;
+	vec3 old_start;
+	double torsion;
+	double occupancy;
+} BondSample;
+
+typedef enum
+{
+	BondSampleThorough,
+	BondSampleStatic,
+	BondSampleMonteCarlo
+} BondSampleStyle;
+
 // Anything which is capable of predicting electron positions.
 //
 
@@ -27,6 +43,8 @@ public:
 
 	virtual std::string getClassName() = 0;
 	virtual vec3 getStaticPosition() = 0;
+	virtual vec3 getAbsolutePosition() = 0;
+	virtual std::vector<BondSample> *getManyPositions(BondSampleStyle style) = 0;
 
 	FFTPtr getZeroDistribution();
 protected:

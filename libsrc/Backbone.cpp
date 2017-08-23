@@ -94,10 +94,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				bool shouldBlur = (rType == RefinementFineBlur);
 				setupNelderMead();
 				setupTorsionSet(bond, k, 4, resNum, 0.3, 0.1, shouldBlur);
+				//setScoreType(ScoreTypeCorrel);
 
 				if (shouldBlur)
 				{
-					addTorsionBlur(bond, deg2rad(0.05), 0.1);
+					addTorsionBlur(bond, 0.1, 0.1);
 				}
 				setCrystal(target);
 				sample();

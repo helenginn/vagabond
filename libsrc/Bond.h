@@ -11,28 +11,12 @@
 
 #include <stdio.h>
 #include <string>
-#include "Model.h"
 #include <vector>
 #include "mat3x3.h"
 #include "Distributor.h"
 #include <iostream>
 #include "Atom.h"
-
-typedef struct
-{
-	mat3x3 basis;
-	vec3 start;
-	vec3 old_start;
-	double torsion;
-	double occupancy;
-} BondSample;
-
-typedef enum
-{
-	BondSampleThorough,
-	BondSampleStatic,
-	BondSampleMonteCarlo
-} BondSampleStyle;
+#include "Model.h"
 
 typedef struct
 {
@@ -40,6 +24,7 @@ typedef struct
 	double geomRatio;
 	double circlePortion;
 } AtomValue;
+
 
 typedef struct
 {
@@ -335,6 +320,11 @@ public:
 		return static_cast<Bond *>(object)->_currentCheck;
 	}
 
+	vec3 getAbsolutePosition()
+	{
+		return _absolute;
+	}
+
 protected:
 
 private:
@@ -385,7 +375,6 @@ private:
 											   double myTorsion, double ratio,
 											   double *transferBlur);
 
-
 	void duplicateDownstream(BondPtr newBranch, int groupNum);
 	virtual void propagateChange();
 	bool _usingTorsion;
@@ -397,6 +386,11 @@ private:
 	static mat3x3 magicAxisChecks[];
 	int _currentCheck;
 	vec3 getFixedAxis(vec3 axis, double hRot, double kRot);
+	mat3x3 getMagicMat();
+
+	/* What should be returned when asking for an atom's position
+	 * for drawing into a map... */
+	vec3 _absolute;
 
 	AbsolutePtr getAbsInheritance();
 

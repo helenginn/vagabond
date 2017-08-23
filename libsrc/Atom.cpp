@@ -79,9 +79,10 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset)
 
 	FFT::multiply(modified, atomDist);
 	modified->fft(1);
+//	modified->printSlice();
 	modified->invertScale();
 
-	vec3 pos = getPosition();
+	vec3 pos = _model->getAbsolutePosition();
 	pos = vec3_subtract_vec3(pos, offset);
 	mat3x3_mult_vec(unit_cell, &pos);
 
@@ -119,17 +120,20 @@ void Atom::findAtomType(std::string resName)
 	_geomType = GeomTable::getGeomTable().getType(resName, _atomName);
 }
 
-std::string Atom::pdbLineBeginning()
+std::string Atom::pdbLineBeginning(int i)
 {
 	std::string residueName = getMonomer()->getIdentifier();
 	int resNum = getMonomer()->getResidueNum();
 	to_upper(residueName);
 	std::ostringstream line;
 
+	char conformer[] = "A";
+	conformer[0] += i;
+
 	line << "ATOM  ";
 	line << std::setfill(' ') << std::setw(5) << std::fixed << _atomNum;
 	line << std::setfill(' ') << std::setw(4) << _atomName;
-	line << "  ";
+	line << " " << conformer;
 	line << std::setw(3) << residueName;
 	line << " A";
 	line << std::setfill(' ') << std::setw(4) << resNum;

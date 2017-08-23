@@ -15,6 +15,7 @@
 #include <iostream>
 #include "Monomer.h"
 #include "Polymer.h"
+#include "maths.h"
 
 Absolute::Absolute(vec3 pos, double bFac, std::string element, double occValue)
 {
@@ -90,6 +91,37 @@ FFTPtr Absolute::getDistribution()
 	prepareDistribution(n, scale, this, Absolute::getExpValue);
 
 	return getDistributionCopy();
+}
+
+std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
+{
+	std::vector<BondSample> *bondSamples = &_bondSamples;
+	bondSamples->clear();
+
+	/* B factor isotropic only atm, get mean square displacement in
+	 * each dimension. */
+	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
+	meanSqDisp = pow(meanSqDisp, 1./2.);
+	double total = 64;
+
+	for (int i = 0; i < total; i++)
+	{
+		double x = random_norm_dist(0, meanSqDisp);
+		double y = random_norm_dist(0, meanSqDisp);
+		double z = random_norm_dist(0, meanSqDisp);
+
+		vec3 xyz = make_vec3(x, y, z);
+		vec3 full = vec3_add_vec3(xyz, _position);
+		BondSample sample;
+		sample.basis = make_mat3x3();
+		sample.occupancy = 1 / total;
+		sample.torsion = 0;
+		sample.old_start = make_vec3(0, 0, 0);
+		sample.start = full;
+		bondSamples->push_back(sample);
+	}
+
+	return bondSamples;
 }
 
 void Absolute::addToMonomer(MonomerPtr monomer)

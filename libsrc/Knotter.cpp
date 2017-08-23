@@ -522,7 +522,6 @@ void Knotter::makeProline()
 
 	BondPtr ca2cb = BondPtr(new Bond(cAlpha, cBeta));
 	ca2cb->setFixed(true);
-	ca2cb->setBendTowards(hBackbone);
 	ca2cb->setTorsionAtoms(nSpine, cGamma);
 	ca2cb->activate(_sidechain, inherit);
 

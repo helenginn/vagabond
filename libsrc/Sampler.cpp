@@ -374,7 +374,8 @@ double Sampler::getScore()
 	double toReal = 1/(scales*n);
 	mat3x3_scale(&basis, toReal, toReal, toReal);
 
-	vec3 offset = _sampled[0]->getPosition();
+	_sampled[0]->getModel()->getDistribution();
+	vec3 offset = _sampled[0]->getModel()->getAbsolutePosition();
 
 	for (int i = 0; i < _sampled.size(); i++)
 	{

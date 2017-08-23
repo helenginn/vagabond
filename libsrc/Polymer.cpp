@@ -135,7 +135,7 @@ void Polymer::graph(std::string graphName)
 	std::map<std::string, std::string> plotMap;
 	plotMap["filename"] = graphName;
 	plotMap["height"] = "700";
-	plotMap["width"] = "1000";
+	plotMap["width"] = "1200";
 	plotMap["xHeader0"] = "resnum";
 	plotMap["yHeader0"] = "rmsd";
 

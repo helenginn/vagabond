@@ -15,6 +15,7 @@
 #include <string>
 #include "FileReader.h"
 #include "Distributor.h"
+#include "Bond.h"
 
 class Absolute : public Model
 {
@@ -23,8 +24,14 @@ public:
 
 
 // Model virtual functions:
+	virtual std::vector<BondSample> *getManyPositions(BondSampleStyle style);
 	virtual FFTPtr getDistribution();
 	virtual vec3 getStaticPosition();
+	virtual vec3 getAbsolutePosition()
+	{
+		return getStaticPosition();
+	}
+	
 	virtual void addToMolecule(MoleculePtr molecule);
 	virtual void addToMonomer(MonomerPtr monomer);
 
@@ -153,6 +160,7 @@ private:
 	bool _hetatm;
 	bool _usingTensor;
 	mat3x3 _tensor;
+	std::vector<BondSample> _bondSamples;
 
 	vec3 _position;
 	double _bFactor;

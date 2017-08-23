@@ -96,7 +96,7 @@ public:
 
 	void findAtomType(std::string resName);
 	void inheritParents();
-	std::string pdbLineBeginning();
+	std::string pdbLineBeginning(int i);
 
 	AtomType getGeomType()
 	{

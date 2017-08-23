@@ -24,6 +24,7 @@
 #define rad2deg(a) ((a) / M_PI * 180)
 
 #define ToBondPtr(a) (std::static_pointer_cast<Bond>((a)))
+#define ToAbsolutePtr(a) (std::static_pointer_cast<Absolute>((a)))
 
 class FFT;
 typedef std::shared_ptr<FFT> FFTPtr;
