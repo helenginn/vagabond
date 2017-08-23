@@ -14,6 +14,7 @@
 #include "Shouter.h"
 #include <iomanip>
 #include "Polymer.h"
+#include "FileReader.h"
 
 Options::Options(int argc, const char **argv)
 {
@@ -79,22 +80,35 @@ void Options::run()
 
 			crystals[0]->tiedUpScattering();
 			MoleculePtr molecule = crystals[0]->molecule("A");
+			crystals[0]->molecule(0)->makePDB("refine_0.pdb");
+			crystals[0]->molecule(0)->graph("graph_0");
 
-			if (false && _numCycles > 0)
+			if (_numCycles > 0)
 			{
-				molecule->refine(crystals[0], RefinementBroad);
-				crystals[0]->realSpaceClutter();
-				crystals[0]->getDataInformation(data, propFo, propFc);
+
 			}
+
+			int count = 0;
 
 			for (int i = 0; i < _numCycles; i++)
 			{
+				count++;
 				molecule->refine(crystals[0], RefinementFine);
 				crystals[0]->realSpaceClutter();
 				crystals[0]->getDataInformation(data, propFo, propFc);
-			}
+				crystals[0]->molecule(0)->makePDB("refine_blur_" + i_to_str(count) + ".pdb");
+				crystals[0]->molecule(0)->graph("graph_" + i_to_str(count) + "_fine");
 
-			crystals[0]->molecule(0)->makePDB();
+				if (i % 3 == 2)
+				{
+					count++;
+					molecule->refine(crystals[0], RefinementFineBlur);
+					crystals[0]->molecule(0)->makePDB("refine_fine_" + i_to_str(count) + ".pdb");
+					crystals[0]->molecule(0)->graph("graph_" + i_to_str(count) + "_blur");
+					crystals[0]->realSpaceClutter();
+					crystals[0]->getDataInformation(data, propFo, propFc);
+				}
+			}
 
 			crystals[0]->writeCalcMillersToFile(data, 1.0);
 

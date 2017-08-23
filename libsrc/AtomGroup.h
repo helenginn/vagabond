@@ -14,7 +14,7 @@
 #include <vector>
 #include "shared_ptrs.h"
 
-class AtomGroup
+class AtomGroup : public std::enable_shared_from_this<AtomGroup>
 {
 public:
 	AtomPtr findAtom(std::string atomType);

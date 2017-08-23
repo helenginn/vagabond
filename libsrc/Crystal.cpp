@@ -271,10 +271,11 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 	if (verbose)
 	{
 		double free = (*op)(free1, free2);
-		
-		std::cout << "R values: " << std::setprecision(5)
-		<< working;
-		std::cout << ", " << free << std::endl;
+		double diff = free - working;
+
+		std::cout << "R values: " << std::setprecision(4)
+		<< working * 100;
+		std::cout << ", " << free * 100 << " % (diff: " << diff * 100 << " %)"<<  std::endl;
 	}
 
 	return working;

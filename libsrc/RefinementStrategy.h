@@ -48,6 +48,7 @@ protected:
 	int _changed;
 	bool _mock;
 	bool _toDegrees;
+	bool _silent;
 
     std::vector<int> couplings;
     std::vector<void *> objects;
@@ -71,6 +72,7 @@ public:
         cycleNum = 0;
         startingScore = 0;
 		_verbose = false;
+		_silent = false;
 		_changed = -1;
 		finishFunction = NULL;
 		_mock = false;
@@ -103,6 +105,11 @@ public:
 	void setVerbose(bool value)
 	{
 		_verbose = value;
+	}
+
+	void setSilent(bool silent)
+	{
+		_silent = silent;
 	}
     
 	bool didChange()

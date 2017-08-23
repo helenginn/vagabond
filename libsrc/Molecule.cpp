@@ -45,7 +45,7 @@ void Molecule::refine(CrystalPtr target, RefinementType rType)
 
 }
 
-void Molecule::makePDB()
+void Molecule::makePDB(std::string filename)
 {
 
 }

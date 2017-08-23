@@ -22,7 +22,8 @@
 typedef enum
 {
 	RefinementBroad = 0,
-	RefinementFine = 1
+	RefinementFine = 1,
+	RefinementFineBlur = 2,
 } RefinementType;
 
 typedef enum
@@ -30,6 +31,7 @@ typedef enum
 	ScoreTypeCorrel = 0,
 	ScoreTypeMultiply = 1,
 	ScoreTypeRFactor = 2,
+	ScoreTypeModelRMSD = 3,
 } ScoreType;
 
 class Sampler
@@ -45,8 +47,12 @@ public:
 	void addBendBlur(BondPtr bond, double range, double interval);
 	void addBendAngle(BondPtr bond, double range, double interval);
 	void addOccupancy(BondPtr bond, double range, double interval);
+	void addSampledCAs(PolymerPtr polymer, int from, int to);
+	void addSampledAtoms(AtomGroupPtr group);
 	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
+	void addMagicAxis(BondPtr bond, double range, double interval);
+	void addMagicAxisBroad(BondPtr bond);
 	void setCrystal(CrystalPtr crystal);
 	void sample();
 
@@ -88,8 +94,9 @@ public:
 		_scoreType = type;
 	}
 protected:
-	void setupDoubleTorsion(BondPtr bond, int k, int bondNum, int resNum,
-							double range, double interval);
+	void setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
+							double range, double interval,
+						 bool addDampening = false);
 
 private:
 	double getScore();

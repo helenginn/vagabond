@@ -30,8 +30,6 @@ void Knotter::tieTowardsCTerminus()
 					   "What an idiot. Haha!");
 	}
 
-
-
 	PolymerPtr polymer = _backbone->getPolymer();
 	int resNum = _backbone->getResNum();
 	BackbonePtr prevBackbone, nextBackbone;
@@ -88,6 +86,7 @@ void Knotter::tieTowardsCTerminus()
 	AtomPtr inherit = nSpine;
 
 	BondPtr nSpine2cAlpha = BondPtr(new Bond(nSpine, cAlpha));
+	Bond::setTorsionBlur(&*nSpine2cAlpha, deg2rad(0.05));
 
 	if (prevCarbonylCarbon)
 	{
@@ -117,6 +116,7 @@ void Knotter::tieTowardsCTerminus()
 	if (nextBackbone)
 	{
 		BondPtr carbonyl2nextN = BondPtr(new Bond(carbonylCarbon, nextNSpine));
+		Bond::setTorsionBlur(&*carbonyl2nextN, deg2rad(0.05));
 		carbonyl2nextN->setTorsionAtoms(cAlpha, nextCalpha);
 		carbonyl2nextN->activate(_backbone, inherit);
 	}
@@ -180,10 +180,22 @@ void Knotter::tie()
 		makeIsoleucine();
 	}
 
+	if (residue == "arg")
+	{
+		convertable = true;
+		makeArginine();
+	}
+
 	if (residue == "phe")
 	{
 		convertable = true;
 		makePhenylalanine();
+	}
+
+	if (residue == "asn")
+	{
+		convertable = true;
+		makeAsparagine();
 	}
 
 	if (residue == "asp")
@@ -191,7 +203,6 @@ void Knotter::tie()
 		convertable = true;
 		makeAspartate();
 	}
-
 	if (residue == "tyr")
 	{
 		convertable = true;
@@ -319,6 +330,94 @@ void Knotter::makeMethionine()
 	cb2hb2->activate(_sidechain, inherit);
 }
 
+void Knotter::makeArginine()
+{
+	MonomerPtr monomer = _sidechain->getMonomer();
+	BackbonePtr backbone = monomer->getBackbone();
+	std::string residue = monomer->getIdentifier();
+	_sidechain->setCanRefine(true);
+
+	AtomPtr nSpine = backbone->findAtom("N");
+	AtomPtr cAlpha = _sidechain->findAtom("CA");
+	AtomPtr hBackbone = _sidechain->findAtom("HA");
+	AtomPtr cBeta = _sidechain->findAtom("CB");
+	AtomPtr hBeta2 = _sidechain->findAtom("HB2");
+	AtomPtr hBeta3 = _sidechain->findAtom("HB3");
+	AtomPtr cGamma = _sidechain->findAtom("CG");
+	AtomPtr hGamma2 = _sidechain->findAtom("HG2");
+	AtomPtr hGamma3 = _sidechain->findAtom("HG3");
+	AtomPtr cDelta = _sidechain->findAtom("CD");
+	AtomPtr hDelta2 = _sidechain->findAtom("HD2");
+	AtomPtr hDelta3 = _sidechain->findAtom("HD3");
+	AtomPtr nEpsilon = _sidechain->findAtom("NE");
+	AtomPtr hEpsilon2 = _sidechain->findAtom("HE2");
+	AtomPtr hEpsilon3 = _sidechain->findAtom("HE3");
+	AtomPtr cOmega = _sidechain->findAtom("CZ");
+	AtomPtr nOmega1 = _sidechain->findAtom("NH1");
+	AtomPtr nOmega2 = _sidechain->findAtom("NH2");
+	AtomPtr hh11 = _sidechain->findAtom("HH11");
+	AtomPtr hh12 = _sidechain->findAtom("HH12");
+	AtomPtr hh21 = _sidechain->findAtom("HH21");
+	AtomPtr hh22 = _sidechain->findAtom("HH22");
+
+	AtomPtr inherit = cAlpha;
+
+	BondPtr ca2cb = BondPtr(new Bond(cAlpha, cBeta));
+	ca2cb->setBendTowards(hBackbone);
+	ca2cb->setTorsionAtoms(nSpine, cGamma);
+	ca2cb->activate(_sidechain, inherit);
+
+	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
+	cb2cg->setTorsionAtoms(cAlpha, cDelta);
+	cb2cg->activate(_sidechain, inherit);
+
+	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
+	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
+
+	BondPtr cg2cd = BondPtr(new Bond(cGamma, cDelta));
+	cg2cd->setTorsionAtoms(cBeta, nEpsilon);
+	cg2cd->activate(_sidechain, inherit);
+
+	BondPtr cg2hg2 = BondPtr(new Bond(cGamma, hGamma2));
+	BondPtr cg2hg3 = BondPtr(new Bond(cGamma, hGamma3));
+
+	BondPtr cd2ce = BondPtr(new Bond(cDelta, nEpsilon));
+	cd2ce->setTorsionAtoms(cGamma, cOmega);
+	cd2ce->activate(_sidechain, inherit);
+
+	BondPtr cd2hd2 = BondPtr(new Bond(cDelta, hDelta2));
+	BondPtr cd2hd3 = BondPtr(new Bond(cDelta, hDelta3));
+
+	BondPtr ce2nz = BondPtr(new Bond(nEpsilon, cOmega));
+	ce2nz->setTorsionAtoms(cDelta, nOmega1);
+	ce2nz->activate(_sidechain, inherit);
+
+	BondPtr ce2nh1= BondPtr(new Bond(cOmega, nOmega1));
+	BondPtr ce2nh2 = BondPtr(new Bond(cOmega, nOmega2));
+	ce2nh1->activate(_sidechain, inherit);
+	ce2nh2->activate(_sidechain, inherit);
+
+	BondPtr nz1hz11 = BondPtr(new Bond(nOmega1, hh11));
+	BondPtr nz1hz12 = BondPtr(new Bond(nOmega1, hh12));
+	BondPtr nz2hz21 = BondPtr(new Bond(nOmega1, hh21));
+	BondPtr nz2hz22 = BondPtr(new Bond(nOmega1, hh22));
+
+	nz1hz11->activate(_sidechain, inherit);
+	nz1hz11->activate(_sidechain, inherit);
+	nz2hz21->activate(_sidechain, inherit);
+	nz2hz22->activate(_sidechain, inherit);
+
+
+	cd2hd2->activate(_sidechain, inherit);
+	cd2hd3->activate(_sidechain, inherit);
+
+	cg2hg2->activate(_sidechain, inherit);
+	cg2hg3->activate(_sidechain, inherit);
+
+	cb2hb3->activate(_sidechain, inherit);
+	cb2hb2->activate(_sidechain, inherit);
+}
+
 void Knotter::makeLysine()
 {
 	MonomerPtr monomer = _sidechain->getMonomer();
@@ -424,11 +523,13 @@ void Knotter::makeProline()
 	AtomPtr inherit = cAlpha;
 
 	BondPtr ca2cb = BondPtr(new Bond(cAlpha, cBeta));
+	ca2cb->setFixed(true);
 	ca2cb->setBendTowards(hBackbone);
 	ca2cb->setTorsionAtoms(nSpine, cGamma);
 	ca2cb->activate(_sidechain, inherit);
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
+	cb2cg->setFixed(true);
 	cb2cg->setTorsionAtoms(cAlpha, cDelta);
 	cb2cg->activate(_sidechain, inherit);
 
@@ -438,6 +539,7 @@ void Knotter::makeProline()
 	cb2hb3->activate(_sidechain, inherit);
 
 	BondPtr cg2cd = BondPtr(new Bond(cGamma, cDelta));
+	cg2cd->setFixed(true);
 	cg2cd->activate(_sidechain, inherit);
 
 	BondPtr cg2hg2 = BondPtr(new Bond(cGamma, hGamma2));
@@ -519,7 +621,6 @@ void Knotter::makeCysteine()
 
 	BondPtr ca2cb = BondPtr(new Bond(cAlpha, cBeta));
 	Bond::setBondLength(&*ca2cb, 1.530);
-	ca2cb->setBendTowards(hBackBone);
 	ca2cb->setTorsionAtoms(nSpine, sGamma);
 	ca2cb->activate(_sidechain, inherit);
 
@@ -1023,6 +1124,52 @@ void Knotter::makeAspartate()
 	cg1cd1->activate(_sidechain, inherit);
 	BondPtr cg1cd2 = BondPtr(new Bond(cGamma, oDelta2));
 	cg1cd2->activate(_sidechain, inherit);	
+}
+
+void Knotter::makeAsparagine()
+{
+	MonomerPtr monomer = _sidechain->getMonomer();
+	BackbonePtr backbone = monomer->getBackbone();
+	std::string residue = monomer->getIdentifier();
+	_sidechain->setCanRefine(true);
+
+	AtomPtr nSpine = backbone->findAtom("N");
+	AtomPtr cAlpha = _sidechain->findAtom("CA");
+	AtomPtr cBeta = _sidechain->findAtom("CB");
+	AtomPtr hBeta2 = _sidechain->findAtom("HB2");
+	AtomPtr hBeta3 = _sidechain->findAtom("HB3");
+	AtomPtr cGamma = _sidechain->findAtom("CG");
+	AtomPtr oDelta1 = _sidechain->findAtom("OD1");
+	AtomPtr nDelta2 = _sidechain->findAtom("ND2");
+	AtomPtr hDelta21 = _sidechain->findAtom("HD21");
+	AtomPtr hDelta22 = _sidechain->findAtom("HD22");
+	AtomPtr hBackbone = _sidechain->findAtom("HA");
+
+	AtomPtr inherit = cAlpha;
+
+	BondPtr ca2cb = BondPtr(new Bond(cAlpha, cBeta));
+	ca2cb->setTorsionAtoms(nSpine, cGamma);
+	ca2cb->setBendTowards(hBackbone);
+	ca2cb->activate(_sidechain, inherit);
+
+	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma));
+	cb2cg1->setTorsionAtoms(cAlpha, oDelta1);
+	cb2cg1->activate(_sidechain, inherit);
+	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
+	cb2hb2->activate(_sidechain, inherit);
+	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
+	cb2hb3->activate(_sidechain, inherit);
+
+	BondPtr cg1cd1 = BondPtr(new Bond(cGamma, oDelta1));
+	cg1cd1->activate(_sidechain, inherit);
+	BondPtr cg1cd2 = BondPtr(new Bond(cGamma, nDelta2));
+	cg1cd2->activate(_sidechain, inherit);
+	BondPtr nd22hd21 = BondPtr(new Bond(nDelta2, hDelta21));
+	nd22hd21->activate(_sidechain, inherit);
+	BondPtr nd22hd22 = BondPtr(new Bond(nDelta2, hDelta22));
+	nd22hd22->activate(_sidechain, inherit);
+
+
 }
 
 void Knotter::makeThreonine()

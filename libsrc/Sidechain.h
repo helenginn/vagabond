@@ -36,9 +36,21 @@ public:
 	{
 		_resNum = resNum;
 	}
+
+	void setPolymer(PolymerPtr poly)
+	{
+		_myPolymer = poly;
+	}
+
+	PolymerPtr getPolymer()
+	{
+		return _myPolymer.lock();
+	}
+
 private:
 	bool _canRefine;
 	int _resNum;
+	PolymerWkr _myPolymer;
 };
 
 #endif /* defined(__vagabond__Sidechain__) */

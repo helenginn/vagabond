@@ -138,47 +138,52 @@ void RefinementStrategy::finish()
     if (endScore >= startingScore || endScore != endScore)
     {
 		resetToInitialParameters();
-		double rad2degscale = (_toDegrees ? rad2deg(1) : 1);
-		std::cout << "No change for " << jobName << " ";
+				_changed = 0;
 
-		for (int i = 0; i < objects.size(); i++)
+		if (!_silent)
 		{
-			double objectValue = (*getters[i])(objects[i]);
-			std::cout << tags[i] << "=" << objectValue * rad2degscale <<
-			(_toDegrees ? "º" : "") << ", ";
+			double rad2degscale = (_toDegrees ? rad2deg(1) : 1);
+			std::cout << "No change for " << jobName << " ";
+
+			for (int i = 0; i < objects.size(); i++)
+			{
+				double objectValue = (*getters[i])(objects[i]);
+				std::cout << tags[i] << "=" << objectValue * rad2degscale <<
+				(_toDegrees ? "º" : "") << ", ";
+			}
+
+			std::cout << " (" << startingScore << ")" << std::endl;
 		}
-
-		std::cout << " (" << startingScore << ")" << std::endl;
-
-		_changed = 0;
     }
     else
     {
         double reduction = (startingScore - endScore) / startingScore;
-        
-        std::cout << "Reduction ";
-		double rad2degscale = (_toDegrees ? rad2deg(1) : 1);
 
-        if (reduction == reduction)
-        {
-            std::cout << "by " << std::fixed << std::setprecision(4) <<
-            -reduction * 100 << "% ";
-        }
-        
-        std::cout << "for " << jobName << ": ";
-        
-        for (int i = 0; i < objects.size(); i++)
-        {
-            double objectValue = (*getters[i])(objects[i]);
-            std::cout << tags[i] << "=" << objectValue * rad2degscale <<
-			(_toDegrees ? "º" : "") << ", ";
-        }
+		if (!_silent)
+		{std::cout << "Reduction ";
+			double rad2degscale = (_toDegrees ? rad2deg(1) : 1);
 
-		std::cout << "(" << startingScore << " to " << endScore << ")" << std::endl;
+			if (reduction == reduction)
+			{
+				std::cout << "by " << std::fixed << std::setprecision(4) <<
+				-reduction * 100 << "% ";
+			}
+
+			std::cout << "for " << jobName << ": ";
+
+			for (int i = 0; i < objects.size(); i++)
+			{
+				double objectValue = (*getters[i])(objects[i]);
+				std::cout << tags[i] << "=" << objectValue * rad2degscale <<
+				(_toDegrees ? "º" : "") << ", ";
+			}
+
+			std::cout << "(" << startingScore << " to " << endScore << ")" << std::endl;
+		}
 
 		_changed = 1;
     }
-    
+
     cycleNum = 0;
 
 	if (finishFunction != NULL)

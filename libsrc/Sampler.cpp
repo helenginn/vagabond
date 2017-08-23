@@ -15,6 +15,9 @@
 #include "Element.h"
 #include "FileReader.h"
 #include "Absolute.h"
+#include "Polymer.h"
+#include "Monomer.h"
+#include "Backbone.h"
 
 Sampler::Sampler()
 {
@@ -24,15 +27,16 @@ Sampler::Sampler()
 }
 
 
-void Sampler::setupDoubleTorsion(BondPtr bond, int k, int bondNum, int resNum,
-								 double range, double interval)
+void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
+								 double range, double interval, bool addDampen)
 {
 	bond->setActiveGroup(k);
+	bond->setBlocked(true);
 
 	reportInDegrees();
 	setScoreType(ScoreTypeRFactor);
 
-	setJobName("torsion_double_" + bond->getMajor()->getAtomName() + "_" +
+	setJobName("torsion_set_" + bond->getMajor()->getAtomName() + "_" +
 			   bond->getMinor()->getAtomName() + "_g" +
 			   i_to_str(k) + "_" + i_to_str(resNum));
 
@@ -101,6 +105,11 @@ void Sampler::setupDoubleTorsion(BondPtr bond, int k, int bondNum, int resNum,
 
 		bond = nextBond;
 	}
+
+	if (addDampen)
+	{
+		addDampening(bond, 0.2, 0.01);
+	}
 }
 
 
@@ -139,6 +148,30 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 	_bonds.push_back(bond);
 }
 
+void Sampler::addMagicAxis(BondPtr bond, double range, double interval)
+{
+	//	double number = fabs(range / interval);
+	std::string num = i_to_str(_strategy->parameterCount() + 1);
+
+	_strategy->addParameter(&*bond, Bond::getHRot, Bond::setHRot,
+							range, interval,
+							"h" + bond->shortDesc());
+	_strategy->addParameter(&*bond, Bond::getKRot, Bond::setKRot,
+							range, interval,
+							"k" + bond->shortDesc());
+
+//	_strategy->setSilent(true);
+	_bonds.push_back(bond);
+}
+
+void Sampler::addMagicAxisBroad(BondPtr bond)
+{
+	_strategy->addParameter(&*bond, Bond::getMagicAxisMat, Bond::setMagicAxisMat,
+							6.0, 1.01,
+							"ax" + bond->shortDesc());
+	_bonds.push_back(bond);
+}
+
 void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
 {
 	_strategy->addParameter(&*bond, Bond::getTorsionBlur, Bond::setTorsionBlur,
@@ -162,7 +195,7 @@ void Sampler::addDampening(BondPtr bond, double range, double interval)
 //	double number = fabs(range / interval);
 	_strategy->addParameter(&*bond, Bond::getDampening,
 							Bond::setDampening, range,
-							interval, "torsion_next_blur");
+							interval, "d" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }
@@ -222,6 +255,28 @@ void Sampler::addAbsoluteBFactor(AbsolutePtr abs, double range, double interval)
 							range, interval, "bfactor");
 }
 
+void Sampler::addSampledCAs(PolymerPtr polymer, int from, int to)
+{
+	for (int i = 0; i < polymer->monomerCount(); i++)
+	{
+		if (!polymer->getMonomer(i))
+		{
+			continue;
+		}
+
+		BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
+		AtomPtr ca = backbone->findAtom("CA");
+		addSampled(ca);
+	}
+}
+
+void Sampler::addSampledAtoms(AtomGroupPtr group)
+{
+	for (int i = 0; i < group->atomCount(); i++)
+	{
+		addSampled(group->atom(i));
+	}
+}
 
 void Sampler::addSampled(AtomPtr atom)
 {
@@ -258,23 +313,6 @@ void Sampler::sample()
 		_strategy->isMock();
 		_mock = false;
 	}
-/*
-	std::cout << "Refining bonds ";
-
-	for (int i = 0; i < _bonds.size(); i++)
-	{
-		std::cout << _bonds[i]->shortDesc() << " (" <<
-		rad2deg(_bonds[i]->getTorsion(0)) << "º) ";
-	}
-
-	std::cout << "against atoms ";
-
-	for (int i = 0; i < sampleSize(); i++)
-	{
-		std::cout << _sampled[i]->getAtomName() << " ";
-	}
-
-	std::cout << std::endl;*/
 
 	if (sampleSize())
 	{
@@ -284,12 +322,17 @@ void Sampler::sample()
 
 	_scoreType = ScoreTypeCorrel;
 	_strategy = RefinementStrategyPtr();
+
+	for (int i = 0; i < _bonds.size(); i++)
+	{
+		_bonds[i]->setBlocked(false);
+	}
+
 	_bonds.clear();
 	_sampled.clear();
 	_unsampled.clear();
 	_joint = false;
 }
-
 
 double Sampler::getScore()
 {
@@ -298,9 +341,29 @@ double Sampler::getScore()
 		return 0;
 	}
 
+	if (_scoreType == ScoreTypeModelRMSD)
+	{
+		double score = 0;
+
+		for (int i = 0; i < sampleSize(); i++)
+		{
+			ModelPtr model = _sampled[i]->getModel();
+
+			if (model->getClassName() != "Bond")
+			{
+				continue;
+			}
+
+			BondPtr bond = std::static_pointer_cast<Bond>(model);
+			score += bond->getMeanSquareDeviation();
+		}
+
+		return score;
+	}
+
 	std::vector<double> xs, ys;
 
-	double n = 32;
+	double n = 60;
 	double scales = 0.33;
 	FFTPtr segment = FFTPtr(new FFT());
 	segment->create(n);

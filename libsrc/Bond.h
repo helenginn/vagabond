@@ -46,7 +46,11 @@ typedef struct
 	std::vector<AtomValue> atoms;
 	double torsionAngle;
 	double torsionBlur;
+	double compensation;
 	double occupancy;
+	vec3 magicAxis;
+	double hRot;
+	double kRot;
 	std::vector<BondSample> storedSamples;
 	std::vector<BondSample> staticSample;
 	std::vector<BondSample> singleStateSample;
@@ -136,6 +140,34 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_bondGroups[bond->_activeGroup].torsionAngle = value;
+		static_cast<Bond *>(object)->propagateChange();
+	}
+
+	static double getHRot(void *object)
+	{
+		Bond *bond = static_cast<Bond *>(object);
+		return bond->_bondGroups[bond->_activeGroup].hRot;
+	}
+
+	static double getKRot(void *object)
+	{
+		Bond *bond = static_cast<Bond *>(object);
+		return bond->_bondGroups[bond->_activeGroup].kRot;
+	}
+
+	static void setHRot(void *object, double hRot)
+	{
+		Bond *bond = static_cast<Bond *>(object);
+		bond->_bondGroups[bond->_activeGroup].hRot = hRot;
+		static_cast<Bond *>(object)->propagateChange();
+	}
+
+	void resetAxis();
+
+	static void setKRot(void *object, double kRot)
+	{
+		Bond *bond = static_cast<Bond *>(object);
+		bond->_bondGroups[bond->_activeGroup].kRot = kRot;
 		static_cast<Bond *>(object)->propagateChange();
 	}
 
@@ -281,9 +313,26 @@ public:
 		return _bondGroups[group].extraTorsionSamples.size();
 	}
 
+	double getMeanSquareDeviation();
+
 	AtomPtr extraTorsionSample(int group, int i)
 	{
 		return _bondGroups[group].extraTorsionSamples[i].lock();
+	}
+
+	void setBlocked(bool blocked)
+	{
+		_blocked = blocked;
+	}
+
+	static void setMagicAxisMat(void *object, double num)
+	{
+		static_cast<Bond *>(object)->_currentCheck = num;
+	}
+
+	static double getMagicAxisMat(void *object)
+	{
+		return static_cast<Bond *>(object)->_currentCheck;
 	}
 
 protected:
@@ -343,6 +392,11 @@ private:
 
 	/* Flag to say whether recalculation should occur */
 	bool _changedPos, _changedSamples;
+	bool _blocked;
+
+	static mat3x3 magicAxisChecks[];
+	int _currentCheck;
+	vec3 getFixedAxis(vec3 axis, double hRot, double kRot);
 
 	AbsolutePtr getAbsInheritance();
 

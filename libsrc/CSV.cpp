@@ -542,7 +542,10 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
             }
             else if (style == GraphStyleLine)
             {
-                png->drawLine(lastX, lastY, xProp, yProp, transparency, red, green, blue);
+				if (i > 0)
+				{
+					png->drawLine(lastX, lastY, xProp, yProp, transparency, red, green, blue);
+				}
                 lastX = xProp;
                 lastY = yProp;
             }

@@ -11,6 +11,7 @@
 #include "Sidechain.h"
 #include "Atom.h"
 #include "Knotter.h"
+#include "Bond.h"
 
 Monomer::Monomer()
 {
@@ -60,7 +61,7 @@ void Monomer::tieAtomsUp()
 {
 	KnotterPtr knotter = KnotterPtr(new Knotter());
 
-	if (getResidueNum() >= 104 && getResidueNum() <= 124)
+	if (getResidueNum() >= 89 && getResidueNum() <= 124)
 	{
 		knotter->setBackbone(_backbone);
 		knotter->tieTowardsCTerminus();
@@ -70,5 +71,4 @@ void Monomer::tieAtomsUp()
 		_backbone->setTied();
 		_sidechain->setTied();
 	}
-
 }

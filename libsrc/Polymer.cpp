@@ -13,6 +13,9 @@
 #include <iostream>
 #include "Backbone.h"
 #include "Shouter.h"
+#include "Atom.h"
+#include "Bond.h"
+#include "CSV.h"
 #include <fstream>
 
 void Polymer::addMonomer(MonomerPtr monomer)
@@ -77,10 +80,10 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 }
 
-void Polymer::makePDB()
+void Polymer::makePDB(std::string filename)
 {
 	std::ofstream file;
-	file.open("test.pdb");
+	file.open(filename.c_str());
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -99,6 +102,47 @@ void Polymer::makePDB()
 
 	file.close();
 
-	std::cout << "Written PDB to test.pdb." << std::endl;
+	std::cout << "Written PDB to " << filename << "." << std::endl;
+}
+
+void Polymer::graph(std::string graphName)
+{
+	CSVPtr csv = CSVPtr(new CSV(2, "resnum", "rmsd"));
+
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (!getMonomer(i))
+		{
+			continue;
+		}
+
+		BackbonePtr backbone = getMonomer(i)->getBackbone();
+		AtomPtr ca = backbone->findAtom("CA");
+		ModelPtr model = ca->getModel();
+
+		if (model->getClassName() != "Bond")
+		{
+			continue;
+		}
+
+		BondPtr bond = std::static_pointer_cast<Bond>(model);
+		double meanSq = bond->getMeanSquareDeviation();
+		double value = i;
+
+		csv->addEntry(2, value, meanSq);
+	}
+
+	std::map<std::string, std::string> plotMap;
+	plotMap["filename"] = graphName;
+	plotMap["height"] = "700";
+	plotMap["width"] = "1000";
+	plotMap["xHeader0"] = "resnum";
+	plotMap["yHeader0"] = "rmsd";
+
+	plotMap["xTitle0"] = "Residue number";
+	plotMap["yTitle0"] = "RMSD";
+	plotMap["style0"] = "line";
+
+	csv->plotPNG(plotMap);
 }
 

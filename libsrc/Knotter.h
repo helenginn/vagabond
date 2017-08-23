@@ -49,6 +49,8 @@ private:
 	void makePhenylalanine();
 	void makeMethionine();
 	void makeProline();
+	void makeArginine();
+	void makeAsparagine();
 };
 
 

@@ -22,7 +22,8 @@ public:
 	virtual void summary();
 	virtual void tieAtomsUp();
 	virtual void refine(CrystalPtr target, RefinementType rType);
-	virtual void makePDB();
+	virtual void makePDB(std::string filename);
+	void graph(std::string graphName);
 
 	void addUnknownMonomers(int number)
 	{

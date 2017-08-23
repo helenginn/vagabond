@@ -30,7 +30,8 @@ public:
 	virtual void tieAtomsUp() {};
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	void tiedUpScattering(double *tied, double *all);
-	virtual void makePDB();
+	virtual void makePDB(std::string filename);
+	virtual void graph(std::string graphName) {};
 
 	long int atomCount()
 	{

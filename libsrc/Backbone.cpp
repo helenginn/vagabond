@@ -54,69 +54,58 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			BondPtr bond = std::static_pointer_cast<Bond>(model);
 			std::string majorAtom = bond->getMajor()->getAtomName();
 
-			if (!bond->isNotJustForHydrogens() || bond->isFixed())
+			if (!bond->isNotJustForHydrogens() || bond->isFixed()
+				|| !bond->isUsingTorsion())
 			{
 				continue;
 			}
 
 			int groups = bond->downstreamAtomGroupCount();
 
-			if (false && bond->isUsingTorsion() && (rType == RefinementFine))
+			for (int k = 0; k < groups; k++)
 			{
-				for (int k = 0; k < groups; k++)
+				setupGrid();
+				bond->setBlocked(true);
+				addMagicAxisBroad(bond);
+				setJobName("magic_broad_axis_" + bond->shortDesc());
+				addSampledCAs(getPolymer(), resNum, resNum + 8);
+				setScoreType(ScoreTypeModelRMSD);
+				sample();
+				bond->resetAxis();
+
+				setupGrid();
+				bond->setBlocked(true);
+				addMagicAxis(bond, deg2rad(20.0), deg2rad(2.0));
+				if (rType == RefinementFine)
 				{
-					bond->setActiveGroup(k);
-					setupNelderMead();
-
-					addDampening(bond, 0.2, 0.5);
-
-					for (int j = 0; j < bond->downstreamAtomCount(k); j++)
-					{
-						addSampled(bond->downstreamAtom(k, j));
-					}
-
-					setJobName("blur_" + majorAtom + "_"
-							   + atom + "_" + i_to_str(resNum));
-					setCrystal(target);
-					sample();
+				//	addDampening(bond, 0.1, 0.1);
 				}
 
-				bond->setActiveGroup(0);
+				setJobName("magic_axis_" + bond->shortDesc());
+				addSampledCAs(getPolymer(), resNum, resNum + 8);
+				setScoreType(ScoreTypeModelRMSD);
+				sample();
+				bond->resetAxis();
 			}
 
-			if (bond->isUsingTorsion() && bond->isNotJustForHydrogens())
+			for (int k = 0; k < groups; k++)
 			{
-				if (rType == RefinementBroad)
-				{
-					for (int k = 0; k < groups; k++)
-					{
-						setupGrid();
-						setupDoubleTorsion(bond, k, 1, resNum, 360, 8);
-						setCrystal(target);
-						sample();
+				bool shouldBlur = (rType == RefinementFineBlur);
+				setupNelderMead();
+				setupTorsionSet(bond, k, 4, resNum, 0.3, 0.1, shouldBlur);
 
-						setupGrid();
-						setupDoubleTorsion(bond, k, 1, resNum, 16, 1);
-						setCrystal(target);
-						sample();
-					}
-
-				}
-				else
+				if (shouldBlur)
 				{
-					for (int k = 0; k < groups; k++)
-					{
-						setupNelderMead();
-						setupDoubleTorsion(bond, k, 5, resNum, 0.2, 0.1);
-						setCrystal(target);
-						sample();
-					}
-					
-					bond->setActiveGroup(0);
-					
+					addTorsionBlur(bond, deg2rad(0.05), 0.1);
 				}
+				setCrystal(target);
+				sample();
 			}
+
+
+			bond->setActiveGroup(0);
+
 		}
-		
+
 	}
 }

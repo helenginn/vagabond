@@ -52,65 +52,44 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 				continue;
 			}
 
-			int groups = bond->downstreamAtomGroupCount();
-
 			ModelPtr preModel = bond->getParentModel();
 
-			if (bond->isUsingTorsion() && bond->isNotJustForHydrogens())
+			int groups = bond->downstreamAtomGroupCount();
+
+			for (int k = 0; k < groups; k++)
 			{
-				if (rType == RefinementBroad)
+				setupNelderMead();
+				bond->setBlocked(true);
+				addMagicAxis(bond, deg2rad(20.0), deg2rad(1.0));
+				if (rType == RefinementFineBlur)
 				{
-					for (int k = 0; k < groups; k++)
-					{
-						setupGrid();
-						setupDoubleTorsion(bond, k, 0, resNum, 360, 8);
-						setCrystal(target);
-						sample();
-
-						setupGrid();
-						setupDoubleTorsion(bond, k, 0, resNum, 30, 2);
-						setCrystal(target);
-						sample();
-					}
-				}
-				else
-				{
-					for (int k = 0; k < groups; k++)
-					{
-						setupNelderMead();
-						setupNelderMead();
-						setupDoubleTorsion(bond, k, 5, resNum, 0.2, 0.1);
-						setCrystal(target);
-						sample();
-					}
-					
-					bond->setActiveGroup(0);
+			//		addDampening(bond, 0.1, 0.1);
 				}
 
-				if (false && bond->isUsingTorsion() && (rType == RefinementFine))
-				{
-					for (int k = 0; k < groups; k++)
-					{
-						bond->setActiveGroup(k);
-						setupNelderMead();
-
-						addDampening(bond, 0.2, 0.5);
-					//	addTorsionBlur(bond, deg2rad(12.0), deg2rad(0.5));
-
-						for (int j = 0; j < bond->downstreamAtomCount(k); j++)
-						{
-							addSampled(bond->downstreamAtom(k, j));
-						}
-
-						setJobName("blur_" + majorAtom + "_"
-								   + atom + "_" + i_to_str(resNum));
-						setCrystal(target);
-						sample();
-					}
-
-					bond->setActiveGroup(0);
-				}
+				setJobName("comp_axis_" + bond->shortDesc());
+				addSampledAtoms(shared_from_this());
+				setScoreType(ScoreTypeModelRMSD);
+				bond->resetAxis();
+				sample();
 			}
+
+			for (int k = 0; k < groups; k++)
+			{
+				setupNelderMead();
+				setupTorsionSet(bond, k, 5, resNum, 0.5, 0.1);
+
+				if (rType == RefinementFineBlur)
+				{
+					addDampening(bond, 0.2, 0.1);
+					addTorsionBlur(bond, deg2rad(0.05), 0.1);
+				}
+				setCrystal(target);
+				sample();
+			}
+
+
+			bond->setActiveGroup(0);
+
 		}
 
 	}
