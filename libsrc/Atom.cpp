@@ -78,14 +78,22 @@ double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell,
 	return score;
 }
 
-void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset)
+void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool useNew)
 {
 	FFTPtr atomDist = _element->getDistribution();
-	FFTPtr modified = getBlur();
+	FFTPtr modified;
+
+	if (!useNew)
+	{
+		modified = getBlur();
+	}
+	else
+	{
+		modified = _model->getDistribution();
+	}
 
 	FFT::multiply(modified, atomDist);
 	modified->fft(1);
-//	modified->printSlice();
 	modified->invertScale();
 
 	vec3 pos = _model->getAbsolutePosition();

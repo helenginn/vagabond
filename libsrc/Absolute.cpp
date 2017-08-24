@@ -114,8 +114,8 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 	 * each dimension. */
 	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
 	meanSqDisp = sqrt(meanSqDisp);
-	double total = 1;
-	double step = meanSqDisp / total;
+	double total = 2;
+	double step = meanSqDisp * 1.5 / total;
 	double occTotal = 0;
 
 	for (int i = -total; i <= total; i++)

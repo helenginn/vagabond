@@ -581,6 +581,11 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 			xValue = 0;
 		}
 
+		if (yValue != yValue)
+		{
+			yValue = 0;
+		}
+
 		vec3_set_length(&myBondVec, 1);
 		vec3_set_length(&nextPerfectVec, 1);
 
@@ -598,7 +603,7 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		undoBlur *= _dampening;
 
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;
-		addBlur *= xValue;
+		addBlur *= yValue;
 
 		BondSample simple;
 		simple.torsion = myTorsion + undoBlur + addBlur;
