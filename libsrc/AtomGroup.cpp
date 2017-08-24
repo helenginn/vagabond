@@ -65,6 +65,14 @@ std::string AtomGroup::getPDBContribution()
 	return stream.str();
 }
 
+void AtomGroup::setUseAbsolute()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		atom(i)->setKeepModel();
+	}
+}
+
 
 AtomGroup::AtomGroup()
 {

@@ -26,8 +26,6 @@ public:
 		return _myPolymer.lock();
 	}
 
-
-
 	void setResNum(int resNum)
 	{
 		_resNum = resNum;

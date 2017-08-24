@@ -40,7 +40,15 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 			   bond->getMinor()->getAtomName() + "_g" +
 			   i_to_str(k) + "_" + i_to_str(resNum));
 
-	addTorsion(bond, deg2rad(range), deg2rad(interval));
+	if (addDampen)
+	{
+		addTorsionBlur(bond, 0.01, 0.1);
+		addDampening(bond, 0.2, 0.01);
+	}
+	else
+	{
+		addTorsion(bond, deg2rad(range), deg2rad(interval));
+	}
 
 	for (int j = 0; j < bond->downstreamAtomCount(k); j++)
 	{
@@ -84,7 +92,14 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 			if (nextBond->isUsingTorsion() && !nextBond->isFixed()
 				&& nextBond->isNotJustForHydrogens())
 			{
-				addTorsion(nextBond, deg2rad(range), deg2rad(interval));
+				if (!addDampen)
+				{
+					addTorsion(nextBond, deg2rad(range), deg2rad(interval));
+				}
+				else
+				{
+					addDampening(nextBond, 0.2, 0.01);
+				}
 
 				for (int j = 0; j < nextBond->downstreamAtomCount(0); j++)
 				{
@@ -135,6 +150,43 @@ void Sampler::addOccupancy(BondPtr bond, double range, double interval)
 							"occupancy");
 
 	_bonds.push_back(bond);
+}
+
+void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
+{
+	for (int i = from; i < to; i++)
+	{
+		if (!polymer->getMonomer(i))
+		{
+			continue;
+		}
+
+		BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
+		AtomPtr ca = backbone->findAtom("CA");
+		AtomPtr n = backbone->findAtom("C");
+
+		if (ca)
+		{
+			if (ca->getModel()->getClassName() != "Bond")
+			{
+				continue;
+			}
+
+			BondPtr caBond = ToBondPtr(ca->getModel());
+			addTorsion(caBond, deg2rad(0.2), deg2rad(0.05));
+		}
+
+		if (n)
+		{
+			if (n->getModel()->getClassName() != "Bond")
+			{
+				continue;
+			}
+
+			BondPtr nBond = ToBondPtr(n->getModel());
+			addTorsion(nBond, deg2rad(0.2), deg2rad(0.05));
+		}
+	}
 }
 
 void Sampler::addTorsion(BondPtr bond, double range, double interval)
@@ -257,7 +309,7 @@ void Sampler::addAbsoluteBFactor(AbsolutePtr abs, double range, double interval)
 
 void Sampler::addSampledCAs(PolymerPtr polymer, int from, int to)
 {
-	for (int i = 0; i < polymer->monomerCount(); i++)
+	for (int i = from; i < to; i++)
 	{
 		if (!polymer->getMonomer(i))
 		{
@@ -267,6 +319,10 @@ void Sampler::addSampledCAs(PolymerPtr polymer, int from, int to)
 		BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
 		AtomPtr ca = backbone->findAtom("CA");
 		addSampled(ca);
+		AtomPtr c = backbone->findAtom("C");
+		addSampled(c);
+		AtomPtr n = backbone->findAtom("N");
+		addSampled(n);
 	}
 }
 
@@ -314,6 +370,11 @@ void Sampler::sample()
 		_mock = false;
 	}
 
+	if (_scoreType == ScoreTypeModelPos)
+	{
+		_strategy->setCycles(50);
+	}
+
 	if (sampleSize())
 	{
 		_strategy->setJobName(_jobName);
@@ -341,7 +402,7 @@ double Sampler::getScore()
 		return 0;
 	}
 
-	if (_scoreType == ScoreTypeModelRMSD)
+	if (_scoreType == ScoreTypeModelRMSD || _scoreType == ScoreTypeModelRMSDZero)
 	{
 		double score = 0;
 		double count = 0;
@@ -356,11 +417,40 @@ double Sampler::getScore()
 			}
 
 			BondPtr bond = std::static_pointer_cast<Bond>(model);
-			score += bond->getMeanSquareDeviation();
+			double target = -1;
+
+			if (_scoreType == ScoreTypeModelRMSD)
+			{
+				target = _sampled[i]->getInitialBFactor();
+			}
+
+			double rmsdScore = bond->getMeanSquareDeviation(target);
+
 			count++;
+			score += rmsdScore;
 		}
 
 		return score / count;
+	}
+
+	if (_scoreType == ScoreTypeModelPos)
+	{
+		double score = 0;
+		
+		for (int i = 0; i < sampleSize(); i++)
+		{
+			BondPtr bond = ToBondPtr(_sampled[i]->getModel());
+			bond->getDistribution();
+			vec3 bestPos = bond->getAbsolutePosition();
+			vec3 initialPos = _sampled[i]->getInitialPosition();
+
+			vec3 diff = vec3_subtract_vec3(bestPos, initialPos);
+			score += vec3_sqlength(diff);
+		}
+
+		score /= (double)sampleSize();
+
+		return score;
 	}
 
 	std::vector<double> xs, ys;

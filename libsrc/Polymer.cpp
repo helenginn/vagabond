@@ -107,7 +107,7 @@ void Polymer::makePDB(std::string filename)
 
 void Polymer::graph(std::string graphName)
 {
-	CSVPtr csv = CSVPtr(new CSV(2, "resnum", "rmsd"));
+	CSVPtr csv = CSVPtr(new CSV(3, "resnum", "newB", "oldB"));
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -129,7 +129,7 @@ void Polymer::graph(std::string graphName)
 		double meanSq = bond->getMeanSquareDeviation();
 		double value = i;
 
-		csv->addEntry(2, value, meanSq);
+		csv->addEntry(3, value, meanSq, ca->getInitialBFactor());
 	}
 
 	std::map<std::string, std::string> plotMap;
@@ -137,11 +137,20 @@ void Polymer::graph(std::string graphName)
 	plotMap["height"] = "700";
 	plotMap["width"] = "1200";
 	plotMap["xHeader0"] = "resnum";
-	plotMap["yHeader0"] = "rmsd";
+	plotMap["yHeader0"] = "newB";
+	plotMap["xHeader1"] = "resnum";
+	plotMap["yHeader1"] = "oldB";
+	plotMap["colour0"] = "black";
+	plotMap["colour1"] = "red";
+	plotMap["yMin0"] = "0";
+	plotMap["yMin1"] = "0";
+	plotMap["yMax0"] = "40";
+	plotMap["yMax1"] = "40";
 
 	plotMap["xTitle0"] = "Residue number";
-	plotMap["yTitle0"] = "RMSD";
+	plotMap["yTitle0"] = "B factor";
 	plotMap["style0"] = "line";
+	plotMap["style1"] = "line";
 
 	csv->plotPNG(plotMap);
 }

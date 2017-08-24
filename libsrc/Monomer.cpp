@@ -62,10 +62,17 @@ void Monomer::tieAtomsUp()
 {
 	KnotterPtr knotter = KnotterPtr(new Knotter());
 
-	const int start = 92;
+	const int start = 85;
 
 	if (getResidueNum() >= start && getResidueNum() <= 124)
 	{
+		bool useAbsolute = (getResidueNum() < start + 12);
+
+		if (useAbsolute)
+		{
+			getBackbone()->setUseAbsolute();
+			getSidechain()->setUseAbsolute();
+		}
 		knotter->setBackbone(_backbone);
 		knotter->tieTowardsCTerminus();
 		knotter->setSidechain(_sidechain);
@@ -74,7 +81,7 @@ void Monomer::tieAtomsUp()
 		if (getResidueNum() == start)
 		{
 			BondPtr bond = ToBondPtr(getBackbone()->findAtom("CA")->getModel());
-			Bond::setTorsionBlur(&*bond, 0.1);
+			Bond::setTorsionBlur(&*bond, 0.0);
 		}
 
 		_backbone->setTied();

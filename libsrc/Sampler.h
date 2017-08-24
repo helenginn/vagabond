@@ -24,7 +24,8 @@ typedef enum
 	RefinementBroad = 0,
 	RefinementFine = 1,
 	RefinementFineBlur = 2,
-	RefinementModelOnly = 3,
+	RefinementModelRMSD = 3,
+	RefinementModelPos = 4,
 } RefinementType;
 
 typedef enum
@@ -33,6 +34,8 @@ typedef enum
 	ScoreTypeMultiply = 1,
 	ScoreTypeRFactor = 2,
 	ScoreTypeModelRMSD = 3,
+	ScoreTypeModelRMSDZero = 4,
+	ScoreTypeModelPos = 5,
 } ScoreType;
 
 class Sampler
@@ -50,6 +53,7 @@ public:
 	void addOccupancy(BondPtr bond, double range, double interval);
 	void addSampledCAs(PolymerPtr polymer, int from, int to);
 	void addSampledAtoms(AtomGroupPtr group);
+	void addRamachandranAngles(PolymerPtr polymer, int from, int to);
 	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
 	void addMagicAxis(BondPtr bond, double range, double interval);

@@ -70,13 +70,14 @@ void Options::run()
 
 			/* sandbox */
 			DiffractionPtr data = diffractions[0];
+
+			crystals[0]->realSpaceClutter();
+			crystals[0]->getDataInformation(data, propFo, propFc);
+
 			if (_tie)
 			{
 				crystals[0]->tieAtomsUp();
 			}
-
-			crystals[0]->realSpaceClutter();
-			crystals[0]->getDataInformation(data, propFo, propFc);
 
 			crystals[0]->tiedUpScattering();
 			MoleculePtr molecule = crystals[0]->molecule("A");
@@ -87,22 +88,9 @@ void Options::run()
 
 			if (_numCycles > 0)
 			{
-				molecule->refine(crystals[0], RefinementModelOnly);
-				crystals[0]->realSpaceClutter();
-				crystals[0]->getDataInformation(data, propFo, propFc);
-				crystals[0]->molecule(0)->makePDB("refine_model_" + i_to_str(count) + ".pdb");
-				crystals[0]->molecule(0)->graph("graph_" + i_to_str(count) + "_model");
-				crystals[0]->writeCalcMillersToFile(data, 1.0);
-				crystals[0]->realSpaceClutter();
-				crystals[0]->getDataInformation(data, propFo, propFc);
 				count++;
-			}
-
-
-			for (int i = 0; i < _numCycles; i++)
-			{
-				count++;
-				molecule->refine(crystals[0], RefinementFine);
+				molecule->refine(crystals[0], RefinementModelRMSD);
+				molecule->refine(crystals[0], RefinementModelPos);
 				crystals[0]->realSpaceClutter();
 				crystals[0]->getDataInformation(data, propFo, propFc);
 				crystals[0]->molecule(0)->makePDB("refine_" + i_to_str(count) + ".pdb");
@@ -110,19 +98,29 @@ void Options::run()
 				crystals[0]->writeCalcMillersToFile(data, 1.0);
 				crystals[0]->realSpaceClutter();
 				crystals[0]->getDataInformation(data, propFo, propFc);
+			}
 
-				if (i % 3 == 2)
+
+			for (int i = 0; i < _numCycles; i++)
+			{
+				count++;
+				if (i >= 2)
 				{
-					count++;
 					molecule->refine(crystals[0], RefinementFineBlur);
-					crystals[0]->molecule(0)->makePDB("refine_" + i_to_str(count) + ".pdb");
-					crystals[0]->molecule(0)->graph("graph_" + i_to_str(count));
-					crystals[0]->realSpaceClutter();
-					crystals[0]->getDataInformation(data, propFo, propFc);
-					crystals[0]->writeCalcMillersToFile(data, 1.0);
-					crystals[0]->realSpaceClutter();
-					crystals[0]->getDataInformation(data, propFo, propFc);
 				}
+				else
+				{
+					molecule->refine(crystals[0], RefinementFine);
+				}
+
+
+				crystals[0]->realSpaceClutter();
+				crystals[0]->getDataInformation(data, propFo, propFc);
+				crystals[0]->molecule(0)->makePDB("refine_" + i_to_str(count) + ".pdb");
+				crystals[0]->molecule(0)->graph("graph_" + i_to_str(count));
+				crystals[0]->writeCalcMillersToFile(data, 1.0);
+				crystals[0]->realSpaceClutter();
+				crystals[0]->getDataInformation(data, propFo, propFc);
 			}
 		}
 	}

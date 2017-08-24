@@ -52,6 +52,12 @@ void Atom::setModel(ModelPtr model)
 FFTPtr Atom::getBlur()
 {
 	FFTPtr modelDist = _model->getDistribution();
+
+	if (_distModelOnly)
+	{
+		modelDist = _distModelOnly->getDistribution();
+	}
+
 	return modelDist;
 }
 
@@ -140,4 +146,9 @@ std::string Atom::pdbLineBeginning(int i)
 	line << "    ";
 
 	return line.str();
+}
+
+void Atom::setKeepModel()
+{
+	_distModelOnly = _model;
 }

@@ -58,7 +58,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 			for (int k = 0; k < groups; k++)
 			{
-				if (rType != RefinementModelOnly)
+				if (rType != RefinementModelRMSD)
 				{
 					break;
 				}
@@ -73,9 +73,21 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 				sample();
 			}
 
-			if (rType == RefinementModelOnly)
+			if (rType == RefinementModelRMSD)
 			{
 				continue;
+			}
+
+			if (rType == RefinementModelPos)
+			{
+			/*	setupNelderMead();
+				setJobName("model_pos_" + bond->shortDesc());
+				addRamachandranAngles(getPolymer(), resNum, resNum + 8);
+				addSampledAtoms(shared_from_this());
+				setScoreType(ScoreTypeModelPos);
+				sample();
+*/
+				break;
 			}
 
 			for (int k = 0; k < groups; k++)

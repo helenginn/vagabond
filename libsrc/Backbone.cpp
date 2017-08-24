@@ -15,11 +15,6 @@
 
 void Backbone::refine(CrystalPtr target, RefinementType rType)
 {
-	if (rType == RefinementBroad)
-	{
-	//	return;
-	}
-
 
 	if (!isTied())
 	{
@@ -64,42 +59,84 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 			for (int k = 0; k < groups; k++)
 			{
-				if (rType != RefinementModelOnly)
+				if (rType != RefinementModelRMSD)
 				{
 					break;
 				}
 
-				setupNelderMead();
-				bond->setBlocked(true);
-				addMagicAxis(bond, deg2rad(20.0), deg2rad(2.0));
-				if (rType == RefinementModelOnly)
+				ScoreType scoreType = ScoreTypeModelRMSD;
+				for (int l = 0; l < 3; l++)
 				{
-					addDampening(bond, 0.1, 0.1);
-				}
+					setupNelderMead();
+					bond->setBlocked(true);
+					addMagicAxis(bond, deg2rad(20.0), deg2rad(2.0));
 
-				setJobName("magic_axis_" + bond->shortDesc());
-				addSampledCAs(getPolymer(), resNum, resNum + 8);
-				setScoreType(ScoreTypeModelRMSD);
+					if (scoreType == ScoreTypeModelRMSD)
+					{
+						addDampening(bond, 0.1, 0.1);
+						addTorsionBlur(bond, 0.1, 0.1);
+					}
+
+					setJobName("magic_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
+					addSampledCAs(getPolymer(), resNum, resNum + 24);
+					setScoreType(scoreType);
+					sample();
+
+					if (scoreType == ScoreTypeModelRMSD)
+					{
+						scoreType = ScoreTypeModelRMSDZero;
+					}
+					else
+					{
+						scoreType = ScoreTypeModelRMSD;
+
+					}
+
+					bond->resetAxis();
+
+				}
+				setupNelderMead();
+				setJobName("model_pos_" + bond->shortDesc());
+				addRamachandranAngles(getPolymer(), resNum, resNum + 3);
+				addSampledCAs(getPolymer(), resNum, resNum + 3);
+				setScoreType(ScoreTypeModelPos);
 				sample();
-				bond->resetAxis();
+
 			}
 
-			if (rType == RefinementModelOnly)
+			if (rType == RefinementModelRMSD)
 			{
 				continue;
+			}
+
+			if (rType == RefinementModelPos)
+			{
+				break;
+				setupNelderMead();
+				setJobName("model_pos_" + bond->shortDesc());
+				addRamachandranAngles(getPolymer(), resNum, resNum + 12);
+				addSampledCAs(getPolymer(), resNum, resNum + 12);
+				setScoreType(ScoreTypeModelPos);
+				sample();
+
+				break;
 			}
 
 			for (int k = 0; k < groups; k++)
 			{
 				bool shouldBlur = (rType == RefinementFineBlur);
-				setupNelderMead();
-				setupTorsionSet(bond, k, 4, resNum, 0.3, 0.1, shouldBlur);
-				//setScoreType(ScoreTypeCorrel);
 
 				if (shouldBlur)
 				{
-					addTorsionBlur(bond, 0.1, 0.1);
+					setupNelderMead();
+					setupTorsionSet(bond, k, 5, resNum, 0.05, 0.02, true);
+					setCrystal(target);
+					sample();
 				}
+
+				setupNelderMead();
+				setupTorsionSet(bond, k, 4, resNum, 0.2, 0.1);
+
 				setCrystal(target);
 				sample();
 			}

@@ -68,6 +68,8 @@ public:
 	{
 		_beenTied = true;
 	}
+
+	void setUseAbsolute();
 protected:
 	AtomGroup();
 	int _timesRefined;

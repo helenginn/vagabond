@@ -25,6 +25,7 @@ typedef std::map<std::string, MoleculePtr> MoleculeMap;
 class Crystal : public Object
 {
 public:
+	Crystal();
 	void addMolecule(MoleculePtr molecule);
 
 	long int moleculeCount()
@@ -92,7 +93,7 @@ private:
 	MoleculeMap _molecules;
 	std::string _filename;
 
-
+	double _firstScale;
 	mat3x3 _hkl2real;
 	mat3x3 _real2frac;
 

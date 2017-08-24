@@ -107,8 +107,11 @@ public:
 	{
 		return _monomer.lock();
 	}
+
+	void setKeepModel();
 private:
 	ModelPtr _model;
+	ModelPtr _distModelOnly;
 	ElementPtr _element;
 	std::string _atomName;
 	MonomerWkr _monomer;

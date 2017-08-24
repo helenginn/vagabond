@@ -19,6 +19,7 @@
 #include "Shouter.h"
 #include "Diffraction.h"
 #include "Polymer.h"
+#include "CSV.h"
 
 void Crystal::summary()
 {
@@ -227,6 +228,8 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
 	double maxRes = (highRes == 0 ? FLT_MAX : 1 / highRes);
 
+	CSVPtr csv = CSVPtr(new CSV(2, "fo" , "fc"));
+
 	/* symmetry issues */
 	for (int i = -nLimit; i < nLimit; i++)
 	{
@@ -253,6 +256,8 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 					continue;
 				}
 
+				csv->addEntry(2, amp1, amp2);
+
 				if (!isFree)
 				{
 					set1.push_back(amp1);
@@ -267,12 +272,33 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 		}
 	}
 
+	if (op == r_factor)
+	{
+		csv->writeToFile("correlplot.csv");
+
+		std::map<std::string, std::string> plotMap;
+		plotMap["filename"] = "correlplot";
+		plotMap["xHeader0"] = "fo";
+		plotMap["yHeader0"] = "fc";
+		plotMap["colour0"] = "black";
+
+		plotMap["xTitle0"] = "Fo amplitude";
+		plotMap["yTitle0"] = "Fc amplitude";
+		plotMap["style0"] = "scatter";
+		csv->plotPNG(plotMap);
+	}
+
 	double working = (*op)(set1, set2);
 
 	if (verbose)
 	{
+		double ccWork = correlation(set1, set2);
+		double ccFree = correlation(free1, free2);
 		double free = (*op)(free1, free2);
 		double diff = free - working;
+
+		std::cout << "CCwork/CCfree: " << ccWork * 100 << ", " << ccFree * 100
+		<< " %." << std::endl;
 
 		std::cout << "R values: " << std::setprecision(4)
 		<< working * 100;
@@ -327,11 +353,15 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes)
 
 void Crystal::scaleToDiffraction(DiffractionPtr data)
 {
-	double scale = 1 / valueWithDiffraction(data, &scale_factor);
-	_fft->multiplyAll(scale);
+	//if (_firstScale < 0)
+	{
+		_firstScale = 1 / valueWithDiffraction(data, &scale_factor);
+	}
 
+	_fft->multiplyAll(_firstScale);
+/*
 	std::vector<double> bins;
-	generateResolutionBins(0, 1.0, 15, &bins);
+	generateResolutionBins(0, 1.0, 1, &bins);
 
 	for (int i = 0; i < bins.size() - 1; i++)
 	{
@@ -339,6 +369,7 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 										     	bins[i], bins[i + 1]);
 		applyScaleFactor(scale, bins[i], bins[i + 1]);
 	}
+ */
 }
 
 double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
@@ -429,4 +460,9 @@ void Crystal::tiedUpScattering()
 
 	std::cout << "Tied up " << tied << " electrons out of " << total << " (";
 	std::cout << 100. * sqrt(tied / total) << "%)." << std::endl;
+}
+
+Crystal::Crystal()
+{
+	_firstScale = -1;
 }
