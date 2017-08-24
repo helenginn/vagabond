@@ -98,27 +98,59 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 	std::vector<BondSample> *bondSamples = &_bondSamples;
 	bondSamples->clear();
 
-	/* B factor isotropic only atm, get mean square displacement in
-	 * each dimension. */
-	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
-	meanSqDisp = pow(meanSqDisp, 1./2.);
-	double total = 25;
-
-	for (int i = 0; i < total; i++)
+	if (style == BondSampleStatic)
 	{
-		double x = random_norm_dist(0, meanSqDisp);
-		double y = random_norm_dist(0, meanSqDisp);
-		double z = random_norm_dist(0, meanSqDisp);
-
-		vec3 xyz = make_vec3(x, y, z);
-		vec3 full = vec3_add_vec3(xyz, _position);
 		BondSample sample;
 		sample.basis = make_mat3x3();
-		sample.occupancy = 1 / total;
+		sample.occupancy = 1;
 		sample.torsion = 0;
 		sample.old_start = make_vec3(0, 0, 0);
-		sample.start = full;
+		sample.start = _position;
 		bondSamples->push_back(sample);
+		return bondSamples;
+	}
+
+		/* B factor isotropic only atm, get mean square displacement in
+	 * each dimension. */
+	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
+	meanSqDisp = sqrt(meanSqDisp);
+	double total = 1;
+	double step = meanSqDisp / total;
+	double occTotal = 0;
+
+	for (int i = -total; i <= total; i++)
+	{
+		double xVal = i * step;
+
+		for (int j = -total; j <= total; j++)
+		{
+			double yVal = j * step;
+
+			for (int k = -total; k <= total; k++)
+			{
+				double zVal = k * step;
+				
+				double occ = normal_distribution(xVal, meanSqDisp);
+				occ *= normal_distribution(yVal, meanSqDisp);
+				occ *= normal_distribution(zVal, meanSqDisp);
+				occTotal += occ;
+				vec3 xyz = make_vec3(xVal, yVal, zVal);
+				vec3 full = vec3_add_vec3(xyz, _position);
+
+				BondSample sample;
+				sample.basis = make_mat3x3();
+				sample.occupancy = occ;
+				sample.torsion = 0;
+				sample.old_start = make_vec3(0, 0, 0);
+				sample.start = full;
+				bondSamples->push_back(sample);
+			}
+		}
+	}
+
+	for (int i = 0; i < bondSamples->size(); i++)
+	{
+		(*bondSamples)[i].occupancy /= occTotal;
 	}
 
 	return bondSamples;

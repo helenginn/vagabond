@@ -566,14 +566,19 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		vec3 nextPerfectVec = vec3_subtract_vec3(nextPerfectPos, myPerfectPos);
 		vec3 nextDifference = vec3_subtract_vec3(myPerfectPos, myCurrentPos);
 		mat3x3_mult_vec(magicMat, &nextDifference);
+		double notY = sqrt(nextDifference.x * nextDifference.x +
+						   nextDifference.z * nextDifference.z);
 		double notX = sqrt(nextDifference.y * nextDifference.y +
 						   nextDifference.z * nextDifference.z);
 		double tanX = nextDifference.x / notX;
-		double diffValue = sin(atan(tanX));
+		double tanY = nextDifference.y / notY;
 
-		if (diffValue != diffValue)
+		double xValue = sin(atan(tanX));
+		double yValue = sin(atan(tanY));
+
+		if (xValue != xValue)
 		{
-			diffValue = 0;
+			xValue = 0;
 		}
 
 		vec3_set_length(&myBondVec, 1);
@@ -589,11 +594,11 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 
 		double undoBlur = 0;
 		undoBlur = rotAngle;
-		undoBlur *= diffValue;
+		undoBlur *= xValue;
 		undoBlur *= _dampening;
 
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;
-		addBlur *= diffValue;
+		addBlur *= xValue;
 
 		BondSample simple;
 		simple.torsion = myTorsion + undoBlur + addBlur;
@@ -640,50 +645,47 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 
 	if (model->getClassName() != "Bond")
 	{
-		vec3 heavyPos = getHeavyAlign()->getInitialPosition();
-		vec3 majorPos = getMajor()->getInitialPosition();
-		int total = 25;
-		double occTotal = 0;
-		vec3 none = {0, 0, 1};
-		vec3 start = vec3_subtract_vec3(majorPos, _bondDirection);
-		mat3x3 newBasis = makeTorsionBasis(heavyPos, majorPos, start, none);
-
-		if (style == BondSampleStatic)
-		{
-			total = 1;
-		}
+		std::vector<BondSample> *absPos;
+		absPos = ToAbsolutePtr(model)->getManyPositions(style);
+		mat3x3 magicMat = getMagicMat();
 
 		/* We must be connected to something else, oh well */
 		/* Torsion basis must be the same. */
 
-		for (int i = 0; i <= total; i++)
+		for (int i = 0; i < absPos->size(); i++)
 		{
+			vec3 majorPos = (*absPos)[i].start;
+			vec3 heavyPos = getHeavyAlign()->getPosition();
+			vec3 none = {0, 0, 1};
+			vec3 actualMajor = getMajor()->getPosition();
+
+			vec3 start = vec3_subtract_vec3(majorPos, _bondDirection);
+			vec3 perfectStart = vec3_subtract_vec3(actualMajor, _bondDirection);
+
+			mat3x3 newBasis = makeTorsionBasis(heavyPos, actualMajor, perfectStart, none);
 			double newTorsion = _bondGroups[_activeGroup].torsionAngle;
 
-			double sigma = (double)i / (double)total - 0.5;
+			vec3 majorDev = vec3_subtract_vec3(majorPos, actualMajor);
+			mat3x3_mult_vec(magicMat, &majorDev);
+			double notX = sqrt(majorDev.y * majorDev.y +
+							   majorDev.z * majorDev.z);
+			double tanX = majorDev.x / notX;
+			double diffValue = sin(atan(tanX));
 
-			double torsionAdd = _bondGroups[_activeGroup].torsionBlur * sigma;
-			double occupancy = normal_distribution(sigma, 0.3);
-			occTotal += occupancy;
-
-			if (style == BondSampleStatic)
+			if (diffValue != diffValue)
 			{
-				occupancy = 1;
-				torsionAdd = 0;
+				diffValue = 0;
 			}
+
+			double torsionAdd = _bondGroups[_activeGroup].torsionBlur * diffValue;
 
 			BondSample newSample;
 			newSample.basis = newBasis;
 			newSample.start = start;
 			newSample.old_start = majorPos;
 			newSample.torsion = newTorsion + torsionAdd;
-			newSample.occupancy = occupancy;
+			newSample.occupancy = (*absPos)[i].occupancy;
 			newSamples->push_back(newSample);
-		}
-
-		for (int i = 0; i < newSamples->size(); i++)
-		{
-			(*newSamples)[i].occupancy /= occTotal;
 		}
 
 		return newSamples;
