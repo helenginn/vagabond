@@ -458,15 +458,24 @@ double FFT::interpolate(vec3 vox000, bool im)
 							vox000.y - (double)((int)vox000.y),
 							vox000.z - (double)((int)vox000.z));
 
-	long int idx000 = element(vox000.x, vox000.y, vox000.z);
+	long vox000x = vox000.x;
+	long vox000y = vox000.y;
+	long vox000z = vox000.z;
+	long vox000xm = vox000.x + 1;
+	long vox000ym = vox000.y + 1;
+	long vox000zm = vox000.z + 1;
 
-	long int idx100 = element(vox000.x + 1, vox000.y, vox000.z);
-	long int idx010 = element(vox000.x, vox000.y + 1, vox000.z);
-	long int idx110 = element(vox000.x + 1, vox000.y + 1, vox000.z);
-	long int idx001 = element(vox000.x, vox000.y, vox000.z + 1);
-	long int idx101 = element(vox000.x + 1, vox000.y, vox000.z + 1);
-	long int idx011 = element(vox000.x, vox000.y + 1, vox000.z + 1);
-	long int idx111 = element(vox000.x + 1, vox000.y + 1, vox000.z + 1);
+	collapse(&vox000x, &vox000y, &vox000z);
+	collapse(&vox000xm, &vox000ym, &vox000zm);
+
+	long int idx000 = quickElement(vox000x, vox000y, vox000z);
+	long int idx100 = quickElement(vox000xm, vox000y, vox000z);
+	long int idx010 = quickElement(vox000x, vox000ym, vox000z);
+	long int idx110 = quickElement(vox000xm, vox000ym, vox000z);
+	long int idx001 = quickElement(vox000x, vox000y, vox000zm);
+	long int idx101 = quickElement(vox000xm, vox000y, vox000zm);
+	long int idx011 = quickElement(vox000x, vox000ym, vox000zm);
+	long int idx111 = quickElement(vox000xm, vox000ym, vox000zm);
 
 	double val00 = data[idx000][im] * (1 - remain.x) +
 	data[idx100][im] * remain.x;

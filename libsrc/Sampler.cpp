@@ -154,7 +154,7 @@ void Sampler::addOccupancy(BondPtr bond, double range, double interval)
 
 void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
 {
-	for (int i = from; i < to; i++)
+	for (int i = from - 1; i < to - 1; i++)
 	{
 		if (!polymer->getMonomer(i))
 		{
@@ -174,6 +174,14 @@ void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
 
 			BondPtr caBond = ToBondPtr(ca->getModel());
 			addTorsion(caBond, deg2rad(0.2), deg2rad(0.05));
+
+			if (caBond->getParentModel()->getClassName() == "Absolute")
+			{
+				AbsolutePtr abs = ToAbsolutePtr(caBond->getParentModel());
+				addAbsolutePosition(abs, 0.02, 0.01);
+			}
+
+
 		}
 
 		if (n)
@@ -228,6 +236,8 @@ void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
 {
 	_strategy->addParameter(&*bond, Bond::getTorsionBlur, Bond::setTorsionBlur,
 							range, interval, "b" + bond->shortDesc());
+	_strategy->addParameter(&*bond, Bond::getTorsionVertBlur, Bond::setTorsionVertBlur,
+							range, interval, "vb" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }
@@ -328,6 +338,11 @@ void Sampler::addSampledCAs(PolymerPtr polymer, int from, int to)
 
 void Sampler::addSampledAtoms(AtomGroupPtr group)
 {
+	if (!group)
+	{
+		return;
+	}
+
 	for (int i = 0; i < group->atomCount(); i++)
 	{
 		addSampled(group->atom(i));
@@ -336,6 +351,11 @@ void Sampler::addSampledAtoms(AtomGroupPtr group)
 
 void Sampler::addSampled(AtomPtr atom)
 {
+	if (!atom)
+	{
+		return;
+	}
+
 	double electrons = atom->getElement()->electronCount();
 
 	if (electrons <= 1)

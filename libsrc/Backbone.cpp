@@ -95,6 +95,7 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 					bond->resetAxis();
 
 				}
+
 				setupNelderMead();
 				setJobName("model_pos_" + bond->shortDesc());
 				addRamachandranAngles(getPolymer(), resNum, resNum + 3);
@@ -107,19 +108,6 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			if (rType == RefinementModelRMSD)
 			{
 				continue;
-			}
-
-			if (rType == RefinementModelPos)
-			{
-				break;
-				setupNelderMead();
-				setJobName("model_pos_" + bond->shortDesc());
-				addRamachandranAngles(getPolymer(), resNum, resNum + 12);
-				addSampledCAs(getPolymer(), resNum, resNum + 12);
-				setScoreType(ScoreTypeModelPos);
-				sample();
-
-				break;
 			}
 
 			for (int k = 0; k < groups; k++)

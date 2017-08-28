@@ -524,6 +524,8 @@ void Knotter::makeProline()
 	ca2cb->setFixed(true);
 	ca2cb->setTorsionAtoms(nSpine, cGamma);
 	ca2cb->activate(_sidechain, inherit);
+	ca2cb->addExtraTorsionSample(cGamma, 0);
+	ca2cb->addExtraTorsionSample(cDelta, 0);
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->setFixed(true);

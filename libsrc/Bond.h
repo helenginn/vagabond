@@ -31,7 +31,7 @@ typedef struct
 	std::vector<AtomValue> atoms;
 	double torsionAngle;
 	double torsionBlur;
-	double compensation;
+	double torsionVertBlur;
 	double occupancy;
 	vec3 magicAxis;
 	double hRot;
@@ -100,6 +100,19 @@ public:
 	virtual std::string getClassName()
 	{
 		return "Bond";
+	}
+
+	static void setTorsionVertBlur(void *object, double value)
+	{
+		Bond *bond = static_cast<Bond *>(object);
+		bond->_bondGroups[bond->_activeGroup].torsionVertBlur = value;
+		static_cast<Bond *>(object)->propagateChange();
+	}
+
+	static double getTorsionVertBlur(void *object)
+	{
+		Bond *bond = static_cast<Bond *>(object);
+		return bond->_bondGroups[bond->_activeGroup].torsionVertBlur;
 	}
 
 	static void setTorsionBlur(void *object, double value)

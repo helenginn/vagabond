@@ -45,12 +45,10 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	_blocked = false;
 	_currentCheck = 0;
 
-	double bondRand = double(rand()) / double(RAND_MAX) - 0.5;
-	bondRand *= 0.02;
 	BondGroup aGroup;
 	aGroup.torsionAngle = 0;
 	aGroup.torsionBlur = 0.0;
-	aGroup.compensation = 0;
+	aGroup.torsionVertBlur = 0.0;
 	aGroup.magicAxis = make_vec3(1, 0, 0);
 	aGroup.hRot = 0;
 	aGroup.kRot = 0;
@@ -165,9 +163,9 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group)
 		BondGroup newGroup;
 		newGroup.torsionAngle = 0;
 		newGroup.torsionBlur = 0;
+		newGroup.torsionVertBlur = 0.0;
 		newGroup.hRot = 0;
 		newGroup.kRot = 0;
-		newGroup.compensation = 0;
 		newGroup.magicAxis = make_vec3(1, 0, 0);
 		newGroup.occupancy = 1;
 		newGroup._changedSamples = true;
@@ -332,13 +330,24 @@ std::string Bond::getPDBContribution()
 	double skip = (double)positions->size() / 25.;
 
 	if (skip < 0) skip = 1;
+	const int side = 5;
+	int count = 0;
 
-	for (double i = 0; i < positions->size(); i+= skip)
+	for (double i = 0; i < positions->size(); i+= 1)
 	{
+		int l = i / (side * side);
+		int k = (i - (l * side * side)) / side;
+		int h = (i - l * side * side - k * side);
+
+		if ((h + k) % 2 != 0 || (k + l) % 2 != 0 || (l + h) % 2 != 0)
+		{
+			continue;
+		}
+
 		vec3 placement = (*positions)[i].start;
 		double occupancy = (*positions)[i].occupancy;
 
-		stream << atom->pdbLineBeginning(i);
+		stream << atom->pdbLineBeginning(count);
 		stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.x;
 		stream << std::setw(8) << std::setprecision(3) << placement.y;
 		stream << std::setw(8) << std::setprecision(3) << placement.z;
@@ -346,7 +355,9 @@ std::string Bond::getPDBContribution()
 		stream << std::setw(6) << std::setprecision(2) << getAbsInheritance()->getBFactor();
 		stream << "          ";
 		stream << std::setw(2) << element->getSymbol();
-		stream << "  " << std::endl;;
+		stream << "  " << std::endl;
+
+		count++;
 	}
 
 	return stream.str();
@@ -570,11 +581,15 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 						   nextDifference.z * nextDifference.z);
 		double notX = sqrt(nextDifference.y * nextDifference.y +
 						   nextDifference.z * nextDifference.z);
+		double notZ = sqrt(nextDifference.y * nextDifference.y +
+						   nextDifference.x * nextDifference.x);
 		double tanX = nextDifference.x / notX;
 		double tanY = nextDifference.y / notY;
+		double tanZ = nextDifference.z / notZ;
 
 		double xValue = sin(atan(tanX));
-		double yValue = sin(atan(tanY));
+		double yValue = cos(atan(tanX));
+		double zValue = sin(atan(tanZ));
 
 		if (xValue != xValue)
 		{
@@ -583,7 +598,12 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 
 		if (yValue != yValue)
 		{
-			yValue = 0;
+			yValue = 1;
+		}
+
+		if (zValue != zValue)
+		{
+			zValue = 0;
 		}
 
 		vec3_set_length(&myBondVec, 1);
@@ -604,9 +624,11 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;
 		addBlur *= yValue;
+		double addVertBlur = _bondGroups[_activeGroup].torsionBlur;
+		addVertBlur *= zValue;
 
 		BondSample simple;
-		simple.torsion = myTorsion + undoBlur + addBlur;
+		simple.torsion = myTorsion + undoBlur + addBlur + addVertBlur;
 		simple.occupancy = 1;
 		simple.basis = make_mat3x3();
 		simple.start = nextCurrentPos;
@@ -663,8 +685,17 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 			vec3 heavyPos = getHeavyAlign()->getPosition();
 			vec3 none = {0, 0, 1};
 			vec3 actualMajor = getMajor()->getPosition();
+			vec3 halfDir = _bondDirection;
+			vec3_mult(&halfDir, 0.5);
+			vec3 midPoint = vec3_subtract_vec3(actualMajor, halfDir);
 
-			vec3 start = vec3_subtract_vec3(majorPos, _bondDirection);
+			vec3 newDir = vec3_subtract_vec3(midPoint, majorPos);
+			vec3_mult(&newDir, 2.0);
+
+			vec3 start = vec3_add_vec3(majorPos, newDir);
+			start = vec3_subtract_vec3(majorPos, _bondDirection);
+
+
 			vec3 perfectStart = vec3_subtract_vec3(actualMajor, _bondDirection);
 
 			mat3x3 newBasis = makeTorsionBasis(heavyPos, actualMajor, perfectStart, none);
@@ -672,10 +703,10 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 
 			vec3 majorDev = vec3_subtract_vec3(majorPos, actualMajor);
 			mat3x3_mult_vec(magicMat, &majorDev);
-			double notX = sqrt(majorDev.y * majorDev.y +
+			double notY = sqrt(majorDev.x * majorDev.x +
 							   majorDev.z * majorDev.z);
-			double tanX = majorDev.x / notX;
-			double diffValue = sin(atan(tanX));
+			double tanY = majorDev.y / notY;
+			double diffValue = sin(atan(tanY));
 
 			if (diffValue != diffValue)
 			{
@@ -1108,7 +1139,7 @@ std::string Bond::shortDesc()
 
 double Bond::getMeanSquareDeviation(double target)
 {
-	double targMult = 0.333;
+	double targMult = 1./3.;
 	target /= 8 * M_PI * M_PI * targMult;
 
 	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
@@ -1141,7 +1172,6 @@ double Bond::getMeanSquareDeviation(double target)
 	}
 
 	double score = 0;
-	score += fabs(meanSq - target);
 
 	if (target >= 0)
 	{
@@ -1151,6 +1181,7 @@ double Bond::getMeanSquareDeviation(double target)
 	}
 	else
 	{
+		score = fabs(meanSq - target);
 		score *= 8 * M_PI * M_PI * targMult;
 	}
 

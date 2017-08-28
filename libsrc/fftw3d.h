@@ -82,16 +82,21 @@ public:
 		return mask[i];
 	}
 
+	void collapse(long *x, long *y, long *z)
+	{
+		while (*x < 0) *x += nx;
+		while (*x >= nx) *x -= nx;
+
+		while (*y < 0) *y += ny;
+		while (*y >= ny) *y -= ny;
+
+		while (*z < 0) *z += nz;
+		while (*z >= nz) *z -= nz;
+	}
+
 	long element(long x, long y, long z)
 	{
-		while (x < 0) x += nx;
-		while (x >= nx) x -= nx;
-
-		while (y < 0) y += ny;
-		while (y >= ny) y -= ny;
-
-		while (z < 0) z += nz;
-		while (z >= nz) z -= nz;
+		collapse(&x, &y, &z);
 
 		return x + nx*y + (nx*ny)*z;
 	}
