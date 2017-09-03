@@ -52,6 +52,7 @@ void Atom::setModel(ModelPtr model)
 FFTPtr Atom::getBlur()
 {
 	FFTPtr modelDist = _model->getDistribution();
+	/* YEAH, that line does something */
 
 	if (_distModelOnly)
 	{
@@ -97,6 +98,12 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool useNew)
 	modified->invertScale();
 
 	vec3 pos = _model->getAbsolutePosition();
+
+	if (_distModelOnly)
+	{
+		pos = _distModelOnly->getAbsolutePosition();
+	}
+
 	pos = vec3_subtract_vec3(pos, offset);
 	mat3x3_mult_vec(unit_cell, &pos);
 

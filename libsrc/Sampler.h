@@ -74,6 +74,11 @@ public:
 		_strategy->reportInDegrees();
 	}
 
+	void setCycles(int cycles)
+	{
+		_strategy->setCycles(cycles);
+	}
+
 	static double score(void *object)
 	{
 		return static_cast<Sampler *>(object)->getScore();

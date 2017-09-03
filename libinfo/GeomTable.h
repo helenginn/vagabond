@@ -44,9 +44,12 @@ typedef enum
 	AtomValCA, AtomValCB, AtomValCG1, AtomValCG2,
 	AtomAspCA, AtomAspCB, AtomAspCG, AtomAspOD1, AtomAspOD2,
 	AtomAsnCA, AtomAsnCB, AtomAsnCG, AtomAsnOD1, AtomAsnND2,
+	AtomGlnCA, AtomGlnCB, AtomGlnCG, AtomGlnCD, AtomGlnOE1, AtomGlnNE2,
+	AtomGluCA, AtomGluCB, AtomGluCG, AtomGluCD, AtomGluOE1, AtomGluOE2,
 	AtomIleCA, AtomIleCB, AtomIleCG1, AtomIleCG2, AtomIleCD1,
 	AtomProCA, AtomProCB, AtomProCG, AtomProCD,
 	AtomArgCA, AtomArgCB, AtomArgCG, AtomArgCD, AtomArgNE, AtomArgCZ, AtomArgNH1, AtomArgNH2,
+	AtomTrpCA, AtomTrpCB, AtomTrpCG, AtomTrpCD1, AtomTrpCD2, AtomTrpNE1, AtomTrpCE2, AtomTrpCE3, AtomTrpCZ2, AtomTrpCZ3, AtomTrpCH2,
 
 } AtomType;
 

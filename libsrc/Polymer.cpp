@@ -108,6 +108,8 @@ void Polymer::makePDB(std::string filename)
 void Polymer::graph(std::string graphName)
 {
 	CSVPtr csv = CSVPtr(new CSV(3, "resnum", "newB", "oldB"));
+	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
+	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -118,18 +120,50 @@ void Polymer::graph(std::string graphName)
 
 		BackbonePtr backbone = getMonomer(i)->getBackbone();
 		AtomPtr ca = backbone->findAtom("CA");
-		ModelPtr model = ca->getModel();
+		ModelPtr caModel = ca->getModel();
+		AtomPtr n = backbone->findAtom("N");
+		ModelPtr nModel = n->getModel();
+		AtomPtr c = backbone->findAtom("C");
+		ModelPtr cModel = c->getModel();
 
-		if (model->getClassName() != "Bond")
+		double value = i;
+		double caDampen = 0; double cDampen = 0; double nDampen = 0;
+		double caBlur = 0; double cBlur = 0; double nBlur = 0;
+
+		if (caModel->getClassName() == "Bond")
 		{
-			continue;
+			BondPtr caBond = std::static_pointer_cast<Bond>(caModel);
+			double meanSq = caBond->getMeanSquareDeviation();
+			csv->addEntry(3, value, meanSq, ca->getInitialBFactor());
+			caDampen = Bond::getDampening(&*caBond);
+			caBlur = Bond::getTorsionBlur(&*caBond);
+
+			if (caDampen > 0) caBlur = 0;
+		}
+		else
+		{
+			csv->addEntry(3, value, ca->getInitialBFactor(), ca->getInitialBFactor());
 		}
 
-		BondPtr bond = std::static_pointer_cast<Bond>(model);
-		double meanSq = bond->getMeanSquareDeviation();
-		double value = i;
+		if (cModel->getClassName() == "Bond")
+		{
+			BondPtr cBond = std::static_pointer_cast<Bond>(cModel);
+			cDampen = Bond::getDampening(&*cBond);
+			cBlur = Bond::getTorsionBlur(&*cBond);
 
-		csv->addEntry(3, value, meanSq, ca->getInitialBFactor());
+			if (cDampen > 0) cBlur = 0;
+		}
+
+		if (nModel->getClassName() == "Bond")
+		{
+			BondPtr nBond = std::static_pointer_cast<Bond>(nModel);
+			nDampen = Bond::getDampening(&*nBond);
+			nBlur = Bond::getTorsionBlur(&*nBond);
+			if (nDampen > 0) nBlur = 0;
+		}
+
+		csvDamp->addEntry(4, value, caDampen, cDampen, nDampen);
+		csvBlur->addEntry(4, value, caBlur, cBlur, nBlur);
 	}
 
 	std::map<std::string, std::string> plotMap;
@@ -153,5 +187,37 @@ void Polymer::graph(std::string graphName)
 	plotMap["style1"] = "line";
 
 	csv->plotPNG(plotMap);
+
+	plotMap["filename"] = "dampening_" + graphName;
+	plotMap["yHeader0"] = "dN-CA";
+	plotMap["xHeader1"] = "resnum";
+	plotMap["yHeader1"] = "dCA-C";
+	plotMap["xHeader2"] = "resnum";
+	plotMap["yHeader2"] = "dC-N";
+	plotMap["style2"] = "line";
+	plotMap["colour2"] = "blue";
+	plotMap["yTitle0"] = "Dampening factor";
+	plotMap["yMin0"] = "-2";
+	plotMap["yMin1"] = "-2";
+	plotMap["yMin2"] = "-2";
+	plotMap["yMax0"] = "2";
+	plotMap["yMax1"] = "2";
+	plotMap["yMax2"] = "2";
+
+	csvDamp->plotPNG(plotMap);
+
+	plotMap["filename"] = "blurring_" + graphName;
+	plotMap["yHeader0"] = "bN-CA";
+	plotMap["yHeader1"] = "bCA-C";
+	plotMap["yHeader2"] = "bC-N";
+	plotMap["yTitle0"] = "Blurring factor";
+	plotMap["yMin0"] = "-0.5";
+	plotMap["yMin1"] = "-0.5";
+	plotMap["yMin2"] = "-0.5";
+	plotMap["yMax0"] = "0.5";
+	plotMap["yMax1"] = "0.5";
+	plotMap["yMax2"] = "0.5";
+
+	csvBlur->plotPNG(plotMap);
 }
 

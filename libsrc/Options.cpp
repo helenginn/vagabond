@@ -83,7 +83,7 @@ void Options::run()
 			MoleculePtr molecule = crystals[0]->molecule("A");
 			crystals[0]->molecule(0)->makePDB("refine_0.pdb");
 			crystals[0]->molecule(0)->graph("graph_0");
-			crystals[0]->writeCalcMillersToFile(data, 1.0);
+			crystals[0]->writeCalcMillersToFile(data);
 			crystals[0]->realSpaceClutter();
 			crystals[0]->getDataInformation(data, propFo, propFc);
 			
@@ -109,9 +109,9 @@ void Options::run()
 			for (int i = 0; i < _numCycles; i++)
 			{
 				count++;
-				if (i >= 3)
+				if (i >= 10)
 				{
-					molecule->refine(crystals[0], RefinementFine);
+					molecule->refine(crystals[0], RefinementFineBlur);
 				}
 				else
 				{

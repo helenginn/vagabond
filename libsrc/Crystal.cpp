@@ -125,9 +125,11 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, double resolution)
 
 	double dStar = 1 / resolution;
 
-	double aLength = mat3x3_length(_hkl2real, 0);
-	double bLength = mat3x3_length(_hkl2real, 1);
-	double cLength = mat3x3_length(_hkl2real, 2);
+	mat3x3 transpose = mat3x3_transpose(_hkl2real);
+
+	double aLength = mat3x3_length(transpose, 0);
+	double bLength = mat3x3_length(transpose, 1);
+	double cLength = mat3x3_length(transpose, 2);
 
 	double aLimit = aLength * dStar;
 	double bLimit = bLength * dStar;
@@ -355,13 +357,13 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 {
 	//if (_firstScale < 0)
 	{
-		_firstScale = 1 / valueWithDiffraction(data, &scale_factor);
+//		_firstScale = 1 / valueWithDiffraction(data, &scale_factor);
 	}
 
-	_fft->multiplyAll(_firstScale);
-/*
+//	_fft->multiplyAll(_firstScale);
+
 	std::vector<double> bins;
-	generateResolutionBins(0, 1.0, 1, &bins);
+	generateResolutionBins(0, HARD_CODED_RESOLUTION, 20, &bins);
 
 	for (int i = 0; i < bins.size() - 1; i++)
 	{
@@ -369,7 +371,7 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 										     	bins[i], bins[i + 1]);
 		applyScaleFactor(scale, bins[i], bins[i + 1]);
 	}
- */
+
 }
 
 double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)

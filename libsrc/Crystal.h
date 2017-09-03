@@ -20,6 +20,8 @@
 #include "maths.h"
 #include "Molecule.h"
 
+#define HARD_CODED_RESOLUTION 1.0
+
 typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
 class Crystal : public Object
@@ -64,7 +66,8 @@ public:
 
 	void tiedUpScattering();
 	void realSpaceClutter();
-	void writeCalcMillersToFile(DiffractionPtr data, double resolution = 1.0);
+	void writeCalcMillersToFile(DiffractionPtr data,
+								double resolution = HARD_CODED_RESOLUTION);
 
 	void fourierTransform(int dir)
 	{
@@ -75,7 +78,7 @@ public:
 	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
 	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 								bool verbose = false, double lowRes = 0,
-								double highRes = 0);
+								double highRes = HARD_CODED_RESOLUTION);
 	void getDataInformation(DiffractionPtr data, double partsFo = 2,
 							  double partsFc = 1);
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);

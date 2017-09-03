@@ -34,7 +34,7 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 	bond->setBlocked(true);
 
 	reportInDegrees();
-	setScoreType(ScoreTypeRFactor);
+	setScoreType(ScoreTypeCorrel);
 
 	setJobName("torsion_set_" + bond->getMajor()->getAtomName() + "_" +
 			   bond->getMinor()->getAtomName() + "_g" +
@@ -42,8 +42,8 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 
 	if (addDampen)
 	{
-		addTorsionBlur(bond, 0.01, 0.1);
-		addDampening(bond, 0.2, 0.01);
+		addTorsionBlur(bond, 0.1, 0.01);
+		addDampening(bond, 0.1, 0.01);
 	}
 	else
 	{
@@ -98,7 +98,8 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 				}
 				else
 				{
-					addDampening(nextBond, 0.2, 0.01);
+					addTorsionBlur(nextBond, 0.1, 0.01);
+					addDampening(nextBond, 0.1, 0.01);
 				}
 
 				for (int j = 0; j < nextBond->downstreamAtomCount(0); j++)
@@ -119,11 +120,6 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 		}
 
 		bond = nextBond;
-	}
-
-	if (addDampen)
-	{
-		addDampening(bond, 0.2, 0.01);
 	}
 }
 
@@ -210,6 +206,8 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 
 void Sampler::addMagicAxis(BondPtr bond, double range, double interval)
 {
+	if (!bond) return;
+
 	//	double number = fabs(range / interval);
 	std::string num = i_to_str(_strategy->parameterCount() + 1);
 
@@ -234,6 +232,8 @@ void Sampler::addMagicAxisBroad(BondPtr bond)
 
 void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
 {
+	if (!bond) return;
+
 	_strategy->addParameter(&*bond, Bond::getTorsionBlur, Bond::setTorsionBlur,
 							range, interval, "b" + bond->shortDesc());
 	_strategy->addParameter(&*bond, Bond::getTorsionVertBlur, Bond::setTorsionVertBlur,
@@ -254,6 +254,8 @@ void Sampler::addBondLength(BondPtr bond, double range, double interval)
 
 void Sampler::addDampening(BondPtr bond, double range, double interval)
 {
+	if (!bond) return;
+
 //	double number = fabs(range / interval);
 	_strategy->addParameter(&*bond, Bond::getDampening,
 							Bond::setDampening, range,
@@ -441,7 +443,7 @@ double Sampler::getScore()
 
 			if (_scoreType == ScoreTypeModelRMSD)
 			{
-				target = _sampled[i]->getInitialBFactor();
+				target = 0;//_sampled[i]->getInitialBFactor();
 			}
 
 			double rmsdScore = bond->getMeanSquareDeviation(target);

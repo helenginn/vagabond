@@ -105,6 +105,7 @@ public:
 	static void setTorsionVertBlur(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
+		return;
 		bond->_bondGroups[bond->_activeGroup].torsionVertBlur = value;
 		static_cast<Bond *>(object)->propagateChange();
 	}
@@ -326,6 +327,7 @@ public:
 	static void setMagicAxisMat(void *object, double num)
 	{
 		static_cast<Bond *>(object)->_currentCheck = num;
+		static_cast<Bond *>(object)->propagateChange();
 	}
 
 	static double getMagicAxisMat(void *object)

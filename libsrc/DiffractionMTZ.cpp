@@ -115,15 +115,12 @@ void DiffractionMtz::load()
 
 	int largest = 0;
 
-	for (int i = 0; i < 3; i++)
-	{
-		int indexLimit = cell[i] * maxRes + 1;
+	int indexLimitH = std::max(fabs(col_h->min), fabs(col_h->max));
+	int indexLimitK = std::max(fabs(col_k->min), fabs(col_k->max));
+	int indexLimitL = std::max(fabs(col_l->min), fabs(col_l->max));
 
-		if (indexLimit > largest)
-		{
-			largest = indexLimit;
-		}
-	}
+	largest = std::max(indexLimitH, indexLimitK);
+	largest = std::max(largest, indexLimitL);
 
 	largest *= 2;
 	largest += 1;

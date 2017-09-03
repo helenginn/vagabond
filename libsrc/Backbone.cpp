@@ -23,8 +23,8 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 	int resNum = getMonomer()->getResidueNum();
 
-	const char *atoms[] = {"CA", "N", "C"};
-	std::vector<std::string> atomStrs(atoms, atoms+2);
+	const char *atoms[] = {"N", "CA", "C"};
+	std::vector<std::string> atomStrs(atoms, atoms+3);
 
 	for (int i = 0; i < atomStrs.size(); i++)
 	{
@@ -46,7 +46,7 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				continue;
 			}
 
-			BondPtr bond = std::static_pointer_cast<Bond>(model);
+			BondPtr bond = ToBondPtr(model);
 			std::string majorAtom = bond->getMajor()->getAtomName();
 
 			if (!bond->isNotJustForHydrogens() || bond->isFixed()
@@ -59,20 +59,41 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 			for (int k = 0; k < groups; k++)
 			{
+				BondPtr nextBond;
+				if (bond->getParentModel()->getClassName() == "Bond")
+				{
+			//		nextBond = ToBondPtr(bond->getParentModel());
+				}
+
 				if (rType != RefinementModelRMSD)
 				{
 					break;
 				}
 
-				ScoreType scoreType = ScoreTypeModelRMSD;
-				for (int l = 0; l < 3; l++)
+				ScoreType scoreType = ScoreTypeModelRMSDZero;
+				for (int l = 0; l < 1; l++)
 				{
+					if (scoreType == ScoreTypeModelRMSDZero)
+					{
+				//		Bond::setDampening(&*bond, 0.2);
+						setupGrid();
+						addMagicAxisBroad(bond);
+						setJobName("broad_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
+						addSampledCAs(getPolymer(), resNum, resNum + 24);
+						setScoreType(scoreType);
+						sample();
+					}
+
 					setupNelderMead();
-					bond->setBlocked(true);
 					addMagicAxis(bond, deg2rad(20.0), deg2rad(2.0));
 
 					if (scoreType == ScoreTypeModelRMSD)
 					{
+						if (majorAtom == "N")
+						{
+//							continue;
+						}
+
 						addDampening(bond, 0.1, 0.1);
 						addTorsionBlur(bond, 0.1, 0.1);
 					}
@@ -81,6 +102,7 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 					addSampledCAs(getPolymer(), resNum, resNum + 24);
 					setScoreType(scoreType);
 					sample();
+				//	Bond::setDampening(&*bond, 0.02);
 
 					if (scoreType == ScoreTypeModelRMSD)
 					{
@@ -95,14 +117,14 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 					bond->resetAxis();
 
 				}
-
+/*
 				setupNelderMead();
 				setJobName("model_pos_" + bond->shortDesc());
 				addRamachandranAngles(getPolymer(), resNum, resNum + 3);
 				addSampledCAs(getPolymer(), resNum, resNum + 3);
 				setScoreType(ScoreTypeModelPos);
 				sample();
-
+*/
 			}
 
 			if (rType == RefinementModelRMSD)
@@ -117,14 +139,20 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				if (shouldBlur)
 				{
 					setupNelderMead();
+					setCycles(10);
 					setupTorsionSet(bond, k, 5, resNum, 0.05, 0.02, true);
 					setCrystal(target);
 					sample();
 				}
-
+/*
 				setupNelderMead();
-				setupTorsionSet(bond, k, 4, resNum, 0.2, 0.1);
-
+				setupTorsionSet(bond, k, 4, resNum, 1.0, 0.05);
+				setCrystal(target);
+				sample();
+*/
+				setupNelderMead();
+				setupTorsionSet(bond, k, 4, resNum, 0.3, 0.02);
+//				setupTorsionSet(bond, k, 3, resNum, 0.05, 0.02, true);
 				setCrystal(target);
 				sample();
 			}

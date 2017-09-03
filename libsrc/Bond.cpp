@@ -36,7 +36,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	_major = major;
 	_minor = minor;
 	_activeGroup = 0;
-	_dampening = 0.5;
+	_dampening = 0.02;
 	_bendBlur = 0;
 	_bondLength = 0;
 	_changedPos = true;
@@ -622,13 +622,19 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		undoBlur *= xValue;
 		undoBlur *= _dampening;
 
+		if (_dampening < 0) undoBlur = 0;
+
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;
 		addBlur *= yValue;
 		double addVertBlur = _bondGroups[_activeGroup].torsionBlur;
 		addVertBlur *= zValue;
 
+		double bigBlur = addBlur + addVertBlur;
+		bigBlur *= -_dampening;
+		if (_dampening > 0) bigBlur = 0;
+
 		BondSample simple;
-		simple.torsion = myTorsion + undoBlur + addBlur + addVertBlur;
+		simple.torsion = myTorsion + undoBlur + bigBlur;
 		simple.occupancy = 1;
 		simple.basis = make_mat3x3();
 		simple.start = nextCurrentPos;
@@ -1139,8 +1145,9 @@ std::string Bond::shortDesc()
 
 double Bond::getMeanSquareDeviation(double target)
 {
-	double targMult = 1./3.;
-	target /= 8 * M_PI * M_PI * targMult;
+	double targMult = 3;
+	target /= 8 * M_PI * M_PI;
+    target *= targMult;
 
 	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
 	vec3 mean = make_vec3(0, 0, 0);
@@ -1182,7 +1189,8 @@ double Bond::getMeanSquareDeviation(double target)
 	else
 	{
 		score = fabs(meanSq - target);
-		score *= 8 * M_PI * M_PI * targMult;
+		score *= 8 * M_PI * M_PI;
+		score /= targMult;
 	}
 
 	return score;

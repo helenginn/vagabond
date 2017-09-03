@@ -47,10 +47,13 @@ private:
 	void makeTyrosine();
 	void makeAspartate();
 	void makePhenylalanine();
+	void makeTryptophan();
 	void makeMethionine();
 	void makeProline();
 	void makeArginine();
 	void makeAsparagine();
+	void makeGlutamine();
+	void makeGlutamate();
 };
 
 

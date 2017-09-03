@@ -63,8 +63,10 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 					break;
 				}
 
-				ScoreType scoreType = ScoreTypeModelRMSD;
-				for (int l = 0; l < 3; l++)
+				break;
+
+				ScoreType scoreType = ScoreTypeModelRMSDZero;
+				for (int l = 0; l < 1; l++)
 				{
 					setupNelderMead();
 					bond->setBlocked(true);
@@ -94,14 +96,14 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 					bond->resetAxis();
 
 				}
-
+/*
 				setupNelderMead();
 				setupTorsionSet(bond, k, 5, resNum, deg2rad(0.2), deg2rad(0.01));
 				addSampledAtoms(shared_from_this());
 				setScoreType(ScoreTypeModelPos);
 				setJobName("model_pos_" + i_to_str(resNum) + "_" + bond->shortDesc());
 				sample();
-
+*/
 			}
 
 			if (rType == RefinementModelRMSD)
