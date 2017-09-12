@@ -9,6 +9,7 @@
 #ifndef __vagabond__vec3__
 #define __vagabond__vec3__
 
+#include <cstdlib>
 #include <stdio.h>
 #include <math.h>
 #include <string>
@@ -39,6 +40,8 @@ inline vec3 make_vec3(double x, double y, double z)
 
 	return vec;
 }
+
+vec3 make_randomish_axis();
 
 inline vec2 make_vec2(double x, double y)
 {

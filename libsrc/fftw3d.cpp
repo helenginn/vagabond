@@ -411,6 +411,10 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 		printf("\t\tCould not export wisdom to %s\n",wisdomFile);
 	}
 
+	fftwf_complex *tempData;
+	tempData = (fftwf_complex *)fftwf_malloc(nn * sizeof(FFTW_DATA_TYPE));
+	fftwf_execute_dft(_myDims->plan, tempData, tempData);
+	fftwf_free(tempData);
 }
 
 

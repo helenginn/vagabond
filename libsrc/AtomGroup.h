@@ -70,9 +70,11 @@ public:
 	}
 
 	void setUseAbsolute();
+
 protected:
 	AtomGroup();
 	int _timesRefined;
+	void addAtomsFrom(AtomGroupPtr child);
 
 	bool isTied()
 	{

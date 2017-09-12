@@ -25,6 +25,7 @@
 
 #define ToBondPtr(a) (std::static_pointer_cast<Bond>((a)))
 #define ToAbsolutePtr(a) (std::static_pointer_cast<Absolute>((a)))
+#define ToPolymerPtr(a) (std::static_pointer_cast<Polymer>((a)))
 
 class FFT;
 typedef std::shared_ptr<FFT> FFTPtr;
@@ -88,10 +89,12 @@ typedef std::shared_ptr<Object> ObjectPtr;
 class RefinementGridSearch;
 class RefinementStepSearch;
 class RefinementStrategy;
+class RefinementSnake;
 class NelderMead;
 typedef std::shared_ptr<RefinementStepSearch> RefinementStepSearchPtr;
 typedef std::shared_ptr<RefinementGridSearch> RefinementGridSearchPtr;
 typedef std::shared_ptr<RefinementStrategy> RefinementStrategyPtr;
+typedef std::shared_ptr<RefinementSnake> RefinementSnakePtr;
 typedef std::shared_ptr<NelderMead> NelderMeadPtr;
 
 class CSV;

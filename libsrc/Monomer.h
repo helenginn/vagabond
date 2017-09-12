@@ -21,6 +21,7 @@ public:
 	Monomer();
 	void setup();
 	void tieAtomsUp();
+	void setConstantDampening(double value);
 
 	void setIdentifier(std::string idString)
 	{
@@ -70,6 +71,18 @@ public:
 		_models.push_back(model);
 	}
 
+	int modelCount()
+	{
+		return _models.size();
+	}
+
+	ModelPtr model(int i)
+	{
+		return _models[i];
+	}
+
+	void setKick(double value, bool beforeAnchor);
+	double getKick();
 private:
 	std::string _identifier; // e.g. three-letter code
 	int _residueNum; // number in protein sequence including missing ones.

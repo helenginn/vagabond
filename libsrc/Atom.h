@@ -85,6 +85,19 @@ public:
 		return _initialB;
 	}
 
+	double getInitialAnisoB(int index)
+	{
+		return _aniso[index];
+	}
+
+	void setInitialAnisoBs(double x, double y, double z)
+	{
+		const double bFacMult = 8 * M_PI * M_PI / 3;
+		_aniso[0] = x * bFacMult;
+		_aniso[1] = y * bFacMult;
+		_aniso[2] = z * bFacMult;
+	}
+
 	void setInitialBFactor(double b)
 	{
 		_initialB = b;
@@ -119,6 +132,7 @@ private:
 	vec3 _initialPosition;
 	double _initialB;
 	int _atomNum;
+	double _aniso[3];
 
 	AtomType _geomType;
 };

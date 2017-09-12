@@ -61,6 +61,7 @@ void RefinementGridSearch::recursiveEvaluation(ParamList referenceList, ParamLis
     
     double result = (*evaluationFunction)(evaluateObject);
     (*results)[workingList] = result;
+	reverseResults[result] = workingList;
     
     orderedParams.push_back(workingList);
     orderedResults.push_back(result);
@@ -142,6 +143,7 @@ void RefinementGridSearch::refine()
 	{
 		csv->writeToFile(jobName + "_gridsearch.csv");
 	}
+
 	_refine_counter++;
 
     finish();

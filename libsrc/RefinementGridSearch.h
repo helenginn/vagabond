@@ -26,12 +26,14 @@
 
 typedef std::vector<double> ParamList;
 typedef std::map<ParamList, double> ResultMap;
+typedef std::map<double, ParamList> ReverseMap;
 
 class RefinementGridSearch : public RefinementStrategy
 {
 private:
     int gridLength;
     int gridJumps;
+	ReverseMap reverseResults;
     std::vector<double> orderedResults;
     std::vector<ParamList> orderedParams;
 	static int _refine_counter; /* thread care! */
@@ -56,6 +58,19 @@ public:
     
     ResultMap results;
     void recursiveEvaluation(ParamList referenceList, ParamList workingList, ResultMap *results);
+
+	std::vector<double> getNextResult(int num)
+	{
+		ReverseMap::iterator it = reverseResults.begin();
+
+		for (int i = 0; i < num; i++)
+		{
+			it++;
+		}
+
+		return it->second;
+	}
+
 	virtual void clearParameters()
     {
         orderedResults.clear();

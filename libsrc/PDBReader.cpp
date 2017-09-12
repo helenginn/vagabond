@@ -81,7 +81,7 @@ void PDBReader::validateMolecule(AbsolutePtr atom)
 		{
 			_myMolecule = _myCrystal->molecule(newChain);
 
-			if (_myMolecule->className() == "Polymer")
+			if (_myMolecule->getClassName() == "Polymer")
 			{
 				_myPolymer = std::static_pointer_cast<Polymer>(_myMolecule);
 			}

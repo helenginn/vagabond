@@ -36,6 +36,7 @@ typedef enum
 	ScoreTypeModelRMSD = 3,
 	ScoreTypeModelRMSDZero = 4,
 	ScoreTypeModelPos = 5,
+	ScoreTypeModelOverallB = 6,
 } ScoreType;
 
 class Sampler
@@ -44,6 +45,9 @@ public:
 	Sampler();
 
 	void addSampled(AtomPtr atom);
+	void addSampled(std::vector<AtomPtr> atoms);
+
+	void addOverallKickAndDampen(PolymerPtr polymer);
 	void addTorsion(BondPtr bond, double range, double interval);
 	void addTorsionBlur(BondPtr bond, double range, double interval);
 	void addDampening(BondPtr bond, double range, double interval);
@@ -51,7 +55,7 @@ public:
 	void addBendBlur(BondPtr bond, double range, double interval);
 	void addBendAngle(BondPtr bond, double range, double interval);
 	void addOccupancy(BondPtr bond, double range, double interval);
-	void addSampledCAs(PolymerPtr polymer, int from, int to);
+	void addSampledBackbone(PolymerPtr polymer, int from = 0, int to = 0);
 	void addSampledAtoms(AtomGroupPtr group);
 	void addRamachandranAngles(PolymerPtr polymer, int from, int to);
 	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
@@ -59,14 +63,22 @@ public:
 	void addMagicAxis(BondPtr bond, double range, double interval);
 	void addMagicAxisBroad(BondPtr bond);
 	void setCrystal(CrystalPtr crystal);
-	void sample();
+	double sample(bool clear = true);
 
 	void setupGrid();
 	void setupNelderMead();
+	void setupSnake();
 
 	void setJointSampling()
 	{
 		_joint = true;
+	}
+
+	void copyTarget(Sampler *other)
+	{
+		_fft = other->_fft;
+		_real2hkl = other->_real2hkl;
+		_scoreType = other->_scoreType;
 	}
 
 	void reportInDegrees()
@@ -89,6 +101,16 @@ public:
 		_jobName = newJob;
 	}
 
+	std::string getJobName()
+	{
+		return _jobName;
+	}
+
+	void setSilent(bool silent = true)
+	{
+		_strategy->setSilent(silent);
+	}
+
 	int sampleSize()
 	{
 		return _sampled.size();
@@ -103,10 +125,20 @@ public:
 	{
 		_scoreType = type;
 	}
+
+	void setOverallBFactor(double value)
+	{
+		_overallB = value;
+	}
+
+	std::vector<double> getNextResult(int num);
+
 protected:
 	void setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 							double range, double interval,
 						 bool addDampening = false);
+	FFTPtr _fft;
+	mat3x3 _real2hkl;
 
 private:
 	double getScore();
@@ -114,10 +146,9 @@ private:
 	std::vector<AtomPtr> _sampled;
 	std::vector<AtomPtr> _unsampled;
 	std::vector<BondPtr> _bonds;
-	FFTPtr _fft;
 	bool _mock;
-	mat3x3 _real2hkl;
 	bool _joint;
+	double _overallB;
 
 	std::string _jobName;
 	ScoreType _scoreType;

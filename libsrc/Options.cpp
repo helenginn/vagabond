@@ -76,11 +76,13 @@ void Options::run()
 
 			if (_tie)
 			{
+				crystals[0]->setAnchors();
 				crystals[0]->tieAtomsUp();
 			}
 
 			crystals[0]->tiedUpScattering();
 			MoleculePtr molecule = crystals[0]->molecule("A");
+
 			crystals[0]->molecule(0)->makePDB("refine_0.pdb");
 			crystals[0]->molecule(0)->graph("graph_0");
 			crystals[0]->writeCalcMillersToFile(data);
@@ -91,17 +93,33 @@ void Options::run()
 
 			if (_numCycles > 0)
 			{
-				for (int i = 0; i < 1; i++)
+				for (int i = 0; i < 2; i++)
 				{
 					count++;
+					std::string refineCount = "refine_" + i_to_str(count);
 					molecule->refine(crystals[0], RefinementModelRMSD);
 					crystals[0]->realSpaceClutter();
 					crystals[0]->getDataInformation(data, propFo, propFc);
-					crystals[0]->molecule(0)->makePDB("refine_" + i_to_str(count) + ".pdb");
+					crystals[0]->molecule(0)->makePDB(refineCount + ".pdb");
 					crystals[0]->molecule(0)->graph("graph_" + i_to_str(count));
-					crystals[0]->writeCalcMillersToFile(data, 1.0);
+					crystals[0]->writeCalcMillersToFile(data, refineCount);
 					crystals[0]->realSpaceClutter();
 					crystals[0]->getDataInformation(data, propFo, propFc);
+
+					if (molecule->getClassName() == "Polymer" && i == 0)
+					{
+						count++;
+						std::string refineCount = "refine_" + i_to_str(count);
+						PolymerPtr polymer = ToPolymerPtr(molecule);
+						polymer->scaleFlexibilityToBFactor(16.0);
+						polymer->makePDB("refine_" + i_to_str(count) + ".pdb");
+						polymer->graph("graph_" + i_to_str(count));
+						crystals[0]->writeCalcMillersToFile(data, refineCount);
+						crystals[0]->realSpaceClutter();
+						crystals[0]->getDataInformation(data, propFo, propFc);
+					}
+
+				//	crystals[0]->changeAnchors(91);
 				}
 			}
 
@@ -119,11 +137,12 @@ void Options::run()
 				}
 
 
+				std::string refineCount = "refine_" + i_to_str(count);
 				crystals[0]->realSpaceClutter();
 				crystals[0]->getDataInformation(data, propFo, propFc);
 				crystals[0]->molecule(0)->makePDB("refine_" + i_to_str(count) + ".pdb");
 				crystals[0]->molecule(0)->graph("graph_" + i_to_str(count));
-				crystals[0]->writeCalcMillersToFile(data, 1.0);
+				crystals[0]->writeCalcMillersToFile(data, refineCount);
 				crystals[0]->realSpaceClutter();
 				crystals[0]->getDataInformation(data, propFo, propFc);
 			}

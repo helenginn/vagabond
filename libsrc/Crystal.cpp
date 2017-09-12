@@ -109,7 +109,8 @@ void Crystal::realSpaceClutter()
 	_fft->createFFTWplan(8);
 }
 
-void Crystal::writeCalcMillersToFile(DiffractionPtr data, double resolution)
+void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix,
+									 double resolution)
 {
 	if (!_fft)
 	{
@@ -135,15 +136,15 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, double resolution)
 	double bLimit = bLength * dStar;
 	double cLimit = cLength * dStar;
 
-	std::string fc = _filename + "_fc.vbond.pha";
+	std::string fc = prefix + "_" + _filename + "_fc.vbond.pha";
 	std::ofstream fcFile;
 	fcFile.open(fc);
 
-	std::string fofc = _filename + "_fofc.vbond.pha";
+	std::string fofc = prefix + "_" + _filename + "_fofc.vbond.pha";
 	std::ofstream fofcFile;
 	fofcFile.open(fofc);
 
-	std::string twofofc = _filename + "_2fofc.vbond.pha";
+	std::string twofofc = prefix + "_" + _filename + "_2fofc.vbond.pha";
 	std::ofstream twofofcFile;
 	twofofcFile.open(twofofc);
 
@@ -462,6 +463,32 @@ void Crystal::tiedUpScattering()
 
 	std::cout << "Tied up " << tied << " electrons out of " << total << " (";
 	std::cout << 100. * sqrt(tied / total) << "%)." << std::endl;
+}
+
+void Crystal::setAnchors()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (molecule(i)->getClassName() == "Polymer")
+		{
+			PolymerPtr polymer = ToPolymerPtr(molecule(i));
+			polymer->setAnchor(34);
+		}
+	}
+}
+
+
+void Crystal::changeAnchors(int newAnchor)
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (molecule(i)->getClassName() == "Polymer")
+		{
+			PolymerPtr polymer = ToPolymerPtr(molecule(i));
+
+	//		polymer->changeAnchor(newAnchor);
+		}
+	}
 }
 
 Crystal::Crystal()

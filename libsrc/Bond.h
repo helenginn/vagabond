@@ -16,6 +16,7 @@
 #include "Distributor.h"
 #include <iostream>
 #include "Atom.h"
+#include "Sampler.h"
 #include "Model.h"
 
 typedef struct
@@ -43,13 +44,15 @@ typedef struct
 	bool _changedSamples;
 } BondGroup;
 
-class Bond : public Model
+class Bond : public Model, public Sampler
 {
 public:
 	Bond(AtomPtr major, AtomPtr minor, int group = 0);
 	Bond(Bond &other);
 	void activate(AtomGroupPtr group = AtomGroupPtr(),
 				  AtomPtr inherit = AtomPtr());
+	void setupSampling();
+	std::vector<AtomPtr> importantAtoms();
 
 	AtomPtr getMajor()
 	{
@@ -266,11 +269,6 @@ public:
 		_bondGroups[n].atoms[i].geomRatio = value;
 	}
 
-	void setAbsoluteInheritance(AtomPtr abs)
-	{
-		_absInherit = abs;
-	}
-
 	void setActiveGroup(int newGroup)
 	{
 		if (_activeGroup == newGroup)
@@ -312,7 +310,7 @@ public:
 		return _bondGroups[group].extraTorsionSamples.size();
 	}
 
-	double getMeanSquareDeviation(double target = -1);
+	double getMeanSquareDeviation(double target = -1, int index = -1);
 
 	AtomPtr extraTorsionSample(int group, int i)
 	{
@@ -407,9 +405,6 @@ private:
 	 * for drawing into a map... */
 	vec3 _absolute;
 
-	AbsolutePtr getAbsInheritance();
-
-	AtomPtr _absInherit;
 	FFTPtr _fftAbs;
 };
 

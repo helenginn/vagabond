@@ -32,7 +32,8 @@ public:
 	void tiedUpScattering(double *tied, double *all);
 	virtual void makePDB(std::string filename);
 	virtual void graph(std::string graphName) {};
-
+	void setAnchors();
+	
 	long int atomCount()
 	{
 		return atoms.size();
@@ -48,7 +49,7 @@ public:
 		return _chainID;
 	}
 
-	std::string className()
+	virtual std::string getClassName()
 	{
 		return "Molecule";
 	}

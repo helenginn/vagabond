@@ -30,6 +30,7 @@ public:
 
 	void tie();
 	void tieTowardsCTerminus();
+	void tieTowardsNTerminus();
 private:
 	SidechainPtr _sidechain;
 	BackbonePtr _backbone;

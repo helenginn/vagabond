@@ -73,6 +73,13 @@ void AtomGroup::setUseAbsolute()
 	}
 }
 
+void AtomGroup::addAtomsFrom(AtomGroupPtr child)
+{
+	for (int i = 0; i < child->atomCount(); i++)
+	{
+		addAtom(child->atom(i));
+	}
+}
 
 AtomGroup::AtomGroup()
 {

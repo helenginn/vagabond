@@ -75,11 +75,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				{
 					if (scoreType == ScoreTypeModelRMSDZero)
 					{
-				//		Bond::setDampening(&*bond, 0.2);
 						setupGrid();
 						addMagicAxisBroad(bond);
+						setSilent();
 						setJobName("broad_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
-						addSampledCAs(getPolymer(), resNum, resNum + 24);
+						addSampledBackbone(getPolymer(), resNum, resNum + 20);
 						setScoreType(scoreType);
 						sample();
 					}
@@ -99,10 +99,10 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 					}
 
 					setJobName("magic_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
-					addSampledCAs(getPolymer(), resNum, resNum + 24);
+					setSilent();
+					addSampledBackbone(getPolymer(), resNum, resNum + 20);
 					setScoreType(scoreType);
 					sample();
-				//	Bond::setDampening(&*bond, 0.02);
 
 					if (scoreType == ScoreTypeModelRMSD)
 					{
@@ -115,16 +115,21 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 					}
 
 					bond->resetAxis();
-
 				}
-/*
+
 				setupNelderMead();
 				setJobName("model_pos_" + bond->shortDesc());
 				addRamachandranAngles(getPolymer(), resNum, resNum + 3);
-				addSampledCAs(getPolymer(), resNum, resNum + 3);
+				addSampledBackbone(getPolymer(), resNum, resNum + 3);
+
+				//setupTorsionSet(bond, k, 4, resNum, deg2rad(4), deg2rad(0.2));
+				//setJobName("model_pos_" + i_to_str(resNum) + "_" + bond->shortDesc());
 				setScoreType(ScoreTypeModelPos);
 				sample();
-*/
+
+				std::cout << "Res " << resNum << " bond " << bond->shortDesc();
+				std::cout << " : bFactor " << bond->getMeanSquareDeviation();
+				std::cout << std::endl;
 			}
 
 			if (rType == RefinementModelRMSD)
@@ -163,4 +168,20 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 		}
 
 	}
+}
+
+AtomPtr Backbone::betaCarbonTorsionAtom()
+{
+	/* What is the major atom of the bond describing CA? */
+
+	AtomPtr ca = findAtom("CA");
+	ModelPtr model = ca->getModel();
+
+	if (model->getClassName() == "Bond")
+	{
+		BondPtr bond = ToBondPtr(model);
+		return bond->getMajor();
+	}
+
+	return AtomPtr();
 }

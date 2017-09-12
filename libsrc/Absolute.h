@@ -73,6 +73,10 @@ public:
 	{
 		_tensor = tensor;
 		_usingTensor = true;
+		double x = sqrt(tensor.vals[0]);
+		double y = sqrt(tensor.vals[4]);
+		double z = sqrt(tensor.vals[8]);
+		getAtom()->setInitialAnisoBs(x, y, z);
 	}
 
 	double getBFactor()

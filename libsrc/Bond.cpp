@@ -36,7 +36,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	_major = major;
 	_minor = minor;
 	_activeGroup = 0;
-	_dampening = 0.02;
+	_dampening = 0.05;
 	_bendBlur = 0;
 	_bondLength = 0;
 	_changedPos = true;
@@ -49,7 +49,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	aGroup.torsionAngle = 0;
 	aGroup.torsionBlur = 0.0;
 	aGroup.torsionVertBlur = 0.0;
-	aGroup.magicAxis = make_vec3(1, 0, 0);
+	aGroup.magicAxis = make_randomish_axis();
 	aGroup.hRot = 0;
 	aGroup.kRot = 0;
 	aGroup.occupancy = 1;
@@ -99,7 +99,6 @@ Bond::Bond(Bond &other)
 	_changedPos = true;
 	_changedSamples = true;
 	_bondDirection = other._bondDirection;
-	_absInherit = other._absInherit;
 	_heavyAlign = other._heavyAlign;
 	_lightAlign = other._lightAlign;
 }
@@ -166,7 +165,7 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group)
 		newGroup.torsionVertBlur = 0.0;
 		newGroup.hRot = 0;
 		newGroup.kRot = 0;
-		newGroup.magicAxis = make_vec3(1, 0, 0);
+		newGroup.magicAxis = make_randomish_axis();
 		newGroup.occupancy = 1;
 		newGroup._changedSamples = true;
 		_bondGroups.push_back(newGroup);
@@ -238,11 +237,6 @@ void Bond::activate(AtomGroupPtr group, AtomPtr inherit)
 	{
 		BondPtr myself = std::static_pointer_cast<Bond>(shared_from_this());
 		group->addBond(myself);
-	}
-
-	if (inherit)
-	{
-		setAbsoluteInheritance(inherit);
 	}
 
 	_activated = true;
@@ -352,7 +346,7 @@ std::string Bond::getPDBContribution()
 		stream << std::setw(8) << std::setprecision(3) << placement.y;
 		stream << std::setw(8) << std::setprecision(3) << placement.z;
 		stream << std::setw(6) << std::setprecision(2) << occupancy / double(tries);
-		stream << std::setw(6) << std::setprecision(2) << getAbsInheritance()->getBFactor();
+		stream << std::setw(6) << std::setprecision(2) << 0;
 		stream << "          ";
 		stream << std::setw(2) << element->getSymbol();
 		stream << "  " << std::endl;
@@ -555,6 +549,8 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 	vec3 nextPerfectPos = nextBond->getStaticPosition();
 	double nextRatio = getGeomRatio(_activeGroup, 0);
 
+	const bool useMagicAxis = true;
+
 	mat3x3 magicMat = getMagicMat();
 
 	for (int i = 0; i < prevs->size(); i++)
@@ -577,14 +573,11 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		vec3 nextPerfectVec = vec3_subtract_vec3(nextPerfectPos, myPerfectPos);
 		vec3 nextDifference = vec3_subtract_vec3(myPerfectPos, myCurrentPos);
 		mat3x3_mult_vec(magicMat, &nextDifference);
-		double notY = sqrt(nextDifference.x * nextDifference.x +
-						   nextDifference.z * nextDifference.z);
 		double notX = sqrt(nextDifference.y * nextDifference.y +
 						   nextDifference.z * nextDifference.z);
 		double notZ = sqrt(nextDifference.y * nextDifference.y +
 						   nextDifference.x * nextDifference.x);
 		double tanX = nextDifference.x / notX;
-		double tanY = nextDifference.y / notY;
 		double tanZ = nextDifference.z / notZ;
 
 		double xValue = sin(atan(tanX));
@@ -594,6 +587,11 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		if (xValue != xValue)
 		{
 			xValue = 0;
+		}
+
+		if (!useMagicAxis)
+		{
+			xValue = 1;
 		}
 
 		if (yValue != yValue)
@@ -622,14 +620,12 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		undoBlur *= xValue;
 		undoBlur *= _dampening;
 
-		if (_dampening < 0) undoBlur = 0;
+		if (_dampening <= 0) undoBlur = 0;
 
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;
 		addBlur *= yValue;
-		double addVertBlur = _bondGroups[_activeGroup].torsionBlur;
-		addVertBlur *= zValue;
 
-		double bigBlur = addBlur + addVertBlur;
+		double bigBlur = addBlur;
 		bigBlur *= -_dampening;
 		if (_dampening > 0) bigBlur = 0;
 
@@ -676,7 +672,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 
 	newSamples->clear();
 
-	if (model->getClassName() != "Bond")
+	if (model->getClassName() == "Absolute")
 	{
 		std::vector<BondSample> *absPos;
 		absPos = ToAbsolutePtr(model)->getManyPositions(style);
@@ -688,7 +684,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 		for (int i = 0; i < absPos->size(); i++)
 		{
 			vec3 majorPos = (*absPos)[i].start;
-			vec3 heavyPos = getHeavyAlign()->getPosition();
+			vec3 heavyPos = getHeavyAlign()->getInitialPosition();
 			vec3 none = {0, 0, 1};
 			vec3 actualMajor = getMajor()->getPosition();
 			vec3 halfDir = _bondDirection;
@@ -738,7 +734,11 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 	double torsionNumber = prevBond->downstreamAtomNum(getMinor(), &myGroup);
 
 	double totalAtoms = prevBond->downstreamAtomCount(myGroup);
-	prevBond->setActiveGroup(myGroup);
+
+	if (myGroup >= 0) // otherwise, might be next to anchor.
+	{
+		prevBond->setActiveGroup(myGroup);
+	}
 
 	vec3 nextPos, myMeanPos;
 	double nextRatio = 0;
@@ -1119,23 +1119,6 @@ void Bond::setOccupancy(void *object, double value)
 	static_cast<Bond *>(object)->propagateChange();
 }
 
-AbsolutePtr Bond::getAbsInheritance()
-{
-	ModelPtr absModel = _absInherit->getModel();
-
-	if (absModel->getClassName() == "Bond")
-	{
-		BondPtr bondModel = std::static_pointer_cast<Bond>(absModel);
-		return bondModel->getAbsInheritance();
-	}
-	else if (absModel->getClassName() == "Absolute")
-	{
-		return std::static_pointer_cast<Absolute>(absModel);
-	}
-
-	return AbsolutePtr();
-}
-
 std::string Bond::shortDesc()
 {
 	std::ostringstream stream;
@@ -1143,7 +1126,7 @@ std::string Bond::shortDesc()
 	return stream.str();
 }
 
-double Bond::getMeanSquareDeviation(double target)
+double Bond::getMeanSquareDeviation(double target, int index)
 {
 	double targMult = 3;
 	target /= 8 * M_PI * M_PI;
@@ -1193,5 +1176,55 @@ double Bond::getMeanSquareDeviation(double target)
 		score /= targMult;
 	}
 
+	if (index >= 0)
+	{
+		double val = 0;
+		switch (index) {
+			case 0:
+				val = meanX;
+				break;
+			case 1:
+				val = meanY;
+				break;
+			case 2:
+				val = meanZ;
+				break;
+			default:
+				break;
+		}
+
+		val *= 8 * M_PI * M_PI;
+		return val;
+	}
+
 	return score;
+}
+
+std::vector<AtomPtr> Bond::importantAtoms()
+{
+	std::vector<AtomPtr> atoms;
+
+	for (int i = 0; i < downstreamAtomCount(_activeGroup); i++)
+	{
+		atoms.push_back(downstreamAtom(_activeGroup, i));
+	}
+
+	for (int i = 0; i < extraTorsionSampleCount(_activeGroup); i++)
+	{
+		atoms.push_back(extraTorsionSample(_activeGroup, i));
+	}
+
+	return atoms;
+}
+
+void Bond::setupSampling()
+{
+	setupGrid();
+	ModelPtr model = shared_from_this();
+	BondPtr bond = std::static_pointer_cast<Bond>(model);
+	setJobName("bond_" + shortDesc());
+	setSilent(true);
+
+	addTorsion(bond, deg2rad(5), deg2rad(0.4));
+	addSampled(importantAtoms());
 }

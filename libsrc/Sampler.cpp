@@ -9,6 +9,7 @@
 #include "Sampler.h"
 #include "RefinementGridSearch.h"
 #include "RefinementNelderMead.h"
+#include "RefinementSnake.h"
 #include "Bond.h"
 #include "Atom.h"
 #include "Crystal.h"
@@ -30,8 +31,12 @@ Sampler::Sampler()
 void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 								 double range, double interval, bool addDampen)
 {
+/*
+	setupSnake();
+	RefinementSnakePtr snake = std::static_pointer_cast<RefinementSnake>(_strategy);
+	*/
+
 	bond->setActiveGroup(k);
-	bond->setBlocked(true);
 
 	reportInDegrees();
 	setScoreType(ScoreTypeCorrel);
@@ -60,6 +65,11 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 		addSampled(bond->extraTorsionSample(k, j));
 	}
 
+/*
+	snake->addBond(bond);
+	addSampled(bond->importantAtoms());
+*/
+
 	for (int i = 0; i < bondNum; i++)
 	{
 		if (!bond->downstreamAtomGroupCount() || !bond->downstreamAtomCount(0) ||
@@ -79,10 +89,12 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 				!nextBond->isUsingTorsion()))
 		{
 			trial++;
+
 			if (trial >= totalAtoms)
 			{
 				break;
 			}
+
 			nextAtom = bond->downstreamAtom(k, trial);
 			nextBond = std::static_pointer_cast<Bond>(nextAtom->getModel());
 		}
@@ -92,6 +104,7 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 			if (nextBond->isUsingTorsion() && !nextBond->isFixed()
 				&& nextBond->isNotJustForHydrogens())
 			{
+
 				if (!addDampen)
 				{
 					addTorsion(nextBond, deg2rad(range), deg2rad(interval));
@@ -111,6 +124,10 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 				{
 					addSampled(nextBond->extraTorsionSample(0, j));
 				}
+/*
+				addSampled(nextBond->importantAtoms());
+				snake->addBond(nextBond);
+ */
 			}
 		}
 
@@ -121,8 +138,15 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 
 		bond = nextBond;
 	}
+
 }
 
+void Sampler::setupSnake()
+{
+	_strategy = RefinementStrategyPtr(new RefinementSnake());
+	RefinementSnakePtr snake = std::static_pointer_cast<RefinementSnake>(_strategy);
+	snake->setParentSampler(this);
+}
 
 void Sampler::setupGrid()
 {
@@ -136,6 +160,12 @@ void Sampler::setupNelderMead()
 	_strategy->setEvaluationFunction(Sampler::score, this);
 	_strategy->setCycles(20);
 
+}
+
+void Sampler::addOverallKickAndDampen(PolymerPtr polymer)
+{
+	_strategy->addParameter(&*polymer, Polymer::getInitialKick, Polymer::setInitialKick, 0.10, 0.002, "kick");
+	_strategy->addParameter(&*polymer, Polymer::getConstantDampening, Polymer::setConstantDampening, 0.05, 0.02, "dampen");
 }
 
 void Sampler::addOccupancy(BondPtr bond, double range, double interval)
@@ -157,44 +187,37 @@ void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
 			continue;
 		}
 
+		reportInDegrees();
 		BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
 		AtomPtr ca = backbone->findAtom("CA");
-		AtomPtr n = backbone->findAtom("C");
+		AtomPtr n = backbone->findAtom("N");
+		AtomPtr c = backbone->findAtom("C");
+		std::vector<AtomPtr> atoms;
 
-		if (ca)
+		BondPtr caBond = ToBondPtr(ca->getModel());
+		addTorsion(caBond, deg2rad(0.2), deg2rad(0.05));
+
+		BondPtr cBond = ToBondPtr(n->getModel());
+		addTorsion(cBond, deg2rad(0.2), deg2rad(0.05));
+
+		if (caBond->getParentModel()->getClassName() == "Absolute")
 		{
-			if (ca->getModel()->getClassName() != "Bond")
-			{
-				continue;
-			}
-
-			BondPtr caBond = ToBondPtr(ca->getModel());
-			addTorsion(caBond, deg2rad(0.2), deg2rad(0.05));
-
-			if (caBond->getParentModel()->getClassName() == "Absolute")
-			{
-				AbsolutePtr abs = ToAbsolutePtr(caBond->getParentModel());
-				addAbsolutePosition(abs, 0.02, 0.01);
-			}
-
-
+			AbsolutePtr abs = ToAbsolutePtr(caBond->getParentModel());
+			addAbsolutePosition(abs, 0.02, 0.01);
 		}
 
-		if (n)
-		{
-			if (n->getModel()->getClassName() != "Bond")
-			{
-				continue;
-			}
-
-			BondPtr nBond = ToBondPtr(n->getModel());
-			addTorsion(nBond, deg2rad(0.2), deg2rad(0.05));
-		}
+		BondPtr nBond = ToBondPtr(n->getModel());
+		addTorsion(nBond, deg2rad(0.2), deg2rad(0.05));
 	}
 }
 
 void Sampler::addTorsion(BondPtr bond, double range, double interval)
 {
+	if (!bond || bond->getClassName() != "Bond")
+	{
+		return;
+	}
+
 //	double number = fabs(range / interval);
 	std::string num = i_to_str(_strategy->parameterCount() + 1);
 	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
@@ -319,8 +342,14 @@ void Sampler::addAbsoluteBFactor(AbsolutePtr abs, double range, double interval)
 							range, interval, "bfactor");
 }
 
-void Sampler::addSampledCAs(PolymerPtr polymer, int from, int to)
+void Sampler::addSampledBackbone(PolymerPtr polymer, int from, int to)
 {
+	if (from == 0 && to == 0)
+	{
+		from = 0;
+		to = polymer->monomerCount();
+	}
+
 	for (int i = from; i < to; i++)
 	{
 		if (!polymer->getMonomer(i))
@@ -329,12 +358,23 @@ void Sampler::addSampledCAs(PolymerPtr polymer, int from, int to)
 		}
 
 		BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
+		SidechainPtr sidechain = polymer->getMonomer(i)->getSidechain();
 		AtomPtr ca = backbone->findAtom("CA");
 		addSampled(ca);
+		AtomPtr cb = sidechain->findAtom("CB");
+		addSampled(cb);
 		AtomPtr c = backbone->findAtom("C");
 		addSampled(c);
 		AtomPtr n = backbone->findAtom("N");
 		addSampled(n);
+	}
+}
+
+void Sampler::addSampled(std::vector<AtomPtr> atoms)
+{
+	for (int i = 0; i < atoms.size(); i++)
+	{
+		addSampled(atoms[i]);
 	}
 }
 
@@ -384,7 +424,7 @@ void Sampler::setCrystal(CrystalPtr crystal)
 	_fft = crystal->getFFT();
 }
 
-void Sampler::sample()
+double Sampler::sample(bool clear)
 {
 	if (_mock)
 	{
@@ -394,7 +434,7 @@ void Sampler::sample()
 
 	if (_scoreType == ScoreTypeModelPos)
 	{
-		_strategy->setCycles(50);
+		_strategy->setCycles(30);
 	}
 
 	if (sampleSize())
@@ -403,8 +443,14 @@ void Sampler::sample()
 		_strategy->refine();
 	}
 
+	double value = getScore();
+
 	_scoreType = ScoreTypeCorrel;
-	_strategy = RefinementStrategyPtr();
+
+	if (clear)
+	{
+		_strategy = RefinementStrategyPtr();
+	}
 
 	for (int i = 0; i < _bonds.size(); i++)
 	{
@@ -415,6 +461,8 @@ void Sampler::sample()
 	_sampled.clear();
 	_unsampled.clear();
 	_joint = false;
+
+	return value;
 }
 
 double Sampler::getScore()
@@ -424,7 +472,9 @@ double Sampler::getScore()
 		return 0;
 	}
 
-	if (_scoreType == ScoreTypeModelRMSD || _scoreType == ScoreTypeModelRMSDZero)
+	if (_scoreType == ScoreTypeModelRMSD
+		|| _scoreType == ScoreTypeModelOverallB
+		|| _scoreType == ScoreTypeModelRMSDZero)
 	{
 		double score = 0;
 		double count = 0;
@@ -443,7 +493,11 @@ double Sampler::getScore()
 
 			if (_scoreType == ScoreTypeModelRMSD)
 			{
-				target = 0;//_sampled[i]->getInitialBFactor();
+				target = _sampled[i]->getInitialBFactor();
+			}
+			else if (_scoreType == ScoreTypeModelOverallB)
+			{
+				target = _overallB;
 			}
 
 			double rmsdScore = bond->getMeanSquareDeviation(target);
@@ -477,25 +531,43 @@ double Sampler::getScore()
 
 	std::vector<double> xs, ys;
 
-	double n = 60;
+	_sampled[0]->getModel()->getDistribution();
+	vec3 zero = _sampled[0]->getModel()->getAbsolutePosition();
+	double maxDistance = 0;
+
+	for (int i = 1; i < _sampled.size(); i++)
+	{
+		/* Refresh absolute position */
+		_sampled[i]->getModel()->getDistribution();
+		vec3 offset = _sampled[i]->getModel()->getAbsolutePosition();
+
+		vec3 diff = vec3_subtract_vec3(offset, zero);
+		double distance = vec3_length(diff);
+
+		if (distance > maxDistance)
+		{
+			maxDistance = distance;
+		}
+	}
+
 	double scales = 0.33;
+	double n = (maxDistance + 1.0) / scales;
+	n = 60;
+
 	FFTPtr segment = FFTPtr(new FFT());
-	segment->create(n);
+	segment->create(n + 0.5);
 	segment->setScales(scales);
 	mat3x3 basis = make_mat3x3();
 	double toReal = 1/(scales*n);
 	mat3x3_scale(&basis, toReal, toReal, toReal);
 
-	_sampled[0]->getModel()->getDistribution();
-	vec3 offset = _sampled[0]->getModel()->getAbsolutePosition();
-
 	for (int i = 0; i < _sampled.size(); i++)
 	{
-		_sampled[i]->addToMap(segment, basis, offset);
+		_sampled[i]->addToMap(segment, basis, zero);
 	}
 
-	mat3x3_mult_vec(_real2hkl, &offset);
-	double cutoff = FFT::score(_fft, segment, offset, &xs, &ys);
+	mat3x3_mult_vec(_real2hkl, &zero);
+	double cutoff = FFT::score(_fft, segment, zero, &xs, &ys);
 
 	if (_scoreType == ScoreTypeCorrel)
 	{
@@ -512,4 +584,12 @@ double Sampler::getScore()
 		double mult = weightedMapScore(xs, ys);
 		return -mult;
 	}
+}
+
+std::vector<double> Sampler::getNextResult(int num)
+{
+	RefinementGridSearchPtr grid;
+	grid = std::static_pointer_cast<RefinementGridSearch>(_strategy);
+
+	return grid->getNextResult(num);
 }

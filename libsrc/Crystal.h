@@ -64,9 +64,11 @@ public:
 		return _fft;
 	}
 
+	void setAnchors();
+	void changeAnchors(int newAnchor);
 	void tiedUpScattering();
 	void realSpaceClutter();
-	void writeCalcMillersToFile(DiffractionPtr data,
+	void writeCalcMillersToFile(DiffractionPtr data, std::string prefix = "",
 								double resolution = HARD_CODED_RESOLUTION);
 
 	void fourierTransform(int dir)

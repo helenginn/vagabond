@@ -17,6 +17,7 @@
 #include "Bond.h"
 #include "CSV.h"
 #include <fstream>
+#include "FileReader.h"
 
 void Polymer::addMonomer(MonomerPtr monomer)
 {
@@ -30,7 +31,15 @@ void Polymer::addMonomer(MonomerPtr monomer)
 
 void Polymer::tieAtomsUp()
 {
-	for (int i = 0; i < monomerCount(); i++)
+	for (int i = _anchorNum - 1; i < monomerCount(); i++)
+	{
+		if (getMonomer(i))
+		{
+			getMonomer(i)->tieAtomsUp();
+		}
+	}
+
+	for (int i = _anchorNum - 2; i >= 0; i--)
 	{
 		if (getMonomer(i))
 		{
@@ -46,34 +55,45 @@ void Polymer::summary()
 
 }
 
+void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
+							RefinementType rType)
+{
+	if (!monomer)
+	{
+		return;
+	}
+
+	BackbonePtr backbone = monomer->getBackbone();
+
+	if (backbone)
+	{
+		backbone->refine(target, rType);
+	}
+
+
+	SidechainPtr victim = monomer->getSidechain();
+
+	if (victim && victim->canRefine())
+	{
+		victim->refine(target, rType);
+	}
+}
+
 void Polymer::refine(CrystalPtr target, RefinementType rType)
 {
 	time_t wall_start;
 	time(&wall_start);
 
-	for (int i = 0; i < monomerCount(); i++)
+	for (int i = _anchorNum - 2; i >= 0; i--)
 	{
 		MonomerPtr monomer = getMonomer(i);
+		refineMonomer(monomer, target, rType);
+	}
 
-		if (!monomer)
-		{
-			continue;
-		}
-
-		BackbonePtr backbone = monomer->getBackbone();
-
-		if (backbone)
-		{
-			backbone->refine(target, rType);
-		}
-
-
-		SidechainPtr victim = monomer->getSidechain();
-
-		if (victim && victim->canRefine())
-		{
-			victim->refine(target, rType);
-		}
+	for (int i = _anchorNum - 1; i < monomerCount(); i++)
+	{
+		MonomerPtr monomer = getMonomer(i);
+		refineMonomer(monomer, target, rType);
 	}
 
 	shout_timer(wall_start, "refinement");
@@ -107,7 +127,8 @@ void Polymer::makePDB(std::string filename)
 
 void Polymer::graph(std::string graphName)
 {
-	CSVPtr csv = CSVPtr(new CSV(3, "resnum", "newB", "oldB"));
+	CSVPtr csv = CSVPtr(new CSV(9, "resnum", "newB", "oldB", "oldX", "oldY", "oldZ",
+								"newX", "newY", "newZ"));
 	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 
@@ -134,7 +155,15 @@ void Polymer::graph(std::string graphName)
 		{
 			BondPtr caBond = std::static_pointer_cast<Bond>(caModel);
 			double meanSq = caBond->getMeanSquareDeviation();
-			csv->addEntry(3, value, meanSq, ca->getInitialBFactor());
+			double newX = caBond->getMeanSquareDeviation(-1, 0);
+			double newY = caBond->getMeanSquareDeviation(-1, 1);
+			double newZ = caBond->getMeanSquareDeviation(-1, 2);
+			double oldX = ca->getInitialAnisoB(0);
+			double oldY = ca->getInitialAnisoB(1);
+			double oldZ = ca->getInitialAnisoB(2);
+
+			csv->addEntry(9, value, meanSq, ca->getInitialBFactor(),
+						  oldX, oldY, oldZ, newX, newY, newZ);
 			caDampen = Bond::getDampening(&*caBond);
 			caBlur = Bond::getTorsionBlur(&*caBond);
 
@@ -142,7 +171,12 @@ void Polymer::graph(std::string graphName)
 		}
 		else
 		{
-			csv->addEntry(3, value, ca->getInitialBFactor(), ca->getInitialBFactor());
+			double oldX = ca->getInitialAnisoB(0);
+			double oldY = ca->getInitialAnisoB(1);
+			double oldZ = ca->getInitialAnisoB(2);
+
+			csv->addEntry(9, value, ca->getInitialBFactor(), ca->getInitialBFactor(),
+						  oldX, oldY, oldZ, oldX, oldY, oldZ);
 		}
 
 		if (cModel->getClassName() == "Bond")
@@ -188,6 +222,47 @@ void Polymer::graph(std::string graphName)
 
 	csv->plotPNG(plotMap);
 
+	{
+		std::map<std::string, std::string> plotMap;
+		plotMap["height"] = "700";
+		plotMap["width"] = "1200";
+		plotMap["xHeader0"] = "resnum";
+		plotMap["xHeader1"] = "resnum";
+		plotMap["colour0"] = "black";
+		plotMap["colour1"] = "red";
+		plotMap["yMin0"] = "0";
+		plotMap["yMin1"] = "0";
+		plotMap["yMax0"] = "40";
+		plotMap["yMax1"] = "40";
+
+		plotMap["xTitle0"] = "Residue number";
+		plotMap["style0"] = "line";
+		plotMap["style1"] = "line";
+
+
+		plotMap["filename"] = "aniso_x_" + graphName;
+		plotMap["yHeader0"] = "newX";
+		plotMap["yHeader1"] = "oldX";
+		plotMap["yTitle0"] = "Aniso Bx factor";
+
+		csv->plotPNG(plotMap);
+
+		plotMap["filename"] = "aniso_y_" + graphName;
+		plotMap["yHeader0"] = "newY";
+		plotMap["yHeader1"] = "oldY";
+		plotMap["yTitle0"] = "Aniso By factor";
+
+		csv->plotPNG(plotMap);
+
+		plotMap["filename"] = "aniso_z_" + graphName;
+		plotMap["yHeader0"] = "newZ";
+		plotMap["yHeader1"] = "oldZ";
+		plotMap["yTitle0"] = "Aniso Bz factor";
+
+		csv->plotPNG(plotMap);
+}
+
+
 	plotMap["filename"] = "dampening_" + graphName;
 	plotMap["yHeader0"] = "dN-CA";
 	plotMap["xHeader1"] = "resnum";
@@ -221,3 +296,88 @@ void Polymer::graph(std::string graphName)
 	csvBlur->plotPNG(plotMap);
 }
 
+double Polymer::getConstantDampening(void *object)
+{
+	return static_cast<Polymer *>(object)->_dampening;
+}
+
+void Polymer::setConstantDampening(void *object, double value)
+{
+	Polymer *polymer = static_cast<Polymer *>(object);
+	polymer->_dampening = value;
+
+	for (int i = 0; i < polymer->monomerCount(); i++)
+	{
+		if (polymer->getMonomer(i))
+		{
+			polymer->getMonomer(i)->setConstantDampening(value);
+		}
+	}
+}
+
+void Polymer::changeAnchor(int num)
+{
+	int oldAnchor = _anchorNum;
+
+	MonomerPtr newMono = getMonomer(num);
+
+	if (!newMono)
+	{
+		shout_at_helen("Monomer " + i_to_str(num) + " doesn't exist.");
+		return;
+	}
+
+	AtomPtr newAnchorAtom = newMono->getBackbone()->findAtom("CA");
+
+	if (!newAnchorAtom)
+	{
+		shout_at_helen("Anchor position CA does not exist\n"\
+					   "for residue " + i_to_str(num));
+	}
+
+	/* Tasks:
+	 * - convert old anchor to a normal bond
+	 * (should be in direction of tying - polarity of (oldAnchor - newAnchor)
+	 * - convert old bond to a new anchor
+	 * - write the reversal
+	 */
+
+	for (int i = oldAnchor; i < num; i++)
+	{
+		MonomerPtr monomer = getMonomer(i);
+
+		if (monomer)
+		{
+			BackbonePtr backbone = monomer->getBackbone();
+	//		backbone->reverse();
+		}
+	}
+
+	_anchorNum = num;
+}
+
+void Polymer::setInitialKick(void *object, double value)
+{
+	Polymer *polymer = static_cast<Polymer *>(object);
+	int monomerNum = polymer->_anchorNum - 1;
+	polymer->getMonomer(monomerNum)->setKick(value, 0);
+	polymer->getMonomer(monomerNum - 1)->setKick(value, 1);
+}
+
+double Polymer::getInitialKick(void *object)
+{
+	Polymer *polymer = static_cast<Polymer *>(object);
+	int monomerNum = polymer->_anchorNum - 1;
+	return polymer->getMonomer(monomerNum)->getKick();
+}
+
+void Polymer::scaleFlexibilityToBFactor(double value)
+{
+	setupNelderMead();
+	setScoreType(ScoreTypeModelOverallB);
+	setOverallBFactor(value);
+	addOverallKickAndDampen(shared_from_this());
+	addSampledBackbone(shared_from_this());
+	setJobName("kick_and_dampen");
+	sample();
+}

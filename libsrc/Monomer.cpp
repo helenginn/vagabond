@@ -13,6 +13,8 @@
 #include "Knotter.h"
 #include "Bond.h"
 #include "shared_ptrs.h"
+#include "Polymer.h"
+#include "Shouter.h"
 
 Monomer::Monomer()
 {
@@ -57,35 +59,87 @@ void Monomer::addAtom(AtomPtr atom)
 	}
 }
 
+void Monomer::setKick(double value, bool beforeAnchor)
+{
+	AtomPtr atom;
+
+	if (beforeAnchor)
+	{
+		atom = getBackbone()->findAtom("C");
+	}
+	else
+	{
+		atom = getBackbone()->findAtom("CA");
+	}
+
+	ModelPtr model = atom->getModel();
+	if (model->getClassName() != "Bond")
+	{
+		shout_at_helen("Can't kick something that\n isn't a bond!");
+	}
+
+	BondPtr bond = ToBondPtr(model);
+
+	Bond::setTorsionBlur(&*bond, value);
+}
+
+double Monomer::getKick()
+{
+	AtomPtr ca = getBackbone()->findAtom("CA");
+	ModelPtr model = ca->getModel();
+	if (model->getClassName() != "Bond")
+	{
+		shout_at_helen("Can't kick something that\n isn't a bond!");
+	}
+
+	BondPtr bond = ToBondPtr(model);
+	
+	return Bond::getTorsionBlur(&*bond);
+}
 
 void Monomer::tieAtomsUp()
 {
 	KnotterPtr knotter = KnotterPtr(new Knotter());
 
-	const int start = 34;
+	const int start = getPolymer()->getAnchor();
 
-	if (getResidueNum() >= start && getResidueNum() <= 124)
+	knotter->setBackbone(_backbone);
+
+	if (getResidueNum() >= start)
 	{
-		bool useAbsolute = (getResidueNum() < start + 10);
-
-		if (useAbsolute)
-		{
-			getBackbone()->setUseAbsolute();
-			getSidechain()->setUseAbsolute();
-		}
-
-		knotter->setBackbone(_backbone);
 		knotter->tieTowardsCTerminus();
-		knotter->setSidechain(_sidechain);
-		knotter->tie();
+	}
+	else
+	{
+		knotter->tieTowardsNTerminus();
+	}
 
-		if (getResidueNum() == start)
+	knotter->setSidechain(_sidechain);
+	knotter->tie();
+
+	if (getResidueNum() == start)
+	{
+		BondPtr bond = ToBondPtr(getBackbone()->findAtom("CA")->getModel());
+		Bond::setTorsionBlur(&*bond, 0.10);
+	}
+	else if (getResidueNum() == start - 1)
+	{
+		BondPtr bond = ToBondPtr(getBackbone()->findAtom("C")->getModel());
+		Bond::setTorsionBlur(&*bond, 0.10);
+	}
+
+	_backbone->setTied();
+	_sidechain->setTied();
+}
+
+void Monomer::setConstantDampening(double value)
+{
+	for (int i = 0; i < modelCount(); i++)
+	{
+		if (model(i)->getClassName() == "Bond")
 		{
-			BondPtr bond = ToBondPtr(getBackbone()->findAtom("CA")->getModel());
-			Bond::setTorsionBlur(&*bond, 0.12);
+			BondPtr bond = ToBondPtr(model(i));
+			Bond::setDampening(&*bond, value);
 		}
-
-		_backbone->setTied();
-		_sidechain->setTied();
 	}
 }

@@ -36,7 +36,10 @@ public:
 		return _resNum;
 	}
 
+	AtomPtr betaCarbonTorsionAtom();
+
 	void refine(CrystalPtr target, RefinementType rType);
+	void reverse();
 private:
 	int _resNum;
 	PolymerWkr _myPolymer;

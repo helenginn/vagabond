@@ -12,18 +12,47 @@
 #include <stdio.h>
 #include "shared_ptrs.h"
 #include "Molecule.h"
+#include "Sampler.h"
 #include <vector>
 #include <map>
 
-class Polymer : public Molecule, public std::enable_shared_from_this<Polymer>
+class Polymer :
+public Molecule,
+public std::enable_shared_from_this<Polymer>,
+public Sampler
 {
 public:
+	Polymer()
+	{
+		_dampening = 0.05;
+		_anchorNum = 0;
+	}
+
 	void addMonomer(MonomerPtr monomer);
 	virtual void summary();
 	virtual void tieAtomsUp();
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	virtual void makePDB(std::string filename);
 	void graph(std::string graphName);
+
+	static double getConstantDampening(void *object);
+	static void setConstantDampening(void *object, double value);
+
+	static void setInitialKick(void *object, double value);
+	static double getInitialKick(void *object);
+
+	void scaleFlexibilityToBFactor(double value);
+
+	void changeAnchor(int num);
+	void setAnchor(int num)
+	{
+		_anchorNum = num;
+	}
+
+	int getAnchor()
+	{
+		return _anchorNum;
+	}
 
 	void addUnknownMonomers(int number)
 	{
@@ -43,13 +72,18 @@ public:
 		return _monomers.size();
 	}
 
-	std::string className()
+	virtual std::string getClassName()
 	{
 		return "Polymer";
 	}
 private:
+	void refineMonomer(MonomerPtr monomer, CrystalPtr target,
+					   RefinementType rType);
+
 	std::map<long, MonomerPtr> _monomers;
 
+	int _anchorNum;
+	double _dampening;
 };
 
 #endif /* defined(__vagabond__Polymer__) */
