@@ -195,6 +195,8 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group)
 			double oldAngle = _bondGroups[0].torsionAngle;
 			double increment = newAngle - oldAngle;
 
+			
+
 			portion = increment / (2 * M_PI);
 		}
 	}

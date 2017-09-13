@@ -119,11 +119,10 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 				setupNelderMead();
 				setJobName("model_pos_" + bond->shortDesc());
+
 				addRamachandranAngles(getPolymer(), resNum, resNum + 3);
 				addSampledBackbone(getPolymer(), resNum, resNum + 3);
 
-				//setupTorsionSet(bond, k, 4, resNum, deg2rad(4), deg2rad(0.2));
-				//setJobName("model_pos_" + i_to_str(resNum) + "_" + bond->shortDesc());
 				setScoreType(ScoreTypeModelPos);
 				sample();
 

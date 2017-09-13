@@ -93,7 +93,7 @@ void Options::run()
 
 			if (_numCycles > 0)
 			{
-				for (int i = 0; i < 2; i++)
+				for (int i = 0; i < 6; i++)
 				{
 					count++;
 					std::string refineCount = "refine_" + i_to_str(count);

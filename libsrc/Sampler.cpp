@@ -187,27 +187,36 @@ void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
 			continue;
 		}
 
+		std::string ramaAtom = "N";
+		std::string peptideAtom = "C";
+
+		if (polymer->getAnchor() >= polymer->getMonomer(i)->getResidueNum())
+		{
+			ramaAtom = "C";
+			peptideAtom = "N";
+		}
+
 		reportInDegrees();
 		BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
 		AtomPtr ca = backbone->findAtom("CA");
-		AtomPtr n = backbone->findAtom("N");
-		AtomPtr c = backbone->findAtom("C");
+		AtomPtr rama = backbone->findAtom(ramaAtom);
+		AtomPtr peptide = backbone->findAtom(peptideAtom);
 		std::vector<AtomPtr> atoms;
 
 		BondPtr caBond = ToBondPtr(ca->getModel());
 		addTorsion(caBond, deg2rad(0.2), deg2rad(0.05));
 
-		BondPtr cBond = ToBondPtr(n->getModel());
-		addTorsion(cBond, deg2rad(0.2), deg2rad(0.05));
+//		BondPtr ramaBond = ToBondPtr(rama->getModel());
+//		Bond::setTorsion(&*ramaBond, deg2rad(180));
+
+		BondPtr peptideBond = ToBondPtr(peptide->getModel());
+		addTorsion(peptideBond, deg2rad(0.2), deg2rad(0.05));
 
 		if (caBond->getParentModel()->getClassName() == "Absolute")
 		{
-			AbsolutePtr abs = ToAbsolutePtr(caBond->getParentModel());
-			addAbsolutePosition(abs, 0.02, 0.01);
+	//		AbsolutePtr abs = ToAbsolutePtr(caBond->getParentModel());
+	//		addAbsolutePosition(abs, 0.02, 0.01);
 		}
-
-		BondPtr nBond = ToBondPtr(n->getModel());
-		addTorsion(nBond, deg2rad(0.2), deg2rad(0.05));
 	}
 }
 
@@ -359,10 +368,22 @@ void Sampler::addSampledBackbone(PolymerPtr polymer, int from, int to)
 
 		BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
 		SidechainPtr sidechain = polymer->getMonomer(i)->getSidechain();
+
 		AtomPtr ca = backbone->findAtom("CA");
 		addSampled(ca);
 		AtomPtr cb = sidechain->findAtom("CB");
-		addSampled(cb);
+		if (polymer->getMonomer(i)->getIdentifier() == "pro")
+		{
+			addSampledAtoms(sidechain);
+		}
+		else
+		{
+			addSampled(cb);
+		}
+
+
+		AtomPtr o = backbone->findAtom("O");
+		addSampled(o);
 		AtomPtr c = backbone->findAtom("C");
 		addSampled(c);
 		AtomPtr n = backbone->findAtom("N");
@@ -521,7 +542,7 @@ double Sampler::getScore()
 			vec3 initialPos = _sampled[i]->getInitialPosition();
 
 			vec3 diff = vec3_subtract_vec3(bestPos, initialPos);
-			score += vec3_sqlength(diff);
+			score += vec3_length(diff);
 		}
 
 		score /= (double)sampleSize();
