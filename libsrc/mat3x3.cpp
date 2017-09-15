@@ -110,7 +110,9 @@ mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double 
 
 	double sinC = sin(deg2rad(gamma));
 
-	double volume = a * b * c * sqrt(1 - cosA * cosA - cosB * cosB - cosC * cosC + 2 * cosA * cosB * cosC);
+	double vol_bit = 1 - cosA * cosA - cosB * cosB - cosC * cosC;
+	vol_bit += 2 * cosA * cosB * cosC;
+	double volume = a * b * c * sqrt(vol_bit);
 
 	mat3x3 mat;
 	mat.vals[0] = a;
