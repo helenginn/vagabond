@@ -221,6 +221,7 @@ void Polymer::graph(std::string graphName)
 	plotMap["style1"] = "line";
 
 	csv->plotPNG(plotMap);
+	csv->writeToFile(graphName + ".csv");
 
 	{
 		std::map<std::string, std::string> plotMap;
