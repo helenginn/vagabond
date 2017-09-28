@@ -25,6 +25,8 @@
 
 #define ToBondPtr(a) (std::static_pointer_cast<Bond>((a)))
 #define ToAbsolutePtr(a) (std::static_pointer_cast<Absolute>((a)))
+#define ToAnchorPtr(a) (std::static_pointer_cast<Anchor>((a)))
+#define ToModelPtr(a) (std::static_pointer_cast<Model>((a)))
 #define ToPolymerPtr(a) (std::static_pointer_cast<Polymer>((a)))
 
 class FFT;
@@ -65,10 +67,13 @@ typedef std::shared_ptr<Element> ElementPtr;
 class Model;
 class Absolute;
 class Bond;
+class Anchor;
 
 typedef std::shared_ptr<Absolute> AbsolutePtr;
 typedef std::shared_ptr<Model> ModelPtr;
 typedef std::shared_ptr<Bond> BondPtr;
+typedef std::weak_ptr<Bond> BondWkr;
+typedef std::shared_ptr<Anchor> AnchorPtr;
 
 class Bucket;
 class BucketUniform;

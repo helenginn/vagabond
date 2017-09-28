@@ -56,10 +56,9 @@ std::string AtomGroup::getPDBContribution()
 {
 	std::ostringstream stream;
 
-	for (int i = 0; i < bondCount(); i++)
+	for (int i = 0; i < atomCount(); i++)
 	{
-		BondPtr aBond = bond(i);
-		stream << aBond->getPDBContribution();
+		stream << atom(i)->getPDBContribution();
 	}
 
 	return stream.str();

@@ -180,7 +180,9 @@ void Sampler::addOccupancy(BondPtr bond, double range, double interval)
 
 void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
 {
-	for (int i = from - 1; i < to - 1; i++)
+	int step = (from < to) ? 1 : -1;
+
+	for (int i = from - 1; i != to - 1; i += step)
 	{
 		if (!polymer->getMonomer(i))
 		{
@@ -204,19 +206,12 @@ void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
 		std::vector<AtomPtr> atoms;
 
 		BondPtr caBond = ToBondPtr(ca->getModel());
-		addTorsion(caBond, deg2rad(0.2), deg2rad(0.05));
+		addTorsion(caBond, deg2rad(2.0), deg2rad(0.05));
 
-//		BondPtr ramaBond = ToBondPtr(rama->getModel());
-//		Bond::setTorsion(&*ramaBond, deg2rad(180));
+		BondPtr ramaBond = ToBondPtr(rama->getModel());
 
 		BondPtr peptideBond = ToBondPtr(peptide->getModel());
-		addTorsion(peptideBond, deg2rad(0.2), deg2rad(0.05));
-
-		if (caBond->getParentModel()->getClassName() == "Absolute")
-		{
-	//		AbsolutePtr abs = ToAbsolutePtr(caBond->getParentModel());
-	//		addAbsolutePosition(abs, 0.02, 0.01);
-		}
+		addTorsion(peptideBond, deg2rad(2.0), deg2rad(0.05));
 	}
 }
 
@@ -227,11 +222,13 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 		return;
 	}
 
+	int resNum = bond->getMinor()->getMonomer()->getResidueNum();
+
 //	double number = fabs(range / interval);
 	std::string num = i_to_str(_strategy->parameterCount() + 1);
 	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
 							range, interval,
-							"t" + bond->shortDesc());
+							"t" + i_to_str(resNum) + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }
@@ -359,7 +356,9 @@ void Sampler::addSampledBackbone(PolymerPtr polymer, int from, int to)
 		to = polymer->monomerCount();
 	}
 
-	for (int i = from; i < to; i++)
+	int step = (from < to) ? 1 : -1;
+
+	for (int i = from; i != to; i += step)
 	{
 		if (!polymer->getMonomer(i))
 		{
@@ -539,7 +538,7 @@ double Sampler::getScore()
 			BondPtr bond = ToBondPtr(_sampled[i]->getModel());
 			bond->getDistribution();
 			vec3 bestPos = bond->getAbsolutePosition();
-			vec3 initialPos = _sampled[i]->getInitialPosition();
+			vec3 initialPos = _sampled[i]->getPDBPosition();
 
 			vec3 diff = vec3_subtract_vec3(bestPos, initialPos);
 			score += vec3_length(diff);

@@ -57,7 +57,7 @@ public:
 
 	BondPtr bond(int i)
 	{
-		return _bonds[i];
+		return _bonds[i].lock();
 	}
 
 	double totalElectrons();
@@ -83,7 +83,7 @@ protected:
 private:
 	MonomerWkr _monomer;
 
-	std::vector<BondPtr> _bonds;
+	std::vector<BondWkr> _bonds;
 	std::vector<AtomPtr> _atoms;
 
 	bool _beenTied;

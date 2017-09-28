@@ -486,7 +486,7 @@ void Crystal::changeAnchors(int newAnchor)
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
 
-	//		polymer->changeAnchor(newAnchor);
+			polymer->changeAnchor(newAnchor);
 		}
 	}
 }

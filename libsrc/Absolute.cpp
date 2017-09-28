@@ -17,6 +17,17 @@
 #include "Polymer.h"
 #include "maths.h"
 
+Absolute::Absolute()
+{
+	_position = make_vec3(0, 0, 0);
+	_bFactor = 0;
+	_element = "";
+	_occupancy = 1;
+	_hetatm = false;
+	_usingTensor = false;
+	_tensor = make_mat3x3();
+}
+
 Absolute::Absolute(vec3 pos, double bFac, std::string element, double occValue)
 {
 	_position = pos;
@@ -35,6 +46,7 @@ void Absolute::makeAtom()
 	myAtom->setModel(shared_from_this());
 	myAtom->setInitialPosition(_position);
 	myAtom->setInitialBFactor(_bFactor);
+	myAtom->setPDBPosition(_position);
 	myAtom->setAtomNum(_atomNum);
 	ElementPtr element = Element::getElement(_element);
 	myAtom->setElement(element);

@@ -80,6 +80,16 @@ public:
 		return _initialPosition;
 	}
 
+	vec3 getPDBPosition()
+	{
+		return _pdbPosition;
+	}
+
+	void setPDBPosition(vec3 pdbPos)
+	{
+		_pdbPosition = pdbPos;
+	}
+
 	double getInitialBFactor()
 	{
 		return _initialB;
@@ -123,6 +133,7 @@ public:
 	}
 
 	void setKeepModel();
+	std::string getPDBContribution();
 private:
 	ModelPtr _model;
 	ModelPtr _distModelOnly;
@@ -131,6 +142,7 @@ private:
 	MonomerWkr _monomer;
 	vec3 _initialPosition;
 	double _initialB;
+	vec3 _pdbPosition;
 	int _atomNum;
 	double _aniso[3];
 

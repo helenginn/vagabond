@@ -47,6 +47,8 @@ public:
 		return _myPolymer.lock();
 	}
 
+	void fixBackboneTorsions(AtomPtr betaTorsion);
+
 private:
 	bool _canRefine;
 	int _resNum;

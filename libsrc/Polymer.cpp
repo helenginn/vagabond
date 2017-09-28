@@ -295,6 +295,8 @@ void Polymer::graph(std::string graphName)
 	plotMap["yMax2"] = "0.5";
 
 	csvBlur->plotPNG(plotMap);
+
+	std::cout << "Written out " << graphName << std::endl;
 }
 
 double Polymer::getConstantDampening(void *object)
@@ -318,13 +320,15 @@ void Polymer::setConstantDampening(void *object, double value)
 
 void Polymer::changeAnchor(int num)
 {
+	resetInitialPositions();
+
 	int oldAnchor = _anchorNum;
 
-	MonomerPtr newMono = getMonomer(num);
+	MonomerPtr newMono = getMonomer(num - 1);
 
 	if (!newMono)
 	{
-		shout_at_helen("Monomer " + i_to_str(num) + " doesn't exist.");
+		shout_at_helen("Monomer " + i_to_str(num - 1) + " doesn't exist.");
 		return;
 	}
 
@@ -333,7 +337,7 @@ void Polymer::changeAnchor(int num)
 	if (!newAnchorAtom)
 	{
 		shout_at_helen("Anchor position CA does not exist\n"\
-					   "for residue " + i_to_str(num));
+					   "for residue " + i_to_str(num - 1));
 	}
 
 	/* Tasks:
@@ -343,15 +347,21 @@ void Polymer::changeAnchor(int num)
 	 * - write the reversal
 	 */
 
-	for (int i = oldAnchor; i < num; i++)
-	{
-		MonomerPtr monomer = getMonomer(i);
+	newMono->getBackbone()->setAnchor();
 
-		if (monomer)
+	int limit = (oldAnchor < num) ? 0 : monomerCount();
+	int step = (oldAnchor < num) ? -1 : 1;
+
+	for (int i = num - 1; i < limit; i += step)
+	{
+		if (!getMonomer(i))
 		{
-			BackbonePtr backbone = monomer->getBackbone();
-	//		backbone->reverse();
+			return;
 		}
+
+		BackbonePtr bone = getMonomer(i)->getBackbone();
+		AtomPtr betaCarbon = bone->betaCarbonTorsionAtom();
+		getMonomer(i)->getSidechain()->fixBackboneTorsions(betaCarbon);
 	}
 
 	_anchorNum = num;

@@ -74,6 +74,11 @@ double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell,
 	vec3 pos = getPosition();
 	mat3x3_mult_vec(unit_cell, &pos);
 
+	if (pos.x != pos.x)
+	{
+		return 0;
+	}
+
 	double score = FFT::score(fft, modelDist, pos, xs, ys);
 
 	return score;
@@ -106,6 +111,11 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool useNew)
 
 	pos = vec3_subtract_vec3(pos, offset);
 	mat3x3_mult_vec(unit_cell, &pos);
+
+	if (pos.x != pos.x)
+	{
+		return;
+	}
 
 	FFT::add(fft, modified, pos);
 }
@@ -166,4 +176,56 @@ std::string Atom::pdbLineBeginning(int i)
 void Atom::setKeepModel()
 {
 	_distModelOnly = _model;
+}
+
+
+std::string Atom::getPDBContribution()
+{
+	std::string atomName = getAtomName();
+	ElementPtr element = getElement();
+
+	int tries = 10;
+
+	if (element->getSymbol() == "H")
+	{
+		tries = 1;
+	}
+
+	std::ostringstream stream;
+	std::vector<BondSample> *positions = getModel()->getManyPositions(BondSampleThorough);
+
+	double skip = (double)positions->size() / 25.;
+
+	if (skip < 0) skip = 1;
+	const int side = 5;
+	int count = 0;
+
+	for (double i = 0; i < positions->size(); i+= 1)
+	{
+		int l = i / (side * side);
+		int k = (i - (l * side * side)) / side;
+		int h = (i - l * side * side - k * side);
+
+		if ((h + k) % 2 != 0 || (k + l) % 2 != 0 || (l + h) % 2 != 0)
+		{
+			continue;
+		}
+
+		vec3 placement = (*positions)[i].start;
+		double occupancy = (*positions)[i].occupancy;
+
+		stream << pdbLineBeginning(count);
+		stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.x;
+		stream << std::setw(8) << std::setprecision(3) << placement.y;
+		stream << std::setw(8) << std::setprecision(3) << placement.z;
+		stream << std::setw(6) << std::setprecision(2) << occupancy / double(tries);
+		stream << std::setw(6) << std::setprecision(2) << 0;
+		stream << "          ";
+		stream << std::setw(2) << element->getSymbol();
+		stream << "  " << std::endl;
+
+		count++;
+	}
+
+	return stream.str();
 }

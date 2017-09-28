@@ -22,6 +22,7 @@ public:
 	void setup();
 	void tieAtomsUp();
 	void setConstantDampening(double value);
+	bool isAfterAnchor();
 
 	void setIdentifier(std::string idString)
 	{

@@ -32,11 +32,17 @@ public:
 	void tiedUpScattering(double *tied, double *all);
 	virtual void makePDB(std::string filename);
 	virtual void graph(std::string graphName) {};
+	void resetInitialPositions();
 	void setAnchors();
 	
 	long int atomCount()
 	{
 		return atoms.size();
+	}
+
+	AtomPtr atom(int i)
+	{
+		return atoms[i];
 	}
 
 	void setChainID(std::string chain)

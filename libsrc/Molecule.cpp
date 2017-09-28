@@ -10,7 +10,7 @@
 #include "Molecule.h"
 #include "Atom.h"
 #include "Element.h"
-#include "Model.h"
+#include "Bond.h"
 #include <float.h>
 #include <iostream>
 #include "fftw3d.h"
@@ -73,5 +73,20 @@ void Molecule::tiedUpScattering(double *tied, double *all)
 
 	*tied += some;
 	*all += total;
+}
+
+void Molecule::resetInitialPositions()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		atom(i)->setInitialPosition(atom(i)->getPosition());
+
+		ModelPtr model = atom(i)->getModel();
+
+		if (model->isBond())
+		{
+			ToBondPtr(model)->resetBondDirection();
+		}
+	}
 }
 

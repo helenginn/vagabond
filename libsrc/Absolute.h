@@ -21,7 +21,7 @@ class Absolute : public Model
 {
 public:
 	Absolute(vec3 pos, double bFac, std::string element, double occValue);
-
+	Absolute();
 
 // Model virtual functions:
 	virtual std::vector<BondSample> *getManyPositions(BondSampleStyle style);
@@ -152,11 +152,22 @@ public:
 	{
 		return _atom;
 	}
+
+	void setNextAtom(AtomPtr atom)
+	{
+		_nextAtom = atom;
+	}
+
+	AtomPtr getNextAtom()
+	{
+		return _nextAtom.lock();
+	}
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 
 private:
 	AtomPtr _atom;
+    AtomWkr _nextAtom;
 	std::string _element;
 	double _occupancy;
 	std::string _chainID, _resName, _atomName;

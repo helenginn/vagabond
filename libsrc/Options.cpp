@@ -95,6 +95,7 @@ void Options::run()
 			{
 				for (int i = 0; i < 6; i++)
 				{
+
 					count++;
 					std::string refineCount = "refine_" + i_to_str(count);
 					molecule->refine(crystals[0], RefinementModelRMSD);
@@ -108,7 +109,7 @@ void Options::run()
 
 					if (molecule->getClassName() == "Polymer" && i == 0)
 					{
-						count++;
+                        count++;
 						std::string refineCount = "refine_" + i_to_str(count);
 						PolymerPtr polymer = ToPolymerPtr(molecule);
 						polymer->scaleFlexibilityToBFactor(16.0);
@@ -117,9 +118,16 @@ void Options::run()
 						crystals[0]->writeCalcMillersToFile(data, refineCount);
 						crystals[0]->realSpaceClutter();
 						crystals[0]->getDataInformation(data, propFo, propFc);
-					}
 
-				//	crystals[0]->changeAnchors(91);
+						crystals[0]->changeAnchors(91);
+						count++;
+						polymer->scaleFlexibilityToBFactor(16.0);
+						polymer->makePDB("refine_" + i_to_str(count) + ".pdb");
+						polymer->graph("graph_" + i_to_str(count));
+						crystals[0]->writeCalcMillersToFile(data, refineCount);
+						crystals[0]->realSpaceClutter();
+						crystals[0]->getDataInformation(data, propFo, propFc);
+					}
 				}
 			}
 

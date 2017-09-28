@@ -35,6 +35,8 @@ private:
 	SidechainPtr _sidechain;
 	BackbonePtr _backbone;
 
+	BondPtr tieBetaCarbon(AtomPtr torsionAtom);
+
 	void makeAlanine();
 	void makeGlycine();
 	void makeCysteine();

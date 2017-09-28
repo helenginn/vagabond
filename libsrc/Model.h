@@ -17,8 +17,8 @@
 typedef struct
 {
 	mat3x3 basis;
-	vec3 start;
-	vec3 old_start;
+	vec3 start;     /* position of last minor */
+	vec3 old_start; /* position of torsion-defining atom */
 	double torsion;
 	double occupancy;
 } BondSample;
@@ -42,11 +42,22 @@ public:
 	virtual void addToMolecule(MoleculePtr molecule);
 
 	virtual std::string getClassName() = 0;
+
+	/* Static position if no blurring factors applied (for bonds) */
 	virtual vec3 getStaticPosition() = 0;
+
+	/* Actual mean position of blurred positions (may not be same as static) */
 	virtual vec3 getAbsolutePosition() = 0;
+
+	/* Get blurred position array */
 	virtual std::vector<BondSample> *getManyPositions(BondSampleStyle style) = 0;
 
 	FFTPtr getZeroDistribution();
+
+	bool isBond()
+	{
+		return (getClassName() == "Bond");
+	}
 protected:
 	virtual void propagateChange();
 private:

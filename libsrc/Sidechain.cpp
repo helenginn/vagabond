@@ -97,7 +97,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 				}
 
 				setupNelderMead();
-				setupTorsionSet(bond, k, 5, resNum, deg2rad(0.2), deg2rad(0.01));
+				setupTorsionSet(bond, k, 5, resNum, deg2rad(1.0), deg2rad(0.01));
 				addSampledAtoms(shared_from_this());
 				setScoreType(ScoreTypeModelPos);
 				setJobName("model_pos_" + i_to_str(resNum) + "_" + bond->shortDesc());
@@ -130,5 +130,22 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 		}
 
+	}
+}
+
+void Sidechain::fixBackboneTorsions(AtomPtr betaTorsion)
+{
+	AtomPtr atom = findAtom("CB");
+
+	if (!atom)
+	{
+		return;
+	}
+
+	ModelPtr model = atom->getModel();
+
+	if (model->isBond())
+	{
+		ToBondPtr(model)->setTorsionAtoms(betaTorsion);
 	}
 }

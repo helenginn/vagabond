@@ -143,3 +143,11 @@ void Monomer::setConstantDampening(double value)
 		}
 	}
 }
+
+bool Monomer::isAfterAnchor()
+{
+	int anchor = getPolymer()->getAnchor();
+	bool after = (_residueNum >= anchor);
+
+	return after;
+}

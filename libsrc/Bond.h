@@ -53,6 +53,9 @@ public:
 				  AtomPtr inherit = AtomPtr());
 	void setupSampling();
 	std::vector<AtomPtr> importantAtoms();
+	ModelPtr reverse(BondPtr upstreamBond);
+	void reverseDownstreamAtoms(int group);
+	void resetBondDirection();
 
 	AtomPtr getMajor()
 	{
@@ -96,7 +99,8 @@ public:
 		return _bondGroups[group].torsionAngle;
 	}
 
-	void setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign);
+	void setTorsionAtoms(AtomPtr heavyAlign = AtomPtr(),
+						 AtomPtr lightAlign = AtomPtr());
 	virtual FFTPtr getDistribution();
 	virtual vec3 getStaticPosition();
 	std::vector<BondSample> *getManyPositions(BondSampleStyle style);
@@ -212,7 +216,7 @@ public:
 		_bendToAtom = bendToAtom;
 	}
 
-	void addDownstreamAtom(AtomPtr atom, int group);
+	void addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry = false);
 
 	int downstreamAtomCount(int group)
 	{

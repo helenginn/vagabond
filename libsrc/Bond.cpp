@@ -77,7 +77,12 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 
 	if (upModel->getClassName() == "Bond")
 	{
-		std::static_pointer_cast<Bond>(upModel)->addDownstreamAtom(minor, group);
+		ToBondPtr(upModel)->addDownstreamAtom(minor, group);
+	}
+
+	if (upModel->getClassName() == "Absolute" || upModel->getClassName() == "Anchor")
+	{
+		ToAbsolutePtr(upModel)->setNextAtom(minor);
 	}
 }
 
@@ -155,7 +160,7 @@ void Bond::deriveBondAngle(int group, int n)
 	}
 }
 
-void Bond::addDownstreamAtom(AtomPtr atom, int group)
+void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 {
 	while (_bondGroups.size() <= group)
 	{
@@ -195,8 +200,7 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group)
 			double oldAngle = _bondGroups[0].torsionAngle;
 			double increment = newAngle - oldAngle;
 
-			
-
+			/* To be replaced with what's downstream */
 			portion = increment / (2 * M_PI);
 		}
 	}
@@ -207,10 +211,95 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group)
 	newAtom.circlePortion = portion;
 	_bondGroups[group].atoms.push_back(newAtom);
 
+	if (skipGeometry)
+	{
+		return;
+	}
+
 	int totalAtoms = _bondGroups[group].atoms.size();
 	int totalGroups = downstreamAtomGroupCount();
 
 	deriveBondAngle(totalGroups - 1, totalAtoms - 1);
+
+	/* Replacement for upstream */
+	AtomPtr firstAtom = downstreamAtom(group, 0);
+
+	if (firstAtom && totalAtoms > 1)
+	{
+		if (atom->getElement()->electronCount() <= 1)
+		{
+			return;
+		}
+
+		if (firstAtom->getElement()->electronCount() <= 1)
+		{
+			return;
+		}
+
+		/* Geometry from minor, major, first, current atom (atom) */
+		/* Bond directions/dimensions akin to unit cell! */
+
+		AtomType central = getMinor()->getGeomType();
+		AtomType preceding = getMajor()->getGeomType();
+		AtomType firstType = downstreamAtom(group, 0)->getGeomType();
+		AtomType newType = atom->getGeomType();
+
+		GeomTable table = GeomTable::getGeomTable();
+		double angle_c = table.getBondAngle(preceding, central, firstType);
+		double angle_b = table.getBondAngle(preceding, central, newType);
+		double angle_a = table.getBondAngle(firstType, central, newType);
+		double length_a = table.getBondLength(central, preceding);
+		double length_b = table.getBondLength(central, firstType);
+		double length_c = table.getBondLength(central, newType);
+
+		if (angle_a < 0 || angle_b < 0 || angle_c < 0)
+		{
+		//	std::cout << "Angle problem!" << std::endl;
+			return;
+		}
+
+		mat3x3 bondcell = mat3x3_from_unit_cell(length_a, length_b, length_c,
+												rad2deg(angle_a), rad2deg(angle_b),
+												rad2deg(angle_c));
+		//mat3x3 inverse = mat3x3_inverse(bondcell);
+
+		vec3 xAxis = make_vec3(1, 0, 0);
+		vec3 newAtomAxis = make_vec3(0, 1, 0);
+		vec3 firstAtomAxis = make_vec3(0, 0, 1);
+		mat3x3_mult_vec(bondcell, &newAtomAxis);
+		mat3x3_mult_vec(bondcell, &firstAtomAxis);
+		mat3x3_mult_vec(bondcell, &xAxis);
+
+		double increment = 0;
+		mat3x3_closest_rot_mat(firstAtomAxis, newAtomAxis, xAxis, &increment);
+		portion = increment / (2 * M_PI);
+
+		double diff1 = fabs(portion - newAtom.circlePortion);
+		double diff2 = fabs(-portion - newAtom.circlePortion);
+
+		diff1 = std::min(diff1, fabs(diff1 - 1));
+		diff2 = std::min(diff2, fabs(diff2 - 1));
+
+		if (diff1 > diff2)
+		{
+			portion *= -1;
+		}
+
+		if ((portion - newAtom.circlePortion) > 0.5)
+		{
+			portion -= 1;
+		}
+		else if ((portion - newAtom.circlePortion) < -0.5)
+		{
+			portion += 1;
+		}
+
+		std::cout << shortDesc() << " first atom " << firstAtom->getAtomName()
+		<< " second atom " << atom->getAtomName() << std::endl;
+		
+		std::cout << " Replacing with portion " << portion << " compared to " << newAtom.circlePortion << std::endl;
+	}
+
 }
 
 void Bond::setMinor(AtomPtr newMinor)
@@ -291,8 +380,15 @@ mat3x3 Bond::makeTorsionBasis(vec3 hPos, vec3 maPos,
 
 void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
 {
-	_heavyAlign = heavyAlign;
-	_lightAlign = lightAlign;
+	//if (heavyAlign)
+	{
+		_heavyAlign = heavyAlign;
+	}
+
+	//if (lightAlign)
+	{
+		_lightAlign = lightAlign;
+	}
 
 	/* Make torsion basis.
 	 * Make any starting set of angles with correct Z axis. */
@@ -306,7 +402,7 @@ void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
 
 	_usingTorsion = true;
 }
-
+/*
 std::string Bond::getPDBContribution()
 {
 	AtomPtr atom = getMinor();
@@ -357,7 +453,7 @@ std::string Bond::getPDBContribution()
 	}
 
 	return stream.str();
-}
+}*/
 
 vec3 meanOfManyPositions(std::vector<BondSample> *positions)
 {
@@ -400,6 +496,11 @@ FFTPtr Bond::getDistribution()
 		occSum += occupancy;
 
 		vec3_mult(&relative, 1 / realLimits);
+
+		if (relative.x != relative.x)
+		{
+			continue;
+		}
 
 		fft->addToReal(relative.x, relative.y, relative.z, occupancy);
 	}
@@ -674,7 +775,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 
 	newSamples->clear();
 
-	if (model->getClassName() == "Absolute")
+	if (model->getClassName() == "Absolute" || model->getClassName() == "Anchor")
 	{
 		std::vector<BondSample> *absPos;
 		absPos = ToAbsolutePtr(model)->getManyPositions(style);
@@ -689,17 +790,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 			vec3 heavyPos = getHeavyAlign()->getInitialPosition();
 			vec3 none = {0, 0, 1};
 			vec3 actualMajor = getMajor()->getPosition();
-			vec3 halfDir = _bondDirection;
-			vec3_mult(&halfDir, 0.5);
-			vec3 midPoint = vec3_subtract_vec3(actualMajor, halfDir);
-
-			vec3 newDir = vec3_subtract_vec3(midPoint, majorPos);
-			vec3_mult(&newDir, 2.0);
-
-			vec3 start = vec3_add_vec3(majorPos, newDir);
-			start = vec3_subtract_vec3(majorPos, _bondDirection);
-
-
+			vec3 start = vec3_subtract_vec3(majorPos, _bondDirection);
 			vec3 perfectStart = vec3_subtract_vec3(actualMajor, _bondDirection);
 
 			mat3x3 newBasis = makeTorsionBasis(heavyPos, actualMajor, perfectStart, none);
@@ -764,8 +855,12 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 	double spread = staticAtom ? 0 : _bendBlur;
 	myBendings = sampleMyAngles(0, spread, monteCarlo);
 
+	double circlePortion = 0;
 	double circleAdd = 0;
-	double circlePortion = prevBond->getCirclePortion(myGroup, torsionNumber);
+	if (myGroup >= 0) // otherwise, might be next to anchor.
+	{
+		circlePortion = prevBond->getCirclePortion(myGroup, torsionNumber);
+	}
 
 	if (circlePortion > -9)
 	{
@@ -853,6 +948,11 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 										   myCurrentPos, none);
 
 		/* do the bendy thing */
+
+		if (myCurrentPos.x != myCurrentPos.x)
+		{
+	//		std::cout << "My current pos" << std::endl;
+		}
 
 		for (int j = 0; j < myBendings.size(); j++)
 		{
@@ -1219,6 +1319,23 @@ std::vector<AtomPtr> Bond::importantAtoms()
 	return atoms;
 }
 
+void Bond::resetBondDirection()
+{
+	vec3 majorPos = getMajor()->getPosition();
+	vec3 minorPos = getMinor()->getPosition();
+
+	if (getParentModel()->isBond())
+	{
+		ToBondPtr(getParentModel())->getDistribution();
+		majorPos = ToBondPtr(getParentModel())->getAbsolutePosition();
+		getDistribution();
+		minorPos = getAbsolutePosition();
+	}
+
+	_bondDirection = vec3_subtract_vec3(majorPos, minorPos);
+	vec3_set_length(&_bondDirection, _bondLength);
+}
+
 void Bond::setupSampling()
 {
 	setupGrid();
@@ -1229,4 +1346,58 @@ void Bond::setupSampling()
 
 	addTorsion(bond, deg2rad(5), deg2rad(0.4));
 	addSampled(importantAtoms());
+}
+
+void Bond::reverseDownstreamAtoms(int group)
+{
+	std::vector<AtomValue> newAtoms;
+	newAtoms.push_back(_bondGroups[group].atoms[0]);
+
+	for (int i = downstreamAtomCount(group) - 1; i > 0; i--)
+	{
+		newAtoms.push_back(_bondGroups[group].atoms[i]);
+	}
+
+	_bondGroups[group].atoms = newAtoms;
+}
+
+ModelPtr Bond::reverse(BondPtr upstreamBond)
+{
+	ModelPtr nextBond = getMajor()->getModel();
+	AtomPtr minor = getMinor();
+	AtomPtr major = getMajor();
+	setMinor(major);
+	setMajor(minor);
+
+	AtomPtr heavy = getHeavyAlign();
+	AtomPtr light = getLightAlign();
+	_heavyAlign = light;
+	_lightAlign = heavy;
+
+	vec3_mult(&_bondDirection, -1);
+
+	for (int i = 0; i < downstreamAtomGroupCount(); i++)
+	{
+		if (upstreamBond)
+		{
+			_bondGroups[i].atoms.erase(_bondGroups[i].atoms.begin());
+			upstreamBond->_bondGroups[i].atoms.clear();
+
+			// FIXME
+			upstreamBond->addDownstreamAtom(major, i);
+
+			for (int j = downstreamAtomCount(i) - 1; j >= 0; j--)
+			{
+				AtomPtr atom = downstreamAtom(i, j);
+				upstreamBond->addDownstreamAtom(atom, i);
+			}
+
+//			upstreamBond->reverseDownstreamAtoms(i);
+		}
+	}
+
+	setActiveGroup(0);
+	activate();
+
+	return nextBond;
 }

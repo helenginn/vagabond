@@ -12,6 +12,7 @@
 #include "Atom.h"
 #include "Absolute.h"
 #include "FileReader.h"
+#include "Anchor.h"
 
 void Backbone::refine(CrystalPtr target, RefinementType rType)
 {
@@ -70,39 +71,39 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 					break;
 				}
 
+				int magicStart = resNum;
+				int magicEnd = resNum + 20;
+
+				if (!getMonomer()->isAfterAnchor())
+				{
+					magicEnd = resNum - 20;
+				}
+
 				ScoreType scoreType = ScoreTypeModelRMSDZero;
 				for (int l = 0; l < 1; l++)
 				{
+					double oldDampening = Bond::getDampening(&*bond);
+					Bond::setDampening(&*bond, 0.2);
+
 					if (scoreType == ScoreTypeModelRMSDZero)
 					{
 						setupGrid();
 						addMagicAxisBroad(bond);
 						setSilent();
 						setJobName("broad_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
-						addSampledBackbone(getPolymer(), resNum, resNum + 20);
+						addSampledBackbone(getPolymer(), magicStart, magicEnd);
 						setScoreType(scoreType);
 						sample();
 					}
 
 					setupNelderMead();
-					addMagicAxis(bond, deg2rad(20.0), deg2rad(2.0));
-
-					if (scoreType == ScoreTypeModelRMSD)
-					{
-						if (majorAtom == "N")
-						{
-//							continue;
-						}
-
-						addDampening(bond, 0.1, 0.1);
-						addTorsionBlur(bond, 0.1, 0.1);
-					}
-
+					addMagicAxis(bond, deg2rad(10.0), deg2rad(2.0));
 					setJobName("magic_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
 					setSilent();
-					addSampledBackbone(getPolymer(), resNum, resNum + 20);
+					addSampledBackbone(getPolymer(), magicStart, magicEnd);
 					setScoreType(scoreType);
 					sample();
+					Bond::setDampening(&*bond, oldDampening);
 
 					if (scoreType == ScoreTypeModelRMSD)
 					{
@@ -118,10 +119,19 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				}
 
 				setupNelderMead();
-				setJobName("model_pos_" + bond->shortDesc());
+				setJobName("model_pos_" + i_to_str(resNum) + "_" + bond->shortDesc());
 
-				addRamachandranAngles(getPolymer(), resNum, resNum + 3);
-				addSampledBackbone(getPolymer(), resNum, resNum + 3);
+				if (getMonomer()->isAfterAnchor())
+				{
+					addRamachandranAngles(getPolymer(), resNum, resNum + 3);
+					addSampledBackbone(getPolymer(), resNum, resNum + 3);
+				}
+				else
+				{
+					addRamachandranAngles(getPolymer(), resNum, resNum - 3);
+					addSampledBackbone(getPolymer(), resNum, resNum - 3);
+				}
+
 
 				setScoreType(ScoreTypeModelPos);
 				sample();
@@ -183,4 +193,40 @@ AtomPtr Backbone::betaCarbonTorsionAtom()
 	}
 
 	return AtomPtr();
+}
+
+void Backbone::setAnchor()
+{
+	// the backbone N should become an anchor point
+	AtomPtr nitrogen = findAtom("N");
+	ModelPtr model = nitrogen->getModel();
+	BondPtr bond = ToBondPtr(model);
+	AtomPtr downstreamAtom = bond->downstreamAtom(0, 0);
+	ModelPtr nextModel = downstreamAtom->getModel();
+	BondPtr nextBond = ToBondPtr(nextModel);
+
+	AnchorPtr anchor = AnchorPtr(new Anchor(bond, nextBond));
+	ModelPtr modelAnchor = ToModelPtr(ToAbsolutePtr(anchor));
+
+	ModelPtr currentReversal = model;
+	BondPtr oldReversal = BondPtr();
+
+	while (currentReversal->getClassName() == "Bond")
+	{
+		BondPtr reverseBond = ToBondPtr(currentReversal);
+		currentReversal = reverseBond->reverse(oldReversal);
+		oldReversal = reverseBond;
+	}
+
+	std::cout << "Nitrogen atom " << nitrogen->getMonomer()->getResidueNum() << nitrogen->getAtomName() << std::endl;
+
+	nitrogen->setModel(modelAnchor);
+
+	if (currentReversal->getClassName() == "Absolute" ||
+		currentReversal->getClassName() == "Anchor")
+	{
+		AtomPtr atom = ToAbsolutePtr(currentReversal)->getNextAtom();
+
+		oldReversal->addDownstreamAtom(atom, 0);
+	}
 }
