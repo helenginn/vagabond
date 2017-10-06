@@ -218,7 +218,7 @@ std::string Atom::getPDBContribution()
 		stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.x;
 		stream << std::setw(8) << std::setprecision(3) << placement.y;
 		stream << std::setw(8) << std::setprecision(3) << placement.z;
-		stream << std::setw(6) << std::setprecision(2) << occupancy / double(tries);
+		stream << std::setw(6) << std::setprecision(2) << 50 * occupancy / double(tries);
 		stream << std::setw(6) << std::setprecision(2) << 0;
 		stream << "          ";
 		stream << std::setw(2) << element->getSymbol();
