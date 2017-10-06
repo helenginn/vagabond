@@ -190,6 +190,7 @@ public:
 	}
 
 	void printSlice(bool amplitude = false);
+	void applySymmetry(CSym::CCP4SPG *spaceGroup, bool collapse);
 
     long nx,ny,nz,nn;
     fftwf_complex *data;

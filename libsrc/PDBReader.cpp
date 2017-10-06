@@ -17,6 +17,7 @@
 #include "Polymer.h"
 #include "Monomer.h"
 #include "Absolute.h"
+#include "csymlib.h"
 
 PDBReader::PDBReader()
 {
@@ -253,6 +254,10 @@ void PDBReader::getSymmetry(std::string line)
 	mat3x3 hkl2real = mat3x3_from_unit_cell(a, b, c, alpha, beta, gamma);
 	mat3x3 real2hkl = mat3x3_inverse(hkl2real);
 
+	CSym::CCP4SPG *spg = CSym::ccp4spg_load_by_spgname(spaceGroup.c_str());
+
+	_myCrystal->setUnitCell(a, b, c, alpha, beta, gamma);
+	_myCrystal->setSpaceGroup(spg);
 	_myCrystal->setHKL2Real(hkl2real);
 	_myCrystal->setReal2HKL(real2hkl);
 

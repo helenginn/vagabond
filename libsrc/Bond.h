@@ -363,6 +363,7 @@ private:
 	bool _activated;
 	int _activeGroup;
 	bool _fixed;
+	bool _disabled;
 
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();

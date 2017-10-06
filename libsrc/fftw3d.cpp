@@ -784,3 +784,58 @@ void FFT::printSlice(bool amplitude)
 	std::cout << std::endl;
 }
 
+void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool collapse)
+{
+	bool discuss = true;
+
+	for (int k = -nz / 2; k < nz / 2; k++)
+	{
+		for (int j = -ny / 2; j < ny / 2; j++)
+		{
+			for (int i = -nx / 2; i < nx / 2; i++)
+			{
+				bool isSysabs = CSym::ccp4spg_is_sysabs(spaceGroup, i, j, k);
+				if (isSysabs)
+				{
+					continue;
+				}
+
+				int _h = 0;
+				int _k = 0;
+				int _l = 0;
+
+				int isym = CSym::ccp4spg_put_in_asu(spaceGroup, i, j, k, &_h, &_k, &_l);
+
+				long index = element(i, j, k);
+				long sym_index = element(_h, _k, _l);
+				bool isAsu = (index == sym_index);
+
+				if (isAsu)
+				{
+					continue;
+				}
+
+				int friedel = ((isym % 2) != 0);
+
+				if (!collapse)
+				{
+					if (friedel) continue;
+
+					data[sym_index][0] += data[index][0];
+					data[sym_index][1] += data[index][1];
+				}
+				else
+				{
+					data[index][0] = data[sym_index][0];
+					data[index][1] = data[sym_index][1];
+
+					if (friedel)
+					{
+						data[index][1] *= -1;
+					}
+				}
+			}
+		}
+	}
+}
+

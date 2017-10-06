@@ -73,6 +73,7 @@ void Options::run()
 
 			crystals[0]->realSpaceClutter();
 			crystals[0]->getDataInformation(data, propFo, propFc);
+			crystals[0]->writeCalcMillersToFile(data, "pre");
 
 			if (_tie)
 			{
@@ -82,6 +83,7 @@ void Options::run()
 
 			crystals[0]->tiedUpScattering();
 			MoleculePtr molecule = crystals[0]->molecule("A");
+		//	molecule = crystals[0]->molecule("A1");
 
 			crystals[0]->molecule(0)->makePDB("refine_0.pdb");
 			crystals[0]->molecule(0)->graph("graph_0");
@@ -118,7 +120,7 @@ void Options::run()
 						crystals[0]->writeCalcMillersToFile(data, refineCount);
 						crystals[0]->realSpaceClutter();
 						crystals[0]->getDataInformation(data, propFo, propFc);
-
+/*
 						crystals[0]->changeAnchors(91);
 						count++;
 						polymer->scaleFlexibilityToBFactor(16.0);
@@ -127,6 +129,7 @@ void Options::run()
 						crystals[0]->writeCalcMillersToFile(data, refineCount);
 						crystals[0]->realSpaceClutter();
 						crystals[0]->getDataInformation(data, propFo, propFc);
+ */
 					}
 				}
 			}

@@ -64,7 +64,12 @@ public:
 
 	MonomerPtr getMonomer(int i)
 	{
-		return _monomers[i];
+		if (_monomers.count(i))
+		{
+			return _monomers[i];
+		}
+
+		return MonomerPtr();
 	}
 
 	long monomerCount()

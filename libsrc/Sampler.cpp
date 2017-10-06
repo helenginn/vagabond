@@ -206,12 +206,26 @@ void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
 		std::vector<AtomPtr> atoms;
 
 		BondPtr caBond = ToBondPtr(ca->getModel());
-		addTorsion(caBond, deg2rad(2.0), deg2rad(0.05));
 
 		BondPtr ramaBond = ToBondPtr(rama->getModel());
-
 		BondPtr peptideBond = ToBondPtr(peptide->getModel());
-		addTorsion(peptideBond, deg2rad(2.0), deg2rad(0.05));
+
+
+		bool last = (i == to - 1 - step);
+
+		if (!last)
+		{
+			addTorsion(peptideBond, deg2rad(4.0), deg2rad(0.05));
+			addTorsion(caBond, deg2rad(4.0), deg2rad(0.05));
+		}
+		else if (step > 0)
+		{
+			addTorsion(caBond, deg2rad(4.0), deg2rad(0.05));
+		}
+		else
+		{
+			addTorsion(peptideBond, deg2rad(4.0), deg2rad(0.05));
+		}
 	}
 }
 
@@ -518,6 +532,7 @@ double Sampler::getScore()
 			else if (_scoreType == ScoreTypeModelOverallB)
 			{
 				target = _overallB;
+				target = _sampled[i]->getInitialBFactor();
 			}
 
 			double rmsdScore = bond->getMeanSquareDeviation(target);

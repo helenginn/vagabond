@@ -19,6 +19,7 @@
 #include <map>
 #include "maths.h"
 #include "Molecule.h"
+#include "csymlib.h"
 
 #define HARD_CODED_RESOLUTION 1.0
 
@@ -71,11 +72,7 @@ public:
 	void writeCalcMillersToFile(DiffractionPtr data, std::string prefix = "",
 								double resolution = HARD_CODED_RESOLUTION);
 
-	void fourierTransform(int dir)
-	{
-		_fft->fft(dir);
-	}
-
+	void fourierTransform(int dir);
 	void scaleToDiffraction(DiffractionPtr data);
 	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
 	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
@@ -93,14 +90,35 @@ public:
 	{
 		_filename = file;
 	}
-	
+
+	void setSpaceGroup(CSym::CCP4SPG *spg)
+	{
+		_spaceGroup = spg;
+	}
+
+	void setUnitCell(double a, double b, double c,
+					 double alpha, double beta, double gamma)
+	{
+		_unitCell.clear();
+		_unitCell.push_back(a);
+		_unitCell.push_back(b);
+		_unitCell.push_back(c);
+		_unitCell.push_back(alpha);
+		_unitCell.push_back(beta);
+		_unitCell.push_back(gamma);
+	}
+
 private:
 	MoleculeMap _molecules;
 	std::string _filename;
 
+	std::vector<double> _unitCell;
 	double _firstScale;
 	mat3x3 _hkl2real;
 	mat3x3 _real2frac;
+	CSym::CCP4SPG *_spaceGroup;
+
+	void applySymOps();
 
 	FFTPtr _fft;
 };

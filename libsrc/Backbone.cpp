@@ -73,37 +73,45 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 				int magicStart = resNum;
 				int magicEnd = resNum + 20;
+				int magicCloseEnd = resNum + 6;
 
 				if (!getMonomer()->isAfterAnchor())
 				{
 					magicEnd = resNum - 20;
+					magicCloseEnd = resNum - 6;
 				}
 
 				ScoreType scoreType = ScoreTypeModelRMSDZero;
+
 				for (int l = 0; l < 1; l++)
 				{
-					double oldDampening = Bond::getDampening(&*bond);
-					Bond::setDampening(&*bond, 0.2);
-
 					if (scoreType == ScoreTypeModelRMSDZero)
 					{
 						setupGrid();
 						addMagicAxisBroad(bond);
 						setSilent();
 						setJobName("broad_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
-						addSampledBackbone(getPolymer(), magicStart, magicEnd);
 						setScoreType(scoreType);
 						sample();
 					}
-
+					
 					setupNelderMead();
-					addMagicAxis(bond, deg2rad(10.0), deg2rad(2.0));
+					if (scoreType == ScoreTypeModelRMSD)
+					{
+						addDampening(bond, 0.05, 0.05);
+						addSampledBackbone(getPolymer(), magicStart, magicCloseEnd);
+					}
+					else
+					{
+						addMagicAxis(bond, deg2rad(10.0), deg2rad(2.0));
+						addSampledBackbone(getPolymer(), magicStart, magicEnd);
+					}
+
 					setJobName("magic_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
 					setSilent();
 					addSampledBackbone(getPolymer(), magicStart, magicEnd);
 					setScoreType(scoreType);
 					sample();
-					Bond::setDampening(&*bond, oldDampening);
 
 					if (scoreType == ScoreTypeModelRMSD)
 					{
@@ -138,6 +146,7 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 				std::cout << "Res " << resNum << " bond " << bond->shortDesc();
 				std::cout << " : bFactor " << bond->getMeanSquareDeviation();
+				std::cout << " (" << myAtom->getInitialBFactor() << ")";
 				std::cout << std::endl;
 			}
 

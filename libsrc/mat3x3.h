@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "vec3.h"
 #include <string.h>
+#include "csymlib.h"
 
 struct mat3x3
 {
@@ -22,6 +23,7 @@ struct mat3x3
 mat3x3 mat3x3_inverse(mat3x3 &mat);
 mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double beta, double gamma);
 mat3x3 make_mat3x3();
+mat3x3 mat3x3_from_ccp4(CSym::ccp4_symop symop);
 
 inline void mat3x3_mult_vec(struct mat3x3 mat, struct vec3 *vec)
 {

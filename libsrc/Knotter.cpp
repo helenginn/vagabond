@@ -35,7 +35,8 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
 
 	BondPtr ca2cb;
 
-	if (_backbone->betaCarbonTorsionAtom()->getAtomName() == "N")
+	AtomPtr betaTorsion = _backbone->betaCarbonTorsionAtom();
+	if (betaTorsion->getAtomName() == "N")
 	{
 		// tie to C terminus so hAlpha then cBeta
 		BondPtr ca2ha = BondPtr(new Bond(cAlpha, hAlpha));
@@ -77,7 +78,7 @@ void Knotter::tieTowardsNTerminus()
 	int resNum = _backbone->getResNum();
 	BackbonePtr prevBackbone, nextBackbone;
 
-	if (resNum > 1)
+//	if (resNum > 1)
 	{
 		/* to get the previous (C-terminal) backbone residue */
 		MonomerPtr monomer = polymer->getMonomer(resNum);
@@ -780,8 +781,8 @@ void Knotter::makeCysteine()
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
 	cb2hb3->activate(_sidechain, inherit);
 
-	BondPtr sg2hg = BondPtr(new Bond(sGamma, hGamma));
-	sg2hg->activate(_sidechain, inherit);
+//	BondPtr sg2hg = BondPtr(new Bond(sGamma, hGamma));
+//	sg2hg->activate(_sidechain, inherit);
 }
 
 void Knotter::makeValine()
@@ -1165,8 +1166,8 @@ void Knotter::makeTryptophan()
 	cd22ce2->setTorsionAtoms(cGamma, cOmega3);
 	cd22ce2->setFixed(true);
 	cd22ce2->activate(_sidechain, inherit);
-	BondPtr cd22hd2 = BondPtr(new Bond(cDelta2, hDelta2));
-	cd22hd2->activate(_sidechain, inherit);
+//	BondPtr cd22hd2 = BondPtr(new Bond(cDelta2, hDelta2));
+//	cd22hd2->activate(_sidechain, inherit);
 
 	BondPtr cd12ce1 = BondPtr(new Bond(cDelta1, nEpsilon1));
 	cd12ce1->setTorsionAtoms(cGamma, cEpsilon2);

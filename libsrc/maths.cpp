@@ -11,9 +11,32 @@
 #include <vector>
 #include <iostream>
 
+double scale_factor_by_sum(std::vector<double> &set1, std::vector<double> &set2)
+{
+	double x_sum = 0;
+	double y_sum = 0;
+
+	for (int i = 0; i < set1.size(); i++)
+	{
+		if (set1[i] == set1[i] && set2[i] == set2[i])
+		{
+			x_sum += set1[i];
+			y_sum += set2[i];
+		}
+	}
+
+	double grad = (y_sum / x_sum);
+
+	if (grad < 0)
+		grad = -1;
+
+	return grad;
+}
+
 double scale_factor_cutoff(std::vector<double> &set1, std::vector<double> &set2,
 					double cutoff)
 {
+	/* Misnamed */
 	double x_squared = 0;
 	double x_y = 0;
 

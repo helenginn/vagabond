@@ -300,3 +300,17 @@ vec3 axis(mat3x3 me, int i)
 
 	return axis;
 }
+
+mat3x3 mat3x3_from_ccp4(CSym::ccp4_symop symop)
+{
+	mat3x3 matrix = make_mat3x3();
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 3; j++)
+		{
+			matrix.vals[i * 3 + j] = symop.rot[i][j];
+		}
+	}
+
+	return matrix;
+}

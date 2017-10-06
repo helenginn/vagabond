@@ -15,11 +15,15 @@
 #include <fstream>
 #include <time.h>
 #include "BucketUniform.h"
-#include "../libccp4/cmtzlib.h"
 #include "Shouter.h"
 #include "Diffraction.h"
 #include "Polymer.h"
 #include "CSV.h"
+
+#include "../libccp4/cmtzlib.h"
+#include "../libccp4/csymlib.h"
+#include "../libccp4/ccp4_spg.h"
+#include "../libccp4/ccp4_general.h"
 
 void Crystal::summary()
 {
@@ -148,6 +152,61 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix,
 	std::ofstream twofofcFile;
 	twofofcFile.open(twofofc);
 
+	/* For writing MTZ files */
+
+	int columns = 10;
+
+	float cell[6], wavelength;
+	float *fdata = new float[columns];
+
+	/* variables for symmetry */
+	CSym::CCP4SPG *mtzspg = _spaceGroup;
+	float rsm[192][4][4];
+	char ltypex[2];
+
+	/* variables for MTZ data structure */
+	CMtz::MTZ *mtzout;
+	CMtz::MTZXTAL *xtal;
+	CMtz::MTZSET *set;
+	CMtz::MTZCOL *colout[11];
+
+	cell[0] = _unitCell[0];
+	cell[1] = _unitCell[1];
+	cell[2] = _unitCell[2];
+	cell[3] = _unitCell[3];
+	cell[4] = _unitCell[4];
+	cell[5] = _unitCell[5];
+	wavelength = 1.00; // fixme
+
+	std::string outputFile = prefix + "_" + _filename + "_vbond.mtz";
+
+	mtzout = CMtz::MtzMalloc(0, 0);
+	ccp4_lwtitl(mtzout, "Written from Helen's XFEL tasks ", 0);
+	mtzout->refs_in_memory = 0;
+	mtzout->fileout = CMtz::MtzOpenForWrite(outputFile.c_str());
+
+	// then add symm headers...
+	for (int i = 0; i < mtzspg->nsymop; ++i)
+		CCP4::rotandtrn_to_mat4(rsm[i], mtzspg->symop[i]);
+	strncpy(ltypex, mtzspg->symbol_old, 1);
+	ccp4_lwsymm(mtzout, mtzspg->nsymop, mtzspg->nsymop_prim, rsm, ltypex,
+				mtzspg->spg_ccp4_num, mtzspg->symbol_old, mtzspg->point_group);
+
+	// then add xtals, datasets, cols
+	xtal = MtzAddXtal(mtzout, "vagabond_crystal", "vagabond_project", cell);
+	set = MtzAddDataset(mtzout, xtal, "Dataset", wavelength);
+	colout[0] = MtzAddColumn(mtzout, set, "H", "H");
+	colout[1] = MtzAddColumn(mtzout, set, "K", "H");
+	colout[2] = MtzAddColumn(mtzout, set, "L", "H");
+	colout[3] = MtzAddColumn(mtzout, set, "FREE", "R");
+	colout[4] = MtzAddColumn(mtzout, set, "FP", "F");
+	colout[5] = MtzAddColumn(mtzout, set, "FC", "F");
+	colout[6] = MtzAddColumn(mtzout, set, "FWT", "F");
+	colout[7] = MtzAddColumn(mtzout, set, "PHWT", "P");
+	colout[8] = MtzAddColumn(mtzout, set, "DELFWT", "F");
+	colout[9] = MtzAddColumn(mtzout, set, "PHDELWT", "P");
+
+	int num = 0;
 	FFTPtr fftData = data->getFFT();
 
 	/* symmetry issues */
@@ -157,8 +216,17 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix,
 		{
 			for (int k = 0; k < cLimit; k++)
 			{
+				bool asu = CSym::ccp4spg_is_in_asu(_spaceGroup, i, j, k);
+
+				if (!asu)
+				{
+					continue;
+				}
+
 				vec3 pos = make_vec3(i, j, k);
 				mat3x3_mult_vec(_real2frac, &pos);
+
+				double phase = _fft->getPhase(i, j, k);
 
 				double intensity = _fft->getIntensity(i, j, k);
 				double calcAmp = sqrt(intensity);
@@ -166,10 +234,30 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix,
 				double foInt = fftData->getIntensity(i, j, k);
 				double foAmp = sqrt(foInt);
 
+				int free = fftData->getMask(i, j, k);
+
 				if (vec3_length(pos) > dStar)
 				{
 					continue;
 				}
+
+				/* MTZ file stuff */
+
+				fdata[0] = i;
+				fdata[1] = j;
+				fdata[2] = k;
+				fdata[3] = free;
+				fdata[4] = foAmp;
+				fdata[5] = calcAmp;
+				fdata[6] = 2 * foAmp - calcAmp;
+				fdata[7] = phase;
+				fdata[8] = foAmp - calcAmp;
+				fdata[9] = phase;
+
+				num++;
+				ccp4_lwrefl(mtzout, fdata, colout, columns, num);
+
+				/* Pha file stuff */
 
 				fcFile << std::fixed << std::setprecision(1)
 				<< std::setw(4) << i
@@ -195,17 +283,20 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix,
 				twofofcFile << 2 * foAmp - calcAmp;
 
 				fcFile <<  " 1.0000  " <<
-				std::setw(5) << std::right << _fft->getPhase(i, j, k)
+				std::setw(5) << std::right << phase
 				<< std::setw(8) << 1000 << std::endl;
 				fofcFile <<  " 1.0000  " <<
-				std::setw(5) << std::right << _fft->getPhase(i, j, k)
+				std::setw(5) << std::right << phase
 				<< std::setw(8) << 1000 << std::endl;
 				twofofcFile <<  " 1.0000  " <<
-				std::setw(5) << std::right << _fft->getPhase(i, j, k)
+				std::setw(5) << std::right << phase
 				<< std::setw(8) << 1000 << std::endl;
 			}
 		}
 	}
+
+	MtzPut(mtzout, " ");
+	MtzFree(mtzout);
 
 	fcFile.close();
 	fofcFile.close();
@@ -368,8 +459,9 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 
 	for (int i = 0; i < bins.size() - 1; i++)
 	{
-		double scale = 1 / valueWithDiffraction(data, &scale_factor, false,
-										     	bins[i], bins[i + 1]);
+		double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
+											bins[i], bins[i + 1]);
+		double scale = 1 / ratio;
 		applyScaleFactor(scale, bins[i], bins[i + 1]);
 	}
 
@@ -494,4 +586,28 @@ void Crystal::changeAnchors(int newAnchor)
 Crystal::Crystal()
 {
 	_firstScale = -1;
+}
+
+void Crystal::applySymOps()
+{
+	if (_spaceGroup->spg_num == 1)
+	{
+		return;
+	}
+
+	std::cout << "Applying space group " << _spaceGroup->symbol_xHM << std::endl;
+
+//	return;
+	_fft->applySymmetry(_spaceGroup, false);
+	_fft->applySymmetry(_spaceGroup, true);
+}
+
+void Crystal::fourierTransform(int dir)
+{
+	_fft->fft(dir);
+
+	if (dir == 1)
+	{
+		applySymOps();
+	}
 }

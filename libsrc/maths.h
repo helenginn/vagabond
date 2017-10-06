@@ -18,6 +18,7 @@
 double scale_factor_cutoff(std::vector<double> &set1, std::vector<double> &set2,
 					double cutoff = -FLT_MAX);
 double scale_factor(std::vector<double> &set1, std::vector<double> &set2);
+double scale_factor_by_sum(std::vector<double> &set1, std::vector<double> &set2);
 
 double scaled_r_factor(std::vector<double> &set1, std::vector<double> &set2,
 					   double cutoff = -FLT_MAX);

@@ -55,6 +55,13 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	aGroup.occupancy = 1;
 	_bondGroups.push_back(aGroup);
 
+	_disabled = (!major || !minor);
+
+	if (_disabled)
+	{
+		return;
+	}
+
 	if (getMinor()->getModel()->getClassName() == "Bond")
 	{
 		std::cout << "Warning!" << std::endl;
@@ -293,11 +300,12 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 		{
 			portion += 1;
 		}
-
+/*
 		std::cout << shortDesc() << " first atom " << firstAtom->getAtomName()
 		<< " second atom " << atom->getAtomName() << std::endl;
 		
 		std::cout << " Replacing with portion " << portion << " compared to " << newAtom.circlePortion << std::endl;
+*/
 	}
 
 }
@@ -322,6 +330,9 @@ void Bond::setMinor(AtomPtr newMinor)
 
 void Bond::activate(AtomGroupPtr group, AtomPtr inherit)
 {
+	if (_disabled)
+		return;
+
 	getMinor()->setModel(shared_from_this());
 
 	if (group)
@@ -380,6 +391,8 @@ mat3x3 Bond::makeTorsionBasis(vec3 hPos, vec3 maPos,
 
 void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
 {
+	if (_disabled) return;
+
 	//if (heavyAlign)
 	{
 		_heavyAlign = heavyAlign;
