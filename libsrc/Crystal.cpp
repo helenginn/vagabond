@@ -257,10 +257,6 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 	MtzPut(mtzout, " ");
 	MtzFree(mtzout);
 
-	fcFile.close();
-	fofcFile.close();
-	twofofcFile.close();
-
 	std::cout << "Written pha files from crystal." << std::endl;
 }
 
