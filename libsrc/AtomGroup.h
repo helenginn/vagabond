@@ -30,7 +30,7 @@ public:
 		return _monomer.lock();
 	}
 
-	void addAtom(AtomPtr atom)
+	virtual void addAtom(AtomPtr atom)
 	{
 		_atoms.push_back(atom);
 	}

@@ -139,6 +139,9 @@ public:
 		return _monomer.lock();
 	}
 
+	std::string shortDesc();
+
+
 	void setKeepModel();
 	std::string getPDBContribution();
 private:

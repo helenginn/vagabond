@@ -176,6 +176,7 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 void Absolute::addToMonomer(MonomerPtr monomer)
 {
 	makeAtom();
+
 	monomer->addAtom(_atom);
 	monomer->getPolymer()->addAtom(_atom);
 

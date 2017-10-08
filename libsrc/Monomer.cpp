@@ -34,10 +34,21 @@ void Monomer::setup()
 
 void Monomer::addAtom(AtomPtr atom)
 {
-	_atoms.push_back(atom);
+	std::string newAtomName = atom->getAtomName();
+
+	AtomPtr existingAtom = findAtom(newAtomName);
+
+	if (existingAtom)
+	{
+		std::string atomDesc = existingAtom->shortDesc();
+		warn_user("Ignoring alternative conformation for " + atomDesc);
+		return;
+	}
+
+	AtomGroup::addAtom(atom);
+
 	atom->setMonomer(shared_from_this());
 	
-
 	bool isBoth = atom->isBackboneAndSidechain();
 
 	if (isBoth)
@@ -65,11 +76,11 @@ void Monomer::setKick(double value, bool beforeAnchor)
 
 	if (beforeAnchor)
 	{
-		atom = getBackbone()->findAtom("C");
+		atom = findAtom("C");
 	}
 	else
 	{
-		atom = getBackbone()->findAtom("CA");
+		atom = findAtom("CA");
 	}
 
 	ModelPtr model = atom->getModel();
@@ -80,14 +91,12 @@ void Monomer::setKick(double value, bool beforeAnchor)
 
 	BondPtr bond = ToBondPtr(model);
 
-	if (beforeAnchor) value *= -1;
-
 	Bond::setTorsionBlur(&*bond, value);
 }
 
 double Monomer::getKick()
 {
-	AtomPtr ca = getBackbone()->findAtom("CA");
+	AtomPtr ca = findAtom("CA");
 	ModelPtr model = ca->getModel();
 	if (model->getClassName() != "Bond")
 	{

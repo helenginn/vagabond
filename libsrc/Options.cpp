@@ -116,7 +116,7 @@ void Options::run()
 					{
                         count++;
 						std::string refineCount = "refine_" + i_to_str(count);
-						polymer->scaleFlexibilityToBFactor(20.0);
+						polymer->scaleFlexibilityToBFactor(crystals[0]);
 						polymer->makePDB("refine_" + i_to_str(count) + ".pdb");
 						polymer->graph("graph_" + i_to_str(count));
 						crystals[0]->writeCalcMillersToFile(data, refineCount);
@@ -205,6 +205,29 @@ void Options::parse()
 			datasets.push_back(diffraction);
 			diffractions.push_back(diffraction);
 			understood = true;
+		}
+
+		prefix = "--target-b=";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			std::string bee_string = arg.substr(prefix.size());
+			double bee = atof(bee_string.c_str());
+
+			if (crystals.size() == 0)
+			{
+				shout_at_user("Overall B factor specified, but a coordinate\n"\
+							  "file has not been specified yet. Please use\n"\
+							  "--with-pdb= to specify some atomic coordinates.");
+			}
+			else
+			{
+				CrystalPtr crystal = crystals.at(crystals.size() - 1);
+				crystal->setOverallBFactor(bee);
+				std::cout << "Setting " << crystal->getFilename()
+				<< " to a target B factor of " << bee << "." << std::endl;
+				understood = true;
+			}
 		}
 
 		prefix = "--anchor-res=";

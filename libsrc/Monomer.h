@@ -14,8 +14,9 @@
 #include "shared_ptrs.h"
 #include <vector>
 #include "Sidechain.h"
+#include "AtomGroup.h"
 
-class Monomer : public std::enable_shared_from_this<Monomer>
+class Monomer : public AtomGroup
 {
 public:
 	Monomer();
@@ -23,6 +24,12 @@ public:
 	void tieAtomsUp();
 	void setConstantDampening(double value);
 	bool isAfterAnchor();
+
+	MonomerPtr shared_from_this()
+	{
+		AtomGroupPtr group = AtomGroup::shared_from_this();
+		return std::static_pointer_cast<Monomer>(group);
+	}
 
 	void setIdentifier(std::string idString)
 	{
@@ -65,7 +72,7 @@ public:
 		return _myPolymer.lock();
 	}
 
-	void addAtom(AtomPtr atom);
+	virtual void addAtom(AtomPtr atom);
 
 	void addModel(ModelPtr model)
 	{
@@ -89,7 +96,6 @@ private:
 	int _residueNum; // number in protein sequence including missing ones.
 
 	PolymerWkr _myPolymer;
-	std::vector<AtomPtr> _atoms;
 	std::vector<ModelPtr> _models;
 	BackbonePtr _backbone;
 	SidechainPtr _sidechain;

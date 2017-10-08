@@ -217,8 +217,7 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 				}
 
 				vec3 pos = make_vec3(i, j, k);
-				mat3x3 test = mat3x3_transpose(_real2frac);
-				mat3x3_mult_vec(test, &pos);
+				mat3x3_mult_vec(_real2frac, &pos);
 
 				double phase = _fft->getPhase(i, j, k);
 
@@ -546,6 +545,7 @@ Crystal::Crystal()
 	_firstScale = -1;
 	_maxResolution = HARD_CODED_RESOLUTION;
 	_anchorResidue = 34;
+	_overallB = 16;
 }
 
 void Crystal::applySymOps()

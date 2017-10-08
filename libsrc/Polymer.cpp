@@ -7,6 +7,7 @@
 //
 
 #include "Polymer.h"
+#include "Crystal.h"
 #include "Sidechain.h"
 #include "Monomer.h"
 #include "Sampler.h"
@@ -511,10 +512,11 @@ double Polymer::getInitialKick(void *object)
 	return polymer->getMonomer(monomerNum)->getKick();
 }
 
-void Polymer::scaleFlexibilityToBFactor(double value)
+void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 {
 	setupNelderMead();
 	setScoreType(ScoreTypeModelOverallB);
+	double value = target->getOverallBFactor();
 	setOverallBFactor(value);
 	addOverallKickAndDampen(shared_from_this());
 	addSampledBackbone(shared_from_this());

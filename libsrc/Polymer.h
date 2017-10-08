@@ -42,7 +42,7 @@ public:
 	static void setInitialKick(void *object, double value);
 	static double getInitialKick(void *object);
 
-	void scaleFlexibilityToBFactor(double value);
+	void scaleFlexibilityToBFactor(CrystalPtr target);
 
 	void changeAnchor(int num);
 	void setAnchor(int num)

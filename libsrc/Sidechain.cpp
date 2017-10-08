@@ -141,7 +141,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 				}
 */
 				setupNelderMead();
-				setupTorsionSet(bond, k, 5, resNum, deg2rad(4.0), deg2rad(0.01));
+				setupTorsionSet(bond, k, 5, resNum, ANGLE_SAMPLING, deg2rad(0.01));
 				addSampledAtoms(shared_from_this());
 				setScoreType(ScoreTypeModelPos);
 				setJobName("model_pos_" + i_to_str(resNum) + "_" + bond->shortDesc());

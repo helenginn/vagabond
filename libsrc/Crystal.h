@@ -129,6 +129,16 @@ public:
 		_anchorResidue = anchor;
 	}
 
+	void setOverallBFactor(double b)
+	{
+		_overallB = b;
+	}
+
+	double getOverallBFactor()
+	{
+		return _overallB;
+	}
+
 private:
 	MoleculeMap _molecules;
 	std::string _filename;
@@ -140,6 +150,7 @@ private:
 	CSym::CCP4SPG *_spaceGroup;
 	double _maxResolution;
 	int _anchorResidue;
+	double _overallB;
 
 	void applySymOps();
 

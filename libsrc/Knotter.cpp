@@ -731,17 +731,6 @@ void Knotter::makeSerine()
 
 	AtomPtr inherit = cAlpha;
 
-	if (!hBeta2 || !hBeta3 || !hGamma)
-	{
-		warn_user("Missing some hydrogens in " + residue + ", continuing.");
-	}
-
-	if (!cAlpha || !cBeta || !oGamma)
-	{
-		warn_user("Missing vital atoms in " + residue + ", giving up.");
-		return;
-	}
-
 	tieBetaCarbon(oGamma);
 
 	BondPtr cb2og = BondPtr(new Bond(cBeta, oGamma));

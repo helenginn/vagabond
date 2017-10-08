@@ -257,3 +257,10 @@ std::string Atom::getPDBContribution()
 
 	return stream.str();
 }
+
+std::string Atom::shortDesc()
+{
+	return getMonomer()->getIdentifier()
+		+ i_to_str(getMonomer()->getResidueNum()) +
+		getAtomName();
+}
