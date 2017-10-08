@@ -10,7 +10,7 @@
 #include <iostream>
 #include "PDBReader.h"
 #include "Crystal.h"
-#include "DiffractionMtz.h"
+#include "DiffractionMTZ.h"
 #include "Shouter.h"
 #include <iomanip>
 #include "Polymer.h"
@@ -116,7 +116,7 @@ void Options::run()
 					{
                         count++;
 						std::string refineCount = "refine_" + i_to_str(count);
-						polymer->scaleFlexibilityToBFactor(16.0);
+						polymer->scaleFlexibilityToBFactor(20.0);
 						polymer->makePDB("refine_" + i_to_str(count) + ".pdb");
 						polymer->graph("graph_" + i_to_str(count));
 						crystals[0]->writeCalcMillersToFile(data, refineCount);
@@ -207,6 +207,52 @@ void Options::parse()
 			understood = true;
 		}
 
+		prefix = "--anchor-res=";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			std::string anchor_string = arg.substr(prefix.size());
+			int anchor = atoi(anchor_string.c_str());
+
+			if (crystals.size() == 0)
+			{
+				shout_at_user("Anchor residue specified, but a coordinate\n"\
+							  "file has not been specified yet. Please use\n"\
+							  "--with-pdb= to specify some atomic coordinates.");
+			}
+			else
+			{
+				CrystalPtr crystal = crystals.at(crystals.size() - 1);
+				crystal->setAnchorResidue(anchor);
+				std::cout << "Setting " << crystal->getFilename()
+				<< " to anchor residue " << anchor << "." << std::endl;
+				understood = true;
+			}
+		}
+
+		prefix = "--max-res=";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			std::string max_res = arg.substr(prefix.size());
+			double maxRes = atof(max_res.c_str());
+
+			if (crystals.size() == 0)
+			{
+				shout_at_user("Max resolution specified, but a coordinate\n"\
+							  "file has not been specified yet. Please use\n"\
+							  "--with-pdb= to specify some atomic coordinates.");
+			}
+			else
+			{
+				CrystalPtr crystal = crystals.at(crystals.size() - 1);
+				crystal->setMaxResolution(maxRes);
+				std::cout << "Setting " << crystal->getFilename()
+				<< " to resolution " << maxRes << " Å." << std::endl;
+				understood = true;
+			}
+		}
+
 		prefix = "--num-cycles=";
 
 		if (!arg.compare(0, prefix.size(), prefix))
@@ -247,3 +293,4 @@ void Options::outputCrystalInfo()
 		crystals[i]->fourierTransform(1);
 	}
 }
+

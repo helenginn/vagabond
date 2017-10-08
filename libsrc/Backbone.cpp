@@ -89,6 +89,7 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 					{
 						setupGrid();
 						addMagicAxisBroad(bond);
+						addSampledBackbone(getPolymer(), magicStart, magicEnd);
 						setSilent();
 						setJobName("broad_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
 						setScoreType(scoreType);

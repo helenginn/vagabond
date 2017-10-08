@@ -80,6 +80,8 @@ void Monomer::setKick(double value, bool beforeAnchor)
 
 	BondPtr bond = ToBondPtr(model);
 
+	if (beforeAnchor) value *= -1;
+
 	Bond::setTorsionBlur(&*bond, value);
 }
 

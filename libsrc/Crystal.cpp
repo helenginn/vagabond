@@ -119,8 +119,7 @@ void Crystal::realSpaceClutter()
 	_difft->createFFTWplan(8);
 }
 
-void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix,
-									 double resolution)
+void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 {
 	if (!_fft)
 	{
@@ -134,7 +133,7 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix,
 	fourierTransform(1);
 	scaleToDiffraction(data);
 
-	double dStar = 1 / resolution;
+	double dStar = 1 / _maxResolution;
 
 	mat3x3 transpose = mat3x3_transpose(_hkl2real);
 
@@ -145,18 +144,6 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix,
 	double aLimit = aLength * dStar;
 	double bLimit = bLength * dStar;
 	double cLimit = cLength * dStar;
-
-	std::string fc = prefix + "_" + _filename + "_fc.vbond.pha";
-	std::ofstream fcFile;
-	fcFile.open(fc);
-
-	std::string fofc = prefix + "_" + _filename + "_fofc.vbond.pha";
-	std::ofstream fofcFile;
-	fofcFile.open(fofc);
-
-	std::string twofofc = prefix + "_" + _filename + "_2fofc.vbond.pha";
-	std::ofstream twofofcFile;
-	twofofcFile.open(twofofc);
 
 	/* For writing MTZ files */
 
@@ -230,7 +217,8 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix,
 				}
 
 				vec3 pos = make_vec3(i, j, k);
-				mat3x3_mult_vec(_real2frac, &pos);
+				mat3x3 test = mat3x3_transpose(_real2frac);
+				mat3x3_mult_vec(test, &pos);
 
 				double phase = _fft->getPhase(i, j, k);
 
@@ -262,41 +250,6 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix,
 
 				num++;
 				ccp4_lwrefl(mtzout, fdata, colout, columns, num);
-
-				/* Pha file stuff */
-
-				fcFile << std::fixed << std::setprecision(1)
-				<< std::setw(4) << i
-				<< std::setw(4) << j
-				<< std::setw(4) << k
-				<< std::setw(8) << std::right;
-
-				fofcFile << std::fixed << std::setprecision(1)
-				<< std::setw(4) << i
-				<< std::setw(4) << j
-				<< std::setw(4) << k
-				<< std::setw(8) << std::right;
-
-
-				twofofcFile << std::fixed << std::setprecision(1)
-				<< std::setw(4) << i
-				<< std::setw(4) << j
-				<< std::setw(4) << k
-				<< std::setw(8) << std::right;
-
-				fcFile << calcAmp;
-				fofcFile << foAmp - calcAmp;
-				twofofcFile << 2 * foAmp - calcAmp;
-
-				fcFile <<  " 1.0000  " <<
-				std::setw(5) << std::right << phase
-				<< std::setw(8) << 1000 << std::endl;
-				fofcFile <<  " 1.0000  " <<
-				std::setw(5) << std::right << phase
-				<< std::setw(8) << 1000 << std::endl;
-				twofofcFile <<  " 1.0000  " <<
-				std::setw(5) << std::right << phase
-				<< std::setw(8) << 1000 << std::endl;
 			}
 		}
 	}
@@ -326,7 +279,7 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 	std::vector<double> set1, set2, free1, free2;
 
 	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
-	double maxRes = (highRes == 0 ? FLT_MAX : 1 / highRes);
+	double maxRes = (highRes == 0 ? 1 / _maxResolution : 1 / highRes);
 
 	CSVPtr csv = CSVPtr(new CSV(2, "fo" , "fc"));
 
@@ -454,7 +407,7 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes)
 void Crystal::scaleToDiffraction(DiffractionPtr data)
 {
 	std::vector<double> bins;
-	generateResolutionBins(0, HARD_CODED_RESOLUTION, 20, &bins);
+	generateResolutionBins(0, _maxResolution, 20, &bins);
 
 	for (int i = 0; i < bins.size() - 1; i++)
 	{
@@ -573,7 +526,7 @@ void Crystal::setAnchors()
 		if (molecule(i)->getClassName() == "Polymer")
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
-			polymer->setAnchor(34);
+			polymer->setAnchor(_anchorResidue);
 		}
 	}
 }
@@ -595,6 +548,8 @@ void Crystal::changeAnchors(int newAnchor)
 Crystal::Crystal()
 {
 	_firstScale = -1;
+	_maxResolution = HARD_CODED_RESOLUTION;
+	_anchorResidue = 34;
 }
 
 void Crystal::applySymOps()

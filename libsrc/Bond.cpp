@@ -102,10 +102,12 @@ Bond::Bond(Bond &other)
 	_activeGroup = other._activeGroup;
 	_bondGroups = other._bondGroups;
 	_fixed = other._fixed;
+	_disabled = other._disabled;
 	_blocked = false;
-	_currentCheck = 0;
-
-	_dampening = -0;
+	_currentCheck = other._currentCheck;
+	_absolute = other._absolute;
+	
+	_dampening = other._dampening;
 	_bendBlur = 0;
 	_bondLength = other._bondLength;
 	_changedPos = true;
@@ -385,23 +387,16 @@ mat3x3 Bond::makeTorsionBasis(vec3 hPos, vec3 maPos,
 		*newAngle = angle;
 	}
 
-	_torsionBasis = test;
 	return test;
 }
 
 void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
 {
-	if (_disabled) return;
+	if (_disabled || !heavyAlign || !lightAlign) return;
 
-	//if (heavyAlign)
-	{
-		_heavyAlign = heavyAlign;
-	}
+	_heavyAlign = heavyAlign;
+	_lightAlign = lightAlign;
 
-	//if (lightAlign)
-	{
-		_lightAlign = lightAlign;
-	}
 
 	/* Make torsion basis.
 	 * Make any starting set of angles with correct Z axis. */

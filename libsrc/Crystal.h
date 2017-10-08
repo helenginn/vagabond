@@ -60,6 +60,8 @@ public:
 		return _real2frac;
 	}
 
+
+
 	FFTPtr getFFT()
 	{
 		return _fft;
@@ -74,15 +76,14 @@ public:
 	void changeAnchors(int newAnchor);
 	void tiedUpScattering();
 	void realSpaceClutter();
-	void writeCalcMillersToFile(DiffractionPtr data, std::string prefix = "",
-								double resolution = HARD_CODED_RESOLUTION);
+	void writeCalcMillersToFile(DiffractionPtr data, std::string prefix = "");
 
 	void fourierTransform(int dir);
 	void scaleToDiffraction(DiffractionPtr data);
 	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
 	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 								bool verbose = false, double lowRes = 0,
-								double highRes = HARD_CODED_RESOLUTION);
+								double highRes = 0);
 	void getDataInformation(DiffractionPtr data, double partsFo = 2,
 							  double partsFc = 1);
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);
@@ -94,6 +95,11 @@ public:
 	void setFilename(std::string file)
 	{
 		_filename = file;
+	}
+
+	std::string getFilename()
+	{
+		return _filename;
 	}
 
 	void setSpaceGroup(CSym::CCP4SPG *spg)
@@ -113,6 +119,16 @@ public:
 		_unitCell.push_back(gamma);
 	}
 
+	void setMaxResolution(double maxRes)
+	{
+		_maxResolution = maxRes;
+	}
+
+	void setAnchorResidue(int anchor)
+	{
+		_anchorResidue = anchor;
+	}
+
 private:
 	MoleculeMap _molecules;
 	std::string _filename;
@@ -122,6 +138,8 @@ private:
 	mat3x3 _hkl2real;
 	mat3x3 _real2frac;
 	CSym::CCP4SPG *_spaceGroup;
+	double _maxResolution;
+	int _anchorResidue;
 
 	void applySymOps();
 

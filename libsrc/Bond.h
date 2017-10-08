@@ -211,11 +211,6 @@ public:
 	static double getBendAngle(void *object);
 	static void setBendAngle(void *object, double value);
 
-	void setBendTowards(AtomWkr bendToAtom)
-	{
-		_bendToAtom = bendToAtom;
-	}
-
 	void addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry = false);
 
 	int downstreamAtomCount(int group)
@@ -350,7 +345,6 @@ private:
 
 	AtomWkr _heavyAlign;
 	AtomWkr _lightAlign;
-	AtomWkr _bendToAtom;
 
 	double _bondLength;
 
@@ -374,7 +368,6 @@ private:
 	 * calculated because it's connected to an Absolute PDB.
 	 * Otherwise use as a reference for torsion matrix updates. */
 	vec3 _bondDirection;
-	mat3x3 _torsionBasis;
 
 	/* Will aim to define torsion basis as:
 	   x: along line of 0º torsion angle.
@@ -409,8 +402,6 @@ private:
 	/* What should be returned when asking for an atom's position
 	 * for drawing into a map... */
 	vec3 _absolute;
-
-	FFTPtr _fftAbs;
 };
 
 #endif /* defined(__vagabond__Bond__) */

@@ -87,7 +87,7 @@ double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell,
 	modelDist->fft(1);
 	modelDist->invertScale();
 
-	vec3 pos = getPosition();
+	vec3 pos = _model->getAbsolutePosition();
 	mat3x3_mult_vec(unit_cell, &pos);
 
 	if (pos.x != pos.x)

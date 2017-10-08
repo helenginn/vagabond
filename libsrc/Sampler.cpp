@@ -532,7 +532,6 @@ double Sampler::getScore()
 			else if (_scoreType == ScoreTypeModelOverallB)
 			{
 				target = _overallB;
-				target = _sampled[i]->getInitialBFactor();
 			}
 
 			double rmsdScore = bond->getMeanSquareDeviation(target);

@@ -17,6 +17,8 @@
 #include "Bond.h"
 #include "CSV.h"
 #include <fstream>
+#include "maths.h"
+#include <float.h>
 #include "FileReader.h"
 
 void Polymer::addMonomer(MonomerPtr monomer)
@@ -31,6 +33,13 @@ void Polymer::addMonomer(MonomerPtr monomer)
 
 void Polymer::tieAtomsUp()
 {
+	if (!getMonomer(_anchorNum - 1))
+	{
+		shout_at_user("Anchor point specified isn't an available residue.\n"\
+					  "Please specify an existing residue as an anchor point\n"\
+					  "with option --anchor-res=");
+	}
+
 	for (int i = _anchorNum - 1; i < monomerCount(); i++)
 	{
 		if (getMonomer(i))
@@ -127,6 +136,11 @@ void Polymer::makePDB(std::string filename)
 
 void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 {
+	CSVPtr perCA = CSVPtr(new CSV(3, "resnum", "cc", "diffcc"));
+
+	std::vector<double> tempCCs, tempDiffCCs, tempNs;
+	double sumCC = 0; double sumDiffCC = 0;
+
 	for (int n = 0; n < monomerCount(); n++)
 	{
 		if (!getMonomer(n))
@@ -136,55 +150,54 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 
 		AtomPtr ca = getMonomer(n)->getBackbone()->findAtom("CA");
 		std::vector<double> xs, ys;
-		ca->scoreWithMap(diffCrystal, &xs, &ys, true, MapScoreTypeRadialMagnitude);
+		double cutoff = ca->scoreWithMap(diffCrystal, &xs, &ys, false, MapScoreTypeCorrel);
+		double cc = correlation(xs, ys, cutoff);
+		sumCC += cc;
 
-		CSVPtr histogram = CSVPtr(new CSV());
-		histogram->setupHistogram(0, 0.07, 0.01, "distance", 4, "pos_diff", "neg_diff", "pos_sum", "neg_sum");
+		cutoff = ca->scoreWithMap(diffCrystal, &xs, &ys, true, MapScoreTypeCorrel);
+		double diffcc = weightedMapScore(xs, ys);
+		sumDiffCC += diffcc;
 
-		for (int i = 0; i < xs.size(); i++)
-		{
-			if (ys[i] < 0)
-			{
-				histogram->addOneToFrequency(xs[i], "neg_diff", -ys[i]);
-				histogram->addOneToFrequency(xs[i], "neg_sum");
-			}
-			else
-			{
-				histogram->addOneToFrequency(xs[i], "pos_diff", ys[i]);
-				histogram->addOneToFrequency(xs[i], "pos_sum");
-			}
-		}
-
-		for (int i = 0; i < histogram->entryCount(); i++)
-		{
-			double pos_diff = histogram->valueForEntry("pos_diff", i);
-			double pos_sum = histogram->valueForEntry("pos_sum", i);
-			pos_diff /= pos_sum;
-			histogram->setValueForEntry(i, "pos_diff", pos_diff);
-			double neg_diff = histogram->valueForEntry("neg_diff", i);
-			double neg_sum = histogram->valueForEntry("neg_sum", i);
-			neg_diff /= neg_sum;
-			histogram->setValueForEntry(i, "neg_diff", neg_diff);
-		}
-
-		std::map<std::string, std::string> plotMap;
-		plotMap["filename"] = "res" + i_to_str(n) + "_" + graphName;
-		plotMap["height"] = "700";
-		plotMap["width"] = "1200";
-		plotMap["xHeader0"] = "distance";
-		plotMap["yHeader0"] = "pos_diff";
-		plotMap["xHeader1"] = "distance";
-		plotMap["yHeader1"] = "neg_diff";
-		plotMap["colour0"] = "black";
-		plotMap["colour1"] = "red";
-		plotMap["xTitle0"] = "Fractional distance";
-		plotMap["yTitle0"] = "Magnitude difference";
-		plotMap["style0"] = "line";
-		plotMap["style1"] = "line";
-
-		histogram->plotPNG(plotMap);
-		histogram->writeToFile(plotMap["filename"] + ".csv");
+		tempCCs.push_back(cc);
+		tempDiffCCs.push_back(diffcc);
+		tempNs.push_back(n + 1);
 	}
+
+	sumCC /= tempNs.size();
+	sumDiffCC /= tempNs.size();
+
+	std::cout << "Average CC " << sumCC << std::endl;
+
+	for (int i = 0; i < tempNs.size(); i++)
+	{
+		double ccRelative = tempCCs[i];
+		double diffCCRelative = tempDiffCCs[i] / sumDiffCC - 1;
+		perCA->addEntry(3, tempNs[i], ccRelative, diffCCRelative);
+	}
+
+	std::map<std::string, std::string> plotMap;
+	plotMap["filename"] = "diffmap_" + graphName;
+	plotMap["height"] = "700";
+	plotMap["width"] = "1200";
+	plotMap["xHeader0"] = "resnum";
+	plotMap["yHeader0"] = "cc";
+	plotMap["xHeader1"] = "resnum";
+	plotMap["yHeader1"] = "diffcc";
+	plotMap["yMin0"] = "-1";
+	plotMap["yMin1"] = "-1";
+	plotMap["yMax0"] = "1";
+	plotMap["yMax1"] = "1";
+	plotMap["colour0"] = "black";
+	plotMap["colour1"] = "red";
+	plotMap["xTitle0"] = "Residue number";
+	plotMap["yTitle0"] = "Correlation coefficient";
+	plotMap["style0"] = "line";
+	plotMap["style1"] = "line";
+
+	perCA->writeToFile("diffmap_" + graphName + ".csv");
+	perCA->plotPNG(plotMap);
+
+	std::cout << "Written out " << graphName << " graph set." << std::endl;
 }
 
 void Polymer::graph(std::string graphName)
@@ -412,7 +425,7 @@ void Polymer::graph(std::string graphName)
 
 	csvBlur->plotPNG(plotMap);
 
-	std::cout << "Written out " << graphName << std::endl;
+	std::cout << "Written out " << graphName << " graph set." << std::endl;
 }
 
 double Polymer::getConstantDampening(void *object)
