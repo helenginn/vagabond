@@ -65,6 +65,11 @@ public:
 		return _fft;
 	}
 
+	FFTPtr getDiFFT()
+	{
+		return _difft;
+	}
+
 	void setAnchors();
 	void changeAnchors(int newAnchor);
 	void tiedUpScattering();
@@ -121,6 +126,7 @@ private:
 	void applySymOps();
 
 	FFTPtr _fft;
+	FFTPtr _difft;
 };
 
 #endif /* defined(__vagabond__Crystal__) */

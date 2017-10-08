@@ -27,6 +27,13 @@
 #define CPLX_ABS(__data, __p) sqrt( __data[__p][0]*__data[__p][0] + __data[__p][1]*__data[__p][1] )
 #define CPLX_PHASE(__data, __p) atan2( __data[__p][1], __data[__p][0] )
 
+typedef enum
+{
+	MapScoreTypeNone,
+	MapScoreTypeCorrel,
+	MapScoreTypeRadialMagnitude,
+} MapScoreType;
+
 inline void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, float *result)
 {
 	result[0] = comp1[0] * comp2[0] - comp1[1] * comp2[1];
@@ -144,12 +151,14 @@ public:
 	}
 
 	static double operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
-							bool scoreMe = false, std::vector<double> *xs = NULL,
+							MapScoreType mapScoreType = MapScoreTypeNone,
+							std::vector<double> *xs = NULL,
 							std::vector<double> *ys = NULL);
 
 	static double score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 position,
 						std::vector<double> *xs = NULL,
-						std::vector<double> *ys = NULL);
+						std::vector<double> *ys = NULL,
+						MapScoreType mapScore = MapScoreTypeCorrel);
 
 	void normalise();
 

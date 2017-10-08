@@ -550,13 +550,8 @@ double Sampler::getScore()
 		
 		for (int i = 0; i < sampleSize(); i++)
 		{
-			BondPtr bond = ToBondPtr(_sampled[i]->getModel());
-			bond->getDistribution();
-			vec3 bestPos = bond->getAbsolutePosition();
-			vec3 initialPos = _sampled[i]->getPDBPosition();
-
-			vec3 diff = vec3_subtract_vec3(bestPos, initialPos);
-			score += vec3_length(diff);
+			double oneScore = _sampled[i]->posDisplacement();
+			score += oneScore;
 		}
 
 		score /= (double)sampleSize();

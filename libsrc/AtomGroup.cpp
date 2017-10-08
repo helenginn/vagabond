@@ -80,6 +80,38 @@ void AtomGroup::addAtomsFrom(AtomGroupPtr child)
 	}
 }
 
+double AtomGroup::getAverageBFactor(bool initial)
+{
+	double sum = 0;
+	double count = 0;
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->getElement()->electronCount() <= 1)
+		{
+			continue;
+		}
+
+		if (initial)
+		{
+			sum += atom(i)->getInitialBFactor();
+			count++;
+		}
+		else
+		{
+			if (atom(i)->getModel()->isBond())
+			{
+				BondPtr bond = ToBondPtr(atom(i)->getModel());
+				double val = bond->getMeanSquareDeviation();
+				sum += val;
+				count++;
+			}
+		}
+	}
+
+	return sum / count;
+}
+
 AtomGroup::AtomGroup()
 {
 	_beenTied = false;

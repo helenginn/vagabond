@@ -1055,7 +1055,7 @@ void Bond::propagateChange()
 		for (int i = 0; i < downstreamAtomCount(j); i++)
 		{
 			ModelPtr model = downstreamAtom(j, i)->getModel();
-			BondPtr bond = std::static_pointer_cast<Bond>(model);
+			BondPtr bond = ToBondPtr(model);
 			bond->propagateChange();
 		}
 	}

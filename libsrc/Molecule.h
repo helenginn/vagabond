@@ -32,6 +32,7 @@ public:
 	void tiedUpScattering(double *tied, double *all);
 	virtual void makePDB(std::string filename);
 	virtual void graph(std::string graphName) {};
+	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst) {};
 	void resetInitialPositions();
 	void setAnchors();
 	

@@ -11,7 +11,7 @@
 #include "mat3x3.h"
 #include <math.h>
 #include <stdlib.h>
-#include "Model.h"
+#include "Bond.h"
 #include <iostream>
 #include "Element.h"
 #include "Monomer.h"
@@ -19,6 +19,7 @@
 #include <iomanip>
 #include "FileReader.h"
 #include <sstream>
+#include "Crystal.h"
 
 Atom::Atom()
 {
@@ -62,8 +63,23 @@ FFTPtr Atom::getBlur()
 	return modelDist;
 }
 
+double Atom::scoreWithMap(CrystalPtr crystal, std::vector<double> *xs,
+						  std::vector<double> *ys, bool diff,
+						  MapScoreType mapScore)
+{
+	FFTPtr fft = crystal->getFFT();
+
+	if (diff)
+	{
+		fft = crystal->getDiFFT();
+	}
+
+	return scoreWithMap(fft, crystal->getReal2Frac(), xs, ys, mapScore);
+}
+
 double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell,
-						  std::vector<double> *xs, std::vector<double> *ys)
+						  std::vector<double> *xs, std::vector<double> *ys,
+						  MapScoreType mapScore)
 {
 	FFTPtr atomDist = _element->getDistribution();
 	FFTPtr modelDist = getBlur();
@@ -79,7 +95,7 @@ double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell,
 		return 0;
 	}
 
-	double score = FFT::score(fft, modelDist, pos, xs, ys);
+	double score = FFT::score(fft, modelDist, pos, xs, ys, mapScore);
 
 	return score;
 }
@@ -178,6 +194,18 @@ void Atom::setKeepModel()
 	_distModelOnly = _model;
 }
 
+double Atom::posDisplacement()
+{
+	BondPtr bond = ToBondPtr(getModel());
+	bond->getDistribution();
+	vec3 bestPos = bond->getAbsolutePosition();
+	vec3 initialPos = getPDBPosition();
+
+	vec3 diff = vec3_subtract_vec3(bestPos, initialPos);
+	double score = vec3_length(diff);
+
+	return score;
+}
 
 std::string Atom::getPDBContribution()
 {
@@ -197,7 +225,7 @@ std::string Atom::getPDBContribution()
 	double skip = (double)positions->size() / 25.;
 
 	if (skip < 0) skip = 1;
-	const int side = 5;
+	const int side = 7;
 	int count = 0;
 
 	for (double i = 0; i < positions->size(); i+= 1)

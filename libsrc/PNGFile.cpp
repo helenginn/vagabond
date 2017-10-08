@@ -154,7 +154,7 @@ void PNGFile::RGB_to_HSB(float red, float green, float blue,
 
 		*hue = *hue / 6.0f;
 
-		if (hue < 0)
+		if (*hue < 0)
 		{
 			*hue = *hue + 1.0f;
 		}

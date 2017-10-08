@@ -193,3 +193,4 @@ void Sidechain::fixBackboneTorsions(AtomPtr betaTorsion)
 		ToBondPtr(model)->setTorsionAtoms(betaTorsion);
 	}
 }
+

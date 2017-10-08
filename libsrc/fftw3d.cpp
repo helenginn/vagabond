@@ -499,9 +499,10 @@ double FFT::interpolate(vec3 vox000, bool im)
 }
 
 double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos,
-				  std::vector<double> *xs, std::vector<double> *ys)
+				  std::vector<double> *xs, std::vector<double> *ys,
+				  MapScoreType mapScore)
 {
-	return operation(fftCrystal, fftThing, pos, true, xs, ys);
+	return operation(fftCrystal, fftThing, pos, mapScore, xs, ys);
 }
 
 
@@ -509,7 +510,7 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos,
  *
  */
 double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
-					  bool scoreMe, std::vector<double> *xs,
+					  MapScoreType mapScoreType, std::vector<double> *xs,
 					  std::vector<double> *ys)
 {
 	/* I rarely comment something so heavily but I will get confused if
@@ -604,7 +605,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	int count = 0;
 	double step = 1;
 
-	if (scoreMe)
+	if (mapScoreType != MapScoreTypeNone)
 	{
 		step = 1;
 	}
@@ -656,7 +657,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				if (offsetPos.y < 0) offsetPos.y += fftAtom->ny;
 				if (offsetPos.z < 0) offsetPos.z += fftAtom->nz;
 
-				if (!scoreMe)
+				if (mapScoreType == MapScoreTypeNone)
 				{
 					atomImag = fftAtom->interpolate(offsetPos, 1);
 				}
@@ -672,13 +673,24 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 				count++;
 
-				if (scoreMe)
+				if (mapScoreType == MapScoreTypeCorrel)
 				{
 					double realCryst = fftCrystal->interpolate(finalCrystalVox);
 					crystalVals.push_back(realCryst);
 					thingVals.push_back(atomReal);
 					orderedVals.push_back(atomReal);
 					sumVals += atomReal;
+				}
+				else if (mapScoreType == MapScoreTypeRadialMagnitude)
+				{
+					double realCryst = fftCrystal->interpolate(finalCrystalVox);
+					finalCrystalVox.x /= fftCrystal->nx;
+					finalCrystalVox.y /= fftCrystal->ny;
+					finalCrystalVox.z /= fftCrystal->nz;
+
+					vec3 diff = vec3_subtract_vec3(finalCrystalVox, add);
+					xs->push_back(vec3_length(diff));
+					ys->push_back(realCryst);
 				}
 				else
 				{
@@ -702,7 +714,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 	//std::cout << "Num: " << count << std::endl;
 
-	if (!scoreMe)
+	if (mapScoreType != MapScoreTypeCorrel)
 	{
 		return 0;
 	}

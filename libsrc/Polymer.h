@@ -33,7 +33,8 @@ public:
 	virtual void tieAtomsUp();
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	virtual void makePDB(std::string filename);
-	void graph(std::string graphName);
+	virtual void graph(std::string graphName);
+	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst);
 
 	static double getConstantDampening(void *object);
 	static void setConstantDampening(void *object, double value);

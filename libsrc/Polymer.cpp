@@ -125,12 +125,75 @@ void Polymer::makePDB(std::string filename)
 	std::cout << "Written PDB to " << filename << "." << std::endl;
 }
 
+void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
+{
+	for (int n = 0; n < monomerCount(); n++)
+	{
+		if (!getMonomer(n))
+		{
+			continue;
+		}
+
+		AtomPtr ca = getMonomer(n)->getBackbone()->findAtom("CA");
+		std::vector<double> xs, ys;
+		ca->scoreWithMap(diffCrystal, &xs, &ys, true, MapScoreTypeRadialMagnitude);
+
+		CSVPtr histogram = CSVPtr(new CSV());
+		histogram->setupHistogram(0, 0.07, 0.01, "distance", 4, "pos_diff", "neg_diff", "pos_sum", "neg_sum");
+
+		for (int i = 0; i < xs.size(); i++)
+		{
+			if (ys[i] < 0)
+			{
+				histogram->addOneToFrequency(xs[i], "neg_diff", -ys[i]);
+				histogram->addOneToFrequency(xs[i], "neg_sum");
+			}
+			else
+			{
+				histogram->addOneToFrequency(xs[i], "pos_diff", ys[i]);
+				histogram->addOneToFrequency(xs[i], "pos_sum");
+			}
+		}
+
+		for (int i = 0; i < histogram->entryCount(); i++)
+		{
+			double pos_diff = histogram->valueForEntry("pos_diff", i);
+			double pos_sum = histogram->valueForEntry("pos_sum", i);
+			pos_diff /= pos_sum;
+			histogram->setValueForEntry(i, "pos_diff", pos_diff);
+			double neg_diff = histogram->valueForEntry("neg_diff", i);
+			double neg_sum = histogram->valueForEntry("neg_sum", i);
+			neg_diff /= neg_sum;
+			histogram->setValueForEntry(i, "neg_diff", neg_diff);
+		}
+
+		std::map<std::string, std::string> plotMap;
+		plotMap["filename"] = "res" + i_to_str(n) + "_" + graphName;
+		plotMap["height"] = "700";
+		plotMap["width"] = "1200";
+		plotMap["xHeader0"] = "distance";
+		plotMap["yHeader0"] = "pos_diff";
+		plotMap["xHeader1"] = "distance";
+		plotMap["yHeader1"] = "neg_diff";
+		plotMap["colour0"] = "black";
+		plotMap["colour1"] = "red";
+		plotMap["xTitle0"] = "Fractional distance";
+		plotMap["yTitle0"] = "Magnitude difference";
+		plotMap["style0"] = "line";
+		plotMap["style1"] = "line";
+
+		histogram->plotPNG(plotMap);
+		histogram->writeToFile(plotMap["filename"] + ".csv");
+	}
+}
+
 void Polymer::graph(std::string graphName)
 {
-	CSVPtr csv = CSVPtr(new CSV(9, "resnum", "newB", "oldB", "oldX", "oldY", "oldZ",
-								"newX", "newY", "newZ"));
+	CSVPtr csv = CSVPtr(new CSV(10, "resnum", "newB", "oldB", "oldX", "oldY", "oldZ",
+								"newX", "newY", "newZ", "pos"));
 	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
+	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB", "pos"));
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -140,6 +203,7 @@ void Polymer::graph(std::string graphName)
 		}
 
 		BackbonePtr backbone = getMonomer(i)->getBackbone();
+		SidechainPtr sidechain = getMonomer(i)->getSidechain();
 		AtomPtr ca = backbone->findAtom("CA");
 		ModelPtr caModel = ca->getModel();
 		AtomPtr n = backbone->findAtom("N");
@@ -161,9 +225,10 @@ void Polymer::graph(std::string graphName)
 			double oldX = ca->getInitialAnisoB(0);
 			double oldY = ca->getInitialAnisoB(1);
 			double oldZ = ca->getInitialAnisoB(2);
+			double posDisp = ca->posDisplacement();
 
-			csv->addEntry(9, value, meanSq, ca->getInitialBFactor(),
-						  oldX, oldY, oldZ, newX, newY, newZ);
+			csv->addEntry(10, value, meanSq, ca->getInitialBFactor(),
+						  oldX, oldY, oldZ, newX, newY, newZ, posDisp);
 			caDampen = Bond::getDampening(&*caBond);
 			caBlur = Bond::getTorsionBlur(&*caBond);
 
@@ -194,6 +259,14 @@ void Polymer::graph(std::string graphName)
 			nDampen = Bond::getDampening(&*nBond);
 			nBlur = Bond::getTorsionBlur(&*nBond);
 			if (nDampen > 0) nBlur = 0;
+		}
+
+		if (sidechain)
+		{
+			double initialBee = sidechain->getAverageBFactor(true);
+			double nowBee = sidechain->getAverageBFactor(false);
+
+			sidechainCsv->addEntry(3, value, initialBee, nowBee);
 		}
 
 		csvDamp->addEntry(4, value, caDampen, cDampen, nDampen);
@@ -261,8 +334,51 @@ void Polymer::graph(std::string graphName)
 		plotMap["yTitle0"] = "Aniso Bz factor";
 
 		csv->plotPNG(plotMap);
-}
+	}
 
+	{
+		std::map<std::string, std::string> plotMap;
+		plotMap["filename"] = "sidechain_" + graphName;
+		plotMap["height"] = "700";
+		plotMap["width"] = "1200";
+		plotMap["xHeader0"] = "resnum";
+		plotMap["yHeader0"] = "newB";
+		plotMap["xHeader1"] = "resnum";
+		plotMap["yHeader1"] = "oldB";
+		plotMap["colour0"] = "black";
+		plotMap["colour1"] = "red";
+		plotMap["yMin0"] = "0";
+		plotMap["yMin1"] = "0";
+		plotMap["yMax0"] = "40";
+		plotMap["yMax1"] = "40";
+
+		plotMap["xTitle0"] = "Sidechain number";
+		plotMap["yTitle0"] = "B factor";
+		plotMap["style0"] = "line";
+		plotMap["style1"] = "line";
+
+		sidechainCsv->plotPNG(plotMap);
+		sidechainCsv->writeToFile("sidechain_" + graphName + ".csv");
+	}
+
+	{
+		std::map<std::string, std::string> plotMap;
+		plotMap["filename"] = "displacement_" + graphName;
+		plotMap["height"] = "700";
+		plotMap["width"] = "1200";
+		plotMap["xHeader0"] = "resnum";
+		plotMap["yHeader0"] = "pos";
+		plotMap["colour0"] = "black";
+		plotMap["yMin0"] = "0";
+		plotMap["yMax0"] = "1";
+
+		plotMap["xTitle0"] = "Residue number";
+		plotMap["yTitle0"] = "Displacement Ang";
+		plotMap["style0"] = "line";
+
+		csv->plotPNG(plotMap);
+		csv->writeToFile("displacement_" + graphName + ".csv");
+	}
 
 	plotMap["filename"] = "dampening_" + graphName;
 	plotMap["yHeader0"] = "dN-CA";

@@ -16,6 +16,7 @@
 #include "mat3x3.h"
 #include <string>
 #include "../libinfo/GeomTable.h"
+#include "fftw3d.h"
 
 class Atom : public std::enable_shared_from_this<Atom>
 {
@@ -30,6 +31,7 @@ public:
 	bool isBackboneAndSidechain();
 
 	vec3 getPosition();
+	double posDisplacement();
 
 	void setElement(ElementPtr element)
 	{
@@ -64,7 +66,12 @@ public:
 	/* Fit with FFT for the element dist only */
 	double scoreWithMap(FFTPtr fft, mat3x3 unit_cell,
 						std::vector<double> *xs = NULL,
-						std::vector<double> *ys = NULL);
+						std::vector<double> *ys = NULL,
+						MapScoreType mapScore = MapScoreTypeCorrel);
+
+	double scoreWithMap(CrystalPtr crystal, std::vector<double> *xs = NULL,
+						std::vector<double> *ys = NULL, bool diff = false,
+						MapScoreType mapScore = MapScoreTypeCorrel);
 
 	/* Returns a FFT for the model dist, for reuse */
 	void addToMap(FFTPtr fft, mat3x3 unit_cell,

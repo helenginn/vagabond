@@ -81,6 +81,31 @@ public:
         va_end(arguments);
     }
 
+
+	void setupHistogram(double start, double end, double interval, std::string catHeader, int count, ...)
+	{
+		va_list arguments;
+		va_start(arguments, count);
+
+		headers.push_back(catHeader);
+
+		for (int i = 0; i < count; i++)
+		{
+			std::string header = std::string(va_arg(arguments, char *));
+			headers.push_back(header);
+		}
+
+		va_end(arguments);
+
+		double value = start;
+		while (value <= end)
+		{
+			addPartialEntry(1, value);
+			histCategories.push_back(value);
+			value += interval;
+		}
+	}
+
 	void minMaxCol(int col, double *min, double *max, bool round = false);
     void addOneToFrequency(double category, std::string whichHeader, double weight = 1, std::string categoryHeader = "");
     void addOneToFrequency(double category, int column, double weight = 1, int categoryNum = 0);

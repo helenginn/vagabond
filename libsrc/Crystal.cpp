@@ -77,6 +77,7 @@ void Crystal::realSpaceClutter()
 	if (!_fft)
 	{
 		_fft = FFTPtr(new FFT());
+		_difft = FFTPtr(new FFT());
 
 		vec3 uc_dims = empty_vec3();
 		vec3 fft_dims = empty_vec3();
@@ -92,13 +93,17 @@ void Crystal::realSpaceClutter()
 		_fft->create(fft_dims.x, fft_dims.y, fft_dims.z);
 		_fft->setupMask();
 
+		_difft->create(fft_dims.x, fft_dims.y, fft_dims.z);
+
 		double scaling = 1 / largest;
 
 		_fft->setBasis(_hkl2real, scaling);
+		_difft->setBasis(_hkl2real, scaling);
 	}
 	else
 	{
 		_fft->setAll(0);
+		_difft->setAll(0);
 	}
 
 
@@ -111,6 +116,7 @@ void Crystal::realSpaceClutter()
 //	bucket->addSolvent(fft);
 
 	_fft->createFFTWplan(8);
+	_difft->createFFTWplan(8);
 }
 
 void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix,
@@ -447,13 +453,6 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes)
 
 void Crystal::scaleToDiffraction(DiffractionPtr data)
 {
-	//if (_firstScale < 0)
-	{
-//		_firstScale = 1 / valueWithDiffraction(data, &scale_factor);
-	}
-
-//	_fft->multiplyAll(_firstScale);
-
 	std::vector<double> bins;
 	generateResolutionBins(0, HARD_CODED_RESOLUTION, 20, &bins);
 
@@ -523,6 +522,9 @@ void Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 				double new_amp = partsFo * amp - partsFc * old_amp;
 				new_amp /= old_amp;
 
+				double diff_scale = amp - old_amp;
+				diff_scale /= old_amp;
+
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(_real2frac, &ijk);
 				double length = vec3_length(ijk);
@@ -532,15 +534,22 @@ void Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 				//	new_amp = 0;
 				}
 
+				vec2 diff_complex = complex;
+
 				complex.x *= new_amp;
 				complex.y *= new_amp;
 
+				diff_complex.x *= diff_scale;
+				diff_complex.y *= diff_scale;
+
 				_fft->setElement(index, complex.x, complex.y);
+				_difft->setElement(index, diff_complex.x, diff_complex.y);
 			}
 		}
 	}
 
 	fourierTransform(-1);
+	_difft->fft(-1);
 }
 
 void Crystal::tiedUpScattering()

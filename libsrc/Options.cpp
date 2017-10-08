@@ -90,7 +90,8 @@ void Options::run()
 			crystals[0]->writeCalcMillersToFile(data);
 			crystals[0]->realSpaceClutter();
 			crystals[0]->getDataInformation(data, propFo, propFc);
-			
+			crystals[0]->molecule(0)->differenceGraphs("diffgraph_pre_", crystals[0]);
+
 			int count = 0;
 
 			if (_numCycles > 0)
@@ -101,26 +102,28 @@ void Options::run()
 					count++;
 					std::string refineCount = "refine_" + i_to_str(count);
 					molecule->refine(crystals[0], RefinementModelRMSD);
+					PolymerPtr polymer = ToPolymerPtr(molecule);
 					crystals[0]->realSpaceClutter();
 					crystals[0]->getDataInformation(data, propFo, propFc);
-					crystals[0]->molecule(0)->makePDB(refineCount + ".pdb");
-					crystals[0]->molecule(0)->graph("graph_" + i_to_str(count));
+					polymer->makePDB(refineCount + ".pdb");
+					polymer->graph("graph_" + i_to_str(count));
 					crystals[0]->writeCalcMillersToFile(data, refineCount);
 					crystals[0]->realSpaceClutter();
 					crystals[0]->getDataInformation(data, propFo, propFc);
+					polymer->differenceGraphs("diffgraph_" + i_to_str(count), crystals[0]);
 
 					if (molecule->getClassName() == "Polymer" && i == 0)
 					{
                         count++;
 						std::string refineCount = "refine_" + i_to_str(count);
-						PolymerPtr polymer = ToPolymerPtr(molecule);
 						polymer->scaleFlexibilityToBFactor(16.0);
 						polymer->makePDB("refine_" + i_to_str(count) + ".pdb");
 						polymer->graph("graph_" + i_to_str(count));
 						crystals[0]->writeCalcMillersToFile(data, refineCount);
 						crystals[0]->realSpaceClutter();
 						crystals[0]->getDataInformation(data, propFo, propFc);
-/*
+						polymer->differenceGraphs("diffgraph_" + i_to_str(count), crystals[0]);
+						/*
 						crystals[0]->changeAnchors(91);
 						count++;
 						polymer->scaleFlexibilityToBFactor(16.0);
