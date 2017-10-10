@@ -132,6 +132,9 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 	realSpaceClutter();
 	fourierTransform(1);
 	scaleToDiffraction(data);
+	double nLimit = _fft->nx;
+	nLimit = nLimit - ((int)nLimit % 2);
+	nLimit /= 2;
 
 	double dStar = 1 / _maxResolution;
 
@@ -203,11 +206,11 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 	FFTPtr fftData = data->getFFT();
 
 	/* symmetry issues */
-	for (int i = -aLimit; i < aLimit; i++)
+	for (int i = -nLimit; i < nLimit; i++)
 	{
-		for (int j = -bLimit; j < bLimit; j++)
+		for (int j = -nLimit; j < nLimit; j++)
 		{
-			for (int k = 0; k < cLimit; k++)
+			for (int k = 0; k < nLimit; k++)
 			{
 				bool asu = CSym::ccp4spg_is_in_asu(_spaceGroup, i, j, k);
 
@@ -270,7 +273,9 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 
 	FFTPtr fftData = data->getFFT();
 	double nLimit = std::min(fftData->nx, _fft->nx);
+	nLimit = nLimit - ((int)nLimit % 2);
 	nLimit /= 2;
+
 	std::vector<double> set1, set2, free1, free2;
 
 	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
@@ -443,6 +448,7 @@ void Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	FFTPtr fftData = data->getFFT();
 	double nLimit = std::min(fftData->nx, _fft->nx);
 	nLimit /= 2;
+//	nLimit += 1;
 	std::vector<double> set1, set2;
 
 	/* symmetry issues */
@@ -472,15 +478,6 @@ void Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 
 				double diff_scale = amp - old_amp;
 				diff_scale /= old_amp;
-
-				vec3 ijk = make_vec3(i, j, k);
-				mat3x3_mult_vec(_real2frac, &ijk);
-				double length = vec3_length(ijk);
-
-				if (length > 1 / 1.4)
-				{
-				//	new_amp = 0;
-				}
 
 				vec2 diff_complex = complex;
 

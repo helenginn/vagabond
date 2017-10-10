@@ -49,6 +49,12 @@ private:
 	vec3 _absPosition;
 	std::vector<BondSample> _manyPositions;
 
+	/* Anchor will copy each of the input bonds and take a static
+	 * copy of them. Anchor will then behave like a bond, but return
+	 * the appropriate copy depending on what _callingBond is */
+	Bond *_trappedToNTerminus;
+	Bond *_trappedToCTerminus;
+
 	Bond *_callingBond;
 };
 

@@ -279,9 +279,7 @@ void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
 
 	_strategy->addParameter(&*bond, Bond::getTorsionBlur, Bond::setTorsionBlur,
 							range, interval, "b" + bond->shortDesc());
-	_strategy->addParameter(&*bond, Bond::getTorsionVertBlur, Bond::setTorsionVertBlur,
-							range, interval, "vb" + bond->shortDesc());
-
+	
 	_bonds.push_back(bond);
 }
 
@@ -468,7 +466,7 @@ double Sampler::sample(bool clear)
 
 	if (_scoreType == ScoreTypeModelPos)
 	{
-		_strategy->setCycles(30);
+		_strategy->setCycles(26);
 	}
 
 	if (sampleSize())
@@ -532,6 +530,7 @@ double Sampler::getScore()
 			else if (_scoreType == ScoreTypeModelOverallB)
 			{
 				target = _overallB;
+				target = _sampled[i]->getInitialBFactor();
 			}
 
 			double rmsdScore = bond->getMeanSquareDeviation(target);

@@ -93,6 +93,7 @@ void Options::run()
 			crystals[0]->molecule(0)->differenceGraphs("diffgraph_pre_", crystals[0]);
 
 			int count = 0;
+			PolymerPtr polymer = ToPolymerPtr(molecule);
 
 			if (_numCycles > 0)
 			{
@@ -100,9 +101,9 @@ void Options::run()
 				{
 
 					count++;
-					std::string refineCount = "refine_" + i_to_str(count);
+
+                    std::string refineCount = "refine_" + i_to_str(count);
 					molecule->refine(crystals[0], RefinementModelRMSD);
-					PolymerPtr polymer = ToPolymerPtr(molecule);
 					crystals[0]->realSpaceClutter();
 					crystals[0]->getDataInformation(data, propFo, propFc);
 					polymer->makePDB(refineCount + ".pdb");

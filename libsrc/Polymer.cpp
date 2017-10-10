@@ -16,6 +16,7 @@
 #include "Shouter.h"
 #include "Atom.h"
 #include "Bond.h"
+#include "Absolute.h"
 #include "CSV.h"
 #include <fstream>
 #include "maths.h"
@@ -519,6 +520,16 @@ void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 	double value = target->getOverallBFactor();
 	setOverallBFactor(value);
 	addOverallKickAndDampen(shared_from_this());
+	setCycles(50);
+
+	AtomPtr nitrogen = getMonomer(getAnchor() - 1)->findAtom("N");
+
+	if (!nitrogen)
+	{
+		shout_at_helen("Mistake");
+	}
+
+//	addAbsoluteBFactor(ToAbsolutePtr(nitrogen->getModel()), 0.4, 0.1);
 	addSampledBackbone(shared_from_this());
 	setJobName("kick_and_dampen");
 	sample();

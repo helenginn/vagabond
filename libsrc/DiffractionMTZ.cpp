@@ -151,6 +151,7 @@ void DiffractionMtz::load()
 		MaskType mask = (flag <= 0.1) ? MaskFree : MaskWork;
 
 		long element = fft->element(h, k, l);
+
 		fft->data[element][0] = amplitude;
 		fft->data[element][1] = 0;
 		fft->mask[element] = mask;

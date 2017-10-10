@@ -163,8 +163,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 				setupNelderMead();
 				setupTorsionSet(bond, k, 5, resNum, 0.5, 0.1);
-				addDampening(bond, 0.2, 0.1);
-				addTorsionBlur(bond, 0.3, 0.1);
+				addDampening(bond, 0.02, 0.1);
 				setCrystal(target);
 				sample();
 			}

@@ -11,6 +11,12 @@
 
 Anchor::Anchor(BondPtr inheritDownstreamBond, BondPtr inheritParentBond)
 {
+	
+
+
+	return;
+// below - ignore for now
+
 	/* When going from towards-C-tie (>) to towards-N-tie (<):
 	 *                *
 	 *    --N--CA--C--N--CA--C--N--CA--
