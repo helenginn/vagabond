@@ -71,7 +71,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 						setupGrid();
 						addMagicAxisBroad(bond);
 						setSilent();
-						setJobName("broad_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
+						setJobName("broad_axis_" +  bond->shortDesc());
 						setScoreType(scoreType);
 						sample();
 					}
@@ -87,7 +87,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 						addMagicAxis(bond, deg2rad(10.0), deg2rad(2.0));
 					}
 
-					setJobName("magic_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
+					setJobName("magic_axis_" +  bond->shortDesc());
 					setSilent();
 					addSampledAtoms(shared_from_this());
 					setScoreType(scoreType);
@@ -120,7 +120,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 						addTorsionBlur(bond, 0.1, 0.1);
 					}
 
-					setJobName("magic_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
+					setJobName("magic_axis_" +  bond->shortDesc());
 					addSampledAtoms(shared_from_this());
 					setSilent();
 					setScoreType(scoreType);
@@ -144,7 +144,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 				setupTorsionSet(bond, k, 5, resNum, ANGLE_SAMPLING, deg2rad(0.01));
 				addSampledAtoms(shared_from_this());
 				setScoreType(ScoreTypeModelPos);
-				setJobName("model_pos_" + i_to_str(resNum) + "_" + bond->shortDesc());
+				setJobName("model_pos_" +  bond->shortDesc());
 				sample();
 
 			}

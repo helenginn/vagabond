@@ -10,11 +10,11 @@
 #define __vagabond__Anchor__
 
 #include <stdio.h>
-#include "Absolute.h"
+#include "Bond.h"
 #include "shared_ptrs.h"
 #include <vector>
 
-class Anchor : public Absolute
+class Anchor : public Bond
 {
 public:
 	Anchor(BondPtr inheritDownstreamBond, BondPtr inheritParentBond);
@@ -26,34 +26,42 @@ public:
 
 	virtual vec3 getStaticPosition()
 	{
-		return _staticPosition;
+		return getAppropriateBond()->getStaticPosition();
 	}
 
 	virtual vec3 getAbsolutePosition()
 	{
-		return _absPosition;
+		return getAppropriateBond()->getAbsolutePosition();
 	}
 
 	virtual std::vector<BondSample> *getManyPositions(BondSampleStyle style)
 	{
-		return &_manyPositions;
+		return getAppropriateBond()->getManyPositions(style);
 	}
 
 	virtual std::string getClassName()
 	{
 		return "Anchor";
 	}
-private:
 
-	vec3 _staticPosition;
-	vec3 _absPosition;
-	std::vector<BondSample> _manyPositions;
+	/* Which trapped bond is required for the _callingBond? */
+	BondPtr getAppropriateBond();
+	void activate();
+
+	static BondPtr sanitiseBond(Bond *myself, BondPtr model);
+private:
 
 	/* Anchor will copy each of the input bonds and take a static
 	 * copy of them. Anchor will then behave like a bond, but return
 	 * the appropriate copy depending on what _callingBond is */
-	Bond *_trappedToNTerminus;
-	Bond *_trappedToCTerminus;
+	BondPtr _trappedToNTerminus;
+	BondPtr _trappedToCTerminus;
+	bool _flipNTerminus;
+
+	/* Temporary holding of static start position for anchor and
+	 * bond group */
+	vec3 _anchorStart;
+	BondGroup *_newHeavyStoredGroup;
 
 	Bond *_callingBond;
 };

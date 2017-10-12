@@ -483,11 +483,11 @@ void Polymer::changeAnchor(int num)
 	int limit = (oldAnchor < num) ? 0 : monomerCount();
 	int step = (oldAnchor < num) ? -1 : 1;
 
-	for (int i = num - 1; i < limit; i += step)
+	for (int i = 0; i < monomerCount(); i += 1)
 	{
 		if (!getMonomer(i))
 		{
-			return;
+			continue;
 		}
 
 		BackbonePtr bone = getMonomer(i)->getBackbone();

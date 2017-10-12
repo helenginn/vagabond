@@ -58,6 +58,11 @@ public:
 	{
 		return (getClassName() == "Bond");
 	}
+
+	bool isAnchor()
+	{
+		return (getClassName() == "Anchor");
+	}
 protected:
 	virtual void propagateChange();
 private:

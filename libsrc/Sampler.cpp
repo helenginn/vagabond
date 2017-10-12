@@ -242,7 +242,7 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 	std::string num = i_to_str(_strategy->parameterCount() + 1);
 	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
 							range, interval,
-							"t" + i_to_str(resNum) + bond->shortDesc());
+							"t" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }

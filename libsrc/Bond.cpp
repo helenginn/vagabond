@@ -8,6 +8,7 @@
 
 #include "Bond.h"
 #include "Atom.h"
+#include "Anchor.h"
 #include "fftw3d.h"
 #include <iostream>
 #include "Shouter.h"
@@ -29,8 +30,14 @@ mat3x3 Bond::magicAxisChecks[] =
 	{0, 0, -1, 0, 1, 0, 1, 0, 0},
 };
 
+Bond::Bond()
+{
+	_anchored = false;
+}
+
 Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 {
+	_anchored = false;
 	_usingTorsion = false;
 	_activated = false;
 	_major = major;
@@ -392,10 +399,18 @@ mat3x3 Bond::makeTorsionBasis(vec3 hPos, vec3 maPos,
 
 void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign)
 {
-	if (_disabled || !heavyAlign || !lightAlign) return;
+	// light align can be left alone, but if neither are set, give up.
+	if (_disabled || !heavyAlign || (!lightAlign && _lightAlign.expired()))
+	{
+		return;
+	}
 
 	_heavyAlign = heavyAlign;
-	_lightAlign = lightAlign;
+
+	if (lightAlign)
+	{
+		_lightAlign = lightAlign;
+	}
 
 
 	/* Make torsion basis.
@@ -650,7 +665,6 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 												 double *transferBlur)
 {
 	std::vector<BondSample> set;
-	BondPtr prevBond = std::static_pointer_cast<Bond>(getParentModel());
 	const vec3 none = make_vec3(0, 0, 0);
 	*transferBlur = 0;
 
@@ -756,8 +770,6 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 
 std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 {
-	ModelPtr model = getMajor()->getModel();
-
 	std::vector<BondSample> *newSamples;
 
 	if (style == BondSampleStatic)
@@ -781,12 +793,18 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 		return &_bondGroups[_activeGroup].storedSamples;
 	}
 
+	if (_anchored && style == BondSampleStatic)
+	{
+		return &_bondGroups[_activeGroup].staticSample;
+	}
+
+	ModelPtr model = getMajor()->getModel();
+
 	newSamples->clear();
 
-	if (model->getClassName() == "Absolute" || model->getClassName() == "Anchor")
+	if (model->getClassName() == "Absolute")
 	{
-		std::vector<BondSample> *absPos;
-		absPos = ToAbsolutePtr(model)->getManyPositions(style);
+		std::vector<BondSample> *absPos = model->getManyPositions(style);
 		mat3x3 magicMat = getMagicMat();
 
 		/* We must be connected to something else, oh well */
@@ -831,6 +849,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 	}
 
 	BondPtr prevBond = std::static_pointer_cast<Bond>(model);
+	prevBond = Anchor::sanitiseBond(this, prevBond);
 	int myGroup = -1;
 	double torsionNumber = prevBond->downstreamAtomNum(getMinor(), &myGroup);
 
@@ -1042,6 +1061,11 @@ bool Bond::isNotJustForHydrogens()
 
 void Bond::propagateChange()
 {
+	if (_anchored)
+	{
+		return;
+	}
+
 	_changedPos = true;
 	_changedSamples = true;
 
@@ -1066,7 +1090,7 @@ std::string Bond::description()
 	stream << "Bond downstream groups: (" << downstreamAtomGroupCount() << "):" << std::endl;
 	stream << "Bond downstream atoms (first) (" << downstreamAtomCount(0) << "):" << std::endl;
 
-	for (int i = 0; i < downstreamAtomCount(0); i++)
+	for (int i = 0; i < downstreamAtomGroupCount(); i++)
 	{
 		stream << "\t" << downstreamAtom(i, 0)->getAtomName() << std::endl;
 	}
@@ -1078,6 +1102,7 @@ ModelPtr Bond::getParentModel()
 {
 	AtomPtr atom = getMajor();
 	ModelPtr model = atom->getModel();
+
 	return model;
 }
 
@@ -1232,7 +1257,9 @@ void Bond::setOccupancy(void *object, double value)
 std::string Bond::shortDesc()
 {
 	std::ostringstream stream;
-	stream << getMajor()->getAtomName() << "-" << getMinor()->getAtomName();
+	stream << getMajor()->getMonomer()->getResidueNum() <<
+	getMajor()->getAtomName() << "-" << getMinor()->getAtomName();
+	_shortDesc = stream.str();
 	return stream.str();
 }
 
@@ -1399,8 +1426,6 @@ ModelPtr Bond::reverse(BondPtr upstreamBond)
 				AtomPtr atom = downstreamAtom(i, j);
 				upstreamBond->addDownstreamAtom(atom, i);
 			}
-
-//			upstreamBond->reverseDownstreamAtoms(i);
 		}
 	}
 

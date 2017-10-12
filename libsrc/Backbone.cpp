@@ -42,7 +42,8 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			AtomPtr myAtom = myAtoms[j].lock();
 			ModelPtr model = myAtom->getModel();
 
-			if (model->getClassName() == "Absolute")
+			if (model->getClassName() == "Absolute" ||
+				model->isAnchor())
 			{
 				continue;
 			}
@@ -91,7 +92,7 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 						addMagicAxisBroad(bond);
 						addSampledBackbone(getPolymer(), magicStart, magicEnd);
 						setSilent();
-						setJobName("broad_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
+						setJobName("broad_axis_" + bond->shortDesc());
 						setScoreType(scoreType);
 						sample();
 					}
@@ -108,7 +109,7 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 						addSampledBackbone(getPolymer(), magicStart, magicEnd);
 					}
 
-					setJobName("magic_axis_" + i_to_str(resNum) + "_" + bond->shortDesc());
+					setJobName("magic_axis_" + bond->shortDesc());
 					setSilent();
 					addSampledBackbone(getPolymer(), magicStart, magicEnd);
 					setScoreType(scoreType);
@@ -128,7 +129,7 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				}
 
 				setupNelderMead();
-				setJobName("model_pos_" + i_to_str(resNum) + "_" + bond->shortDesc());
+				setJobName("model_pos_" +  bond->shortDesc());
 
 				if (getMonomer()->isAfterAnchor())
 				{
@@ -216,7 +217,7 @@ void Backbone::setAnchor()
 	BondPtr nextBond = ToBondPtr(nextModel);
 
 	AnchorPtr anchor = AnchorPtr(new Anchor(bond, nextBond));
-	ModelPtr modelAnchor = ToModelPtr(ToAbsolutePtr(anchor));
+	ModelPtr modelAnchor = ToModelPtr(ToBondPtr(anchor));
 
 	ModelPtr currentReversal = model;
 	BondPtr oldReversal = BondPtr();
@@ -228,9 +229,9 @@ void Backbone::setAnchor()
 		oldReversal = reverseBond;
 	}
 
-	std::cout << "Nitrogen atom " << nitrogen->getMonomer()->getResidueNum() << nitrogen->getAtomName() << std::endl;
+	std::cout << "Reanchoring on atom " << nitrogen->shortDesc() << std::endl;
 
-	nitrogen->setModel(modelAnchor);
+	ToAnchorPtr(modelAnchor)->activate();
 
 	if (currentReversal->getClassName() == "Absolute" ||
 		currentReversal->getClassName() == "Anchor")

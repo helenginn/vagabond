@@ -283,6 +283,11 @@ public:
 		return _activeGroup;
 	}
 
+	BondGroup *getBondGroup(int i)
+	{
+		return &_bondGroups[i];
+	}
+
 	std::string description();
 	std::string shortDesc();
 	std::string getPDBContribution();
@@ -337,9 +342,30 @@ public:
 		return _absolute;
 	}
 
+	void setAnchored()
+	{
+		_anchored = true;
+		_changedPos = false;
+		_changedSamples = false;
+	}
+
+
+	/* Will aim to define torsion basis as:
+	 x: along line of 0º torsion angle.
+	 y: completes the right-handed coordinate system
+	 z: along bond direction, from heavy-to-light alignment atoms.
+	 */
+	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
+							vec3 miPos, vec3 lPos, double *newAngle = NULL);
+
+	
 protected:
+	Bond();
+
 
 private:
+	std::string _shortDesc;
+
 	AtomWkr _major;
 	AtomWkr _minor;
 
@@ -348,16 +374,23 @@ private:
 
 	double _bondLength;
 
-	/* Bond groups */
+	/* Downstream groups of bonds */
 	std::vector<BondGroup> _bondGroups;
-	std::vector<AtomWkr> _extraTorsionSamples;
+std::vector<AtomWkr> _extraTorsionSamples;
 
 	double _dampening;
 	double _bendBlur;
 	bool _activated;
 	int _activeGroup;
+
+	/* Should not be refined */
 	bool _fixed;
+
+	/* Had a non-NULL atom input as major or minor */
 	bool _disabled;
+
+	/* Has been set as an anchor, will not respond to 'propagate change'*/
+	bool _anchored;
 
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();
@@ -368,14 +401,6 @@ private:
 	 * calculated because it's connected to an Absolute PDB.
 	 * Otherwise use as a reference for torsion matrix updates. */
 	vec3 _bondDirection;
-
-	/* Will aim to define torsion basis as:
-	   x: along line of 0º torsion angle.
-	   y: completes the right-handed coordinate system
-	   z: along bond direction, from heavy-to-light alignment atoms.
-	 */
-	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
-							vec3 miPos, vec3 lPos, double *newAngle = NULL);
 
 	vec3 positionFromTorsion(mat3x3 torsionBasis, double angle,
 							 double ratio, vec3 start);
