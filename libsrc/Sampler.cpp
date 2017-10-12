@@ -218,13 +218,9 @@ void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
 			addTorsion(peptideBond, ANGLE_SAMPLING, deg2rad(0.05));
 			addTorsion(caBond, ANGLE_SAMPLING, deg2rad(0.05));
 		}
-		else if (step > 0)
-		{
-			addTorsion(caBond, ANGLE_SAMPLING, deg2rad(0.05));
-		}
 		else
 		{
-			addTorsion(peptideBond, ANGLE_SAMPLING, deg2rad(0.05));
+			addTorsion(caBond, ANGLE_SAMPLING, deg2rad(0.05));
 		}
 	}
 }
@@ -370,7 +366,7 @@ void Sampler::addSampledBackbone(PolymerPtr polymer, int from, int to)
 
 	int step = (from < to) ? 1 : -1;
 
-	for (int i = from; i != to; i += step)
+	for (int i = from - 1; i != to - 1; i += step)
 	{
 		if (!polymer->getMonomer(i))
 		{
@@ -466,7 +462,7 @@ double Sampler::sample(bool clear)
 
 	if (_scoreType == ScoreTypeModelPos)
 	{
-		_strategy->setCycles(26);
+		_strategy->setCycles(30);
 	}
 
 	if (sampleSize())
@@ -530,7 +526,7 @@ double Sampler::getScore()
 			else if (_scoreType == ScoreTypeModelOverallB)
 			{
 				target = _overallB;
-				target = _sampled[i]->getInitialBFactor();
+		//		target = _sampled[i]->getInitialBFactor();
 			}
 
 			double rmsdScore = bond->getMeanSquareDeviation(target);

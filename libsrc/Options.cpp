@@ -124,7 +124,7 @@ void Options::run()
 						crystals[0]->realSpaceClutter();
 						crystals[0]->getDataInformation(data, propFo, propFc);
 						polymer->differenceGraphs("diffgraph_" + i_to_str(count), crystals[0]);
-/*
+
 						crystals[0]->changeAnchors(91);
 						count++;
 						polymer->scaleFlexibilityToBFactor(crystals[0]);
@@ -132,7 +132,8 @@ void Options::run()
 						polymer->graph("graph_" + i_to_str(count));
 						crystals[0]->writeCalcMillersToFile(data, refineCount);
 						crystals[0]->realSpaceClutter();
-						crystals[0]->getDataInformation(data, propFo, propFc);*/
+						crystals[0]->getDataInformation(data, propFo, propFc);
+
 					}
 				}
 			}

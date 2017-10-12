@@ -61,12 +61,6 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 			for (int k = 0; k < groups; k++)
 			{
-				BondPtr nextBond;
-				if (bond->getParentModel()->getClassName() == "Bond")
-				{
-			//		nextBond = ToBondPtr(bond->getParentModel());
-				}
-
 				if (rType != RefinementModelRMSD)
 				{
 					break;
