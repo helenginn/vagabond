@@ -47,7 +47,7 @@
 #define CH1E_C_NH1_ANGLE     117.2
 #define CH1E_C_O_ANGLE       120.1
 #define NH1_C_O_ANGLE        122.7
-#define C_CH1E_NH1_ANGLE     111.0 // ref1 says too high! 111.2 - E&H
+#define C_CH1E_NH1_ANGLE     111.0
 #define NH1_CH1E_CH2E_ANGLE  110.6
 #define C_NH1_CH1E_ANGLE     121.7
 
@@ -147,6 +147,7 @@ void GeomTable::addIdentityToType(std::string res, std::string atomName,
 
 GeomTable::GeomTable()
 {
+
 	addBondLength(AtomCH2E, AtomCH2E, CH2E_CH2E_LENGTH);
 	addBondLength(AtomCH2E, AtomNH3, CH2E_NH3_LENGTH);
 	addBondLength(AtomCH1E, AtomOH1, CH1E_OH1_LENGTH);
@@ -166,7 +167,6 @@ GeomTable::GeomTable()
 	addBondLength(AtomC, AtomO, C_O_LENGTH);
 	addBondLength(AtomCH2E, AtomSM, CH2E_SM_LENGTH);
 	addBondLength(AtomCH3E, AtomSM, CH3E_SM_LENGTH);
-
 	addBondAngle(AtomCH1E, AtomCH2E, AtomCH2E, CH1E_CH2E_CH2E_ANGLE);
 	addBondAngle(AtomCH2E, AtomCH2E, AtomCH2E, CH2E_CH2E_CH2E_ANGLE);
 	addBondAngle(AtomCH2E, AtomCH2E, AtomNH3, CH2E_CH2E_NH3_ANGLE);
@@ -182,7 +182,6 @@ GeomTable::GeomTable()
 	addBondAngle(AtomC5, AtomCR1H, AtomNH1, C5_CR1H_NH1_ANGLE);
 	addBondAngle(AtomCH2E, AtomSM, AtomCH3E, CH2E_SM_CH3E_ANGLE);
 	addBondAngle(AtomCH2E, AtomCH2E, AtomSM, CH2E_CH2E_SM_ANGLE);
-
 	addBondAngle(AtomCH1E, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
 	addBondAngle(AtomCH1E, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomNH1, AtomC, AtomO, NH1_C_O_ANGLE);
@@ -379,66 +378,66 @@ GeomTable::GeomTable()
 
 	addBondLength(AtomC, AtomGluCA, 1.525);
 	addBondLength(AtomNH1, AtomGluCA, 1.459);
-	addBondLength(AtomGluCA, AtomGluCB, 1.530);
-	addBondLength(AtomGluCB, AtomGluCG, 1.520);
-	addBondLength(AtomGluCG, AtomGluCD, 1.516);
-	addBondLength(AtomGluCD, AtomGluOE1, 1.249);
-	addBondLength(AtomGluCD, AtomGluOE2, 1.249);
+	addBondLength(AtomGluCA, AtomGluCB, 1.535);
+	addBondLength(AtomGluCB, AtomGluCG, 1.517);
+	addBondLength(AtomGluCG, AtomGluCD, 1.515);
+	addBondLength(AtomGluCD, AtomGluOE1, 1.252);
+	addBondLength(AtomGluCD, AtomGluOE2, 1.252);
 
 	addBondAngle(AtomNH1, AtomGluCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomGluCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomGluCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomGluCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomGluCA, AtomGluCB, 110.5);
-	addBondAngle(AtomGluCB, AtomGluCA, AtomC, 110.1);
-	addBondAngle(AtomGluCA, AtomGluCB, AtomGluCG, 114.1);
-	addBondAngle(AtomGluCB, AtomGluCG, AtomGluCD, 112.6);
-	addBondAngle(AtomGluCG, AtomGluCD, AtomGluOE1, 118.4);
-	addBondAngle(AtomGluCG, AtomGluCD, AtomGluOE2, 118.4);
+	addBondAngle(AtomNH1, AtomGluCA, AtomGluCB, 110.6);
+	addBondAngle(AtomGluCB, AtomGluCA, AtomC, 110.4);
+	addBondAngle(AtomGluCA, AtomGluCB, AtomGluCG, 113.4);
+	addBondAngle(AtomGluCB, AtomGluCG, AtomGluCD, 114.2);
+	addBondAngle(AtomGluCG, AtomGluCD, AtomGluOE1, 118.3);
+	addBondAngle(AtomGluCG, AtomGluCD, AtomGluOE2, 118.3);
 
 	addBondLength(AtomC, AtomGlnCA, 1.525);
 	addBondLength(AtomNH1, AtomGlnCA, 1.459);
-	addBondLength(AtomGlnCA, AtomGlnCB, 1.530);
-	addBondLength(AtomGlnCB, AtomGlnCG, 1.520);
-	addBondLength(AtomGlnCG, AtomGlnCD, 1.516);
-	addBondLength(AtomGlnCD, AtomGlnOE1, 1.231);
-	addBondLength(AtomGlnCD, AtomGlnNE2, 1.328);
+	addBondLength(AtomGlnCA, AtomGlnCB, 1.535);
+	addBondLength(AtomGlnCB, AtomGlnCG, 1.521);
+	addBondLength(AtomGlnCG, AtomGlnCD, 1.506);
+	addBondLength(AtomGlnCD, AtomGlnOE1, 1.235);
+	addBondLength(AtomGlnCD, AtomGlnNE2, 1.324);
 
 	addBondAngle(AtomNH1, AtomGlnCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomGlnCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomGlnCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomGlnCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomGlnCA, AtomGlnCB, 110.5);
-	addBondAngle(AtomGlnCB, AtomGlnCA, AtomC, 110.1);
-	addBondAngle(AtomGlnCA, AtomGlnCB, AtomGlnCG, 114.1);
-	addBondAngle(AtomGlnCB, AtomGlnCG, AtomGlnCD, 112.6);
-	addBondAngle(AtomGlnCG, AtomGlnCD, AtomGlnOE1, 120.8);
-	addBondAngle(AtomGlnCG, AtomGlnCD, AtomGlnNE2, 116.4);
+	addBondAngle(AtomNH1, AtomGlnCA, AtomGlnCB, 110.6);
+	addBondAngle(AtomGlnCB, AtomGlnCA, AtomC, 110.4);
+	addBondAngle(AtomGlnCA, AtomGlnCB, AtomGlnCG, 113.4);
+	addBondAngle(AtomGlnCB, AtomGlnCG, AtomGlnCD, 111.6);
+	addBondAngle(AtomGlnCG, AtomGlnCD, AtomGlnOE1, 121.6);
+	addBondAngle(AtomGlnCG, AtomGlnCD, AtomGlnNE2, 116.7);
 
 	addBondLength(AtomC, AtomAsnCA, 1.525);
 	addBondLength(AtomNH1, AtomAsnCA, 1.459);
-	addBondLength(AtomAsnCA, AtomAsnCB, 1.530);
-	addBondLength(AtomAsnCB, AtomAsnCG, 1.516);
-	addBondLength(AtomAsnCG, AtomAsnOD1, 1.231);
-	addBondLength(AtomAsnCG, AtomAsnND2, 1.328);
+	addBondLength(AtomAsnCA, AtomAsnCB, 1.527);
+	addBondLength(AtomAsnCB, AtomAsnCG, 1.506);
+	addBondLength(AtomAsnCG, AtomAsnOD1, 1.235);
+	addBondLength(AtomAsnCG, AtomAsnND2, 1.324);
 
 	addBondAngle(AtomNH1, AtomAsnCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomAsnCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomAsnCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomAsnCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomAsnCA, AtomAsnCB, 110.5);
-	addBondAngle(AtomAsnCB, AtomAsnCA, AtomC, 110.1);
-	addBondAngle(AtomAsnCA, AtomAsnCB, AtomAsnCG, 112.6);
-	addBondAngle(AtomAsnCB, AtomAsnCG, AtomAsnOD1, 120.8);
-	addBondAngle(AtomAsnCB, AtomAsnCG, AtomAsnND2, 116.4);
+	addBondAngle(AtomNH1, AtomAsnCA, AtomAsnCB, 110.6);
+	addBondAngle(AtomAsnCB, AtomAsnCA, AtomC, 110.4);
+	addBondAngle(AtomAsnCA, AtomAsnCB, AtomAsnCG, 113.4);
+	addBondAngle(AtomAsnCB, AtomAsnCG, AtomAsnOD1, 121.6);
+	addBondAngle(AtomAsnCB, AtomAsnCG, AtomAsnND2, 116.7);
 
 	addBondLength(AtomC, AtomArgCA, 1.525);
 	addBondLength(AtomNH1, AtomArgCA, 1.459);
-	addBondLength(AtomArgCA, AtomArgCB, 1.530);
-	addBondLength(AtomArgCB, AtomArgCG, 1.520);
-	addBondLength(AtomArgCG, AtomArgCD, 1.520);
+	addBondLength(AtomArgCA, AtomArgCB, 1.535);
+	addBondLength(AtomArgCB, AtomArgCG, 1.521);
+	addBondLength(AtomArgCG, AtomArgCD, 1.515);
 	addBondLength(AtomArgCD, AtomArgNE, 1.460);
-	addBondLength(AtomArgNE, AtomArgCZ, 1.329);
+	addBondLength(AtomArgNE, AtomArgCZ, 1.326);
 	addBondLength(AtomArgCZ, AtomArgNH1, 1.326);
 	addBondLength(AtomArgCZ, AtomArgNH2, 1.326);
 
@@ -446,14 +445,14 @@ GeomTable::GeomTable()
 	addBondAngle(AtomArgCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomArgCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomArgCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomArgCA, AtomArgCB, 110.5);
-	addBondAngle(AtomArgCB, AtomArgCA, AtomC, 110.1);
-	addBondAngle(AtomArgCA, AtomArgCB, AtomArgCG, 114.1);
-	addBondAngle(AtomArgCB, AtomArgCG, AtomArgCD, 111.3);
-	addBondAngle(AtomArgCG, AtomArgCD, AtomArgNE, 112.0);
-	addBondAngle(AtomArgCD, AtomArgNE, AtomArgCZ, 124.2);
-	addBondAngle(AtomArgNE, AtomArgCZ, AtomArgNH1, 120.0);
-	addBondAngle(AtomArgNE, AtomArgCZ, AtomArgNH2, 119.7);
+	addBondAngle(AtomNH1, AtomArgCA, AtomArgCB, 110.6);
+	addBondAngle(AtomArgCB, AtomArgCA, AtomC, 110.4);
+	addBondAngle(AtomArgCA, AtomArgCB, AtomArgCG, 113.4);
+	addBondAngle(AtomArgCB, AtomArgCG, AtomArgCD, 111.6);
+	addBondAngle(AtomArgCG, AtomArgCD, AtomArgNE, 111.8);
+	addBondAngle(AtomArgCD, AtomArgNE, AtomArgCZ, 123.6);
+	addBondAngle(AtomArgNE, AtomArgCZ, AtomArgNH1, 120.3);
+	addBondAngle(AtomArgNE, AtomArgCZ, AtomArgNH2, 119.4);
 
 	addBondAngle(AtomNH1, AtomProCA, AtomC, 112.1);
 	addBondAngle(AtomProCA, AtomC, AtomO, 120.2);
@@ -466,9 +465,9 @@ GeomTable::GeomTable()
 
 	addBondLength(AtomC, AtomProCA, 1.524);
 	addBondLength(AtomNH1, AtomProCA, 1.468);
-	addBondLength(AtomProCA, AtomProCB, 1.530);
-	addBondLength(AtomProCB, AtomProCG, 1.492);
-	addBondLength(AtomProCG, AtomProCD, 1.503);
+	addBondLength(AtomProCA, AtomProCB, 1.531);
+	addBondLength(AtomProCB, AtomProCG, 1.495);
+	addBondLength(AtomProCG, AtomProCD, 1.502);
 	
 	addBondLength(AtomC, AtomMetCA, 1.525);
 	addBondLength(AtomNH1, AtomMetCA, 1.459);
@@ -476,15 +475,16 @@ GeomTable::GeomTable()
 	addBondLength(AtomMetCB, AtomMetCG, 1.509);
 	addBondLength(AtomMetCG, AtomMetSD, 1.807);
 	addBondLength(AtomMetSD, AtomMetCE, 1.774);
+
 	addBondAngle(AtomNH1, AtomMetCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomMetCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomMetCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomMetCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomMetCA, AtomMetCB, 110.5);
-	addBondAngle(AtomC, AtomMetCA, AtomMetCB, 110.1);
-	addBondAngle(AtomMetCA, AtomMetCB, AtomMetCG, 114.1);
-	addBondAngle(AtomMetCB, AtomMetCG, AtomMetSD, 112.7);
-	addBondAngle(AtomMetCG, AtomMetSD, AtomMetCE, 100.9);
+	addBondAngle(AtomNH1, AtomMetCA, AtomMetCB, 110.6);
+	addBondAngle(AtomC, AtomMetCA, AtomMetCB, 110.4);
+	addBondAngle(AtomMetCA, AtomMetCB, AtomMetCG, 113.3);
+	addBondAngle(AtomMetCB, AtomMetCG, AtomMetSD, 112.4);
+	addBondAngle(AtomMetCG, AtomMetSD, AtomMetCE, 100.2);
 
 	addBondLength(AtomC, AtomGlyCA, 1.514);
 	addBondLength(AtomNH1, AtomGlyCA, 1.456);
@@ -506,12 +506,12 @@ GeomTable::GeomTable()
 	addBondAngle(AtomLysCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomLysCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomLysCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomLysCA, AtomLysCB, 110.5);
-	addBondAngle(AtomLysCB, AtomLysCA, AtomC, 110.1);
-	addBondAngle(AtomLysCA, AtomLysCB, AtomLysCG, 114.1);
-	addBondAngle(AtomLysCB, AtomLysCG, AtomLysCD, 111.3);
-	addBondAngle(AtomLysCG, AtomLysCD, AtomLysCE, 111.3);
-	addBondAngle(AtomLysCD, AtomLysCE, AtomLysNZ, 111.9);
+	addBondAngle(AtomNH1, AtomLysCA, AtomLysCB, 110.6);
+	addBondAngle(AtomLysCB, AtomLysCA, AtomC, 110.4);
+	addBondAngle(AtomLysCA, AtomLysCB, AtomLysCG, 113.4);
+	addBondAngle(AtomLysCB, AtomLysCG, AtomLysCD, 111.6);
+	addBondAngle(AtomLysCG, AtomLysCD, AtomLysCE, 111.9);
+	addBondAngle(AtomLysCD, AtomLysCE, AtomLysNZ, 111.7);
 
 	addBondLength(AtomC, AtomSerCA, 1.525);
 	addBondLength(AtomNH1, AtomSerCA, 1.459);
@@ -528,167 +528,167 @@ GeomTable::GeomTable()
 
 	addBondLength(AtomC, AtomCysCA, 1.525);
 	addBondLength(AtomNH1, AtomCysCA, 1.459);
-	addBondLength(AtomCysCA, AtomCysCB, 1.530);
-	addBondLength(AtomCysCB, AtomCysSG, 1.808);
+	addBondLength(AtomCysCA, AtomCysCB, 1.526);
+	addBondLength(AtomCysCB, AtomCysSG, 1.812);
 
 	addBondAngle(AtomNH1, AtomCysCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomCysCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomCysCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomCysCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomCysCA, AtomCysCB, 110.5);
-	addBondAngle(AtomCysCB, AtomCysCA, AtomC, 110.1);
-	addBondAngle(AtomCysCA, AtomCysCB, AtomCysSG, 114.4);
+	addBondAngle(AtomNH1, AtomCysCA, AtomCysCB, 110.8);
+	addBondAngle(AtomCysCB, AtomCysCA, AtomC, 111.5);
+	addBondAngle(AtomCysCA, AtomCysCB, AtomCysSG, 114.2);
 	
 	addBondLength(AtomC, AtomHisCA, 1.525);
 	addBondLength(AtomNH1, AtomHisCA, 1.459);
-	addBondLength(AtomHisCA, AtomHisCB, 1.530);
-	addBondLength(AtomHisCB, AtomHisCG, 1.497);
-	addBondLength(AtomHisCG, AtomHisND1, 1.371);
-	addBondLength(AtomHisCG, AtomHisCD2, 1.356);
-	addBondLength(AtomHisND1, AtomHisCE1, 1.319);
-	addBondLength(AtomHisCD2, AtomHisNE2, 1.374);
+	addBondLength(AtomHisCA, AtomHisCB, 1.535);
+	addBondLength(AtomHisCB, AtomHisCG, 1.492);
+	addBondLength(AtomHisCG, AtomHisND1, 1.380);
+	addBondLength(AtomHisCG, AtomHisCD2, 1.354);
+	addBondLength(AtomHisND1, AtomHisCE1, 1.326);
+	addBondLength(AtomHisCD2, AtomHisNE2, 1.373);
 
 	addBondAngle(AtomNH1, AtomHisCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomHisCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomHisCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomHisCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomHisCA, AtomHisCB, 110.5);
-	addBondAngle(AtomHisCB, AtomHisCA, AtomC, 110.1);
-	addBondAngle(AtomHisCA, AtomHisCB, AtomHisCG, 113.8);
-	addBondAngle(AtomHisCB, AtomHisCG, AtomHisCD2, 131.2);
-	addBondAngle(AtomHisCB, AtomHisCG, AtomHisND1, 122.7);
-	addBondAngle(AtomHisCG, AtomHisCD2, AtomHisNE2, 107.2);
-	addBondAngle(AtomHisCG, AtomHisND1, AtomHisCE1, 109.3);
+	addBondAngle(AtomNH1, AtomHisCA, AtomHisCB, 110.6);
+	addBondAngle(AtomHisCB, AtomHisCA, AtomC, 110.4);
+	addBondAngle(AtomHisCA, AtomHisCB, AtomHisCG, 113.6);
+	addBondAngle(AtomHisCB, AtomHisCG, AtomHisCD2, 130.8);
+	addBondAngle(AtomHisCB, AtomHisCG, AtomHisND1, 123.2);
+	addBondAngle(AtomHisCG, AtomHisCD2, AtomHisNE2, 109.2);
+	addBondAngle(AtomHisCG, AtomHisND1, AtomHisCE1, 108.2);
 
 	addBondLength(AtomC, AtomPheCA, 1.525);
 	addBondLength(AtomNH1, AtomPheCA, 1.459);
-	addBondLength(AtomPheCA, AtomPheCB, 1.530);
-	addBondLength(AtomPheCB, AtomPheCG, 1.502);
-	addBondLength(AtomPheCG, AtomPheCD1, 1.384);
-	addBondLength(AtomPheCG, AtomPheCD2, 1.384);
-	addBondLength(AtomPheCD1, AtomPheCE1, 1.384);
-	addBondLength(AtomPheCD2, AtomPheCE2, 1.384);
-	addBondLength(AtomPheCE2, AtomPheCZ, 1.382);
+	addBondLength(AtomPheCA, AtomPheCB, 1.535);
+	addBondLength(AtomPheCB, AtomPheCG, 1.509);
+	addBondLength(AtomPheCG, AtomPheCD1, 1.383);
+	addBondLength(AtomPheCG, AtomPheCD2, 1.383);
+	addBondLength(AtomPheCD1, AtomPheCE1, 1.388);
+	addBondLength(AtomPheCD2, AtomPheCE2, 1.388);
+	addBondLength(AtomPheCE2, AtomPheCZ, 1.369);
 
 	addBondAngle(AtomNH1, AtomPheCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomPheCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomPheCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomPheCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomPheCA, AtomPheCB, 110.5);
-	addBondAngle(AtomPheCB, AtomPheCA, AtomC, 110.1);
-	addBondAngle(AtomPheCA, AtomPheCB, AtomPheCG, 113.8);
-	addBondAngle(AtomPheCB, AtomPheCG, AtomPheCD2, 120.7);
-	addBondAngle(AtomPheCB, AtomPheCG, AtomPheCD1, 120.7);
-	addBondAngle(AtomPheCG, AtomPheCD2, AtomPheCE2, 120.7);
-	addBondAngle(AtomPheCG, AtomPheCD1, AtomPheCE1, 120.7);
-	addBondAngle(AtomPheCD2, AtomPheCE2, AtomPheCZ, 120.0);
+	addBondAngle(AtomNH1, AtomPheCA, AtomPheCB, 110.6);
+	addBondAngle(AtomPheCB, AtomPheCA, AtomC, 110.4);
+	addBondAngle(AtomPheCA, AtomPheCB, AtomPheCG, 113.9);
+	addBondAngle(AtomPheCB, AtomPheCG, AtomPheCD2, 120.8);
+	addBondAngle(AtomPheCB, AtomPheCG, AtomPheCD1, 120.8);
+	addBondAngle(AtomPheCG, AtomPheCD2, AtomPheCE2, 120.8);
+	addBondAngle(AtomPheCG, AtomPheCD1, AtomPheCE1, 120.8);
+	addBondAngle(AtomPheCD2, AtomPheCE2, AtomPheCZ, 120.1);
+
+	addBondLength(AtomC, AtomIleCA, 1.525);
+	addBondLength(AtomNH1, AtomIleCA, 1.459);
+	addBondLength(AtomIleCA, AtomIleCB, 1.544);
+	addBondLength(AtomIleCB, AtomIleCG1, 1.536);
+	addBondLength(AtomIleCG1, AtomIleCD1, 1.500);
+	addBondLength(AtomIleCB, AtomIleCG2, 1.524);
 
 	addBondAngle(AtomNH1, AtomIleCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomIleCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomIleCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomIleCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomIleCA, AtomIleCB, 111.5);
-	addBondAngle(AtomIleCB, AtomIleCA, AtomC, 109.1);
-	addBondAngle(AtomIleCA, AtomIleCB, AtomIleCG1, 110.4);
-	addBondAngle(AtomIleCA, AtomIleCB, AtomIleCG2, 110.5);
-	addBondAngle(AtomIleCB, AtomIleCG1, AtomIleCD1, 113.8);
-
-	addBondLength(AtomC, AtomIleCA, 1.525);
-	addBondLength(AtomNH1, AtomIleCA, 1.459);
-	addBondLength(AtomIleCA, AtomIleCB, 1.540);
-	addBondLength(AtomIleCB, AtomIleCG1, 1.530);
-	addBondLength(AtomIleCG1, AtomIleCD1, 1.513);
-	addBondLength(AtomIleCB, AtomIleCG2, 1.521);
+	addBondAngle(AtomNH1, AtomIleCA, AtomIleCB, 110.8);
+	addBondAngle(AtomIleCB, AtomIleCA, AtomC, 111.6);
+	addBondAngle(AtomIleCA, AtomIleCB, AtomIleCG1, 110.0);
+	addBondAngle(AtomIleCA, AtomIleCB, AtomIleCG2, 110.9);
+	addBondAngle(AtomIleCB, AtomIleCG1, AtomIleCD1, 113.9);
 
 	addBondLength(AtomC, AtomAlaCA, 1.525);
 	addBondLength(AtomNH1, AtomAlaCA, 1.459);
-	addBondLength(AtomAlaCA, AtomAlaCB, 1.521);
+	addBondLength(AtomAlaCA, AtomAlaCB, 1.520);
 
 	addBondAngle(AtomNH1, AtomAlaCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomAlaCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomAlaCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomAlaCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomAlaCA, AtomAlaCB, 110.4);
-	addBondAngle(AtomAlaCB, AtomAlaCA, AtomC, 110.5);
+	addBondAngle(AtomNH1, AtomAlaCA, AtomAlaCB, 110.1);
+	addBondAngle(AtomAlaCB, AtomAlaCA, AtomC, 110.1);
 
 	addBondLength(AtomC, AtomLeuCA, 1.525);
 	addBondLength(AtomNH1, AtomLeuCA, 1.459);
-	addBondLength(AtomLeuCA, AtomLeuCB, 1.530);
-	addBondLength(AtomLeuCB, AtomLeuCG, 1.530);
-	addBondLength(AtomLeuCG, AtomLeuCD1, 1.521);
-	addBondLength(AtomLeuCG, AtomLeuCD2, 1.521);
+	addBondLength(AtomLeuCA, AtomLeuCB, 1.533);
+	addBondLength(AtomLeuCB, AtomLeuCG, 1.521);
+	addBondLength(AtomLeuCG, AtomLeuCD1, 1.524);
+	addBondLength(AtomLeuCG, AtomLeuCD2, 1.524);
 
 	addBondAngle(AtomNH1, AtomLeuCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomLeuCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomLeuCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomLeuCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomLeuCA, AtomLeuCB, 110.5);
-	addBondAngle(AtomLeuCB, AtomLeuCA, AtomC, 110.1);
-	addBondAngle(AtomLeuCA, AtomLeuCB, AtomLeuCG, 116.3);
-	addBondAngle(AtomLeuCB, AtomLeuCG, AtomLeuCD1, 110.7);
-	addBondAngle(AtomLeuCB, AtomLeuCG, AtomLeuCD2, 110.7);
+	addBondAngle(AtomNH1, AtomLeuCA, AtomLeuCB, 110.4);
+	addBondAngle(AtomLeuCB, AtomLeuCA, AtomC, 110.2);
+	addBondAngle(AtomLeuCA, AtomLeuCB, AtomLeuCG, 115.3);
+	addBondAngle(AtomLeuCB, AtomLeuCG, AtomLeuCD1, 111.0);
+	addBondAngle(AtomLeuCB, AtomLeuCG, AtomLeuCD2, 110.5);
 
 	addBondLength(AtomC, AtomTrpCA, 1.525);
 	addBondLength(AtomNH1, AtomTrpCA, 1.459);
-	addBondLength(AtomTrpCA, AtomTrpCB, 1.530);
+	addBondLength(AtomTrpCA, AtomTrpCB, 1.535);
 	addBondLength(AtomTrpCB, AtomTrpCG, 1.498);
-	addBondLength(AtomTrpCG, AtomTrpCD1, 1.365);
-	addBondLength(AtomTrpCG, AtomTrpCD2, 1.433);
-	addBondLength(AtomTrpCD1, AtomTrpNE1, 1.374);
-	addBondLength(AtomTrpNE1, AtomTrpCE2, 1.370);
+	addBondLength(AtomTrpCG, AtomTrpCD1, 1.363);
+	addBondLength(AtomTrpCG, AtomTrpCD2, 1.432);
+	addBondLength(AtomTrpCD1, AtomTrpNE1, 1.375);
+	addBondLength(AtomTrpNE1, AtomTrpCE2, 1.371);
 	addBondLength(AtomTrpCD2, AtomTrpCE2, 1.409);
-	addBondLength(AtomTrpCD2, AtomTrpCE3, 1.398);
-	addBondLength(AtomTrpCE2, AtomTrpCZ2, 1.394);
+	addBondLength(AtomTrpCD2, AtomTrpCE3, 1.399);
+	addBondLength(AtomTrpCE2, AtomTrpCZ2, 1.393);
 	addBondLength(AtomTrpCE3, AtomTrpCZ3, 1.382);
-	addBondLength(AtomTrpCZ3, AtomTrpCH2, 1.368);
-	addBondLength(AtomTrpCZ2, AtomTrpCH2, 1.400);
+	addBondLength(AtomTrpCZ3, AtomTrpCH2, 1.369);
+	addBondLength(AtomTrpCZ2, AtomTrpCH2, 1.396);
 
 	addBondAngle(AtomNH1, AtomTrpCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomTrpCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomTrpCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomTrpCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomTrpCA, AtomTrpCB, 110.5);
-	addBondAngle(AtomTrpCB, AtomTrpCA, AtomC, 110.1);
-	addBondAngle(AtomTrpCA, AtomTrpCB, AtomTrpCG, 113.6);
-	addBondAngle(AtomTrpCB, AtomTrpCG, AtomTrpCD1, 126.9);
-	addBondAngle(AtomTrpCB, AtomTrpCG, AtomTrpCD2, 126.8);
-	addBondAngle(AtomTrpCG, AtomTrpCD1, AtomTrpNE1, 110.2);
+	addBondAngle(AtomNH1, AtomTrpCA, AtomTrpCB, 110.6);
+	addBondAngle(AtomTrpCB, AtomTrpCA, AtomC, 110.4);
+	addBondAngle(AtomTrpCA, AtomTrpCB, AtomTrpCG, 113.7);
+	addBondAngle(AtomTrpCB, AtomTrpCG, AtomTrpCD1, 127.0);
+	addBondAngle(AtomTrpCB, AtomTrpCG, AtomTrpCD2, 126.6);
+	addBondAngle(AtomTrpCG, AtomTrpCD1, AtomTrpNE1, 110.1);
 	addBondAngle(AtomTrpCG, AtomTrpCD2, AtomTrpCE3, 133.9);
-	addBondAngle(AtomTrpCD1, AtomTrpNE1, AtomTrpCE2, 108.9);
-	addBondAngle(AtomTrpNE1, AtomTrpCE2, AtomTrpCZ2, 130.1);
-	addBondAngle(AtomTrpCZ3, AtomTrpCE3, AtomTrpCD2, 118.6);
-	addBondAngle(AtomTrpCD2, AtomTrpCE2, AtomTrpCZ2, 122.4);
-	addBondAngle(AtomTrpCE3, AtomTrpCZ3, AtomTrpCH2, 121.1);
+	addBondAngle(AtomTrpCD1, AtomTrpNE1, AtomTrpCE2, 109.0);
+	addBondAngle(AtomTrpNE1, AtomTrpCE2, AtomTrpCZ2, 130.4);
+	addBondAngle(AtomTrpCZ3, AtomTrpCE3, AtomTrpCD2, 118.8);
+	addBondAngle(AtomTrpCD2, AtomTrpCE2, AtomTrpCZ2, 122.3);
+	addBondAngle(AtomTrpCE3, AtomTrpCZ3, AtomTrpCH2, 121.2);
 
 	addBondLength(AtomC, AtomTyrCA, 1.525);
 	addBondLength(AtomNH1, AtomTyrCA, 1.459);
-	addBondLength(AtomTyrCA, AtomTyrCB, 1.530);
+	addBondLength(AtomTyrCA, AtomTyrCB, 1.535);
 	addBondLength(AtomTyrCB, AtomTyrCG, 1.512);
-	addBondLength(AtomTyrCG, AtomTyrCD1, 1.389);
-	addBondLength(AtomTyrCG, AtomTyrCD2, 1.389);
-	addBondLength(AtomTyrCD1, AtomTyrCE1, 1.382);
-	addBondLength(AtomTyrCD2, AtomTyrCE2, 1.382);
-	addBondLength(AtomTyrCE2, AtomTyrCZ, 1.378);
-	addBondLength(AtomTyrCZ, AtomTyrOH, 1.376);
+	addBondLength(AtomTyrCG, AtomTyrCD1, 1.387);
+	addBondLength(AtomTyrCG, AtomTyrCD2, 1.387);
+	addBondLength(AtomTyrCD1, AtomTyrCE1, 1.389);
+	addBondLength(AtomTyrCD2, AtomTyrCE2, 1.389);
+	addBondLength(AtomTyrCE2, AtomTyrCZ, 1.381);
+	addBondLength(AtomTyrCZ, AtomTyrOH, 1.374);
 
 	addBondAngle(AtomNH1, AtomTyrCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomTyrCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomTyrCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomTyrCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomTyrCA, AtomTyrCB, 110.5);
-	addBondAngle(AtomTyrCB, AtomTyrCA, AtomC, 110.1);
-	addBondAngle(AtomTyrCA, AtomTyrCB, AtomTyrCG, 113.9);
-	addBondAngle(AtomTyrCB, AtomTyrCG, AtomTyrCD2, 120.8);
-	addBondAngle(AtomTyrCB, AtomTyrCG, AtomTyrCD1, 120.8);
-	addBondAngle(AtomTyrCG, AtomTyrCD2, AtomTyrCE2, 121.2);
-	addBondAngle(AtomTyrCG, AtomTyrCD1, AtomTyrCE1, 121.2);
-	addBondAngle(AtomTyrCD2, AtomTyrCE2, AtomTyrCZ, 119.6);
-	addBondAngle(AtomTyrCE2, AtomTyrCZ, AtomTyrOH, 119.9);
+	addBondAngle(AtomNH1, AtomTyrCA, AtomTyrCB, 110.6);
+	addBondAngle(AtomTyrCB, AtomTyrCA, AtomC, 110.4);
+	addBondAngle(AtomTyrCA, AtomTyrCB, AtomTyrCG, 113.4);
+	addBondAngle(AtomTyrCB, AtomTyrCG, AtomTyrCD2, 121.0);
+	addBondAngle(AtomTyrCB, AtomTyrCG, AtomTyrCD1, 121.0);
+	addBondAngle(AtomTyrCG, AtomTyrCD2, AtomTyrCE2, 121.3);
+	addBondAngle(AtomTyrCG, AtomTyrCD1, AtomTyrCE1, 121.3);
+	addBondAngle(AtomTyrCD2, AtomTyrCE2, AtomTyrCZ, 119.8);
+	addBondAngle(AtomTyrCE2, AtomTyrCZ, AtomTyrOH, 120.1);
 
 	addBondLength(AtomC, AtomAspCA, 1.525);
 	addBondLength(AtomNH1, AtomAspCA, 1.459);
-	addBondLength(AtomAspCA, AtomAspCB, 1.530);
-	addBondLength(AtomAspCB, AtomAspCG, 1.516);
+	addBondLength(AtomAspCA, AtomAspCB, 1.535);
+	addBondLength(AtomAspCB, AtomAspCG, 1.513);
 	addBondLength(AtomAspCG, AtomAspOD1, 1.249);
 	addBondLength(AtomAspCG, AtomAspOD2, 1.249);
 
@@ -696,40 +696,40 @@ GeomTable::GeomTable()
 	addBondAngle(AtomAspCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomAspCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomAspCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomAspCA, AtomAspCB, 110.5);
-	addBondAngle(AtomAspCB, AtomAspCA, AtomC, 110.1);
-	addBondAngle(AtomAspCA, AtomAspCB, AtomAspCG, 112.6);
-	addBondAngle(AtomAspCB, AtomAspCG, AtomAspOD1, 118.4);
-	addBondAngle(AtomAspCB, AtomAspCG, AtomAspOD2, 118.4);
+	addBondAngle(AtomNH1, AtomAspCA, AtomAspCB, 110.6);
+	addBondAngle(AtomAspCB, AtomAspCA, AtomC, 110.4);
+	addBondAngle(AtomAspCA, AtomAspCB, AtomAspCG, 113.4);
+	addBondAngle(AtomAspCB, AtomAspCG, AtomAspOD1, 118.3);
+	addBondAngle(AtomAspCB, AtomAspCG, AtomAspOD2, 123.3);
 
 	addBondAngle(AtomNH1, AtomAspCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomAspCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomAspCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomAspCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomAspCA, AtomAspCB, 110.5);
-	addBondAngle(AtomAspCB, AtomAspCA, AtomC, 110.1);
-	addBondAngle(AtomAspCA, AtomAspCB, AtomAspCG, 112.6);
-	addBondAngle(AtomAspCB, AtomAspCG, AtomAspOD1, 118.4);
-	addBondAngle(AtomAspCB, AtomAspCG, AtomAspOD2, 118.4);
+	addBondAngle(AtomNH1, AtomAspCA, AtomAspCB, 110.6);
+	addBondAngle(AtomAspCB, AtomAspCA, AtomC, 110.4);
+	addBondAngle(AtomAspCA, AtomAspCB, AtomAspCG, 113.4);
+	addBondAngle(AtomAspCB, AtomAspCG, AtomAspOD1, 118.3);
+	addBondAngle(AtomAspCB, AtomAspCG, AtomAspOD2, 118.3);
 
 	addBondLength(AtomC, AtomThrCA, 1.525);
 	addBondLength(AtomNH1, AtomThrCA, 1.459);
-	addBondLength(AtomThrCA, AtomThrCB, 1.540);
-	addBondLength(AtomThrCB, AtomThrOG1, 1.433);
-	addBondLength(AtomThrCB, AtomThrCG2, 1.521);
+	addBondLength(AtomThrCA, AtomThrCB, 1.529);
+	addBondLength(AtomThrCB, AtomThrOG1, 1.428);
+	addBondLength(AtomThrCB, AtomThrCG2, 1.519);
 
 	addBondAngle(AtomNH1, AtomThrCA, AtomC, C_CH1E_NH1_ANGLE);
 	addBondAngle(AtomThrCA, AtomC, AtomO, CH1E_C_O_ANGLE);
 	addBondAngle(AtomC, AtomNH1, AtomThrCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomThrCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
-	addBondAngle(AtomNH1, AtomThrCA, AtomThrCB, 111.5);
-	addBondAngle(AtomThrCB, AtomThrCA, AtomC, 109.1);
-	addBondAngle(AtomThrCA, AtomThrCB, AtomThrCG2, 110.5);
-	addBondAngle(AtomThrCA, AtomThrCB, AtomThrOG1, 109.6);
+	addBondAngle(AtomNH1, AtomThrCA, AtomThrCB, 110.3);
+	addBondAngle(AtomThrCB, AtomThrCA, AtomC, 111.6);
+	addBondAngle(AtomThrCA, AtomThrCB, AtomThrCG2, 112.4);
+	addBondAngle(AtomThrCA, AtomThrCB, AtomThrOG1, 109.0);
 
 	addBondLength(AtomC, AtomValCA, 1.525);
 	addBondLength(AtomNH1, AtomValCA, 1.459);
-	addBondLength(AtomValCA, AtomValCB, 1.540);
+	addBondLength(AtomValCA, AtomValCB, 1.543);
 	addBondLength(AtomValCB, AtomValCG1, 1.524);
 	addBondLength(AtomValCB, AtomValCG2, 1.524);
 
@@ -738,9 +738,9 @@ GeomTable::GeomTable()
 	addBondAngle(AtomC, AtomNH1, AtomValCA, C_NH1_CH1E_ANGLE);
 	addBondAngle(AtomValCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
 	addBondAngle(AtomNH1, AtomValCA, AtomValCB, 111.5);
-	addBondAngle(AtomValCB, AtomValCA, AtomC, 109.1);
-	addBondAngle(AtomValCA, AtomValCB, AtomValCG1, 110.5);
-	addBondAngle(AtomValCA, AtomValCB, AtomValCG2, 110.5);
+	addBondAngle(AtomValCB, AtomValCA, AtomC, 111.4);
+	addBondAngle(AtomValCA, AtomValCB, AtomValCG1, 110.9);
+	addBondAngle(AtomValCA, AtomValCB, AtomValCG2, 110.9);
 
 }
 
