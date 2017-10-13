@@ -127,13 +127,13 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 				if (getMonomer()->isAfterAnchor())
 				{
-					addRamachandranAngles(getPolymer(), resNum, resNum + 3);
-					addSampledBackbone(getPolymer(), resNum, resNum + 3);
+					addRamachandranAngles(getPolymer(), resNum, resNum + 2);
+					addSampledBackbone(getPolymer(), resNum, resNum + 2);
 				}
 				else
 				{
-					addRamachandranAngles(getPolymer(), resNum, resNum - 3);
-					addSampledBackbone(getPolymer(), resNum, resNum - 3);
+					addRamachandranAngles(getPolymer(), resNum, resNum - 2);
+					addSampledBackbone(getPolymer(), resNum, resNum - 2);
 				}
 
 
@@ -230,8 +230,15 @@ void Backbone::setAnchor()
 	if (currentReversal->getClassName() == "Absolute" ||
 		currentReversal->getClassName() == "Anchor")
 	{
-		AtomPtr atom = ToAbsolutePtr(currentReversal)->getNextAtom();
-
-		oldReversal->addDownstreamAtom(atom, 0);
+		oldReversal->getBondGroup(0)->atoms.clear();
+		AbsolutePtr absolute = ToAbsolutePtr(currentReversal);
+		for (int i = 0; i < absolute->nextAtomCount(); i++)
+		{
+			AtomPtr atom = absolute->getNextAtom(i);
+			if (atom != oldReversal->getMajor())
+			{
+				oldReversal->addDownstreamAtom(atom, 0);
+			}
+		}
 	}
 }

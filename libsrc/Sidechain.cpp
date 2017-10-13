@@ -69,6 +69,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 					if (scoreType == ScoreTypeModelRMSDZero)
 					{
 						setupGrid();
+						addSampledAtoms(shared_from_this());
 						addMagicAxisBroad(bond);
 						setSilent();
 						setJobName("broad_axis_" +  bond->shortDesc());
@@ -106,40 +107,8 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 					bond->resetAxis();
 				}
 
-				/*
-				ScoreType scoreType = ScoreTypeModelRMSDZero;
-				for (int l = 0; l < 1; l++)
-				{
-					setupNelderMead();
-					bond->setBlocked(true);
-					addMagicAxis(bond, deg2rad(20.0), deg2rad(2.0));
+				
 
-					if (scoreType == ScoreTypeModelRMSD)
-					{
-						addDampening(bond, 0.1, 0.1);
-						addTorsionBlur(bond, 0.1, 0.1);
-					}
-
-					setJobName("magic_axis_" +  bond->shortDesc());
-					addSampledAtoms(shared_from_this());
-					setSilent();
-					setScoreType(scoreType);
-					sample();
-
-					if (scoreType == ScoreTypeModelRMSD)
-					{
-						scoreType = ScoreTypeModelRMSDZero;
-					}
-					else
-					{
-						scoreType = ScoreTypeModelRMSD;
-
-					}
-
-					bond->resetAxis();
-
-				}
-*/
 				setupNelderMead();
 				setupTorsionSet(bond, k, 5, resNum, ANGLE_SAMPLING, deg2rad(0.01));
 				addSampledAtoms(shared_from_this());

@@ -153,21 +153,26 @@ public:
 		return _atom;
 	}
 
-	void setNextAtom(AtomPtr atom)
+	void addNextAtom(AtomPtr atom)
 	{
-		_nextAtom = atom;
+		_nextAtoms.push_back(atom);
 	}
 
-	AtomPtr getNextAtom()
+	AtomPtr getNextAtom(int i)
 	{
-		return _nextAtom.lock();
+		return _nextAtoms[i].lock();
+	}
+
+	long nextAtomCount()
+	{
+		return _nextAtoms.size();
 	}
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 
 private:
 	AtomPtr _atom;
-    AtomWkr _nextAtom;
+	std::vector<AtomWkr> _nextAtoms;
 	std::string _element;
 	double _occupancy;
 	std::string _chainID, _resName, _atomName;

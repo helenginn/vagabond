@@ -96,7 +96,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 
 	if (upModel->getClassName() == "Absolute" || upModel->getClassName() == "Anchor")
 	{
-		ToAbsolutePtr(upModel)->setNextAtom(minor);
+		ToAbsolutePtr(upModel)->addNextAtom(minor);
 	}
 }
 

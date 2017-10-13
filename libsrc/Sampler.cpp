@@ -216,10 +216,12 @@ void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
 		if (!last)
 		{
 			addTorsion(peptideBond, ANGLE_SAMPLING, deg2rad(0.05));
+			addTorsion(ramaBond, ANGLE_SAMPLING, deg2rad(0.05));
 			addTorsion(caBond, ANGLE_SAMPLING, deg2rad(0.05));
 		}
 		else
 		{
+			addTorsion(ramaBond, ANGLE_SAMPLING, deg2rad(0.05));
 			addTorsion(caBond, ANGLE_SAMPLING, deg2rad(0.05));
 		}
 	}

@@ -97,7 +97,7 @@ void Options::run()
 
 			if (_numCycles > 0)
 			{
-				for (int i = 0; i < 6; i++)
+				for (int i = 0; i < 100; i++)
 				{
 
 					count++;
@@ -128,6 +128,8 @@ void Options::run()
 						crystals[0]->changeAnchors(91);
 						count++;
 						polymer->scaleFlexibilityToBFactor(crystals[0]);
+				//		crystals[0]->changeAnchors(34);
+					//	polymer->scaleFlexibilityToBFactor(crystals[0]);
 						polymer->makePDB("refine_" + i_to_str(count) + ".pdb");
 						polymer->graph("graph_" + i_to_str(count));
 						crystals[0]->writeCalcMillersToFile(data, refineCount);
