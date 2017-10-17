@@ -79,7 +79,8 @@ void Molecule::resetInitialPositions()
 {
 	for (int i = 0; i < atomCount(); i++)
 	{
-		atom(i)->setInitialPosition(atom(i)->getPosition());
+		vec3 pos = atom(i)->getPosition();
+		atom(i)->setInitialPosition(pos);
 
 		ModelPtr model = atom(i)->getModel();
 

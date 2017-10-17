@@ -165,7 +165,13 @@ void Sampler::setupNelderMead()
 void Sampler::addOverallKickAndDampen(PolymerPtr polymer)
 {
 	_strategy->addParameter(&*polymer, Polymer::getInitialKick, Polymer::setInitialKick, 0.10, 0.002, "kick");
-	_strategy->addParameter(&*polymer, Polymer::getConstantDampening, Polymer::setConstantDampening, 0.05, 0.02, "dampen");
+	_strategy->addParameter(&*polymer, Polymer::getBackboneDampening, Polymer::setBackboneDampening, 0.05, 0.02, "dampen");
+}
+
+void Sampler::addSidechainDampen(PolymerPtr polymer)
+{
+//	_strategy->addParameter(&*polymer, Polymer::getSidechainDampening, Polymer::setSidechainDampening, 0.02, 0.01, "side_dampen");
+//	_strategy->addParameter(&*polymer, Polymer::getSideKick, Polymer::setSideKick, 0.02, 0.01, "side_kick");
 }
 
 void Sampler::addOccupancy(BondPtr bond, double range, double interval)
@@ -356,6 +362,20 @@ void Sampler::addAbsoluteBFactor(AbsolutePtr abs, double range, double interval)
 	//	double number = fabs(range / interval);
 	_strategy->addParameter(&*abs, Absolute::getB, Absolute::setB,
 							range, interval, "bfactor");
+}
+
+void Sampler::addSampledSidechains(PolymerPtr polymer)
+{
+	for (int i = 0; i < polymer->monomerCount(); i++)
+	{
+		if (!polymer->getMonomer(i))
+		{
+			continue;
+		}
+
+		SidechainPtr sidechain = polymer->getMonomer(i)->getSidechain();
+		addSampledAtoms(sidechain);
+	}
 }
 
 void Sampler::addSampledBackbone(PolymerPtr polymer, int from, int to)

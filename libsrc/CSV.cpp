@@ -282,6 +282,11 @@ void CSV::minMaxCol(int col, double *min, double *max, bool round)
 
 void CSV::writeStringToPlot(std::string text, Plot *plot, int y, int x)
 {
+	if (!text.length())
+	{
+		return;
+	}
+	
     for (int i = 0; i < text.length(); i++)
     {
         (*plot)[y][x + i] = text[i];

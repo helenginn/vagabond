@@ -80,6 +80,27 @@ void AtomGroup::addAtomsFrom(AtomGroupPtr child)
 	}
 }
 
+double AtomGroup::getAverageDisplacement()
+{
+	double sum = 0;
+	double count = 0;
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->getElement()->electronCount() <= 1)
+		{
+			continue;
+		}
+
+		double val = atom(i)->posDisplacement();
+
+		sum += val;
+		count++;
+	}
+
+	return sum / count;
+}
+
 double AtomGroup::getAverageBFactor(bool initial)
 {
 	double sum = 0;

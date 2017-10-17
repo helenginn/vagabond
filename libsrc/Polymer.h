@@ -18,13 +18,14 @@
 
 class Polymer :
 public Molecule,
-public std::enable_shared_from_this<Polymer>,
 public Sampler
 {
 public:
 	Polymer()
 	{
 		_dampening = 0.05;
+		_sideDampening = 0.05;
+		_sideKick = 0;
 		_anchorNum = 0;
 	}
 
@@ -36,13 +37,20 @@ public:
 	virtual void graph(std::string graphName);
 	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst);
 
-	static double getConstantDampening(void *object);
-	static void setConstantDampening(void *object, double value);
+	static double getBackboneDampening(void *object);
+	static void setBackboneDampening(void *object, double value);
+
+	static double getSidechainDampening(void *object);
+	static void setSidechainDampening(void *object, double value);
 
 	static void setInitialKick(void *object, double value);
 	static double getInitialKick(void *object);
 
+	static double getSideKick(void *object);
+	static void setSideKick(void *object, double value);
+
 	void scaleFlexibilityToBFactor(CrystalPtr target);
+	void scaleSidechainsToBFactor();
 
 	void changeAnchor(int num);
 	void setAnchor(int num)
@@ -82,6 +90,11 @@ public:
 	{
 		return "Polymer";
 	}
+
+	PolymerPtr shared_from_this()
+	{
+		return ToPolymerPtr(Molecule::shared_from_this());
+	}
 private:
 	void refineMonomer(MonomerPtr monomer, CrystalPtr target,
 					   RefinementType rType);
@@ -90,6 +103,8 @@ private:
 
 	int _anchorNum;
 	double _dampening;
+	double _sideDampening;
+	double _sideKick;
 };
 
 #endif /* defined(__vagabond__Polymer__) */

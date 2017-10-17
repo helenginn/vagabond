@@ -132,6 +132,8 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				}
 				else
 				{
+//					setupTorsionSet(bond, k, 4, resNum, deg2rad(4), deg2rad(0.05));
+
 					addRamachandranAngles(getPolymer(), resNum, resNum - 2);
 					addSampledBackbone(getPolymer(), resNum, resNum - 2);
 				}
@@ -228,16 +230,32 @@ void Backbone::setAnchor()
 	ToAnchorPtr(modelAnchor)->activate();
 
 	if (currentReversal->getClassName() == "Absolute" ||
-		currentReversal->getClassName() == "Anchor")
+		currentReversal->isAnchor())
 	{
 		oldReversal->getBondGroup(0)->atoms.clear();
-		AbsolutePtr absolute = ToAbsolutePtr(currentReversal);
-		for (int i = 0; i < absolute->nextAtomCount(); i++)
+
+		if (currentReversal->isAnchor())
 		{
-			AtomPtr atom = absolute->getNextAtom(i);
-			if (atom != oldReversal->getMajor())
+			ToAnchorPtr(currentReversal)->setCallingBond(&*oldReversal);
+			BondPtr bond = ToAnchorPtr(currentReversal)->getAppropriateBond(true);
+
+			oldReversal->addDownstreamAtom(bond->getMajor(), 0);
+
+			for (int i = bond->downstreamAtomCount(0) - 1; i > 0; i--)
 			{
-				oldReversal->addDownstreamAtom(atom, 0);
+				oldReversal->addDownstreamAtom(bond->downstreamAtom(0, i), 0);
+			}
+		}
+		else
+		{
+			AbsolutePtr absolute = ToAbsolutePtr(currentReversal);
+			for (int i = 0; i < absolute->nextAtomCount(); i++)
+			{
+				AtomPtr atom = absolute->getNextAtom(i);
+				if (atom != oldReversal->getMajor())
+				{
+					oldReversal->addDownstreamAtom(atom, 0);
+				}
 			}
 		}
 	}

@@ -70,6 +70,31 @@ void Monomer::addAtom(AtomPtr atom)
 	}
 }
 
+void Monomer::setSideKick(double value)
+{
+	AtomPtr atom = findAtom("CB");
+
+	if (!atom)
+	{
+		return;
+	}
+
+	ModelPtr model = atom->getModel();
+	if (!model->isBond())
+	{
+		return;
+	}
+
+	BondPtr bond = ToBondPtr(model);
+
+	if (bond->isFixed() || !bond->isUsingTorsion())
+	{
+		return;
+	}
+
+	Bond::setTorsionBlur(&*bond, value);
+}
+
 void Monomer::setKick(double value, bool beforeAnchor)
 {
 	AtomPtr atom;
@@ -143,7 +168,7 @@ void Monomer::tieAtomsUp()
 	_sidechain->setTied();
 }
 
-void Monomer::setConstantDampening(double value)
+void Monomer::setBackboneDampening(double value)
 {
 	for (int i = 0; i < modelCount(); i++)
 	{
@@ -151,6 +176,24 @@ void Monomer::setConstantDampening(double value)
 		{
 			BondPtr bond = ToBondPtr(model(i));
 			Bond::setDampening(&*bond, value);
+		}
+	}
+/*	for (int i = 0; i < getBackbone()->bondCount(); i++)
+	{
+		BondPtr bond = getBackbone()->bond(i);
+		Bond::setDampening(&*bond, value);
+	}*/
+}
+
+void Monomer::setSidechainDampening(double value)
+{
+	for (int i = 0; i < getSidechain()->atomCount(); i++)
+	{
+		ModelPtr model = getSidechain()->atom(i)->getModel();
+
+		if (model->isBond())
+		{
+			Bond::setDampening(&*model, value);
 		}
 	}
 }

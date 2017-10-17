@@ -22,7 +22,12 @@ public:
 	Monomer();
 	void setup();
 	void tieAtomsUp();
-	void setConstantDampening(double value);
+
+	/* For global modification of entire structure */
+	void setBackboneDampening(double value);
+	void setSidechainDampening(double value);
+
+	
 	bool isAfterAnchor();
 
 	MonomerPtr shared_from_this()
@@ -91,6 +96,8 @@ public:
 
 	void setKick(double value, bool beforeAnchor);
 	double getKick();
+
+	void setSideKick(double value);
 private:
 	std::string _identifier; // e.g. three-letter code
 	int _residueNum; // number in protein sequence including missing ones.

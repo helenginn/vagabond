@@ -45,7 +45,8 @@ public:
 	}
 
 	/* Which trapped bond is required for the _callingBond? */
-	BondPtr getAppropriateBond();
+	/* If the calling bond happens to be reversed, pass reverse = true */
+	BondPtr getAppropriateBond(bool reverse = false);
 	void activate();
 
 	static BondPtr sanitiseBond(Bond *myself, BondPtr model);
@@ -58,9 +59,10 @@ private:
 	BondPtr _trappedToCTerminus;
 	bool _flipNTerminus;
 
-	/* Temporary holding of static start position for anchor and
+	/* Temporary holding of static start position for anchor, heavy atom and
 	 * bond group */
 	vec3 _anchorStart;
+	vec3 _majorStart;
 	BondGroup *_newHeavyStoredGroup;
 
 	Bond *_callingBond;

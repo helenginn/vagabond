@@ -25,11 +25,12 @@
 
 typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
-class Crystal : public Object
+class Crystal : public Object, public std::enable_shared_from_this<Crystal>
 {
 public:
 	Crystal();
 	void addMolecule(MoleculePtr molecule);
+	void concludeRefinement(int cycleNum, DiffractionPtr data);
 
 	long int moleculeCount()
 	{

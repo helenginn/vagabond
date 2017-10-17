@@ -201,7 +201,7 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 	double ratio = tan(angle);
 	double portion = -10;
 
-	if (_bondGroups[group].atoms.size() > 0)
+	if (_bondGroups[group].atoms.size() > 0 && atom->getElement()->electronCount() > 1)
 	{
 		if (!_heavyAlign.expired() && _usingTorsion)
 		{
@@ -328,7 +328,7 @@ void Bond::setMinor(AtomPtr newMinor)
 		deriveBondLength();
 	}
 
-	vec3 majorPos = getMajor()->getPosition();
+	vec3 majorPos = getMajor()->getInitialPosition();
 	vec3 minorPos = getMinor()->getInitialPosition();
 
 	vec3 difference = vec3_subtract_vec3(majorPos, minorPos);
@@ -390,6 +390,12 @@ mat3x3 Bond::makeTorsionBasis(vec3 hPos, vec3 maPos,
 		{
 			angle *= -1;
 		}
+
+		if (angle != angle)
+		{
+			shout_at_helen("Torsion angle is nan!");
+		}
+
 
 		*newAngle = angle;
 	}
@@ -681,6 +687,7 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 	for (int i = 0; i < prevs->size(); i++)
 	{
 		double torsionAngle = (*prevs)[i].torsion + circleAdd;
+
 		mat3x3 oldBasis = (*prevs)[i].basis;
 		vec3 prevMinorPos = (*prevs)[i].start;
 		vec3 prevHeavyPos = (*prevs)[i].old_start;
@@ -743,9 +750,7 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		double undoBlur = 0;
 		undoBlur = rotAngle;
 		undoBlur *= xValue;
-		undoBlur *= _dampening;
-
-		if (_dampening <= 0) undoBlur = 0;
+		undoBlur *= fabs(_dampening);
 
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;
 		addBlur *= yValue;
@@ -1083,8 +1088,7 @@ void Bond::propagateChange()
 std::string Bond::description()
 {
 	std::ostringstream stream;
-	stream << "Bond: connects " << getMajor()->getAtomName() << " to "
-	<< getMinor()->getAtomName() << std::endl;
+	stream << "Bond: " << shortDesc() << std::endl;
 	stream << "Bond length: " << _bondLength << " Å" << std::endl;
 	stream << "Bond torsion angle: " << rad2deg(_bondGroups[0].torsionAngle) << std::endl;
 	stream << "Bond downstream groups: (" << downstreamAtomGroupCount() << "):" << std::endl;

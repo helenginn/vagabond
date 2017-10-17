@@ -155,6 +155,12 @@ void Knotter::tieTowardsNTerminus()
 
 	cAlpha2NSpine->activate(_backbone);
 
+	if (nSpine->getModel()->isBond())
+	{
+		BondPtr nSpine2hydrogen = BondPtr(new Bond(nSpine, nHydrogen));
+		nSpine2hydrogen->activate(_backbone);
+	}
+
 	if (isProline)
 	{
 		cAlpha2NSpine->setFixed(true);
@@ -247,6 +253,12 @@ void Knotter::tieTowardsCTerminus()
 
 	nSpine2cAlpha->activate(_backbone, inherit);
 
+	if (nSpine->getModel()->isBond())
+	{
+		BondPtr nSpine2hydrogen = BondPtr(new Bond(nSpine, nHydrogen));
+		nSpine2hydrogen->activate(_backbone);
+	}
+	
 	if (isProline)
 	{
 		nSpine2cAlpha->setFixed(true);

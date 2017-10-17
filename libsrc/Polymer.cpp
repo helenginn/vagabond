@@ -204,11 +204,11 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 
 void Polymer::graph(std::string graphName)
 {
-	CSVPtr csv = CSVPtr(new CSV(10, "resnum", "newB", "oldB", "oldX", "oldY", "oldZ",
-								"newX", "newY", "newZ", "pos"));
+	CSVPtr csv = CSVPtr(new CSV(11, "resnum", "newB", "oldB", "oldX", "oldY", "oldZ",
+								"newX", "newY", "newZ", "pos", "sidepos"));
 	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
-	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB", "pos"));
+	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB"));
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -241,9 +241,10 @@ void Polymer::graph(std::string graphName)
 			double oldY = ca->getInitialAnisoB(1);
 			double oldZ = ca->getInitialAnisoB(2);
 			double posDisp = ca->posDisplacement();
+			double sideDisp = sidechain->getAverageDisplacement();
 
-			csv->addEntry(10, value, meanSq, ca->getInitialBFactor(),
-						  oldX, oldY, oldZ, newX, newY, newZ, posDisp);
+			csv->addEntry(11, value, meanSq, ca->getInitialBFactor(),
+						  oldX, oldY, oldZ, newX, newY, newZ, posDisp, sideDisp);
 			caDampen = Bond::getDampening(&*caBond);
 			caBlur = Bond::getTorsionBlur(&*caBond);
 
@@ -280,6 +281,7 @@ void Polymer::graph(std::string graphName)
 		{
 			double initialBee = sidechain->getAverageBFactor(true);
 			double nowBee = sidechain->getAverageBFactor(false);
+			double pos = sidechain->getAverageDisplacement();
 
 			sidechainCsv->addEntry(3, value, initialBee, nowBee);
 		}
@@ -383,13 +385,19 @@ void Polymer::graph(std::string graphName)
 		plotMap["width"] = "1200";
 		plotMap["xHeader0"] = "resnum";
 		plotMap["yHeader0"] = "pos";
+		plotMap["xHeader1"] = "resnum";
+		plotMap["yHeader1"] = "sidepos";
 		plotMap["colour0"] = "black";
+		plotMap["colour1"] = "blue";
 		plotMap["yMin0"] = "0";
 		plotMap["yMax0"] = "1";
+		plotMap["yMin1"] = "0";
+		plotMap["yMax1"] = "1";
 
 		plotMap["xTitle0"] = "Residue number";
 		plotMap["yTitle0"] = "Displacement Ang";
 		plotMap["style0"] = "line";
+		plotMap["style1"] = "line";
 
 		csv->plotPNG(plotMap);
 		csv->writeToFile("displacement_" + graphName + ".csv");
@@ -430,12 +438,32 @@ void Polymer::graph(std::string graphName)
 	std::cout << "Written out " << graphName << " graph set." << std::endl;
 }
 
-double Polymer::getConstantDampening(void *object)
+
+double Polymer::getSidechainDampening(void *object)
+{
+	return static_cast<Polymer *>(object)->_sideDampening;
+}
+
+void Polymer::setSidechainDampening(void *object, double value)
+{
+	Polymer *polymer = static_cast<Polymer *>(object);
+	polymer->_sideDampening = value;
+
+	for (int i = 0; i < polymer->monomerCount(); i++)
+	{
+		if (polymer->getMonomer(i))
+		{
+			polymer->getMonomer(i)->setSidechainDampening(value);
+		}
+	}
+}
+
+double Polymer::getBackboneDampening(void *object)
 {
 	return static_cast<Polymer *>(object)->_dampening;
 }
 
-void Polymer::setConstantDampening(void *object, double value)
+void Polymer::setBackboneDampening(void *object, double value)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
 	polymer->_dampening = value;
@@ -444,7 +472,7 @@ void Polymer::setConstantDampening(void *object, double value)
 	{
 		if (polymer->getMonomer(i))
 		{
-			polymer->getMonomer(i)->setConstantDampening(value);
+			polymer->getMonomer(i)->setBackboneDampening(value);
 		}
 	}
 }
@@ -483,7 +511,7 @@ void Polymer::changeAnchor(int num)
 	int limit = (oldAnchor < num) ? 0 : monomerCount();
 	int step = (oldAnchor < num) ? -1 : 1;
 
-	for (int i = 0; i < monomerCount(); i += 1)
+	for (int i = 0; i < monomerCount(); i++)
 	{
 		if (!getMonomer(i))
 		{
@@ -506,12 +534,35 @@ void Polymer::setInitialKick(void *object, double value)
 	polymer->getMonomer(monomerNum - 1)->setKick(value, 1);
 }
 
+/* For side chains, obviously */
+double Polymer::getSideKick(void *object)
+{
+	return static_cast<Polymer *>(object)->_sideKick;
+}
+
+void Polymer::setSideKick(void *object, double value)
+{
+	Polymer *polymer = static_cast<Polymer *>(object);
+	polymer->_sideKick = value;
+
+	for (int i = 0; i < polymer->monomerCount(); i++)
+	{
+		if (!polymer->getMonomer(i))
+		{
+			continue;
+		}
+
+		polymer->getMonomer(i)->setSideKick(value);
+	}
+}
+
 double Polymer::getInitialKick(void *object)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
 	int monomerNum = polymer->_anchorNum - 1;
 	return polymer->getMonomer(monomerNum)->getKick();
 }
+
 
 void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 {
@@ -521,16 +572,19 @@ void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 	setOverallBFactor(value);
 	addOverallKickAndDampen(shared_from_this());
 	setCycles(50);
-
-	AtomPtr nitrogen = getMonomer(getAnchor() - 1)->findAtom("N");
-
-	if (!nitrogen)
-	{
-		shout_at_helen("Mistake");
-	}
-
-//	addAbsoluteBFactor(ToAbsolutePtr(nitrogen->getModel()), 0.4, 0.1);
 	addSampledBackbone(shared_from_this());
 	setJobName("kick_and_dampen");
+	sample();
+
+	double newDampen = getBackboneDampening(this);
+	setSidechainDampening(this, newDampen);
+
+	setupNelderMead();
+	setScoreType(ScoreTypeModelOverallB);
+	setOverallBFactor(value * 1.15);
+	addSidechainDampen(shared_from_this());
+	addSampledSidechains(shared_from_this());
+	setJobName("side_chain_dampen");
+	setCycles(50);
 	sample();
 }

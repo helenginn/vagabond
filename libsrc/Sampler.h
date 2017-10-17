@@ -48,6 +48,8 @@ public:
 	void addSampled(std::vector<AtomPtr> atoms);
 
 	void addOverallKickAndDampen(PolymerPtr polymer);
+	void addSidechainDampen(PolymerPtr polymer);
+	
 	void addTorsion(BondPtr bond, double range, double interval);
 	void addTorsionBlur(BondPtr bond, double range, double interval);
 	void addDampening(BondPtr bond, double range, double interval);
@@ -56,6 +58,7 @@ public:
 	void addBendAngle(BondPtr bond, double range, double interval);
 	void addOccupancy(BondPtr bond, double range, double interval);
 	void addSampledBackbone(PolymerPtr polymer, int from = 0, int to = 0);
+	void addSampledSidechains(PolymerPtr polymer);
 	void addSampledAtoms(AtomGroupPtr group);
 	void addRamachandranAngles(PolymerPtr polymer, int from, int to);
 	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);

@@ -19,6 +19,7 @@
 #include "Diffraction.h"
 #include "Polymer.h"
 #include "CSV.h"
+#include "FileReader.h"
 
 #include "../libccp4/cmtzlib.h"
 #include "../libccp4/csymlib.h"
@@ -566,5 +567,25 @@ void Crystal::fourierTransform(int dir)
 	if (dir == 1)
 	{
 		applySymOps();
+	}
+}
+
+void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (molecule(i)->getClassName() != "Polymer")
+		{
+			continue;
+		}
+
+		realSpaceClutter();
+		getDataInformation(data, 3, 2);
+		std::string refineCount = "refine_" + i_to_str(cycleNum);
+		PolymerPtr polymer = ToPolymerPtr(molecule(i));
+		polymer->makePDB(refineCount + ".pdb");
+		polymer->graph("graph_" + i_to_str(cycleNum));
+		writeCalcMillersToFile(data, refineCount);
+		polymer->differenceGraphs("diffgraph_" + i_to_str(cycleNum), shared_from_this());
 	}
 }

@@ -62,6 +62,7 @@ public:
 
 	double totalElectrons();
 	double getAverageBFactor(bool initial = false);
+	double getAverageDisplacement();
 
 	std::string getPDBContribution();
 

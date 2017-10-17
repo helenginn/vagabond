@@ -79,6 +79,7 @@ public:
 
 	void setInitialPosition(vec3 pos)
 	{
+
 		_initialPosition = pos;
 	}
 

@@ -17,6 +17,11 @@ void TextManager::text_free(png_byte **pointer)
 
 void TextManager::text_malloc(png_byte **pointer, std::string text, int *width, int *height)
 {
+	if (!text.length())
+	{
+		return;
+	}
+	
     int squish = 3;
     int totalWidth = squish;
     int maxHeight = 0;

@@ -97,22 +97,25 @@ void Options::run()
 
 			if (_numCycles > 0)
 			{
-				for (int i = 0; i < 100; i++)
+				for (int i = 0; i < 6; i++)
 				{
+					std::string refineCount = "refine_" + i_to_str(count);
 
-					count++;
-                    std::string refineCount = "refine_" + i_to_str(count);
+					if (true)
+					{
+						count++;
+						molecule->refine(crystals[0], RefinementModelRMSD);
+						crystals[0]->realSpaceClutter();
+						crystals[0]->getDataInformation(data, propFo, propFc);
+						polymer->makePDB(refineCount + ".pdb");
+						polymer->graph("graph_" + i_to_str(count));
+						crystals[0]->writeCalcMillersToFile(data, refineCount);
 
-					molecule->refine(crystals[0], RefinementModelRMSD);
-					crystals[0]->realSpaceClutter();
-					crystals[0]->getDataInformation(data, propFo, propFc);
-					polymer->makePDB(refineCount + ".pdb");
-					polymer->graph("graph_" + i_to_str(count));
-					crystals[0]->writeCalcMillersToFile(data, refineCount);
-					crystals[0]->realSpaceClutter();
-					crystals[0]->getDataInformation(data, propFo, propFc);
-					polymer->differenceGraphs("diffgraph_" + i_to_str(count), crystals[0]);
-
+						crystals[0]->realSpaceClutter();
+						crystals[0]->getDataInformation(data, propFo, propFc);
+						polymer->differenceGraphs("diffgraph_" + i_to_str(count), crystals[0]);
+					}
+					
 					if (molecule->getClassName() == "Polymer" && i == 0)
 					{
                         count++;
@@ -124,12 +127,13 @@ void Options::run()
 						crystals[0]->realSpaceClutter();
 						crystals[0]->getDataInformation(data, propFo, propFc);
 						polymer->differenceGraphs("diffgraph_" + i_to_str(count), crystals[0]);
-
-						crystals[0]->changeAnchors(91);
+					}
+					else if (molecule->getClassName() == "Polymer" && i > 0)
+					{
+						int myAnchor = (i % 2 == 1) ? 91 : 34;
+						crystals[0]->changeAnchors(myAnchor);
 						count++;
 						polymer->scaleFlexibilityToBFactor(crystals[0]);
-				//		crystals[0]->changeAnchors(34);
-					//	polymer->scaleFlexibilityToBFactor(crystals[0]);
 						polymer->makePDB("refine_" + i_to_str(count) + ".pdb");
 						polymer->graph("graph_" + i_to_str(count));
 						crystals[0]->writeCalcMillersToFile(data, refineCount);

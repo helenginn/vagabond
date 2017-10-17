@@ -18,7 +18,7 @@
 
 struct vec3;
 
-class Molecule
+class Molecule : public std::enable_shared_from_this<Molecule>
 {
 public:
 	void addModel(ModelPtr model);
