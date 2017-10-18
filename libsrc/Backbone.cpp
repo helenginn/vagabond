@@ -122,6 +122,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 					bond->resetAxis();
 				}
 
+				rType = RefinementModelPos;
+			}
+
+			if (rType == RefinementModelPos)
+			{
 				setupNelderMead();
 				setJobName("model_pos_" +  bond->shortDesc());
 
@@ -132,12 +137,9 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				}
 				else
 				{
-//					setupTorsionSet(bond, k, 4, resNum, deg2rad(4), deg2rad(0.05));
-
 					addRamachandranAngles(getPolymer(), resNum, resNum - 2);
 					addSampledBackbone(getPolymer(), resNum, resNum - 2);
 				}
-
 
 				setScoreType(ScoreTypeModelPos);
 				sample();
@@ -146,10 +148,7 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				std::cout << " : bFactor " << bond->getMeanSquareDeviation();
 				std::cout << " (" << myAtom->getInitialBFactor() << ")";
 				std::cout << std::endl;
-			}
 
-			if (rType == RefinementModelRMSD)
-			{
 				continue;
 			}
 

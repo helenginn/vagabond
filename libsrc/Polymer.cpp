@@ -15,13 +15,14 @@
 #include "Backbone.h"
 #include "Shouter.h"
 #include "Atom.h"
-#include "Bond.h"
+#include "Anchor.h"
 #include "Absolute.h"
 #include "CSV.h"
 #include <fstream>
 #include "maths.h"
 #include <float.h>
 #include "FileReader.h"
+#include "Kabsch.h"
 
 void Polymer::addMonomer(MonomerPtr monomer)
 {
@@ -499,17 +500,7 @@ void Polymer::changeAnchor(int num)
 					   "for residue " + i_to_str(num - 1));
 	}
 
-	/* Tasks:
-	 * - convert old anchor to a normal bond
-	 * (should be in direction of tying - polarity of (oldAnchor - newAnchor)
-	 * - convert old bond to a new anchor
-	 * - write the reversal
-	 */
-
 	newMono->getBackbone()->setAnchor();
-
-	int limit = (oldAnchor < num) ? 0 : monomerCount();
-	int step = (oldAnchor < num) ? -1 : 1;
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -563,7 +554,6 @@ double Polymer::getInitialKick(void *object)
 	return polymer->getMonomer(monomerNum)->getKick();
 }
 
-
 void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 {
 	setupNelderMead();
@@ -588,3 +578,160 @@ void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 	setCycles(50);
 	sample();
 }
+
+void Polymer::minimiseCentroids()
+{
+	std::cout << "****************************************" << std::endl;
+	std::cout << "Minimising centroids for the ensemble..." << std::endl;
+	std::cout << "****************************************" << std::endl;
+
+	std::vector<vec3> addedVecs;
+	int count = 0;
+
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (!getMonomer(i))
+		{
+			continue;
+		}
+
+		AtomPtr ca = getMonomer(i)->findAtom("CA");
+
+		if (!ca) continue;
+
+		std::vector<BondSample> *samples;
+		samples = ca->getModel()->getManyPositions(BondSampleThorough);
+
+		if (!addedVecs.size())
+		{
+			addedVecs = std::vector<vec3>(samples->size(), make_vec3(0, 0, 0));
+		}
+
+		for (int j = 0; j < samples->size(); j++)
+		{
+			addedVecs[j] = vec3_add_vec3(addedVecs[j], samples->at(j).start);
+		}
+	}
+
+	double mult = 1 / (double)addedVecs.size();
+	std::cout << "Centroids calculated..." << std::endl;
+
+	// now we take these off every state of the anchor.
+
+	MonomerPtr anchoredRes = getMonomer(getAnchor() - 1);
+	ModelPtr model = anchoredRes->findAtom("N")->getModel();
+	AnchorPtr anchor = ToAnchorPtr(model);
+
+	BondPtr nBond = anchor->getToN();
+	BondPtr cBond = anchor->getToC();
+
+	for (int i = 0; i < addedVecs.size(); i++)
+	{
+		vec3_mult(&addedVecs[i], mult);
+	}
+
+	vec3 meanPos = make_vec3(0, 0, 0);
+
+	for (int i = 0; i < addedVecs.size(); i++)
+	{
+		meanPos = vec3_add_vec3(meanPos, addedVecs[i]);
+	}
+
+	vec3_mult(&meanPos, mult);
+
+	for (int i = 0; i < addedVecs.size(); i++)
+	{
+		 addedVecs[i] = vec3_subtract_vec3(addedVecs[i], meanPos);
+	}
+
+	std::vector<BondSample> *nSamples = nBond->getManyPositions(BondSampleThorough);
+	std::vector<BondSample> *cSamples = cBond->getManyPositions(BondSampleThorough);
+
+	for (int i = 0; i < addedVecs.size(); i++)
+	{
+		vec3 *nStart = &nSamples->at(i).start;
+		vec3 *oldNStart = &nSamples->at(i).old_start;
+
+		*nStart = vec3_subtract_vec3(*nStart, addedVecs[i]);
+		*oldNStart = vec3_subtract_vec3(*oldNStart, addedVecs[i]);
+
+		vec3 *cStart = &cSamples->at(i).start;
+		vec3 *oldCStart = &cSamples->at(i).old_start;
+
+		*cStart = vec3_subtract_vec3(*cStart, addedVecs[i]);
+		*oldCStart = vec3_subtract_vec3(*oldCStart, addedVecs[i]);
+	}
+
+	std::cout << "Centroids applied." << std::endl;
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->getModel()->isBond())
+		{
+			ToBondPtr(atom(i)->getModel())->propagateChange();
+		}
+	}
+
+	std::cout << "Change flag added." << std::endl;
+}
+
+void Polymer::minimiseRotations()
+{
+	std::cout << "****************************************" << std::endl;
+	std::cout << "Minimising rotations for the ensemble..." << std::endl;
+	std::cout << "****************************************" << std::endl;
+
+	int num = 0;
+
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (!getMonomer(i))
+		{
+			continue;
+		}
+
+		AtomPtr ca = getMonomer(i)->findAtom("CA");
+		if (!ca) continue;
+
+		std::vector<BondSample> *samples;
+		samples = ca->getModel()->getManyPositions(BondSampleThorough);
+
+		num = samples->size();
+
+		break;
+	}
+
+	for (int i = 0; i < num; i++)
+	{
+		std::vector<vec3> fixedVecs, variantVecs;
+
+		for (int j = 0; j < monomerCount(); j++)
+		{
+			if (!getMonomer(j))
+			{
+				continue;
+			}
+
+			AtomPtr ca = getMonomer(j)->findAtom("CA");
+			if (!ca) continue;
+
+			std::vector<BondSample> *samples;
+			samples = ca->getModel()->getManyPositions(BondSampleThorough);
+
+			BondSample *midSample = &samples->at(samples->size() / 2);
+			vec3 fixed = midSample->start;
+
+			vec3 variant = samples->at(i).start;
+			fixedVecs.push_back(fixed);
+			variantVecs.push_back(variant);
+		}
+
+		Kabsch kabsch;
+		kabsch.setAtoms(variantVecs, fixedVecs);
+		mat3x3 mat = kabsch.run();
+		std::cout << mat3x3_desc(mat) << std::endl;
+	}
+
+	std::cout << "Kabsch'd them all!" << std::endl;
+}
+

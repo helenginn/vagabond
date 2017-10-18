@@ -49,6 +49,16 @@ public:
 	BondPtr getAppropriateBond(bool reverse = false);
 	void activate();
 
+	BondPtr getToN()
+	{
+		return _trappedToNTerminus;
+	}
+
+	BondPtr getToC()
+	{
+		return _trappedToCTerminus;
+	}
+
 	static BondPtr sanitiseBond(Bond *myself, BondPtr model);
 private:
 

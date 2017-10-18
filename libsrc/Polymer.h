@@ -51,6 +51,8 @@ public:
 
 	void scaleFlexibilityToBFactor(CrystalPtr target);
 	void scaleSidechainsToBFactor();
+	void minimiseCentroids();
+	void minimiseRotations();
 
 	void changeAnchor(int num);
 	void setAnchor(int num)

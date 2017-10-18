@@ -173,6 +173,7 @@ BondPtr Anchor::getAppropriateBond(bool reverse)
 	}
 	else
 	{
+		return _trappedToNTerminus;
 		shout_at_helen("Calling bond is not appropriate!");
 		return BondPtr();
 	}

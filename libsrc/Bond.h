@@ -358,7 +358,8 @@ public:
 	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
 							vec3 miPos, vec3 lPos, double *newAngle = NULL);
 
-	
+	virtual void propagateChange();
+
 protected:
 	Bond();
 
@@ -412,7 +413,6 @@ std::vector<AtomWkr> _extraTorsionSamples;
 											   double *transferBlur);
 
 	void duplicateDownstream(BondPtr newBranch, int groupNum);
-	virtual void propagateChange();
 	bool _usingTorsion;
 
 	/* Flag to say whether recalculation should occur */

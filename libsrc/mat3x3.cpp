@@ -10,6 +10,7 @@
 
 #include "mat3x3.h"
 #include <string.h>
+#include <sstream>
 #include "vec3.h"
 #include <math.h>
 
@@ -313,4 +314,14 @@ mat3x3 mat3x3_from_ccp4(CSym::ccp4_symop symop)
 	}
 
 	return matrix;
+}
+
+std::string mat3x3_desc(mat3x3 mat)
+{
+	std::ostringstream str;
+	str << "(" << mat.vals[0] << ", " << mat.vals[1] << ", " << mat.vals[2] << ",\n";
+	str << mat.vals[3] << ", " << mat.vals[4] << ", " << mat.vals[5] << ",\n";
+	str << mat.vals[6] << ", " << mat.vals[7] << ", " << mat.vals[8] << ")";
+
+	return str.str();
 }

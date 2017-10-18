@@ -94,20 +94,22 @@ void Options::run()
 
 			int count = 0;
 			PolymerPtr polymer = ToPolymerPtr(molecule);
+			int myAnchor = 49;
+			RefinementType type = RefinementModelRMSD;
 
 			if (_numCycles > 0)
 			{
-				for (int i = 0; i < 6; i++)
+				for (int i = 0; i < 10; i++)
 				{
 					std::string refineCount = "refine_" + i_to_str(count);
 
-					if (true)
+					if (false)
 					{
 						count++;
-						molecule->refine(crystals[0], RefinementModelRMSD);
+						molecule->refine(crystals[0], type);
 						crystals[0]->realSpaceClutter();
 						crystals[0]->getDataInformation(data, propFo, propFc);
-						polymer->makePDB(refineCount + ".pdb");
+						polymer->makePDB("refine_" + i_to_str(count) + ".pdb");
 						polymer->graph("graph_" + i_to_str(count));
 						crystals[0]->writeCalcMillersToFile(data, refineCount);
 
@@ -128,12 +130,25 @@ void Options::run()
 						crystals[0]->getDataInformation(data, propFo, propFc);
 						polymer->differenceGraphs("diffgraph_" + i_to_str(count), crystals[0]);
 					}
-					else if (molecule->getClassName() == "Polymer" && i > 0)
+					else if (molecule->getClassName() == "Polymer" && i == 2)
 					{
-						int myAnchor = (i % 2 == 1) ? 91 : 34;
+						myAnchor = (myAnchor == 49) ? 99 : 49;
+						myAnchor = 91;
 						crystals[0]->changeAnchors(myAnchor);
 						count++;
 						polymer->scaleFlexibilityToBFactor(crystals[0]);
+						polymer->makePDB("refine_" + i_to_str(count) + ".pdb");
+						polymer->graph("graph_" + i_to_str(count));
+						crystals[0]->writeCalcMillersToFile(data, refineCount);
+						crystals[0]->realSpaceClutter();
+						crystals[0]->getDataInformation(data, propFo, propFc);
+					}
+					else if (molecule->getClassName() == "Polymer" && i == 4)
+					{
+						count++;
+						polymer->minimiseCentroids();
+						polymer->minimiseRotations();
+						type = RefinementModelPos;
 						polymer->makePDB("refine_" + i_to_str(count) + ".pdb");
 						polymer->graph("graph_" + i_to_str(count));
 						crystals[0]->writeCalcMillersToFile(data, refineCount);
@@ -144,6 +159,7 @@ void Options::run()
 				}
 			}
 
+			exit(0);
 
 			for (int i = 0; i < _numCycles; i++)
 			{

@@ -19,6 +19,7 @@ struct mat3x3
 	double vals[9];
 };
 
+std::string mat3x3_desc(mat3x3 mat);
 
 mat3x3 mat3x3_inverse(mat3x3 &mat);
 mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double beta, double gamma);
