@@ -54,6 +54,7 @@ public:
 	void minimiseCentroids();
 	void minimiseRotations();
 
+	AnchorPtr getAnchorModel();
 	void changeAnchor(int num);
 	void setAnchor(int num)
 	{
@@ -107,6 +108,8 @@ private:
 	double _dampening;
 	double _sideDampening;
 	double _sideKick;
+
+
 };
 
 #endif /* defined(__vagabond__Polymer__) */

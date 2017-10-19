@@ -220,15 +220,15 @@ std::string Atom::getPDBContribution()
 	}
 
 	std::ostringstream stream;
-	std::vector<BondSample> *positions = getModel()->getManyPositions(BondSampleThorough);
+	std::vector<BondSample> positions = getModel()->getFinalPositions();
 
-	double skip = (double)positions->size() / 25.;
+	double skip = (double)positions.size() / 25.;
 
 	if (skip < 0) skip = 1;
 	const int side = 7;
 	int count = 0;
 
-	for (double i = 0; i < positions->size(); i+= 1)
+	for (double i = 0; i < positions.size(); i+= 1)
 	{
 		int l = i / (side * side);
 		int k = (i - (l * side * side)) / side;
@@ -239,8 +239,8 @@ std::string Atom::getPDBContribution()
 			continue;
 		}
 
-		vec3 placement = (*positions)[i].start;
-		double occupancy = (*positions)[i].occupancy;
+		vec3 placement = positions[i].start;
+		double occupancy = positions[i].occupancy;
 
 		stream << pdbLineBeginning(count);
 		stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.x;
@@ -263,4 +263,14 @@ std::string Atom::shortDesc()
 	return getMonomer()->getIdentifier()
 		+ i_to_str(getMonomer()->getResidueNum()) +
 		getAtomName();
+}
+
+MoleculePtr Atom::getMolecule()
+{
+	if (getMonomer())
+	{
+		return getMonomer()->getPolymer();
+	}
+
+	return MoleculePtr();
 }

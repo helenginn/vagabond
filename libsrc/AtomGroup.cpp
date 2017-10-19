@@ -138,3 +138,14 @@ AtomGroup::AtomGroup()
 	_beenTied = false;
 	_timesRefined = 0;
 }
+
+void AtomGroup::propagateChange()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->getModel()->isBond())
+		{
+			ToBondPtr(atom(i)->getModel())->propagateChange();
+		}
+	}
+}

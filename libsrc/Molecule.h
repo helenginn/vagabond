@@ -14,15 +14,15 @@
 #include "mat3x3.h"
 #include "shared_ptrs.h"
 #include "Sampler.h"
+#include "AtomGroup.h"
 #include <string>
 
 struct vec3;
 
-class Molecule : public std::enable_shared_from_this<Molecule>
+class Molecule : public AtomGroup
 {
 public:
 	void addModel(ModelPtr model);
-	void addAtom(AtomPtr atom);
 
 	void addToMap(FFTPtr fft, mat3x3 _real2frac);
 
@@ -35,16 +35,6 @@ public:
 	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst) {};
 	void resetInitialPositions();
 	void setAnchors();
-	
-	long int atomCount()
-	{
-		return atoms.size();
-	}
-
-	AtomPtr atom(int i)
-	{
-		return atoms[i];
-	}
 
 	void setChainID(std::string chain)
 	{
@@ -56,17 +46,40 @@ public:
 		return _chainID;
 	}
 
+	std::vector<vec3> getCentroidOffsets()
+	{
+		return _centroidOffsets;
+	}
+
+	std::vector<mat3x3> getRotationCorrections()
+	{
+		return _rotations;
+	}
+
+	std::vector<vec3> getRotationCentres()
+	{
+		return _centroids;
+	}
 	virtual std::string getClassName()
 	{
 		return "Molecule";
 	}
 
+	MoleculePtr shared_from_this()
+	{
+		AtomGroupPtr groupPtr = AtomGroup::shared_from_this();
+		return ToMoleculePtr(groupPtr);
+	}
+protected:
+	std::vector<vec3> _centroidOffsets;
+	std::vector<vec3> _centroids; // after offset correction
+	std::vector<mat3x3> _rotations;
+
 private:
 	std::vector<ModelPtr> models;
-	std::vector<AtomPtr> atoms;
-
 
 	std::string _chainID;
+
 };
 
 #endif /* defined(__vagabond__Molecule__) */

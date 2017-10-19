@@ -137,12 +137,17 @@ public:
 
 	MonomerPtr getMonomer()
 	{
+		if (_monomer.expired())
+		{
+			return MonomerPtr();
+		}
+
 		return _monomer.lock();
 	}
 
 	std::string shortDesc();
 
-
+	MoleculePtr getMolecule();
 	void setKeepModel();
 	std::string getPDBContribution();
 private:

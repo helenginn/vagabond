@@ -52,6 +52,8 @@ public:
 	/* Get blurred position array */
 	virtual std::vector<BondSample> *getManyPositions(BondSampleStyle style) = 0;
 
+	virtual std::vector<BondSample> getFinalPositions();
+
 	FFTPtr getZeroDistribution();
 
 	bool isBond()

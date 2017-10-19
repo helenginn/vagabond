@@ -44,10 +44,10 @@ mat3x3 Kabsch::run()
 		shout_at_helen("Kabsch run with no atoms");
 	}
 
-	mat matrix = (double **)malloc(sizeof(double) * 3);
-	mat v = (double **)malloc(sizeof(double) * 3);
+	mat matrix = (double **)malloc(sizeof(double *) * 3);
+	mat v = (double **)malloc(sizeof(double *) * 3);
 
-	for (int i = 0; i < _positions[0].size(); i++)
+	for (int i = 0; i < 3; i++)
 	{
 		matrix[i] = (double *)malloc(sizeof(double) * 3);
 		v[i] = (double *)malloc(sizeof(double) * 3);

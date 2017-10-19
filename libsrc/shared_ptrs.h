@@ -28,6 +28,7 @@
 #define ToAnchorPtr(a) (std::static_pointer_cast<Anchor>((a)))
 #define ToModelPtr(a) (std::static_pointer_cast<Model>((a)))
 #define ToPolymerPtr(a) (std::static_pointer_cast<Polymer>((a)))
+#define ToMoleculePtr(a) (std::static_pointer_cast<Molecule>((a)))
 
 class FFT;
 typedef std::shared_ptr<FFT> FFTPtr;
@@ -37,6 +38,7 @@ typedef std::shared_ptr<Crystal> CrystalPtr;
 
 class Molecule;
 typedef std::shared_ptr<Molecule> MoleculePtr;
+typedef std::weak_ptr<Molecule> MoleculeWkr;
 
 class Monomer;
 typedef std::shared_ptr<Monomer> MonomerPtr;

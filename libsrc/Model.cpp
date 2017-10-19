@@ -40,6 +40,14 @@ FFTPtr Model::getZeroDistribution()
 	return getDistributionCopy();
 }
 
+std::vector<BondSample> Model::getFinalPositions()
+{
+	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
+	std::vector<BondSample> copyPos = *positions;
+
+	return copyPos;
+}
+
 void Model::propagateChange()
 {
 	

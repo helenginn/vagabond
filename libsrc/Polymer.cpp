@@ -579,6 +579,15 @@ void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 	sample();
 }
 
+AnchorPtr Polymer::getAnchorModel()
+{
+	MonomerPtr anchoredRes = getMonomer(getAnchor() - 1);
+	ModelPtr model = anchoredRes->findAtom("N")->getModel();
+	AnchorPtr anchor = ToAnchorPtr(model);
+
+	return anchor;
+}
+
 void Polymer::minimiseCentroids()
 {
 	std::cout << "****************************************" << std::endl;
@@ -586,7 +595,6 @@ void Polymer::minimiseCentroids()
 	std::cout << "****************************************" << std::endl;
 
 	std::vector<vec3> addedVecs;
-	int count = 0;
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -618,13 +626,6 @@ void Polymer::minimiseCentroids()
 
 	// now we take these off every state of the anchor.
 
-	MonomerPtr anchoredRes = getMonomer(getAnchor() - 1);
-	ModelPtr model = anchoredRes->findAtom("N")->getModel();
-	AnchorPtr anchor = ToAnchorPtr(model);
-
-	BondPtr nBond = anchor->getToN();
-	BondPtr cBond = anchor->getToC();
-
 	for (int i = 0; i < addedVecs.size(); i++)
 	{
 		vec3_mult(&addedVecs[i], mult);
@@ -641,38 +642,22 @@ void Polymer::minimiseCentroids()
 
 	for (int i = 0; i < addedVecs.size(); i++)
 	{
-		 addedVecs[i] = vec3_subtract_vec3(addedVecs[i], meanPos);
+		vec3 offset = vec3_subtract_vec3(addedVecs[i], meanPos);
+		_centroidOffsets.push_back(offset);
 	}
 
+	AnchorPtr anchor = getAnchorModel();
+	BondPtr nBond = anchor->getToN();
 	std::vector<BondSample> *nSamples = nBond->getManyPositions(BondSampleThorough);
-	std::vector<BondSample> *cSamples = cBond->getManyPositions(BondSampleThorough);
 
 	for (int i = 0; i < addedVecs.size(); i++)
 	{
 		vec3 *nStart = &nSamples->at(i).start;
-		vec3 *oldNStart = &nSamples->at(i).old_start;
-
-		*nStart = vec3_subtract_vec3(*nStart, addedVecs[i]);
-		*oldNStart = vec3_subtract_vec3(*oldNStart, addedVecs[i]);
-
-		vec3 *cStart = &cSamples->at(i).start;
-		vec3 *oldCStart = &cSamples->at(i).old_start;
-
-		*cStart = vec3_subtract_vec3(*cStart, addedVecs[i]);
-		*oldCStart = vec3_subtract_vec3(*oldCStart, addedVecs[i]);
+		vec3 newPos = vec3_subtract_vec3(*nStart, addedVecs[i]);
+		_centroids.push_back(newPos);
 	}
 
-	std::cout << "Centroids applied." << std::endl;
-
-	for (int i = 0; i < atomCount(); i++)
-	{
-		if (atom(i)->getModel()->isBond())
-		{
-			ToBondPtr(atom(i)->getModel())->propagateChange();
-		}
-	}
-
-	std::cout << "Change flag added." << std::endl;
+	propagateChange();
 }
 
 void Polymer::minimiseRotations()
@@ -701,6 +686,8 @@ void Polymer::minimiseRotations()
 		break;
 	}
 
+	std::vector<mat3x3> rotations;
+
 	for (int i = 0; i < num; i++)
 	{
 		std::vector<vec3> fixedVecs, variantVecs;
@@ -716,11 +703,16 @@ void Polymer::minimiseRotations()
 			if (!ca) continue;
 
 			std::vector<BondSample> *samples;
-			samples = ca->getModel()->getManyPositions(BondSampleThorough);
+			ModelPtr model = ca->getModel();
 
-			BondSample *midSample = &samples->at(samples->size() / 2);
-			vec3 fixed = midSample->start;
+			if (!model)
+			{
+				shout_at_helen("Missing model for CA atom!");
+			}
 
+			samples = model->getManyPositions(BondSampleThorough);
+
+			vec3 fixed = samples->at(samples->size() / 2).start;
 			vec3 variant = samples->at(i).start;
 			fixedVecs.push_back(fixed);
 			variantVecs.push_back(variant);
@@ -729,9 +721,11 @@ void Polymer::minimiseRotations()
 		Kabsch kabsch;
 		kabsch.setAtoms(variantVecs, fixedVecs);
 		mat3x3 mat = kabsch.run();
-		std::cout << mat3x3_desc(mat) << std::endl;
+		_rotations.push_back(mat);
 	}
 
 	std::cout << "Kabsch'd them all!" << std::endl;
+
+	propagateChange();
 }
 

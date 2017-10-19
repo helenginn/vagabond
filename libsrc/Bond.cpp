@@ -19,6 +19,7 @@
 #include <sstream>
 #include <iomanip>
 #include "Monomer.h"
+#include "Molecule.h"
 
 mat3x3 Bond::magicAxisChecks[] =
 {
@@ -502,10 +503,72 @@ vec3 meanOfManyPositions(std::vector<BondSample> *positions)
 	return sum;
 }
 
-FFTPtr Bond::getDistribution()
+std::vector<vec3> Bond::polymerCorrectedPositions()
+{
+	std::vector<vec3> posOnly;
+	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
+
+	MoleculePtr molecule = getMinor()->getMolecule();
+	std::vector<vec3> offsets;
+	std::vector<vec3> rotationCentres;
+	std::vector<mat3x3> rotations;
+
+	if (molecule)
+	{
+		offsets = molecule->getCentroidOffsets();
+		rotations = molecule->getRotationCorrections();
+		rotationCentres = molecule->getRotationCentres();
+	}
+	else
+	{
+		std::cout << "No molecule for " << shortDesc() << std::endl;
+	}
+
+	for (int i = 0; i < positions->size(); i++)
+	{
+		vec3 subtract = positions->at(i).start;
+
+		// remove translation aspect of superposition
+		if (offsets.size() > i)
+		{
+			subtract = vec3_subtract_vec3(positions->at(i).start, offsets[i]);
+		}
+
+		// perform rotation element of superposition
+		if (rotations.size() > i && rotationCentres.size() > i)
+		{
+			vec3 tmp = vec3_subtract_vec3(subtract, rotationCentres[i]);
+			mat3x3_mult_vec(rotations[i], &tmp);
+			subtract = vec3_add_vec3(tmp, rotationCentres[i]);
+		}
+
+		posOnly.push_back(subtract);
+	}
+
+	return posOnly;
+}
+
+std::vector<BondSample> Bond::getFinalPositions()
 {
 	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
-	_absolute = meanOfManyPositions(positions);
+	std::vector<BondSample> copyPos = *positions;
+	std::vector<vec3> posOnly = polymerCorrectedPositions();
+
+	for (int i = 0; i < copyPos.size(); i++)
+	{
+		if (i < posOnly.size())
+		{
+			copyPos[i].start = posOnly[i];
+		}
+	}
+
+	return copyPos;
+}
+
+FFTPtr Bond::getDistribution()
+{
+	std::vector<BondSample> positions = getFinalPositions();
+	_absolute = meanOfManyPositions(&positions);
 
 	double n = ATOM_SAMPLING_COUNT;
 	double scale = 1 / (2 * MAX_SCATTERING_DSTAR);
@@ -517,11 +580,12 @@ FFTPtr Bond::getDistribution()
 	fft->setScales(scale);
 	double occSum = 0;
 
-	for (int i = 0; i < positions->size(); i++)
+	for (int i = 0; i < positions.size(); i++)
 	{
-		vec3 placement = (*positions)[i].start;
+		vec3 placement = positions[i].start;
+
 		vec3 relative = vec3_subtract_vec3(placement, _absolute);
-		double occupancy = (*positions)[i].occupancy;
+		double occupancy = positions[i].occupancy;
 		occSum += occupancy;
 
 		vec3_mult(&relative, 1 / realLimits);
@@ -1273,26 +1337,26 @@ double Bond::getMeanSquareDeviation(double target, int index)
 	target /= 8 * M_PI * M_PI;
     target *= targMult;
 
-	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
+	std::vector<BondSample> positions = getFinalPositions();
 	vec3 mean = make_vec3(0, 0, 0);
 
-	for (int i = 0; i < positions->size(); i++)
+	for (int i = 0; i < positions.size(); i++)
 	{
-		vec3 pos = (*positions)[i].start;
+		vec3 pos = positions[i].start;
 
 		mean = vec3_add_vec3(mean, pos);
 	}
 
-	double mult = 1 / (double)positions->size();
+	double mult = 1 / (double)positions.size();
 	vec3_mult(&mean, mult);
 
 	double meanSq = 0;
 	double meanX = 0; double meanY = 0; double meanZ = 0;
 
-	for (int i = 0; i < positions->size(); i++)
+	for (int i = 0; i < positions.size(); i++)
 	{
-		vec3 pos = (*positions)[i].start;
-		double occupancy = sqrt((*positions)[i].occupancy);
+		vec3 pos = positions[i].start;
+		double occupancy = sqrt(positions[i].occupancy);
 
 		vec3 diff = vec3_subtract_vec3(pos, mean);
 		vec3_mult(&diff, occupancy);

@@ -103,7 +103,7 @@ void Options::run()
 				{
 					std::string refineCount = "refine_" + i_to_str(count);
 
-					if (false)
+					if (true)
 					{
 						count++;
 						molecule->refine(crystals[0], type);
@@ -136,14 +136,14 @@ void Options::run()
 						myAnchor = 91;
 						crystals[0]->changeAnchors(myAnchor);
 						count++;
-						polymer->scaleFlexibilityToBFactor(crystals[0]);
+					//	polymer->scaleFlexibilityToBFactor(crystals[0]);
 						polymer->makePDB("refine_" + i_to_str(count) + ".pdb");
 						polymer->graph("graph_" + i_to_str(count));
 						crystals[0]->writeCalcMillersToFile(data, refineCount);
 						crystals[0]->realSpaceClutter();
 						crystals[0]->getDataInformation(data, propFo, propFc);
 					}
-					else if (molecule->getClassName() == "Polymer" && i == 4)
+					else if (molecule->getClassName() == "Polymer" && i == 3)
 					{
 						count++;
 						polymer->minimiseCentroids();
@@ -158,8 +158,6 @@ void Options::run()
 					}
 				}
 			}
-
-			exit(0);
 
 			for (int i = 0; i < _numCycles; i++)
 			{

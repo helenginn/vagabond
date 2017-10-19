@@ -66,6 +66,7 @@ Anchor::Anchor(BondPtr inheritToNTerminus, BondPtr inheritToCTerminus)
 	/* Add all the upstream bonds as downstream bonds during semi-manual reversal.
 	 * Primary atom needs to be the major atom to continue main chain. */
 	badBond->addDownstreamAtom(goodBond->getMajor(), 0);
+	_minor = goodBond->getMinor();
 
 	/* Add the rest in reverse order to maintain chirality */
 	for (int j = goodBond->downstreamAtomCount(0) - 1; j > 0; j--)

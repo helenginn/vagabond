@@ -27,7 +27,6 @@ public:
 	void setBackboneDampening(double value);
 	void setSidechainDampening(double value);
 
-	
 	bool isAfterAnchor();
 
 	MonomerPtr shared_from_this()

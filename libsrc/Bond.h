@@ -103,7 +103,7 @@ public:
 						 AtomPtr lightAlign = AtomPtr());
 	virtual FFTPtr getDistribution();
 	virtual vec3 getStaticPosition();
-	std::vector<BondSample> *getManyPositions(BondSampleStyle style);
+
 	virtual std::string getClassName()
 	{
 		return "Bond";
@@ -342,6 +342,8 @@ public:
 		return _absolute;
 	}
 
+	std::vector<BondSample> getFinalPositions();
+	
 	void setAnchored()
 	{
 		_anchored = true;
@@ -359,16 +361,18 @@ public:
 							vec3 miPos, vec3 lPos, double *newAngle = NULL);
 
 	virtual void propagateChange();
-
+	std::vector<BondSample> *getManyPositions(BondSampleStyle style);
+	
+	std::vector<vec3> polymerCorrectedPositions();
 protected:
 	Bond();
 
+	AtomWkr _minor;
 
 private:
 	std::string _shortDesc;
 
 	AtomWkr _major;
-	AtomWkr _minor;
 
 	AtomWkr _heavyAlign;
 	AtomWkr _lightAlign;
@@ -377,7 +381,7 @@ private:
 
 	/* Downstream groups of bonds */
 	std::vector<BondGroup> _bondGroups;
-std::vector<AtomWkr> _extraTorsionSamples;
+	std::vector<AtomWkr> _extraTorsionSamples;
 
 	double _dampening;
 	double _bendBlur;
@@ -427,6 +431,9 @@ std::vector<AtomWkr> _extraTorsionSamples;
 	/* What should be returned when asking for an atom's position
 	 * for drawing into a map... */
 	vec3 _absolute;
+
+	/* Molecule which can provide offsets/rotations */
+	MoleculeWkr _molecule;
 };
 
 #endif /* defined(__vagabond__Bond__) */
