@@ -29,11 +29,12 @@ public:
 		_anchorNum = 0;
 	}
 
+	void closenessSummary();
 	void addMonomer(MonomerPtr monomer);
 	virtual void summary();
 	virtual void tieAtomsUp();
 	virtual void refine(CrystalPtr target, RefinementType rType);
-	virtual void makePDB(std::string filename);
+	virtual void makePDB(std::string filename, PDBType pdbType);
 	virtual void graph(std::string graphName);
 	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst);
 
@@ -54,7 +55,7 @@ public:
 	void minimiseCentroids();
 	void minimiseRotations();
 
-	AnchorPtr getAnchorModel();
+	ModelPtr getAnchorModel();
 	void changeAnchor(int num);
 	void setAnchor(int num)
 	{

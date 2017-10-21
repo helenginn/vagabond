@@ -112,7 +112,7 @@ void RefinementStrategy::refine()
 
 void RefinementStrategy::reportProgress(double score)
 {
-	if (!_verbose)
+	if (!_verbose || _silent)
 	{
 		return;
 	}

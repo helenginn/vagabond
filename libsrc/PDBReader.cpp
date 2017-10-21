@@ -18,6 +18,9 @@
 #include "Monomer.h"
 #include "Absolute.h"
 #include "csymlib.h"
+#include <sstream>
+#include <iomanip>
+#include "Element.h"
 
 PDBReader::PDBReader()
 {
@@ -331,4 +334,21 @@ CrystalPtr PDBReader::getCrystal()
 	}
 
 	return _myCrystal;
+}
+
+std::string PDBReader::writeLine(AtomPtr atom, vec3 placement, int count,
+								 double occupancy, double bFactor)
+{
+	std::ostringstream stream;
+	stream << atom->pdbLineBeginning(count);
+	stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.x;
+	stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.y;
+	stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.z;
+	stream << std::fixed << std::setw(6) << std::setprecision(2) << occupancy;
+	stream << std::fixed << std::setw(6) << std::setprecision(2) << bFactor;
+	stream << "          ";
+	stream << std::setw(2) << atom->getElement()->getSymbol();
+	stream << "  " << std::endl;
+
+	return stream.str();
 }

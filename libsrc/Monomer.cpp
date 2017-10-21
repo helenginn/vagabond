@@ -205,3 +205,8 @@ bool Monomer::isAfterAnchor()
 
 	return after;
 }
+
+std::string Monomer::getResCode()
+{
+	return GeomTable::getResCode(getIdentifier());
+}

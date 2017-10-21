@@ -56,4 +56,5 @@ void shout_timer(time_t wall_start, std::string job)
 	time_t minutes = (diff - seconds) / 60;
 
 	std::cout << "~ Clock time for " << job << ": " << minutes << "m" << seconds << "s. ~" << std::endl;
+	std::cout << std::endl;
 }

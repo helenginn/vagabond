@@ -54,6 +54,8 @@ public:
 
 	virtual std::vector<BondSample> getFinalPositions();
 
+	virtual double getMeanSquareDeviation(double target = -1, int index = -1) = 0;
+
 	FFTPtr getZeroDistribution();
 
 	bool isBond()

@@ -165,8 +165,8 @@ void DiffractionMtz::load()
 	}
 
 	std::cout << "Loaded " << count << " reflections into"\
-	" memory from " << _filename << "." << std::endl << std::endl;
-	std::cout << "Counted " << maskCount << " free reflections." << std::endl;
+	" memory from " << _filename << "." << std::endl;
+	std::cout << "Counted " << maskCount << " free reflections." << std::endl << std::endl;
 
 }
 

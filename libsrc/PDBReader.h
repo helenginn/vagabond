@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <iostream>
 #include "shared_ptrs.h"
+#include "vec3.h"
 
 class PDBReader
 {
@@ -20,6 +21,9 @@ public:
 	PDBReader();
 	void setFilename(std::string);
 	CrystalPtr getCrystal();
+
+	static std::string writeLine(AtomPtr atom, vec3 placement, int count,
+								 double occupancy, double bFactor);
 
 private:
 	std::string filename;

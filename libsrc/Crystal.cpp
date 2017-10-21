@@ -20,6 +20,7 @@
 #include "Polymer.h"
 #include "CSV.h"
 #include "FileReader.h"
+#include "LocalCC.h"
 
 #include "../libccp4/cmtzlib.h"
 #include "../libccp4/csymlib.h"
@@ -122,14 +123,11 @@ void Crystal::realSpaceClutter()
 
 void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 {
-	if (!_fft)
+	if (_fft)
 	{
-		shout_at_user("There is likely a bug. Cannot write\n"\
-					  "calculated Miller list until it has\n"\
-					  "been generated!");
+		_fft->setAll(0);
 	}
 
-	_fft->setAll(0);
 	realSpaceClutter();
 	fourierTransform(1);
 	scaleToDiffraction(data);
@@ -259,8 +257,6 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 
 	MtzPut(mtzout, " ");
 	MtzFree(mtzout);
-
-	std::cout << "Written pha files from crystal." << std::endl;
 }
 
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
@@ -346,15 +342,17 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 
 	if (verbose)
 	{
+		double ccLocal = LocalCC::localCorrelation(_fft, fftData);
 		double ccWork = correlation(set1, set2);
 		double ccFree = correlation(free1, free2);
 		double free = (*op)(free1, free2);
 		double diff = free - working;
 
+		std::cout << "CClocal: " << ccLocal * 100 <<  "%." << std::endl;
 		std::cout << "CCwork/CCfree: " << ccWork * 100 << ", " << ccFree * 100
 		<< " %." << std::endl;
 
-		std::cout << "R values: " << std::setprecision(4)
+		std::cout << "Rwork/Rfree: " << std::setprecision(4)
 		<< working * 100;
 		std::cout << ", " << free * 100 << " % (diff: " << diff * 100 << " %)"<<  std::endl;
 	}
@@ -437,14 +435,11 @@ void Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	if (!_fft || !_fft->nn)
 	{
 		realSpaceClutter();
+		fourierTransform(1);
+		scaleToDiffraction(data);
 	}
 
-	fourierTransform(1);
-
-	scaleToDiffraction(data);
 	rFactorWithDiffraction(data, true);
-
-	std::cout << "Combining model with data information." << std::endl;
 
 	FFTPtr fftData = data->getFFT();
 	double nLimit = std::min(fftData->nx, _fft->nx);
@@ -579,13 +574,19 @@ void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 			continue;
 		}
 
-		realSpaceClutter();
-		getDataInformation(data, 3, 2);
+		std::cout << "*******************************" << std::endl;
+		std::cout << "\tCycle " << cycleNum << std::endl;
+
 		std::string refineCount = "refine_" + i_to_str(cycleNum);
 		PolymerPtr polymer = ToPolymerPtr(molecule(i));
-		polymer->makePDB(refineCount + ".pdb");
+		polymer->makePDB(refineCount + ".pdb", PDBTypeEnsemble);
+		polymer->makePDB("b_" + refineCount + ".pdb", PDBTypeSameBFactor);
+		polymer->makePDB("a_" + refineCount + ".pdb", PDBTypeAverage);
+		polymer->makePDB("p_" + refineCount + ".pdb", PDBTypeSamePosition);
 		polymer->graph("graph_" + i_to_str(cycleNum));
+		polymer->closenessSummary();
 		writeCalcMillersToFile(data, refineCount);
+		getDataInformation(data, 3, 2);
 		polymer->differenceGraphs("diffgraph_" + i_to_str(cycleNum), shared_from_this());
 	}
 }

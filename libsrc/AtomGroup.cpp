@@ -52,13 +52,22 @@ double AtomGroup::totalElectrons()
 	return total;
 }
 
-std::string AtomGroup::getPDBContribution()
+std::string AtomGroup::getPDBContribution(PDBType pdbType)
 {
 	std::ostringstream stream;
 
 	for (int i = 0; i < atomCount(); i++)
 	{
-		stream << atom(i)->getPDBContribution();
+		if (pdbType == PDBTypeEnsemble)
+		{
+			stream << atom(i)->getPDBContribution();
+		}
+		else
+		{
+			bool samePos = (pdbType == PDBTypeSamePosition);
+			bool sameB = (pdbType == PDBTypeSameBFactor);
+			stream << atom(i)->averagePDBContribution(samePos, sameB);
+		}
 	}
 
 	return stream.str();

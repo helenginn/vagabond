@@ -130,6 +130,8 @@ public:
 		abs->_position.z = z;
 	}
 
+	virtual double getMeanSquareDeviation(double target = -1, int index = -1);
+
 	static double getB(void *object)
 	{
 		Absolute *abs = static_cast<Absolute *>(object);

@@ -20,6 +20,7 @@
 #include "FileReader.h"
 #include <sstream>
 #include "Crystal.h"
+#include "PDBReader.h"
 
 Atom::Atom()
 {
@@ -207,6 +208,31 @@ double Atom::posDisplacement()
 	return score;
 }
 
+std::string Atom::averagePDBContribution(bool samePos, bool sameB)
+{
+	getModel()->getDistribution();
+	std::string atomName = getAtomName();
+	ElementPtr element = getElement();
+
+	double occupancy = 1;
+	vec3 placement = getModel()->getAbsolutePosition();
+
+	if (samePos)
+	{
+		placement = getPDBPosition();
+	}
+
+	double bFactor = getModel()->getMeanSquareDeviation();
+
+	if (sameB)
+	{
+		bFactor = getInitialBFactor();
+	}
+
+	return PDBReader::writeLine(shared_from_this(),
+								placement, 0, occupancy, bFactor);
+}
+
 std::string Atom::getPDBContribution()
 {
 	std::string atomName = getAtomName();
@@ -240,18 +266,8 @@ std::string Atom::getPDBContribution()
 		}
 
 		vec3 placement = positions[i].start;
-		double occupancy = positions[i].occupancy;
-
-		stream << pdbLineBeginning(count);
-		stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.x;
-		stream << std::setw(8) << std::setprecision(3) << placement.y;
-		stream << std::setw(8) << std::setprecision(3) << placement.z;
-		stream << std::setw(6) << std::setprecision(2) << 50 * occupancy / double(tries);
-		stream << std::setw(6) << std::setprecision(2) << 0;
-		stream << "          ";
-		stream << std::setw(2) << element->getSymbol();
-		stream << "  " << std::endl;
-
+		double occupancy = 50 * positions[i].occupancy / double(tries);
+		stream << PDBReader::writeLine(shared_from_this(), placement, count, occupancy, 0);
 		count++;
 	}
 

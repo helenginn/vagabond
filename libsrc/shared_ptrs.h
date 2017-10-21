@@ -126,4 +126,13 @@ typedef enum
 	MaskWork = 9,
 } MaskType;
 
+
+typedef enum
+{
+	PDBTypeEnsemble,
+	PDBTypeAverage,
+	PDBTypeSamePosition,
+	PDBTypeSameBFactor,
+} PDBType;
+
 #endif

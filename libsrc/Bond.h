@@ -314,7 +314,7 @@ public:
 		return _bondGroups[group].extraTorsionSamples.size();
 	}
 
-	double getMeanSquareDeviation(double target = -1, int index = -1);
+	virtual double getMeanSquareDeviation(double target = -1, int index = -1);
 
 	AtomPtr extraTorsionSample(int group, int i)
 	{

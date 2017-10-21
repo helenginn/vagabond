@@ -16,13 +16,14 @@
 
 void Backbone::refine(CrystalPtr target, RefinementType rType)
 {
-
 	if (!isTied())
 	{
 		return;
 	}
 
 	int resNum = getMonomer()->getResidueNum();
+
+	std::cout << getMonomer()->getResCode() << std::flush;
 
 	const char *atoms[] = {"N", "CA", "C"};
 	std::vector<std::string> atomStrs(atoms, atoms+3);
@@ -141,13 +142,15 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 					addSampledBackbone(getPolymer(), resNum, resNum - 2);
 				}
 
+				setSilent();
 				setScoreType(ScoreTypeModelPos);
 				sample();
-
+/*
 				std::cout << "Res " << resNum << " bond " << bond->shortDesc();
 				std::cout << " : bFactor " << bond->getMeanSquareDeviation();
 				std::cout << " (" << myAtom->getInitialBFactor() << ")";
 				std::cout << std::endl;
+*/
 
 				continue;
 			}

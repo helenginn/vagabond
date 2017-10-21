@@ -96,6 +96,7 @@ public:
 	void setKick(double value, bool beforeAnchor);
 	double getKick();
 
+	std::string getResCode();
 	void setSideKick(double value);
 private:
 	std::string _identifier; // e.g. three-letter code

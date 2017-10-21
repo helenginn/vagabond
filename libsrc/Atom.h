@@ -150,6 +150,7 @@ public:
 	MoleculePtr getMolecule();
 	void setKeepModel();
 	std::string getPDBContribution();
+	std::string averagePDBContribution(bool samePos, bool sameB);
 private:
 	ModelPtr _model;
 	ModelPtr _distModelOnly;

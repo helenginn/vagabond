@@ -96,23 +96,52 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 	time_t wall_start;
 	time(&wall_start);
 
+	std::cout << std::endl;
+	std::cout << "Refining from anchor to N-terminus...";
+	std::cout << std::endl << std::endl << "\t";
+
+	int count = 0;
+
 	for (int i = _anchorNum - 2; i >= 0; i--)
 	{
 		MonomerPtr monomer = getMonomer(i);
+
 		refineMonomer(monomer, target, rType);
+
+		if (monomer && count % 30 == 30 - 1)
+		{
+			std::cout << " - " << i << "\n\t" << std::flush;
+		}
+
+		count++;
 	}
+
+	std::cout << std::endl << std::endl;
+	std::cout << "Refining from anchor to C-terminus...";
+	std::cout << std::endl << std::endl << "\t";
+
+	count = 0;
 
 	for (int i = _anchorNum - 1; i < monomerCount(); i++)
 	{
 		MonomerPtr monomer = getMonomer(i);
 		refineMonomer(monomer, target, rType);
+
+		if (monomer && count % 30 == 30 - 1)
+		{
+			std::cout << " - " << i << "\n\t" << std::flush;
+		}
+
+		count++;
 	}
+
+	std::cout << std::endl << std::endl;
 
 	shout_timer(wall_start, "refinement");
 
 }
 
-void Polymer::makePDB(std::string filename)
+void Polymer::makePDB(std::string filename, PDBType pdbType)
 {
 	std::ofstream file;
 	file.open(filename.c_str());
@@ -128,13 +157,11 @@ void Polymer::makePDB(std::string filename)
 
 		SidechainPtr victim = monomer->getSidechain();
 
-		file << monomer->getBackbone()->getPDBContribution();
-		file << victim->getPDBContribution();
+		file << monomer->getBackbone()->getPDBContribution(pdbType);
+		file << victim->getPDBContribution(pdbType);
 	}
 
 	file.close();
-
-	std::cout << "Written PDB to " << filename << "." << std::endl;
 }
 
 void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
@@ -169,8 +196,6 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 	sumCC /= tempNs.size();
 	sumDiffCC /= tempNs.size();
 
-	std::cout << "Average CC " << sumCC << std::endl;
-
 	for (int i = 0; i < tempNs.size(); i++)
 	{
 		double ccRelative = tempCCs[i];
@@ -199,8 +224,6 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 
 	perCA->writeToFile("diffmap_" + graphName + ".csv");
 	perCA->plotPNG(plotMap);
-
-	std::cout << "Written out " << graphName << " graph set." << std::endl;
 }
 
 void Polymer::graph(std::string graphName)
@@ -435,8 +458,6 @@ void Polymer::graph(std::string graphName)
 	plotMap["yMax2"] = "0.5";
 
 	csvBlur->plotPNG(plotMap);
-
-	std::cout << "Written out " << graphName << " graph set." << std::endl;
 }
 
 
@@ -556,15 +577,20 @@ double Polymer::getInitialKick(void *object)
 
 void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 {
+
 	setupNelderMead();
 	setScoreType(ScoreTypeModelOverallB);
 	double value = target->getOverallBFactor();
+	std::cout << "Scaling flexibility to B factor of " << value << std::endl;
 	setOverallBFactor(value);
 	addOverallKickAndDampen(shared_from_this());
 	setCycles(50);
+	setSilent();
 	addSampledBackbone(shared_from_this());
 	setJobName("kick_and_dampen");
 	sample();
+
+	return;
 
 	double newDampen = getBackboneDampening(this);
 	setSidechainDampening(this, newDampen);
@@ -579,20 +605,20 @@ void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 	sample();
 }
 
-AnchorPtr Polymer::getAnchorModel()
+ModelPtr Polymer::getAnchorModel()
 {
 	MonomerPtr anchoredRes = getMonomer(getAnchor() - 1);
 	ModelPtr model = anchoredRes->findAtom("N")->getModel();
-	AnchorPtr anchor = ToAnchorPtr(model);
 
-	return anchor;
+	return model;
 }
 
 void Polymer::minimiseCentroids()
 {
-	std::cout << "****************************************" << std::endl;
 	std::cout << "Minimising centroids for the ensemble..." << std::endl;
-	std::cout << "****************************************" << std::endl;
+
+	_centroidOffsets.clear();
+	_centroids.clear();
 
 	std::vector<vec3> addedVecs;
 
@@ -622,7 +648,6 @@ void Polymer::minimiseCentroids()
 	}
 
 	double mult = 1 / (double)addedVecs.size();
-	std::cout << "Centroids calculated..." << std::endl;
 
 	// now we take these off every state of the anchor.
 
@@ -646,9 +671,8 @@ void Polymer::minimiseCentroids()
 		_centroidOffsets.push_back(offset);
 	}
 
-	AnchorPtr anchor = getAnchorModel();
-	BondPtr nBond = anchor->getToN();
-	std::vector<BondSample> *nSamples = nBond->getManyPositions(BondSampleThorough);
+	ModelPtr anchor = getAnchorModel();
+	std::vector<BondSample> *nSamples = anchor->getManyPositions(BondSampleThorough);
 
 	for (int i = 0; i < addedVecs.size(); i++)
 	{
@@ -657,16 +681,17 @@ void Polymer::minimiseCentroids()
 		_centroids.push_back(newPos);
 	}
 
+	std::cout << "Calculated corrections for " << _centroids.size() << " structures." << std::endl;
+
 	propagateChange();
 }
 
 void Polymer::minimiseRotations()
 {
-	std::cout << "****************************************" << std::endl;
 	std::cout << "Minimising rotations for the ensemble..." << std::endl;
-	std::cout << "****************************************" << std::endl;
 
 	int num = 0;
+	_rotations.clear();
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -686,8 +711,6 @@ void Polymer::minimiseRotations()
 		break;
 	}
 
-	std::vector<mat3x3> rotations;
-
 	for (int i = 0; i < num; i++)
 	{
 		std::vector<vec3> fixedVecs, variantVecs;
@@ -702,7 +725,7 @@ void Polymer::minimiseRotations()
 			AtomPtr ca = getMonomer(j)->findAtom("CA");
 			if (!ca) continue;
 
-			std::vector<BondSample> *samples;
+			std::vector<BondSample> samples;
 			ModelPtr model = ca->getModel();
 
 			if (!model)
@@ -710,10 +733,10 @@ void Polymer::minimiseRotations()
 				shout_at_helen("Missing model for CA atom!");
 			}
 
-			samples = model->getManyPositions(BondSampleThorough);
+			samples = model->getFinalPositions();
 
-			vec3 fixed = samples->at(samples->size() / 2).start;
-			vec3 variant = samples->at(i).start;
+			vec3 fixed = samples.at(samples.size() / 2).start;
+			vec3 variant = samples.at(i).start;
 			fixedVecs.push_back(fixed);
 			variantVecs.push_back(variant);
 		}
@@ -729,3 +752,27 @@ void Polymer::minimiseRotations()
 	propagateChange();
 }
 
+void Polymer::closenessSummary()
+{
+	double posSum = 0;
+	double bSum = 0;
+	int count = 0;
+	
+	for (int i = 0; i < atomCount(); i++)
+	{
+		double disp = atom(i)->posDisplacement();;
+
+		if (disp != disp) continue;
+
+		posSum += disp;
+		bSum += atom(i)->getModel()->getMeanSquareDeviation();
+		count++;
+	}
+	
+	posSum /= count;
+	bSum /= count;
+
+	std::cout << "Across all atoms:\n";
+	std::cout << "\tB factor (Å^2): " << bSum << std::endl;
+	std::cout << "\tPositional displacement from PDB (Å): " << posSum << std::endl;
+}

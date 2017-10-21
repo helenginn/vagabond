@@ -519,10 +519,6 @@ std::vector<vec3> Bond::polymerCorrectedPositions()
 		rotations = molecule->getRotationCorrections();
 		rotationCentres = molecule->getRotationCentres();
 	}
-	else
-	{
-		std::cout << "No molecule for " << shortDesc() << std::endl;
-	}
 
 	for (int i = 0; i < positions->size(); i++)
 	{

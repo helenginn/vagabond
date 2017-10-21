@@ -183,6 +183,11 @@ void Absolute::addToMonomer(MonomerPtr monomer)
 	Model::addToMonomer(monomer);
 }
 
+double Absolute::getMeanSquareDeviation(double target, int index)
+{
+	return _bFactor;
+}
+
 vec3 Absolute::getStaticPosition()
 {
 	return _position;

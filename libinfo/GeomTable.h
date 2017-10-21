@@ -70,6 +70,8 @@ public:
 	double getBondAngle(AtomType atom1, AtomType atom2, AtomType atom3);
 	AtomType getType(std::string, std::string);
 
+	static std::string getResCode(std::string threeLetter);
+
 private:
 	void addBondAngle(AtomType atom1, AtomType atom2,
 					  AtomType atom3, double angle);
@@ -77,6 +79,7 @@ private:
 	void addBondLength(AtomType atom1, AtomType atom2, double length);
 
 	static GeomTable _geomTable;
+	static std::map<std::string, std::string> _three2OneCode;
 
 	std::map<AtomPair, double> _bondLengths;
 	std::map<AtomTrio, double> _bondAngles;

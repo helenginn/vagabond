@@ -64,7 +64,7 @@ public:
 	double getAverageBFactor(bool initial = false);
 	double getAverageDisplacement();
 
-	std::string getPDBContribution();
+	std::string getPDBContribution(PDBType pdbType);
 
 	void setTied()
 	{

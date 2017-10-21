@@ -429,14 +429,9 @@ void Knotter::tie()
 		makeGlycine();
 	}
 
-	if (convertable)
+	if (!convertable)
 	{
-		std::cout << "Knotter is tying up residue: " << residue
-		<< resNum << std::endl;
-	}
-	else
-	{
-//		std::cout << "Knotter doesn't know how to tie up " << residue << std::endl;
+		warn_user("Knotter doesn't know how to tie up " + residue);
 	}
 }
 
@@ -1162,7 +1157,7 @@ void Knotter::makeTryptophan()
 	cg2cd1->activate(_sidechain, inherit);
 
 	BondPtr cg2cd2 = BondPtr(new Bond(cGamma, cDelta2));
-	cg2cd2->setTorsionAtoms(cBeta, cEpsilon2);
+	cg2cd2->setTorsionAtoms(cBeta, cEpsilon3);
 	cg2cd2->setFixed(true);
 	cg2cd2->activate(_sidechain, inherit);
 
@@ -1181,9 +1176,9 @@ void Knotter::makeTryptophan()
 	BondPtr cd12hd1 = BondPtr(new Bond(cDelta1, hDelta1));
 	cd12hd1->activate(_sidechain, inherit);
 
-	BondPtr ce12he1 = BondPtr(new Bond(nEpsilon1, cEpsilon2));
-	cd12ce1->setTorsionAtoms(cDelta1, cOmega2);
-	ce12he1->activate(_sidechain, inherit);
+	BondPtr ne12ce2 = BondPtr(new Bond(nEpsilon1, cEpsilon2));
+	ne12ce2->setTorsionAtoms(cDelta1, cOmega2);
+	ne12ce2->activate(_sidechain, inherit);
 
 	BondPtr ce22cz = BondPtr(new Bond(cEpsilon2, cOmega2));
 	ce22cz->setTorsionAtoms(cDelta2, hOmega2);
