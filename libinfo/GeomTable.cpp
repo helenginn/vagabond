@@ -20,8 +20,8 @@
 
 #define C_CH1E_LENGTH    (1.523) // // 1.525 - Engh&Huber, 1.523 - ref1.
 #define CH1E_NH1_LENGTH  (1.455) // 1.458 - Engh&Huber, 1.455 - ref1.
-#define C_NH1_LENGTH     (1.332) // 1.329 - E&H - used ref1.
-#define C_O_LENGTH       (1.231) // agrees with ref1.
+#define C_NH1_LENGTH     (1.329) // 1.329 - E&H, 1.332 - ref1.
+#define C_O_LENGTH       (1.231) // 1.229 - E&H, 1.231 - ref1.
 
 #define CH2E_SM_LENGTH   (1.803)
 #define CH3E_SM_LENGTH   (1.791)
@@ -36,10 +36,10 @@
 #define CH2E_CH2E_CH2E_ANGLE 111.3 
 #define CH1E_CH1E_CH3E_ANGLE 110.5
 
-#define CH1E_C_NH1_ANGLE     117.2
-#define CH1E_C_O_ANGLE       120.1
+#define CH1E_C_NH1_ANGLE     117.2 // 117.2
+#define CH1E_C_O_ANGLE       120.7 // 120.1 - Engh&Huber, 120.7 - CCP4
 #define NH1_C_O_ANGLE        122.7
-#define C_CH1E_NH1_ANGLE     110.72
+#define C_CH1E_NH1_ANGLE     111.2 // matches Engh & Huber and CCP4
 #define NH1_CH1E_CH2E_ANGLE  110.6
 #define C_NH1_CH1E_ANGLE     121.7
 

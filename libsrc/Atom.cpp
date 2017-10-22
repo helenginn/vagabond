@@ -137,6 +137,11 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool useNew)
 	FFT::add(fft, modified, pos);
 }
 
+vec3 Atom::getAbsolutePosition()
+{
+	return _model->getAbsolutePosition();
+}
+
 vec3 Atom::getPosition()
 {
 	return _model->getStaticPosition();

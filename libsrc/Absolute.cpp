@@ -59,6 +59,25 @@ void Absolute::makeAtom()
 void Absolute::addToMolecule(MoleculePtr molecule)
 {
 	makeAtom();
+/*
+	if (!_atom->getMonomer())
+	{
+		return;
+	}
+
+	int myMono = _atom->getMonomer()->getResidueNum();
+
+	for (int i = 0; i < molecule->atomCount(); i++)
+	{
+		std::string atomName = molecule->atom(i)->getAtomName();
+		int moleMono = molecule->atom(i)->getMonomer()->getResidueNum();
+
+		if (_atom->getAtomName() == atomName && myMono == moleMono)
+		{
+			return;
+		}
+	}
+*/
 	molecule->addAtom(_atom);
 
 	Model::addToMolecule(molecule);

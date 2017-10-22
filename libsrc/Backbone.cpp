@@ -81,6 +81,12 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 				for (int l = 0; l < 1; l++)
 				{
+					if (bond->getMinor()->getAtomName() != "CA" &&
+						bond->getMajor()->getAtomName() != "CA")
+					{
+						continue;
+					}
+
 					if (scoreType == ScoreTypeModelRMSDZero)
 					{
 						setupGrid();
@@ -123,11 +129,13 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 					bond->resetAxis();
 				}
 
+				/*
 				rType = RefinementModelPos;
 			}
 
 			if (rType == RefinementModelPos)
 			{
+*/
 				setupNelderMead();
 				setJobName("model_pos_" +  bond->shortDesc());
 
@@ -152,7 +160,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				std::cout << std::endl;
 */
 
-				continue;
+			}
+
+			if (rType != RefinementFineBlur)
+			{
+				return;
 			}
 
 			for (int k = 0; k < groups; k++)

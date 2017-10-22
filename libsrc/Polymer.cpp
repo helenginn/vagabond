@@ -146,6 +146,8 @@ void Polymer::makePDB(std::string filename, PDBType pdbType)
 	std::ofstream file;
 	file.open(filename.c_str());
 
+//	file << getPDBContribution(pdbType);
+
 	for (int i = 0; i < monomerCount(); i++)
 	{
 		MonomerPtr monomer = getMonomer(i);
@@ -228,8 +230,8 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 
 void Polymer::graph(std::string graphName)
 {
-	CSVPtr csv = CSVPtr(new CSV(11, "resnum", "newB", "oldB", "oldX", "oldY", "oldZ",
-								"newX", "newY", "newZ", "pos", "sidepos"));
+	CSVPtr csv = CSVPtr(new CSV(12, "resnum", "newB", "oldB", "oldX", "oldY", "oldZ",
+								"newX", "newY", "newZ", "pos", "sidepos", "flex"));
 	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB"));
@@ -266,9 +268,11 @@ void Polymer::graph(std::string graphName)
 			double oldZ = ca->getInitialAnisoB(2);
 			double posDisp = ca->posDisplacement();
 			double sideDisp = sidechain->getAverageDisplacement();
+			double flex = caBond->getFlexibilityPotential();
 
-			csv->addEntry(11, value, meanSq, ca->getInitialBFactor(),
-						  oldX, oldY, oldZ, newX, newY, newZ, posDisp, sideDisp);
+			csv->addEntry(12, value, meanSq, ca->getInitialBFactor(),
+						  oldX, oldY, oldZ, newX, newY, newZ, posDisp, sideDisp,
+						  flex);
 			caDampen = Bond::getDampening(&*caBond);
 			caBlur = Bond::getTorsionBlur(&*caBond);
 
@@ -319,8 +323,9 @@ void Polymer::graph(std::string graphName)
 	plotMap["height"] = "700";
 	plotMap["width"] = "1200";
 	plotMap["xHeader0"] = "resnum";
-	plotMap["yHeader0"] = "newB";
 	plotMap["xHeader1"] = "resnum";
+//	plotMap["xHeader2"] = "resnum";
+	plotMap["yHeader0"] = "newB";
 	plotMap["yHeader1"] = "oldB";
 	plotMap["colour0"] = "black";
 	plotMap["colour1"] = "red";
@@ -618,9 +623,9 @@ void Polymer::minimiseCentroids()
 	std::cout << "Minimising centroids for the ensemble..." << std::endl;
 
 	_centroidOffsets.clear();
-	_centroids.clear();
 
 	std::vector<vec3> addedVecs;
+	int count = 0;
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -628,6 +633,8 @@ void Polymer::minimiseCentroids()
 		{
 			continue;
 		}
+
+		count++;
 
 		AtomPtr ca = getMonomer(i)->findAtom("CA");
 
@@ -647,41 +654,33 @@ void Polymer::minimiseCentroids()
 		}
 	}
 
-	double mult = 1 / (double)addedVecs.size();
+	// calculate the number of atoms which have been gone into each anchor
+	double mult = 1 / (double)count;
 
-	// now we take these off every state of the anchor.
+	// now we divide every state of the anchor by this.
 
 	for (int i = 0; i < addedVecs.size(); i++)
 	{
 		vec3_mult(&addedVecs[i], mult);
-	}
+}
 
-	vec3 meanPos = make_vec3(0, 0, 0);
+	vec3 meanPos = make_vec3(0, 0, 0); // mean of all centroids
 
 	for (int i = 0; i < addedVecs.size(); i++)
 	{
 		meanPos = vec3_add_vec3(meanPos, addedVecs[i]);
 	}
 
-	vec3_mult(&meanPos, mult);
+	vec3_mult(&meanPos, 1 / (double)addedVecs.size());
 
+	// Find the offsets to bring all centroids to the mean value
 	for (int i = 0; i < addedVecs.size(); i++)
 	{
 		vec3 offset = vec3_subtract_vec3(addedVecs[i], meanPos);
 		_centroidOffsets.push_back(offset);
 	}
 
-	ModelPtr anchor = getAnchorModel();
-	std::vector<BondSample> *nSamples = anchor->getManyPositions(BondSampleThorough);
-
-	for (int i = 0; i < addedVecs.size(); i++)
-	{
-		vec3 *nStart = &nSamples->at(i).start;
-		vec3 newPos = vec3_subtract_vec3(*nStart, addedVecs[i]);
-		_centroids.push_back(newPos);
-	}
-
-	std::cout << "Calculated corrections for " << _centroids.size() << " structures." << std::endl;
+	std::cout << "Calculated corrections for " << _centroidOffsets.size() << " structures." << std::endl;
 
 	propagateChange();
 }
@@ -692,6 +691,7 @@ void Polymer::minimiseRotations()
 
 	int num = 0;
 	_rotations.clear();
+	_centroids.clear();
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -743,6 +743,7 @@ void Polymer::minimiseRotations()
 
 		Kabsch kabsch;
 		kabsch.setAtoms(variantVecs, fixedVecs);
+		_centroids.push_back(kabsch.fixCentroids());
 		mat3x3 mat = kabsch.run();
 		_rotations.push_back(mat);
 	}

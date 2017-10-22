@@ -26,6 +26,8 @@ int main(int argc, const char * argv[])
 	std::cout << "          \\ o           ___           o /\n";
 	std::cout << "            \\ o        /   \\        o /\n";
 	std::cout << "              -_______-     -_______-\n";
+	std::cout << "             Vagabond at your service.\n" << std::endl;
+
 
 
 

@@ -23,6 +23,8 @@ std::string mat3x3_desc(mat3x3 mat);
 
 mat3x3 mat3x3_inverse(mat3x3 &mat);
 mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double beta, double gamma);
+mat3x3 mat3x3_from_unit_cell(double *unitCell);
+void unit_cell_from_mat3x3(mat3x3 mat, double *vals);
 mat3x3 make_mat3x3();
 mat3x3 mat3x3_from_ccp4(CSym::ccp4_symop symop);
 
@@ -51,5 +53,7 @@ mat3x3 mat3x3_ortho_axes(vec3 cVec);
 mat3x3 mat3x3_rhbasis(vec3 aVec, vec3 bVec);
 mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis,
 							  double *best = NULL);
+
+mat3x3 mat3x3_from_2d_array(double **values);
 
 #endif /* defined(__vagabond__mat3x3__) */

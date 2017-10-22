@@ -88,7 +88,8 @@ public:
 	void getDataInformation(DiffractionPtr data, double partsFo = 2,
 							  double partsFc = 1);
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);
-	
+
+	void reconfigureUnitCell();
 	void summary();
 
 	void tieAtomsUp();

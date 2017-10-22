@@ -524,18 +524,19 @@ std::vector<vec3> Bond::polymerCorrectedPositions()
 	{
 		vec3 subtract = positions->at(i).start;
 
+		// perform rotation element of superposition
+
+	    if (rotations.size() > i && rotationCentres.size() > i)
+		{
+			vec3 tmp = vec3_add_vec3(subtract, rotationCentres[i]);
+			mat3x3_mult_vec(rotations[i], &tmp);
+			subtract = vec3_add_vec3(tmp, rotationCentres[i]);
+		}
+
 		// remove translation aspect of superposition
 		if (offsets.size() > i)
 		{
 			subtract = vec3_subtract_vec3(positions->at(i).start, offsets[i]);
-		}
-
-		// perform rotation element of superposition
-		if (rotations.size() > i && rotationCentres.size() > i)
-		{
-			vec3 tmp = vec3_subtract_vec3(subtract, rotationCentres[i]);
-			mat3x3_mult_vec(rotations[i], &tmp);
-			subtract = vec3_add_vec3(tmp, rotationCentres[i]);
 		}
 
 		posOnly.push_back(subtract);
@@ -1497,4 +1498,40 @@ ModelPtr Bond::reverse(BondPtr upstreamBond)
 	activate();
 
 	return nextBond;
+}
+
+double Bond::getFlexibilityPotential()
+{
+	std::vector<BondSample> *samples = getManyPositions(BondSampleThorough);
+	double sum = 0;
+	double weights = 0;
+
+	for (int i = 1; i < samples->size(); i++)
+	{
+		mat3x3 iTorsionBasis = samples->at(i).basis;
+		vec3 iBondDir = mat3x3_axis(iTorsionBasis, 2);
+
+		for (int j = 0; j < i; j++)
+		{
+			mat3x3 jTorsionBasis = samples->at(j).basis;
+			vec3 jBondDir = mat3x3_axis(jTorsionBasis, 2);
+
+			double weight = 1;
+			double angle = vec3_angle_with_vec3(iBondDir, jBondDir);
+
+			if (angle != angle) angle = 0;
+
+			sum += angle * weight;
+			weights += weight;
+		}
+	}
+
+	double average = sum / weights;
+
+	if (average != average)
+	{
+		average = 0;
+	}
+
+	return average;
 }

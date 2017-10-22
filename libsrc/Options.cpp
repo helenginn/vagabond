@@ -41,8 +41,6 @@ Options::Options(int argc, const char **argv)
 
 void Options::run()
 {
-	std::cout << "Vagabond at your service.\n" << std::endl;
-
 	parse();
 
 	if (!crystals.size())
@@ -92,31 +90,38 @@ void Options::run()
 			{
 				for (int i = 0; i < 100; i++)
 				{
+				//	crystals[0]->reconfigureUnitCell();
+
 					if (true)
 					{
 						count++;
 						molecule->refine(crystals[0], type);
 						crystals[0]->concludeRefinement(count, data);
 					}
-					
+
 					if (molecule->getClassName() == "Polymer" && i == 0)
 					{
                         count++;
 						polymer->scaleFlexibilityToBFactor(crystals[0]);
 						crystals[0]->concludeRefinement(count, data);
 					}
-					else if (molecule->getClassName() == "Polymer" && i == 3)
+					else if (molecule->getClassName() == "Polymer" && i == 2)
 					{
 						count++;
-						crystals[0]->changeAnchors(84);
+						crystals[0]->changeAnchors(730);
+						crystals[0]->concludeRefinement(count, data);
+					}
+					else if (molecule->getClassName() == "Polymer" && i == 4)
+					{
+						count++;
+						polymer->minimiseCentroids();
+						polymer->minimiseRotations();
 						crystals[0]->concludeRefinement(count, data);
 					}
 					else if (molecule->getClassName() == "Polymer" && i == 6)
 					{
 						count++;
-						polymer->minimiseCentroids();
-						polymer->minimiseRotations();
-						type = RefinementModelPos;
+						crystals[0]->changeAnchors(638);
 						crystals[0]->concludeRefinement(count, data);
 					}
 				}

@@ -31,6 +31,7 @@ public:
 	bool isBackboneAndSidechain();
 
 	vec3 getPosition();
+	vec3 getAbsolutePosition();
 	double posDisplacement();
 
 	void setElement(ElementPtr element)

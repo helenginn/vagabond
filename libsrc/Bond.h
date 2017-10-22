@@ -315,6 +315,7 @@ public:
 	}
 
 	virtual double getMeanSquareDeviation(double target = -1, int index = -1);
+	double getFlexibilityPotential();
 
 	AtomPtr extraTorsionSample(int group, int i)
 	{

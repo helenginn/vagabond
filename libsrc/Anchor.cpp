@@ -156,7 +156,11 @@ void Anchor::activate()
 
 BondPtr Anchor::getAppropriateBond(bool reverse)
 {
-	if (!reverse && _trappedToCTerminus->getMajor() == _callingBond->getMinor())
+	if (!_callingBond)
+	{
+		return _trappedToNTerminus;
+	}
+	else if (!reverse && _trappedToCTerminus->getMajor() == _callingBond->getMinor())
 	{
 		return _trappedToNTerminus;
 	}

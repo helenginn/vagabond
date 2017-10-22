@@ -66,6 +66,11 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 				ScoreType scoreType = ScoreTypeModelRMSDZero;
 				for (int l = 0; l < 1; l++)
 				{
+					if (bond->getMinor()->getAtomName() != "CB")
+					{
+						continue;
+					}
+
 					if (scoreType == ScoreTypeModelRMSDZero)
 					{
 						setupGrid();
@@ -106,12 +111,12 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 					bond->resetAxis();
 				}
-
+/*
 				rType = RefinementModelPos;
 			}
 
 			if (rType == RefinementModelPos)
-			{
+			{*/
 				for (int k = 0; k < groups; k++)
 				{
 					setupNelderMead();
@@ -123,9 +128,13 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 					rType = RefinementModelPos;
 				}
 
-				continue;
 			}
 
+			if (rType != RefinementFineBlur)
+			{
+				return;
+			}
+			
 			for (int k = 0; k < groups; k++)
 			{
 				setupNelderMead();

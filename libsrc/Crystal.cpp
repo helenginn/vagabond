@@ -21,6 +21,8 @@
 #include "CSV.h"
 #include "FileReader.h"
 #include "LocalCC.h"
+#include "Atom.h"
+#include "Kabsch.h"
 
 #include "../libccp4/cmtzlib.h"
 #include "../libccp4/csymlib.h"
@@ -578,6 +580,8 @@ void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 		std::cout << "\tCycle " << cycleNum << std::endl;
 
 		std::string refineCount = "refine_" + i_to_str(cycleNum);
+		writeCalcMillersToFile(data, refineCount);
+		getDataInformation(data, 3, 2);
 		PolymerPtr polymer = ToPolymerPtr(molecule(i));
 		polymer->makePDB(refineCount + ".pdb", PDBTypeEnsemble);
 		polymer->makePDB("b_" + refineCount + ".pdb", PDBTypeSameBFactor);
@@ -585,8 +589,53 @@ void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 		polymer->makePDB("p_" + refineCount + ".pdb", PDBTypeSamePosition);
 		polymer->graph("graph_" + i_to_str(cycleNum));
 		polymer->closenessSummary();
-		writeCalcMillersToFile(data, refineCount);
-		getDataInformation(data, 3, 2);
 		polymer->differenceGraphs("diffgraph_" + i_to_str(cycleNum), shared_from_this());
 	}
+}
+
+void Crystal::reconfigureUnitCell()
+{
+	PolymerPtr polymer = ToPolymerPtr(molecule(0));
+
+	Kabsch kabsch;
+
+	std::vector<vec3> xs, ys;
+
+	for (int i = 0; i < polymer->atomCount(); i++)
+	{
+		if (!polymer->atom(i)->isBackbone())
+		{
+			continue;
+		}
+
+		vec3 initPos = polymer->atom(i)->getPDBPosition();
+		vec3 nowPos = polymer->atom(i)->getAbsolutePosition();
+
+		xs.push_back(nowPos);
+		ys.push_back(initPos);
+	}
+
+	kabsch.setAtoms(xs, ys);
+	kabsch.fixCentroids();
+	kabsch.run();
+
+	mat3x3 transform = kabsch.findFinalTransform();
+	//mat3x3 invTrans = mat3x3_inverse(transform);
+
+	std::cout << mat3x3_desc(transform) << std::endl;
+
+	mat3x3 potential = mat3x3_mult_mat3x3(transform, _hkl2real);
+
+	double vals[6];
+	unit_cell_from_mat3x3(potential, vals);
+
+	std::cout << "Potential new unit cell: " << std::endl;
+	std::cout << "\t" << std::endl;
+
+	for (int i = 0; i < 6; i++)
+	{
+		std::cout << vals[i] << " ";
+	}
+
+	std::cout << std::endl;
 }

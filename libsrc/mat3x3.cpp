@@ -7,6 +7,7 @@
 //
 
 #define deg2rad(a) ((a)*M_PI/180)
+#define rad2deg(a) ((a) / M_PI * 180)
 
 #include "mat3x3.h"
 #include <string.h>
@@ -39,7 +40,7 @@ vec3 mat3x3_mult_vec(struct mat3x3 mat, struct vec3 vec)
 
 mat3x3 mat3x3_mult_mat3x3(struct mat3x3 m1, struct mat3x3 m2)
 {
-	struct mat3x3 m;
+	mat3x3 m = make_mat3x3();
 
 	m.vals[0] = m1.vals[0] * m2.vals[0] + m1.vals[1] * m2.vals[3] + m1.vals[2] * m2.vals[6];
 	m.vals[1] = m1.vals[0] * m2.vals[1] + m1.vals[1] * m2.vals[4] + m1.vals[2] * m2.vals[7];
@@ -101,6 +102,31 @@ mat3x3 mat3x3_inverse(mat3x3 &mat)
 
 	return inv;
 
+}
+
+mat3x3 mat3x3_from_unit_cell(double *unitCell)
+{
+	return mat3x3_from_unit_cell(unitCell[0], unitCell[1],
+								 unitCell[2], unitCell[3],
+								 unitCell[4], unitCell[5]);
+}
+
+void unit_cell_from_mat3x3(mat3x3 mat, double *vals)
+{
+	vec3 a = mat3x3_axis(mat, 0);
+	vec3 b = mat3x3_axis(mat, 1);
+	vec3 c = mat3x3_axis(mat, 2);
+
+	double alpha = vec3_angle_with_vec3(b, c);
+	double beta = vec3_angle_with_vec3(a, c);
+	double gamma = vec3_angle_with_vec3(a, b);
+
+	vals[0] = vec3_length(a);
+	vals[1] = vec3_length(b);
+	vals[2] = vec3_length(c);
+	vals[3] = rad2deg(alpha);
+	vals[4] = rad2deg(beta);
+	vals[5] = rad2deg(gamma);
 }
 
 mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double beta, double gamma)
@@ -294,10 +320,10 @@ mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis, double *best)
 	return mat3x3_unit_vec_rotation(axis, bestAngle);
 }
 
-vec3 axis(mat3x3 me, int i)
+vec3 mat3x3_axis(mat3x3 me, int i)
 {
 	vec3 axis;
-	memcpy(&axis, &me.vals[i * 3], 3 * sizeof(double));
+	axis = make_vec3(me.vals[0 + i], me.vals[3 + i], me.vals[6 + i]);
 
 	return axis;
 }
@@ -324,4 +350,19 @@ std::string mat3x3_desc(mat3x3 mat)
 	str << mat.vals[6] << ", " << mat.vals[7] << ", " << mat.vals[8] << ")";
 
 	return str.str();
+}
+
+mat3x3 mat3x3_from_2d_array(double **values)
+{
+	mat3x3 new_mat = make_mat3x3();
+
+	for (int j = 0; j < 3; j++)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			new_mat.vals[j * 3 + i] = values[j][i];
+		}
+	}
+
+	return new_mat;
 }

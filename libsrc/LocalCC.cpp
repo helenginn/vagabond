@@ -17,9 +17,9 @@ double LocalCC::localCorrelation(FFTPtr fft1, FFTPtr fft2)
 
 	for (long k = -fft2->nz / 2; k < fft2->nz / 2; k++)
 	{
-		for (long j = 0; j < fft2->ny; j++)
+		for (long j = -fft2->ny / 2; j < fft2->ny / 2; j++)
 		{
-			for (long i = 0; i < fft2->nx; i++)
+			for (long i = -fft2->nx / 2; i < fft2->nx / 2; i++)
 			{
 				long base_x = i; long base_y = j; long base_z = k;
 				fft2->collapse(&base_x, &base_y, &base_z);
@@ -36,7 +36,7 @@ double LocalCC::localCorrelation(FFTPtr fft1, FFTPtr fft2)
 							fft2->collapse(&new_x, &new_y, &new_z);
 
 							if (new_x * base_x < 0 || new_y * base_y < 0 ||
-								new_z * base_z < 0)
+								new_z * base_z < 0) // wrong!!
 							{
 								continue;
 							}
@@ -47,7 +47,7 @@ double LocalCC::localCorrelation(FFTPtr fft1, FFTPtr fft2)
 							val1s.push_back(int1);
 							val2s.push_back(int2);
 
-							sumInts += int1 + int2;
+							sumInts += int2;
 						}
 					}
 				}
