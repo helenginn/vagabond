@@ -27,6 +27,7 @@ Atom::Atom()
 	_initialPosition = make_vec3(0, 0, 0);
 	_initialB = 0;
 	_geomType = AtomUnassigned;
+	_weighting = 1;
 }
 
 Atom::Atom(Atom &other)
@@ -38,6 +39,7 @@ Atom::Atom(Atom &other)
 	_atomName = other._atomName;
 	_model = other._model;
 	_monomer = other._monomer;
+	_weighting = other._weighting;
 }
 
 void Atom::inheritParents()
@@ -60,6 +62,8 @@ FFTPtr Atom::getBlur()
 	{
 		modelDist = _distModelOnly->getDistribution();
 	}
+
+	modelDist->multiplyAll(_weighting);
 
 	return modelDist;
 }

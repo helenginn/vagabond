@@ -146,6 +146,16 @@ public:
 		return _monomer.lock();
 	}
 
+	double getWeighting()
+	{
+		return _weighting;
+	}
+
+	void setWeighting(double weighting)
+	{
+		_weighting = weighting;
+	}
+
 	std::string shortDesc();
 
 	MoleculePtr getMolecule();
@@ -163,6 +173,7 @@ private:
 	vec3 _pdbPosition;
 	int _atomNum;
 	double _aniso[3];
+	double _weighting;
 
 	AtomType _geomType;
 };

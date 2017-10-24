@@ -43,8 +43,8 @@ AbsolutePtr PDBReader::makeAtom(std::string line)
 	atomNum = line.substr(6, 5);
 	atomName = line.substr(11, 5);
 	resName = line.substr(17, 3);
-	chainID = line.substr(21, 2);
-	resNum = line.substr(23, 7);
+	chainID = line.substr(21, 1);
+	resNum = line.substr(22, 7);
 	xData = line.substr(30, 8);
 	yData = line.substr(38, 8);
 	zData = line.substr(46, 8);
@@ -57,7 +57,7 @@ AbsolutePtr PDBReader::makeAtom(std::string line)
 	double zValue = atof(zData.c_str());
 	double bFacValue = atof(bFactor.c_str());
 	double occValue = atof(occupancy.c_str());
-	double resNumValue = atoi(resNum.c_str());
+	int resNumValue = atoi(resNum.c_str());
 	double atomNumValue = atoi(atomNum.c_str());
 
 	vec3 vec = make_vec3(xValue, yValue, zValue);
@@ -127,8 +127,8 @@ void PDBReader::validateResidue(AbsolutePtr atom)
 	if (difference < 0)
 	{
 		warn_user("Residue number going backwards in PDB. "\
-				  "Will try to cope. Will probably fail."\
-				  "residue " + i_to_str(atom->getResNum())
+				  "Will try to cope. Will probably fail. "\
+				  "Residue " + i_to_str(atom->getResNum())
 				  + " vs " + i_to_str(_residueNum));
 	}
 
@@ -136,14 +136,6 @@ void PDBReader::validateResidue(AbsolutePtr atom)
 	if (difference == 0)
 	{
 		return;
-	}
-
-	/* More than one residue difference? Must be missing some
-	 * disordered residues. We care. Add placeholders. */
-	if (difference > 1)
-	{
-		difference--;
-		_myPolymer->addUnknownMonomers(difference);
 	}
 
 	/* Now we add the final residue as a new one */

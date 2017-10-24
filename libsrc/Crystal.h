@@ -20,6 +20,7 @@
 #include "maths.h"
 #include "Molecule.h"
 #include "csymlib.h"
+#include <iostream>
 
 #define HARD_CODED_RESOLUTION 1.0
 
@@ -126,9 +127,17 @@ public:
 		_maxResolution = maxRes;
 	}
 
-	void setAnchorResidue(int anchor)
+	void addAnchorResidue(int anchor)
 	{
-		_anchorResidue = anchor;
+		_anchorResidues.push_back(anchor);
+		std::cout << "Adding anchor residue " << anchor << " to "
+		<< getFilename() << "." << std::endl;
+
+	}
+
+	int totalAnchors()
+	{
+		return _anchorResidues.size();
 	}
 
 	void setOverallBFactor(double b)
@@ -151,8 +160,9 @@ private:
 	mat3x3 _real2frac;
 	CSym::CCP4SPG *_spaceGroup;
 	double _maxResolution;
-	int _anchorResidue;
+	std::vector<int> _anchorResidues;
 	double _overallB;
+	double totalToScale();
 
 	void applySymOps();
 

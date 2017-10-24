@@ -18,7 +18,6 @@ class Anchor : public Bond
 {
 public:
 	Anchor(BondPtr inheritDownstreamBond, BondPtr inheritParentBond);
-
 	void setCallingBond(Bond *call)
 	{
 		_callingBond = call;

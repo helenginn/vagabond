@@ -23,6 +23,7 @@ Anchor::Anchor(BondPtr inheritToNTerminus, BondPtr inheritToCTerminus)
 	 * basis is CA--N bond reversed, torsion is reversed.
 	 */
 
+	_callingBond = NULL;
 	_trappedToNTerminus = std::make_shared<Bond>(*inheritToNTerminus);
 	_trappedToCTerminus = std::make_shared<Bond>(*inheritToCTerminus);
 

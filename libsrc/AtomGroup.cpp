@@ -158,3 +158,29 @@ void AtomGroup::propagateChange()
 		}
 	}
 }
+
+int AtomGroup::totalElectrons(int *fcWeighted)
+{
+	double sum = 0;
+	double weighted = 0;
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		double e = atom(i)->getElement()->electronCount();
+		sum += e;
+		double weight = atom(i)->getWeighting();
+		weighted += e * weight;
+	}
+
+	*fcWeighted = weighted;
+
+	return sum;
+}
+
+void AtomGroup::setWeighting(double value)
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		atom(i)->setWeighting(value);
+	}
+}

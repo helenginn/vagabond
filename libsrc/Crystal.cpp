@@ -123,6 +123,21 @@ void Crystal::realSpaceClutter()
 	_difft->createFFTWplan(8);
 }
 
+double Crystal::totalToScale()
+{
+	int sum = 0;
+	int weighted = 0;
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		int weights = 0;
+		sum += molecule(i)->totalElectrons(&weights);
+		weighted += weights;
+	}
+
+	return sqrt((double)sum / (double)weighted);
+}
+
 void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 {
 	if (_fft)
@@ -195,7 +210,7 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 	colout[0] = MtzAddColumn(mtzout, set, "H", "H");
 	colout[1] = MtzAddColumn(mtzout, set, "K", "H");
 	colout[2] = MtzAddColumn(mtzout, set, "L", "H");
-	colout[3] = MtzAddColumn(mtzout, set, "FREE", "R");
+	colout[3] = MtzAddColumn(mtzout, set, "FREE", "I");
 	colout[4] = MtzAddColumn(mtzout, set, "FP", "F");
 	colout[5] = MtzAddColumn(mtzout, set, "FC", "F");
 	colout[6] = MtzAddColumn(mtzout, set, "FWT", "F");
@@ -231,7 +246,9 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 				double foInt = fftData->getIntensity(i, j, k);
 				double foAmp = sqrt(foInt);
 
-				int free = fftData->getMask(i, j, k);
+				// i.e. 0 when mask is free flag.
+
+				int free = (fftData->getMask(i, j, k) != MaskFree);
 
 				if (vec3_length(pos) > dStar)
 				{
@@ -409,12 +426,15 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 {
 	std::vector<double> bins;
 	generateResolutionBins(0, _maxResolution, 20, &bins);
+	double totalFc = totalToScale();
 
+//	std::cout << "Total Fc: " << totalFc << std::endl;
+	
 	for (int i = 0; i < bins.size() - 1; i++)
 	{
 		double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
 											bins[i], bins[i + 1]);
-		double scale = 1 / ratio;
+		double scale = totalFc / ratio;
 		applyScaleFactor(scale, bins[i], bins[i + 1]);
 	}
 
@@ -516,7 +536,7 @@ void Crystal::setAnchors()
 		if (molecule(i)->getClassName() == "Polymer")
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
-			polymer->setAnchor(_anchorResidue);
+			polymer->setAnchor(_anchorResidues[0]);
 		}
 	}
 }
@@ -530,7 +550,7 @@ void Crystal::changeAnchors(int newAnchor)
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
 
-			polymer->changeAnchor(newAnchor);
+			polymer->changeAnchor(_anchorResidues[newAnchor]);
 		}
 	}
 }
@@ -539,7 +559,6 @@ Crystal::Crystal()
 {
 	_firstScale = -1;
 	_maxResolution = HARD_CODED_RESOLUTION;
-	_anchorResidue = 34;
 	_overallB = 16;
 }
 

@@ -33,6 +33,7 @@ class RefinementGridSearch : public RefinementStrategy
 private:
     int gridLength;
     int gridJumps;
+	bool _writeCSV;
 	ReverseMap reverseResults;
     std::vector<double> orderedResults;
     std::vector<ParamList> orderedParams;
@@ -44,6 +45,7 @@ public:
 		gridJumps = 8;
         gridLength = 15;
         cycleNum = 1;
+		_writeCSV = false;
     };
     
     void setGridLength(int length)

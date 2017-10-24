@@ -72,6 +72,9 @@ public:
 	}
 
 	void setUseAbsolute();
+	int totalElectrons(int *fcWeighted);
+
+	void setWeighting(double value);
 
 protected:
 	AtomGroup();

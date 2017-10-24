@@ -27,6 +27,7 @@ public:
 		_sideDampening = 0.05;
 		_sideKick = 0;
 		_anchorNum = 0;
+		_totalMonomers = 0;
 	}
 
 	void closenessSummary();
@@ -54,6 +55,7 @@ public:
 	void scaleSidechainsToBFactor();
 	void minimiseCentroids();
 	void minimiseRotations();
+	void downWeightResidues(int start, int end, double value);
 
 	ModelPtr getAnchorModel();
 	void changeAnchor(int num);
@@ -65,14 +67,6 @@ public:
 	int getAnchor()
 	{
 		return _anchorNum;
-	}
-
-	void addUnknownMonomers(int number)
-	{
-		for (int i = 0; i < number; i++)
-		{
-			addMonomer(MonomerPtr());
-		}
 	}
 
 	MonomerPtr getMonomer(int i)
@@ -87,7 +81,8 @@ public:
 
 	long monomerCount()
 	{
-		return _monomers.size();
+//		return _monomers.size();
+		return _totalMonomers;
 	}
 
 	virtual std::string getClassName()
@@ -109,6 +104,7 @@ private:
 	double _dampening;
 	double _sideDampening;
 	double _sideKick;
+	double _totalMonomers;
 
 
 };

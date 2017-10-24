@@ -69,6 +69,12 @@ void Options::run()
 			/* sandbox */
 			DiffractionPtr data = diffractions[0];
 
+			MoleculePtr molecule = crystals[0]->molecule("A");
+			PolymerPtr polymer = ToPolymerPtr(molecule);
+			polymer->downWeightResidues(856, 861, 0);
+			polymer->downWeightResidues(883, 890, 0);
+			polymer->downWeightResidues(1009, 1015, 0);
+
 			crystals[0]->writeCalcMillersToFile(data, "pre");
 			crystals[0]->getDataInformation(data, propFo, propFc);
 
@@ -79,11 +85,11 @@ void Options::run()
 			}
 
 			crystals[0]->tiedUpScattering();
-			MoleculePtr molecule = crystals[0]->molecule("A");
+
+
 			int count = 0;
 			crystals[0]->concludeRefinement(count, data);
 
-			PolymerPtr polymer = ToPolymerPtr(molecule);
 			RefinementType type = RefinementModelRMSD;
 
 			if (_numCycles > 0)
@@ -107,8 +113,10 @@ void Options::run()
 					}
 					else if (molecule->getClassName() == "Polymer" && i == 2)
 					{
+						if (crystals[0]->totalAnchors() <= 1) continue;
+
 						count++;
-						crystals[0]->changeAnchors(730);
+						crystals[0]->changeAnchors(1);
 						crystals[0]->concludeRefinement(count, data);
 					}
 					else if (molecule->getClassName() == "Polymer" && i == 4)
@@ -118,10 +126,13 @@ void Options::run()
 						polymer->minimiseRotations();
 						crystals[0]->concludeRefinement(count, data);
 					}
-					else if (molecule->getClassName() == "Polymer" && i == 6)
+					else if (molecule->getClassName() == "Polymer" && i % 2 == 0)
 					{
+						int myAnchor = (i / 2) - 1;
+						if (myAnchor >= crystals[0]->totalAnchors()) continue;
+
 						count++;
-						crystals[0]->changeAnchors(638);
+						crystals[0]->changeAnchors(myAnchor);
 						crystals[0]->concludeRefinement(count, data);
 					}
 				}
@@ -215,23 +226,41 @@ void Options::parse()
 
 		if (!arg.compare(0, prefix.size(), prefix))
 		{
-			std::string anchor_string = arg.substr(prefix.size());
-			int anchor = atoi(anchor_string.c_str());
-
 			if (crystals.size() == 0)
 			{
 				shout_at_user("Anchor residue specified, but a coordinate\n"\
 							  "file has not been specified yet. Please use\n"\
 							  "--with-pdb= to specify some atomic coordinates.");
 			}
-			else
+
+			std::string anchor_string = arg.substr(prefix.size());
+
+			size_t comma = anchor_string.find(",");
+			CrystalPtr crystal = crystals.at(crystals.size() - 1);
+
+			while (true)
 			{
-				CrystalPtr crystal = crystals.at(crystals.size() - 1);
-				crystal->setAnchorResidue(anchor);
-				std::cout << "Setting " << crystal->getFilename()
-				<< " to anchor residue " << anchor << "." << std::endl;
-				understood = true;
+				std::string number = anchor_string;
+
+				if (comma < anchor_string.size())
+				{
+					number = anchor_string.substr(0, comma);
+					anchor_string = anchor_string.substr(comma + 1);
+					comma = anchor_string.find(",");
+				}
+
+				int anchor = atoi(number.c_str());
+				crystal->addAnchorResidue(anchor);
+
+				if (comma >= anchor_string.size())
+				{
+					int anchor = atoi(anchor_string.c_str());
+					crystal->addAnchorResidue(anchor);
+					break;
+				}
 			}
+
+			understood = true;
 		}
 
 		prefix = "--max-res=";

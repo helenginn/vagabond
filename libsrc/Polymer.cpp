@@ -26,11 +26,16 @@
 
 void Polymer::addMonomer(MonomerPtr monomer)
 {
-	long existingMonomers = monomerCount();
-	_monomers[existingMonomers] = monomer;
 	if (monomer)
 	{
+		int resNum = monomer->getResidueNum() - 1;
+		_monomers[resNum] = monomer;
 		monomer->setPolymer(shared_from_this());
+
+		if (resNum > _totalMonomers)
+		{
+			_totalMonomers = resNum;
+		}
 	}
 }
 
@@ -63,7 +68,7 @@ void Polymer::tieAtomsUp()
 void Polymer::summary()
 {
 	Molecule::summary();
-	std::cout << "| I am a polymer with " << monomerCount() << " monomers." << std::endl;
+	std::cout << "| I am a polymer with " << _monomers.size() << " monomers." << std::endl;
 
 }
 
@@ -431,38 +436,6 @@ void Polymer::graph(std::string graphName)
 		csv->plotPNG(plotMap);
 		csv->writeToFile("displacement_" + graphName + ".csv");
 	}
-
-	plotMap["filename"] = "dampening_" + graphName;
-	plotMap["yHeader0"] = "dN-CA";
-	plotMap["xHeader1"] = "resnum";
-	plotMap["yHeader1"] = "dCA-C";
-	plotMap["xHeader2"] = "resnum";
-	plotMap["yHeader2"] = "dC-N";
-	plotMap["style2"] = "line";
-	plotMap["colour2"] = "blue";
-	plotMap["yTitle0"] = "Dampening factor";
-	plotMap["yMin0"] = "-2";
-	plotMap["yMin1"] = "-2";
-	plotMap["yMin2"] = "-2";
-	plotMap["yMax0"] = "2";
-	plotMap["yMax1"] = "2";
-	plotMap["yMax2"] = "2";
-
-	csvDamp->plotPNG(plotMap);
-
-	plotMap["filename"] = "blurring_" + graphName;
-	plotMap["yHeader0"] = "bN-CA";
-	plotMap["yHeader1"] = "bCA-C";
-	plotMap["yHeader2"] = "bC-N";
-	plotMap["yTitle0"] = "Blurring factor";
-	plotMap["yMin0"] = "-0.5";
-	plotMap["yMin1"] = "-0.5";
-	plotMap["yMin2"] = "-0.5";
-	plotMap["yMax0"] = "0.5";
-	plotMap["yMax1"] = "0.5";
-	plotMap["yMax2"] = "0.5";
-
-	csvBlur->plotPNG(plotMap);
 }
 
 
@@ -776,4 +749,20 @@ void Polymer::closenessSummary()
 	std::cout << "Across all atoms:\n";
 	std::cout << "\tB factor (Å^2): " << bSum << std::endl;
 	std::cout << "\tPositional displacement from PDB (Å): " << posSum << std::endl;
+}
+
+void Polymer::downWeightResidues(int start, int end, double value) // inclusive
+{
+	double count = 0;
+	for (int i = start; i <= end; i++)
+	{
+		if (getMonomer(i))
+		{
+			getMonomer(i)->setWeighting(value);
+			count++;
+		}
+	}
+
+	std::cout << "Set " << count << " residues in region " << start << "-"
+	<< end << " to weighting of " << 0 << std::endl;
 }
