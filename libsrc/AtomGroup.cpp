@@ -11,6 +11,7 @@
 #include "Element.h"
 #include "Bond.h"
 #include <sstream>
+#include <iomanip>
 
 AtomPtr AtomGroup::findAtom(std::string atomType)
 {
@@ -55,19 +56,46 @@ double AtomGroup::totalElectrons()
 std::string AtomGroup::getPDBContribution(PDBType pdbType)
 {
 	std::ostringstream stream;
+	int numConf = 0;
+
+	if (!atomCount())
+	{
+		return "";
+	}
+
+	if (pdbType == PDBTypeEnsemble)
+	{
+		/* Get the total number of conformers to worry about */
+		std::vector<BondSample> *samples = atom(0)->getModel()->getManyPositions(BondSampleThorough);
+
+		numConf = samples->size();
+
+		for (int j = 0; j < numConf; j++)
+		{
+			stream << "MODEL " << std::setw(8) << j << std::setw(66) << " " << std::endl;
+
+			for (int i = 0; i < atomCount(); i++)
+			{
+				if (!atom(i)->getMonomer())
+				{
+					continue;
+				}
+
+				stream << atom(i)->getPDBContribution(j);
+			}
+			
+			stream << "TER" << std::setw(80) << " " << std::endl;
+			stream << "ENDMDL" << std::setw(80) << " " << std::endl;
+		}
+
+		return stream.str();
+	}
 
 	for (int i = 0; i < atomCount(); i++)
 	{
-		if (pdbType == PDBTypeEnsemble)
-		{
-			stream << atom(i)->getPDBContribution();
-		}
-		else
-		{
-			bool samePos = (pdbType == PDBTypeSamePosition);
-			bool sameB = (pdbType == PDBTypeSameBFactor);
-			stream << atom(i)->averagePDBContribution(samePos, sameB);
-		}
+		bool samePos = (pdbType == PDBTypeSamePosition);
+		bool sameB = (pdbType == PDBTypeSameBFactor);
+		stream << atom(i)->averagePDBContribution(samePos, sameB);
 	}
 
 	return stream.str();

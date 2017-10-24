@@ -184,8 +184,8 @@ std::string Atom::pdbLineBeginning(int i)
 	to_upper(residueName);
 	std::ostringstream line;
 
-	char conformer[] = "A";
-	conformer[0] += i;
+	char conformer[] = " ";
+//	conformer[0] += i;
 
 	line << "ATOM  ";
 	line << std::setfill(' ') << std::setw(5) << std::fixed << _atomNum;
@@ -242,7 +242,7 @@ std::string Atom::averagePDBContribution(bool samePos, bool sameB)
 								placement, 0, occupancy, bFactor);
 }
 
-std::string Atom::getPDBContribution()
+std::string Atom::getPDBContribution(int ensembleNum)
 {
 	std::string atomName = getAtomName();
 	ElementPtr element = getElement();
@@ -269,14 +269,26 @@ std::string Atom::getPDBContribution()
 		int k = (i - (l * side * side)) / side;
 		int h = (i - l * side * side - k * side);
 
-		if ((h + k) % 2 != 0 || (k + l) % 2 != 0 || (l + h) % 2 != 0)
+		if ((ensembleNum < 0) &&
+			((h + k) % 2 != 0 || (k + l) % 2 != 0 || (l + h) % 2 != 0))
 		{
 			continue;
+		}
+
+		if (ensembleNum >= 0)
+		{
+			i = ensembleNum;
 		}
 
 		vec3 placement = positions[i].start;
 		double occupancy = 50 * positions[i].occupancy / double(tries);
 		stream << PDBReader::writeLine(shared_from_this(), placement, count, occupancy, 0);
+
+		if (ensembleNum >= 0)
+		{
+			break;
+		}
+
 		count++;
 	}
 

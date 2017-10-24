@@ -151,7 +151,8 @@ void Polymer::makePDB(std::string filename, PDBType pdbType)
 	std::ofstream file;
 	file.open(filename.c_str());
 
-//	file << getPDBContribution(pdbType);
+	file << getPDBContribution(pdbType);
+	return;
 
 	for (int i = 0; i < monomerCount(); i++)
 	{

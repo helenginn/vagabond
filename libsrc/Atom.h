@@ -160,7 +160,7 @@ public:
 
 	MoleculePtr getMolecule();
 	void setKeepModel();
-	std::string getPDBContribution();
+	std::string getPDBContribution(int ensembleNum = -1);
 	std::string averagePDBContribution(bool samePos, bool sameB);
 private:
 	ModelPtr _model;
