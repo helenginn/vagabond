@@ -40,6 +40,8 @@ public:
 
 	void refine(CrystalPtr target, RefinementType rType);
 	void setAnchor();
+protected:
+	virtual bool shouldRefineMagicAxis(BondPtr bond);
 private:
 	int _resNum;
 	PolymerWkr _myPolymer;

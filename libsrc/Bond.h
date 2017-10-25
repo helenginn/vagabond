@@ -56,6 +56,7 @@ public:
 	ModelPtr reverse(BondPtr upstreamBond);
 	void reverseDownstreamAtoms(int group);
 	void resetBondDirection();
+	bool isRefinable();
 
 	AtomPtr getMajor()
 	{
@@ -101,7 +102,7 @@ public:
 
 	void setTorsionAtoms(AtomPtr heavyAlign = AtomPtr(),
 						 AtomPtr lightAlign = AtomPtr());
-	virtual FFTPtr getDistribution();
+	virtual FFTPtr getDistribution(bool quick = false);
 	virtual vec3 getStaticPosition();
 
 	virtual std::string getClassName()
@@ -414,8 +415,7 @@ private:
 										   bool singleState = false);
 	std::vector<BondSample> getCorrectedAngles(std::vector<BondSample> *prevs,
 											   double circleAdd,
-											   double myTorsion, double ratio,
-											   double *transferBlur);
+											   double myTorsion, double ratio);
 
 	void duplicateDownstream(BondPtr newBranch, int groupNum);
 	bool _usingTorsion;

@@ -25,7 +25,7 @@ public:
 
 // Model virtual functions:
 	virtual std::vector<BondSample> *getManyPositions(BondSampleStyle style);
-	virtual FFTPtr getDistribution();
+	virtual FFTPtr getDistribution(bool quick = false);
 	virtual vec3 getStaticPosition();
 	virtual vec3 getAbsolutePosition()
 	{

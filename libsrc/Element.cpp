@@ -88,7 +88,7 @@ double Element::getVoxelValue(void *object, double x, double y, double z)
 	return val;
 }
 
-FFTPtr Element::getDistribution()
+FFTPtr Element::getDistribution(bool quick)
 {
 	double n = ATOM_SAMPLING_COUNT;
 	double scale = 2 * MAX_SCATTERING_DSTAR;

@@ -831,10 +831,18 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool collapse)
 
 				if (!collapse)
 				{
+					/* Don't do the other half of reciprocal space */
 					if (friedel) continue;
 
-					data[sym_index][0] += data[index][0];
-					data[sym_index][1] += data[index][1];
+					/* Perform phase shift */
+
+					/* Grab temps */
+					int iTmp = data[index][0];
+					int jTmp = data[index][1];
+
+					/* Add to the asymmetric unit */
+					data[sym_index][0] += iTmp;
+					data[sym_index][1] += jTmp;
 				}
 				else
 				{

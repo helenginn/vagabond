@@ -85,7 +85,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	vec3_set_length(&difference, _bondLength);
 
 	_bondDirection = difference;
-	_bondGroups[_activeGroup].magicAxis = _bondDirection;
+//	_bondGroups[_activeGroup].magicAxis = _bondDirection;
 	deriveBondLength();
 
 	ModelPtr upModel = getMajor()->getModel();
@@ -562,10 +562,12 @@ std::vector<BondSample> Bond::getFinalPositions()
 	return copyPos;
 }
 
-FFTPtr Bond::getDistribution()
+FFTPtr Bond::getDistribution(bool absOnly)
 {
 	std::vector<BondSample> positions = getFinalPositions();
 	_absolute = meanOfManyPositions(&positions);
+
+	if (absOnly) return FFTPtr();
 
 	double n = ATOM_SAMPLING_COUNT;
 	double scale = 1 / (2 * MAX_SCATTERING_DSTAR);
@@ -713,35 +715,35 @@ mat3x3 Bond::getMagicMat()
 {
 	vec3 xAxis = make_vec3(1, 0, 0);
 	vec3 zAxis = make_vec3(0, 0, 1);
+	vec3 yAxis = make_vec3(0, 1, 0);
 
 	vec3 compAxis = getFixedAxis(_bondGroups[_activeGroup].magicAxis,
 								 _bondGroups[_activeGroup].hRot,
 								 _bondGroups[_activeGroup].kRot);
-	double compLength = vec3_length(compAxis);
-	mat3x3 compMat = mat3x3_closest_rot_mat(xAxis, compAxis, zAxis);
-	mat3x3_scale(&compMat, compLength, compLength, compLength);
-	mat3x3 invComp = mat3x3_inverse(compMat);
-	mat3x3 magicMat = mat3x3_mult_mat3x3(invComp, magicAxisChecks[_currentCheck]);
+	mat3x3 compMat = mat3x3_closest_rot_mat(compAxis, xAxis, yAxis);
+//	mat3x3_mult_vec(compMat, &yAxis);
+//	compMat = mat3x3_rhbasis(compAxis, yAxis);
+
+	mat3x3 magicMat = mat3x3_mult_mat3x3(compMat, magicAxisChecks[_currentCheck]);
 
 	return magicMat;
 }
 
 std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 												 double circleAdd,
-												 double myTorsion, double ratio,
-												 double *transferBlur)
+												 double myTorsion, double ratio)
 {
 	std::vector<BondSample> set;
+	set.reserve(prevs->size());
 	const vec3 none = make_vec3(0, 0, 0);
-	*transferBlur = 0;
 
 	AtomPtr nextAtom = downstreamAtom(_activeGroup, 0);
 	vec3 myPerfectPos = getStaticPosition();
 	BondPtr nextBond = std::static_pointer_cast<Bond>(nextAtom->getModel());
 	vec3 nextPerfectPos = nextBond->getStaticPosition();
 	double nextRatio = getGeomRatio(_activeGroup, 0);
-
-	const bool useMagicAxis = true;
+	vec3 nextPerfectVec = vec3_subtract_vec3(nextPerfectPos, myPerfectPos);
+	vec3_set_length(&nextPerfectVec, 1);
 
 	mat3x3 magicMat = getMagicMat();
 
@@ -763,7 +765,6 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 													   nextRatio, myCurrentPos);
 		vec3 nextBondVec = vec3_subtract_vec3(nextCurrentPos, myCurrentPos);
 		vec3 myBondVec = vec3_subtract_vec3(myCurrentPos, prevMinorPos);
-		vec3 nextPerfectVec = vec3_subtract_vec3(nextPerfectPos, myPerfectPos);
 		vec3 nextDifference = vec3_subtract_vec3(myPerfectPos, myCurrentPos);
 		mat3x3_mult_vec(magicMat, &nextDifference);
 		double notX = sqrt(nextDifference.y * nextDifference.y +
@@ -782,11 +783,6 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 			xValue = 0;
 		}
 
-		if (!useMagicAxis)
-		{
-			xValue = 1;
-		}
-
 		if (yValue != yValue)
 		{
 			yValue = 1;
@@ -798,9 +794,10 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		}
 
 		vec3_set_length(&myBondVec, 1);
-		vec3_set_length(&nextPerfectVec, 1);
+		vec3_set_length(&nextBondVec, 1);
 
 		double rotAngle = 0;
+
 		mat3x3_closest_rot_mat(nextBondVec, nextPerfectVec, myBondVec, &rotAngle);
 
 		if (rotAngle != rotAngle)
@@ -827,9 +824,6 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		simple.start = nextCurrentPos;
 		set.push_back(simple);
 	}
-
-	*transferBlur /= set.size();
-	*transferBlur = sqrt(*transferBlur);
 
 	return set;
 }
@@ -968,32 +962,14 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 	double ratio = prevBond->getGeomRatio(myGroup, torsionNumber);
 
 	std::vector<BondSample> myTorsions;
-	std::vector<BondSample> myDupPrevSamples;
-	std::vector<BondSample> tempTorsions;
 
 	bool usingCompensation = (!staticAtom && isUsingTorsion()
 							  && nextBond && !isFixed());
 
 	if (usingCompensation)
 	{
-		double transferBlur = 0;
-		tempTorsions = getCorrectedAngles(prevSamples, circleAdd, myTorsion,
-										  ratio, &transferBlur);
-
-		for (int i = 0; i < tempTorsions.size(); i++)
-		{
-			std::vector<BondSample> moreTorsions;
-			moreTorsions = sampleMyAngles(tempTorsions[i].torsion, 0,
-										  monteCarlo);
-
-			for (int j = 0; j < moreTorsions.size(); j++)
-			{
-				myDupPrevSamples.push_back((*prevSamples)[i]);
-			}
-
-			myTorsions.reserve(myTorsions.size() + moreTorsions.size());
-			myTorsions.insert(myTorsions.end(), moreTorsions.begin(), moreTorsions.end());
-		}
+		myTorsions = getCorrectedAngles(prevSamples, circleAdd,
+										  myTorsion, ratio);
 	}
 	else
 	{
@@ -1007,16 +983,13 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 			simple.start = make_vec3(0, 0, 0);
 			simple.occupancy = 1;
 			myTorsions.push_back(simple);
-			myDupPrevSamples.push_back((*prevSamples)[i]);
 		}
 	}
 
-	for (int i = 0; i < myDupPrevSamples.size(); i++)
+	for (int i = 0; i < (*prevSamples).size(); i++)
 	{
-		double currentTorsion = myDupPrevSamples[i].torsion + circleAdd;
-
+		double currentTorsion = (*prevSamples)[i].torsion + circleAdd;
 		spread = staticAtom ? 0 : _bondGroups[_activeGroup].torsionBlur;
-
 		double occupancy = getOccupancy(&*prevBond);
 
 		if (torsionNumber < 0)
@@ -1026,54 +999,36 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 						   description());
 		}
 
-		vec3 prevHeavyPos = myDupPrevSamples[i].old_start;
-		mat3x3 oldBasis = myDupPrevSamples[i].basis;
-		vec3 prevMinorPos = myDupPrevSamples[i].start;
+		vec3 prevHeavyPos = (*prevSamples)[i].old_start;
+		mat3x3 oldBasis = (*prevSamples)[i].basis;
+		vec3 prevMinorPos = (*prevSamples)[i].start;
 		vec3 myCurrentPos = positionFromTorsion(oldBasis, currentTorsion,
 												ratio, prevMinorPos);
 
 		/* Prepping for bending */
-		vec3 zAxis = {0, 0, 1};
-		mat3x3_mult_vec(oldBasis, &zAxis);
 		const vec3 none = {0, 0, 1};
-
 		mat3x3 newBasis = makeTorsionBasis(prevHeavyPos, prevMinorPos,
 										   myCurrentPos, none);
 
-		/* do the bendy thing */
+		BondSample nextSample;
+		nextSample.basis = newBasis;
+		nextSample.start = myCurrentPos;
+		nextSample.old_start = prevMinorPos;
+		nextSample.torsion = myTorsions[i].torsion;
+		nextSample.occupancy = myTorsions[i].occupancy *
+		(*prevSamples)[i].occupancy * occupancy;
 
-		if (myCurrentPos.x != myCurrentPos.x)
+		if (style == BondSampleStatic)
 		{
-	//		std::cout << "My current pos" << std::endl;
+			nextSample.occupancy = 1;
 		}
 
-		for (int j = 0; j < myBendings.size(); j++)
+		newSamples->push_back(nextSample);
+
+		if (style == BondSampleStatic)
 		{
-			vec3 cross = vec3_cross_vec3(myCurrentPos, zAxis);
-			vec3_set_length(&cross, 1);
-			mat3x3 bend = mat3x3_unit_vec_rotation(cross, myBendings[j].torsion);
-			mat3x3_mult_vec(bend, &myCurrentPos);
-
-			BondSample nextSample;
-			nextSample.basis = newBasis;
-			nextSample.start = myCurrentPos;
-			nextSample.old_start = prevMinorPos;
-			nextSample.torsion = myTorsions[i].torsion;
-			nextSample.occupancy = myTorsions[i].occupancy *
-			myBendings[j].occupancy * myDupPrevSamples[i].occupancy * occupancy;
-
-			if (style == BondSampleStatic)
-			{
-				nextSample.occupancy = 1;
-			}
-
-			newSamples->push_back(nextSample);
-
-			if (style == BondSampleStatic)
-			{
-				_changedPos = false;
-				return newSamples;
-			}
+			_changedPos = false;
+			return newSamples;
 		}
 	}
 
@@ -1534,4 +1489,9 @@ double Bond::getFlexibilityPotential()
 	}
 
 	return average;
+}
+
+bool Bond::isRefinable()
+{
+	return isNotJustForHydrogens() && !isFixed() && isUsingTorsion();
 }

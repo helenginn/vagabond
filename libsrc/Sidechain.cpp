@@ -15,6 +15,14 @@
 #include "FileReader.h"
 #include "Absolute.h"
 
+bool Sidechain::shouldRefineMagicAxis(BondPtr bond)
+{
+	if (_refinedMagicAxisCount > 2) return false;
+
+	return (bond->getMinor()->getAtomName() == "CB");
+}
+
+
 void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
 	int resNum = getMonomer()->getResidueNum();
@@ -24,135 +32,89 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		return;
 	}
 
-	_timesRefined++;
-
-	const char *atoms[] = {"CB", "OG", "CG", "SD", "CG1", "CG2", "CD", "CE", "NZ", "OG1"};
-	std::vector<std::string> atomStrs(atoms, atoms+8);
-
-	for (int i = 0; i < atomStrs.size(); i++)
+	for (int i = 0; i < atomCount(); i++)
 	{
-		std::string atom = atomStrs[i];
-		AtomList myAtoms = findAtoms(atom);
+		AtomPtr myAtom = atom(i);
+		ModelPtr model = myAtom->getModel();
 
-		if (!myAtoms.size())
+		if (!model->isBond())
 		{
 			continue;
 		}
 
-		for (int j = 0; j < myAtoms.size(); j++)
+		BondPtr bond = std::static_pointer_cast<Bond>(model);
+
+		if (!bond->isRefinable())
 		{
-			AtomPtr myAtom = myAtoms[j].lock();
-			ModelPtr model = myAtom->getModel();
-
-			BondPtr bond = std::static_pointer_cast<Bond>(model);
-			std::string majorAtom = bond->getMajor()->getAtomName();
-
-			if (!bond->isNotJustForHydrogens() || bond->isFixed())
-			{
-				continue;
-			}
-
-			ModelPtr preModel = bond->getParentModel();
-
-			int groups = bond->downstreamAtomGroupCount();
-
-			for (int k = 0; k < groups; k++)
-			{
-				if (rType != RefinementModelRMSD)
-				{
-					break;
-				}
-
-				ScoreType scoreType = ScoreTypeModelRMSDZero;
-				for (int l = 0; l < 1; l++)
-				{
-					if (bond->getMinor()->getAtomName() != "CB")
-					{
-						continue;
-					}
-
-					if (scoreType == ScoreTypeModelRMSDZero)
-					{
-						setupGrid();
-						addSampledAtoms(shared_from_this());
-						addMagicAxisBroad(bond);
-						setSilent();
-						setJobName("broad_axis_" +  bond->shortDesc());
-						setScoreType(scoreType);
-						sample();
-					}
-
-					setupNelderMead();
-
-					if (scoreType == ScoreTypeModelRMSD)
-					{
-						addDampening(bond, 0.05, 0.05);
-					}
-					else
-					{
-						addMagicAxis(bond, deg2rad(10.0), deg2rad(2.0));
-					}
-
-					setJobName("magic_axis_" +  bond->shortDesc());
-					setSilent();
-					addSampledAtoms(shared_from_this());
-					setScoreType(scoreType);
-					sample();
-
-					if (scoreType == ScoreTypeModelRMSD)
-					{
-						scoreType = ScoreTypeModelRMSDZero;
-					}
-					else
-					{
-						scoreType = ScoreTypeModelRMSD;
-
-					}
-
-					bond->resetAxis();
-				}
-/*
-				rType = RefinementModelPos;
-			}
-
-			if (rType == RefinementModelPos)
-			{*/
-				for (int k = 0; k < groups; k++)
-				{
-					setupNelderMead();
-					setupTorsionSet(bond, k, 3, resNum, ANGLE_SAMPLING, deg2rad(0.01));
-					setScoreType(ScoreTypeModelPos);
-					setSilent();
-					setJobName("model_pos_" +  bond->shortDesc());
-					sample();
-					rType = RefinementModelPos;
-				}
-
-			}
-
-			if (rType != RefinementFineBlur)
-			{
-				return;
-			}
-			
-			for (int k = 0; k < groups; k++)
-			{
-				setupNelderMead();
-				setupTorsionSet(bond, k, 5, resNum, 2.5, 0.1);
-				setCrystal(target);
-				sample();
-
-				setupNelderMead();
-				setupTorsionSet(bond, k, 5, resNum, 0.5, 0.1);
-				addDampening(bond, 0.02, 0.1);
-				setCrystal(target);
-				sample();
-			}
-
-
-			bond->setActiveGroup(0);
-
+			continue;
 		}
+
+		int groups = bond->downstreamAtomGroupCount();
+
+		for (int k = 0; k < groups; k++)
+		{
+			if (rType != RefinementModelRMSD)
+			{
+				break;
+			}
+
+			if (shouldRefineMagicAxis(bond))
+			{
+				_refinedMagicAxisCount++;
+
+				/* Find the vague direction */
+				setupGrid();
+				addSampledAtoms(shared_from_this());
+				addMagicAxisBroad(bond);
+				setSilent();
+				setJobName("broad_axis_" +  bond->shortDesc());
+				setScoreType(ScoreTypeModelRMSDZero);
+				sample();
+
+				/* Fine-tune the axis */
+				setupNelderMead();
+				addMagicAxis(bond, deg2rad(10.0), deg2rad(2.0));
+				setJobName("magic_axis_" +  bond->shortDesc());
+				setSilent();
+				addSampledAtoms(shared_from_this());
+				setScoreType(ScoreTypeModelRMSDZero);
+				sample();
+
+				bond->resetAxis();
+			}
+
+			/* Refine model position */
+
+			setupNelderMead();
+			setupTorsionSet(bond, k, 3, resNum, ANGLE_SAMPLING, deg2rad(0.01));
+
+			setScoreType(ScoreTypeModelPos);
+			setSilent();
+			setJobName("model_pos_" +  bond->shortDesc());
+			sample();
+		}
+
+		if (rType != RefinementFineBlur)
+		{
+			continue;
+		}
+
+		for (int k = 0; k < groups; k++)
+		{
+			setupNelderMead();
+			setupTorsionSet(bond, k, 5, resNum, 0.05, 0.2);
+			setCrystal(target);
+			sample();
+
+			setupNelderMead();
+			setupTorsionSet(bond, k, 4, resNum, 0.3, 0.02);
+			addDampening(bond, 0.02, 0.1);
+			setCrystal(target);
+			sample();
+		}
+
+
+		bond->setActiveGroup(0);
 
 	}
 }

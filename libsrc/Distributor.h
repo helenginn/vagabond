@@ -23,7 +23,7 @@ public:
 		_calculated = false;
 	}
 	
-	virtual FFTPtr getDistribution() = 0;
+	virtual FFTPtr getDistribution(bool quick = false) = 0;
 
 protected:
 	bool _calculated;

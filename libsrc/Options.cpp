@@ -71,10 +71,11 @@ void Options::run()
 
 			MoleculePtr molecule = crystals[0]->molecule("A");
 			PolymerPtr polymer = ToPolymerPtr(molecule);
+/*
 			polymer->downWeightResidues(856, 861, 0);
 			polymer->downWeightResidues(883, 890, 0);
 			polymer->downWeightResidues(1009, 1015, 0);
-
+*/
 			crystals[0]->writeCalcMillersToFile(data, "pre");
 			crystals[0]->getDataInformation(data, propFo, propFc);
 
@@ -96,8 +97,6 @@ void Options::run()
 			{
 				for (int i = 0; i < 100; i++)
 				{
-				//	crystals[0]->reconfigureUnitCell();
-
 					if (true)
 					{
 						count++;

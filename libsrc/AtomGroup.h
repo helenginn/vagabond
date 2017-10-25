@@ -78,7 +78,6 @@ public:
 
 protected:
 	AtomGroup();
-	int _timesRefined;
 	void addAtomsFrom(AtomGroupPtr child);
 	void propagateChange();
 

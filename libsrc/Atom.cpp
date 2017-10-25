@@ -207,7 +207,7 @@ void Atom::setKeepModel()
 double Atom::posDisplacement()
 {
 	BondPtr bond = ToBondPtr(getModel());
-	bond->getDistribution();
+	bond->getDistribution(true);
 	vec3 bestPos = bond->getAbsolutePosition();
 	vec3 initialPos = getPDBPosition();
 

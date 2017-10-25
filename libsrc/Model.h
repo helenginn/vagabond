@@ -36,7 +36,7 @@ typedef enum
 class Model : public std::enable_shared_from_this<Model>, public Distributor
 {
 public:
-	virtual FFTPtr getDistribution() = 0;
+	virtual FFTPtr getDistribution(bool quick = false) = 0;
 
 	virtual void addToMonomer(MonomerPtr monomer);
 	virtual void addToMolecule(MoleculePtr molecule);

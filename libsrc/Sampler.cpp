@@ -25,6 +25,7 @@ Sampler::Sampler()
 	_mock = false;
 	_joint = false;
 	_scoreType = ScoreTypeCorrel;
+	_refinedMagicAxisCount = 0;
 }
 
 
@@ -484,7 +485,11 @@ double Sampler::sample(bool clear)
 
 	if (_scoreType == ScoreTypeModelPos)
 	{
-		_strategy->setCycles(50);
+		_strategy->setCycles(40);
+	}
+	else if (_scoreType == ScoreTypeModelRMSDZero)
+	{
+		_strategy->setCycles(15);
 	}
 
 	if (sampleSize())

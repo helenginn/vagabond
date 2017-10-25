@@ -23,7 +23,7 @@ public:
 	Element(std::string symbol, std::string name, double electrons,
 			const float *scatter);
 	static ElementPtr getElement(std::string symbol);
-	FFTPtr getDistribution();
+	virtual FFTPtr getDistribution(bool quick = false);
 
 	std::string getSymbol()
 	{

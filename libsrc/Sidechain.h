@@ -48,7 +48,8 @@ public:
 	}
 
 	void fixBackboneTorsions(AtomPtr betaTorsion);
-
+protected:
+	virtual bool shouldRefineMagicAxis(BondPtr bond);
 private:
 	bool _canRefine;
 	int _resNum;

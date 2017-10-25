@@ -43,6 +43,11 @@ void Kabsch::setAtoms(std::vector<vec3> aAtoms, std::vector<vec3> bAtoms)
 	}
 }
 
+void Kabsch::setWeights(std::vector<double> &weights)
+{
+	_weights = weights;
+}
+
 vec3 Kabsch::fixCentroids()
 {
 	vec3 aSum = make_vec3(0, 0, 0);
@@ -92,14 +97,28 @@ mat3x3 Kabsch::run()
 		memset(v[i], 0, sizeof(double) * 3);
 	}
 
+	double weightSum = 0;
+
 	for (int j = 0; j < 3; j++)
 	{
 		for (int i = 0; i < 3; i++)
 		{
 			for (int k = 0; k < _positions[0].size(); k++)
 			{
-				matrix[i][j] += _positions[0][k][i] * _positions[1][k][j];
+				double add = _positions[0][k][i] * _positions[1][k][j];
+				double weight = _weights[i] * _weights[j];
+				add *= weight;
+				weightSum += weight;
+				matrix[i][j] += add;
 			}
+		}
+	}
+
+	for (int j = 0; j < 3; j++)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			matrix[i][j] /= weightSum;
 		}
 	}
 
@@ -108,20 +127,9 @@ mat3x3 Kabsch::run()
 	vect w = (double *)malloc(sizeof(double) * 3);
 	svdcmp(matrix, 3, 3, w, v);
 
-	mat3x3 myU = make_mat3x3();
-	mat3x3 myV = make_mat3x3();
-	for (int j = 0; j < 3; j++)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			myU.vals[j * 3 + i] = matrix[i][j];
-			myV.vals[j * 3 + i] = v[i][j];
-		}
-	}
-	/*
 	mat3x3 myU = mat3x3_from_2d_array(matrix); // has been changed by svdcmp.
 	mat3x3 myV = mat3x3_from_2d_array(v);
-*/
+
 	mat3x3 vT = mat3x3_transpose(myV);
 	mat3x3 mult = mat3x3_mult_mat3x3(myU, vT);
 	double det = mat3x3_determinant(mult);

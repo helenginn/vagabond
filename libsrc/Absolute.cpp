@@ -114,7 +114,7 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 /*  Absolute distribution only needs to be the blurring due to the atomic
  *  B factor. The position should be provided by a different function. */
 
-FFTPtr Absolute::getDistribution()
+FFTPtr Absolute::getDistribution(bool quick)
 {
 	double n = ATOM_SAMPLING_COUNT;
 	double scale = 2 * MAX_SCATTERING_DSTAR;
@@ -145,7 +145,7 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 	 * each dimension. */
 	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
 	meanSqDisp = sqrt(meanSqDisp);
-	double total = 3;
+	double total = 2;
 	double step = (meanSqDisp * 2) / total; // cover four st.dev.s
 	double occTotal = 0;
 

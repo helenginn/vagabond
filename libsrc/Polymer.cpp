@@ -685,38 +685,51 @@ void Polymer::minimiseRotations()
 		break;
 	}
 
+	int f = num / 2;
+
 	for (int i = 0; i < num; i++)
 	{
+		std::vector<double> weights;
 		std::vector<vec3> fixedVecs, variantVecs;
 
-		for (int j = 0; j < monomerCount(); j++)
+		for (int j = 0; j < atomCount(); j++)
 		{
 			if (!getMonomer(j))
 			{
 				continue;
 			}
 
-			AtomPtr ca = getMonomer(j)->findAtom("CA");
-			if (!ca) continue;
+			BackbonePtr bone = getMonomer(j)->getBackbone();
 
-			std::vector<BondSample> samples;
-			ModelPtr model = ca->getModel();
-
-			if (!model)
+			for (int k = 0; k < bone->atomCount(); k++)
 			{
-				shout_at_helen("Missing model for CA atom!");
+				AtomPtr anAtom = bone->findAtom("CA");
+				if (!anAtom) continue;
+
+				std::vector<BondSample> samples;
+				ModelPtr model = anAtom->getModel();
+
+				if (!model)
+				{
+					shout_at_helen("Missing model for backbone atom!");
+				}
+
+				double bee = model->getMeanSquareDeviation();
+				double weight = 1 / (bee * bee);
+				weights.push_back(1);//weight);
+
+				samples = model->getFinalPositions();
+
+				vec3 fixed = samples.at(f).start;
+				vec3 variant = samples.at(i).start;
+				fixedVecs.push_back(fixed);
+				variantVecs.push_back(variant);
 			}
-
-			samples = model->getFinalPositions();
-
-			vec3 fixed = samples.at(samples.size() / 2).start;
-			vec3 variant = samples.at(i).start;
-			fixedVecs.push_back(fixed);
-			variantVecs.push_back(variant);
 		}
 
 		Kabsch kabsch;
 		kabsch.setAtoms(variantVecs, fixedVecs);
+		kabsch.setWeights(weights);
 		_centroids.push_back(kabsch.fixCentroids());
 		mat3x3 mat = kabsch.run();
 		_rotations.push_back(mat);
@@ -735,7 +748,7 @@ void Polymer::closenessSummary()
 	
 	for (int i = 0; i < atomCount(); i++)
 	{
-		double disp = atom(i)->posDisplacement();;
+		double disp = atom(i)->posDisplacement();
 
 		if (disp != disp) continue;
 

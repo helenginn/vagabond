@@ -173,7 +173,6 @@ double AtomGroup::getAverageBFactor(bool initial)
 AtomGroup::AtomGroup()
 {
 	_beenTied = false;
-	_timesRefined = 0;
 }
 
 void AtomGroup::propagateChange()

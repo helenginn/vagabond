@@ -24,6 +24,7 @@ public:
 		_rotation = make_mat3x3();
 	}
 
+	void setWeights(std::vector<double> &weights);
 	void setAtoms(std::vector<vec3> aAtoms, std::vector<vec3> bAtoms);
 	mat3x3 run();
 	mat3x3 findFinalTransform();
@@ -99,6 +100,7 @@ public:
 private:
 	std::vector<std::vector<double> > _positions[2];
 	std::vector<vec3> _vecs[2];
+	std::vector<double> _weights;
 
 	std::vector<double> _unitCell;
 	mat3x3 _covariance;
