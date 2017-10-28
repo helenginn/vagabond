@@ -19,6 +19,7 @@
 #define ATOM_SAMPLING_COUNT (36)
 #define PROTEIN_SAMPLING (1. / 3.)
 #define WATER_RADIUS 0.6
+#define FUTURE_RESIDUES 8
 
 #define deg2rad(a) ((a) * M_PI / 180)
 #define rad2deg(a) ((a) / M_PI * 180)

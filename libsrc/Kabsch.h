@@ -22,6 +22,7 @@ public:
 	{
 		_covariance = make_mat3x3();
 		_rotation = make_mat3x3();
+		_failed = false;
 	}
 
 	void setWeights(std::vector<double> &weights);
@@ -33,6 +34,11 @@ public:
 	mat3x3 getCovariance()
 	{
 		return _covariance;
+	}
+
+	bool didFail()
+	{
+		return _failed;
 	}
 
 	static double score(void *object);
@@ -101,6 +107,7 @@ private:
 	std::vector<std::vector<double> > _positions[2];
 	std::vector<vec3> _vecs[2];
 	std::vector<double> _weights;
+	bool _failed;
 
 	std::vector<double> _unitCell;
 	mat3x3 _covariance;

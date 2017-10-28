@@ -94,6 +94,13 @@ public:
 	{
 		return ToPolymerPtr(Molecule::shared_from_this());
 	}
+protected:
+	virtual double getScore()
+	{
+		propagateChange();
+		return Sampler::getScore();
+	}
+
 private:
 	void refineMonomer(MonomerPtr monomer, CrystalPtr target,
 					   RefinementType rType);

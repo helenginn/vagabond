@@ -211,3 +211,14 @@ void AtomGroup::setWeighting(double value)
 		atom(i)->setWeighting(value);
 	}
 }
+
+void AtomGroup::resetMagicAxes()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->getModel()->isBond())
+		{
+			ToBondPtr(atom(i)->getModel())->calculateMagicAxis();
+		}
+	}
+}

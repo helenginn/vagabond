@@ -95,7 +95,7 @@ void Options::run()
 
 			if (_numCycles > 0)
 			{
-				for (int i = 0; i < 100; i++)
+				for (int i = 0; i < 25; i++)
 				{
 					if (true)
 					{
@@ -107,22 +107,27 @@ void Options::run()
 					if (molecule->getClassName() == "Polymer" && i == 0)
 					{
                         count++;
-						polymer->scaleFlexibilityToBFactor(crystals[0]);
+						polymer->minimiseRotations();
+						polymer->minimiseCentroids();
 						crystals[0]->concludeRefinement(count, data);
 					}
+
 					else if (molecule->getClassName() == "Polymer" && i == 2)
 					{
 						if (crystals[0]->totalAnchors() <= 1) continue;
 
 						count++;
 						crystals[0]->changeAnchors(1);
+						polymer->scaleFlexibilityToBFactor(crystals[0]);
 						crystals[0]->concludeRefinement(count, data);
 					}
+					 /*
 					else if (molecule->getClassName() == "Polymer" && i == 4)
 					{
 						count++;
-						polymer->minimiseCentroids();
-						polymer->minimiseRotations();
+						polymer->scaleFlexibilityToBFactor(crystals[0]);
+//						polymer->minimiseRotations();
+//						polymer->minimiseCentroids();
 						crystals[0]->concludeRefinement(count, data);
 					}
 					else if (molecule->getClassName() == "Polymer" && i % 2 == 0)
@@ -133,7 +138,8 @@ void Options::run()
 						count++;
 						crystals[0]->changeAnchors(myAnchor);
 						crystals[0]->concludeRefinement(count, data);
-					}
+                    }
+ */
 				}
 			}
 
@@ -198,7 +204,7 @@ void Options::parse()
 			understood = true;
 		}
 
-		prefix = "--target-b=";
+		prefix = "--target-flex=";
 
 		if (!arg.compare(0, prefix.size(), prefix))
 		{
@@ -216,7 +222,7 @@ void Options::parse()
 				CrystalPtr crystal = crystals.at(crystals.size() - 1);
 				crystal->setOverallBFactor(bee);
 				std::cout << "Setting " << crystal->getFilename()
-				<< " to a target B factor of " << bee << "." << std::endl;
+				<< " to a target flexiness of " << bee << "." << std::endl;
 				understood = true;
 			}
 		}

@@ -54,21 +54,27 @@ public:
 
 	virtual std::vector<BondSample> getFinalPositions();
 
-	virtual double getMeanSquareDeviation(double target = -1, int index = -1) = 0;
+	virtual double getMeanSquareDeviation() = 0;
 
 	FFTPtr getZeroDistribution();
+	virtual void propagateChange();
 
 	bool isBond()
 	{
 		return (getClassName() == "Bond");
 	}
 
+	bool isAbsolute()
+	{
+		return (getClassName() == "Absolute");
+	}
+
+
 	bool isAnchor()
 	{
 		return (getClassName() == "Anchor");
 	}
 protected:
-	virtual void propagateChange();
 private:
 	std::vector<AtomPtr> atoms;
 };

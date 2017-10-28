@@ -106,7 +106,11 @@ mat3x3 Kabsch::run()
 			for (int k = 0; k < _positions[0].size(); k++)
 			{
 				double add = _positions[0][k][i] * _positions[1][k][j];
-				double weight = _weights[i] * _weights[j];
+				double weight = 1;
+				if (_weights.size() > k)
+				{
+					weight = _weights[i] * _weights[j];
+				}
 				add *= weight;
 				weightSum += weight;
 				matrix[i][j] += add;
@@ -125,7 +129,14 @@ mat3x3 Kabsch::run()
 	_covariance = mat3x3_from_2d_array(matrix);
 
 	vect w = (double *)malloc(sizeof(double) * 3);
-	svdcmp(matrix, 3, 3, w, v);
+	int success = svdcmp(matrix, 3, 3, w, v);
+
+	if (!success)
+	{
+		_failed = true;
+		_rotation = make_mat3x3();
+		return _rotation;
+	}
 
 	mat3x3 myU = mat3x3_from_2d_array(matrix); // has been changed by svdcmp.
 	mat3x3 myV = mat3x3_from_2d_array(v);

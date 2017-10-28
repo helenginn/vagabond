@@ -21,15 +21,6 @@
 #include "Monomer.h"
 #include "Molecule.h"
 
-mat3x3 Bond::magicAxisChecks[] =
-{
-	{ 1, 0, 0, 0, 1, 0, 0, 0, 1},
-	{-1, 0, 0, 0, 1, 0, 0, 0, 1},
-	{0, -1, 0, 1, 0, 0, 0, 0, 1},
-	{0, 1, 0, -1, 0, 0, 0, 0, 1},
-	{0, 0, 1, 0, 1, 0, -1, 0, 0},
-	{0, 0, -1, 0, 1, 0, 1, 0, 0},
-};
 
 Bond::Bond()
 {
@@ -44,22 +35,21 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	_major = major;
 	_minor = minor;
 	_activeGroup = 0;
-	_dampening = 0.05;
+	_dampening = INITIAL_DAMPENING;
 	_bendBlur = 0;
 	_bondLength = 0;
 	_changedPos = true;
 	_changedSamples = true;
 	_fixed = false;
 	_blocked = false;
-	_currentCheck = 0;
+	_blurTotal = 0;
 
 	BondGroup aGroup;
 	aGroup.torsionAngle = 0;
 	aGroup.torsionBlur = 0.0;
 	aGroup.torsionVertBlur = 0.0;
 	aGroup.magicAxis = make_randomish_axis();
-	aGroup.hRot = 0;
-	aGroup.kRot = 0;
+	aGroup.magicAngle = 0;
 	aGroup.occupancy = 1;
 	_bondGroups.push_back(aGroup);
 
@@ -112,7 +102,6 @@ Bond::Bond(Bond &other)
 	_fixed = other._fixed;
 	_disabled = other._disabled;
 	_blocked = false;
-	_currentCheck = other._currentCheck;
 	_absolute = other._absolute;
 	
 	_dampening = other._dampening;
@@ -185,8 +174,7 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 		newGroup.torsionAngle = 0;
 		newGroup.torsionBlur = 0;
 		newGroup.torsionVertBlur = 0.0;
-		newGroup.hRot = 0;
-		newGroup.kRot = 0;
+		newGroup.magicAngle = 0;
 		newGroup.magicAxis = make_randomish_axis();
 		newGroup.occupancy = 1;
 		newGroup._changedSamples = true;
@@ -526,17 +514,18 @@ std::vector<vec3> Bond::polymerCorrectedPositions()
 
 		// perform rotation element of superposition
 
+		// remove translation aspect of superposition
+
 	    if (rotations.size() > i && rotationCentres.size() > i)
 		{
 			vec3 tmp = vec3_add_vec3(subtract, rotationCentres[i]);
 			mat3x3_mult_vec(rotations[i], &tmp);
-			subtract = vec3_add_vec3(tmp, rotationCentres[i]);
+			subtract = vec3_subtract_vec3(tmp, rotationCentres[i]);
 		}
 
-		// remove translation aspect of superposition
 		if (offsets.size() > i)
 		{
-			subtract = vec3_subtract_vec3(positions->at(i).start, offsets[i]);
+			subtract = vec3_subtract_vec3(subtract, offsets[i]);
 		}
 
 		posOnly.push_back(subtract);
@@ -559,13 +548,14 @@ std::vector<BondSample> Bond::getFinalPositions()
 		}
 	}
 
+	_absolute = meanOfManyPositions(&copyPos);
+
 	return copyPos;
 }
 
 FFTPtr Bond::getDistribution(bool absOnly)
 {
 	std::vector<BondSample> positions = getFinalPositions();
-	_absolute = meanOfManyPositions(&positions);
 
 	if (absOnly) return FFTPtr();
 
@@ -630,103 +620,70 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 	return final;
 }
 
-std::vector<BondSample> Bond::sampleMyAngles(double angle, double sigma,
-											 bool singleState)
+void Bond::calculateMagicAxis()
 {
-	double sum = 0;
-	sigma = fabs(sigma);
-	std::vector<BondSample> samples;
-
-	if (singleState)
-	{
-		BondSample sample;
-		sample.occupancy = 1;
-		sample.torsion = random_norm_dist(angle, sigma);
-		samples.push_back(sample);
-		return samples;
-	}
-
-	if (sigma <= 0)
-	{
-		BondSample sample;
-		sample.occupancy = 1;
-		sample.torsion = angle;
-		samples.push_back(sample);
-
-		return samples;
-	}
-
-	double interval = ANGLE_SAMPLING;
-
-	if (sigma <= interval)
-	{
-		interval = sigma * 1.0;
-	}
-
-	samples.reserve(sigma * 2 / interval + 1);
+	BondPtr downBond = ToBondPtr(shared_from_this());
 	int count = 0;
+	vec3 posSum = make_vec3(0, 0, 0);
+	vec3 startVec = getStaticPosition();
 
-	for (double ang = -2.0 * sigma; ang <= 2.0 * sigma; ang += interval)
+	while (count < FUTURE_RESIDUES && downBond->downstreamAtomGroupCount()
+		   && downBond->downstreamAtomCount(0))
 	{
-		double relFreq = normal_distribution(ang, sigma);
-		sum += relFreq;
-		BondSample sample;
-		sample.occupancy = relFreq;
-		sample.torsion = ang + angle;
-		samples.push_back(sample);
+		AtomPtr downAtom = downBond->downstreamAtom(0, 0);
+		vec3 downPos = downAtom->getModel()->getStaticPosition();
+		vec3 downDiff = vec3_subtract_vec3(downPos, startVec);
+		vec3_set_length(&downDiff, 1);
+		startVec = downPos;
+		posSum = vec3_add_vec3(posSum, downDiff);
+
+		if (downAtom->getModel()->isBond())
+		{
+			downBond = ToBondPtr(downAtom->getModel());
+		}
+		else
+		{
+			break;
+		}
+
 		count++;
 	}
 
-	for (int i = 0; i < samples.size(); i++)
+	vec3_set_length(&posSum, 1);
+
+	if (downBond->downstreamAtomGroupCount())
 	{
-		samples[i].occupancy /= sum;
+		_bondGroups[0].magicAxis = posSum;
 	}
-
-	return samples;
-}
-
-vec3 Bond::getFixedAxis(vec3 axis, double hRot, double kRot)
-{
-	vec3 xAxis = make_vec3(1, 0, 0);
-	vec3 yAxis = make_vec3(0, 1, 0);
-	mat3x3 smallRotH = mat3x3_unit_vec_rotation(xAxis, hRot);
-	mat3x3 smallRotK = mat3x3_unit_vec_rotation(yAxis, kRot);
-	mat3x3 smallRots = mat3x3_mult_mat3x3(smallRotK, smallRotH);
-	mat3x3 magicMat = mat3x3_mult_mat3x3(smallRots, magicAxisChecks[_currentCheck]);
-
-	vec3 compAxis = axis;
-	mat3x3_mult_vec(magicMat, &compAxis);
-	_currentCheck = 0;
-
-	return compAxis;
-}
-
-void Bond::resetAxis()
-{
-	vec3 compAxis = getFixedAxis(_bondGroups[_activeGroup].magicAxis,
-								 _bondGroups[_activeGroup].hRot,
-								 _bondGroups[_activeGroup].kRot);
-	_bondGroups[_activeGroup].magicAxis = compAxis;
-	_bondGroups[_activeGroup].hRot = 0;
-	_bondGroups[_activeGroup].kRot = 0;
 }
 
 mat3x3 Bond::getMagicMat()
 {
+	vec3 magicAxis = _bondGroups[_activeGroup].magicAxis;
+	double magicAngle = _bondGroups[_activeGroup].magicAngle;
+
 	vec3 xAxis = make_vec3(1, 0, 0);
 	vec3 zAxis = make_vec3(0, 0, 1);
 	vec3 yAxis = make_vec3(0, 1, 0);
 
-	vec3 compAxis = getFixedAxis(_bondGroups[_activeGroup].magicAxis,
-								 _bondGroups[_activeGroup].hRot,
-								 _bondGroups[_activeGroup].kRot);
-	mat3x3 compMat = mat3x3_closest_rot_mat(compAxis, xAxis, yAxis);
-//	mat3x3_mult_vec(compMat, &yAxis);
-//	compMat = mat3x3_rhbasis(compAxis, yAxis);
+	/* Find the twizzle to put z axis onto the magic axis (around the x) */
+	mat3x3 firstTwizzle = mat3x3_closest_rot_mat(magicAxis, zAxis, xAxis);
 
-	mat3x3 magicMat = mat3x3_mult_mat3x3(compMat, magicAxisChecks[_currentCheck]);
+	return firstTwizzle;
 
-	return magicMat;
+	/* Find where this would place the Y axis */
+	mat3x3_mult_vec(firstTwizzle, &yAxis);
+
+	/* Find what the appropriate X axis would be */
+	vec3 cross = vec3_cross_vec3(magicAxis, yAxis);
+
+	/* Finally reconstruct the matrix from the X/Z basis vectors */
+	mat3x3 magicBase = mat3x3_rhbasis(cross, magicAxis);
+	mat3x3 magicRot = mat3x3_unit_vec_rotation(zAxis, magicAngle);
+
+	mat3x3 magicInv = mat3x3_mult_mat3x3(magicRot, magicBase);
+
+	return mat3x3_inverse(magicInv);
 }
 
 std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
@@ -737,6 +694,7 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 	set.reserve(prevs->size());
 	const vec3 none = make_vec3(0, 0, 0);
 
+	_blurTotal = 0;
 	AtomPtr nextAtom = downstreamAtom(_activeGroup, 0);
 	vec3 myPerfectPos = getStaticPosition();
 	BondPtr nextBond = std::static_pointer_cast<Bond>(nextAtom->getModel());
@@ -763,38 +721,34 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		vec3 nextCurrentPos;
 		nextCurrentPos = nextBond->positionFromTorsion(newBasis, myTorsion,
 													   nextRatio, myCurrentPos);
+
 		vec3 nextBondVec = vec3_subtract_vec3(nextCurrentPos, myCurrentPos);
 		vec3 myBondVec = vec3_subtract_vec3(myCurrentPos, prevMinorPos);
+
+		/* Difference between perfect and deviant position of major atom */
 		vec3 nextDifference = vec3_subtract_vec3(myPerfectPos, myCurrentPos);
+
+		/* Find out what this deviation is if beam axis is set to z */
 		mat3x3_mult_vec(magicMat, &nextDifference);
-		double notX = sqrt(nextDifference.y * nextDifference.y +
-						   nextDifference.z * nextDifference.z);
+
 		double notZ = sqrt(nextDifference.y * nextDifference.y +
 						   nextDifference.x * nextDifference.x);
-		double tanX = nextDifference.x / notX;
-		double tanZ = nextDifference.z / notZ;
-
+		double tanX = nextDifference.z / notZ;
 		double xValue = sin(atan(tanX));
-		double yValue = cos(atan(tanX));
-		double zValue = sin(atan(tanZ));
-
-		if (xValue != xValue)
-		{
-			xValue = 0;
-		}
+		double yValue = sqrt(1 - xValue * xValue);
 
 		if (yValue != yValue)
 		{
 			yValue = 1;
 		}
 
-		if (zValue != zValue)
-		{
-			zValue = 0;
-		}
+		/* We want to correct if the deviation is close to the magic angle */
+		double modulation = xValue;
 
-		vec3_set_length(&myBondVec, 1);
-		vec3_set_length(&nextBondVec, 1);
+		if (modulation != modulation)
+		{
+			modulation = 0;
+		}
 
 		double rotAngle = 0;
 
@@ -807,23 +761,26 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 
 		double undoBlur = 0;
 		undoBlur = rotAngle;
-		undoBlur *= xValue;
+		undoBlur *= modulation;
 		undoBlur *= fabs(_dampening);
 
+		_blurTotal += fabs(undoBlur);
+
+		/* This will only really apply for a kicked bond */
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;
 		addBlur *= yValue;
-
-		double bigBlur = addBlur;
-		bigBlur *= -_dampening;
-		if (_dampening > 0) bigBlur = 0;
+		addBlur *= -_dampening;
+		if (_dampening > 0) addBlur = 0;
 
 		BondSample simple;
-		simple.torsion = myTorsion + undoBlur + bigBlur;
+		simple.torsion = myTorsion + undoBlur + addBlur;
 		simple.occupancy = 1;
 		simple.basis = make_mat3x3();
 		simple.start = nextCurrentPos;
 		set.push_back(simple);
 	}
+
+	_blurTotal /= (double)prevs->size();
 
 	return set;
 }
@@ -851,6 +808,11 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 	if (!_changedSamples && style == BondSampleThorough)
 	{
 		return &_bondGroups[_activeGroup].storedSamples;
+	}
+
+	if (!_changedPos && style == BondSampleStatic)
+	{
+		return &_bondGroups[_activeGroup].staticSample;
 	}
 
 	if (_anchored && style == BondSampleStatic)
@@ -936,12 +898,8 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 
 	std::vector<BondSample> *prevSamples = prevBond->getManyPositions(style);
 
-	std::vector<BondSample> myBendings;
-
 	/* This is just to get a set of angles, no bases */
-	double spread = staticAtom ? 0 : _bendBlur;
-	myBendings = sampleMyAngles(0, spread, monteCarlo);
-
+	double spread = 0;
 	double circlePortion = 0;
 	double circleAdd = 0;
 	if (myGroup >= 0) // otherwise, might be next to anchor.
@@ -989,7 +947,6 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 	for (int i = 0; i < (*prevSamples).size(); i++)
 	{
 		double currentTorsion = (*prevSamples)[i].torsion + circleAdd;
-		spread = staticAtom ? 0 : _bondGroups[_activeGroup].torsionBlur;
 		double occupancy = getOccupancy(&*prevBond);
 
 		if (torsionNumber < 0)
@@ -1056,6 +1013,7 @@ vec3 Bond::getStaticPosition()
 	return _bondGroups[_activeGroup].staticSample[0].start;
 }
 
+
 bool Bond::isNotJustForHydrogens()
 {
 	if (getMinor()->getElement()->electronCount() > 1)
@@ -1099,23 +1057,6 @@ void Bond::propagateChange()
 			bond->propagateChange();
 		}
 	}
-}
-
-std::string Bond::description()
-{
-	std::ostringstream stream;
-	stream << "Bond: " << shortDesc() << std::endl;
-	stream << "Bond length: " << _bondLength << " Å" << std::endl;
-	stream << "Bond torsion angle: " << rad2deg(_bondGroups[0].torsionAngle) << std::endl;
-	stream << "Bond downstream groups: (" << downstreamAtomGroupCount() << "):" << std::endl;
-	stream << "Bond downstream atoms (first) (" << downstreamAtomCount(0) << "):" << std::endl;
-
-	for (int i = 0; i < downstreamAtomGroupCount(); i++)
-	{
-		stream << "\t" << downstreamAtom(i, 0)->getAtomName() << std::endl;
-	}
-
-	return stream.str();
 }
 
 ModelPtr Bond::getParentModel()
@@ -1283,76 +1224,43 @@ std::string Bond::shortDesc()
 	return stream.str();
 }
 
-double Bond::getMeanSquareDeviation(double target, int index)
+std::string Bond::description()
 {
-	double targMult = 3;
-	target /= 8 * M_PI * M_PI;
-    target *= targMult;
+	std::ostringstream stream;
+	stream << "Bond: " << shortDesc() << std::endl;
+	stream << "Bond length: " << _bondLength << " Å" << std::endl;
+	stream << "Bond torsion angle: " << rad2deg(_bondGroups[0].torsionAngle) << std::endl;
+	stream << "Bond downstream groups: (" << downstreamAtomGroupCount() << "):" << std::endl;
+	stream << "Bond downstream atoms (first) (" << downstreamAtomCount(0) << "):" << std::endl;
 
-	std::vector<BondSample> positions = getFinalPositions();
-	vec3 mean = make_vec3(0, 0, 0);
-
-	for (int i = 0; i < positions.size(); i++)
+	for (int i = 0; i < downstreamAtomGroupCount(); i++)
 	{
-		vec3 pos = positions[i].start;
-
-		mean = vec3_add_vec3(mean, pos);
+		stream << "\t" << downstreamAtom(i, 0)->getAtomName() << std::endl;
 	}
 
-	double mult = 1 / (double)positions.size();
-	vec3_mult(&mean, mult);
+	return stream.str();
+}
 
-	double meanSq = 0;
+double Bond::getMeanSquareDeviation()
+{
+	std::vector<BondSample> positions = getFinalPositions();
+
 	double meanX = 0; double meanY = 0; double meanZ = 0;
 
 	for (int i = 0; i < positions.size(); i++)
 	{
 		vec3 pos = positions[i].start;
-		double occupancy = sqrt(positions[i].occupancy);
+		double occupancy = positions[i].occupancy;
 
-		vec3 diff = vec3_subtract_vec3(pos, mean);
+		vec3 diff = vec3_subtract_vec3(pos, _absolute);
 		vec3_mult(&diff, occupancy);
 		meanX += diff.x * diff.x;
 		meanY += diff.y * diff.y;
 		meanZ += diff.z * diff.z;
-		meanSq += vec3_sqlength(diff);
 	}
 
-	double score = 0;
-
-	if (target >= 0)
-	{
-		score += fabs(meanX - target / 3);
-		score += fabs(meanY - target / 3);
-		score += fabs(meanZ - target / 3);
-	}
-	else
-	{
-		score = fabs(meanSq - target);
-		score *= 8 * M_PI * M_PI;
-		score /= targMult;
-	}
-
-	if (index >= 0)
-	{
-		double val = 0;
-		switch (index) {
-			case 0:
-				val = meanX;
-				break;
-			case 1:
-				val = meanY;
-				break;
-			case 2:
-				val = meanZ;
-				break;
-			default:
-				break;
-		}
-
-		val *= 8 * M_PI * M_PI;
-		return val;
-	}
+	double score = fabs(meanX + meanY + meanZ) / 3;
+	score *= 8 * M_PI * M_PI;
 
 	return score;
 }
@@ -1458,27 +1366,25 @@ ModelPtr Bond::reverse(BondPtr upstreamBond)
 double Bond::getFlexibilityPotential()
 {
 	std::vector<BondSample> *samples = getManyPositions(BondSampleThorough);
+	std::vector<BondSample> *statPos = getManyPositions(BondSampleStatic);
 	double sum = 0;
 	double weights = 0;
 
-	for (int i = 1; i < samples->size(); i++)
+	mat3x3 statBasis = statPos->at(0).basis;
+	vec3 statBondDir = mat3x3_axis(statBasis, 2);
+
+	for (int i = 0; i < samples->size(); i++)
 	{
 		mat3x3 iTorsionBasis = samples->at(i).basis;
 		vec3 iBondDir = mat3x3_axis(iTorsionBasis, 2);
 
-		for (int j = 0; j < i; j++)
-		{
-			mat3x3 jTorsionBasis = samples->at(j).basis;
-			vec3 jBondDir = mat3x3_axis(jTorsionBasis, 2);
+		double weight = 1;
+		double angle = vec3_angle_with_vec3(iBondDir, statBondDir);
 
-			double weight = 1;
-			double angle = vec3_angle_with_vec3(iBondDir, jBondDir);
+		if (angle != angle) angle = 0;
 
-			if (angle != angle) angle = 0;
-
-			sum += angle * weight;
-			weights += weight;
-		}
+		sum += angle * weight;
+		weights += weight;
 	}
 
 	double average = sum / weights;
@@ -1488,7 +1394,9 @@ double Bond::getFlexibilityPotential()
 		average = 0;
 	}
 
-	return average;
+	double val = average;
+
+	return val;
 }
 
 bool Bond::isRefinable()

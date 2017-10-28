@@ -63,6 +63,8 @@ void Polymer::tieAtomsUp()
 			getMonomer(i)->tieAtomsUp();
 		}
 	}
+
+	resetMagicAxes();
 }
 
 void Polymer::summary()
@@ -236,8 +238,8 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 
 void Polymer::graph(std::string graphName)
 {
-	CSVPtr csv = CSVPtr(new CSV(12, "resnum", "newB", "oldB", "oldX", "oldY", "oldZ",
-								"newX", "newY", "newZ", "pos", "sidepos", "flex"));
+	CSVPtr csv = CSVPtr(new CSV(6, "resnum", "newB", "oldB",
+								"pos", "sidepos", "flex"));
 	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB"));
@@ -266,19 +268,12 @@ void Polymer::graph(std::string graphName)
 		{
 			BondPtr caBond = std::static_pointer_cast<Bond>(caModel);
 			double meanSq = caBond->getMeanSquareDeviation();
-			double newX = caBond->getMeanSquareDeviation(-1, 0);
-			double newY = caBond->getMeanSquareDeviation(-1, 1);
-			double newZ = caBond->getMeanSquareDeviation(-1, 2);
-			double oldX = ca->getInitialAnisoB(0);
-			double oldY = ca->getInitialAnisoB(1);
-			double oldZ = ca->getInitialAnisoB(2);
 			double posDisp = ca->posDisplacement();
 			double sideDisp = sidechain->getAverageDisplacement();
 			double flex = caBond->getFlexibilityPotential();
 
-			csv->addEntry(12, value, meanSq, ca->getInitialBFactor(),
-						  oldX, oldY, oldZ, newX, newY, newZ, posDisp, sideDisp,
-						  flex);
+			csv->addEntry(6, value, meanSq, ca->getInitialBFactor(),
+						  posDisp, sideDisp, flex);
 			caDampen = Bond::getDampening(&*caBond);
 			caBlur = Bond::getTorsionBlur(&*caBond);
 
@@ -515,6 +510,8 @@ void Polymer::changeAnchor(int num)
 	}
 
 	_anchorNum = num;
+
+//	resetMagicAxes();
 }
 
 void Polymer::setInitialKick(void *object, double value)
@@ -556,32 +553,20 @@ double Polymer::getInitialKick(void *object)
 
 void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 {
-
 	setupNelderMead();
-	setScoreType(ScoreTypeModelOverallB);
+	setScoreType(ScoreTypeModelFlexiness);
 	double value = target->getOverallBFactor();
-	std::cout << "Scaling flexibility to B factor of " << value << std::endl;
+	std::cout << "Scaling flexibility to " << value << std::endl;
 	setOverallBFactor(value);
 	addOverallKickAndDampen(shared_from_this());
 	setCycles(50);
-	setSilent();
+	ModelPtr anchor = getAnchorModel();
+
 	addSampledBackbone(shared_from_this());
-	setJobName("kick_and_dampen");
+	setJobName("dampen");
 	sample();
 
 	return;
-
-	double newDampen = getBackboneDampening(this);
-	setSidechainDampening(this, newDampen);
-
-	setupNelderMead();
-	setScoreType(ScoreTypeModelOverallB);
-	setOverallBFactor(value * 1.15);
-	addSidechainDampen(shared_from_this());
-	addSampledSidechains(shared_from_this());
-	setJobName("side_chain_dampen");
-	setCycles(50);
-	sample();
 }
 
 ModelPtr Polymer::getAnchorModel()
@@ -594,8 +579,6 @@ ModelPtr Polymer::getAnchorModel()
 
 void Polymer::minimiseCentroids()
 {
-	std::cout << "Minimising centroids for the ensemble..." << std::endl;
-
 	_centroidOffsets.clear();
 
 	std::vector<vec3> addedVecs;
@@ -614,8 +597,10 @@ void Polymer::minimiseCentroids()
 
 		if (!ca) continue;
 
-		std::vector<BondSample> *samples;
-		samples = ca->getModel()->getManyPositions(BondSampleThorough);
+		std::vector<BondSample> someSamples;
+		someSamples = ca->getModel()->getFinalPositions();
+		std::vector<BondSample> *samples = &someSamples;
+
 
 		if (!addedVecs.size())
 		{
@@ -661,8 +646,6 @@ void Polymer::minimiseCentroids()
 
 void Polymer::minimiseRotations()
 {
-	std::cout << "Minimising rotations for the ensemble..." << std::endl;
-
 	int num = 0;
 	_rotations.clear();
 	_centroids.clear();
@@ -686,6 +669,7 @@ void Polymer::minimiseRotations()
 	}
 
 	int f = num / 2;
+	std::vector<mat3x3> tmpMats;
 
 	for (int i = 0; i < num; i++)
 	{
@@ -703,10 +687,10 @@ void Polymer::minimiseRotations()
 
 			for (int k = 0; k < bone->atomCount(); k++)
 			{
-				AtomPtr anAtom = bone->findAtom("CA");
+				AtomPtr anAtom = bone->atom(k);
 				if (!anAtom) continue;
 
-				std::vector<BondSample> samples;
+				std::vector<BondSample> *samples;
 				ModelPtr model = anAtom->getModel();
 
 				if (!model)
@@ -716,24 +700,34 @@ void Polymer::minimiseRotations()
 
 				double bee = model->getMeanSquareDeviation();
 				double weight = 1 / (bee * bee);
-				weights.push_back(1);//weight);
+				weights.push_back(weight);
 
-				samples = model->getFinalPositions();
+				samples = model->getManyPositions(BondSampleThorough);
+				vec3 fixed = model->getAbsolutePosition();
 
-				vec3 fixed = samples.at(f).start;
-				vec3 variant = samples.at(i).start;
+				vec3 variant = samples->at(i).start;
 				fixedVecs.push_back(fixed);
 				variantVecs.push_back(variant);
 			}
 		}
 
 		Kabsch kabsch;
-		kabsch.setAtoms(variantVecs, fixedVecs);
+
+		kabsch.setAtoms(fixedVecs, variantVecs);
 		kabsch.setWeights(weights);
 		_centroids.push_back(kabsch.fixCentroids());
 		mat3x3 mat = kabsch.run();
-		_rotations.push_back(mat);
+
+		if (kabsch.didFail())
+		{
+			_centroidOffsets.clear();
+			return;
+		}
+
+		tmpMats.push_back(mat);
 	}
+
+	_rotations = tmpMats;
 
 	std::cout << "Kabsch'd them all!" << std::endl;
 

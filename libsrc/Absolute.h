@@ -130,7 +130,7 @@ public:
 		abs->_position.z = z;
 	}
 
-	virtual double getMeanSquareDeviation(double target = -1, int index = -1);
+	virtual double getMeanSquareDeviation();
 
 	static double getB(void *object)
 	{

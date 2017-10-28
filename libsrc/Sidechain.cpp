@@ -63,24 +63,16 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 				_refinedMagicAxisCount++;
 
 				/* Find the vague direction */
-				setupGrid();
-				addSampledAtoms(shared_from_this());
-				addMagicAxisBroad(bond);
-				setSilent();
-				setJobName("broad_axis_" +  bond->shortDesc());
-				setScoreType(ScoreTypeModelRMSDZero);
-				sample();
+				bond->calculateMagicAxis();
 
-				/* Fine-tune the axis */
+				/* Fine-tune the angle around the axis */
 				setupNelderMead();
-				addMagicAxis(bond, deg2rad(10.0), deg2rad(2.0));
-				setJobName("magic_axis_" +  bond->shortDesc());
+				addMagicAngle(bond, deg2rad(10.0), deg2rad(2.0));
+				setJobName("magic_angle_" +  bond->shortDesc());
 				setSilent();
 				addSampledAtoms(shared_from_this());
 				setScoreType(ScoreTypeModelRMSDZero);
 				sample();
-
-				bond->resetAxis();
 			}
 
 			/* Refine model position */

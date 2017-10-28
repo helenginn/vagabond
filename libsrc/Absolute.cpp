@@ -146,7 +146,7 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
 	meanSqDisp = sqrt(meanSqDisp);
 	double total = 2;
-	double step = (meanSqDisp * 2) / total; // cover four st.dev.s
+	double step = (meanSqDisp * 1.5) / total; // cover four st.dev.s
 	double occTotal = 0;
 
 	for (int i = -total; i <= total; i++)
@@ -169,6 +169,7 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 				double occ = normal_distribution(xVal, meanSqDisp);
 				occ *= normal_distribution(yVal, meanSqDisp);
 				occ *= normal_distribution(zVal, meanSqDisp);
+				occ = 1;
 				occTotal += occ;
 				vec3 xyz = make_vec3(xVal, yVal, zVal);
 				vec3 full = vec3_add_vec3(xyz, _position);
@@ -202,7 +203,7 @@ void Absolute::addToMonomer(MonomerPtr monomer)
 	Model::addToMonomer(monomer);
 }
 
-double Absolute::getMeanSquareDeviation(double target, int index)
+double Absolute::getMeanSquareDeviation()
 {
 	return _bFactor;
 }

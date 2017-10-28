@@ -26,6 +26,7 @@ Sampler::Sampler()
 	_joint = false;
 	_scoreType = ScoreTypeCorrel;
 	_refinedMagicAxisCount = 0;
+	_overallFlex = 0.025;
 }
 
 
@@ -165,7 +166,6 @@ void Sampler::setupNelderMead()
 
 void Sampler::addOverallKickAndDampen(PolymerPtr polymer)
 {
-	_strategy->addParameter(&*polymer, Polymer::getInitialKick, Polymer::setInitialKick, 0.10, 0.002, "kick");
 	_strategy->addParameter(&*polymer, Polymer::getBackboneDampening, Polymer::setBackboneDampening, 0.05, 0.02, "dampen");
 }
 
@@ -252,31 +252,21 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 	_bonds.push_back(bond);
 }
 
-void Sampler::addMagicAxis(BondPtr bond, double range, double interval)
+void Sampler::addMagicAngle(BondPtr bond, double range, double interval)
 {
 	if (!bond) return;
 
 	//	double number = fabs(range / interval);
 	std::string num = i_to_str(_strategy->parameterCount() + 1);
 
-	_strategy->addParameter(&*bond, Bond::getHRot, Bond::setHRot,
+	_strategy->addParameter(&*bond, Bond::getMagicAngle, Bond::setMagicAngle,
 							range, interval,
 							"h" + bond->shortDesc());
-	_strategy->addParameter(&*bond, Bond::getKRot, Bond::setKRot,
-							range, interval,
-							"k" + bond->shortDesc());
 
 //	_strategy->setSilent(true);
 	_bonds.push_back(bond);
 }
 
-void Sampler::addMagicAxisBroad(BondPtr bond)
-{
-	_strategy->addParameter(&*bond, Bond::getMagicAxisMat, Bond::setMagicAxisMat,
-							6.0, 1.01,
-							"ax" + bond->shortDesc());
-	_bonds.push_back(bond);
-}
 
 void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
 {
@@ -489,7 +479,7 @@ double Sampler::sample(bool clear)
 	}
 	else if (_scoreType == ScoreTypeModelRMSDZero)
 	{
-		_strategy->setCycles(15);
+		_strategy->setCycles(10);
 	}
 
 	if (sampleSize())
@@ -527,12 +517,16 @@ double Sampler::getScore()
 		return 0;
 	}
 
-	if (_scoreType == ScoreTypeModelRMSD
-		|| _scoreType == ScoreTypeModelOverallB
+	if (_scoreType == ScoreTypeModelFlexiness
 		|| _scoreType == ScoreTypeModelRMSDZero)
 	{
 		double score = 0;
 		double count = 0;
+
+		for (int i = 0; i < sampleSize(); i++)
+		{
+			_sampled[i]->getModel()->propagateChange();
+		}
 
 		for (int i = 0; i < sampleSize(); i++)
 		{
@@ -546,20 +540,15 @@ double Sampler::getScore()
 			BondPtr bond = std::static_pointer_cast<Bond>(model);
 			double target = -1;
 
-			if (_scoreType == ScoreTypeModelRMSD)
+			if (_scoreType == ScoreTypeModelFlexiness)
 			{
-				target = _sampled[i]->getInitialBFactor();
-			}
-			else if (_scoreType == ScoreTypeModelOverallB)
-			{
-				target = _overallB;
-		//		target = _sampled[i]->getInitialBFactor();
+				target = _overallFlex;
 			}
 
-			double rmsdScore = bond->getMeanSquareDeviation(target);
+			double rmsdScore = bond->getFlexibilityPotential();
 
 			count++;
-			score += rmsdScore;
+			score += fabs(rmsdScore - target);
 		}
 
 		return score / count;

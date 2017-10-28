@@ -16,7 +16,7 @@
 
 bool Backbone::shouldRefineMagicAxis(BondPtr bond)
 {
-//	if (_refinedMagicAxisCount > 6) return false;
+//	if (_refinedMagicAxisCount > 2) return false;
 
 	return (bond->getMinor()->getAtomName() == "CA" ||
 			bond->getMajor()->getAtomName() == "CA");
@@ -60,12 +60,12 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			}
 
 			int magicStart = resNum;
-			int magicEnd = resNum + 25;
+			int magicEnd = resNum + FUTURE_RESIDUES;
 			int magicCloseEnd = resNum + 2;
 
 			if (!getMonomer()->isAfterAnchor())
 			{
-				magicEnd = resNum - 25;
+				magicEnd = resNum - FUTURE_RESIDUES;
 				magicCloseEnd = resNum - 2;
 			}
 
@@ -74,25 +74,29 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				_refinedMagicAxisCount++;
 
 				/* Find the vague direction */
-				setupGrid();
-				addMagicAxisBroad(bond);
-				addSampledBackbone(getPolymer(), magicStart, magicEnd);
-				setSilent();
-				setJobName("broad_axis_" + bond->shortDesc());
-				setScoreType(ScoreTypeModelRMSDZero);
-				sample();
+				bond->calculateMagicAxis();
 
 				/* Fine-tune the axis */
-				setupNelderMead();
-				addMagicAxis(bond, deg2rad(10.0), deg2rad(2.0));
+			/*	setupGrid();
+				addMagicAngle(bond, deg2rad(360.0), deg2rad(60.0));
 				addSampledBackbone(getPolymer(), magicStart, magicEnd);
-				setJobName("magic_axis_" + bond->shortDesc());
+				setJobName("magic_angle_" + bond->shortDesc());
 				setSilent();
-				addSampledBackbone(getPolymer(), magicStart, magicEnd);
 				setScoreType(ScoreTypeModelRMSDZero);
 				sample();
 
-				bond->resetAxis();
+				setupNelderMead();
+				setCycles(6);
+				addMagicAngle(bond, deg2rad(15.0), deg2rad(2.0));
+				addSampledBackbone(getPolymer(), magicStart, magicEnd);
+				setJobName("magic_angle_" + bond->shortDesc());
+				setSilent();
+				setScoreType(ScoreTypeModelRMSDZero);
+				sample();*/
+
+			//	double angle = Bond::getMagicAngle(&*bond);
+			//	std::cout << std::endl << "angle\t" << angle << std::endl;
+
 			}
 
 			/* Refine model position */

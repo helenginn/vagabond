@@ -525,6 +525,7 @@ void Crystal::tiedUpScattering()
 		molecule(i)->tiedUpScattering(&tied, &total);
 	}
 
+	std::cout << std::fixed << std::setprecision(0);
 	std::cout << "Tied up " << tied << " electrons out of " << total << " (";
 	std::cout << 100. * sqrt(tied / total) << "%)." << std::endl;
 }
@@ -559,7 +560,7 @@ Crystal::Crystal()
 {
 	_firstScale = -1;
 	_maxResolution = HARD_CODED_RESOLUTION;
-	_overallB = 16;
+	_overallB = 0.025;
 }
 
 void Crystal::applySymOps()

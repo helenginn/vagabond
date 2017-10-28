@@ -22,7 +22,7 @@
  * be filled up to square with zero rows.
  */
 
-void svdcmp(mat A, unsigned int M, unsigned int N, vect W, mat V)
+int svdcmp(mat A, unsigned int M, unsigned int N, vect W, mat V)
 {
     /* Householder reduction to bidiagonal form. */
     int NM;
@@ -50,8 +50,8 @@ void svdcmp(mat A, unsigned int M, unsigned int N, vect W, mat V)
 	rv1 = vect_create(N);
 
     if( M < N ) {
-        fprintf( stderr, "You must augment A with extra zero rows.\n" );
-        return;
+   //     fprintf( stderr, "You must augment A with extra zero rows.\n" );
+        return false;
     }
 
     for( i = 0; i < N; ++i ) {
@@ -253,8 +253,8 @@ void svdcmp(mat A, unsigned int M, unsigned int N, vect W, mat V)
             }
 
             if( its >= 30 ) {
-                fprintf( stderr, "No convergence in 30 iterations.\n" );
-                return;
+           //     fprintf( stderr, "No convergence in 30 iterations.\n" );
+                return false;
             }
 
             X = W[l];
@@ -317,5 +317,5 @@ void svdcmp(mat A, unsigned int M, unsigned int N, vect W, mat V)
     }
 	vect_delete(rv1);
 	
-    return;
+    return true;
 }

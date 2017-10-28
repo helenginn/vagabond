@@ -35,14 +35,16 @@ typedef struct
 	double torsionVertBlur;
 	double occupancy;
 	vec3 magicAxis;
-	double hRot;
-	double kRot;
+	double magicAngle;
 	std::vector<BondSample> storedSamples;
 	std::vector<BondSample> staticSample;
 	std::vector<BondSample> singleStateSample;
 	std::vector<AtomWkr> extraTorsionSamples;
 	bool _changedSamples;
 } BondGroup;
+
+#define INITIAL_KICK 0.06
+#define INITIAL_DAMPENING 0.06
 
 class Bond : public Model, public Sampler
 {
@@ -57,6 +59,7 @@ public:
 	void reverseDownstreamAtoms(int group);
 	void resetBondDirection();
 	bool isRefinable();
+	void calculateMagicAxis();
 
 	AtomPtr getMajor()
 	{
@@ -150,31 +153,16 @@ public:
 		static_cast<Bond *>(object)->propagateChange();
 	}
 
-	static double getHRot(void *object)
+	static double getMagicAngle(void *object)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		return bond->_bondGroups[bond->_activeGroup].hRot;
+		return bond->_bondGroups[bond->_activeGroup].magicAngle;
 	}
 
-	static double getKRot(void *object)
+	static void setMagicAngle(void *object, double angle)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		return bond->_bondGroups[bond->_activeGroup].kRot;
-	}
-
-	static void setHRot(void *object, double hRot)
-	{
-		Bond *bond = static_cast<Bond *>(object);
-		bond->_bondGroups[bond->_activeGroup].hRot = hRot;
-		static_cast<Bond *>(object)->propagateChange();
-	}
-
-	void resetAxis();
-
-	static void setKRot(void *object, double kRot)
-	{
-		Bond *bond = static_cast<Bond *>(object);
-		bond->_bondGroups[bond->_activeGroup].kRot = kRot;
+		bond->_bondGroups[bond->_activeGroup].magicAngle = angle;
 		static_cast<Bond *>(object)->propagateChange();
 	}
 
@@ -315,7 +303,7 @@ public:
 		return _bondGroups[group].extraTorsionSamples.size();
 	}
 
-	virtual double getMeanSquareDeviation(double target = -1, int index = -1);
+	virtual double getMeanSquareDeviation();
 	double getFlexibilityPotential();
 
 	AtomPtr extraTorsionSample(int group, int i)
@@ -326,17 +314,6 @@ public:
 	void setBlocked(bool blocked)
 	{
 		_blocked = blocked;
-	}
-
-	static void setMagicAxisMat(void *object, double num)
-	{
-		static_cast<Bond *>(object)->_currentCheck = num;
-		static_cast<Bond *>(object)->propagateChange();
-	}
-
-	static double getMagicAxisMat(void *object)
-	{
-		return static_cast<Bond *>(object)->_currentCheck;
 	}
 
 	vec3 getAbsolutePosition()
@@ -389,6 +366,7 @@ private:
 	double _bendBlur;
 	bool _activated;
 	int _activeGroup;
+	double _blurTotal;
 
 	/* Should not be refined */
 	bool _fixed;
@@ -411,8 +389,6 @@ private:
 
 	vec3 positionFromTorsion(mat3x3 torsionBasis, double angle,
 							 double ratio, vec3 start);
-	std::vector<BondSample> sampleMyAngles(double angle, double sigma,
-										   bool singleState = false);
 	std::vector<BondSample> getCorrectedAngles(std::vector<BondSample> *prevs,
 											   double circleAdd,
 											   double myTorsion, double ratio);
@@ -424,9 +400,6 @@ private:
 	bool _changedPos, _changedSamples;
 	bool _blocked;
 
-	static mat3x3 magicAxisChecks[];
-	int _currentCheck;
-	vec3 getFixedAxis(vec3 axis, double hRot, double kRot);
 	mat3x3 getMagicMat();
 
 	/* What should be returned when asking for an atom's position

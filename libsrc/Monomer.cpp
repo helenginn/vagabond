@@ -156,12 +156,12 @@ void Monomer::tieAtomsUp()
 	if (getResidueNum() == start)
 	{
 		BondPtr bond = ToBondPtr(getBackbone()->findAtom("CA")->getModel());
-		Bond::setTorsionBlur(&*bond, +0.20);
+		Bond::setTorsionBlur(&*bond, INITIAL_KICK);
 	}
 	else if (getResidueNum() == start - 1)
 	{
 		BondPtr bond = ToBondPtr(getBackbone()->findAtom("C")->getModel());
-		Bond::setTorsionBlur(&*bond, +0.20);
+		Bond::setTorsionBlur(&*bond, INITIAL_KICK);
 	}
 
 	_backbone->setTied();
@@ -170,19 +170,18 @@ void Monomer::tieAtomsUp()
 
 void Monomer::setBackboneDampening(double value)
 {
-	for (int i = 0; i < modelCount(); i++)
+	for (int i = 0; i < atomCount(); i++)
 	{
-		if (model(i)->getClassName() == "Bond")
+		if (atom(i)->getModel()->isBond())
 		{
-			BondPtr bond = ToBondPtr(model(i));
-			Bond::setDampening(&*bond, value);
+			BondPtr bond = ToBondPtr(atom(i)->getModel());
+
+			if (bond->isRefinable())
+			{
+				Bond::setDampening(&*bond, value);
+			}
 		}
 	}
-/*	for (int i = 0; i < getBackbone()->bondCount(); i++)
-	{
-		BondPtr bond = getBackbone()->bond(i);
-		Bond::setDampening(&*bond, value);
-	}*/
 }
 
 void Monomer::setSidechainDampening(double value)

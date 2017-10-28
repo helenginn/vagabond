@@ -75,7 +75,7 @@ public:
 	int totalElectrons(int *fcWeighted);
 
 	void setWeighting(double value);
-
+	void resetMagicAxes();
 protected:
 	AtomGroup();
 	void addAtomsFrom(AtomGroupPtr child);

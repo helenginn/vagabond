@@ -33,10 +33,9 @@ typedef enum
 	ScoreTypeCorrel = 0,
 	ScoreTypeMultiply = 1,
 	ScoreTypeRFactor = 2,
-	ScoreTypeModelRMSD = 3,
-	ScoreTypeModelRMSDZero = 4,
-	ScoreTypeModelPos = 5,
-	ScoreTypeModelOverallB = 6,
+	ScoreTypeModelRMSDZero = 3,
+	ScoreTypeModelPos = 4,
+	ScoreTypeModelFlexiness = 5,
 } ScoreType;
 
 class Sampler
@@ -63,8 +62,7 @@ public:
 	void addRamachandranAngles(PolymerPtr polymer, int from, int to);
 	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
-	void addMagicAxis(BondPtr bond, double range, double interval);
-	void addMagicAxisBroad(BondPtr bond);
+	void addMagicAngle(BondPtr bond, double range, double interval);
 	void setCrystal(CrystalPtr crystal);
 	double sample(bool clear = true);
 
@@ -131,7 +129,7 @@ public:
 
 	void setOverallBFactor(double value)
 	{
-		_overallB = value;
+		_overallFlex = value;
 	}
 
 	std::vector<double> getNextResult(int num);
@@ -145,15 +143,15 @@ protected:
 
 	int _refinedMagicAxisCount;
 	virtual bool shouldRefineMagicAxis(BondPtr bond) { return false; }
+	virtual double getScore();
 private:
-	double getScore();
 
 	std::vector<AtomPtr> _sampled;
 	std::vector<AtomPtr> _unsampled;
 	std::vector<BondPtr> _bonds;
 	bool _mock;
 	bool _joint;
-	double _overallB;
+	double _overallFlex;
 
 	std::string _jobName;
 	ScoreType _scoreType;
