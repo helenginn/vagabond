@@ -20,7 +20,7 @@
 #include <iomanip>
 #include "Monomer.h"
 #include "Molecule.h"
-
+#include "Anisotropicator.h"
 
 Bond::Bond()
 {
@@ -622,6 +622,12 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 
 void Bond::calculateMagicAxis()
 {
+	_bondGroups[0].magicAxis = longestAxis();
+	propagateChange();
+}
+
+void Bond::calculateInitialMagicAxis()
+{
 	BondPtr downBond = ToBondPtr(shared_from_this());
 	int count = 0;
 	vec3 posSum = make_vec3(0, 0, 0);
@@ -655,6 +661,8 @@ void Bond::calculateMagicAxis()
 	{
 		_bondGroups[0].magicAxis = posSum;
 	}
+
+	propagateChange();
 }
 
 mat3x3 Bond::getMagicMat()
@@ -1229,9 +1237,12 @@ std::string Bond::description()
 	std::ostringstream stream;
 	stream << "Bond: " << shortDesc() << std::endl;
 	stream << "Bond length: " << _bondLength << " Å" << std::endl;
-	stream << "Bond torsion angle: " << rad2deg(_bondGroups[0].torsionAngle) << std::endl;
-	stream << "Bond downstream groups: (" << downstreamAtomGroupCount() << "):" << std::endl;
-	stream << "Bond downstream atoms (first) (" << downstreamAtomCount(0) << "):" << std::endl;
+	stream << "Bond torsion angle: "
+	<< rad2deg(_bondGroups[0].torsionAngle) << std::endl;
+	stream << "Bond downstream groups: ("
+	<< downstreamAtomGroupCount() << "):" << std::endl;
+	stream << "Bond downstream atoms (first) ("
+	<< downstreamAtomCount(0) << "):" << std::endl;
 
 	for (int i = 0; i < downstreamAtomGroupCount(); i++)
 	{
@@ -1250,19 +1261,42 @@ double Bond::getMeanSquareDeviation()
 	for (int i = 0; i < positions.size(); i++)
 	{
 		vec3 pos = positions[i].start;
-		double occupancy = positions[i].occupancy;
-
 		vec3 diff = vec3_subtract_vec3(pos, _absolute);
-		vec3_mult(&diff, occupancy);
 		meanX += diff.x * diff.x;
 		meanY += diff.y * diff.y;
 		meanZ += diff.z * diff.z;
 	}
 
 	double score = fabs(meanX + meanY + meanZ) / 3;
+	score /= (double)positions.size();
 	score *= 8 * M_PI * M_PI;
 
 	return score;
+}
+
+vec3 Bond::longestAxis()
+{
+	std::vector<BondSample> positions = getFinalPositions();
+
+	std::vector<vec3> points;
+
+	for (int i = 0; i < positions.size(); i++)
+	{
+		points.push_back(positions[i].start);
+	}
+
+	Anisotropicator tropicator;
+	tropicator.setPoints(points);
+	_realSpaceTensor = tropicator.getTensor();
+	vec3 longest = tropicator.longestAxis();
+
+	return longest;
+}
+
+mat3x3 Bond::getRealSpaceTensor()
+{
+	longestAxis();
+	return _realSpaceTensor;
 }
 
 std::vector<AtomPtr> Bond::importantAtoms()

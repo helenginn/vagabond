@@ -13,7 +13,7 @@
 #include "AtomGroup.h"
 #include "Sampler.h"
 
-class Sidechain : public AtomGroup, public Sampler
+class Sidechain : public AtomGroup
 {
 public:
 	Sidechain()
@@ -21,7 +21,6 @@ public:
 		_canRefine = false;
 	}
 
-	void refine(CrystalPtr target, RefinementType rType);
 	bool canRefine()
 	{
 		return _canRefine;
@@ -50,6 +49,10 @@ public:
 	void fixBackboneTorsions(AtomPtr betaTorsion);
 protected:
 	virtual bool shouldRefineMagicAxis(BondPtr bond);
+	virtual AtomPtr topLevelAtom()
+	{
+		return findAtom("CB");
+	}
 private:
 	bool _canRefine;
 	int _resNum;

@@ -36,6 +36,8 @@ typedef enum
 class Model : public std::enable_shared_from_this<Model>, public Distributor
 {
 public:
+	Model();
+
 	virtual FFTPtr getDistribution(bool quick = false) = 0;
 
 	virtual void addToMonomer(MonomerPtr monomer);
@@ -55,6 +57,10 @@ public:
 	virtual std::vector<BondSample> getFinalPositions();
 
 	virtual double getMeanSquareDeviation() = 0;
+	virtual mat3x3 getRealSpaceTensor()
+	{
+		return _realSpaceTensor;
+	}
 
 	FFTPtr getZeroDistribution();
 	virtual void propagateChange();
@@ -69,12 +75,12 @@ public:
 		return (getClassName() == "Absolute");
 	}
 
-
 	bool isAnchor()
 	{
 		return (getClassName() == "Anchor");
 	}
 protected:
+	mat3x3 _realSpaceTensor;
 private:
 	std::vector<AtomPtr> atoms;
 };

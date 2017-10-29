@@ -13,7 +13,7 @@
 #include "AtomGroup.h"
 #include "Sampler.h"
 
-class Backbone : public AtomGroup, public Sampler
+class Backbone : public AtomGroup
 {
 public:
 	void setPolymer(PolymerPtr poly)
@@ -38,7 +38,7 @@ public:
 
 	AtomPtr betaCarbonTorsionAtom();
 
-	void refine(CrystalPtr target, RefinementType rType);
+	virtual void refine(CrystalPtr target, RefinementType rType);
 	void setAnchor();
 protected:
 	virtual bool shouldRefineMagicAxis(BondPtr bond);

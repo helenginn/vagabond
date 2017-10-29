@@ -66,7 +66,7 @@ void Crystal::addMolecule(MoleculePtr molecule)
 	_molecules[molecule->getChainID()] = molecule;
 }
 
-void Crystal::setReal2HKL(mat3x3 mat)
+void Crystal::setReal2Frac(mat3x3 mat)
 {
 	_real2frac = mat;
 }
@@ -587,7 +587,8 @@ void Crystal::fourierTransform(int dir)
 	}
 }
 
-void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
+void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data,
+								 CrystalPtr crystal)
 {
 	for (int i = 0; i < moleculeCount(); i++)
 	{
@@ -603,10 +604,10 @@ void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 		writeCalcMillersToFile(data, refineCount);
 		getDataInformation(data, 3, 2);
 		PolymerPtr polymer = ToPolymerPtr(molecule(i));
-		polymer->makePDB(refineCount + ".pdb", PDBTypeEnsemble);
-		polymer->makePDB("b_" + refineCount + ".pdb", PDBTypeSameBFactor);
-		polymer->makePDB("a_" + refineCount + ".pdb", PDBTypeAverage);
-		polymer->makePDB("p_" + refineCount + ".pdb", PDBTypeSamePosition);
+		polymer->makePDB(refineCount + ".pdb", PDBTypeEnsemble, crystal);
+		polymer->makePDB("b_" + refineCount + ".pdb", PDBTypeSameBFactor, crystal);
+		polymer->makePDB("a_" + refineCount + ".pdb", PDBTypeAverage, crystal);
+		polymer->makePDB("p_" + refineCount + ".pdb", PDBTypeSamePosition, crystal);
 		polymer->graph("graph_" + i_to_str(cycleNum));
 		polymer->closenessSummary();
 		polymer->differenceGraphs("diffgraph_" + i_to_str(cycleNum), shared_from_this());

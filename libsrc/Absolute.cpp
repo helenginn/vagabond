@@ -16,6 +16,8 @@
 #include "Monomer.h"
 #include "Polymer.h"
 #include "maths.h"
+#include "Crystal.h"
+#include "Anisotropicator.h"
 
 Absolute::Absolute()
 {
@@ -59,25 +61,7 @@ void Absolute::makeAtom()
 void Absolute::addToMolecule(MoleculePtr molecule)
 {
 	makeAtom();
-/*
-	if (!_atom->getMonomer())
-	{
-		return;
-	}
 
-	int myMono = _atom->getMonomer()->getResidueNum();
-
-	for (int i = 0; i < molecule->atomCount(); i++)
-	{
-		std::string atomName = molecule->atom(i)->getAtomName();
-		int moleMono = molecule->atom(i)->getMonomer()->getResidueNum();
-
-		if (_atom->getAtomName() == atomName && myMono == moleMono)
-		{
-			return;
-		}
-	}
-*/
 	molecule->addAtom(_atom);
 
 	Model::addToMolecule(molecule);
@@ -211,4 +195,19 @@ double Absolute::getMeanSquareDeviation()
 vec3 Absolute::getStaticPosition()
 {
 	return _position;
+}
+
+void Absolute::setTensor(mat3x3 tensor, CrystalPtr crystal)
+{
+	_tensor = tensor;
+	_usingTensor = true;
+
+	mat3x3 toNormal = crystal->getHKL2Real();
+	_realSpaceTensor = mat3x3_mult_mat3x3(toNormal, _tensor);
+
+	Anisotropicator tropicator;
+	tropicator.setTensor(_realSpaceTensor);
+	vec3 longestAxis = tropicator.longestAxis();
+
+	getAtom()->setEllipsoidLongestAxis(longestAxis);
 }

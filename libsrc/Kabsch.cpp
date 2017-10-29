@@ -148,6 +148,11 @@ mat3x3 Kabsch::run()
 	if (det > 0)
 	{
 		_rotation = mult;
+
+		free_2d_array(matrix);
+		free_2d_array(v);
+		free(w);
+
 		return mult;
 	}
 
@@ -159,6 +164,11 @@ mat3x3 Kabsch::run()
 	mat3x3 mat2 = mat3x3_mult_mat3x3(myU, mat1);
 
 	_rotation = mat2;
+
+	free_2d_array(matrix);
+	free_2d_array(v);
+	free(w);
+	
 	return mat2;
 }
 

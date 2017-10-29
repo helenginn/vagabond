@@ -31,7 +31,8 @@ class Crystal : public Object, public std::enable_shared_from_this<Crystal>
 public:
 	Crystal();
 	void addMolecule(MoleculePtr molecule);
-	void concludeRefinement(int cycleNum, DiffractionPtr data);
+	void concludeRefinement(int cycleNum, DiffractionPtr data,
+							CrystalPtr crystal);
 
 	long int moleculeCount()
 	{
@@ -55,14 +56,18 @@ public:
 		return MoleculePtr();
 	}
 
-	void setReal2HKL(mat3x3 mat);
+	void setReal2Frac(mat3x3 mat);
 	void setHKL2Real(mat3x3 mat);
+
 	mat3x3 getReal2Frac()
 	{
 		return _real2frac;
 	}
 
-
+	mat3x3 getHKL2Real()
+	{
+		return _hkl2real;
+	}
 
 	FFTPtr getFFT()
 	{

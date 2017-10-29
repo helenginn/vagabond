@@ -21,6 +21,7 @@
 #include <sstream>
 #include "Crystal.h"
 #include "PDBReader.h"
+#include "Anisotropicator.h"
 
 Atom::Atom()
 {
@@ -177,7 +178,7 @@ void Atom::findAtomType(std::string resName)
 	_geomType = GeomTable::getGeomTable().getType(resName, _atomName);
 }
 
-std::string Atom::pdbLineBeginning(int i)
+std::string Atom::pdbLineBeginning(std::string start)
 {
 	std::string residueName = getMonomer()->getIdentifier();
 	int resNum = getMonomer()->getResidueNum();
@@ -187,14 +188,14 @@ std::string Atom::pdbLineBeginning(int i)
 	char conformer[] = " ";
 //	conformer[0] += i;
 
-	line << "ATOM  ";
+	line << start;
 	line << std::setfill(' ') << std::setw(5) << std::fixed << _atomNum;
 	line << std::setfill(' ') << std::setw(4) << _atomName;
 	line << " " << conformer;
 	line << std::setw(3) << residueName;
 	line << " A";
 	line << std::setfill(' ') << std::setw(4) << resNum;
-	line << "    ";
+	line << "  ";
 
 	return line.str();
 }
@@ -217,8 +218,45 @@ double Atom::posDisplacement()
 	return score;
 }
 
+std::string Atom::anisouPDBLine(CrystalPtr crystal)
+{
+	if (!getMonomer())
+	{
+		return "";
+	}
+
+	std::ostringstream stream;
+	stream << pdbLineBeginning("ANISOU");
+
+	mat3x3 realTensor = getModel()->getRealSpaceTensor();
+	mat3x3 toCrystal = crystal->getReal2Frac();
+
+	Anisotropicator tropicator;
+	tropicator.setTensor(realTensor);
+	mat3x3 ellipsoid = tropicator.basis();
+	mat3x3 recipEllipsoid = mat3x3_mult_mat3x3(toCrystal, ellipsoid);
+	mat3x3 transpose = mat3x3_transpose(recipEllipsoid);
+	mat3x3 recipTensor = mat3x3_mult_mat3x3(recipEllipsoid, transpose);
+
+	stream << std::setprecision(0) << std::fixed;
+	stream << std::setfill(' ') << std::setw(7) << 10e4 * recipTensor.vals[0];
+	stream << std::setfill(' ') << std::setw(7) << 10e4 * recipTensor.vals[4];
+	stream << std::setfill(' ') << std::setw(7) << 10e4 * recipTensor.vals[8];
+	stream << std::setfill(' ') << std::setw(7) << 10e4 * recipTensor.vals[1];
+	stream << std::setfill(' ') << std::setw(7) << 10e4 * recipTensor.vals[2];
+	stream << std::setfill(' ') << std::setw(7) << 10e4 * recipTensor.vals[5];
+	stream << std::endl;
+
+	return stream.str();
+}
+
 std::string Atom::averagePDBContribution(bool samePos, bool sameB)
 {
+	if (!getMonomer())
+	{
+		return "";
+	}
+
 	getModel()->getDistribution();
 	std::string atomName = getAtomName();
 	ElementPtr element = getElement();

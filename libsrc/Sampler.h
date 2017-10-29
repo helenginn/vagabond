@@ -64,7 +64,7 @@ public:
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
 	void addMagicAngle(BondPtr bond, double range, double interval);
 	void setCrystal(CrystalPtr crystal);
-	double sample(bool clear = true);
+	bool sample(bool clear = true);
 
 	void setupGrid();
 	void setupNelderMead();
@@ -135,7 +135,7 @@ public:
 	std::vector<double> getNextResult(int num);
 
 protected:
-	void setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
+	BondPtr setupTorsionSet(BondPtr bond, int k, int bondNum,
 							double range, double interval,
 						 bool addDampening = false);
 	FFTPtr _fft;

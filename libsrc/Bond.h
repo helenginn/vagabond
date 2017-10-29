@@ -44,7 +44,7 @@ typedef struct
 } BondGroup;
 
 #define INITIAL_KICK 0.06
-#define INITIAL_DAMPENING 0.06
+#define INITIAL_DAMPENING 0.08
 
 class Bond : public Model, public Sampler
 {
@@ -60,6 +60,7 @@ public:
 	void resetBondDirection();
 	bool isRefinable();
 	void calculateMagicAxis();
+	void calculateInitialMagicAxis();
 
 	AtomPtr getMajor()
 	{
@@ -304,6 +305,10 @@ public:
 	}
 
 	virtual double getMeanSquareDeviation();
+	vec3 longestAxis();
+
+	virtual mat3x3 getRealSpaceTensor();
+	
 	double getFlexibilityPotential();
 
 	AtomPtr extraTorsionSample(int group, int i)

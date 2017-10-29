@@ -109,7 +109,7 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 	int count = 0;
 
-	for (int i = _anchorNum - 2; i >= 0; i--)
+	for (int i = _anchorNum - 1; i >= 0; i--)
 	{
 		MonomerPtr monomer = getMonomer(i);
 
@@ -129,7 +129,7 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 	count = 0;
 
-	for (int i = _anchorNum - 1; i < monomerCount(); i++)
+	for (int i = _anchorNum - 2; i < monomerCount(); i++)
 	{
 		MonomerPtr monomer = getMonomer(i);
 		refineMonomer(monomer, target, rType);
@@ -148,30 +148,12 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 }
 
-void Polymer::makePDB(std::string filename, PDBType pdbType)
+void Polymer::makePDB(std::string filename, PDBType pdbType, CrystalPtr crystal)
 {
 	std::ofstream file;
 	file.open(filename.c_str());
 
-	file << getPDBContribution(pdbType);
-	return;
-
-	for (int i = 0; i < monomerCount(); i++)
-	{
-		MonomerPtr monomer = getMonomer(i);
-
-		if (!monomer)
-		{
-			continue;
-		}
-
-		SidechainPtr victim = monomer->getSidechain();
-
-		file << monomer->getBackbone()->getPDBContribution(pdbType);
-		file << victim->getPDBContribution(pdbType);
-	}
-
-	file.close();
+	file << getPDBContribution(pdbType, crystal);
 }
 
 void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
@@ -238,8 +220,8 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 
 void Polymer::graph(std::string graphName)
 {
-	CSVPtr csv = CSVPtr(new CSV(6, "resnum", "newB", "oldB",
-								"pos", "sidepos", "flex"));
+	CSVPtr csv = CSVPtr(new CSV(7, "resnum", "newB", "oldB",
+								"pos", "sidepos", "flex", "ellipsoid"));
 	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB"));
@@ -268,12 +250,20 @@ void Polymer::graph(std::string graphName)
 		{
 			BondPtr caBond = std::static_pointer_cast<Bond>(caModel);
 			double meanSq = caBond->getMeanSquareDeviation();
+			vec3 origEllipsoid = ca->getEllipsoidLongestAxis();
+			vec3 newEllipsoid = caBond->longestAxis();
+			double angleBetween = vec3_angle_with_vec3(newEllipsoid, origEllipsoid);
+			if (angleBetween > deg2rad(90))
+			{
+				angleBetween -= deg2rad(90);
+			}
+
 			double posDisp = ca->posDisplacement();
 			double sideDisp = sidechain->getAverageDisplacement();
 			double flex = caBond->getFlexibilityPotential();
 
-			csv->addEntry(6, value, meanSq, ca->getInitialBFactor(),
-						  posDisp, sideDisp, flex);
+			csv->addEntry(7, value, meanSq, ca->getInitialBFactor(),
+						  posDisp, sideDisp, flex, rad2deg(angleBetween));
 			caDampen = Bond::getDampening(&*caBond);
 			caBlur = Bond::getTorsionBlur(&*caBond);
 
@@ -281,12 +271,7 @@ void Polymer::graph(std::string graphName)
 		}
 		else
 		{
-			double oldX = ca->getInitialAnisoB(0);
-			double oldY = ca->getInitialAnisoB(1);
-			double oldZ = ca->getInitialAnisoB(2);
-
-			csv->addEntry(9, value, ca->getInitialBFactor(), ca->getInitialBFactor(),
-						  oldX, oldY, oldZ, oldX, oldY, oldZ);
+			csv->addEntry(3, value, ca->getInitialBFactor(), ca->getInitialBFactor());
 		}
 
 		if (cModel->getClassName() == "Bond")
@@ -310,7 +295,6 @@ void Polymer::graph(std::string graphName)
 		{
 			double initialBee = sidechain->getAverageBFactor(true);
 			double nowBee = sidechain->getAverageBFactor(false);
-			double pos = sidechain->getAverageDisplacement();
 
 			sidechainCsv->addEntry(3, value, initialBee, nowBee);
 		}
@@ -348,37 +332,16 @@ void Polymer::graph(std::string graphName)
 		plotMap["height"] = "700";
 		plotMap["width"] = "1200";
 		plotMap["xHeader0"] = "resnum";
-		plotMap["xHeader1"] = "resnum";
 		plotMap["colour0"] = "black";
 		plotMap["colour1"] = "red";
 		plotMap["yMin0"] = "0";
-		plotMap["yMin1"] = "0";
-		plotMap["yMax0"] = "40";
-		plotMap["yMax1"] = "40";
+		plotMap["yMax0"] = "180";
 
 		plotMap["xTitle0"] = "Residue number";
 		plotMap["style0"] = "line";
-		plotMap["style1"] = "line";
-
-
-		plotMap["filename"] = "aniso_x_" + graphName;
-		plotMap["yHeader0"] = "newX";
-		plotMap["yHeader1"] = "oldX";
-		plotMap["yTitle0"] = "Aniso Bx factor";
-
-		csv->plotPNG(plotMap);
-
-		plotMap["filename"] = "aniso_y_" + graphName;
-		plotMap["yHeader0"] = "newY";
-		plotMap["yHeader1"] = "oldY";
-		plotMap["yTitle0"] = "Aniso By factor";
-
-		csv->plotPNG(plotMap);
-
-		plotMap["filename"] = "aniso_z_" + graphName;
-		plotMap["yHeader0"] = "newZ";
-		plotMap["yHeader1"] = "oldZ";
-		plotMap["yTitle0"] = "Aniso Bz factor";
+		plotMap["filename"] = "ellipsoid_" + graphName;
+		plotMap["yHeader0"] = "ellipsoid";
+		plotMap["yTitle0"] = "Ellipsoid angle";
 
 		csv->plotPNG(plotMap);
 	}
@@ -507,11 +470,10 @@ void Polymer::changeAnchor(int num)
 		BackbonePtr bone = getMonomer(i)->getBackbone();
 		AtomPtr betaCarbon = bone->betaCarbonTorsionAtom();
 		getMonomer(i)->getSidechain()->fixBackboneTorsions(betaCarbon);
-	}
+		getMonomer(i)->resetMagicAxes();
+}
 
 	_anchorNum = num;
-
-//	resetMagicAxes();
 }
 
 void Polymer::setInitialKick(void *object, double value)
@@ -553,6 +515,7 @@ double Polymer::getInitialKick(void *object)
 
 void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 {
+	return;
 	setupNelderMead();
 	setScoreType(ScoreTypeModelFlexiness);
 	double value = target->getOverallBFactor();

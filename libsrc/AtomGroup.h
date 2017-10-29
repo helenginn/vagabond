@@ -13,8 +13,9 @@
 #include <string>
 #include <vector>
 #include "shared_ptrs.h"
+#include "Sampler.h"
 
-class AtomGroup : public std::enable_shared_from_this<AtomGroup>
+class AtomGroup : public std::enable_shared_from_this<AtomGroup>, public Sampler
 {
 public:
 	AtomPtr findAtom(std::string atomType);
@@ -64,7 +65,8 @@ public:
 	double getAverageBFactor(bool initial = false);
 	double getAverageDisplacement();
 
-	std::string getPDBContribution(PDBType pdbType);
+	std::string getPDBContribution(PDBType pdbType,
+								   CrystalPtr crystal = CrystalPtr());
 
 	void setTied()
 	{
@@ -74,12 +76,15 @@ public:
 	void setUseAbsolute();
 	int totalElectrons(int *fcWeighted);
 
+	virtual void refine(CrystalPtr target, RefinementType rType);
 	void setWeighting(double value);
 	void resetMagicAxes();
 protected:
 	AtomGroup();
 	void addAtomsFrom(AtomGroupPtr child);
 	void propagateChange();
+	virtual AtomPtr topLevelAtom();
+	bool hasAtom(AtomPtr anAtom);
 
 	bool isTied()
 	{

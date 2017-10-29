@@ -30,32 +30,18 @@ Sampler::Sampler()
 }
 
 
-void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
+BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 								 double range, double interval, bool addDampen)
 {
-/*
-	setupSnake();
-	RefinementSnakePtr snake = std::static_pointer_cast<RefinementSnake>(_strategy);
-	*/
-
 	bond->setActiveGroup(k);
 
 	reportInDegrees();
 	setScoreType(ScoreTypeCorrel);
 
-	setJobName("torsion_set_" + bond->getMajor()->getAtomName() + "_" +
-			   bond->getMinor()->getAtomName() + "_g" +
-			   i_to_str(k) + "_" + i_to_str(resNum));
+	setJobName("torsion_set_" + bond->shortDesc() + "_g" +
+			   i_to_str(k));
 
-	if (addDampen)
-	{
-		addTorsionBlur(bond, 0.1, 0.01);
-		addDampening(bond, 0.1, 0.01);
-	}
-	else
-	{
-		addTorsion(bond, deg2rad(range), deg2rad(interval));
-	}
+	addTorsion(bond, deg2rad(range), deg2rad(interval));
 
 	for (int j = 0; j < bond->downstreamAtomCount(k); j++)
 	{
@@ -67,31 +53,32 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 		addSampled(bond->extraTorsionSample(k, j));
 	}
 
-/*
-	snake->addBond(bond);
-	addSampled(bond->importantAtoms());
-*/
+	BondPtr returnBond = BondPtr();
 
 	for (int i = 0; i < bondNum; i++)
 	{
-		if (!bond->downstreamAtomGroupCount() || !bond->downstreamAtomCount(0) ||
-			!bond->isUsingTorsion() || bond->isFixed() || !bond->isNotJustForHydrogens())
+		if (!bond->downstreamAtomGroupCount() || !bond->downstreamAtomCount(k) ||
+			!bond->isRefinable())
 		{
+			/* No hope! Give up! */
 			break;
 		}
 
 		int trial = 0;
+
 		AtomPtr nextAtom = bond->downstreamAtom(k, trial);
 		int totalAtoms = bond->downstreamAtomCount(k);
 
 		BondPtr nextBond = std::static_pointer_cast<Bond>(nextAtom->getModel());
 
-		while (nextAtom &&
-			   (!nextBond->isNotJustForHydrogens() || nextBond->isFixed() ||
-				!nextBond->isUsingTorsion()))
+		/* In case the downstream atom has no future, get whatever
+		 downstream atom has a refinable future.
+		 Prioritise 0th bond. */
+		while (nextAtom && !nextBond->isRefinable())
 		{
 			trial++;
 
+			/* No more, give up */
 			if (trial >= totalAtoms)
 			{
 				break;
@@ -101,39 +88,28 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 			nextBond = std::static_pointer_cast<Bond>(nextAtom->getModel());
 		}
 
-		if (nextAtom)
+		/* Now if we have a better bond, go forth */
+		if (nextAtom && nextBond->isRefinable())
 		{
-			if (nextBond->isUsingTorsion() && !nextBond->isFixed()
-				&& nextBond->isNotJustForHydrogens())
+			if (!returnBond)
 			{
+				returnBond = nextBond;
+			}
 
-				if (!addDampen)
-				{
-					addTorsion(nextBond, deg2rad(range), deg2rad(interval));
-				}
-				else
-				{
-					addTorsionBlur(nextBond, 0.1, 0.01);
-					addDampening(nextBond, 0.1, 0.01);
-				}
+			addTorsion(nextBond, deg2rad(range), deg2rad(interval));
 
-				for (int j = 0; j < nextBond->downstreamAtomCount(0); j++)
-				{
-					addSampled(nextBond->downstreamAtom(0, j));
-				}
+			for (int j = 0; j < nextBond->downstreamAtomCount(k); j++)
+			{
+				addSampled(nextBond->downstreamAtom(k, j));
+			}
 
-				for (int j = 0; j < nextBond->extraTorsionSampleCount(0); j++)
-				{
-					addSampled(nextBond->extraTorsionSample(0, j));
-				}
-/*
-				addSampled(nextBond->importantAtoms());
-				snake->addBond(nextBond);
- */
+			for (int j = 0; j < nextBond->extraTorsionSampleCount(k); j++)
+			{
+				addSampled(nextBond->extraTorsionSample(k, j));
 			}
 		}
 
-		if (!nextBond)
+		if (!nextBond->isRefinable())
 		{
 			break;
 		}
@@ -141,6 +117,7 @@ void Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum, int resNum,
 		bond = nextBond;
 	}
 
+	return returnBond;
 }
 
 void Sampler::setupSnake()
@@ -465,7 +442,7 @@ void Sampler::setCrystal(CrystalPtr crystal)
 	_fft = crystal->getFFT();
 }
 
-double Sampler::sample(bool clear)
+bool Sampler::sample(bool clear)
 {
 	if (_mock)
 	{
@@ -475,7 +452,7 @@ double Sampler::sample(bool clear)
 
 	if (_scoreType == ScoreTypeModelPos)
 	{
-		_strategy->setCycles(40);
+		_strategy->setCycles(12);
 	}
 	else if (_scoreType == ScoreTypeModelRMSDZero)
 	{
@@ -488,9 +465,9 @@ double Sampler::sample(bool clear)
 		_strategy->refine();
 	}
 
-	double value = getScore();
-
 	_scoreType = ScoreTypeCorrel;
+
+	bool changed = _strategy->didChange();
 
 	if (clear)
 	{
@@ -507,7 +484,7 @@ double Sampler::sample(bool clear)
 	_unsampled.clear();
 	_joint = false;
 
-	return value;
+	return changed;
 }
 
 double Sampler::getScore()

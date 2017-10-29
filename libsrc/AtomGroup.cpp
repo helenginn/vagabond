@@ -53,7 +53,7 @@ double AtomGroup::totalElectrons()
 	return total;
 }
 
-std::string AtomGroup::getPDBContribution(PDBType pdbType)
+std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal)
 {
 	std::ostringstream stream;
 	int numConf = 0;
@@ -96,6 +96,10 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType)
 		bool samePos = (pdbType == PDBTypeSamePosition);
 		bool sameB = (pdbType == PDBTypeSameBFactor);
 		stream << atom(i)->averagePDBContribution(samePos, sameB);
+		if (crystal)
+		{
+			stream << atom(i)->anisouPDBLine(crystal);
+		}
 	}
 
 	return stream.str();
@@ -218,7 +222,113 @@ void AtomGroup::resetMagicAxes()
 	{
 		if (atom(i)->getModel()->isBond())
 		{
-			ToBondPtr(atom(i)->getModel())->calculateMagicAxis();
+			ToBondPtr(atom(i)->getModel())->calculateInitialMagicAxis();
+		}
+	}
+}
+
+AtomPtr AtomGroup::topLevelAtom()
+{
+	if (!atomCount()) return AtomPtr();
+
+	AtomPtr topAtom = atom(0);
+
+	while (true)
+	{
+		if (!topAtom->getModel()->isBond())
+		{
+			break;
+		}
+
+		BondPtr bond = ToBondPtr(topAtom->getModel());
+
+		if (!hasAtom(bond->getMajor()))
+		{
+			break;
+		}
+
+		topAtom = bond->getMajor();
+	}
+
+	return topAtom;
+}
+
+bool AtomGroup::hasAtom(AtomPtr anAtom)
+{
+	bool found = false;
+
+	if (!anAtom) return false;
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i) == anAtom)
+		{
+			found = true;
+		}
+	}
+
+	return found;
+}
+
+void AtomGroup::refine(CrystalPtr target, RefinementType rType)
+{
+	AtomPtr topAtom = topLevelAtom();
+
+	while (hasAtom(topAtom))
+	{
+		if (rType != RefinementModelRMSD)
+		{
+			break;
+		}
+
+		if (!topAtom->getModel()->isBond())
+		{
+			break;
+		}
+
+		BondPtr bond = ToBondPtr(topAtom->getModel());
+
+		int groups = bond->downstreamAtomGroupCount();
+
+		if (!groups)
+		{
+			break;
+		}
+
+		if (!bond->isRefinable())
+		{
+			break;
+		}
+
+		for (int k = 0; k < groups; k++)
+		{
+			if (shouldRefineMagicAxis(bond))
+			{
+				bond->calculateMagicAxis();
+			}
+
+			bool changed = true;
+
+			BondPtr topBond;
+			while (changed)
+			{
+				setupNelderMead();
+				topBond = setupTorsionSet(bond, k, 4, deg2rad(4), deg2rad(0.04));
+
+				setScoreType(ScoreTypeModelPos);
+
+				setSilent();
+				setJobName("model_pos_" +  bond->shortDesc());
+				changed = sample();
+			}
+
+			if (!topBond)
+			{
+				topAtom = AtomPtr();
+				continue;
+			}
+
+			topAtom = topBond->getMinor();
 		}
 	}
 }

@@ -193,7 +193,7 @@ void PDBReader::addAnisotropicBFactors(std::string line)
 
 	if (_myAbsolute)
 	{
-		_myAbsolute->setTensor(tensor);
+		_myAbsolute->setTensor(tensor, _myCrystal);
 	}
 	else
 	{
@@ -254,7 +254,7 @@ void PDBReader::getSymmetry(std::string line)
 	_myCrystal->setUnitCell(a, b, c, alpha, beta, gamma);
 	_myCrystal->setSpaceGroup(spg);
 	_myCrystal->setHKL2Real(hkl2real);
-	_myCrystal->setReal2HKL(real2hkl);
+	_myCrystal->setReal2Frac(real2hkl);
 
 	_foundCrystal = true;
 }
@@ -332,8 +332,8 @@ std::string PDBReader::writeLine(AtomPtr atom, vec3 placement, int count,
 								 double occupancy, double bFactor)
 {
 	std::ostringstream stream;
-	stream << atom->pdbLineBeginning(count);
-	stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.x;
+	stream << atom->pdbLineBeginning();
+	stream << std::fixed << std::setw(10) << std::setprecision(3) << placement.x;
 	stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.y;
 	stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.z;
 	stream << std::fixed << std::setw(6) << std::setprecision(2) << occupancy;

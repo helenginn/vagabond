@@ -14,6 +14,7 @@
 #include <sstream>
 #include "vec3.h"
 #include <math.h>
+#include <vector>
 
 struct mat3x3 make_mat3x3()
 {
@@ -365,4 +366,63 @@ mat3x3 mat3x3_from_2d_array(double **values)
 	}
 
 	return new_mat;
+}
+
+void mat3x3_to_2d_array(mat3x3 mat, double ***values)
+{
+	*values = (double **)malloc(sizeof(double *) * 3);
+
+	for (int j = 0; j < 3; j++)
+	{
+		(*values)[j] = (double *)malloc(sizeof(double) * 3);
+
+		for (int i = 0; i < 3; i++)
+		{
+			(*values)[j][i] = mat.vals[j * 3 + i];
+		}
+	}
+}
+
+void free_2d_array(double **values)
+{
+	for (int i = 0; i < 3; i++)
+	{
+		free(values[i]);
+	}
+
+	free(values);
+}
+
+mat3x3 mat3x3_covariance(std::vector<vec3> points)
+{
+	mat3x3 mat = make_mat3x3();
+	memset(mat.vals, 0, sizeof(double) * 9);
+
+	vec3 mean = make_vec3(0, 0, 0);
+
+	for (int i = 0; i < points.size(); i++)
+	{
+		mean = vec3_add_vec3(mean, points[i]);
+	}
+
+	vec3_mult(&mean, 1 / (double)points.size());
+
+	for (int i = 0; i < points.size(); i++)
+	{
+		points[i] = vec3_subtract_vec3(points[i], mean);
+	}
+
+	for (int j = 0; j < 3; j++)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			for (int k = 0; k < points.size(); k++)
+			{
+				double add = *(&points[k].x + i) * *(&points[k].x + j);
+				mat.vals[j * 3 + i] += add;
+			}
+		}
+	}
+
+	return mat;
 }

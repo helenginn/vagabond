@@ -12,6 +12,11 @@
 #include "Monomer.h"
 #include "Atom.h"
 
+Model::Model()
+{
+	_realSpaceTensor = make_mat3x3();
+}
+
 void Model::addToMolecule(MoleculePtr molecule)
 {
 	molecule->addModel(shared_from_this());

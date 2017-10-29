@@ -161,11 +161,6 @@ void Knotter::tieTowardsNTerminus()
 		nSpine2hydrogen->activate(_backbone);
 	}
 
-	if (isProline)
-	{
-		cAlpha2NSpine->setFixed(true);
-	}
-
 //	BondPtr cAlpha2hAlpha = BondPtr(new Bond(cAlpha, hAlpha));
 //	cAlpha2hAlpha->activate(_backbone);
 /*
@@ -259,10 +254,12 @@ void Knotter::tieTowardsCTerminus()
 		nSpine2hydrogen->activate(_backbone);
 	}
 	
-	if (isProline)
+/*
+    if (isProline)
 	{
 		nSpine2cAlpha->setFixed(true);
 	}
+ */
 
 	nSpine2cAlpha->addExtraTorsionSample(carbonylOxygen, 0);
 
@@ -523,8 +520,9 @@ void Knotter::makeArginine()
 	AtomPtr hDelta2 = _sidechain->findAtom("HD2");
 	AtomPtr hDelta3 = _sidechain->findAtom("HD3");
 	AtomPtr nEpsilon = _sidechain->findAtom("NE");
-	AtomPtr hEpsilon2 = _sidechain->findAtom("HE2");
-	AtomPtr hEpsilon3 = _sidechain->findAtom("HE3");
+	AtomPtr hEpsilon = _sidechain->findAtom("HE");
+//	AtomPtr hEpsilon2 = _sidechain->findAtom("HE2");
+//	AtomPtr hEpsilon3 = _sidechain->findAtom("HE3");
 	AtomPtr cOmega = _sidechain->findAtom("CZ");
 	AtomPtr nOmega1 = _sidechain->findAtom("NH1");
 	AtomPtr nOmega2 = _sidechain->findAtom("NH2");
@@ -558,9 +556,11 @@ void Knotter::makeArginine()
 	BondPtr cd2hd2 = BondPtr(new Bond(cDelta, hDelta2));
 	BondPtr cd2hd3 = BondPtr(new Bond(cDelta, hDelta3));
 
-	BondPtr ce2nz = BondPtr(new Bond(nEpsilon, cOmega));
-	ce2nz->setTorsionAtoms(cDelta, nOmega1);
-	ce2nz->activate(_sidechain, inherit);
+	BondPtr ne2cz = BondPtr(new Bond(nEpsilon, cOmega));
+	BondPtr ne2he = BondPtr(new Bond(nEpsilon, hEpsilon));
+	ne2cz->setTorsionAtoms(cDelta, nOmega1);
+	ne2cz->activate(_sidechain, inherit);
+	ne2he->activate(_sidechain, inherit);
 
 	BondPtr ce2nh1= BondPtr(new Bond(cOmega, nOmega1));
 	BondPtr ce2nh2 = BondPtr(new Bond(cOmega, nOmega2));
@@ -569,8 +569,8 @@ void Knotter::makeArginine()
 
 	BondPtr nz1hz11 = BondPtr(new Bond(nOmega1, hh11));
 	BondPtr nz1hz12 = BondPtr(new Bond(nOmega1, hh12));
-	BondPtr nz2hz21 = BondPtr(new Bond(nOmega1, hh21));
-	BondPtr nz2hz22 = BondPtr(new Bond(nOmega1, hh22));
+	BondPtr nz2hz21 = BondPtr(new Bond(nOmega2, hh21));
+	BondPtr nz2hz22 = BondPtr(new Bond(nOmega2, hh22));
 
 	nz1hz11->activate(_sidechain, inherit);
 	nz1hz11->activate(_sidechain, inherit);

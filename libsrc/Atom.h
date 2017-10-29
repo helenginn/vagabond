@@ -104,19 +104,6 @@ public:
 		return _initialB;
 	}
 
-	double getInitialAnisoB(int index)
-	{
-		return _aniso[index];
-	}
-
-	void setInitialAnisoBs(double x, double y, double z)
-	{
-		const double bFacMult = 8 * M_PI * M_PI / 3;
-		_aniso[0] = x * bFacMult;
-		_aniso[1] = y * bFacMult;
-		_aniso[2] = z * bFacMult;
-	}
-
 	void setInitialBFactor(double b)
 	{
 		_initialB = b;
@@ -129,7 +116,7 @@ public:
 
 	void findAtomType(std::string resName);
 	void inheritParents();
-	std::string pdbLineBeginning(int i);
+	std::string pdbLineBeginning(std::string start = "ATOM  ");
 
 	AtomType getGeomType()
 	{
@@ -156,12 +143,23 @@ public:
 		_weighting = weighting;
 	}
 
+	void setEllipsoidLongestAxis(vec3 axis)
+	{
+		_ellipsoidLongestAxis = axis;
+	}
+
+	vec3 getEllipsoidLongestAxis()
+	{
+		return _ellipsoidLongestAxis;
+	}
+
 	std::string shortDesc();
 
 	MoleculePtr getMolecule();
 	void setKeepModel();
 	std::string getPDBContribution(int ensembleNum = -1);
 	std::string averagePDBContribution(bool samePos, bool sameB);
+	std::string anisouPDBLine(CrystalPtr crystal);
 private:
 	ModelPtr _model;
 	ModelPtr _distModelOnly;
@@ -172,7 +170,7 @@ private:
 	double _initialB;
 	vec3 _pdbPosition;
 	int _atomNum;
-	double _aniso[3];
+	vec3 _ellipsoidLongestAxis;
 	double _weighting;
 
 	AtomType _geomType;

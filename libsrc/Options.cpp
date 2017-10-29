@@ -89,7 +89,7 @@ void Options::run()
 
 
 			int count = 0;
-			crystals[0]->concludeRefinement(count, data);
+			crystals[0]->concludeRefinement(count, data, crystals[0]);
 
 			RefinementType type = RefinementModelRMSD;
 
@@ -101,7 +101,7 @@ void Options::run()
 					{
 						count++;
 						molecule->refine(crystals[0], type);
-						crystals[0]->concludeRefinement(count, data);
+						crystals[0]->concludeRefinement(count, data, crystals[0]);
 					}
 
 					if (molecule->getClassName() == "Polymer" && i == 0)
@@ -109,9 +109,9 @@ void Options::run()
                         count++;
 						polymer->minimiseRotations();
 						polymer->minimiseCentroids();
-						crystals[0]->concludeRefinement(count, data);
+						crystals[0]->concludeRefinement(count, data, crystals[0]);
 					}
-
+/*
 					else if (molecule->getClassName() == "Polymer" && i == 2)
 					{
 						if (crystals[0]->totalAnchors() <= 1) continue;
@@ -119,27 +119,25 @@ void Options::run()
 						count++;
 						crystals[0]->changeAnchors(1);
 						polymer->scaleFlexibilityToBFactor(crystals[0]);
-						crystals[0]->concludeRefinement(count, data);
-					}
-					 /*
-					else if (molecule->getClassName() == "Polymer" && i == 4)
+						crystals[0]->concludeRefinement(count, data, crystals[0]);
+					}*/
+					else if (molecule->getClassName() == "Polymer" && i == 8)
 					{
 						count++;
-						polymer->scaleFlexibilityToBFactor(crystals[0]);
-//						polymer->minimiseRotations();
-//						polymer->minimiseCentroids();
-						crystals[0]->concludeRefinement(count, data);
+						polymer->minimiseRotations();
+						polymer->minimiseCentroids();
+						crystals[0]->concludeRefinement(count, data, crystals[0]);
 					}
-					else if (molecule->getClassName() == "Polymer" && i % 2 == 0)
+/*					else if (molecule->getClassName() == "Polymer" && i % 2 == 0)
 					{
 						int myAnchor = (i / 2) - 1;
 						if (myAnchor >= crystals[0]->totalAnchors()) continue;
 
 						count++;
 						crystals[0]->changeAnchors(myAnchor);
-						crystals[0]->concludeRefinement(count, data);
-                    }
- */
+						crystals[0]->concludeRefinement(count, data, crystals[0]);
+                    }*/
+
 				}
 			}
 
@@ -155,7 +153,7 @@ void Options::run()
 					molecule->refine(crystals[0], RefinementFine);
 				}
 
-				crystals[0]->concludeRefinement(count, data);
+				crystals[0]->concludeRefinement(count, data, crystals[0]);
 			}
 		}
 	}

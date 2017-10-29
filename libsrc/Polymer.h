@@ -12,13 +12,11 @@
 #include <stdio.h>
 #include "shared_ptrs.h"
 #include "Molecule.h"
-#include "Sampler.h"
 #include <vector>
 #include <map>
 
 class Polymer :
-public Molecule,
-public Sampler
+public Molecule
 {
 public:
 	Polymer()
@@ -35,7 +33,7 @@ public:
 	virtual void summary();
 	virtual void tieAtomsUp();
 	virtual void refine(CrystalPtr target, RefinementType rType);
-	virtual void makePDB(std::string filename, PDBType pdbType);
+	virtual void makePDB(std::string filename, PDBType pdbType, CrystalPtr crystal);
 	virtual void graph(std::string graphName);
 	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst);
 
