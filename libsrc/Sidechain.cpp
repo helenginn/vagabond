@@ -37,3 +37,39 @@ void Sidechain::fixBackboneTorsions(AtomPtr betaTorsion)
 	}
 }
 
+void Sidechain::setInitialDampening()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->isBackbone())
+		{
+			continue;
+		}
+
+		BondPtr bond = BondPtr();
+
+		if (atom(i)->getModel()->isBond())
+		{
+			bond = ToBondPtr(atom(i)->getModel());
+		}
+		else
+		{
+			continue;
+		}
+
+		Bond::setDampening(&*bond, -0.0);
+
+		double kick = 0.6;
+		std::string id = getMonomer()->getIdentifier();
+
+		if (id == "tyr" || id == "phe" || id == "trp")
+		{
+			kick = 0.3;
+		}
+
+		if (bond->isRefinable() && atom(i)->getAtomName() == "CB")
+		{
+			Bond::setTorsionBlur(&*bond, kick);
+		}
+	}
+}

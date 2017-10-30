@@ -24,6 +24,7 @@ public:
 private:
 	void parse();
 	void outputCrystalInfo();
+	void refinementCycle(MoleculePtr molecule, int *count);
 
 	std::vector<std::string> arguments;
 

@@ -308,18 +308,18 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 			}
 
 			bool changed = true;
+			int count = 0;
 
 			BondPtr topBond;
-			while (changed)
+			while (changed && count < 100)
 			{
 				setupNelderMead();
 				topBond = setupTorsionSet(bond, k, 4, deg2rad(4), deg2rad(0.04));
-
 				setScoreType(ScoreTypeModelPos);
-
 				setSilent();
 				setJobName("model_pos_" +  bond->shortDesc());
 				changed = sample();
+				count++;
 			}
 
 			if (!topBond)

@@ -160,6 +160,9 @@ public:
 	std::string getPDBContribution(int ensembleNum = -1);
 	std::string averagePDBContribution(bool samePos, bool sameB);
 	std::string anisouPDBLine(CrystalPtr crystal);
+
+	static double getAngle(AtomPtr atom1, AtomPtr atom2, AtomPtr atom3);
+	
 private:
 	ModelPtr _model;
 	ModelPtr _distModelOnly;

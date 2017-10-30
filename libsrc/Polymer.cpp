@@ -32,9 +32,9 @@ void Polymer::addMonomer(MonomerPtr monomer)
 		_monomers[resNum] = monomer;
 		monomer->setPolymer(shared_from_this());
 
-		if (resNum > _totalMonomers)
+		if (monomer->getResidueNum() > _totalMonomers)
 		{
-			_totalMonomers = resNum;
+			_totalMonomers = monomer->getResidueNum();
 		}
 	}
 }
@@ -109,7 +109,7 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 	int count = 0;
 
-	for (int i = _anchorNum - 1; i >= 0; i--)
+	for (int i = _anchorNum - 2; i >= 0; i--)
 	{
 		MonomerPtr monomer = getMonomer(i);
 
@@ -129,7 +129,7 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 	count = 0;
 
-	for (int i = _anchorNum - 2; i < monomerCount(); i++)
+	for (int i = _anchorNum - 1; i < monomerCount(); i++)
 	{
 		MonomerPtr monomer = getMonomer(i);
 		refineMonomer(monomer, target, rType);
@@ -736,4 +736,43 @@ void Polymer::downWeightResidues(int start, int end, double value) // inclusive
 
 	std::cout << "Set " << count << " residues in region " << start << "-"
 	<< end << " to weighting of " << 0 << std::endl;
+}
+
+bool Polymer::test()
+{
+	bool bondsOk = true;
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->getModel()->isBond())
+		{
+			bondsOk *= ToBondPtr(atom(i)->getModel())->test();
+		}
+	}
+
+	if (!bondsOk)
+	{
+		std::cout << "Bonds FAILED test for polymer " << getChainID() << std::endl;
+	}
+
+	return true;
+}
+
+void Polymer::reportParameters()
+{
+	int count = 0;
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->getModel()->isBond())
+		{
+			if (ToBondPtr(atom(i)->getModel())->isRefinable())
+			{
+				count++;
+			}
+		}
+	}
+
+	std::cout << "Chain " << getChainID() << " has " << count
+	<< " refinable bonds." << std::endl;
 }

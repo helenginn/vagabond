@@ -46,6 +46,7 @@ public:
 		return _myPolymer.lock();
 	}
 
+	void setInitialDampening();
 	void fixBackboneTorsions(AtomPtr betaTorsion);
 protected:
 	virtual bool shouldRefineMagicAxis(BondPtr bond);

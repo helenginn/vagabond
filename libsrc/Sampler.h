@@ -145,6 +145,7 @@ protected:
 	virtual bool shouldRefineMagicAxis(BondPtr bond) { return false; }
 	virtual double getScore();
 private:
+	void addAtomsForBond(BondPtr bond, int k);
 
 	std::vector<AtomPtr> _sampled;
 	std::vector<AtomPtr> _unsampled;

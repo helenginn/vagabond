@@ -15,6 +15,7 @@
 #include "vec3.h"
 #include <math.h>
 #include <vector>
+#include <iostream>
 
 struct mat3x3 make_mat3x3()
 {
@@ -136,8 +137,17 @@ mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double 
 	double cosB = cos(deg2rad(beta));
 	double cosC = cos(deg2rad(gamma));
 
-	double sinC = sin(deg2rad(gamma));
+	if (alpha + beta + gamma > 360)
+	{
+		std::cout << "Unit cell calculation problem - angles add up to "
+		<< alpha + beta + gamma << "º!" << std::endl;
+	}
 
+	double sinC = sin(deg2rad(gamma));
+/*
+ V = a * b * c * sqrt(1 - cos(alpha)^2 - cos(beta)^2 - cos(gamma)^2
+ + 2 * cos(alpha) * cos(beta) * cos(gamma))
+ */
 	double vol_bit = 1 - cosA * cosA - cosB * cosB - cosC * cosC;
 	vol_bit += 2 * cosA * cosB * cosC;
 	double volume = a * b * c * sqrt(vol_bit);

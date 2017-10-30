@@ -123,8 +123,10 @@ void PDBReader::validateResidue(AbsolutePtr atom)
 
 	int difference = atom->getResNum() - _residueNum;
 
+	bool newMolecule = (atom->getChainID() != _myChain);
+
 	/* Something crazy going on, warn user. */
-	if (difference < 0)
+	if (!newMolecule && difference < 0)
 	{
 		warn_user("Residue number going backwards in PDB. "\
 				  "Will try to cope. Will probably fail. "\

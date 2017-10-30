@@ -85,6 +85,7 @@ void DiffractionMtz::load()
 	std::vector<std::string> rFreeNames;
 	rFreeNames.push_back("RFREE");
 	rFreeNames.push_back("FREE");
+	rFreeNames.push_back("FreeR_flag");
 
 	getCol(rFreeNames, mtz, &col_rfree);
 
@@ -147,7 +148,13 @@ void DiffractionMtz::load()
 		int k = adata[col_k->source - 1];
 		int l = adata[col_l->source - 1];
 		float amplitude = adata[col_f->source - 1];
-		float flag = adata[col_rfree->source - 1];
+		float flag = 1;
+
+		if (col_rfree)
+		{
+			flag = adata[col_rfree->source - 1];
+		}
+
 		MaskType mask = (flag <= 0.1) ? MaskFree : MaskWork;
 
 		long element = fft->element(h, k, l);

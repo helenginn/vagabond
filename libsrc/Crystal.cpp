@@ -523,6 +523,7 @@ void Crystal::tiedUpScattering()
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		molecule(i)->tiedUpScattering(&tied, &total);
+		molecule(i)->reportParameters();
 	}
 
 	std::cout << std::fixed << std::setprecision(0);
@@ -532,6 +533,11 @@ void Crystal::tiedUpScattering()
 
 void Crystal::setAnchors()
 {
+	if (!_anchorResidues.size())
+	{
+		shout_at_user("You need to specify an anchor residue.");
+	}
+
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		if (molecule(i)->getClassName() == "Polymer")

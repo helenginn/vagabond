@@ -103,3 +103,11 @@ vec3 make_randomish_axis()
 
 	return vec;
 }
+
+double vec3_angle_from_three_points(vec3 &aVec, vec3 &bVec, vec3 &cVec)
+{
+	vec3 aToB = vec3_subtract_vec3(bVec, aVec);
+	vec3 aToC = vec3_subtract_vec3(bVec, cVec);
+
+	return vec3_angle_with_vec3(aToB, aToC);
+}

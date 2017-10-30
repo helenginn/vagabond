@@ -45,6 +45,11 @@ void Molecule::makePDB(std::string filename, PDBType pdbType)
 
 }
 
+void Molecule::reportParameters()
+{
+
+}
+
 void Molecule::tiedUpScattering(double *tied, double *all)
 {
 	double total = 0;

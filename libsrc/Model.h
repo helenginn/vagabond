@@ -16,10 +16,10 @@
 
 typedef struct
 {
-	mat3x3 basis;
+	mat3x3 basis;   /* Defines bond axis of previous bond */
 	vec3 start;     /* position of last minor */
 	vec3 old_start; /* position of torsion-defining atom */
-	double torsion;
+	double torsion; /* Defines torsion of next atom */
 	double occupancy;
 } BondSample;
 

@@ -61,6 +61,7 @@ public:
 	bool isRefinable();
 	void calculateMagicAxis();
 	void calculateInitialMagicAxis();
+	bool test();
 
 	AtomPtr getMajor()
 	{
@@ -385,7 +386,7 @@ private:
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();
 	/* And a given bond angle for downstream atom n */
-	void deriveBondAngle(int group, int n);
+	double deriveBondAngle(AtomPtr atom);
 
 	/* Bond direction only used when a torsion angle can't be
 	 * calculated because it's connected to an Absolute PDB.

@@ -36,6 +36,8 @@ public:
 	void resetInitialPositions();
 	void setAnchors();
 
+	virtual void reportParameters();
+
 	void setChainID(std::string chain)
 	{
 		_chainID = chain;

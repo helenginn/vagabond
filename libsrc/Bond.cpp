@@ -137,33 +137,18 @@ void Bond::deriveBondLength()
 	}
 }
 
-void Bond::deriveBondAngle(int group, int n)
+double Bond::deriveBondAngle(AtomPtr atom)
 {
-	AtomType type1 = getMajor()->getGeomType();
-	AtomType type2 = getMinor()->getGeomType();
+	double angle = 0;
+	angle = Atom::getAngle(getMajor(), getMinor(), atom);
 
-	if (downstreamAtomGroupCount() <= group)
-	{
-		return;
-	}
-
-	AtomPtr next = downstreamAtom(group, n);
-	AtomType type3 = next->getGeomType();
-
-	GeomTable table = GeomTable::getGeomTable();
-	double angle = table.getBondAngle(type1, type2, type3);
-
-	if (angle < 0 && next->getElement()->electronCount() > 1)
+	if (angle < 0 && atom->getElement()->electronCount() > 1)
 	{
 		std::cout << "Unassigned angle (" << getMajor()->getAtomName() << " to " <<
-		getMinor()->getAtomName() << " to " << next->getAtomName() << ")!" << std::endl;
+		getMinor()->getAtomName() << " to " << atom->getAtomName() << ")!" << std::endl;
 	}
 
-	if (angle > 0)
-	{
-		double ratio = tan(angle - M_PI / 2);
-		setGeomRatio(group, n, ratio);
-	}
+	return angle;
 }
 
 void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
@@ -185,13 +170,22 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 	vec3 start = getMinor()->getInitialPosition();
 	vec3 diff = vec3_subtract_vec3(pos, start);
 
+	/* Geometry ratio derived from model (bad) */
 	double angle = vec3_angle_with_vec3(_bondDirection, diff);
 	angle -= M_PI / 2;
 	double ratio = tan(angle);
+
 	double portion = -10;
+
+	if (_bondGroups[group].atoms.size() == 0)
+	{
+		/* This is the first atom */
+		portion = 0;
+	}
 
 	if (_bondGroups[group].atoms.size() > 0 && atom->getElement()->electronCount() > 1)
 	{
+		/* Calculate from data */
 		if (!_heavyAlign.expired() && _usingTorsion)
 		{
 			vec3 hPos = _heavyAlign.lock()->getInitialPosition();
@@ -214,71 +208,69 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 	newAtom.atom = atom;
 	newAtom.geomRatio = ratio;
 	newAtom.circlePortion = portion;
-	_bondGroups[group].atoms.push_back(newAtom);
+
+	/* There is an existing atom */
+	bool ok = downstreamAtomCount(group) > 0;
+
+	angle = deriveBondAngle(atom);
 
 	if (skipGeometry)
 	{
-		return;
+		ok = false;
 	}
 
-	int totalAtoms = _bondGroups[group].atoms.size();
-	int totalGroups = downstreamAtomGroupCount();
-
-	deriveBondAngle(totalGroups - 1, totalAtoms - 1);
-
-	/* Replacement for upstream */
-	AtomPtr firstAtom = downstreamAtom(group, 0);
-
-	if (firstAtom && totalAtoms > 1)
+	if (angle > 0)
 	{
-		if (atom->getElement()->electronCount() <= 1)
-		{
-			return;
-		}
+		double ratio = tan(angle - M_PI / 2);
+		newAtom.geomRatio = ratio;
+	}
 
-		if (firstAtom->getElement()->electronCount() <= 1)
-		{
-			return;
-		}
+	if (ok)
+	{
+		/* Future atoms should be defined relative to first atom. */
+		AtomPtr firstAtom = downstreamAtom(group, 0);
+
+		/* First atom exists and is not hydrogen */
+		ok *= firstAtom && (atom->getElement()->electronCount() > 1);
+	}
+
+	if (ok)
+	{
 
 		/* Geometry from minor, major, first, current atom (atom) */
 		/* Bond directions/dimensions akin to unit cell! */
 
 		AtomType central = getMinor()->getGeomType();
 		AtomType preceding = getMajor()->getGeomType();
-		AtomType firstType = downstreamAtom(group, 0)->getGeomType();
+		AtomType firstDownAtom = downstreamAtom(group, 0)->getGeomType();
 		AtomType newType = atom->getGeomType();
 
+		/* Organise angles to rotate y/z around x */
+		/* Which means that angle_a should match x axis */
 		GeomTable table = GeomTable::getGeomTable();
-		double angle_c = table.getBondAngle(preceding, central, firstType);
+		double angle_c = table.getBondAngle(preceding, central, firstDownAtom);
 		double angle_b = table.getBondAngle(preceding, central, newType);
-		double angle_a = table.getBondAngle(firstType, central, newType);
-		double length_a = table.getBondLength(central, preceding);
-		double length_b = table.getBondLength(central, firstType);
-		double length_c = table.getBondLength(central, newType);
+		double angle_a = table.getBondAngle(firstDownAtom, central, newType);
 
 		if (angle_a < 0 || angle_b < 0 || angle_c < 0)
 		{
-		//	std::cout << "Angle problem!" << std::endl;
-			return;
+			ok = false;
 		}
 
-		mat3x3 bondcell = mat3x3_from_unit_cell(length_a, length_b, length_c,
-												rad2deg(angle_a), rad2deg(angle_b),
+		mat3x3 bondcell = mat3x3_from_unit_cell(1, 1, 1, rad2deg(angle_a),
+												rad2deg(angle_b),
 												rad2deg(angle_c));
-		//mat3x3 inverse = mat3x3_inverse(bondcell);
 
-		vec3 xAxis = make_vec3(1, 0, 0);
-		vec3 newAtomAxis = make_vec3(0, 1, 0);
-		vec3 firstAtomAxis = make_vec3(0, 0, 1);
-		mat3x3_mult_vec(bondcell, &newAtomAxis);
-		mat3x3_mult_vec(bondcell, &firstAtomAxis);
-		mat3x3_mult_vec(bondcell, &xAxis);
+		vec3 xAxis = mat3x3_axis(bondcell, 0);
+		vec3 newAtomAxis = mat3x3_axis(bondcell, 1);
+		vec3 firstAtomAxis = mat3x3_axis(bondcell, 2);
 
+		/* This angle will always come out positive */
 		double increment = 0;
 		mat3x3_closest_rot_mat(firstAtomAxis, newAtomAxis, xAxis, &increment);
 		portion = increment / (2 * M_PI);
 
+		/* So we must try to maintain chirality */
 		double diff1 = fabs(portion - newAtom.circlePortion);
 		double diff2 = fabs(-portion - newAtom.circlePortion);
 
@@ -290,6 +282,7 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 			portion *= -1;
 		}
 
+		/* Take out unnecessary >180º circle turns */
 		if ((portion - newAtom.circlePortion) > 0.5)
 		{
 			portion -= 1;
@@ -298,14 +291,14 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 		{
 			portion += 1;
 		}
-/*
-		std::cout << shortDesc() << " first atom " << firstAtom->getAtomName()
-		<< " second atom " << atom->getAtomName() << std::endl;
-		
-		std::cout << " Replacing with portion " << portion << " compared to " << newAtom.circlePortion << std::endl;
-*/
+
+		if (portion == portion && ok)
+		{
+			newAtom.circlePortion = portion;
+		}
 	}
 
+	_bondGroups[group].atoms.push_back(newAtom);
 }
 
 void Bond::setMinor(AtomPtr newMinor)
@@ -777,8 +770,11 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		/* This will only really apply for a kicked bond */
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;
 		addBlur *= yValue;
-		addBlur *= -_dampening;
-		if (_dampening > 0) addBlur = 0;
+
+		if (isFixed())
+		{
+			undoBlur = 0; addBlur = 0;
+		}
 
 		BondSample simple;
 		simple.torsion = myTorsion + undoBlur + addBlur;
@@ -811,7 +807,6 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 	}
 
 	bool staticAtom = (style == BondSampleStatic);
-	bool monteCarlo = (style == BondSampleMonteCarlo);
 
 	if (!_changedSamples && style == BondSampleThorough)
 	{
@@ -915,13 +910,13 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 		circlePortion = prevBond->getCirclePortion(myGroup, torsionNumber);
 	}
 
-	if (circlePortion > -9)
+	if (circlePortion < -9) /* Likely a hydrogen */
 	{
-		circleAdd += deg2rad(360) * circlePortion;
+		circleAdd += deg2rad(360) * torsionNumber / totalAtoms;
 	}
 	else
 	{
-		circleAdd += deg2rad(360) * torsionNumber / totalAtoms;
+		circleAdd += deg2rad(360) * circlePortion;
 	}
 
 	double myTorsion = _bondGroups[_activeGroup].torsionAngle;
@@ -1436,4 +1431,65 @@ double Bond::getFlexibilityPotential()
 bool Bond::isRefinable()
 {
 	return isNotJustForHydrogens() && !isFixed() && isUsingTorsion();
+}
+
+bool Bond::test()
+{
+	bool ok = true;
+
+	/* Test of geometry for multiple downstream atoms */
+	for (int i = 0; i < downstreamAtomGroupCount(); i++)
+	{
+		for (int j = -1; j < downstreamAtomCount(i); j++)
+		{
+			AtomPtr atom1 = getMajor();
+			if (j >= 0)
+			{
+				atom1 = downstreamAtom(i, j);
+			}
+
+			for (int k = 0; k < downstreamAtomCount(i); k++)
+			{
+				AtomPtr atom3 = downstreamAtom(i, (k + 1) % downstreamAtomCount(i));
+
+				double angle = Atom::getAngle(atom1, getMinor(), atom3);
+
+				if (angle < 0)
+				{
+					/* Has no geometric entry */
+					continue;
+				}
+
+				vec3 pos1 = atom1->getModel()->getStaticPosition();
+				vec3 pos2 = getMinor()->getModel()->getStaticPosition();
+				vec3 pos3 = atom3->getModel()->getStaticPosition();
+
+				double realAngle = vec3_angle_from_three_points(pos1, pos2, pos3);
+
+				if (angle > deg2rad(90))
+				{
+					angle -= deg2rad(90);
+				}
+
+				if (realAngle > deg2rad(90))
+				{
+					realAngle -= deg2rad(90);
+				}
+
+				double diff = fabs(realAngle - angle);
+
+				if (diff > 1e-6)
+				{
+					std::cout << shortDesc() << " angle "
+					<< atom1->getAtomName() << "-" << getMinor()->getAtomName() << "-"
+					<< atom3->getAtomName() << "\t"
+					<< rad2deg(realAngle) << "\t" << rad2deg(diff) << std::endl;
+				}
+
+				ok *= (diff < 1e-6);
+			}
+		}
+	}
+
+	return ok;
 }

@@ -65,6 +65,7 @@ double vec3_dot_vec3(vec3 &aVec, vec3 &bVec);
 double vec3_angle_with_vec3(vec3 &aVec, vec3 &bVec);
 double vec3_cosine_with_vec3(vec3 &aVec, vec3 &bVec);
 vec3 vec3_cross_vec3(vec3 &aVec, vec3 &bVec);
+double vec3_angle_from_three_points(vec3 &aVec, vec3 &bVec, vec3 &cVec);
 
 std::string vec3_desc(vec3 vec);
 

@@ -29,6 +29,43 @@ Sampler::Sampler()
 	_overallFlex = 0.025;
 }
 
+void Sampler::addAtomsForBond(BondPtr firstBond, int k)
+{
+	std::vector<BondPtr> extraTorsionBonds;
+	extraTorsionBonds.push_back(firstBond);
+
+	for (int i = 0; i < extraTorsionBonds.size(); i++)
+	{
+		BondPtr bond = extraTorsionBonds[i];
+
+		for (int j = 0; j < bond->downstreamAtomCount(k); j++)
+		{
+			AtomPtr downAtom = bond->downstreamAtom(k, j);
+			addSampled(downAtom);
+
+			if (downAtom->getModel()->isBond())
+			{
+				BondPtr downBond = ToBondPtr(downAtom->getModel());
+/*
+				if (downBond->isFixed())
+				{
+					extraTorsionBonds.push_back(downBond);
+				}
+
+				for (int l = 0; l < downBond->extraTorsionSampleCount(k); l++)
+				{
+					addSampled(downBond->extraTorsionSample(k, l));
+				}
+ */
+			}
+		}
+
+		for (int j = 0; j < bond->extraTorsionSampleCount(k); j++)
+		{
+			addSampled(bond->extraTorsionSample(k, j));
+		}
+	}
+}
 
 BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 								 double range, double interval, bool addDampen)
@@ -43,15 +80,7 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 
 	addTorsion(bond, deg2rad(range), deg2rad(interval));
 
-	for (int j = 0; j < bond->downstreamAtomCount(k); j++)
-	{
-		addSampled(bond->downstreamAtom(k, j));
-	}
-
-	for (int j = 0; j < bond->extraTorsionSampleCount(k); j++)
-	{
-		addSampled(bond->extraTorsionSample(k, j));
-	}
+	addAtomsForBond(bond, k);
 
 	BondPtr returnBond = BondPtr();
 
@@ -97,16 +126,7 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 			}
 
 			addTorsion(nextBond, deg2rad(range), deg2rad(interval));
-
-			for (int j = 0; j < nextBond->downstreamAtomCount(k); j++)
-			{
-				addSampled(nextBond->downstreamAtom(k, j));
-			}
-
-			for (int j = 0; j < nextBond->extraTorsionSampleCount(k); j++)
-			{
-				addSampled(nextBond->extraTorsionSample(k, j));
-			}
+			addAtomsForBond(nextBond, k);
 		}
 
 		if (!nextBond->isRefinable())
@@ -143,7 +163,7 @@ void Sampler::setupNelderMead()
 
 void Sampler::addOverallKickAndDampen(PolymerPtr polymer)
 {
-	_strategy->addParameter(&*polymer, Polymer::getBackboneDampening, Polymer::setBackboneDampening, 0.05, 0.02, "dampen");
+//	_strategy->addParameter(&*polymer, Polymer::getBackboneDampening, Polymer::setBackboneDampening, 0.05, 0.02, "dampen");
 }
 
 void Sampler::addSidechainDampen(PolymerPtr polymer)
@@ -452,13 +472,21 @@ bool Sampler::sample(bool clear)
 
 	if (_scoreType == ScoreTypeModelPos)
 	{
-		_strategy->setCycles(12);
+		_strategy->setCycles(10);
 	}
 	else if (_scoreType == ScoreTypeModelRMSDZero)
 	{
 		_strategy->setCycles(10);
 	}
+/*
+	std::cout << "Sampling ";
 
+	for (int i = 0; i < sampleSize(); i++)
+	{
+		std::cout << _sampled[i]->shortDesc() << ", ";
+	}
+	std::cout << std::endl;
+*/
 	if (sampleSize())
 	{
 		_strategy->setJobName(_jobName);
@@ -539,6 +567,8 @@ double Sampler::getScore()
 		for (int i = 0; i < sampleSize(); i++)
 		{
 			double oneScore = _sampled[i]->posDisplacement();
+			std::string name = _sampled[i]->getAtomName();
+
 			score += oneScore;
 			count++;
 		}

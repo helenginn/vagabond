@@ -53,8 +53,10 @@ public:
 	void scaleSidechainsToBFactor();
 	void minimiseCentroids();
 	void minimiseRotations();
+	virtual void reportParameters();
 	void downWeightResidues(int start, int end, double value);
 
+	bool test();
 	ModelPtr getAnchorModel();
 	void changeAnchor(int num);
 	void setAnchor(int num)

@@ -63,21 +63,11 @@ void Options::run()
 	{
 		if (crystals.size() == 1)
 		{
-			double propFo = 4;
-			double propFc = 3.2;
-
-			/* sandbox */
 			DiffractionPtr data = diffractions[0];
 
-			MoleculePtr molecule = crystals[0]->molecule("A");
-			PolymerPtr polymer = ToPolymerPtr(molecule);
-/*
-			polymer->downWeightResidues(856, 861, 0);
-			polymer->downWeightResidues(883, 890, 0);
-			polymer->downWeightResidues(1009, 1015, 0);
-*/
+			/* sandbox */
 			crystals[0]->writeCalcMillersToFile(data, "pre");
-			crystals[0]->getDataInformation(data, propFo, propFc);
+			crystals[0]->getDataInformation(data, 3, 2);
 
 			if (_tie)
 			{
@@ -87,73 +77,21 @@ void Options::run()
 
 			crystals[0]->tiedUpScattering();
 
-
 			int count = 0;
 			crystals[0]->concludeRefinement(count, data, crystals[0]);
-
-			RefinementType type = RefinementModelRMSD;
 
 			if (_numCycles > 0)
 			{
 				for (int i = 0; i < 25; i++)
 				{
-					if (true)
+					for (int j = 0; j < crystals[0]->moleculeCount(); j++)
 					{
-						count++;
-						molecule->refine(crystals[0], type);
-						crystals[0]->concludeRefinement(count, data, crystals[0]);
+						MoleculePtr molecule = crystals[0]->molecule(j);
+						refinementCycle(molecule, &count);
 					}
 
-					if (molecule->getClassName() == "Polymer" && i == 0)
-					{
-                        count++;
-						polymer->minimiseRotations();
-						polymer->minimiseCentroids();
-						crystals[0]->concludeRefinement(count, data, crystals[0]);
-					}
-/*
-					else if (molecule->getClassName() == "Polymer" && i == 2)
-					{
-						if (crystals[0]->totalAnchors() <= 1) continue;
-
-						count++;
-						crystals[0]->changeAnchors(1);
-						polymer->scaleFlexibilityToBFactor(crystals[0]);
-						crystals[0]->concludeRefinement(count, data, crystals[0]);
-					}*/
-					else if (molecule->getClassName() == "Polymer" && i == 8)
-					{
-						count++;
-						polymer->minimiseRotations();
-						polymer->minimiseCentroids();
-						crystals[0]->concludeRefinement(count, data, crystals[0]);
-					}
-/*					else if (molecule->getClassName() == "Polymer" && i % 2 == 0)
-					{
-						int myAnchor = (i / 2) - 1;
-						if (myAnchor >= crystals[0]->totalAnchors()) continue;
-
-						count++;
-						crystals[0]->changeAnchors(myAnchor);
-						crystals[0]->concludeRefinement(count, data, crystals[0]);
-                    }*/
-
+					crystals[0]->concludeRefinement(count, data, crystals[0]);
 				}
-			}
-
-			for (int i = 0; i < _numCycles; i++)
-			{
-				count++;
-				if (i >= 10)
-				{
-					molecule->refine(crystals[0], RefinementFineBlur);
-				}
-				else
-				{
-					molecule->refine(crystals[0], RefinementFine);
-				}
-
-				crystals[0]->concludeRefinement(count, data, crystals[0]);
 			}
 		}
 	}
@@ -330,3 +268,47 @@ void Options::outputCrystalInfo()
 	}
 }
 
+void Options::refinementCycle(MoleculePtr molecule, int *count)
+{
+	RefinementType type = RefinementModelRMSD;
+	DiffractionPtr data = diffractions[0];
+
+	if (molecule->getClassName() == "Polymer")
+	{
+		PolymerPtr polymer = ToPolymerPtr(molecule);
+		polymer->test();
+
+		if (true)
+		{
+			(*count)++;
+			molecule->refine(crystals[0], type);
+		}
+
+		if (molecule->getClassName() == "Polymer" && (*count == 1))
+		{
+			(*count)++;
+			polymer->minimiseRotations();
+			polymer->minimiseCentroids();
+		}
+	}
+
+	/*
+	 else if (molecule->getClassName() == "Polymer" && i == 2)
+	 {
+	 if (crystals[0]->totalAnchors() <= 1) continue;
+
+	 count++;
+	 crystals[0]->changeAnchors(1);
+	 polymer->scaleFlexibilityToBFactor(crystals[0]);
+	 crystals[0]->concludeRefinement(count, data, crystals[0]);
+	 }*/
+	/*					else if (molecule->getClassName() == "Polymer" && i % 2 == 0)
+	 {
+	 int myAnchor = (i / 2) - 1;
+	 if (myAnchor >= crystals[0]->totalAnchors()) continue;
+
+	 count++;
+	 crystals[0]->changeAnchors(myAnchor);
+	 crystals[0]->concludeRefinement(count, data, crystals[0]);
+	 }*/
+}

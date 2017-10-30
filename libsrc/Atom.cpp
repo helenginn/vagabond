@@ -349,3 +349,15 @@ MoleculePtr Atom::getMolecule()
 
 	return MoleculePtr();
 }
+
+double Atom::getAngle(AtomPtr atom1, AtomPtr atom2, AtomPtr atom3)
+{
+	AtomType type1 = atom1->getGeomType();
+	AtomType type2 = atom2->getGeomType();
+	AtomType type3 = atom3->getGeomType();
+
+	GeomTable table = GeomTable::getGeomTable();
+	double angle = table.getBondAngle(type1, type2, type3);
+
+	return angle;
+}
