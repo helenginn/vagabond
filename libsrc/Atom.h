@@ -78,6 +78,26 @@ public:
 	void addToMap(FFTPtr fft, mat3x3 unit_cell,
 				  vec3 offset = make_vec3(0, 0, 0), bool useNew = false);
 
+	void setOriginalOccupancy(double occ)
+	{
+		_origOccupancy = occ;
+	}
+
+	double getOriginalOccupancy()
+	{
+		return _origOccupancy;
+	}
+
+	void setAlternativeConformer(std::string conf)
+	{
+		_conformer = conf;
+	}
+
+	std::string getAlternativeConformer()
+	{
+		return _conformer;
+	}
+
 	void setInitialPosition(vec3 pos)
 	{
 
@@ -173,8 +193,10 @@ private:
 	double _initialB;
 	vec3 _pdbPosition;
 	int _atomNum;
+	double _origOccupancy;
 	vec3 _ellipsoidLongestAxis;
 	double _weighting;
+	std::string _conformer;
 
 	AtomType _geomType;
 };

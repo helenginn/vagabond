@@ -17,22 +17,6 @@ int main(int argc, const char * argv[])
 {
 	/* Options are parsed and will generate the objects needed */
 
-	std::cout << "   _______                                _______\n";
-	std::cout << " |        ---__________________________---       |\n";
-	std::cout << "  \\ o          o   o   o    o   o   o         o /\n";
-	std::cout << "    \\ o                                     o /\n";
-	std::cout << "      \\ o    \\______           ______/    o /\n";
-	std::cout << "        \\ o   \\_____/         \\_____/   o /\n";
-	std::cout << "          \\ o           ___           o /\n";
-	std::cout << "            \\ o        /   \\        o /\n";
-	std::cout << "              -_______-     -_______-\n";
-	std::cout << "             Vagabond at your service.\n" << std::endl;
-
-
-
-
-
-
 	Options options(argc, argv);
 	options.run();
 

@@ -18,6 +18,7 @@
 #include "maths.h"
 #include "Crystal.h"
 #include "Anisotropicator.h"
+#include <iomanip>
 
 Absolute::Absolute()
 {
@@ -50,10 +51,12 @@ void Absolute::makeAtom()
 	myAtom->setInitialBFactor(_bFactor);
 	myAtom->setPDBPosition(_position);
 	myAtom->setAtomNum(_atomNum);
+	myAtom->setAlternativeConformer(_conformer);
 	ElementPtr element = Element::getElement(_element);
 	myAtom->setElement(element);
 	myAtom->setAtomName(_atomName);
 	myAtom->findAtomType(_resName);
+	myAtom->setOriginalOccupancy(_occupancy);
 
 	_atom = myAtom;
 }
@@ -132,6 +135,28 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 	double total = 2;
 	double step = (meanSqDisp * 1.5) / total; // cover four st.dev.s
 	double occTotal = 0;
+
+	int samples = 60;
+	int rnd = 1;
+
+	std::vector<vec3> points;
+	double offset = 2. / (double)samples;
+	double increment = M_PI * (3.0 - sqrt(5));
+
+	for (int i = 0; i < samples; i++)
+	{
+		double y = (((double)i * offset) - 1) + (offset / 2);
+		double r = sqrt(1 - y * y);
+		r *= meanSqDisp;
+
+		double phi = (double)((i + rnd) % samples) * increment;
+
+		double x = cos(phi) * r;
+		double z = sin(phi) * r;
+		y *= r;
+
+		points.push_back(make_vec3(x, y, z));
+	}
 
 	for (int i = -total; i <= total; i++)
 	{

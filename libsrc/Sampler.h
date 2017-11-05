@@ -110,6 +110,7 @@ public:
 	void setSilent(bool silent = true)
 	{
 		_strategy->setSilent(silent);
+		_silent = silent;
 	}
 
 	int sampleSize()
@@ -152,6 +153,7 @@ private:
 	std::vector<BondPtr> _bonds;
 	bool _mock;
 	bool _joint;
+	bool _silent;
 	double _overallFlex;
 
 	std::string _jobName;

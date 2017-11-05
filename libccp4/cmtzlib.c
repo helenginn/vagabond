@@ -75,7 +75,7 @@ MTZ *MtzGetUserCellTolerance(const char *logname, int read_refs, const double ce
 
 { MTZ *mtz;
   CCP4File *filein;
-  int istat, newproj, cset_warn=0, length;
+  int istat=0, newproj=0, cset_warn=0, length=0;
   MTZCOL *colin[MCOLUMNS], *newcol;
   char *filename;
   char crysin[MXTALS][65],projin[MXTALS][65],crystal[65],project[65];
@@ -1489,7 +1489,7 @@ int ccp4_lrrefl(const MTZ *mtz, float *resol, float adata[], int logmss[], int i
   int i,j,k;
   int ind[3],ixtal;
   unsigned int colin;
-  float *refldata;
+  float *refldata = NULL;
   double coefhkl[6];
 
   /* If we are past the last reflection, indicate this with return value. */

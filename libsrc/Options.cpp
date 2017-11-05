@@ -9,15 +9,28 @@
 #include "Options.h"
 #include <iostream>
 #include "PDBReader.h"
-#include "Crystal.h"
 #include "DiffractionMTZ.h"
 #include "Shouter.h"
 #include <iomanip>
 #include "Polymer.h"
 #include "FileReader.h"
 
+OptionsPtr Options::options;
+
 Options::Options(int argc, const char **argv)
 {
+
+	std::cout << "   _______                                _______\n";
+	std::cout << " |        ---__________________________---       |\n";
+	std::cout << "  \\ o          o   o   o    o   o   o         o /\n";
+	std::cout << "    \\ o                                     o /\n";
+	std::cout << "      \\ o    \\______           ______/    o /\n";
+	std::cout << "        \\ o   \\_____/         \\_____/   o /\n";
+	std::cout << "          \\ o           ___           o /\n";
+	std::cout << "            \\ o        /   \\        o /\n";
+	std::cout << "              -_______-     -_______-\n\n";
+	std::cout << "             Vagabond at your service.\n" << std::endl;
+
 	_numCycles = 6;
 	_tie = true;
 
@@ -77,21 +90,16 @@ void Options::run()
 
 			crystals[0]->tiedUpScattering();
 
+
+			PolymerPtr chainA = ToPolymerPtr(crystals[0]->molecule("A"));
+
 			int count = 0;
 			crystals[0]->concludeRefinement(count, data, crystals[0]);
 
 			if (_numCycles > 0)
 			{
-				for (int i = 0; i < 25; i++)
-				{
-					for (int j = 0; j < crystals[0]->moleculeCount(); j++)
-					{
-						MoleculePtr molecule = crystals[0]->molecule(j);
-						refinementCycle(molecule, &count);
-					}
-
-					crystals[0]->concludeRefinement(count, data, crystals[0]);
-				}
+				refineAll(RefinementModelPos, _numCycles, &count);
+			//	refineAll(RefinementFine, _numCycles, &count);
 			}
 		}
 	}
@@ -268,9 +276,25 @@ void Options::outputCrystalInfo()
 	}
 }
 
-void Options::refinementCycle(MoleculePtr molecule, int *count)
+void Options::refineAll(RefinementType type, int numCycles, int *count)
 {
-	RefinementType type = RefinementModelRMSD;
+	for (int i = 0; i < numCycles; i++)
+	{
+		for (int j = 0; j < crystals[0]->moleculeCount(); j++)
+		{
+			MoleculePtr molecule = crystals[0]->molecule(j);
+			refinementCycle(molecule, count, type);
+		}
+
+		(*count)++;
+		crystals[0]->concludeRefinement(*count, diffractions[0], crystals[0]);
+	}
+
+}
+
+void Options::refinementCycle(MoleculePtr molecule, int *count,
+							  RefinementType type)
+{
 	DiffractionPtr data = diffractions[0];
 
 	if (molecule->getClassName() == "Polymer")
@@ -280,15 +304,17 @@ void Options::refinementCycle(MoleculePtr molecule, int *count)
 
 		if (true)
 		{
-			(*count)++;
 			molecule->refine(crystals[0], type);
 		}
 
 		if (molecule->getClassName() == "Polymer" && (*count == 1))
 		{
-			(*count)++;
-			polymer->minimiseRotations();
-			polymer->minimiseCentroids();
+			polymer->superimpose();
+		}
+
+		if (molecule->getClassName() == "Polymer" && (*count == 2))
+		{
+	//		crystals[0]->changeAnchors(1);
 		}
 	}
 
@@ -298,7 +324,7 @@ void Options::refinementCycle(MoleculePtr molecule, int *count)
 	 if (crystals[0]->totalAnchors() <= 1) continue;
 
 	 count++;
-	 crystals[0]->changeAnchors(1);
+
 	 polymer->scaleFlexibilityToBFactor(crystals[0]);
 	 crystals[0]->concludeRefinement(count, data, crystals[0]);
 	 }*/

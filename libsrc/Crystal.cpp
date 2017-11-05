@@ -154,16 +154,6 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 
 	double dStar = 1 / _maxResolution;
 
-	mat3x3 transpose = mat3x3_transpose(_hkl2real);
-
-	double aLength = mat3x3_length(transpose, 0);
-	double bLength = mat3x3_length(transpose, 1);
-	double cLength = mat3x3_length(transpose, 2);
-
-	double aLimit = aLength * dStar;
-	double bLimit = bLength * dStar;
-	double cLimit = cLength * dStar;
-
 	/* For writing MTZ files */
 
 	int columns = 10;
@@ -306,7 +296,10 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 		{
 			for (int k = 0; k < nLimit; k++)
 			{
+				int _i = 0; int _j = 0; int _k = 0;
 				vec3 ijk = make_vec3(i, j, k);
+				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_i, &_j, &_k);
+				
 				mat3x3_mult_vec(_real2frac, &ijk);
 				double length = vec3_length(ijk);
 
@@ -315,10 +308,10 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 					continue;
 				}
 
-				double amp1 = sqrt(fftData->getIntensity(i, j, k));
+				double amp1 = sqrt(fftData->getIntensity(_i, _j, _k));
 				double amp2 = sqrt(_fft->getIntensity(i, j, k));
 
-				int isFree = fftData->getMask(i, j, k) == MaskFree;
+				int isFree = fftData->getMask(_i, _j, _k) == MaskFree;
 
 				if (amp1 != amp1 || amp2 != amp2)
 				{
@@ -393,7 +386,7 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes)
 	{
 		for (int j = -nLimit; j < nLimit; j++)
 		{
-			for (int k = 0; k < nLimit; k++)
+			for (int k = -nLimit; k < nLimit; k++)
 			{
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(_real2frac, &ijk);
@@ -424,12 +417,17 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes)
 
 void Crystal::scaleToDiffraction(DiffractionPtr data)
 {
+	if (_maxResolution <= 0)
+	{
+		_maxResolution = data->getMaxResolution();
+		std::cout << "Using the resolution from " << data->getFilename()
+		<< " of " << _maxResolution << " Å." << std::endl;
+	}
+
 	std::vector<double> bins;
 	generateResolutionBins(0, _maxResolution, 20, &bins);
 	double totalFc = totalToScale();
 
-//	std::cout << "Total Fc: " << totalFc << std::endl;
-	
 	for (int i = 0; i < bins.size() - 1; i++)
 	{
 		double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
@@ -466,7 +464,6 @@ void Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	FFTPtr fftData = data->getFFT();
 	double nLimit = std::min(fftData->nx, _fft->nx);
 	nLimit /= 2;
-//	nLimit += 1;
 	std::vector<double> set1, set2;
 
 	/* symmetry issues */
@@ -474,10 +471,13 @@ void Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	{
 		for (int j = -nLimit; j < nLimit; j++)
 		{
-			for (int k = 0; k < nLimit; k++)
+			for (int k = -nLimit; k < nLimit; k++)
 			{
-				double amp = sqrt(fftData->getIntensity(i, j, k));
-				bool isRfree = fftData->getMask(i, j, k) == MaskFree;
+				int _h, _k, _l;
+				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_h, &_k, &_l);
+
+				double amp = sqrt(fftData->getIntensity(_h, _k, _l));
+				bool isRfree = fftData->getMask(_h, _k, _l) == MaskFree;
 
 				if (amp != amp || isRfree)
 				{
@@ -533,17 +533,20 @@ void Crystal::tiedUpScattering()
 
 void Crystal::setAnchors()
 {
-	if (!_anchorResidues.size())
-	{
-		shout_at_user("You need to specify an anchor residue.");
-	}
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		if (molecule(i)->getClassName() == "Polymer")
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
-			polymer->setAnchor(_anchorResidues[0]);
+			if (!_anchorResidues.size())
+			{
+				polymer->findAnchorNearestCentroid();
+			}
+			else
+			{
+				polymer->setAnchor(_anchorResidues[0]);
+			}
 		}
 	}
 }
@@ -551,6 +554,11 @@ void Crystal::setAnchors()
 
 void Crystal::changeAnchors(int newAnchor)
 {
+	if (_anchorResidues.size() >= newAnchor)
+	{
+		return;
+	}
+
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		if (molecule(i)->getClassName() == "Polymer")
@@ -565,7 +573,7 @@ void Crystal::changeAnchors(int newAnchor)
 Crystal::Crystal()
 {
 	_firstScale = -1;
-	_maxResolution = HARD_CODED_RESOLUTION;
+	_maxResolution = 0;
 	_overallB = 0.025;
 }
 
@@ -576,11 +584,10 @@ void Crystal::applySymOps()
 		return;
 	}
 
-	std::cout << "Applying space group " << _spaceGroup->symbol_xHM << std::endl;
+	std::cout << "Applying symmetry for space group " << _spaceGroup->symbol_xHM;
+	std::cout << " (" << _spaceGroup->spg_num << ")" << std::endl;
 
-//	return;
 	_fft->applySymmetry(_spaceGroup, false);
-	_fft->applySymmetry(_spaceGroup, true);
 }
 
 void Crystal::fourierTransform(int dir)
@@ -593,30 +600,50 @@ void Crystal::fourierTransform(int dir)
 	}
 }
 
+void Crystal::makePDBs(std::string suffix)
+{
+	std::vector<std::string> prefices; std::vector<PDBType> pdbTypes;
+	prefices.push_back("e_"); pdbTypes.push_back(PDBTypeEnsemble);
+	prefices.push_back("a_"); pdbTypes.push_back(PDBTypeAverage);
+	prefices.push_back("p_"); pdbTypes.push_back(PDBTypeSamePosition);
+	prefices.push_back("b_"); pdbTypes.push_back(PDBTypeSameBFactor);
+
+	for (int i = 0; i < prefices.size(); i++)
+	{
+		std::ofstream file;
+		file.open(prefices[i] + suffix + ".pdb");
+
+		for (int j = 0; j < moleculeCount(); j++)
+		{
+			file << molecule(j)->makePDB(pdbTypes[i], shared_from_this());
+		}
+
+		file.close();
+	}
+ };
+
+
 void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data,
 								 CrystalPtr crystal)
 {
+	std::cout << "*******************************" << std::endl;
+	std::cout << "\tCycle " << cycleNum << std::endl;
+
+	std::string refineCount = "refine_" + i_to_str(cycleNum);
+	writeCalcMillersToFile(data, refineCount);
+	getDataInformation(data, 3, 2);
+	makePDBs(refineCount);
+	PolymerPtr polymer = ToPolymerPtr(molecule(0));
+
 	for (int i = 0; i < moleculeCount(); i++)
 	{
-		if (molecule(i)->getClassName() != "Polymer")
+		if (molecule(i)->getClassName() == "Polymer")
 		{
-			continue;
+			PolymerPtr polymer = ToPolymerPtr(molecule(i));
+			polymer->graph("chain_" + polymer->getChainID() +
+						   "_" + i_to_str(cycleNum));
+			polymer->closenessSummary();
 		}
-
-		std::cout << "*******************************" << std::endl;
-		std::cout << "\tCycle " << cycleNum << std::endl;
-
-		std::string refineCount = "refine_" + i_to_str(cycleNum);
-		writeCalcMillersToFile(data, refineCount);
-		getDataInformation(data, 3, 2);
-		PolymerPtr polymer = ToPolymerPtr(molecule(i));
-		polymer->makePDB(refineCount + ".pdb", PDBTypeEnsemble, crystal);
-		polymer->makePDB("b_" + refineCount + ".pdb", PDBTypeSameBFactor, crystal);
-		polymer->makePDB("a_" + refineCount + ".pdb", PDBTypeAverage, crystal);
-		polymer->makePDB("p_" + refineCount + ".pdb", PDBTypeSamePosition, crystal);
-		polymer->graph("graph_" + i_to_str(cycleNum));
-		polymer->closenessSummary();
-		polymer->differenceGraphs("diffgraph_" + i_to_str(cycleNum), shared_from_this());
 	}
 }
 

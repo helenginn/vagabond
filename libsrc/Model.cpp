@@ -53,7 +53,7 @@ std::vector<BondSample> Model::getFinalPositions()
 	return copyPos;
 }
 
-void Model::propagateChange()
+void Model::propagateChange(bool activeGroupOnly)
 {
 	
 }

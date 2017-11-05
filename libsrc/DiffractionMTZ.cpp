@@ -107,8 +107,9 @@ void DiffractionMtz::load()
 					  "label as H, K and L.");
 	}
 
-	float minRes, maxRes;
-	MtzResLimits(mtz, &minRes, &maxRes);
+	MtzResLimits(mtz, &_minRes, &_maxRes);
+	_minRes = 1.0 / sqrt(_minRes);
+	_maxRes = 1.0 / sqrt(_maxRes);
 
 	CMtz::MTZXTAL **xtals = MtzXtals(mtz);
 	float *cell = (float *)malloc(sizeof(float) * 6);

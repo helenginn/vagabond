@@ -31,6 +31,9 @@
 #define ToPolymerPtr(a) (std::static_pointer_cast<Polymer>((a)))
 #define ToMoleculePtr(a) (std::static_pointer_cast<Molecule>((a)))
 
+class Options;
+typedef std::shared_ptr<Options> OptionsPtr;
+
 class FFT;
 typedef std::shared_ptr<FFT> FFTPtr;
 

@@ -168,6 +168,7 @@ private:
 	std::vector<int> _anchorResidues;
 	double _overallB;
 	double totalToScale();
+	void makePDBs(std::string suffix);
 
 	void applySymOps();
 

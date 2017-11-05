@@ -14,6 +14,7 @@
 #include "Monomer.h"
 #include "FileReader.h"
 #include "Absolute.h"
+#include "Backbone.h"
 
 bool Sidechain::shouldRefineMagicAxis(BondPtr bond)
 {
@@ -70,6 +71,61 @@ void Sidechain::setInitialDampening()
 		if (bond->isRefinable() && atom(i)->getAtomName() == "CB")
 		{
 			Bond::setTorsionBlur(&*bond, kick);
+		}
+	}
+}
+
+void Sidechain::splitConformers()
+{
+	int count = conformerCount();
+
+	if (count <= 1) return;
+
+	if (getMonomer()->getBackbone()->findAtoms("N").size() != 1)
+	{
+		std::cout << "Not splitting whole residue conformer, "
+		<< getMonomer()->getResidueNum() << getMonomer()->getIdentifier() << std::endl;
+//		return;
+	}
+
+	AtomPtr start = findAtom("CB");
+
+	if (!start || !start->getModel()->isBond())
+	{
+		return;
+	}
+
+	BondPtr bond = ToBondPtr(start->getModel());
+
+	if (count > 2) return;
+
+	for (int i = 1; i < count; i++)
+	{
+		std::string confID = conformer(i);
+
+		bond->splitBond();
+	}
+
+	AtomList atoms = findAtoms("CB");
+
+	for (int i = 0; i < atoms.size(); i++)
+	{
+		AtomPtr atom = atoms[i].lock();
+		if (atom->getModel()->isBond())
+		{
+			BondPtr bond = ToBondPtr(atom->getModel());
+			double origOcc = atom->getOriginalOccupancy();
+			Bond::setOccupancy(&*bond, origOcc);
+		}
+	}
+
+	for (int i = 0; i < getMonomer()->atomCount(); i++)
+	{
+		AtomPtr atom = getMonomer()->atom(i);
+
+		if (atom->getModel()->isAbsolute() && atom->getAlternativeConformer().length())
+		{
+			atom->setWeighting(0);
 		}
 	}
 }

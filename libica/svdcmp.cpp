@@ -25,25 +25,25 @@
 int svdcmp(mat A, unsigned int M, unsigned int N, vect W, mat V)
 {
     /* Householder reduction to bidiagonal form. */
-    int NM;
-    scal C;
-    scal F;
+    int NM = 0;
+    scal C = 0;
+    scal F = 0;
     scal G = 0.0;
-    scal H;
-    scal S;
-    scal X;
-    scal Y;
-    scal Z;
+    scal H = 0;
+    scal S = 0;
+    scal X = 0;
+    scal Y = 0;
+    scal Z = 0;
     scal Scale = 0.0;
     scal ANorm = 0.0;
-    scal tmp;
-    int flag;
-    int i;
-    int its;
-    int j;
-    int jj;
-    int k;
-    int l;
+    scal tmp = 0;
+    int flag = 0;
+    int i = 0;
+    int its = 0;
+    int j = 0;
+    int jj = 0;
+    int k = 0;
+    int l = 0;
 	vect rv1;
 
 

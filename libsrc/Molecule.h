@@ -30,7 +30,7 @@ public:
 	virtual void tieAtomsUp() {};
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	void tiedUpScattering(double *tied, double *all);
-	virtual void makePDB(std::string filename, PDBType pdbType);
+	virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal);
 	virtual void graph(std::string graphName) {};
 	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst) {};
 	void resetInitialPositions();

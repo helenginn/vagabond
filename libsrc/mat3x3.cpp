@@ -238,6 +238,20 @@ mat3x3 mat3x3_unit_vec_rotation(vec3 axis, double radians)
 	return mat;
 }
 
+mat3x3 mat3x3_rotate(double alpha, double beta, double gamma)
+{
+	vec3 xAxis = {1, 0, 0};
+	vec3 yAxis = {0, 1, 0};
+	vec3 zAxis = {0, 0, 1};
+
+	mat3x3 xRot = mat3x3_unit_vec_rotation(xAxis, alpha);
+	mat3x3 yRot = mat3x3_unit_vec_rotation(yAxis, beta);
+	mat3x3 xyRot = mat3x3_mult_mat3x3(yRot, xRot);
+	mat3x3 zRot = mat3x3_unit_vec_rotation(zAxis, gamma);
+	mat3x3 xyzRot = mat3x3_mult_mat3x3(zRot, xyRot);
+
+	return xyzRot;
+}
 
 mat3x3 mat3x3_ortho_axes(vec3 cVec)
 {
@@ -436,3 +450,32 @@ mat3x3 mat3x3_covariance(std::vector<vec3> points)
 
 	return mat;
 }
+
+/*
+ Matrix *Matrix::frustum(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat near, GLfloat far)
+ {
+ Matrix *matrix = new Matrix();
+
+ (*matrix)[0]  = (2.0 * near) / (right - left);
+ (*matrix)[1]  = 0.0;
+ (*matrix)[2]  = 0.0;
+ (*matrix)[3] = 0.0;
+
+ (*matrix)[4]  = 0.0;
+ (*matrix)[5]  = (2.0 * near) / (top - bottom);
+ (*matrix)[6]  = 0.0;
+ (*matrix)[7] = 0.0;
+
+ (*matrix)[8]  = (right + left) / (right - left);
+ (*matrix)[9]  = (top + bottom) / (top - bottom);
+ (*matrix)[10] = -(far + near) / (far - near);
+ (*matrix)[11] = -1.0;
+
+ (*matrix)[12]  = 0.0;
+ (*matrix)[13]  = 0.0;
+ (*matrix)[14] = -(2.0 * far * near) / (far - near);
+ (*matrix)[15] = 0.0;
+
+ return matrix;
+ }
+ */

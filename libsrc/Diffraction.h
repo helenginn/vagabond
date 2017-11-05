@@ -18,6 +18,12 @@
 class Diffraction : public Dataset
 {
 public:
+	Diffraction()
+	{
+		_minRes = 0;
+		_maxRes = 0;
+	}
+
 	void setFilename(std::string filename)
 	{
 		_filename = filename;
@@ -34,9 +40,17 @@ public:
 	{
 		return fft;
 	}
+
+	double getMaxResolution()
+	{
+		return _maxRes;
+	}
 protected:
 	FFTPtr fft;
 	std::string _filename;
+
+	float _minRes;
+	float _maxRes;
 
 private:
 	/* Contains the reciprocal reflection values */

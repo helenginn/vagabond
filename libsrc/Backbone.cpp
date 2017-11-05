@@ -37,6 +37,12 @@ AtomPtr Backbone::betaCarbonTorsionAtom()
 	/* What is the major atom of the bond describing CA? */
 
 	AtomPtr ca = findAtom("CA");
+
+	if (!ca)
+	{
+		return AtomPtr();
+	}
+
 	ModelPtr model = ca->getModel();
 
 	if (model->getClassName() == "Bond")
@@ -54,6 +60,7 @@ void Backbone::setAnchor()
 	AtomPtr nitrogen = findAtom("N");
 	ModelPtr model = nitrogen->getModel();
 	BondPtr bond = ToBondPtr(model);
+	// This will become dodgy if we have multiple conformers on backbone
 	AtomPtr downstreamAtom = bond->downstreamAtom(0, 0);
 	ModelPtr nextModel = downstreamAtom->getModel();
 	BondPtr nextBond = ToBondPtr(nextModel);
@@ -78,29 +85,32 @@ void Backbone::setAnchor()
 	if (currentReversal->getClassName() == "Absolute" ||
 		currentReversal->isAnchor())
 	{
-		oldReversal->getBondGroup(0)->atoms.clear();
-
-		if (currentReversal->isAnchor())
+		for (int k = 0; k < bond->downstreamAtomGroupCount(); k++)
 		{
-			ToAnchorPtr(currentReversal)->setCallingBond(&*oldReversal);
-			BondPtr bond = ToAnchorPtr(currentReversal)->getAppropriateBond(true);
+			oldReversal->getBondGroup(k)->atoms.clear();
 
-			oldReversal->addDownstreamAtom(bond->getMajor(), 0);
+			if (currentReversal->isAnchor())
+			{
+				ToAnchorPtr(currentReversal)->setCallingBond(&*oldReversal);
+				BondPtr bond = ToAnchorPtr(currentReversal)->getAppropriateBond(true);
 
-			for (int i = bond->downstreamAtomCount(0) - 1; i > 0; i--)
-			{
-				oldReversal->addDownstreamAtom(bond->downstreamAtom(0, i), 0);
-			}
-		}
-		else
-		{
-			AbsolutePtr absolute = ToAbsolutePtr(currentReversal);
-			for (int i = 0; i < absolute->nextAtomCount(); i++)
-			{
-				AtomPtr atom = absolute->getNextAtom(i);
-				if (atom != oldReversal->getMajor())
+				oldReversal->addDownstreamAtom(bond->getMajor(), k);
+
+				for (int i = bond->downstreamAtomCount(k) - 1; i > 0; i--)
 				{
-					oldReversal->addDownstreamAtom(atom, 0);
+					oldReversal->addDownstreamAtom(bond->downstreamAtom(k, i), 0);
+				}
+			}
+			else
+			{
+				AbsolutePtr absolute = ToAbsolutePtr(currentReversal);
+				for (int i = 0; i < absolute->nextAtomCount(); i++)
+				{
+					AtomPtr atom = absolute->getNextAtom(i);
+					if (atom != oldReversal->getMajor())
+					{
+						oldReversal->addDownstreamAtom(atom, k);
+					}
 				}
 			}
 		}

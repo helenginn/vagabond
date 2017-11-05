@@ -49,6 +49,11 @@ public:
 		trim(_resName); to_lower(_resName);
 	}
 
+	void setAlternativeConformerName(std::string conformer)
+	{
+		_conformer = conformer;
+	}
+
 	int getResNum()
 	{
 		return _resNum;
@@ -174,6 +179,7 @@ private:
 	bool _hetatm;
 	bool _usingTensor;
 	mat3x3 _tensor;
+	std::string _conformer;
 	std::vector<BondSample> _bondSamples;
 
 	vec3 _position;

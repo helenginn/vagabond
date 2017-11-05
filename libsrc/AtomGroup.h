@@ -14,11 +14,13 @@
 #include <vector>
 #include "shared_ptrs.h"
 #include "Sampler.h"
+#include <map>
 
 class AtomGroup : public std::enable_shared_from_this<AtomGroup>, public Sampler
 {
 public:
 	AtomPtr findAtom(std::string atomType);
+	AtomPtr findAtom(std::string atomType, std::string confID);
 	AtomList findAtoms(std::string atomType);
 
 	void setMonomer(MonomerPtr monomer)
@@ -79,11 +81,13 @@ public:
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	void setWeighting(double value);
 	void resetMagicAxes();
+	int conformerCount();
+	std::string conformer(int i);
 protected:
 	AtomGroup();
 	void addAtomsFrom(AtomGroupPtr child);
 	void propagateChange();
-	virtual AtomPtr topLevelAtom();
+	virtual AtomList topLevelAtoms();
 	bool hasAtom(AtomPtr anAtom);
 
 	bool isTied()
@@ -97,8 +101,9 @@ private:
 	std::vector<AtomPtr> _atoms;
 
 	bool _beenTied;
-private:
-	
+
+	std::map<std::string, int> conformerMap();
+
 };
 
 #endif /* defined(__vagabond__AtomGroup__) */

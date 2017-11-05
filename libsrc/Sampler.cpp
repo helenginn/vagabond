@@ -27,6 +27,7 @@ Sampler::Sampler()
 	_scoreType = ScoreTypeCorrel;
 	_refinedMagicAxisCount = 0;
 	_overallFlex = 0.025;
+	_silent = false;
 }
 
 void Sampler::addAtomsForBond(BondPtr firstBond, int k)
@@ -46,17 +47,6 @@ void Sampler::addAtomsForBond(BondPtr firstBond, int k)
 			if (downAtom->getModel()->isBond())
 			{
 				BondPtr downBond = ToBondPtr(downAtom->getModel());
-/*
-				if (downBond->isFixed())
-				{
-					extraTorsionBonds.push_back(downBond);
-				}
-
-				for (int l = 0; l < downBond->extraTorsionSampleCount(k); l++)
-				{
-					addSampled(downBond->extraTorsionSample(k, l));
-				}
- */
 			}
 		}
 
@@ -64,6 +54,8 @@ void Sampler::addAtomsForBond(BondPtr firstBond, int k)
 		{
 			addSampled(bond->extraTorsionSample(k, j));
 		}
+
+		k = 0;
 	}
 }
 
@@ -126,7 +118,7 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 			}
 
 			addTorsion(nextBond, deg2rad(range), deg2rad(interval));
-			addAtomsForBond(nextBond, k);
+			addAtomsForBond(nextBond, 0);
 		}
 
 		if (!nextBond->isRefinable())
@@ -134,6 +126,7 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 			break;
 		}
 
+		k = 0;
 		bond = nextBond;
 	}
 
@@ -238,8 +231,6 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 		return;
 	}
 
-	int resNum = bond->getMinor()->getMonomer()->getResidueNum();
-
 //	double number = fabs(range / interval);
 	std::string num = i_to_str(_strategy->parameterCount() + 1);
 	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
@@ -260,7 +251,6 @@ void Sampler::addMagicAngle(BondPtr bond, double range, double interval)
 							range, interval,
 							"h" + bond->shortDesc());
 
-//	_strategy->setSilent(true);
 	_bonds.push_back(bond);
 }
 
@@ -474,25 +464,25 @@ bool Sampler::sample(bool clear)
 	{
 		_strategy->setCycles(10);
 	}
-	else if (_scoreType == ScoreTypeModelRMSDZero)
-	{
-		_strategy->setCycles(10);
-	}
-/*
-	std::cout << "Sampling ";
 
-	for (int i = 0; i < sampleSize(); i++)
+	if (!_silent)
 	{
-		std::cout << _sampled[i]->shortDesc() << ", ";
+		std::cout << "Sampling ";
+		
+		for (int i = 0; i < sampleSize(); i++)
+		{
+			std::cout << _sampled[i]->shortDesc() << ", ";
+		}
+		std::cout << std::endl;
 	}
-	std::cout << std::endl;
-*/
+
 	if (sampleSize())
 	{
 		_strategy->setJobName(_jobName);
 		_strategy->refine();
 	}
 
+	_silent = false;
 	_scoreType = ScoreTypeCorrel;
 
 	bool changed = _strategy->didChange();
@@ -627,7 +617,7 @@ double Sampler::getScore()
 		}
 	}
 
-	double scales = 0.33;
+	double scales = 0.5;
 	double n = (maxDistance + 1.0) / scales;
 	n = 60;
 
@@ -656,11 +646,13 @@ double Sampler::getScore()
 		double rFactor = scaled_r_factor(xs, ys, cutoff);
 		return rFactor;
 	}
-	else
+	else if (_scoreType == ScoreTypeMultiply)
 	{
 		double mult = weightedMapScore(xs, ys);
 		return -mult;
 	}
+
+	return 0;
 }
 
 std::vector<double> Sampler::getNextResult(int num)

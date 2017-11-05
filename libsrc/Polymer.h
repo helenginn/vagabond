@@ -33,7 +33,7 @@ public:
 	virtual void summary();
 	virtual void tieAtomsUp();
 	virtual void refine(CrystalPtr target, RefinementType rType);
-	virtual void makePDB(std::string filename, PDBType pdbType, CrystalPtr crystal);
+	virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal);
 	virtual void graph(std::string graphName);
 	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst);
 
@@ -51,14 +51,15 @@ public:
 
 	void scaleFlexibilityToBFactor(CrystalPtr target);
 	void scaleSidechainsToBFactor();
-	void minimiseCentroids();
-	void minimiseRotations();
+	void superimpose();
 	virtual void reportParameters();
 	void downWeightResidues(int start, int end, double value);
 
 	bool test();
 	ModelPtr getAnchorModel();
 	void changeAnchor(int num);
+	void findAnchorNearestCentroid();
+	void checkChainContinuity();
 	void setAnchor(int num)
 	{
 		_anchorNum = num;
@@ -112,6 +113,8 @@ private:
 	double _sideDampening;
 	double _sideKick;
 	double _totalMonomers;
+	void minimiseCentroids();
+	void minimiseRotations();
 
 
 };

@@ -19,7 +19,6 @@ public:
 
 	void syminfoCheck();
 private:
-	
 };
 
 #endif /* defined(__vagabond__DiffractionMTZ__) */

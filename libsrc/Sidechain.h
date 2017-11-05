@@ -48,11 +48,12 @@ public:
 
 	void setInitialDampening();
 	void fixBackboneTorsions(AtomPtr betaTorsion);
+	void splitConformers();
 protected:
 	virtual bool shouldRefineMagicAxis(BondPtr bond);
-	virtual AtomPtr topLevelAtom()
+	virtual AtomList topLevelAtoms()
 	{
-		return findAtom("CB");
+		return findAtoms("CB");
 	}
 private:
 	bool _canRefine;

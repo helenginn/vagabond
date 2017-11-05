@@ -475,10 +475,14 @@ int ccp4_parse(const char *line, CCP4PARSERARRAY *parser)
   double value;
   char *delim,*nulldelim,*comm;
   char quot[]="\"\'";
-  int  ibeg,iend,start;
+	int  ibeg = 0;
+	int iend = 0;
+	int start = 0;
 
   double intvalue,frcvalue,expvalue;
-  int    intdigits,frcdigits,expdigits;
+	int    intdigits = 0;
+	int frcdigits = 0;
+	int expdigits = 0;
 
   /* Local parser variables */
   int ntok,maxtok;

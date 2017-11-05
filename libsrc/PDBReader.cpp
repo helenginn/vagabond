@@ -21,13 +21,14 @@
 #include <sstream>
 #include <iomanip>
 #include "Element.h"
+#include <unistd.h>
 
 PDBReader::PDBReader()
 {
 	_foundCrystal = false;
 }
 
-AbsolutePtr PDBReader::makeAtom(std::string line)
+AbsolutePtr PDBReader::makeAbsolute(std::string line)
 {
 	if (line.length() < 78)
 	{
@@ -38,10 +39,11 @@ AbsolutePtr PDBReader::makeAtom(std::string line)
 	}
 
 	std::string xData, yData, zData, element, bFactor, occupancy;
-	std::string resNum, chainID, atomName, atomNum, resName;
+	std::string resNum, chainID, atomName, atomNum, resName, alternate;
 
 	atomNum = line.substr(6, 5);
 	atomName = line.substr(11, 5);
+	alternate = line.substr(16, 1);
 	resName = line.substr(17, 3);
 	chainID = line.substr(21, 1);
 	resNum = line.substr(22, 7);
@@ -65,6 +67,11 @@ AbsolutePtr PDBReader::makeAtom(std::string line)
 	_myAbsolute = abs;
 	abs->setIdentity(resNumValue, chainID, resName, atomName, atomNumValue);
 
+	if (alternate[0] != ' ')
+	{
+		abs->setAlternativeConformerName(alternate);
+	}
+
 	if (line.substr(0, 6) == "HETATM")
 	{
 		abs->setHeteroAtom(true);
@@ -73,6 +80,7 @@ AbsolutePtr PDBReader::makeAtom(std::string line)
 	return abs;
 }
 
+/* We want to check we should be appending to the correct molecule */
 void PDBReader::validateMolecule(AbsolutePtr atom)
 {
 	std::string newChain = atom->getChainID();
@@ -92,6 +100,7 @@ void PDBReader::validateMolecule(AbsolutePtr atom)
 		}
 		else
 		{
+			/* Get a new molecule ready */
 			if (atom->isHeteroAtom())
 			{
 				_myPolymer = PolymerPtr();
@@ -205,7 +214,8 @@ void PDBReader::addAnisotropicBFactors(std::string line)
 
 void PDBReader::addAtomToMolecule(std::string line)
 {
-	AbsolutePtr abs = makeAtom(line);
+	AbsolutePtr abs = makeAbsolute(line);
+	/* Makes sure we're ready to append to the correct molecule */
 	validateMolecule(abs);
 
 	if (abs->isHeteroAtom())
@@ -214,6 +224,7 @@ void PDBReader::addAtomToMolecule(std::string line)
 	}
 	else
 	{
+		/* Makes sure we're ready to append to the correct residue */
 		validateResidue(abs);
 		abs->addToMonomer(_myMonomer);
 	}
@@ -251,7 +262,7 @@ void PDBReader::getSymmetry(std::string line)
 	mat3x3 hkl2real = mat3x3_from_unit_cell(a, b, c, alpha, beta, gamma);
 	mat3x3 real2hkl = mat3x3_inverse(hkl2real);
 
-	CSym::CCP4SPG *spg = CSym::ccp4spg_load_by_spgname(spaceGroup.c_str());
+	CSym::CCP4SPG *spg = CSym::ccp4spg_load_by_ccp4_spgname(spaceGroup.c_str());
 
 	_myCrystal->setUnitCell(a, b, c, alpha, beta, gamma);
 	_myCrystal->setSpaceGroup(spg);
@@ -283,7 +294,10 @@ void PDBReader::parse()
 {
 	if (!file_exists(filename))
 	{
-		shout_at_user("Cannot open file " + filename + ".");
+		char cwd[1024];
+		getcwd(cwd, sizeof(cwd));
+		std::cout << "Working directory: " << cwd << std::endl;
+		shout_at_user("File " + filename + " does not exist.");
 	}
 
 	std::string pdbContents = get_file_contents(filename);

@@ -38,7 +38,7 @@ private:
 	int _residueNum;
 
 	void getSymmetry(std::string line);
-	AbsolutePtr makeAtom(std::string line);
+	AbsolutePtr makeAbsolute(std::string line);
 	void parseLine(std::string line);
 	void parse();
 	void validateMolecule(AbsolutePtr atom);

@@ -42,7 +42,7 @@ double LocalCC::localCorrelation(FFTPtr fft1, FFTPtr fft2)
 							}
 
 							double int1 = fft1->getIntensity(x, y, z);
-							double int2 = fft2->getIntensity(x, y, z);
+							double int2 = fft2->getIntensity(x, y, z); // data
 
 							val1s.push_back(int1);
 							val2s.push_back(int2);

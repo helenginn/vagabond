@@ -798,64 +798,61 @@ void FFT::printSlice(bool amplitude)
 
 void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool collapse)
 {
-	bool discuss = true;
+	fftwf_complex *tempData;
+	tempData = (fftwf_complex *)fftwf_malloc(nn * sizeof(FFTW_DATA_TYPE));
+	memset(tempData, 0, sizeof(FFTW_DATA_TYPE) * nn);
 
-	for (int k = -nz / 2; k < nz / 2; k++)
+	int count = 0;
+
+	for (int k = -nz / 2; k <= nz / 2; k++)
 	{
-		for (int j = -ny / 2; j < ny / 2; j++)
+		for (int j = -ny / 2; j <= ny / 2; j++)
 		{
-			for (int i = -nx / 2; i < nx / 2; i++)
+			for (int i = -nx / 2; i <= nx / 2; i++)
 			{
-				bool isSysabs = CSym::ccp4spg_is_sysabs(spaceGroup, i, j, k);
-				if (isSysabs)
-				{
-					continue;
-				}
-
-				int _h = 0;
-				int _k = 0;
-				int _l = 0;
-
-				int isym = CSym::ccp4spg_put_in_asu(spaceGroup, i, j, k, &_h, &_k, &_l);
-
+				count++;
 				long index = element(i, j, k);
-				long sym_index = element(_h, _k, _l);
-				bool isAsu = (index == sym_index);
+				double xOrig = data[index][0];
+				double yOrig = data[index][1];
+				double myPhase = getPhase(i, j, k);
 
-				if (isAsu)
+				int throw1, throw2, throw3;
+				int isym = CSym::ccp4spg_put_in_asu(spaceGroup, i, j, k,
+													&throw1, &throw2, &throw3);
+				int jsym = (isym - 1) / 2;
+				int isign = (isym % 2) ? 1 : -1;
+
+				float *trn = spaceGroup->symop[jsym].trn;
+				double deg = CSym::ccp4spg_phase_shift(i, j, k, myPhase,
+													   trn, isign);
+				double phase = deg2rad(deg);
+				double amp = sqrt(xOrig * xOrig + yOrig * yOrig);
+
+				double x = amp * cos(phase);
+				double y = amp * sin(phase);
+
+				for (int l = 1; l < spaceGroup->nsymop * 2 + 1; l++)
 				{
-					continue;
-				}
+					int _h, _k, _l;
+					CSym::ccp4spg_generate_indices(spaceGroup, l, i, j, k,
+												   &_h, &_k, &_l);
+					long sym_index = element(_h, _k, _l);
 
-				int friedel = ((isym % 2) != 0);
-
-				if (!collapse)
-				{
-					/* Don't do the other half of reciprocal space */
-					if (friedel) continue;
-
-					/* Perform phase shift */
-
-					/* Grab temps */
-					int iTmp = data[index][0];
-					int jTmp = data[index][1];
-
-					/* Add to the asymmetric unit */
-					data[sym_index][0] += iTmp;
-					data[sym_index][1] += jTmp;
-				}
-				else
-				{
-					data[index][0] = data[sym_index][0];
-					data[index][1] = data[sym_index][1];
-
-					if (friedel)
+					if (false && throw1 == 1 && throw2 == 2 && throw3 == 3)
 					{
-						data[index][1] *= -1;
+						std::cout << "(" << count << ", " << l << ") Adding " << x << ", " << y <<
+						" to " << _h << " " << _k << " " << _l <<
+						" from " << i << " " << j << " " << k << std::endl;
 					}
+
+					tempData[sym_index][0] += x;
+					tempData[sym_index][1] += y;
 				}
 			}
 		}
 	}
+
+	memcpy(data, tempData, sizeof(FFTW_DATA_TYPE) * nn);
+	free(tempData);
 }
 

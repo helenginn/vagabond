@@ -18,7 +18,7 @@
 #include "Anchor.h"
 #include "Absolute.h"
 #include "CSV.h"
-#include <fstream>
+#include <sstream>
 #include "maths.h"
 #include <float.h>
 #include "FileReader.h"
@@ -28,7 +28,7 @@ void Polymer::addMonomer(MonomerPtr monomer)
 {
 	if (monomer)
 	{
-		int resNum = monomer->getResidueNum() - 1;
+		int resNum = monomer->getResidueNum();
 		_monomers[resNum] = monomer;
 		monomer->setPolymer(shared_from_this());
 
@@ -39,16 +39,54 @@ void Polymer::addMonomer(MonomerPtr monomer)
 	}
 }
 
+void Polymer::checkChainContinuity()
+{
+	int foundFirst = -1;
+	int foundGap = -1;
+
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (foundFirst >= 0 && foundGap >= 0 && getMonomer(i))
+		{
+			// Now the monomers have started again
+
+			shout_at_user("Continuity break in chain " + getChainID()
+						  + " residues " + i_to_str(foundFirst) + "-"
+						  + i_to_str(foundGap) + "\nPlease rebuild and rerun.");
+		}
+
+		if (getMonomer(i))
+		{
+			foundFirst = i;
+		}
+
+		if (foundFirst >= 0 && !getMonomer(i))
+		{
+			foundGap = i;
+		}
+	}
+}
+
 void Polymer::tieAtomsUp()
 {
-	if (!getMonomer(_anchorNum - 1))
+	if (!getMonomer(_anchorNum) || !getMonomer(_anchorNum)->findAtom("N"))
 	{
 		shout_at_user("Anchor point specified isn't an available residue.\n"\
 					  "Please specify an existing residue as an anchor point\n"\
 					  "with option --anchor-res=");
 	}
 
-	for (int i = _anchorNum - 1; i < monomerCount(); i++)
+	checkChainContinuity();
+
+	AtomPtr n = getMonomer(_anchorNum)->findAtom("N");
+
+	ModelPtr nModel = n->getModel();
+	if (nModel->isAbsolute())
+	{
+		ToAbsolutePtr(nModel)->setBFactor(2.0);
+	}
+
+	for (int i = _anchorNum; i < monomerCount(); i++)
 	{
 		if (getMonomer(i))
 		{
@@ -56,11 +94,19 @@ void Polymer::tieAtomsUp()
 		}
 	}
 
-	for (int i = _anchorNum - 2; i >= 0; i--)
+	for (int i = _anchorNum - 1; i >= 0; i--)
 	{
 		if (getMonomer(i))
 		{
 			getMonomer(i)->tieAtomsUp();
+		}
+	}
+
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (getMonomer(i))
+		{
+			getMonomer(i)->getSidechain()->splitConformers();
 		}
 	}
 
@@ -104,12 +150,12 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 	time(&wall_start);
 
 	std::cout << std::endl;
-	std::cout << "Refining from anchor to N-terminus...";
+	std::cout << "Refining chain " << getChainID() << " from anchor to N-terminus...";
 	std::cout << std::endl << std::endl << "\t";
 
 	int count = 0;
 
-	for (int i = _anchorNum - 2; i >= 0; i--)
+	for (int i = _anchorNum - 1; i >= 0; i--)
 	{
 		MonomerPtr monomer = getMonomer(i);
 
@@ -124,12 +170,12 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 	}
 
 	std::cout << std::endl << std::endl;
-	std::cout << "Refining from anchor to C-terminus...";
+	std::cout << "Refining chain " << getChainID() << " from anchor to C-terminus...";
 	std::cout << std::endl << std::endl << "\t";
 
 	count = 0;
 
-	for (int i = _anchorNum - 1; i < monomerCount(); i++)
+	for (int i = _anchorNum; i < monomerCount(); i++)
 	{
 		MonomerPtr monomer = getMonomer(i);
 		refineMonomer(monomer, target, rType);
@@ -148,12 +194,12 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 }
 
-void Polymer::makePDB(std::string filename, PDBType pdbType, CrystalPtr crystal)
+std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal)
 {
-	std::ofstream file;
-	file.open(filename.c_str());
+	std::ostringstream stream;
+	stream << getPDBContribution(pdbType, crystal);
 
-	file << getPDBContribution(pdbType, crystal);
+	return stream.str();
 }
 
 void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
@@ -238,7 +284,12 @@ void Polymer::graph(std::string graphName)
 		AtomPtr ca = backbone->findAtom("CA");
 		ModelPtr caModel = ca->getModel();
 		AtomPtr n = backbone->findAtom("N");
-		ModelPtr nModel = n->getModel();
+		ModelPtr nModel;
+		if (n)
+		{
+			nModel = n->getModel();
+		}
+		
 		AtomPtr c = backbone->findAtom("C");
 		ModelPtr cModel = c->getModel();
 
@@ -272,23 +323,6 @@ void Polymer::graph(std::string graphName)
 		else
 		{
 			csv->addEntry(3, value, ca->getInitialBFactor(), ca->getInitialBFactor());
-		}
-
-		if (cModel->getClassName() == "Bond")
-		{
-			BondPtr cBond = std::static_pointer_cast<Bond>(cModel);
-			cDampen = Bond::getDampening(&*cBond);
-			cBlur = Bond::getTorsionBlur(&*cBond);
-
-			if (cDampen > 0) cBlur = 0;
-		}
-
-		if (nModel->getClassName() == "Bond")
-		{
-			BondPtr nBond = std::static_pointer_cast<Bond>(nModel);
-			nDampen = Bond::getDampening(&*nBond);
-			nBlur = Bond::getTorsionBlur(&*nBond);
-			if (nDampen > 0) nBlur = 0;
 		}
 
 		if (sidechain)
@@ -436,17 +470,85 @@ void Polymer::setBackboneDampening(void *object, double value)
 	}
 }
 
+void Polymer::findAnchorNearestCentroid()
+{
+	vec3 sum = make_vec3(0, 0, 0);
+	double count = 0;
+
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (!getMonomer(i))
+		{
+			continue;
+		}
+
+		AtomPtr n = getMonomer(i)->findAtom("N");
+
+		if (!n)
+		{
+			continue;
+		}
+
+		n->getModel()->getFinalPositions();
+		vec3 absN = n->getModel()->getAbsolutePosition();
+
+		if (!n) continue;
+
+		count++;
+		sum = vec3_add_vec3(sum, absN);
+	}
+
+	vec3_mult(&sum, 1 / count);
+	int anchorRes = -1;
+	double lowestLength = FLT_MAX;
+
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (!getMonomer(i))
+		{
+			continue;
+		}
+
+		AtomPtr n = getMonomer(i)->findAtom("N");
+
+		if (!n) continue;
+		
+		vec3 absCa = n->getModel()->getAbsolutePosition();
+
+		vec3 diff = vec3_subtract_vec3(absCa, sum);
+		double length = vec3_length(diff);
+
+		if (length < lowestLength)
+		{
+			anchorRes = getMonomer(i)->getResidueNum();
+			lowestLength = length;
+		}
+	}
+
+	if (anchorRes < 0)
+	{
+		shout_at_user("You appear to have no C-alpha atoms in your structure.");
+	}
+	else
+	{
+		std::cout << "Anchoring at residue " << anchorRes << ", chain "
+		<< getChainID() << std::endl;
+	}
+
+	setAnchor(anchorRes);
+}
+
 void Polymer::changeAnchor(int num)
 {
 	resetInitialPositions();
 
-	int oldAnchor = _anchorNum;
-
-	MonomerPtr newMono = getMonomer(num - 1);
+	MonomerPtr newMono = getMonomer(num);
 
 	if (!newMono)
 	{
-		shout_at_helen("Monomer " + i_to_str(num - 1) + " doesn't exist.");
+		shout_at_helen("Attempt to anchor residue " + i_to_str(num - 1) +
+					   " failed because it doesn't exist on Chain "
+					   + getChainID() + ".");
 		return;
 	}
 
@@ -455,7 +557,7 @@ void Polymer::changeAnchor(int num)
 	if (!newAnchorAtom)
 	{
 		shout_at_helen("Anchor position CA does not exist\n"\
-					   "for residue " + i_to_str(num - 1));
+					   "for residue " + i_to_str(num));
 	}
 
 	newMono->getBackbone()->setAnchor();
@@ -471,7 +573,7 @@ void Polymer::changeAnchor(int num)
 		AtomPtr betaCarbon = bone->betaCarbonTorsionAtom();
 		getMonomer(i)->getSidechain()->fixBackboneTorsions(betaCarbon);
 		getMonomer(i)->resetMagicAxes();
-}
+	}
 
 	_anchorNum = num;
 }
@@ -479,7 +581,7 @@ void Polymer::changeAnchor(int num)
 void Polymer::setInitialKick(void *object, double value)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
-	int monomerNum = polymer->_anchorNum - 1;
+	int monomerNum = polymer->_anchorNum;
 	polymer->getMonomer(monomerNum)->setKick(value, 0);
 	polymer->getMonomer(monomerNum - 1)->setKick(value, 1);
 }
@@ -509,7 +611,7 @@ void Polymer::setSideKick(void *object, double value)
 double Polymer::getInitialKick(void *object)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
-	int monomerNum = polymer->_anchorNum - 1;
+	int monomerNum = polymer->_anchorNum;
 	return polymer->getMonomer(monomerNum)->getKick();
 }
 
@@ -534,10 +636,16 @@ void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 
 ModelPtr Polymer::getAnchorModel()
 {
-	MonomerPtr anchoredRes = getMonomer(getAnchor() - 1);
+	MonomerPtr anchoredRes = getMonomer(getAnchor());
 	ModelPtr model = anchoredRes->findAtom("N")->getModel();
 
 	return model;
+}
+
+void Polymer::superimpose()
+{
+	minimiseRotations();
+	minimiseCentroids();
 }
 
 void Polymer::minimiseCentroids()
@@ -546,6 +654,10 @@ void Polymer::minimiseCentroids()
 
 	std::vector<vec3> addedVecs;
 	int count = 0;
+
+	ModelPtr anchor = getAnchorModel();
+	getAnchorModel()->getFinalPositions();
+	vec3 oldPos = getAnchorModel()->getAbsolutePosition();
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -602,9 +714,21 @@ void Polymer::minimiseCentroids()
 		_centroidOffsets.push_back(offset);
 	}
 
-	std::cout << "Calculated corrections for " << _centroidOffsets.size() << " structures." << std::endl;
-
 	propagateChange();
+
+	anchor->getFinalPositions();
+	vec3 newPos = anchor->getAbsolutePosition();
+
+	vec3 backToOld = vec3_subtract_vec3(oldPos, newPos);
+	std::cout << "Additional correction: " << vec3_desc(backToOld) << std::endl;
+
+	for (int i = 0; i < _centroidOffsets.size(); i++)
+	{
+		vec3 offset = vec3_add_vec3(_centroidOffsets[i], backToOld);
+		_centroidOffsets[i] = offset;
+	}
+
+	std::cout << "Calculated corrections for " << _centroidOffsets.size() << " structures." << std::endl;
 }
 
 void Polymer::minimiseRotations()
@@ -717,7 +841,7 @@ void Polymer::closenessSummary()
 	posSum /= count;
 	bSum /= count;
 
-	std::cout << "Across all atoms:\n";
+	std::cout << "Across all Chain " << getChainID() << " atoms:\n";
 	std::cout << "\tB factor (Å^2): " << bSum << std::endl;
 	std::cout << "\tPositional displacement from PDB (Å): " << posSum << std::endl;
 }
@@ -734,8 +858,8 @@ void Polymer::downWeightResidues(int start, int end, double value) // inclusive
 		}
 	}
 
-	std::cout << "Set " << count << " residues in region " << start << "-"
-	<< end << " to weighting of " << 0 << std::endl;
+	std::cout << "Set " << count << " residues in region " << getChainID()
+	<< start << "-" << end << " to weighting of " << 0 << std::endl;
 }
 
 bool Polymer::test()

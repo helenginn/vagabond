@@ -18,6 +18,7 @@
 #include "Atom.h"
 #include "Sampler.h"
 #include "Model.h"
+#include <mutex>
 
 typedef struct
 {
@@ -33,7 +34,6 @@ typedef struct
 	double torsionAngle;
 	double torsionBlur;
 	double torsionVertBlur;
-	double occupancy;
 	vec3 magicAxis;
 	double magicAngle;
 	std::vector<BondSample> storedSamples;
@@ -106,7 +106,8 @@ public:
 	}
 
 	void setTorsionAtoms(AtomPtr heavyAlign = AtomPtr(),
-						 AtomPtr lightAlign = AtomPtr());
+						 AtomPtr lightAlign = AtomPtr(),
+						 int groupNum = 0);
 	virtual FFTPtr getDistribution(bool quick = false);
 	virtual vec3 getStaticPosition();
 
@@ -171,7 +172,7 @@ public:
 	static double getOccupancy(void *object)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		return bond->_bondGroups[bond->_activeGroup].occupancy;
+		return bond->_occupancy;
 	}
 
 	static void setOccupancy(void *object, double value);
@@ -265,8 +266,9 @@ public:
 		{
 			return;
 		}
+
 		_activeGroup = newGroup;
-		propagateChange();
+		propagateChange(true);
 	}
 
 	int getActiveGroup()
@@ -345,10 +347,17 @@ public:
 	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
 							vec3 miPos, vec3 lPos, double *newAngle = NULL);
 
-	virtual void propagateChange();
+	virtual void propagateChange(bool activeGroupOnly = false);
 	std::vector<BondSample> *getManyPositions(BondSampleStyle style);
-	
+
+	std::vector<vec3> fishPositions();
+
 	std::vector<vec3> polymerCorrectedPositions();
+
+	void useMutex()
+	{
+		_useMutex = true;
+	}
 protected:
 	Bond();
 
@@ -373,6 +382,7 @@ private:
 	bool _activated;
 	int _activeGroup;
 	double _blurTotal;
+	double _occupancy;
 
 	/* Should not be refined */
 	bool _fixed;
@@ -382,6 +392,9 @@ private:
 
 	/* Has been set as an anchor, will not respond to 'propagate change'*/
 	bool _anchored;
+
+	/* Expect interference from GUI */
+	bool _useMutex;
 
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();
@@ -399,7 +412,7 @@ private:
 											   double circleAdd,
 											   double myTorsion, double ratio);
 
-	void duplicateDownstream(BondPtr newBranch, int groupNum);
+	BondPtr duplicateDownstream(BondPtr newBranch, int groupNum);
 	bool _usingTorsion;
 
 	/* Flag to say whether recalculation should occur */
@@ -411,6 +424,10 @@ private:
 	/* What should be returned when asking for an atom's position
 	 * for drawing into a map... */
 	vec3 _absolute;
+	/* And a record of the final positions */
+	std::vector<vec3> _finalPositions;
+
+	std::mutex guiLock;
 
 	/* Molecule which can provide offsets/rotations */
 	MoleculeWkr _molecule;

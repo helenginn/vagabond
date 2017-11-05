@@ -87,7 +87,10 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   ccp4_symop *op2,*op3,opinv;
 
   /* spacegroup variables */
-  int sg_num, sg_ccp4_num, sg_nsymp, sg_num_cent;
+	int sg_num = 0;
+	int sg_ccp4_num = 0;
+	int sg_nsymp = 0;
+	int sg_num_cent = 0;
   float cent_ops[4][4];
   char sg_symbol_old[20],sg_symbol_Hall[40],sg_symbol_xHM[20],
        sg_point_group[20],sg_patt_group[40];
@@ -1810,7 +1813,8 @@ void ccp4spg_print_recip_ops(const CCP4SPG* sp)
 int range_to_limits(const char *range, float limits[2])
 {
   int i,in_value=1,neg=0,frac=0,equal=0;
-  float value1,value2;
+	float value1 = 0;
+	float value2 = 0;
   float delta=0.00001;
   char ch;
   char buf[2];

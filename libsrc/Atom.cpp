@@ -186,14 +186,17 @@ std::string Atom::pdbLineBeginning(std::string start)
 	std::ostringstream line;
 
 	char conformer[] = " ";
-//	conformer[0] += i;
+	if (getAlternativeConformer().length())
+	{
+		conformer[0] = getAlternativeConformer()[0];
+	}
 
 	line << start;
 	line << std::setfill(' ') << std::setw(5) << std::fixed << _atomNum;
 	line << std::setfill(' ') << std::setw(4) << _atomName;
 	line << " " << conformer;
 	line << std::setw(3) << residueName;
-	line << " A";
+	line << " " << getMolecule()->getChainID();
 	line << std::setfill(' ') << std::setw(4) << resNum;
 	line << "  ";
 
@@ -220,7 +223,7 @@ double Atom::posDisplacement()
 
 std::string Atom::anisouPDBLine(CrystalPtr crystal)
 {
-	if (!getMonomer())
+	if (!getMonomer() || getAlternativeConformer().length())
 	{
 		return "";
 	}

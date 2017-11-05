@@ -10,7 +10,7 @@
 #include "Shouter.h"
 #include "Absolute.h"
 #include "Sidechain.h"
-#include "BackBone.h"
+#include "Backbone.h"
 #include "Monomer.h"
 #include <iostream>
 #include "Atom.h"
@@ -36,6 +36,14 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
 	BondPtr ca2cb;
 
 	AtomPtr betaTorsion = _backbone->betaCarbonTorsionAtom();
+
+	if (!betaTorsion)
+	{
+		shout_at_user("Residue " + _backbone->getPolymer()->getChainID()
+					  + i_to_str(_backbone->getResNum()) + " is missing the backbone!\n"\
+					  "Please rebuild and rerun.");
+	}
+
 	if (betaTorsion->getAtomName() == "N")
 	{
 		// tie to C terminus so hAlpha then cBeta
@@ -81,7 +89,7 @@ void Knotter::tieTowardsNTerminus()
 //	if (resNum > 1)
 	{
 		/* to get the previous (C-terminal) backbone residue */
-		MonomerPtr monomer = polymer->getMonomer(resNum);
+		MonomerPtr monomer = polymer->getMonomer(resNum + 1);
 
 		if (monomer)
 		{
@@ -91,7 +99,7 @@ void Knotter::tieTowardsNTerminus()
 
 	if (resNum < polymer->monomerCount())
 	{
-		MonomerPtr monomer = polymer->getMonomer(resNum - 2);
+		MonomerPtr monomer = polymer->getMonomer(resNum - 1);
 
 		if (monomer)
 		{
@@ -160,7 +168,7 @@ void Knotter::tieTowardsNTerminus()
 //		cAlpha2NSpine->setFixed(true);
 	}
 
-	if (nSpine->getModel()->isBond())
+	if (nSpine && nSpine->getModel()->isBond())
 	{
 		BondPtr nSpine2hydrogen = BondPtr(new Bond(nSpine, nHydrogen));
 		nSpine2hydrogen->activate(_backbone);
@@ -195,17 +203,17 @@ void Knotter::tieTowardsCTerminus()
 
 	if (resNum > 1)
 	{
-		MonomerPtr monomer = polymer->getMonomer(resNum - 2);
+		MonomerPtr monomer = polymer->getMonomer(resNum - 1);
 
 		if (monomer)
 		{
-		prevBackbone = monomer->getBackbone(); // one before
+			prevBackbone = monomer->getBackbone(); // one before
 		}
 	}
 
 	if (resNum < polymer->monomerCount())
 	{
-		MonomerPtr monomer = polymer->getMonomer(resNum);
+		MonomerPtr monomer = polymer->getMonomer(resNum + 1);
 
 		if (monomer)
 		{
@@ -253,7 +261,7 @@ void Knotter::tieTowardsCTerminus()
 
 	nSpine2cAlpha->activate(_backbone, inherit);
 
-	if (nSpine->getModel()->isBond())
+	if (nSpine && nSpine->getModel()->isBond())
 	{
 		BondPtr nSpine2hydrogen = BondPtr(new Bond(nSpine, nHydrogen));
 		nSpine2hydrogen->activate(_backbone);
@@ -263,7 +271,7 @@ void Knotter::tieTowardsCTerminus()
 	nSpine2cAlpha->addExtraTorsionSample(carbonylOxygen, 0);
 
 	BondPtr cAlpha2Carbonyl = BondPtr(new Bond(cAlpha, carbonylCarbon));
-	if (nextBackbone)
+	if (nextBackbone && nSpine)
 	{
 		cAlpha2Carbonyl->setTorsionAtoms(nSpine, nextNSpine);
 	}
@@ -785,8 +793,8 @@ void Knotter::makeCysteine()
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
 	cb2hb3->activate(_sidechain, inherit);
 
-//	BondPtr sg2hg = BondPtr(new Bond(sGamma, hGamma));
-//	sg2hg->activate(_sidechain, inherit);
+	BondPtr sg2hg = BondPtr(new Bond(sGamma, hGamma));
+	sg2hg->activate(_sidechain, inherit);
 }
 
 void Knotter::makeValine()
@@ -973,6 +981,7 @@ void Knotter::makeTyrosine()
 
 	BondPtr ca2cb = tieBetaCarbon(cGamma);
 	ca2cb->addExtraTorsionSample(cOmega, 0);
+	ca2cb->addExtraTorsionSample(oxygen, 0);
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->setTorsionAtoms(cAlpha, cDelta1);
@@ -1053,6 +1062,7 @@ void Knotter::makePhenylalanine()
 
 
 	BondPtr ca2cb = tieBetaCarbon(cGamma);
+	if (!ca2cb) return;
 	ca2cb->addExtraTorsionSample(cOmega, 0);
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
