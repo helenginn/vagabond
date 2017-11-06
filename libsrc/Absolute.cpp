@@ -158,6 +158,22 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 		points.push_back(make_vec3(x, y, z));
 	}
 
+	for (int i = 0; i < points.size(); i++)
+	{
+		vec3 full = vec3_add_vec3(points[i], _position);
+		double occ = 1;
+		occTotal += occ;
+
+		BondSample sample;
+		sample.basis = make_mat3x3();
+		sample.occupancy = occ;
+		sample.torsion = 0;
+		sample.old_start = make_vec3(0, 0, 0);
+		sample.start = full;
+		bondSamples->push_back(sample);
+	}
+
+	/*
 	for (int i = -total; i <= total; i++)
 	{
 		double xVal = i * step;
@@ -193,6 +209,7 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 			}
 		}
 	}
+	 */
 
 	for (int i = 0; i < bondSamples->size(); i++)
 	{

@@ -63,7 +63,7 @@ void Sidechain::setInitialDampening()
 		double kick = 0.6;
 		std::string id = getMonomer()->getIdentifier();
 
-		if (id == "tyr" || id == "phe" || id == "trp")
+		if (id == "tyr" || id == "phe" || id == "trp" || id == "his")
 		{
 			kick = 0.3;
 		}
