@@ -90,19 +90,22 @@ void Options::run()
 
 			crystals[0]->tiedUpScattering();
 
-
 			PolymerPtr chainA = ToPolymerPtr(crystals[0]->molecule("A"));
+	//		chainA->downWeightResidues(10, 19, 0.0);
+	//		chainA->downWeightResidues(120, 124, 0.0);
 
 			int count = 0;
 			crystals[0]->concludeRefinement(count, data, crystals[0]);
 
 			if (_numCycles > 0)
 			{
-				refineAll(RefinementModelPos, _numCycles, &count);
-			//	refineAll(RefinementFine, _numCycles, &count);
+				refineAll(RefinementModelPos, 2, &count);
+				refineAll(RefinementFine, _numCycles, &count);
 			}
 		}
 	}
+
+	std::cout << std::endl << "**** Finished. ****" << std::endl;
 
 	std::cout << std::endl;
 }

@@ -113,6 +113,7 @@ void Crystal::realSpaceClutter()
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
+		molecule(i)->propagateChange();
 		molecule(i)->addToMap(_fft, _real2frac);
 	}
 
@@ -135,7 +136,7 @@ double Crystal::totalToScale()
 		weighted += weights;
 	}
 
-	return sqrt((double)sum / (double)weighted);
+	return (sqrt((double)sum / (double)weighted)) * 1.0;
 }
 
 void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
@@ -631,9 +632,8 @@ void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data,
 
 	std::string refineCount = "refine_" + i_to_str(cycleNum);
 	writeCalcMillersToFile(data, refineCount);
-	getDataInformation(data, 3, 2);
+	getDataInformation(data, 2, 1);
 	makePDBs(refineCount);
-	PolymerPtr polymer = ToPolymerPtr(molecule(0));
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
@@ -645,6 +645,9 @@ void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data,
 			polymer->closenessSummary();
 		}
 	}
+
+//	realSpaceClutter();
+//	_fft->printSlice();
 }
 
 void Crystal::reconfigureUnitCell()

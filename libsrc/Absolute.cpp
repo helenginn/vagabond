@@ -132,12 +132,13 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 	 * each dimension. */
 	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
 	meanSqDisp = sqrt(meanSqDisp);
-	double total = 2;
-	double step = (meanSqDisp * 1.5) / total; // cover four st.dev.s
+
 	double occTotal = 0;
 
-	int samples = 60;
+	int samples = 81;
 	int rnd = 1;
+	double total = 2;
+	double step = (meanSqDisp * 1.5) / total; // cover four st.dev.s
 
 	std::vector<vec3> points;
 	double offset = 2. / (double)samples;
@@ -173,8 +174,9 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 		bondSamples->push_back(sample);
 	}
 
-	/*
-	for (int i = -total; i <= total; i++)
+/*
+
+    for (int i = -total; i <= total; i++)
 	{
 		double xVal = i * step;
 
@@ -209,7 +211,7 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 			}
 		}
 	}
-	 */
+*/
 
 	for (int i = 0; i < bondSamples->size(); i++)
 	{

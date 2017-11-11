@@ -312,7 +312,6 @@ void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 	_bonds.push_back(bond);
 }
 
-
 void Sampler::addAbsolutePosition(AbsolutePtr abs, double range, double interval)
 {
 	if (abs->getClassName() != "Absolute")
@@ -327,6 +326,14 @@ void Sampler::addAbsolutePosition(AbsolutePtr abs, double range, double interval
 							range, interval, "pos_y");
 	_strategy->addParameter(&*abs, Absolute::getPosZ, Absolute::setPosZ,
 							range, interval, "pos_z");
+}
+
+void Sampler::addRotamer(Sidechain *side, double range, double interval)
+{
+	//	double number = fabs(range / interval);
+	_strategy->addParameter(side, Sidechain::getRotamerExponent,
+							Sidechain::setRotamerExponent,
+							range, interval, "rot_exp");
 }
 
 
@@ -448,7 +455,7 @@ void Sampler::addSampled(AtomPtr atom)
 
 void Sampler::setCrystal(CrystalPtr crystal)
 {
-	_real2hkl = crystal->getReal2Frac();
+	_real2Frac = crystal->getReal2Frac();
 	_fft = crystal->getFFT();
 }
 
@@ -617,7 +624,7 @@ double Sampler::getScore()
 		}
 	}
 
-	double scales = 0.5;
+	double scales = 1. / 4.0;
 	double n = (maxDistance + 1.0) / scales;
 	n = 60;
 
@@ -625,7 +632,7 @@ double Sampler::getScore()
 	segment->create(n + 0.5);
 	segment->setScales(scales);
 	mat3x3 basis = make_mat3x3();
-	double toReal = 1/(scales*n);
+	double toReal = 1 / (scales*n);
 	mat3x3_scale(&basis, toReal, toReal, toReal);
 
 	for (int i = 0; i < _sampled.size(); i++)
@@ -633,8 +640,30 @@ double Sampler::getScore()
 		_sampled[i]->addToMap(segment, basis, zero);
 	}
 
-	mat3x3_mult_vec(_real2hkl, &zero);
+//	segment->printSlice();
+
+	//std::cout << "Checking " << vec3_desc(zero) << std::endl;
+	mat3x3_mult_vec(_real2Frac, &zero);
+
+//	_fft->printSlice(zero.z);
+	long ele = _fft->elementFromFrac(zero.x, zero.y, zero.z);
+
 	double cutoff = FFT::score(_fft, segment, zero, &xs, &ys);
+
+	/*
+	 std::cout << "Checking " << vec3_desc(zero) << std::endl;
+	std::cout << "Value at point = " << _fft->getReal(ele) << std::endl;
+	std::cout << "HERE" << std::endl;
+
+	for (int i = 0; i < xs.size(); i++)
+	{
+		if (ys[i] < cutoff) continue;
+
+		std::cout << xs[i] << "\t" << ys[i] << std::endl;
+	}
+
+	exit(0);
+	 */
 
 	if (_scoreType == ScoreTypeCorrel)
 	{

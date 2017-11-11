@@ -220,7 +220,7 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
 			continue;
 		}
 
-		if (vec2[i] < cutoff)
+		if (vec2[i] <= cutoff)
 		{
 			continue;
 		}

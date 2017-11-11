@@ -29,6 +29,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 	std::cout << getMonomer()->getResCode() << std::flush;
 
+	if (rType == RefinementFine)
+	{
+		return;
+	}
+
 	AtomGroup::refine(target, rType);
 }
 

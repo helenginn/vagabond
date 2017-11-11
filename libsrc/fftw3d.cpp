@@ -675,7 +675,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 				if (mapScoreType == MapScoreTypeCorrel)
 				{
-					double realCryst = fftCrystal->interpolate(finalCrystalVox);
+//					double realCryst = fftCrystal->interpolate(finalCrystalVox);
+					double realCryst = fftCrystal->getReal(crystalIndex);
 					crystalVals.push_back(realCryst);
 					thingVals.push_back(atomReal);
 					orderedVals.push_back(atomReal);
@@ -726,7 +727,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	}
 
 	std::sort(orderedVals.begin(), orderedVals.end(), std::greater<double>());
-	double percentileVal = sumVals * 0.98;
+	double percentileVal = sumVals * 0.96;
 	double cumulative = 0;
 	double cutoff = 0;
 
@@ -764,7 +765,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	}
 }
 
-void FFT::printSlice(bool amplitude)
+void FFT::printSlice(double zVal)
 {
 	for (int j = 0; j < ny; j++)
 	{
@@ -772,12 +773,7 @@ void FFT::printSlice(bool amplitude)
 		for (int i = 0; i < nx; i++)
 		{
 			std::string symbol = " ";
-			double value = getReal(element(i, j, 0));
-
-			if (amplitude)
-			{
-				value = sqrt(getIntensity(i, j, 0));
-			}
+			double value = getReal(element(i, j, zVal * nz));
 
 			if (value > 0.01) symbol = ".";
 			if (value > 0.02) symbol = ":";

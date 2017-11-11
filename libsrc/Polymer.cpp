@@ -107,6 +107,8 @@ void Polymer::tieAtomsUp()
 		if (getMonomer(i))
 		{
 			getMonomer(i)->getSidechain()->splitConformers();
+			getMonomer(i)->getSidechain()->parameteriseAsRotamers();
+			getMonomer(i)->getSidechain()->setCanRefine(true);
 		}
 	}
 
@@ -763,7 +765,7 @@ void Polymer::minimiseRotations()
 		std::vector<double> weights;
 		std::vector<vec3> fixedVecs, variantVecs;
 
-		for (int j = 0; j < atomCount(); j++)
+		for (int j = 0; j < monomerCount(); j++)
 		{
 			if (!getMonomer(j))
 			{

@@ -310,13 +310,15 @@ mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis, double *best)
 	double tan_theta = - B / A;
 	double theta = atan(tan_theta);
 
+	double sinSq = tan_theta * tan_theta / (1 + tan_theta * tan_theta);
+	double cc = sqrt(1 - sinSq);
+	double s = sqrt(sinSq);
+
 	/* Now we have two possible solutions, theta or theta+pi
 	 * and we need to work out which one. This could potentially be
 	 * simplified - do we really need so many cos/sins? maybe check
 	 * the 2nd derivative instead? */
-	double cc = cos(theta);
 	double C = 1 - cc;
-	double s = sin(theta);
 	double occ = -cc;
 	double oC = 1 - occ;
 	double os = -s;
@@ -338,11 +340,14 @@ mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis, double *best)
 	if (best != NULL)
 	{
 		*best = bestAngle;
+		return make_mat3x3();
 	}
-
-	/* Don't return an identity matrix which has been rotated by
-	 * theta around "axis", but do assign it to twizzle. */
-	return mat3x3_unit_vec_rotation(axis, bestAngle);
+	else
+	{
+		/* Don't return an identity matrix which has been rotated by
+		 * theta around "axis", but do assign it to twizzle. */
+		return mat3x3_unit_vec_rotation(axis, bestAngle);
+	}
 }
 
 vec3 mat3x3_axis(mat3x3 me, int i)

@@ -246,7 +246,7 @@ void AtomGroup::propagateChange()
 	{
 		if (atom(i)->getModel()->isBond())
 		{
-			ToBondPtr(atom(i)->getModel())->propagateChange();
+			ToBondPtr(atom(i)->getModel())->propagateChange(0);
 		}
 	}
 }

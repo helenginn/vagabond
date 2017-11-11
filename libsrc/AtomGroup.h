@@ -83,10 +83,10 @@ public:
 	void resetMagicAxes();
 	int conformerCount();
 	std::string conformer(int i);
+	void propagateChange();
 protected:
 	AtomGroup();
 	void addAtomsFrom(AtomGroupPtr child);
-	void propagateChange();
 	virtual AtomList topLevelAtoms();
 	bool hasAtom(AtomPtr anAtom);
 

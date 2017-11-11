@@ -198,7 +198,7 @@ public:
 		return _inverse;
 	}
 
-	void printSlice(bool amplitude = false);
+	void printSlice(double zVal = 0);
 	void applySymmetry(CSym::CCP4SPG *spaceGroup, bool collapse);
 
     long nx,ny,nz,nn;

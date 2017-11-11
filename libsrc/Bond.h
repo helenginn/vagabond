@@ -153,7 +153,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_bondGroups[bond->_activeGroup].torsionAngle = value;
-		static_cast<Bond *>(object)->propagateChange();
+		static_cast<Bond *>(object)->propagateChange(20);
 	}
 
 	static double getMagicAngle(void *object)
@@ -268,7 +268,7 @@ public:
 		}
 
 		_activeGroup = newGroup;
-		propagateChange(true);
+		propagateChange(0);
 	}
 
 	int getActiveGroup()
@@ -279,6 +279,12 @@ public:
 	BondGroup *getBondGroup(int i)
 	{
 		return &_bondGroups[i];
+	}
+
+	void setOccupancyMult(double mult)
+	{
+		_occMult = mult;
+		propagateChange();
 	}
 
 	std::string description();
@@ -347,7 +353,9 @@ public:
 	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
 							vec3 miPos, vec3 lPos, double *newAngle = NULL);
 
-	virtual void propagateChange(bool activeGroupOnly = false);
+	void recalculateTorsion(AtomPtr heavy, double value);
+
+	virtual void propagateChange(int depth = -1);
 	std::vector<BondSample> *getManyPositions(BondSampleStyle style);
 
 	std::vector<vec3> fishPositions();
@@ -358,6 +366,12 @@ public:
 	{
 		_useMutex = true;
 	}
+
+	double getMultOccupancy()
+	{
+		return _occupancy * _occMult;
+	}
+
 protected:
 	Bond();
 
@@ -383,6 +397,7 @@ private:
 	int _activeGroup;
 	double _blurTotal;
 	double _occupancy;
+	double _occMult;
 
 	/* Should not be refined */
 	bool _fixed;

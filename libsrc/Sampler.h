@@ -62,6 +62,7 @@ public:
 	void addRamachandranAngles(PolymerPtr polymer, int from, int to);
 	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
+	void addRotamer(Sidechain *side, double range, double interval);
 	void addMagicAngle(BondPtr bond, double range, double interval);
 	void setCrystal(CrystalPtr crystal);
 	bool sample(bool clear = true);
@@ -78,7 +79,7 @@ public:
 	void copyTarget(Sampler *other)
 	{
 		_fft = other->_fft;
-		_real2hkl = other->_real2hkl;
+		_real2Frac = other->_real2Frac;
 		_scoreType = other->_scoreType;
 	}
 
@@ -140,7 +141,7 @@ protected:
 							double range, double interval,
 						 bool addDampening = false);
 	FFTPtr _fft;
-	mat3x3 _real2hkl;
+	mat3x3 _real2Frac;
 
 	int _refinedMagicAxisCount;
 	virtual bool shouldRefineMagicAxis(BondPtr bond) { return false; }

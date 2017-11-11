@@ -27,6 +27,7 @@ void Element::setupElements()
 	elements.push_back(ElementPtr(new Element("P", "phosphorus", 15,  ScatterFactors::pScatter)));
 	elements.push_back(ElementPtr(new Element("S", "sulphur", 16,  ScatterFactors::sScatter)));
 	elements.push_back(ElementPtr(new Element("CL", "chlorine", 17,  ScatterFactors::clScatter)));
+	elements.push_back(ElementPtr(new Element("ZN", "zinc", 30,  ScatterFactors::znScatter)));
 }
 
 Element::Element(std::string symbol, std::string name, double electrons, const float *scatter)

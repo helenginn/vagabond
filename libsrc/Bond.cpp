@@ -43,7 +43,8 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	_fixed = false;
 	_blocked = false;
 	_blurTotal = 0;
-	_occupancy = 1;
+	_occupancy = 1.0;
+	_occMult = 1.0;
 
 	BondGroup aGroup;
 	aGroup.torsionAngle = 0;
@@ -94,6 +95,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 Bond::Bond(Bond &other)
 {
 	_occupancy = other._occupancy;
+	_occMult = other._occMult;
 	_usingTorsion = other._usingTorsion;
 	_activated = other._activated;
 	_major = other._major;
@@ -576,6 +578,7 @@ FFTPtr Bond::getDistribution(bool absOnly)
 	if (absOnly) return FFTPtr();
 
 	double n = ATOM_SAMPLING_COUNT;
+	/* Don't panic, invert scale below */
 	double scale = 1 / (2 * MAX_SCATTERING_DSTAR);
 
 	double realLimits = (scale * n);
@@ -802,7 +805,7 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 
 		BondSample simple;
 		simple.torsion = myTorsion + undoBlur + addBlur;
-		simple.occupancy = _occupancy;
+		simple.occupancy = getMultOccupancy();
 		simple.basis = make_mat3x3();
 		simple.start = nextCurrentPos;
 		set.push_back(simple);
@@ -957,7 +960,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 			simple.torsion = _bondGroups[_activeGroup].torsionAngle;
 			simple.basis = make_mat3x3();
 			simple.start = make_vec3(0, 0, 0);
-			simple.occupancy = _occupancy;
+			simple.occupancy = getMultOccupancy();
 			myTorsions.push_back(simple);
 		}
 	}
@@ -965,7 +968,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 	for (int i = 0; i < (*prevSamples).size(); i++)
 	{
 		double currentTorsion = (*prevSamples)[i].torsion + circleAdd;
-		double occupancy = _occupancy;
+		double occupancy = getMultOccupancy();
 
 		if (torsionNumber < 0)
 		{
@@ -1057,30 +1060,47 @@ bool Bond::isNotJustForHydrogens()
 	return false;
 }
 
-void Bond::propagateChange(bool activeGroupOnly)
+void Bond::propagateChange(int depth)
 {
 	if (_anchored)
 	{
 		return;
 	}
 
-	_changedPos = true;
-	_changedSamples = true;
+	/* Iterative now */
+	std::vector<BondPtr> propagateBonds;
+	propagateBonds.push_back(ToBondPtr(shared_from_this()));
+	int count = 0;
 
-	if (activeGroupOnly)
+	for (int k = 0; k < propagateBonds.size(); k++)
 	{
-		return;
-	}
+		BondPtr bond = propagateBonds[k];
 
-	for (int j = 0; j < downstreamAtomGroupCount(); j++)
-	{
-		for (int i = 0; i < downstreamAtomCount(j); i++)
+		for (int j = 0; j < bond->downstreamAtomGroupCount(); j++)
 		{
-			ModelPtr model = downstreamAtom(j, i)->getModel();
-			BondPtr bond = ToBondPtr(model);
-			bond->propagateChange();
+			for (int i = 0; i < bond->downstreamAtomCount(j); i++)
+			{
+				ModelPtr model = bond->downstreamAtom(j, i)->getModel();
+				BondPtr bond = ToBondPtr(model);
+
+				if (bond->_anchored) continue;
+
+				propagateBonds.push_back(bond);
+			}
 		}
+
+		bond->_changedPos = true;
+		bond->_changedSamples = true;
+
+		if (depth >= 0 && count > depth)
+		{
+			break;
+		}
+
+		count++;
 	}
+
+//	std::cout << "Changed " << propagateBonds.size() << " bonds." << std::endl;
 }
 
 ModelPtr Bond::getParentModel()
@@ -1187,6 +1207,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum)
 	/* Do we have something in the list which has an Absolute model?
 	 * if not, leave as default (new atom) */
 
+	bool changed = false;
 	for (int i = 0; i < list.size(); i++)
 	{
 		if (list[i].expired()) continue;
@@ -1196,7 +1217,24 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum)
 		if (model->isAbsolute())
 		{
 			duplAtom = atom;
+			changed = true;
+			break;
 		}
+	}
+
+	/* Existing atoms: list.size() */
+	if (!changed)
+	{
+		char conformer[] = "a";
+		getMinor()->setAlternativeConformer(conformer);
+
+		for (int i = 0; i < list.size(); i++)
+		{
+			conformer[0]++;
+		}
+
+		duplAtom->setAlternativeConformer(conformer);
+
 	}
 
 	duplAtom->inheritParents();
@@ -1543,6 +1581,28 @@ bool Bond::test()
 	}
 
 	return ok;
+}
+
+void Bond::recalculateTorsion(AtomPtr heavy, double value)
+{
+	if (!_heavyAlign.expired())
+	{
+		heavy->getModel()->getFinalPositions();
+		_heavyAlign.lock()->getModel()->getFinalPositions();
+		vec3 newHPos = heavy->getModel()->getAbsolutePosition();
+		vec3 origHPos = _heavyAlign.lock()->getModel()->getAbsolutePosition();
+		getMinor()->getModel()->getFinalPositions();
+		getMajor()->getModel()->getFinalPositions();
+		vec3 miPos = getMinor()->getAbsolutePosition();
+		vec3 maPos = getMajor()->getAbsolutePosition();
+
+		double unwantedTorsion = 0;
+		makeTorsionBasis(origHPos, maPos, miPos, newHPos, &unwantedTorsion);
+
+		value += unwantedTorsion;
+		setTorsion(this, value);
+	}
+
 }
 
 /* For GUI */

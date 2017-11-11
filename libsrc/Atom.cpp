@@ -39,8 +39,14 @@ Atom::Atom(Atom &other)
 	_element = other._element;
 	_atomName = other._atomName;
 	_model = other._model;
+	_distModelOnly = other._distModelOnly;
 	_monomer = other._monomer;
 	_weighting = other._weighting;
+	_atomNum = other._atomNum;
+	_pdbPosition = other._pdbPosition;
+	_origOccupancy = other._origOccupancy;
+	_conformer = other._conformer;
+	_ellipsoidLongestAxis = other._ellipsoidLongestAxis;
 }
 
 void Atom::inheritParents()
@@ -211,7 +217,7 @@ void Atom::setKeepModel()
 double Atom::posDisplacement()
 {
 	BondPtr bond = ToBondPtr(getModel());
-	bond->getDistribution(true);
+	bond->getFinalPositions();
 	vec3 bestPos = bond->getAbsolutePosition();
 	vec3 initialPos = getPDBPosition();
 

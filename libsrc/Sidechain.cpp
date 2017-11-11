@@ -6,6 +6,7 @@
 //  Copyright (c) 2017 Strubi. All rights reserved.
 //
 
+#include "Shouter.h"
 #include "Sidechain.h"
 #include "Sampler.h"
 #include "Bond.h"
@@ -15,10 +16,47 @@
 #include "FileReader.h"
 #include "Absolute.h"
 #include "Backbone.h"
+#include "RotamerTable.h"
 
 bool Sidechain::shouldRefineMagicAxis(BondPtr bond)
 {
 	return (bond->getMinor()->getAtomName() == "CB");
+}
+
+void Sidechain::refine(CrystalPtr target, RefinementType rType)
+{
+	if (!_rotamerised)
+	{
+		if (rType != RefinementFine)
+		{
+			AtomGroup::refine(target, rType);
+		}
+
+		return;
+	}
+
+
+
+	if (!canRefine()) return;
+
+	if (rType != RefinementFine)
+	{
+		return;
+	}
+
+	setupNelderMead();
+	setCrystal(target);
+	addSampledAtoms(shared_from_this());
+
+	setScoreType(ScoreTypeCorrel);
+	addRotamer(this, 4.0, 0.05);
+
+	//	 setSilent();
+
+	setJobName("rotamer_" + getMonomer()->getResCode()
+			   + i_to_str(getMonomer()->getResidueNum()));
+
+	sample();
 }
 
 void Sidechain::fixBackboneTorsions(AtomPtr betaTorsion)
@@ -75,9 +113,12 @@ void Sidechain::setInitialDampening()
 	}
 }
 
-void Sidechain::splitConformers()
+void Sidechain::splitConformers(int count)
 {
-	int count = conformerCount();
+	if (count < 0)
+	{
+		count = conformerCount();
+	}
 
 	if (count <= 1) return;
 
@@ -96,8 +137,6 @@ void Sidechain::splitConformers()
 	}
 
 	BondPtr bond = ToBondPtr(start->getModel());
-
-	if (count > 2) return;
 
 	for (int i = 1; i < count; i++)
 	{
@@ -126,6 +165,133 @@ void Sidechain::splitConformers()
 		if (atom->getModel()->isAbsolute() && atom->getAlternativeConformer().length())
 		{
 			atom->setWeighting(0);
+		}
+	}
+}
+
+void Sidechain::parameteriseAsRotamers()
+{
+	RotamerTable *table = RotamerTable::getTable();
+	std::string res = getMonomer()->getIdentifier();
+
+	std::vector<Rotamer> rotamers = table->rotamersFor(res);
+
+	if (!rotamers.size())
+	{
+		return;
+	}
+
+	// do the stuff
+	_rotamerised = true;
+	_canRefine = false;
+
+	splitConformers(rotamers.size());
+
+	// rotamers.size() should equal size of atoms list.
+
+	for (int i = 0; i < rotamers.size(); i++)
+	{
+		for (int j = 0; j < rotamers[i].torsions.size(); j++)
+		{
+			TorsionAngle angle = rotamers[i].torsions[j];
+			double torsionValue = deg2rad(angle.torsion);
+			std::string atomID = angle.secondAtom;
+
+			AtomList atoms = findAtoms(atomID);
+
+			if (atoms.size() != rotamers.size())
+			{
+				std::cout << "Ooooo no" << std::endl;
+			}
+
+			if (atoms[i].expired())
+			{
+				continue;
+			}
+
+			AtomPtr atom = atoms[i].lock();
+			if (!atom->getModel()->isBond())
+			{
+				continue;
+			}
+
+			BondPtr bond = ToBondPtr(atom->getModel());
+
+			Bond::setTorsion(&*bond, torsionValue);
+
+			if (bond->getMinor()->getAtomName() == "CB")
+			{
+				BackbonePtr bb = getMonomer()->getBackbone();
+				AtomPtr heavy = bb->findAtom("N");
+				bond->recalculateTorsion(heavy, torsionValue);
+			}
+
+			bond->setFixed(true);
+		}
+	}
+
+	AtomList cbs = findAtoms("CB");
+
+	for (int i = 0; i < cbs.size(); i++)
+	{
+		if (cbs[i].expired()) continue;
+
+		AtomPtr cb = cbs[i].lock();
+		if (!cb->getModel()->isBond()) continue;
+
+		BondPtr bond = ToBondPtr(cb->getModel());
+
+		double occ = rotamers[i].allOccupancy;
+
+		Bond::setOccupancy(&*bond, occ);
+	}
+}
+
+void Sidechain::refreshRotamers()
+{
+	if (!_rotamerised)
+	{
+		warn_user("Trying to refresh rotamers without having rotamerised");
+	}
+
+	AtomList atoms = findAtoms("CB");
+	double occTotal = 0;
+	double occWeight = 0;
+	double expTotal = 0;
+
+	for (int i = 0; i < atoms.size(); i++)
+	{
+		AtomPtr atom = atoms[i].lock();
+		if (atom->getModel()->isBond())
+		{
+			BondPtr bond = ToBondPtr(atom->getModel());
+			double occ = Bond::getOccupancy(&*bond);
+			double myExp = exp(-_exponent * occTotal * occTotal);
+
+			expTotal += myExp;
+			occTotal += occ;
+			occWeight += occ * myExp;
+		}
+	}
+
+	occWeight /= expTotal;
+
+	occTotal = 0;
+	double test = 0;
+	for (int i = 0; i < atoms.size(); i++)
+	{
+		AtomPtr atom = atoms[i].lock();
+		if (atom->getModel()->isBond())
+		{
+			BondPtr bond = ToBondPtr(atom->getModel());
+			double myExp = exp(-_exponent * occTotal * occTotal);
+			double mult = myExp / (occWeight * expTotal);
+			occTotal += Bond::getOccupancy(&*bond);
+			bond->setOccupancyMult(mult);
+
+			double newOcc = bond->getMultOccupancy();
+		//	std::cout << "Setting occ mult " << i << ", " << newOcc << std::endl;
+			test += newOcc;
 		}
 	}
 }
