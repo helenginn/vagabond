@@ -12,7 +12,7 @@
 #include "fftw3d.h"
 #include <stdlib.h>
 #include <iostream>
-#include "ScatterFactors.h"
+#include "../libinfo/ScatterFactors.h"
 
 std::vector<ElementPtr> Element::elements;
 

@@ -9,8 +9,8 @@
 #include "Kabsch.h"
 #include "Shouter.h"
 #include "Model.h"
-#include "matrix.h"
-#include "svdcmp.h"
+#include "../libica/svdcmp.h"
+#include "../libica/matrix.h"
 #include "RefinementStepSearch.h"
 #include "RefinementNelderMead.h"
 #include <iostream>

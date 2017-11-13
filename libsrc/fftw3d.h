@@ -10,7 +10,7 @@
 #ifndef fftw3d_h
 #define fftw3d_h
 
-#include <fftw3.h>
+#include "../libfftw/api/fftw3.h"
 #include <deque>
 #include "mat3x3.h"
 #include "shared_ptrs.h"
