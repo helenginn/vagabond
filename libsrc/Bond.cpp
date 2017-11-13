@@ -47,6 +47,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	_blurTotal = 0;
 	_occupancy = 1.0;
 	_occMult = 1.0;
+	_anisotropyExtent = 0.0;
 
 	BondGroup aGroup;
 	aGroup.torsionAngle = 0;
@@ -588,6 +589,7 @@ FFTPtr Bond::getDistribution(bool absOnly)
 	FFTPtr fft = FFTPtr(new FFT());
 	fft->create(n);
 	fft->setScales(scale);
+	fft->createFFTWplan(1);
 	double occSum = 0;
 
 	for (int i = 0; i < positions.size(); i++)
@@ -608,7 +610,6 @@ FFTPtr Bond::getDistribution(bool absOnly)
 		fft->addToReal(relative.x, relative.y, relative.z, occupancy);
 	}
 
-	fft->createFFTWplan(1);
 	fft->fft(1);
 	fft->invertScale();
 

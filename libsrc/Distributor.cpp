@@ -22,6 +22,8 @@ FFTPtr Distributor::prepareDistribution(double n, double scale, void *object,
 	_fft->create(n);
 	_fft->setScales(scale);
 
+	_fft->createFFTWplan(1);
+
 	for (double x = -0.5; x <= 0.5; x += 1 / n)
 	{
 		for (double y = -0.5; y <= 0.5; y += 1 / n)
@@ -38,8 +40,6 @@ FFTPtr Distributor::prepareDistribution(double n, double scale, void *object,
 			}
 		}
 	}
-
-	_fft->createFFTWplan(1);
 
 	_calculated = true;
 	

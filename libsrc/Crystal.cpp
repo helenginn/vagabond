@@ -110,6 +110,8 @@ void Crystal::realSpaceClutter()
 		_difft->setAll(0);
 	}
 
+	_fft->createFFTWplan(8);
+	_difft->createFFTWplan(8);
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
@@ -120,8 +122,6 @@ void Crystal::realSpaceClutter()
 //	BucketPtr bucket = BucketPtr(new BucketUniform());
 //	bucket->addSolvent(fft);
 
-	_fft->createFFTWplan(8);
-	_difft->createFFTWplan(8);
 }
 
 double Crystal::totalToScale()

@@ -624,7 +624,7 @@ void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 	double value = target->getOverallBFactor();
 	std::cout << "Scaling flexibility to " << value << std::endl;
 	setTargetFlexibility(value);
-	setVerbose();
+//	setVerbose();
 	addOverallKickAndDampen(shared_from_this());
 	setCycles(50);
 	ModelPtr anchor = getAnchorModel();

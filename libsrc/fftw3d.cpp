@@ -389,9 +389,10 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 		strcat(wisdomFile,".fftw3_wisdom");
 	}
 
-	fftwf_import_wisdom_from_filename(wisdomFile);
-
-	//		printf("Error reading wisdom!\n");
+	if (file_exists(wisdomFile))
+	{
+		fftwf_import_wisdom_from_filename(wisdomFile);
+	}
 
 	FourierDimension dims;
 	dims.nx = nx; dims.ny = ny; dims.nz = nz;
@@ -411,10 +412,15 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 		printf("\t\tCould not export wisdom to %s\n",wisdomFile);
 	}
 
-	fftwf_complex *tempData;
-	tempData = (fftwf_complex *)fftwf_malloc(nn * sizeof(FFTW_DATA_TYPE));
-	fftwf_execute_dft(_myDims->plan, tempData, tempData);
-	fftwf_free(tempData);
+	/* Grab it back */
+	fftwf_import_wisdom_from_filename(wisdomFile);
+
+	/* Use it */
+	fft(1);
+	fft(-1);
+
+	/* Reinitialise */
+	setAll(0);
 }
 
 
@@ -424,19 +430,22 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
  */
 void FFT::fft(int direction)
 {
-	if(direction == 1)
+	int tries = 0;
+
+	if (direction == 1)
 	{
-    	fftwf_execute_dft(_myDims->plan, data, data);
+		fftwf_execute_dft(_myDims->plan, data, data);
 	}
-    else if (direction == -1)
+	else if (direction == -1)
 	{
-    	fftwf_execute_dft(_myDims->iplan, data, data);
+		fftwf_execute_dft(_myDims->iplan, data, data);
 	}
-    else
-    {
+	else
+	{
 		printf("Error: Undefined FFTW direction\n");
 		exit(1);
 	}
+
 }
 
 
