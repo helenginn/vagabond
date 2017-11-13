@@ -26,7 +26,7 @@ Sampler::Sampler()
 	_joint = false;
 	_scoreType = ScoreTypeCorrel;
 	_refinedMagicAxisCount = 0;
-	_overallFlex = 0.025;
+	_overallFlex = 0;
 	_silent = false;
 }
 
@@ -156,7 +156,8 @@ void Sampler::setupNelderMead()
 
 void Sampler::addOverallKickAndDampen(PolymerPtr polymer)
 {
-//	_strategy->addParameter(&*polymer, Polymer::getBackboneDampening, Polymer::setBackboneDampening, 0.05, 0.02, "dampen");
+	_strategy->addParameter(&*polymer, Polymer::getBackboneDampening, Polymer::setBackboneDampening, 0.02, 0.02, "dampen");
+//	_strategy->addParameter(&*polymer, Polymer::getInitialKick, Polymer::setInitialKick, 0.05, 0.02, "kick");
 }
 
 void Sampler::addSidechainDampen(PolymerPtr polymer)
@@ -239,7 +240,7 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 
 	_bonds.push_back(bond);
 }
-
+/*
 void Sampler::addMagicAngle(BondPtr bond, double range, double interval)
 {
 	if (!bond) return;
@@ -247,13 +248,13 @@ void Sampler::addMagicAngle(BondPtr bond, double range, double interval)
 	//	double number = fabs(range / interval);
 	std::string num = i_to_str(_strategy->parameterCount() + 1);
 
-	_strategy->addParameter(&*bond, Bond::getMagicAngle, Bond::setMagicAngle,
+	_strategy->addParameter(&*bond, Bond::getMagicPhi, Bond::setMagicPsi,
 							range, interval,
 							"h" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }
-
+*/
 
 void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
 {
@@ -413,7 +414,7 @@ void Sampler::addSampled(std::vector<AtomPtr> atoms)
 	}
 }
 
-void Sampler::addSampledAtoms(AtomGroupPtr group)
+void Sampler::addSampledAtoms(AtomGroupPtr group, std::string conformer)
 {
 	if (!group)
 	{
@@ -422,6 +423,12 @@ void Sampler::addSampledAtoms(AtomGroupPtr group)
 
 	for (int i = 0; i < group->atomCount(); i++)
 	{
+		if (conformer.length() &&
+			group->atom(i)->getAlternativeConformer() != conformer)
+		{
+			continue;
+		}
+
 		addSampled(group->atom(i));
 	}
 }
@@ -472,7 +479,7 @@ bool Sampler::sample(bool clear)
 		_strategy->setCycles(10);
 	}
 
-	if (!_silent)
+	if (!_silent && false)
 	{
 		std::cout << "Sampling ";
 		

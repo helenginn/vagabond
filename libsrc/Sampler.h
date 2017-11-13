@@ -58,12 +58,12 @@ public:
 	void addOccupancy(BondPtr bond, double range, double interval);
 	void addSampledBackbone(PolymerPtr polymer, int from = 0, int to = 0);
 	void addSampledSidechains(PolymerPtr polymer);
-	void addSampledAtoms(AtomGroupPtr group);
+	void addSampledAtoms(AtomGroupPtr group, std::string conformer = "");
 	void addRamachandranAngles(PolymerPtr polymer, int from, int to);
 	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
 	void addRotamer(Sidechain *side, double range, double interval);
-	void addMagicAngle(BondPtr bond, double range, double interval);
+//	void addMagicAngle(BondPtr bond, double range, double interval);
 	void setCrystal(CrystalPtr crystal);
 	bool sample(bool clear = true);
 
@@ -114,6 +114,11 @@ public:
 		_silent = silent;
 	}
 
+	void setVerbose(bool verbose = true)
+	{
+		_strategy->setVerbose(verbose);
+	}
+
 	int sampleSize()
 	{
 		return _sampled.size();
@@ -129,7 +134,7 @@ public:
 		_scoreType = type;
 	}
 
-	void setOverallBFactor(double value)
+	void setTargetFlexibility(double value)
 	{
 		_overallFlex = value;
 	}

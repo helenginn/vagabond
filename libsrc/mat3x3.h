@@ -57,6 +57,7 @@ mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis,
 							  double *best = NULL);
 mat3x3 mat3x3_covariance(std::vector<vec3> points);
 
+mat3x3 mat3x3_rot_from_angles(double phi, double psi);
 mat3x3 mat3x3_from_2d_array(double **values);
 void mat3x3_to_2d_array(mat3x3 mat, double ***values);
 void free_2d_array(double **values);

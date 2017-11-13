@@ -12,6 +12,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <cerrno>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <dirent.h>
 
 std::string get_file_contents(std::string filename);
 
@@ -29,5 +33,43 @@ std::string f_to_str(double val, int precision);
 void trim(std::string& str);
 void to_lower(std::string &str);
 void to_upper(std::string &str);
+
+class FileReader
+{
+
+public:
+
+	inline static void setOutputDirectory(std::string _dir)
+	{
+		outputDir = _dir;
+
+		DIR *dir = opendir(outputDir.c_str());
+
+		if (dir)
+		{
+			closedir(dir);
+		}
+		else if (ENOENT == errno)
+		{
+			mkdir(outputDir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+		}
+
+	}
+
+	inline static std::string addOutputDirectory(std::string filename)
+	{
+		if (!outputDir.length())
+		{
+			return filename;
+		}
+
+		std::string fullPath = "./" + outputDir + "/" + filename;
+		return fullPath;
+	}
+
+private:
+	static std::string outputDir;
+
+};
 
 #endif /* defined(__GameDriver__FileReader__) */

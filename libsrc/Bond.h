@@ -33,9 +33,9 @@ typedef struct
 	std::vector<AtomValue> atoms;
 	double torsionAngle;
 	double torsionBlur;
-	double torsionVertBlur;
 	vec3 magicAxis;
-	double magicAngle;
+	double magicPhi;
+	double magicPsi;
 	std::vector<BondSample> storedSamples;
 	std::vector<BondSample> staticSample;
 	std::vector<BondSample> singleStateSample;
@@ -43,7 +43,7 @@ typedef struct
 	bool _changedSamples;
 } BondGroup;
 
-#define INITIAL_KICK 0.06
+#define INITIAL_KICK 0.10
 #define INITIAL_DAMPENING 0.08
 
 class Bond : public Model, public Sampler
@@ -61,6 +61,8 @@ public:
 	bool isRefinable();
 	void calculateMagicAxis();
 	void calculateInitialMagicAxis();
+	double magicAxisScore();
+	static double magicAxisStaticScore(void *object);
 	bool test();
 
 	AtomPtr getMajor()
@@ -116,20 +118,6 @@ public:
 		return "Bond";
 	}
 
-	static void setTorsionVertBlur(void *object, double value)
-	{
-		Bond *bond = static_cast<Bond *>(object);
-		return;
-		bond->_bondGroups[bond->_activeGroup].torsionVertBlur = value;
-		static_cast<Bond *>(object)->propagateChange();
-	}
-
-	static double getTorsionVertBlur(void *object)
-	{
-		Bond *bond = static_cast<Bond *>(object);
-		return bond->_bondGroups[bond->_activeGroup].torsionVertBlur;
-	}
-
 	static void setTorsionBlur(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
@@ -156,16 +144,29 @@ public:
 		static_cast<Bond *>(object)->propagateChange(20);
 	}
 
-	static double getMagicAngle(void *object)
+	static double getMagicPsi(void *object)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		return bond->_bondGroups[bond->_activeGroup].magicAngle;
+		return bond->_bondGroups[bond->_activeGroup].magicPsi;
 	}
 
-	static void setMagicAngle(void *object, double angle)
+	static void setMagicPsi(void *object, double angle)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		bond->_bondGroups[bond->_activeGroup].magicAngle = angle;
+		bond->_bondGroups[bond->_activeGroup].magicPsi = angle;
+		static_cast<Bond *>(object)->propagateChange();
+	}
+
+	static double getMagicPhi(void *object)
+	{
+		Bond *bond = static_cast<Bond *>(object);
+		return bond->_bondGroups[bond->_activeGroup].magicPhi;
+	}
+
+	static void setMagicPhi(void *object, double angle)
+	{
+		Bond *bond = static_cast<Bond *>(object);
+		bond->_bondGroups[bond->_activeGroup].magicPhi = angle;
 		static_cast<Bond *>(object)->propagateChange();
 	}
 
@@ -314,7 +315,10 @@ public:
 	}
 
 	virtual double getMeanSquareDeviation();
+
+	void getAnisotropy();
 	vec3 longestAxis();
+	double anisotropyExtent();
 
 	virtual mat3x3 getRealSpaceTensor();
 	
@@ -390,6 +394,17 @@ private:
 	/* Downstream groups of bonds */
 	std::vector<BondGroup> _bondGroups;
 	std::vector<AtomWkr> _extraTorsionSamples;
+	std::vector<AtomWkr> _magicAxisAtoms;
+
+	int magicAtomCount()
+	{
+		return _magicAxisAtoms.size();
+	}
+
+	AtomPtr getMagicAtom(int i)
+	{
+		return _magicAxisAtoms[i].lock();
+	}
 
 	double _dampening;
 	double _bendBlur;
@@ -435,6 +450,8 @@ private:
 	bool _blocked;
 
 	mat3x3 getMagicMat();
+	vec3 _longest;
+	double _anisotropyExtent;
 
 	/* What should be returned when asking for an atom's position
 	 * for drawing into a map... */

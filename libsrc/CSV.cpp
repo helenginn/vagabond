@@ -182,7 +182,7 @@ void CSV::addEntry(int dummy, ...)
 void CSV::writeToFile(std::string filename)
 {
     std::ofstream csv;
-	std::string outputFile = filename;
+	std::string outputFile = FileReader::addOutputDirectory(filename);
 
     csv.open(outputFile.c_str());
     

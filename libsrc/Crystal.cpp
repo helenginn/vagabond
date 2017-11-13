@@ -139,7 +139,7 @@ double Crystal::totalToScale()
 	return (sqrt((double)sum / (double)weighted)) * 1.0;
 }
 
-void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
+void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 {
 	if (_fft)
 	{
@@ -181,7 +181,8 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 	cell[5] = _unitCell[5];
 	wavelength = 1.00; // fixme
 
-	std::string outputFile = prefix + "_" + _filename + "_vbond.mtz";
+	std::string outputFileOnly = prefix + "_" + _filename + "_vbond.mtz";
+	std::string outputFile = FileReader::addOutputDirectory(outputFileOnly);
 
 	mtzout = CMtz::MtzMalloc(0, 0);
 	ccp4_lwtitl(mtzout, "Written from Helen's XFEL tasks ", 0);
@@ -575,7 +576,7 @@ Crystal::Crystal()
 {
 	_firstScale = -1;
 	_maxResolution = 0;
-	_overallB = 0.025;
+	_overallFlex = 0.03;
 }
 
 void Crystal::applySymOps()
@@ -611,8 +612,10 @@ void Crystal::makePDBs(std::string suffix)
 
 	for (int i = 0; i < prefices.size(); i++)
 	{
+		std::string path;
+		path = FileReader::addOutputDirectory(prefices[i] + suffix + ".pdb");
 		std::ofstream file;
-		file.open(prefices[i] + suffix + ".pdb");
+		file.open(path);
 
 		for (int j = 0; j < moleculeCount(); j++)
 		{
@@ -631,7 +634,7 @@ void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data,
 	std::cout << "\tCycle " << cycleNum << std::endl;
 
 	std::string refineCount = "refine_" + i_to_str(cycleNum);
-	writeCalcMillersToFile(data, refineCount);
+	writeMillersToFile(data, refineCount);
 	getDataInformation(data, 2, 1);
 	makePDBs(refineCount);
 

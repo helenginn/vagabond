@@ -37,6 +37,7 @@ public:
 		return _tensor;
 	}
 
+	double anisotropyExtent();
 	vec3 longestAxis();
 private:
 	std::vector<vec3> _points;

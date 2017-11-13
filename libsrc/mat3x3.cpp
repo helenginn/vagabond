@@ -456,31 +456,18 @@ mat3x3 mat3x3_covariance(std::vector<vec3> points)
 	return mat;
 }
 
-/*
- Matrix *Matrix::frustum(GLfloat left, GLfloat right, GLfloat bottom, GLfloat top, GLfloat near, GLfloat far)
- {
- Matrix *matrix = new Matrix();
+mat3x3 mat3x3_rot_from_angles(double phi, double psi)
+{
+	vec3 zAxis = {0, 0, 1};
+	vec3 xAxis = {1, 0, 0};
+	/* we shall rotate phi round the y axis for starters */
+	mat3x3 mat = mat3x3_rotate(0, phi, 0);
+	vec3 rotAxis = mat3x3_mult_vec(mat, xAxis);
 
- (*matrix)[0]  = (2.0 * near) / (right - left);
- (*matrix)[1]  = 0.0;
- (*matrix)[2]  = 0.0;
- (*matrix)[3] = 0.0;
+	/* we need to remake our next rotation axis as the cross product */
+	vec3 newAxis = vec3_cross_vec3(rotAxis, zAxis);
 
- (*matrix)[4]  = 0.0;
- (*matrix)[5]  = (2.0 * near) / (top - bottom);
- (*matrix)[6]  = 0.0;
- (*matrix)[7] = 0.0;
+	mat3x3 secondRot = mat3x3_unit_vec_rotation(newAxis, psi);
 
- (*matrix)[8]  = (right + left) / (right - left);
- (*matrix)[9]  = (top + bottom) / (top - bottom);
- (*matrix)[10] = -(far + near) / (far - near);
- (*matrix)[11] = -1.0;
-
- (*matrix)[12]  = 0.0;
- (*matrix)[13]  = 0.0;
- (*matrix)[14] = -(2.0 * far * near) / (far - near);
- (*matrix)[15] = 0.0;
-
- return matrix;
- }
- */
+	return mat3x3_mult_mat3x3(secondRot, mat);
+}

@@ -585,7 +585,7 @@ void Polymer::setInitialKick(void *object, double value)
 	Polymer *polymer = static_cast<Polymer *>(object);
 	int monomerNum = polymer->_anchorNum;
 	polymer->getMonomer(monomerNum)->setKick(value, 0);
-	polymer->getMonomer(monomerNum - 1)->setKick(value, 1);
+	polymer->getMonomer(monomerNum - 1)->setKick(value, 0);
 }
 
 /* For side chains, obviously */
@@ -619,12 +619,12 @@ double Polymer::getInitialKick(void *object)
 
 void Polymer::scaleFlexibilityToBFactor(CrystalPtr target)
 {
-	return;
 	setupNelderMead();
 	setScoreType(ScoreTypeModelFlexiness);
 	double value = target->getOverallBFactor();
 	std::cout << "Scaling flexibility to " << value << std::endl;
-	setOverallBFactor(value);
+	setTargetFlexibility(value);
+	setVerbose();
 	addOverallKickAndDampen(shared_from_this());
 	setCycles(50);
 	ModelPtr anchor = getAnchorModel();

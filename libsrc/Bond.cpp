@@ -6,21 +6,23 @@
 //  Copyright (c) 2017 Strubi. All rights reserved.
 //
 
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+
 #include "Bond.h"
 #include "Atom.h"
 #include "Anchor.h"
 #include "fftw3d.h"
-#include <iostream>
 #include "Shouter.h"
 #include "AtomGroup.h"
 #include "Element.h"
 #include "Absolute.h"
 #include "maths.h"
-#include <sstream>
-#include <iomanip>
 #include "Monomer.h"
 #include "Molecule.h"
 #include "Anisotropicator.h"
+#include "RefinementNelderMead.h"
 
 Bond::Bond()
 {
@@ -49,9 +51,9 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	BondGroup aGroup;
 	aGroup.torsionAngle = 0;
 	aGroup.torsionBlur = 0.0;
-	aGroup.torsionVertBlur = 0.0;
 	aGroup.magicAxis = make_randomish_axis();
-	aGroup.magicAngle = 0;
+	aGroup.magicPhi = 0;
+	aGroup.magicPsi = 0;
 	_bondGroups.push_back(aGroup);
 
 	_disabled = (!major || !minor);
@@ -169,8 +171,8 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 		BondGroup newGroup;
 		newGroup.torsionAngle = 0;
 		newGroup.torsionBlur = 0;
-		newGroup.torsionVertBlur = 0.0;
-		newGroup.magicAngle = 0;
+		newGroup.magicPhi = 0;
+		newGroup.magicPsi = 0;
 		newGroup.magicAxis = make_randomish_axis();
 		newGroup._changedSamples = true;
 		_bondGroups.push_back(newGroup);
@@ -639,79 +641,80 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 	return final;
 }
 
-void Bond::calculateMagicAxis()
+
+/* Just a vague guess... */
+void Bond::calculateInitialMagicAxis()
 {
 	_bondGroups[0].magicAxis = longestAxis();
 	propagateChange(20);
 }
 
-/* To be honest we only care about 0th group here */
-void Bond::calculateInitialMagicAxis()
+void Bond::calculateMagicAxis()
 {
+	/* Prepare queried atoms */
+
 	BondPtr downBond = ToBondPtr(shared_from_this());
 	int count = 0;
-	vec3 posSum = make_vec3(0, 0, 0);
-	vec3 startVec = getStaticPosition();
 
-	while (count < FUTURE_RESIDUES && downBond->downstreamAtomGroupCount()
+	while (count < FUTURE_MAGIC_ATOMS && downBond->downstreamAtomGroupCount()
 		   && downBond->downstreamAtomCount(0))
 	{
 		AtomPtr downAtom = downBond->downstreamAtom(0, 0);
-		vec3 downPos = downAtom->getModel()->getStaticPosition();
-		vec3 downDiff = vec3_subtract_vec3(downPos, startVec);
-		vec3_set_length(&downDiff, 1);
-		startVec = downPos;
-		posSum = vec3_add_vec3(posSum, downDiff);
-
-		if (downAtom->getModel()->isBond())
-		{
-			downBond = ToBondPtr(downAtom->getModel());
-		}
-		else
-		{
-			break;
-		}
+		_magicAxisAtoms.push_back(downAtom);
 
 		count++;
 	}
 
-	vec3_set_length(&posSum, 1);
+	NelderMeadPtr nelder = NelderMeadPtr(new NelderMead());
+	nelder->addParameter(this, getMagicPhi, setMagicPhi, deg2rad(10), deg2rad(0.1));
+	nelder->addParameter(this, getMagicPsi, setMagicPsi, deg2rad(10), deg2rad(0.1));
+	nelder->setEvaluationFunction(magicAxisStaticScore, this);
+	nelder->setSilent(true);
+	nelder->refine();
+	
+}
 
-	if (downBond->downstreamAtomGroupCount())
+double Bond::magicAxisScore()
+{
+	propagateChange(FUTURE_MAGIC_ATOMS);
+	double sum = 0;
+
+	for (int i = 0; i < magicAtomCount(); i++)
 	{
-		_bondGroups[0].magicAxis = posSum;
+		AtomPtr magicAtom = getMagicAtom(i);
+		BondPtr bond = ToBondPtr(magicAtom->getModel());
+		sum += bond->anisotropyExtent();
 	}
 
-	propagateChange(20);
+	sum /= (double)magicAtomCount();
+
+	return sum;
+}
+double Bond::magicAxisStaticScore(void *object)
+{
+	return static_cast<Bond *>(object)->magicAxisScore();
 }
 
 mat3x3 Bond::getMagicMat()
 {
+	mat3x3 rot = make_mat3x3();
 	vec3 magicAxis = _bondGroups[_activeGroup].magicAxis;
-	double magicAngle = _bondGroups[_activeGroup].magicAngle;
+	double phi = _bondGroups[_activeGroup].magicPhi;
+	double psi = _bondGroups[_activeGroup].magicPsi;
+
+	if (phi != 0 && psi != 0)
+	{
+		rot = mat3x3_rot_from_angles(phi, psi);
+	}
 
 	vec3 xAxis = make_vec3(1, 0, 0);
 	vec3 zAxis = make_vec3(0, 0, 1);
-	vec3 yAxis = make_vec3(0, 1, 0);
 
 	/* Find the twizzle to put z axis onto the magic axis (around the x) */
 	mat3x3 firstTwizzle = mat3x3_closest_rot_mat(magicAxis, zAxis, xAxis);
+	mat3x3 multed = mat3x3_mult_mat3x3(rot, firstTwizzle);
 
-	return firstTwizzle;
-
-	/* Find where this would place the Y axis */
-	mat3x3_mult_vec(firstTwizzle, &yAxis);
-
-	/* Find what the appropriate X axis would be */
-	vec3 cross = vec3_cross_vec3(magicAxis, yAxis);
-
-	/* Finally reconstruct the matrix from the X/Z basis vectors */
-	mat3x3 magicBase = mat3x3_rhbasis(cross, magicAxis);
-	mat3x3 magicRot = mat3x3_unit_vec_rotation(zAxis, magicAngle);
-
-	mat3x3 magicInv = mat3x3_mult_mat3x3(magicRot, magicBase);
-
-	return mat3x3_inverse(magicInv);
+	return multed;
 }
 
 std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
@@ -1349,23 +1352,35 @@ double Bond::getMeanSquareDeviation()
 	return score;
 }
 
-vec3 Bond::longestAxis()
+void Bond::getAnisotropy()
 {
-	std::vector<BondSample> positions = getFinalPositions();
+//	std::vector<BondSample> positions = getFinalPositions();
+	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
 
 	std::vector<vec3> points;
 
-	for (int i = 0; i < positions.size(); i++)
+	for (int i = 0; i < positions->size(); i++)
 	{
-		points.push_back(positions[i].start);
+		points.push_back((*positions)[i].start);
 	}
 
 	Anisotropicator tropicator;
 	tropicator.setPoints(points);
 	_realSpaceTensor = tropicator.getTensor();
-	vec3 longest = tropicator.longestAxis();
+	_longest = tropicator.longestAxis();
+	_anisotropyExtent = tropicator.anisotropyExtent();
+}
 
-	return longest;
+vec3 Bond::longestAxis()
+{
+	getAnisotropy();
+	return _longest;
+}
+
+double Bond::anisotropyExtent()
+{
+	getAnisotropy();
+	return _anisotropyExtent;
 }
 
 mat3x3 Bond::getRealSpaceTensor()
@@ -1474,9 +1489,9 @@ ModelPtr Bond::reverse(BondPtr upstreamBond)
 
 double Bond::getFlexibilityPotential()
 {
+	std::vector<BondSample> *samples = getManyPositions(BondSampleThorough);
 	return _blurTotal;
 
-	std::vector<BondSample> *samples = getManyPositions(BondSampleThorough);
 	std::vector<BondSample> *statPos = getManyPositions(BondSampleStatic);
 	double sum = 0;
 	double weights = 0;

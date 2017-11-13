@@ -79,7 +79,7 @@ void Options::run()
 			DiffractionPtr data = diffractions[0];
 
 			/* sandbox */
-			crystals[0]->writeCalcMillersToFile(data, "pre");
+			crystals[0]->writeMillersToFile(data, "pre");
 			crystals[0]->getDataInformation(data, 3, 2);
 
 			if (_tie)
@@ -99,7 +99,7 @@ void Options::run()
 
 			if (_numCycles > 0)
 			{
-				refineAll(RefinementModelPos, 2, &count);
+				refineAll(RefinementModelPos, 4, &count);
 				refineAll(RefinementFine, _numCycles, &count);
 			}
 		}
@@ -247,6 +247,17 @@ void Options::parse()
 			understood = true;
 		}
 
+		prefix = "--output-dir=";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			_outputDir = arg.substr(prefix.size());
+			std::cout << "Setting output directory to ";
+			std::cout << _outputDir << "." << std::endl << std::endl;
+			FileReader::setOutputDirectory(_outputDir);
+			understood = true;
+		}
+
 		prefix = "--no-tie";
 
 		if (!arg.compare(0, prefix.size(), prefix))
@@ -310,34 +321,15 @@ void Options::refinementCycle(MoleculePtr molecule, int *count,
 			molecule->refine(crystals[0], type);
 		}
 
+		if (molecule->getClassName() == "Polymer" && (*count == 0))
+		{
+			polymer->scaleFlexibilityToBFactor(crystals[0]);
+		}
+
 		if (molecule->getClassName() == "Polymer" && (*count == 1))
 		{
 			polymer->superimpose();
 		}
-
-		if (molecule->getClassName() == "Polymer" && (*count == 2))
-		{
-	//		crystals[0]->changeAnchors(1);
-		}
 	}
 
-	/*
-	 else if (molecule->getClassName() == "Polymer" && i == 2)
-	 {
-	 if (crystals[0]->totalAnchors() <= 1) continue;
-
-	 count++;
-
-	 polymer->scaleFlexibilityToBFactor(crystals[0]);
-	 crystals[0]->concludeRefinement(count, data, crystals[0]);
-	 }*/
-	/*					else if (molecule->getClassName() == "Polymer" && i % 2 == 0)
-	 {
-	 int myAnchor = (i / 2) - 1;
-	 if (myAnchor >= crystals[0]->totalAnchors()) continue;
-
-	 count++;
-	 crystals[0]->changeAnchors(myAnchor);
-	 crystals[0]->concludeRefinement(count, data, crystals[0]);
-	 }*/
 }

@@ -60,6 +60,7 @@ private:
 
 	int _numCycles;
 	bool _tie;
+	std::string _outputDir;
 };
 
 #endif /* defined(__vagabond__Options__) */

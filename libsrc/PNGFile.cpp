@@ -21,9 +21,11 @@ int PNGFile::writeImage(std::string filename, int width, int height, std::string
     FILE *fp = NULL;
     png_structp png_ptr = NULL;
     png_infop info_ptr = NULL;
+
+	std::string path = FileReader::addOutputDirectory(filename);
     
     // Open file for writing (binary mode)
-    fp = fopen(filename.c_str(), "wb");
+    fp = fopen(path.c_str(), "wb");
     if (fp == NULL) {
         fprintf(stderr, "Could not open file %s for writing\n", filename.c_str());
         code = 1;

@@ -44,10 +44,31 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		return;
 	}
 
-	setupNelderMead();
-	setCrystal(target);
-	addSampledAtoms(shared_from_this());
 
+	AtomList atoms = findAtoms("CB");
+
+	for (int i = 0; i < atoms.size(); i++)
+	{
+		setupNelderMead();
+		setCrystal(target);
+		setScoreType(ScoreTypeMultiply);
+
+		if (atoms[i].expired())
+		{
+			continue;
+		}
+
+		AtomPtr atom = atoms[i].lock();
+		std::string conformer = atom->getAlternativeConformer();
+
+		addSampledAtoms(shared_from_this(), conformer);
+		double conformerScore = score(this);
+
+		std::cout << "conformer " << conformer <<
+		" " << conformerScore << std::endl;
+	}
+
+	/*
 	setScoreType(ScoreTypeRFactor);
 	addRotamer(this, 4.0, 0.05);
 
@@ -57,6 +78,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 			   + i_to_str(getMonomer()->getResidueNum()));
 
 	sample();
+	 */
 }
 
 void Sidechain::fixBackboneTorsions(AtomPtr betaTorsion)

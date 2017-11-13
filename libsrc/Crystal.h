@@ -83,7 +83,7 @@ public:
 	void changeAnchors(int newAnchor);
 	void tiedUpScattering();
 	void realSpaceClutter();
-	void writeCalcMillersToFile(DiffractionPtr data, std::string prefix = "");
+	void writeMillersToFile(DiffractionPtr data, std::string prefix = "");
 
 	void fourierTransform(int dir);
 	void scaleToDiffraction(DiffractionPtr data);
@@ -147,12 +147,12 @@ public:
 
 	void setOverallBFactor(double b)
 	{
-		_overallB = b;
+		_overallFlex = b;
 	}
 
 	double getOverallBFactor()
 	{
-		return _overallB;
+		return _overallFlex;
 	}
 
 private:
@@ -166,7 +166,7 @@ private:
 	CSym::CCP4SPG *_spaceGroup;
 	double _maxResolution;
 	std::vector<int> _anchorResidues;
-	double _overallB;
+	double _overallFlex;
 	double totalToScale();
 	void makePDBs(std::string suffix);
 
