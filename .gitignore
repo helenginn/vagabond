@@ -40,10 +40,8 @@ sites
 
 Makefile.in
 aclocal.m4
-install-sh
 .deps
 config.guess
 .libs
 libtool
-ltmain.sh
 
