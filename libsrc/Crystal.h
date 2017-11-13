@@ -19,7 +19,7 @@
 #include <map>
 #include "maths.h"
 #include "Molecule.h"
-#include "csymlib.h"
+#include "../libccp4/csymlib.h"
 #include <iostream>
 
 #define HARD_CODED_RESOLUTION 1.0

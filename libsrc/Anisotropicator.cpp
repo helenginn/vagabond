@@ -7,7 +7,7 @@
 //
 
 #include "Anisotropicator.h"
-#include "svdcmp.h"
+#include "../libica/svdcmp.h"
 #include <iostream>
 
 void Anisotropicator::setPoints(std::vector<vec3> points)

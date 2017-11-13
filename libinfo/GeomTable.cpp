@@ -32,8 +32,8 @@
 #define CR1H_NH1_LENGTH  (1.374)
 #define CR1E_NH1_LENGTH  (1.374)
 
-#define CH1E_CH2E_CH2E_ANGLE 114.1 
-#define CH2E_CH2E_CH2E_ANGLE 111.3 
+#define CH1E_CH2E_CH2E_ANGLE 114.1
+#define CH2E_CH2E_CH2E_ANGLE 111.3
 #define CH1E_CH1E_CH3E_ANGLE 110.5
 
 #define CH1E_C_NH1_ANGLE     117.2 // 117.2
@@ -42,8 +42,10 @@
 #define NH1_C_O_ANGLE        122.7
 #define C_CH1E_NH1_ANGLE     111.2 // matches Engh & Huber and CCP4
 
-#include "shared_ptrs.h"
+#define deg2rad(a) ((a) * M_PI / 180)
+
 #include "GeomTable.h"
+#include <math.h>
 
 std::map<std::string, std::string> GeomTable::_three2OneCode;
 GeomTable GeomTable::_geomTable;
@@ -451,7 +453,7 @@ GeomTable::GeomTable()
 	addBondLength(AtomProCA, AtomProCB, 1.531);
 	addBondLength(AtomProCB, AtomProCG, 1.495);
 	addBondLength(AtomProCG, AtomProCD, 1.502);
-	
+
 	addBondLength(AtomC, AtomMetCA, 1.525);
 	addBondLength(AtomNH1, AtomMetCA, 1.459);
 	addBondLength(AtomMetCA, AtomMetCB, 1.535);
@@ -521,7 +523,7 @@ GeomTable::GeomTable()
 	addBondAngle(AtomNH1, AtomCysCA, AtomCysCB, 110.8);
 	addBondAngle(AtomCysCB, AtomCysCA, AtomC, 111.5);
 	addBondAngle(AtomCysCA, AtomCysCB, AtomCysSG, 114.2);
-	
+
 	addBondLength(AtomC, AtomHisCA, 1.525);
 	addBondLength(AtomNH1, AtomHisCA, 1.459);
 	addBondLength(AtomHisCA, AtomHisCB, 1.535);

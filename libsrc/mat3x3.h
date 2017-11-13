@@ -10,9 +10,10 @@
 #define __vagabond__mat3x3__
 
 #include <stdio.h>
+#include <vector>
 #include "vec3.h"
 #include <string.h>
-#include "csymlib.h"
+#include "../libccp4/csymlib.h"
 
 struct mat3x3
 {

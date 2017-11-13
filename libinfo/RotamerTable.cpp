@@ -36,7 +36,7 @@ void RotamerTable::addRotamerToTable(std::string resName, Rotamer rot)
 	_residueRotamerMap[resName].push_back(rot);
 }
 
-bool rotamerMoreCommon(Rotamer &rot1, Rotamer &rot2)
+bool rotamerMoreCommon(Rotamer rot1, Rotamer rot2)
 {
 	return (rot1.allOccupancy > rot2.allOccupancy);
 }

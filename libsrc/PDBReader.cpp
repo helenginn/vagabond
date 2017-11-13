@@ -17,7 +17,6 @@
 #include "Polymer.h"
 #include "Monomer.h"
 #include "Absolute.h"
-#include "csymlib.h"
 #include <sstream>
 #include <iomanip>
 #include "Element.h"

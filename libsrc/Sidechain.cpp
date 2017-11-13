@@ -16,7 +16,7 @@
 #include "FileReader.h"
 #include "Absolute.h"
 #include "Backbone.h"
-#include "RotamerTable.h"
+#include "../libinfo/RotamerTable.h"
 
 bool Sidechain::shouldRefineMagicAxis(BondPtr bond)
 {

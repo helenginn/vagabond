@@ -14,6 +14,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <iomanip>
+#include <algorithm>
 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
     std::stringstream ss(s);

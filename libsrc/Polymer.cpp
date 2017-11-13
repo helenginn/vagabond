@@ -107,8 +107,8 @@ void Polymer::tieAtomsUp()
 		if (getMonomer(i))
 		{
 			getMonomer(i)->getSidechain()->splitConformers();
-			getMonomer(i)->getSidechain()->parameteriseAsRotamers();
-			getMonomer(i)->getSidechain()->setCanRefine(true);
+	//		getMonomer(i)->getSidechain()->parameteriseAsRotamers();
+	//		getMonomer(i)->getSidechain()->setCanRefine(true);
 		}
 	}
 
@@ -291,7 +291,7 @@ void Polymer::graph(std::string graphName)
 		{
 			nModel = n->getModel();
 		}
-		
+
 		AtomPtr c = backbone->findAtom("C");
 		ModelPtr cModel = c->getModel();
 
@@ -514,7 +514,7 @@ void Polymer::findAnchorNearestCentroid()
 		AtomPtr n = getMonomer(i)->findAtom("N");
 
 		if (!n) continue;
-		
+
 		vec3 absCa = n->getModel()->getAbsolutePosition();
 
 		vec3 diff = vec3_subtract_vec3(absCa, sum);
@@ -828,7 +828,7 @@ void Polymer::closenessSummary()
 	double posSum = 0;
 	double bSum = 0;
 	int count = 0;
-	
+
 	for (int i = 0; i < atomCount(); i++)
 	{
 		double disp = atom(i)->posDisplacement();
@@ -839,7 +839,7 @@ void Polymer::closenessSummary()
 		bSum += atom(i)->getModel()->getMeanSquareDeviation();
 		count++;
 	}
-	
+
 	posSum /= count;
 	bSum /= count;
 
