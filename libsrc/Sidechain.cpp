@@ -48,7 +48,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 	setCrystal(target);
 	addSampledAtoms(shared_from_this());
 
-	setScoreType(ScoreTypeCorrel);
+	setScoreType(ScoreTypeRFactor);
 	addRotamer(this, 4.0, 0.05);
 
 	//	 setSilent();

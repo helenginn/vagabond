@@ -19,10 +19,13 @@ void BucketUniform::addSolvent(FFTPtr map)
 
 	for (long i = 0; i < map->nn; i++)
 	{
-		MaskType mask = map->getMask(i);
+// noooo.
+		/*
+		 MaskType mask = map->getMask(i);
 		if (mask == MaskEmpty)
 		{
 			map->setElement(i, trialDensity, 0);
 		}
+		 */
 	}
 }

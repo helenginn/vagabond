@@ -156,7 +156,9 @@ void DiffractionMtz::load()
 			flag = adata[col_rfree->source - 1];
 		}
 
-		MaskType mask = (flag <= 0.1) ? MaskFree : MaskWork;
+		if (flag != flag) flag = 1;
+
+		int mask = flag;
 
 		long element = fft->element(h, k, l);
 

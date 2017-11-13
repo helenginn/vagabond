@@ -44,7 +44,8 @@ void Bucket::findBulkSolvent(FFTPtr map)
 			for (int i = 0; i < map->nz; i++)
 			{
 				long element = map->element(i, j, k);
-				MaskType type = map->getMask(element);
+//				MaskType type = map->getMask(element);
+				MaskType type = MaskProtein;
 
 				if (type != MaskUnchecked)
 				{

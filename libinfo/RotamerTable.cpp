@@ -56,6 +56,7 @@ std::vector<Rotamer> RotamerTable::rotamersFor(std::string residue)
 
 RotamerTable::RotamerTable()
 {
+	/** ASPARAGINE / ASN / N **/
 	{
 		Rotamer rotamer;
 		rotamer.name = "p-10";
@@ -119,5 +120,50 @@ RotamerTable::RotamerTable()
 		addRotamerToTable("asn", rotamer);
 	}
 
+	/** ASPARTATE / ASP / D **/
 
+	{
+		Rotamer rotamer;
+		rotamer.name = "p-10";
+		setOccupancies(&rotamer, 0.10, 0.01, 0.02, 0.13);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", 62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", -10.0));
+		addRotamerToTable("asp", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "p30";
+		setOccupancies(&rotamer, 0.09, 0.01, 0.05, 0.12);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", 62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", 30.0));
+		addRotamerToTable("asp", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "t0";
+		setOccupancies(&rotamer, 0.21, 0.08, 0.44, 0.20);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", 0.0));
+		addRotamerToTable("asp", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "t70";
+		setOccupancies(&rotamer, 0.06, 0.11, 0.07, 0.04);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", 65.0));
+		addRotamerToTable("asp", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "m-20";
+		setOccupancies(&rotamer, 0.51, 0.77, 0.38, 0.47);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -70.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", -15.0));
+		addRotamerToTable("asp", rotamer);
+	}
 }

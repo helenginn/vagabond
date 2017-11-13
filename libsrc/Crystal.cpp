@@ -239,7 +239,7 @@ void Crystal::writeCalcMillersToFile(DiffractionPtr data, std::string prefix)
 
 				// i.e. 0 when mask is free flag.
 
-				int free = (fftData->getMask(i, j, k) != MaskFree);
+				int free = fftData->getMask(i, j, k);
 
 				if (vec3_length(pos) > dStar)
 				{
@@ -312,7 +312,7 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 				double amp1 = sqrt(fftData->getIntensity(_i, _j, _k));
 				double amp2 = sqrt(_fft->getIntensity(i, j, k));
 
-				int isFree = fftData->getMask(_i, _j, _k) == MaskFree;
+				int isFree = (fftData->getMask(_i, _j, _k) == 0);
 
 				if (amp1 != amp1 || amp2 != amp2)
 				{
@@ -478,7 +478,7 @@ void Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_h, &_k, &_l);
 
 				double amp = sqrt(fftData->getIntensity(_h, _k, _l));
-				bool isRfree = fftData->getMask(_h, _k, _l) == MaskFree;
+				bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
 
 				if (amp != amp || isRfree)
 				{

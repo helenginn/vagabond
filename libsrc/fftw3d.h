@@ -78,13 +78,13 @@ public:
 		mask[i] = value;
 	}
 
-	MaskType getMask(long x, long y, long z)
+	int getMask(long x, long y, long z)
 	{
 		long elem = element(x, y, z);
 		return mask[elem];
 	}
 
-	MaskType getMask(long i)
+	int getMask(long i)
 	{
 		return mask[i];
 	}
@@ -203,7 +203,7 @@ public:
 
     long nx,ny,nz,nn;
     fftwf_complex *data;
-	MaskType *mask; // not char due to cpu speed
+	int *mask; // not char due to cpu speed
 
 	double scales[3];
     

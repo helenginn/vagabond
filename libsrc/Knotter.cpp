@@ -528,8 +528,6 @@ void Knotter::makeArginine()
 	AtomPtr hDelta3 = _sidechain->findAtom("HD3");
 	AtomPtr nEpsilon = _sidechain->findAtom("NE");
 	AtomPtr hEpsilon = _sidechain->findAtom("HE");
-//	AtomPtr hEpsilon2 = _sidechain->findAtom("HE2");
-//	AtomPtr hEpsilon3 = _sidechain->findAtom("HE3");
 	AtomPtr cOmega = _sidechain->findAtom("CZ");
 	AtomPtr nOmega1 = _sidechain->findAtom("NH1");
 	AtomPtr nOmega2 = _sidechain->findAtom("NH2");

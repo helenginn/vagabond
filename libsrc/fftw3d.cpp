@@ -81,8 +81,8 @@ FFT::FFT(FFT &other)
 
 	if (other.mask)
 	{
-		mask = (MaskType *)malloc(nn * sizeof(MaskType));
-		memcpy(mask, other.mask, nn * sizeof(MaskType));
+		mask = (int *)malloc(nn * sizeof(int));
+		memcpy(mask, other.mask, nn * sizeof(int));
 	}
 
 	_myDims = other._myDims;
@@ -112,7 +112,7 @@ void FFT::create(long nnx, long nny, long nnz)
 
 void FFT::setupMask()
 {
-	mask = (MaskType *) calloc(nn, sizeof(MaskType));
+	mask = (int *) calloc(nn, sizeof(int));
 }
 
 /*
@@ -727,7 +727,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	}
 
 	std::sort(orderedVals.begin(), orderedVals.end(), std::greater<double>());
-	double percentileVal = sumVals * 0.96;
+	double percentileVal = sumVals * 0.98;
 	double cumulative = 0;
 	double cutoff = 0;
 

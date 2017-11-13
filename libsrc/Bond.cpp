@@ -389,7 +389,7 @@ mat3x3 Bond::makeTorsionBasis(vec3 hPos, vec3 maPos,
 
 		if (angle != angle)
 		{
-			shout_at_helen("Torsion angle is nan!");
+			shout_at_helen("Torsion angle is nan for " + shortDesc() + "!");
 		}
 
 
@@ -642,7 +642,7 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 void Bond::calculateMagicAxis()
 {
 	_bondGroups[0].magicAxis = longestAxis();
-	propagateChange();
+	propagateChange(20);
 }
 
 /* To be honest we only care about 0th group here */
@@ -682,7 +682,7 @@ void Bond::calculateInitialMagicAxis()
 		_bondGroups[0].magicAxis = posSum;
 	}
 
-//	propagateChange();
+	propagateChange(20);
 }
 
 mat3x3 Bond::getMagicMat()
@@ -1267,7 +1267,6 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum)
 	for (int i = 0; i < newBranch->downstreamAtomCount(groupNum); i++)
 	{
 		double portion = myParent->_bondGroups[0].atoms[i].circlePortion;
-		double oldPortion = newBranch->_bondGroups[groupNum].atoms[i].circlePortion;
 		newBranch->_bondGroups[groupNum].atoms[i].circlePortion = portion;
 	}
 
@@ -1585,7 +1584,7 @@ bool Bond::test()
 
 void Bond::recalculateTorsion(AtomPtr heavy, double value)
 {
-	if (!_heavyAlign.expired())
+	if (!_heavyAlign.expired() && _heavyAlign.lock() != heavy)
 	{
 		heavy->getModel()->getFinalPositions();
 		_heavyAlign.lock()->getModel()->getFinalPositions();
@@ -1600,9 +1599,9 @@ void Bond::recalculateTorsion(AtomPtr heavy, double value)
 		makeTorsionBasis(origHPos, maPos, miPos, newHPos, &unwantedTorsion);
 
 		value += unwantedTorsion;
-		setTorsion(this, value);
 	}
 
+	setTorsion(this, value);
 }
 
 /* For GUI */

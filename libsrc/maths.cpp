@@ -93,7 +93,7 @@ double r_factor(std::vector<double> &set1, std::vector<double> &set2)
 double scaled_r_factor(std::vector<double> &set1, std::vector<double> &set2,
 					   double cutoff)
 {
-	double scale = scale_factor(set1, set2);
+	double scale = scale_factor_cutoff(set1, set2, cutoff);
 
 	double numerator = 0;
 	double denominator = 0;
