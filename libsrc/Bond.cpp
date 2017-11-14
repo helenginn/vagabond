@@ -1355,21 +1355,31 @@ double Bond::getMeanSquareDeviation()
 
 void Bond::getAnisotropy()
 {
-//	std::vector<BondSample> positions = getFinalPositions();
+	std::vector<BondSample> finals = getFinalPositions();
 	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
 
 	std::vector<vec3> points;
+	std::vector<vec3> finalPoints;
 
 	for (int i = 0; i < positions->size(); i++)
 	{
 		points.push_back((*positions)[i].start);
+		finalPoints.push_back(finals[i].start);
 	}
 
-	Anisotropicator tropicator;
-	tropicator.setPoints(points);
-	_realSpaceTensor = tropicator.getTensor();
-	_longest = tropicator.longestAxis();
-	_anisotropyExtent = tropicator.anisotropyExtent();
+	{
+		Anisotropicator tropicator;
+		tropicator.setPoints(finalPoints);
+		_realSpaceTensor = tropicator.getTensor();
+		_longest = tropicator.longestAxis();
+	}
+
+	{
+		Anisotropicator tropicator;
+		tropicator.setPoints(points);
+		_realSpaceTensor = tropicator.getTensor();
+		_anisotropyExtent = tropicator.anisotropyExtent();
+	}
 }
 
 vec3 Bond::longestAxis()
