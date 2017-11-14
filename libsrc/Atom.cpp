@@ -199,10 +199,10 @@ std::string Atom::pdbLineBeginning(std::string start)
 
 	line << start;
 	line << std::setfill(' ') << std::setw(5) << std::fixed << _atomNum;
-	line << std::setfill(' ') << std::setw(4) << _atomName;
-	line << " " << conformer;
+	line << "  " << std::left << std::setfill(' ') << std::setw(3) << _atomName;
+	line << std::right << conformer;
 	line << std::setw(3) << residueName;
-	line << " " << getMolecule()->getChainID();
+	line << " " << getMolecule()->getChainID()[0];
 	line << std::setfill(' ') << std::setw(4) << resNum;
 	line << "  ";
 
