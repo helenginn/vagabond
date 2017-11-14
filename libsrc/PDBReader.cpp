@@ -25,6 +25,7 @@
 PDBReader::PDBReader()
 {
 	_foundCrystal = false;
+	_breakMe = false;
 }
 
 AbsolutePtr PDBReader::makeAbsolute(std::string line)
@@ -82,38 +83,36 @@ AbsolutePtr PDBReader::makeAbsolute(std::string line)
 /* We want to check we should be appending to the correct molecule */
 void PDBReader::validateMolecule(AbsolutePtr atom)
 {
-	std::string newChain = atom->getChainID();
-
-	if (newChain != _myChain)
+	if (atom->getChainID() != _myChain || _breakMe)
 	{
 		/* We have switched proteins. Have we gone back to an old one? */
 
-		if (_myCrystal->molecule(newChain))
+		/* Get a new molecule ready */
+		if (atom->isHeteroAtom())
 		{
-			_myMolecule = _myCrystal->molecule(newChain);
-
-			if (_myMolecule->getClassName() == "Polymer")
-			{
-				_myPolymer = std::static_pointer_cast<Polymer>(_myMolecule);
-			}
+			_myPolymer = PolymerPtr();
+			_myMolecule = MoleculePtr(new Molecule());
 		}
 		else
 		{
-			/* Get a new molecule ready */
-			if (atom->isHeteroAtom())
-			{
-				_myPolymer = PolymerPtr();
-				_myMolecule = MoleculePtr(new Molecule());
-			}
-			else
-			{
-				_myPolymer = PolymerPtr(new Polymer());
-				_myMolecule = _myPolymer;
-			}
-
-			_myMolecule->setChainID(newChain);
-			_myCrystal->addMolecule(_myMolecule);
+			_myPolymer = PolymerPtr(new Polymer());
+			_myMolecule = _myPolymer;
 		}
+
+		if (_breakMe)
+		{
+			_chainFrag++;
+			_breakMe = false;
+		}
+		else
+		{
+			_chainFrag = 0;
+		}
+
+		_myChain = atom->getChainID();
+		_myMolecule->setChainID(_myChain + i_to_str(_chainFrag));
+		_myCrystal->addMolecule(_myMolecule);
+
 	}
 }
 
@@ -131,15 +130,23 @@ void PDBReader::validateResidue(AbsolutePtr atom)
 
 	int difference = atom->getResNum() - _residueNum;
 
-	bool newMolecule = (atom->getChainID() != _myChain);
-
 	/* Something crazy going on, warn user. */
-	if (!newMolecule && difference < 0)
+	if (difference < 0)
 	{
-		warn_user("Residue number going backwards in PDB. "\
+		warn_user("Residue number negative or going backwards in PDB. "\
 				  "Will try to cope. Will probably fail. "\
 				  "Residue " + i_to_str(atom->getResNum())
 				  + " vs " + i_to_str(_residueNum));
+	}
+	else if (difference > 1 && _myMolecule->atomCount() != 0)
+	{
+		warn_user("Break in PDB chain " + atom->getChainID() + " of "\
+				  + i_to_str(difference) + " residues."\
+				  "Assigning to new PDB chain fragment. "\
+				  "Residue " + i_to_str(atom->getResNum()));
+
+		_breakMe = true;
+		validateMolecule(atom);
 	}
 
 	/* All set up already, no problem. */
@@ -359,3 +366,4 @@ std::string PDBReader::writeLine(AtomPtr atom, vec3 placement, int count,
 
 	return stream.str();
 }
+

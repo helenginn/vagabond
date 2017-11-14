@@ -657,21 +657,6 @@ double Sampler::getScore()
 
 	double cutoff = FFT::score(_fft, segment, zero, &xs, &ys);
 
-	/*
-	 std::cout << "Checking " << vec3_desc(zero) << std::endl;
-	std::cout << "Value at point = " << _fft->getReal(ele) << std::endl;
-	std::cout << "HERE" << std::endl;
-
-	for (int i = 0; i < xs.size(); i++)
-	{
-		if (ys[i] < cutoff) continue;
-
-		std::cout << xs[i] << "\t" << ys[i] << std::endl;
-	}
-
-	exit(0);
-	 */
-
 	if (_scoreType == ScoreTypeCorrel)
 	{
 		double correl = correlation(xs, ys, cutoff);

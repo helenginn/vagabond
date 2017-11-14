@@ -59,7 +59,7 @@ void Crystal::addMolecule(MoleculePtr molecule)
 {
 	if (molecule->getChainID().length() <= 0)
 	{
-		shout_at_helen("Monomer chain ID is missing while trying\n"\
+		shout_at_helen("Polymer chain ID is missing while trying\n"\
 					   "to interpret PDB file.");
 	}
 	

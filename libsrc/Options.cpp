@@ -97,11 +97,8 @@ void Options::run()
 			int count = 0;
 			crystals[0]->concludeRefinement(count, data, crystals[0]);
 
-			if (_numCycles > 0)
-			{
-				refineAll(RefinementModelPos, 4, &count);
-				refineAll(RefinementFine, _numCycles, &count);
-			}
+			refineAll(RefinementModelPos, 4, &count);
+			refineAll(RefinementFine, _numCycles, &count);
 		}
 	}
 

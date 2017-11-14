@@ -34,8 +34,12 @@ private:
 	CrystalPtr _myCrystal;
 	MonomerPtr _myMonomer;
 	std::string _myChain;
+	bool _breakMe;
+	int _chainFrag;
 	AbsolutePtr _myAbsolute;
 	int _residueNum;
+
+	std::string longChainID(std::string base);
 
 	void getSymmetry(std::string line);
 	AbsolutePtr makeAbsolute(std::string line);
