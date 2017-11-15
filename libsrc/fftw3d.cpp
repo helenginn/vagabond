@@ -516,7 +516,7 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos,
 
 
 /*  For multiplying point-wise
- *
+ *  No assumption that interpolation is not needed.
  */
 double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 					  MapScoreType mapScoreType, std::vector<double> *xs,
@@ -620,21 +620,17 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	}
 
 	vec3 atomPos = make_vec3(0, 0, 0);
-	for (double k = 0; ; k += step)
+	for (double k = 0; atomPos.z < fftAtom->nz; k += step)
 	{
-		for (double j = 0; ; j += step)
+		for (double j = 0; atomPos.y < fftAtom->ny; j += step)
 		{
-			for (double i = 0; ; i += step)
+			for (double i = 0; atomPos.x < fftAtom->nx; i += step)
 			{
 				/* Position currently in voxel coords - change to atom. */
 				vec3 crystalPos = make_vec3(i, j, k);
 				atomPos = mat3x3_mult_vec(crystal2AtomVox, crystalPos);
 				vec3 pos = atomPos;
 
-				if (atomPos.x > fftAtom->nx)
-				{
-					break;
-				}
 
 				/* Now we must find the relative crystal voxel to write this
 				 * density value to, given that the atom is wrapped around
@@ -710,16 +706,10 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				}
 			}
 
-			if (atomPos.y > fftAtom->ny)
-			{
-				break;
-			}
+			atomPos.x = 0;
 		}
 
-		if (atomPos.z > fftAtom->nz)
-		{
-			break;
-		}
+		atomPos.y = 0;
 	}
 
 	//std::cout << "Num: " << count << std::endl;
@@ -755,7 +745,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 }
 
 /*  For multiplying point-wise
- *
+ *  Assumes no differences in FFT scales.
  */
  void FFT::multiply(FFTPtr fftEdit, FFTPtr fftConst)
 {
