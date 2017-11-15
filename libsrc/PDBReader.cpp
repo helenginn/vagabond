@@ -150,7 +150,7 @@ void PDBReader::validateResidue(AbsolutePtr atom)
 	}
 
 	/* All set up already, no problem. */
-	if (difference == 0)
+	if (difference == 0 && _myMolecule->atomCount() > 0)
 	{
 		return;
 	}
