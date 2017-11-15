@@ -651,11 +651,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 				atomReal = fftAtom->interpolate(offsetPos, 0);
 
-				if (atomReal != atomReal)
-				{
-					std::cout << "WTF" << std::endl;
-				}
-
 				double atomImag = 0;
 
 				if (offsetPos.x < 0) offsetPos.x += fftAtom->nx;
@@ -680,7 +675,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 				if (mapScoreType == MapScoreTypeCorrel)
 				{
-//					double realCryst = fftCrystal->interpolate(finalCrystalVox);
 					double realCryst = fftCrystal->getReal(crystalIndex);
 					crystalVals.push_back(realCryst);
 					thingVals.push_back(atomReal);
