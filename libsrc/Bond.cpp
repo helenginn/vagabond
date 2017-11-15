@@ -796,7 +796,7 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		undoBlur *= modulation;
 		undoBlur *= fabs(_dampening);
 
-		_blurTotal += fabs(rotAngle - undoBlur);
+		_blurTotal += fabs(undoBlur);
 
 		/* This will only really apply for a kicked bond */
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;

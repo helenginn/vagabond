@@ -584,8 +584,8 @@ void Polymer::setInitialKick(void *object, double value)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
 	int monomerNum = polymer->_anchorNum;
-	polymer->getMonomer(monomerNum)->setKick(value, 0);
-	polymer->getMonomer(monomerNum - 1)->setKick(value, 0);
+	polymer->getMonomer(monomerNum)->setKick(value, false);
+	polymer->getMonomer(monomerNum - 1)->setKick(value, true);
 }
 
 /* For side chains, obviously */

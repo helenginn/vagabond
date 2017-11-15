@@ -157,7 +157,7 @@ void Sampler::setupNelderMead()
 void Sampler::addOverallKickAndDampen(PolymerPtr polymer)
 {
 	_strategy->addParameter(&*polymer, Polymer::getBackboneDampening, Polymer::setBackboneDampening, 0.02, 0.02, "dampen");
-//	_strategy->addParameter(&*polymer, Polymer::getInitialKick, Polymer::setInitialKick, 0.05, 0.02, "kick");
+	_strategy->addParameter(&*polymer, Polymer::getInitialKick, Polymer::setInitialKick, 0.05, 0.02, "kick");
 }
 
 void Sampler::addSidechainDampen(PolymerPtr polymer)
