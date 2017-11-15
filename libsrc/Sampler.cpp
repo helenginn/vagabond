@@ -157,7 +157,7 @@ void Sampler::setupNelderMead()
 void Sampler::addOverallKickAndDampen(PolymerPtr polymer)
 {
 	_strategy->addParameter(&*polymer, Polymer::getBackboneDampening, Polymer::setBackboneDampening, 0.02, 0.02, "dampen");
-	_strategy->addParameter(&*polymer, Polymer::getInitialKick, Polymer::setInitialKick, 0.05, 0.02, "kick");
+//	_strategy->addParameter(&*polymer, Polymer::getInitialKick, Polymer::setInitialKick, 0.05, 0.02, "kick");
 }
 
 void Sampler::addSidechainDampen(PolymerPtr polymer)
@@ -262,7 +262,7 @@ void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
 
 	_strategy->addParameter(&*bond, Bond::getTorsionBlur, Bond::setTorsionBlur,
 							range, interval, "b" + bond->shortDesc());
-	
+
 	_bonds.push_back(bond);
 }
 
@@ -482,7 +482,7 @@ bool Sampler::sample(bool clear)
 	if (!_silent && false)
 	{
 		std::cout << "Sampling ";
-		
+
 		for (int i = 0; i < sampleSize(); i++)
 		{
 			std::cout << _sampled[i]->shortDesc() << ", ";
