@@ -38,8 +38,6 @@ sites
 *.out
 *.app
 
-aclocal.m4
 .deps
 .libs
-libtool
 
