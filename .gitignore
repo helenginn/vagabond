@@ -38,6 +38,4 @@ sites
 *.out
 *.app
 
-.deps
-.libs
 
