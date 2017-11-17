@@ -40,7 +40,6 @@ sites
 
 aclocal.m4
 .deps
-config.guess
 .libs
 libtool
 
