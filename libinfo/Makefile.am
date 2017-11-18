@@ -1,5 +1,5 @@
 ACLOCAL_AMFLAGS = -I m4
-AM_CFLAGS = --std=c++11 -O3
+AM_CFLAGS = --std=c++0x -O3
 AM_LDFLAGS =
 
 lib_LTLIBRARIES = ../libs/libvbondinfo.la
