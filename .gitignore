@@ -38,10 +38,4 @@ sites
 *.out
 *.app
 
-Makefile.in
-aclocal.m4
-.deps
-config.guess
-.libs
-libtool
 
