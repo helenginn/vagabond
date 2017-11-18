@@ -189,6 +189,13 @@ void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 	mtzout->refs_in_memory = 0;
 	mtzout->fileout = CMtz::MtzOpenForWrite(outputFile.c_str());
 
+	if (!mtzout->fileout)
+	{
+		std::cout << "Could not open " << outputFile.c_str() << std::endl;
+		std::cerr << "Error: " << strerror(errno) << std::endl;
+		return;
+	}
+
 	// then add symm headers...
 	for (int i = 0; i < mtzspg->nsymop; ++i)
 		CCP4::rotandtrn_to_mat4(rsm[i], mtzspg->symop[i]);
