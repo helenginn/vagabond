@@ -265,7 +265,7 @@ void Options::parse()
 
 		if (!understood)
 		{
-			bool madeJoke = parseJoke(arg);
+			bool madeJoke = parseJoke(prefix);
 
 			if (!madeJoke)
 			{
