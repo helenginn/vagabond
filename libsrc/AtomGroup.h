@@ -16,7 +16,7 @@
 #include "Sampler.h"
 #include <map>
 
-class AtomGroup : public std::enable_shared_from_this<AtomGroup>, public Sampler
+class AtomGroup : public boost::enable_shared_from_this<AtomGroup>, public Sampler
 {
 public:
 	AtomPtr findAtom(std::string atomType);

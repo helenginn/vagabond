@@ -33,7 +33,7 @@ typedef enum
 // Anything which is capable of predicting electron positions.
 //
 
-class Model : public std::enable_shared_from_this<Model>, public Distributor
+class Model : public boost::enable_shared_from_this<Model>, public Distributor
 {
 public:
 	Model();

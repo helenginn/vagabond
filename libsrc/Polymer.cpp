@@ -301,7 +301,7 @@ void Polymer::graph(std::string graphName)
 
 		if (caModel->getClassName() == "Bond")
 		{
-			BondPtr caBond = std::static_pointer_cast<Bond>(caModel);
+			BondPtr caBond = boost::static_pointer_cast<Bond>(caModel);
 			double meanSq = caBond->getMeanSquareDeviation();
 			vec3 origEllipsoid = ca->getEllipsoidLongestAxis();
 			vec3 newEllipsoid = caBond->longestAxis();

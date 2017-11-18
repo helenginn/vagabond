@@ -26,7 +26,7 @@
 
 typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
-class Crystal : public Object, public std::enable_shared_from_this<Crystal>
+class Crystal : public Object, public boost::enable_shared_from_this<Crystal>
 {
 public:
 	Crystal();

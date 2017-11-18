@@ -576,7 +576,7 @@ Crystal::Crystal()
 {
 	_firstScale = -1;
 	_maxResolution = 0;
-	_overallFlex = 0.003;
+	_overallFlex = 0.001;
 }
 
 void Crystal::applySymOps()

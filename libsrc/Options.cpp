@@ -138,7 +138,7 @@ void Options::parse()
 			DiffractionMtzPtr mtz;
 			mtz = DiffractionMtzPtr(new DiffractionMtz());
 			DiffractionPtr diffraction;
-			diffraction = std::static_pointer_cast<Diffraction>(mtz);
+			diffraction = boost::static_pointer_cast<Diffraction>(mtz);
 			diffraction->setFilename(mtz_name);
 			diffraction->load();
 

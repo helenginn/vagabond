@@ -18,7 +18,7 @@
 #include "../libinfo/GeomTable.h"
 #include "fftw3d.h"
 
-class Atom : public std::enable_shared_from_this<Atom>
+class Atom : public boost::enable_shared_from_this<Atom>
 {
 public:
 	Atom();

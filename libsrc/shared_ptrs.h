@@ -9,7 +9,9 @@
 #ifndef vagabond_shared_ptrs_h
 #define vagabond_shared_ptrs_h
 
-#include <memory>
+#include "../libboost/shared_ptr.hpp"
+#include "../libboost/weak_ptr.hpp"
+#include "../libboost/enable_shared_from_this.hpp"
 #include <math.h>
 #include <vector>
 
@@ -24,99 +26,99 @@
 #define deg2rad(a) ((a) * M_PI / 180)
 #define rad2deg(a) ((a) / M_PI * 180)
 
-#define ToBondPtr(a) (std::static_pointer_cast<Bond>((a)))
-#define ToAbsolutePtr(a) (std::static_pointer_cast<Absolute>((a)))
-#define ToAnchorPtr(a) (std::static_pointer_cast<Anchor>((a)))
-#define ToModelPtr(a) (std::static_pointer_cast<Model>((a)))
-#define ToPolymerPtr(a) (std::static_pointer_cast<Polymer>((a)))
-#define ToMoleculePtr(a) (std::static_pointer_cast<Molecule>((a)))
+#define ToBondPtr(a) (boost::static_pointer_cast<Bond>((a)))
+#define ToAbsolutePtr(a) (boost::static_pointer_cast<Absolute>((a)))
+#define ToAnchorPtr(a) (boost::static_pointer_cast<Anchor>((a)))
+#define ToModelPtr(a) (boost::static_pointer_cast<Model>((a)))
+#define ToPolymerPtr(a) (boost::static_pointer_cast<Polymer>((a)))
+#define ToMoleculePtr(a) (boost::static_pointer_cast<Molecule>((a)))
 
 class Options;
-typedef std::shared_ptr<Options> OptionsPtr;
+typedef boost::shared_ptr<Options> OptionsPtr;
 
 class FFT;
-typedef std::shared_ptr<FFT> FFTPtr;
+typedef boost::shared_ptr<FFT> FFTPtr;
 
 class Crystal;
-typedef std::shared_ptr<Crystal> CrystalPtr;
+typedef boost::shared_ptr<Crystal> CrystalPtr;
 
 class Molecule;
-typedef std::shared_ptr<Molecule> MoleculePtr;
-typedef std::weak_ptr<Molecule> MoleculeWkr;
+typedef boost::shared_ptr<Molecule> MoleculePtr;
+typedef boost::weak_ptr<Molecule> MoleculeWkr;
 
 class Monomer;
-typedef std::shared_ptr<Monomer> MonomerPtr;
-typedef std::weak_ptr<Monomer> MonomerWkr;
+typedef boost::shared_ptr<Monomer> MonomerPtr;
+typedef boost::weak_ptr<Monomer> MonomerWkr;
 
 class AtomGroup;
 class Backbone;
-typedef std::shared_ptr<Backbone> BackbonePtr;
-typedef std::shared_ptr<AtomGroup> AtomGroupPtr;
+typedef boost::shared_ptr<Backbone> BackbonePtr;
+typedef boost::shared_ptr<AtomGroup> AtomGroupPtr;
 
 class Sidechain;
-typedef std::shared_ptr<Sidechain> SidechainPtr;
+typedef boost::shared_ptr<Sidechain> SidechainPtr;
 
 class Knotter;
-typedef std::shared_ptr<Knotter> KnotterPtr;
+typedef boost::shared_ptr<Knotter> KnotterPtr;
 
 class Polymer;
-typedef std::shared_ptr<Polymer> PolymerPtr;
-typedef std::weak_ptr<Polymer> PolymerWkr;
+typedef boost::shared_ptr<Polymer> PolymerPtr;
+typedef boost::weak_ptr<Polymer> PolymerWkr;
 
 class Atom;
-typedef std::shared_ptr<Atom> AtomPtr;
-typedef std::weak_ptr<Atom> AtomWkr;
+typedef boost::shared_ptr<Atom> AtomPtr;
+typedef boost::weak_ptr<Atom> AtomWkr;
 
 class Element;
-typedef std::shared_ptr<Element> ElementPtr;
+typedef boost::shared_ptr<Element> ElementPtr;
 
 class Model;
 class Absolute;
 class Bond;
 class Anchor;
 
-typedef std::shared_ptr<Absolute> AbsolutePtr;
-typedef std::shared_ptr<Model> ModelPtr;
-typedef std::shared_ptr<Bond> BondPtr;
-typedef std::weak_ptr<Bond> BondWkr;
-typedef std::shared_ptr<Anchor> AnchorPtr;
+typedef boost::shared_ptr<Absolute> AbsolutePtr;
+typedef boost::shared_ptr<Model> ModelPtr;
+typedef boost::shared_ptr<Bond> BondPtr;
+typedef boost::weak_ptr<Bond> BondWkr;
+typedef boost::shared_ptr<Anchor> AnchorPtr;
 
 class Bucket;
 class BucketUniform;
 
-typedef std::shared_ptr<Bucket> BucketPtr;
-typedef std::shared_ptr<BucketUniform> BucketUniformPtr;
+typedef boost::shared_ptr<Bucket> BucketPtr;
+typedef boost::shared_ptr<BucketUniform> BucketUniformPtr;
 
 class Dataset;
 class Diffraction;
 class DiffractionMtz;
-typedef std::shared_ptr<Dataset> DatasetPtr;
-typedef std::shared_ptr<Diffraction> DiffractionPtr;
-typedef std::shared_ptr<DiffractionMtz> DiffractionMtzPtr;
+typedef boost::shared_ptr<Dataset> DatasetPtr;
+typedef boost::shared_ptr<Diffraction> DiffractionPtr;
+typedef boost::shared_ptr<DiffractionMtz> DiffractionMtzPtr;
 
 class Object;
-typedef std::shared_ptr<Object> ObjectPtr;
+typedef boost::shared_ptr<Object> ObjectPtr;
 
 class RefinementGridSearch;
 class RefinementStepSearch;
 class RefinementStrategy;
 class RefinementSnake;
 class NelderMead;
-typedef std::shared_ptr<RefinementStepSearch> RefinementStepSearchPtr;
-typedef std::shared_ptr<RefinementGridSearch> RefinementGridSearchPtr;
-typedef std::shared_ptr<RefinementStrategy> RefinementStrategyPtr;
-typedef std::shared_ptr<RefinementSnake> RefinementSnakePtr;
-typedef std::shared_ptr<NelderMead> NelderMeadPtr;
+typedef boost::shared_ptr<RefinementStepSearch> RefinementStepSearchPtr;
+typedef boost::shared_ptr<RefinementGridSearch> RefinementGridSearchPtr;
+typedef boost::shared_ptr<RefinementStrategy> RefinementStrategyPtr;
+typedef boost::shared_ptr<RefinementSnake> RefinementSnakePtr;
+typedef boost::shared_ptr<NelderMead> NelderMeadPtr;
 
 class CSV;
 class PNGFile;
 class TextManager;
-typedef std::shared_ptr<PNGFile> PNGFilePtr;
-typedef std::shared_ptr<TextManager> TextManagerPtr;
-typedef std::shared_ptr<CSV> CSVPtr;
+typedef boost::shared_ptr<PNGFile> PNGFilePtr;
+typedef boost::shared_ptr<TextManager> TextManagerPtr;
+typedef boost::shared_ptr<CSV> CSVPtr;
 
 class Sampler;
-typedef std::shared_ptr<Sampler> SamplerPtr;
+typedef boost::shared_ptr<Sampler> SamplerPtr;
 
 typedef std::vector<AtomWkr> AtomList;
 

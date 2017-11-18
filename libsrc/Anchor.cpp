@@ -24,8 +24,8 @@ Anchor::Anchor(BondPtr inheritToNTerminus, BondPtr inheritToCTerminus)
 	 */
 
 	_callingBond = NULL;
-	_trappedToNTerminus = std::make_shared<Bond>(*inheritToNTerminus);
-	_trappedToCTerminus = std::make_shared<Bond>(*inheritToCTerminus);
+	_trappedToNTerminus.reset(new Bond(*inheritToNTerminus));
+	_trappedToCTerminus.reset(new Bond(*inheritToCTerminus));
 
 	// Either we have bonds C->N and N->CA (to C terminus)
 	// or we have CA->N and N->C (to N terminus)

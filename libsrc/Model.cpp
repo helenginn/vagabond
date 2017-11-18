@@ -27,7 +27,7 @@ void Model::addToMonomer(MonomerPtr monomer)
 	monomer->addModel(shared_from_this());
 
 	PolymerPtr polymer = monomer->getPolymer();
-	MoleculePtr molecule = std::static_pointer_cast<Molecule>(polymer);
+	MoleculePtr molecule = boost::static_pointer_cast<Molecule>(polymer);
 	molecule->addModel(shared_from_this());
 }
 

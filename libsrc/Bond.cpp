@@ -345,7 +345,7 @@ void Bond::activate(AtomGroupPtr group, AtomPtr inherit)
 
 	if (group)
 	{
-		BondPtr myself = std::static_pointer_cast<Bond>(shared_from_this());
+		BondPtr myself = boost::static_pointer_cast<Bond>(shared_from_this());
 		group->addBond(myself);
 	}
 
@@ -613,7 +613,9 @@ FFTPtr Bond::getDistribution(bool absOnly)
 	fft->fft(1);
 	fft->invertScale();
 
-	return std::make_shared<FFT>(*fft);
+	FFTPtr newPtr;
+	newPtr.reset(new FFT(*fft));
+	return newPtr;
 }
 
 vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
@@ -729,7 +731,7 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 	_blurTotal = 0;
 	AtomPtr nextAtom = downstreamAtom(_activeGroup, 0);
 	vec3 myPerfectPos = getStaticPosition();
-	BondPtr nextBond = std::static_pointer_cast<Bond>(nextAtom->getModel());
+	BondPtr nextBond = boost::static_pointer_cast<Bond>(nextAtom->getModel());
 	vec3 nextPerfectPos = nextBond->getStaticPosition();
 	double nextRatio = getGeomRatio(_activeGroup, 0);
 	vec3 nextPerfectVec = vec3_subtract_vec3(nextPerfectPos, myPerfectPos);
@@ -904,7 +906,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 		return newSamples;
 	}
 
-	BondPtr prevBond = std::static_pointer_cast<Bond>(model);
+	BondPtr prevBond = boost::static_pointer_cast<Bond>(model);
 	prevBond = Anchor::sanitiseBond(this, prevBond);
 	int myGroup = -1;
 	double torsionNumber = prevBond->downstreamAtomNum(getMinor(), &myGroup);
@@ -1129,7 +1131,7 @@ double Bond::getBendAngle(void *object)
 	}
 
 	int myGroup = -1;
-	BondPtr newBond = std::static_pointer_cast<Bond>(model);
+	BondPtr newBond = boost::static_pointer_cast<Bond>(model);
 	int i = newBond->downstreamAtomNum(bond->getMinor(), &myGroup);
 
 	if (i >= 0)
@@ -1156,7 +1158,7 @@ void Bond::setBendAngle(void *object, double value)
 	}
 
 	int myGroup = -1;
-	BondPtr newBond = std::static_pointer_cast<Bond>(model);
+	BondPtr newBond = boost::static_pointer_cast<Bond>(model);
 	int i = newBond->downstreamAtomNum(bond->getMinor(), &myGroup);
 
 	if (i >= 0)
@@ -1170,8 +1172,8 @@ void Bond::setBendAngle(void *object, double value)
 
 bool Bond::splitBond()
 {
-	BondPtr me = std::static_pointer_cast<Bond>(shared_from_this());
-	BondPtr parent = std::static_pointer_cast<Bond>(getParentModel());
+	BondPtr me = boost::static_pointer_cast<Bond>(shared_from_this());
+	BondPtr parent = boost::static_pointer_cast<Bond>(getParentModel());
 	int last = parent->downstreamAtomGroupCount();
 	BondPtr dupl = me->duplicateDownstream(parent, last);
 	double torsion = getTorsion(&*me);
@@ -1201,7 +1203,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum)
 		return BondPtr();
 	}
 
-	BondPtr myParent = std::static_pointer_cast<Bond>(model);
+	BondPtr myParent = boost::static_pointer_cast<Bond>(model);
 
 	BondPtr duplBond = BondPtr(new Bond(*this));
 
@@ -1281,7 +1283,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum)
 	
 	for (int i = 0; i < downstreamAtomCount(0); i++)
 	{
-		BondPtr nextBond = std::static_pointer_cast<Bond>(downstreamAtom(0, i)->getModel());
+		BondPtr nextBond = boost::static_pointer_cast<Bond>(downstreamAtom(0, i)->getModel());
 
 		if (!nextBond->isBond())
 		{
@@ -1438,7 +1440,7 @@ void Bond::setupSampling()
 {
 	setupGrid();
 	ModelPtr model = shared_from_this();
-	BondPtr bond = std::static_pointer_cast<Bond>(model);
+	BondPtr bond = boost::static_pointer_cast<Bond>(model);
 	setJobName("bond_" + shortDesc());
 	setSilent(true);
 

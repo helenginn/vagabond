@@ -32,7 +32,7 @@ public:
 	MonomerPtr shared_from_this()
 	{
 		AtomGroupPtr group = AtomGroup::shared_from_this();
-		return std::static_pointer_cast<Monomer>(group);
+		return boost::static_pointer_cast<Monomer>(group);
 	}
 
 	void setIdentifier(std::string idString)

@@ -90,7 +90,7 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 		AtomPtr nextAtom = bond->downstreamAtom(k, trial);
 		int totalAtoms = bond->downstreamAtomCount(k);
 
-		BondPtr nextBond = std::static_pointer_cast<Bond>(nextAtom->getModel());
+		BondPtr nextBond = boost::static_pointer_cast<Bond>(nextAtom->getModel());
 
 		/* In case the downstream atom has no future, get whatever
 		 downstream atom has a refinable future.
@@ -106,7 +106,7 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 			}
 
 			nextAtom = bond->downstreamAtom(k, trial);
-			nextBond = std::static_pointer_cast<Bond>(nextAtom->getModel());
+			nextBond = boost::static_pointer_cast<Bond>(nextAtom->getModel());
 		}
 
 		/* Now if we have a better bond, go forth */
@@ -136,7 +136,7 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 void Sampler::setupSnake()
 {
 	_strategy = RefinementStrategyPtr(new RefinementSnake());
-	RefinementSnakePtr snake = std::static_pointer_cast<RefinementSnake>(_strategy);
+	RefinementSnakePtr snake = boost::static_pointer_cast<RefinementSnake>(_strategy);
 	snake->setParentSampler(this);
 }
 
@@ -546,7 +546,7 @@ double Sampler::getScore()
 				continue;
 			}
 
-			BondPtr bond = std::static_pointer_cast<Bond>(model);
+			BondPtr bond = boost::static_pointer_cast<Bond>(model);
 			double target = -1;
 
 			if (_scoreType == ScoreTypeModelFlexiness)
@@ -679,7 +679,7 @@ double Sampler::getScore()
 std::vector<double> Sampler::getNextResult(int num)
 {
 	RefinementGridSearchPtr grid;
-	grid = std::static_pointer_cast<RefinementGridSearch>(_strategy);
+	grid = boost::static_pointer_cast<RefinementGridSearch>(_strategy);
 
 	return grid->getNextResult(num);
 }

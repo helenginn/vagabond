@@ -30,7 +30,9 @@ protected:
 
 	FFTPtr getDistributionCopy()
 	{
-		return std::make_shared<FFT>(*_fft);
+		FFTPtr newPtr;
+		newPtr.reset(new FFT(*_fft));
+		return newPtr;
 	}
 
 	FFTPtr prepareDistribution(double n, double scale, void *object,
