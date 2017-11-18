@@ -9,9 +9,9 @@
 #ifndef vagabond_shared_ptrs_h
 #define vagabond_shared_ptrs_h
 
-#include "../libboost/shared_ptr.hpp"
-#include "../libboost/weak_ptr.hpp"
-#include "../libboost/enable_shared_from_this.hpp"
+#include <boost/shared_ptr.hpp>
+#include <boost/weak_ptr.hpp>
+#include <boost/enable_shared_from_this.hpp>
 #include <math.h>
 #include <vector>
 
