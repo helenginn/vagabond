@@ -43,6 +43,8 @@ Options::Options(int argc, const char **argv)
 		std::cout << "Please specify a macromolecular model." << std::endl;
 		std::cout << "\te.g., vagabond --with-pdb=xxxx.pdb" << std::endl;
 		std::cout << std::endl;
+		std::cout << "Alternatively, see all options:" << std::endl;
+		std::cout << "\tvagabond --help\n" << std::endl;
 		exit(0);
 	}
 
@@ -107,6 +109,24 @@ void Options::run()
 	std::cout << std::endl;
 }
 
+void Options::displayHelp()
+{
+	std::cout << "Syntax: vagabond [options]\n\n" << std::endl;
+	std::cout << "Takes an atomistic PDB file and refines it against" << std::endl;
+	std::cout << "a reflection list in torsion space.\n\n" << std::endl;
+	std::cout << "--help\t\t\t\tDisplays command list.\n" << std::endl;
+	std::cout << "--with-pdb=<filename>\t\tName of the input PDB file to refine.\n" << std::endl;
+	std::cout << "--with-mtz=<filename>\t\tName of the MTZ file to refine.\n" << std::endl;
+	std::cout << "--output-dir=<directory>\tOptional name of a directory to dump processing.\n" << std::endl;
+	std::cout << "--target-flex=<num>\t\tOptional inherent flexibility to aim for in\n\t\t\t\tdegrees (default 0.001)\n" << std::endl;
+	std::cout << "--anchor-res=<num>\t\tOptional override default anchor residue for all\n\t\t\t\tchains (under development)\n" << std::endl;
+	std::cout << std::endl;
+	std::cout << "Baseline command to start running vagabond:\n" << std::endl;
+	std::cout << "\tvagabond --with-pdb=start.pdb --with-mtz=start.mtz\n" << std::endl;
+
+	exit(0);
+}
+
 void Options::parse()
 {
 	for (int i = 0; i < arguments.size(); i++)
@@ -114,7 +134,14 @@ void Options::parse()
 		bool understood = false;
 		std::string arg = arguments[i];
 
-		std::string prefix("--with-pdb=");
+		std::string prefix("--help");
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			displayHelp();
+		}
+
+		prefix = "--with-pdb=";
 
 		if (!arg.compare(0, prefix.size(), prefix))
 		{

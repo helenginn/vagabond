@@ -46,6 +46,7 @@ private:
 	static OptionsPtr options;
 
 	void parse();
+	void displayHelp();
 	void outputCrystalInfo();
 	void refinementCycle(MoleculePtr molecule, int *count,
 						 RefinementType type);
