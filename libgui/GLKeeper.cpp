@@ -77,7 +77,7 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 #endif // SETUP_BUFFERS
 
 	Vagabond2GLPtr v2gl = Vagabond2GLPtr(new Vagabond2GL());
-	GLObjectPtr object = std::static_pointer_cast<GLObject>(v2gl);
+	GLObjectPtr object = boost::static_pointer_cast<GLObject>(v2gl);
 
 	_objects.push_back(object);
 
