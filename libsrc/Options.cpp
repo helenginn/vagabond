@@ -265,8 +265,13 @@ void Options::parse()
 
 		if (!understood)
 		{
-			warn_user("I did not understand your command:\n\t"\
-					  + arg);
+			bool madeJoke = parseJoke(arg);
+
+			if (!madeJoke)
+			{
+				warn_user("I did not understand your command:\n\t"\
+						  + arg);
+			}
 		}
 	}
 }
@@ -328,5 +333,16 @@ void Options::refinementCycle(MoleculePtr molecule, int *count,
 			polymer->superimpose();
 		}
 	}
+}
 
+bool Options::parseJoke(std::string arg)
+{
+	if (arg == "vag")
+	{
+		std::cout << "Unparsed command: vag\n\tI appreciate the offer but let's"\
+		"\n\tkeep this vaguely professional" << std::endl;
+		return true;
+	}
+
+	return false;
 }
