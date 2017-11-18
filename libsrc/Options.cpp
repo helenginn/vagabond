@@ -265,7 +265,7 @@ void Options::parse()
 
 		if (!understood)
 		{
-			bool madeJoke = parseJoke(prefix);
+			bool madeJoke = parseJoke(arg);
 
 			if (!madeJoke)
 			{
@@ -340,7 +340,7 @@ bool Options::parseJoke(std::string arg)
 	if (arg == "vag")
 	{
 		std::cout << "Unparsed command: vag\n\tI appreciate the offer but let's"\
-		"\n\tkeep this vaguely professional" << std::endl;
+		"\n\tkeep this vaguely professional\n" << std::endl;
 		return true;
 	}
 
