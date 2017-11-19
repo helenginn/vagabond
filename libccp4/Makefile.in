@@ -314,7 +314,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-AM_CFLAGS = --std=c++11 -O3
+AM_CFLAGS = --std=c++0x -O3
 AM_LDFLAGS = 
 lib_LTLIBRARIES = ../libs/libccp4c.la
 ___libs_libccp4c_la_SOURCES = ccp4_array.c cmap_data.c cmtzlib.c ccp4_general.c \
