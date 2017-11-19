@@ -94,7 +94,7 @@ void PDBReader::validateMolecule(AbsolutePtr atom)
 			_myMolecule = MoleculePtr(new Molecule());
 
 			_myMolecule->setAbsoluteBFacSubtract(0);
-			_myMolecule->setAbsoluteBFacMult(0.2);
+			_myMolecule->setAbsoluteBFacMult(0.5);
 		}
 		else
 		{
