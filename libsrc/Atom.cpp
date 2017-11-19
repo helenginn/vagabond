@@ -267,11 +267,13 @@ std::string Atom::averagePDBContribution(bool samePos, bool sameB)
 		return "";
 	}
 
-	getModel()->getDistribution();
+	getModel()->getDistribution(true);
 	std::string atomName = getAtomName();
 	ElementPtr element = getElement();
 
 	double occupancy = 1;
+	occupancy = getModel()->getEffectiveOccupancy();
+
 	vec3 placement = getModel()->getAbsolutePosition();
 
 	if (samePos)

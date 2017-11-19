@@ -56,6 +56,8 @@ public:
 
 	virtual std::vector<BondSample> getFinalPositions();
 
+	virtual double getEffectiveOccupancy() { return 1; }
+
 	virtual double getMeanSquareDeviation() = 0;
 	virtual mat3x3 getRealSpaceTensor()
 	{

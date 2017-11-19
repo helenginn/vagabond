@@ -210,6 +210,7 @@ void Sidechain::parameteriseAsRotamers()
 	splitConformers(rotamers.size());
 
 	// rotamers.size() should equal size of atoms list.
+	std::cout << "Multi-rotamer model for residue " << i_to_str(_resNum) << std::endl;
 
 	for (int i = 0; i < rotamers.size(); i++)
 	{
@@ -278,9 +279,14 @@ void Sidechain::parameteriseAsRotamers()
 		BondPtr bond = ToBondPtr(cb->getModel());
 
 		double occ = rotamers[i].allOccupancy;
+		std::cout << "Setting rotamer " << rotamers[i].name << " (no. "
+		<< i << ") to occupancy " << occ << ", conformer " <<
+		cb->getAlternativeConformer() << std::endl;
 
 		Bond::setOccupancy(&*bond, occ);
 	}
+
+	refreshRotamers();
 }
 
 void Sidechain::refreshRotamers()
@@ -326,7 +332,7 @@ void Sidechain::refreshRotamers()
 			bond->setOccupancyMult(mult);
 
 			double newOcc = bond->getMultOccupancy();
-		//	std::cout << "Setting occ mult " << i << ", " << newOcc << std::endl;
+		//	std::cout << "New occupancy state " << i << ", " << newOcc << std::endl;
 			test += newOcc;
 		}
 	}

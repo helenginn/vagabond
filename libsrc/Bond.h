@@ -64,6 +64,7 @@ public:
 	double magicAxisScore();
 	static double magicAxisStaticScore(void *object);
 	bool test();
+	double getEffectiveOccupancy();
 
 	AtomPtr getMajor()
 	{

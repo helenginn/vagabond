@@ -465,4 +465,107 @@ RotamerTable::RotamerTable()
 		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  180.0));
 		addRotamerToTable("lys", rotamer);
 	}
+
+	/* SERINE / SER / S */
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "p";
+		setOccupancies(&rotamer, 0.48, 0.33, 0.36, 0.55);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  62.0));
+		addRotamerToTable("ser", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "t";
+		setOccupancies(&rotamer, 0.22, 0.22, 0.34, 0.18);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		addRotamerToTable("ser", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "m";
+		setOccupancies(&rotamer, 0.29, 0.44, 0.29, 0.25);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -65.0));
+		addRotamerToTable("ser", rotamer);
+	}
+
+	/* HISTIDINE / HIS / H */
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "p-80";
+		setOccupancies(&rotamer, 0.09, 0.00, 0.06, 0.13);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", -75.0));
+		addRotamerToTable("his", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "p80";
+		setOccupancies(&rotamer, 0.04, 0.00, 0.04, 0.06);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  80.0));
+		addRotamerToTable("his", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "t-160";
+		setOccupancies(&rotamer, 0.05, 0.05, 0.14, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", -165.0));
+		addRotamerToTable("his", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "t-80";
+		setOccupancies(&rotamer, 0.11, 0.17, 0.09, 0.09);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  -80.0));
+		addRotamerToTable("his", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "t60";
+		setOccupancies(&rotamer, 0.16, 0.24, 0.17, 0.12);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",   60.0));
+		addRotamerToTable("his", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "m-70";
+		setOccupancies(&rotamer, 0.29, 0.26, 0.30, 0.30);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -65.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  -70.0));
+		addRotamerToTable("his", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "m170";
+		setOccupancies(&rotamer, 0.07, 0.09, 0.03, 0.09);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -65.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  165.0));
+		addRotamerToTable("his", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "m80";
+		setOccupancies(&rotamer, 0.13, 0.14, 0.10, 0.14);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -65.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",   85.0));
+		addRotamerToTable("his", rotamer);
+	}
+
+	/* GLUTAMATE / GLU / E */
+	
 }

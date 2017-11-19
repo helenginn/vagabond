@@ -972,6 +972,8 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 		}
 	}
 
+	double occTotal = 0;
+
 	for (int i = 0; i < (*prevSamples).size(); i++)
 	{
 		double currentTorsion = (*prevSamples)[i].torsion + circleAdd;
@@ -1001,7 +1003,8 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 		nextSample.old_start = prevMinorPos;
 		nextSample.torsion = myTorsions[i].torsion;
 		nextSample.occupancy = myTorsions[i].occupancy *
-		(*prevSamples)[i].occupancy * occupancy;
+		(*prevSamples)[i].occupancy;
+		occTotal += nextSample.occupancy;
 
 		if (style == BondSampleStatic)
 		{
@@ -1019,6 +1022,12 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 
 	if (style == BondSampleThorough)
 	{
+		if (false && getMultOccupancy() < 0.9)
+		{
+			std::cout << "Occ total: " << shortDesc() << " " << occTotal
+			<< " instead of " << std::setprecision(4) << getMultOccupancy() << std::endl;
+		}
+
 		_changedSamples = false;
 	}
 	else if (style == BondSampleStatic)
@@ -1499,38 +1508,6 @@ double Bond::getFlexibilityPotential()
 {
 	std::vector<BondSample> *samples = getManyPositions(BondSampleThorough);
 	return _blurTotal;
-
-	std::vector<BondSample> *statPos = getManyPositions(BondSampleStatic);
-	double sum = 0;
-	double weights = 0;
-
-	mat3x3 statBasis = statPos->at(0).basis;
-	vec3 statBondDir = mat3x3_axis(statBasis, 2);
-
-	for (int i = 0; i < samples->size(); i++)
-	{
-		mat3x3 iTorsionBasis = samples->at(i).basis;
-		vec3 iBondDir = mat3x3_axis(iTorsionBasis, 2);
-
-		double weight = 1;
-		double angle = vec3_angle_with_vec3(iBondDir, statBondDir);
-
-		if (angle != angle) angle = 0;
-
-		sum += angle * weight;
-		weights += weight;
-	}
-
-	double average = sum / weights;
-
-	if (average != average)
-	{
-		average = 0;
-	}
-
-	double val = average;
-
-	return val;
 }
 
 bool Bond::isRefinable()
@@ -1637,3 +1614,15 @@ std::vector<vec3> Bond::fishPositions()
 	return positions;
 }
 
+double Bond::getEffectiveOccupancy()
+{
+	std::vector<BondSample> *samples = getManyPositions(BondSampleThorough);
+	double total = 0;
+
+	for (int i = 0; i < samples->size(); i++)
+	{
+		total += samples->at(i).occupancy;
+	}
+
+	return total;
+}
