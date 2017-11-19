@@ -51,6 +51,11 @@ public:
 	{
 		return _dampen;
 	}
+
+	static bool enableTests()
+	{
+		return _enableTests;
+	}
 private:
 	static OptionsPtr options;
 
@@ -73,6 +78,7 @@ private:
 	bool _tie;
 	static double _kick;
 	static double _dampen;
+	static bool _enableTests;
 	std::string _outputDir;
 };
 

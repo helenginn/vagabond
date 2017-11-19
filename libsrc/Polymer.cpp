@@ -23,6 +23,7 @@
 #include <float.h>
 #include "FileReader.h"
 #include "Kabsch.h"
+#include "Options.h"
 
 void Polymer::addMonomer(MonomerPtr monomer)
 {
@@ -32,9 +33,9 @@ void Polymer::addMonomer(MonomerPtr monomer)
 		_monomers[resNum] = monomer;
 		monomer->setPolymer(shared_from_this());
 
-		if (monomer->getResidueNum() > _totalMonomers)
+		if (monomer->getResidueNum() + 1 > _totalMonomers)
 		{
-			_totalMonomers = monomer->getResidueNum();
+			_totalMonomers = monomer->getResidueNum() + 1;
 		}
 	}
 }
@@ -107,8 +108,13 @@ void Polymer::tieAtomsUp()
 		if (getMonomer(i))
 		{
 			getMonomer(i)->getSidechain()->splitConformers();
-	//		getMonomer(i)->getSidechain()->parameteriseAsRotamers();
-	//		getMonomer(i)->getSidechain()->setCanRefine(true);
+		}
+
+		if (Options::enableTests() && (i == 62 || i == 123))
+		{
+			std::cout << "Parameterising residue " << i_to_str(i) << std::endl;
+			getMonomer(i)->getSidechain()->parameteriseAsRotamers();
+			getMonomer(i)->getSidechain()->setCanRefine(true);
 		}
 	}
 

@@ -166,4 +166,303 @@ RotamerTable::RotamerTable()
 		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", -15.0));
 		addRotamerToTable("asp", rotamer);
 	}
+
+	/** LYSINE / LYS / K **/
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "ptpt";
+		setOccupancies(&rotamer, 0.01, 0.00, 0.02, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", 180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE", 180.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "pttp";
+		setOccupancies(&rotamer, 0.01, 0.00, 0.01, 0.02);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", 180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD", 180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "pttt";
+		setOccupancies(&rotamer, 0.02, 0.00, 0.04, 0.03);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", 180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD", 180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE", 180.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "pttm";
+		setOccupancies(&rotamer, 0.01, 0.00, 0.01, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", 180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD", 180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE", -65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "ptmt";
+		setOccupancies(&rotamer, 0.01, 0.00, 0.01, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG", 180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD", -68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE", 180.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "tptp";
+		setOccupancies(&rotamer, 0.01, 0.01, 0.01, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",   68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",   65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "tptt";
+		setOccupancies(&rotamer, 0.03, 0.05, 0.01, 0.02);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",   68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  180.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "tptm";
+		setOccupancies(&rotamer, 0.01, 0.01, 0.01, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",   68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  -65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "ttpp";
+		setOccupancies(&rotamer, 0.01, 0.01, 0.01, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",   68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",   65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "ttpt";
+		setOccupancies(&rotamer, 0.02, 0.02, 0.05, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",   68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  180.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "tttp";
+		setOccupancies(&rotamer, 0.04, 0.05, 0.05, 0.03);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",   65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "tttt";
+		setOccupancies(&rotamer, 0.13, 0.17, 0.19, 0.10);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  180.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "tttm";
+		setOccupancies(&rotamer, 0.03, 0.04, 0.02, 0.03);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  -65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "ttmt";
+		setOccupancies(&rotamer, 0.02, 0.02, 0.04, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  -68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  180.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "ttmm";
+		setOccupancies(&rotamer, 0.01, 0.01, 0.00, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  -68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  -65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mptt";
+		setOccupancies(&rotamer, 0.01, 0.00, 0.00, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -90.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",   68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  180.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mtpp";
+		setOccupancies(&rotamer, 0.01, 0.01, 0.01, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -67.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",   68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",   65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mtpt";
+		setOccupancies(&rotamer, 0.03, 0.04, 0.02, 0.03);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -67.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",   68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  180.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mttp";
+		setOccupancies(&rotamer, 0.03, 0.02, 0.04, 0.04);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -67.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",   65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mttt";
+		setOccupancies(&rotamer, 0.20, 0.23, 0.14, 0.21);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -67.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  180.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mttm";
+		setOccupancies(&rotamer, 0.05, 0.03, 0.05, 0.06);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -67.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  -65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mtmt";
+		setOccupancies(&rotamer, 0.03, 0.06, 0.02, 0.03);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -67.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  -68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  180.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mtmm";
+		setOccupancies(&rotamer, 0.01, 0.00, 0.01, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -67.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  -68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  -65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mmtp";
+		setOccupancies(&rotamer, 0.01, 0.01, 0.00, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  -68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",   65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mmtt";
+		setOccupancies(&rotamer, 0.06, 0.03, 0.05, 0.08);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  -68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  180.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mmtm";
+		setOccupancies(&rotamer, 0.01, 0.01, 0.01, 0.02);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  -68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  -65.0));
+		addRotamerToTable("lys", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mmmt";
+		setOccupancies(&rotamer, 0.01, 0.01, 0.01, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  -68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  -68.0));
+		rotamer.torsions.push_back(createTorsionAngle("CD", "CE",  180.0));
+		addRotamerToTable("lys", rotamer);
+	}
 }

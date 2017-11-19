@@ -18,6 +18,7 @@
 OptionsPtr Options::options;
 double Options::_kick = 0.10;
 double Options::_dampen = 0.08;
+bool Options::_enableTests = false;
 
 Options::Options(int argc, const char **argv)
 {
@@ -120,8 +121,11 @@ void Options::displayHelp()
 	std::cout << "--with-pdb=<filename>\t\tName of the input PDB file to refine.\n" << std::endl;
 	std::cout << "--with-mtz=<filename>\t\tName of the MTZ file to refine.\n" << std::endl;
 	std::cout << "--output-dir=<directory>\tOptional name of a directory to dump processing.\n" << std::endl;
-	std::cout << "--target-flex=<num>\t\tOptional inherent flexibility to aim for in\n\t\t\t\tdegrees (default 0.001)\n" << std::endl;
+	std::cout << "--target-flex=<num>\t\tOptional inherent flexibility to aim for in\n\t\t\t\tdegrees (default 0.001, disabled)\n" << std::endl;
 	std::cout << "--anchor-res=<num>\t\tOptional override default anchor residue for all\n\t\t\t\tchains (under development)\n" << std::endl;
+	std::cout << "--kick=<num>\t\t\tOptional override for kick fraction for initial bond\n" << std::endl;
+	std::cout << "--dampen=<num>\t\t\tOptional override for dampen fraction for all bonds\n" << std::endl;
+	std::cout << "--enable-tests\t\t\tEnable whatever it is Helen is currently working on\n" << std::endl;
 	std::cout << std::endl;
 	std::cout << "Baseline command to start running vagabond:\n" << std::endl;
 	std::cout << "\tvagabond --with-pdb=start.pdb --with-mtz=start.mtz\n" << std::endl;
@@ -329,6 +333,14 @@ void Options::parse()
 			FileReader::setOutputDirectory(_outputDir);
 			understood = true;
 		}
+		prefix = "--enable-tests";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			_enableTests = true;
+			std::cout << "Enabling Helen's test/sandbox." << std::endl;
+			understood = true;
+		}
 
 		prefix = "--no-tie";
 
@@ -421,3 +433,4 @@ bool Options::parseJoke(std::string arg)
 
 	return false;
 }
+
