@@ -297,7 +297,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4
-AM_CXXFLAGS = --std=c++11 -O3 -L../libs/.libs/ -L../libfftw/ -lccp4c -lpng -lica -lfftw3f -lvbondinfo
+AM_CXXFLAGS = --std=c++0x -O3 -I../ -L../libs/.libs/ -L../libfftw/ -lccp4c -lpng -lica -lfftw3f -lvbondinfo
 vagabond_SOURCES = main.cpp       Absolute.cpp         Element.cpp     PNGFile.cpp \
 Anchor.cpp           fftw3d.cpp      Polymer.cpp \
 Anisotropicator.cpp  FileReader.cpp  RefinementGridSearch.cpp \
