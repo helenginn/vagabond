@@ -246,7 +246,21 @@ void Sidechain::parameteriseAsRotamers()
 			if (bond->getMinor()->getAtomName() == "CB")
 			{
 				BackbonePtr bb = getMonomer()->getBackbone();
+
+				if (!bb)
+				{
+					std::cout << "Cannot find backbone for " << getMonomer()->getResidueNum() << std::endl;
+					continue;
+				}
+
 				AtomPtr heavy = bb->findAtom("N");
+
+				if (!heavy)
+				{
+					std::cout << "Cannot find nitrogen atom of backbone." << std::endl;
+					continue;
+				}
+
 				bond->recalculateTorsion(heavy, torsionValue);
 			}
 
