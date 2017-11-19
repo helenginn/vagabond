@@ -108,13 +108,13 @@ void Polymer::tieAtomsUp()
 		if (getMonomer(i))
 		{
 			getMonomer(i)->getSidechain()->splitConformers();
-		}
 
-		if (Options::enableTests() && (i == 62 || i == 123))
-		{
-			std::cout << "Parameterising residue " << i_to_str(i) << std::endl;
-			getMonomer(i)->getSidechain()->parameteriseAsRotamers();
-			getMonomer(i)->getSidechain()->setCanRefine(true);
+			if (Options::enableTests() && (i == 62 || i == 123))
+			{
+				std::cout << "Parameterising residue " << i_to_str(i) << std::endl;
+				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
+				getMonomer(i)->getSidechain()->setCanRefine(true);
+			}
 		}
 	}
 
