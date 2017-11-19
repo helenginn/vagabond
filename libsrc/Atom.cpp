@@ -29,6 +29,7 @@ Atom::Atom()
 	_initialB = 0;
 	_geomType = AtomUnassigned;
 	_weighting = 1;
+	_origOccupancy = 1.0;
 }
 
 Atom::Atom(Atom &other)
