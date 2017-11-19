@@ -64,6 +64,21 @@ public:
 		return _realSpaceTensor;
 	}
 
+	bool hasMolecule()
+	{
+		return !_molecule.expired();
+	}
+
+	MoleculePtr getMolecule()
+	{
+		return _molecule.lock();
+	}
+
+	void setMolecule(MoleculePtr mole)
+	{
+		_molecule = mole;
+	}
+
 	FFTPtr getZeroDistribution();
 	virtual void propagateChange(bool activeGroupOnly = false);
 
@@ -83,6 +98,10 @@ public:
 	}
 protected:
 	mat3x3 _realSpaceTensor;
+
+	/* Molecule which can provide offsets/rotations/etc. */
+	MoleculeWkr _molecule;
+
 private:
 	std::vector<AtomPtr> atoms;
 };

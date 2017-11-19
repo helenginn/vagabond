@@ -92,6 +92,9 @@ void PDBReader::validateMolecule(AbsolutePtr atom)
 		{
 			_myPolymer = PolymerPtr();
 			_myMolecule = MoleculePtr(new Molecule());
+
+			_myMolecule->setAbsoluteBFacSubtract(0);
+			_myMolecule->setAbsoluteBFacMult(0.2);
 		}
 		else
 		{
@@ -112,7 +115,6 @@ void PDBReader::validateMolecule(AbsolutePtr atom)
 		_myChain = atom->getChainID();
 		_myMolecule->setChainID(_myChain + i_to_str(_chainFrag));
 		_myCrystal->addMolecule(_myMolecule);
-
 	}
 }
 
@@ -339,7 +341,7 @@ CrystalPtr PDBReader::getCrystal()
 	parse();
 
 	_myCrystal->summary();
-	
+
 	if (!_foundCrystal)
 	{
 		shout_at_user("PDB file does not contain the CRYST1\n" \
@@ -366,4 +368,3 @@ std::string PDBReader::writeLine(AtomPtr atom, vec3 placement, int count,
 
 	return stream.str();
 }
-

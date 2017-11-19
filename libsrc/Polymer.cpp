@@ -110,7 +110,8 @@ void Polymer::tieAtomsUp()
 			getMonomer(i)->getSidechain()->splitConformers();
 
 			if (Options::enableTests() && (i == 62 || i == 63 ||
-										   i >= 123 || i == 103))
+																		 i == 30 || i == 78 ||
+										   							 i >= 123 || i == 103))
 			{
 				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
 			}

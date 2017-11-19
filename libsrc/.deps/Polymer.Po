@@ -230,11 +230,7 @@ Polymer.o: Polymer.cpp /usr/include/stdc-predef.h Polymer.h \
  Sampler.h RefinementStrategy.h AtomGroup.h /usr/include/c++/4.8.2/map \
  /usr/include/c++/4.8.2/bits/stl_tree.h \
  /usr/include/c++/4.8.2/bits/stl_map.h \
- /usr/include/c++/4.8.2/bits/stl_multimap.h Crystal.h Object.h fftw3d.h \
- ../libfftw/api/fftw3.h /usr/include/c++/4.8.2/deque \
- /usr/include/c++/4.8.2/bits/stl_deque.h \
- /usr/include/c++/4.8.2/bits/deque.tcc maths.h \
- /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/float.h \
+ /usr/include/c++/4.8.2/bits/stl_multimap.h \
  /usr/include/c++/4.8.2/iostream /usr/include/c++/4.8.2/ostream \
  /usr/include/c++/4.8.2/ios /usr/include/c++/4.8.2/bits/ios_base.h \
  /usr/include/c++/4.8.2/bits/locale_classes.h \
@@ -250,11 +246,15 @@ Polymer.o: Polymer.cpp /usr/include/stdc-predef.h Polymer.h \
  /usr/include/c++/4.8.2/bits/locale_facets.tcc \
  /usr/include/c++/4.8.2/bits/basic_ios.tcc \
  /usr/include/c++/4.8.2/bits/ostream.tcc /usr/include/c++/4.8.2/istream \
- /usr/include/c++/4.8.2/bits/istream.tcc Sidechain.h Monomer.h Backbone.h \
- Shouter.h Atom.h ../libinfo/GeomTable.h Anchor.h Bond.h Distributor.h \
- Model.h /usr/include/c++/4.8.2/mutex /usr/include/c++/4.8.2/chrono \
- /usr/include/c++/4.8.2/ratio /usr/include/c++/4.8.2/ctime \
- /usr/include/c++/4.8.2/system_error \
+ /usr/include/c++/4.8.2/bits/istream.tcc Crystal.h Object.h fftw3d.h \
+ ../libfftw/api/fftw3.h /usr/include/c++/4.8.2/deque \
+ /usr/include/c++/4.8.2/bits/stl_deque.h \
+ /usr/include/c++/4.8.2/bits/deque.tcc maths.h \
+ /usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/float.h Sidechain.h \
+ Monomer.h Backbone.h Shouter.h Atom.h ../libinfo/GeomTable.h Anchor.h \
+ Bond.h Distributor.h Model.h /usr/include/c++/4.8.2/mutex \
+ /usr/include/c++/4.8.2/chrono /usr/include/c++/4.8.2/ratio \
+ /usr/include/c++/4.8.2/ctime /usr/include/c++/4.8.2/system_error \
  /usr/include/c++/4.8.2/x86_64-redhat-linux/bits/error_constants.h \
  Absolute.h FileReader.h /usr/include/sys/stat.h /usr/include/bits/stat.h \
  /usr/include/dirent.h /usr/include/bits/dirent.h \
@@ -985,24 +985,6 @@ AtomGroup.h:
 
 /usr/include/c++/4.8.2/bits/stl_multimap.h:
 
-Crystal.h:
-
-Object.h:
-
-fftw3d.h:
-
-../libfftw/api/fftw3.h:
-
-/usr/include/c++/4.8.2/deque:
-
-/usr/include/c++/4.8.2/bits/stl_deque.h:
-
-/usr/include/c++/4.8.2/bits/deque.tcc:
-
-maths.h:
-
-/usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/float.h:
-
 /usr/include/c++/4.8.2/iostream:
 
 /usr/include/c++/4.8.2/ostream:
@@ -1042,6 +1024,24 @@ maths.h:
 /usr/include/c++/4.8.2/istream:
 
 /usr/include/c++/4.8.2/bits/istream.tcc:
+
+Crystal.h:
+
+Object.h:
+
+fftw3d.h:
+
+../libfftw/api/fftw3.h:
+
+/usr/include/c++/4.8.2/deque:
+
+/usr/include/c++/4.8.2/bits/stl_deque.h:
+
+/usr/include/c++/4.8.2/bits/deque.tcc:
+
+maths.h:
+
+/usr/lib/gcc/x86_64-redhat-linux/4.8.5/include/float.h:
 
 Sidechain.h:
 

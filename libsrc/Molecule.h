@@ -16,12 +16,14 @@
 #include "Sampler.h"
 #include "AtomGroup.h"
 #include <string>
+#include <iostream>
 
 struct vec3;
 
 class Molecule : public AtomGroup
 {
 public:
+	Molecule();
 	void addModel(ModelPtr model);
 
 	void addToMap(FFTPtr fft, mat3x3 _real2frac);
@@ -37,6 +39,27 @@ public:
 	void setAnchors();
 
 	virtual void reportParameters();
+
+	double getAbsoluteBFacSubtract()
+	{
+			return _absoluteBFacSubtract;
+	}
+
+	void setAbsoluteBFacSubtract(double subtract)
+	{
+		 _absoluteBFacSubtract = subtract;
+	}
+
+	double getAbsoluteBFacMult()
+	{
+		  return _absoluteBFacMult;
+	}
+
+	void setAbsoluteBFacMult(double mult)
+	{
+		std::cout << "setting absolute mult to " << mult << std::endl;
+		 _absoluteBFacMult = mult;
+	}
 
 	void setChainID(std::string chain)
 	{
@@ -62,6 +85,7 @@ public:
 	{
 		return _centroids;
 	}
+
 	virtual std::string getClassName()
 	{
 		return "Molecule";
@@ -79,6 +103,9 @@ protected:
 
 private:
 	std::vector<ModelPtr> models;
+
+	double _absoluteBFacSubtract;
+	double _absoluteBFacMult;
 
 	std::string _chainID;
 

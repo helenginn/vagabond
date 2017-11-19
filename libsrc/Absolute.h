@@ -31,7 +31,7 @@ public:
 	{
 		return getStaticPosition();
 	}
-	
+
 	virtual void addToMolecule(MoleculePtr molecule);
 	virtual void addToMonomer(MonomerPtr monomer);
 

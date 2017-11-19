@@ -178,7 +178,7 @@ public:
 	}
 
 	static void setOccupancy(void *object, double value);
-	
+
 	static double getDampening(void *object)
 	{
 		return static_cast<Bond *>(object)->_dampening;
@@ -322,7 +322,7 @@ public:
 	double anisotropyExtent();
 
 	virtual mat3x3 getRealSpaceTensor();
-	
+
 	double getFlexibilityPotential();
 
 	AtomPtr extraTorsionSample(int group, int i)
@@ -341,7 +341,7 @@ public:
 	}
 
 	std::vector<BondSample> getFinalPositions();
-	
+
 	void setAnchored()
 	{
 		_anchored = true;
@@ -461,9 +461,6 @@ private:
 	std::vector<vec3> _finalPositions;
 
 	std::mutex guiLock;
-
-	/* Molecule which can provide offsets/rotations */
-	MoleculeWkr _molecule;
 };
 
 #endif /* defined(__vagabond__Bond__) */

@@ -567,5 +567,84 @@ RotamerTable::RotamerTable()
 	}
 
 	/* GLUTAMATE / GLU / E */
-	
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "pt-20";
+		setOccupancies(&rotamer, 0.05, 0.01, 0.09, 0.07);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",   62.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  -20.0));
+		addRotamerToTable("glu", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "pm0";
+		setOccupancies(&rotamer, 0.02, 0.00, 0.00, 0.04);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",   70.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  -80.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",    0.0));
+		addRotamerToTable("glu", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "tp10";
+		setOccupancies(&rotamer, 0.06, 0.10, 0.02, 0.06);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",   65.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",   10.0));
+		addRotamerToTable("glu", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "tt0";
+		setOccupancies(&rotamer, 0.24, 0.25, 0.42, 0.18);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",   00.0));
+		addRotamerToTable("glu", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "tm-20";
+		setOccupancies(&rotamer, 0.01, 0.01, 0.01, 0.01);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB", -177.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  -80.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  -25.0));
+		addRotamerToTable("glu", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mp0";
+		setOccupancies(&rotamer, 0.06, 0.01, 0.02, 0.10);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -65.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",   85.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",    0.0));
+		addRotamerToTable("glu", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mt-10";
+		setOccupancies(&rotamer, 0.33, 0.36, 0.29, 0.32);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -67.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  180.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  -10.0));
+		addRotamerToTable("glu", rotamer);
+	}
+
+	{
+		Rotamer rotamer;
+		rotamer.name = "mm-40";
+		setOccupancies(&rotamer, 0.13, 0.19, 0.07, 0.12);
+		rotamer.torsions.push_back(createTorsionAngle("CA", "CB",  -65.0));
+		rotamer.torsions.push_back(createTorsionAngle("CB", "CG",  -65.0));
+		rotamer.torsions.push_back(createTorsionAngle("CG", "CD",  -40.0));
+		addRotamerToTable("glu", rotamer);
+	}
 }

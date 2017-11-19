@@ -279,10 +279,6 @@ void Sidechain::parameteriseAsRotamers()
 		BondPtr bond = ToBondPtr(cb->getModel());
 
 		double occ = rotamers[i].allOccupancy;
-		std::cout << "Setting rotamer " << rotamers[i].name << " (no. "
-		<< i << ") to occupancy " << occ << ", conformer " <<
-		cb->getAlternativeConformer() << std::endl;
-
 		Bond::setOccupancy(&*bond, occ);
 	}
 

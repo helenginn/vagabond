@@ -16,6 +16,12 @@
 #include "fftw3d.h"
 #include "mat3x3.h"
 
+Molecule::Molecule()
+{
+	_absoluteBFacSubtract = 0.0;
+	_absoluteBFacMult = 1.0;
+}
+
 void Molecule::addModel(ModelPtr aModel)
 {
 	models.push_back(aModel);
@@ -90,4 +96,3 @@ void Molecule::resetInitialPositions()
 		}
 	}
 }
-

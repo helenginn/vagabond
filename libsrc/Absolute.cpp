@@ -19,6 +19,7 @@
 #include "Crystal.h"
 #include "Anisotropicator.h"
 #include <iomanip>
+#include <iostream>
 
 Absolute::Absolute()
 {
@@ -67,6 +68,7 @@ void Absolute::addToMolecule(MoleculePtr molecule)
 
 	molecule->addAtom(_atom);
 
+	setMolecule(molecule);
 	Model::addToMolecule(molecule);
 }
 
@@ -91,6 +93,16 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 	double distSq =	(x * x + y * y + z * z);
 
 	double bf = me->_bFactor;
+
+	if (me->hasMolecule())
+	{
+		MoleculePtr molecule = me->getMolecule();
+		double subtract = molecule->getAbsoluteBFacSubtract();
+		double mult = molecule->getAbsoluteBFacMult();
+		bf -= subtract;
+		bf *= mult;
+	}
+
 	double exponent = (-0.25) * bf * distSq;
 	double value = exp(exponent);
 	value *= me->_occupancy;
