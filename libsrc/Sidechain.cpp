@@ -160,15 +160,10 @@ void Sidechain::splitConformers(int count)
 
 	BondPtr bond = ToBondPtr(start->getModel());
 
-	std::cout << "Count is " << count << " rotamers." << std::endl;
-
 	for (int i = 1; i < count; i++)
 	{
-		std::cout << "Splitting bond for rotamer " << i << std::endl;
 		bond->splitBond();
 	}
-
-	std::cout << "Split all bonds" << std::endl;
 
 	AtomList atoms = findAtoms("CB");
 
@@ -209,8 +204,6 @@ void Sidechain::parameteriseAsRotamers()
 	{
 		return;
 	}
-
-	std::cout << "Found " << rotamers.size() << " rotamers." << std::endl;
 
 	// do the stuff
 	_rotamerised = true;
@@ -275,8 +268,6 @@ void Sidechain::parameteriseAsRotamers()
 		}
 	}
 
-	std::cout << "Generated multiple rotamers..." << std::endl;
-
 	AtomList cbs = findAtoms("CB");
 
 	for (int i = 0; i < cbs.size(); i++)
@@ -292,8 +283,6 @@ void Sidechain::parameteriseAsRotamers()
 
 		Bond::setOccupancy(&*bond, occ);
 	}
-
-	std::cout << "Fixed occupancies." << std::endl;
 }
 
 void Sidechain::refreshRotamers()

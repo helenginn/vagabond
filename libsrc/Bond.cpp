@@ -1177,7 +1177,6 @@ bool Bond::splitBond()
 	BondPtr parent = boost::static_pointer_cast<Bond>(getParentModel());
 	int last = parent->downstreamAtomGroupCount();
 	BondPtr dupl = me->duplicateDownstream(parent, last);
-	std::cout << "Duplicated downstream" << std::endl;
 	double torsion = getTorsion(&*me);
 	setTorsion(&*me, torsion);
 
