@@ -419,7 +419,7 @@ void Options::refinementCycle(MoleculePtr molecule, int *count,
 
 		if (molecule->getClassName() == "Polymer" && (*count == 0))
 		{
-			polymer->scaleFlexibilityToBFactor(crystals[0]);
+	//		polymer->scaleFlexibilityToBFactor(crystals[0]);
 		}
 
 		if (molecule->getClassName() == "Polymer" && (*count == 1))
