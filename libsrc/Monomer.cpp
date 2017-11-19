@@ -171,7 +171,6 @@ void Monomer::tieAtomsUp()
 		Bond::setTorsionBlur(&*bond, initialKick);
 	}
 
-	_sidechain->setInitialDampening();
 	_backbone->setTied();
 	_sidechain->setTied();
 }

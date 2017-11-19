@@ -113,8 +113,9 @@ void Polymer::tieAtomsUp()
 			{
 				std::cout << "Parameterising residue " << i_to_str(i) << std::endl;
 				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
-//				getMonomer(i)->getSidechain()->setCanRefine(true);
 			}
+
+			getMonomer(i)->getSidechain()->setInitialDampening();
 		}
 	}
 

@@ -180,8 +180,6 @@ void Sidechain::splitConformers(int count)
 		}
 	}
 
-	std::cout << "Set occupancies." << std::endl;
-
 	for (int i = 0; i < getMonomer()->atomCount(); i++)
 	{
 		AtomPtr atom = getMonomer()->atom(i);
