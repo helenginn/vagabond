@@ -74,6 +74,8 @@ int AtomGroup::conformerCount()
 
 std::string AtomGroup::conformer(int i)
 {
+	if (i > conformerMap().size()) return "";
+
 	std::map<std::string, int> conformerList = conformerMap();
 	std::map<std::string, int>::iterator it = conformerList.begin();
 

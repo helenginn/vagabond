@@ -162,6 +162,7 @@ void Sidechain::splitConformers(int count)
 
 	for (int i = 1; i < count; i++)
 	{
+		std::cout << "Splitting bond for rotamer " << i << std::endl;
 		std::string confID = conformer(i);
 
 		bond->splitBond();
@@ -217,6 +218,8 @@ void Sidechain::parameteriseAsRotamers()
 	{
 		for (int j = 0; j < rotamers[i].torsions.size(); j++)
 		{
+			std::cout << "Checking rotamer " << i << ", " << j << std::endl;
+
 			TorsionAngle angle = rotamers[i].torsions[j];
 			double torsionValue = deg2rad(angle.torsion);
 			std::string atomID = angle.secondAtom;
