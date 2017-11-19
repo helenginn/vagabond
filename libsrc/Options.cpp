@@ -198,6 +198,73 @@ void Options::parse()
 			}
 		}
 
+		prefix = "--kick=";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			std::string kick_string = arg.substr(prefix.size());
+			double kick = atof(kick_string.c_str());
+
+			if (crystals.size() == 0)
+			{
+				shout_at_user("Overall B factor specified, but a coordinate\n"\
+							  "file has not been specified yet. Please use\n"\
+							  "--with-pdb= to specify some atomic coordinates.");
+			}
+			else
+			{
+				CrystalPtr crystal = crystals.at(crystals.size() - 1);
+				std::cout << "Setting " << crystal->getFilename()
+				<< " to a initial kick of " << kick << "." << std::endl;
+
+				for (int i = 0; i < crystal->moleculeCount(); i++)
+				{
+					if (crystal->molecule(i)->getClassName() != "Polymer")
+					{
+						continue;
+					}
+
+					PolymerPtr polymer = ToPolymerPtr(crystal->molecule(i));
+					Polymer::setInitialKick(&*polymer, kick);
+				}
+				understood = true;
+			}
+		}
+
+		prefix = "--dampen=";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			std::string dampen_string = arg.substr(prefix.size());
+			double dampen = atof(dampen_string.c_str());
+
+			if (crystals.size() == 0)
+			{
+				shout_at_user("Overall B factor specified, but a coordinate\n"\
+							  "file has not been specified yet. Please use\n"\
+							  "--with-pdb= to specify some atomic coordinates.");
+			}
+			else
+			{
+				CrystalPtr crystal = crystals.at(crystals.size() - 1);
+				std::cout << "Setting " << crystal->getFilename()
+				<< " to a dampening of " << dampen << "." << std::endl;
+
+				for (int i = 0; i < crystal->moleculeCount(); i++)
+				{
+					if (crystal->molecule(i)->getClassName() != "Polymer")
+					{
+						continue;
+					}
+
+					PolymerPtr polymer = ToPolymerPtr(crystal->molecule(i));
+					Polymer::setBackboneDampening(&*polymer, dampen);
+				}
+
+				understood = true;
+			}
+		}
+
 		prefix = "--anchor-res=";
 
 		if (!arg.compare(0, prefix.size(), prefix))
