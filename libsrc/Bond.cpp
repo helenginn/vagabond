@@ -23,6 +23,7 @@
 #include "Molecule.h"
 #include "Anisotropicator.h"
 #include "RefinementNelderMead.h"
+#include "Options.h"
 
 Bond::Bond()
 {
@@ -37,7 +38,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	_major = major;
 	_minor = minor;
 	_activeGroup = 0;
-	_dampening = INITIAL_DAMPENING;
+	_dampening = Options::getDampen();
 	_bendBlur = 0;
 	_bondLength = 0;
 	_changedPos = true;

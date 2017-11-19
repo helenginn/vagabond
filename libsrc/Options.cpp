@@ -17,6 +17,7 @@
 
 OptionsPtr Options::options;
 double Options::_kick = 0.10;
+double Options::_dampen = 0.08;
 
 Options::Options(int argc, const char **argv)
 {
@@ -227,7 +228,7 @@ void Options::parse()
 		if (!arg.compare(0, prefix.size(), prefix))
 		{
 			std::string dampen_string = arg.substr(prefix.size());
-			double dampen = atof(dampen_string.c_str());
+			_dampen = atof(dampen_string.c_str());
 
 			if (crystals.size() == 0)
 			{
@@ -239,18 +240,7 @@ void Options::parse()
 			{
 				CrystalPtr crystal = crystals.at(crystals.size() - 1);
 				std::cout << "Setting " << crystal->getFilename()
-				<< " to a dampening of " << dampen << "." << std::endl;
-
-				for (int i = 0; i < crystal->moleculeCount(); i++)
-				{
-					if (crystal->molecule(i)->getClassName() != "Polymer")
-					{
-						continue;
-					}
-
-					PolymerPtr polymer = ToPolymerPtr(crystal->molecule(i));
-					Polymer::setBackboneDampening(&*polymer, dampen);
-				}
+				<< " to a dampening of " << _dampen << "." << std::endl;
 
 				understood = true;
 			}

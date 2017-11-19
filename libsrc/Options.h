@@ -46,7 +46,11 @@ public:
 	{
 		return _kick;
 	}
-	
+
+	static double getDampen()
+	{
+		return _dampen;
+	}
 private:
 	static OptionsPtr options;
 
@@ -68,6 +72,7 @@ private:
 	int _numCycles;
 	bool _tie;
 	static double _kick;
+	static double _dampen;
 	std::string _outputDir;
 };
 
