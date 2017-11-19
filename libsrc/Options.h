@@ -41,6 +41,11 @@ public:
 	{
 		return crystals[i];
 	}
+
+	static double getKick()
+	{
+		return _kick;
+	}
 	
 private:
 	static OptionsPtr options;
@@ -62,6 +67,7 @@ private:
 
 	int _numCycles;
 	bool _tie;
+	static double _kick;
 	std::string _outputDir;
 };
 

@@ -15,6 +15,7 @@
 #include "shared_ptrs.h"
 #include "Polymer.h"
 #include "Shouter.h"
+#include "Options.h"
 
 Monomer::Monomer()
 {
@@ -157,15 +158,17 @@ void Monomer::tieAtomsUp()
 	knotter->setSidechain(_sidechain);
 	knotter->tie();
 
+	double initialKick = Options::getKick();
+
 	if (getResidueNum() == start)
 	{
 		BondPtr bond = ToBondPtr(getBackbone()->findAtom("CA")->getModel());
-		Bond::setTorsionBlur(&*bond, -INITIAL_KICK);
+		Bond::setTorsionBlur(&*bond, -initialKick);
 	}
 	else if (getResidueNum() == start - 1)
 	{
 		BondPtr bond = ToBondPtr(getBackbone()->findAtom("C")->getModel());
-		Bond::setTorsionBlur(&*bond, INITIAL_KICK);
+		Bond::setTorsionBlur(&*bond, initialKick);
 	}
 
 	_sidechain->setInitialDampening();

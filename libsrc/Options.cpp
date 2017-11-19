@@ -16,6 +16,7 @@
 #include "FileReader.h"
 
 OptionsPtr Options::options;
+double Options::_kick = 0.10;
 
 Options::Options(int argc, const char **argv)
 {
@@ -203,7 +204,7 @@ void Options::parse()
 		if (!arg.compare(0, prefix.size(), prefix))
 		{
 			std::string kick_string = arg.substr(prefix.size());
-			double kick = atof(kick_string.c_str());
+			_kick = atof(kick_string.c_str());
 
 			if (crystals.size() == 0)
 			{
@@ -215,18 +216,8 @@ void Options::parse()
 			{
 				CrystalPtr crystal = crystals.at(crystals.size() - 1);
 				std::cout << "Setting " << crystal->getFilename()
-				<< " to a initial kick of " << kick << "." << std::endl;
+				<< " to a initial kick of " << _kick << "." << std::endl;
 
-				for (int i = 0; i < crystal->moleculeCount(); i++)
-				{
-					if (crystal->molecule(i)->getClassName() != "Polymer")
-					{
-						continue;
-					}
-
-					PolymerPtr polymer = ToPolymerPtr(crystal->molecule(i));
-					Polymer::setInitialKick(&*polymer, kick);
-				}
 				understood = true;
 			}
 		}
