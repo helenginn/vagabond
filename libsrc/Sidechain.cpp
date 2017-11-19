@@ -203,6 +203,8 @@ void Sidechain::parameteriseAsRotamers()
 		return;
 	}
 
+	std::cout << "Found " << rotamers.size() << " rotamers." << std::endl;
+
 	// do the stuff
 	_rotamerised = true;
 	_canRefine = false;
@@ -252,6 +254,8 @@ void Sidechain::parameteriseAsRotamers()
 		}
 	}
 
+	std::cout << "Generated multiple rotamers..." << std::endl;
+
 	AtomList cbs = findAtoms("CB");
 
 	for (int i = 0; i < cbs.size(); i++)
@@ -267,6 +271,8 @@ void Sidechain::parameteriseAsRotamers()
 
 		Bond::setOccupancy(&*bond, occ);
 	}
+
+	std::cout << "Fixed occupancies." << std::endl;
 }
 
 void Sidechain::refreshRotamers()
