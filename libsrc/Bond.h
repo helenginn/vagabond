@@ -155,7 +155,6 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_bondGroups[bond->_activeGroup].magicPsi = angle;
-		static_cast<Bond *>(object)->propagateChange();
 	}
 
 	static double getMagicPhi(void *object)
@@ -168,7 +167,6 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_bondGroups[bond->_activeGroup].magicPhi = angle;
-		static_cast<Bond *>(object)->propagateChange();
 	}
 
 	static double getOccupancy(void *object)
