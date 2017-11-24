@@ -275,6 +275,8 @@ void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 
 	MtzPut(mtzout, " ");
 	MtzFree(mtzout);
+
+	delete [] fdata;
 }
 
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
@@ -375,7 +377,8 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 
 		std::cout << "Rwork/Rfree: " << std::setprecision(4)
 		<< working * 100;
-		std::cout << ", " << free * 100 << " % (diff: " << diff * 100 << " %)"<<  std::endl;
+		std::cout << ", " << free * 100 <<
+		" % (diff: " << diff * 100 << " %)"<<  std::endl;
 	}
 
 	return working;
@@ -449,16 +452,22 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 
 double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 {
-	std::cout << "*******************************" << std::endl;
+	if (verbose)
+	{
+		std::cout << "*******************************" << std::endl;
+	}
 
 	double rFactor = valueWithDiffraction(data, &r_factor, verbose);
 
-	std::cout << "*******************************" << std::endl;
+	if (verbose)
+	{
+		std::cout << "*******************************" << std::endl;
+	}
 
 	return rFactor;
 }
 
-void Crystal::getDataInformation(DiffractionPtr data, double partsFo,
+double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 								 double partsFc)
 {
 	if (!_fft || !_fft->nn)
@@ -468,7 +477,7 @@ void Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 		scaleToDiffraction(data);
 	}
 
-	rFactorWithDiffraction(data, true);
+	double rFac = rFactorWithDiffraction(data, true);
 
 	FFTPtr fftData = data->getFFT();
 	double nLimit = std::min(fftData->nx, _fft->nx);
@@ -522,6 +531,8 @@ void Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 
 	fourierTransform(-1);
 	_difft->fft(-1);
+
+	return rFac;
 }
 
 void Crystal::tiedUpScattering()
@@ -536,8 +547,8 @@ void Crystal::tiedUpScattering()
 	}
 
 	std::cout << std::fixed << std::setprecision(0);
-	std::cout << "Tied up " << tied << " electrons out of " << total << " (";
-	std::cout << 100. * sqrt(tied / total) << "%)." << std::endl;
+	std::cout << "Tied up " << 100. * sqrt(tied / total) << "% of"\
+	" the scattering electrons." << std::endl;
 }
 
 void Crystal::setAnchors()
@@ -634,7 +645,7 @@ void Crystal::makePDBs(std::string suffix)
  };
 
 
-void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data,
+double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data,
 								 CrystalPtr crystal)
 {
 	std::cout << "*******************************" << std::endl;
@@ -642,7 +653,7 @@ void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data,
 
 	std::string refineCount = "refine_" + i_to_str(cycleNum);
 	writeMillersToFile(data, refineCount);
-	getDataInformation(data, 2, 1);
+	double rFac = getDataInformation(data, 2, 1);
 	makePDBs(refineCount);
 
 	for (int i = 0; i < moleculeCount(); i++)
@@ -650,14 +661,15 @@ void Crystal::concludeRefinement(int cycleNum, DiffractionPtr data,
 		if (molecule(i)->getClassName() == "Polymer")
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
+			polymer->differenceGraphs("density_" + polymer->getChainID() +
+									  "_" + i_to_str(cycleNum), shared_from_this());
 			polymer->graph("chain_" + polymer->getChainID() +
 						   "_" + i_to_str(cycleNum));
 			polymer->closenessSummary();
 		}
 	}
 
-//	realSpaceClutter();
-//	_fft->printSlice();
+	return rFac;
 }
 
 void Crystal::reconfigureUnitCell()

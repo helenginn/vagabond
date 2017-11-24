@@ -89,16 +89,8 @@ void RefinementStrategy::refine()
 		std::cout << " No parameters to refine! Exiting." << std::endl;
         return;
     }
-/*
-    std::cout << " Refining ";
-    
-    for (int i = 0; i < tags.size() - 1; i++)
-    {
-        std::cout << tags[i] << ", ";
-    }
-    
-    std::cout << tags[tags.size() - 1] << " --- " << std::endl;
-    */
+
+	
     startingScore = (*evaluationFunction)(evaluateObject);
 
     for (int i = 0; i < objects.size(); i++)

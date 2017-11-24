@@ -276,11 +276,20 @@ mat3x3 mat3x3_rhbasis(vec3 aVec, vec3 bVec)
 	vec3_set_length(&cVec, 1);
 
 	mat3x3 mat;
-	memcpy(&mat.vals[0], &aVec, 3 * sizeof(double));
-	memcpy(&mat.vals[3], &cVec, 3 * sizeof(double));
-	memcpy(&mat.vals[6], &bVec, 3 * sizeof(double));
 
-	return mat3x3_transpose(mat);
+	mat.vals[0] = aVec.x;
+	mat.vals[1] = cVec.x;
+	mat.vals[2] = bVec.x;
+
+	mat.vals[3] = aVec.y;
+	mat.vals[4] = cVec.y;
+	mat.vals[5] = bVec.y;
+
+	mat.vals[6] = aVec.z;
+	mat.vals[7] = cVec.z;
+	mat.vals[8] = bVec.z;
+
+	return mat;
 }
 
 
@@ -310,7 +319,8 @@ mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis, double *best)
 	double tan_theta = - B / A;
 	double theta = atan(tan_theta);
 
-	double sinSq = tan_theta * tan_theta / (1 + tan_theta * tan_theta);
+//	double sinSq = tan_theta * tan_theta / (1 + tan_theta * tan_theta);
+	double sinSq = pow(sin(theta), 2);
 	double cc = sqrt(1 - sinSq);
 	double s = sqrt(sinSq);
 

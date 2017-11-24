@@ -30,6 +30,7 @@ Atom::Atom()
 	_geomType = AtomUnassigned;
 	_weighting = 1;
 	_origOccupancy = 1.0;
+	_fromPDB = true;
 }
 
 Atom::Atom(Atom &other)
@@ -44,6 +45,7 @@ Atom::Atom(Atom &other)
 	_monomer = other._monomer;
 	_weighting = other._weighting;
 	_atomNum = other._atomNum;
+	_fromPDB = other._fromPDB;
 	_pdbPosition = other._pdbPosition;
 	_origOccupancy = other._origOccupancy;
 	_conformer = other._conformer;

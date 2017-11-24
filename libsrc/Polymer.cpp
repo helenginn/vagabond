@@ -103,15 +103,25 @@ void Polymer::tieAtomsUp()
 		}
 	}
 
+	double kick = Options::getKick();
+	setInitialKick(this, kick);
+
 	for (int i = 0; i < monomerCount(); i++)
 	{
 		if (getMonomer(i))
 		{
 			getMonomer(i)->getSidechain()->splitConformers();
 
-			if (Options::enableTests() && (i == 62 || i == 63 ||
-																		 i == 30 || i == 78 ||
-										   							 i >= 123 || i == 103))
+			if ((Options::enableTests() == 1 || Options::enableTests() == 2)
+				&& (i == 62 || i == 63 || i == 30 || i == 78 ||
+					i >= 123 || i == 103))
+			{
+				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
+			}
+
+			if ((Options::enableTests() == 3)
+				&& (i == 857 || i == 962 || i == 1011 || i == 1012 ||
+					i == 1015 || i == 1028 || i == 1053 || i == 1068))
 			{
 				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
 			}
@@ -218,22 +228,23 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 
 	std::vector<double> tempCCs, tempDiffCCs, tempNs;
 	double sumCC = 0; double sumDiffCC = 0;
+	FFTPtr fft = diffCrystal->getFFT();
+	FFTPtr difft = diffCrystal->getDiFFT();
+	mat3x3 real2Frac = diffCrystal->getReal2Frac();
 
 	for (int n = 0; n < monomerCount(); n++)
 	{
-		if (!getMonomer(n))
+		if (!getMonomer(n) || !getMonomer(n)->getBackbone())
 		{
 			continue;
 		}
 
-		AtomPtr ca = getMonomer(n)->getBackbone()->findAtom("CA");
-		std::vector<double> xs, ys;
-		double cutoff = ca->scoreWithMap(diffCrystal, &xs, &ys, false, MapScoreTypeCorrel);
-		double cc = correlation(xs, ys, cutoff);
+		BackbonePtr backbone = getMonomer(n)->getBackbone();
+		double cc = -getMonomer(n)->scoreWithMap(ScoreTypeMultiply, fft, real2Frac);
 		sumCC += cc;
 
-		cutoff = ca->scoreWithMap(diffCrystal, &xs, &ys, true, MapScoreTypeCorrel);
-		double diffcc = weightedMapScore(xs, ys);
+		double diffcc = -getMonomer(n)->scoreWithMap(ScoreTypeMultiply,
+											   difft, _real2Frac);
 		sumDiffCC += diffcc;
 
 		tempCCs.push_back(cc);
@@ -259,10 +270,10 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 	plotMap["yHeader0"] = "cc";
 	plotMap["xHeader1"] = "resnum";
 	plotMap["yHeader1"] = "diffcc";
-	plotMap["yMin0"] = "-1";
-	plotMap["yMin1"] = "-1";
-	plotMap["yMax0"] = "1";
-	plotMap["yMax1"] = "1";
+//	plotMap["yMin0"] = "-1";
+//	plotMap["yMin1"] = "-1";
+//	plotMap["yMax0"] = "1";
+//	plotMap["yMax1"] = "1";
 	plotMap["colour0"] = "black";
 	plotMap["colour1"] = "red";
 	plotMap["xTitle0"] = "Residue number";
@@ -360,8 +371,8 @@ void Polymer::graph(std::string graphName)
 	plotMap["colour1"] = "red";
 	plotMap["yMin0"] = "0";
 	plotMap["yMin1"] = "0";
-	plotMap["yMax0"] = "40";
-	plotMap["yMax1"] = "40";
+	plotMap["yMax0"] = "60";
+	plotMap["yMax1"] = "60";
 
 	plotMap["xTitle0"] = "Residue number";
 	plotMap["yTitle0"] = "B factor";
@@ -591,9 +602,35 @@ void Polymer::changeAnchor(int num)
 void Polymer::setInitialKick(void *object, double value)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
+	int anchorNum = polymer->_anchorNum;
+
+	for (int i = 0; i < polymer->monomerCount(); i++)
+	{
+		MonomerPtr monomer = polymer->getMonomer(i);
+
+		if (!monomer) continue;
+
+		BackbonePtr bone = monomer->getBackbone();
+		double kick = value * (monomer->getResidueNum() < anchorNum ? -1 : 1);
+
+		for (int j = 0; j < bone->atomCount(); j++)
+		{
+			ModelPtr model = bone->atom(j)->getModel();
+
+			if (model->isBond())
+			{
+				BondPtr bond = ToBondPtr(model);
+				Bond::setTorsionBlur(&*bond, kick);
+			}
+		}
+	}
+
+	/*
+	Polymer *polymer = static_cast<Polymer *>(object);
 	int monomerNum = polymer->_anchorNum;
 	polymer->getMonomer(monomerNum)->setKick(value, false);
 	polymer->getMonomer(monomerNum - 1)->setKick(value, true);
+	 */
 }
 
 /* For side chains, obviously */
@@ -660,8 +697,6 @@ void Polymer::superimpose()
 
 void Polymer::minimiseCentroids()
 {
-	_centroidOffsets.clear();
-
 	std::vector<vec3> addedVecs;
 	int count = 0;
 
@@ -717,6 +752,9 @@ void Polymer::minimiseCentroids()
 
 	vec3_mult(&meanPos, 1 / (double)addedVecs.size());
 
+	// Remove the old centroid positions
+	_centroidOffsets.clear();
+
 	// Find the offsets to bring all centroids to the mean value
 	for (int i = 0; i < addedVecs.size(); i++)
 	{
@@ -744,8 +782,8 @@ void Polymer::minimiseCentroids()
 void Polymer::minimiseRotations()
 {
 	int num = 0;
-	_rotations.clear();
-	_centroids.clear();
+
+	std::vector<vec3> tmpCentroids;
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -765,7 +803,6 @@ void Polymer::minimiseRotations()
 		break;
 	}
 
-	int f = num / 2;
 	std::vector<mat3x3> tmpMats;
 
 	for (int i = 0; i < num; i++)
@@ -812,7 +849,7 @@ void Polymer::minimiseRotations()
 
 		kabsch.setAtoms(fixedVecs, variantVecs);
 		kabsch.setWeights(weights);
-		_centroids.push_back(kabsch.fixCentroids());
+		tmpCentroids.push_back(kabsch.fixCentroids());
 		mat3x3 mat = kabsch.run();
 
 		if (kabsch.didFail())
@@ -824,6 +861,7 @@ void Polymer::minimiseRotations()
 		tmpMats.push_back(mat);
 	}
 
+	_centroids = tmpCentroids;
 	_rotations = tmpMats;
 
 	std::cout << "Kabsch'd them all!" << std::endl;
@@ -839,6 +877,11 @@ void Polymer::closenessSummary()
 
 	for (int i = 0; i < atomCount(); i++)
 	{
+		if (!atom(i)->isFromPDB())
+		{
+			continue;
+		}
+
 		double disp = atom(i)->posDisplacement();
 
 		if (disp != disp) continue;

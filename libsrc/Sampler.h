@@ -53,7 +53,6 @@ public:
 	void addTorsionBlur(BondPtr bond, double range, double interval);
 	void addDampening(BondPtr bond, double range, double interval);
 	void addBondLength(BondPtr bond, double range, double interval);
-	void addBendBlur(BondPtr bond, double range, double interval);
 	void addBendAngle(BondPtr bond, double range, double interval);
 	void addOccupancy(BondPtr bond, double range, double interval);
 	void addSampledBackbone(PolymerPtr polymer, int from = 0, int to = 0);

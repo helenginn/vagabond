@@ -39,20 +39,21 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	_minor = minor;
 	_activeGroup = 0;
 	_dampening = Options::getDampen();
-	_bendBlur = 0;
 	_bondLength = 0;
 	_changedPos = true;
 	_changedSamples = true;
+	_refineBondAngle = false;
 	_fixed = false;
 	_blocked = false;
 	_blurTotal = 0;
 	_occupancy = 1.0;
 	_occMult = 1.0;
 	_anisotropyExtent = 0.0;
+	double initialKick = Options::getKick();
 
 	BondGroup aGroup;
 	aGroup.torsionAngle = 0;
-	aGroup.torsionBlur = 0.0;
+	aGroup.torsionBlur = initialKick;
 	aGroup.magicAxis = make_randomish_axis();
 	aGroup.magicPhi = 0;
 	aGroup.magicPsi = 0;
@@ -118,9 +119,9 @@ Bond::Bond(Bond &other)
 	_blocked = false;
 	_absolute = other._absolute;
 	_molecule = other._molecule;
-	
+
+	_refineBondAngle = other._refineBondAngle;
 	_dampening = other._dampening;
-	_bendBlur = 0;
 	_bondLength = other._bondLength;
 	_changedPos = true;
 	_changedSamples = true;
@@ -176,7 +177,6 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 		newGroup.magicPhi = 0;
 		newGroup.magicPsi = 0;
 		newGroup.magicAxis = make_randomish_axis();
-		newGroup._changedSamples = true;
 		_bondGroups.push_back(newGroup);
 	}
 
@@ -241,6 +241,11 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 	{
 		double ratio = tan(angle - M_PI / 2);
 		newAtom.geomRatio = ratio;
+		newAtom.expectedAngle = angle;
+	}
+	else
+	{
+		newAtom.expectedAngle = -1;
 	}
 
 	if (ok)
@@ -507,6 +512,7 @@ std::vector<vec3> Bond::polymerCorrectedPositions()
 {
 	std::vector<vec3> posOnly;
 	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
+	posOnly.reserve(positions->size());
 
 	MoleculePtr molecule = getMinor()->getMolecule();
 	std::vector<vec3> offsets;
@@ -660,16 +666,19 @@ void Bond::calculateMagicAxis()
 	BondPtr downBond = ToBondPtr(shared_from_this());
 	int count = 0;
 
-	while (count < FUTURE_MAGIC_ATOMS && downBond->downstreamAtomGroupCount()
+	while (count < FUTURE_MAGIC_ATOMS && downBond &&
+		   downBond->downstreamAtomGroupCount()
 		   && downBond->downstreamAtomCount(0))
 	{
 		AtomPtr downAtom = downBond->downstreamAtom(0, 0);
 		_magicAxisAtoms.push_back(downAtom);
 
+		downBond = ToBondPtr(downAtom->getModel());
 		count++;
 	}
 
 	NelderMeadPtr nelder = NelderMeadPtr(new NelderMead());
+//	nelder->setCycles(20);
 	nelder->addParameter(this, getMagicPhi, setMagicPhi, deg2rad(10), deg2rad(0.1));
 	nelder->addParameter(this, getMagicPsi, setMagicPsi, deg2rad(10), deg2rad(0.1));
 	nelder->setEvaluationFunction(magicAxisStaticScore, this);
@@ -770,6 +779,7 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 						   nextDifference.x * nextDifference.x);
 		double tanX = nextDifference.z / notZ;
 		double xValue = sin(atan(tanX));
+	//	double xValue = sqrt(tanX * tanX / (1 + tanX * tanX));
 		double yValue = sqrt(1 - xValue * xValue);
 
 		if (yValue != yValue)
@@ -830,10 +840,6 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 	if (style == BondSampleStatic)
 	{
 		newSamples = &_bondGroups[_activeGroup].staticSample;
-	}
-	else if (style == BondSampleMonteCarlo)
-	{
-		newSamples = &_bondGroups[_activeGroup].singleStateSample;
 	}
 	else
 	{
@@ -960,6 +966,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 	else
 	{
 		myTorsions.clear();
+		myTorsions.reserve(prevSamples->size());
 
 		for (int i = 0; i < prevSamples->size(); i++)
 		{
@@ -973,6 +980,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 	}
 
 	double occTotal = 0;
+	newSamples->reserve(prevSamples->size());
 
 	for (int i = 0; i < (*prevSamples).size(); i++)
 	{
@@ -1130,18 +1138,9 @@ ModelPtr Bond::getParentModel()
 double Bond::getBendAngle(void *object)
 {
 	Bond *bond = static_cast<Bond *>(object);
-	AtomPtr atom = bond->getMajor();
-	ModelPtr model = atom->getModel();
-
-	if (model->getClassName() != "Bond")
-	{
-		shout_at_helen("Helen should never have let this happen.\n"\
-					   "Helen has tried to refine a bend connected\n"\
-					   "to something that is not a bond.");
-	}
+	BondPtr newBond = ToBondPtr(bond->getParentModel());
 
 	int myGroup = -1;
-	BondPtr newBond = boost::static_pointer_cast<Bond>(model);
 	int i = newBond->downstreamAtomNum(bond->getMinor(), &myGroup);
 
 	if (i >= 0)
@@ -1152,6 +1151,21 @@ double Bond::getBendAngle(void *object)
 	}
 
 	return 0;
+}
+
+double Bond::getExpectedAngle()
+{
+	int myGroup = -1;
+	BondPtr newBond = ToBondPtr(getParentModel());
+	int i = newBond->downstreamAtomNum(getMinor(), &myGroup);
+
+	if (i >= 0)
+	{
+		double angle = newBond->_bondGroups[myGroup].atoms[i].expectedAngle;
+		return angle;
+	}
+
+	return -1;
 }
 
 void Bond::setBendAngle(void *object, double value)
@@ -1177,7 +1191,22 @@ void Bond::setBendAngle(void *object, double value)
 		newBond->setGeomRatio(myGroup, i, ratio);
 	}
 
-	newBond->propagateChange();
+	newBond->propagateChange(20);
+}
+
+double Bond::bondAnglePenalty()
+{
+	if (!getRefineBondAngle()) return 1;
+
+	double currentAngle = rad2deg(getBendAngle(this));
+	double expectedAngle = rad2deg(getExpectedAngle());
+
+	double diff = expectedAngle - currentAngle;
+	double stdev = 1.0;
+	diff /= stdev;
+	double penalty = diff * diff + 1;
+
+	return penalty;
 }
 
 bool Bond::splitBond()
@@ -1211,13 +1240,15 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum)
 
 	BondPtr duplBond = BondPtr(new Bond(*this));
 
-	AtomPtr duplAtom = AtomPtr(new Atom(*getMinor()));
+	AtomPtr duplAtom = AtomPtr();
 	AtomList list = getMinor()->getMonomer()->findAtoms(getMinor()->getAtomName());
 
 	/* Do we have something in the list which has an Absolute model?
 	 * if not, leave as default (new atom) */
 
 	bool changed = false;
+
+	/* Existing atoms: list.size() */
 	for (int i = 0; i < list.size(); i++)
 	{
 		if (list[i].expired()) continue;
@@ -1232,9 +1263,9 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum)
 		}
 	}
 
-	/* Existing atoms: list.size() */
 	if (!changed)
 	{
+		duplAtom = AtomPtr(new Atom(*getMinor()));
 		char conformer[] = "a";
 		getMinor()->setAlternativeConformer(conformer);
 
@@ -1244,7 +1275,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum)
 		}
 
 		duplAtom->setAlternativeConformer(conformer);
-
+		duplAtom->setFromPDB(false);
 	}
 
 	duplAtom->inheritParents();
@@ -1359,21 +1390,18 @@ double Bond::getMeanSquareDeviation()
 	return score;
 }
 
-void Bond::getAnisotropy()
+void Bond::getAnisotropy(bool withKabsch)
 {
-	std::vector<BondSample> finals = getFinalPositions();
-	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
-
-	std::vector<vec3> points;
-	std::vector<vec3> finalPoints;
-
-	for (int i = 0; i < positions->size(); i++)
+//	if (withKabsch)
 	{
-		points.push_back((*positions)[i].start);
-		finalPoints.push_back(finals[i].start);
-	}
+		std::vector<BondSample> finals = getFinalPositions();
+		std::vector<vec3> finalPoints;
 
-	{
+		for (int i = 0; i < finals.size(); i++)
+		{
+			finalPoints.push_back(finals[i].start);
+		}
+
 		Anisotropicator tropicator;
 		tropicator.setPoints(finalPoints);
 		_realSpaceTensor = tropicator.getTensor();
@@ -1381,6 +1409,14 @@ void Bond::getAnisotropy()
 	}
 
 	{
+		std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
+		std::vector<vec3> points;
+
+		for (int i = 0; i < positions->size(); i++)
+		{
+			points.push_back((*positions)[i].start);
+		}
+
 		Anisotropicator tropicator;
 		tropicator.setPoints(points);
 		_realSpaceTensor = tropicator.getTensor();
@@ -1390,13 +1426,13 @@ void Bond::getAnisotropy()
 
 vec3 Bond::longestAxis()
 {
-	getAnisotropy();
+	getAnisotropy(true);
 	return _longest;
 }
 
 double Bond::anisotropyExtent()
 {
-	getAnisotropy();
+	getAnisotropy(false);
 	return _anisotropyExtent;
 }
 
@@ -1506,7 +1542,6 @@ ModelPtr Bond::reverse(BondPtr upstreamBond)
 
 double Bond::getFlexibilityPotential()
 {
-	std::vector<BondSample> *samples = getManyPositions(BondSampleThorough);
 	return _blurTotal;
 }
 
@@ -1530,9 +1565,19 @@ bool Bond::test()
 				atom1 = downstreamAtom(i, j);
 			}
 
+			if (ToBondPtr(atom1->getModel())->getRefineBondAngle())
+			{
+				continue;
+			}
+
 			for (int k = 0; k < downstreamAtomCount(i); k++)
 			{
 				AtomPtr atom3 = downstreamAtom(i, (k + 1) % downstreamAtomCount(i));
+
+				if (ToBondPtr(atom3->getModel())->getRefineBondAngle())
+				{
+					continue;
+				}
 
 				double angle = Atom::getAngle(atom1, getMinor(), atom3);
 
@@ -1571,7 +1616,7 @@ bool Bond::test()
 					std::cout << shortDesc() << " angle "
 					<< atom1->getAtomName() << "-" << getMinor()->getAtomName() << "-"
 					<< atom3->getAtomName() << "\t"
-					<< rad2deg(90 + realAngle) << "\t" << rad2deg(90 + angle) << std::endl;
+					<< 90 + rad2deg(realAngle) << "\t" << 90 + rad2deg(angle) << std::endl;
 				}
 
 				ok *= (diff < 1e-6);

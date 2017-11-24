@@ -94,7 +94,6 @@ void PDBReader::validateMolecule(AbsolutePtr atom)
 			_myMolecule = MoleculePtr(new Molecule());
 
 			_myMolecule->setAbsoluteBFacSubtract(0);
-			_myMolecule->setAbsoluteBFacMult(0.5);
 		}
 		else
 		{
@@ -143,7 +142,7 @@ void PDBReader::validateResidue(AbsolutePtr atom)
 	else if (difference > 1 && _myMolecule->atomCount() != 0)
 	{
 		warn_user("Break in PDB chain " + atom->getChainID() + " of "\
-				  + i_to_str(difference) + " residues."\
+				  + i_to_str(difference) + " residues.\n"\
 				  "Assigning to new PDB chain fragment. "\
 				  "Residue " + i_to_str(atom->getResNum()));
 

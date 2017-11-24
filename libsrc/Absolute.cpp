@@ -150,7 +150,6 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 	int samples = 81;
 	int rnd = 1;
 	double total = 2;
-	double step = (meanSqDisp * 1.5) / total; // cover four st.dev.s
 
 	std::vector<vec3> points;
 	double offset = 2. / (double)samples;

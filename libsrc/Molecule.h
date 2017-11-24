@@ -29,7 +29,7 @@ public:
 	void addToMap(FFTPtr fft, mat3x3 _real2frac);
 
 	virtual void summary();
-	virtual void tieAtomsUp() {};
+	virtual void tieAtomsUp();
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	void tiedUpScattering(double *tied, double *all);
 	virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal);

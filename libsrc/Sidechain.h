@@ -48,6 +48,11 @@ public:
 		return _myPolymer.lock();
 	}
 
+	virtual bool shouldRefineAngles()
+	{
+		return (_timesRefined > 0);
+	}
+
 	void setInitialDampening();
 	void fixBackboneTorsions(AtomPtr betaTorsion);
 	void splitConformers(int count = -1);

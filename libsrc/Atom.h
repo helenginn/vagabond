@@ -98,6 +98,16 @@ public:
 		return _conformer;
 	}
 
+	bool isFromPDB()
+	{
+		return _fromPDB;
+	}
+
+	void setFromPDB(bool value)
+	{
+		_fromPDB = value;
+	}
+
 	void setInitialPosition(vec3 pos)
 	{
 
@@ -197,6 +207,7 @@ private:
 	vec3 _ellipsoidLongestAxis;
 	double _weighting;
 	std::string _conformer;
+	bool _fromPDB;
 
 	AtomType _geomType;
 };

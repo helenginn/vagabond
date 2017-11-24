@@ -22,6 +22,11 @@ Molecule::Molecule()
 	_absoluteBFacMult = 1.0;
 }
 
+void Molecule::tieAtomsUp()
+{
+	setAbsoluteBFacMult(0.4);
+}
+
 void Molecule::addModel(ModelPtr aModel)
 {
 	models.push_back(aModel);
@@ -59,9 +64,9 @@ void Molecule::reportParameters()
 void Molecule::tiedUpScattering(double *tied, double *all)
 {
 	double total = 0;
+	double totalCount = 0;
 	double some = 0;
 	double someCount = 0;
-	double someTotal = 0;
 
 	for (int i = 0; i < atomCount(); i++)
 	{
@@ -72,10 +77,8 @@ void Molecule::tiedUpScattering(double *tied, double *all)
 		}
 
 		total += atom(i)->getElement()->electronCount();
-		someTotal++;
+		totalCount++;
 	}
-
-	double scatterFrac = sqrt(some / total);
 
 	*tied += some;
 	*all += total;

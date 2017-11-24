@@ -60,7 +60,7 @@ void Sampler::addAtomsForBond(BondPtr firstBond, int k)
 }
 
 BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
-								 double range, double interval, bool addDampen)
+								 double range, double interval, bool addAngle)
 {
 	bond->setActiveGroup(k);
 
@@ -71,6 +71,11 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 			   i_to_str(k));
 
 	addTorsion(bond, deg2rad(range), deg2rad(interval));
+
+	if (addAngle)
+	{
+		addBendAngle(bond, deg2rad(0.01), deg2rad(0.001));
+	}
 
 	addAtomsForBond(bond, k);
 
@@ -118,6 +123,12 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 			}
 
 			addTorsion(nextBond, deg2rad(range), deg2rad(interval));
+
+			if (addAngle)
+			{
+				addBendAngle(bond, deg2rad(0.01), deg2rad(0.001));
+			}
+
 			addAtomsForBond(nextBond, 0);
 		}
 
@@ -227,34 +238,23 @@ void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
 
 void Sampler::addTorsion(BondPtr bond, double range, double interval)
 {
-	if (!bond || bond->getClassName() != "Bond")
+	if (!bond || !bond->isBond())
 	{
 		return;
 	}
 
-//	double number = fabs(range / interval);
-	std::string num = i_to_str(_strategy->parameterCount() + 1);
+	if (!bond->isRefinable())
+	{
+		return;
+	}
+
 	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
 							range, interval,
 							"t" + bond->shortDesc());
 
-	_bonds.push_back(bond);
-}
-/*
-void Sampler::addMagicAngle(BondPtr bond, double range, double interval)
-{
-	if (!bond) return;
-
-	//	double number = fabs(range / interval);
-	std::string num = i_to_str(_strategy->parameterCount() + 1);
-
-	_strategy->addParameter(&*bond, Bond::getMagicPhi, Bond::setMagicPsi,
-							range, interval,
-							"h" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }
-*/
 
 void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
 {
@@ -288,27 +288,17 @@ void Sampler::addDampening(BondPtr bond, double range, double interval)
 	_bonds.push_back(bond);
 }
 
-void Sampler::addBendBlur(BondPtr bond, double range, double interval)
-{
-//	double number = fabs(range / interval);
-	_strategy->addParameter(&*bond, Bond::getBendBlur, Bond::setBendBlur,
-							range, interval, "bend_blur");
-
-	double blurNow = Bond::getBendBlur(&*bond);
-
-	if (blurNow < (range / 2))
-	{
-		Bond::setBendBlur(&*bond, range / 2);
-	}
-
-	_bonds.push_back(bond);
-}
-
 void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 {
 	//	double number = fabs(range / interval);
+
+	if (!bond->getRefineBondAngle())
+	{
+		return;
+	}
+
 	_strategy->addParameter(&*bond, Bond::getBendAngle, Bond::setBendAngle,
-							range, interval, "bend");
+							range, interval, "b" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }
@@ -476,7 +466,11 @@ bool Sampler::sample(bool clear)
 
 	if (_scoreType == ScoreTypeModelPos)
 	{
-		_strategy->setCycles(10);
+		int paramCount = _strategy->parameterCount();
+		int cycles = paramCount * 1;
+		if (cycles < 10) cycles = 10;
+
+		_strategy->setCycles(cycles);
 	}
 
 	if (!_silent && false)
@@ -490,7 +484,7 @@ bool Sampler::sample(bool clear)
 		std::cout << std::endl;
 	}
 
-	if (sampleSize())
+	if (sampleSize() && _strategy->parameterCount())
 	{
 		_strategy->setJobName(_jobName);
 		_strategy->refine();
@@ -571,10 +565,13 @@ double Sampler::getScore()
 		for (int i = 0; i < sampleSize(); i++)
 		{
 			double oneScore = _sampled[i]->posDisplacement();
+			double weight = _sampled[i]->getElement()->electronCount();
+			weight = 1;
 			std::string name = _sampled[i]->getAtomName();
+			ModelPtr model = _sampled[i]->getModel();
 
-			score += oneScore;
-			count++;
+			score += oneScore * weight;
+			count += weight;
 		}
 
 		return score / count;
@@ -610,15 +607,18 @@ double Sampler::getScore()
 		return score;
 	}
 
+	return AtomGroup::scoreWithMap(_sampled, _scoreType, _fft, _real2Frac);
+
+/*
 	std::vector<double> xs, ys;
 
-	_sampled[0]->getModel()->getDistribution();
+	_sampled[0]->getModel()->getDistribution(true);
 	vec3 zero = _sampled[0]->getModel()->getAbsolutePosition();
 	double maxDistance = 0;
 
 	for (int i = 1; i < _sampled.size(); i++)
 	{
-		/* Refresh absolute position */
+		// Refresh absolute position
 		_sampled[i]->getModel()->getDistribution();
 		vec3 offset = _sampled[i]->getModel()->getAbsolutePosition();
 
@@ -673,7 +673,7 @@ double Sampler::getScore()
 		return -mult;
 	}
 
-	return 0;
+	return 0;*/
 }
 
 std::vector<double> Sampler::getNextResult(int num)
