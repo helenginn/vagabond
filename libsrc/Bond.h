@@ -24,6 +24,7 @@ typedef struct
 {
 	AtomWkr atom;
 	double geomRatio;
+	double expectedAngle;
 	double circlePortion;
 } AtomValue;
 
@@ -38,9 +39,7 @@ typedef struct
 	double magicPsi;
 	std::vector<BondSample> storedSamples;
 	std::vector<BondSample> staticSample;
-	std::vector<BondSample> singleStateSample;
 	std::vector<AtomWkr> extraTorsionSamples;
-	bool _changedSamples;
 } BondGroup;
 
 #define INITIAL_KICK 0.10
@@ -65,6 +64,7 @@ public:
 	static double magicAxisStaticScore(void *object);
 	bool test();
 	double getEffectiveOccupancy();
+	double bondAnglePenalty();
 
 	AtomPtr getMajor()
 	{
@@ -189,17 +189,6 @@ public:
 		bond->propagateChange();
 	}
 
-	static double getBendBlur(void *object)
-	{
-		return static_cast<Bond *>(object)->_bendBlur;
-	}
-
-	static void setBendBlur(void *object, double value)
-	{
-		static_cast<Bond *>(object)->_bendBlur = value;
-		static_cast<Bond *>(object)->propagateChange();
-	}
-
 	static double getBendAngle(void *object);
 	static void setBendAngle(void *object, double value);
 
@@ -245,6 +234,7 @@ public:
 
 	bool isNotJustForHydrogens();
 
+	double getExpectedAngle();
 	double getGeomRatio(int n, int i)
 	{
 		return _bondGroups[n].atoms[i].geomRatio;
@@ -315,7 +305,7 @@ public:
 
 	virtual double getMeanSquareDeviation();
 
-	void getAnisotropy();
+	void getAnisotropy(bool withKabsch);
 	vec3 longestAxis();
 	double anisotropyExtent();
 
@@ -375,6 +365,16 @@ public:
 		return _occupancy * _occMult;
 	}
 
+	void setRefineBondAngle(bool value = true)
+	{
+		_refineBondAngle = true;
+	}
+
+	bool getRefineBondAngle()
+	{
+		return _refineBondAngle;
+	}
+
 protected:
 	Bond();
 
@@ -406,7 +406,6 @@ private:
 	}
 
 	double _dampening;
-	double _bendBlur;
 	bool _activated;
 	int _activeGroup;
 	double _blurTotal;
@@ -447,6 +446,7 @@ private:
 	/* Flag to say whether recalculation should occur */
 	bool _changedPos, _changedSamples;
 	bool _blocked;
+	bool _refineBondAngle;
 
 	mat3x3 getMagicMat();
 	vec3 _longest;

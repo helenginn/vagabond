@@ -192,11 +192,8 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
 			continue;
 		}
 
-		double addition = vec1[i];
 		sum_x += vec1[i] * weight;
-
-		addition = vec2[i];
-		sum_y += addition * weight;
+		sum_y += vec2[i] * weight;
 
 		sum_weight += weight;
 	}

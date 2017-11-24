@@ -23,6 +23,10 @@ public:
 	AtomPtr findAtom(std::string atomType, std::string confID);
 	AtomList findAtoms(std::string atomType);
 
+	static double scoreWithMap(std::vector<AtomPtr> atoms, ScoreType scoreType,
+							   FFTPtr map, mat3x3 real2Frac);
+	double scoreWithMap(ScoreType scoreType, FFTPtr map, mat3x3 real2Frac);
+
 	void setMonomer(MonomerPtr monomer)
 	{
 		_monomer = monomer;
@@ -35,7 +39,13 @@ public:
 
 	virtual void addAtom(AtomPtr atom)
 	{
-		_atoms.push_back(atom);
+		std::vector<AtomPtr>::iterator it;
+		it = std::find(_atoms.begin(), _atoms.end(), atom);
+
+		if (it == _atoms.end())
+		{
+			_atoms.push_back(atom);
+		}
 	}
 
 	long atomCount()
@@ -75,6 +85,11 @@ public:
 		_beenTied = true;
 	}
 
+	virtual bool shouldRefineAngles()
+	{
+		return false;
+	}
+
 	void setUseAbsolute();
 	int totalElectrons(int *fcWeighted);
 
@@ -89,6 +104,7 @@ protected:
 	void addAtomsFrom(AtomGroupPtr child);
 	virtual AtomList topLevelAtoms();
 	bool hasAtom(AtomPtr anAtom);
+	int _timesRefined;
 
 	bool isTied()
 	{

@@ -12,6 +12,7 @@
 #include "Bond.h"
 #include <sstream>
 #include <iomanip>
+#include "maths.h"
 
 AtomPtr AtomGroup::findAtom(std::string atomType)
 {
@@ -240,6 +241,7 @@ double AtomGroup::getAverageBFactor(bool initial)
 AtomGroup::AtomGroup()
 {
 	_beenTied = false;
+	_timesRefined = 0;
 }
 
 void AtomGroup::propagateChange()
@@ -339,10 +341,12 @@ bool AtomGroup::hasAtom(AtomPtr anAtom)
 void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 {
 	AtomList topAtoms = topLevelAtoms();
+	bool refineAngles = shouldRefineAngles();
 
 	ScoreType scoreType = ScoreTypeModelPos;
 	int maxTries = 60;
 	int bondNum = 4;
+	_timesRefined++;
 
 	if (rType == RefinementFine)
 	{
@@ -395,7 +399,8 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					setupNelderMead();
 					setCrystal(target);
 					topBond = setupTorsionSet(bond, k, bondNum,
-											  deg2rad(4), deg2rad(0.04));
+											  deg2rad(4), deg2rad(0.04),
+											  refineAngles);
 					setScoreType(scoreType);
 
 					setSilent();
@@ -415,4 +420,77 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 			}
 		}
 	}
+}
+
+double AtomGroup::scoreWithMap(ScoreType scoreType, FFTPtr map, mat3x3 real2Frac)
+{
+	return scoreWithMap(_atoms, scoreType, map, real2Frac);
+}
+
+double AtomGroup::scoreWithMap(std::vector<AtomPtr> atoms, ScoreType scoreType,
+							   FFTPtr map, mat3x3 real2Frac)
+{
+	atoms[0]->getModel()->getDistribution(true);
+	vec3 zero = atoms[0]->getModel()->getAbsolutePosition();
+	double maxDistance = 0;
+
+	for (int i = 1; i < atoms.size(); i++)
+	{
+		/* Refresh absolute position */
+		atoms[i]->getModel()->getDistribution();
+		vec3 offset = atoms[i]->getModel()->getAbsolutePosition();
+
+		vec3 diff = vec3_subtract_vec3(offset, zero);
+		double distance = vec3_length(diff);
+
+		if (distance > maxDistance)
+		{
+			maxDistance = distance;
+		}
+	}
+
+	double scales = 1. / 4.0;
+	double n = (maxDistance + 1.0) / scales;
+	n = 60;
+
+	FFTPtr segment = FFTPtr(new FFT());
+	segment->create(n + 0.5);
+	segment->setScales(scales);
+	mat3x3 basis = make_mat3x3();
+	double toReal = 1 / (scales*n);
+	mat3x3_scale(&basis, toReal, toReal, toReal);
+
+	for (int i = 0; i < atoms.size(); i++)
+	{
+		atoms[i]->addToMap(segment, basis, zero);
+	}
+
+	//	segment->printSlice();
+
+	//std::cout << "Checking " << vec3_desc(zero) << std::endl;
+	mat3x3_mult_vec(real2Frac, &zero);
+
+	//	_fft->printSlice(zero.z);
+	std::vector<double> xs, ys;
+
+	double cutoff = FFT::score(map, segment, zero, &xs, &ys);
+	cutoff = 0.95;
+
+	if (scoreType == ScoreTypeCorrel)
+	{
+		double correl = correlation(xs, ys, cutoff);
+		return -correl;
+	}
+	else if (scoreType == ScoreTypeRFactor)
+	{
+		double rFactor = scaled_r_factor(xs, ys, cutoff);
+		return rFactor;
+	}
+	else if (scoreType == ScoreTypeMultiply)
+	{
+		double mult = weightedMapScore(xs, ys);
+		return -mult;
+	}
+
+	return 0;
 }

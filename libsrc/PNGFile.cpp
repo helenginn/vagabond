@@ -277,7 +277,9 @@ png_byte PNGFile::valueAt(int x, int y)
     }
     
     value /= bytesPerPixel;
-    
+
+	delete [] bytes;
+
     return value;
 }
 

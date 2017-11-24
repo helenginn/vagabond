@@ -9,6 +9,7 @@
 #ifndef vagabond_shared_ptrs_h
 #define vagabond_shared_ptrs_h
 
+#define BOOST_DISABLE_ASSERTS
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
@@ -21,7 +22,7 @@
 #define ATOM_SAMPLING_COUNT (36)
 #define PROTEIN_SAMPLING (1. / 3.)
 #define WATER_RADIUS 0.6
-#define FUTURE_MAGIC_ATOMS 12
+#define FUTURE_MAGIC_ATOMS 5
 
 #define deg2rad(a) ((a) * M_PI / 180)
 #define rad2deg(a) ((a) / M_PI * 180)

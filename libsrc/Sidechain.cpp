@@ -35,8 +35,6 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		return;
 	}
 
-
-
 	if (!canRefine()) return;
 
 	if (rType != RefinementFine)

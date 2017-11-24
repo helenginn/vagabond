@@ -84,4 +84,6 @@ inline void vec3_set_length(vec3 *vec, double length)
 	vec3_mult(vec, length / now);
 }
 
+
+
 #endif /* defined(__vagabond__vec3__) */

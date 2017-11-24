@@ -16,9 +16,9 @@
 #include "FileReader.h"
 
 OptionsPtr Options::options;
-double Options::_kick = 0.10;
+double Options::_kick = 0.01;
 double Options::_dampen = 0.08;
-bool Options::_enableTests = false;
+int Options::_enableTests = false;
 
 Options::Options(int argc, const char **argv)
 {
@@ -96,13 +96,11 @@ void Options::run()
 			crystals[0]->tiedUpScattering();
 
 			PolymerPtr chainA = ToPolymerPtr(crystals[0]->molecule("A"));
-	//		chainA->downWeightResidues(10, 19, 0.0);
-	//		chainA->downWeightResidues(120, 124, 0.0);
 
 			int count = 0;
 			crystals[0]->concludeRefinement(count, data, crystals[0]);
 
-			refineAll(RefinementModelPos, 4, &count);
+			refineAll(RefinementModelPos, 8, &count);
 			refineAll(RefinementFine, _numCycles, &count);
 		}
 	}
@@ -333,12 +331,14 @@ void Options::parse()
 			FileReader::setOutputDirectory(_outputDir);
 			understood = true;
 		}
-		prefix = "--enable-tests";
+		prefix = "--enable-tests=";
 
 		if (!arg.compare(0, prefix.size(), prefix))
 		{
-			_enableTests = true;
-			std::cout << "Enabling Helen's test/sandbox." << std::endl;
+			std::string testString = arg.substr(prefix.size());
+			_enableTests = atoi(testString.c_str());
+			std::cout << "Enabling Helen's test/sandbox no. " <<
+			enableTests() << "." << std::endl;
 			understood = true;
 		}
 
@@ -381,6 +381,8 @@ void Options::outputCrystalInfo()
 
 void Options::refineAll(RefinementType type, int numCycles, int *count)
 {
+	double lastRWork = 200;
+
 	for (int i = 0; i < numCycles; i++)
 	{
 		for (int j = 0; j < crystals[0]->moleculeCount(); j++)
@@ -390,7 +392,21 @@ void Options::refineAll(RefinementType type, int numCycles, int *count)
 		}
 
 		(*count)++;
-		crystals[0]->concludeRefinement(*count, diffractions[0], crystals[0]);
+		double newRWork = crystals[0]->concludeRefinement(*count, diffractions[0],
+														  crystals[0]);
+
+		/* Do we go for another cycle? */
+		if (i + 1 == numCycles && newRWork < lastRWork)
+		{
+			std::cout << "Going for another cycle..." << std::endl;
+			numCycles++;
+		}
+		else if (i + 1 == numCycles)
+		{
+			std::cout << "Leaving it there." << std::endl;
+		}
+
+		lastRWork = newRWork;
 	}
 
 }
