@@ -778,9 +778,8 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		double notZ = sqrt(nextDifference.y * nextDifference.y +
 						   nextDifference.x * nextDifference.x);
 		double tanX = nextDifference.z / notZ;
-		double xValue = sin(atan(tanX));
-	//	double xValue = sqrt(tanX * tanX / (1 + tanX * tanX));
-		double yValue = sqrt(1 - xValue * xValue);
+		double dampValue = sin(atan(tanX));
+		double yValue = sqrt(1 - dampValue * dampValue);
 
 		if (yValue != yValue)
 		{
@@ -788,11 +787,9 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		}
 
 		/* We want to correct if the deviation is close to the magic angle */
-		double modulation = xValue;
-
-		if (modulation != modulation)
+		if (dampValue != dampValue)
 		{
-			modulation = 0;
+			dampValue = 0;
 		}
 
 		double rotAngle = 0;
@@ -806,13 +803,19 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 
 		double undoBlur = 0;
 		undoBlur = rotAngle;
-		undoBlur *= modulation;
+		undoBlur *= dampValue;
 		undoBlur *= fabs(_dampening);
 
 		_blurTotal += fabs(undoBlur);
 
 		/* This will only really apply for a kicked bond */
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;
+/*
+		if (rotAngle >= 0 && addBlur >= 0) addBlur *= -1;
+		if (rotAngle < 0 && addBlur < 0) addBlur *= -1;
+*/
+//		addBlur *= fabs(rotAngle);
+
 		addBlur *= yValue;
 
 		if (isFixed())
@@ -1392,7 +1395,7 @@ double Bond::getMeanSquareDeviation()
 
 void Bond::getAnisotropy(bool withKabsch)
 {
-//	if (withKabsch)
+	if (withKabsch)
 	{
 		std::vector<BondSample> finals = getFinalPositions();
 		std::vector<vec3> finalPoints;
@@ -1407,7 +1410,7 @@ void Bond::getAnisotropy(bool withKabsch)
 		_realSpaceTensor = tropicator.getTensor();
 		_longest = tropicator.longestAxis();
 	}
-
+	else
 	{
 		std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
 		std::vector<vec3> points;

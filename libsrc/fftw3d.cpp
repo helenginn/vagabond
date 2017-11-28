@@ -343,6 +343,7 @@ void FFT::multiplyAll(float value)
 
 void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 {
+	nthreads = 1;
 	char	wisdomFile[128];
 	wisdomFile[0] = 0;
 

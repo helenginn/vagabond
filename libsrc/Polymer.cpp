@@ -693,6 +693,32 @@ void Polymer::superimpose()
 {
 	minimiseRotations();
 	minimiseCentroids();
+
+	ModelPtr model = getAnchorModel();
+	ModelPtr ca102 = getMonomer(102)->findAtom("CA")->getModel();
+
+	if (model->isAbsolute())
+	{
+		std::vector<vec3> sphereAngles = ToAbsolutePtr(model)->getSphereAngles();
+		CSVPtr csv = CSVPtr(new CSV(6, "psi", "phi", "theta", "corr_x", "corr_y", "corr_z"));
+		CSVPtr one = CSVPtr(new CSV(3, "x", "y", "z"));
+		std::vector<BondSample> positions = ca102->getFinalPositions();
+
+		for (int i = 0; i < sphereAngles.size(); i++)
+		{
+			double xMove = getCentroidOffsets()[i].x;
+			double yMove = getCentroidOffsets()[i].y;
+			double zMove = getCentroidOffsets()[i].z;
+			csv->addEntry(6, sphereAngles[i].x, sphereAngles[i].y,
+						  sphereAngles[i].z, xMove, yMove, zMove);
+
+			one->addEntry(3, positions[i].start.x, positions[i].start.y,
+						  positions[i].start.z);
+		}
+
+		one->writeToFile("res102.csv");
+		csv->writeToFile("kabsch.csv");
+	}
 }
 
 void Polymer::minimiseCentroids()

@@ -437,7 +437,11 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 	}
 
 	std::vector<double> bins;
+	bins.push_back(0);
+	bins.push_back(10);
 	generateResolutionBins(0, _maxResolution, 20, &bins);
+//	bins.push_back(6);
+//	bins.push_back(_maxResolution);
 	double totalFc = totalToScale();
 
 	for (int i = 0; i < bins.size() - 1; i++)
@@ -661,8 +665,8 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data,
 		if (molecule(i)->getClassName() == "Polymer")
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
-			polymer->differenceGraphs("density_" + polymer->getChainID() +
-									  "_" + i_to_str(cycleNum), shared_from_this());
+//			polymer->differenceGraphs("density_" + polymer->getChainID() +
+//									  "_" + i_to_str(cycleNum), shared_from_this());
 			polymer->graph("chain_" + polymer->getChainID() +
 						   "_" + i_to_str(cycleNum));
 			polymer->closenessSummary();

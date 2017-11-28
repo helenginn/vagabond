@@ -367,7 +367,7 @@ public:
 
 	void setRefineBondAngle(bool value = true)
 	{
-		_refineBondAngle = true;
+		_refineBondAngle = value;
 	}
 
 	bool getRefineBondAngle()

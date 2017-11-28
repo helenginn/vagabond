@@ -149,25 +149,29 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 
 	int samples = 81;
 	int rnd = 1;
-	double total = 2;
 
 	std::vector<vec3> points;
 	double offset = 2. / (double)samples;
 	double increment = M_PI * (3.0 - sqrt(5));
 
+	_sphereAngles.clear();
+
+	double m = meanSqDisp;
+
 	for (int i = 0; i < samples; i++)
 	{
 		double y = (((double)i * offset) - 1) + (offset / 2);
 		double r = sqrt(1 - y * y);
-		r *= meanSqDisp;
 
 		double phi = (double)((i + rnd) % samples) * increment;
 
 		double x = cos(phi) * r;
 		double z = sin(phi) * r;
-		y *= r;
 
-		points.push_back(make_vec3(x, y, z));
+		vec3 point = make_vec3(x * m, y * m, z * m);
+
+		points.push_back(point);
+		_sphereAngles.push_back(point);
 	}
 
 	for (int i = 0; i < points.size(); i++)

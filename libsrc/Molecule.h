@@ -57,7 +57,6 @@ public:
 
 	void setAbsoluteBFacMult(double mult)
 	{
-		std::cout << "setting absolute mult to " << mult << std::endl;
 		 _absoluteBFacMult = mult;
 	}
 

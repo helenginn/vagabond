@@ -166,6 +166,11 @@ public:
 	{
 		return _nextAtoms.size();
 	}
+
+	std::vector<vec3> getSphereAngles()
+	{
+		return _sphereAngles;
+	}
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 
@@ -181,6 +186,7 @@ private:
 	mat3x3 _tensor;
 	std::string _conformer;
 	std::vector<BondSample> _bondSamples;
+	std::vector<vec3> _sphereAngles;
 
 	vec3 _position;
 	double _bFactor;

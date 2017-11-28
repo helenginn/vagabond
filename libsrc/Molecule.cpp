@@ -24,7 +24,13 @@ Molecule::Molecule()
 
 void Molecule::tieAtomsUp()
 {
-	setAbsoluteBFacMult(0.4);
+	if (getClassName() != "Polymer")
+	{
+		double mult = 0.2;
+		std::cout << "Setting HETATM B factor multiplier to " << mult <<
+		" for Chain " << getChainID() << std::endl;
+		setAbsoluteBFacMult(mult);
+	}
 }
 
 void Molecule::addModel(ModelPtr aModel)
