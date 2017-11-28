@@ -414,7 +414,8 @@ GeomTable::GeomTable()
 	addBondAngle(AtomAsnCB, AtomAsnCA, AtomC, 110.4);
 	addBondAngle(AtomAsnCA, AtomAsnCB, AtomAsnCG, 113.4);
 	addBondAngle(AtomAsnCB, AtomAsnCG, AtomAsnOD1, 121.6);
-	addBondAngle(AtomAsnCB, AtomAsnCG, AtomAsnND2, 116.7);
+	addBondAngle(AtomAsnCB, AtomAsnCG, AtomAsnND2, 116.6);
+	addBondAngle(AtomAsnOD1, AtomAsnCG, AtomAsnND2, 121.8);
 
 	addBondLength(AtomC, AtomArgCA, 1.525);
 	addBondLength(AtomNH1, AtomArgCA, 1.459);
@@ -691,6 +692,7 @@ GeomTable::GeomTable()
 	addBondAngle(AtomAspCA, AtomAspCB, AtomAspCG, 113.4);
 	addBondAngle(AtomAspCB, AtomAspCG, AtomAspOD1, 118.3);
 	addBondAngle(AtomAspCB, AtomAspCG, AtomAspOD2, 118.3);
+	addBondAngle(AtomAspOD1, AtomAspCG, AtomAspOD2, 123.4);
 
 	addBondLength(AtomC, AtomThrCA, 1.525);
 	addBondLength(AtomNH1, AtomThrCA, 1.459);

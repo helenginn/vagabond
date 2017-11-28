@@ -27,6 +27,9 @@ void Element::setupElements()
 	elements.push_back(ElementPtr(new Element("P", "phosphorus", 15,  ScatterFactors::pScatter)));
 	elements.push_back(ElementPtr(new Element("S", "sulphur", 16,  ScatterFactors::sScatter)));
 	elements.push_back(ElementPtr(new Element("CL", "chlorine", 17,  ScatterFactors::clScatter)));
+	elements.push_back(ElementPtr(new Element("CA", "calcium", 20,  ScatterFactors::caScatter)));
+	elements.push_back(ElementPtr(new Element("MN", "manganese", 25,  ScatterFactors::mnScatter)));
+	elements.push_back(ElementPtr(new Element("FE", "iron", 26,  ScatterFactors::feScatter)));
 	elements.push_back(ElementPtr(new Element("ZN", "zinc", 30,  ScatterFactors::znScatter)));
 }
 
