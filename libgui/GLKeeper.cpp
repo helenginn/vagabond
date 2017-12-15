@@ -29,17 +29,18 @@ void GLKeeper::setupCamera(void)
 	camBeta = 0;
 	camGamma = 0;
 	_centre = make_vec3(0, 0, START_Z);
-    zNear = 2;
-    zFar = 150;
+    zNear = 3;
+    zFar = 50;
 	//	modelMat.vals[11] -= centreZ;
 	modelMat = make_mat4x4();
 	rotMat = make_mat4x4();
 
 	float correctedNear = zNear;
 	if (zNear <= 0.1) correctedNear = 0.1;
-	float aspect = width / height;
+	double side = 0.3;
+	float aspect = height / width;
 	float fieldSize = correctedNear * tanf(DEGREES_TO_RADIANS(FIELD_OF_VIEW) / 2.0);
-	projMat = mat4x4_frustum(fieldSize, fieldSize / aspect, correctedNear, zFar);
+	projMat = mat4x4_frustum(side, -side, side * aspect, -side * aspect, correctedNear, zFar);
 
 	updateCamera();
 }
@@ -50,16 +51,20 @@ void GLKeeper::updateCamera(void)
 	_translation = vec3_add_vec3(_translation, alteration);
 	_centre = vec3_subtract_vec3(_centre, alteration);
 
-	vec3 negAll = _centre;
-	vec3_mult(&negAll, -1);
+	vec3 centre = make_vec3(0, 0, 5);
+	vec3 negCentre = centre;
+	vec3_mult(&negCentre, -1);
+
 	mat4x4 change = make_mat4x4();
-	mat4x4_translate(&change, _centre);
+	mat4x4_translate(&change, centre);
 	mat4x4_rotate(&change, camAlpha, camBeta, camGamma);
-	mat4x4_translate(&change, negAll);
-	modelMat = mat4x4_mult_mat4x4(change, modelMat);
+	mat4x4_translate(&change, negCentre);
+
 	mat4x4 transMat = make_mat4x4();
 	mat4x4_translate(&transMat, _translation);
+
 	modelMat = mat4x4_mult_mat4x4(modelMat, transMat);
+	modelMat = mat4x4_mult_mat4x4(change, modelMat);
 
 	camAlpha = 0; camBeta = 0; camGamma = 0;
 	_translation = make_vec3(0, 0, 0);
@@ -97,7 +102,7 @@ void GLKeeper::render(void)
 
 	updateCamera();
 
-	glViewport(0, 0, width, height);
+//	glViewport(0, 0, width, height);
 
 	for (int i = 0; i < _objects.size(); i++)
 	{
@@ -127,9 +132,9 @@ void GLKeeper::zoom(float x, float y, float z)
 
 void GLKeeper::rotateAngles(float alpha, float beta, float gamma)
 {
-    camAlpha += alpha;
+    camAlpha -= alpha;
     camBeta += beta;
-    camGamma += gamma;
+    camGamma -= gamma;
 }
 
 void GLKeeper::panned(float x, float y)

@@ -13,6 +13,7 @@
 #include <sstream>
 #include <iomanip>
 #include "maths.h"
+#include "ccp4_spg.h"
 
 AtomPtr AtomGroup::findAtom(std::string atomType)
 {
@@ -348,11 +349,12 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 	int bondNum = 4;
 	_timesRefined++;
 
+	double degrees = 4;
 	if (rType == RefinementFine)
 	{
 		scoreType = ScoreTypeMultiply;
-		maxTries = 1;
-		bondNum = 5;
+		maxTries = 10;
+		degrees = 2;
 	}
 
 	for (int n = 0; n < topAtoms.size(); n++)
@@ -399,11 +401,14 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					setupNelderMead();
 					setCrystal(target);
 					topBond = setupTorsionSet(bond, k, bondNum,
-											  deg2rad(4), deg2rad(0.04),
+											  deg2rad(degrees), deg2rad(0.04),
 											  refineAngles);
 					setScoreType(scoreType);
 
-					setSilent();
+					if (rType == RefinementModelPos)
+					{
+						setSilent();
+					}
 
 					setJobName("torsion_" +  bond->shortDesc());
 					changed = sample();
@@ -449,9 +454,9 @@ double AtomGroup::scoreWithMap(std::vector<AtomPtr> atoms, ScoreType scoreType,
 		}
 	}
 
-	double scales = 1. / 4.0;
-	double n = (maxDistance + 1.0) / scales;
-	n = 60;
+	double scales = 0.6;
+	double n = 2 * (maxDistance + 3.0) / scales;
+	n = 24;
 
 	FFTPtr segment = FFTPtr(new FFT());
 	segment->create(n + 0.5);
@@ -459,22 +464,40 @@ double AtomGroup::scoreWithMap(std::vector<AtomPtr> atoms, ScoreType scoreType,
 	mat3x3 basis = make_mat3x3();
 	double toReal = 1 / (scales*n);
 	mat3x3_scale(&basis, toReal, toReal, toReal);
+	segment->createFFTWplan(1);
 
 	for (int i = 0; i < atoms.size(); i++)
 	{
 		atoms[i]->addToMap(segment, basis, zero);
 	}
 
-	//	segment->printSlice();
-
-	//std::cout << "Checking " << vec3_desc(zero) << std::endl;
+//	segment->normalise();
 	mat3x3_mult_vec(real2Frac, &zero);
 
-	//	_fft->printSlice(zero.z);
 	std::vector<double> xs, ys;
 
 	double cutoff = FFT::score(map, segment, zero, &xs, &ys);
-	cutoff = 0.95;
+
+	FFTPtr obsSeg = FFTPtr(new FFT(*segment));
+	obsSeg->setAll(0);
+
+	/* n.b. this is fucked. please unfuck before continuing. */
+//	FFT::score(map, obsSeg, zero, NULL, NULL, MapScoreTypeCopyToSmaller);
+
+	/*
+
+	segment->shiftToCentre();
+	segment->normalise();
+	segment->printSlice();
+
+	segment->fft(-1);
+	segment->writeReciprocalToFile("segment_calc.mtz");
+
+	obsSeg->shiftToCentre();
+	obsSeg->normalise();
+	obsSeg->fft(-1);
+	obsSeg->writeReciprocalToFile("segment_obs.mtz");
+*/
 
 	if (scoreType == ScoreTypeCorrel)
 	{

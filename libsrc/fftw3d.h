@@ -32,6 +32,7 @@ typedef enum
 	MapScoreTypeNone,
 	MapScoreTypeCorrel,
 	MapScoreTypeRadialMagnitude,
+	MapScoreTypeCopyToSmaller,
 } MapScoreType;
 
 inline void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, float *result)
@@ -62,12 +63,12 @@ public:
 
 	void setupMask();
 
-	double sumAll()
+	double averageAll()
 	{
 		double reals = 0;
 		for (int i = 0; i < nn; i++)
 		{
-			reals += data[i][0];
+			reals += fabs(data[i][0]);
 		}
 
 		return reals / (double)nn;
@@ -206,7 +207,12 @@ public:
 	int *mask; // not char due to cpu speed
 
 	double scales[3];
-    
+
+	void writeReciprocalToFile(std::string filename, double maxResolution = 0,
+							   CSym::CCP4SPG *mtzspg = NULL,
+							   std::vector<double> unitCell = std::vector<double>(),
+							   mat3x3 real2Frac = make_mat3x3(),
+							   FFTPtr data = FFTPtr());
 private:
 	FourierDimension *_myDims;
 

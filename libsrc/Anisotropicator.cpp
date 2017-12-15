@@ -25,17 +25,16 @@ void Anisotropicator::setTensor(mat3x3 tensor)
 
 double Anisotropicator::anisotropyExtent()
 {
-	double score = 0;
+	double ave = 0;
 
 	for (int i = 0; i < 3; i++)
 	{
 		double length = vec3_length(_axes[i]);
-		double nextLength = vec3_length(_axes[(i + 1) % 3]);
-		double diff = fabs(nextLength - length);
-		score += diff;
+		double next = vec3_length(_axes[(i + 1) % 3]);
+		ave += fabs(length - next);
 	}
 
-	return score;
+	return ave;
 }
 
 vec3 Anisotropicator::longestAxis()

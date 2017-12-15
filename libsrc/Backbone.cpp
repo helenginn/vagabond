@@ -29,7 +29,10 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 	std::cout << getMonomer()->getResCode() << std::flush;
 
-	AtomGroup::refine(target, rType);
+	if (rType != RefinementFine)
+	{
+		AtomGroup::refine(target, rType);
+	}
 }
 
 AtomPtr Backbone::betaCarbonTorsionAtom()

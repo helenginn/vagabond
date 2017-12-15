@@ -118,13 +118,14 @@ void Polymer::tieAtomsUp()
 			{
 				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
 			}
-
+/*
 			if ((Options::enableTests() == 3)
 				&& (i == 857 || i == 962 || i == 1011 || i == 1012 ||
 					i == 1015 || i == 1028 || i == 1053 || i == 1068))
 			{
 				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
 			}
+*/
 
 			getMonomer(i)->getSidechain()->setInitialDampening();
 		}
@@ -240,11 +241,11 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 		}
 
 		BackbonePtr backbone = getMonomer(n)->getBackbone();
-		double cc = -getMonomer(n)->scoreWithMap(ScoreTypeMultiply, fft, real2Frac);
+		double cc = -getMonomer(n)->scoreWithMap(ScoreTypeCorrel, fft, real2Frac);
 		sumCC += cc;
 
 		double diffcc = -getMonomer(n)->scoreWithMap(ScoreTypeMultiply,
-											   difft, _real2Frac);
+											   difft, real2Frac);
 		sumDiffCC += diffcc;
 
 		tempCCs.push_back(cc);
@@ -270,10 +271,11 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 	plotMap["yHeader0"] = "cc";
 	plotMap["xHeader1"] = "resnum";
 	plotMap["yHeader1"] = "diffcc";
-//	plotMap["yMin0"] = "-1";
-//	plotMap["yMin1"] = "-1";
-//	plotMap["yMax0"] = "1";
-//	plotMap["yMax1"] = "1";
+	plotMap["yMin0"] = "0";
+	plotMap["yMax0"] = "1";
+	plotMap["yMin1"] = "-10";
+	plotMap["yMax1"] = "10";
+
 	plotMap["colour0"] = "black";
 	plotMap["colour1"] = "red";
 	plotMap["xTitle0"] = "Residue number";
@@ -695,14 +697,14 @@ void Polymer::superimpose()
 	minimiseCentroids();
 
 	ModelPtr model = getAnchorModel();
-	ModelPtr ca102 = getMonomer(102)->findAtom("CA")->getModel();
+//	ModelPtr ca102 = getMonomer(102)->findAtom("CA")->getModel();
 
 	if (model->isAbsolute())
 	{
 		std::vector<vec3> sphereAngles = ToAbsolutePtr(model)->getSphereAngles();
 		CSVPtr csv = CSVPtr(new CSV(6, "psi", "phi", "theta", "corr_x", "corr_y", "corr_z"));
 		CSVPtr one = CSVPtr(new CSV(3, "x", "y", "z"));
-		std::vector<BondSample> positions = ca102->getFinalPositions();
+//		std::vector<BondSample> positions = ca102->getFinalPositions();
 
 		for (int i = 0; i < sphereAngles.size(); i++)
 		{
@@ -711,12 +713,13 @@ void Polymer::superimpose()
 			double zMove = getCentroidOffsets()[i].z;
 			csv->addEntry(6, sphereAngles[i].x, sphereAngles[i].y,
 						  sphereAngles[i].z, xMove, yMove, zMove);
-
+/*
 			one->addEntry(3, positions[i].start.x, positions[i].start.y,
 						  positions[i].start.z);
+*/
 		}
 
-		one->writeToFile("res102.csv");
+//		one->writeToFile("res102.csv");
 		csv->writeToFile("kabsch.csv");
 	}
 }

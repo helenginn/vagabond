@@ -85,7 +85,10 @@ void Options::run()
 
 			/* sandbox */
 			crystals[0]->writeMillersToFile(data, "pre");
-			crystals[0]->getDataInformation(data, 3, 2);
+			crystals[0]->getDataInformation(data, 2, 1);
+
+			PolymerPtr chainA = ToPolymerPtr(crystals[0]->molecule("A0"));
+			chainA->differenceGraphs("test", crystals[0]);
 
 			if (_tie)
 			{
@@ -95,12 +98,10 @@ void Options::run()
 
 			crystals[0]->tiedUpScattering();
 
-			PolymerPtr chainA = ToPolymerPtr(crystals[0]->molecule("A"));
-
 			int count = 0;
 			crystals[0]->concludeRefinement(count, data, crystals[0]);
 
-			refineAll(RefinementModelPos, 8, &count);
+			refineAll(RefinementModelPos, 2, &count);
 			refineAll(RefinementFine, _numCycles, &count);
 		}
 	}
@@ -396,7 +397,7 @@ void Options::refineAll(RefinementType type, int numCycles, int *count)
 														  crystals[0]);
 
 		/* Do we go for another cycle? */
-		if (i + 1 == numCycles && newRWork < lastRWork)
+		if (false && i + 1 == numCycles && newRWork < lastRWork)
 		{
 			std::cout << "Going for another cycle..." << std::endl;
 			numCycles++;

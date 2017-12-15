@@ -22,6 +22,11 @@
 #include "FileReader.h"
 #include <sys/stat.h>
 
+#include "../libccp4/cmtzlib.h"
+#include "../libccp4/csymlib.h"
+#include "../libccp4/ccp4_spg.h"
+#include "../libccp4/ccp4_general.h"
+
 std::deque<FourierDimension> FFT::_dimensions;
 
 inline void fftwf_add(fftwf_complex comp1, fftwf_complex comp2, float *result)
@@ -556,8 +561,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	mat3x3 crystal2AtomVox = mat3x3_mult_mat3x3(fftAtom->getBasisInverse(),
 												fftCrystal->getBasis());
 
-
-
 	/* Prepare a matrix to convert atomic voxels into crystal voxels */
 	mat3x3 atomVox2Crystal = mat3x3_mult_mat3x3(fftCrystal->getBasisInverse(),
 												fftAtom->getBasis());
@@ -613,36 +616,67 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 	/* Temp calculation of mean... delete me... */
 	int count = 0;
-	double step = 1;
 
-	if (mapScoreType != MapScoreTypeNone)
+	/* Determine bounding box - 9th Dec 2017 */
+	vec3 minAtom = make_vec3(0, 0, 0);
+	vec3 maxAtom = make_vec3(0, 0, 0);
+
+	for (int k = 0; k <= fftAtom->nz; k += fftAtom->nz)
 	{
-		step = 1;
+		for (int j = 0; j <= fftAtom->ny; j += fftAtom->ny)
+		{
+			for (int i = 0; i <= fftAtom->nx; i += fftAtom->nx)
+			{
+				vec3 atomCorner = make_vec3(i, j, k);
+				vec3 toCrystal = mat3x3_mult_vec(atomVox2Crystal, atomCorner);
+				toCrystal.x = (int)toCrystal.x;
+				toCrystal.y = (int)toCrystal.y;
+				toCrystal.z = (int)toCrystal.z;
+
+				vec3_min_each(&minAtom, toCrystal);
+				vec3_max_each(&maxAtom, toCrystal);
+			}
+		}
 	}
 
+	double step = 1;
+	int skipped = 0;
+
 	vec3 atomPos = make_vec3(0, 0, 0);
-	for (double k = 0; atomPos.z < fftAtom->nz; k += step)
+	for (double k = minAtom.z; k < maxAtom.z; k += step)
 	{
-		for (double j = 0; atomPos.y < fftAtom->ny; j += step)
+		for (double j = minAtom.y; j < maxAtom.y; j += step)
 		{
-			for (double i = 0; atomPos.x < fftAtom->nx; i += step)
+			for (double i = minAtom.x; i < maxAtom.x; i += step)
 			{
 				/* Position currently in voxel coords - change to atom. */
 				vec3 crystalPos = make_vec3(i, j, k);
 				atomPos = mat3x3_mult_vec(crystal2AtomVox, crystalPos);
-				vec3 pos = atomPos;
 
+				if (atomPos.x < 0 || atomPos.y < 0 || atomPos.z < 0)
+				{
+					skipped++;
+					continue;
+				}
+
+				if (atomPos.x > fftAtom->nx || atomPos.y > fftAtom->ny
+					|| atomPos.z > fftAtom->nz)
+				{
+					skipped++;
+					continue;
+				}
 
 				/* Now we must find the relative crystal voxel to write this
-				 * density value to, given that the atom is wrapped around
+				 * density value to, given that the atom was wrapped around
 				 * the origin (center). This should work regardless of odd/
 				 * even dimension lengths. */
 
 				/* We add the tiny offset which resulted from the atom
 				 * falling between two voxels, in atomic voxels */
-				vec3 offsetPos = vec3_add_vec3(pos, atomOffset);
+				vec3 offsetPos = vec3_add_vec3(atomPos, atomOffset);
 
-				if (fftAtom->getReal(offsetPos.x, offsetPos.y, offsetPos.y) == 0)
+				if (fftAtom->getReal(offsetPos.x, offsetPos.y, offsetPos.y) <= 0
+					&& mapScoreType != MapScoreTypeCopyToSmaller)
 				{
 					continue;
 				}
@@ -676,7 +710,9 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 				if (mapScoreType == MapScoreTypeCorrel)
 				{
-					double realCryst = fftCrystal->getReal(crystalIndex);
+					if (atomReal < 0.2) continue;
+
+					double realCryst = fftCrystal->data[crystalIndex][0];
 					crystalVals.push_back(realCryst);
 					thingVals.push_back(atomReal);
 					orderedVals.push_back(atomReal);
@@ -693,21 +729,35 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 					xs->push_back(vec3_length(diff));
 					ys->push_back(realCryst);
 				}
-				else
+				else if (mapScoreType == MapScoreTypeCopyToSmaller)
+				{
+
+					double realCryst = fftCrystal->interpolate(finalCrystalVox);
+					int ele = fftAtom->element(offsetPos.x, offsetPos.y,
+												  offsetPos.z);
+
+					if (fftAtom->getReal(ele) <= 0.001)
+					{
+//						continue;
+					}
+
+					fftAtom->setElement(ele, realCryst, 0);
+				}
+				else if (mapScoreType == MapScoreTypeNone)
 				{
 					/* Add the density to the real value of the crystal voxel.*/
 					fftCrystal->data[crystalIndex][0] += atomReal * volume;
 					fftCrystal->data[crystalIndex][1] += atomImag * volume;
 				}
 			}
-
-			atomPos.x = 0;
 		}
-
-		atomPos.y = 0;
 	}
 
-	//std::cout << "Num: " << count << std::endl;
+	if (mapScoreType == MapScoreTypeCopyToSmaller)
+	{
+		std::cout << "Skipped: " << skipped << std::endl;
+		std::cout << "Num: " << count << " out of " << fftAtom->nn << std::endl;
+	}
 
 	if (mapScoreType != MapScoreTypeCorrel)
 	{
@@ -786,6 +836,13 @@ void FFT::printSlice(double zVal)
 	std::cout << std::endl;
 }
 
+void FFT::normalise()
+{
+	double total = averageAll();
+	double mult = 1 / total;
+	multiplyAll(mult);
+}
+
 void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool collapse)
 {
 	fftwf_complex *tempData;
@@ -846,3 +903,158 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool collapse)
 	free(tempData);
 }
 
+void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
+								CSym::CCP4SPG *mtzspg, std::vector<double> unitCell,
+								mat3x3 real2Frac, FFTPtr data)
+{
+	double nLimit = nx;
+	nLimit = nLimit - ((int)nLimit % 2); // make even
+	nLimit /= 2;
+
+	double dStar = 1 / maxResolution;
+
+	if (maxResolution <= 0) dStar = FLT_MAX;
+
+	/* For writing MTZ files */
+
+	int columns = 10;
+
+	float cell[6], wavelength;
+	float *fdata = new float[columns];
+
+	/* variables for symmetry */
+	float rsm[192][4][4];
+	char ltypex[2];
+
+	/* variables for MTZ data structure */
+	CMtz::MTZ *mtzout;
+	CMtz::MTZXTAL *xtal;
+	CMtz::MTZSET *set;
+	CMtz::MTZCOL *colout[11];
+
+	if (unitCell.size() < 6)
+	{
+		unitCell.resize(6);
+		unitCell[0] = nx * scales[0];
+		unitCell[1] = ny * scales[1];
+		unitCell[2] = nz * scales[2];
+		unitCell[3] = 90;
+		unitCell[4] = 90;
+		unitCell[5] = 90;
+
+		mtzspg = CSym::ccp4spg_load_by_ccp4_num(1);
+		real2Frac = mat3x3_from_unit_cell(&(unitCell[0]));
+	}
+
+	cell[0] = unitCell[0];
+	cell[1] = unitCell[1];
+	cell[2] = unitCell[2];
+	cell[3] = unitCell[3];
+	cell[4] = unitCell[4];
+	cell[5] = unitCell[5];
+	wavelength = 1.00; // fixme
+
+	std::string outputFileOnly = filename;
+	std::string outputFile = FileReader::addOutputDirectory(outputFileOnly);
+
+	mtzout = CMtz::MtzMalloc(0, 0);
+	ccp4_lwtitl(mtzout, "Written from Helen's XFEL tasks ", 0);
+	mtzout->refs_in_memory = 0;
+	mtzout->fileout = CMtz::MtzOpenForWrite(outputFile.c_str());
+
+	if (!mtzout->fileout)
+	{
+		std::cout << "Could not open " << outputFile.c_str() << std::endl;
+		std::cerr << "Error: " << strerror(errno) << std::endl;
+		return;
+	}
+
+	// then add symm headers...
+	for (int i = 0; i < mtzspg->nsymop; ++i)
+		CCP4::rotandtrn_to_mat4(rsm[i], mtzspg->symop[i]);
+	strncpy(ltypex, mtzspg->symbol_old, 1);
+	ccp4_lwsymm(mtzout, mtzspg->nsymop, mtzspg->nsymop_prim, rsm, ltypex,
+				mtzspg->spg_ccp4_num, mtzspg->symbol_old, mtzspg->point_group);
+
+	// then add xtals, datasets, cols
+	xtal = MtzAddXtal(mtzout, "vagabond_crystal", "vagabond_project", cell);
+	set = MtzAddDataset(mtzout, xtal, "Dataset", wavelength);
+	colout[0] = MtzAddColumn(mtzout, set, "H", "H");
+	colout[1] = MtzAddColumn(mtzout, set, "K", "H");
+	colout[2] = MtzAddColumn(mtzout, set, "L", "H");
+	colout[3] = MtzAddColumn(mtzout, set, "FREE", "I");
+	colout[4] = MtzAddColumn(mtzout, set, "FP", "F");
+	colout[5] = MtzAddColumn(mtzout, set, "FC", "F");
+	colout[6] = MtzAddColumn(mtzout, set, "FWT", "F");
+	colout[7] = MtzAddColumn(mtzout, set, "PHWT", "P");
+	colout[8] = MtzAddColumn(mtzout, set, "DELFWT", "F");
+	colout[9] = MtzAddColumn(mtzout, set, "PHDELWT", "P");
+
+	int num = 0;
+
+	/* symmetry issues */
+	for (int i = -nLimit; i < nLimit; i++)
+	{
+		for (int j = -nLimit; j < nLimit; j++)
+		{
+			for (int k = 0; k < nLimit; k++)
+			{
+				bool asu = CSym::ccp4spg_is_in_asu(mtzspg, i, j, k);
+
+				if (!asu)
+				{
+					continue;
+				}
+
+				vec3 pos = make_vec3(i, j, k);
+				mat3x3_mult_vec(real2Frac, &pos);
+
+				if (vec3_length(pos) > dStar)
+				{
+					continue;
+				}
+				double phase = getPhase(i, j, k);
+
+				double intensity = getIntensity(i, j, k);
+				double calcAmp = sqrt(intensity);
+
+				int free = 1;
+				double foInt = intensity;
+				if (data)
+				{
+					foInt = data->getIntensity(i, j, k);
+					free = getMask(i, j, k);
+				}
+				else
+				{
+					std::cout << "";
+				}
+
+				double foAmp = sqrt(foInt);
+
+				// i.e. 0 when mask is free flag.
+
+				/* MTZ file stuff */
+
+				fdata[0] = i;
+				fdata[1] = j;
+				fdata[2] = k;
+				fdata[3] = free;
+				fdata[4] = foAmp;
+				fdata[5] = calcAmp;
+				fdata[6] = 2 * foAmp - calcAmp;
+				fdata[7] = phase;
+				fdata[8] = foAmp - calcAmp;
+				fdata[9] = phase;
+
+				num++;
+				ccp4_lwrefl(mtzout, fdata, colout, columns, num);
+			}
+		}
+	}
+
+	MtzPut(mtzout, " ");
+	MtzFree(mtzout);
+
+	delete [] fdata;
+}

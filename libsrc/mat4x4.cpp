@@ -47,14 +47,18 @@ std::string mat4x4_desc(mat4x4 mat)
 	return str.str();
 }
 
-mat4x4 mat4x4_frustum(float lr, float bt, float near, float far)
+mat4x4 mat4x4_frustum(float left, float right, float top,
+					  float bottom, float near, float far)
 {
 	mat4x4 mat = make_mat4x4();
 
-	mat.vals[0] = 1 / lr;
-	mat.vals[5] = 1 / bt;
+	mat.vals[0] = 2 / (left - right);
+	mat.vals[4] = -(left + right) / (left - right);
+	mat.vals[5] = 2 / (top - bottom);
+	mat.vals[7] = -(top + bottom) / (top - bottom);
 	mat.vals[10] = -2 / (far - near);
 	mat.vals[11] = -(far + near) / (far - near);
+	mat.vals[14] = 0;
 	mat.vals[15] = 1;
 
 	return mat;

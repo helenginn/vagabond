@@ -161,12 +161,10 @@ void Monomer::tieAtomsUp()
 	if (getResidueNum() == start)
 	{
 		BondPtr bond = ToBondPtr(getBackbone()->findAtom("CA")->getModel());
-	//	Bond::setTorsionBlur(&*bond, -initialKick);
 	}
 	else if (getResidueNum() == start - 1)
 	{
 		BondPtr bond = ToBondPtr(getBackbone()->findAtom("C")->getModel());
-	//	Bond::setTorsionBlur(&*bond, initialKick);
 	}
 
 	_backbone->setTied();

@@ -112,4 +112,13 @@ double vec3_angle_from_three_points(vec3 &aVec, vec3 &bVec, vec3 &cVec)
 	return vec3_angle_with_vec3(aToB, aToC);
 }
 
+double ewald_wavelength(vec3 &index)
+{
+    double ewald_radius = index.x * index.x + index.y * index.y
+                        + index.z * index.z;
 
+    ewald_radius /= (0 - 2 * index.z);
+    double ewald_wavelength = 1 / ewald_radius;
+
+    return ewald_wavelength;
+}
