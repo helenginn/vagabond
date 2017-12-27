@@ -36,6 +36,11 @@ public:
 		return _resNum;
 	}
 
+	virtual bool shouldRefineAngles()
+	{
+		return (_timesRefined > 0);
+	}
+
 	AtomPtr betaCarbonTorsionAtom();
 
 	virtual void refine(CrystalPtr target, RefinementType rType);

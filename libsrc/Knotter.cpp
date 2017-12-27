@@ -715,7 +715,7 @@ void Knotter::makeProline()
 	ca2cb->setRefineBondAngle(false);
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
-	cb2cg->setFixed(true);
+//	cb2cg->setFixed(true);
 	cb2cg->setTorsionAtoms(cAlpha, cDelta);
 	cb2cg->activate(_sidechain, inherit);
 //	Bond::setTorsion(&*cb2cg, deg2rad(-34.61));
@@ -726,7 +726,7 @@ void Knotter::makeProline()
 	cb2hb3->activate(_sidechain, inherit);
 
 	BondPtr cg2cd = BondPtr(new Bond(cGamma, cDelta));
-	cg2cd->setFixed(true);
+//	cg2cd->setFixed(true);
 	cg2cd->activate(_sidechain, inherit);
 
 	BondPtr cg2hg2 = BondPtr(new Bond(cGamma, hGamma2));

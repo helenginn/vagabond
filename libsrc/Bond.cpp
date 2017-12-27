@@ -1143,6 +1143,11 @@ double Bond::getBendAngle(void *object)
 	Bond *bond = static_cast<Bond *>(object);
 	BondPtr newBond = ToBondPtr(bond->getParentModel());
 
+	if (!newBond || !newBond->isBond())
+	{
+		return 0;
+	}
+
 	int myGroup = -1;
 	int i = newBond->downstreamAtomNum(bond->getMinor(), &myGroup);
 
@@ -1179,6 +1184,7 @@ void Bond::setBendAngle(void *object, double value)
 
 	if (model->getClassName() != "Bond")
 	{
+		return;
 		shout_at_helen("Helen should never have let this happen.\n"\
 					   "Helen has tried to refine a bend connected\n"\
 					   "to something that is not a bond.");
@@ -1187,6 +1193,11 @@ void Bond::setBendAngle(void *object, double value)
 	int myGroup = -1;
 	BondPtr newBond = boost::static_pointer_cast<Bond>(model);
 	int i = newBond->downstreamAtomNum(bond->getMinor(), &myGroup);
+
+	if (!newBond || !newBond->isBond())
+	{
+		return;
+	}
 
 	if (i >= 0)
 	{

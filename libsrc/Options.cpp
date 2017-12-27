@@ -101,7 +101,7 @@ void Options::run()
 			int count = 0;
 			crystals[0]->concludeRefinement(count, data, crystals[0]);
 
-			refineAll(RefinementModelPos, 2, &count);
+			refineAll(RefinementModelPos, 6, &count);
 			refineAll(RefinementFine, _numCycles, &count);
 		}
 	}
@@ -397,7 +397,7 @@ void Options::refineAll(RefinementType type, int numCycles, int *count)
 														  crystals[0]);
 
 		/* Do we go for another cycle? */
-		if (false && i + 1 == numCycles && newRWork < lastRWork)
+		if (i + 1 == numCycles && newRWork < lastRWork)
 		{
 			std::cout << "Going for another cycle..." << std::endl;
 			numCycles++;

@@ -352,9 +352,15 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 	double degrees = 4;
 	if (rType == RefinementFine)
 	{
-		scoreType = ScoreTypeMultiply;
-		maxTries = 10;
+		scoreType = ScoreTypeCorrel;
+		maxTries = 5;
 		degrees = 2;
+		bondNum = 4;
+	}
+
+	if (refineAngles)
+	{
+		bondNum = 3;
 	}
 
 	for (int n = 0; n < topAtoms.size(); n++)
@@ -400,6 +406,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					bond->setActiveGroup(k);
 					setupNelderMead();
 					setCrystal(target);
+					setCycles(16);
 					topBond = setupTorsionSet(bond, k, bondNum,
 											  deg2rad(degrees), deg2rad(0.04),
 											  refineAngles);
@@ -456,7 +463,7 @@ double AtomGroup::scoreWithMap(std::vector<AtomPtr> atoms, ScoreType scoreType,
 
 	double scales = 0.6;
 	double n = 2 * (maxDistance + 3.0) / scales;
-	n = 24;
+//	n = 24;
 
 	FFTPtr segment = FFTPtr(new FFT());
 	segment->create(n + 0.5);
@@ -498,6 +505,25 @@ double AtomGroup::scoreWithMap(std::vector<AtomPtr> atoms, ScoreType scoreType,
 	obsSeg->fft(-1);
 	obsSeg->writeReciprocalToFile("segment_obs.mtz");
 */
+
+	/*
+	double correl = correlation(xs, ys, cutoff);
+	std::cout << "Correlation: " << correl << std::endl;
+	std::cout << "Cutoff: " << cutoff << std::endl;
+
+	if (correl > 0.65)
+	{
+		for (int i = 0; i < xs.size(); i++)
+		{
+			if (ys[i] > cutoff)
+			{
+				std::cout << xs[i] << ", " << ys[i] << std::endl;
+			}
+		}
+
+		exit(0);
+	}
+	 */
 
 	if (scoreType == ScoreTypeCorrel)
 	{

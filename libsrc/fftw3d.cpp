@@ -712,7 +712,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				{
 					if (atomReal < 0.2) continue;
 
-					double realCryst = fftCrystal->data[crystalIndex][0];
+					double realCryst = fftCrystal->interpolate(finalCrystalVox);
 					crystalVals.push_back(realCryst);
 					thingVals.push_back(atomReal);
 					orderedVals.push_back(atomReal);
@@ -770,8 +770,10 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 		*ys = thingVals;
 	}
 
+	return 0;
+
 	std::sort(orderedVals.begin(), orderedVals.end(), std::greater<double>());
-	double percentileVal = sumVals * 0.98;
+	double percentileVal = sumVals * 0.95;
 	double cumulative = 0;
 	double cutoff = 0;
 
@@ -781,7 +783,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 		if (cumulative > percentileVal)
 		{
-			cutoff = orderedVals[i - 1];
+			cutoff = orderedVals[i];
 			break;
 		}
 	}
@@ -869,7 +871,13 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool collapse)
 				int jsym = (isym - 1) / 2;
 				int isign = (isym % 2) ? 1 : -1;
 
-				float *trn = spaceGroup->symop[jsym].trn;
+				float *trn = spaceGroup->invsymop[jsym].trn;
+
+				if (isign == -1) // in positive asu, weirdly
+				{
+					trn = spaceGroup->symop[jsym].trn;
+				}
+
 				double deg = CSym::ccp4spg_phase_shift(i, j, k, myPhase,
 													   trn, isign);
 				double phase = deg2rad(deg);
@@ -878,19 +886,12 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool collapse)
 				double x = amp * cos(phase);
 				double y = amp * sin(phase);
 
-				for (int l = 1; l < spaceGroup->nsymop * 2 + 1; l++)
+				for (int l = 1; l <= spaceGroup->nsymop * 2; l++)
 				{
 					int _h, _k, _l;
 					CSym::ccp4spg_generate_indices(spaceGroup, l, i, j, k,
 												   &_h, &_k, &_l);
 					long sym_index = element(_h, _k, _l);
-
-					if (false && throw1 == 1 && throw2 == 2 && throw3 == 3)
-					{
-						std::cout << "(" << count << ", " << l << ") Adding " << x << ", " << y <<
-						" to " << _h << " " << _k << " " << _l <<
-						" from " << i << " " << j << " " << k << std::endl;
-					}
 
 					tempData[sym_index][0] += x;
 					tempData[sym_index][1] += y;

@@ -38,6 +38,7 @@ void Sampler::addAtomsForBond(BondPtr firstBond, int k)
 	for (int i = 0; i < extraTorsionBonds.size(); i++)
 	{
 		BondPtr bond = extraTorsionBonds[i];
+		addSampled(bond->getMinor());
 
 		for (int j = 0; j < bond->downstreamAtomCount(k); j++)
 		{
@@ -70,9 +71,10 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 	setJobName("torsion_set_" + bond->shortDesc() + "_g" +
 			   i_to_str(k));
 
+	addSampled(bond->getMajor());
 	addTorsion(bond, deg2rad(range), deg2rad(interval));
 
-	if (addAngle)
+	if (addAngle && bond->getRefineBondAngle())
 	{
 		addBendAngle(bond, deg2rad(0.01), deg2rad(0.001));
 	}
@@ -80,6 +82,8 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 	addAtomsForBond(bond, k);
 
 	BondPtr returnBond = BondPtr();
+
+	int bondCount = 1;
 
 	for (int i = 0; i < bondNum; i++)
 	{
@@ -124,9 +128,9 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 
 			addTorsion(nextBond, deg2rad(range), deg2rad(interval));
 
-			if (addAngle)
+			if (addAngle && nextBond->getRefineBondAngle())
 			{
-				addBendAngle(bond, deg2rad(0.01), deg2rad(0.001));
+				addBendAngle(nextBond, deg2rad(0.01), deg2rad(0.001));
 			}
 
 			addAtomsForBond(nextBond, 0);
@@ -139,6 +143,12 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 
 		k = 0;
 		bond = nextBond;
+		bondCount++;
+	}
+
+	if (bondCount <= 2)
+	{
+	//	return BondPtr();
 	}
 
 	return returnBond;
@@ -439,6 +449,7 @@ void Sampler::addSampled(AtomPtr atom)
 	}
 	else
 	{
+		/* No repeats! */
 		for (int i = 0; i < sampleSize(); i++)
 		{
 			if (_sampled[i] == atom)

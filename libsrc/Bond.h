@@ -372,7 +372,7 @@ public:
 
 	bool getRefineBondAngle()
 	{
-		return _refineBondAngle;
+		return _refineBondAngle * !isFixed();
 	}
 
 protected:

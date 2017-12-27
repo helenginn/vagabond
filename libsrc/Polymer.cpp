@@ -225,6 +225,7 @@ std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal)
 
 void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 {
+	return;
 	CSVPtr perCA = CSVPtr(new CSV(3, "resnum", "cc", "diffcc"));
 
 	std::vector<double> tempCCs, tempDiffCCs, tempNs;
