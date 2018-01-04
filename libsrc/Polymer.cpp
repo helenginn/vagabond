@@ -24,7 +24,7 @@
 #include "FileReader.h"
 #include "Kabsch.h"
 #include "Options.h"
-#include "FlexTarget.h"
+#include "FlexGlobal.h"
 #include "RefinementNelderMead.h"
 
 void Polymer::addMonomer(MonomerPtr monomer)
@@ -1029,13 +1029,13 @@ void Polymer::optimiseTranslationTensor()
 	setTransTensor22(this, 5);
 	setTransTensor33(this, 5);
 
-	FlexTarget target;
+	FlexGlobal target;
 	target.setTargetBFactor(8);
 	target.setAtomGroup(AtomGroup::shared_from_this());
-	nelderMead->setEvaluationFunction(FlexTarget::score, &target);
+	nelderMead->setEvaluationFunction(FlexGlobal::score, &target);
 	nelderMead->setVerbose(true);
 	nelderMead->setCycles(50);
-	std::cout << "SCORE: " << FlexTarget::score(&target) << std::endl;
+	std::cout << "SCORE: " << FlexGlobal::score(&target) << std::endl;
 	nelderMead->refine();
 
 	std::cout << "Final tensor: \n" << mat3x3_desc(_transTensor) << std::endl;

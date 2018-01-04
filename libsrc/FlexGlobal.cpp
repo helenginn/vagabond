@@ -1,23 +1,23 @@
 //
-//  FlexTarget.cpp
+//  FlexGlobal.cpp
 //  vagabond
 //
 //  Created by Helen Ginn on 27/12/2017.
 //  Copyright © 2017 Strubi. All rights reserved.
 //
 
-#include "FlexTarget.h"
+#include "FlexGlobal.h"
 #include "AtomGroup.h"
 #include "Atom.h"
 #include "Bond.h"
 #include "Anisotropicator.h"
 
-FlexTarget::FlexTarget()
+FlexGlobal::FlexGlobal()
 {
 	_targetIsoB = 8;
 }
 
-double FlexTarget::notStaticScore()
+double FlexGlobal::notStaticScore()
 {
 	_atomGroup->propagateChange();
 
@@ -66,7 +66,7 @@ double FlexTarget::notStaticScore()
 	return score;
 }
 
-double FlexTarget::score(void *object)
+double FlexGlobal::score(void *object)
 {
-	return static_cast<FlexTarget *>(object)->notStaticScore();
+	return static_cast<FlexGlobal *>(object)->notStaticScore();
 }

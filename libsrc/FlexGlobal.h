@@ -1,21 +1,21 @@
 //
-//  FlexTarget.hpp
+//  FlexGlobal.hpp
 //  vagabond
 //
 //  Created by Helen Ginn on 27/12/2017.
 //  Copyright © 2017 Strubi. All rights reserved.
 //
 
-#ifndef FlexTarget_hpp
-#define FlexTarget_hpp
+#ifndef FlexGlobal_hpp
+#define FlexGlobal_hpp
 
 #include <stdio.h>
 #include "shared_ptrs.h"
 
-class FlexTarget
+class FlexGlobal
 {
 public:
-	FlexTarget();
+	FlexGlobal();
 
 	void setAtomGroup(AtomGroupPtr group)
 	{
@@ -35,4 +35,4 @@ private:
 	AtomGroupPtr _atomGroup;
 };
 
-#endif /* FlexTarget_hpp */
+#endif /* FlexGlobal_hpp */
