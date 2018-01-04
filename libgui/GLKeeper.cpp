@@ -30,7 +30,7 @@ void GLKeeper::setupCamera(void)
 	camGamma = 0;
 	_centre = make_vec3(0, 0, START_Z);
     zNear = 3;
-    zFar = 50;
+    zFar = 100;
 	//	modelMat.vals[11] -= centreZ;
 	modelMat = make_mat4x4();
 	rotMat = make_mat4x4();
