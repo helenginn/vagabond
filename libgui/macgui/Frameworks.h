@@ -14,7 +14,7 @@
 
 
 #define MAX_LIGHTS 20
-#define START_Z -32
+#define START_Z -64
 
 typedef struct
 {
