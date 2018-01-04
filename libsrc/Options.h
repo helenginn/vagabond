@@ -56,6 +56,11 @@ public:
 	{
 		return _enableTests;
 	}
+
+	static double getBStart()
+	{
+		return _bStart;
+	}
 private:
 	static OptionsPtr options;
 
@@ -79,6 +84,7 @@ private:
 	static double _kick;
 	static double _dampen;
 	static int _enableTests;
+	static double _bStart;
 	std::string _outputDir;
 };
 

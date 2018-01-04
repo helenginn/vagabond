@@ -13,7 +13,7 @@
 #include <sstream>
 #include <iomanip>
 #include "maths.h"
-#include "ccp4_spg.h"
+#include "../libccp4/ccp4_spg.h"
 
 AtomPtr AtomGroup::findAtom(std::string atomType)
 {

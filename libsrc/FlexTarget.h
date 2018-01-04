@@ -21,8 +21,17 @@ public:
 	{
 		_atomGroup = group;
 	}
-private:
 
+	static double score(void *object);
+
+	void setTargetBFactor(double value)
+	{
+		_targetIsoB = value;
+	}
+private:
+	double _targetIsoB;
+
+	double notStaticScore();
 	AtomGroupPtr _atomGroup;
 };
 

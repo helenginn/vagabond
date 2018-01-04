@@ -24,6 +24,8 @@
 #include "FileReader.h"
 #include "Kabsch.h"
 #include "Options.h"
+#include "FlexTarget.h"
+#include "RefinementNelderMead.h"
 
 void Polymer::addMonomer(MonomerPtr monomer)
 {
@@ -84,7 +86,7 @@ void Polymer::tieAtomsUp()
 	ModelPtr nModel = n->getModel();
 	if (nModel->isAbsolute())
 	{
-		ToAbsolutePtr(nModel)->setBFactor(2.0);
+		ToAbsolutePtr(nModel)->setBFactor(_startB);
 	}
 
 	for (int i = _anchorNum; i < monomerCount(); i++)
@@ -692,6 +694,31 @@ ModelPtr Polymer::getAnchorModel()
 	return model;
 }
 
+void Polymer::applyTranslationTensor()
+{
+	_transTensorOffsets.clear();
+	ModelPtr anchor = getAnchorModel();
+	std::vector<BondSample> *finals = getAnchorModel()->getManyPositions(BondSampleThorough);
+	vec3 sum = make_vec3(0, 0, 0);
+
+	for (int i = 0; i < finals->size(); i++)
+	{
+		sum = vec3_add_vec3(sum, finals->at(i).start);
+	}
+
+	vec3_mult(&sum, 1/(double)finals->size());
+
+	for (int i = 0; i < finals->size(); i++)
+	{
+		vec3 onePos = finals->at(i).start;
+		vec3 diff = vec3_subtract_vec3(onePos, sum);
+		vec3 diffTensored = diff;
+		mat3x3_mult_vec(_transTensor, &diffTensored);
+		vec3 movement = vec3_subtract_vec3(diffTensored, diff);
+		_transTensorOffsets.push_back(movement);
+	}
+}
+
 void Polymer::superimpose()
 {
 	minimiseRotations();
@@ -723,6 +750,8 @@ void Polymer::superimpose()
 //		one->writeToFile("res102.csv");
 		csv->writeToFile("kabsch.csv");
 	}
+
+	applyTranslationTensor();
 }
 
 void Polymer::minimiseCentroids()
@@ -982,4 +1011,32 @@ void Polymer::reportParameters()
 
 	std::cout << "Chain " << getChainID() << " has " << count
 	<< " refinable bonds." << std::endl;
+}
+
+void Polymer::optimiseTranslationTensor()
+{
+	std::cout << "Optimising translation tensor to maximise isotropy." << std::endl;
+
+	NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
+	nelderMead->addParameter(this, getTransTensor11, setTransTensor11, 1, 0.01);
+	nelderMead->addParameter(this, getTransTensor12, setTransTensor12, 1, 0.01);
+	nelderMead->addParameter(this, getTransTensor13, setTransTensor13, 1, 0.01);
+	nelderMead->addParameter(this, getTransTensor22, setTransTensor22, 1, 0.01);
+	nelderMead->addParameter(this, getTransTensor23, setTransTensor23, 1, 0.01);
+	nelderMead->addParameter(this, getTransTensor33, setTransTensor33, 1, 0.01);
+
+	setTransTensor11(this, 5);
+	setTransTensor22(this, 5);
+	setTransTensor33(this, 5);
+
+	FlexTarget target;
+	target.setTargetBFactor(8);
+	target.setAtomGroup(AtomGroup::shared_from_this());
+	nelderMead->setEvaluationFunction(FlexTarget::score, &target);
+	nelderMead->setVerbose(true);
+	nelderMead->setCycles(50);
+	std::cout << "SCORE: " << FlexTarget::score(&target) << std::endl;
+	nelderMead->refine();
+
+	std::cout << "Final tensor: \n" << mat3x3_desc(_transTensor) << std::endl;
 }

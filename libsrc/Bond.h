@@ -28,7 +28,6 @@ typedef struct
 	double circlePortion;
 } AtomValue;
 
-
 typedef struct
 {
 	std::vector<AtomValue> atoms;
@@ -44,6 +43,8 @@ typedef struct
 
 #define INITIAL_KICK 0.10
 #define INITIAL_DAMPENING 0.08
+
+class Anisotropicator;
 
 class Bond : public Model, public Sampler
 {
@@ -305,9 +306,9 @@ public:
 
 	virtual double getMeanSquareDeviation();
 
-	void getAnisotropy(bool withKabsch);
+	Anisotropicator getAnisotropy(bool withKabsch);
 	vec3 longestAxis();
-	double anisotropyExtent();
+	double anisotropyExtent(bool withKabsch = false);
 
 	virtual mat3x3 getRealSpaceTensor();
 
@@ -411,6 +412,7 @@ private:
 	double _blurTotal;
 	double _occupancy;
 	double _occMult;
+	double _isotropicAverage;
 
 	/* Should not be refined */
 	bool _fixed;

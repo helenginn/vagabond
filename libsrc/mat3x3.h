@@ -56,6 +56,7 @@ mat3x3 mat3x3_rhbasis(vec3 aVec, vec3 cVec);
 mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis,
 							  double *best = NULL);
 mat3x3 mat3x3_covariance(std::vector<vec3> points);
+mat3x3 mat3x3_make_tensor(mat3x3 &tensify, vec3 &lengths);
 
 mat3x3 mat3x3_rot_from_angles(double phi, double psi);
 mat3x3 mat3x3_from_2d_array(double **values);

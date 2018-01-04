@@ -18,6 +18,7 @@
 OptionsPtr Options::options;
 double Options::_kick = 0.01;
 double Options::_dampen = 0.08;
+double Options::_bStart = 1.5;
 int Options::_enableTests = false;
 
 Options::Options(int argc, const char **argv)
@@ -212,7 +213,7 @@ void Options::parse()
 
 			if (crystals.size() == 0)
 			{
-				shout_at_user("Overall B factor specified, but a coordinate\n"\
+				shout_at_user("Initial kick specified, but a coordinate\n"\
 							  "file has not been specified yet. Please use\n"\
 							  "--with-pdb= to specify some atomic coordinates.");
 			}
@@ -224,6 +225,16 @@ void Options::parse()
 
 				understood = true;
 			}
+		}
+
+		prefix = "--bfactor=";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			std::string bee_string = arg.substr(prefix.size());
+			_bStart = atof(bee_string.c_str());
+
+			understood = true;
 		}
 
 		prefix = "--dampen=";
@@ -422,19 +433,22 @@ void Options::refinementCycle(MoleculePtr molecule, int *count,
 		PolymerPtr polymer = ToPolymerPtr(molecule);
 		polymer->test();
 
+//		polymer->superimpose();
+//		polymer->optimiseTranslationTensor();
+
 		if (true)
 		{
 			molecule->refine(crystals[0], type);
 		}
 
-		if (molecule->getClassName() == "Polymer" && (*count == 0))
-		{
-	//		polymer->scaleFlexibilityToBFactor(crystals[0]);
-		}
-
 		if (molecule->getClassName() == "Polymer" && (*count == 1))
 		{
 			polymer->superimpose();
+		}
+
+		if (molecule->getClassName() == "Polymer" && (*count == 2))
+		{
+	//		polymer->optimiseTranslationTensor();
 		}
 	}
 }

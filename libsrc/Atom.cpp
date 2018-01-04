@@ -241,15 +241,8 @@ std::string Atom::anisouPDBLine(CrystalPtr crystal)
 	stream << pdbLineBeginning("ANISOU");
 
 	mat3x3 realTensor = getModel()->getRealSpaceTensor();
-	mat3x3 toCrystal = crystal->getReal2Frac();
-
-	Anisotropicator tropicator;
-	tropicator.setTensor(realTensor);
-	mat3x3 ellipsoid = tropicator.basis();
-	mat3x3 recipEllipsoid = mat3x3_mult_mat3x3(toCrystal, ellipsoid);
-	mat3x3 transpose = mat3x3_transpose(recipEllipsoid);
-	mat3x3 recipTensor = mat3x3_mult_mat3x3(recipEllipsoid, transpose);
-
+	mat3x3 recipTensor = realTensor;
+	
 	stream << std::setprecision(0) << std::fixed;
 	stream << std::setfill(' ') << std::setw(7) << 10e4 * recipTensor.vals[0];
 	stream << std::setfill(' ') << std::setw(7) << 10e4 * recipTensor.vals[4];

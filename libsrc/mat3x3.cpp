@@ -461,6 +461,11 @@ mat3x3 mat3x3_covariance(std::vector<vec3> points)
 		}
 	}
 
+	for (int i = 0; i < 9; i++)
+	{
+		mat.vals[i] /= (double)points.size();
+	}
+
 	return mat;
 }
 
@@ -478,4 +483,17 @@ mat3x3 mat3x3_rot_from_angles(double phi, double psi)
 	mat3x3 secondRot = mat3x3_unit_vec_rotation(newAxis, psi);
 
 	return mat3x3_mult_mat3x3(secondRot, mat);
+}
+
+mat3x3 mat3x3_make_tensor(mat3x3 &tensify, vec3 &lengths)
+{
+	mat3x3 transpose = mat3x3_inverse(tensify);
+	mat3x3 scaling = make_mat3x3();
+	scaling.vals[0] = lengths.x;
+	scaling.vals[4] = lengths.y;
+	scaling.vals[8] = lengths.z;
+	mat3x3 combo1 = mat3x3_mult_mat3x3(scaling, transpose);
+	mat3x3 combo2 = mat3x3_mult_mat3x3(tensify, combo1);
+	
+	return combo2;
 }

@@ -85,6 +85,11 @@ public:
 		return _centroids;
 	}
 
+	std::vector<vec3> getTransTensorOffsets()
+	{
+		return _transTensorOffsets;
+	}
+
 	virtual std::string getClassName()
 	{
 		return "Molecule";
@@ -99,6 +104,7 @@ protected:
 	std::vector<vec3> _centroidOffsets;
 	std::vector<vec3> _centroids; // after offset correction
 	std::vector<mat3x3> _rotations;
+	std::vector<vec3> _transTensorOffsets;
 
 private:
 	std::vector<ModelPtr> models;

@@ -516,6 +516,7 @@ std::vector<vec3> Bond::polymerCorrectedPositions()
 
 	MoleculePtr molecule = getMinor()->getMolecule();
 	std::vector<vec3> offsets;
+	std::vector<vec3> transTensorOffsets;
 	std::vector<vec3> rotationCentres;
 	std::vector<mat3x3> rotations;
 
@@ -524,6 +525,7 @@ std::vector<vec3> Bond::polymerCorrectedPositions()
 		offsets = molecule->getCentroidOffsets();
 		rotations = molecule->getRotationCorrections();
 		rotationCentres = molecule->getRotationCentres();
+		transTensorOffsets = molecule->getTransTensorOffsets();
 	}
 
 	for (int i = 0; i < positions->size(); i++)
@@ -544,6 +546,13 @@ std::vector<vec3> Bond::polymerCorrectedPositions()
 		if (offsets.size() > i)
 		{
 			subtract = vec3_subtract_vec3(subtract, offsets[i]);
+		}
+
+		// remove the translation from the tensor for translation
+
+		if (transTensorOffsets.size() > i)
+		{
+			subtract = vec3_subtract_vec3(subtract, transTensorOffsets[i]);
 		}
 
 		posOnly.push_back(subtract);
@@ -1384,6 +1393,9 @@ std::string Bond::description()
 
 double Bond::getMeanSquareDeviation()
 {
+	getAnisotropy(true);
+	return _isotropicAverage * 8 * M_PI * M_PI;
+
 	std::vector<BondSample> positions = getFinalPositions();
 
 	double meanX = 0; double meanY = 0; double meanZ = 0;
@@ -1404,7 +1416,7 @@ double Bond::getMeanSquareDeviation()
 	return score;
 }
 
-void Bond::getAnisotropy(bool withKabsch)
+Anisotropicator Bond::getAnisotropy(bool withKabsch)
 {
 	if (withKabsch)
 	{
@@ -1419,7 +1431,11 @@ void Bond::getAnisotropy(bool withKabsch)
 		Anisotropicator tropicator;
 		tropicator.setPoints(finalPoints);
 		_realSpaceTensor = tropicator.getTensor();
+		_anisotropyExtent = tropicator.anisotropyExtent();
 		_longest = tropicator.longestAxis();
+		_isotropicAverage = tropicator.isotropicAverage();
+
+		return tropicator;
 	}
 	else
 	{
@@ -1435,6 +1451,7 @@ void Bond::getAnisotropy(bool withKabsch)
 		tropicator.setPoints(points);
 //		_realSpaceTensor = tropicator.getTensor();
 		_anisotropyExtent = tropicator.anisotropyExtent();
+		return tropicator;
 	}
 }
 
@@ -1444,11 +1461,12 @@ vec3 Bond::longestAxis()
 	return _longest;
 }
 
-double Bond::anisotropyExtent()
+double Bond::anisotropyExtent(bool withKabsch)
 {
-	getAnisotropy(false);
+	getAnisotropy(withKabsch);
 	return _anisotropyExtent;
 }
+
 
 mat3x3 Bond::getRealSpaceTensor()
 {
