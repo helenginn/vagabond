@@ -29,6 +29,7 @@ public:
 		_totalMonomers = 0;
 		_transTensor = make_mat3x3();
 		_startB = Options::getBStart();
+		_extraRotParams = {1, 0, 0};
 	}
 
 	void closenessSummary();
@@ -168,6 +169,39 @@ public:
 		static_cast<Polymer *>(object)->applyTranslationTensor();
 	}
 
+	static void setRotPhi(void *object, double value)
+	{
+		static_cast<Polymer *>(object)->_extraRotParams.x = value;
+		static_cast<Polymer *>(object)->applyTranslationTensor();
+	}
+
+	static double getRotPhi(void *object)
+	{
+		return static_cast<Polymer *>(object)->_extraRotParams.x;
+	}
+
+	static void setRotPsi(void *object, double value)
+	{
+		static_cast<Polymer *>(object)->_extraRotParams.y = value;
+		static_cast<Polymer *>(object)->applyTranslationTensor();
+	}
+
+	static double getRotPsi(void *object)
+	{
+		return static_cast<Polymer *>(object)->_extraRotParams.y;
+	}
+
+	static void setRotTheta(void *object, double value)
+	{
+		static_cast<Polymer *>(object)->_extraRotParams.z = value;
+		static_cast<Polymer *>(object)->applyTranslationTensor();
+	}
+
+	static double getRotTheta(void *object)
+	{
+		return static_cast<Polymer *>(object)->_extraRotParams.z;
+	}
+
 	void optimiseTranslationTensor();
 protected:
 	virtual double getScore()
@@ -183,6 +217,7 @@ private:
 	std::map<long, MonomerPtr> _monomers;
 
 	mat3x3 _transTensor;
+	vec3 _extraRotParams;
 	int _anchorNum;
 	double _startB;
 	double _dampening;

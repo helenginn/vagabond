@@ -17,6 +17,8 @@
 #include "Distributor.h"
 #include "Bond.h"
 
+class Anisotropicator;
+
 class Absolute : public Model
 {
 public:
@@ -34,6 +36,8 @@ public:
 
 	virtual void addToMolecule(MoleculePtr molecule);
 	virtual void addToMonomer(MonomerPtr monomer);
+	virtual mat3x3 getRealSpaceTensor();
+	virtual void getAnisotropy(bool withKabsch);
 
 	void setIdentity(int resNumValue, std::string chainID,
 					 std::string resName, std::string atomName, int atomNum)
@@ -72,6 +76,10 @@ public:
 	void setBFactor(double bfac)
 	{
 		_bFactor = bfac;
+		_tensor = make_mat3x3();
+		_tensor.vals[0] = bfac;
+		_tensor.vals[4] = bfac;
+		_tensor.vals[8] = bfac;
 	}
 
 	void setTensor(mat3x3 tensor, CrystalPtr crystal);
@@ -190,6 +198,7 @@ private:
 
 	vec3 _position;
 	double _bFactor;
+	bool _isOfManyPositions;
 
 	void makeAtom();
 };

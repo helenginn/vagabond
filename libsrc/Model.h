@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <vector>
 #include "Distributor.h"
+#include <mutex>
 
 typedef struct
 {
@@ -49,20 +50,21 @@ public:
 	virtual vec3 getStaticPosition() = 0;
 
 	/* Actual mean position of blurred positions (may not be same as static) */
-	virtual vec3 getAbsolutePosition() = 0;
+	virtual vec3 getAbsolutePosition()
+	{
+		return _absolute;
+	}
 
 	/* Get blurred position array */
 	virtual std::vector<BondSample> *getManyPositions(BondSampleStyle style) = 0;
 
+	std::vector<vec3> polymerCorrectedPositions();
 	virtual std::vector<BondSample> getFinalPositions();
 
 	virtual double getEffectiveOccupancy() { return 1; }
 
 	virtual double getMeanSquareDeviation() = 0;
-	virtual mat3x3 getRealSpaceTensor()
-	{
-		return _realSpaceTensor;
-	}
+	virtual mat3x3 getRealSpaceTensor();
 
 	bool hasMolecule()
 	{
@@ -96,14 +98,34 @@ public:
 	{
 		return (getClassName() == "Anchor");
 	}
+
+	vec3 longestAxis();
+	std::vector<vec3> fishPositions();
 protected:
 	mat3x3 _realSpaceTensor;
 
 	/* Molecule which can provide offsets/rotations/etc. */
 	MoleculeWkr _molecule;
+	
+	/* What should be returned when asking for an atom's position
+	 * for drawing into a map... */
+	vec3 _absolute;
+	/* And a record of the final positions */
+	std::vector<vec3> _finalPositions;
+
+	/* Expect interference from GUI */
+	bool _useMutex;
+
+	vec3 _longest;
+	double _anisotropyExtent;
+
+	virtual void getAnisotropy(bool withKabsch);
+	double anisotropyExtent(bool withKabsch = false);
+	double _isotropicAverage;
 
 private:
 	std::vector<AtomPtr> atoms;
+	std::mutex guiLock;
 };
 
 #endif /* defined(__vagabond__Model__) */

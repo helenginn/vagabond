@@ -105,3 +105,5 @@ void Molecule::resetInitialPositions()
 		}
 	}
 }
+
+

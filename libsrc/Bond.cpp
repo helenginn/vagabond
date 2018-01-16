@@ -74,6 +74,9 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	vec3 majorPos = getMajor()->getInitialPosition();
 	vec3 minorPos = getMinor()->getInitialPosition();
 
+	MoleculePtr molecule = getMinor()->getMolecule();
+	setMolecule(molecule);
+
 	vec3 difference = vec3_subtract_vec3(majorPos, minorPos);
 	_bondLength = vec3_length(difference);
 
@@ -437,158 +440,7 @@ void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign, int groupNum)
 
 	_usingTorsion = true;
 }
-/*
-std::string Bond::getPDBContribution()
-{
-	AtomPtr atom = getMinor();
-	std::string atomName = atom->getAtomName();
-	ElementPtr element = atom->getElement();
 
-	int tries = 10;
-
-	if (element->getSymbol() == "H")
-	{
-		tries = 1;
-	}
-
-	std::ostringstream stream;
-	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
-
-	double skip = (double)positions->size() / 25.;
-
-	if (skip < 0) skip = 1;
-	const int side = 5;
-	int count = 0;
-
-	for (double i = 0; i < positions->size(); i+= 1)
-	{
-		int l = i / (side * side);
-		int k = (i - (l * side * side)) / side;
-		int h = (i - l * side * side - k * side);
-
-		if ((h + k) % 2 != 0 || (k + l) % 2 != 0 || (l + h) % 2 != 0)
-		{
-			continue;
-		}
-
-		vec3 placement = (*positions)[i].start;
-		double occupancy = (*positions)[i].occupancy;
-
-		stream << atom->pdbLineBeginning(count);
-		stream << std::fixed << std::setw(8) << std::setprecision(3) << placement.x;
-		stream << std::setw(8) << std::setprecision(3) << placement.y;
-		stream << std::setw(8) << std::setprecision(3) << placement.z;
-		stream << std::setw(6) << std::setprecision(2) << occupancy / double(tries);
-		stream << std::setw(6) << std::setprecision(2) << 0;
-		stream << "          ";
-		stream << std::setw(2) << element->getSymbol();
-		stream << "  " << std::endl;
-
-		count++;
-	}
-
-	return stream.str();
-}*/
-
-vec3 meanOfManyPositions(std::vector<BondSample> *positions)
-{
-	vec3 sum = make_vec3(0, 0, 0);
-	double weights = 0;
-
-	for (int i = 0; i < positions->size(); i++)
-	{
-		vec3 tmp = (*positions)[i].start;
-		vec3_mult(&tmp, (*positions)[i].occupancy);
-		sum = vec3_add_vec3(sum, tmp);
-		weights += (*positions)[i].occupancy;
-	}
-
-	vec3_mult(&sum, 1 / weights);
-
-	return sum;
-}
-
-std::vector<vec3> Bond::polymerCorrectedPositions()
-{
-	std::vector<vec3> posOnly;
-	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
-	posOnly.reserve(positions->size());
-
-	MoleculePtr molecule = getMinor()->getMolecule();
-	std::vector<vec3> offsets;
-	std::vector<vec3> transTensorOffsets;
-	std::vector<vec3> rotationCentres;
-	std::vector<mat3x3> rotations;
-
-	if (molecule)
-	{
-		offsets = molecule->getCentroidOffsets();
-		rotations = molecule->getRotationCorrections();
-		rotationCentres = molecule->getRotationCentres();
-		transTensorOffsets = molecule->getTransTensorOffsets();
-	}
-
-	for (int i = 0; i < positions->size(); i++)
-	{
-		vec3 subtract = positions->at(i).start;
-
-		// perform rotation element of superposition
-
-	    if (rotations.size() > i && rotationCentres.size() > i)
-		{
-			vec3 tmp = vec3_add_vec3(subtract, rotationCentres[i]);
-			mat3x3_mult_vec(rotations[i], &tmp);
-			subtract = vec3_subtract_vec3(tmp, rotationCentres[i]);
-		}
-
-		// remove translation aspect of superposition
-
-		if (offsets.size() > i)
-		{
-			subtract = vec3_subtract_vec3(subtract, offsets[i]);
-		}
-
-		// remove the translation from the tensor for translation
-
-		if (transTensorOffsets.size() > i)
-		{
-			subtract = vec3_subtract_vec3(subtract, transTensorOffsets[i]);
-		}
-
-		posOnly.push_back(subtract);
-	}
-
-	return posOnly;
-}
-
-std::vector<BondSample> Bond::getFinalPositions()
-{
-	std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
-	std::vector<BondSample> copyPos = *positions;
-	std::vector<vec3> posOnly = polymerCorrectedPositions();
-
-	for (int i = 0; i < copyPos.size(); i++)
-	{
-		if (i < posOnly.size())
-		{
-			copyPos[i].start = posOnly[i];
-		}
-	}
-
-	_absolute = meanOfManyPositions(&copyPos);
-
-	if (_useMutex)
-	{
-		std::lock_guard<std::mutex> lock(guiLock);
-		_finalPositions = posOnly;
-	}
-	else
-	{
-		_finalPositions = posOnly;
-	}
-
-	return copyPos;
-}
 
 FFTPtr Bond::getDistribution(bool absOnly)
 {
@@ -687,7 +539,7 @@ void Bond::calculateMagicAxis()
 	}
 
 	NelderMeadPtr nelder = NelderMeadPtr(new NelderMead());
-//	nelder->setCycles(20);
+	nelder->setCycles(20);
 	nelder->addParameter(this, getMagicPhi, setMagicPhi, deg2rad(10), deg2rad(0.1));
 	nelder->addParameter(this, getMagicPsi, setMagicPsi, deg2rad(10), deg2rad(0.1));
 	nelder->setEvaluationFunction(magicAxisStaticScore, this);
@@ -789,11 +641,15 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 		double tanX = nextDifference.z / notZ;
 		double dampValue = sin(atan(tanX));
 		double yValue = sqrt(1 - dampValue * dampValue);
+		// on the Z axis exactly = yValue of 1.
+	//	if (notZ < 0) yValue *= -1;
 
 		if (yValue != yValue)
 		{
 			yValue = 1;
 		}
+
+		yValue -= 0.5; // so the kick is applied equally in both directions.
 
 		/* We want to correct if the deviation is close to the magic angle */
 		if (dampValue != dampValue)
@@ -1217,21 +1073,6 @@ void Bond::setBendAngle(void *object, double value)
 	newBond->propagateChange(20);
 }
 
-double Bond::bondAnglePenalty()
-{
-	if (!getRefineBondAngle()) return 1;
-
-	double currentAngle = rad2deg(getBendAngle(this));
-	double expectedAngle = rad2deg(getExpectedAngle());
-
-	double diff = expectedAngle - currentAngle;
-	double stdev = 1.0;
-	diff /= stdev;
-	double penalty = diff * diff + 1;
-
-	return penalty;
-}
-
 bool Bond::splitBond()
 {
 	BondPtr me = boost::static_pointer_cast<Bond>(shared_from_this());
@@ -1395,83 +1236,6 @@ double Bond::getMeanSquareDeviation()
 {
 	getAnisotropy(true);
 	return _isotropicAverage * 8 * M_PI * M_PI;
-
-	std::vector<BondSample> positions = getFinalPositions();
-
-	double meanX = 0; double meanY = 0; double meanZ = 0;
-
-	for (int i = 0; i < positions.size(); i++)
-	{
-		vec3 pos = positions[i].start;
-		vec3 diff = vec3_subtract_vec3(pos, _absolute);
-		meanX += diff.x * diff.x;
-		meanY += diff.y * diff.y;
-		meanZ += diff.z * diff.z;
-	}
-
-	double score = fabs(meanX + meanY + meanZ) / 3;
-	score /= (double)positions.size();
-	score *= 8 * M_PI * M_PI;
-
-	return score;
-}
-
-Anisotropicator Bond::getAnisotropy(bool withKabsch)
-{
-	if (withKabsch)
-	{
-		std::vector<BondSample> finals = getFinalPositions();
-		std::vector<vec3> finalPoints;
-
-		for (int i = 0; i < finals.size(); i++)
-		{
-			finalPoints.push_back(finals[i].start);
-		}
-
-		Anisotropicator tropicator;
-		tropicator.setPoints(finalPoints);
-		_realSpaceTensor = tropicator.getTensor();
-		_anisotropyExtent = tropicator.anisotropyExtent();
-		_longest = tropicator.longestAxis();
-		_isotropicAverage = tropicator.isotropicAverage();
-
-		return tropicator;
-	}
-	else
-	{
-		std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
-		std::vector<vec3> points;
-
-		for (int i = 0; i < positions->size(); i++)
-		{
-			points.push_back((*positions)[i].start);
-		}
-
-		Anisotropicator tropicator;
-		tropicator.setPoints(points);
-//		_realSpaceTensor = tropicator.getTensor();
-		_anisotropyExtent = tropicator.anisotropyExtent();
-		return tropicator;
-	}
-}
-
-vec3 Bond::longestAxis()
-{
-	getAnisotropy(true);
-	return _longest;
-}
-
-double Bond::anisotropyExtent(bool withKabsch)
-{
-	getAnisotropy(withKabsch);
-	return _anisotropyExtent;
-}
-
-
-mat3x3 Bond::getRealSpaceTensor()
-{
-	longestAxis();
-	return _realSpaceTensor;
 }
 
 std::vector<AtomPtr> Bond::importantAtoms()
@@ -1681,15 +1445,6 @@ void Bond::recalculateTorsion(AtomPtr heavy, double value)
 	setTorsion(this, value);
 }
 
-/* For GUI */
-std::vector<vec3> Bond::fishPositions()
-{
-	std::vector<vec3> positions;
-	std::lock_guard<std::mutex> lock(guiLock);
-	positions = _finalPositions;
-
-	return positions;
-}
 
 double Bond::getEffectiveOccupancy()
 {

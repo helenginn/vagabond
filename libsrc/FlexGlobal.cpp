@@ -57,11 +57,8 @@ double FlexGlobal::notStaticScore()
 		vec3 anisoAxis = aniso.getAxis(j);
 		double sqlength = vec3_sqlength(anisoAxis);
 		double diff = fabs(sqlength - actualTarget);
-		std::cout << sqlength << " " << actualTarget << std::endl;
 		score += diff;
 	}
-
-	std::cout << " = " << score << std::endl;
 
 	return score;
 }

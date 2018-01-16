@@ -497,3 +497,33 @@ mat3x3 mat3x3_make_tensor(mat3x3 &tensify, vec3 &lengths)
 	
 	return combo2;
 }
+
+double mat3x3_diff_from_identity(mat3x3 &mat, double target)
+{
+	double diff = 0;
+	if (target < 0)
+	{
+		target = (mat.vals[0] + mat.vals[4] + mat.vals[8]) / 3;
+	}
+
+//	std::cout << "---" << std::endl;
+
+	for (int i = 0; i < 9; i++)
+	{
+		double this_target = (i % 4 == 0) ? target : 0;
+		double add = fabs(mat.vals[i] - this_target);
+	//	std::cout << this_target << " " << mat.vals[i] << std::endl;
+
+		diff += add;
+	}
+
+	return diff;
+}
+
+void mat3x3_mult_scalar(mat3x3 *mat, double scale)
+{
+	for (int i = 0; i < 9; i++)
+	{
+		mat->vals[i] *= scale;
+	}
+}

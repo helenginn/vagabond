@@ -629,13 +629,6 @@ void Polymer::setInitialKick(void *object, double value)
 			}
 		}
 	}
-
-	/*
-	Polymer *polymer = static_cast<Polymer *>(object);
-	int monomerNum = polymer->_anchorNum;
-	polymer->getMonomer(monomerNum)->setKick(value, false);
-	polymer->getMonomer(monomerNum - 1)->setKick(value, true);
-	 */
 }
 
 /* For side chains, obviously */
@@ -697,6 +690,7 @@ ModelPtr Polymer::getAnchorModel()
 void Polymer::applyTranslationTensor()
 {
 	_transTensorOffsets.clear();
+	_extraRotationMats.clear();
 	ModelPtr anchor = getAnchorModel();
 	std::vector<BondSample> *finals = getAnchorModel()->getManyPositions(BondSampleThorough);
 	vec3 sum = make_vec3(0, 0, 0);
@@ -721,6 +715,11 @@ void Polymer::applyTranslationTensor()
 
 void Polymer::superimpose()
 {
+	_centroids.clear();
+	_centroidOffsets.clear();
+	_rotations.clear();
+	propagateChange();
+
 	minimiseRotations();
 	minimiseCentroids();
 
@@ -761,7 +760,7 @@ void Polymer::minimiseCentroids()
 
 	ModelPtr anchor = getAnchorModel();
 	getAnchorModel()->getFinalPositions();
-	vec3 oldPos = getAnchorModel()->getAbsolutePosition();
+	vec3 oldPos = getAnchorModel()->getStaticPosition();
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -770,20 +769,19 @@ void Polymer::minimiseCentroids()
 			continue;
 		}
 
-		count++;
-
 		AtomPtr ca = getMonomer(i)->findAtom("CA");
 
 		if (!ca) continue;
+
+		count++;
 
 		std::vector<BondSample> someSamples;
 		someSamples = ca->getModel()->getFinalPositions();
 		std::vector<BondSample> *samples = &someSamples;
 
-
 		if (!addedVecs.size())
 		{
-			addedVecs = std::vector<vec3>(samples->size(), make_vec3(0, 0, 0));
+			addedVecs = std::vector<vec3>(samples->size(), make_vec3(0, 0, 0));;
 		}
 
 		for (int j = 0; j < samples->size(); j++)
@@ -811,7 +809,7 @@ void Polymer::minimiseCentroids()
 
 	vec3_mult(&meanPos, 1 / (double)addedVecs.size());
 
-	// Remove the old centroid positions
+	// Remove the old centroid positions if not already
 	_centroidOffsets.clear();
 
 	// Find the offsets to bring all centroids to the mean value
@@ -823,9 +821,12 @@ void Polymer::minimiseCentroids()
 
 	propagateChange();
 
+	// This time, it should apply the offset to the anchor.
+	// But we want the anchor to remain in the same place as before.
 	anchor->getFinalPositions();
 	vec3 newPos = anchor->getAbsolutePosition();
 
+	// Find the difference.
 	vec3 backToOld = vec3_subtract_vec3(oldPos, newPos);
 	std::cout << "Additional correction: " << vec3_desc(backToOld) << std::endl;
 
@@ -1025,18 +1026,16 @@ void Polymer::optimiseTranslationTensor()
 	nelderMead->addParameter(this, getTransTensor23, setTransTensor23, 1, 0.01);
 	nelderMead->addParameter(this, getTransTensor33, setTransTensor33, 1, 0.01);
 
-	setTransTensor11(this, 5);
-	setTransTensor22(this, 5);
-	setTransTensor33(this, 5);
+	setTransTensor11(this, 1);
+	setTransTensor22(this, 1);
+	setTransTensor33(this, 1);
+
+	double bFac = getAverageBFactor();
 
 	FlexGlobal target;
-	target.setTargetBFactor(8);
+	target.setTargetBFactor(bFac + 1);
 	target.setAtomGroup(AtomGroup::shared_from_this());
 	nelderMead->setEvaluationFunction(FlexGlobal::score, &target);
-	nelderMead->setVerbose(true);
-	nelderMead->setCycles(50);
-	std::cout << "SCORE: " << FlexGlobal::score(&target) << std::endl;
+	nelderMead->setCycles(20);
 	nelderMead->refine();
-
-	std::cout << "Final tensor: \n" << mat3x3_desc(_transTensor) << std::endl;
 }

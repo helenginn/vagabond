@@ -102,7 +102,9 @@ void Options::run()
 			int count = 0;
 			crystals[0]->concludeRefinement(count, data, crystals[0]);
 
-			refineAll(RefinementModelPos, 6, &count);
+			refineAll(RefinementModelPos, 3, &count);
+			refineAll(RefinementFlexibility, 20, &count);
+			refineAll(RefinementModelPos, 3, &count);
 			refineAll(RefinementFine, _numCycles, &count);
 		}
 	}
@@ -391,7 +393,7 @@ void Options::outputCrystalInfo()
 	}
 }
 
-void Options::refineAll(RefinementType type, int numCycles, int *count)
+void Options::refineAll(RefinementType type, int numCycles, int *count, bool keepGoing)
 {
 	double lastRWork = 200;
 
@@ -408,7 +410,7 @@ void Options::refineAll(RefinementType type, int numCycles, int *count)
 														  crystals[0]);
 
 		/* Do we go for another cycle? */
-		if (i + 1 == numCycles && newRWork < lastRWork)
+		if (keepGoing && i + 1 == numCycles && newRWork < lastRWork)
 		{
 			std::cout << "Going for another cycle..." << std::endl;
 			numCycles++;
@@ -433,9 +435,6 @@ void Options::refinementCycle(MoleculePtr molecule, int *count,
 		PolymerPtr polymer = ToPolymerPtr(molecule);
 		polymer->test();
 
-//		polymer->superimpose();
-//		polymer->optimiseTranslationTensor();
-
 		if (true)
 		{
 			molecule->refine(crystals[0], type);
@@ -446,9 +445,10 @@ void Options::refinementCycle(MoleculePtr molecule, int *count,
 			polymer->superimpose();
 		}
 
-		if (molecule->getClassName() == "Polymer" && (*count == 2))
+		if (false && molecule->getClassName() == "Polymer" && (*count % 6 == 0)
+			&& type == RefinementFlexibility)
 		{
-	//		polymer->optimiseTranslationTensor();
+			polymer->superimpose();
 		}
 	}
 }

@@ -95,6 +95,11 @@ public:
 		return "Molecule";
 	}
 
+	bool isPolymer()
+	{
+		return (getClassName() == "Polymer");
+	}
+
 	MoleculePtr shared_from_this()
 	{
 		AtomGroupPtr groupPtr = AtomGroup::shared_from_this();
@@ -105,6 +110,7 @@ protected:
 	std::vector<vec3> _centroids; // after offset correction
 	std::vector<mat3x3> _rotations;
 	std::vector<vec3> _transTensorOffsets;
+	std::vector<mat3x3> _extraRotationMats;
 
 private:
 	std::vector<ModelPtr> models;

@@ -69,7 +69,8 @@ private:
 	void outputCrystalInfo();
 	void refinementCycle(MoleculePtr molecule, int *count,
 						 RefinementType type);
-	void refineAll(RefinementType type, int numCycles, int *count);
+	void refineAll(RefinementType type, int numCycles, int *count,
+				   bool keepGoing = true);
 	bool parseJoke(std::string arg);
 
 	std::vector<std::string> arguments;

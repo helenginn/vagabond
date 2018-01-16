@@ -13,7 +13,9 @@
 #include <sstream>
 #include <iomanip>
 #include "maths.h"
+#include "Shouter.h"
 #include "../libccp4/ccp4_spg.h"
+#include "FlexRegion.h"
 
 AtomPtr AtomGroup::findAtom(std::string atomType)
 {
@@ -343,19 +345,35 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 {
 	AtomList topAtoms = topLevelAtoms();
 	bool refineAngles = shouldRefineAngles();
-
-	ScoreType scoreType = ScoreTypeModelPos;
-	int maxTries = 60;
-	int bondNum = 4;
 	_timesRefined++;
 
-	double degrees = 4;
-	if (rType == RefinementFine)
-	{
+	ScoreType scoreType = ScoreTypeModelPos;
+	int maxTries = 0;
+	int bondNum = 4;
+	double degrees = 0;
+
+	switch (rType) {
+		case RefinementModelPos:
+		scoreType = ScoreTypeModelPos;
+		maxTries = 60;
+		degrees = 4;
+		break;
+
+		case RefinementFine:
 		scoreType = ScoreTypeCorrel;
 		maxTries = 5;
 		degrees = 2;
-		bondNum = 4;
+		break;
+
+		case RefinementFlexibility:
+		scoreType = ScoreTypeModelPos;
+		maxTries = 1;
+		degrees = 4;
+		break;
+
+		default:
+		shout_at_helen("Unimplemented refinement option?");
+		break;
 	}
 
 	if (refineAngles)
@@ -397,11 +415,30 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					bond->calculateMagicAxis();
 				}
 
-				bool changed = true;
 				int count = 0;
 
 				BondPtr topBond;
-				while (changed && count < maxTries)
+
+				while (rType == RefinementFlexibility && count < maxTries)
+				{
+					FlexRegion flexer;
+					flexer.setup();
+					flexer.addBond(ToBondPtr(bond), 8);
+					flexer.addSingleBondParameters();
+					flexer.sample();
+					count++;
+				}
+
+				if (rType == RefinementFlexibility)
+				{
+					rType = RefinementModelPos;
+					count = 0;
+					maxTries = 60;
+				}
+
+				bool changed = true;
+
+				while (rType != RefinementFlexibility && changed && count < maxTries)
 				{
 					bond->setActiveGroup(k);
 					setupNelderMead();
