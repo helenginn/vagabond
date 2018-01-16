@@ -23,6 +23,7 @@ void Element::setupElements()
 	elements.push_back(ElementPtr(new Element("N", "nitrogen", 7,  ScatterFactors::nScatter)));
 	elements.push_back(ElementPtr(new Element("O", "oxygen", 8,  ScatterFactors::oScatter)));
 	elements.push_back(ElementPtr(new Element("F", "fluorine", 9,  ScatterFactors::fScatter)));
+	elements.push_back(ElementPtr(new Element("NA", "sodium", 11,  ScatterFactors::naScatter)));
 	elements.push_back(ElementPtr(new Element("MG", "magnesium", 12,  ScatterFactors::mgScatter)));
 	elements.push_back(ElementPtr(new Element("P", "phosphorus", 15,  ScatterFactors::pScatter)));
 	elements.push_back(ElementPtr(new Element("S", "sulphur", 16,  ScatterFactors::sScatter)));
