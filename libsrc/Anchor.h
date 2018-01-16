@@ -28,11 +28,6 @@ public:
 		return getAppropriateBond()->getStaticPosition();
 	}
 
-	virtual vec3 getAbsolutePosition()
-	{
-		return getAppropriateBond()->getAbsolutePosition();
-	}
-
 	virtual std::vector<BondSample> *getManyPositions(BondSampleStyle style)
 	{
 		return getAppropriateBond()->getManyPositions(style);

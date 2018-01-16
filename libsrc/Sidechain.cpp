@@ -27,7 +27,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
 	if (!_rotamerised)
 	{
-		if (rType != RefinementFine)
+		if (rType != RefinementFine || findAtoms("CB").size() <= 1)
 		{
 			AtomGroup::refine(target, rType);
 		}

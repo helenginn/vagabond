@@ -44,10 +44,9 @@ void Bucket::findBulkSolvent(FFTPtr map)
 			for (int i = 0; i < map->nz; i++)
 			{
 				long element = map->element(i, j, k);
-//				MaskType type = map->getMask(element);
-				MaskType type = MaskProtein;
+				long value = map->getReal(element);
 
-				if (type != MaskUnchecked)
+				if (value >= 10e-6)
 				{
 					continue;
 				}
@@ -61,9 +60,8 @@ void Bucket::findBulkSolvent(FFTPtr map)
 					int _k = fullCheckVecs[l].z + k;
 
 					long adjusted = map->element(_i, _j, _k);
-					
 
-					if (map->getMask(adjusted) == MaskProtein)
+					if (map->getReal(adjusted) > 10e-6)
 					{
 						foundProtein = true;
 						break;

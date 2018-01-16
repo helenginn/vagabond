@@ -144,10 +144,8 @@ mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double 
 	}
 
 	double sinC = sin(deg2rad(gamma));
-/*
- V = a * b * c * sqrt(1 - cos(alpha)^2 - cos(beta)^2 - cos(gamma)^2
- + 2 * cos(alpha) * cos(beta) * cos(gamma))
- */
+
+
 	double vol_bit = 1 - cosA * cosA - cosB * cosB - cosC * cosC;
 	vol_bit += 2 * cosA * cosB * cosC;
 	double volume = a * b * c * sqrt(vol_bit);
@@ -463,6 +461,11 @@ mat3x3 mat3x3_covariance(std::vector<vec3> points)
 		}
 	}
 
+	for (int i = 0; i < 9; i++)
+	{
+		mat.vals[i] /= (double)points.size();
+	}
+
 	return mat;
 }
 
@@ -480,4 +483,47 @@ mat3x3 mat3x3_rot_from_angles(double phi, double psi)
 	mat3x3 secondRot = mat3x3_unit_vec_rotation(newAxis, psi);
 
 	return mat3x3_mult_mat3x3(secondRot, mat);
+}
+
+mat3x3 mat3x3_make_tensor(mat3x3 &tensify, vec3 &lengths)
+{
+	mat3x3 transpose = mat3x3_inverse(tensify);
+	mat3x3 scaling = make_mat3x3();
+	scaling.vals[0] = lengths.x;
+	scaling.vals[4] = lengths.y;
+	scaling.vals[8] = lengths.z;
+	mat3x3 combo1 = mat3x3_mult_mat3x3(scaling, transpose);
+	mat3x3 combo2 = mat3x3_mult_mat3x3(tensify, combo1);
+	
+	return combo2;
+}
+
+double mat3x3_diff_from_identity(mat3x3 &mat, double target)
+{
+	double diff = 0;
+	if (target < 0)
+	{
+		target = (mat.vals[0] + mat.vals[4] + mat.vals[8]) / 3;
+	}
+
+//	std::cout << "---" << std::endl;
+
+	for (int i = 0; i < 9; i++)
+	{
+		double this_target = (i % 4 == 0) ? target : 0;
+		double add = fabs(mat.vals[i] - this_target);
+	//	std::cout << this_target << " " << mat.vals[i] << std::endl;
+
+		diff += add;
+	}
+
+	return diff;
+}
+
+void mat3x3_mult_scalar(mat3x3 *mat, double scale)
+{
+	for (int i = 0; i < 9; i++)
+	{
+		mat->vals[i] *= scale;
+	}
 }

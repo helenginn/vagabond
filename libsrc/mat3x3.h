@@ -44,6 +44,7 @@ vec3 mat3x3_axis(mat3x3 me, int i);
 
 vec3 mat3x3_mult_vec(struct mat3x3 mat, struct vec3 vec);
 
+void mat3x3_mult_scalar(mat3x3 *mat, double scale);
 void mat3x3_scale(mat3x3 *mat, double a, double b, double c);
 double mat3x3_length(mat3x3 &mat, int index);
 mat3x3 mat3x3_transpose(mat3x3 &mat);
@@ -56,10 +57,12 @@ mat3x3 mat3x3_rhbasis(vec3 aVec, vec3 cVec);
 mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis,
 							  double *best = NULL);
 mat3x3 mat3x3_covariance(std::vector<vec3> points);
+mat3x3 mat3x3_make_tensor(mat3x3 &tensify, vec3 &lengths);
 
 mat3x3 mat3x3_rot_from_angles(double phi, double psi);
 mat3x3 mat3x3_from_2d_array(double **values);
 void mat3x3_to_2d_array(mat3x3 mat, double ***values);
 void free_2d_array(double **values);
+double mat3x3_diff_from_identity(mat3x3 &mat, double target = -1);
 
 #endif /* defined(__vagabond__mat3x3__) */

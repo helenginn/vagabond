@@ -39,6 +39,15 @@ void Vagabond2GL::updateAtoms()
 		_vertices[vertex].pos[1] = majStart.y;
 		_vertices[vertex].pos[2] = majStart.z;
 		vertex++;
+
+		for (int i = 0; i < 2; i++)
+		{
+			_vertices[vertex + i].pos[0] = (minStart.x + majStart.x) / 2;
+			_vertices[vertex + i].pos[1] = (minStart.y + majStart.y) / 2;
+			_vertices[vertex + i].pos[2] = (minStart.z + majStart.z) / 2;
+		}
+
+		vertex += 2;
 		_vertices[vertex].pos[0] = minStart.x;
 		_vertices[vertex].pos[1] = minStart.y;
 		_vertices[vertex].pos[2] = minStart.z;
@@ -106,6 +115,35 @@ bool Vagabond2GL::shouldGetBonds()
 	return false;
 }
 
+void Vagabond2GL::setVertexColour(AtomPtr atom, Vertex *vertex)
+{
+	vertex->color[0] = 150. / 255.;
+	vertex->color[1] = 150. / 255.;
+	vertex->color[2] = 150. / 255.;
+	vertex->color[3] = 1.0;
+
+	if (atom->getElement()->getSymbol() == "O")
+	{
+		vertex->color[0] = 1.0;
+		vertex->color[1] = 0.0;
+		vertex->color[2] = 0.0;
+	}
+
+	if (atom->getElement()->getSymbol() == "N")
+	{
+		vertex->color[0] = 104. / 255.;
+		vertex->color[1] = 139. / 255.;
+		vertex->color[2] = 255. / 255.;
+	}
+
+	if (atom->getElement()->getSymbol() == "S")
+	{
+		vertex->color[0] = 255. / 255.;
+		vertex->color[1] = 255. / 255.;
+		vertex->color[2] = 0. / 255.;
+	}
+}
+
 int Vagabond2GL::processMolecule(MoleculePtr molecule)
 {
 	GLuint count = (int)_vertices.size();
@@ -124,6 +162,7 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 	for (int i = 0; i < molecule->atomCount(); i++)
 	{
 		AtomPtr atom = molecule->atom(i);
+		AtomPtr major = ToBondPtr(atom->getModel())->getMajor();
 
 		if (atom->getElement()->electronCount() <= 1)
 		{
@@ -148,20 +187,29 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 				vertex.pos[0] = majStart.x;
 				vertex.pos[1] = majStart.y;
 				vertex.pos[2] = majStart.z;
-				vertex.color[0] = 0;
-				vertex.color[1] = 0;
-				vertex.color[2] = 0;
-				vertex.color[3] = 1;
+				setVertexColour(major, &vertex);
 				_vertices.push_back(vertex);
+
+				/* Mid point */
+				vertex.pos[0] = (minStart.x + majStart.x) / 2;
+				vertex.pos[1] = (minStart.y + majStart.y) / 2;
+				vertex.pos[2] = (minStart.z + majStart.z) / 2;
+				_vertices.push_back(vertex);
+				setVertexColour(atom, &vertex);
+				_vertices.push_back(vertex);
+
+				/* Minor atom */
 				vertex.pos[0] = minStart.x;
 				vertex.pos[1] = minStart.y;
 				vertex.pos[2] = minStart.z;
 				_vertices.push_back(vertex);
 				_indices.push_back(count);
 				_indices.push_back(count + 1);
+				_indices.push_back(count + 2);
+				_indices.push_back(count + 3);
 
 				_atomMap[atom] = std::make_pair(j, count);
-				count += 2;
+				count += 4;
 			}
 
 			if (minBonds.size() && majBonds.size())

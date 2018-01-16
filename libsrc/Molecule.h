@@ -57,7 +57,6 @@ public:
 
 	void setAbsoluteBFacMult(double mult)
 	{
-		std::cout << "setting absolute mult to " << mult << std::endl;
 		 _absoluteBFacMult = mult;
 	}
 
@@ -86,9 +85,19 @@ public:
 		return _centroids;
 	}
 
+	std::vector<vec3> getTransTensorOffsets()
+	{
+		return _transTensorOffsets;
+	}
+
 	virtual std::string getClassName()
 	{
 		return "Molecule";
+	}
+
+	bool isPolymer()
+	{
+		return (getClassName() == "Polymer");
 	}
 
 	MoleculePtr shared_from_this()
@@ -100,6 +109,8 @@ protected:
 	std::vector<vec3> _centroidOffsets;
 	std::vector<vec3> _centroids; // after offset correction
 	std::vector<mat3x3> _rotations;
+	std::vector<vec3> _transTensorOffsets;
+	std::vector<mat3x3> _extraRotationMats;
 
 private:
 	std::vector<ModelPtr> models;

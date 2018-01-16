@@ -132,7 +132,7 @@ void PDBReader::validateResidue(AbsolutePtr atom)
 	int difference = atom->getResNum() - _residueNum;
 
 	/* Something crazy going on, warn user. */
-	if (difference < 0)
+	if (difference < 0 && _myMolecule->atomCount() != 0)
 	{
 		warn_user("Residue number negative or going backwards in PDB. "\
 				  "Will try to cope. Will probably fail. "\

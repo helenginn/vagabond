@@ -13,6 +13,9 @@
 #include <sstream>
 #include <iomanip>
 #include "maths.h"
+#include "Shouter.h"
+#include "../libccp4/ccp4_spg.h"
+#include "FlexRegion.h"
 
 AtomPtr AtomGroup::findAtom(std::string atomType)
 {
@@ -342,17 +345,40 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 {
 	AtomList topAtoms = topLevelAtoms();
 	bool refineAngles = shouldRefineAngles();
-
-	ScoreType scoreType = ScoreTypeModelPos;
-	int maxTries = 60;
-	int bondNum = 4;
 	_timesRefined++;
 
-	if (rType == RefinementFine)
-	{
-		scoreType = ScoreTypeMultiply;
+	ScoreType scoreType = ScoreTypeModelPos;
+	int maxTries = 0;
+	int bondNum = 4;
+	double degrees = 0;
+
+	switch (rType) {
+		case RefinementModelPos:
+		scoreType = ScoreTypeModelPos;
+		maxTries = 60;
+		degrees = 4;
+		break;
+
+		case RefinementFine:
+		scoreType = ScoreTypeCorrel;
+		maxTries = 5;
+		degrees = 2;
+		break;
+
+		case RefinementFlexibility:
+		scoreType = ScoreTypeModelPos;
 		maxTries = 1;
-		bondNum = 5;
+		degrees = 4;
+		break;
+
+		default:
+		shout_at_helen("Unimplemented refinement option?");
+		break;
+	}
+
+	if (refineAngles)
+	{
+		bondNum = 3;
 	}
 
 	for (int n = 0; n < topAtoms.size(); n++)
@@ -389,21 +415,44 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					bond->calculateMagicAxis();
 				}
 
-				bool changed = true;
 				int count = 0;
 
 				BondPtr topBond;
-				while (changed && count < maxTries)
+
+				while (rType == RefinementFlexibility && count < maxTries)
+				{
+					FlexRegion flexer;
+					flexer.setup();
+					flexer.addBond(ToBondPtr(bond), 8);
+					flexer.addSingleBondParameters();
+					flexer.sample();
+					count++;
+				}
+
+				if (rType == RefinementFlexibility)
+				{
+					rType = RefinementModelPos;
+					count = 0;
+					maxTries = 60;
+				}
+
+				bool changed = true;
+
+				while (rType != RefinementFlexibility && changed && count < maxTries)
 				{
 					bond->setActiveGroup(k);
 					setupNelderMead();
 					setCrystal(target);
+					setCycles(16);
 					topBond = setupTorsionSet(bond, k, bondNum,
-											  deg2rad(4), deg2rad(0.04),
+											  deg2rad(degrees), deg2rad(0.04),
 											  refineAngles);
 					setScoreType(scoreType);
 
-					setSilent();
+					if (rType == RefinementModelPos)
+					{
+						setSilent();
+					}
 
 					setJobName("torsion_" +  bond->shortDesc());
 					changed = sample();
@@ -449,9 +498,9 @@ double AtomGroup::scoreWithMap(std::vector<AtomPtr> atoms, ScoreType scoreType,
 		}
 	}
 
-	double scales = 1. / 4.0;
-	double n = (maxDistance + 1.0) / scales;
-	n = 60;
+	double scales = 0.6;
+	double n = 2 * (maxDistance + 3.0) / scales;
+//	n = 24;
 
 	FFTPtr segment = FFTPtr(new FFT());
 	segment->create(n + 0.5);
@@ -459,22 +508,59 @@ double AtomGroup::scoreWithMap(std::vector<AtomPtr> atoms, ScoreType scoreType,
 	mat3x3 basis = make_mat3x3();
 	double toReal = 1 / (scales*n);
 	mat3x3_scale(&basis, toReal, toReal, toReal);
+	segment->createFFTWplan(1);
 
 	for (int i = 0; i < atoms.size(); i++)
 	{
 		atoms[i]->addToMap(segment, basis, zero);
 	}
 
-	//	segment->printSlice();
-
-	//std::cout << "Checking " << vec3_desc(zero) << std::endl;
+//	segment->normalise();
 	mat3x3_mult_vec(real2Frac, &zero);
 
-	//	_fft->printSlice(zero.z);
 	std::vector<double> xs, ys;
 
 	double cutoff = FFT::score(map, segment, zero, &xs, &ys);
-	cutoff = 0.95;
+
+	FFTPtr obsSeg = FFTPtr(new FFT(*segment));
+	obsSeg->setAll(0);
+
+	/* n.b. this is fucked. please unfuck before continuing. */
+//	FFT::score(map, obsSeg, zero, NULL, NULL, MapScoreTypeCopyToSmaller);
+
+	/*
+
+	segment->shiftToCentre();
+	segment->normalise();
+	segment->printSlice();
+
+	segment->fft(-1);
+	segment->writeReciprocalToFile("segment_calc.mtz");
+
+	obsSeg->shiftToCentre();
+	obsSeg->normalise();
+	obsSeg->fft(-1);
+	obsSeg->writeReciprocalToFile("segment_obs.mtz");
+*/
+
+	/*
+	double correl = correlation(xs, ys, cutoff);
+	std::cout << "Correlation: " << correl << std::endl;
+	std::cout << "Cutoff: " << cutoff << std::endl;
+
+	if (correl > 0.65)
+	{
+		for (int i = 0; i < xs.size(); i++)
+		{
+			if (ys[i] > cutoff)
+			{
+				std::cout << xs[i] << ", " << ys[i] << std::endl;
+			}
+		}
+
+		exit(0);
+	}
+	 */
 
 	if (scoreType == ScoreTypeCorrel)
 	{

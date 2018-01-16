@@ -137,6 +137,8 @@ public:
 	void setInitialBFactor(double b)
 	{
 		_initialB = b;
+		_tensor = make_mat3x3();
+		mat3x3_mult_scalar(&_tensor, b);
 	}
 
 	void setAtomNum(int atomNum)
@@ -183,6 +185,16 @@ public:
 		return _ellipsoidLongestAxis;
 	}
 
+	void setTensor(mat3x3 tensor)
+	{
+		_tensor = tensor;
+	}
+
+	mat3x3 getTensor()
+	{
+		return _tensor;
+	}
+
 	std::string shortDesc();
 
 	MoleculePtr getMolecule();
@@ -192,7 +204,8 @@ public:
 	std::string anisouPDBLine(CrystalPtr crystal);
 
 	static double getAngle(AtomPtr atom1, AtomPtr atom2, AtomPtr atom3);
-	
+
+
 private:
 	ModelPtr _model;
 	ModelPtr _distModelOnly;
@@ -208,6 +221,7 @@ private:
 	double _weighting;
 	std::string _conformer;
 	bool _fromPDB;
+	mat3x3 _tensor;
 
 	AtomType _geomType;
 };

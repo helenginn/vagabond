@@ -34,6 +34,7 @@ private:
 	vec3 _centroid;
 	void updateAtoms();
 	bool shouldGetBonds();
+	void setVertexColour(AtomPtr atom, Vertex *vertex);
 
 	void getPositions(AtomPtr atom, std::vector<vec3> *min,
 					  std::vector<vec3> *maj);

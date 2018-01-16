@@ -24,6 +24,8 @@
 #include "FileReader.h"
 #include "Kabsch.h"
 #include "Options.h"
+#include "FlexGlobal.h"
+#include "RefinementNelderMead.h"
 
 void Polymer::addMonomer(MonomerPtr monomer)
 {
@@ -84,7 +86,7 @@ void Polymer::tieAtomsUp()
 	ModelPtr nModel = n->getModel();
 	if (nModel->isAbsolute())
 	{
-		ToAbsolutePtr(nModel)->setBFactor(2.0);
+		ToAbsolutePtr(nModel)->setBFactor(_startB);
 	}
 
 	for (int i = _anchorNum; i < monomerCount(); i++)
@@ -118,13 +120,14 @@ void Polymer::tieAtomsUp()
 			{
 				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
 			}
-
+/*
 			if ((Options::enableTests() == 3)
 				&& (i == 857 || i == 962 || i == 1011 || i == 1012 ||
 					i == 1015 || i == 1028 || i == 1053 || i == 1068))
 			{
 				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
 			}
+*/
 
 			getMonomer(i)->getSidechain()->setInitialDampening();
 		}
@@ -224,6 +227,7 @@ std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal)
 
 void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 {
+	return;
 	CSVPtr perCA = CSVPtr(new CSV(3, "resnum", "cc", "diffcc"));
 
 	std::vector<double> tempCCs, tempDiffCCs, tempNs;
@@ -240,11 +244,11 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 		}
 
 		BackbonePtr backbone = getMonomer(n)->getBackbone();
-		double cc = -getMonomer(n)->scoreWithMap(ScoreTypeMultiply, fft, real2Frac);
+		double cc = -getMonomer(n)->scoreWithMap(ScoreTypeCorrel, fft, real2Frac);
 		sumCC += cc;
 
 		double diffcc = -getMonomer(n)->scoreWithMap(ScoreTypeMultiply,
-											   difft, _real2Frac);
+											   difft, real2Frac);
 		sumDiffCC += diffcc;
 
 		tempCCs.push_back(cc);
@@ -270,10 +274,11 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 	plotMap["yHeader0"] = "cc";
 	plotMap["xHeader1"] = "resnum";
 	plotMap["yHeader1"] = "diffcc";
-//	plotMap["yMin0"] = "-1";
-//	plotMap["yMin1"] = "-1";
-//	plotMap["yMax0"] = "1";
-//	plotMap["yMax1"] = "1";
+	plotMap["yMin0"] = "0";
+	plotMap["yMax0"] = "1";
+	plotMap["yMin1"] = "-10";
+	plotMap["yMax1"] = "10";
+
 	plotMap["colour0"] = "black";
 	plotMap["colour1"] = "red";
 	plotMap["xTitle0"] = "Residue number";
@@ -624,13 +629,6 @@ void Polymer::setInitialKick(void *object, double value)
 			}
 		}
 	}
-
-	/*
-	Polymer *polymer = static_cast<Polymer *>(object);
-	int monomerNum = polymer->_anchorNum;
-	polymer->getMonomer(monomerNum)->setKick(value, false);
-	polymer->getMonomer(monomerNum - 1)->setKick(value, true);
-	 */
 }
 
 /* For side chains, obviously */
@@ -689,10 +687,70 @@ ModelPtr Polymer::getAnchorModel()
 	return model;
 }
 
+void Polymer::applyTranslationTensor()
+{
+	_transTensorOffsets.clear();
+	_extraRotationMats.clear();
+	ModelPtr anchor = getAnchorModel();
+	std::vector<BondSample> *finals = getAnchorModel()->getManyPositions(BondSampleThorough);
+	vec3 sum = make_vec3(0, 0, 0);
+
+	for (int i = 0; i < finals->size(); i++)
+	{
+		sum = vec3_add_vec3(sum, finals->at(i).start);
+	}
+
+	vec3_mult(&sum, 1/(double)finals->size());
+
+	for (int i = 0; i < finals->size(); i++)
+	{
+		vec3 onePos = finals->at(i).start;
+		vec3 diff = vec3_subtract_vec3(onePos, sum);
+		vec3 diffTensored = diff;
+		mat3x3_mult_vec(_transTensor, &diffTensored);
+		vec3 movement = vec3_subtract_vec3(diffTensored, diff);
+		_transTensorOffsets.push_back(movement);
+	}
+}
+
 void Polymer::superimpose()
 {
+	_centroids.clear();
+	_centroidOffsets.clear();
+	_rotations.clear();
+	propagateChange();
+
 	minimiseRotations();
 	minimiseCentroids();
+
+	ModelPtr model = getAnchorModel();
+//	ModelPtr ca102 = getMonomer(102)->findAtom("CA")->getModel();
+
+	if (model->isAbsolute())
+	{
+		std::vector<vec3> sphereAngles = ToAbsolutePtr(model)->getSphereAngles();
+		CSVPtr csv = CSVPtr(new CSV(6, "psi", "phi", "theta", "corr_x", "corr_y", "corr_z"));
+		CSVPtr one = CSVPtr(new CSV(3, "x", "y", "z"));
+//		std::vector<BondSample> positions = ca102->getFinalPositions();
+
+		for (int i = 0; i < sphereAngles.size(); i++)
+		{
+			double xMove = getCentroidOffsets()[i].x;
+			double yMove = getCentroidOffsets()[i].y;
+			double zMove = getCentroidOffsets()[i].z;
+			csv->addEntry(6, sphereAngles[i].x, sphereAngles[i].y,
+						  sphereAngles[i].z, xMove, yMove, zMove);
+/*
+			one->addEntry(3, positions[i].start.x, positions[i].start.y,
+						  positions[i].start.z);
+*/
+		}
+
+//		one->writeToFile("res102.csv");
+		csv->writeToFile("kabsch.csv");
+	}
+
+	applyTranslationTensor();
 }
 
 void Polymer::minimiseCentroids()
@@ -702,7 +760,7 @@ void Polymer::minimiseCentroids()
 
 	ModelPtr anchor = getAnchorModel();
 	getAnchorModel()->getFinalPositions();
-	vec3 oldPos = getAnchorModel()->getAbsolutePosition();
+	vec3 oldPos = getAnchorModel()->getStaticPosition();
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -711,20 +769,19 @@ void Polymer::minimiseCentroids()
 			continue;
 		}
 
-		count++;
-
 		AtomPtr ca = getMonomer(i)->findAtom("CA");
 
 		if (!ca) continue;
+
+		count++;
 
 		std::vector<BondSample> someSamples;
 		someSamples = ca->getModel()->getFinalPositions();
 		std::vector<BondSample> *samples = &someSamples;
 
-
 		if (!addedVecs.size())
 		{
-			addedVecs = std::vector<vec3>(samples->size(), make_vec3(0, 0, 0));
+			addedVecs = std::vector<vec3>(samples->size(), make_vec3(0, 0, 0));;
 		}
 
 		for (int j = 0; j < samples->size(); j++)
@@ -752,7 +809,7 @@ void Polymer::minimiseCentroids()
 
 	vec3_mult(&meanPos, 1 / (double)addedVecs.size());
 
-	// Remove the old centroid positions
+	// Remove the old centroid positions if not already
 	_centroidOffsets.clear();
 
 	// Find the offsets to bring all centroids to the mean value
@@ -764,9 +821,12 @@ void Polymer::minimiseCentroids()
 
 	propagateChange();
 
+	// This time, it should apply the offset to the anchor.
+	// But we want the anchor to remain in the same place as before.
 	anchor->getFinalPositions();
 	vec3 newPos = anchor->getAbsolutePosition();
 
+	// Find the difference.
 	vec3 backToOld = vec3_subtract_vec3(oldPos, newPos);
 	std::cout << "Additional correction: " << vec3_desc(backToOld) << std::endl;
 
@@ -952,4 +1012,30 @@ void Polymer::reportParameters()
 
 	std::cout << "Chain " << getChainID() << " has " << count
 	<< " refinable bonds." << std::endl;
+}
+
+void Polymer::optimiseTranslationTensor()
+{
+	std::cout << "Optimising translation tensor to maximise isotropy." << std::endl;
+
+	NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
+	nelderMead->addParameter(this, getTransTensor11, setTransTensor11, 1, 0.01);
+	nelderMead->addParameter(this, getTransTensor12, setTransTensor12, 1, 0.01);
+	nelderMead->addParameter(this, getTransTensor13, setTransTensor13, 1, 0.01);
+	nelderMead->addParameter(this, getTransTensor22, setTransTensor22, 1, 0.01);
+	nelderMead->addParameter(this, getTransTensor23, setTransTensor23, 1, 0.01);
+	nelderMead->addParameter(this, getTransTensor33, setTransTensor33, 1, 0.01);
+
+	setTransTensor11(this, 1);
+	setTransTensor22(this, 1);
+	setTransTensor33(this, 1);
+
+	double bFac = getAverageBFactor();
+
+	FlexGlobal target;
+	target.setTargetBFactor(bFac + 1);
+	target.setAtomGroup(AtomGroup::shared_from_this());
+	nelderMead->setEvaluationFunction(FlexGlobal::score, &target);
+	nelderMead->setCycles(20);
+	nelderMead->refine();
 }

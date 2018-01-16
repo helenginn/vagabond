@@ -18,6 +18,7 @@
 OptionsPtr Options::options;
 double Options::_kick = 0.01;
 double Options::_dampen = 0.08;
+double Options::_bStart = 1.5;
 int Options::_enableTests = false;
 
 Options::Options(int argc, const char **argv)
@@ -85,7 +86,10 @@ void Options::run()
 
 			/* sandbox */
 			crystals[0]->writeMillersToFile(data, "pre");
-			crystals[0]->getDataInformation(data, 3, 2);
+			crystals[0]->getDataInformation(data, 2, 1);
+
+			PolymerPtr chainA = ToPolymerPtr(crystals[0]->molecule("A0"));
+			chainA->differenceGraphs("test", crystals[0]);
 
 			if (_tie)
 			{
@@ -95,12 +99,12 @@ void Options::run()
 
 			crystals[0]->tiedUpScattering();
 
-			PolymerPtr chainA = ToPolymerPtr(crystals[0]->molecule("A"));
-
 			int count = 0;
 			crystals[0]->concludeRefinement(count, data, crystals[0]);
 
-			refineAll(RefinementModelPos, 8, &count);
+			refineAll(RefinementModelPos, 3, &count);
+			refineAll(RefinementFlexibility, 20, &count);
+			refineAll(RefinementModelPos, 3, &count);
 			refineAll(RefinementFine, _numCycles, &count);
 		}
 	}
@@ -211,7 +215,7 @@ void Options::parse()
 
 			if (crystals.size() == 0)
 			{
-				shout_at_user("Overall B factor specified, but a coordinate\n"\
+				shout_at_user("Initial kick specified, but a coordinate\n"\
 							  "file has not been specified yet. Please use\n"\
 							  "--with-pdb= to specify some atomic coordinates.");
 			}
@@ -223,6 +227,16 @@ void Options::parse()
 
 				understood = true;
 			}
+		}
+
+		prefix = "--bfactor=";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			std::string bee_string = arg.substr(prefix.size());
+			_bStart = atof(bee_string.c_str());
+
+			understood = true;
 		}
 
 		prefix = "--dampen=";
@@ -379,7 +393,7 @@ void Options::outputCrystalInfo()
 	}
 }
 
-void Options::refineAll(RefinementType type, int numCycles, int *count)
+void Options::refineAll(RefinementType type, int numCycles, int *count, bool keepGoing)
 {
 	double lastRWork = 200;
 
@@ -396,7 +410,7 @@ void Options::refineAll(RefinementType type, int numCycles, int *count)
 														  crystals[0]);
 
 		/* Do we go for another cycle? */
-		if (i + 1 == numCycles && newRWork < lastRWork)
+		if (keepGoing && i + 1 == numCycles && newRWork < lastRWork)
 		{
 			std::cout << "Going for another cycle..." << std::endl;
 			numCycles++;
@@ -426,12 +440,13 @@ void Options::refinementCycle(MoleculePtr molecule, int *count,
 			molecule->refine(crystals[0], type);
 		}
 
-		if (molecule->getClassName() == "Polymer" && (*count == 0))
+		if (molecule->getClassName() == "Polymer" && (*count == 1))
 		{
-	//		polymer->scaleFlexibilityToBFactor(crystals[0]);
+			polymer->superimpose();
 		}
 
-		if (molecule->getClassName() == "Polymer" && (*count == 1))
+		if (false && molecule->getClassName() == "Polymer" && (*count % 6 == 0)
+			&& type == RefinementFlexibility)
 		{
 			polymer->superimpose();
 		}

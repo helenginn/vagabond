@@ -66,10 +66,23 @@ double vec3_angle_with_vec3(vec3 &aVec, vec3 &bVec);
 double vec3_cosine_with_vec3(vec3 &aVec, vec3 &bVec);
 vec3 vec3_cross_vec3(vec3 &aVec, vec3 &bVec);
 double vec3_angle_from_three_points(vec3 &aVec, vec3 &bVec, vec3 &cVec);
+double ewald_wavelength(vec3 &aVec);
 
 std::string vec3_desc(vec3 vec);
 
+inline void vec3_min_each(vec3 *minVec, vec3 &aVec)
+{
+	if (aVec.x < minVec->x) minVec->x = aVec.x;
+	if (aVec.y < minVec->y) minVec->y = aVec.y;
+	if (aVec.z < minVec->z) minVec->z = aVec.z;
+}
 
+inline void vec3_max_each(vec3 *maxVec, vec3 &aVec)
+{
+	if (aVec.x > maxVec->x) maxVec->x = aVec.x;
+	if (aVec.y > maxVec->y) maxVec->y = aVec.y;
+	if (aVec.z > maxVec->z) maxVec->z = aVec.z;
+}
 inline void vec3_mult(vec3 *aVec, double mult)
 {
 	aVec->x *= mult;

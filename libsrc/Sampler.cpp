@@ -38,6 +38,7 @@ void Sampler::addAtomsForBond(BondPtr firstBond, int k)
 	for (int i = 0; i < extraTorsionBonds.size(); i++)
 	{
 		BondPtr bond = extraTorsionBonds[i];
+		addSampled(bond->getMinor());
 
 		for (int j = 0; j < bond->downstreamAtomCount(k); j++)
 		{
@@ -70,9 +71,10 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 	setJobName("torsion_set_" + bond->shortDesc() + "_g" +
 			   i_to_str(k));
 
+	addSampled(bond->getMajor());
 	addTorsion(bond, deg2rad(range), deg2rad(interval));
 
-	if (addAngle)
+	if (addAngle && bond->getRefineBondAngle())
 	{
 		addBendAngle(bond, deg2rad(0.01), deg2rad(0.001));
 	}
@@ -80,6 +82,8 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 	addAtomsForBond(bond, k);
 
 	BondPtr returnBond = BondPtr();
+
+	int bondCount = 1;
 
 	for (int i = 0; i < bondNum; i++)
 	{
@@ -124,9 +128,9 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 
 			addTorsion(nextBond, deg2rad(range), deg2rad(interval));
 
-			if (addAngle)
+			if (addAngle && nextBond->getRefineBondAngle())
 			{
-				addBendAngle(bond, deg2rad(0.01), deg2rad(0.001));
+				addBendAngle(nextBond, deg2rad(0.01), deg2rad(0.001));
 			}
 
 			addAtomsForBond(nextBond, 0);
@@ -139,6 +143,12 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 
 		k = 0;
 		bond = nextBond;
+		bondCount++;
+	}
+
+	if (bondCount <= 2)
+	{
+	//	return BondPtr();
 	}
 
 	return returnBond;
@@ -439,6 +449,7 @@ void Sampler::addSampled(AtomPtr atom)
 	}
 	else
 	{
+		/* No repeats! */
 		for (int i = 0; i < sampleSize(); i++)
 		{
 			if (_sampled[i] == atom)
@@ -608,72 +619,6 @@ double Sampler::getScore()
 	}
 
 	return AtomGroup::scoreWithMap(_sampled, _scoreType, _fft, _real2Frac);
-
-/*
-	std::vector<double> xs, ys;
-
-	_sampled[0]->getModel()->getDistribution(true);
-	vec3 zero = _sampled[0]->getModel()->getAbsolutePosition();
-	double maxDistance = 0;
-
-	for (int i = 1; i < _sampled.size(); i++)
-	{
-		// Refresh absolute position
-		_sampled[i]->getModel()->getDistribution();
-		vec3 offset = _sampled[i]->getModel()->getAbsolutePosition();
-
-		vec3 diff = vec3_subtract_vec3(offset, zero);
-		double distance = vec3_length(diff);
-
-		if (distance > maxDistance)
-		{
-			maxDistance = distance;
-		}
-	}
-
-	double scales = 1. / 4.0;
-	double n = (maxDistance + 1.0) / scales;
-	n = 60;
-
-	FFTPtr segment = FFTPtr(new FFT());
-	segment->create(n + 0.5);
-	segment->setScales(scales);
-	mat3x3 basis = make_mat3x3();
-	double toReal = 1 / (scales*n);
-	mat3x3_scale(&basis, toReal, toReal, toReal);
-
-	for (int i = 0; i < _sampled.size(); i++)
-	{
-		_sampled[i]->addToMap(segment, basis, zero);
-	}
-
-//	segment->printSlice();
-
-	//std::cout << "Checking " << vec3_desc(zero) << std::endl;
-	mat3x3_mult_vec(_real2Frac, &zero);
-
-//	_fft->printSlice(zero.z);
-	long ele = _fft->elementFromFrac(zero.x, zero.y, zero.z);
-
-	double cutoff = FFT::score(_fft, segment, zero, &xs, &ys);
-
-	if (_scoreType == ScoreTypeCorrel)
-	{
-		double correl = correlation(xs, ys, cutoff);
-		return -correl;
-	}
-	else if (_scoreType == ScoreTypeRFactor)
-	{
-		double rFactor = scaled_r_factor(xs, ys, cutoff);
-		return rFactor;
-	}
-	else if (_scoreType == ScoreTypeMultiply)
-	{
-		double mult = weightedMapScore(xs, ys);
-		return -mult;
-	}
-
-	return 0;*/
 }
 
 std::vector<double> Sampler::getNextResult(int num)

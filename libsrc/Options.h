@@ -56,6 +56,11 @@ public:
 	{
 		return _enableTests;
 	}
+
+	static double getBStart()
+	{
+		return _bStart;
+	}
 private:
 	static OptionsPtr options;
 
@@ -64,7 +69,8 @@ private:
 	void outputCrystalInfo();
 	void refinementCycle(MoleculePtr molecule, int *count,
 						 RefinementType type);
-	void refineAll(RefinementType type, int numCycles, int *count);
+	void refineAll(RefinementType type, int numCycles, int *count,
+				   bool keepGoing = true);
 	bool parseJoke(std::string arg);
 
 	std::vector<std::string> arguments;
@@ -79,6 +85,7 @@ private:
 	static double _kick;
 	static double _dampen;
 	static int _enableTests;
+	static double _bStart;
 	std::string _outputDir;
 };
 

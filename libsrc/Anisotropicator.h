@@ -17,6 +17,8 @@
 class Anisotropicator
 {
 public:
+	Anisotropicator();
+
 	/* Should update the principle axes */
 	void setTensor(mat3x3 tensor);
 	/* Should update the tensor too */
@@ -37,6 +39,11 @@ public:
 		return _tensor;
 	}
 
+	double isotropicAverage()
+	{
+		return _isotropicAverage;
+	}
+
 	double anisotropyExtent();
 	vec3 longestAxis();
 private:
@@ -44,6 +51,7 @@ private:
 	mat3x3 _tensor;
 	void findPrincipleAxes();
 
+	double _isotropicAverage;
 	mat3x3 _axisMatrix;
 	vec3 _axes[3];
 };

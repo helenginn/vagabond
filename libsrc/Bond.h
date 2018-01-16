@@ -28,7 +28,6 @@ typedef struct
 	double circlePortion;
 } AtomValue;
 
-
 typedef struct
 {
 	std::vector<AtomValue> atoms;
@@ -42,8 +41,10 @@ typedef struct
 	std::vector<AtomWkr> extraTorsionSamples;
 } BondGroup;
 
-#define INITIAL_KICK 0.10
+#define INITIAL_KICK 0.01
 #define INITIAL_DAMPENING 0.08
+
+class Anisotropicator;
 
 class Bond : public Model, public Sampler
 {
@@ -64,7 +65,6 @@ public:
 	static double magicAxisStaticScore(void *object);
 	bool test();
 	double getEffectiveOccupancy();
-	double bondAnglePenalty();
 
 	AtomPtr getMajor()
 	{
@@ -123,7 +123,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_bondGroups[bond->_activeGroup].torsionBlur = value;
-		static_cast<Bond *>(object)->propagateChange();
+		static_cast<Bond *>(object)->propagateChange(20);
 	}
 
 	static double getTorsionBlur(void *object)
@@ -186,7 +186,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_dampening = value;
-		bond->propagateChange();
+		bond->propagateChange(20);
 	}
 
 	static double getBendAngle(void *object);
@@ -305,12 +305,6 @@ public:
 
 	virtual double getMeanSquareDeviation();
 
-	void getAnisotropy(bool withKabsch);
-	vec3 longestAxis();
-	double anisotropyExtent();
-
-	virtual mat3x3 getRealSpaceTensor();
-
 	double getFlexibilityPotential();
 
 	AtomPtr extraTorsionSample(int group, int i)
@@ -327,8 +321,6 @@ public:
 	{
 		return _absolute;
 	}
-
-	std::vector<BondSample> getFinalPositions();
 
 	void setAnchored()
 	{
@@ -367,12 +359,12 @@ public:
 
 	void setRefineBondAngle(bool value = true)
 	{
-		_refineBondAngle = true;
+		_refineBondAngle = value;
 	}
 
 	bool getRefineBondAngle()
 	{
-		return _refineBondAngle;
+		return _refineBondAngle * !isFixed();
 	}
 
 protected:
@@ -421,9 +413,6 @@ private:
 	/* Has been set as an anchor, will not respond to 'propagate change'*/
 	bool _anchored;
 
-	/* Expect interference from GUI */
-	bool _useMutex;
-
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();
 	/* And a given bond angle for downstream atom n */
@@ -449,16 +438,8 @@ private:
 	bool _refineBondAngle;
 
 	mat3x3 getMagicMat();
-	vec3 _longest;
-	double _anisotropyExtent;
 
-	/* What should be returned when asking for an atom's position
-	 * for drawing into a map... */
-	vec3 _absolute;
-	/* And a record of the final positions */
-	std::vector<vec3> _finalPositions;
 
-	std::mutex guiLock;
 };
 
 #endif /* defined(__vagabond__Bond__) */

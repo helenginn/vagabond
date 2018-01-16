@@ -10,9 +10,15 @@
 #include "../libica/svdcmp.h"
 #include <iostream>
 
+Anisotropicator::Anisotropicator()
+{
+	_isotropicAverage = 0;
+}
+
 void Anisotropicator::setPoints(std::vector<vec3> points)
 {
 	_points = points;
+
 	_tensor = mat3x3_covariance(points);
 	findPrincipleAxes();
 }
@@ -25,17 +31,16 @@ void Anisotropicator::setTensor(mat3x3 tensor)
 
 double Anisotropicator::anisotropyExtent()
 {
-	double score = 0;
+	double ave = 0;
 
 	for (int i = 0; i < 3; i++)
 	{
 		double length = vec3_length(_axes[i]);
-		double nextLength = vec3_length(_axes[(i + 1) % 3]);
-		double diff = fabs(nextLength - length);
-		score += diff;
+		double next = vec3_length(_axes[(i + 1) % 3]);
+		ave += fabs(length - next);
 	}
 
-	return score;
+	return ave;
 }
 
 vec3 Anisotropicator::longestAxis()
@@ -73,20 +78,17 @@ void Anisotropicator::findPrincipleAxes()
 
 	mat3x3 axes = mat3x3_from_2d_array(matrix);
 	_axisMatrix = axes;
-
-	for (int j = 0; j < 3; j++)
-	{
-		for (int i = 0; i < 3; i++)
-		{
-			_axisMatrix.vals[j * 3 + i] *= w[i];
-		}
-	}
-
 	axes = mat3x3_transpose(_axisMatrix);
+	_isotropicAverage = 0;
 
 	for (int i = 0; i < 3; i++)
 	{
 		_axes[i] = mat3x3_axis(axes, i);
-		vec3_set_length(&_axes[i], w[i]);
+		vec3_set_length(&_axes[i], sqrt(w[i]));
+		_isotropicAverage += w[i] / 3;
 	}
+
+	vec3 lengths = {w[0], w[1], w[2]};
+
+	_tensor = mat3x3_make_tensor(_axisMatrix, lengths);
 }

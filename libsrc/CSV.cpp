@@ -188,7 +188,7 @@ void CSV::writeToFile(std::string filename)
     
     for (int i = 0; i < headers.size(); i++)
     {
-        csv << headers[i] << ",";
+        csv << headers[i] << ", ";
     }
     
     csv << std::endl;
@@ -199,7 +199,7 @@ void CSV::writeToFile(std::string filename)
         
         for (int j = 0; j < anEntry.size(); j++)
         {
-			csv << std::setprecision(14) << anEntry[j] << ",";
+			csv << std::setprecision(14) << anEntry[j] << ", ";
         }
         
         csv << std::endl;

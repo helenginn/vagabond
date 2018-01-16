@@ -30,6 +30,26 @@ Absolute::Absolute()
 	_hetatm = false;
 	_usingTensor = false;
 	_tensor = make_mat3x3();
+	_isOfManyPositions = false;
+}
+
+mat3x3 Absolute::getRealSpaceTensor()
+{
+	if (_isOfManyPositions)
+	{
+		getAnisotropy(true);
+		return Model::getRealSpaceTensor();
+	}
+
+	return _tensor;
+}
+
+void Absolute::getAnisotropy(bool withKabsch)
+{
+	if (_isOfManyPositions)
+	{
+		Model::getAnisotropy(true);
+	}
 }
 
 Absolute::Absolute(vec3 pos, double bFac, std::string element, double occValue)
@@ -42,6 +62,7 @@ Absolute::Absolute(vec3 pos, double bFac, std::string element, double occValue)
 	_hetatm = false;
 	_usingTensor = false;
 	_tensor = make_mat3x3();
+	_isOfManyPositions = false;
 }
 
 void Absolute::makeAtom()
@@ -149,25 +170,29 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 
 	int samples = 81;
 	int rnd = 1;
-	double total = 2;
 
 	std::vector<vec3> points;
 	double offset = 2. / (double)samples;
 	double increment = M_PI * (3.0 - sqrt(5));
 
+	_sphereAngles.clear();
+
+	double m = meanSqDisp;
+
 	for (int i = 0; i < samples; i++)
 	{
 		double y = (((double)i * offset) - 1) + (offset / 2);
 		double r = sqrt(1 - y * y);
-		r *= meanSqDisp;
 
 		double phi = (double)((i + rnd) % samples) * increment;
 
 		double x = cos(phi) * r;
 		double z = sin(phi) * r;
-		y *= r;
 
-		points.push_back(make_vec3(x, y, z));
+		vec3 point = make_vec3(x * m, y * m, z * m);
+
+		points.push_back(point);
+		_sphereAngles.push_back(point);
 	}
 
 	for (int i = 0; i < points.size(); i++)
@@ -185,49 +210,12 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 		bondSamples->push_back(sample);
 	}
 
-/*
-
-    for (int i = -total; i <= total; i++)
-	{
-		double xVal = i * step;
-
-		for (int j = -total; j <= total; j++)
-		{
-			double yVal = j * step;
-
-			for (int k = -total; k <= total; k++)
-			{
-				double zVal = k * step;
-
-				double distance = sqrt(xVal * xVal + yVal * yVal + zVal * zVal);
-				double stdev = distance / meanSqDisp;
-
-				if (stdev > 2.00) continue;
-
-				double occ = normal_distribution(xVal, meanSqDisp);
-				occ *= normal_distribution(yVal, meanSqDisp);
-				occ *= normal_distribution(zVal, meanSqDisp);
-				occ = 1;
-				occTotal += occ;
-				vec3 xyz = make_vec3(xVal, yVal, zVal);
-				vec3 full = vec3_add_vec3(xyz, _position);
-
-				BondSample sample;
-				sample.basis = make_mat3x3();
-				sample.occupancy = occ;
-				sample.torsion = 0;
-				sample.old_start = make_vec3(0, 0, 0);
-				sample.start = full;
-				bondSamples->push_back(sample);
-			}
-		}
-	}
-*/
-
 	for (int i = 0; i < bondSamples->size(); i++)
 	{
 		(*bondSamples)[i].occupancy /= occTotal;
 	}
+
+	_isOfManyPositions = true;
 
 	return bondSamples;
 }
@@ -238,6 +226,7 @@ void Absolute::addToMonomer(MonomerPtr monomer)
 
 	monomer->addAtom(_atom);
 	monomer->getPolymer()->addAtom(_atom);
+	setMolecule(monomer->getPolymer());
 
 	Model::addToMonomer(monomer);
 }
@@ -257,12 +246,14 @@ void Absolute::setTensor(mat3x3 tensor, CrystalPtr crystal)
 	_tensor = tensor;
 	_usingTensor = true;
 
-	mat3x3 toNormal = crystal->getHKL2Real();
-	_realSpaceTensor = mat3x3_mult_mat3x3(toNormal, _tensor);
+//	mat3x3 toNormal = crystal->getHKL2Real();
+//	_realSpaceTensor = mat3x3_mult_mat3x3(toNormal, _tensor);
+	_realSpaceTensor = _tensor;
 
 	Anisotropicator tropicator;
 	tropicator.setTensor(_realSpaceTensor);
 	vec3 longestAxis = tropicator.longestAxis();
 
 	getAtom()->setEllipsoidLongestAxis(longestAxis);
+	getAtom()->setTensor(_tensor);
 }

@@ -149,134 +149,10 @@ void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 	realSpaceClutter();
 	fourierTransform(1);
 	scaleToDiffraction(data);
-	double nLimit = _fft->nx;
-	nLimit = nLimit - ((int)nLimit % 2);
-	nLimit /= 2;
-
-	double dStar = 1 / _maxResolution;
-
-	/* For writing MTZ files */
-
-	int columns = 10;
-
-	float cell[6], wavelength;
-	float *fdata = new float[columns];
-
-	/* variables for symmetry */
-	CSym::CCP4SPG *mtzspg = _spaceGroup;
-	float rsm[192][4][4];
-	char ltypex[2];
-
-	/* variables for MTZ data structure */
-	CMtz::MTZ *mtzout;
-	CMtz::MTZXTAL *xtal;
-	CMtz::MTZSET *set;
-	CMtz::MTZCOL *colout[11];
-
-	cell[0] = _unitCell[0];
-	cell[1] = _unitCell[1];
-	cell[2] = _unitCell[2];
-	cell[3] = _unitCell[3];
-	cell[4] = _unitCell[4];
-	cell[5] = _unitCell[5];
-	wavelength = 1.00; // fixme
 
 	std::string outputFileOnly = prefix + "_" + _filename + "_vbond.mtz";
-	std::string outputFile = FileReader::addOutputDirectory(outputFileOnly);
-
-	mtzout = CMtz::MtzMalloc(0, 0);
-	ccp4_lwtitl(mtzout, "Written from Helen's XFEL tasks ", 0);
-	mtzout->refs_in_memory = 0;
-	mtzout->fileout = CMtz::MtzOpenForWrite(outputFile.c_str());
-
-	if (!mtzout->fileout)
-	{
-		std::cout << "Could not open " << outputFile.c_str() << std::endl;
-		std::cerr << "Error: " << strerror(errno) << std::endl;
-		return;
-	}
-
-	// then add symm headers...
-	for (int i = 0; i < mtzspg->nsymop; ++i)
-		CCP4::rotandtrn_to_mat4(rsm[i], mtzspg->symop[i]);
-	strncpy(ltypex, mtzspg->symbol_old, 1);
-	ccp4_lwsymm(mtzout, mtzspg->nsymop, mtzspg->nsymop_prim, rsm, ltypex,
-				mtzspg->spg_ccp4_num, mtzspg->symbol_old, mtzspg->point_group);
-
-	// then add xtals, datasets, cols
-	xtal = MtzAddXtal(mtzout, "vagabond_crystal", "vagabond_project", cell);
-	set = MtzAddDataset(mtzout, xtal, "Dataset", wavelength);
-	colout[0] = MtzAddColumn(mtzout, set, "H", "H");
-	colout[1] = MtzAddColumn(mtzout, set, "K", "H");
-	colout[2] = MtzAddColumn(mtzout, set, "L", "H");
-	colout[3] = MtzAddColumn(mtzout, set, "FREE", "I");
-	colout[4] = MtzAddColumn(mtzout, set, "FP", "F");
-	colout[5] = MtzAddColumn(mtzout, set, "FC", "F");
-	colout[6] = MtzAddColumn(mtzout, set, "FWT", "F");
-	colout[7] = MtzAddColumn(mtzout, set, "PHWT", "P");
-	colout[8] = MtzAddColumn(mtzout, set, "DELFWT", "F");
-	colout[9] = MtzAddColumn(mtzout, set, "PHDELWT", "P");
-
-	int num = 0;
-	FFTPtr fftData = data->getFFT();
-
-	/* symmetry issues */
-	for (int i = -nLimit; i < nLimit; i++)
-	{
-		for (int j = -nLimit; j < nLimit; j++)
-		{
-			for (int k = 0; k < nLimit; k++)
-			{
-				bool asu = CSym::ccp4spg_is_in_asu(_spaceGroup, i, j, k);
-
-				if (!asu)
-				{
-					continue;
-				}
-
-				vec3 pos = make_vec3(i, j, k);
-				mat3x3_mult_vec(_real2frac, &pos);
-
-				double phase = _fft->getPhase(i, j, k);
-
-				double intensity = _fft->getIntensity(i, j, k);
-				double calcAmp = sqrt(intensity);
-
-				double foInt = fftData->getIntensity(i, j, k);
-				double foAmp = sqrt(foInt);
-
-				// i.e. 0 when mask is free flag.
-
-				int free = fftData->getMask(i, j, k);
-
-				if (vec3_length(pos) > dStar)
-				{
-					continue;
-				}
-
-				/* MTZ file stuff */
-
-				fdata[0] = i;
-				fdata[1] = j;
-				fdata[2] = k;
-				fdata[3] = free;
-				fdata[4] = foAmp;
-				fdata[5] = calcAmp;
-				fdata[6] = 2 * foAmp - calcAmp;
-				fdata[7] = phase;
-				fdata[8] = foAmp - calcAmp;
-				fdata[9] = phase;
-
-				num++;
-				ccp4_lwrefl(mtzout, fdata, colout, columns, num);
-			}
-		}
-	}
-
-	MtzPut(mtzout, " ");
-	MtzFree(mtzout);
-
-	delete [] fdata;
+	getFFT()->writeReciprocalToFile(outputFileOnly, _maxResolution, _spaceGroup,
+									_unitCell, _real2frac, data->getFFT());
 }
 
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
@@ -390,8 +266,8 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes)
 	nLimit /= 2;
 	std::vector<double> set1, set2, free1, free2;
 
-	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
-	double maxRes = (highRes == 0 ? FLT_MAX : 1 / highRes);
+	double minRes = (lowRes <= 0 ? 0 : 1 / lowRes);
+	double maxRes = (highRes <= 0 ? FLT_MAX : 1 / highRes);
 
 	/* symmetry issues */
 	for (int i = -nLimit; i < nLimit; i++)
@@ -440,6 +316,10 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 	generateResolutionBins(0, _maxResolution, 20, &bins);
 	double totalFc = totalToScale();
 
+	double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
+										0, _maxResolution);
+	applyScaleFactor(totalFc / ratio, 0, 0);
+
 	for (int i = 0; i < bins.size() - 1; i++)
 	{
 		double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
@@ -470,12 +350,9 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 								 double partsFc)
 {
-	if (!_fft || !_fft->nn)
-	{
-		realSpaceClutter();
-		fourierTransform(1);
-		scaleToDiffraction(data);
-	}
+	realSpaceClutter();
+	fourierTransform(1);
+	scaleToDiffraction(data);
 
 	double rFac = rFactorWithDiffraction(data, true);
 
@@ -496,14 +373,17 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 
 				double amp = sqrt(fftData->getIntensity(_h, _k, _l));
 				bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
+				long index = _fft->element(i, j, k);
 
 				if (amp != amp || isRfree)
 				{
+					_fft->setElement(index, 0, 0);
+					_difft->setElement(index, 0, 0);
+
 					continue;
 				}
 
 				vec2 complex;
-				long index = _fft->element(i, j, k);
 				complex.x = _fft->getReal(index);
 				complex.y = _fft->getImaginary(index);
 				double old_amp = sqrt(complex.x * complex.x +
@@ -529,6 +409,7 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 		}
 	}
 
+		/* Back to real space */
 	fourierTransform(-1);
 	_difft->fft(-1);
 
@@ -618,6 +499,10 @@ void Crystal::fourierTransform(int dir)
 	{
 		applySymOps();
 	}
+	else
+	{
+		_fft->normalise();
+	}
 }
 
 void Crystal::makePDBs(std::string suffix)
@@ -661,8 +546,11 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data,
 		if (molecule(i)->getClassName() == "Polymer")
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
-			polymer->differenceGraphs("density_" + polymer->getChainID() +
-									  "_" + i_to_str(cycleNum), shared_from_this());
+			if (cycleNum > 0)
+			{
+				polymer->differenceGraphs("density_" + polymer->getChainID() +
+										  "_" + i_to_str(cycleNum), shared_from_this());
+			}
 			polymer->graph("chain_" + polymer->getChainID() +
 						   "_" + i_to_str(cycleNum));
 			polymer->closenessSummary();
