@@ -63,6 +63,31 @@ double FlexGlobal::notStaticScore()
 	return score;
 }
 
+void FlexGlobal::maximiseIsotropy()
+{
+	double sum = 0;
+	double count = 0;
+
+	for (int i = 0; i < _atomGroup->atomCount(); i++)
+	{
+		AtomPtr atom = _atomGroup->atom(i);
+
+		if (!atom->getModel()->isBond())
+		{
+			continue;
+		}
+
+		BondPtr bond = ToBondPtr(atom->getModel());
+		double isoTarget = bond->getMeanSquareDeviation();
+
+		sum += isoTarget;
+		count++;
+	}
+
+	sum /= count;
+	_targetIsoB = sum;
+}
+
 double FlexGlobal::score(void *object)
 {
 	return static_cast<FlexGlobal *>(object)->notStaticScore();

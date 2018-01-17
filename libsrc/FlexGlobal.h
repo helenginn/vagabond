@@ -24,6 +24,7 @@ public:
 
 	static double score(void *object);
 
+	void maximiseIsotropy();
 	void setTargetBFactor(double value)
 	{
 		_targetIsoB = value;
