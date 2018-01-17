@@ -91,48 +91,43 @@ double FlexRegion::getScore()
 	_bonds[0]->propagateChange(bondCount());
 	MoleculePtr molecule = _bonds[0]->getMolecule();
 	PolymerPtr polymer = ToPolymerPtr(molecule);
+	ModelPtr anchor = polymer->getAnchorModel();
 
-	ModelPtr model = polymer->getAnchorModel();
-	mat3x3 baseTensor = model->getRealSpaceTensor();
-	mat3x3 origBaseTensor = make_mat3x3();
+	/* Current tensor for vagabond model */
+	mat3x3 baseTensor = anchor->getRealSpaceTensor();
 	mat3x3 inverseBase = mat3x3_inverse(baseTensor);
 
-	if (model->isAbsolute())
+	/* Original tensor from the PDB */
+	mat3x3 origBaseTensor = make_mat3x3();
+
+	if (anchor->isAbsolute())
 	{
-		origBaseTensor = ToAbsolutePtr(model)->getAtom()->getTensor();
+		origBaseTensor = ToAbsolutePtr(anchor)->getAtom()->getTensor();
 	}
 	else
 	{
 		shout_at_helen("Anchor is not an Absolute!");
 	}
 
-	mat3x3 baseDiff = mat3x3_mult_mat3x3(origBaseTensor, inverseBase);
+	/* Calculate inflation from 'current' to 'original' */
+	mat3x3 inflation = mat3x3_mult_mat3x3(origBaseTensor, inverseBase);
 
 	for (int i = 0; i < bondCount(); i++)
 	{
 		BondPtr checkBond = _bonds[i];
-		
-		AtomPtr minor = checkBond->getMinor();
-		AtomPtr reference = ToAbsolutePtr(model)->getAtom();
+		AtomPtr checkAtom = checkBond->getMinor();
 
-		/* Dealing with our Vagabondage distributions */
+		/* Take the current tensor and inflate it to match anchor inflation */
+		mat3x3 currentTensor = checkBond->getRealSpaceTensor();
+		mat3x3 inflatedCurrent = mat3x3_mult_mat3x3(inflation, currentTensor);
+		mat3x3 currentInverse = mat3x3_inverse(inflatedCurrent);
 
-		mat3x3 actualRefTensor = model->getRealSpaceTensor();
-		mat3x3 actualRefRemainder = mat3x3_mult_mat3x3(baseDiff, actualRefTensor);
-		mat3x3 myActualTensor = checkBond->getRealSpaceTensor();
-		mat3x3 myActualRemainder = mat3x3_mult_mat3x3(baseDiff, myActualTensor);
-		mat3x3 myActualInverse = mat3x3_inverse(myActualRemainder);
-		mat3x3 actualDifference = mat3x3_mult_mat3x3(actualRefRemainder, myActualInverse);
-	//	mat3x3 actualInverse = mat3x3_inverse(actualDifference);
+		/* Take the original tensor which should be somewhat inflated already */
+		mat3x3 origTensor = checkAtom->getTensor();
+		mat3x3 difference = mat3x3_mult_mat3x3(currentInverse, origTensor);
 
-	//	mat3x3 mult = mat3x3_mult_mat3x3(actualInverse, idealDifference);
-	//	mat3x3 diff_inverse = mat3x3_inverse(bond_diff);
-
-	//	mat3x3 mult = mat3x3_mult_mat3x3(diff_inverse, difference);
-
-		// Mult should be identity if it is perfect...
-
-		double diff = mat3x3_diff_from_identity(actualDifference, 1);
+		/* Find how close this is to the identity matrix */
+		double diff = mat3x3_diff_from_identity(difference, 1);
 		score += diff;
 		count++;
 	}
