@@ -439,13 +439,12 @@ void Options::refinementCycle(MoleculePtr molecule, int *count,
 			molecule->refine(crystals[0], type);
 		}
 
-		if (molecule->getClassName() == "Polymer" && (*count == 1))
+		if (type == RefinementFlexibility)
 		{
-			polymer->superimpose();
+			polymer->optimiseTranslationTensor();
 		}
 
-		if (false && molecule->getClassName() == "Polymer" && (*count % 6 == 0)
-			&& type == RefinementFlexibility)
+		if (molecule->getClassName() == "Polymer" && (*count == 1))
 		{
 			polymer->superimpose();
 		}
