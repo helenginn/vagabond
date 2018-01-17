@@ -1033,8 +1033,8 @@ void Polymer::optimiseTranslationTensor()
 	double bFac = getAverageBFactor();
 
 	FlexGlobal target;
-	target.setTargetBFactor(bFac + 1);
 	target.setAtomGroup(AtomGroup::shared_from_this());
+	target.maximiseIsotropy();
 	nelderMead->setEvaluationFunction(FlexGlobal::score, &target);
 	nelderMead->setCycles(20);
 	nelderMead->refine();
