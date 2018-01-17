@@ -49,7 +49,6 @@ void FlexRegion::setup()
 	_strategy = boost::static_pointer_cast<RefinementStrategy>(mead);
 	_strategy->setEvaluationFunction(FlexRegion::score, this);
 	_strategy->setCycles(40);
-//	_strategy->setVerbose(true);
 
 	_strategy->setJobName("flex_region");
 	_strategy->setSilent(false);
