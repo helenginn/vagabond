@@ -40,4 +40,5 @@ sites
 *.app
 
 vagabond
+Makefile
 
