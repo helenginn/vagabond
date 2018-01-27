@@ -7,11 +7,11 @@
 //
 
 #include "Vagabond2GL.h"
-#include "Options.h"
-#include "Crystal.h"
-#include "Bond.h"
-#include "Atom.h"
-#include "Element.h"
+#include "../libsrc/Options.h"
+#include "../libsrc/Crystal.h"
+#include "../libsrc/Bond.h"
+#include "../libsrc/Atom.h"
+#include "../libsrc/Element.h"
 
 void Vagabond2GL::updateAtoms()
 {

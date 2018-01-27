@@ -251,12 +251,18 @@ void AtomGroup::propagateChange()
 {
 	for (int i = 0; i < atomCount(); i++)
 	{
-		if (atom(i)->getModel()->isBond())
-		{
-			ToBondPtr(atom(i)->getModel())->propagateChange(0);
-		}
+		atom(i)->getModel()->propagateChange(0);
 	}
 }
+
+void AtomGroup::refreshPositions()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		atom(i)->getModel()->getFinalPositions();
+	}
+}
+
 
 int AtomGroup::totalElectrons(int *fcWeighted)
 {
@@ -367,7 +373,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 
 		case RefinementFlexibility:
 		scoreType = ScoreTypeModelPos;
-		maxTries = 1;
+		maxTries = 3;
 		degrees = 4;
 		break;
 
@@ -423,7 +429,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 				{
 					FlexRegion flexer;
 					flexer.setup();
-					flexer.addBond(ToBondPtr(bond), 8);
+					flexer.addBond(ToBondPtr(bond), 4);
 					flexer.addSingleBondParameters();
 					flexer.sample();
 					count++;

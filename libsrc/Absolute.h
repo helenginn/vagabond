@@ -53,6 +53,11 @@ public:
 		trim(_resName); to_lower(_resName);
 	}
 
+	virtual void propagateChange(int depth = -1)
+	{
+		_calculated = false;
+	}
+
 	void setAlternativeConformerName(std::string conformer)
 	{
 		_conformer = conformer;
@@ -178,6 +183,11 @@ public:
 	std::vector<vec3> getSphereAngles()
 	{
 		return _sphereAngles;
+	}
+
+	void setAnchorPoint()
+	{
+		_isOfManyPositions = true;
 	}
 protected:
 	static double getExpValue(void *object, double x, double y, double z);

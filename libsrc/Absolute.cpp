@@ -97,11 +97,20 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 {
 	Absolute *me = static_cast<Absolute *>(object);
 	double aniso = 0;
+	double mult = 1;
+	
+	if (me->hasMolecule())
+	{
+		MoleculePtr molecule = me->getMolecule();
+		mult = molecule->getAbsoluteBFacMult();
+	}
 
 	if (me->_usingTensor)
 	{
+		mat3x3 scaledTensor = me->getRealSpaceTensor();
+		mat3x3_mult_scalar(&scaledTensor, mult);
 		vec3 recipVec = make_vec3(x, y, z);
-		mat3x3_mult_vec(me->_tensor, &recipVec);
+		mat3x3_mult_vec(scaledTensor, &recipVec);
 		recipVec.x *= x;
 		recipVec.y *= y;
 		recipVec.z *= z;
@@ -119,7 +128,6 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 	{
 		MoleculePtr molecule = me->getMolecule();
 		double subtract = molecule->getAbsoluteBFacSubtract();
-		double mult = molecule->getAbsoluteBFacMult();
 		bf -= subtract;
 		bf *= mult;
 	}
@@ -214,8 +222,6 @@ std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
 	{
 		(*bondSamples)[i].occupancy /= occTotal;
 	}
-
-	_isOfManyPositions = true;
 
 	return bondSamples;
 }

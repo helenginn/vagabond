@@ -20,7 +20,7 @@
 
 #define MAX_SCATTERING_DSTAR 2.00
 #define ATOM_SAMPLING_COUNT (36)
-#define PROTEIN_SAMPLING (1. / 3.)
+#define PROTEIN_SAMPLING (0.5)
 #define WATER_RADIUS 0.6
 #define FUTURE_MAGIC_ATOMS 12
 
@@ -33,6 +33,9 @@
 #define ToModelPtr(a) (boost::static_pointer_cast<Model>((a)))
 #define ToPolymerPtr(a) (boost::static_pointer_cast<Polymer>((a)))
 #define ToMoleculePtr(a) (boost::static_pointer_cast<Molecule>((a)))
+
+class Notifiable;
+typedef boost::shared_ptr<Notifiable> NotifiablePtr;
 
 class Options;
 typedef boost::shared_ptr<Options> OptionsPtr;

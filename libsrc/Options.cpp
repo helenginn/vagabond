@@ -19,10 +19,15 @@ OptionsPtr Options::options;
 double Options::_kick = 0.01;
 double Options::_dampen = 0.08;
 double Options::_bStart = 1.5;
+double Options::_bMult = 0.6;
+double Options::_minRes = 0.0;
 int Options::_enableTests = false;
 
 Options::Options(int argc, const char **argv)
 {
+	_manual = false;
+	_notify = NULL;
+	_globalCount = 0;
 
 	std::cout << "   _______                                _______\n";
 	std::cout << " |        ---__________________________---       |\n";
@@ -49,7 +54,7 @@ Options::Options(int argc, const char **argv)
 		std::cout << std::endl;
 		std::cout << "Alternatively, see all options:" << std::endl;
 		std::cout << "\tvagabond --help\n" << std::endl;
-		exit(0);
+        return;
 	}
 
 	for (int i = 1; i < argc; i++)
@@ -61,6 +66,11 @@ Options::Options(int argc, const char **argv)
 void Options::run()
 {
 	parse();
+
+    if (arguments.size() <= 1)
+    {
+        return;
+    }
 
 	if (!crystals.size())
 	{
@@ -77,6 +87,8 @@ void Options::run()
 
 		outputCrystalInfo();
 	}
+
+	std::cout << "Running in " << (_manual ? "manual" : "automatic") << " mode." << std::endl;
 
 	if (diffractions.size() == 1)
 	{
@@ -100,18 +112,27 @@ void Options::run()
 			crystals[0]->tiedUpScattering();
 
 			int count = 0;
-			crystals[0]->concludeRefinement(count, data, crystals[0]);
+			crystals[0]->concludeRefinement(count, data);
 
-			refineAll(RefinementModelPos, 3, &count);
-			refineAll(RefinementFlexibility, 20, &count);
-			refineAll(RefinementModelPos, 3, &count);
-			refineAll(RefinementFine, _numCycles, &count);
+			if (!_manual)
+			{
+				refineAll(RefinementModelPos, 3, &count);
+				refineAll(RefinementFlexibility, 20, &count);
+				refineAll(RefinementModelPos, 3, &count);
+				refineAll(RefinementFine, _numCycles, &count);
+			}
+			else if (_notify)
+			{
+				_notify->enable();
+			}
 		}
 	}
 
-	std::cout << std::endl << "**** Finished. ****" << std::endl;
-
-	std::cout << std::endl;
+	if (!_manual)
+	{
+		std::cout << std::endl << "**** Finished. ****" << std::endl;
+		std::cout << std::endl;
+	}
 }
 
 void Options::displayHelp()
@@ -132,6 +153,18 @@ void Options::displayHelp()
 	std::cout << "\tvagabond --with-pdb=start.pdb --with-mtz=start.mtz\n" << std::endl;
 
 	exit(0);
+}
+
+void Options::notifyGUI(bool enable)
+{
+    if (_notify && enable)
+    {
+        _notify->enable();
+    }
+    else if (_notify && !enable)
+    {
+        _notify->disable();
+    }
 }
 
 void Options::parse()
@@ -237,6 +270,20 @@ void Options::parse()
 
 			understood = true;
 		}
+
+
+		prefix = "--min-res=";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			std::string min_string = arg.substr(prefix.size());
+			_minRes = atof(min_string.c_str());
+                        std::cout << "Minimum resolution set to " << _minRes
+                        << " Å." << std::endl;
+
+			understood = true;
+		}
+
 
 		prefix = "--dampen=";
 
@@ -394,7 +441,13 @@ void Options::outputCrystalInfo()
 
 void Options::refineAll(RefinementType type, int numCycles, int *count, bool keepGoing)
 {
+        notifyGUI(false);
+
 	double lastRWork = 200;
+	if (count == NULL)
+	{
+		count = &_globalCount;
+	}
 
 	for (int i = 0; i < numCycles; i++)
 	{
@@ -405,8 +458,8 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool kee
 		}
 
 		(*count)++;
-		double newRWork = crystals[0]->concludeRefinement(*count, diffractions[0],
-														  crystals[0]);
+		double newRWork = crystals[0]->concludeRefinement(*count,
+														  diffractions[0]);
 
 		/* Do we go for another cycle? */
 		if (keepGoing && i + 1 == numCycles && newRWork < lastRWork)
@@ -422,6 +475,62 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool kee
 		lastRWork = newRWork;
 	}
 
+        notifyGUI(true);
+}
+
+void Options::superimposeAll(CrystalPtr crystal)
+{
+	notifyGUI(false);
+
+	if (!crystal)
+	{
+		if (crystalCount())
+		{
+			crystal = crystals[0];
+		}
+		else return;
+	}
+
+	for (int i = 0; i < crystal->moleculeCount(); i++)
+	{
+		MoleculePtr molecule = crystal->molecule(i);
+		if (molecule->isPolymer())
+		{
+			PolymerPtr polymer = ToPolymerPtr(molecule);
+			polymer->superimpose();
+			polymer->propagateChange();
+			polymer->refreshPositions();
+		}
+	}
+
+	_globalCount++;
+	crystal->concludeRefinement(_globalCount, diffractions[0]);
+
+        notifyGUI(true);
+}
+
+void Options::applyBMultiplier()
+{
+    notifyGUI(false);
+    CrystalPtr crystal = crystals[0];
+
+    for (int i = 0; i < crystal->moleculeCount(); i++)
+	{
+		MoleculePtr molecule = crystal->molecule(i);
+		
+		if (!molecule->isPolymer())
+		{
+			std::cout << "Changing B multiplier for HETATMs to: " << _bMult << std::endl;
+			molecule->setAbsoluteBFacMult(_bMult);
+			molecule->propagateChange();
+			molecule->refreshPositions();
+		}
+	}
+
+	_globalCount++;
+	crystal->concludeRefinement(_globalCount, diffractions[0]);
+
+    notifyGUI(true);
 }
 
 void Options::refinementCycle(MoleculePtr molecule, int *count,
@@ -434,14 +543,13 @@ void Options::refinementCycle(MoleculePtr molecule, int *count,
 		PolymerPtr polymer = ToPolymerPtr(molecule);
 		polymer->test();
 
-		if (true)
-		{
-			molecule->refine(crystals[0], type);
-		}
+		molecule->refine(crystals[0], type);
+
+		if (_manual) return;
 
 		if (type == RefinementFlexibility)
 		{
-			polymer->optimiseTranslationTensor();
+		//	polymer->optimiseTranslationTensor();
 		}
 
 		if (molecule->getClassName() == "Polymer" && (*count == 1))

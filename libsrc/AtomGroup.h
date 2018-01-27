@@ -53,7 +53,9 @@ public:
 		return _atoms.size();
 	}
 
-	AtomPtr atom(int i)
+	bool hasAtom(AtomPtr anAtom);
+	
+        AtomPtr atom(int i)
 	{
 		return _atoms[i];
 	}
@@ -99,11 +101,11 @@ public:
 	int conformerCount();
 	std::string conformer(int i);
 	void propagateChange();
+	void refreshPositions();
 protected:
 	AtomGroup();
 	void addAtomsFrom(AtomGroupPtr child);
 	virtual AtomList topLevelAtoms();
-	bool hasAtom(AtomPtr anAtom);
 	int _timesRefined;
 
 	bool isTied()

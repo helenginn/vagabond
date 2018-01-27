@@ -14,6 +14,7 @@ double LocalCC::localCorrelation(FFTPtr fft1, FFTPtr fft2)
 {
 	double sumCC = 0;
 	double count = 0;
+        return 0;
 
 	for (long k = -fft2->nz / 2; k < fft2->nz / 2; k++)
 	{

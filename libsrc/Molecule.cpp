@@ -15,6 +15,7 @@
 #include <iostream>
 #include "fftw3d.h"
 #include "mat3x3.h"
+#include "Options.h"
 
 Molecule::Molecule()
 {
@@ -26,7 +27,7 @@ void Molecule::tieAtomsUp()
 {
 	if (getClassName() != "Polymer")
 	{
-		double mult = 0.2;
+		double mult = Options::getBMult();
 		std::cout << "Setting HETATM B factor multiplier to " << mult <<
 		" for Chain " << getChainID() << std::endl;
 		setAbsoluteBFacMult(mult);

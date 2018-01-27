@@ -332,12 +332,15 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 
 double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 {
+        double highRes = _maxResolution;
+        double lowRes = Options::minRes();
+
 	if (verbose)
 	{
 		std::cout << "*******************************" << std::endl;
 	}
 
-	double rFactor = valueWithDiffraction(data, &r_factor, verbose);
+	double rFactor = valueWithDiffraction(data, &r_factor, verbose, lowRes, highRes);
 
 	if (verbose)
 	{
@@ -354,12 +357,18 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	fourierTransform(1);
 	scaleToDiffraction(data);
 
+
+
 	double rFac = rFactorWithDiffraction(data, true);
 
 	FFTPtr fftData = data->getFFT();
 	double nLimit = std::min(fftData->nx, _fft->nx);
 	nLimit /= 2;
 	std::vector<double> set1, set2;
+
+	double lowRes = Options::minRes();
+        double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
+	double maxRes = (1 / _maxResolution);
 
 	/* symmetry issues */
 	for (int i = -nLimit; i < nLimit; i++)
@@ -374,8 +383,12 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 				double amp = sqrt(fftData->getIntensity(_h, _k, _l));
 				bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
 				long index = _fft->element(i, j, k);
+                                
+                                vec3 ijk = make_vec3(i, j, k);	
+				mat3x3_mult_vec(_real2frac, &ijk);
+				double length = vec3_length(ijk);
 
-				if (amp != amp || isRfree)
+				if (length < minRes || length > maxRes || amp != amp || isRfree)	
 				{
 					_fft->setElement(index, 0, 0);
 					_difft->setElement(index, 0, 0);
@@ -530,8 +543,7 @@ void Crystal::makePDBs(std::string suffix)
  };
 
 
-double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data,
-								 CrystalPtr crystal)
+double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 {
 	std::cout << "*******************************" << std::endl;
 	std::cout << "\tCycle " << cycleNum << std::endl;

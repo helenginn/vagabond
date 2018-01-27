@@ -147,7 +147,7 @@ std::vector<BondSample> Model::getFinalPositions()
 	return copyPos;
 }
 
-void Model::propagateChange(bool activeGroupOnly)
+void Model::propagateChange(int depth)
 {
 	
 }

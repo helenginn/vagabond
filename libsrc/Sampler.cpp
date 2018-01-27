@@ -308,7 +308,9 @@ void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 	}
 
 	_strategy->addParameter(&*bond, Bond::getBendAngle, Bond::setBendAngle,
-							range, interval, "b" + bond->shortDesc());
+							range, interval, "b0" + bond->shortDesc());
+	_strategy->addParameter(&*bond, Bond::getCirclePortion, Bond::setCirclePortion,
+							range, interval, "b1" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }

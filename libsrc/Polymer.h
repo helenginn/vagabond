@@ -90,6 +90,7 @@ public:
 		return _totalMonomers;
 	}
 
+
 	virtual std::string getClassName()
 	{
 		return "Polymer";

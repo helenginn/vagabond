@@ -82,7 +82,7 @@ public:
 	}
 
 	FFTPtr getZeroDistribution();
-	virtual void propagateChange(bool activeGroupOnly = false);
+	virtual void propagateChange(int depth = -1);
 
 	bool isBond()
 	{

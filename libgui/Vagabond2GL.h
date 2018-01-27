@@ -11,9 +11,9 @@
 
 #include <stdio.h>
 #include "GLObject.h"
-#include "shared_ptrs.h"
+#include "../libsrc/shared_ptrs.h"
 #include <map>
-#include "Bond.h"
+#include "../libsrc/Bond.h"
 
 typedef std::map<AtomPtr, std::pair<int, int> > AtomMap;
 typedef std::map<MoleculePtr, int> GLMoleculeMap;

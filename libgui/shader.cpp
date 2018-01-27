@@ -35,7 +35,7 @@
 
 #include <string.h>
 #include <string>
-#include "FileReader.h"
+#include "../libsrc/FileReader.h"
 
 /*
  * Returns a string containing the text in

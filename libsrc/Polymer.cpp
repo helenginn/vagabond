@@ -82,11 +82,11 @@ void Polymer::tieAtomsUp()
 	checkChainContinuity();
 
 	AtomPtr n = getMonomer(_anchorNum)->findAtom("N");
-
 	ModelPtr nModel = n->getModel();
 	if (nModel->isAbsolute())
 	{
 		ToAbsolutePtr(nModel)->setBFactor(_startB);
+		ToAbsolutePtr(nModel)->setAnchorPoint();
 	}
 
 	for (int i = _anchorNum; i < monomerCount(); i++)
@@ -1039,3 +1039,4 @@ void Polymer::optimiseTranslationTensor()
 	nelderMead->setCycles(20);
 	nelderMead->refine();
 }
+

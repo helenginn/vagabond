@@ -242,7 +242,7 @@ void PDBReader::getSymmetry(std::string line)
 {
 	std::string aData, bData, cData, alphaData, betaData, gammaData, spaceGroup;
 
-	if (line.length() < 65)
+	if (line.length() < 57)
 	{
 		shout_at_user("The symmetry line (CRYST1) in the PDB\n"\
 					  "is less than 65 characters and must be\n"\

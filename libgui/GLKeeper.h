@@ -12,7 +12,7 @@
 #include <iostream>
 
 #include "Frameworks.h"
-#include "mat4x4.h"
+#include "../libsrc/mat4x4.h"
 #include <math.h>
 #include <vector>
 #include "Vagabond2GL.h"
@@ -30,6 +30,7 @@ private:
 
 	vec3 _centre;
 	vec3 _translation;
+	vec3 _totalCentroid;
 
     void setupVBOs (void);
     void setupBuffers(void);

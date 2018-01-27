@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include "Frameworks.h"
 #include <vector>
-#include "mat4x4.h"
+#include "../libsrc/mat4x4.h"
 #include <iostream>
 
 const Vertex Vertices[] = {

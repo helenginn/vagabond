@@ -52,13 +52,35 @@ mat4x4 mat4x4_frustum(float left, float right, float top,
 {
 	mat4x4 mat = make_mat4x4();
 
-	mat.vals[0] = 2 / (left - right);
-	mat.vals[4] = -(left + right) / (left - right);
+	float r_width  = 1.0f / (right - left);
+	float r_height = 1.0f / (top - bottom);
+	float r_depth  = 1.0f / (far - near);
+	float x =  2.0f * (r_width);
+	float y =  2.0f * (r_height);
+	float z =  2.0f * (r_depth);
+	float A = (right + left) * r_width;
+	float B = (top + bottom) * r_height;
+	float C = (far + near) * r_depth;
+	mat.vals[0] = x;
+	mat.vals[3] = -A;
+	mat.vals[5] = y;
+	mat.vals[7] = -B;
+	mat.vals[10] = -z;
+	mat.vals[11] = -C;
+	return mat;
+}
+
+mat4x4 mat4x4_ortho(float left, float right, float top,
+					float bottom, float near, float far)
+{
+	mat4x4 mat = make_mat4x4();
+
+	mat.vals[0] = 2 / (right - left);
+	mat.vals[4] = -(left + right) / (right - left);
 	mat.vals[5] = 2 / (top - bottom);
 	mat.vals[7] = -(top + bottom) / (top - bottom);
 	mat.vals[10] = -2 / (far - near);
 	mat.vals[11] = -(far + near) / (far - near);
-	mat.vals[14] = 0;
 	mat.vals[15] = 1;
 
 	return mat;

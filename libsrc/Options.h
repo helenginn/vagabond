@@ -14,15 +14,18 @@
 #include <string>
 #include "shared_ptrs.h"
 #include "Crystal.h"
+#include "Notifiable.h"
 
 class Options
 {
 public:
 	Options(int argc, const char **argv);
+	void run();
 
 	static void setRuntimeOptions(OptionsPtr pointer)
 	{
 		Options::options = pointer;
+		pointer->setManual(true);
 	}
 
 	static OptionsPtr getRuntimeOptions()
@@ -30,7 +33,10 @@ public:
 		return options;
 	}
 
-	void run();
+	void setNotify(Notifiable *notifiable)
+	{
+		_notify = notifiable;
+	}
 
 	size_t crystalCount()
 	{
@@ -52,6 +58,11 @@ public:
 		return _dampen;
 	}
 
+        static double minRes()
+        {
+                return _minRes;
+        }
+
 	static int enableTests()
 	{
 		return _enableTests;
@@ -61,16 +72,36 @@ public:
 	{
 		return _bStart;
 	}
+
+	static double getBMult()
+	{
+		return _bMult;
+	}
+	
+	static void setBMult(double bMult)
+	{
+		_bMult = bMult;
+	}
+	
+	void setManual(bool manual)
+	{
+		_manual = manual;
+	}
+
+	void refineAll(RefinementType type, int numCycles, int *count = NULL,
+				   bool keepGoing = false);
+	void superimposeAll(CrystalPtr crystal = CrystalPtr());
+	void applyBMultiplier();
 private:
 	static OptionsPtr options;
+	Notifiable *_notify;
+        void notifyGUI(bool enable);
 
 	void parse();
 	void displayHelp();
 	void outputCrystalInfo();
 	void refinementCycle(MoleculePtr molecule, int *count,
 						 RefinementType type);
-	void refineAll(RefinementType type, int numCycles, int *count,
-				   bool keepGoing = true);
 	bool parseJoke(std::string arg);
 
 	std::vector<std::string> arguments;
@@ -81,12 +112,17 @@ private:
 	std::vector<DiffractionPtr> diffractions;
 
 	int _numCycles;
+	int _globalCount;
 	bool _tie;
+	bool _manual;
+
 	static double _kick;
 	static double _dampen;
+	static double _bMult;
 	static int _enableTests;
 	static double _bStart;
 	std::string _outputDir;
+        static double _minRes;
 };
 
 #endif /* defined(__vagabond__Options__) */

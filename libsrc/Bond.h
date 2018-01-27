@@ -167,7 +167,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_bondGroups[bond->_activeGroup].magicPhi = angle;
-	}
+        }
 
 	static double getOccupancy(void *object)
 	{
@@ -244,6 +244,9 @@ public:
 	{
 		return _bondGroups[n].atoms[i].circlePortion;
 	}
+
+	static double getCirclePortion(void *object);
+	static void setCirclePortion(void *object, double value);
 
 	void setGeomRatio(int n, int i, double value)
 	{
@@ -342,8 +345,6 @@ public:
 
 	virtual void propagateChange(int depth = -1);
 	std::vector<BondSample> *getManyPositions(BondSampleStyle style);
-
-	std::vector<vec3> fishPositions();
 
 	std::vector<vec3> polymerCorrectedPositions();
 

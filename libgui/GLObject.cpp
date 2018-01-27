@@ -58,8 +58,8 @@ void GLObject::initialisePrograms()
 
 	/* create program object and attach shaders */
 	_program = glCreateProgram();
-	shaderAttachFromFile(_program, GL_VERTEX_SHADER, "Shader.vsh");
-	shaderAttachFromFile(_program, GL_FRAGMENT_SHADER, "Shader.fsh");
+	shaderAttachFromFile(_program, GL_VERTEX_SHADER, "/Users/helenginn/vagabond/vagabond/vagabond/libgui/Shaders/Shader.vsh");
+	shaderAttachFromFile(_program, GL_FRAGMENT_SHADER, "/Users/helenginn/vagabond/vagabond/vagabond/libgui/Shaders/Shader.fsh");
 
 	glBindAttribLocation(_program, 0, "position");
 	glBindAttribLocation(_program, 1, "normal");

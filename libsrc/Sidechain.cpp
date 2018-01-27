@@ -118,12 +118,12 @@ void Sidechain::setInitialDampening()
 
 		Bond::setDampening(&*bond, -0.0);
 
-		double kick = 0.6;
+		double kick = 0.2;
 		std::string id = getMonomer()->getIdentifier();
 
 		if (id == "tyr" || id == "phe" || id == "trp" || id == "his")
 		{
-			kick = 0.3;
+			kick = 0.1;
 		}
 
 		if (bond->isRefinable() && atom(i)->getAtomName() == "CB")

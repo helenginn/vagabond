@@ -31,8 +31,7 @@ class Crystal : public Object, public boost::enable_shared_from_this<Crystal>
 public:
 	Crystal();
 	void addMolecule(MoleculePtr molecule);
-	double concludeRefinement(int cycleNum, DiffractionPtr data,
-							  CrystalPtr crystal);
+	double concludeRefinement(int cycleNum, DiffractionPtr data);
 
 	long int moleculeCount()
 	{
