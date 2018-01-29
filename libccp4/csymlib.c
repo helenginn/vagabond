@@ -29,6 +29,7 @@
 #include "ccp4_utils.h"
 #include "csymlib.h"
 #include "cvecmat.h"
+#include "syminfo.h"
 #include "ccp4_errno.h"
 #include "ccp4_unitcell.h"
 #include "ccp4_general.h"
@@ -73,6 +74,23 @@ CCP4SPG *ccp4spg_load_by_ccp4_spgname(const char *ccp4spgname)
 CCP4SPG *ccp4_spgrp_reverse_lookup(const int nsym1, const ccp4_symop *op1)
 {
   return ccp4spg_load_spacegroup(0, 0, NULL, NULL, nsym1, op1);
+}
+
+char *get_line(char *buffer, int num, char *library)
+{
+    char *ptr = strchr(library, '\n');
+    if (ptr == NULL) printf("Null!\n");
+    if (ptr == NULL) return NULL;
+
+    int total = ptr - library;
+    if (total > 80)
+    {
+        total = 80;
+    }
+
+    memcpy(buffer, library, total * sizeof(char));
+    buffer[total] = 0;
+    return ++ptr;
 }
 
 CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
@@ -139,37 +157,15 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
     }
   }
 
-  /* Open the symop file: */
-  if (!(symopfile = getenv("SYMINFO"))) {
-    if (debug)
-      printf("Environment variable SYMINFO not set ... guessing location of symmetry file. \n");
-    if (!(ccp4dir = getenv("CLIBD"))) {
-      printf("Environment variable CLIBD not set ... big trouble! \n");
-      return NULL;
-    }
-
-    symopfile = ccp4_utils_malloc((strlen(ccp4dir)+22)*sizeof(char));
-    strcpy(symopfile,ccp4_utils_joinfilenames(ccp4dir,"syminfo.lib"));
-    symopfile[strlen(ccp4dir)+21] = '\0';
-    ccp4printf(1," SYMINFO file set to %s \n",symopfile);
-  } else {
-    if (debug) {
-      ccp4printf(1,"\n Spacegroup information obtained from library file: \n");
-      ccp4printf(1," Logical Name: SYMINFO   Filename: %s\n\n",symopfile);
-    }
-  }
-
-  filein = fopen(symopfile,"r");
-  if (!filein) {
-    ccp4_signal(CSYM_ERRNO(CSYMERR_NoSyminfoFile),"ccp4spg_load_spacegroup",NULL); 
-    return NULL;
-  }
-
-  if (!(getenv("SYMINFO"))) free(symopfile);
+  printf("Got here!\n");
 
   parser = ccp4_parse_start(20);
-  if (parser == NULL) 
+  if (parser == NULL)
+  { 
+    printf("Oh no\n");
     ccp4_signal(CSYM_ERRNO(CSYMERR_ParserFail),"ccp4spg_load_spacegroup",NULL);
+  }
+
   /* "=" is used in map asu fields, so remove it as delimiter */
   ccp4_parse_delimiters(parser," \t,",",");
   /* Set some convenient pointers to members of the parser array */
@@ -179,7 +175,12 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
   if (debug) 
     printf(" parser initialised \n");
 
-  while (fgets(filerec,80,filein)) {
+  char *symPtr = (char *)syminfo;
+  while (1)
+  {
+    symPtr = get_line(filerec, 80, symPtr);
+    
+    if (!symPtr) break;
 
     /* If syminfo.lib comes from a DOS platform, and we are on
        unix, need to strip spurious \r character. Note this is
