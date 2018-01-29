@@ -11,6 +11,6 @@
 
 #include "Frameworks.h"
 
-void shaderAttachFromFile(GLuint, GLenum, const char *);
+void shaderAttachFromFile(GLuint program, GLenum type, const char *filePath, bool isString);
 
 #endif /* shader_hpp */

@@ -43,65 +43,75 @@
  */
 static char *shaderLoadSource(const char *filePath)
 {
-	std::string contents = get_file_contents(filePath);
-	return (char *)contents.c_str();
+    std::string contents = get_file_contents(filePath);
+    return (char *)contents.c_str();
 }
 
 /*
  * Returns a shader object containing a shader
  * compiled from the given GLSL shader file.
  */
-static GLuint shaderCompileFromFile(GLenum type, const char *filePath)
+static GLuint shaderCompileFromFile(GLenum type, const char *filePath, bool isString)
 {
-	GLuint shader;
-	GLint length;
-	GLint result;
+    GLuint shader;
+    GLint length;
+    GLint result;
 
-	std::string contents = get_file_contents(filePath);
-	const char *cstr = contents.c_str();
+    const char *cstr = NULL;
+    
+    if (!isString)
+    {
+        std::string contents = get_file_contents(filePath);
+        cstr = contents.c_str();
+        length = (GLint)contents.size();
+    }
+    else
+    {
+        cstr = filePath;
+        length = (GLint)strlen(filePath);
+    }
 
-	/* create shader object, set the source, and compile */
-	shader = glCreateShader(type);
-	length = (GLint)contents.size();
-	glShaderSource(shader, 1, &cstr, &length);
-	glCompileShader(shader);
+    /* create shader object, set the source, and compile */
+    shader = glCreateShader(type);
+    glShaderSource(shader, 1, &cstr, &length);
+    glCompileShader(shader);
 
-	/* make sure the compilation was successful */
-	glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
-	if(result == GL_FALSE) {
-		char *log;
+    /* make sure the compilation was successful */
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
+    if(result == GL_FALSE) {
+        char *log;
 
-		/* get the shader info log */
-		glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
-		log = (char *)malloc(length);
-		glGetShaderInfoLog(shader, length, &result, log);
+        /* get the shader info log */
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &length);
+        log = (char *)malloc(length);
+        glGetShaderInfoLog(shader, length, &result, log);
 
-		/* print an error message and the info log */
-		fprintf(stderr, "shaderCompileFromFile(): Unable to compile %s: %s\n", filePath, log);
-		free(log);
+        /* print an error message and the info log */
+        fprintf(stderr, "shaderCompileFromFile(): Unable to compile %s: %s\n", filePath, log);
+        free(log);
 
-		glDeleteShader(shader);
-		return 0;
-	}
+        glDeleteShader(shader);
+        return 0;
+    }
 
-	return shader;
+    return shader;
 }
 
 /*
  * Compiles and attaches a shader of the
  * given type to the given program object.
  */
-void shaderAttachFromFile(GLuint program, GLenum type, const char *filePath)
+void shaderAttachFromFile(GLuint program, GLenum type, const char *filePath, bool isString)
 {
-	/* compile the shader */
-	GLuint shader = shaderCompileFromFile(type, filePath);
-	if(shader != 0) {
-		/* attach the shader to the program */
-		glAttachShader(program, shader);
+    /* compile the shader */
+    GLuint shader = shaderCompileFromFile(type, filePath, isString);
+    if(shader != 0) {
+        /* attach the shader to the program */
+        glAttachShader(program, shader);
 
-		/* delete the shader - it won't actually be
-		 * destroyed until the program that it's attached
-		 * to has been destroyed */
-		glDeleteShader(shader);
-	}
+        /* delete the shader - it won't actually be
+         * destroyed until the program that it's attached
+         * to has been destroyed */
+        glDeleteShader(shader);
+    }
 }
