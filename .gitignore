@@ -2,6 +2,10 @@
 throwaway*/
 .fftw3f_wisdom
 
+# Qt5
+
+moc_*.cpp
+
 # Prerequisites
 *.d
 
