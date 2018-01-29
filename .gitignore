@@ -1,3 +1,7 @@
+# throwaway folders
+throwaway*/
+.fftw3f_wisdom
+
 # Prerequisites
 *.d
 
@@ -6,6 +10,8 @@
 *.lo
 *.o
 *.Plo
+*.Po
+
 sites
 *.d
 
@@ -40,6 +46,25 @@ sites
 *.out
 *.app
 
+# Vi problems
+*.swp
+
 vagabond
 Makefile
+
+aclocal.m4
+autom4te.cache/
+autoscan.log
+compile
+config.guess
+config.log
+config.status
+config.sub
+configure
+configure.ac
+configure.scan
+depcomp
+install-sh
+ltmain.sh
+.qmake.stash
 
