@@ -33,10 +33,14 @@
 typedef enum
 {
     InstructionTypeNone,
+    InstructionTypeOpenPDB,
+    InstructionTypeOpenMTZ,
     InstructionTypeSuperimpose,
     InstructionTypeRefinePositions,
     InstructionTypeRefineFlexibility,
     InstructionTypeChangeBMult,
+    InstructionTypeRecalculateFFT,
+    InstructionTypeSetOutputDir,
 } InstructionType;
 
 
@@ -46,31 +50,29 @@ class VagWindow : public QMainWindow, public Notifiable
     
 public:
     VagWindow(QWidget *parent = 0, int argc = 0, char *argv[] = NULL);
-
-	/* Buttons down the side */
-    QPushButton *bSuperimpose;
-    QPushButton *bRefinePos;
-    QPushButton *bRefineFlex;
-    QPushButton *bChangeBMult;
-    QPushButton *bExploreMolecule;
-
     ~VagWindow();
-    
-    void makeButtons();
+
     virtual void disable();
     virtual void enable();
     void waitForInstructions();
     void receiveDialogue(DialogueType type, std::string diagString);
-    
+
+    virtual void setMessage(std::string message);
+
 protected:
     virtual void resizeEvent(QResizeEvent *event);
 private slots:
-	void pushSuperimpose();
-	void pushRefinePositions();
-	void pushRefineFlexibility();
-	void pushBMultiplier();
-	void pushExploreMcule();
-	
+    void pushSuperimpose();
+    void pushRefinePositions();
+    void pushRefineFlexibility();
+    void pushBMultiplier();
+    void pushExploreMcule();
+    void recalculateFFT();
+
+    void openPDB();
+    void openMTZ();
+    void setOutput();
+
 private:
     VagabondGLWidget *display;
     QWaitCondition wait;
@@ -79,9 +81,27 @@ private:
     InstructionType _instructionType;
     Dialogue *_myDialogue;
     MoleculeExplorer *_explorer;
+    QFileDialog *_fileDialogue;   
     
+    void updateExplorerButton();
+    QLabel *_lStatus;
+
+    /* Buttons down the side */
+    QPushButton *bSuperimpose;
+    QPushButton *bRefinePos;
+    QPushButton *bRefineFlex;
+    QPushButton *bChangeBMult;
+    QPushButton *bExploreMolecule;
+    QPushButton *bRecalculate;
+
+    std::string _outputDir;
+    std::string _pdbName; 
+    std::string _mtzName;
     int _argc;
     char **_argv;
+
+    void makeMenu();
+    void makeButtons();
 };
 
 #endif /* defined(__Vagabond__VagWindow__) */
