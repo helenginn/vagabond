@@ -53,6 +53,7 @@ sites
 
 # Vi problems
 *.swp
+tags
 
 ./libsrc/vagabond
 vagabond
