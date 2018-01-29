@@ -29,150 +29,156 @@ typedef std::map<std::string, MoleculePtr> MoleculeMap;
 class Crystal : public Object, public boost::enable_shared_from_this<Crystal>
 {
 public:
-	Crystal();
-	void addMolecule(MoleculePtr molecule);
-	double concludeRefinement(int cycleNum, DiffractionPtr data);
+    Crystal();
+    void addMolecule(MoleculePtr molecule);
+    double concludeRefinement(int cycleNum, DiffractionPtr data);
 
-	long int moleculeCount()
-	{
-		return _molecules.size();
-	}
+    long int moleculeCount()
+    {
+        return _molecules.size();
+    }
 
-	MoleculePtr molecule(long int i)
-	{
-		MoleculeMap::iterator it = _molecules.begin();
-		std::advance(it, i);
-		return it->second;
-	}
+    MoleculePtr molecule(long int i)
+    {
+        MoleculeMap::iterator it = _molecules.begin();
+        std::advance(it, i);
+        return it->second;
+    }
 
-	MoleculePtr molecule(std::string chain)
-	{
-		if (_molecules.count(chain))
-		{
-			return _molecules[chain];
-		}
+    MoleculePtr molecule(std::string chain)
+    {
+        if (_molecules.count(chain))
+        {
+            return _molecules[chain];
+        }
 
-		return MoleculePtr();
-	}
+        return MoleculePtr();
+    }
 
-	void setReal2Frac(mat3x3 mat);
-	void setHKL2Real(mat3x3 mat);
+    void setReal2Frac(mat3x3 mat);
+    void setHKL2Real(mat3x3 mat);
 
-	mat3x3 getReal2Frac()
-	{
-		return _real2frac;
-	}
+    mat3x3 getReal2Frac()
+    {
+        return _real2frac;
+    }
 
-	mat3x3 getHKL2Real()
-	{
-		return _hkl2real;
-	}
+    mat3x3 getHKL2Real()
+    {
+        return _hkl2real;
+    }
 
-	FFTPtr getFFT()
-	{
-		return _fft;
-	}
+    FFTPtr getFFT()
+    {
+        return _fft;
+    }
 
-	FFTPtr getDiFFT()
-	{
-		return _difft;
-	}
+    FFTPtr getDiFFT()
+    {
+        return _difft;
+    }
 
-	void setAnchors();
-	void changeAnchors(int newAnchor);
-	void tiedUpScattering();
-	void realSpaceClutter();
-	void writeMillersToFile(DiffractionPtr data, std::string prefix = "");
+    void setAnchors();
+    void changeAnchors(int newAnchor);
+    void tiedUpScattering();
+    void realSpaceClutter();
+    void writeMillersToFile(DiffractionPtr data, std::string prefix = "");
 
-	void fourierTransform(int dir);
-	void scaleToDiffraction(DiffractionPtr data);
-	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
-	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
-								bool verbose = false, double lowRes = 0,
-								double highRes = 0);
-	double getDataInformation(DiffractionPtr data, double partsFo = 2,
-							  double partsFc = 1);
-	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);
+    void fourierTransform(int dir);
+    void scaleToDiffraction(DiffractionPtr data);
+    double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
+    double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
+                                bool verbose = false, double lowRes = 0,
+                                double highRes = 0);
+    double getDataInformation(DiffractionPtr data, double partsFo = 2,
+                              double partsFc = 1);
+    void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);
 
-	void reconfigureUnitCell();
-	void summary();
+    void reconfigureUnitCell();
+    void summary();
 
-	void tieAtomsUp();
-	
-	void setFilename(std::string file)
-	{
-		_filename = file;
-	}
+    void tieAtomsUp();
+    
+    void setFilename(std::string file)
+    {
+        _filename = file;
+    }
 
-	std::string getFilename()
-	{
-		return _filename;
-	}
+    std::string getFilename()
+    {
+        return _filename;
+    }
 
-	void setSpaceGroup(CSym::CCP4SPG *spg)
-	{
-		_spaceGroup = spg;
-	}
+    void setSpaceGroup(CSym::CCP4SPG *spg)
+    {
+        _spaceGroup = spg;
+    }
 
-	void setUnitCell(double a, double b, double c,
-					 double alpha, double beta, double gamma)
-	{
-		_unitCell.clear();
-		_unitCell.push_back(a);
-		_unitCell.push_back(b);
-		_unitCell.push_back(c);
-		_unitCell.push_back(alpha);
-		_unitCell.push_back(beta);
-		_unitCell.push_back(gamma);
-	}
+    void setUnitCell(double a, double b, double c,
+                     double alpha, double beta, double gamma)
+    {
+        _unitCell.clear();
+        _unitCell.push_back(a);
+        _unitCell.push_back(b);
+        _unitCell.push_back(c);
+        _unitCell.push_back(alpha);
+        _unitCell.push_back(beta);
+        _unitCell.push_back(gamma);
+    }
 
-	void setMaxResolution(double maxRes)
-	{
-		_maxResolution = maxRes;
-	}
+    void setMaxResolution(double maxRes)
+    {
+        _maxResolution = maxRes;
+    }
 
-	void addAnchorResidue(int anchor)
-	{
-		_anchorResidues.push_back(anchor);
-		std::cout << "Adding anchor residue " << anchor << " to "
-		<< getFilename() << "." << std::endl;
+    void addAnchorResidue(int anchor)
+    {
+        _anchorResidues.push_back(anchor);
+        std::cout << "Adding anchor residue " << anchor << " to "
+        << getFilename() << "." << std::endl;
 
-	}
+    }
 
-	int totalAnchors()
-	{
-		return _anchorResidues.size();
-	}
+    int totalAnchors()
+    {
+        return _anchorResidues.size();
+    }
 
-	void setOverallBFactor(double b)
-	{
-		_overallFlex = b;
-	}
+    void setOverallBFactor(double b)
+    {
+        _overallFlex = b;
+    }
 
-	double getOverallBFactor()
-	{
-		return _overallFlex;
-	}
+    double getOverallBFactor()
+    {
+        return _overallFlex;
+    }
 
+    std::string agreementSummary();
 private:
-	MoleculeMap _molecules;
-	std::string _filename;
+    MoleculeMap _molecules;
+    std::string _filename;
 
-	std::vector<double> _unitCell;
-	double _firstScale;
-	mat3x3 _hkl2real;
-	mat3x3 _real2frac;
-	CSym::CCP4SPG *_spaceGroup;
-	double _maxResolution;
-	std::vector<int> _anchorResidues;
-	double _overallFlex;
-	double totalToScale();
-	void makePDBs(std::string suffix);
+    std::vector<double> _unitCell;
+    double _firstScale;
+    mat3x3 _hkl2real;
+    mat3x3 _real2frac;
+    CSym::CCP4SPG *_spaceGroup;
+    double _maxResolution;
+    std::vector<int> _anchorResidues;
+    double _overallFlex;
+    double totalToScale();
 
-	void applySymOps();
+    void makePDBs(std::string suffix);
+    void applySymOps();
 
-	FFTPtr _fft;
-	FFTPtr _difft;
+    double _rWork;
+    double _rFree;
+    double _ccWork;
+    double _ccFree;
+
+    FFTPtr _fft;
+    FFTPtr _difft;
 };
 
 #endif /* defined(__vagabond__Crystal__) */

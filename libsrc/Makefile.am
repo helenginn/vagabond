@@ -15,7 +15,9 @@ Crystal.cpp          Model.cpp       Shouter.cpp \
 CSV.cpp              Molecule.cpp    Sidechain.cpp \
 Diffraction.cpp      Monomer.cpp     TextManager.cpp \
 DiffractionMTZ.cpp   Options.cpp     vec3.cpp \
-Distributor.cpp      PDBReader.cpp
+Distributor.cpp      PDBReader.cpp   FlexRegion.cpp \
+FlexGlobal.cpp
+
 
 
 

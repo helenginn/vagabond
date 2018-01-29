@@ -588,8 +588,6 @@ mat3x3 Bond::getMagicMat()
     mat3x3 firstTwizzle = mat3x3_closest_rot_mat(magicAxis, zAxis, xAxis);
     mat3x3 multed = mat3x3_mult_mat3x3(rot, firstTwizzle);
 
-    std::cout << mat3x3_desc(rot) << std::endl;
-
     return multed;
 }
 

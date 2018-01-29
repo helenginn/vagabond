@@ -37,7 +37,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 	if (!canRefine()) return;
 
-	if (rType != RefinementFine)
+	if (rType != RefinementFine || rType != RefinementFlexibility)
 	{
 		return;
 	}
@@ -65,18 +65,6 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		std::cout << "conformer " << conformer <<
 		" " << conformerScore << std::endl;
 	}
-
-	/*
-	setScoreType(ScoreTypeRFactor);
-	addRotamer(this, 4.0, 0.05);
-
-	//	 setSilent();
-
-	setJobName("rotamer_" + getMonomer()->getResCode()
-			   + i_to_str(getMonomer()->getResidueNum()));
-
-	sample();
-	 */
 }
 
 void Sidechain::fixBackboneTorsions(AtomPtr betaTorsion)

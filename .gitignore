@@ -1,6 +1,7 @@
 # throwaway folders
 throwaway*/
 .fftw3f_wisdom
+libtool
 
 # Qt5
 
@@ -53,6 +54,7 @@ sites
 # Vi problems
 *.swp
 
+./libsrc/vagabond
 vagabond
 Makefile
 
@@ -71,4 +73,5 @@ depcomp
 install-sh
 ltmain.sh
 .qmake.stash
+missing
 

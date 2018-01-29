@@ -88,10 +88,15 @@ public:
 		_manual = manual;
 	}
 
+        void statusMessage(std::string message);
+        void agreementSummary();
 	void refineAll(RefinementType type, int numCycles, int *count = NULL,
 				   bool keepGoing = false);
 	void superimposeAll(CrystalPtr crystal = CrystalPtr());
 	void applyBMultiplier();
+        void openPDB(std::string pdbName);
+        void openMTZ(std::string mtzName);
+        void recalculateFFT();
 private:
 	static OptionsPtr options;
 	Notifiable *_notify;

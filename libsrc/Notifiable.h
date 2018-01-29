@@ -9,6 +9,8 @@
 #ifndef __Vagabond__Notifiable__
 #define __Vagabond__Notifiable__
 
+#include <string>
+
 class Notifiable
 {
 public:
@@ -27,7 +29,13 @@ public:
         _enabled = false;
     }
 
+    virtual void setMessage(std::string message)
+    {
+        _message = message;
+    }
+
 private:
+    std::string _message;
     bool _enabled;
 };
 
