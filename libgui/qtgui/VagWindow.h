@@ -38,6 +38,7 @@ typedef enum
     InstructionTypeSuperimpose,
     InstructionTypeRefinePositions,
     InstructionTypeRefineFlexibility,
+    InstructionTypeRefineDensity,
     InstructionTypeChangeBMult,
     InstructionTypeRecalculateFFT,
     InstructionTypeSetOutputDir,
@@ -67,6 +68,7 @@ private slots:
     void pushRefineFlexibility();
     void pushBMultiplier();
     void pushExploreMcule();
+    void pushRefineDensity();
     void recalculateFFT();
 
     void openPDB();
@@ -93,6 +95,7 @@ private:
     QPushButton *bChangeBMult;
     QPushButton *bExploreMolecule;
     QPushButton *bRecalculate;
+    QPushButton *bRefineDensity;
 
     std::string _outputDir;
     std::string _pdbName; 

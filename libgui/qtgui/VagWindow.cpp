@@ -54,12 +54,17 @@ void VagWindow::makeButtons()
     bRefineFlex->setEnabled(false);
     connect(bRefineFlex, SIGNAL(clicked()), this, SLOT(pushRefineFlexibility()));
 
+    bRefineDensity = new QPushButton("Refine sidechains to density", this);
+    bRefineDensity->setGeometry(700, 150, 200, 50);
+    bRefineDensity->setEnabled(false);
+    connect(bRefineDensity, SIGNAL(clicked()), this, SLOT(pushRefineDensity()));
+
     bRecalculate = new QPushButton("Recalculate FFT", this);
-    bRecalculate->setGeometry(700, 150, 200, 50);
+    bRecalculate->setGeometry(700, 200, 200, 50);
     bRecalculate->setEnabled(false);
     connect(bRecalculate, SIGNAL(clicked()), this, SLOT(recalculateFFT()));    
     bChangeBMult = new QPushButton("Set hetatm B multiplier", this);
-    bChangeBMult->setGeometry(700, 200, 200, 50);
+    bChangeBMult->setGeometry(700, 250, 200, 50);
     bChangeBMult->setEnabled(false);
     connect(bChangeBMult, SIGNAL(clicked()), this, SLOT(pushBMultiplier()));
     
@@ -155,7 +160,11 @@ void VagWindow::waitForInstructions()
             case InstructionTypeRefineFlexibility:
             options->refineAll(RefinementFlexibility, 1);
             break;
-        
+
+            case InstructionTypeRefineDensity: 
+            options->refineAll(RefinementFine, 1);
+            break;
+
             case InstructionTypeChangeBMult:
             options->applyBMultiplier();
             break;
@@ -194,6 +203,7 @@ void VagWindow::enable()
     bChangeBMult->setEnabled(true);
     bExploreMolecule->setEnabled(true);
     bRecalculate->setEnabled(true);
+    bRefineDensity->setEnabled(true);
 }
 
 void VagWindow::disable()
@@ -204,6 +214,7 @@ void VagWindow::disable()
     bChangeBMult->setEnabled(false);
     bExploreMolecule->setEnabled(false);
     bRecalculate->setEnabled(false);
+    bRefineDensity->setEnabled(false);
 }
 
 void VagWindow::resizeEvent(QResizeEvent *event)
@@ -247,6 +258,12 @@ void VagWindow::pushBMultiplier()
 void VagWindow::pushRefineFlexibility()
 {
     _instructionType = InstructionTypeRefineFlexibility;
+    wait.wakeAll();
+}
+
+void VagWindow::pushRefineDensity()
+{
+    _instructionType = InstructionTypeRefineDensity;
     wait.wakeAll();
 }
 
@@ -385,7 +402,6 @@ void VagWindow::setOutput()
 void VagWindow::setMessage(std::string message)
 {
     Notifiable::setMessage(message);
-
     _lStatus->setText(QString::fromStdString(message));
 }
 
@@ -394,6 +410,11 @@ VagWindow::~VagWindow()
     delete bSuperimpose;
     delete bRefinePos;
     delete bRefineFlex;
+    delete bExploreMolecule;
+    delete bChangeBMult;
+    delete bRecalculate;
+    delete display;
     delete _myDialogue;
+    delete _fileDialogue;
     delete _explorer;
 }
