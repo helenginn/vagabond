@@ -106,7 +106,7 @@ private:
 	void displayHelp();
 	void outputCrystalInfo();
 	void refinementCycle(MoleculePtr molecule, int *count,
-						 RefinementType type);
+                             RefinementType type);
 	bool parseJoke(std::string arg);
 
 	std::vector<std::string> arguments;
