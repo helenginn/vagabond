@@ -611,12 +611,31 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
     mat3x3 magicMat = getMagicMat();
 
     vec3 averageMinorPos = make_vec3(0, 0, 0);
+    vec3 averageBondDir = make_vec3(0, 0, 0);
 
     for (int i = 0; i < prevs->size(); i++)
     {
+        double torsionAngle = (*prevs)[i].torsion + circleAdd;
+        
         averageMinorPos = vec3_add_vec3(averageMinorPos, (*prevs)[i].start);
+        mat3x3 oldBasis = (*prevs)[i].basis;
+        vec3 prevMinorPos = (*prevs)[i].start;
+        vec3 prevHeavyPos = (*prevs)[i].old_start;
+
+        vec3 myCurrentPos = positionFromTorsion(oldBasis, torsionAngle,
+                                                ratio, prevMinorPos);
+        mat3x3 newBasis = nextBond->makeTorsionBasis(prevHeavyPos, prevMinorPos,
+                                                     myCurrentPos, none);
+
+        vec3 nextCurrentPos;
+        nextCurrentPos = nextBond->positionFromTorsion(newBasis, myTorsion,
+                                                       nextRatio, myCurrentPos);
+        vec3 bondDir = vec3_subtract_vec3(nextCurrentPos, myCurrentPos);
+        vec3_set_length(&bondDir, 1.);
+        averageBondDir = vec3_add_vec3(averageBondDir, bondDir);
     }
 
+    vec3_mult(&averageBondDir, 1 / (double)prevs->size());
     vec3_mult(&averageMinorPos, 1 / (double)prevs->size());
 
     for (int i = 0; i < prevs->size(); i++)
@@ -666,7 +685,8 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 
         double rotAngle = 0;
 
-        mat3x3_closest_rot_mat(nextBondVec, nextPerfectVec, myBondVec, &rotAngle);
+        /* Find the best angle for dampening */
+        mat3x3_closest_rot_mat(nextBondVec, averageBondDir, myBondVec, &rotAngle);
 
         if (rotAngle != rotAngle)
         {
