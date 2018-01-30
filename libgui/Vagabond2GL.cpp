@@ -182,11 +182,20 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
                     break;
                 }
 
+
                 vec3 minStart = minBonds[j];
+                vec3 normal = vec3_subtract_vec3(minStart, majStart);
+                vec3_set_length(&normal, 1);
+                GLfloat glNorm[3];
+                glNorm[0] = normal.x;
+                glNorm[1] = normal.y;
+                glNorm[2] = normal.z;
+
                 Vertex vertex;
                 vertex.pos[0] = majStart.x;
                 vertex.pos[1] = majStart.y;
                 vertex.pos[2] = majStart.z;
+                memcpy(vertex.normal, &glNorm, 3 * sizeof(GLfloat));
                 setVertexColour(major, &vertex);
                 _vertices.push_back(vertex);
 
@@ -194,6 +203,7 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
                 vertex.pos[0] = (minStart.x + majStart.x) / 2;
                 vertex.pos[1] = (minStart.y + majStart.y) / 2;
                 vertex.pos[2] = (minStart.z + majStart.z) / 2;
+                memcpy(vertex.normal, &glNorm, 3 * sizeof(GLfloat));
                 _vertices.push_back(vertex);
                 setVertexColour(atom, &vertex);
                 _vertices.push_back(vertex);
@@ -202,6 +212,7 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
                 vertex.pos[0] = minStart.x;
                 vertex.pos[1] = minStart.y;
                 vertex.pos[2] = minStart.z;
+                memcpy(vertex.normal, &glNorm, 3 * sizeof(GLfloat));
                 _vertices.push_back(vertex);
                 _indices.push_back(count);
                 _indices.push_back(count + 1);
