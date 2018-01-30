@@ -576,7 +576,7 @@ mat3x3 Bond::getMagicMat()
     double phi = _bondGroups[_activeGroup].magicPhi;
     double psi = _bondGroups[_activeGroup].magicPsi;
 
-    if (phi != 0 && psi != 0)
+    if (phi != 0 || psi != 0)
     {
         rot = mat3x3_rot_from_angles(phi, psi);
     }
