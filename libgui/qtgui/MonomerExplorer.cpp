@@ -34,6 +34,11 @@ void MonomerExplorer::populateList()
         std::cout << "Warning: no monomer!" << std::endl;
     }
 
+    if (!_monomer->atomCount())
+    {
+        return;
+    }
+
     for (int i = 0; i < _monomer->atomCount(); i++)
     {
         AtomPtr atom = _monomer->atom(i);
@@ -89,15 +94,15 @@ void MonomerExplorer::clickedAtomListItem()
         double torsion = rad2deg(Bond::getTorsion(&*bond));
         QString torsionText = QString::number(torsion);
 
-        double kick = Bond::getTorsionBlur(&*bond);
-        QString kickText = QString::fromStdString(f_to_str(kick, 3));
-
         double dampen = Bond::getDampening(&*bond);
         QString dampenText = QString::fromStdString(f_to_str(dampen, 3));
 
         makeLabelAndEdit(this, &_lTorsion, &_tTorsion, 1, "Torsion (º):",
                          torsionText, enabledBond);        
         _tTorsion->setSetterAndObject(&*bond, Bond::setTorsion, true);
+
+        double kick = Bond::getTorsionBlur(&*bond);
+        QString kickText = QString::fromStdString(f_to_str(kick, 3));
 
         makeLabelAndEdit(this, &_lKick, &_tKick, 2, "Kick:", kickText, enabledBond);
         _tKick->setSetterAndObject(&*bond, Bond::setTorsionBlur);
