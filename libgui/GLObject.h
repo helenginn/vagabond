@@ -88,6 +88,12 @@ public:
 	}
 
 	vec3 fixCentroid(vec3 newCentroid);
+
+        vec3 transformPosByModel(vec3 pos)
+        {
+            vec3 newPos = mat4x4_mult_vec(modelMat, pos);
+            return newPos;
+        }
 protected:
 	mat4x4 projMat;
 	mat4x4 modelMat;

@@ -68,6 +68,16 @@ void GLKeeper::updateCamera(void)
     _translation = make_vec3(0, 0, 0);
 }
 
+void GLKeeper::focusOnPosition(vec3 pos)
+{
+    vec3 newPos = transformPosByModel(pos);
+    std::cout << "Matrix: " << mat4x4_desc(modelMat) << std::endl;
+    std::cout << vec3_desc(pos) << " to " << vec3_desc(newPos) << std::endl;
+    vec3_mult(&newPos, -1);
+    newPos.z -= 30;
+
+    _translation = vec3_add_vec3(_translation, newPos);
+}
 
 GLKeeper::GLKeeper(int newWidth, int newHeight)
 {

@@ -50,6 +50,7 @@ public:
 
     virtual void render(void);
     void cleanup(void);
+    void focusOnPosition(vec3 pos);    
     
     void rotateAngles(float alpha, float beta, float gamma);
     
