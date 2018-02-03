@@ -29,9 +29,9 @@ vec3 mat4x4_mult_vec(struct mat4x4 mat, struct vec3 vec)
 {
 	struct vec3 v;
 
-	v.x = mat.vals[0] * vec.x + mat.vals[1] * vec.y + mat.vals[2] * vec.z + mat.vals[3];
-	v.y = mat.vals[4] * vec.x + mat.vals[5] * vec.y + mat.vals[6] * vec.z + mat.vals[7];
-	v.z = mat.vals[8] * vec.x + mat.vals[9] * vec.y + mat.vals[10] * vec.z + mat.vals[11];
+	v.x = mat.vals[0] * vec.x + mat.vals[4] * vec.y + mat.vals[8] * vec.z + mat.vals[12];
+	v.y = mat.vals[1] * vec.x + mat.vals[5] * vec.y + mat.vals[9] * vec.z + mat.vals[13];
+	v.z = mat.vals[2] * vec.x + mat.vals[6] * vec.y + mat.vals[10] * vec.z + mat.vals[14];
 
 	return v;
 }
