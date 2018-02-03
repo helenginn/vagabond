@@ -14,8 +14,6 @@
 #define BACKGROUND_COLOR_GREEN 0
 #define BACKGROUND_COLOR_BLUE 0
 
-//#define SETUP_BUFFERS
-
 #include "GLKeeper.h"
 #include "../libsrc/vec3.h"
 
@@ -24,11 +22,11 @@ bool GLKeeper::everMovedMouse = false;
 void GLKeeper::setupCamera(void)
 {
     _translation = make_vec3(0, 0, START_Z);
+    _totalCentroid = make_vec3(0, 0, 0);
+    _centre = make_vec3(0, 0, 0);
     camAlpha = 0;
     camBeta = 0;
     camGamma = 0;
-    _totalCentroid = make_vec3(0, 0, 0);
-    _centre = make_vec3(0, 0, 0);
     zNear = 10;
     zFar = 100;
     modelMat = make_mat4x4();
@@ -38,7 +36,8 @@ void GLKeeper::setupCamera(void)
     if (zNear <= 0.1) correctedNear = 0.1;
     double side = 0.5;
     float aspect = height / width;
-    projMat = mat4x4_frustum(side, -side, side * aspect, -side * aspect, correctedNear, zFar);
+    projMat = mat4x4_frustum(side, -side, side * aspect, -side * aspect,
+                             correctedNear, zFar);
 
     updateCamera();
 }
