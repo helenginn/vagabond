@@ -22,611 +22,639 @@
 
 Sampler::Sampler()
 {
-	_mock = false;
-	_joint = false;
-	_scoreType = ScoreTypeCorrel;
-	_refinedMagicAxisCount = 0;
-	_overallFlex = 0;
-	_silent = false;
+    _mock = false;
+    _joint = false;
+    _scoreType = ScoreTypeCorrel;
+    _refinedMagicAxisCount = 0;
+    _overallFlex = 0;
+    _silent = false;
 }
 
 void Sampler::addAtomsForBond(BondPtr firstBond, int k)
 {
-	std::vector<BondPtr> extraTorsionBonds;
-	extraTorsionBonds.push_back(firstBond);
+    std::vector<BondPtr> extraTorsionBonds;
+    extraTorsionBonds.push_back(firstBond);
 
-	for (int i = 0; i < extraTorsionBonds.size(); i++)
-	{
-		BondPtr bond = extraTorsionBonds[i];
-		addSampled(bond->getMinor());
+    for (int i = 0; i < extraTorsionBonds.size(); i++)
+    {
+        BondPtr bond = extraTorsionBonds[i];
+        addSampled(bond->getMinor());
 
-		for (int j = 0; j < bond->downstreamAtomCount(k); j++)
-		{
-			AtomPtr downAtom = bond->downstreamAtom(k, j);
-			addSampled(downAtom);
+        for (int j = 0; j < bond->downstreamAtomCount(k); j++)
+        {
+            AtomPtr downAtom = bond->downstreamAtom(k, j);
+            addSampled(downAtom);
 
-			if (downAtom->getModel()->isBond())
-			{
-				BondPtr downBond = ToBondPtr(downAtom->getModel());
-			}
-		}
+            if (downAtom->getModel()->isBond())
+            {
+                BondPtr downBond = ToBondPtr(downAtom->getModel());
+            }
+        }
 
-		for (int j = 0; j < bond->extraTorsionSampleCount(k); j++)
-		{
-			addSampled(bond->extraTorsionSample(k, j));
-		}
+        for (int j = 0; j < bond->extraTorsionSampleCount(k); j++)
+        {
+            addSampled(bond->extraTorsionSample(k, j));
+        }
 
-		k = 0;
-	}
+        k = 0;
+    }
 }
 
 BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
-								 double range, double interval, bool addAngle)
+                                 double range, double interval, bool addAngle,
+                                 bool addFlex)
 {
-	bond->setActiveGroup(k);
+    bond->setActiveGroup(k);
 
-	reportInDegrees();
-	setScoreType(ScoreTypeCorrel);
+    reportInDegrees();
+    setScoreType(ScoreTypeCorrel);
 
-	setJobName("torsion_set_" + bond->shortDesc() + "_g" +
-			   i_to_str(k));
+    setJobName("torsion_set_" + bond->shortDesc() + "_g" +
+               i_to_str(k));
 
-	addSampled(bond->getMajor());
-	addTorsion(bond, deg2rad(range), deg2rad(interval));
+    addSampled(bond->getMajor());
+    addTorsion(bond, deg2rad(range), deg2rad(interval));
 
-	if (addAngle && bond->getRefineBondAngle())
-	{
-		addBendAngle(bond, deg2rad(0.01), deg2rad(0.001));
-	}
+    if (addAngle && bond->getRefineBondAngle())
+    {
+        addBendAngle(bond, deg2rad(0.01), deg2rad(0.001));
+    }
 
-	addAtomsForBond(bond, k);
+    if (addFlex)
+    {
+        addTorsionBlur(bond, 0.5, 0.001);
+        addDampening(bond, 0.25, 0.001);
+        addMagicAngle(bond, deg2rad(20), 0.001);
+    }
 
-	BondPtr returnBond = BondPtr();
+    addAtomsForBond(bond, k);
 
-	int bondCount = 1;
+    BondPtr returnBond = BondPtr();
 
-	for (int i = 0; i < bondNum; i++)
-	{
-		if (!bond->downstreamAtomGroupCount() || !bond->downstreamAtomCount(k) ||
-			!bond->isRefinable())
-		{
-			/* No hope! Give up! */
-			break;
-		}
+    int bondCount = 1;
 
-		int trial = 0;
+    for (int i = 0; i < bondNum; i++)
+    {
+        if (!bond->downstreamAtomGroupCount() || !bond->downstreamAtomCount(k) ||
+            !bond->isRefinable())
+        {
+            /* No hope! Give up! */
+            break;
+        }
 
-		AtomPtr nextAtom = bond->downstreamAtom(k, trial);
-		int totalAtoms = bond->downstreamAtomCount(k);
+        int trial = 0;
 
-		BondPtr nextBond = boost::static_pointer_cast<Bond>(nextAtom->getModel());
+        AtomPtr nextAtom = bond->downstreamAtom(k, trial);
+        int totalAtoms = bond->downstreamAtomCount(k);
 
-		/* In case the downstream atom has no future, get whatever
-		 downstream atom has a refinable future.
-		 Prioritise 0th bond. */
-		while (nextAtom && !nextBond->isRefinable())
-		{
-			trial++;
+        BondPtr nextBond = boost::static_pointer_cast<Bond>(nextAtom->getModel());
 
-			/* No more, give up */
-			if (trial >= totalAtoms)
-			{
-				break;
-			}
+        /* In case the downstream atom has no future, get whatever
+         downstream atom has a refinable future.
+         Prioritise 0th bond. */
+        while (nextAtom && !nextBond->isRefinable())
+        {
+            trial++;
 
-			nextAtom = bond->downstreamAtom(k, trial);
-			nextBond = boost::static_pointer_cast<Bond>(nextAtom->getModel());
-		}
+            /* No more, give up */
+            if (trial >= totalAtoms)
+            {
+                break;
+            }
 
-		/* Now if we have a better bond, go forth */
-		if (nextAtom && nextBond->isRefinable())
-		{
-			if (!returnBond)
-			{
-				returnBond = nextBond;
-			}
+            nextAtom = bond->downstreamAtom(k, trial);
+            nextBond = boost::static_pointer_cast<Bond>(nextAtom->getModel());
+        }
 
-			addTorsion(nextBond, deg2rad(range), deg2rad(interval));
+        /* Now if we have a better bond, go forth */
+        if (nextAtom && nextBond->isRefinable())
+        {
+            if (!returnBond)
+            {
+                returnBond = nextBond;
+            }
 
-			if (addAngle && nextBond->getRefineBondAngle())
-			{
-				addBendAngle(nextBond, deg2rad(0.01), deg2rad(0.001));
-			}
+            addTorsion(nextBond, deg2rad(range), deg2rad(interval));
 
-			addAtomsForBond(nextBond, 0);
-		}
+            if (addAngle && nextBond->getRefineBondAngle())
+            {
+                addBendAngle(nextBond, deg2rad(0.01), deg2rad(0.001));
+            }
 
-		if (!nextBond->isRefinable())
-		{
-			break;
-		}
+            if (addFlex)
+            {
+                addTorsionBlur(nextBond, 0.5, 0.001);
+                addDampening(nextBond, 0.25, 0.001);
+                addMagicAngle(nextBond, deg2rad(20), 0.001);
+            }
 
-		k = 0;
-		bond = nextBond;
-		bondCount++;
-	}
+            addAtomsForBond(nextBond, 0);
+        }
 
-	if (bondCount <= 2)
-	{
-	//	return BondPtr();
-	}
+        if (!nextBond->isRefinable())
+        {
+            break;
+        }
 
-	return returnBond;
+        k = 0;
+        bond = nextBond;
+        bondCount++;
+    }
+
+    if (bondCount <= 2)
+    {
+    //    return BondPtr();
+    }
+
+    return returnBond;
 }
 
 void Sampler::setupSnake()
 {
-	_strategy = RefinementStrategyPtr(new RefinementSnake());
-	RefinementSnakePtr snake = boost::static_pointer_cast<RefinementSnake>(_strategy);
-	snake->setParentSampler(this);
+    _strategy = RefinementStrategyPtr(new RefinementSnake());
+    RefinementSnakePtr snake = boost::static_pointer_cast<RefinementSnake>(_strategy);
+    snake->setParentSampler(this);
 }
 
 void Sampler::setupGrid()
 {
-	_strategy = RefinementStrategyPtr(new RefinementGridSearch());
-	_strategy->setEvaluationFunction(Sampler::score, this);
+    _strategy = RefinementStrategyPtr(new RefinementGridSearch());
+    _strategy->setEvaluationFunction(Sampler::score, this);
 }
 
 void Sampler::setupNelderMead()
 {
-	_strategy = RefinementStrategyPtr(new NelderMead());
-	_strategy->setEvaluationFunction(Sampler::score, this);
-	_strategy->setCycles(20);
+    _strategy = RefinementStrategyPtr(new NelderMead());
+    _strategy->setEvaluationFunction(Sampler::score, this);
+    _strategy->setCycles(20);
 
 }
 
 void Sampler::addOverallKickAndDampen(PolymerPtr polymer)
 {
-	_strategy->addParameter(&*polymer, Polymer::getBackboneDampening, Polymer::setBackboneDampening, 0.02, 0.02, "dampen");
-//	_strategy->addParameter(&*polymer, Polymer::getInitialKick, Polymer::setInitialKick, 0.05, 0.02, "kick");
+    _strategy->addParameter(&*polymer, Polymer::getBackboneDampening, Polymer::setBackboneDampening, 0.02, 0.02, "dampen");
+//    _strategy->addParameter(&*polymer, Polymer::getInitialKick, Polymer::setInitialKick, 0.05, 0.02, "kick");
 }
 
 void Sampler::addSidechainDampen(PolymerPtr polymer)
 {
-//	_strategy->addParameter(&*polymer, Polymer::getSidechainDampening, Polymer::setSidechainDampening, 0.02, 0.01, "side_dampen");
-//	_strategy->addParameter(&*polymer, Polymer::getSideKick, Polymer::setSideKick, 0.02, 0.01, "side_kick");
+//    _strategy->addParameter(&*polymer, Polymer::getSidechainDampening, Polymer::setSidechainDampening, 0.02, 0.01, "side_dampen");
+//    _strategy->addParameter(&*polymer, Polymer::getSideKick, Polymer::setSideKick, 0.02, 0.01, "side_kick");
 }
 
 void Sampler::addOccupancy(BondPtr bond, double range, double interval)
 {
-	//	double number = fabs(range / interval);
-	_strategy->addParameter(&*bond, Bond::getOccupancy, Bond::setOccupancy,
-							range, interval,
-							"occupancy");
+    //    double number = fabs(range / interval);
+    _strategy->addParameter(&*bond, Bond::getOccupancy, Bond::setOccupancy,
+                            range, interval,
+                            "occupancy");
 
-	_bonds.push_back(bond);
+    _bonds.push_back(bond);
 }
 
 void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
 {
-	int step = (from < to) ? 1 : -1;
+    int step = (from < to) ? 1 : -1;
 
-	for (int i = from - 1; i != to - 1; i += step)
-	{
-		if (!polymer->getMonomer(i))
-		{
-			continue;
-		}
+    for (int i = from - 1; i != to - 1; i += step)
+    {
+        if (!polymer->getMonomer(i))
+        {
+            continue;
+        }
 
-		std::string ramaAtom = "N";
-		std::string peptideAtom = "C";
+        std::string ramaAtom = "N";
+        std::string peptideAtom = "C";
 
-		if (polymer->getAnchor() >= polymer->getMonomer(i)->getResidueNum())
-		{
-			ramaAtom = "C";
-			peptideAtom = "N";
-		}
+        if (polymer->getAnchor() >= polymer->getMonomer(i)->getResidueNum())
+        {
+            ramaAtom = "C";
+            peptideAtom = "N";
+        }
 
-		reportInDegrees();
-		BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
-		AtomPtr ca = backbone->findAtom("CA");
-		AtomPtr rama = backbone->findAtom(ramaAtom);
-		AtomPtr peptide = backbone->findAtom(peptideAtom);
-		std::vector<AtomPtr> atoms;
+        reportInDegrees();
+        BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
+        AtomPtr ca = backbone->findAtom("CA");
+        AtomPtr rama = backbone->findAtom(ramaAtom);
+        AtomPtr peptide = backbone->findAtom(peptideAtom);
+        std::vector<AtomPtr> atoms;
 
-		BondPtr caBond = ToBondPtr(ca->getModel());
+        BondPtr caBond = ToBondPtr(ca->getModel());
 
-		BondPtr ramaBond = ToBondPtr(rama->getModel());
-		BondPtr peptideBond = ToBondPtr(peptide->getModel());
+        BondPtr ramaBond = ToBondPtr(rama->getModel());
+        BondPtr peptideBond = ToBondPtr(peptide->getModel());
 
 
-		bool last = (i == to - 1 - step);
+        bool last = (i == to - 1 - step);
 
-		if (!last)
-		{
-			addTorsion(peptideBond, ANGLE_SAMPLING, deg2rad(0.05));
-			addTorsion(ramaBond, ANGLE_SAMPLING, deg2rad(0.05));
-			addTorsion(caBond, ANGLE_SAMPLING, deg2rad(0.05));
-		}
-		else
-		{
-			addTorsion(ramaBond, ANGLE_SAMPLING, deg2rad(0.05));
-			addTorsion(caBond, ANGLE_SAMPLING, deg2rad(0.05));
-		}
-	}
+        if (!last)
+        {
+            addTorsion(peptideBond, ANGLE_SAMPLING, deg2rad(0.05));
+            addTorsion(ramaBond, ANGLE_SAMPLING, deg2rad(0.05));
+            addTorsion(caBond, ANGLE_SAMPLING, deg2rad(0.05));
+        }
+        else
+        {
+            addTorsion(ramaBond, ANGLE_SAMPLING, deg2rad(0.05));
+            addTorsion(caBond, ANGLE_SAMPLING, deg2rad(0.05));
+        }
+    }
 }
 
 void Sampler::addTorsion(BondPtr bond, double range, double interval)
 {
-	if (!bond || !bond->isBond())
-	{
-		return;
-	}
+    if (!bond || !bond->isBond())
+    {
+        return;
+    }
 
-	if (!bond->isRefinable())
-	{
-		return;
-	}
+    if (!bond->isRefinable())
+    {
+        return;
+    }
 
-	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
-							range, interval,
-							"t" + bond->shortDesc());
+    _strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
+                            range, interval,
+                            "t" + bond->shortDesc());
 
 
-	_bonds.push_back(bond);
+    _bonds.push_back(bond);
 }
 
 void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
 {
-	if (!bond) return;
+    if (!bond) return;
 
-	_strategy->addParameter(&*bond, Bond::getTorsionBlur, Bond::setTorsionBlur,
-							range, interval, "b" + bond->shortDesc());
+    _strategy->addParameter(&*bond, Bond::getTorsionBlur, Bond::setTorsionBlur,
+                            range, interval, "b" + bond->shortDesc());
 
-	_bonds.push_back(bond);
+    _bonds.push_back(bond);
 }
 
 void Sampler::addBondLength(BondPtr bond, double range, double interval)
 {
-	//	double number = fabs(range / interval);
-	_strategy->addParameter(&*bond, Bond::getBondLength,
-							Bond::setBondLength, range,
-							interval, "bond_length");
+    //    double number = fabs(range / interval);
+    _strategy->addParameter(&*bond, Bond::getBondLength,
+                            Bond::setBondLength, range,
+                            interval, "bond_length");
 
-	_bonds.push_back(bond);
+    _bonds.push_back(bond);
 }
 
 void Sampler::addDampening(BondPtr bond, double range, double interval)
 {
-	if (!bond) return;
+    if (!bond) return;
 
-//	double number = fabs(range / interval);
-	_strategy->addParameter(&*bond, Bond::getDampening,
-							Bond::setDampening, range,
-							interval, "d" + bond->shortDesc());
+//    double number = fabs(range / interval);
+    _strategy->addParameter(&*bond, Bond::getDampening,
+                            Bond::setDampening, range,
+                            interval, "d" + bond->shortDesc());
 
-	_bonds.push_back(bond);
+    _bonds.push_back(bond);
+}
+
+void Sampler::addMagicAngle(BondPtr bond, double range, double interval)
+{
+    if (!bond) return;
+    
+    _strategy->addParameter(&*bond, Bond::getMagicPhi,
+                            Bond::setMagicPhi, range, interval,
+                            "ph" + bond->shortDesc());
+    _strategy->addParameter(&*bond, Bond::getMagicPsi,
+                            Bond::setMagicPsi, range, interval,
+                            "ps" + bond->shortDesc());
+    
 }
 
 void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 {
-	//	double number = fabs(range / interval);
+    //    double number = fabs(range / interval);
 
-	if (!bond->getRefineBondAngle())
-	{
-		return;
-	}
+    if (!bond->getRefineBondAngle())
+    {
+        return;
+    }
 
-	_strategy->addParameter(&*bond, Bond::getBendAngle, Bond::setBendAngle,
-							range, interval, "b0" + bond->shortDesc());
-	_strategy->addParameter(&*bond, Bond::getCirclePortion, Bond::setCirclePortion,
-							range, interval, "b1" + bond->shortDesc());
+    _strategy->addParameter(&*bond, Bond::getBendAngle, Bond::setBendAngle,
+                            range, interval, "b0" + bond->shortDesc());
+    _strategy->addParameter(&*bond, Bond::getCirclePortion, Bond::setCirclePortion,
+                            range, interval, "b1" + bond->shortDesc());
 
-	_bonds.push_back(bond);
+    _bonds.push_back(bond);
 }
 
 void Sampler::addAbsolutePosition(AbsolutePtr abs, double range, double interval)
 {
-	if (abs->getClassName() != "Absolute")
-	{
-		return;
-	}
+    if (abs->getClassName() != "Absolute")
+    {
+        return;
+    }
 
-	//	double number = fabs(range / interval);
-	_strategy->addParameter(&*abs, Absolute::getPosX, Absolute::setPosX,
-							range, interval, "pos_x");
-	_strategy->addParameter(&*abs, Absolute::getPosY, Absolute::setPosY,
-							range, interval, "pos_y");
-	_strategy->addParameter(&*abs, Absolute::getPosZ, Absolute::setPosZ,
-							range, interval, "pos_z");
+    //    double number = fabs(range / interval);
+    _strategy->addParameter(&*abs, Absolute::getPosX, Absolute::setPosX,
+                            range, interval, "pos_x");
+    _strategy->addParameter(&*abs, Absolute::getPosY, Absolute::setPosY,
+                            range, interval, "pos_y");
+    _strategy->addParameter(&*abs, Absolute::getPosZ, Absolute::setPosZ,
+                            range, interval, "pos_z");
 }
 
 void Sampler::addRotamer(Sidechain *side, double range, double interval)
 {
-	//	double number = fabs(range / interval);
-	_strategy->addParameter(side, Sidechain::getRotamerExponent,
-							Sidechain::setRotamerExponent,
-							range, interval, "rot_exp");
+    //    double number = fabs(range / interval);
+    _strategy->addParameter(side, Sidechain::getRotamerExponent,
+                            Sidechain::setRotamerExponent,
+                            range, interval, "rot_exp");
 }
 
 
 void Sampler::addAbsoluteBFactor(AbsolutePtr abs, double range, double interval)
 {
-	if (abs->getClassName() != "Absolute")
-	{
-		return;
-	}
+    if (abs->getClassName() != "Absolute")
+    {
+        return;
+    }
 
-	//	double number = fabs(range / interval);
-	_strategy->addParameter(&*abs, Absolute::getB, Absolute::setB,
-							range, interval, "bfactor");
+    //    double number = fabs(range / interval);
+    _strategy->addParameter(&*abs, Absolute::getB, Absolute::setB,
+                            range, interval, "bfactor");
 }
 
 void Sampler::addSampledSidechains(PolymerPtr polymer)
 {
-	for (int i = 0; i < polymer->monomerCount(); i++)
-	{
-		if (!polymer->getMonomer(i))
-		{
-			continue;
-		}
+    for (int i = 0; i < polymer->monomerCount(); i++)
+    {
+        if (!polymer->getMonomer(i))
+        {
+            continue;
+        }
 
-		SidechainPtr sidechain = polymer->getMonomer(i)->getSidechain();
-		addSampledAtoms(sidechain);
-	}
+        SidechainPtr sidechain = polymer->getMonomer(i)->getSidechain();
+        addSampledAtoms(sidechain);
+    }
 }
 
 void Sampler::addSampledBackbone(PolymerPtr polymer, int from, int to)
 {
-	if (from == 0 && to == 0)
-	{
-		from = 0;
-		to = polymer->monomerCount();
-	}
+    if (from == 0 && to == 0)
+    {
+        from = 0;
+        to = polymer->monomerCount();
+    }
 
-	int step = (from < to) ? 1 : -1;
+    int step = (from < to) ? 1 : -1;
 
-	for (int i = from - 1; i != to - 1; i += step)
-	{
-		if (!polymer->getMonomer(i))
-		{
-			continue;
-		}
+    for (int i = from - 1; i != to - 1; i += step)
+    {
+        if (!polymer->getMonomer(i))
+        {
+            continue;
+        }
 
-		BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
-		SidechainPtr sidechain = polymer->getMonomer(i)->getSidechain();
+        BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
+        SidechainPtr sidechain = polymer->getMonomer(i)->getSidechain();
 
-		AtomPtr ca = backbone->findAtom("CA");
-		addSampled(ca);
-		AtomPtr cb = sidechain->findAtom("CB");
-		if (polymer->getMonomer(i)->getIdentifier() == "pro")
-		{
-			addSampledAtoms(sidechain);
-		}
-		else
-		{
-			addSampled(cb);
-		}
+        AtomPtr ca = backbone->findAtom("CA");
+        addSampled(ca);
+        AtomPtr cb = sidechain->findAtom("CB");
+        if (polymer->getMonomer(i)->getIdentifier() == "pro")
+        {
+            addSampledAtoms(sidechain);
+        }
+        else
+        {
+            addSampled(cb);
+        }
 
 
-		AtomPtr o = backbone->findAtom("O");
-		addSampled(o);
-		AtomPtr c = backbone->findAtom("C");
-		addSampled(c);
-		AtomPtr n = backbone->findAtom("N");
-		addSampled(n);
-	}
+        AtomPtr o = backbone->findAtom("O");
+        addSampled(o);
+        AtomPtr c = backbone->findAtom("C");
+        addSampled(c);
+        AtomPtr n = backbone->findAtom("N");
+        addSampled(n);
+    }
 }
 
 void Sampler::addSampled(std::vector<AtomPtr> atoms)
 {
-	for (int i = 0; i < atoms.size(); i++)
-	{
-		addSampled(atoms[i]);
-	}
+    for (int i = 0; i < atoms.size(); i++)
+    {
+        addSampled(atoms[i]);
+    }
 }
 
 void Sampler::addSampledAtoms(AtomGroupPtr group, std::string conformer)
 {
-	if (!group)
-	{
-		return;
-	}
+    if (!group)
+    {
+        return;
+    }
 
-	for (int i = 0; i < group->atomCount(); i++)
-	{
-		if (conformer.length() &&
-			group->atom(i)->getAlternativeConformer() != conformer)
-		{
-			continue;
-		}
+    for (int i = 0; i < group->atomCount(); i++)
+    {
+        if (conformer.length() &&
+            group->atom(i)->getAlternativeConformer() != conformer)
+        {
+            continue;
+        }
 
-		addSampled(group->atom(i));
-	}
+        addSampled(group->atom(i));
+    }
 }
 
 void Sampler::addSampled(AtomPtr atom)
 {
-	if (!atom)
-	{
-		return;
-	}
+    if (!atom)
+    {
+        return;
+    }
 
-	double electrons = atom->getElement()->electronCount();
+    double electrons = atom->getElement()->electronCount();
 
-	if (electrons <= 1)
-	{
-		// hydrogen
-		_unsampled.push_back(atom);
-	}
-	else
-	{
-		/* No repeats! */
-		for (int i = 0; i < sampleSize(); i++)
-		{
-			if (_sampled[i] == atom)
-			{
-				return;
-			}
-		}
-		_sampled.push_back(atom);
-	}
+    if (electrons <= 1)
+    {
+        // hydrogen
+        _unsampled.push_back(atom);
+    }
+    else
+    {
+        /* No repeats! */
+        for (int i = 0; i < sampleSize(); i++)
+        {
+            if (_sampled[i] == atom)
+            {
+                return;
+            }
+        }
+        _sampled.push_back(atom);
+    }
 }
 
 void Sampler::setCrystal(CrystalPtr crystal)
 {
-	_real2Frac = crystal->getReal2Frac();
-	_fft = crystal->getFFT();
+    _real2Frac = crystal->getReal2Frac();
+    _fft = crystal->getFFT();
 }
 
 bool Sampler::sample(bool clear)
 {
-	if (_mock)
-	{
-		_strategy->isMock();
-		_mock = false;
-	}
+    if (_mock)
+    {
+        _strategy->isMock();
+        _mock = false;
+    }
 
-	if (_scoreType == ScoreTypeModelPos)
-	{
-		int paramCount = _strategy->parameterCount();
-		int cycles = paramCount * 1;
-		if (cycles < 10) cycles = 10;
+    if (_scoreType == ScoreTypeModelPos)
+    {
+        int paramCount = _strategy->parameterCount();
+        int cycles = paramCount * 1;
+        if (cycles < 10) cycles = 10;
 
-		_strategy->setCycles(cycles);
-	}
+        _strategy->setCycles(cycles);
+    }
 
-	if (!_silent && false)
-	{
-		std::cout << "Sampling ";
+    if (!_silent && false)
+    {
+        std::cout << "Sampling ";
 
-		for (int i = 0; i < sampleSize(); i++)
-		{
-			std::cout << _sampled[i]->shortDesc() << ", ";
-		}
-		std::cout << std::endl;
-	}
+        for (int i = 0; i < sampleSize(); i++)
+        {
+            std::cout << _sampled[i]->shortDesc() << ", ";
+        }
+        std::cout << std::endl;
+    }
 
-	if (sampleSize() && _strategy->parameterCount())
-	{
-		_strategy->setJobName(_jobName);
-		_strategy->refine();
-	}
+    if (sampleSize() && _strategy->parameterCount())
+    {
+        _strategy->setJobName(_jobName);
+        _strategy->refine();
+    }
 
-	_silent = false;
-	_scoreType = ScoreTypeCorrel;
+    _silent = false;
+    _scoreType = ScoreTypeCorrel;
 
-	bool changed = _strategy->didChange();
+    bool changed = _strategy->didChange();
 
-	if (clear)
-	{
-		_strategy = RefinementStrategyPtr();
-	}
+    if (clear)
+    {
+        _strategy = RefinementStrategyPtr();
+    }
 
-	for (int i = 0; i < _bonds.size(); i++)
-	{
-		_bonds[i]->setBlocked(false);
-	}
+    for (int i = 0; i < _bonds.size(); i++)
+    {
+        _bonds[i]->setBlocked(false);
+    }
 
-	_bonds.clear();
-	_sampled.clear();
-	_unsampled.clear();
-	_joint = false;
+    _bonds.clear();
+    _sampled.clear();
+    _unsampled.clear();
+    _joint = false;
 
-	return changed;
+    return changed;
 }
 
 double Sampler::getScore()
 {
-	if (!_sampled.size())
-	{
-		return 0;
-	}
+    if (!_sampled.size())
+    {
+        return 0;
+    }
 
-	if (_scoreType == ScoreTypeModelFlexiness
-		|| _scoreType == ScoreTypeModelRMSDZero)
-	{
-		double score = 0;
-		double count = 0;
+    if (_scoreType == ScoreTypeModelFlexiness
+        || _scoreType == ScoreTypeModelRMSDZero)
+    {
+        double score = 0;
+        double count = 0;
 
-		for (int i = 0; i < sampleSize(); i++)
-		{
-			_sampled[i]->getModel()->propagateChange();
-		}
+        for (int i = 0; i < sampleSize(); i++)
+        {
+            _sampled[i]->getModel()->propagateChange();
+        }
 
-		for (int i = 0; i < sampleSize(); i++)
-		{
-			ModelPtr model = _sampled[i]->getModel();
+        for (int i = 0; i < sampleSize(); i++)
+        {
+            ModelPtr model = _sampled[i]->getModel();
 
-			if (model->getClassName() != "Bond")
-			{
-				continue;
-			}
+            if (model->getClassName() != "Bond")
+            {
+                continue;
+            }
 
-			BondPtr bond = boost::static_pointer_cast<Bond>(model);
-			double target = -1;
+            BondPtr bond = boost::static_pointer_cast<Bond>(model);
+            double target = -1;
 
-			if (_scoreType == ScoreTypeModelFlexiness)
-			{
-				target = _overallFlex;
-			}
+            if (_scoreType == ScoreTypeModelFlexiness)
+            {
+                target = _overallFlex;
+            }
 
-			double rmsdScore = bond->getFlexibilityPotential();
+            double rmsdScore = bond->getFlexibilityPotential();
 
-			count++;
-			score += fabs(rmsdScore - target);
-		}
+            count++;
+            score += fabs(rmsdScore - target);
+        }
 
-		return score / count;
-	}
+        return score / count;
+    }
 
-	if (_scoreType == ScoreTypeModelPos)
-	{
-		double score = 0;
-		double count = 0;
+    if (_scoreType == ScoreTypeModelPos)
+    {
+        double score = 0;
+        double count = 0;
 
-		for (int i = 0; i < sampleSize(); i++)
-		{
-			double oneScore = _sampled[i]->posDisplacement();
-			double weight = _sampled[i]->getElement()->electronCount();
-			weight = 1;
-			std::string name = _sampled[i]->getAtomName();
-			ModelPtr model = _sampled[i]->getModel();
+        for (int i = 0; i < sampleSize(); i++)
+        {
+            double oneScore = _sampled[i]->posDisplacement();
+            double weight = _sampled[i]->getElement()->electronCount();
+            weight = 1;
+            std::string name = _sampled[i]->getAtomName();
+            ModelPtr model = _sampled[i]->getModel();
 
-			score += oneScore * weight;
-			count += weight;
-		}
+            score += oneScore * weight;
+            count += weight;
+        }
 
-		return score / count;
+        return score / count;
 
-		for (int i = 1; i < sampleSize(); i++)
-		{
-			BondPtr bond = ToBondPtr(_sampled[i]->getModel());
-			bond->getDistribution();
-			vec3 bestPos = bond->getAbsolutePosition();
-			vec3 initialPos = _sampled[i]->getPDBPosition();
+        for (int i = 1; i < sampleSize(); i++)
+        {
+            BondPtr bond = ToBondPtr(_sampled[i]->getModel());
+            bond->getDistribution();
+            vec3 bestPos = bond->getAbsolutePosition();
+            vec3 initialPos = _sampled[i]->getPDBPosition();
 
-			for (int j = 0; j < i - 1; j++)
-			{
-				BondPtr jBond = ToBondPtr(_sampled[j]->getModel());
-				vec3 jBestPos = jBond->getAbsolutePosition();
-				vec3 jInitialPos = _sampled[j]->getPDBPosition();
+            for (int j = 0; j < i - 1; j++)
+            {
+                BondPtr jBond = ToBondPtr(_sampled[j]->getModel());
+                vec3 jBestPos = jBond->getAbsolutePosition();
+                vec3 jInitialPos = _sampled[j]->getPDBPosition();
 
-				// take (opposite) differences
-				vec3 bestPosDiff = vec3_subtract_vec3(jBestPos, bestPos);
-				vec3 initialDiff = vec3_subtract_vec3(initialPos, jInitialPos);
+                // take (opposite) differences
+                vec3 bestPosDiff = vec3_subtract_vec3(jBestPos, bestPos);
+                vec3 initialDiff = vec3_subtract_vec3(initialPos, jInitialPos);
 
-				// add them up and take the length of the remainder.
-				vec3 addDiff = vec3_add_vec3(initialDiff, bestPosDiff);
-				double length = vec3_length(addDiff);
+                // add them up and take the length of the remainder.
+                vec3 addDiff = vec3_add_vec3(initialDiff, bestPosDiff);
+                double length = vec3_length(addDiff);
 
-				score += length;
-				count++;
-			}
-		}
+                score += length;
+                count++;
+            }
+        }
 
-		score /= count;
+        score /= count;
 
-		return score;
-	}
+        return score;
+    }
 
-	return AtomGroup::scoreWithMap(_sampled, _scoreType, _fft, _real2Frac);
+    return AtomGroup::scoreWithMap(_sampled, _scoreType, _fft, _real2Frac);
 }
 
 std::vector<double> Sampler::getNextResult(int num)
 {
-	RefinementGridSearchPtr grid;
-	grid = boost::static_pointer_cast<RefinementGridSearch>(_strategy);
+    RefinementGridSearchPtr grid;
+    grid = boost::static_pointer_cast<RefinementGridSearch>(_strategy);
 
-	return grid->getNextResult(num);
+    return grid->getNextResult(num);
 }

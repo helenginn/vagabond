@@ -21,151 +21,151 @@
 
 typedef enum
 {
-	RefinementBroad = 0,
-	RefinementFine = 1,
-	RefinementFineBlur = 2,
-	RefinementModelRMSD = 3,
-	RefinementModelPos = 4,
-	RefinementFlexibility = 5,
+    RefinementBroad = 0,
+    RefinementFine = 1,
+    RefinementFineBlur = 2,
+    RefinementModelRMSD = 3,
+    RefinementModelPos = 4,
+    RefinementFlexibility = 5,
 } RefinementType;
 
 typedef enum
 {
-	ScoreTypeCorrel = 0,
-	ScoreTypeMultiply = 1,
-	ScoreTypeRFactor = 2,
-	ScoreTypeModelRMSDZero = 3,
-	ScoreTypeModelPos = 4,
-	ScoreTypeModelFlexiness = 5,
+    ScoreTypeCorrel = 0,
+    ScoreTypeMultiply = 1,
+    ScoreTypeRFactor = 2,
+    ScoreTypeModelRMSDZero = 3,
+    ScoreTypeModelPos = 4,
+    ScoreTypeModelFlexiness = 5,
 } ScoreType;
 
 class Sampler
 {
 public:
-	Sampler();
+    Sampler();
 
-	void addSampled(AtomPtr atom);
-	void addSampled(std::vector<AtomPtr> atoms);
+    void addSampled(AtomPtr atom);
+    void addSampled(std::vector<AtomPtr> atoms);
 
-	void addOverallKickAndDampen(PolymerPtr polymer);
-	void addSidechainDampen(PolymerPtr polymer);
-	
-	void addTorsion(BondPtr bond, double range, double interval);
-	void addTorsionBlur(BondPtr bond, double range, double interval);
-	void addDampening(BondPtr bond, double range, double interval);
-	void addBondLength(BondPtr bond, double range, double interval);
-	void addBendAngle(BondPtr bond, double range, double interval);
-	void addOccupancy(BondPtr bond, double range, double interval);
-	void addSampledBackbone(PolymerPtr polymer, int from = 0, int to = 0);
-	void addSampledSidechains(PolymerPtr polymer);
-	void addSampledAtoms(AtomGroupPtr group, std::string conformer = "");
-	void addRamachandranAngles(PolymerPtr polymer, int from, int to);
-	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
-	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
-	void addRotamer(Sidechain *side, double range, double interval);
-//	void addMagicAngle(BondPtr bond, double range, double interval);
-	void setCrystal(CrystalPtr crystal);
-	bool sample(bool clear = true);
+    void addOverallKickAndDampen(PolymerPtr polymer);
+    void addSidechainDampen(PolymerPtr polymer);
+    
+    void addTorsion(BondPtr bond, double range, double interval);
+    void addTorsionBlur(BondPtr bond, double range, double interval);
+    void addDampening(BondPtr bond, double range, double interval);
+    void addBondLength(BondPtr bond, double range, double interval);
+    void addBendAngle(BondPtr bond, double range, double interval);
+    void addOccupancy(BondPtr bond, double range, double interval);
+    void addSampledBackbone(PolymerPtr polymer, int from = 0, int to = 0);
+    void addSampledSidechains(PolymerPtr polymer);
+    void addSampledAtoms(AtomGroupPtr group, std::string conformer = "");
+    void addRamachandranAngles(PolymerPtr polymer, int from, int to);
+    void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
+    void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
+    void addRotamer(Sidechain *side, double range, double interval);
+    void addMagicAngle(BondPtr bond, double range, double interval);
+    void setCrystal(CrystalPtr crystal);
+    bool sample(bool clear = true);
 
-	void setupGrid();
-	void setupNelderMead();
-	void setupSnake();
+    void setupGrid();
+    void setupNelderMead();
+    void setupSnake();
 
-	void setJointSampling()
-	{
-		_joint = true;
-	}
+    void setJointSampling()
+    {
+        _joint = true;
+    }
 
-	void copyTarget(Sampler *other)
-	{
-		_fft = other->_fft;
-		_real2Frac = other->_real2Frac;
-		_scoreType = other->_scoreType;
-	}
+    void copyTarget(Sampler *other)
+    {
+        _fft = other->_fft;
+        _real2Frac = other->_real2Frac;
+        _scoreType = other->_scoreType;
+    }
 
-	void reportInDegrees()
-	{
-		_strategy->reportInDegrees();
-	}
+    void reportInDegrees()
+    {
+        _strategy->reportInDegrees();
+    }
 
-	void setCycles(int cycles)
-	{
-		_strategy->setCycles(cycles);
-	}
+    void setCycles(int cycles)
+    {
+        _strategy->setCycles(cycles);
+    }
 
-	static double score(void *object)
-	{
-		return static_cast<Sampler *>(object)->getScore();
-	}
+    static double score(void *object)
+    {
+        return static_cast<Sampler *>(object)->getScore();
+    }
 
-	void setJobName(std::string newJob)
-	{
-		_jobName = newJob;
-	}
+    void setJobName(std::string newJob)
+    {
+        _jobName = newJob;
+    }
 
-	std::string getJobName()
-	{
-		return _jobName;
-	}
+    std::string getJobName()
+    {
+        return _jobName;
+    }
 
-	void setSilent(bool silent = true)
-	{
-		_strategy->setSilent(silent);
-		_silent = silent;
-	}
+    void setSilent(bool silent = true)
+    {
+        _strategy->setSilent(silent);
+        _silent = silent;
+    }
 
-	void setVerbose(bool verbose = true)
-	{
-		_strategy->setVerbose(verbose);
-	}
+    void setVerbose(bool verbose = true)
+    {
+        _strategy->setVerbose(verbose);
+    }
 
-	int sampleSize()
-	{
-		return _sampled.size();
-	}
+    int sampleSize()
+    {
+        return _sampled.size();
+    }
 
-	void setMock()
-	{
-		_mock = true;
-	}
+    void setMock()
+    {
+        _mock = true;
+    }
 
-	void setScoreType(ScoreType type)
-	{
-		_scoreType = type;
-	}
+    void setScoreType(ScoreType type)
+    {
+        _scoreType = type;
+    }
 
-	void setTargetFlexibility(double value)
-	{
-		_overallFlex = value;
-	}
+    void setTargetFlexibility(double value)
+    {
+        _overallFlex = value;
+    }
 
-	std::vector<double> getNextResult(int num);
+    std::vector<double> getNextResult(int num);
 
 protected:
-	BondPtr setupTorsionSet(BondPtr bond, int k, int bondNum,
-							double range, double interval,
-						 bool addDampening = false);
-	FFTPtr _fft;
-	mat3x3 _real2Frac;
+    BondPtr setupTorsionSet(BondPtr bond, int k, int bondNum,
+                            double range, double interval,
+                         bool addAngle = false, bool addFlex = false);
+    FFTPtr _fft;
+    mat3x3 _real2Frac;
 
-	int _refinedMagicAxisCount;
-	virtual bool shouldRefineMagicAxis(BondPtr bond) { return false; }
-	virtual double getScore();
+    int _refinedMagicAxisCount;
+    virtual bool shouldRefineMagicAxis(BondPtr bond) { return false; }
+    virtual double getScore();
 private:
-	void addAtomsForBond(BondPtr bond, int k);
+    void addAtomsForBond(BondPtr bond, int k);
 
-	std::vector<AtomPtr> _sampled;
-	std::vector<AtomPtr> _unsampled;
-	std::vector<BondPtr> _bonds;
-	bool _mock;
-	bool _joint;
-	bool _silent;
-	double _overallFlex;
+    std::vector<AtomPtr> _sampled;
+    std::vector<AtomPtr> _unsampled;
+    std::vector<BondPtr> _bonds;
+    bool _mock;
+    bool _joint;
+    bool _silent;
+    double _overallFlex;
 
-	std::string _jobName;
-	ScoreType _scoreType;
+    std::string _jobName;
+    ScoreType _scoreType;
 
-	RefinementStrategyPtr _strategy;
+    RefinementStrategyPtr _strategy;
 };
 
 
