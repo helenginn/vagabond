@@ -19,114 +19,125 @@
 class Options
 {
 public:
-	Options(int argc, const char **argv);
-	void run();
+    Options(int argc, const char **argv);
+    void run();
 
-	static void setRuntimeOptions(OptionsPtr pointer)
-	{
-		Options::options = pointer;
-		pointer->setManual(true);
-	}
+    static void setRuntimeOptions(OptionsPtr pointer)
+    {
+        Options::options = pointer;
+        pointer->setManual(true);
+    }
 
-	static OptionsPtr getRuntimeOptions()
-	{
-		return options;
-	}
+    static OptionsPtr getRuntimeOptions()
+    {
+        return options;
+    }
 
-	void setNotify(Notifiable *notifiable)
-	{
-		_notify = notifiable;
-	}
+    void setNotify(Notifiable *notifiable)
+    {
+        _notify = notifiable;
+    }
 
-	size_t crystalCount()
-	{
-		return crystals.size();
-	}
+    Notifiable *getNotify()
+    {
+        return _notify;
+    }
 
-	CrystalPtr getCrystal(int i)
-	{
-		return crystals[i];
-	}
+    size_t crystalCount()
+    {
+        return crystals.size();
+    }
 
-	static double getKick()
-	{
-		return _kick;
-	}
+    CrystalPtr getCrystal(int i)
+    {
+        return crystals[i];
+    }
 
-	static double getDampen()
-	{
-		return _dampen;
-	}
+    CrystalPtr getActiveCrystal()
+    {
+        if (!crystals.size()) return CrystalPtr();
+        return crystals[0];
+    }
 
-        static double minRes()
-        {
-                return _minRes;
-        }
+    static double getKick()
+    {
+        return _kick;
+    }
 
-	static int enableTests()
-	{
-		return _enableTests;
-	}
+    static double getDampen()
+    {
+        return _dampen;
+    }
 
-	static double getBStart()
-	{
-		return _bStart;
-	}
+    static double minRes()
+    {
+        return _minRes;
+    }
 
-	static double getBMult()
-	{
-		return _bMult;
-	}
-	
-	static void setBMult(double bMult)
-	{
-		_bMult = bMult;
-	}
-	
-	void setManual(bool manual)
-	{
-		_manual = manual;
-	}
+    static int enableTests()
+    {
+        return _enableTests;
+    }
 
-        void statusMessage(std::string message);
-        void agreementSummary();
-	void refineAll(RefinementType type, int numCycles, int *count = NULL,
-				   bool keepGoing = false);
-	void superimposeAll(CrystalPtr crystal = CrystalPtr());
-	void applyBMultiplier();
-        void openPDB(std::string pdbName);
-        void openMTZ(std::string mtzName);
-        void recalculateFFT();
+    static double getBStart()
+    {
+        return _bStart;
+    }
+
+    static double getBMult()
+    {
+        return _bMult;
+    }
+    
+    static void setBMult(double bMult)
+    {
+        _bMult = bMult;
+    }
+    
+    void setManual(bool manual)
+    {
+        _manual = manual;
+    }
+
+    void statusMessage(std::string message);
+    void agreementSummary();
+    void refineAll(RefinementType type, int numCycles, int *count = NULL,
+            bool keepGoing = false);
+    void superimposeAll(CrystalPtr crystal = CrystalPtr());
+    void applyBMultiplier();
+    void openPDB(std::string pdbName);
+    void openMTZ(std::string mtzName);
+    void recalculateFFT();
 private:
-	static OptionsPtr options;
-	Notifiable *_notify;
-        void notifyGUI(bool enable);
+    static OptionsPtr options;
+    Notifiable *_notify;
+    void notifyGUI(bool enable);
 
-	void parse();
-	void displayHelp();
-	void outputCrystalInfo();
-	void refinementCycle(MoleculePtr molecule, int *count,
+    void parse();
+    void displayHelp();
+    void outputCrystalInfo();
+    void refinementCycle(MoleculePtr molecule, int *count,
                              RefinementType type);
-	bool parseJoke(std::string arg);
+    bool parseJoke(std::string arg);
 
-	std::vector<std::string> arguments;
+    std::vector<std::string> arguments;
 
-	std::vector<ObjectPtr> objects;
-	std::vector<CrystalPtr> crystals;
-	std::vector<DatasetPtr> datasets;
-	std::vector<DiffractionPtr> diffractions;
+    std::vector<ObjectPtr> objects;
+    std::vector<CrystalPtr> crystals;
+    std::vector<DatasetPtr> datasets;
+    std::vector<DiffractionPtr> diffractions;
 
-	int _numCycles;
-	int _globalCount;
-	bool _tie;
-	bool _manual;
+    int _numCycles;
+    int _globalCount;
+    bool _tie;
+    bool _manual;
 
-	static double _kick;
-	static double _dampen;
-	static double _bMult;
-	static int _enableTests;
-	static double _bStart;
-	std::string _outputDir;
+    static double _kick;
+    static double _dampen;
+    static double _bMult;
+    static int _enableTests;
+    static double _bStart;
+    std::string _outputDir;
         static double _minRes;
 };
 

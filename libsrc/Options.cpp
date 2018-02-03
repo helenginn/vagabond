@@ -244,21 +244,6 @@ void Options::parse()
         {
             std::string kick_string = arg.substr(prefix.size());
             _kick = atof(kick_string.c_str());
-
-            if (crystals.size() == 0)
-            {
-                shout_at_user("Initial kick specified, but a coordinate\n"\
-                              "file has not been specified yet. Please use\n"\
-                              "--with-pdb= to specify some atomic coordinates.");
-            }
-            else
-            {
-                CrystalPtr crystal = crystals.at(crystals.size() - 1);
-                std::cout << "Setting " << crystal->getFilename()
-                << " to a initial kick of " << _kick << "." << std::endl;
-
-                understood = true;
-            }
         }
 
         prefix = "--bfactor=";
@@ -291,21 +276,6 @@ void Options::parse()
         {
             std::string dampen_string = arg.substr(prefix.size());
             _dampen = atof(dampen_string.c_str());
-
-            if (crystals.size() == 0)
-            {
-                shout_at_user("Overall B factor specified, but a coordinate\n"\
-                              "file has not been specified yet. Please use\n"\
-                              "--with-pdb= to specify some atomic coordinates.");
-            }
-            else
-            {
-                CrystalPtr crystal = crystals.at(crystals.size() - 1);
-                std::cout << "Setting " << crystal->getFilename()
-                << " to a dampening of " << _dampen << "." << std::endl;
-
-                understood = true;
-            }
         }
 
         prefix = "--anchor-res=";
@@ -461,7 +431,7 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool kee
 
         statusMessage("Calculating R factors...");
 
-        double newRWork = crystals[0]->concludeRefinement(*count,
+        double newRWork = getActiveCrystal()->concludeRefinement(*count,
                                                           diffractions[0]);
 
         agreementSummary();
@@ -505,17 +475,13 @@ void Options::superimposeAll(CrystalPtr crystal)
         {
             PolymerPtr polymer = ToPolymerPtr(molecule);
             polymer->superimpose();
-            polymer->propagateChange();
-            polymer->refreshPositions();
+            polymer->refreshPositions(true);
         }
     }
 
     statusMessage("Calculating R factors...");
 
-    _globalCount++;
-    crystal->concludeRefinement(_globalCount, diffractions[0]);
-
-    agreementSummary();
+    recalculateFFT();
 
     notifyGUI(true);
 }
@@ -539,7 +505,6 @@ void Options::applyBMultiplier()
         }
     }
 
-    _globalCount++;
     recalculateFFT();
 
     notifyGUI(true);
@@ -649,6 +614,7 @@ void Options::recalculateFFT()
     if (!diffractions.size()) return;
     if (!crystals.size()) return;
 
+    _globalCount++;
     DiffractionPtr mtz = diffractions[0];
     statusMessage("Calculating R factors...");
     crystals[0]->concludeRefinement(_globalCount, mtz);
