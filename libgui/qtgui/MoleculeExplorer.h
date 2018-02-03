@@ -22,6 +22,7 @@
 
 class MonomerExplorer;
 class SequenceView;
+class GLKeeper;
 
 class MoleculeExplorer : public QMainWindow
 {
@@ -32,9 +33,11 @@ public:
     ~MoleculeExplorer();
 
     void displayMonomer(MonomerPtr monomer);
+    void setGLKeeper(GLKeeper *keeper);
 private slots:
 
 private:
+    GLKeeper *_keeper;
     MonomerExplorer *_monomerExplorer;
     MoleculePtr _molecule;
     SequenceView *_sequenceView;

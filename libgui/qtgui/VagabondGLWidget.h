@@ -17,16 +17,21 @@ public:
     VagabondGLWidget(QWidget *obj = NULL);
     ~VagabondGLWidget();
     
+    GLKeeper *getKeeper()
+    {
+        return keeper;
+    }
 protected:
     virtual void initializeGL();
     virtual void paintGL();
     virtual void resizeGL(int w, int h);
     
     virtual void keyPressEvent(QKeyEvent *event);
-	virtual void keyReleaseEvent(QKeyEvent *event);
+    virtual void keyReleaseEvent(QKeyEvent *event);
     virtual void mousePressEvent(QMouseEvent *e);
     virtual void mouseReleaseEvent(QMouseEvent *e);
     virtual void mouseMoveEvent(QMouseEvent *e);
+
 private:
     GLKeeper *keeper;
     QTimer *timer;

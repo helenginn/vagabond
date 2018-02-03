@@ -6,6 +6,8 @@
 #include "../../libsrc/shared_ptrs.h"
 #include "AtomListItem.h"
 #include "SetterEdit.h"
+#include <QtWidgets/qpushbutton.h>
+#include "../GLKeeper.h"
 
 class MonomerExplorer : public QWidget
 {
@@ -23,14 +25,22 @@ public:
         return _monomer;
     }
 
+    GLKeeper *getKeeper()
+    {
+        return _keeper;
+    }
+
+    void setKeeper(GLKeeper *keeper);
     ~MonomerExplorer();
 private slots:
     void clickedAtomListItem();
+    void pushRefineDensity();
 private:
     void initialise(MonomerPtr monomer);
     void populateList();
 
     MonomerPtr _monomer;
+    GLKeeper *_keeper;
 
     QListWidget *_atomList;
 
@@ -46,6 +56,9 @@ private:
     SetterEdit *_tDampen;
     SetterEdit *_tPhi;
     SetterEdit *_tPsi;
+
+    QPushButton *_bRefineDensity;
+    QLabel *_lCorrel;
 };
 
 

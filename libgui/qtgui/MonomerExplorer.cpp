@@ -4,12 +4,16 @@
 #include "../../libsrc/Atom.h"
 #include "../../libsrc/Bond.h"
 #include "../../libsrc/FileReader.h"
+#include "../../libsrc/Notifiable.h"
+#include "../../libsrc/Options.h"
 
 #define TEXT_HEIGHT 28
 
 void MonomerExplorer::initialise(MonomerPtr monomer)
 {
     _monomer = monomer;
+    _bRefineDensity = NULL;
+    _lCorrel = NULL;
     populateList();
     _lModel = NULL;
     _lTorsion = NULL;
@@ -50,7 +54,40 @@ void MonomerExplorer::populateList()
             SLOT(clickedAtomListItem()));
 
     _atomList->show();
+    
+    delete _bRefineDensity;
+    _bRefineDensity = new QPushButton("Refine to density", this);
+    _bRefineDensity->setGeometry(0, 200, 150, 50);
+    _bRefineDensity->show(); 
+    connect(_bRefineDensity, SIGNAL(clicked()), this, SLOT(pushRefineDensity()));
+
+    OptionsPtr options = Options::getRuntimeOptions();
+    CrystalPtr crystal = options->getActiveCrystal();
+    Notifiable *notify = options->getNotify();
+    bool running = notify->isRunningSomething();
+
+    if (crystal && !running)
+    {
+        delete _lCorrel;
+        double score = -_monomer->scoreWithMap(ScoreTypeCorrel, crystal);
+        std::string scoreString = "CC (2Fo-Fc): " + f_to_str(score, 3);
+
+        _lCorrel = new QLabel(QString::fromStdString(scoreString), this); 
+        _lCorrel->setGeometry(200, 200, 150, 50);
+        _lCorrel->show();
+    }
 }
+
+void MonomerExplorer::setKeeper(GLKeeper *keeper)
+{
+    _keeper = keeper;
+
+    /* GLKeeper focus on the atom at hand */
+    AtomPtr atom = _monomer->atom(0);
+    vec3 pos = atom->getAbsolutePosition();
+    _keeper->focusOnPosition(pos);
+}
+
 
 void makeLabelAndEdit(QWidget *me, QLabel **qlabel, SetterEdit **qtext, int row,
                       QString label, QString text, bool enabled)
@@ -129,6 +166,20 @@ void MonomerExplorer::clickedAtomListItem()
     _lModel = new QLabel(modelType, this);
     _lModel->setGeometry(160, 0, 240, TEXT_HEIGHT);
     _lModel->show();
+}
+
+void MonomerExplorer::pushRefineDensity()
+{
+    OptionsPtr options = Options::getRuntimeOptions();
+    Notifiable *notify = options->getNotify();
+
+    CrystalPtr crystal = options->getActiveCrystal();
+
+    _monomer->getSidechain()->setTargetRefinement(crystal, RefinementFine);
+    notify->setObject(&*_monomer->getSidechain());
+    notify->setGetter(AtomGroup::refine);
+    notify->setRefreshGroup(_monomer);
+    notify->setInstruction(InstructionTypeGetObjectValue);
 }
 
 MonomerExplorer::~MonomerExplorer()

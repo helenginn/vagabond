@@ -1,3 +1,5 @@
+#include "../../libsrc/Options.h"
+#include "../../libsrc/Notifiable.h"
 #include "SetterEdit.h"
 #include <iostream>
 
@@ -12,13 +14,15 @@ void SetterEdit::setObjectValue()
         value = deg2rad(value);
     }
 
-    (*_setter)(_object, value);
+    OptionsPtr options = Options::getRuntimeOptions();
+    Notifiable *notify = options->getNotify();
 
-    if (_monomer)
-    {   
-        _monomer->propagateChange();
-        _monomer->refreshPositions();
-    }
+    std::cout << "Got here." << std::endl;
+
+    notify->setObject(_object);
+    notify->setSetter(_setter, value);
+    notify->setRefreshGroup(_monomer);
+    notify->setInstruction(InstructionTypeSetObjectValue);
 }
 
 

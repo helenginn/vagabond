@@ -15,10 +15,10 @@ public:
         getText();
     }
 
-	MonomerPtr getMonomer()
-	{
-		return _monomer;
-	}
+    MonomerPtr getMonomer()
+    {
+        return _monomer;
+    }
 
 private:
     MonomerPtr _monomer;

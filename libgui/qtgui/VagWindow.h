@@ -30,20 +30,6 @@
 #include "Dialogue.h"
 #include "MoleculeExplorer.h"
 
-typedef enum
-{
-    InstructionTypeNone,
-    InstructionTypeOpenPDB,
-    InstructionTypeOpenMTZ,
-    InstructionTypeSuperimpose,
-    InstructionTypeRefinePositions,
-    InstructionTypeRefineFlexibility,
-    InstructionTypeRefineDensity,
-    InstructionTypeChangeBMult,
-    InstructionTypeRecalculateFFT,
-    InstructionTypeSetOutputDir,
-} InstructionType;
-
 
 class VagWindow : public QMainWindow, public Notifiable
 {
@@ -56,10 +42,11 @@ public:
     virtual void disable();
     virtual void enable();
     void waitForInstructions();
+    virtual bool isRunningSomething();
     void receiveDialogue(DialogueType type, std::string diagString);
 
     virtual void setMessage(std::string message);
-
+    virtual void wakeup();
 protected:
     virtual void resizeEvent(QResizeEvent *event);
 private slots:
@@ -80,7 +67,6 @@ private:
     QWaitCondition wait;
     QMutex mutex;
     InstructionThread _instructionThread;
-    InstructionType _instructionType;
     Dialogue *_myDialogue;
     MoleculeExplorer *_explorer;
     QFileDialog *_fileDialogue;   

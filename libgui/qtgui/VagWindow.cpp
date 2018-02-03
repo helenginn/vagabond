@@ -7,7 +7,7 @@
 //
 
 #define DEFAULT_WIDTH 900
-#define DEFAULT_HEIGHT 760
+#define DEFAULT_HEIGHT 660
 
 #include "../../libsrc/shared_ptrs.h"
 #include "VagWindow.h"
@@ -116,7 +116,7 @@ VagWindow::VagWindow(QWidget *parent,
     this->setWindowTitle("Vagabond");
     
     display = new VagabondGLWidget(this);
-    display->setGeometry(0, 0, 700, 700);
+    display->setGeometry(0, 0, 700, 600);
     
     makeButtons();
     makeMenu();    
@@ -124,7 +124,7 @@ VagWindow::VagWindow(QWidget *parent,
     QFont bigFont = QFont("Helvetica", 16);
     _lStatus = new QLabel("Vagabond at your service.", this);
     _lStatus->setFont(bigFont);
-    _lStatus->setGeometry(10, 700, 680, 60);
+    _lStatus->setGeometry(10, 600, 680, 60);
     _lStatus->show();
 
     _argc = argc;
@@ -186,12 +186,35 @@ void VagWindow::waitForInstructions()
             FileReader::setOutputDirectory(_outputDir);
             setMessage("Set output directory " + _outputDir);
             break;
+
+            case InstructionTypeSetObjectValue:
+            Notifiable::performObjectSet();
+            break;
  
+            case InstructionTypeGetObjectValue:
+            Notifiable::performObjectGet();
+            break;
+
             default:
             break;
         }
         
         mutex.unlock();
+    }
+}
+
+bool VagWindow::isRunningSomething()
+{
+    bool locked = mutex.try_lock();
+
+    if (locked)
+    {
+        mutex.unlock();
+        return false;
+    }
+    else
+    {
+        return true;
     }
 }
 
@@ -289,6 +312,7 @@ void VagWindow::pushExploreMcule()
     if (molecule)
     {
         _explorer = new MoleculeExplorer(this, molecule);
+        _explorer->setGLKeeper(display->getKeeper());
         _explorer->show();
     }
 }
@@ -397,6 +421,11 @@ void VagWindow::setOutput()
         _instructionType = InstructionTypeSetOutputDir;
         wait.wakeAll();
     }
+}
+
+void VagWindow::wakeup()
+{
+    wait.wakeAll();
 }
 
 void VagWindow::setMessage(std::string message)
