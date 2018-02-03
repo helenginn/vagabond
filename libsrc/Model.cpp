@@ -147,7 +147,7 @@ std::vector<BondSample> Model::getFinalPositions()
 	return copyPos;
 }
 
-void Model::propagateChange(int depth)
+void Model::propagateChange(int depth, bool refresh)
 {
 	
 }

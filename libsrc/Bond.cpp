@@ -974,7 +974,7 @@ bool Bond::isNotJustForHydrogens()
     return false;
 }
 
-void Bond::propagateChange(int depth)
+void Bond::propagateChange(int depth, bool refresh)
 {
     if (_anchored)
     {
@@ -1009,6 +1009,11 @@ void Bond::propagateChange(int depth)
         if (depth >= 0 && count > depth)
         {
             break;
+        }
+
+        if (refresh)
+        {
+            bond->getFinalPositions();
         }
 
         count++;

@@ -343,7 +343,7 @@ public:
 
 	void recalculateTorsion(AtomPtr heavy, double value);
 
-	virtual void propagateChange(int depth = -1);
+	virtual void propagateChange(int depth = -1, bool refresh = false);
 	std::vector<BondSample> *getManyPositions(BondSampleStyle style);
 
 	std::vector<vec3> polymerCorrectedPositions();
