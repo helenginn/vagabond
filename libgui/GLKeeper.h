@@ -56,18 +56,18 @@ public:
     
     void keyPressed(char key);
     void draggedLeftMouse(float x, float y);
-	void draggedRightMouse(float x, float y);
-	void panned(float x, float y);
+    void draggedRightMouse(float x, float y);
+    void panned(float x, float y);
 
-	bool shouldRender()
-	{
-		return !_rendered;
-	}
+    bool shouldRender()
+    {
+        return !_rendered;
+    }
 
-	void setShouldRender()
-	{
-		_rendered = false;
-	}
+    void setShouldRender()
+    {
+        _rendered = false;
+    }
 };
 
 #endif /* defined(__RaddoseViewer__GLKeeper__) */

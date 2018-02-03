@@ -25,10 +25,10 @@ public:
 	{
 		_renders = 0;
 	}
+
 	void findAtoms();
 
 	virtual void render();
-
 private:
 	int processMolecule(MoleculePtr molecule);
 	vec3 _centroid;
