@@ -20,29 +20,29 @@
 class GLKeeper : GLObject
 {
 private:
-	std::vector<GLObjectPtr> _objects;
+    std::vector<GLObjectPtr> _objects;
 
-	float camAlpha, camBeta, camGamma;
-	float zNear, zFar;
-	static bool everMovedMouse;
+    float camAlpha, camBeta, camGamma;
+    float zNear, zFar;
+    static bool everMovedMouse;
     GLfloat width, height;
-	bool _rendered;
+    bool _rendered;
 
-	vec3 _centre;
-	vec3 _translation;
-	vec3 _totalCentroid;
+    vec3 _centre;
+    vec3 _translation;
+    vec3 _totalCentroid;
 
     void setupVBOs (void);
     void setupBuffers(void);
     void setupCamera(void);
     void updateCamera(void);
 
-	mat4x4 rotMat;
+    mat4x4 rotMat;
 
-	void zoom(float x, float y, float z);
+    void zoom(float x, float y, float z);
 
     GLubyte *newIndices;
-	void initialisePrograms();
+    void initialisePrograms();
 
 public:
     GLKeeper(int width, int height);
