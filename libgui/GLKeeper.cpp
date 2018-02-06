@@ -58,7 +58,7 @@ void GLKeeper::updateCamera(void)
 
     mat4x4 transMat = make_mat4x4();
     _centre = vec3_add_vec3(_centre, _translation);
-    _translation = vec3_add_vec3(_translation, alteration);
+//    _translation = vec3_add_vec3(_translation, alteration);
     mat4x4_translate(&transMat, _translation);
 
     mat4x4 tmp = mat4x4_mult_mat4x4(change, transMat);
@@ -73,7 +73,10 @@ void GLKeeper::focusOnPosition(vec3 pos)
     vec3 newPos = transformPosByModel(pos);
     std::cout << "Matrix: " << mat4x4_desc(modelMat) << std::endl;
     std::cout << vec3_desc(pos) << " to " << vec3_desc(newPos) << std::endl;
+    std::cout << vec3_desc(_centre) << " centre to ";
+    _centre = vec3_add_vec3(_translation, newPos);
     vec3_mult(&newPos, -1);
+    std::cout << vec3_desc(_centre) << std::endl;
     newPos.z -= 30;
 
     _translation = vec3_add_vec3(_translation, newPos);
