@@ -8,26 +8,28 @@
 
 #include "VagabondGLWidget.h"
 
+#define PAN_SENSITIVITY 30
+
 VagabondGLWidget::VagabondGLWidget(QWidget *obj) : QOpenGLWidget(obj)
 {
     keeper = NULL;
     _mouseButton = Qt::NoButton;
     _lastX = 0; _lastY = 0;
-	_controlPressed = false;
-	setFocus();
+    _controlPressed = false;
+    setFocus();
 }
 
 void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 {
-	if (event->key() == Qt::Key_Alt)
-	{
-		_controlPressed = true;
-	}
+    if (event->key() == Qt::Key_Alt)
+    {
+        _controlPressed = true;
+    }
 }
 
 void VagabondGLWidget::keyReleaseEvent(QKeyEvent *event)
 {
-	_controlPressed = false;
+    _controlPressed = false;
 }
 
 void VagabondGLWidget::mousePressEvent(QMouseEvent *e)
@@ -58,18 +60,19 @@ void VagabondGLWidget::mouseMoveEvent(QMouseEvent *e)
     
     if (_mouseButton == Qt::LeftButton)
     {
-		if (_controlPressed)
-		{
-			keeper->panned(xDiff, yDiff);
-		}
-		else
-		{
-			keeper->draggedLeftMouse(xDiff * 4, yDiff * 4);
-		}
+        if (_controlPressed)
+        {
+            keeper->panned(xDiff, yDiff);
+        }
+        else
+        {
+            keeper->draggedLeftMouse(xDiff * 4, yDiff * 4);
+        }
     }
     else if (_mouseButton == Qt::RightButton)
     {
-        keeper->draggedRightMouse(xDiff * 10, yDiff * 10);
+        keeper->draggedRightMouse(xDiff * PAN_SENSITIVITY,
+                                  yDiff * PAN_SENSITIVITY);
     }
 }
 
