@@ -388,7 +388,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
         break;
 
         case RefinementFine:
-        scoreType = ScoreTypeRFactor;
+        scoreType = ScoreTypeCorrel;
         maxTries = 6;
         degrees = 4;
         bondNum = 2;
