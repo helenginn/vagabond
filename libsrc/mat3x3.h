@@ -65,4 +65,8 @@ void mat3x3_to_2d_array(mat3x3 mat, double ***values);
 void free_2d_array(double **values);
 double mat3x3_diff_from_identity(mat3x3 &mat, double target = -1);
 
+double mat3x3_rotation_angle(mat3x3 &mat);
+vec3 mat3x3_rotation_axis(mat3x3 &mat);
+
 #endif /* defined(__vagabond__mat3x3__) */
+

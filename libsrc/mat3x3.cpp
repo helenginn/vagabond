@@ -527,3 +527,27 @@ void mat3x3_mult_scalar(mat3x3 *mat, double scale)
 		mat->vals[i] *= scale;
 	}
 }
+
+double mat3x3_rotation_angle(mat3x3 &mat)
+{
+    double angle = 0;
+    double a = mat.vals[0];
+    double b = mat.vals[5];
+    double c = mat.vals[8];
+
+    double cosTheta = (a + b + c - 1) / 2;
+    double theta = acos(cosTheta);
+
+    return theta;
+}
+
+vec3 mat3x3_rotation_axis(mat3x3 &mat)
+{
+    double angle = mat3x3_rotation_angle(mat);
+    double cosangle = cos(angle);
+    double x = sqrt((mat.vals[0] - cosangle) / (1 - cosangle));
+    double y = sqrt((mat.vals[5] - cosangle) / (1 - cosangle));
+    double z = sqrt((mat.vals[8] - cosangle) / (1 - cosangle));
+
+    return make_vec3(x, y, z);
+}
