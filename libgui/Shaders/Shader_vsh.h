@@ -28,7 +28,7 @@ std::string Shader_vsh =
 "    float luminosity = 1.0 / (1. + distance * distance * 0.25);\n"\
 "    float complete = lambert * luminosity;\n"\
 "    complete *= complete;\n"\
-"    complete *= 0.2;\n"\
+"    complete *= 0.3;\n"\
 "    vColor = color + complete * lightColor;\n"\
 "}";
 
