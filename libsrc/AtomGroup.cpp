@@ -302,13 +302,6 @@ void AtomGroup::setWeighting(double value)
 
 void AtomGroup::resetMagicAxes()
 {
-    for (int i = 0; i < atomCount(); i++)
-    {
-        if (atom(i)->getModel()->isBond())
-        {
-            ToBondPtr(atom(i)->getModel())->calculateInitialMagicAxis();
-        }
-    }
 }
 
 AtomList AtomGroup::topLevelAtoms()

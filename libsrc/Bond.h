@@ -33,7 +33,6 @@ typedef struct
 	std::vector<AtomValue> atoms;
 	double torsionAngle;
 	double torsionBlur;
-	vec3 magicAxis;
 	double magicPhi;
 	double magicPsi;
 	std::vector<BondSample> storedSamples;
@@ -60,7 +59,6 @@ public:
 	void resetBondDirection();
 	bool isRefinable();
 	void calculateMagicAxis();
-	void calculateInitialMagicAxis();
 	double magicAxisScore();
 	static double magicAxisStaticScore(void *object);
 	bool test();
@@ -438,7 +436,7 @@ private:
 	bool _blocked;
 	bool _refineBondAngle;
 
-	mat3x3 getMagicMat();
+	mat3x3 getMagicMat(vec3 direction);
 
 
 };

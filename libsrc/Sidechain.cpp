@@ -20,6 +20,7 @@
 
 bool Sidechain::shouldRefineMagicAxis(BondPtr bond)
 {
+    return false;
     return (bond->getMinor()->getAtomName() == "CB");
 }
 

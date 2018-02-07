@@ -54,7 +54,6 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
     BondGroup aGroup;
     aGroup.torsionAngle = 0;
     aGroup.torsionBlur = initialKick;
-    aGroup.magicAxis = make_randomish_axis();
     aGroup.magicPhi = 0;
     aGroup.magicPsi = 0;
     _bondGroups.push_back(aGroup);
@@ -179,7 +178,6 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
         newGroup.torsionBlur = 0;
         newGroup.magicPhi = 0;
         newGroup.magicPsi = 0;
-        newGroup.magicAxis = make_randomish_axis();
         _bondGroups.push_back(newGroup);
     }
 
@@ -513,12 +511,6 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 }
 
 
-/* Just a vague guess... */
-void Bond::calculateInitialMagicAxis()
-{
-    _bondGroups[0].magicAxis = longestAxis();
-    propagateChange(20);
-}
 
 void Bond::calculateMagicAxis()
 {
@@ -569,10 +561,9 @@ double Bond::magicAxisStaticScore(void *object)
     return static_cast<Bond *>(object)->magicAxisScore();
 }
 
-mat3x3 Bond::getMagicMat()
+mat3x3 Bond::getMagicMat(vec3 direction)
 {
     mat3x3 rot = make_mat3x3();
-    vec3 magicAxis = _bondGroups[_activeGroup].magicAxis;
     double phi = _bondGroups[_activeGroup].magicPhi;
     double psi = _bondGroups[_activeGroup].magicPsi;
 
@@ -585,7 +576,7 @@ mat3x3 Bond::getMagicMat()
     vec3 zAxis = make_vec3(0, 0, 1);
 
     /* Find the twizzle to put z axis onto the magic axis (around the x) */
-    mat3x3 firstTwizzle = mat3x3_closest_rot_mat(magicAxis, zAxis, xAxis);
+    mat3x3 firstTwizzle = mat3x3_closest_rot_mat(direction, zAxis, xAxis);
     mat3x3 multed = mat3x3_mult_mat3x3(rot, firstTwizzle);
 
     return multed;
@@ -601,15 +592,9 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 
     _blurTotal = 0;
     AtomPtr nextAtom = downstreamAtom(_activeGroup, 0);
-    vec3 myPerfectPos = getStaticPosition();
     BondPtr nextBond = ToBondPtr(nextAtom->getModel());
-    vec3 nextPerfectPos = nextBond->getStaticPosition();
     double nextRatio = getGeomRatio(_activeGroup, 0);
-    vec3 nextPerfectVec = vec3_subtract_vec3(nextPerfectPos, myPerfectPos);
-    vec3_set_length(&nextPerfectVec, 1);
-
-    mat3x3 magicMat = getMagicMat();
-
+    
     vec3 averageMinorPos = make_vec3(0, 0, 0);
     vec3 averageBondDir = make_vec3(0, 0, 0);
 
@@ -637,6 +622,8 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
 
     vec3_mult(&averageBondDir, 1 / (double)prevs->size());
     vec3_mult(&averageMinorPos, 1 / (double)prevs->size());
+
+    mat3x3 magicMat = getMagicMat(averageBondDir);
 
     for (int i = 0; i < prevs->size(); i++)
     {
@@ -760,7 +747,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
     if (model->getClassName() == "Absolute")
     {
         std::vector<BondSample> *absPos = model->getManyPositions(style);
-        mat3x3 magicMat = getMagicMat();
+        mat3x3 magicMat = getMagicMat(_bondDirection);
 
         /* We must be connected to something else, oh well */
         /* Torsion basis must be the same. */
