@@ -23,102 +23,102 @@ struct vec3;
 class Molecule : public AtomGroup
 {
 public:
-	Molecule();
-	void addModel(ModelPtr model);
+    Molecule();
+    void addModel(ModelPtr model);
 
-	void addToMap(FFTPtr fft, mat3x3 _real2frac);
+    void addToMap(FFTPtr fft, mat3x3 _real2frac);
 
-	virtual void summary();
-	virtual void tieAtomsUp();
-	virtual void refine(CrystalPtr target, RefinementType rType);
-	void tiedUpScattering(double *tied, double *all);
-	virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal);
-	virtual void graph(std::string graphName) {};
-	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst) {};
-	void resetInitialPositions();
-	void setAnchors();
+    virtual void summary();
+    virtual void tieAtomsUp();
+    virtual void refine(CrystalPtr target, RefinementType rType);
+    void tiedUpScattering(double *tied, double *all);
+    virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal);
+    virtual void graph(std::string graphName) {};
+    virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst) {};
+    void resetInitialPositions();
+    void setAnchors();
 
-	virtual void reportParameters();
+    virtual void reportParameters();
 
-	double getAbsoluteBFacSubtract()
-	{
-			return _absoluteBFacSubtract;
-	}
+    double getAbsoluteBFacSubtract()
+    {
+            return _absoluteBFacSubtract;
+    }
 
-	void setAbsoluteBFacSubtract(double subtract)
-	{
-		 _absoluteBFacSubtract = subtract;
-	}
+    void setAbsoluteBFacSubtract(double subtract)
+    {
+         _absoluteBFacSubtract = subtract;
+    }
 
-	double getAbsoluteBFacMult()
-	{
-		  return _absoluteBFacMult;
-	}
+    double getAbsoluteBFacMult()
+    {
+          return _absoluteBFacMult;
+    }
 
-	void setAbsoluteBFacMult(double mult)
-	{
-		 _absoluteBFacMult = mult;
-	}
+    void setAbsoluteBFacMult(double mult)
+    {
+         _absoluteBFacMult = mult;
+    }
 
-	void setChainID(std::string chain)
-	{
-		_chainID = chain;
-	}
+    void setChainID(std::string chain)
+    {
+        _chainID = chain;
+    }
 
-	std::string getChainID()
-	{
-		return _chainID;
-	}
+    std::string getChainID()
+    {
+        return _chainID;
+    }
 
-	std::vector<vec3> getCentroidOffsets()
-	{
-		return _centroidOffsets;
-	}
+    std::vector<vec3> getCentroidOffsets()
+    {
+        return _centroidOffsets;
+    }
 
-	std::vector<mat3x3> getRotationCorrections()
-	{
-		return _rotations;
-	}
+    std::vector<mat3x3> getRotationCorrections()
+    {
+        return _rotations;
+    }
 
-	std::vector<vec3> getRotationCentres()
-	{
-		return _centroids;
-	}
+    std::vector<vec3> getRotationCentres()
+    {
+        return _centroids;
+    }
 
-	std::vector<vec3> getTransTensorOffsets()
-	{
-		return _transTensorOffsets;
-	}
+    std::vector<vec3> getTransTensorOffsets()
+    {
+        return _transTensorOffsets;
+    }
 
-	virtual std::string getClassName()
-	{
-		return "Molecule";
-	}
+    virtual std::string getClassName()
+    {
+        return "Molecule";
+    }
 
-	bool isPolymer()
-	{
-		return (getClassName() == "Polymer");
-	}
+    bool isPolymer()
+    {
+        return (getClassName() == "Polymer");
+    }
 
-	MoleculePtr shared_from_this()
-	{
-		AtomGroupPtr groupPtr = AtomGroup::shared_from_this();
-		return ToMoleculePtr(groupPtr);
-	}
+    MoleculePtr shared_from_this()
+    {
+        AtomGroupPtr groupPtr = AtomGroup::shared_from_this();
+        return ToMoleculePtr(groupPtr);
+    }
 protected:
-	std::vector<vec3> _centroidOffsets;
-	std::vector<vec3> _centroids; // after offset correction
-	std::vector<mat3x3> _rotations;
-	std::vector<vec3> _transTensorOffsets;
-	std::vector<mat3x3> _extraRotationMats;
+    std::vector<vec3> _centroidOffsets;
+    std::vector<vec3> _centroids; // after offset correction
+    std::vector<mat3x3> _rotations;
+    std::vector<vec3> _transTensorOffsets;
+    std::vector<mat3x3> _extraRotationMats;
 
 private:
-	std::vector<ModelPtr> models;
+    std::vector<ModelPtr> models;
 
-	double _absoluteBFacSubtract;
-	double _absoluteBFacMult;
+    double _absoluteBFacSubtract;
+    double _absoluteBFacMult;
 
-	std::string _chainID;
+    std::string _chainID;
 
 };
 
