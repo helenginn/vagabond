@@ -13,6 +13,7 @@
 VagabondGLWidget::VagabondGLWidget(QWidget *obj) : QOpenGLWidget(obj)
 {
     keeper = NULL;
+    timer = NULL;
     _mouseButton = Qt::NoButton;
     _lastX = 0; _lastY = 0;
     _controlPressed = false;

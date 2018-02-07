@@ -21,6 +21,18 @@ public:
     {
         return keeper;
     }
+
+    void startTimer()
+    {
+        if (!timer) return;
+        timer->start();
+    }
+
+    void stopTimer()
+    {
+        if (!timer) return;
+        timer->start(100);
+    }
 protected:
     virtual void initializeGL();
     virtual void paintGL();
@@ -37,6 +49,6 @@ private:
     QTimer *timer;
     
     Qt::MouseButton _mouseButton;
-	bool _controlPressed;
+    bool _controlPressed;
     double _lastX; double _lastY;
 };
