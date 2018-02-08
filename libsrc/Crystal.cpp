@@ -543,6 +543,13 @@ void Crystal::makePDBs(std::string suffix)
     }
  };
 
+void Crystal::writeVagabondFile()
+{
+    std::ofstream file;
+    file.open("test.vbond");
+    writeToFile(file, 0);
+    file.close();
+}
 
 double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 {
@@ -569,6 +576,8 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
             polymer->closenessSummary();
         }
     }
+
+    writeVagabondFile();
 
     return rFac;
 }
@@ -627,3 +636,9 @@ std::string Crystal::agreementSummary()
     ss << "CCwork/free: " << _ccWork << ", " << _ccFree << std::endl;
     return ss.str();
 }
+
+void Crystal::addProperties()
+{
+
+}
+

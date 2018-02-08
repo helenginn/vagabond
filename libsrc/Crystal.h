@@ -21,12 +21,13 @@
 #include "Molecule.h"
 #include "../libccp4/csymlib.h"
 #include <iostream>
+#include "Parser.h"
 
 #define HARD_CODED_RESOLUTION 1.0
 
 typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
-class Crystal : public Object, public boost::enable_shared_from_this<Crystal>
+class Crystal : public Object, public boost::enable_shared_from_this<Crystal>, public Parser
 {
 public:
     Crystal();
@@ -155,6 +156,20 @@ public:
     }
 
     std::string agreementSummary();
+
+protected:
+    virtual std::string getClassName()
+    {
+        return "Crystal";
+    }
+
+    virtual std::string getIdentifier()
+    {
+        return "Crystal_" + _filename;
+    }
+
+    virtual void addProperties();
+
 private:
     MoleculeMap _molecules;
     std::string _filename;
@@ -170,6 +185,7 @@ private:
     double totalToScale();
 
     void makePDBs(std::string suffix);
+    void writeVagabondFile();
     void applySymOps();
 
     double _rWork;

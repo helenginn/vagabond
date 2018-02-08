@@ -126,6 +126,9 @@ typedef boost::shared_ptr<Sampler> SamplerPtr;
 
 typedef std::vector<AtomWkr> AtomList;
 
+class Parser;
+typedef boost::shared_ptr<Parser> ParserPtr;
+
 typedef enum
 {
 	MaskUnchecked = 0,
