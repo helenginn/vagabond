@@ -50,6 +50,7 @@ class Bond : public Model, public Sampler
 public:
 	Bond(AtomPtr major, AtomPtr minor, int group = 0);
 	Bond(Bond &other);
+        void initialize();
 	void activate(AtomGroupPtr group = AtomGroupPtr(),
 				  AtomPtr inherit = AtomPtr());
 	void setupSampling();

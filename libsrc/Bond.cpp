@@ -25,18 +25,11 @@
 #include "RefinementNelderMead.h"
 #include "Options.h"
 
-Bond::Bond()
-{
-    _anchored = false;
-}
-
-Bond::Bond(AtomPtr major, AtomPtr minor, int group)
+void Bond::initialize()
 {
     _anchored = false;
     _usingTorsion = false;
     _activated = false;
-    _major = major;
-    _minor = minor;
     _activeGroup = 0;
     _dampening = Options::getDampen();
     _bondLength = 0;
@@ -57,6 +50,18 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
     aGroup.magicPhi = 0;
     aGroup.magicPsi = 0;
     _bondGroups.push_back(aGroup);
+}
+
+Bond::Bond()
+{
+    initialize();
+}
+
+Bond::Bond(AtomPtr major, AtomPtr minor, int group)
+{
+    initialize();
+    _major = major;
+    _minor = minor;
 
     _disabled = (!major || !minor);
 
@@ -83,7 +88,6 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
     vec3_set_length(&difference, _bondLength);
 
     _bondDirection = difference;
-//    _bondGroups[_activeGroup].magicAxis = _bondDirection;
     deriveBondLength();
 
     ModelPtr upModel = getMajor()->getModel();
