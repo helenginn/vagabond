@@ -140,7 +140,8 @@ void Parser::outputContents(std::ofstream &stream, int in)
         stream << indent(in) << name << " = " << *ptr << std::endl;
     }
 
-    for (ParserList::iterator it = _parserList.begin(); it != _parserList.end(); it++)
+    for (ParserList::iterator it = _parserList.begin();
+         it != _parserList.end(); it++)
     {
         std::string category = it->first;
         stream << indent(in) << "category " << category << std::endl;
@@ -150,11 +151,28 @@ void Parser::outputContents(std::ofstream &stream, int in)
         for (int i = 0; i < it->second.size(); i++)
         {
             ParserPtr child = it->second.at(i);
-            child->writeToFile(stream, in);            
+            child->outputContents(stream, in);            
         }
 
         in--;
         stream << indent(in) << "}" << std::endl;
+    }
+
+    for (ReferenceList::iterator it = _referenceList.begin();
+         it != _referenceList.end(); it++)
+    {
+        std::string category = it->first;
+        stream << indent(in) << "references " << category << std::endl;
+        stream << indent(in) << "{" << std::endl;
+        in++;
+
+        for (int j = 0; j < it->second.size(); j++)
+        {
+            ParserPtr child = it->second.at(j);
+            stream << indent(in) << child->getAbsolutePath() << std::endl;
+        }
+    
+        in--;
     }
 
     in--;
@@ -164,6 +182,13 @@ void Parser::outputContents(std::ofstream &stream, int in)
 void Parser::writeToFile(std::ofstream &stream, int in)
 {
     setup();
-
     outputContents(stream, in);
 }
+
+
+void Parser::addReference(std::string category, ParserPtr cousin)
+{
+    _referenceList[category].push_back(cousin);
+    
+}
+

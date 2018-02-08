@@ -36,6 +36,7 @@ typedef struct
 } IntProperty;
 
 typedef std::map<std::string, std::vector<ParserPtr> > ParserList;
+typedef std::map<std::string, std::vector<ParserPtr> > ReferenceList;
 
 class Parser 
 {
@@ -53,8 +54,8 @@ protected:
     void addIntProperty(std::string className, int *ptr);
     void addVec3Property(std::string className, vec3 *ptr);
     void addChild(std::string category, ParserPtr child);
+    void addReference(std::string category, ParserPtr cousin);
 
-    void outputContents(std::ofstream &stream, int in);
     void writeToFile(std::ofstream &stream, int indent);
 private:
     std::string _className;
@@ -72,10 +73,13 @@ private:
     std::vector<IntProperty> _intProperties;
     std::vector<Vec3Property> _vec3Properties;
     ParserList _parserList;
+    ReferenceList _referenceList;
 
     void makePath();
     void setup();
     bool _setup;
+    
+    void outputContents(std::ofstream &stream, int in);
 };
 
 
