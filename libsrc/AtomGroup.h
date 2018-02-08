@@ -127,7 +127,7 @@ protected:
         return "AtomGroup";
     }
 
-    virtual std::string getIdentifier()
+    virtual std::string getParserIdentifier()
     {
         return "AtomGroupSomething";
     }

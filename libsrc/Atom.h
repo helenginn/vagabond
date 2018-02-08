@@ -212,7 +212,7 @@ protected:
         return "Atom";
     }
 
-    virtual std::string getIdentifier()
+    virtual std::string getParserIdentifier()
     {
         return "atom_" + i_to_str(_atomNum);
     }

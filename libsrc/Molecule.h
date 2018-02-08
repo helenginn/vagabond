@@ -105,7 +105,7 @@ public:
         return ToMoleculePtr(groupPtr);
     }
 protected:
-    virtual std::string getIdentifier()
+    virtual std::string getParserIdentifier()
     {
         return "chain_" + _chainID; 
     }

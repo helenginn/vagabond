@@ -153,7 +153,7 @@ protected:
         return "Crystal";
     }
 
-    virtual std::string getIdentifier()
+    virtual std::string getParserIdentifier()
     {
         return "Crystal_" + _filename;
     }

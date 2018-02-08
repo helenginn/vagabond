@@ -18,7 +18,7 @@ void Parser::setup()
 {
     if (_setup) return;
 
-    _identifier = getIdentifier(); 
+    _identifier = getParserIdentifier(); 
     _className = getClassName();
 
     makePath();
@@ -173,6 +173,7 @@ void Parser::outputContents(std::ofstream &stream, int in)
         }
     
         in--;
+        stream << indent(in) << "}" << std::endl;
     }
 
     in--;

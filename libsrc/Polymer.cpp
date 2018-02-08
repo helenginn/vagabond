@@ -1024,3 +1024,14 @@ void Polymer::optimiseTranslationTensor()
     nelderMead->refine();
 }
 
+void Polymer::addProperties()
+{
+    Molecule::addProperties();
+
+    for (int i = 0; i < monomerCount(); i++)
+    {
+        if (!getMonomer(i)) continue;
+
+        addChild("monomer", getMonomer(i));
+    }
+}

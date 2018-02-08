@@ -45,7 +45,7 @@ public:
 
 protected:
     virtual std::string getClassName() = 0;
-    virtual std::string getIdentifier() = 0;
+    virtual std::string getParserIdentifier() = 0;
     virtual void addProperties() = 0;
 
     void setParent(Parser *parent);

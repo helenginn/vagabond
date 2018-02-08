@@ -203,6 +203,7 @@ public:
     }
 
     void optimiseTranslationTensor();
+    virtual void addProperties();
 protected:
     virtual double getScore()
     {

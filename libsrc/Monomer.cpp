@@ -213,3 +213,10 @@ std::string Monomer::getResCode()
     return GeomTable::getResCode(getIdentifier());
 }
 
+void Monomer::addProperties()
+{
+    for (int i = 0; i < atomCount(); i++)
+    {
+        addReference("atom", atom(i));
+    }
+}

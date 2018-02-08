@@ -15,6 +15,7 @@
 #include <vector>
 #include "Sidechain.h"
 #include "AtomGroup.h"
+#include "FileReader.h"
 
 class Monomer : public AtomGroup
 {
@@ -98,6 +99,18 @@ public:
 
     std::string getResCode();
     void setSideKick(double value);
+
+    virtual std::string getClassName()
+    {
+        return "Monomer";
+    }
+
+    virtual std::string getParserIdentifier()
+    {
+        return _identifier + i_to_str(_residueNum);
+    }
+
+    virtual void addProperties();
 private:
     std::string _identifier; // e.g. three-letter code
     int _residueNum; // number in protein sequence including missing ones.
