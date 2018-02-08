@@ -379,5 +379,9 @@ void Atom::addProperties()
     addIntProperty("atom_num", &_atomNum);
     addDoubleProperty("init_occupancy", &_origOccupancy);
     addStringProperty("conformer", &_conformer);
+    addBoolProperty("from_pdb", &_fromPDB);
+
     // add tensor, matrix stuff
+
+
 }

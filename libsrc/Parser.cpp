@@ -170,7 +170,7 @@ void Parser::outputContents(std::ofstream &stream, int in)
     for (int i = 0; i < _boolProperties.size(); i++)
     {
         std::string name = _boolProperties[i].ptrName;
-        int *ptr = _boolProperties[i].boolPtr;
+        bool *ptr = _boolProperties[i].boolPtr;
         if (!ptr) continue;
         stream << indent(in) << name << " = " << *ptr << std::endl;
     }
