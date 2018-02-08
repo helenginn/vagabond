@@ -466,7 +466,6 @@ void Crystal::setAnchors()
     }
 }
 
-
 void Crystal::changeAnchors(int newAnchor)
 {
     if (_anchorResidues.size() >= newAnchor)
