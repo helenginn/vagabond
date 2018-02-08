@@ -81,6 +81,14 @@ void Parser::addVec3Property(std::string className, vec3 *ptr)
     _vec3Properties.push_back(property);
 }
 
+void Parser::addBoolProperty(std::string className, bool *ptr)
+{
+    BoolProperty property;
+    property.ptrName = className;
+    property.boolPtr = ptr;
+    _boolProperties.push_back(property);
+}
+
 void Parser::addCustomProperty(std::string className, void *ptr,
                                void *delegate, Encoder encoder)
 {
@@ -157,6 +165,14 @@ void Parser::outputContents(std::ofstream &stream, int in)
         (*encoder)(delegate, ptr, stream, in);
         in--;
         stream << indent(in) << "}" << std::endl;
+    }
+
+    for (int i = 0; i < _boolProperties.size(); i++)
+    {
+        std::string name = _boolProperties[i].ptrName;
+        int *ptr = _boolProperties[i].boolPtr;
+        if (!ptr) continue;
+        stream << indent(in) << name << " = " << *ptr << std::endl;
     }
 
     for (int i = 0; i < _intProperties.size(); i++)

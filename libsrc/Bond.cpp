@@ -1515,3 +1515,21 @@ double Bond::getEffectiveOccupancy()
 
     return total;
 }
+
+void Bond::addProperties()
+{
+    addReference("minor", getMinor());
+    addReference("major", getMajor());
+    addReference("heavy", getHeavyAlign());
+    addReference("light", getLightAlign());
+
+    addDoubleProperty("length", &_bondLength);    
+    addDoubleProperty("dampening", &_dampening);
+    addDoubleProperty("occupancy", &_occupancy);
+    addDoubleProperty("occ_mult", &_occMult);
+
+    addBoolProperty("fixed", &_fixed);
+    addBoolProperty("anchored", &_anchored);
+    addBoolProperty("using_torsion", &_usingTorsion);
+    addBoolProperty("refine_bond_angle", &_refineBondAngle);
+}

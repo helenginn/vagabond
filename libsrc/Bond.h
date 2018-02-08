@@ -376,6 +376,8 @@ protected:
         {
             return "bond_" + shortDesc();
         }
+
+        virtual void addProperties();
 private:
 	std::string _shortDesc;
 
@@ -388,7 +390,6 @@ private:
 
 	/* Downstream groups of bonds */
 	std::vector<BondGroup> _bondGroups;
-	std::vector<AtomWkr> _extraTorsionSamples;
 	std::vector<AtomWkr> _magicAxisAtoms;
 
 	int magicAtomCount()

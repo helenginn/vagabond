@@ -31,6 +31,12 @@ typedef struct
 
 typedef struct
 {
+    bool *boolPtr; 
+    std::string ptrName;
+} BoolProperty;
+
+typedef struct
+{
     int *intPtr;
     std::string ptrName;
 } IntProperty;
@@ -65,6 +71,7 @@ protected:
     void addVec3Property(std::string className, vec3 *ptr);
     void addCustomProperty(std::string className, void *ptr,
                            void *delegate, Encoder encoder); 
+    void addBoolProperty(std::string className, bool *ptr);
     void addChild(std::string category, ParserPtr child);
     void addReference(std::string category, ParserPtr cousin);
 
@@ -85,6 +92,7 @@ private:
     std::vector<IntProperty> _intProperties;
     std::vector<Vec3Property> _vec3Properties;
     std::vector<CustomProperty> _customProperties;
+    std::vector<BoolProperty> _boolProperties;
     ParserList _parserList;
     ReferenceList _referenceList;
 

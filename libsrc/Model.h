@@ -14,6 +14,7 @@
 #include <vector>
 #include "Distributor.h"
 #include <mutex>
+#include "Parser.h"
 
 typedef struct
 {
@@ -34,7 +35,7 @@ typedef enum
 // Anything which is capable of predicting electron positions.
 //
 
-class Model : public boost::enable_shared_from_this<Model>, public Distributor, public Parser;
+class Model : public boost::enable_shared_from_this<Model>, public Distributor, public Parser
 {
 public:
 	Model();
