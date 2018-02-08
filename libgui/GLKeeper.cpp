@@ -58,7 +58,7 @@ void GLKeeper::updateCamera(void)
 
     mat4x4 transMat = make_mat4x4();
     _centre = vec3_add_vec3(_centre, _translation);
-//    _translation = vec3_add_vec3(_translation, alteration);
+    _translation = vec3_add_vec3(_translation, alteration);
     mat4x4_translate(&transMat, _translation);
 
     mat4x4 tmp = mat4x4_mult_mat4x4(change, transMat);
