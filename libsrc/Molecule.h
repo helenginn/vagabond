@@ -24,7 +24,6 @@ class Molecule : public AtomGroup
 {
 public:
     Molecule();
-    void addModel(ModelPtr model);
 
     void addToMap(FFTPtr fft, mat3x3 _real2frac);
 
@@ -113,7 +112,6 @@ protected:
     std::vector<mat3x3> _extraRotationMats;
 
 private:
-    std::vector<ModelPtr> models;
 
     double _absoluteBFacSubtract;
     double _absoluteBFacMult;

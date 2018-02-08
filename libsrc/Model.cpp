@@ -18,18 +18,12 @@ Model::Model()
 	_realSpaceTensor = make_mat3x3();
 }
 
-void Model::addToMolecule(MoleculePtr molecule)
-{
-	molecule->addModel(shared_from_this());
-}
-
 void Model::addToMonomer(MonomerPtr monomer)
 {
 	monomer->addModel(shared_from_this());
 
 	PolymerPtr polymer = monomer->getPolymer();
 	MoleculePtr molecule = boost::static_pointer_cast<Molecule>(polymer);
-	molecule->addModel(shared_from_this());
 }
 
 double returnOne(void *object, double x, double y, double z)

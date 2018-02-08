@@ -86,11 +86,8 @@ void Absolute::makeAtom()
 void Absolute::addToMolecule(MoleculePtr molecule)
 {
     makeAtom();
-
     molecule->addAtom(_atom);
-
     setMolecule(molecule);
-    Model::addToMolecule(molecule);
 }
 
 double Absolute::getExpValue(void *object, double x, double y, double z)

@@ -34,11 +34,6 @@ void Molecule::tieAtomsUp()
 	}
 }
 
-void Molecule::addModel(ModelPtr aModel)
-{
-	models.push_back(aModel);
-}
-
 void Molecule::addToMap(FFTPtr fft, mat3x3 _real2frac)
 {
 	for (int i = 0; i < atomCount(); i++)
