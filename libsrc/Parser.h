@@ -15,6 +15,12 @@ typedef struct
     std::string ptrName;
 } StringProperty;
 
+typedef struct
+{
+    double *doublePtr;
+    std::string ptrName;
+} DoubleProperty;
+
 class Parser
 {
 public:
@@ -27,6 +33,7 @@ protected:
 
     void setParent(ParserPtr parent);
     void addStringProperty(std::string className, std::string *ptr);
+    void addDoubleProperty(std::string className, double *ptr);
 
     void writeToFile(std::ofstream &stream, int indent);
 private:
@@ -41,6 +48,7 @@ private:
     }
 
     std::vector<StringProperty> _stringProperties;
+    std::vector<DoubleProperty> _doubleProperties;
 
     void makePath();
     void setup();

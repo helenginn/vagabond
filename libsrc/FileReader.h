@@ -63,6 +63,11 @@ public:
 			return filename;
 		}
 
+                if (outputDir[0] == '/')
+                {
+                    return outputDir + "/" + filename;
+                }
+
 		std::string fullPath = "./" + outputDir + "/" + filename;
 		return fullPath;
 	}

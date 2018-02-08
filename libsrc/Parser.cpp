@@ -6,6 +6,7 @@
 #include "Parser.h"
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 
 Parser::Parser()
 {
@@ -20,7 +21,7 @@ void Parser::setup()
     _className = getClassName();
     makePath();
 
-
+    addProperties();
 }
 
 void Parser::makePath()
@@ -55,6 +56,14 @@ void Parser::addStringProperty(std::string className, std::string *ptr)
     _stringProperties.push_back(property);
 }
 
+void Parser::addDoubleProperty(std::string className, double *ptr)
+{
+    DoubleProperty property;
+    property.ptrName = className;
+    property.doublePtr = ptr;
+    _doubleProperties.push_back(property);
+}
+
 std::string indent(int num)
 {
     std::ostringstream stream;
@@ -69,10 +78,28 @@ std::string indent(int num)
 void Parser::writeToFile(std::ofstream &stream, int i)
 {
     setup();
+    stream << std::setprecision(5);
     stream << indent(i) << "object " << _className
            << ", " << _absolutePath << std::endl;
     stream << indent(i) << "{" << std::endl;
     i++;
+    
+    for (int i = 0; i < _stringProperties.size(); i++)
+    {
+        std::string name = _stringProperties[i].ptrName;
+        std::string *ptr = _stringProperties[i].stringPtr;
+        if (!ptr) continue;
+        stream << indent(i) << name << " = \"" << *ptr << "\"" << std::endl;
+    }
+ 
+    for (int i = 0; i < _doubleProperties.size(); i++)
+    {
+        std::string name = _doubleProperties[i].ptrName;
+        double *ptr = _doubleProperties[i].doublePtr;
+        if (!ptr) continue;
+        stream << indent(i) << name << " = " << *ptr << std::endl;
+    }
+
     stream << indent(i) << "stuff..." << std::endl;
     i--;
     stream << indent(i) << "}" << std::endl;

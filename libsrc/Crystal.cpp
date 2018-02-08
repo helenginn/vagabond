@@ -546,7 +546,8 @@ void Crystal::makePDBs(std::string suffix)
 void Crystal::writeVagabondFile()
 {
     std::ofstream file;
-    file.open("test.vbond");
+    std::string vbondFile = FileReader::addOutputDirectory("test.vbond");
+    file.open(vbondFile);
     writeToFile(file, 0);
     file.close();
 }
@@ -639,6 +640,13 @@ std::string Crystal::agreementSummary()
 
 void Crystal::addProperties()
 {
+    addStringProperty("filename", &_filename);
+    addDoubleProperty("uc_a", &_unitCell[0]);
+    addDoubleProperty("uc_b", &_unitCell[1]);
+    addDoubleProperty("uc_c", &_unitCell[2]);
+    addDoubleProperty("uc_alpha", &_unitCell[3]);
+    addDoubleProperty("uc_beta", &_unitCell[4]);
+    addDoubleProperty("uc_gamma", &_unitCell[5]);
 
 }
 
