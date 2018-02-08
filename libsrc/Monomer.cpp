@@ -215,8 +215,5 @@ std::string Monomer::getResCode()
 
 void Monomer::addProperties()
 {
-    for (int i = 0; i < atomCount(); i++)
-    {
-        addReference("atom", atom(i));
-    }
+    AtomGroup::addProperties();
 }

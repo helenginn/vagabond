@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "AtomGroup.h"
 #include "Sampler.h"
+#include "FileReader.h"
 
 class Sidechain : public AtomGroup
 {
@@ -80,6 +81,17 @@ protected:
     {
         return findAtoms("CB");
     }
+
+    virtual std::string getClassName()
+    {
+        return "Sidechain";
+    }
+
+    virtual std::string getParserIdentifier()
+    {
+        return "side_" + i_to_str(_resNum);
+    }
+
 private:
     void refreshRotamers();
     bool _rotamerised;
