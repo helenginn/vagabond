@@ -16,40 +16,40 @@
 class Backbone : public AtomGroup
 {
 public:
-	void setPolymer(PolymerPtr poly)
-	{
-		_myPolymer = poly;
-	}
-	
-	PolymerPtr getPolymer()
-	{
-		return _myPolymer.lock();
-	}
+    void setPolymer(PolymerPtr poly)
+    {
+        _myPolymer = poly;
+    }
+    
+    PolymerPtr getPolymer()
+    {
+        return _myPolymer.lock();
+    }
 
-	void setResNum(int resNum)
-	{
-		_resNum = resNum;
-	}
+    void setResNum(int resNum)
+    {
+        _resNum = resNum;
+    }
 
-	int getResNum()
-	{
-		return _resNum;
-	}
+    int getResNum()
+    {
+        return _resNum;
+    }
 
-	virtual bool shouldRefineAngles()
-	{
-		return (_timesRefined > 0);
-	}
+    virtual bool shouldRefineAngles()
+    {
+        return (_timesRefined > 0);
+    }
 
-	AtomPtr betaCarbonTorsionAtom();
+    AtomPtr betaCarbonTorsionAtom();
 
-	virtual void refine(CrystalPtr target, RefinementType rType);
-	void setAnchor();
+    virtual void refine(CrystalPtr target, RefinementType rType);
+    void setAnchor();
 protected:
-	virtual bool shouldRefineMagicAxis(BondPtr bond);
+    virtual bool shouldRefineMagicAxis(BondPtr bond);
 private:
-	int _resNum;
-	PolymerWkr _myPolymer;
+    int _resNum;
+    PolymerWkr _myPolymer;
 };
 
 #endif /* defined(__vagabond__Backbone__) */
