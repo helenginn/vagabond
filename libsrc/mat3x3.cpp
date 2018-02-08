@@ -532,7 +532,7 @@ double mat3x3_rotation_angle(mat3x3 &mat)
 {
     double angle = 0;
     double a = mat.vals[0];
-    double b = mat.vals[5];
+    double b = mat.vals[4];
     double c = mat.vals[8];
 
     double cosTheta = (a + b + c - 1) / 2;
