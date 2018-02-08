@@ -81,6 +81,17 @@ void Parser::addVec3Property(std::string className, vec3 *ptr)
     _vec3Properties.push_back(property);
 }
 
+void Parser::addCustomProperty(std::string className, void *ptr,
+                               void *delegate, Encoder encoder)
+{
+    CustomProperty property;
+    property.ptrName = className;
+    property.objPtr = ptr;
+    property.delegate = delegate;
+    property.encoder = encoder;
+    _customProperties.push_back(property);
+}
+
 void Parser::addChild(std::string category, ParserPtr child)
 {
     child->setParent(this);
@@ -130,6 +141,22 @@ void Parser::outputContents(std::ofstream &stream, int in)
         if (!ptr) continue;
         stream << indent(in) << name << " = " << ptr->x
                << ", " << ptr->y << ", " << ptr->z << std::endl;
+    }
+
+    for (int i = 0; i < _customProperties.size(); i++)
+    {
+        std::string name = _customProperties[i].ptrName;
+        void *ptr = _customProperties[i].objPtr;
+        void *delegate = _customProperties[i].delegate;
+        if (!ptr || delegate) continue;
+
+        stream << indent(in) << "special " << name << std::endl;  
+        stream << indent(in) << "{" << std::endl;
+        in++;
+        Encoder encoder = _customProperties[i].encoder;
+        (*encoder)(delegate, ptr, stream, in);
+        in--;
+        stream << indent(in) << "}" << std::endl;
     }
 
     for (int i = 0; i < _intProperties.size(); i++)
@@ -183,6 +210,9 @@ void Parser::outputContents(std::ofstream &stream, int in)
 void Parser::writeToFile(std::ofstream &stream, int in)
 {
     setup();
+
+    stream << "vagabond data structure v0.0" << std::endl;
+
     outputContents(stream, in);
 }
 

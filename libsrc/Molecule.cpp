@@ -113,7 +113,4 @@ void Molecule::addProperties()
     {
         addChild("atom", atom(i));
     }
-
-    addChild("sidechain", _sidechain);
-    addChild("backbone", _backbone);
 }

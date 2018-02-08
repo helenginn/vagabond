@@ -215,3 +215,8 @@ mat3x3 Model::getRealSpaceTensor()
 	longestAxis();
 	return _realSpaceTensor;
 }
+
+void Model::addProperties()
+{
+
+}

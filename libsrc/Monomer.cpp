@@ -216,4 +216,6 @@ std::string Monomer::getResCode()
 void Monomer::addProperties()
 {
     AtomGroup::addProperties();
+    addChild("sidechain", _sidechain);
+    addChild("backbone", _backbone);
 }

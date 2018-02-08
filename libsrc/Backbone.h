@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "AtomGroup.h"
 #include "Sampler.h"
+#include "FileReader.h"
 
 class Backbone : public AtomGroup
 {
@@ -47,6 +48,17 @@ public:
     void setAnchor();
 protected:
     virtual bool shouldRefineMagicAxis(BondPtr bond);
+
+    virtual std::string getClassName()
+    {
+        return "Backbone";
+    }
+
+    virtual std::string getParserIdentifier()
+    {
+        return "back_" + i_to_str(_resNum);
+    }
+
 private:
     int _resNum;
     PolymerWkr _myPolymer;

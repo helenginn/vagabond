@@ -35,6 +35,16 @@ typedef struct
     std::string ptrName;
 } IntProperty;
 
+typedef void (*Encoder)(void *, void *, std::ofstream &, int);
+
+typedef struct
+{
+    void *objPtr;
+    std::string ptrName;
+    void *delegate;
+    Encoder encoder;
+} CustomProperty;
+
 typedef std::map<std::string, std::vector<ParserPtr> > ParserList;
 typedef std::map<std::string, std::vector<ParserPtr> > ReferenceList;
 
@@ -53,6 +63,8 @@ protected:
     void addDoubleProperty(std::string className, double *ptr);
     void addIntProperty(std::string className, int *ptr);
     void addVec3Property(std::string className, vec3 *ptr);
+    void addCustomProperty(std::string className, void *ptr,
+                           void *delegate, Encoder encoder); 
     void addChild(std::string category, ParserPtr child);
     void addReference(std::string category, ParserPtr cousin);
 
@@ -72,6 +84,7 @@ private:
     std::vector<DoubleProperty> _doubleProperties;
     std::vector<IntProperty> _intProperties;
     std::vector<Vec3Property> _vec3Properties;
+    std::vector<CustomProperty> _customProperties;
     ParserList _parserList;
     ReferenceList _referenceList;
 

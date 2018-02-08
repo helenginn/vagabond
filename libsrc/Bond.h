@@ -372,6 +372,10 @@ protected:
 
 	AtomWkr _minor;
 
+        virtual std::string getParserIdentifier()
+        {
+            return "bond_" + shortDesc();
+        }
 private:
 	std::string _shortDesc;
 

@@ -34,7 +34,7 @@ typedef enum
 // Anything which is capable of predicting electron positions.
 //
 
-class Model : public boost::enable_shared_from_this<Model>, public Distributor
+class Model : public boost::enable_shared_from_this<Model>, public Distributor, public Parser;
 {
 public:
 	Model();
@@ -123,6 +123,12 @@ protected:
 	double anisotropyExtent(bool withKabsch = false);
 	double _isotropicAverage;
 
+        virtual std::string getParserIdentifier()
+        {
+            return "model"; 
+        }
+
+        virtual void addProperties();
 private:
 	std::vector<AtomPtr> atoms;
 	std::mutex guiLock;
