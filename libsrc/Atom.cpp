@@ -369,3 +369,15 @@ double Atom::getAngle(AtomPtr atom1, AtomPtr atom2, AtomPtr atom3)
 
 	return angle;
 }
+
+void Atom::addProperties()
+{
+    addStringProperty("atom_name", &_atomName);
+    addDoubleProperty("init_b", &_initialB);
+    addVec3Property("init_pos", &_initialPosition);
+    addVec3Property("pdb_pos", &_pdbPosition);
+    addIntProperty("atom_num", &_atomNum);
+    addDoubleProperty("init_occupancy", &_origOccupancy);
+    addStringProperty("conformer", &_conformer);
+    // add tensor, matrix stuff
+}

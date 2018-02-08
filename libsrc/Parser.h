@@ -7,7 +7,9 @@
 #define __vagabond__Parser__
 
 #include "shared_ptrs.h"
+#include <map>
 #include <fstream>
+#include "vec3.h"
 
 typedef struct
 {
@@ -21,7 +23,21 @@ typedef struct
     std::string ptrName;
 } DoubleProperty;
 
-class Parser
+typedef struct
+{
+    vec3 *vec3Ptr;
+    std::string ptrName;
+} Vec3Property;
+
+typedef struct
+{
+    int *intPtr;
+    std::string ptrName;
+} IntProperty;
+
+typedef std::map<std::string, std::vector<ParserPtr> > ParserList;
+
+class Parser 
 {
 public:
     Parser();
@@ -31,16 +47,20 @@ protected:
     virtual std::string getIdentifier() = 0;
     virtual void addProperties() = 0;
 
-    void setParent(ParserPtr parent);
+    void setParent(Parser *parent);
     void addStringProperty(std::string className, std::string *ptr);
     void addDoubleProperty(std::string className, double *ptr);
+    void addIntProperty(std::string className, int *ptr);
+    void addVec3Property(std::string className, vec3 *ptr);
+    void addChild(std::string category, ParserPtr child);
 
+    void outputContents(std::ofstream &stream, int in);
     void writeToFile(std::ofstream &stream, int indent);
 private:
     std::string _className;
     std::string _identifier;
     std::string _absolutePath;    
-    ParserPtr _parent;
+    Parser *_parent;
 
     std::string getAbsolutePath()
     {
@@ -49,6 +69,9 @@ private:
 
     std::vector<StringProperty> _stringProperties;
     std::vector<DoubleProperty> _doubleProperties;
+    std::vector<IntProperty> _intProperties;
+    std::vector<Vec3Property> _vec3Properties;
+    ParserList _parserList;
 
     void makePath();
     void setup();

@@ -14,9 +14,10 @@
 #include <vector>
 #include "shared_ptrs.h"
 #include "Sampler.h"
+#include "Parser.h"
 #include <map>
 
-class AtomGroup : public boost::enable_shared_from_this<AtomGroup>, public Sampler
+class AtomGroup : public boost::enable_shared_from_this<AtomGroup>, public Sampler, public Parser
 {
 public:
     AtomPtr findAtom(std::string atomType);
@@ -120,6 +121,19 @@ protected:
     {
         return _beenTied;
     }
+
+    virtual std::string getClassName()
+    {
+        return "AtomGroup";
+    }
+
+    virtual std::string getIdentifier()
+    {
+        return "AtomGroupSomething";
+    }
+
+    virtual void addProperties();
+
 private:
     MonomerWkr _monomer;
 

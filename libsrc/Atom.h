@@ -18,8 +18,9 @@
 #include "../libinfo/GeomTable.h"
 #include "fftw3d.h"
 #include "Parser.h"
+#include "FileReader.h"
 
-class Atom : public boost::enable_shared_from_this<Atom>, public Parser.h
+class Atom : public boost::enable_shared_from_this<Atom>, public Parser
 {
 public:
     Atom();
@@ -206,8 +207,17 @@ public:
 
     static double getAngle(AtomPtr atom1, AtomPtr atom2, AtomPtr atom3);
 protected:
+    virtual std::string getClassName()
+    {
+        return "Atom";
+    }
 
+    virtual std::string getIdentifier()
+    {
+        return "atom_" + i_to_str(_atomNum);
+    }
 
+    virtual void addProperties();
 private:
     ModelPtr _model;
     ModelPtr _distModelOnly;

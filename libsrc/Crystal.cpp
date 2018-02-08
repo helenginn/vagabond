@@ -645,6 +645,11 @@ void Crystal::addProperties()
     addDoubleProperty("uc_alpha", &_unitCell[3]);
     addDoubleProperty("uc_beta", &_unitCell[4]);
     addDoubleProperty("uc_gamma", &_unitCell[5]);
+    addIntProperty("spacegroup", &(_spaceGroup->spg_num));
 
+    for (int i = 0; i < moleculeCount(); i++)
+    {
+        addChild("molecule", molecule(i));
+    }
 }
 

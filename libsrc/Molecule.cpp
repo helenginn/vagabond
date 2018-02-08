@@ -103,3 +103,11 @@ void Molecule::resetInitialPositions()
 }
 
 
+void Molecule::addProperties()
+{
+    addStringProperty("chain_id", &_chainID);
+    addDoubleProperty("absolute_bfac_mult", &_absoluteBFacMult);
+    addDoubleProperty("absolute_bfac_subtract", &_absoluteBFacSubtract);
+
+    AtomGroup::addProperties();
+}

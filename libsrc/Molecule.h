@@ -105,6 +105,13 @@ public:
         return ToMoleculePtr(groupPtr);
     }
 protected:
+    virtual std::string getIdentifier()
+    {
+        return "chain_" + _chainID; 
+    }
+
+    virtual void addProperties();
+    
     std::vector<vec3> _centroidOffsets;
     std::vector<vec3> _centroids; // after offset correction
     std::vector<mat3x3> _rotations;
