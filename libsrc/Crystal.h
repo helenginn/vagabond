@@ -145,16 +145,6 @@ public:
         return _anchorResidues.size();
     }
 
-    void setOverallBFactor(double b)
-    {
-        _overallFlex = b;
-    }
-
-    double getOverallBFactor()
-    {
-        return _overallFlex;
-    }
-
     std::string agreementSummary();
 
 protected:
@@ -175,13 +165,11 @@ private:
     std::string _filename;
 
     std::vector<double> _unitCell;
-    double _firstScale;
     mat3x3 _hkl2real;
     mat3x3 _real2frac;
     CSym::CCP4SPG *_spaceGroup;
     double _maxResolution;
     std::vector<int> _anchorResidues;
-    double _overallFlex;
     double totalToScale();
 
     void makePDBs(std::string suffix);

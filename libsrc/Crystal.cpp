@@ -486,9 +486,8 @@ void Crystal::changeAnchors(int newAnchor)
 
 Crystal::Crystal()
 {
-    _firstScale = -1;
     _maxResolution = 0;
-    _overallFlex = 0.001;
+    _unitCell.resize(6);
 }
 
 void Crystal::applySymOps()

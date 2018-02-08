@@ -53,7 +53,6 @@ public:
     static double getSideKick(void *object);
     static void setSideKick(void *object, double value);
 
-    void scaleFlexibilityToBFactor(CrystalPtr target);
     void scaleSidechainsToBFactor();
     void superimpose();
     virtual void reportParameters();

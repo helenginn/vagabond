@@ -112,7 +112,6 @@ protected:
     std::vector<mat3x3> _extraRotationMats;
 
 private:
-
     double _absoluteBFacSubtract;
     double _absoluteBFacMult;
 
