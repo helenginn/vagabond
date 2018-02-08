@@ -109,5 +109,8 @@ void Molecule::addProperties()
     addDoubleProperty("absolute_bfac_mult", &_absoluteBFacMult);
     addDoubleProperty("absolute_bfac_subtract", &_absoluteBFacSubtract);
 
-    AtomGroup::addProperties();
+    for (int i = 0; i < atomCount(); i++)
+    {
+        addChild("atom", atom(i));
+    }
 }

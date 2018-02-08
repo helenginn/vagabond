@@ -617,8 +617,5 @@ double AtomGroup::scoreWithMap(std::vector<AtomPtr> atoms, ScoreType scoreType,
 
 void AtomGroup::addProperties()
 {
-    for (int i = 0; i < atomCount(); i++)
-    {
-        addChild("atom", atom(i));
-    }
+
 }
