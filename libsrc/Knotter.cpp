@@ -70,7 +70,7 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
         ca2ha->activate(_sidechain);
     }
 
-    if (Options::enableTests() == 2)
+    if (Options::enableTests() >= 2)
     {
         ca2cb->setRefineBondAngle();
     }
@@ -920,6 +920,11 @@ void Knotter::makeHistidine()
     cb2cg->addExtraTorsionSample(cEpsilon1, 0);
     cb2cg->addExtraTorsionSample(cDelta2, 0);
 
+    if (Options::enableTests() >= 2)
+    {
+        cb2cg->setRefineBondAngle();
+    }
+    
     BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
     cb2hb2->activate(_sidechain, inherit);
     BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
@@ -1389,7 +1394,7 @@ void Knotter::makeAspartate()
     cb2cg1->setTorsionAtoms(cAlpha, oDelta1);
     cb2cg1->activate(_sidechain, inherit);
 
-    if (Options::enableTests() == 2)
+    if (Options::enableTests() >= 2)
     {
         cb2cg1->setRefineBondAngle();
     }
