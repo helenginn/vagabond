@@ -19,196 +19,197 @@
 
 Monomer::Monomer()
 {
-	_backbone = BackbonePtr(new Backbone());
-	_sidechain = SidechainPtr(new Sidechain());
+    _backbone = BackbonePtr(new Backbone());
+    _sidechain = SidechainPtr(new Sidechain());
 }
 
 void Monomer::setup()
 {
-	_backbone->setMonomer(shared_from_this());
-	_backbone->setPolymer(getPolymer());
-	_backbone->setResNum(_residueNum);
-	_sidechain->setMonomer(shared_from_this());
-	_sidechain->setResNum(_residueNum);
+    _backbone->setMonomer(shared_from_this());
+    _backbone->setPolymer(getPolymer());
+    _backbone->setResNum(_residueNum);
+    _sidechain->setMonomer(shared_from_this());
+    _sidechain->setResNum(_residueNum);
 
 }
 
 void Monomer::addAtom(AtomPtr atom)
 {
-	std::string newAtomName = atom->getAtomName();
+    std::string newAtomName = atom->getAtomName();
 
-	AtomPtr existingAtom = findAtom(newAtomName);
+    AtomPtr existingAtom = findAtom(newAtomName);
 
-	if (existingAtom)
-	{
-	//	std::string atomDesc = existingAtom->shortDesc();
-	//	warn_user("There is an existing conformation for " + atomDesc
-	//			  + "\nCurrently only side chains are supported.");
-	}
+    if (existingAtom)
+    {
+    //    std::string atomDesc = existingAtom->shortDesc();
+    //    warn_user("There is an existing conformation for " + atomDesc
+    //              + "\nCurrently only side chains are supported.");
+    }
 
-	AtomGroup::addAtom(atom);
+    AtomGroup::addAtom(atom);
 
-	atom->setMonomer(shared_from_this());
-	
-	bool isBoth = atom->isBackboneAndSidechain();
+    atom->setMonomer(shared_from_this());
+    
+    bool isBoth = atom->isBackboneAndSidechain();
 
-	if (isBoth)
-	{
-		if (!existingAtom)
-		{
-			_backbone->addAtom(atom);
-		}
+    if (isBoth)
+    {
+        if (!existingAtom)
+        {
+            _backbone->addAtom(atom);
+        }
 
-		_sidechain->addAtom(atom);
-		return;
-	}
+        _sidechain->addAtom(atom);
+        return;
+    }
 
-	bool isBackbone = atom->isBackbone();
+    bool isBackbone = atom->isBackbone();
 
-	if (isBackbone && !existingAtom)
-	{
-		_backbone->addAtom(atom);
-	}
-	else if (!isBackbone)
-	{
-		_sidechain->addAtom(atom);
-	}
+    if (isBackbone && !existingAtom)
+    {
+        _backbone->addAtom(atom);
+    }
+    else if (!isBackbone)
+    {
+        _sidechain->addAtom(atom);
+    }
 }
 
 void Monomer::setSideKick(double value)
 {
-	AtomPtr atom = findAtom("CB");
+    AtomPtr atom = findAtom("CB");
 
-	if (!atom)
-	{
-		return;
-	}
+    if (!atom)
+    {
+        return;
+    }
 
-	ModelPtr model = atom->getModel();
-	if (!model->isBond())
-	{
-		return;
-	}
+    ModelPtr model = atom->getModel();
+    if (!model->isBond())
+    {
+        return;
+    }
 
-	BondPtr bond = ToBondPtr(model);
+    BondPtr bond = ToBondPtr(model);
 
-	if (bond->isFixed() || !bond->isUsingTorsion())
-	{
-		return;
-	}
+    if (bond->isFixed() || !bond->isUsingTorsion())
+    {
+        return;
+    }
 
-	Bond::setTorsionBlur(&*bond, value);
+    Bond::setTorsionBlur(&*bond, value);
 }
 
 void Monomer::setKick(double value, bool beforeAnchor)
 {
-	AtomPtr atom;
+    AtomPtr atom;
 
-	if (beforeAnchor)
-	{
-		atom = findAtom("C");
-	}
-	else
-	{
-		atom = findAtom("CA");
-	}
+    if (beforeAnchor)
+    {
+        atom = findAtom("C");
+    }
+    else
+    {
+        atom = findAtom("CA");
+    }
 
-	ModelPtr model = atom->getModel();
-	if (model->getClassName() != "Bond")
-	{
-		shout_at_helen("Can't kick something that\n isn't a bond!");
-	}
+    ModelPtr model = atom->getModel();
+    if (model->getClassName() != "Bond")
+    {
+        shout_at_helen("Can't kick something that\n isn't a bond!");
+    }
 
-	BondPtr bond = ToBondPtr(model);
+    BondPtr bond = ToBondPtr(model);
 
-	Bond::setTorsionBlur(&*bond, value);
+    Bond::setTorsionBlur(&*bond, value);
 }
 
 double Monomer::getKick()
 {
-	AtomPtr ca = findAtom("CA");
-	ModelPtr model = ca->getModel();
-	if (model->getClassName() != "Bond")
-	{
-		shout_at_helen("Can't kick something that\n isn't a bond!");
-	}
+    AtomPtr ca = findAtom("CA");
+    ModelPtr model = ca->getModel();
+    if (model->getClassName() != "Bond")
+    {
+        shout_at_helen("Can't kick something that\n isn't a bond!");
+    }
 
-	BondPtr bond = ToBondPtr(model);
-	
-	return Bond::getTorsionBlur(&*bond);
+    BondPtr bond = ToBondPtr(model);
+    
+    return Bond::getTorsionBlur(&*bond);
 }
 
 void Monomer::tieAtomsUp()
 {
-	KnotterPtr knotter = KnotterPtr(new Knotter());
+    KnotterPtr knotter = KnotterPtr(new Knotter());
 
-	const int start = getPolymer()->getAnchor();
+    const int start = getPolymer()->getAnchor();
 
-	knotter->setBackbone(_backbone);
+    knotter->setBackbone(_backbone);
 
-	if (getResidueNum() >= start)
-	{
-		knotter->tieTowardsCTerminus();
-	}
-	else
-	{
-		knotter->tieTowardsNTerminus();
-	}
+    if (getResidueNum() >= start)
+    {
+        knotter->tieTowardsCTerminus();
+    }
+    else
+    {
+        knotter->tieTowardsNTerminus();
+    }
 
-	knotter->setSidechain(_sidechain);
-	knotter->tie();
+    knotter->setSidechain(_sidechain);
+    knotter->tie();
 
-	if (getResidueNum() == start)
-	{
-		BondPtr bond = ToBondPtr(getBackbone()->findAtom("CA")->getModel());
-	}
-	else if (getResidueNum() == start - 1)
-	{
-		BondPtr bond = ToBondPtr(getBackbone()->findAtom("C")->getModel());
-	}
+    if (getResidueNum() == start)
+    {
+        BondPtr bond = ToBondPtr(getBackbone()->findAtom("CA")->getModel());
+    }
+    else if (getResidueNum() == start - 1)
+    {
+        BondPtr bond = ToBondPtr(getBackbone()->findAtom("C")->getModel());
+    }
 
-	_backbone->setTied();
-	_sidechain->setTied();
+    _backbone->setTied();
+    _sidechain->setTied();
 }
 
 void Monomer::setBackboneDampening(double value)
 {
-	for (int i = 0; i < atomCount(); i++)
-	{
-		if (atom(i)->getModel()->isBond())
-		{
-			BondPtr bond = ToBondPtr(atom(i)->getModel());
+    for (int i = 0; i < atomCount(); i++)
+    {
+        if (atom(i)->getModel()->isBond())
+        {
+            BondPtr bond = ToBondPtr(atom(i)->getModel());
 
-			if (bond->isRefinable())
-			{
-				Bond::setDampening(&*bond, value);
-			}
-		}
-	}
+            if (bond->isRefinable())
+            {
+                Bond::setDampening(&*bond, value);
+            }
+        }
+    }
 }
 
 void Monomer::setSidechainDampening(double value)
 {
-	for (int i = 0; i < getSidechain()->atomCount(); i++)
-	{
-		ModelPtr model = getSidechain()->atom(i)->getModel();
+    for (int i = 0; i < getSidechain()->atomCount(); i++)
+    {
+        ModelPtr model = getSidechain()->atom(i)->getModel();
 
-		if (model->isBond())
-		{
-			Bond::setDampening(&*model, value);
-		}
-	}
+        if (model->isBond())
+        {
+            Bond::setDampening(&*model, value);
+        }
+    }
 }
 
 bool Monomer::isAfterAnchor()
 {
-	int anchor = getPolymer()->getAnchor();
-	bool after = (_residueNum >= anchor);
+    int anchor = getPolymer()->getAnchor();
+    bool after = (_residueNum >= anchor);
 
-	return after;
+    return after;
 }
 
 std::string Monomer::getResCode()
 {
-	return GeomTable::getResCode(getIdentifier());
+    return GeomTable::getResCode(getIdentifier());
 }
+
