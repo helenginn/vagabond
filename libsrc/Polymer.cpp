@@ -710,7 +710,7 @@ void Polymer::superimpose()
     if (model->isAbsolute())
     {
         std::vector<vec3> sphereAngles = ToAbsolutePtr(model)->getSphereAngles();
-        CSVPtr csv = CSVPtr(new CSV(7, "psi", "phi", "theta", "corr_x", "corr_y", "corr_z", "rot_angle"));
+        CSVPtr csv = CSVPtr(new CSV(10, "psi", "phi", "theta", "corr_x", "corr_y", "corr_z", "rot_angle", "rot_axis_x", "rot_axis_y", "rot_axis_z"));
         CSVPtr one = CSVPtr(new CSV(3, "x", "y", "z"));
 //        std::vector<BondSample> positions = ca102->getFinalPositions();
 
@@ -718,12 +718,14 @@ void Polymer::superimpose()
         {
             mat3x3 rotMat = getRotationCorrections()[i];
             double angle = mat3x3_rotation_angle(rotMat);
+            vec3 axis = mat3x3_rotation_axis(rotMat);
 
             double xMove = getCentroidOffsets()[i].x;
             double yMove = getCentroidOffsets()[i].y;
             double zMove = getCentroidOffsets()[i].z;
-            csv->addEntry(7, sphereAngles[i].x, sphereAngles[i].y,
-                          sphereAngles[i].z, xMove, yMove, zMove, angle);
+            csv->addEntry(10, sphereAngles[i].x, sphereAngles[i].y,
+                          sphereAngles[i].z, xMove, yMove, zMove, angle,
+                          axis.x, axis.y, axis.z); 
 /*
             one->addEntry(3, positions[i].start.x, positions[i].start.y,
                           positions[i].start.z);
