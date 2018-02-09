@@ -228,6 +228,7 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
     }
 
     AtomValue newAtom;
+    newAtom.placeholder = NULL;
     newAtom.atom = atom;
     newAtom.geomRatio = ratio;
     newAtom.circlePortion = portion;
@@ -1516,6 +1517,191 @@ double Bond::getEffectiveOccupancy()
     return total;
 }
 
+bool parseAtomValue(char **blockPtr, AtomValue *atomv)
+{
+    std::cout << "Parsing atom value" << std::endl;
+    char *block = *blockPtr;
+    char *keyword = NULL;
+    char *value = NULL;
+
+    if (block[0] == '}')
+    {
+        *blockPtr = block + 1;
+        incrementIndent(blockPtr);
+        return false;
+    }
+
+    *blockPtr = keywordValue(block, &keyword, &value);
+    
+    double val = strtod(value, NULL);
+
+    if (strcmp(keyword, "geom_ratio") == 0)
+    {
+        atomv->geomRatio = val;
+    }
+    else if (strcmp(keyword, "expected") == 0)
+    {
+        atomv->expectedAngle = val;
+    } 
+    else if (strcmp(keyword, "circlePortion") == 0)
+    {
+        atomv->circlePortion = val;
+    }
+    else if (strcmp(keyword, "atom") == 0)
+    {
+        atomv->placeholder = new std::string(value);
+    }
+
+    printf("%s ... %s\n", keyword, value);
+
+    block++;
+    incrementIndent(&block);
+
+    return true;
+}
+
+
+bool parseBondGroup(char **blockPtr, BondGroup *group)
+{
+    std::cout << "Parsing bond group" << std::endl;
+    char *block = *blockPtr;
+    char *keyword = NULL;
+    char *value = NULL;
+    
+    block = keywordValue(block, &keyword, &value);
+
+    if (block == NULL)
+    {
+        std::cout << "Bad things happened" << std::endl;
+        return false;
+    }
+
+    if (strcmp(keyword, "object") == 0)
+    {
+       // do a thing to load an atom value.
+        AtomValue atomv;
+
+        if (block[0] != '{')
+        {
+            std::cout << "Was expecting a {" << std::endl;
+            return NULL;
+        }
+
+        block++;
+        incrementIndent(&block);
+
+        bool another = true;
+        
+        while (another)
+        {
+            another = parseAtomValue(&block, &atomv);
+        }
+
+        if (block == NULL)
+        {
+            return false;
+        }        
+
+        group->atoms.push_back(atomv);
+    }
+    else
+    {
+        double val = strtod(value, NULL);
+
+        if (strcmp(keyword, "torsion") == 0)
+        {
+            group->torsionAngle = val;
+        }
+        else if (strcmp(keyword, "kick") == 0)
+        {
+            group->torsionBlur = val;
+        }
+        else if (strcmp(keyword, "phi") == 0)
+        {
+            group->magicPhi = val;
+        }
+        else if (strcmp(keyword, "psi") == 0)
+        {
+            group->magicPsi = val;
+        }
+
+        printf("%s ... %s\n", keyword, value);
+    }
+
+    *blockPtr = block;
+    
+    if (block[0] == '}')
+    {
+        *blockPtr = block + 1;
+        incrementIndent(blockPtr);
+        return false;
+    }
+
+    return true;
+
+}
+
+char *Bond::decodeBondGroup(void *bond, void *bondGroup, char *block)
+{
+    std::cout << "Decoding bond group" << std::endl;
+    // poised at "object", hopefully. Let's check.
+    while (true)
+    {    
+        char *white = strchrwhite(block);
+        *white = 0;
+
+        if (block[0] == '}')
+        {
+            break;
+        }
+
+        if (strcmp(block, "object") != 0)
+        {
+            std::cout << "Was expecting an object for a BondGroup." << std::endl;
+            std::cout << "Instead... " << block[0] << std::endl;
+            return NULL;
+        }
+
+        block = white + 1;
+        incrementIndent(&block);
+
+        std::vector<BondGroup> *bondGroups = NULL;
+        bondGroups = static_cast<std::vector<BondGroup> *>(bondGroup); 
+
+        if (block[0] != '{')
+        {
+            std::cout << "Was expecting a {" << std::endl;
+            return NULL;
+        }
+
+        block++;
+        incrementIndent(&block);
+
+        bool another = true;
+
+        BondGroup group;
+
+        while (another)
+        {
+            another = parseBondGroup(&block, &group);
+        }
+
+        bondGroups->push_back(group);
+
+        if (block == NULL)
+        {
+            return NULL;
+        }
+    
+    }
+
+    if (block[0] == 0) return NULL;
+
+    std::cout << "Leaving on character " << block[0] << std::endl;
+    
+    return block;
+}
+
 void Bond::encodeBondGroup(void *bond, void *bondGroup,
                            std::ofstream &stream, int in)
 {
@@ -1524,7 +1710,7 @@ void Bond::encodeBondGroup(void *bond, void *bondGroup,
     
     for (int i = 0; i < groups->size(); i++)
     {
-        stream << indent(in) << "object " << i << std::endl;
+        stream << indent(in) << "object " << std::endl;
         stream << indent(in) << "{" << std::endl;
         in++;
         stream << indent(in) << "torsion = " << (*groups)[i].torsionAngle << std::endl;
@@ -1535,7 +1721,7 @@ void Bond::encodeBondGroup(void *bond, void *bondGroup,
         for (int j = 0; j < (*groups)[i].atoms.size(); j++)
         {
             AtomValue *atom = &(*groups)[i].atoms[j];
-            stream << indent(in) << "object " << i << std::endl;
+            stream << indent(in) << "object " << std::endl;
             stream << indent(in) << "{" << std::endl;
             in++;
             stream << indent(in) << "geom_ratio = " << atom->geomRatio << std::endl;
@@ -1569,5 +1755,6 @@ void Bond::addProperties()
     addBoolProperty("using_torsion", &_usingTorsion);
     addBoolProperty("refine_bond_angle", &_refineBondAngle);
 
-    addCustomProperty("bond_group", &_bondGroups, this, encodeBondGroup);
+    addCustomProperty("bond_group", &_bondGroups, this,
+                      encodeBondGroup, decodeBondGroup);
 }

@@ -1037,3 +1037,12 @@ void Polymer::addProperties()
         addChild("monomer", getMonomer(i));
     }
 }
+
+void Polymer::addObject(ParserPtr object, std::string category)
+{
+    if (category == "monomer")
+    {
+        MonomerPtr monomer = ToMonomerPtr(object);
+        addMonomer(monomer);
+    }
+}

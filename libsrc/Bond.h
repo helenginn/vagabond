@@ -26,6 +26,7 @@ typedef struct
     double geomRatio;
     double expectedAngle;
     double circlePortion;
+    std::string *placeholder;
 } AtomValue;
 
 typedef struct
@@ -50,7 +51,8 @@ class Bond : public Model, public Sampler
 public:
     Bond(AtomPtr major, AtomPtr minor, int group = 0);
     Bond(Bond &other);
-        void initialize();
+    Bond();
+    void initialize();
     void activate(AtomGroupPtr group = AtomGroupPtr(),
                   AtomPtr inherit = AtomPtr());
     void setupSampling();
@@ -369,17 +371,17 @@ public:
 
     static void encodeBondGroup(void *bond, void *bondGroup,
                                 std::ofstream &stream, int indent);
+    static char *decodeBondGroup(void *bond, void *bondGroup, char *block);
 protected:
-    Bond();
 
     AtomWkr _minor;
 
-        virtual std::string getParserIdentifier()
-        {
-            return "bond_" + shortDesc();
-        }
+    virtual std::string getParserIdentifier()
+    {
+        return "bond_" + shortDesc();
+    }
 
-        virtual void addProperties();
+    virtual void addProperties();
 private:
     std::string _shortDesc;
 

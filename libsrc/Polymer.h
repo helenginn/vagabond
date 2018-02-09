@@ -204,6 +204,7 @@ public:
 
     void optimiseTranslationTensor();
     virtual void addProperties();
+    virtual void addObject(ParserPtr object, std::string category);
 protected:
     virtual double getScore()
     {

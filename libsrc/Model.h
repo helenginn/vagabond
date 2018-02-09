@@ -130,6 +130,7 @@ protected:
         }
 
         virtual void addProperties();
+    virtual void addObject(ParserPtr object, std::string category) {};
 private:
 	std::vector<AtomPtr> atoms;
 	std::mutex guiLock;

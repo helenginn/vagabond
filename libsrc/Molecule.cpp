@@ -114,3 +114,4 @@ void Molecule::addProperties()
         addChild("atom", atom(i));
     }
 }
+

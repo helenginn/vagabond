@@ -623,3 +623,13 @@ void AtomGroup::addProperties()
     }
 
 }
+
+void AtomGroup::addObject(ParserPtr object, std::string category)
+{
+    if (category == "Atom")
+    {
+        AtomPtr atom = ToAtomPtr(object);
+        addAtom(atom);
+    } 
+
+}

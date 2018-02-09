@@ -25,11 +25,6 @@ public:
     static ElementPtr getElement(std::string symbol);
     virtual FFTPtr getDistribution(bool quick = false);
 
-    std::string *getSymbolPtr()
-    {
-        return &_symbol;
-    }
-
     std::string getSymbol()
     {
         return _symbol;

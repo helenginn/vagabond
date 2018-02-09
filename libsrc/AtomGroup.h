@@ -133,6 +133,7 @@ protected:
     }
 
     virtual void addProperties();
+    virtual void addObject(ParserPtr object, std::string category);
 
 private:
     MonomerWkr _monomer;

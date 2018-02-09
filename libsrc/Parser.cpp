@@ -8,6 +8,12 @@
 #include <iomanip>
 #include "Crystal.h"
 #include "Polymer.h"
+#include "Atom.h"
+#include "Bond.h"
+#include "Monomer.h"
+#include "Absolute.h"
+#include "Sidechain.h"
+#include "Backbone.h"
 
 Parser::Parser()
 {
@@ -15,14 +21,18 @@ Parser::Parser()
     _parent = NULL;
 }
 
-void Parser::setup()
+void Parser::setup(bool isNew)
 {
     if (_setup) return;
+    
+    if (!isNew)
+    {
+        _identifier = getParserIdentifier(); 
+        _className = getClassName();
 
-    _identifier = getParserIdentifier(); 
-    _className = getClassName();
-
-    makePath();
+        makePath();
+    }
+    
     addProperties();
 }
 
@@ -91,13 +101,15 @@ void Parser::addBoolProperty(std::string className, bool *ptr)
 }
 
 void Parser::addCustomProperty(std::string className, void *ptr,
-                               void *delegate, Encoder encoder)
+                               void *delegate, Encoder encoder,
+                               Decoder decoder) 
 {
     CustomProperty property;
     property.ptrName = className;
     property.objPtr = ptr;
     property.delegate = delegate;
     property.encoder = encoder;
+    property.decoder = decoder;
     _customProperties.push_back(property);
 }
 
@@ -123,7 +135,14 @@ void Parser::outputContents(std::ofstream &stream, int in)
         std::string name = _stringProperties[i].ptrName;
         std::string *ptr = _stringProperties[i].stringPtr;
         if (!ptr) continue;
-        stream << indent(in) << name << " = " << *ptr << "" << std::endl;
+        if (ptr->length())        
+        {
+            stream << indent(in) << name << " = " << *ptr << "" << std::endl;
+        }
+        else
+        {
+            stream << indent(in) << name << " = __NULL__" << std::endl;
+        }
     }
  
     for (int i = 0; i < _doubleProperties.size(); i++)
@@ -140,7 +159,7 @@ void Parser::outputContents(std::ofstream &stream, int in)
         vec3 *ptr = _vec3Properties[i].vec3Ptr;
         if (!ptr) continue;
         stream << indent(in) << name << " = " << ptr->x
-               << ", " << ptr->y << ", " << ptr->z << std::endl;
+               << "," << ptr->y << "," << ptr->z << std::endl;
     }
 
     for (int i = 0; i < _customProperties.size(); i++)
@@ -255,35 +274,216 @@ void Parser::addReference(std::string category, ParserPtr cousin)
     _referenceList[category].push_back(cousin);
 }
 
-char *strchrwhite(char *block)
+char *Parser::parseNextSpecial(char *block)
 {
-    char *space = strchr(block, ' ');
-    char *newline = strchr(block, '\n');
-    char *tab = strchr(block, '\t');
+    // posied at the word just after 'special'.
 
-    if (tab != NULL && tab < newline) newline = tab;
-    if (space != NULL && space < newline) newline = space;
+    char *white = strchrwhite(block);
+    *white = 0;
 
-    return newline;
+    std::string specialName = std::string(block);
+    std::cout << "Special name is " << specialName << std::endl;
+    block = white + 1;
+    incrementIndent(&block);
+
+    if (block[0] != '{')
+    {
+        std::cout << "Something's wrong - was expecting a {!" << std::endl;
+        return white;
+    }
+
+    block++;
+    incrementIndent(&block);
+    
+    for (int i = 0; i < _customProperties.size(); i++)
+    {
+        CustomProperty property = _customProperties[i];
+        if (property.ptrName == specialName)
+        {
+            Decoder decoder = property.decoder;
+            void *delegate = property.delegate;
+            void *ptr = property.objPtr;
+            block = (*decoder)(delegate, ptr, block);
+        }
+    }
+ 
+    if (block[0] != '}')
+    {
+        std::cout << "Why has this special thing not ended?" << std::endl;
+        std::cout << "Actual char: " << block[0] << std::endl;
+    }
+
+    block++;
+    incrementIndent(&block);
+
+    return block;
 }
 
-void incrementIndent(char **block)
+char *Parser::parseNextReference(char *block)
 {
-    while ((*block)[0] == ' ' || (*block)[0] == '\t' || (*block)[0] == '\n'
-            || (*block)[0] == '\0')
+    // poised at the word just after 'references'.
+
+    char *white = strchrwhite(block);
+    *white = 0;
+
+    std::string categoryName = std::string(block);
+    std::cout << "Category name is " << categoryName << std::endl;
+    block = white + 1;
+    incrementIndent(&block);
+
+    // now we want an open bracket.
+    
+    if (block[0] != '{')
     {
-        (*block)++;
+        std::cout << "Something's wrong - was expecting a {!" << std::endl;
+        return white;
     }
+    
+    block++;
+    incrementIndent(&block);
+
+    // expecting a fuckton of references now
+    // will go through later and fill them in
+
+    while (true)
+    {
+        white = strchrwhite(block);
+        *white = 0;
+    
+        char *reference = block;
+
+        if (strlen(reference) > 0)
+        {
+            std::string refStr = std::string(reference);
+            _resolveList[categoryName].push_back(refStr);
+            std::cout << "Adding reference " << reference << std::endl;
+        }
+
+        block = white + 1; 
+        incrementIndent(&block);
+
+        if (block[0] == '}')
+        {
+            std::cout << "Found a } in references" << std::endl;
+            block++;
+            incrementIndent(&block);
+            return block;
+        }
+
+        if (block[0] == 0)
+        {
+            return NULL;
+        }
+    }
+}
+
+char *Parser::parseNextObject(char *block)
+{
+    // poised at the word just after 'category'.
+    char *white = strchrwhite(block);
+    *white = 0;
+    
+    std::string categoryName = std::string(block);
+    std::cout << "Category name is " << categoryName << std::endl;
+    block = white + 1;
+    incrementIndent(&block);
+
+    // now we want an open bracket.
+    
+    if (block[0] != '{')
+    {
+        std::cout << "Something's wrong - was expecting a {!" << std::endl;
+        return white;
+    }
+    
+    block++;
+    incrementIndent(&block);
+
+    // expecting a fuckton of objects now
+
+    white = strchrwhite(block);
+    *white = 0;
+    
+    if (strcmp(block, "object") != 0)
+    {
+        std::cout << "Something's wrong - was expecting an object!" << std::endl;
+        return white;
+    }
+    
+    block = white + 1;
+    incrementIndent(&block);
+
+    bool stillObjects = true;
+
+    while (stillObjects)
+    {
+        char *comma = strchr(block, ',');
+        *comma = 0;
+
+        ParserPtr object = objectOfType(block);
+        if (!object)
+        {
+            return NULL;
+        }
+
+        block = comma + 1;
+
+        // Comes back incremented.
+        block = object->parse(block);
+
+        addObject(object, categoryName);
+        _parserList[categoryName].push_back(object);
+
+        if (block == NULL)
+        {
+            return NULL;
+        }
+        
+        if (block[0] == 0)
+        {
+            std::cout << "File ended prematurely!" << std::endl;
+            return NULL;
+        }
+
+        white = strchrwhite(block);
+        *white = 0;
+        
+        if (strcmp(block, "object") != 0)
+        {
+            stillObjects = false;
+        }
+        else
+        {
+            block = white + 1;
+        }
+    }
+
+    if (block[0] == '}')
+    {
+        std::cout << "Found a } after end of category" << std::endl;
+        block++;
+        incrementIndent(&block);
+    }
+
+    return block;
 }
 
 void Parser::setProperty(std::string property, std::string value)
 {
+    std::cout << "Setting property " << property << " to " << value << std::endl;
+
     for (int i = 0; i < _stringProperties.size(); i++)
     {
         if (_stringProperties[i].ptrName == property)
         {
+            if (value == "__NULL__")
+            {
+                *_stringProperties[i].stringPtr = "";
+                return; 
+            }
+
             *_stringProperties[i].stringPtr = value;
-            std::cout << "Setting string to " << value << std::endl;
+
             return;
         }
     }
@@ -298,7 +498,6 @@ void Parser::setProperty(std::string property, std::string value)
             {
                 *_doubleProperties[i].doublePtr = val;
             }
-            std::cout << "Setting double to " << val << std::endl;
             return;
         }
     }
@@ -311,19 +510,16 @@ void Parser::setProperty(std::string property, std::string value)
             char *comma = strchr(start, ',');
             *comma = 0;
             double x = strtod(start, NULL);
-            start = comma++;
-            incrementIndent(&start);
+            start = comma + 1;
             comma = strchr(start, ',');
             *comma = 0;
             double y = strtod(start, NULL);
-            start = comma++;
-            incrementIndent(&start);
-            comma = strchrwhite(start);
-            *comma = 0;
+            start = comma + 1;
+            
+            // Next one is already zero 
             double z = strtod(start, NULL);
             vec3 vec = make_vec3(x, y, z); 
             *_vec3Properties[i].vec3Ptr = vec;
-            std::cout << "Setting vec3 to " << vec3_desc(vec) << std::endl;
             return;
         }
     }
@@ -333,7 +529,6 @@ void Parser::setProperty(std::string property, std::string value)
         if (_intProperties[i].ptrName == property)
         {
             int val = atoi(value.c_str());
-            std::cout << "Setting int to " << val << std::endl;
             *_intProperties[i].intPtr = val;
             return;
         }
@@ -344,7 +539,6 @@ void Parser::setProperty(std::string property, std::string value)
         if (_boolProperties[i].ptrName == property)
         {
             bool val = atoi(value.c_str());
-            std::cout << "Setting bool to " << val << std::endl;
             *_boolProperties[i].boolPtr = val;
             return;
         }
@@ -369,7 +563,6 @@ char *Parser::parseNextProperty(std::string property, char *block)
     
     // now we expect the value between block and white...
     std::string value = std::string(block);
-    std::cout << "Should set property " << property << " to value " << value << std::endl;
     
     setProperty(property, value);
 
@@ -386,10 +579,11 @@ bool Parser::parseNextChunk(char **blockPtr)
     // just incremented from the first {.
     // we should expect a keyword, or a property next.
     char *space = strchrwhite(block);
+
     if (space == NULL)
     {
-        //std::cout << block << std::endl;
         std::cout << "Nope!" << std::endl;
+        std::cout << block << std::endl;
         return false;
     }
 
@@ -403,7 +597,7 @@ bool Parser::parseNextChunk(char **blockPtr)
     {
         type = ParserTypeObject;
     }
-    else if (strcmp(block, "reference") == 0)
+    else if (strcmp(block, "references") == 0)
     {
         type = ParserTypeReference;
     }
@@ -422,29 +616,53 @@ bool Parser::parseNextChunk(char **blockPtr)
         *blockPtr = parseNextProperty(property, block);
         break;
 
+        case ParserTypeObject:
+        *blockPtr = parseNextObject(block);
+        break;
+
+        case ParserTypeSpecial:
+        *blockPtr = parseNextSpecial(block);
+        break;
+
+        case ParserTypeReference:
+        *blockPtr = parseNextReference(block);
+        break;
+
         default:
         break;
+    }
+
+    block = *blockPtr;
+
+    std::cout << "Completed a 'next' thing, char '" << block[0] << "'" << std::endl;
+
+    if (*blockPtr == NULL)
+    {
+        std::cout << "Parsing error occurred." << std::endl;
+        return false;
     }
 
     if (block[0] == '}')
     {
         std::cout << "Found a }" << std::endl;
+        block++;
+        incrementIndent(&block);
         return false;
     }
    
     return true;
 }
 
-void Parser::parse(char *block)
+char *Parser::parse(char *block)
 {
     // Get to the beginning of the absolute path...
     incrementIndent(&block);
 
     char *newline = strchrwhite(block);
-    if (newline == NULL) return;
+    if (newline == NULL) return NULL;
 
     // We prepare the vessels to accept our data.
-    setup();
+    setup(true);
     
     // Now we can replace the dud path/identifier.
     *newline = '\0';
@@ -467,7 +685,7 @@ void Parser::parse(char *block)
     if (block[0] != '{')
     {
         std::cout << "Check me: no { for object " << path  << "?" << std::endl;
-        return;
+        return NULL;
     }
     else
     {
@@ -488,6 +706,27 @@ void Parser::parse(char *block)
     {    
         another = parseNextChunk(&block);
     }
+
+    if (block == NULL)
+    {
+        return NULL;
+    }
+
+    if (block[0] == 0)
+    {
+       return NULL;
+    }
+
+    if (block[0] != '}')
+    {
+        std::cout << "Why is there no }?" << std::endl;    
+    }
+    else std::cout << "There is an } at the end of an object" << std::endl;    
+
+    block++;
+    incrementIndent(&block);
+
+    return block;
 }
 
 ParserPtr Parser::objectOfType(char *className)
@@ -496,19 +735,47 @@ ParserPtr Parser::objectOfType(char *className)
 
     if (strcmp(className, "Crystal") == 0) 
     {
-        std::cout << "Making object of type " << className << std::endl;
         object = ParserPtr(static_cast<Parser *>(new Crystal()));
     }
-    if (strcmp(className, "Polymer") == 0)
+    else if (strcmp(className, "Polymer") == 0)
     {
-        std::cout << "Making object of type " << className << std::endl;
         object = ParserPtr(static_cast<Polymer *>(new Polymer()));
+    }
+    else if (strcmp(className, "Atom") == 0)
+    {
+        object = ParserPtr(static_cast<Atom *>(new Atom()));
+    }
+    else if (strcmp(className, "Absolute") == 0)
+    {
+        object = ParserPtr(static_cast<Absolute *>(new Absolute()));        
+    }
+    else if (strcmp(className, "Bond") == 0)
+    {
+        object = ParserPtr(static_cast<Bond *>(new Bond()));        
+    }
+    else if (strcmp(className, "Molecule") == 0)
+    {
+        object = ParserPtr(static_cast<Molecule *>(new Molecule()));        
+    }
+    else if (strcmp(className, "Monomer") == 0)
+    {
+        object = ParserPtr(static_cast<Monomer *>(new Monomer()));        
+    }
+    else if (strcmp(className, "Sidechain") == 0)
+    {
+        object = ParserPtr(static_cast<Sidechain *>(new Sidechain()));        
+    }
+    else if (strcmp(className, "Backbone") == 0)
+    {
+        object = ParserPtr(static_cast<Backbone *>(new Backbone()));        
     }
     else
     {
         std::cout << "Do not understand class name " << className << std::endl;
+        return object;
     }
 
+    std::cout << "Making object of type " << className << std::endl;
     return object;
 }
 
@@ -525,9 +792,15 @@ ParserPtr Parser::processBlock(char *block)
     }
 
     block = comma + 1;
-    object->parse(block);
+    // success is NULL if failed.
+    char *success = object->parse(block);
 
-    return object;
+    if (success != NULL)
+    {
+        return object;
+    }
+    
+    return ParserPtr();
 }
 
 

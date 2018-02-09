@@ -223,6 +223,7 @@ protected:
     }
 
     virtual void addProperties();
+    virtual void addObject(ParserPtr object, std::string category);
 private:
     ModelPtr _model;
     ModelPtr _distModelOnly;
@@ -237,6 +238,7 @@ private:
     vec3 _ellipsoidLongestAxis;
     double _weighting;
     std::string _conformer;
+    std::string _elementSymbol;
     bool _fromPDB;
     mat3x3 _tensor;
 

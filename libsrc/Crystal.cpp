@@ -654,3 +654,11 @@ void Crystal::addProperties()
     }
 }
 
+void Crystal::addObject(ParserPtr object, std::string category)
+{
+    if (category == "Molecule")
+    {
+        MoleculePtr molecule = ToMoleculePtr(object);
+        addMolecule(molecule);
+    }
+}

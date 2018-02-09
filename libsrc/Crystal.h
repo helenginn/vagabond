@@ -153,6 +153,7 @@ public:
     }
 
 protected:
+    virtual void addObject(ParserPtr object, std::string category);
     virtual std::string getParserIdentifier()
     {
         return "Crystal_" + _filename;

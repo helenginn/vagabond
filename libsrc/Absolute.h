@@ -193,12 +193,13 @@ public:
 protected:
     static double getExpValue(void *object, double x, double y, double z);
 
-        virtual std::string getParserIdentifier()
-        {
-            return "absolute_" + i_to_str(getAtom()->getAtomNum());
-        }
+    virtual std::string getParserIdentifier()
+    {
+        return "absolute_" + i_to_str(getAtom()->getAtomNum());
+    }
 
-        virtual void addProperties();
+    virtual void addProperties();
+    virtual void addObject(ParserPtr object, std::string category) {};
 private:
     AtomPtr _atom;
     std::vector<AtomWkr> _nextAtoms;

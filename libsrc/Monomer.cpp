@@ -219,3 +219,20 @@ void Monomer::addProperties()
     addChild("sidechain", _sidechain);
     addChild("backbone", _backbone);
 }
+
+void Monomer::addObject(ParserPtr object, std::string category)
+{
+    if (category == "sidechain")
+    {
+        SidechainPtr side = ToSidechainPtr(object);
+        _sidechain = side; 
+    }
+
+    if (category == "backbone")
+    {
+        BackbonePtr back = ToBackbonePtr(object);
+        _backbone = back;
+    }
+}
+
+

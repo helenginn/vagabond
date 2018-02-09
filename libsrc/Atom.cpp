@@ -380,9 +380,24 @@ void Atom::addProperties()
     addDoubleProperty("init_occupancy", &_origOccupancy);
     addStringProperty("conformer", &_conformer);
     addBoolProperty("from_pdb", &_fromPDB);
-    addStringProperty("element", _element->getSymbolPtr());
+
+    if (_element)
+    {
+        _elementSymbol = _element->getSymbol();
+    }
+ 
+    addStringProperty("element", &_elementSymbol); 
 
     // add tensor, matrix stuff
 
     addChild("model", _model);
+}
+
+void Atom::addObject(ParserPtr object, std::string category)
+{
+    if (category == "model")
+    {
+        ModelPtr model = ToModelPtr(object);
+        setModel(model);
+    }
 }
