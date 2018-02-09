@@ -148,9 +148,9 @@ public:
         _atomNum = atomNum;
     }
 
-    void getAtomNum()
+    double getAtomNum()
     {
-        return atomNum;
+        return _atomNum;
     }
 
     void findAtomType(std::string resName);
