@@ -380,6 +380,7 @@ void Atom::addProperties()
     addDoubleProperty("init_occupancy", &_origOccupancy);
     addStringProperty("conformer", &_conformer);
     addBoolProperty("from_pdb", &_fromPDB);
+    addStringProperty("element", _element->getSymbolPtr());
 
     // add tensor, matrix stuff
 
