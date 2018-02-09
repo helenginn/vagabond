@@ -20,7 +20,7 @@
 
 class Anisotropicator;
 
-class Absolute : public Model, public Parser
+class Absolute : public Model
 {
 public:
 	Absolute(vec3 pos, double bFac, std::string element, double occValue);
@@ -193,10 +193,12 @@ public:
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 
-        void std::string getParserIdentifier()
+        virtual std::string getParserIdentifier()
         {
-            return "absolute_" + getAtom()->getAtomNum();
+            return "absolute_" + i_to_str(getAtom()->getAtomNum());
         }
+
+        virtual void addProperties();
 private:
 	AtomPtr _atom;
 	std::vector<AtomWkr> _nextAtoms;

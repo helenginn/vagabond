@@ -260,3 +260,22 @@ void Absolute::setTensor(mat3x3 tensor, CrystalPtr crystal)
     getAtom()->setEllipsoidLongestAxis(longestAxis);
     getAtom()->setTensor(_tensor);
 }
+
+void Absolute::addProperties()
+{
+    addDoubleProperty("occupancy", &_occupancy);
+    addStringProperty("chain", &_chainID);
+    addStringProperty("res_name", &_resName);
+    addStringProperty("atom_name", &_atomName);
+    addStringProperty("conformer", &_conformer);
+    addIntProperty("res_num", &_resNum);
+    addIntProperty("atom_num", &_atomNum);
+    addBoolProperty("hetatm", &_hetatm);
+    addBoolProperty("using_tensor", &_usingTensor);
+    addVec3Property("position", &_position);
+    addDoubleProperty("bfactor", &_bFactor);
+    addBoolProperty("many_positions", &_isOfManyPositions);
+
+    // missing tensor and sampled absolute positions from manyPositions
+}
+
