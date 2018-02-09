@@ -76,6 +76,7 @@ protected:
     void addReference(std::string category, ParserPtr cousin);
 
     void writeToFile(std::ofstream &stream, int indent);
+    void clearContents();
 private:
     std::string _className;
     std::string _identifier;

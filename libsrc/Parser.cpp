@@ -102,6 +102,8 @@ void Parser::addCustomProperty(std::string className, void *ptr,
 
 void Parser::addChild(std::string category, ParserPtr child)
 {
+    if (!child) return;
+
     child->setParent(this);
     _parserList[category].push_back(child);
     child->setup();
@@ -202,7 +204,7 @@ void Parser::outputContents(std::ofstream &stream, int in)
     }
 
     for (ReferenceList::iterator it = _referenceList.begin();
-         it != _referenceList.end(); it++)
+            it != _referenceList.end(); it++)
     {
         std::string category = it->first;
         stream << indent(in) << "references " << category << std::endl;
@@ -214,13 +216,36 @@ void Parser::outputContents(std::ofstream &stream, int in)
             ParserPtr child = it->second.at(j);
             stream << indent(in) << child->getAbsolutePath() << std::endl;
         }
-    
+
         in--;
         stream << indent(in) << "}" << std::endl;
     }
 
     in--;
     stream << indent(in) << "}" << std::endl;
+}
+
+void Parser::clearContents()
+{
+    _stringProperties.clear();
+    _doubleProperties.clear();
+    _intProperties.clear();
+    _vec3Properties.clear();
+    _customProperties.clear();
+    _boolProperties.clear();
+    _referenceList.clear();
+
+    for (ParserList::iterator it = _parserList.begin();
+            it != _parserList.end(); it++)
+    {
+        for (int i = 0; i < it->second.size(); i++)
+        {
+            ParserPtr child = it->second.at(i);
+            child->clearContents();
+        }
+    }
+
+    _parserList.clear();
 }
 
 void Parser::writeToFile(std::ofstream &stream, int in)
@@ -230,12 +255,13 @@ void Parser::writeToFile(std::ofstream &stream, int in)
     stream << "vagabond data structure v0.0" << std::endl;
 
     outputContents(stream, in);
+    clearContents();
 }
 
 
 void Parser::addReference(std::string category, ParserPtr cousin)
 {
+    if (!cousin) return;
     _referenceList[category].push_back(cousin);
-    
 }
 

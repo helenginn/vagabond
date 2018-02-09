@@ -383,5 +383,5 @@ void Atom::addProperties()
 
     // add tensor, matrix stuff
 
-
+    addChild("model", _model);
 }
