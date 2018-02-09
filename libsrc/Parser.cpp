@@ -6,6 +6,7 @@
 #include "Parser.h"
 #include <iostream>
 #include <iomanip>
+#include "Crystal.h"
 
 Parser::Parser()
 {
@@ -252,4 +253,22 @@ void Parser::addReference(std::string category, ParserPtr cousin)
     if (!cousin) return;
     _referenceList[category].push_back(cousin);
 }
+
+ParserPtr Parser::objectOfType(std::string className)
+{
+    ParserPtr object = ParserPtr();
+
+    if (className == "Crystal") 
+    {
+        object = ParserPtr(static_cast<Parser *>(new Crystal()));
+    }
+
+    return object;
+}
+
+ParserPtr Parser::processBlock(char *block)
+{
+    return ParserPtr();
+}
+
 

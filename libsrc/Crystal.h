@@ -147,12 +147,12 @@ public:
 
     std::string agreementSummary();
 
-protected:
     virtual std::string getClassName()
     {
         return "Crystal";
     }
 
+protected:
     virtual std::string getParserIdentifier()
     {
         return "Crystal_" + _filename;

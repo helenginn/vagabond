@@ -14,6 +14,7 @@
 #include <iomanip>
 #include "Polymer.h"
 #include "FileReader.h"
+#include "VBondReader.h"
 
 OptionsPtr Options::options;
 double Options::_kick = 0.01;
@@ -190,10 +191,32 @@ void Options::parse()
             PDBReader pdb = PDBReader();
             pdb.setFilename(pdb_name);
             CrystalPtr crystal = pdb.getCrystal();
-
+            
             objects.push_back(crystal);
             crystals.push_back(crystal);
             understood = true;
+        }
+
+        prefix = "--with-vbond=";
+
+        if (!arg.compare(0, prefix.size(), prefix))
+        {
+            std::string vbond_name = arg.substr(prefix.size());
+
+            VBondReader vReader = VBondReader();
+            vReader.setFilename(vbond_name);
+            CrystalPtr crystal = vReader.getCrystal();
+            understood = true;
+
+            if (!crystal)
+            {
+                std::cout << "Read failed." << std::endl;
+            }
+            else
+            {
+                objects.push_back(crystal);
+                crystals.push_back(crystal);
+            }
         }
 
         prefix = "--with-mtz=";
@@ -626,4 +649,5 @@ bool Options::parseJoke(std::string arg)
 
     return false;
 }
+
 

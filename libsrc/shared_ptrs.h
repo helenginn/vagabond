@@ -33,6 +33,7 @@
 #define ToModelPtr(a) (boost::static_pointer_cast<Model>((a)))
 #define ToPolymerPtr(a) (boost::static_pointer_cast<Polymer>((a)))
 #define ToMoleculePtr(a) (boost::static_pointer_cast<Molecule>((a)))
+#define ToCrystalPtr(a) (boost::static_pointer_cast<Crystal>((a)));
 
 class Notifiable;
 typedef boost::shared_ptr<Notifiable> NotifiablePtr;

@@ -76,8 +76,9 @@ public:
         return _absolutePath;
     }
 
-protected:
     virtual std::string getClassName() = 0;
+    static ParserPtr processBlock(char *block);
+protected:
     virtual std::string getParserIdentifier() = 0;
     virtual void addProperties() = 0;
 
@@ -115,6 +116,7 @@ private:
     bool _setup;
     
     void outputContents(std::ofstream &stream, int in);
+    static ParserPtr objectOfType(std::string className);
 };
 
 
