@@ -249,8 +249,6 @@ void Absolute::setTensor(mat3x3 tensor, CrystalPtr crystal)
     _tensor = tensor;
     _usingTensor = true;
 
-//    mat3x3 toNormal = crystal->getHKL2Real();
-//    _realSpaceTensor = mat3x3_mult_mat3x3(toNormal, _tensor);
     _realSpaceTensor = _tensor;
 
     Anisotropicator tropicator;
