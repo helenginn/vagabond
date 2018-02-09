@@ -367,8 +367,8 @@ public:
         return _refineBondAngle * !isFixed();
     }
 
-    void encodeBondGroup(void *bond, void *bondGroup,
-                         std::ofstream &stream, int indent);
+    static void encodeBondGroup(void *bond, void *bondGroup,
+                                std::ofstream &stream, int indent);
 protected:
     Bond();
 

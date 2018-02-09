@@ -71,6 +71,11 @@ class Parser
 public:
     Parser();
 
+    std::string getAbsolutePath()
+    {
+        return _absolutePath;
+    }
+
 protected:
     virtual std::string getClassName() = 0;
     virtual std::string getParserIdentifier() = 0;
@@ -89,16 +94,12 @@ protected:
 
     void writeToFile(std::ofstream &stream, int indent);
     void clearContents();
+
 private:
     std::string _className;
     std::string _identifier;
     std::string _absolutePath;    
     Parser *_parent;
-
-    std::string getAbsolutePath()
-    {
-        return _absolutePath;
-    }
 
     std::vector<StringProperty> _stringProperties;
     std::vector<DoubleProperty> _doubleProperties;

@@ -1522,7 +1522,34 @@ void Bond::encodeBondGroup(void *bond, void *bondGroup,
     std::vector<BondGroup> *groups = NULL;
     groups = static_cast<std::vector<BondGroup> *>(bondGroup);
     
-    stream << indent(in);
+    for (int i = 0; i < groups->size(); i++)
+    {
+        stream << indent(in) << "object " << i << std::endl;
+        stream << indent(in) << "{" << std::endl;
+        in++;
+        stream << indent(in) << "torsion = " << (*groups)[i].torsionAngle << std::endl;
+        stream << indent(in) << "kick = " << (*groups)[i].torsionBlur << std::endl;
+        stream << indent(in) << "phi = " << (*groups)[i].magicPhi << std::endl;
+        stream << indent(in) << "psi = " << (*groups)[i].magicPsi << std::endl;
+        
+        for (int j = 0; j < (*groups)[i].atoms.size(); j++)
+        {
+            AtomValue *atom = &(*groups)[i].atoms[j];
+            stream << indent(in) << "object " << i << std::endl;
+            stream << indent(in) << "{" << std::endl;
+            in++;
+            stream << indent(in) << "geom_ratio = " << atom->geomRatio << std::endl;
+            stream << indent(in) << "expected = " << atom->expectedAngle << std::endl;
+            stream << indent(in) << "circle_add = " << atom->circlePortion << std::endl;
+            AtomPtr refAtom = atom->atom.lock();
+            stream << indent(in) << "atom = " << refAtom->getAbsolutePath() << std::endl;
+            in--;
+            stream << indent(in) << "}" << std::endl;
+        }
+
+        in--;
+        stream << indent(in) << "}" << std::endl;
+    }
 }
 
 void Bond::addProperties()
@@ -1541,4 +1568,6 @@ void Bond::addProperties()
     addBoolProperty("anchored", &_anchored);
     addBoolProperty("using_torsion", &_usingTorsion);
     addBoolProperty("refine_bond_angle", &_refineBondAngle);
+
+    addCustomProperty("bond_group", &_bondGroups, this, encodeBondGroup);
 }

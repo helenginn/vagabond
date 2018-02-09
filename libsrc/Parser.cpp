@@ -146,7 +146,7 @@ void Parser::outputContents(std::ofstream &stream, int in)
         std::string name = _customProperties[i].ptrName;
         void *ptr = _customProperties[i].objPtr;
         void *delegate = _customProperties[i].delegate;
-        if (!ptr || delegate) continue;
+        if (!ptr) continue;
 
         stream << indent(in) << "special " << name << std::endl;  
         stream << indent(in) << "{" << std::endl;
