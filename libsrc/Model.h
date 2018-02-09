@@ -124,12 +124,12 @@ protected:
     double anisotropyExtent(bool withKabsch = false);
     double _isotropicAverage;
 
-        virtual std::string getParserIdentifier()
-        {
-            return "model"; 
-        }
+    virtual std::string getParserIdentifier()
+    {
+        return "model"; 
+    }
 
-        virtual void addProperties();
+    virtual void addProperties();
     virtual void addObject(ParserPtr object, std::string category) {};
 private:
     std::mutex guiLock;
