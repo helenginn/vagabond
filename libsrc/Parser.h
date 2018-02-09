@@ -10,6 +10,7 @@
 #include <map>
 #include <fstream>
 #include "vec3.h"
+#include <sstream>
 
 typedef struct
 {
@@ -50,6 +51,17 @@ typedef struct
     void *delegate;
     Encoder encoder;
 } CustomProperty;
+
+inline std::string indent(int num)
+{
+    std::ostringstream stream;
+
+    for (int i = 0; i < num; i++)
+    {
+        stream << "  ";
+    }
+    return stream.str();
+}
 
 typedef std::map<std::string, std::vector<ParserPtr> > ParserList;
 typedef std::map<std::string, std::vector<ParserPtr> > ReferenceList;

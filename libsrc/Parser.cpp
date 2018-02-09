@@ -4,7 +4,6 @@
 // Copyright (c) 2018 Helen Ginn. All rights reserved.
 
 #include "Parser.h"
-#include <sstream>
 #include <iostream>
 #include <iomanip>
 
@@ -107,17 +106,6 @@ void Parser::addChild(std::string category, ParserPtr child)
     child->setParent(this);
     _parserList[category].push_back(child);
     child->setup();
-}
-
-std::string indent(int num)
-{
-    std::ostringstream stream;
-
-    for (int i = 0; i < num; i++)
-    {
-        stream << "  ";
-    }
-    return stream.str();
 }
 
 void Parser::outputContents(std::ofstream &stream, int in)
