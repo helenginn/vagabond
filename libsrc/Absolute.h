@@ -16,10 +16,11 @@
 #include "FileReader.h"
 #include "Distributor.h"
 #include "Bond.h"
+#include "Parser.h"
 
 class Anisotropicator;
 
-class Absolute : public Model
+class Absolute : public Model, public Parser
 {
 public:
 	Absolute(vec3 pos, double bFac, std::string element, double occValue);
@@ -192,6 +193,10 @@ public:
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 
+        void std::string getParserIdentifier()
+        {
+            return "absolute_" + getAtom()->getAtomNum();
+        }
 private:
 	AtomPtr _atom;
 	std::vector<AtomWkr> _nextAtoms;

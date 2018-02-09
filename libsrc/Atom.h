@@ -148,6 +148,11 @@ public:
         _atomNum = atomNum;
     }
 
+    void getAtomNum()
+    {
+        return atomNum;
+    }
+
     void findAtomType(std::string resName);
     void inheritParents();
     std::string pdbLineBeginning(std::string start = "ATOM  ");
