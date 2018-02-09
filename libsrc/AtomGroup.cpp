@@ -617,6 +617,8 @@ double AtomGroup::scoreWithMap(std::vector<AtomPtr> atoms, ScoreType scoreType,
 
 void AtomGroup::addProperties()
 {
+    addBoolProperty("been_tied", &_beenTied);
+
     for (int i = 0; i < atomCount(); i++)
     {
         addReference("atom", atom(i));
