@@ -7,6 +7,7 @@
 #include <iostream>
 #include <iomanip>
 #include "Crystal.h"
+#include "Polymer.h"
 
 Parser::Parser()
 {
@@ -122,7 +123,7 @@ void Parser::outputContents(std::ofstream &stream, int in)
         std::string name = _stringProperties[i].ptrName;
         std::string *ptr = _stringProperties[i].stringPtr;
         if (!ptr) continue;
-        stream << indent(in) << name << " = \"" << *ptr << "\"" << std::endl;
+        stream << indent(in) << name << " = " << *ptr << "" << std::endl;
     }
  
     for (int i = 0; i < _doubleProperties.size(); i++)
@@ -254,13 +255,258 @@ void Parser::addReference(std::string category, ParserPtr cousin)
     _referenceList[category].push_back(cousin);
 }
 
-ParserPtr Parser::objectOfType(std::string className)
+char *strchrwhite(char *block)
+{
+    char *space = strchr(block, ' ');
+    char *newline = strchr(block, '\n');
+    char *tab = strchr(block, '\t');
+
+    if (tab != NULL && tab < newline) newline = tab;
+    if (space != NULL && space < newline) newline = space;
+
+    return newline;
+}
+
+void incrementIndent(char **block)
+{
+    while ((*block)[0] == ' ' || (*block)[0] == '\t' || (*block)[0] == '\n'
+            || (*block)[0] == '\0')
+    {
+        (*block)++;
+    }
+}
+
+void Parser::setProperty(std::string property, std::string value)
+{
+    for (int i = 0; i < _stringProperties.size(); i++)
+    {
+        if (_stringProperties[i].ptrName == property)
+        {
+            *_stringProperties[i].stringPtr = value;
+            std::cout << "Setting string to " << value << std::endl;
+            return;
+        }
+    }
+
+    for (int i = 0; i < _doubleProperties.size(); i++)
+    {
+        if (_doubleProperties[i].ptrName == property)
+        {
+            char *check = NULL;
+            double val = strtod(value.c_str(), &check);            
+            if (check > &value[0]);
+            {
+                *_doubleProperties[i].doublePtr = val;
+            }
+            std::cout << "Setting double to " << val << std::endl;
+            return;
+        }
+    }
+
+    for (int i = 0; i < _vec3Properties.size(); i++)
+    {
+        if (_vec3Properties[i].ptrName == property)
+        {
+            char *start = &value[0];
+            char *comma = strchr(start, ',');
+            *comma = 0;
+            double x = strtod(start, NULL);
+            start = comma++;
+            incrementIndent(&start);
+            comma = strchr(start, ',');
+            *comma = 0;
+            double y = strtod(start, NULL);
+            start = comma++;
+            incrementIndent(&start);
+            comma = strchrwhite(start);
+            *comma = 0;
+            double z = strtod(start, NULL);
+            vec3 vec = make_vec3(x, y, z); 
+            *_vec3Properties[i].vec3Ptr = vec;
+            std::cout << "Setting vec3 to " << vec3_desc(vec) << std::endl;
+            return;
+        }
+    }
+
+    for (int i = 0; i < _intProperties.size(); i++)
+    {
+        if (_intProperties[i].ptrName == property)
+        {
+            int val = atoi(value.c_str());
+            std::cout << "Setting int to " << val << std::endl;
+            *_intProperties[i].intPtr = val;
+            return;
+        }
+    }
+
+    for (int i = 0; i < _boolProperties.size(); i++)
+    {
+        if (_boolProperties[i].ptrName == property)
+        {
+            bool val = atoi(value.c_str());
+            std::cout << "Setting bool to " << val << std::endl;
+            *_boolProperties[i].boolPtr = val;
+            return;
+        }
+    }
+
+    std::cout << "Unhandled thing." << std::endl;
+}
+
+char *Parser::parseNextProperty(std::string property, char *block)
+{
+    // just incremented to = sign, let's check.
+    if (block[0] != '=')
+    {
+        std::cout << "Failure to read property for " << _identifier << ", no = sign! It's " << block[0] << std::endl;
+        return &block[1];
+    }
+
+    block++;
+    incrementIndent(&block);
+    char *white = strchrwhite(block); 
+    *white = '\0';
+    
+    // now we expect the value between block and white...
+    std::string value = std::string(block);
+    std::cout << "Should set property " << property << " to value " << value << std::endl;
+    
+    setProperty(property, value);
+
+    block = white + 1;
+    incrementIndent(&block);
+
+    return block;
+}
+
+bool Parser::parseNextChunk(char **blockPtr)
+{
+    char *block = *blockPtr;    
+
+    // just incremented from the first {.
+    // we should expect a keyword, or a property next.
+    char *space = strchrwhite(block);
+    if (space == NULL)
+    {
+        //std::cout << block << std::endl;
+        std::cout << "Nope!" << std::endl;
+        return false;
+    }
+
+    *space = '\0';
+    
+    // what are we about to process?
+
+    ParserType type = ParserTypeProperty;
+    
+    if (strcmp(block, "category") == 0)
+    {
+        type = ParserTypeObject;
+    }
+    else if (strcmp(block, "reference") == 0)
+    {
+        type = ParserTypeReference;
+    }
+    else if (strcmp(block, "special") == 0)
+    {
+        type = ParserTypeSpecial;
+    }
+
+    char *property = block;
+    block = space + 1;
+    incrementIndent(&block);
+
+    switch (type)
+    {
+        case ParserTypeProperty:
+        *blockPtr = parseNextProperty(property, block);
+        break;
+
+        default:
+        break;
+    }
+
+    if (block[0] == '}')
+    {
+        std::cout << "Found a }" << std::endl;
+        return false;
+    }
+   
+    return true;
+}
+
+void Parser::parse(char *block)
+{
+    // Get to the beginning of the absolute path...
+    incrementIndent(&block);
+
+    char *newline = strchrwhite(block);
+    if (newline == NULL) return;
+
+    // We prepare the vessels to accept our data.
+    setup();
+    
+    // Now we can replace the dud path/identifier.
+    *newline = '\0';
+    std::string path = std::string(block);
+    _absolutePath = path;
+
+    std::cout << "Found path " << path << std::endl;
+    
+    // we also want to isolate the final identifier
+    char *slash = strrchr(block, '/');
+    slash++;
+    std::string identifier = std::string(slash);
+    _identifier = identifier;
+
+    std::cout << "Found identifier " << _identifier << std::endl;
+
+    block = newline + 1;
+    incrementIndent(&block);
+    // we expect the next character to be a {
+    if (block[0] != '{')
+    {
+        std::cout << "Check me: no { for object " << path  << "?" << std::endl;
+        return;
+    }
+    else
+    {
+        std::cout << "Loading properties for " << _identifier << std::endl;
+    }
+
+    std::cout << "Set up ok." << std::endl;
+   
+    // Get past the {. 
+    block++;
+    incrementIndent(&block);
+
+    // Loop through the properties.
+
+    bool another = true;
+
+    while (another)
+    {    
+        another = parseNextChunk(&block);
+    }
+}
+
+ParserPtr Parser::objectOfType(char *className)
 {
     ParserPtr object = ParserPtr();
 
-    if (className == "Crystal") 
+    if (strcmp(className, "Crystal") == 0) 
     {
+        std::cout << "Making object of type " << className << std::endl;
         object = ParserPtr(static_cast<Parser *>(new Crystal()));
+    }
+    if (strcmp(className, "Polymer") == 0)
+    {
+        std::cout << "Making object of type " << className << std::endl;
+        object = ParserPtr(static_cast<Polymer *>(new Polymer()));
+    }
+    else
+    {
+        std::cout << "Do not understand class name " << className << std::endl;
     }
 
     return object;
@@ -268,7 +514,20 @@ ParserPtr Parser::objectOfType(std::string className)
 
 ParserPtr Parser::processBlock(char *block)
 {
-    return ParserPtr();
+    // block should start with class name.
+    char *comma = strchr(block, ',');
+    *comma = '\0';
+    
+    ParserPtr object = objectOfType(block);
+    if (!object)
+    {
+        return ParserPtr();
+    }
+
+    block = comma + 1;
+    object->parse(block);
+
+    return object;
 }
 
 

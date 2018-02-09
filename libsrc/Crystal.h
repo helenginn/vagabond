@@ -168,6 +168,8 @@ private:
     mat3x3 _hkl2real;
     mat3x3 _real2frac;
     CSym::CCP4SPG *_spaceGroup;
+    int _spgNum;
+
     double _maxResolution;
     std::vector<int> _anchorResidues;
     double totalToScale();

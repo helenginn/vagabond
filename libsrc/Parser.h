@@ -12,6 +12,14 @@
 #include "vec3.h"
 #include <sstream>
 
+typedef enum
+{
+    ParserTypeObject,
+    ParserTypeReference,
+    ParserTypeSpecial,
+    ParserTypeProperty,
+} ParserType;
+
 typedef struct
 {
     std::string *stringPtr;
@@ -106,8 +114,8 @@ private:
     std::vector<DoubleProperty> _doubleProperties;
     std::vector<IntProperty> _intProperties;
     std::vector<Vec3Property> _vec3Properties;
-    std::vector<CustomProperty> _customProperties;
     std::vector<BoolProperty> _boolProperties;
+    std::vector<CustomProperty> _customProperties;
     ParserList _parserList;
     ReferenceList _referenceList;
 
@@ -116,7 +124,11 @@ private:
     bool _setup;
     
     void outputContents(std::ofstream &stream, int in);
-    static ParserPtr objectOfType(std::string className);
+    static ParserPtr objectOfType(char *className);
+    bool parseNextChunk(char **blockPtr);
+    void parse(char *block);
+    char *parseNextProperty(std::string property, char *block);
+    void setProperty(std::string property, std::string value);
 };
 
 

@@ -486,6 +486,7 @@ void Crystal::changeAnchors(int newAnchor)
 
 Crystal::Crystal()
 {
+    _spgNum = 0;
     _maxResolution = 0;
     _unitCell.resize(6);
 }
@@ -645,7 +646,7 @@ void Crystal::addProperties()
     addDoubleProperty("uc_alpha", &_unitCell[3]);
     addDoubleProperty("uc_beta", &_unitCell[4]);
     addDoubleProperty("uc_gamma", &_unitCell[5]);
-    addIntProperty("spacegroup", &(_spaceGroup->spg_num));
+    addIntProperty("spacegroup", &(_spgNum));
 
     for (int i = 0; i < moleculeCount(); i++)
     {
