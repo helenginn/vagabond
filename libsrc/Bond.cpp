@@ -1516,6 +1516,15 @@ double Bond::getEffectiveOccupancy()
     return total;
 }
 
+void Bond::encodeBondGroup(void *bond, void *bondGroup,
+                           std::ofstream &stream, int in)
+{
+    std::vector<BondGroup> *groups = NULL;
+    groups = static_cast<std::vector<BondGroup> *>(bondGroup);
+    
+    stream << indent(in);
+}
+
 void Bond::addProperties()
 {
     addReference("minor", getMinor());
