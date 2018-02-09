@@ -19,33 +19,33 @@
 
 Molecule::Molecule()
 {
-	_absoluteBFacSubtract = 0.0;
-	_absoluteBFacMult = 1.0;
+    _absoluteBFacSubtract = 0.0;
+    _absoluteBFacMult = 1.0;
 }
 
 void Molecule::tieAtomsUp()
 {
-	if (getClassName() != "Polymer")
-	{
-		double mult = Options::getBMult();
-		std::cout << "Setting HETATM B factor multiplier to " << mult <<
-		" for Chain " << getChainID() << std::endl;
-		setAbsoluteBFacMult(mult);
-	}
+    if (getClassName() != "Polymer")
+    {
+        double mult = Options::getBMult();
+        std::cout << "Setting HETATM B factor multiplier to " << mult <<
+        " for Chain " << getChainID() << std::endl;
+        setAbsoluteBFacMult(mult);
+    }
 }
 
 void Molecule::addToMap(FFTPtr fft, mat3x3 _real2frac)
 {
-	for (int i = 0; i < atomCount(); i++)
-	{
-		atom(i)->addToMap(fft, _real2frac);
-	}
+    for (int i = 0; i < atomCount(); i++)
+    {
+        atom(i)->addToMap(fft, _real2frac);
+    }
 }
 
 void Molecule::summary()
 {
-	std::cout << "| I am chain " << getChainID() << std::endl;
-	std::cout << "| Atoms: " << atomCount() << std::endl;
+    std::cout << "| I am chain " << getChainID() << std::endl;
+    std::cout << "| Atoms: " << atomCount() << std::endl;
 }
 
 void Molecule::refine(CrystalPtr target, RefinementType rType)
@@ -55,7 +55,7 @@ void Molecule::refine(CrystalPtr target, RefinementType rType)
 
 std::string Molecule::makePDB(PDBType pdbType, CrystalPtr crystal)
 {
-	return "";
+    return "";
 }
 
 void Molecule::reportParameters()
@@ -65,41 +65,41 @@ void Molecule::reportParameters()
 
 void Molecule::tiedUpScattering(double *tied, double *all)
 {
-	double total = 0;
-	double totalCount = 0;
-	double some = 0;
-	double someCount = 0;
+    double total = 0;
+    double totalCount = 0;
+    double some = 0;
+    double someCount = 0;
 
-	for (int i = 0; i < atomCount(); i++)
-	{
-		if (atom(i)->getModel()->getClassName() == "Bond")
-		{
-			some += atom(i)->getElement()->electronCount();
-			someCount++;
-		}
+    for (int i = 0; i < atomCount(); i++)
+    {
+        if (atom(i)->getModel()->getClassName() == "Bond")
+        {
+            some += atom(i)->getElement()->electronCount();
+            someCount++;
+        }
 
-		total += atom(i)->getElement()->electronCount();
-		totalCount++;
-	}
+        total += atom(i)->getElement()->electronCount();
+        totalCount++;
+    }
 
-	*tied += some;
-	*all += total;
+    *tied += some;
+    *all += total;
 }
 
 void Molecule::resetInitialPositions()
 {
-	for (int i = 0; i < atomCount(); i++)
-	{
-		vec3 pos = atom(i)->getPosition();
-		atom(i)->setInitialPosition(pos);
+    for (int i = 0; i < atomCount(); i++)
+    {
+        vec3 pos = atom(i)->getPosition();
+        atom(i)->setInitialPosition(pos);
 
-		ModelPtr model = atom(i)->getModel();
+        ModelPtr model = atom(i)->getModel();
 
-		if (model->isBond())
-		{
-			ToBondPtr(model)->resetBondDirection();
-		}
-	}
+        if (model->isBond())
+        {
+            ToBondPtr(model)->resetBondDirection();
+        }
+    }
 }
 
 
