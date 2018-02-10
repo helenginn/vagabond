@@ -134,6 +134,7 @@ inline char *keywordValue(char *block, char **keyword, char **value)
 typedef std::map<std::string, std::vector<ParserPtr> > ParserList;
 typedef std::map<std::string, std::vector<ParserPtr> > ReferenceList;
 typedef std::map<std::string, std::vector<std::string> > ResolveList;
+typedef std::map<std::string, ParserPtr> ParserMap;
 
 class Parser 
 {
@@ -151,6 +152,7 @@ protected:
     virtual std::string getParserIdentifier() = 0;
     virtual void addProperties() = 0;
     virtual void addObject(ParserPtr object, std::string category) {};
+    virtual void linkReference(ParserPtr object, std::string category) {};
 
     void setParent(Parser *parent);
     void addStringProperty(std::string className, std::string *ptr);
@@ -167,6 +169,7 @@ protected:
     void writeToFile(std::ofstream &stream, int indent);
     void clearContents();
 
+    static ParserPtr resolveReference(std::string reference);
 private:
     std::string _className;
     std::string _identifier;
@@ -196,8 +199,9 @@ private:
     char *parseNextSpecial(char *block);
     char *parseNextReference(char *block);
     void setProperty(std::string property, std::string value);
+    void resolveReferences();
 
-    static ParserList _allParsers;
+    static ParserMap _allParsers;
 };
 
 

@@ -15,7 +15,7 @@
 #include "Sidechain.h"
 #include "Backbone.h"
 
-ParserList Parser::_allParsers;
+ParserMap Parser::_allParsers;
 
 Parser::Parser()
 {
@@ -437,7 +437,7 @@ char *Parser::parseNextObject(char *block)
         addObject(object, categoryName);
         _parserList[categoryName].push_back(object);
         std::string path = object->getAbsolutePath();
-        _allParsers[path].push_back(object);
+        _allParsers[path] = object;
 
         if (block == NULL)
         {
@@ -786,10 +786,10 @@ ParserPtr Parser::objectOfType(char *className)
 
 ParserPtr Parser::processBlock(char *block)
 {
-    // block should start with class name.
     char *comma = strchr(block, ',');
     *comma = '\0';
-    
+   
+    // Get the initial object (crystal, we hope) 
     ParserPtr object = objectOfType(block);
     if (!object)
     {
@@ -797,8 +797,12 @@ ParserPtr Parser::processBlock(char *block)
     }
 
     block = comma + 1;
-    // success is NULL if failed.
+
+    // Parse the entirety of the structure.
     char *success = object->parse(block);
+
+    // Resolve dangling references.
+    object->resolveReferences();
 
     if (success != NULL)
     {
@@ -808,4 +812,31 @@ ParserPtr Parser::processBlock(char *block)
     return ParserPtr();
 }
 
+ParserPtr Parser::resolveReference(std::string reference)
+{
+    return _allParsers[reference];
+}
+
+void Parser::resolveReferences()
+{
+    for (ResolveList::iterator it = _resolveList.begin();
+         it != _resolveList.end(); it++)
+    {
+        for (int j = 0; j < it->second.size(); j++)
+        {
+            std::string path = it->second[j];
+            ParserPtr parser = resolveReference(path);
+            linkReference(parser, it->first);
+        }
+    }
+
+    for (ParserList::iterator it = _parserList.begin();
+         it != _parserList.end(); it++) 
+    {
+        for (int j = 0; j < it->second.size(); j++)
+        {
+            it->second[j]->resolveReferences();
+        }
+    }
+}
 
