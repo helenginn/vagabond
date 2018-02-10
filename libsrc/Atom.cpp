@@ -25,349 +25,351 @@
 
 Atom::Atom()
 {
-	_initialPosition = make_vec3(0, 0, 0);
-	_initialB = 0;
-	_geomType = AtomUnassigned;
-	_weighting = 1;
-	_origOccupancy = 1.0;
-	_fromPDB = true;
+    _initialPosition = make_vec3(0, 0, 0);
+    _initialB = 0;
+    _geomType = AtomUnassigned;
+    _weighting = 1;
+    _origOccupancy = 1.0;
+    _fromPDB = true;
 }
 
 Atom::Atom(Atom &other)
 {
-	_initialPosition = other._initialPosition;
-	_initialB = other._initialB;
-	_geomType = other._geomType;
-	_element = other._element;
-	_atomName = other._atomName;
-	_model = other._model;
-	_distModelOnly = other._distModelOnly;
-	_monomer = other._monomer;
-	_weighting = other._weighting;
-	_atomNum = other._atomNum;
-	_fromPDB = other._fromPDB;
-	_pdbPosition = other._pdbPosition;
-	_origOccupancy = other._origOccupancy;
-	_conformer = other._conformer;
-	_ellipsoidLongestAxis = other._ellipsoidLongestAxis;
+    _initialPosition = other._initialPosition;
+    _initialB = other._initialB;
+    _geomType = other._geomType;
+    _element = other._element;
+    _atomName = other._atomName;
+    _model = other._model;
+    _distModelOnly = other._distModelOnly;
+    _monomer = other._monomer;
+    _weighting = other._weighting;
+    _atomNum = other._atomNum;
+    _fromPDB = other._fromPDB;
+    _pdbPosition = other._pdbPosition;
+    _origOccupancy = other._origOccupancy;
+    _conformer = other._conformer;
+    _ellipsoidLongestAxis = other._ellipsoidLongestAxis;
 }
 
 void Atom::inheritParents()
 {
-	getMonomer()->addAtom(shared_from_this());
-	getMonomer()->getPolymer()->addAtom(shared_from_this());
+    getMonomer()->addAtom(shared_from_this());
+    getMonomer()->getPolymer()->addAtom(shared_from_this());
 }
 
 void Atom::setModel(ModelPtr model)
 {
-	_model = model;
+    _model = model;
 }
 
 FFTPtr Atom::getBlur()
 {
-	FFTPtr modelDist = _model->getDistribution();
-	/* YEAH, that line does something */
+    FFTPtr modelDist = _model->getDistribution();
+    /* YEAH, that line does something */
 
-	if (_distModelOnly)
-	{
-		modelDist = _distModelOnly->getDistribution();
-	}
+    if (_distModelOnly)
+    {
+        modelDist = _distModelOnly->getDistribution();
+    }
 
-	modelDist->multiplyAll(_weighting);
+    modelDist->multiplyAll(_weighting);
 
-	return modelDist;
+    return modelDist;
 }
 
 double Atom::scoreWithMap(CrystalPtr crystal, std::vector<double> *xs,
-						  std::vector<double> *ys, bool diff,
-						  MapScoreType mapScore)
+                          std::vector<double> *ys, bool diff,
+                          MapScoreType mapScore)
 {
-	FFTPtr fft = crystal->getFFT();
+    FFTPtr fft = crystal->getFFT();
 
-	if (diff)
-	{
-		fft = crystal->getDiFFT();
-	}
+    if (diff)
+    {
+        fft = crystal->getDiFFT();
+    }
 
-	return scoreWithMap(fft, crystal->getReal2Frac(), xs, ys, mapScore);
+    return scoreWithMap(fft, crystal->getReal2Frac(), xs, ys, mapScore);
 }
 
 double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell,
-						  std::vector<double> *xs, std::vector<double> *ys,
-						  MapScoreType mapScore)
+                          std::vector<double> *xs, std::vector<double> *ys,
+                          MapScoreType mapScore)
 {
-	FFTPtr atomDist = _element->getDistribution();
-	FFTPtr modelDist = getBlur();
-	FFT::multiply(modelDist, atomDist);
-	modelDist->fft(1);
-	modelDist->invertScale();
+    FFTPtr atomDist = _element->getDistribution();
+    FFTPtr modelDist = getBlur();
+    FFT::multiply(modelDist, atomDist);
+    modelDist->fft(1);
+    modelDist->invertScale();
 
-	vec3 pos = _model->getAbsolutePosition();
-	mat3x3_mult_vec(unit_cell, &pos);
+    vec3 pos = _model->getAbsolutePosition();
+    mat3x3_mult_vec(unit_cell, &pos);
 
-	if (pos.x != pos.x)
-	{
-		return 0;
-	}
+    if (pos.x != pos.x)
+    {
+        return 0;
+    }
 
-	double score = FFT::score(fft, modelDist, pos, xs, ys, mapScore);
+    double score = FFT::score(fft, modelDist, pos, xs, ys, mapScore);
 
-	return score;
+    return score;
 }
 
 void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool useNew)
 {
-	FFTPtr atomDist = _element->getDistribution();
-	FFTPtr modified;
+    FFTPtr atomDist = _element->getDistribution();
+    FFTPtr modified;
 
-	if (!useNew)
-	{
-		modified = getBlur();
-	}
-	else
-	{
-		modified = _model->getDistribution();
-	}
+    if (!useNew)
+    {
+        modified = getBlur();
+    }
+    else
+    {
+        modified = _model->getDistribution();
+    }
 
-	FFT::multiply(modified, atomDist);
-	modified->fft(1);
-	modified->invertScale();
+    FFT::multiply(modified, atomDist);
+    modified->fft(1);
+    modified->invertScale();
 
-	vec3 pos = _model->getAbsolutePosition();
+    vec3 pos = _model->getAbsolutePosition();
 
-	if (_distModelOnly)
-	{
-		pos = _distModelOnly->getAbsolutePosition();
-	}
+    if (_distModelOnly)
+    {
+        pos = _distModelOnly->getAbsolutePosition();
+    }
 
-	pos = vec3_subtract_vec3(pos, offset);
-	mat3x3_mult_vec(unit_cell, &pos);
+    pos = vec3_subtract_vec3(pos, offset);
+    mat3x3_mult_vec(unit_cell, &pos);
 
-	if (pos.x != pos.x)
-	{
-		return;
-	}
+        std::cout
 
-	FFT::add(fft, modified, pos);
+    if (pos.x != pos.x)
+    {
+        return;
+    }
+
+    FFT::add(fft, modified, pos);
 }
 
 vec3 Atom::getAbsolutePosition()
 {
-	return _model->getAbsolutePosition();
+    return _model->getAbsolutePosition();
 }
 
 vec3 Atom::getPosition()
 {
-	return _model->getStaticPosition();
+    return _model->getStaticPosition();
 }
 
 bool Atom::isBackbone()
 {
-	if (_atomName == "C") return true;
-	if (_atomName == "H") return true;
-	if (_atomName == "N") return true;
-	if (_atomName == "O") return true;
-	if (_atomName == "HA3") return true;
+    if (_atomName == "C") return true;
+    if (_atomName == "H") return true;
+    if (_atomName == "N") return true;
+    if (_atomName == "O") return true;
+    if (_atomName == "HA3") return true;
 
-	return false;
+    return false;
 }
 
 bool Atom::isBackboneAndSidechain()
 {
-	if (_atomName == "CA") return true;
-	if (_atomName == "HA") return true;
-	if (_atomName == "HA2") return true;
+    if (_atomName == "CA") return true;
+    if (_atomName == "HA") return true;
+    if (_atomName == "HA2") return true;
 
-	return false;
+    return false;
 }
 
 /* Convert to lookup table */
 void Atom::findAtomType(std::string resName)
 {
-	_geomType = GeomTable::getGeomTable().getType(resName, _atomName);
+    _geomType = GeomTable::getGeomTable().getType(resName, _atomName);
 }
 
 std::string Atom::pdbLineBeginning(std::string start)
 {
-	std::string residueName = getMonomer()->getIdentifier();
-	int resNum = getMonomer()->getResidueNum();
-	to_upper(residueName);
-	std::ostringstream line;
+    std::string residueName = getMonomer()->getIdentifier();
+    int resNum = getMonomer()->getResidueNum();
+    to_upper(residueName);
+    std::ostringstream line;
 
-	char conformer[] = " ";
-	if (getAlternativeConformer().length())
-	{
-		conformer[0] = getAlternativeConformer()[0];
-	}
+    char conformer[] = " ";
+    if (getAlternativeConformer().length())
+    {
+        conformer[0] = getAlternativeConformer()[0];
+    }
 
-	line << start;
-	line << std::setfill(' ') << std::setw(5) << std::fixed << _atomNum;
-	line << "  " << std::left << std::setfill(' ') << std::setw(3) << _atomName;
-	line << std::right << conformer;
-	line << std::setw(3) << residueName;
-	line << " " << getMolecule()->getChainID()[0];
-	line << std::setfill(' ') << std::setw(4) << resNum;
-	line << "  ";
+    line << start;
+    line << std::setfill(' ') << std::setw(5) << std::fixed << _atomNum;
+    line << "  " << std::left << std::setfill(' ') << std::setw(3) << _atomName;
+    line << std::right << conformer;
+    line << std::setw(3) << residueName;
+    line << " " << getMolecule()->getChainID()[0];
+    line << std::setfill(' ') << std::setw(4) << resNum;
+    line << "  ";
 
-	return line.str();
+    return line.str();
 }
 
 void Atom::setKeepModel()
 {
-	_distModelOnly = _model;
+    _distModelOnly = _model;
 }
 
 double Atom::posDisplacement()
 {
-	BondPtr bond = ToBondPtr(getModel());
-	bond->getFinalPositions();
-	vec3 bestPos = bond->getAbsolutePosition();
-	vec3 initialPos = getPDBPosition();
+    BondPtr bond = ToBondPtr(getModel());
+    bond->getFinalPositions();
+    vec3 bestPos = bond->getAbsolutePosition();
+    vec3 initialPos = getPDBPosition();
 
-	vec3 diff = vec3_subtract_vec3(bestPos, initialPos);
-	double score = vec3_length(diff);
+    vec3 diff = vec3_subtract_vec3(bestPos, initialPos);
+    double score = vec3_length(diff);
 
-	return score;
+    return score;
 }
 
 std::string Atom::anisouPDBLine(CrystalPtr crystal)
 {
-	if (!getMonomer() || getAlternativeConformer().length())
-	{
-		return "";
-	}
+    if (!getMonomer() || getAlternativeConformer().length())
+    {
+        return "";
+    }
 
-	std::ostringstream stream;
-	stream << pdbLineBeginning("ANISOU");
+    std::ostringstream stream;
+    stream << pdbLineBeginning("ANISOU");
 
-	mat3x3 realTensor = getModel()->getRealSpaceTensor();
-	mat3x3 recipTensor = realTensor;
+    mat3x3 realTensor = getModel()->getRealSpaceTensor();
+    mat3x3 recipTensor = realTensor;
 
-	double scale = 10e4;
-	stream << std::setprecision(0) << std::fixed;
-	stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[0];
-	stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[4];
-	stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[8];
-	stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[1];
-	stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[2];
-	stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[5];
-	stream << std::endl;
+    double scale = 10e4;
+    stream << std::setprecision(0) << std::fixed;
+    stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[0];
+    stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[4];
+    stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[8];
+    stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[1];
+    stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[2];
+    stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[5];
+    stream << std::endl;
 
-	return stream.str();
+    return stream.str();
 }
 
 std::string Atom::averagePDBContribution(bool samePos, bool sameB)
 {
-	if (!getMonomer())
-	{
-		return "";
-	}
+    if (!getMonomer())
+    {
+        return "";
+    }
 
-	getModel()->getDistribution(true);
-	std::string atomName = getAtomName();
-	ElementPtr element = getElement();
+    getModel()->getDistribution(true);
+    std::string atomName = getAtomName();
+    ElementPtr element = getElement();
 
-	double occupancy = 1;
-	occupancy = getModel()->getEffectiveOccupancy();
+    double occupancy = 1;
+    occupancy = getModel()->getEffectiveOccupancy();
 
-	vec3 placement = getModel()->getAbsolutePosition();
+    vec3 placement = getModel()->getAbsolutePosition();
 
-	if (samePos)
-	{
-		placement = getPDBPosition();
-	}
+    if (samePos)
+    {
+        placement = getPDBPosition();
+    }
 
-	double bFactor = getModel()->getMeanSquareDeviation();
+    double bFactor = getModel()->getMeanSquareDeviation();
 
-	if (sameB)
-	{
-		bFactor = getInitialBFactor();
-	}
+    if (sameB)
+    {
+        bFactor = getInitialBFactor();
+    }
 
-	return PDBReader::writeLine(shared_from_this(),
-								placement, 0, occupancy, bFactor);
+    return PDBReader::writeLine(shared_from_this(),
+                                placement, 0, occupancy, bFactor);
 }
 
 std::string Atom::getPDBContribution(int ensembleNum)
 {
-	std::string atomName = getAtomName();
-	ElementPtr element = getElement();
+    std::string atomName = getAtomName();
+    ElementPtr element = getElement();
 
-	int tries = 10;
+    int tries = 10;
 
-	if (element->getSymbol() == "H")
-	{
-		tries = 1;
-	}
+    if (element->getSymbol() == "H")
+    {
+        tries = 1;
+    }
 
-	std::ostringstream stream;
-	std::vector<BondSample> positions = getModel()->getFinalPositions();
+    std::ostringstream stream;
+    std::vector<BondSample> positions = getModel()->getFinalPositions();
 
-	double skip = (double)positions.size() / 25.;
+    double skip = (double)positions.size() / 25.;
 
-	if (skip < 0) skip = 1;
-	const int side = 7;
-	int count = 0;
+    if (skip < 0) skip = 1;
+    const int side = 7;
+    int count = 0;
 
-	for (double i = 0; i < positions.size(); i+= 1)
-	{
-		int l = i / (side * side);
-		int k = (i - (l * side * side)) / side;
-		int h = (i - l * side * side - k * side);
+    for (double i = 0; i < positions.size(); i+= 1)
+    {
+        int l = i / (side * side);
+        int k = (i - (l * side * side)) / side;
+        int h = (i - l * side * side - k * side);
 
-		if ((ensembleNum < 0) &&
-			((h + k) % 2 != 0 || (k + l) % 2 != 0 || (l + h) % 2 != 0))
-		{
-			continue;
-		}
+        if ((ensembleNum < 0) &&
+            ((h + k) % 2 != 0 || (k + l) % 2 != 0 || (l + h) % 2 != 0))
+        {
+            continue;
+        }
 
-		if (ensembleNum >= 0)
-		{
-			i = ensembleNum;
-		}
+        if (ensembleNum >= 0)
+        {
+            i = ensembleNum;
+        }
 
-		vec3 placement = positions[i].start;
-		double occupancy = 50 * positions[i].occupancy / double(tries);
-		stream << PDBReader::writeLine(shared_from_this(), placement, count, occupancy, 0);
+        vec3 placement = positions[i].start;
+        double occupancy = 50 * positions[i].occupancy / double(tries);
+        stream << PDBReader::writeLine(shared_from_this(), placement, count, occupancy, 0);
 
-		if (ensembleNum >= 0)
-		{
-			break;
-		}
+        if (ensembleNum >= 0)
+        {
+            break;
+        }
 
-		count++;
-	}
+        count++;
+    }
 
-	return stream.str();
+    return stream.str();
 }
 
 std::string Atom::shortDesc()
 {
-	return getMonomer()->getIdentifier()
-		+ i_to_str(getMonomer()->getResidueNum()) +
-		getAtomName();
+    return getMonomer()->getIdentifier()
+        + i_to_str(getMonomer()->getResidueNum()) +
+        getAtomName();
 }
 
 MoleculePtr Atom::getMolecule()
 {
-	if (getMonomer())
-	{
-		return getMonomer()->getPolymer();
-	}
+    if (getMonomer())
+    {
+        return getMonomer()->getPolymer();
+    }
 
-	return MoleculePtr();
+    return MoleculePtr();
 }
 
 double Atom::getAngle(AtomPtr atom1, AtomPtr atom2, AtomPtr atom3)
 {
-	AtomType type1 = atom1->getGeomType();
-	AtomType type2 = atom2->getGeomType();
-	AtomType type3 = atom3->getGeomType();
+    AtomType type1 = atom1->getGeomType();
+    AtomType type2 = atom2->getGeomType();
+    AtomType type3 = atom3->getGeomType();
 
-	GeomTable table = GeomTable::getGeomTable();
-	double angle = table.getBondAngle(type1, type2, type3);
+    GeomTable table = GeomTable::getGeomTable();
+    double angle = table.getBondAngle(type1, type2, type3);
 
-	return angle;
+    return angle;
 }
 
 void Atom::addProperties()

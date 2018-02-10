@@ -31,7 +31,7 @@ void VagWindow::makeMenu()
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     QAction *aOutput = fileMenu->addAction(tr("Set &output"));
     connect(aOutput, &QAction::triggered, this, &VagWindow::setOutput);
-    QAction *aOpenPDB = fileMenu->addAction(tr("Open &Model..."));
+    QAction *aOpenPDB = fileMenu->addAction(tr("Open &model..."));
     connect(aOpenPDB, &QAction::triggered, this, &VagWindow::openModel);
     QAction *aOpenMTZ = fileMenu->addAction(tr("Open &MTZ..."));
     connect(aOpenMTZ, &QAction::triggered, this, &VagWindow::openMTZ);
