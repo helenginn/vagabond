@@ -115,3 +115,12 @@ void Molecule::addProperties()
     }
 }
 
+void Molecule::postParseTidy()
+{
+    for (int i = 0; i < atomCount(); i++)
+    {
+        ModelPtr model = atom(i)->getModel();
+        if (!model) continue;
+        model->setMolecule(shared_from_this());
+    }
+}

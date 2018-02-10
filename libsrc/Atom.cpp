@@ -401,3 +401,9 @@ void Atom::addObject(ParserPtr object, std::string category)
         setModel(model);
     }
 }
+
+void Atom::postParseTidy()
+{
+    _element = Element::getElement(_elementSymbol);
+}
+

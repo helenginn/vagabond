@@ -47,6 +47,7 @@ public:
     virtual void refine(CrystalPtr target, RefinementType rType);
     void setAnchor();
 protected:
+    virtual void addProperties();
     virtual bool shouldRefineMagicAxis(BondPtr bond);
 
     virtual std::string getClassName()

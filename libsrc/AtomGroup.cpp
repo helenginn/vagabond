@@ -628,7 +628,7 @@ void AtomGroup::addProperties()
 
 void AtomGroup::addObject(ParserPtr object, std::string category)
 {
-    if (category == "Atom")
+    if (category == "atom")
     {
         AtomPtr atom = ToAtomPtr(object);
         addAtom(atom);
@@ -638,7 +638,7 @@ void AtomGroup::addObject(ParserPtr object, std::string category)
 
 void AtomGroup::linkReference(ParserPtr object, std::string category)
 {
-    if (category == "Atom")
+    if (category == "atom")
     {
         AtomPtr atom = ToAtomPtr(object);
         addAtom(atom);

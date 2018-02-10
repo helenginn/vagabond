@@ -629,6 +629,17 @@ void Crystal::reconfigureUnitCell()
     std::cout << std::endl;
 }
 
+void Crystal::setupSymmetry()
+{
+    mat3x3 hkl2real = mat3x3_from_unit_cell(_unitCell[0], _unitCell[1],
+                                            _unitCell[2], _unitCell[3],
+                                            _unitCell[4], _unitCell[5]);
+    mat3x3 real2hkl = mat3x3_inverse(hkl2real);
+
+    setHKL2Real(hkl2real);
+    setReal2Frac(real2hkl);
+}
+
 std::string Crystal::agreementSummary()
 {
     std::ostringstream ss;
@@ -656,9 +667,15 @@ void Crystal::addProperties()
 
 void Crystal::addObject(ParserPtr object, std::string category)
 {
-    if (category == "Molecule")
+    if (category == "molecule")
     {
         MoleculePtr molecule = ToMoleculePtr(object);
         addMolecule(molecule);
     }
+}
+
+void Crystal::postParseTidy()
+{
+    _spaceGroup = CSym::ccp4spg_load_by_ccp4_num(_spgNum);
+    setupSymmetry();
 }

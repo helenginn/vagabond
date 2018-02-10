@@ -314,3 +314,12 @@ void Sidechain::refreshRotamers()
         }
     }
 }
+
+void Sidechain::addProperties()
+{
+    addBoolProperty("rotamerised", &_rotamerised);
+    addBoolProperty("can_refine", &_canRefine);
+    addIntProperty("res_num", &_resNum);
+
+    AtomGroup::addProperties();
+}

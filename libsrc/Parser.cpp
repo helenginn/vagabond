@@ -285,7 +285,7 @@ char *Parser::parseNextSpecial(char *block)
     *white = 0;
 
     std::string specialName = std::string(block);
-    std::cout << "Special name is " << specialName << std::endl;
+//    std::cout << "Special name is " << specialName << std::endl;
     block = white + 1;
     incrementIndent(&block);
 
@@ -330,7 +330,7 @@ char *Parser::parseNextReference(char *block)
     *white = 0;
 
     std::string categoryName = std::string(block);
-    std::cout << "Category name is " << categoryName << std::endl;
+//    std::cout << "Category name is " << categoryName << std::endl;
     block = white + 1;
     incrementIndent(&block);
 
@@ -359,7 +359,7 @@ char *Parser::parseNextReference(char *block)
         {
             std::string refStr = std::string(reference);
             _resolveList[categoryName].push_back(refStr);
-            std::cout << "Adding reference " << reference << std::endl;
+//            std::cout << "Adding reference " << reference << std::endl;
         }
 
         block = white + 1; 
@@ -367,7 +367,7 @@ char *Parser::parseNextReference(char *block)
 
         if (block[0] == '}')
         {
-            std::cout << "Found a } in references" << std::endl;
+//            std::cout << "Found a } in references" << std::endl;
             block++;
             incrementIndent(&block);
             return block;
@@ -387,7 +387,7 @@ char *Parser::parseNextObject(char *block)
     *white = 0;
     
     std::string categoryName = std::string(block);
-    std::cout << "Category name is " << categoryName << std::endl;
+//    std::cout << "Category name is " << categoryName << std::endl;
     block = white + 1;
     incrementIndent(&block);
 
@@ -465,7 +465,7 @@ char *Parser::parseNextObject(char *block)
 
     if (block[0] == '}')
     {
-        std::cout << "Found a } after end of category" << std::endl;
+//        std::cout << "Found a } after end of category" << std::endl;
         block++;
         incrementIndent(&block);
     }
@@ -475,7 +475,7 @@ char *Parser::parseNextObject(char *block)
 
 void Parser::setProperty(std::string property, std::string value)
 {
-    std::cout << "Setting property " << property << " to " << value << std::endl;
+//    std::cout << "Setting property " << property << " to " << value << std::endl;
 
     for (int i = 0; i < _stringProperties.size(); i++)
     {
@@ -639,7 +639,7 @@ bool Parser::parseNextChunk(char **blockPtr)
 
     block = *blockPtr;
 
-    std::cout << "Completed a 'next' thing, char '" << block[0] << "'" << std::endl;
+//    std::cout << "Completed a 'next' thing, char '" << block[0] << "'" << std::endl;
 
     if (*blockPtr == NULL)
     {
@@ -649,7 +649,7 @@ bool Parser::parseNextChunk(char **blockPtr)
 
     if (block[0] == '}')
     {
-        std::cout << "Found a }" << std::endl;
+//        std::cout << "Found a }" << std::endl;
         block++;
         incrementIndent(&block);
         return false;
@@ -674,7 +674,7 @@ char *Parser::parse(char *block)
     std::string path = std::string(block);
     _absolutePath = path;
 
-    std::cout << "Found path " << path << std::endl;
+//    std::cout << "Found path " << path << std::endl;
     
     // we also want to isolate the final identifier
     char *slash = strrchr(block, '/');
@@ -682,7 +682,7 @@ char *Parser::parse(char *block)
     std::string identifier = std::string(slash);
     _identifier = identifier;
 
-    std::cout << "Found identifier " << _identifier << std::endl;
+//    std::cout << "Found identifier " << _identifier << std::endl;
 
     block = newline + 1;
     incrementIndent(&block);
@@ -694,10 +694,10 @@ char *Parser::parse(char *block)
     }
     else
     {
-        std::cout << "Loading properties for " << _identifier << std::endl;
+//        std::cout << "Loading properties for " << _identifier << std::endl;
     }
 
-    std::cout << "Set up ok." << std::endl;
+//    std::cout << "Set up ok." << std::endl;
    
     // Get past the {. 
     block++;
@@ -726,7 +726,7 @@ char *Parser::parse(char *block)
     {
         std::cout << "Why is there no }?" << std::endl;    
     }
-    else std::cout << "There is an } at the end of an object" << std::endl;    
+//    else std::cout << "There is an } at the end of an object" << std::endl;    
 
     block++;
     incrementIndent(&block);
@@ -780,7 +780,7 @@ ParserPtr Parser::objectOfType(char *className)
         return object;
     }
 
-    std::cout << "Making object of type " << className << std::endl;
+//    std::cout << "Making object of type " << className << std::endl;
     return object;
 }
 
@@ -803,6 +803,14 @@ ParserPtr Parser::processBlock(char *block)
 
     // Resolve dangling references.
     object->resolveReferences();
+
+    // Loop through all objects to allow them to finish up.
+    for (ParserMap::iterator it = _allParsers.begin();
+         it != _allParsers.end(); it++)
+    {
+        ParserPtr aParser = it->second;
+        aParser->postParseTidy();
+    }
 
     if (success != NULL)
     {

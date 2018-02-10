@@ -57,7 +57,7 @@ public:
 
     bool hasAtom(AtomPtr anAtom);
     
-        AtomPtr atom(int i)
+    AtomPtr atom(int i)
     {
         return _atoms[i];
     }

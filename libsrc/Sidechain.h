@@ -92,6 +92,7 @@ protected:
         return "side_" + i_to_str(_resNum);
     }
 
+    virtual void addProperties();
 private:
     void refreshRotamers();
     bool _rotamerised;

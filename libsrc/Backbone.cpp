@@ -120,3 +120,9 @@ void Backbone::setAnchor()
         }
     }
 }
+
+void Backbone::addProperties()
+{
+    addIntProperty("res_num", &_resNum);
+    AtomGroup::addProperties();
+}

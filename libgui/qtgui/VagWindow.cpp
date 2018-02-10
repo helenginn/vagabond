@@ -31,8 +31,8 @@ void VagWindow::makeMenu()
     QMenu *fileMenu = menuBar()->addMenu(tr("&File"));
     QAction *aOutput = fileMenu->addAction(tr("Set &output"));
     connect(aOutput, &QAction::triggered, this, &VagWindow::setOutput);
-    QAction *aOpenPDB = fileMenu->addAction(tr("Open &PDB..."));
-    connect(aOpenPDB, &QAction::triggered, this, &VagWindow::openPDB);
+    QAction *aOpenPDB = fileMenu->addAction(tr("Open &Model..."));
+    connect(aOpenPDB, &QAction::triggered, this, &VagWindow::openModel);
     QAction *aOpenMTZ = fileMenu->addAction(tr("Open &MTZ..."));
     connect(aOpenMTZ, &QAction::triggered, this, &VagWindow::openMTZ);
 }
@@ -170,7 +170,7 @@ void VagWindow::waitForInstructions()
             break;
        
             case InstructionTypeOpenPDB:
-            options->openPDB(_pdbName);
+            options->openModel(_pdbName);
             updateExplorerButton();
             break;
 
@@ -353,10 +353,10 @@ void VagWindow::receiveDialogue(DialogueType type, std::string diagString)
     _myDialogue = NULL;
 }
 
-void VagWindow::openPDB()
+void VagWindow::openModel()
 {
     delete _fileDialogue;
-    _fileDialogue = new QFileDialog(this, tr("Open PDB"), tr("PDB Files (*.pdb)"));
+    _fileDialogue = new QFileDialog(this, tr("Open model"), tr("Model files (*.pdb, *.vbond)"));
     _fileDialogue->setFileMode(QFileDialog::AnyFile);
     _fileDialogue->show();
     

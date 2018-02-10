@@ -16,6 +16,12 @@
 #include "Crystal.h"
 #include "Notifiable.h"
 
+typedef enum
+{
+    ModelFilePDB,
+    ModelFileVagabond,
+} ModelFile;
+
 class Options
 {
 public:
@@ -105,7 +111,7 @@ public:
             bool keepGoing = false);
     void superimposeAll(CrystalPtr crystal = CrystalPtr());
     void applyBMultiplier();
-    void openPDB(std::string pdbName);
+    void openModel(std::string pdbName);
     void openMTZ(std::string mtzName);
     void recalculateFFT();
 private:

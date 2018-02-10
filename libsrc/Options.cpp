@@ -510,7 +510,7 @@ void Options::applyBMultiplier()
     notifyGUI(true);
 }
 
-void Options::openPDB(std::string pdbName)
+void Options::openModel(std::string pdbName)
 {
     if (crystals.size())
     {
@@ -518,33 +518,64 @@ void Options::openPDB(std::string pdbName)
         return;
     }
 
+    ModelFile modelType = ModelFilePDB;
+
+    // if the name ends in 'vbond', let's switch...
+    if (pdbName.substr(pdbName.length() - 5, 5) == "vbond")
+    {
+        modelType = ModelFileVagabond;
+    }
+
     notifyGUI(false);
 
-    statusMessage("Loading PDB file " + pdbName + "...");
-    
-    PDBReader pdb = PDBReader();
-    pdb.setFilename(pdbName);
-    CrystalPtr crystal = pdb.getCrystal();
+    CrystalPtr crystal = CrystalPtr();
+
+    if (modelType == ModelFilePDB)
+    { 
+        PDBReader pdb = PDBReader();
+        pdb.setFilename(pdbName);
+        crystal = pdb.getCrystal();
+    }
+    else if (modelType == ModelFileVagabond)
+    {
+        VBondReader reader = VBondReader();
+        reader.setFilename(pdbName);
+        crystal = reader.getCrystal();
+    }
 
     objects.push_back(crystal);
     crystals.push_back(crystal);
 
-    if (_tie)
+    if (modelType == ModelFilePDB && _tie)
     {
         statusMessage("Tying up atoms...");
         crystals[0]->setAnchors();
         crystals[0]->tieAtomsUp();
     }
 
+    if (modelType == ModelFilePDB)
+    {
+        statusMessage("Loading PDB file " + pdbName + "...");
+    }
+    else if (modelType == ModelFileVagabond)
+    {
+        statusMessage("Loading Vagabond file " + pdbName + "...");
+    }
+
+   
     crystals[0]->tiedUpScattering();
 
     if (diffractions.size())
     {
         recalculateFFT();
     }
-    else
+    else if (modelType == ModelFilePDB)
     {
         statusMessage("Loaded PDB file " + pdbName + ".");
+    }
+    else if (modelType == ModelFileVagabond)
+    {
+        statusMessage("Loaded Vagabond file " + pdbName + ".");
     }
 
     notifyGUI(true);

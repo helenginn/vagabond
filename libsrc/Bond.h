@@ -382,6 +382,8 @@ protected:
     }
 
     virtual void addProperties();
+    virtual void linkReference(ParserPtr object, std::string category);
+    virtual void postParseTidy();    
 private:
     std::string _shortDesc;
 

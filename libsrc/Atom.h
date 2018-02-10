@@ -224,6 +224,7 @@ protected:
 
     virtual void addProperties();
     virtual void addObject(ParserPtr object, std::string category);
+    virtual void postParseTidy();
 private:
     ModelPtr _model;
     ModelPtr _distModelOnly;

@@ -58,7 +58,7 @@ private slots:
     void pushRefineDensity();
     void recalculateFFT();
 
-    void openPDB();
+    void openModel();
     void openMTZ();
     void setOutput();
 

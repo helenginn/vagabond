@@ -96,6 +96,7 @@ public:
     void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);
 
     void reconfigureUnitCell();
+    void setupSymmetry();
     void summary();
 
     void tieAtomsUp();
@@ -160,7 +161,7 @@ protected:
     }
 
     virtual void addProperties();
-
+    virtual void postParseTidy();
 private:
     MoleculeMap _molecules;
     std::string _filename;

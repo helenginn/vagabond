@@ -274,6 +274,17 @@ void Absolute::addProperties()
     addDoubleProperty("bfactor", &_bFactor);
     addBoolProperty("many_positions", &_isOfManyPositions);
 
+    addReference("atom", _atom);
+
+    Model::addProperties();
     // missing tensor and sampled absolute positions from manyPositions
 }
 
+void Absolute::linkReference(ParserPtr object, std::string category)
+{
+    if (category == "atom")
+    {
+        AtomPtr atom = ToAtomPtr(object);
+        _atom = atom;
+    }
+}

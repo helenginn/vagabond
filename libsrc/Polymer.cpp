@@ -1045,4 +1045,6 @@ void Polymer::addObject(ParserPtr object, std::string category)
         MonomerPtr monomer = ToMonomerPtr(object);
         addMonomer(monomer);
     }
+
+    Molecule::addObject(object, category);
 }

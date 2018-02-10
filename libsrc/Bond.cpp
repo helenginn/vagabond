@@ -1519,7 +1519,7 @@ double Bond::getEffectiveOccupancy()
 
 bool parseAtomValue(char **blockPtr, AtomValue *atomv)
 {
-    std::cout << "Parsing atom value" << std::endl;
+//    std::cout << "Parsing atom value" << std::endl;
     char *block = *blockPtr;
     char *keyword = NULL;
     char *value = NULL;
@@ -1552,7 +1552,7 @@ bool parseAtomValue(char **blockPtr, AtomValue *atomv)
         atomv->placeholder = new std::string(value);
     }
 
-    printf("%s ... %s\n", keyword, value);
+//    printf("%s ... %s\n", keyword, value);
 
     block++;
     incrementIndent(&block);
@@ -1563,7 +1563,7 @@ bool parseAtomValue(char **blockPtr, AtomValue *atomv)
 
 bool parseBondGroup(char **blockPtr, BondGroup *group)
 {
-    std::cout << "Parsing bond group" << std::endl;
+//    std::cout << "Parsing bond group" << std::endl;
     char *block = *blockPtr;
     char *keyword = NULL;
     char *value = NULL;
@@ -1584,7 +1584,7 @@ bool parseBondGroup(char **blockPtr, BondGroup *group)
         if (block[0] != '{')
         {
             std::cout << "Was expecting a {" << std::endl;
-            return NULL;
+            return false;
         }
 
         block++;
@@ -1625,7 +1625,7 @@ bool parseBondGroup(char **blockPtr, BondGroup *group)
             group->magicPsi = val;
         }
 
-        printf("%s ... %s\n", keyword, value);
+//        printf("%s ... %s\n", keyword, value);
     }
 
     *blockPtr = block;
@@ -1643,7 +1643,7 @@ bool parseBondGroup(char **blockPtr, BondGroup *group)
 
 char *Bond::decodeBondGroup(void *bond, void *bondGroup, char *block)
 {
-    std::cout << "Decoding bond group" << std::endl;
+//    std::cout << "Decoding bond group" << std::endl;
     // poised at "object", hopefully. Let's check.
     while (true)
     {    
@@ -1697,7 +1697,7 @@ char *Bond::decodeBondGroup(void *bond, void *bondGroup, char *block)
 
     if (block[0] == 0) return NULL;
 
-    std::cout << "Leaving on character " << block[0] << std::endl;
+//    std::cout << "Leaving on character " << block[0] << std::endl;
     
     return block;
 }
@@ -1757,4 +1757,50 @@ void Bond::addProperties()
 
     addCustomProperty("bond_group", &_bondGroups, this,
                       encodeBondGroup, decodeBondGroup);
+    
+    Model::addProperties();
+}
+
+void Bond::linkReference(ParserPtr object, std::string category)
+{
+    AtomPtr atom = ToAtomPtr(object);
+
+    if (category == "minor")
+    {
+        _minor = atom;
+    }
+    else if (category == "major")
+    {
+        _major = atom;
+    }
+    else if (category == "heavy")
+    {
+        _heavyAlign = atom;
+    }
+    else if (category == "light")
+    {
+        _lightAlign = atom;
+    }
+}
+
+void Bond::postParseTidy()
+{
+    for (int i = 0; i < downstreamAtomGroupCount(); i++)
+    {
+        for (int j = 0; j < downstreamAtomCount(i); j++)
+        {
+            if (!_bondGroups[i].atoms[j].placeholder)
+            {
+                continue;
+            }
+
+            std::string str = *_bondGroups[i].atoms[j].placeholder;
+
+            ParserPtr parser = Parser::resolveReference(str);
+            AtomPtr atom = ToAtomPtr(parser);
+            _bondGroups[i].atoms[j].atom = atom;
+            delete _bondGroups[i].atoms[j].placeholder;
+            _bondGroups[i].atoms[j].placeholder = NULL;
+        }
+    }
 }

@@ -113,7 +113,7 @@ inline char *keywordValue(char *block, char **keyword, char **value)
     // Don't panic, we probably just have an 'object'.
     if (block[0] != '=')
     {
-        std::cout << "keyword: " << *keyword << " - block char " << *block << std::endl;
+//        std::cout << "keyword: " << *keyword << " - block char " << *block << std::endl;
         return block;
     }
 
@@ -153,6 +153,7 @@ protected:
     virtual void addProperties() = 0;
     virtual void addObject(ParserPtr object, std::string category) {};
     virtual void linkReference(ParserPtr object, std::string category) {};
+    virtual void postParseTidy() {};
 
     void setParent(Parser *parent);
     void addStringProperty(std::string className, std::string *ptr);

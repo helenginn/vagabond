@@ -235,4 +235,3 @@ void Monomer::addObject(ParserPtr object, std::string category)
     }
 }
 
-
