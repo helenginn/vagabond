@@ -18,28 +18,28 @@ typedef double(get_voxel_value)(void *obj, double x, double y, double z);
 class Distributor
 {
 public:
-	Distributor()
-	{
-		_calculated = false;
-	}
-	
-	virtual FFTPtr getDistribution(bool quick = false) = 0;
+    Distributor()
+    {
+        _calculated = false;
+    }
+    
+    virtual FFTPtr getDistribution(bool quick = false) = 0;
 
 protected:
-	bool _calculated;
+    bool _calculated;
 
-	FFTPtr getDistributionCopy()
-	{
-		FFTPtr newPtr;
-		newPtr.reset(new FFT(*_fft));
-		return newPtr;
-	}
+    FFTPtr getDistributionCopy()
+    {
+        FFTPtr newPtr;
+        newPtr.reset(new FFT(*_fft));
+        return newPtr;
+    }
 
-	FFTPtr prepareDistribution(double n, double scale, void *object,
-							   get_voxel_value *voxel_value);
+    FFTPtr prepareDistribution(double n, double scale, void *object,
+                               get_voxel_value *voxel_value);
 
 private:
-	FFTPtr _fft;
+    FFTPtr _fft;
 };
 
 #endif /* defined(__vagabond__Distributor__) */
