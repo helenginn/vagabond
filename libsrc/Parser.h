@@ -196,6 +196,8 @@ private:
     char *parseNextSpecial(char *block);
     char *parseNextReference(char *block);
     void setProperty(std::string property, std::string value);
+
+    static ParserList _allParsers;
 };
 
 

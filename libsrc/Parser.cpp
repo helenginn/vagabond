@@ -15,6 +15,8 @@
 #include "Sidechain.h"
 #include "Backbone.h"
 
+ParserList Parser::_allParsers;
+
 Parser::Parser()
 {
     _setup = false;
@@ -255,6 +257,7 @@ void Parser::clearContents()
     }
 
     _parserList.clear();
+    _allParsers.clear();
 }
 
 void Parser::writeToFile(std::ofstream &stream, int in)
@@ -433,6 +436,8 @@ char *Parser::parseNextObject(char *block)
 
         addObject(object, categoryName);
         _parserList[categoryName].push_back(object);
+        std::string path = object->getAbsolutePath();
+        _allParsers[path].push_back(object);
 
         if (block == NULL)
         {
