@@ -67,7 +67,6 @@ private:
     {
         _name = name;
     }
-
 };
 
 #endif /* defined(__vagabond__Element__) */

@@ -450,6 +450,22 @@ void Crystal::tiedUpScattering()
     " the scattering electrons." << std::endl;
 }
 
+// N.B. I say powder, because it reminds me of indexing.
+void Crystal::makePowders()
+{
+    std::cout << "Making distance/angle lists." << std::endl;
+    
+    for (int i = 0; i < moleculeCount(); i++)
+    {
+        if (molecule(i)->getClassName() != "Molecule")
+        {
+            continue;
+        }
+    
+        molecule(i)->makePowderList();
+    }
+}
+
 void Crystal::setAnchors()
 {
 

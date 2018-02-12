@@ -16,11 +16,85 @@
 #include "fftw3d.h"
 #include "mat3x3.h"
 #include "Options.h"
+#include "CSV.h"
 
 Molecule::Molecule()
 {
     _absoluteBFacSubtract = 0.0;
     _absoluteBFacMult = 1.0;
+    _magicRotAxis = make_vec3(1, 0, 0);
+    _rotationAxis = make_vec3(1, 0, 0);
+    _rotationAngle = 0;
+    _changedRotations = true;
+}
+
+void Molecule::makePowderList()
+{
+    CSVPtr csvAngles = CSVPtr(new CSV(3, "dist1", "dist2", "angle"));
+    CSVPtr csvDist = CSVPtr(new CSV(1, "dist1"));
+    double maxDistance = 5.0;
+
+    for (int i = 1; i < atomCount() - 1; i++)
+    {
+        vec3 iPos = atom(i)->getAbsolutePosition();
+
+        for (int j = 0; j < i; j++)
+        {
+            vec3 jPos = atom(j)->getAbsolutePosition();
+
+            vec3 diff1 = vec3_subtract_vec3(jPos, iPos);
+
+            double aLength = vec3_length(diff1);
+            if (aLength > maxDistance)
+            {
+                continue;
+            }
+
+            csvDist->addEntry(1, aLength);
+
+            for (int k = 0; k < atomCount(); k++)
+            {
+                if (k == j) continue;
+                if (k == i) continue;
+
+                vec3 kPos = atom(k)->getAbsolutePosition();
+                vec3 diff2 = vec3_subtract_vec3(kPos, jPos);
+                double cosine = vec3_cosine_with_vec3(diff2, diff1);
+                double angle = acos(cosine); 
+//                if (cosine < 0) angle += deg2rad(90);
+
+                if (angle != angle) continue;
+
+                double bLength = vec3_length(diff2);
+
+                if (bLength > maxDistance)
+                {
+                    continue;
+                }
+
+                csvAngles->addEntry(3, aLength, bLength, rad2deg(angle));
+                csvAngles->addEntry(3, bLength, aLength, rad2deg(angle));
+                vec3 diff3 = vec3_subtract_vec3(kPos, iPos);
+                cosine = vec3_cosine_with_vec3(diff3, diff1);
+                angle = acos(cosine); 
+//                if (cosine < 0) angle += deg2rad(90);
+
+                if (angle != angle) continue;
+
+                double cLength = vec3_length(diff3);
+                if (cLength > maxDistance)
+                {
+                    continue;
+                }
+
+                csvAngles->addEntry(3, aLength, cLength, rad2deg(angle));
+                csvAngles->addEntry(3, cLength, aLength, rad2deg(angle));
+            }
+        }
+    }
+
+    csvDist->writeToFile(getChainID() + "_distances.csv");
+    csvAngles->writeToFile(getChainID() + "_angles.csv");
 }
 
 void Molecule::tieAtomsUp()

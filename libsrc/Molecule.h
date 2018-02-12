@@ -36,6 +36,7 @@ public:
     virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst) {};
     void resetInitialPositions();
     void setAnchors();
+    void makePowderList();
 
     virtual void reportParameters();
 

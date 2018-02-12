@@ -99,6 +99,7 @@ public:
     void setupSymmetry();
     void summary();
 
+    void makePowders();
     void tieAtomsUp();
     
     void setFilename(std::string file)
