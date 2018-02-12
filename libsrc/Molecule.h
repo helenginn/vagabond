@@ -90,6 +90,8 @@ public:
         return _transTensorOffsets;
     }
 
+    std::vector<mat3x3> getExtraRotations();
+
     virtual std::string getClassName()
     {
         return "Molecule";
@@ -117,13 +119,30 @@ protected:
     std::vector<vec3> _centroidOffsets;
     std::vector<vec3> _centroids; // after offset correction
     std::vector<mat3x3> _rotations;
-    std::vector<vec3> _transTensorOffsets;
-    std::vector<mat3x3> _extraRotationMats;
 
+    std::vector<vec3> _transTensorOffsets;
+    std::vector<mat3x3> _extraRotationMats; // currently unused
+
+    virtual void calculateExtraRotations() {};
+
+    // this axis calculates the angular response to the reaction sphere
+    vec3 _magicRotAxis;
+
+    // this axis is that of the rotation matrices applied to the structure
+    vec3 _rotationAxis;    
+
+    double _rotationAngle;
+
+    void setChangedRotation()
+    {
+        _changedRotations = true;
+    }
+    
 private:
     double _absoluteBFacSubtract;
     double _absoluteBFacMult;
 
+    bool _changedRotations;
     std::string _chainID;
 };
 

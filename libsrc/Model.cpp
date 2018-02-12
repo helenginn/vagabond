@@ -53,6 +53,7 @@ std::vector<vec3> Model::polymerCorrectedPositions()
     std::vector<vec3> transTensorOffsets;
     std::vector<vec3> rotationCentres;
     std::vector<mat3x3> rotations;
+    std::vector<mat3x3> extraRotations;
 
     if (molecule)
     {
@@ -60,6 +61,7 @@ std::vector<vec3> Model::polymerCorrectedPositions()
         rotations = molecule->getRotationCorrections();
         rotationCentres = molecule->getRotationCentres();
         transTensorOffsets = molecule->getTransTensorOffsets();
+        extraRotations = molecule->getExtraRotations();
     }
 
     for (int i = 0; i < positions->size(); i++)
@@ -80,6 +82,15 @@ std::vector<vec3> Model::polymerCorrectedPositions()
         if (offsets.size() > i)
         {
             subtract = vec3_subtract_vec3(subtract, offsets[i]);
+        }
+
+        // additional rotations applying to whole-molecule
+
+        if (extraRotations.size() > i && rotationCentres.size() > i)
+        {
+            vec3 tmp = vec3_add_vec3(subtract, rotationCentres[i]);
+            mat3x3_mult_vec(extraRotations[i], &tmp);
+            subtract = vec3_subtract_vec3(tmp, rotationCentres[i]);
         }
 
         // remove the translation from the tensor for translation
