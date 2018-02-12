@@ -14,81 +14,81 @@
 
 FlexGlobal::FlexGlobal()
 {
-	_targetIsoB = 8;
+    _targetIsoB = 8;
 }
 
 double FlexGlobal::notStaticScore()
 {
-	_atomGroup->propagateChange();
+    _atomGroup->propagateChange();
 
-	int count = 0;
+    int count = 0;
 
-	std::vector<vec3> allPos;
+    std::vector<vec3> allPos;
 
-	for (int i = 0; i < _atomGroup->atomCount(); i++)
-	{
-		AtomPtr atom = _atomGroup->atom(i);
+    for (int i = 0; i < _atomGroup->atomCount(); i++)
+    {
+        AtomPtr atom = _atomGroup->atom(i);
 
-		if (!atom->getModel()->isBond())
-		{
-			continue;
-		}
+        if (!atom->getModel()->isBond())
+        {
+            continue;
+        }
 
-		BondPtr bond = ToBondPtr(atom->getModel());
-		std::vector<BondSample> samples = bond->getFinalPositions();
-		vec3 meanPos = bond->getAbsolutePosition();
-		allPos.reserve(allPos.size() + samples.size());
+        BondPtr bond = ToBondPtr(atom->getModel());
+        std::vector<BondSample> samples = bond->getFinalPositions();
+        vec3 meanPos = bond->getAbsolutePosition();
+        allPos.reserve(allPos.size() + samples.size());
 
-		for (int i = 0; i < samples.size(); i++)
-		{
-			vec3 diff = vec3_subtract_vec3(samples[i].start, meanPos);
-			allPos.push_back(diff);
-			count++;
-		}
-	}
+        for (int i = 0; i < samples.size(); i++)
+        {
+            vec3 diff = vec3_subtract_vec3(samples[i].start, meanPos);
+            allPos.push_back(diff);
+            count++;
+        }
+    }
 
-	Anisotropicator aniso;
-	aniso.setPoints(allPos);
-	double score = 0;
-	double actualTarget = _targetIsoB / (M_PI * M_PI * 8);
+    Anisotropicator aniso;
+    aniso.setPoints(allPos);
+    double score = 0;
+    double actualTarget = _targetIsoB / (M_PI * M_PI * 8);
 
-	for (int j = 0; j < 3; j++)
-	{
-		vec3 anisoAxis = aniso.getAxis(j);
-		double sqlength = vec3_sqlength(anisoAxis);
-		double diff = fabs(sqlength - actualTarget);
-		score += diff;
-	}
+    for (int j = 0; j < 3; j++)
+    {
+        vec3 anisoAxis = aniso.getAxis(j);
+        double sqlength = vec3_sqlength(anisoAxis);
+        double diff = fabs(sqlength - actualTarget);
+        score += diff;
+    }
 
-	return score;
+    return score;
 }
 
 void FlexGlobal::maximiseIsotropy()
 {
-	double sum = 0;
-	double count = 0;
+    double sum = 0;
+    double count = 0;
 
-	for (int i = 0; i < _atomGroup->atomCount(); i++)
-	{
-		AtomPtr atom = _atomGroup->atom(i);
+    for (int i = 0; i < _atomGroup->atomCount(); i++)
+    {
+        AtomPtr atom = _atomGroup->atom(i);
 
-		if (!atom->getModel()->isBond())
-		{
-			continue;
-		}
+        if (!atom->getModel()->isBond())
+        {
+            continue;
+        }
 
-		BondPtr bond = ToBondPtr(atom->getModel());
-		double isoTarget = bond->getMeanSquareDeviation();
+        BondPtr bond = ToBondPtr(atom->getModel());
+        double isoTarget = bond->getMeanSquareDeviation();
 
-		sum += isoTarget;
-		count++;
-	}
+        sum += isoTarget;
+        count++;
+    }
 
-	sum /= count;
-	_targetIsoB = sum;
+    sum /= count;
+    _targetIsoB = sum;
 }
 
 double FlexGlobal::score(void *object)
 {
-	return static_cast<FlexGlobal *>(object)->notStaticScore();
+    return static_cast<FlexGlobal *>(object)->notStaticScore();
 }
