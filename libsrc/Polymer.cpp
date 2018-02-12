@@ -1088,6 +1088,10 @@ void Polymer::optimiseTranslationTensor()
     nelderMead->addParameter(this, getTransTensor23, setTransTensor23, 1, 0.01);
     nelderMead->addParameter(this, getTransTensor33, setTransTensor33, 1, 0.01);
 
+    nelderMead->addParameter(this, getRotPhi, setRotPhi, 0.1, 0.0001);
+    nelderMead->addParameter(this, getRotPsi, setRotPsi, 0.1, 0.0001);
+    nelderMead->addParameter(this, getRotAngle, setRotAngle, 0.01, 0.0001);
+
     setTransTensor11(this, 1);
     setTransTensor22(this, 1);
     setTransTensor33(this, 1);
