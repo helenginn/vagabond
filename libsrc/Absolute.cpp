@@ -117,7 +117,7 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
         return aniso * me->_occupancy;
     }
 
-    double distSq =    (x * x + y * y + z * z);
+    double distSq = (x * x + y * y + z * z);
 
     double bf = me->_bFactor;
 
