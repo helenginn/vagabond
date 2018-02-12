@@ -14,6 +14,7 @@
 #include "Absolute.h"
 #include "Sidechain.h"
 #include "Backbone.h"
+#include "Shouter.h"
 
 ParserMap Parser::_allParsers;
 
@@ -86,12 +87,36 @@ void Parser::addIntProperty(std::string className, int *ptr)
     _intProperties.push_back(property);
 }
 
+void Parser::addMat3x3Property(std::string className, mat3x3 *ptr)
+{
+    Mat3x3Property property;
+    property.ptrName = className;
+    property.mat3x3Ptr = ptr;
+    _mat3x3Properties.push_back(property);
+}
+
 void Parser::addVec3Property(std::string className, vec3 *ptr)
 {
     Vec3Property property;
     property.ptrName = className;
     property.vec3Ptr = ptr;
     _vec3Properties.push_back(property);
+}
+
+void Parser::addMat3x3ArrayProperty(std::string className, std::vector<mat3x3> *ptr)
+{
+    Mat3x3ArrayProperty property;
+    property.ptrName = className;
+    property.mat3x3ArrayPtr = ptr;
+    _mat3x3ArrayProperties.push_back(property);
+}
+
+void Parser::addVec3ArrayProperty(std::string className, std::vector<vec3> *ptr)
+{
+    Vec3ArrayProperty property;
+    property.ptrName = className;
+    property.vec3ArrayPtr = ptr;
+    _vec3ArrayProperties.push_back(property);
 }
 
 void Parser::addBoolProperty(std::string className, bool *ptr)
@@ -155,6 +180,22 @@ void Parser::outputContents(std::ofstream &stream, int in)
         stream << indent(in) << name << " = " << *ptr << std::endl;
     }
 
+    for (int i = 0; i < _mat3x3Properties.size(); i++)
+    {
+        std::string name = _mat3x3Properties[i].ptrName;
+        mat3x3 *ptr = _mat3x3Properties[i].mat3x3Ptr;
+        if (!ptr) continue;
+
+        stream << indent(in) << name << " = ";
+
+        for (int i = 0; i < 8; i++)
+        {
+            stream << ptr->vals[i] << ",";
+        }
+
+        stream << ptr->vals[8] << std::endl;
+    }
+
     for (int i = 0; i < _vec3Properties.size(); i++)
     {
         std::string name = _vec3Properties[i].ptrName;
@@ -207,6 +248,11 @@ void Parser::outputContents(std::ofstream &stream, int in)
         for (int i = 0; i < it->second.size(); i++)
         {
             ParserPtr child = it->second.at(i);
+            if (!child)
+            {
+                continue;
+            }
+
             child->outputContents(stream, in);            
         }
 
@@ -232,6 +278,47 @@ void Parser::outputContents(std::ofstream &stream, int in)
         stream << indent(in) << "}" << std::endl;
     }
 
+    for (int i = 0; i < _vec3ArrayProperties.size(); i++)
+    {
+        Vec3ArrayProperty property = _vec3ArrayProperties[i];
+        stream << indent(in) << "array " << property.ptrName << std::endl;
+        stream << indent(in) << "{" << std::endl;
+        in++;
+
+        for (int j = 0; j < property.vec3ArrayPtr->size(); j++)
+        {
+            vec3 vec = property.vec3ArrayPtr->at(j);
+            stream << indent(in) << vec3_desc(vec) << std::endl;
+        }
+
+        in--;
+        stream << indent(in) << "}" << std::endl;
+    }
+
+    for (int i = 0; i < _mat3x3ArrayProperties.size(); i++)
+    {
+        Mat3x3ArrayProperty property = _mat3x3ArrayProperties[i];
+        stream << indent(in) << "array " << property.ptrName << std::endl;
+        stream << indent(in) << "{" << std::endl;
+        in++;
+
+        for (int j = 0; j < property.mat3x3ArrayPtr->size(); j++)
+        {
+            mat3x3 mat = property.mat3x3ArrayPtr->at(j);
+            stream << indent(in) << "("; 
+            
+            for (int k = 0; k < 8; k++)
+            {
+                stream << mat.vals[k] << ", ";                
+            }
+            
+            stream << mat.vals[8] << ")" << std::endl;
+        }
+
+        in--;
+        stream << indent(in) << "}" << std::endl;
+    }
+
     in--;
     stream << indent(in) << "}" << std::endl;
 }
@@ -245,6 +332,9 @@ void Parser::clearContents()
     _customProperties.clear();
     _boolProperties.clear();
     _referenceList.clear();
+    _vec3ArrayProperties.clear();
+    _mat3x3ArrayProperties.clear();
+    _mat3x3Properties.clear();
 
     for (ParserList::iterator it = _parserList.begin();
             it != _parserList.end(); it++)
@@ -252,6 +342,8 @@ void Parser::clearContents()
         for (int i = 0; i < it->second.size(); i++)
         {
             ParserPtr child = it->second.at(i);
+            if (!child) continue;
+
             child->clearContents();
         }
     }
@@ -267,6 +359,9 @@ void Parser::writeToFile(std::ofstream &stream, int in)
     stream << "vagabond data structure v0.0" << std::endl;
 
     outputContents(stream, in);
+    
+    stream << std::endl << "END" << std::endl;
+
     clearContents();
 }
 
@@ -322,10 +417,8 @@ char *Parser::parseNextSpecial(char *block)
     return block;
 }
 
-char *Parser::parseNextReference(char *block)
+char *getCategory(char *block, std::string *catName)
 {
-    // poised at the word just after 'references'.
-
     char *white = strchrwhite(block);
     *white = 0;
 
@@ -345,12 +438,110 @@ char *Parser::parseNextReference(char *block)
     block++;
     incrementIndent(&block);
 
+    *catName = categoryName;
+
+    return block;
+}
+
+char *Parser::parseNextArray(char *block)
+{
+    std::string categoryName;
+    // poised at the word just after 'array'.
+    block = getCategory(block, &categoryName);
+    
+    // now poised at whatever came after the {.
+    // Now we expect a bundle of ()s.
+
+    // we will start by loading them in as a contiguous array.
+    // we shall cast them to the appropriate variable later.
+    std::vector<double> stream;
+
+    while (true)
+    {
+        if (block[0] == '}')
+        {
+            block++;
+            incrementIndent(&block);
+            break;
+        }
+
+        std::vector<double> values;
+
+        // check that we start with a (.
+        if (block[0] == '(')
+        {
+            block++;
+            incrementIndent(&block);
+        } 
+        
+        bool more = true;
+
+        // now we have a load of numbers separated by commas.
+        while (more)
+        {
+            char *comma = strchr(block, ',');
+            char *bracket = strchr(block, ')');
+            if (bracket != NULL && bracket < comma)
+            {
+                comma = bracket;
+                more = false;
+            }
+
+            *comma = 0;
+            
+            // we add this to our contiguous stream.  
+
+            double anotherNum = strtod(block, NULL);
+            stream.push_back(anotherNum);
+
+            // bring block to the next 'thing'.
+            block = comma + 1;
+            incrementIndent(&block);
+        }
+
+        // eventually we hit a } and we break.
+    }
+
+    // find the appropriate array
+    for (int i = 0; i < _mat3x3ArrayProperties.size(); i++)
+    {
+        Mat3x3ArrayProperty property = _mat3x3ArrayProperties[i];
+        if (property.ptrName == categoryName)
+        {
+            size_t size = stream.size() / 9;
+            property.mat3x3ArrayPtr->resize(size);
+            mat3x3 *start = &((*property.mat3x3ArrayPtr)[0]); 
+            memcpy(start, &stream[0], stream.size() * sizeof(double));
+        }
+    }
+
+    for (int i = 0; i < _vec3ArrayProperties.size(); i++)
+    {
+        Vec3ArrayProperty property = _vec3ArrayProperties[i];
+        if (property.ptrName == categoryName)
+        {
+            size_t size = stream.size() / 3;
+            property.vec3ArrayPtr->resize(size);
+            vec3 *start = &((*property.vec3ArrayPtr)[0]);
+            memcpy(start, &stream[0], stream.size() * sizeof(double));
+        }
+    }
+
+    return block;
+}
+
+char *Parser::parseNextReference(char *block)
+{
+    std::string categoryName;
+    // poised at the word just after 'references'.
+    block = getCategory(block, &categoryName);
+
     // expecting a fuckton of references now
     // will go through later and fill them in
 
     while (true)
     {
-        white = strchrwhite(block);
+        char *white = strchrwhite(block);
         *white = 0;
     
         char *reference = block;
@@ -437,6 +628,12 @@ char *Parser::parseNextObject(char *block)
         addObject(object, categoryName);
         _parserList[categoryName].push_back(object);
         std::string path = object->getAbsolutePath();
+
+        if (_allParsers.count(path) > 0)
+        {
+            shout_at_user("Duplicate object " + path);
+        }
+
         _allParsers[path] = object;
 
         if (block == NULL)
@@ -507,6 +704,42 @@ void Parser::setProperty(std::string property, std::string value)
         }
     }
 
+    for (int i = 0; i < _mat3x3Properties.size(); i++)
+    {
+        if (_mat3x3Properties[i].ptrName == property)
+        {
+            mat3x3 newMat = make_mat3x3();
+            char *start = &value[0];
+
+            for (int i = 0; i < 9; i++)
+            {
+                char *comma = strchr(start, ',');
+
+                // last one needs no treatment, null-terminated already
+                if (i < 8)
+                {
+                    *comma = 0;
+                }
+
+                char *check = NULL;
+                double x = strtod(start, &check);
+                
+                if (check == NULL)
+                {
+                    std::cout << "Error while parsing matrix property in "
+                              << getAbsolutePath() << std::endl;
+                    break;
+                }
+
+                newMat.vals[i] = x;
+                start = comma + 1;
+            }
+            
+            *_mat3x3Properties[i].mat3x3Ptr = newMat;
+            return;
+        }
+    }
+
     for (int i = 0; i < _vec3Properties.size(); i++)
     {
         if (_vec3Properties[i].ptrName == property)
@@ -549,7 +782,7 @@ void Parser::setProperty(std::string property, std::string value)
         }
     }
 
-    std::cout << "Unhandled thing." << std::endl;
+    std::cout << "Unhandled thing: " << property << " = " << value << "." << std::endl;
 }
 
 char *Parser::parseNextProperty(std::string property, char *block)
@@ -581,6 +814,13 @@ bool Parser::parseNextChunk(char **blockPtr)
 {
     char *block = *blockPtr;    
 
+    if (block == NULL)
+    {
+        std::cout << "On object " << getAbsolutePath() << std::endl;
+        std::cout << "Parsing error has occurred." << std::endl;
+        return false;
+    }
+
     // just incremented from the first {.
     // we should expect a keyword, or a property next.
     char *space = strchrwhite(block);
@@ -606,6 +846,10 @@ bool Parser::parseNextChunk(char **blockPtr)
     {
         type = ParserTypeReference;
     }
+    else if (strcmp(block, "array") == 0)
+    {
+        type = ParserTypeArray;
+    }
     else if (strcmp(block, "special") == 0)
     {
         type = ParserTypeSpecial;
@@ -614,6 +858,8 @@ bool Parser::parseNextChunk(char **blockPtr)
     char *property = block;
     block = space + 1;
     incrementIndent(&block);
+
+//    std::cout << getAbsolutePath() << " " << property << std::endl;
 
     switch (type)
     {
@@ -633,13 +879,15 @@ bool Parser::parseNextChunk(char **blockPtr)
         *blockPtr = parseNextReference(block);
         break;
 
+        case ParserTypeArray:
+        *blockPtr = parseNextArray(block);
+        break;
+
         default:
         break;
     }
 
     block = *blockPtr;
-
-//    std::cout << "Completed a 'next' thing, char '" << block[0] << "'" << std::endl;
 
     if (*blockPtr == NULL)
     {
@@ -649,12 +897,11 @@ bool Parser::parseNextChunk(char **blockPtr)
 
     if (block[0] == '}')
     {
-//        std::cout << "Found a }" << std::endl;
         block++;
         incrementIndent(&block);
         return false;
     }
-   
+
     return true;
 }
 
@@ -740,7 +987,7 @@ ParserPtr Parser::objectOfType(char *className)
 
     if (strcmp(className, "Crystal") == 0) 
     {
-        object = ParserPtr(static_cast<Parser *>(new Crystal()));
+        object = ParserPtr(static_cast<Crystal *>(new Crystal()));
     }
     else if (strcmp(className, "Polymer") == 0)
     {
@@ -812,6 +1059,9 @@ ParserPtr Parser::processBlock(char *block)
         aParser->postParseTidy();
     }
 
+    object->postParseTidy();
+    object->clearContents();
+
     if (success != NULL)
     {
         return object;
@@ -843,6 +1093,9 @@ void Parser::resolveReferences()
     {
         for (int j = 0; j < it->second.size(); j++)
         {
+            ParserPtr child = it->second[j];
+            if (!child) continue;
+
             it->second[j]->resolveReferences();
         }
     }

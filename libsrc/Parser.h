@@ -12,6 +12,7 @@
 #include "vec3.h"
 #include <sstream>
 #include <iostream>
+#include "mat3x3.h"
 
 typedef enum
 {
@@ -19,6 +20,7 @@ typedef enum
     ParserTypeReference,
     ParserTypeSpecial,
     ParserTypeProperty,
+    ParserTypeArray,
 } ParserType;
 
 typedef struct
@@ -35,9 +37,27 @@ typedef struct
 
 typedef struct
 {
+    mat3x3 *mat3x3Ptr;
+    std::string ptrName;
+} Mat3x3Property;
+
+typedef struct
+{
     vec3 *vec3Ptr;
     std::string ptrName;
 } Vec3Property;
+
+typedef struct
+{
+    std::vector<vec3> *vec3ArrayPtr;
+    std::string ptrName;
+} Vec3ArrayProperty;
+
+typedef struct
+{
+    std::vector<mat3x3> *mat3x3ArrayPtr;
+    std::string ptrName;
+} Mat3x3ArrayProperty;
 
 typedef struct
 {
@@ -88,8 +108,7 @@ inline char *strchrwhite(char *block)
 
 inline void incrementIndent(char **block)
 {
-    while ((*block)[0] == ' ' || (*block)[0] == '\t' || (*block)[0] == '\n'
-            || (*block)[0] == '\0')
+    while ((*block)[0] == ' ' || (*block)[0] == '\t' || (*block)[0] == '\n' || (*block)[0] == '\0')
     {
         (*block)++;
     }
@@ -160,12 +179,15 @@ protected:
     void addDoubleProperty(std::string className, double *ptr);
     void addIntProperty(std::string className, int *ptr);
     void addVec3Property(std::string className, vec3 *ptr);
+    void addMat3x3Property(std::string className, mat3x3 *ptr);
     void addCustomProperty(std::string className, void *ptr,
                            void *delegate, Encoder encoder,
                            Decoder decoder); 
     void addBoolProperty(std::string className, bool *ptr);
     void addChild(std::string category, ParserPtr child);
     void addReference(std::string category, ParserPtr cousin);
+    void addVec3ArrayProperty(std::string className, std::vector<vec3> *ptr);
+    void addMat3x3ArrayProperty(std::string className, std::vector<mat3x3> *ptr);
 
     void writeToFile(std::ofstream &stream, int indent);
     void clearContents();
@@ -181,8 +203,11 @@ private:
     std::vector<DoubleProperty> _doubleProperties;
     std::vector<IntProperty> _intProperties;
     std::vector<Vec3Property> _vec3Properties;
+    std::vector<Mat3x3Property> _mat3x3Properties;
     std::vector<BoolProperty> _boolProperties;
     std::vector<CustomProperty> _customProperties;
+    std::vector<Vec3ArrayProperty> _vec3ArrayProperties;
+    std::vector<Mat3x3ArrayProperty> _mat3x3ArrayProperties;
     ResolveList _resolveList;
     ParserList _parserList;
     ReferenceList _referenceList;
@@ -199,6 +224,7 @@ private:
     char *parseNextObject(char *block);
     char *parseNextSpecial(char *block);
     char *parseNextReference(char *block);
+    char *parseNextArray(char *block);
     void setProperty(std::string property, std::string value);
     void resolveReferences();
 
