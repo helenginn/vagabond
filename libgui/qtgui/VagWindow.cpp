@@ -87,7 +87,7 @@ void VagWindow::updateExplorerButton()
         return;
     }
 
-    CrystalPtr crystal = options->getCrystal(0);
+    CrystalPtr crystal = options->getActiveCrystal();
 
     QMenu *moleculeMenu = new QMenu(bExploreMolecule);
     
