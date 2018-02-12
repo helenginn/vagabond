@@ -157,10 +157,7 @@ public:
     void inheritParents();
     std::string pdbLineBeginning(std::string start = "ATOM  ");
 
-    AtomType getGeomType()
-    {
-        return _geomType;
-    }
+    AtomType getGeomType();
 
     MonomerPtr getMonomer()
     {

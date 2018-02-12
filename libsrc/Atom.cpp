@@ -52,6 +52,17 @@ Atom::Atom(Atom &other)
     _ellipsoidLongestAxis = other._ellipsoidLongestAxis;
 }
 
+AtomType Atom::getGeomType()
+{
+    if (_geomType == AtomUnassigned)
+    {
+        std::string id = getMonomer()->getIdentifier();
+        findAtomType(id);
+    }
+
+    return _geomType;
+}
+
 void Atom::inheritParents()
 {
     getMonomer()->addAtom(shared_from_this());
