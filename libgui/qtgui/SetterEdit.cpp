@@ -17,8 +17,6 @@ void SetterEdit::setObjectValue()
     OptionsPtr options = Options::getRuntimeOptions();
     Notifiable *notify = options->getNotify();
 
-    std::cout << "Got here." << std::endl;
-
     notify->setObject(_object);
     notify->setSetter(_setter, value);
     notify->setRefreshGroup(_monomer);

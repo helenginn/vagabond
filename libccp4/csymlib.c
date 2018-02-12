@@ -157,8 +157,6 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
     }
   }
 
-  printf("Got here!\n");
-
   parser = ccp4_parse_start(20);
   if (parser == NULL)
   { 
