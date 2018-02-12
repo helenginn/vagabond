@@ -788,6 +788,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
             newSample.torsion = newTorsion + torsionAdd;
             newSample.occupancy = (*absPos)[i].occupancy;
             newSamples->push_back(newSample);
+
         }
 
         return newSamples;
@@ -884,11 +885,13 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
         vec3 prevHeavyPos = (*prevSamples)[i].old_start;
         mat3x3 oldBasis = (*prevSamples)[i].basis;
         vec3 prevMinorPos = (*prevSamples)[i].start;
+
         vec3 myCurrentPos = positionFromTorsion(oldBasis, currentTorsion,
                                                 ratio, prevMinorPos);
 
         /* Prepping for bending */
         const vec3 none = {0, 0, 1};
+
         mat3x3 newBasis = makeTorsionBasis(prevHeavyPos, prevMinorPos,
                                            myCurrentPos, none);
 
@@ -1821,6 +1824,7 @@ void Bond::postParseTidy()
 
             ParserPtr parser = Parser::resolveReference(str);
             AtomPtr atom = ToAtomPtr(parser);
+
             _bondGroups[i].atoms[j].atom = atom;
             delete _bondGroups[i].atoms[j].placeholder;
             _bondGroups[i].atoms[j].placeholder = NULL;
