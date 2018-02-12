@@ -316,11 +316,6 @@ public:
         return _bondGroups[group].extraTorsionSamples[i].lock();
     }
 
-    void setBlocked(bool blocked)
-    {
-        _blocked = blocked;
-    }
-
     vec3 getAbsolutePosition()
     {
         return _absolute;
@@ -445,7 +440,6 @@ private:
 
     /* Flag to say whether recalculation should occur */
     bool _changedPos, _changedSamples;
-    bool _blocked;
     bool _refineBondAngle;
 
     mat3x3 getMagicMat(vec3 direction);

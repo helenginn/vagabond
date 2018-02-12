@@ -541,11 +541,6 @@ bool Sampler::sample(bool clear)
         _strategy = RefinementStrategyPtr();
     }
 
-    for (int i = 0; i < _bonds.size(); i++)
-    {
-        _bonds[i]->setBlocked(false);
-    }
-
     _bonds.clear();
     _sampled.clear();
     _unsampled.clear();

@@ -37,7 +37,6 @@ void Bond::initialize()
     _changedSamples = true;
     _refineBondAngle = false;
     _fixed = false;
-    _blocked = false;
     _blurTotal = 0;
     _occupancy = 1.0;
     _occMult = 1.0;
@@ -122,7 +121,6 @@ Bond::Bond(Bond &other)
     _fixed = other._fixed;
     _disabled = other._disabled;
     _anchored = other._anchored;
-    _blocked = false;
     _absolute = other._absolute;
     _molecule = other._molecule;
 
