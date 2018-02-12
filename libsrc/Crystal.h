@@ -171,13 +171,14 @@ private:
     mat3x3 _real2frac;
     CSym::CCP4SPG *_spaceGroup;
     int _spgNum;
+    bool _tied;
 
     double _maxResolution;
     std::vector<int> _anchorResidues;
     double totalToScale();
 
     void makePDBs(std::string suffix);
-    void writeVagabondFile();
+    void writeVagabondFile(int cycleNum);
     void applySymOps();
 
     double _rWork;
