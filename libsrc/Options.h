@@ -105,6 +105,11 @@ public:
         _manual = manual;
     }
 
+    static bool shouldPowder()
+    {
+        return _powder;
+    }
+
     void statusMessage(std::string message);
     void agreementSummary();
     void refineAll(RefinementType type, int numCycles, int *count = NULL,
@@ -138,6 +143,7 @@ private:
     bool _tie;
     bool _manual;
 
+    static bool _powder;
     static double _kick;
     static double _dampen;
     static double _bMult;

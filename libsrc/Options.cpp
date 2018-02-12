@@ -23,6 +23,7 @@ double Options::_bStart = 1.5;
 double Options::_bMult = 0.6;
 double Options::_minRes = 0.0;
 int Options::_enableTests = 3;
+bool Options::_powder = false;
 
 Options::Options(int argc, const char **argv)
 {
@@ -97,23 +98,28 @@ void Options::run()
         {
             DiffractionPtr data = diffractions[0];
 
-            /* sandbox */
-            crystals[0]->writeMillersToFile(data, "pre");
-            crystals[0]->getDataInformation(data, 2, 1);
+            CrystalPtr crystal = getActiveCrystal();
 
-            PolymerPtr chainA = ToPolymerPtr(crystals[0]->molecule("A0"));
-            chainA->differenceGraphs("test", crystals[0]);
+            /* sandbox */
+            crystal->writeMillersToFile(data, "pre");
+            crystal->getDataInformation(data, 2, 1);
 
             if (_tie)
             {
-                crystals[0]->setAnchors();
-                crystals[0]->tieAtomsUp();
+                crystal->setAnchors();
+                crystal->tieAtomsUp();
             }
 
-            crystals[0]->tiedUpScattering();
+            crystal->tiedUpScattering();
 
             int count = 0;
-            crystals[0]->concludeRefinement(count, data);
+            crystal->concludeRefinement(count, data);
+
+            if (shouldPowder())
+            {
+                crystal->makePowders();
+                goto finished;
+            }
 
             if (!_manual)
             {
@@ -128,6 +134,8 @@ void Options::run()
             }
         }
     }
+
+    finished:
 
     if (!_manual)
     {
@@ -369,6 +377,14 @@ void Options::parse()
             _enableTests = atoi(testString.c_str());
             std::cout << "Enabling Helen's test/sandbox no. " <<
             enableTests() << "." << std::endl;
+            understood = true;
+        }
+
+        prefix = "--powder";
+
+        if (!arg.compare(0, prefix.size(), prefix))
+        {
+            _powder = true;
             understood = true;
         }
 
