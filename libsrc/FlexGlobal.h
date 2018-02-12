@@ -15,25 +15,25 @@
 class FlexGlobal
 {
 public:
-	FlexGlobal();
+    FlexGlobal();
 
-	void setAtomGroup(AtomGroupPtr group)
-	{
-		_atomGroup = group;
-	}
+    void setAtomGroup(AtomGroupPtr group)
+    {
+        _atomGroup = group;
+    }
 
-	static double score(void *object);
+    static double score(void *object);
 
-	void maximiseIsotropy();
-	void setTargetBFactor(double value)
-	{
-		_targetIsoB = value;
-	}
+    void maximiseIsotropy();
+    void setTargetBFactor(double value)
+    {
+        _targetIsoB = value;
+    }
 private:
-	double _targetIsoB;
+    double _targetIsoB;
 
-	double notStaticScore();
-	AtomGroupPtr _atomGroup;
+    double notStaticScore();
+    AtomGroupPtr _atomGroup;
 };
 
 #endif /* FlexGlobal_hpp */
