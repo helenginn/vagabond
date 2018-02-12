@@ -16,6 +16,7 @@
 typedef enum
 {
 	AtomUnassigned,
+        AtomUnknown,
 	AtomC,
 	AtomCH1E,
 	AtomCH2E,
@@ -79,7 +80,7 @@ private:
 	void addBondLength(AtomType atom1, AtomType atom2, double length);
 
 	static GeomTable _geomTable;
-	static std::map<std::string, std::string> _three2OneCode;
+	std::map<std::string, std::string> _three2OneCode;
 
 	std::map<AtomPair, double> _bondLengths;
 	std::map<AtomTrio, double> _bondAngles;
