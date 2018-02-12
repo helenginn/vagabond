@@ -1559,7 +1559,7 @@ bool parseAtomValue(char **blockPtr, AtomValue *atomv)
     {
         atomv->expectedAngle = val;
     } 
-    else if (strcmp(keyword, "circlePortion") == 0)
+    else if (strcmp(keyword, "circle_add") == 0)
     {
         atomv->circlePortion = val;
     }
@@ -1659,6 +1659,10 @@ bool parseBondGroup(char **blockPtr, BondGroup *group)
 
 char *Bond::decodeBondGroup(void *bond, void *bondGroup, char *block)
 {
+    std::vector<BondGroup> *bondGroups = NULL;
+    bondGroups = static_cast<std::vector<BondGroup> *>(bondGroup); 
+    bondGroups->clear();
+
 //    std::cout << "Decoding bond group" << std::endl;
     // poised at "object", hopefully. Let's check.
     while (true)
@@ -1680,9 +1684,6 @@ char *Bond::decodeBondGroup(void *bond, void *bondGroup, char *block)
 
         block = white + 1;
         incrementIndent(&block);
-
-        std::vector<BondGroup> *bondGroups = NULL;
-        bondGroups = static_cast<std::vector<BondGroup> *>(bondGroup); 
 
         if (block[0] != '{')
         {
@@ -1723,7 +1724,9 @@ void Bond::encodeBondGroup(void *bond, void *bondGroup,
 {
     std::vector<BondGroup> *groups = NULL;
     groups = static_cast<std::vector<BondGroup> *>(bondGroup);
-    
+   
+    stream << std::setprecision(8);
+ 
     for (int i = 0; i < groups->size(); i++)
     {
         stream << indent(in) << "object " << std::endl;
@@ -1770,6 +1773,10 @@ void Bond::addProperties()
     addBoolProperty("anchored", &_anchored);
     addBoolProperty("using_torsion", &_usingTorsion);
     addBoolProperty("refine_bond_angle", &_refineBondAngle);
+    addBoolProperty("activated", &_activated);
+    addBoolProperty("disabled", &_disabled);
+
+    addVec3Property("bond_direction", &_bondDirection);
 
     addCustomProperty("bond_group", &_bondGroups, this,
                       encodeBondGroup, decodeBondGroup);
