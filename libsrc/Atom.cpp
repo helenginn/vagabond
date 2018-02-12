@@ -154,8 +154,6 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool useNew)
     pos = vec3_subtract_vec3(pos, offset);
     mat3x3_mult_vec(unit_cell, &pos);
 
-    std::cout << vec3_desc(pos) << std::endl;
-
     if (pos.x != pos.x)
     {
         return;
