@@ -115,7 +115,7 @@ protected:
     std::vector<vec3> _finalPositions;
 
     /* Expect interference from GUI */
-    bool _useMutex;
+    static bool _useMutex;
 
     vec3 _longest;
     double _anisotropyExtent;

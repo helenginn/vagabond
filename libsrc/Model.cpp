@@ -13,9 +13,10 @@
 #include "Atom.h"
 #include "Anisotropicator.h"
 
+bool Model::_useMutex = false;
+
 Model::Model()
 {
-    _useMutex = true;
     _realSpaceTensor = make_mat3x3();
 }
 
