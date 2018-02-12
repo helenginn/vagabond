@@ -210,14 +210,17 @@ bool Monomer::isAfterAnchor()
 
 std::string Monomer::getResCode()
 {
-    return GeomTable::getResCode(getIdentifier());
+    std::string id = getIdentifier();
+    return GeomTable::getResCode(id);
 }
 
 void Monomer::addProperties()
 {
-    AtomGroup::addProperties();
+    addStringProperty("identifier", &_identifier);
+    addIntProperty("res_num", &_residueNum);
     addChild("sidechain", _sidechain);
     addChild("backbone", _backbone);
+    AtomGroup::addProperties();
 }
 
 void Monomer::addObject(ParserPtr object, std::string category)

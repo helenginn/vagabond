@@ -176,12 +176,35 @@ void Molecule::resetInitialPositions()
     }
 }
 
+std::vector<mat3x3> Molecule::getExtraRotations()
+{
+    if (!_changedRotations && _extraRotationMats.size())
+    {
+        return _extraRotationMats;
+    }
+
+    _extraRotationMats.clear();
+    
+    calculateExtraRotations();
+
+    _changedRotations = false;
+
+    return _extraRotationMats;
+}
 
 void Molecule::addProperties()
 {
     addStringProperty("chain_id", &_chainID);
     addDoubleProperty("absolute_bfac_mult", &_absoluteBFacMult);
     addDoubleProperty("absolute_bfac_subtract", &_absoluteBFacSubtract);
+    addVec3ArrayProperty("centroids", &_centroids);
+    addVec3ArrayProperty("centroid_offsets", &_centroidOffsets);
+    addVec3ArrayProperty("trans_tensor_offsets", &_transTensorOffsets);
+    addVec3Property("magic_rot_axis", &_magicRotAxis);
+    addVec3Property("rotation_axis", &_rotationAxis);
+    addDoubleProperty("rotation_angle", &_rotationAngle);
+    addMat3x3ArrayProperty("extra_rotations", &_extraRotationMats);
+    addMat3x3ArrayProperty("rotations", &_rotations);
 
     for (int i = 0; i < atomCount(); i++)
     {
