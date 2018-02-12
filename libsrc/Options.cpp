@@ -683,6 +683,8 @@ void Options::statusMessage(std::string message)
     {
         _notify->setMessage(message);
     }
+
+    std::cout << message << std::endl;
 }
 
 void Options::agreementSummary()
