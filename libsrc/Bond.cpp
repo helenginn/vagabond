@@ -1481,7 +1481,7 @@ bool Bond::test()
 
                 double diff = fabs(realAngle - angle);
 
-                if (diff > 1e-6)
+                if (diff > 1e-3)
                 {
                     std::cout << shortDesc() << " angle "
                     << atom1->getAtomName() << "-" << getMinor()->getAtomName() << "-"
