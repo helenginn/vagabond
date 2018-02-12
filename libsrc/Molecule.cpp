@@ -146,7 +146,17 @@ void Molecule::tiedUpScattering(double *tied, double *all)
 
     for (int i = 0; i < atomCount(); i++)
     {
-        if (atom(i)->getModel()->getClassName() == "Bond")
+        if (!atom(i)->getElement())
+        {
+            std::cout << "Warning! Atom has no element: " << atom(i)->shortDesc() << std::endl;
+        }
+
+        if (!atom(i)->getModel())
+        {
+            std::cout << "Warning! Atom has no model: " << atom(i)->shortDesc() << std::endl;
+        }
+
+        if (atom(i)->getModel()->isBond())
         {
             some += atom(i)->getElement()->electronCount();
             someCount++;
