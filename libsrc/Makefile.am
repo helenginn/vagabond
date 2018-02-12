@@ -16,10 +16,5 @@ CSV.cpp              Molecule.cpp    Sidechain.cpp \
 Diffraction.cpp      Monomer.cpp     TextManager.cpp \
 DiffractionMTZ.cpp   Options.cpp     vec3.cpp \
 Distributor.cpp      PDBReader.cpp   FlexRegion.cpp \
-FlexGlobal.cpp
-
-
-
-
-
+FlexGlobal.cpp       Parser.cpp      VBondReader.cpp
 
