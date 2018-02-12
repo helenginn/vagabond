@@ -618,6 +618,7 @@ double AtomGroup::scoreWithMap(std::vector<AtomPtr> atoms, ScoreType scoreType,
 void AtomGroup::addProperties()
 {
     addBoolProperty("been_tied", &_beenTied);
+    addIntProperty("times_refined", &_timesRefined);
 
     for (int i = 0; i < atomCount(); i++)
     {

@@ -399,10 +399,13 @@ void Atom::addProperties()
     addDoubleProperty("init_b", &_initialB);
     addVec3Property("init_pos", &_initialPosition);
     addVec3Property("pdb_pos", &_pdbPosition);
+    addVec3Property("longest_axis", &_ellipsoidLongestAxis);
+    addMat3x3Property("tensor", &_tensor);
     addIntProperty("atom_num", &_atomNum);
     addDoubleProperty("init_occupancy", &_origOccupancy);
     addStringProperty("conformer", &_conformer);
     addBoolProperty("from_pdb", &_fromPDB);
+    addDoubleProperty("weighting", &_weighting);
 
     if (_element)
     {
@@ -414,6 +417,7 @@ void Atom::addProperties()
     // add tensor, matrix stuff
 
     addChild("model", _model);
+    addChild("dist_model", _distModelOnly);
 }
 
 void Atom::addObject(ParserPtr object, std::string category)
@@ -423,10 +427,21 @@ void Atom::addObject(ParserPtr object, std::string category)
         ModelPtr model = ToModelPtr(object);
         setModel(model);
     }
+    else if (category == "dist_model")
+    {
+        ModelPtr model = ToModelPtr(object);
+        _distModelOnly = model;
+    }
 }
 
 void Atom::postParseTidy()
 {
     _element = Element::getElement(_elementSymbol);
+    
+    if (_element == ElementPtr())
+    {
+        std::cout << "Warning: element not found for " << shortDesc() << std::endl;
+        std::cout << "Element symbol is: " << _elementSymbol << std::endl;
+    }
 }
 
