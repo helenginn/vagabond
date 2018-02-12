@@ -171,40 +171,49 @@ public:
 
     static void setRotPhi(void *object, double value)
     {
-        static_cast<Polymer *>(object)->_extraRotParams.x = value;
-        static_cast<Polymer *>(object)->applyTranslationTensor();
+        Polymer *polymer = static_cast<Polymer *>(object);
+        polymer->_rotationAxis.x = value;
+        polymer->refreshRotationAxis();
+        polymer->getExtraRotations();
     }
 
     static double getRotPhi(void *object)
     {
-        return static_cast<Polymer *>(object)->_extraRotParams.x;
+        return static_cast<Polymer *>(object)->_rotationAxis.x;
     }
 
     static void setRotPsi(void *object, double value)
     {
-        static_cast<Polymer *>(object)->_extraRotParams.y = value;
-        static_cast<Polymer *>(object)->applyTranslationTensor();
+        Polymer *polymer = static_cast<Polymer *>(object);
+        polymer->_rotationAxis.y = value;
+        polymer->refreshRotationAxis();
+        polymer->getExtraRotations();
     }
 
     static double getRotPsi(void *object)
     {
-        return static_cast<Polymer *>(object)->_extraRotParams.y;
+        return static_cast<Polymer *>(object)->_rotationAxis.y;
     }
 
-    static void setRotTheta(void *object, double value)
+    static void setRotAngle(void *object, double value)
     {
-        static_cast<Polymer *>(object)->_extraRotParams.z = value;
-        static_cast<Polymer *>(object)->applyTranslationTensor();
+        Polymer *polymer = static_cast<Polymer *>(object);
+        polymer->_rotationAngle = value;
+        polymer->_changedRotations = true;
+        polymer->getExtraRotations();
     }
 
-    static double getRotTheta(void *object)
+    static double getRotAngle(void *object)
     {
-        return static_cast<Polymer *>(object)->_extraRotParams.z;
+        return static_cast<Polymer *>(object)->_rotationAngle;
     }
 
+    virtual void calculateExtraRotations();
+    std::vector<vec3> getAnchorSphereDiffs();
     void optimiseTranslationTensor();
     virtual void addProperties();
     virtual void addObject(ParserPtr object, std::string category);
+    virtual void postParseTidy();
 protected:
     virtual double getScore()
     {
@@ -217,9 +226,17 @@ private:
                        RefinementType rType);
 
     std::map<long, MonomerPtr> _monomers;
+    vec3 _extraRotParams;
+
+    void refreshRotationAxis()
+    {
+        vec3 axis = _rotationAxis;
+        double newZ = sqrt(1 - axis.x * axis.x + axis.y * axis.y);
+        _rotationAxis.z = newZ;
+        _changedRotations = true;
+    }
 
     mat3x3 _transTensor;
-    vec3 _extraRotParams;
     int _anchorNum;
     double _startB;
     double _dampening;

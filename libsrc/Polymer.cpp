@@ -663,16 +663,26 @@ double Polymer::getInitialKick(void *object)
 ModelPtr Polymer::getAnchorModel()
 {
     MonomerPtr anchoredRes = getMonomer(getAnchor());
+    if (!anchoredRes)
+    {
+        return ModelPtr();
+    }
+
     ModelPtr model = anchoredRes->findAtom("N")->getModel();
 
     return model;
 }
 
-void Polymer::applyTranslationTensor()
+std::vector<vec3> Polymer::getAnchorSphereDiffs()
 {
-    _transTensorOffsets.clear();
-    _extraRotationMats.clear();
+    std::vector<vec3> results;
     ModelPtr anchor = getAnchorModel();
+
+    if (!anchor)
+    {
+        return std::vector<vec3>();
+    }
+
     std::vector<BondSample> *finals = getAnchorModel()->getManyPositions(BondSampleThorough);
     vec3 sum = make_vec3(0, 0, 0);
 
@@ -687,11 +697,63 @@ void Polymer::applyTranslationTensor()
     {
         vec3 onePos = finals->at(i).start;
         vec3 diff = vec3_subtract_vec3(onePos, sum);
+        results.push_back(diff);
+    }
+
+    return results;
+}
+
+void Polymer::applyTranslationTensor()
+{
+    _transTensorOffsets.clear();
+    _extraRotationMats.clear();
+
+    std::vector<vec3> sphereDiffs = getAnchorSphereDiffs();
+
+    for (int i = 0; i < sphereDiffs.size(); i++)
+    {
+        vec3 diff = sphereDiffs[i];
         vec3 diffTensored = diff;
         mat3x3_mult_vec(_transTensor, &diffTensored);
         vec3 movement = vec3_subtract_vec3(diffTensored, diff);
         _transTensorOffsets.push_back(movement);
     }
+}
+
+void Polymer::calculateExtraRotations()
+{
+    // We have our sphereDiffs.
+    std::vector<vec3> sphereDiffs = getAnchorSphereDiffs();
+
+    // We have a magic axis, _magicRotAxis. We want to know
+    // how close each difference is to one of the poles, mit sign.
+
+    if (!sphereDiffs.size())
+    {
+        return;
+    }
+
+    for (int i = 0; i < sphereDiffs.size(); i++)
+    {
+        vec3 diff = sphereDiffs[i];
+        double cosine = vec3_cosine_with_vec3(diff, _magicRotAxis);
+        vec3 cross = vec3_cross_vec3(diff, _magicRotAxis);
+        
+        // Need to make sure the poles are opposite. 
+        // Choice of doing so is relatively arbitrary.
+        double angleMult = cosine;
+        if (cross.x < 0)
+        {
+            angleMult *= -1;
+        }
+        
+        // Now we make a matrix around our other vector,
+        // _rotationAxis, with the modulated _rotationAngle         
+    
+        double angle = _rotationAngle * angleMult;
+        mat3x3 rot = mat3x3_unit_vec_rotation(_rotationAxis, angle);
+        _extraRotationMats.push_back(rot);
+    }    
 }
 
 void Polymer::superimpose()
@@ -745,6 +807,12 @@ void Polymer::minimiseCentroids()
     int count = 0;
 
     ModelPtr anchor = getAnchorModel();
+
+    if (!anchor)
+    {
+        return;
+    }
+
     getAnchorModel()->getFinalPositions();
     vec3 oldPos = getAnchorModel()->getStaticPosition();
 
@@ -965,8 +1033,16 @@ bool Polymer::test()
 {
     bool bondsOk = true;
 
+    std::cout << "Testing polymer... silence is good." << std::endl;
+
     for (int i = 0; i < atomCount(); i++)
     {
+        if (!atom(i)->getModel())
+        {
+            std::cout << "Missing model for " << atom(i)->shortDesc() << std::endl;
+            bondsOk = 0;
+        }
+
         if (atom(i)->getModel()->isBond())
         {
             bondsOk *= ToBondPtr(atom(i)->getModel())->test();
@@ -1030,6 +1106,9 @@ void Polymer::addProperties()
 {
     Molecule::addProperties();
 
+    addIntProperty("anchor_res", &_anchorNum);
+    addMat3x3Property("trans_tensor", &_transTensor);
+
     for (int i = 0; i < monomerCount(); i++)
     {
         if (!getMonomer(i)) continue;
@@ -1047,4 +1126,10 @@ void Polymer::addObject(ParserPtr object, std::string category)
     }
 
     Molecule::addObject(object, category);
+}
+
+void Polymer::postParseTidy()
+{
+    applyTranslationTensor();
+    Molecule::postParseTidy();
 }
