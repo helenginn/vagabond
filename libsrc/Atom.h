@@ -216,7 +216,7 @@ protected:
 
     virtual std::string getParserIdentifier()
     {
-        return "atom_" + i_to_str(_atomNum);
+        return "atom_" + i_to_str(_atomNum) + "_" + shortDesc(); 
     }
 
     virtual void addProperties();

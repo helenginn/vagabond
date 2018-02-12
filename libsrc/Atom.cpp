@@ -354,9 +354,21 @@ std::string Atom::getPDBContribution(int ensembleNum)
 
 std::string Atom::shortDesc()
 {
-    return getMonomer()->getIdentifier()
-        + i_to_str(getMonomer()->getResidueNum()) +
-        getAtomName();
+    if (!getMonomer())
+    {
+        return getAtomName() + "_" + _conformer;
+    }
+
+    std::string start = getMonomer()->getIdentifier()
+        + i_to_str(getMonomer()->getResidueNum())
+        + getAtomName();
+
+    if (_conformer.length())
+    {
+        start += "_" + _conformer;
+    }
+
+    return start;
 }
 
 MoleculePtr Atom::getMolecule()
