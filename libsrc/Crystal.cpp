@@ -50,10 +50,14 @@ void Crystal::summary()
 
 void Crystal::tieAtomsUp()
 {
+    if (_tied) return;
+
     for (int i = 0; i < moleculeCount(); i++)
     {
         molecule(i)->tieAtomsUp();
     }
+    
+    _tied = true;
 }
 
 void Crystal::addMolecule(MoleculePtr molecule)
