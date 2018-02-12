@@ -100,7 +100,6 @@ std::vector<vec3> Model::polymerCorrectedPositions()
             subtract = vec3_subtract_vec3(subtract, transTensorOffsets[i]);
         }
 
-
         posOnly.push_back(subtract);
     }
 

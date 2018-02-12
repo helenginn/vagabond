@@ -648,3 +648,5 @@ std::vector<double> Sampler::getNextResult(int num)
 
     return grid->getNextResult(num);
 }
+
+
