@@ -101,6 +101,7 @@ public:
     static double refine(void *object)
     {
         static_cast<AtomGroup *>(object)->privateRefine();
+        return 0;
     }
 
     void setTargetRefinement(CrystalPtr target, RefinementType rType);
