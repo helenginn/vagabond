@@ -798,6 +798,13 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
     int myGroup = -1;
     double torsionNumber = prevBond->downstreamAtomNum(getMinor(), &myGroup);
 
+    if (myGroup < 0)
+    {
+        std::cout << "myGroup = " << myGroup << std::endl;
+        std::cout << "Current bond: " << description() << std::endl;
+        std::cout << "Previous bond: " << prevBond->description() << std::endl;
+    }
+    
     bool nextBondExists = false;
     if (_bondGroups[_activeGroup].atoms.size())
     {
@@ -1282,8 +1289,19 @@ std::string Bond::description()
 
     for (int i = 0; i < downstreamAtomGroupCount(); i++)
     {
-        stream << "\t" << downstreamAtom(i, 0)->getAtomName() << std::endl;
+        for (int j = 0; j < downstreamAtomCount(i); j++)
+        {
+            stream << "\t" << downstreamAtom(i, j)->shortDesc()
+            << "(" << &*downstreamAtom(i, j) << ")" << std::endl;
+        }
     }
+
+    stream << "Major: " << getMajor()->shortDesc() << "("
+           << &*getMajor() << ")" << std::endl;
+    stream << "Minor: " << getMinor()->shortDesc() << "("
+           << &*getMinor() << ")" << std::endl;
+
+
 
     return stream.str();
 }
