@@ -693,4 +693,5 @@ void Crystal::postParseTidy()
 {
     _spaceGroup = CSym::ccp4spg_load_by_ccp4_num(_spgNum);
     setupSymmetry();
+    _tied = true;
 }
