@@ -42,7 +42,6 @@ CrystalPtr VBondReader::getCrystal()
         }
 
         std::string className = parser->getClassName();
-        std::cout << "First object is a " << className << std::endl;
         
         if (className == "Crystal")
         {
