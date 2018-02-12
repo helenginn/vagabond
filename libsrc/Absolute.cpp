@@ -263,6 +263,7 @@ void Absolute::addProperties()
 {
     addDoubleProperty("occupancy", &_occupancy);
     addStringProperty("chain", &_chainID);
+    addStringProperty("element", &_element);
     addStringProperty("res_name", &_resName);
     addStringProperty("atom_name", &_atomName);
     addStringProperty("conformer", &_conformer);
@@ -271,13 +272,13 @@ void Absolute::addProperties()
     addBoolProperty("hetatm", &_hetatm);
     addBoolProperty("using_tensor", &_usingTensor);
     addVec3Property("position", &_position);
+    addMat3x3Property("tensor", &_tensor);
     addDoubleProperty("bfactor", &_bFactor);
     addBoolProperty("many_positions", &_isOfManyPositions);
 
     addReference("atom", _atom);
 
     Model::addProperties();
-    // missing tensor and sampled absolute positions from manyPositions
 }
 
 void Absolute::linkReference(ParserPtr object, std::string category)
