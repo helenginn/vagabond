@@ -601,13 +601,8 @@ double Sampler::getScore()
         for (int i = 0; i < sampleSize(); i++)
         {
             double oneScore = _sampled[i]->posDisplacement();
-            double weight = _sampled[i]->getElement()->electronCount();
-            weight = 1;
-            std::string name = _sampled[i]->getAtomName();
-            ModelPtr model = _sampled[i]->getModel();
-
-            score += oneScore * weight;
-            count += weight;
+            score += oneScore;
+            count += 1;
         }
 
         return score / count;
