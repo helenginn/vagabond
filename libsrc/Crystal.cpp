@@ -490,6 +490,8 @@ void Crystal::changeAnchors(int newAnchor)
 
 Crystal::Crystal()
 {
+    _tied = false;
+    _spaceGroup = NULL;
     _spgNum = 0;
     _maxResolution = 0;
     _unitCell.resize(6);
