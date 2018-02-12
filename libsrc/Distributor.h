@@ -38,6 +38,11 @@ protected:
     FFTPtr prepareDistribution(double n, double scale, void *object,
                                get_voxel_value *voxel_value);
 
+    virtual std::string getClassName()
+    {
+        return "Distributor";
+    }
+
 private:
     FFTPtr _fft;
 };

@@ -39,6 +39,11 @@ public:
     {
         return _electrons;
     }
+
+    virtual std::string getClassName()
+    {
+        return "Element";
+    }
     
 protected:
     static double getVoxelValue(void *obj, double x, double y, double z);
