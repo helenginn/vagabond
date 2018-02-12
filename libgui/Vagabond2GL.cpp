@@ -149,20 +149,16 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
     GLuint count = (int)_vertices.size();
     int bonds = 0;
 
+    Bond::useMutex();
+
     for (int i = 0; i < molecule->atomCount(); i++)
     {
         AtomPtr atom = molecule->atom(i);
 
-        if (atom->getModel() && atom->getModel()->isBond())
+        if (!atom->getModel()->isBond())
         {
-            ToBondPtr(atom->getModel())->useMutex();
+            continue;
         }
-    }
-
-    for (int i = 0; i < molecule->atomCount(); i++)
-    {
-        AtomPtr atom = molecule->atom(i);
-        AtomPtr major = ToBondPtr(atom->getModel())->getMajor();
 
         if (atom->getElement()->electronCount() <= 1)
         {
@@ -171,6 +167,8 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 
         if (atom->getModel()->isBond())
         {
+            AtomPtr major = ToBondPtr(atom->getModel())->getMajor();
+
             std::vector<vec3> majBonds, minBonds;
             getPositions(atom, &minBonds, &majBonds);
 

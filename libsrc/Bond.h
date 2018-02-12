@@ -349,7 +349,7 @@ public:
 
     std::vector<vec3> polymerCorrectedPositions();
 
-    void useMutex()
+    static void useMutex()
     {
         _useMutex = true;
     }
