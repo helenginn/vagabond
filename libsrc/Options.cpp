@@ -578,6 +578,15 @@ void Options::openModel(std::string pdbName)
         statusMessage("Loading Vagabond file " + pdbName + "...");
     }
 
+    for (int i = 0; i < crystal->moleculeCount(); i++)
+    {
+        MoleculePtr molecule = crystal->molecule(i);
+        if (molecule->isPolymer())
+        {
+            PolymerPtr polymer = ToPolymerPtr(molecule);
+            polymer->refreshPositions(true);
+        }
+    }
    
     crystals[0]->tiedUpScattering();
 
