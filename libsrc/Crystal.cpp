@@ -541,17 +541,19 @@ void Crystal::makePDBs(std::string suffix)
 
         for (int j = 0; j < moleculeCount(); j++)
         {
-            file << molecule(j)->makePDB(pdbTypes[i], shared_from_this());
+            CrystalPtr crystal = shared_from_this();
+            file << molecule(j)->makePDB(pdbTypes[i], crystal); 
         }
 
         file.close();
     }
  };
 
-void Crystal::writeVagabondFile()
+void Crystal::writeVagabondFile(int cycleNum)
 {
     std::ofstream file;
-    std::string vbondFile = FileReader::addOutputDirectory("test.vbond");
+    std::string filename = "refine_" + i_to_str(cycleNum) + ".vbond";
+    std::string vbondFile = FileReader::addOutputDirectory(filename);
     file.open(vbondFile);
     writeToFile(file, 0);
     file.close();
@@ -583,7 +585,7 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
         }
     }
 
-    writeVagabondFile();
+    writeVagabondFile(cycleNum);
 
     return rFac;
 }
