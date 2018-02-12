@@ -46,10 +46,10 @@ void Monomer::addAtom(AtomPtr atom)
     //              + "\nCurrently only side chains are supported.");
     }
 
-    AtomGroup::addAtom(atom);
-
     atom->setMonomer(shared_from_this());
     
+    AtomGroup::addAtom(atom);
+
     bool isBoth = atom->isBackboneAndSidechain();
 
     if (isBoth)
@@ -229,12 +229,29 @@ void Monomer::addObject(ParserPtr object, std::string category)
     {
         SidechainPtr side = ToSidechainPtr(object);
         _sidechain = side; 
+        _sidechain->setMonomer(shared_from_this());
     }
 
     if (category == "backbone")
     {
         BackbonePtr back = ToBackbonePtr(object);
         _backbone = back;
+        _backbone->setMonomer(shared_from_this());
     }
+
+    AtomGroup::addObject(object, category);
 }
 
+void Monomer::linkReference(ParserPtr object, std::string category)
+{
+    if (category == "atom")
+    {
+        AtomPtr atom = ToAtomPtr(object);
+        addAtom(atom);
+    }   
+}
+
+void Monomer::postParseTidy()
+{
+
+}
