@@ -386,7 +386,7 @@ mat3x3 Bond::makeTorsionBasis(vec3 hPos, vec3 maPos,
     vec3 reverse_bond = vec3_subtract_vec3(miPos, maPos);
     vec3 xNew = vec3_subtract_vec3(hPos, heavy_join);
     vec3 light = vec3_subtract_vec3(lPos, light_join);
-    mat3x3 test = mat3x3_rhbasis(xNew, reverse_bond);
+    mat3x3 basis = mat3x3_rhbasis(xNew, reverse_bond);
 
     if (newAngle)
     {
@@ -409,7 +409,7 @@ mat3x3 Bond::makeTorsionBasis(vec3 hPos, vec3 maPos,
         *newAngle = angle;
     }
 
-    return test;
+    return basis;
 }
 
 void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign, int groupNum)
