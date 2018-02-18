@@ -107,7 +107,7 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 
 void GLKeeper::render(void)
 {
-    glClearColor(0.95, 0.95, 0.95, 1.0);
+    glClearColor(1.0, 1.0, 1.0, 1.0);
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);

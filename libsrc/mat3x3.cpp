@@ -29,6 +29,43 @@ struct mat3x3 make_mat3x3()
 	return mat;
 }
 
+mat3x3 mat3x3_subtract_mat3x3(mat3x3 &one, mat3x3 &two)
+{
+    mat3x3 mat = make_mat3x3();
+    for (int i = 0; i < 9; i++)
+    {
+        mat.vals[i] = one.vals[i] - two.vals[i];
+    }
+
+    return mat;
+}
+
+double mat3x3_abs_sum_all(mat3x3 &mat)
+{
+    double score = 0;
+
+    // penalise being too big more
+    double extraPenalty = 4;
+    
+    for (int i = 0; i < 9; i++)
+    {   
+        double add = mat.vals[i];
+
+        if (mat.vals[i] > 0)
+        {
+            add *= extraPenalty;       
+        }
+        else
+        {
+            add *= -1;
+        }
+
+        score += add; 
+    }
+
+    return score;
+}
+
 vec3 mat3x3_mult_vec(struct mat3x3 mat, struct vec3 vec)
 {
 	struct vec3 v;

@@ -44,32 +44,42 @@ void VagWindow::makeButtons()
     bSuperimpose->setEnabled(false);
     connect(bSuperimpose, SIGNAL(clicked()), this, SLOT(pushSuperimpose()));
     
+    bFitWholeT = new QPushButton("Fit molecule translation", this);
+    bFitWholeT->setGeometry(700, 50, 200, 25);
+    bFitWholeT->setEnabled(false);
+    connect(bFitWholeT, SIGNAL(clicked()), this, SLOT(pushFitWholeT()));
+    
+    bFitWholeR = new QPushButton("Fit molecule rotation", this);
+    bFitWholeR->setGeometry(700, 75, 200, 25);
+    bFitWholeR->setEnabled(false);
+    connect(bFitWholeR, SIGNAL(clicked()), this, SLOT(pushFitWholeR()));
+    
     bRefinePos = new QPushButton("Refine positions to PDB", this);
-    bRefinePos->setGeometry(700, 50, 200, 50);
+    bRefinePos->setGeometry(700, 100, 200, 50);
     bRefinePos->setEnabled(false);
     connect(bRefinePos, SIGNAL(clicked()), this, SLOT(pushRefinePositions()));
 
     bRefineFlex = new QPushButton("Refine flexibility to PDB", this);
-    bRefineFlex->setGeometry(700, 100, 200, 50);
+    bRefineFlex->setGeometry(700, 150, 200, 50);
     bRefineFlex->setEnabled(false);
     connect(bRefineFlex, SIGNAL(clicked()), this, SLOT(pushRefineFlexibility()));
 
     bRefineDensity = new QPushButton("Refine sidechains to density", this);
-    bRefineDensity->setGeometry(700, 150, 200, 50);
+    bRefineDensity->setGeometry(700, 200, 200, 50);
     bRefineDensity->setEnabled(false);
     connect(bRefineDensity, SIGNAL(clicked()), this, SLOT(pushRefineDensity()));
 
     bRecalculate = new QPushButton("Recalculate FFT", this);
-    bRecalculate->setGeometry(700, 200, 200, 50);
+    bRecalculate->setGeometry(700, 250, 200, 50);
     bRecalculate->setEnabled(false);
     connect(bRecalculate, SIGNAL(clicked()), this, SLOT(recalculateFFT()));    
     bChangeBMult = new QPushButton("Set hetatm B multiplier", this);
-    bChangeBMult->setGeometry(700, 250, 200, 50);
+    bChangeBMult->setGeometry(700, 300, 200, 50);
     bChangeBMult->setEnabled(false);
     connect(bChangeBMult, SIGNAL(clicked()), this, SLOT(pushBMultiplier()));
     
     bExploreMolecule = new QPushButton("Explore molecule", this);
-    bExploreMolecule->setGeometry(700, 300, 200, 50);
+    bExploreMolecule->setGeometry(700, 350, 200, 50);
     bExploreMolecule->setEnabled(false);
     bExploreMolecule->setMenu(new QMenu(this));
 
@@ -161,6 +171,14 @@ void VagWindow::waitForInstructions()
             options->refineAll(RefinementFlexibility, 1);
             break;
 
+            case InstructionTypeFitWholeMoleculeTranslation: 
+            options->fitWholeMolecule(true, false);
+            break;
+
+            case InstructionTypeFitWholeMoleculeRotation: 
+            options->fitWholeMolecule(false, true);
+            break;
+
             case InstructionTypeRefineDensity: 
             options->refineAll(RefinementFine, 1);
             break;
@@ -227,6 +245,8 @@ void VagWindow::enable()
     bExploreMolecule->setEnabled(true);
     bRecalculate->setEnabled(true);
     bRefineDensity->setEnabled(true);
+    bFitWholeR->setEnabled(true);
+    bFitWholeT->setEnabled(true);
 }
 
 void VagWindow::disable()
@@ -238,6 +258,8 @@ void VagWindow::disable()
     bExploreMolecule->setEnabled(false);
     bRecalculate->setEnabled(false);
     bRefineDensity->setEnabled(false);
+    bFitWholeR->setEnabled(false);
+    bFitWholeT->setEnabled(false);
 }
 
 void VagWindow::resizeEvent(QResizeEvent *event)
@@ -276,6 +298,18 @@ void VagWindow::pushBMultiplier()
     _myDialogue->setTag(DialogueBMultiplier);
     _myDialogue->setWindow(this);
     _myDialogue->show();
+}
+
+void VagWindow::pushFitWholeT()
+{
+    _instructionType = InstructionTypeFitWholeMoleculeTranslation;
+    wait.wakeAll();
+}
+
+void VagWindow::pushFitWholeR()
+{
+    _instructionType = InstructionTypeFitWholeMoleculeRotation;
+    wait.wakeAll();
 }
 
 void VagWindow::pushRefineFlexibility()

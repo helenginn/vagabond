@@ -27,12 +27,11 @@ public:
     Absolute();
 
 // Model virtual functions:
-    virtual std::vector<BondSample> *getManyPositions(BondSampleStyle style);
+    virtual std::vector<BondSample> *getManyPositions();
     virtual FFTPtr getDistribution(bool quick = false);
-    virtual vec3 getStaticPosition();
     virtual vec3 getAbsolutePosition()
     {
-        return getStaticPosition();
+        return _position;
     }
 
     virtual void addToMolecule(MoleculePtr molecule);

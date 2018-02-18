@@ -24,6 +24,7 @@ Molecule::Molecule()
     _absoluteBFacMult = 1.0;
     _magicRotAxis = make_vec3(1, 0, 0);
     _rotationAxis = make_vec3(1, 0, 0);
+    _rotationCentre = make_vec3(nan(" "), nan(" "), nan(" "));
     _rotationAngle = 0;
     _changedRotations = true;
 }
@@ -212,6 +213,7 @@ void Molecule::addProperties()
     addVec3ArrayProperty("trans_tensor_offsets", &_transTensorOffsets);
     addVec3Property("magic_rot_axis", &_magicRotAxis);
     addVec3Property("rotation_axis", &_rotationAxis);
+    addVec3Property("rot_centre", &_rotationCentre);
     addDoubleProperty("rotation_angle", &_rotationAngle);
     addMat3x3ArrayProperty("extra_rotations", &_extraRotationMats);
     addMat3x3ArrayProperty("rotations", &_rotations);
@@ -222,12 +224,26 @@ void Molecule::addProperties()
     }
 }
 
+void Molecule::setAbsoluteBFacMult(double mult)
+{
+    _absoluteBFacMult = mult;
+    for (int i = 0; i < atomCount(); i++)
+    {
+        ModelPtr model = atom(i)->getModel();
+        model->recalculate();
+    }
+}
+
 void Molecule::postParseTidy()
 {
     for (int i = 0; i < atomCount(); i++)
     {
         ModelPtr model = atom(i)->getModel();
-        if (!model) continue;
+        if (!model) 
+        {
+            continue;
+        }
+
         model->setMolecule(shared_from_this());
     }
 }

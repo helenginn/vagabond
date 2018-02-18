@@ -25,6 +25,11 @@ public:
     
     virtual FFTPtr getDistribution(bool quick = false) = 0;
 
+    void recalculate()
+    {
+        _calculated = true;
+    }
+
 protected:
     bool _calculated;
 

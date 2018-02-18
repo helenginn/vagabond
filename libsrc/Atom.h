@@ -139,8 +139,9 @@ public:
     void setInitialBFactor(double b)
     {
         _initialB = b;
+        double inAng = b / (8 * M_PI * M_PI);
         _tensor = make_mat3x3();
-        mat3x3_mult_scalar(&_tensor, b);
+        mat3x3_mult_scalar(&_tensor, inAng);
     }
 
     void setAtomNum(int atomNum)
@@ -148,7 +149,7 @@ public:
         _atomNum = atomNum;
     }
 
-    double getAtomNum()
+    int getAtomNum()
     {
         return _atomNum;
     }

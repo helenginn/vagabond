@@ -17,43 +17,43 @@
 class Anisotropicator
 {
 public:
-	Anisotropicator();
+    Anisotropicator();
 
-	/* Should update the principle axes */
-	void setTensor(mat3x3 tensor);
-	/* Should update the tensor too */
-	void setPoints(std::vector<vec3> points);
+    /* Should update the principle axes */
+    void setTensor(mat3x3 tensor);
+    /* Should update the tensor too */
+    void setPoints(std::vector<vec3> points);
 
-	vec3 getAxis(int i)
-	{
-		return _axes[i];
-	}
+    vec3 getAxis(int i)
+    {
+        return _axes[i];
+    }
 
-	mat3x3 basis()
-	{
-		return _axisMatrix;
-	}
+    mat3x3 basis()
+    {
+        return _axisMatrix;
+    }
 
-	mat3x3 getTensor()
-	{
-		return _tensor;
-	}
+    mat3x3 getTensor()
+    {
+        return _tensor;
+    }
 
-	double isotropicAverage()
-	{
-		return _isotropicAverage;
-	}
+    double isotropicAverage()
+    {
+        return _isotropicAverage;
+    }
 
-	double anisotropyExtent();
-	vec3 longestAxis();
+    double anisotropyExtent();
+    vec3 longestAxis();
 private:
-	std::vector<vec3> _points;
-	mat3x3 _tensor;
-	void findPrincipleAxes();
+    std::vector<vec3> _points;
+    mat3x3 _tensor;
+    void findPrincipleAxes();
 
-	double _isotropicAverage;
-	mat3x3 _axisMatrix;
-	vec3 _axes[3];
+    double _isotropicAverage;
+    mat3x3 _axisMatrix;
+    vec3 _axes[3];
 };
 
 #endif /* Anisotropicator_hpp */

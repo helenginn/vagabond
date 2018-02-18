@@ -12,6 +12,12 @@
 #include <stdio.h>
 #include "shared_ptrs.h"
 
+typedef enum
+{
+    FlexTargetMaximiseIsotropy,
+    FlexTargetMatchOrigBFactor,
+} FlexTarget;
+
 class FlexGlobal
 {
 public:
@@ -25,6 +31,12 @@ public:
     static double score(void *object);
 
     void maximiseIsotropy();
+
+    void matchOriginalBees()
+    {
+        _targetType = FlexTargetMatchOrigBFactor;
+    }
+
     void setTargetBFactor(double value)
     {
         _targetIsoB = value;
@@ -32,8 +44,11 @@ public:
 private:
     double _targetIsoB;
 
-    double notStaticScore();
+    double matchOriginalBeeScore();
+    double maximiseIsotropyScore();
     AtomGroupPtr _atomGroup;
+
+    FlexTarget _targetType;
 };
 
 #endif /* FlexGlobal_hpp */

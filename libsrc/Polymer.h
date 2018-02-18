@@ -30,6 +30,8 @@ public:
         _transTensor = make_mat3x3();
         _startB = Options::getBStart();
         _extraRotParams = {1, 0, 0};
+        _tmpPhi = 0;
+        _tmpPsi = 0;
     }
 
     void closenessSummary();
@@ -110,6 +112,11 @@ public:
         return static_cast<Polymer *>(object)->_transTensor.vals[1];
     }
 
+    static double getTransTensor31(void *object)
+    {
+        return static_cast<Polymer *>(object)->_transTensor.vals[6];
+    }
+
     static double getTransTensor13(void *object)
     {
         return static_cast<Polymer *>(object)->_transTensor.vals[2];
@@ -123,6 +130,11 @@ public:
     static double getTransTensor23(void *object)
     {
         return static_cast<Polymer *>(object)->_transTensor.vals[5];
+    }
+
+    static double getTransTensor32(void *object)
+    {
+        return static_cast<Polymer *>(object)->_transTensor.vals[7];
     }
 
     static double getTransTensor33(void *object)
@@ -146,6 +158,11 @@ public:
     static void setTransTensor13(void *object, double value)
     {
         static_cast<Polymer *>(object)->_transTensor.vals[2] = value;
+        static_cast<Polymer *>(object)->applyTranslationTensor();
+    }
+
+    static void setTransTensor31(void *object, double value)
+    {
         static_cast<Polymer *>(object)->_transTensor.vals[6] = value;
         static_cast<Polymer *>(object)->applyTranslationTensor();
     }
@@ -156,10 +173,15 @@ public:
         static_cast<Polymer *>(object)->applyTranslationTensor();
     }
 
+    static void setTransTensor32(void *object, double value)
+    {
+        static_cast<Polymer *>(object)->_transTensor.vals[7] = value;
+        static_cast<Polymer *>(object)->applyTranslationTensor();
+    }
+
     static void setTransTensor23(void *object, double value)
     {
         static_cast<Polymer *>(object)->_transTensor.vals[5] = value;
-        static_cast<Polymer *>(object)->_transTensor.vals[7] = value;
         static_cast<Polymer *>(object)->applyTranslationTensor();
     }
 
@@ -172,34 +194,34 @@ public:
     static void setRotPhi(void *object, double value)
     {
         Polymer *polymer = static_cast<Polymer *>(object);
-        polymer->_rotationAxis.x = value;
+        polymer->_tmpPhi = value;
         polymer->refreshRotationAxis();
         polymer->getExtraRotations();
     }
 
     static double getRotPhi(void *object)
     {
-        return static_cast<Polymer *>(object)->_rotationAxis.x;
+        return static_cast<Polymer *>(object)->_tmpPhi;
     }
 
     static void setRotPsi(void *object, double value)
     {
         Polymer *polymer = static_cast<Polymer *>(object);
-        polymer->_rotationAxis.y = value;
+        polymer->_tmpPsi = value;
         polymer->refreshRotationAxis();
         polymer->getExtraRotations();
     }
 
     static double getRotPsi(void *object)
     {
-        return static_cast<Polymer *>(object)->_rotationAxis.y;
+        return static_cast<Polymer *>(object)->_tmpPsi;
     }
 
     static void setRotAngle(void *object, double value)
     {
         Polymer *polymer = static_cast<Polymer *>(object);
         polymer->_rotationAngle = value;
-        polymer->_changedRotations = true;
+        polymer->setChangedRotation();
         polymer->getExtraRotations();
     }
 
@@ -210,7 +232,7 @@ public:
 
     virtual void calculateExtraRotations();
     std::vector<vec3> getAnchorSphereDiffs();
-    void optimiseTranslationTensor();
+    void optimiseWholeMolecule(bool translation = false, bool rotation = true);
     virtual void addProperties();
     virtual void addObject(ParserPtr object, std::string category);
     virtual void postParseTidy();
@@ -230,14 +252,15 @@ private:
 
     void refreshRotationAxis()
     {
-        vec3 axis = _rotationAxis;
-        double newZ = sqrt(1 - axis.x * axis.x + axis.y * axis.y);
-        _rotationAxis.z = newZ;
-        _changedRotations = true;
+        mat3x3 rot = mat3x3_rot_from_angles(_tmpPhi, _tmpPsi);
+        _rotationAxis = mat3x3_axis(rot, 0);
+        setChangedRotation();
     }
 
     mat3x3 _transTensor;
     int _anchorNum;
+    double _tmpPhi;
+    double _tmpPsi;
     double _startB;
     double _dampening;
     double _sideDampening;

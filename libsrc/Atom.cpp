@@ -31,6 +31,7 @@ Atom::Atom()
     _weighting = 1;
     _origOccupancy = 1.0;
     _fromPDB = true;
+    _tensor = make_mat3x3();
 }
 
 Atom::Atom(Atom &other)
@@ -169,7 +170,7 @@ vec3 Atom::getAbsolutePosition()
 
 vec3 Atom::getPosition()
 {
-    return _model->getStaticPosition();
+    return getAbsolutePosition(); 
 }
 
 bool Atom::isBackbone()

@@ -544,6 +544,15 @@ void Options::openModel(std::string pdbName)
 
     notifyGUI(false);
 
+    if (modelType == ModelFilePDB)
+    {
+        statusMessage("Loading PDB file " + pdbName + "...");
+    }
+    else if (modelType == ModelFileVagabond)
+    {
+        statusMessage("Loading Vagabond file " + pdbName + "...");
+    }
+
     CrystalPtr crystal = CrystalPtr();
 
     if (modelType == ModelFilePDB)
@@ -567,15 +576,6 @@ void Options::openModel(std::string pdbName)
         statusMessage("Tying up atoms...");
         crystals[0]->setAnchors();
         crystals[0]->tieAtomsUp();
-    }
-
-    if (modelType == ModelFilePDB)
-    {
-        statusMessage("Loading PDB file " + pdbName + "...");
-    }
-    else if (modelType == ModelFileVagabond)
-    {
-        statusMessage("Loading Vagabond file " + pdbName + "...");
     }
 
     for (int i = 0; i < crystal->moleculeCount(); i++)
@@ -663,6 +663,20 @@ void Options::refinementCycle(MoleculePtr molecule, int *count,
             polymer->superimpose();
         }
     }
+}
+
+void Options::fitWholeMolecule(bool translation, bool rotation)
+{
+    notifyGUI(false);
+
+    statusMessage("Applying whole-molecule fits...");
+
+    CrystalPtr crystal = getActiveCrystal();
+    crystal->fitWholeMolecules(translation, rotation);
+
+    recalculateFFT();
+
+    notifyGUI(true);
 }
 
 void Options::recalculateFFT()

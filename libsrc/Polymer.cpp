@@ -683,7 +683,7 @@ std::vector<vec3> Polymer::getAnchorSphereDiffs()
         return std::vector<vec3>();
     }
 
-    std::vector<BondSample> *finals = getAnchorModel()->getManyPositions(BondSampleThorough);
+    std::vector<BondSample> *finals = getAnchorModel()->getManyPositions();
     vec3 sum = make_vec3(0, 0, 0);
 
     for (int i = 0; i < finals->size(); i++)
@@ -761,6 +761,8 @@ void Polymer::superimpose()
     _centroids.clear();
     _centroidOffsets.clear();
     _rotations.clear();
+    _transTensorOffsets.clear();
+    _extraRotationMats.clear();
     propagateChange();
 
     minimiseRotations();
@@ -774,7 +776,6 @@ void Polymer::superimpose()
         std::vector<vec3> sphereAngles = ToAbsolutePtr(model)->getSphereAngles();
         CSVPtr csv = CSVPtr(new CSV(10, "psi", "phi", "theta", "corr_x", "corr_y", "corr_z", "rot_angle", "rot_axis_x", "rot_axis_y", "rot_axis_z"));
         CSVPtr one = CSVPtr(new CSV(3, "x", "y", "z"));
-//        std::vector<BondSample> positions = ca102->getFinalPositions();
 
         for (int i = 0; i < sphereAngles.size(); i++)
         {
@@ -788,13 +789,8 @@ void Polymer::superimpose()
             csv->addEntry(10, sphereAngles[i].x, sphereAngles[i].y,
                           sphereAngles[i].z, xMove, yMove, zMove, angle,
                           axis.x, axis.y, axis.z); 
-/*
-            one->addEntry(3, positions[i].start.x, positions[i].start.y,
-                          positions[i].start.z);
-*/
         }
 
-//        one->writeToFile("res102.csv");
         csv->writeToFile("kabsch.csv");
     }
 
@@ -814,7 +810,7 @@ void Polymer::minimiseCentroids()
     }
 
     getAnchorModel()->getFinalPositions();
-    vec3 oldPos = getAnchorModel()->getStaticPosition();
+    vec3 oldPos = getAnchorModel()->getAbsolutePosition();
 
     for (int i = 0; i < monomerCount(); i++)
     {
@@ -829,9 +825,10 @@ void Polymer::minimiseCentroids()
 
         count++;
 
+        std::vector<BondSample> *samples;
         std::vector<BondSample> someSamples;
         someSamples = ca->getModel()->getFinalPositions();
-        std::vector<BondSample> *samples = &someSamples;
+        samples = &someSamples;
 
         if (!addedVecs.size())
         {
@@ -861,7 +858,11 @@ void Polymer::minimiseCentroids()
         meanPos = vec3_add_vec3(meanPos, addedVecs[i]);
     }
 
+    // starting point for rotation centre of whole molecule movements
+    // Used by Model to correct for translation stuff
+
     vec3_mult(&meanPos, 1 / (double)addedVecs.size());
+    _rotationCentre = meanPos;
 
     // Remove the old centroid positions if not already
     _centroidOffsets.clear();
@@ -882,7 +883,6 @@ void Polymer::minimiseCentroids()
 
     // Find the difference.
     vec3 backToOld = vec3_subtract_vec3(oldPos, newPos);
-    std::cout << "Additional correction: " << vec3_desc(backToOld) << std::endl;
 
     for (int i = 0; i < _centroidOffsets.size(); i++)
     {
@@ -910,7 +910,7 @@ void Polymer::minimiseRotations()
         if (!ca) continue;
 
         std::vector<BondSample> *samples;
-        samples = ca->getModel()->getManyPositions(BondSampleThorough);
+        samples = ca->getModel()->getManyPositions();
 
         num = samples->size();
 
@@ -950,7 +950,7 @@ void Polymer::minimiseRotations()
                 double weight = 1 / (bee * bee);
                 weights.push_back(weight);
 
-                samples = model->getManyPositions(BondSampleThorough);
+                samples = model->getManyPositions();
                 vec3 fixed = model->getAbsolutePosition();
 
                 vec3 variant = samples->at(i).start;
@@ -1076,33 +1076,43 @@ void Polymer::reportParameters()
     << " refinable bonds." << std::endl;
 }
 
-void Polymer::optimiseTranslationTensor()
+void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 {
-    std::cout << "Optimising translation tensor to maximise isotropy." << std::endl;
+    std::cout << "Optimising whole molecule shifts to match the PDB file." << std::endl;
 
     NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
-    nelderMead->addParameter(this, getTransTensor11, setTransTensor11, 1, 0.01);
-    nelderMead->addParameter(this, getTransTensor12, setTransTensor12, 1, 0.01);
-    nelderMead->addParameter(this, getTransTensor13, setTransTensor13, 1, 0.01);
-    nelderMead->addParameter(this, getTransTensor22, setTransTensor22, 1, 0.01);
-    nelderMead->addParameter(this, getTransTensor23, setTransTensor23, 1, 0.01);
-    nelderMead->addParameter(this, getTransTensor33, setTransTensor33, 1, 0.01);
 
-    nelderMead->addParameter(this, getRotPhi, setRotPhi, 0.1, 0.0001);
-    nelderMead->addParameter(this, getRotPsi, setRotPsi, 0.1, 0.0001);
-    nelderMead->addParameter(this, getRotAngle, setRotAngle, 0.01, 0.0001);
+    if (translation)
+    {
+        nelderMead->addParameter(this, getTransTensor11, setTransTensor11, 0.5, 0.01);
+        nelderMead->addParameter(this, getTransTensor12, setTransTensor12, 0.1, 0.01);
+        nelderMead->addParameter(this, getTransTensor13, setTransTensor13, 0.1, 0.01);
+        nelderMead->addParameter(this, getTransTensor31, setTransTensor31, 0.1, 0.01);
+        nelderMead->addParameter(this, getTransTensor22, setTransTensor22, 0.5, 0.01);
+        nelderMead->addParameter(this, getTransTensor23, setTransTensor23, 0.1, 0.01);
+        nelderMead->addParameter(this, getTransTensor32, setTransTensor32, 0.1, 0.01);
+        nelderMead->addParameter(this, getTransTensor33, setTransTensor33, 0.5, 0.01);
+    }
 
-    setTransTensor11(this, 1);
-    setTransTensor22(this, 1);
-    setTransTensor33(this, 1);
+    if (rotation)
+    {
+        nelderMead->addParameter(this, getRotPhi, setRotPhi, 0.1, 0.0001);
+        nelderMead->addParameter(this, getRotPsi, setRotPsi, 0.1, 0.0001);
+        nelderMead->addParameter(this, getRotAngle, setRotAngle, 0.01, 0.0001);
+        nelderMead->addParameter(this, getRotCentreX, setRotCentreX, 3.0, 0.01);
+        nelderMead->addParameter(this, getRotCentreY, setRotCentreY, 3.0, 0.01);
+        nelderMead->addParameter(this, getRotCentreZ, setRotCentreZ, 3.0, 0.01);
+    }
+
+    nelderMead->setCycles(30);
+    nelderMead->setVerbose(true);
 
     double bFac = getAverageBFactor();
 
     FlexGlobal target;
     target.setAtomGroup(AtomGroup::shared_from_this());
-    target.maximiseIsotropy();
+    target.matchOriginalBees();
     nelderMead->setEvaluationFunction(FlexGlobal::score, &target);
-    nelderMead->setCycles(20);
     nelderMead->refine();
 }
 
@@ -1134,6 +1144,6 @@ void Polymer::addObject(ParserPtr object, std::string category)
 
 void Polymer::postParseTidy()
 {
-    applyTranslationTensor();
     Molecule::postParseTidy();
+    applyTranslationTensor();
 }

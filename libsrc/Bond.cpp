@@ -713,34 +713,15 @@ std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
     return set;
 }
 
-std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
+std::vector<BondSample> *Bond::getManyPositions()
 {
     std::vector<BondSample> *newSamples;
 
-    if (style == BondSampleStatic)
-    {
-        newSamples = &_bondGroups[_activeGroup].staticSample;
-    }
-    else
-    {
-        newSamples = &_bondGroups[_activeGroup].storedSamples;
-    }
+    newSamples = &_bondGroups[_activeGroup].storedSamples;
 
-    bool staticAtom = (style == BondSampleStatic);
-
-    if (!_changedSamples && style == BondSampleThorough)
+    if (!_changedSamples)
     {
         return &_bondGroups[_activeGroup].storedSamples;
-    }
-
-    if (!_changedPos && style == BondSampleStatic)
-    {
-        return &_bondGroups[_activeGroup].staticSample;
-    }
-
-    if (_anchored && style == BondSampleStatic)
-    {
-        return &_bondGroups[_activeGroup].staticSample;
     }
 
     ModelPtr model = getMajor()->getModel();
@@ -749,7 +730,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 
     if (model->getClassName() == "Absolute")
     {
-        std::vector<BondSample> *absPos = model->getManyPositions(style);
+        std::vector<BondSample> *absPos = model->getManyPositions();
         mat3x3 magicMat = getMagicMat(_bondDirection);
 
         /* We must be connected to something else, oh well */
@@ -819,7 +800,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
         prevBond->setActiveGroup(myGroup);
     }
 
-    std::vector<BondSample> *prevSamples = prevBond->getManyPositions(style);
+    std::vector<BondSample> *prevSamples = prevBond->getManyPositions();
 
     /* This is just to get a set of angles, no bases */
     double circlePortion = 0;
@@ -843,7 +824,7 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
 
     std::vector<BondSample> myTorsions;
 
-    bool usingCompensation = (!staticAtom && isUsingTorsion()
+    bool usingCompensation = (isUsingTorsion()
                               && nextBondExists && !isFixed());
 
     if (usingCompensation)
@@ -904,51 +885,21 @@ std::vector<BondSample> *Bond::getManyPositions(BondSampleStyle style)
         (*prevSamples)[i].occupancy;
         occTotal += nextSample.occupancy;
 
-        if (style == BondSampleStatic)
-        {
-            nextSample.occupancy = occupancy;
-        }
-
         newSamples->push_back(nextSample);
-
-        if (style == BondSampleStatic)
-        {
-            _changedPos = false;
-            return newSamples;
-        }
     }
 
-    if (style == BondSampleThorough)
+    if (false && getMultOccupancy() < 0.9)
     {
-        if (false && getMultOccupancy() < 0.9)
-        {
-            std::cout << "Occ total: " << shortDesc() << " " << occTotal
+        std::cout << "Occ total: " << shortDesc() << " " << occTotal
             << " instead of " << std::setprecision(4) << getMultOccupancy() << std::endl;
-        }
+    }
 
-        _changedSamples = false;
-    }
-    else if (style == BondSampleStatic)
-    {
-        std::cout << "WTF" << std::endl;
-        _changedPos = false;
-    }
+    _changedSamples = false;
 
     return newSamples;
 }
 
 /* This gets the position of the minor atom. */
-vec3 Bond::getStaticPosition()
-{
-    if (!_changedPos)
-    {
-        return _bondGroups[_activeGroup].staticSample[0].start;
-    }
-
-    getManyPositions(BondSampleStatic);
-    return _bondGroups[_activeGroup].staticSample[0].start;
-}
-
 
 bool Bond::isNotJustForHydrogens()
 {
@@ -1465,10 +1416,10 @@ bool Bond::test()
                 {
                     continue;
                 }
-
-                vec3 pos1 = atom1->getModel()->getStaticPosition();
-                vec3 pos2 = getMinor()->getModel()->getStaticPosition();
-                vec3 pos3 = atom3->getModel()->getStaticPosition();
+//
+                vec3 pos1 = atom1->getModel()->getManyPositions()->at(0).start;
+                vec3 pos2 = getMinor()->getModel()->getManyPositions()->at(0).start;
+                vec3 pos3 = atom3->getModel()->getManyPositions()->at(0).start;
 
                 double realAngle = vec3_angle_from_three_points(pos1, pos2, pos3);
 
@@ -1525,7 +1476,7 @@ void Bond::recalculateTorsion(AtomPtr heavy, double value)
 
 double Bond::getEffectiveOccupancy()
 {
-    std::vector<BondSample> *samples = getManyPositions(BondSampleThorough);
+    std::vector<BondSample> *samples = getManyPositions();
     double total = 0;
 
     for (int i = 0; i < samples->size(); i++)

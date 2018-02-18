@@ -25,13 +25,6 @@ typedef struct
     double occupancy;
 } BondSample;
 
-typedef enum
-{
-    BondSampleThorough,
-    BondSampleStatic,
-    BondSampleMonteCarlo
-} BondSampleStyle;
-
 // Anything which is capable of predicting electron positions.
 //
 
@@ -48,7 +41,6 @@ public:
     virtual std::string getClassName() = 0;
 
     /* Static position if no blurring factors applied (for bonds) */
-    virtual vec3 getStaticPosition() = 0;
 
     /* Actual mean position of blurred positions (may not be same as static) */
     virtual vec3 getAbsolutePosition()
@@ -57,7 +49,7 @@ public:
     }
 
     /* Get blurred position array */
-    virtual std::vector<BondSample> *getManyPositions(BondSampleStyle style) = 0;
+    virtual std::vector<BondSample> *getManyPositions() = 0;
 
     std::vector<vec3> polymerCorrectedPositions();
     virtual std::vector<BondSample> getFinalPositions();

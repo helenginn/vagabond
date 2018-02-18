@@ -13,7 +13,7 @@
 FFTPtr Distributor::prepareDistribution(double n, double scale, void *object,
                                         get_voxel_value *voxel_value)
 {
-    if (_calculated)
+    if (_calculated && _fft)
     {
         return _fft;
     }

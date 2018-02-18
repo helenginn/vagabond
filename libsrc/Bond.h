@@ -37,7 +37,6 @@ typedef struct
     double magicPhi;
     double magicPsi;
     std::vector<BondSample> storedSamples;
-    std::vector<BondSample> staticSample;
     std::vector<AtomWkr> extraTorsionSamples;
 } BondGroup;
 
@@ -113,7 +112,6 @@ public:
                          AtomPtr lightAlign = AtomPtr(),
                          int groupNum = 0);
     virtual FFTPtr getDistribution(bool quick = false);
-    virtual vec3 getStaticPosition();
 
     virtual std::string getClassName()
     {
@@ -228,6 +226,11 @@ public:
         return -1;
     }
 
+    void setUsingTorsion(bool use)
+    {
+        _usingTorsion = use;
+    }
+
     bool isUsingTorsion()
     {
         return _usingTorsion;
@@ -340,7 +343,7 @@ public:
     void recalculateTorsion(AtomPtr heavy, double value);
 
     virtual void propagateChange(int depth = -1, bool refresh = false);
-    std::vector<BondSample> *getManyPositions(BondSampleStyle style);
+    std::vector<BondSample> *getManyPositions();
 
     std::vector<vec3> polymerCorrectedPositions();
 

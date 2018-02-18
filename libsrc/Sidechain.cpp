@@ -258,6 +258,8 @@ void Sidechain::parameteriseAsRotamers()
         if (!cb->getModel()->isBond()) continue;
 
         BondPtr bond = ToBondPtr(cb->getModel());
+        bond->setFixed(false);
+        bond->setUsingTorsion(false);
 
         double occ = rotamers[i].allOccupancy;
         Bond::setOccupancy(&*bond, occ);

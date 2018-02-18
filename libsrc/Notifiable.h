@@ -26,6 +26,8 @@ typedef enum
     InstructionTypeSetOutputDir,
     InstructionTypeSetObjectValue,
     InstructionTypeGetObjectValue,
+    InstructionTypeFitWholeMoleculeTranslation,
+    InstructionTypeFitWholeMoleculeRotation,
 } InstructionType;
 
 class Notifiable
@@ -95,7 +97,7 @@ public:
 
         if (_atomGroup)
         {
-            _atomGroup->refreshPositions(false);
+            _atomGroup->refreshPositions(true);
         }
 
         enable();

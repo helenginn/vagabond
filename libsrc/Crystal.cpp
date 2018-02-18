@@ -672,6 +672,19 @@ std::string Crystal::agreementSummary()
     return ss.str();
 }
 
+void Crystal::fitWholeMolecules(bool translation, bool rotation)
+{
+    for (int i = 0; i < moleculeCount(); i++)
+    {
+        if (!molecule(i)->isPolymer())
+        {
+            continue;
+        }
+
+        ToPolymerPtr(molecule(i))->optimiseWholeMolecule(translation, rotation);
+    }
+}
+
 void Crystal::addProperties()
 {
     addStringProperty("filename", &_filename);
@@ -681,6 +694,11 @@ void Crystal::addProperties()
     addDoubleProperty("uc_alpha", &_unitCell[3]);
     addDoubleProperty("uc_beta", &_unitCell[4]);
     addDoubleProperty("uc_gamma", &_unitCell[5]);
+
+    addDoubleProperty("r_work", &_rWork);
+    addDoubleProperty("r_free", &_rFree);
+    addDoubleProperty("cc_work", &_ccWork);
+    addDoubleProperty("cc_free", &_ccFree);
 
     _spgNum = 0;
     if (_spaceGroup)
@@ -711,3 +729,5 @@ void Crystal::postParseTidy()
     setupSymmetry();
     _tied = true;
 }
+
+

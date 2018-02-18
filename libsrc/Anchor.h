@@ -23,14 +23,9 @@ public:
 		_callingBond = call;
 	}
 
-	virtual vec3 getStaticPosition()
+	virtual std::vector<BondSample> *getManyPositions()
 	{
-		return getAppropriateBond()->getStaticPosition();
-	}
-
-	virtual std::vector<BondSample> *getManyPositions(BondSampleStyle style)
-	{
-		return getAppropriateBond()->getManyPositions(style);
+		return getAppropriateBond()->getManyPositions();
 	}
 
 	virtual std::string getClassName()

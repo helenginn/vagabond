@@ -119,6 +119,7 @@ public:
     void openModel(std::string pdbName);
     void openMTZ(std::string mtzName);
     void recalculateFFT();
+    void fitWholeMolecule(bool translation, bool rotation);
 private:
     static OptionsPtr options;
     Notifiable *_notify;

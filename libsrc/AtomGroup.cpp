@@ -129,7 +129,7 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal)
     if (pdbType == PDBTypeEnsemble)
     {
         /* Get the total number of conformers to worry about */
-        std::vector<BondSample> *samples = atom(0)->getModel()->getManyPositions(BondSampleThorough);
+        std::vector<BondSample> *samples = atom(0)->getModel()->getManyPositions();
 
         numConf = samples->size();
 
@@ -446,7 +446,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
                 {
                     FlexRegion flexer;
                     flexer.setup();
-                    flexer.addBond(ToBondPtr(bond), 6);
+                    flexer.addBond(ToBondPtr(bond), 8);
                     flexer.addSingleBondParameters();
                     flexer.sample();
                     count++;

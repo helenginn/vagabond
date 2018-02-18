@@ -154,6 +154,8 @@ public:
         return "Crystal";
     }
 
+    void fitWholeMolecules(bool translation = false, bool rotation = true);
+
 protected:
     virtual void addObject(ParserPtr object, std::string category);
     virtual std::string getParserIdentifier()

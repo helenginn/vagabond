@@ -55,10 +55,7 @@ public:
           return _absoluteBFacMult;
     }
 
-    void setAbsoluteBFacMult(double mult)
-    {
-         _absoluteBFacMult = mult;
-    }
+    void setAbsoluteBFacMult(double mult);
 
     void setChainID(std::string chain)
     {
@@ -92,6 +89,11 @@ public:
 
     std::vector<mat3x3> getExtraRotations();
 
+    vec3 getExtraRotationCentre()
+    {
+        return _rotationCentre;
+    }
+
     virtual std::string getClassName()
     {
         return "Molecule";
@@ -107,6 +109,37 @@ public:
         AtomGroupPtr groupPtr = AtomGroup::shared_from_this();
         return ToMoleculePtr(groupPtr);
     }
+
+    static void setRotCentreZ(void *object, double value)
+    {
+        static_cast<Molecule *>(object)->_rotationCentre.z = value;
+    }
+
+    static double getRotCentreZ(void *object)
+    {
+        return static_cast<Molecule *>(object)->_rotationCentre.z;
+    }
+
+    static void setRotCentreY(void *object, double value)
+    {
+        static_cast<Molecule *>(object)->_rotationCentre.y = value;
+    }
+
+    static double getRotCentreY(void *object)
+    {
+        return static_cast<Molecule *>(object)->_rotationCentre.y;
+    }
+
+    static void setRotCentreX(void *object, double value)
+    {
+        static_cast<Molecule *>(object)->_rotationCentre.x = value;
+    }
+
+    static double getRotCentreX(void *object)
+    {
+        return static_cast<Molecule *>(object)->_rotationCentre.x;
+    }
+
 protected:
     virtual std::string getParserIdentifier()
     {
@@ -129,7 +162,8 @@ protected:
     vec3 _magicRotAxis;
 
     // this axis is that of the rotation matrices applied to the structure
-    vec3 _rotationAxis;    
+    vec3 _rotationAxis;
+    vec3 _rotationCentre;
 
     double _rotationAngle;
 

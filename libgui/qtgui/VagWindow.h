@@ -51,6 +51,8 @@ protected:
     virtual void resizeEvent(QResizeEvent *event);
 private slots:
     void pushSuperimpose();
+    void pushFitWholeR();
+    void pushFitWholeT();
     void pushRefinePositions();
     void pushRefineFlexibility();
     void pushBMultiplier();
@@ -82,6 +84,8 @@ private:
     QPushButton *bExploreMolecule;
     QPushButton *bRecalculate;
     QPushButton *bRefineDensity;
+    QPushButton *bFitWholeR;
+    QPushButton *bFitWholeT;
 
     std::string _outputDir;
     std::string _pdbName; 

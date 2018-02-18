@@ -45,7 +45,7 @@ FFTPtr Model::getZeroDistribution()
 std::vector<vec3> Model::polymerCorrectedPositions()
 {
     std::vector<vec3> posOnly;
-    std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
+    std::vector<BondSample> *positions = getManyPositions();
     posOnly.reserve(positions->size());
 
     MoleculePtr molecule = getMolecule();
@@ -54,6 +54,7 @@ std::vector<vec3> Model::polymerCorrectedPositions()
     std::vector<vec3> rotationCentres;
     std::vector<mat3x3> rotations;
     std::vector<mat3x3> extraRotations;
+    vec3 rotCentre;
 
     if (molecule)
     {
@@ -62,6 +63,14 @@ std::vector<vec3> Model::polymerCorrectedPositions()
         rotationCentres = molecule->getRotationCentres();
         transTensorOffsets = molecule->getTransTensorOffsets();
         extraRotations = molecule->getExtraRotations();
+        rotCentre = molecule->getExtraRotationCentre();
+    }
+
+    bool hasCentre = true;
+
+    if (rotCentre.x != rotCentre.x)
+    {
+        hasCentre = false;
     }
 
     for (int i = 0; i < positions->size(); i++)
@@ -88,9 +97,16 @@ std::vector<vec3> Model::polymerCorrectedPositions()
 
         if (extraRotations.size() > i && rotationCentres.size() > i)
         {
-            vec3 tmp = vec3_add_vec3(subtract, rotationCentres[i]);
+            vec3 *bestVec = &rotationCentres[i];
+            
+            if (hasCentre)
+            {
+                bestVec = &rotCentre;
+            }
+
+            vec3 tmp = vec3_add_vec3(subtract, *bestVec); 
             mat3x3_mult_vec(extraRotations[i], &tmp);
-            subtract = vec3_subtract_vec3(tmp, rotationCentres[i]);
+            subtract = vec3_subtract_vec3(tmp, *bestVec);
         }
 
         // remove the translation from the tensor for translation
@@ -126,7 +142,7 @@ vec3 meanOfManyPositions(std::vector<BondSample> *positions)
 
 std::vector<BondSample> Model::getFinalPositions()
 {
-    std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
+    std::vector<BondSample> *positions = getManyPositions();
     std::vector<BondSample> copyPos = *positions;
     std::vector<vec3> posOnly = polymerCorrectedPositions();
 
@@ -193,7 +209,7 @@ void Model::getAnisotropy(bool withKabsch)
     }
     else
     {
-        std::vector<BondSample> *positions = getManyPositions(BondSampleThorough);
+        std::vector<BondSample> *positions = getManyPositions();
         std::vector<vec3> points;
 
         for (int i = 0; i < positions->size(); i++)

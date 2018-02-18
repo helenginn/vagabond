@@ -108,10 +108,13 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
         mat3x3_mult_scalar(&scaledTensor, mult);
         vec3 recipVec = make_vec3(x, y, z);
         mat3x3_mult_vec(scaledTensor, &recipVec);
+
         recipVec.x *= x;
         recipVec.y *= y;
         recipVec.z *= z;
         double multByTranspose = recipVec.x + recipVec.y + recipVec.z;
+
+        // it is 2 * M_PI * M_PI, not 8.
         aniso = exp((2 * M_PI * M_PI) * -(multByTranspose));
 
         return aniso * me->_occupancy;
@@ -125,6 +128,7 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
     {
         MoleculePtr molecule = me->getMolecule();
         double subtract = molecule->getAbsoluteBFacSubtract();
+
         bf -= subtract;
         bf *= mult;
     }
@@ -149,24 +153,12 @@ FFTPtr Absolute::getDistribution(bool quick)
     return getDistributionCopy();
 }
 
-std::vector<BondSample> *Absolute::getManyPositions(BondSampleStyle style)
+std::vector<BondSample> *Absolute::getManyPositions()
 {
     std::vector<BondSample> *bondSamples = &_bondSamples;
     bondSamples->clear();
 
-    if (style == BondSampleStatic)
-    {
-        BondSample sample;
-        sample.basis = make_mat3x3();
-        sample.occupancy = 1;
-        sample.torsion = 0;
-        sample.old_start = make_vec3(0, 0, 0);
-        sample.start = _position;
-        bondSamples->push_back(sample);
-        return bondSamples;
-    }
-
-        /* B factor isotropic only atm, get mean square displacement in
+    /* B factor isotropic only atm, get mean square displacement in
      * each dimension. */
     double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
     meanSqDisp = sqrt(meanSqDisp);
@@ -237,11 +229,6 @@ void Absolute::addToMonomer(MonomerPtr monomer)
 double Absolute::getMeanSquareDeviation()
 {
     return _bFactor;
-}
-
-vec3 Absolute::getStaticPosition()
-{
-    return _position;
 }
 
 void Absolute::setTensor(mat3x3 tensor, CrystalPtr crystal)
