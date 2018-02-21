@@ -60,6 +60,37 @@ void Sampler::addAtomsForBond(BondPtr firstBond, int k)
     }
 }
 
+void Sampler::addParamsForBond(BondPtr bond)
+{
+    for (ParamMap::iterator it = _params.begin(); it != _params.end(); it++)
+    {
+        ParamOptionType option = it->first;
+        double range = it->second;
+
+        switch (option)
+        {
+            case ParamOptionTorsion:
+            addTorsion(bond, deg2rad(range), 0.001);
+            break;
+
+            case ParamOptionKick:
+            addTorsionBlur(bond, range, 0.001);
+            break;
+
+            case ParamOptionDampen:
+            addDampening(bond, range, 0.001);
+            break;
+    
+            case ParamOptionMagicAngles:
+            addMagicAngle(bond, deg2rad(range), 0.001);
+            break;
+    
+            default:
+            break;
+        }
+    }
+}
+
 BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
                                  double range, double interval, bool addAngle,
                                  bool addFlex)
