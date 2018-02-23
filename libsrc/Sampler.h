@@ -15,7 +15,6 @@
 #include "shared_ptrs.h"
 #include "RefinementStrategy.h"
 #include <string>
-#include <map>
 
 /* More of an abstraction, but will take a series of (bond) parameters,
  * take a target function, and supply them to a refinement strategy. */
@@ -39,8 +38,6 @@ typedef enum
     ScoreTypeModelPos = 4,
     ScoreTypeModelFlexiness = 5,
 } ScoreType;
-
-typedef std::map<ParamOptionType, double> ParamMap;
 
 class Sampler
 {
@@ -142,26 +139,6 @@ public:
         _overallFlex = value;
     }
 
-    void clearParams()
-    {
-        _params.clear();
-    }
-
-    void addParamType(ParamOptionType type, double value)
-    {
-        _params[type] = value; 
-    }
-
-    size_t paramCount()
-    {
-        return _params.size();
-    }
-    
-    void copyParams(SamplerPtr sampler)
-    {
-        sampler->_params = _params;
-    }
-
     std::vector<double> getNextResult(int num);
 
 protected:
@@ -176,13 +153,10 @@ protected:
     virtual double getScore();
 private:
     void addAtomsForBond(BondPtr bond, int k);
-    void addParamsForBond(BondPtr bond);
 
     std::vector<AtomPtr> _sampled;
     std::vector<AtomPtr> _unsampled;
     std::vector<BondPtr> _bonds;
-    ParamMap _params;
-
     bool _mock;
     bool _joint;
     bool _silent;

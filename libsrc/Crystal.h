@@ -85,7 +85,7 @@ public:
     void realSpaceClutter();
     void writeMillersToFile(DiffractionPtr data, std::string prefix = "");
 
-    void fourierTransform(int dir, double res = FLT_MAX);
+    void fourierTransform(int dir);
     void scaleToDiffraction(DiffractionPtr data);
     double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
     double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
@@ -182,7 +182,7 @@ private:
 
     void makePDBs(std::string suffix);
     void writeVagabondFile(int cycleNum);
-    void applySymOps(double res = FLT_MAX);
+    void applySymOps();
 
     double _rWork;
     double _rFree;

@@ -70,7 +70,10 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
         ca2ha->activate(_sidechain);
     }
 
-    ca2cb->setRefineBondAngle();
+    if (Options::enableTests() >= 2)
+    {
+        ca2cb->setRefineBondAngle();
+    }
 
     return ca2cb;
 }
@@ -486,8 +489,11 @@ void Knotter::makeMethionine()
     cg2sd->setTorsionAtoms(cBeta, cEpsilon);
     cg2sd->activate(_sidechain, inherit);
 
-    cb2cg->setRefineBondAngle();
-    cg2sd->setRefineBondAngle();
+    if (Options::enableTests() >= 2)
+    {
+        cb2cg->setRefineBondAngle();
+        cg2sd->setRefineBondAngle();
+    }
 
     BondPtr cg2hg2 = BondPtr(new Bond(cGamma, hGamma2));
     BondPtr cg2hg3 = BondPtr(new Bond(cGamma, hGamma3));
@@ -914,7 +920,10 @@ void Knotter::makeHistidine()
     cb2cg->addExtraTorsionSample(cEpsilon1, 0);
     cb2cg->addExtraTorsionSample(cDelta2, 0);
 
-    cb2cg->setRefineBondAngle();
+    if (Options::enableTests() >= 2)
+    {
+        cb2cg->setRefineBondAngle();
+    }
     
     BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
     cb2hb2->activate(_sidechain, inherit);
@@ -993,8 +1002,11 @@ void Knotter::makeTyrosine()
     cb2cg->addExtraTorsionSample(cEpsilon1, 0);
     cb2cg->addExtraTorsionSample(cEpsilon2, 0);
 
-    ca2cb->setRefineBondAngle();
-    cb2cg->setRefineBondAngle();
+    if (Options::enableTests() >= 2)
+    {
+        ca2cb->setRefineBondAngle();
+        cb2cg->setRefineBondAngle();
+    }
 
     BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
     cb2hb2->activate(_sidechain, inherit);
@@ -1078,8 +1090,11 @@ void Knotter::makePhenylalanine()
     cb2cg->addExtraTorsionSample(cEpsilon1, 0);
     cb2cg->addExtraTorsionSample(cEpsilon2, 0);
 
-    ca2cb->setRefineBondAngle();
-    cb2cg->setRefineBondAngle();
+    if (Options::enableTests() >= 2)
+    {
+        ca2cb->setRefineBondAngle();
+        cb2cg->setRefineBondAngle();
+    }
 
     BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
     cb2hb2->activate(_sidechain, inherit);
@@ -1176,8 +1191,11 @@ void Knotter::makeTryptophan()
     cb2cg->addExtraTorsionSample(cOmega3, 0);
     cb2cg->addExtraTorsionSample(ch2, 0);
 
-    ca2cb->setRefineBondAngle();
-    cb2cg->setRefineBondAngle();
+    if (Options::enableTests() >= 2)
+    {
+        ca2cb->setRefineBondAngle();
+        cb2cg->setRefineBondAngle();
+    }
 
     BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
     cb2hb2->activate(_sidechain, inherit);
@@ -1257,6 +1275,7 @@ void Knotter::makeIsoleucine()
     AtomPtr inherit = cAlpha;
 
     BondPtr ca2cb = tieBetaCarbon(cGamma1);
+    ca2cb->setRefineBondAngle(false);
 
     BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma1));
     cb2cg1->setTorsionAtoms(cAlpha, cDelta1);
@@ -1316,6 +1335,7 @@ void Knotter::makeLeucine()
     AtomPtr inherit = cAlpha;
 
     BondPtr ca2cb = tieBetaCarbon(cGamma);
+    ca2cb->setRefineBondAngle(false);
 
     BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma));
     cb2cg1->setTorsionAtoms(cAlpha, cDelta1);
@@ -1368,12 +1388,16 @@ void Knotter::makeAspartate()
     AtomPtr inherit = cAlpha;
 
     BondPtr ca2cb = tieBetaCarbon(cGamma);
+//    ca2cb->setRefineBondAngle(false);
 
     BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma));
     cb2cg1->setTorsionAtoms(cAlpha, oDelta1);
     cb2cg1->activate(_sidechain, inherit);
 
-    cb2cg1->setRefineBondAngle();
+    if (Options::enableTests() >= 2)
+    {
+        cb2cg1->setRefineBondAngle();
+    }
 
     BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
     cb2hb2->activate(_sidechain, inherit);
@@ -1548,6 +1572,7 @@ void Knotter::makeThreonine()
     AtomPtr inherit = cAlpha;
 
     BondPtr ca2cb = tieBetaCarbon(oGamma1);
+    ca2cb->setRefineBondAngle(false);
 
     BondPtr cb2cg1 = BondPtr(new Bond(cBeta, oGamma1));
     cb2cg1->activate(_sidechain, inherit);
