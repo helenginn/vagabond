@@ -845,18 +845,13 @@ void FFT::normalise()
     multiplyAll(mult);
 }
 
-void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double max_res, mat3x3 real2frac)
+void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool collapse)
 {
     fftwf_complex *tempData;
     tempData = (fftwf_complex *)fftwf_malloc(nn * sizeof(FFTW_DATA_TYPE));
     memset(tempData, 0, sizeof(FFTW_DATA_TYPE) * nn);
 
     int count = 0;
-    double max_dstar = 1 / max_res;
-    if (max_res == FLT_MAX)
-    {
-        max_dstar = FLT_MAX;
-    }
 
     for (int k = -nz / 2; k <= nz / 2; k++)
     {
@@ -868,57 +863,35 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double max_res, mat3x3 real2f
                 long index = element(i, j, k);
                 double xOrig = data[index][0];
                 double yOrig = data[index][1];
-                int isAbs = CSym::ccp4spg_is_sysabs(spaceGroup, i, j, k);
-
-                vec3 ijk = make_vec3(i, j, k);
-                mat3x3_mult_vec(real2frac, &ijk);
-                double length = vec3_length(ijk);
-
-                if (length > max_res)
-                {
-//                    continue; // broken
-                }
-
-                if (xOrig == 0 || yOrig == 0)
-                {
-                    continue;
-                }
-
                 double myPhase = getPhase(i, j, k);
+
+                int throw1, throw2, throw3;
+                int isym = CSym::ccp4spg_put_in_asu(spaceGroup, i, j, k,
+                                                    &throw1, &throw2, &throw3);
+                int jsym = (isym - 1) / 2;
+                int isign = (isym % 2) ? 1 : -1;
+
+                float *trn = spaceGroup->invsymop[jsym].trn;
+
+                if (isign == -1) // in positive asu, weirdly
+                {
+                    trn = spaceGroup->symop[jsym].trn;
+                }
+
+                double deg = CSym::ccp4spg_phase_shift(i, j, k, myPhase,
+                                                       trn, isign);
+                double phase = deg2rad(deg);
                 double amp = sqrt(xOrig * xOrig + yOrig * yOrig);
 
-                for (int l = 1; l <= spaceGroup->nsymop * 2; l += 1)
+                double x = amp * cos(phase);
+                double y = amp * sin(phase);
+
+                for (int l = 1; l <= spaceGroup->nsymop * 2; l++)
                 {
                     int _h, _k, _l;
-                    int isign = (l % 2) ? 1 : -1;
-                    int jsym = (l - 1) / 2;
-
-                    float *trn = spaceGroup->invsymop[jsym].trn;
-
-                    if (isign == -1)
-                    {
-                        trn = spaceGroup->symop[jsym].trn;
-                    }
-
                     CSym::ccp4spg_generate_indices(spaceGroup, l, i, j, k,
                                                    &_h, &_k, &_l);
                     long sym_index = element(_h, _k, _l);
-
-                    double deg = myPhase;
-                    deg *= -isign;
-                    double add = (_h * trn[0] + _k * trn[1] + _l * trn[2]);
-                    add = fmod(add, 1.) * 360;
-                    while (add < 0) add += 360;
-                    deg += add;
-/*
-                    printf("hkl %i %i %i\n", i, j, k);
-                    printf("trans %.2f %.2f %.2f\n", trn[0], trn[1], trn[2]);
-                    printf("sym %i, %.2f + %.1f = %.1f\n", l, myPhase, add, deg);
-*/
-                    double phase = deg2rad(deg);
-
-                    double x = amp * cos(phase);
-                    double y = amp * sin(phase);
 
                     tempData[sym_index][0] += x;
                     tempData[sym_index][1] += y;
@@ -1028,9 +1001,8 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
             for (int k = 0; k < nLimit; k++)
             {
                 bool asu = CSym::ccp4spg_is_in_asu(mtzspg, i, j, k);
-                int isAbs = CSym::ccp4spg_is_sysabs(mtzspg, i, j, k);
 
-                if (!asu || isAbs)
+                if (!asu)
                 {
                     continue;
                 }

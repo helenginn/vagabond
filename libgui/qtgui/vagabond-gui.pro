@@ -5,10 +5,12 @@
 TEMPLATE = app
 TARGET = vagabond-gui.app
 INCLUDEPATH += /usr/local/include /usr/local/opt/qt/include ../../
-LIBS += -L../../libs/.libs/ -L../../libfftw/.libs -L/usr/local/lib
+LIBS += -L../../libs/.libs/ -L../../libfftw/.libs -L/usr/local/lib -L/usr/lib64
 LIBS += -lpng -lfftw3f -lica -lccp4c
-QMAKE_LFLAGS = -framework QtWidgets -framework QtGui -framework QtCore
+QMAKE_LFLAGS += -Wl,-rpath,/usr/local/lib
 QMAKE_CXXFLAGS += -O3 -g
+QT += widgets
+QT += opengl
 
 # The following define makes your compiler warn you if you use any
 # feature of Qt which has been marked as deprecated (the exact warnings
