@@ -47,11 +47,16 @@ static char *shaderLoadSource(const char *filePath)
     return (char *)contents.c_str();
 }
 
+Shader::Shader()
+{
+    initializeOpenGLFunctions();
+}
+
 /*
  * Returns a shader object containing a shader
  * compiled from the given GLSL shader file.
  */
-static GLuint shaderCompileFromFile(GLenum type, const char *filePath, bool isString)
+GLuint Shader::shaderCompileFromFile(GLenum type, const char *filePath, bool isString)
 {
     GLuint shader;
     GLint length;
@@ -101,17 +106,18 @@ static GLuint shaderCompileFromFile(GLenum type, const char *filePath, bool isSt
  * Compiles and attaches a shader of the
  * given type to the given program object.
  */
-void shaderAttachFromFile(GLuint program, GLenum type, const char *filePath, bool isString)
+void Shader::shaderAttachFromFile(GLuint program, GLenum type, const char *filePath, bool isString)
 {
     /* compile the shader */
-    GLuint shader = shaderCompileFromFile(type, filePath, isString);
+    Shader me;
+    GLuint shader = me.shaderCompileFromFile(type, filePath, isString);
     if(shader != 0) {
         /* attach the shader to the program */
-        glAttachShader(program, shader);
+        me.glAttachShader(program, shader);
 
         /* delete the shader - it won't actually be
          * destroyed until the program that it's attached
          * to has been destroyed */
-        glDeleteShader(shader);
+        me.glDeleteShader(shader);
     }
 }

@@ -17,7 +17,7 @@
 #include <vector>
 #include "Vagabond2GL.h"
 
-class GLKeeper : GLObject
+class GLKeeper : public GLObject
 {
 private:
     std::vector<GLObjectPtr> _objects;

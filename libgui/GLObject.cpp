@@ -15,6 +15,7 @@
 GLObject::GLObject()
 {
     _projectionUniform = 0;
+    initializeOpenGLFunctions();
 }
 
 void GLObject::rebindProgram()
@@ -61,8 +62,8 @@ void GLObject::initialisePrograms()
     /* create program object and attach shaders */
     _program = glCreateProgram();
 
-    shaderAttachFromFile(_program,  GL_FRAGMENT_SHADER, Shader_fsh.c_str(), true);
-    shaderAttachFromFile(_program,  GL_VERTEX_SHADER, Shader_vsh.c_str(), true);
+    Shader::shaderAttachFromFile(_program,  GL_FRAGMENT_SHADER, Shader_fsh.c_str(), true);
+    Shader::shaderAttachFromFile(_program,  GL_VERTEX_SHADER, Shader_vsh.c_str(), true);
     
 //    shaderAttachFromFile(_program, GL_VERTEX_SHADER, "/Users/helenginn/vagabond/vagabond/vagabond/libgui/Shaders/Shader.vsh");
 //    shaderAttachFromFile(_program, GL_FRAGMENT_SHADER, "/Users/helenginn/vagabond/vagabond/vagabond/libgui/Shaders/Shader.fsh");

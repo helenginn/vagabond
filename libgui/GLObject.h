@@ -39,7 +39,7 @@ inline void checkErrors()
 	}
 }
 
-class GLObject
+class GLObject : protected QOpenGLFunctions
 {
 public:
 	GLObject();
