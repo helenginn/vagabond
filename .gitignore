@@ -67,11 +67,13 @@ config.guess
 config.log
 config.status
 config.sub
+config.h
 configure
 configure.ac
 configure.scan
 depcomp
 install-sh
+libtool
 ltmain.sh
 .qmake.stash
 missing
