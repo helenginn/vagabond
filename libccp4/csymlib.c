@@ -316,7 +316,6 @@ CCP4SPG *ccp4spg_load_spacegroup(const int numspg, const int ccp4numspg,
 
   /* Finished with the parser array */
   ccp4_parse_end(parser);
-  fclose(filein);
 
   if (!sg_nsymp) {
     ccp4printf(0," Failed to find spacegroup in SYMINFO! \n");
