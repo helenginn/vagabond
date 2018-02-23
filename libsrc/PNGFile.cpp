@@ -8,6 +8,7 @@
 
 #include "PNGFile.h"
 #include <string>
+#include <cstring>
 #include <stdlib.h>
 #include <iostream>
 #include <iomanip>
