@@ -98,11 +98,11 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 
     _objects.push_back(object);
 
-    initialisePrograms();
     setupCamera();
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    initialisePrograms();
 }
 
 void GLKeeper::render(void)

@@ -5,8 +5,8 @@
 
 #ifndef FRAMEWORKS_H
 
-#include <OpenGL/OpenGL.h>
-#include <OpenGL/gl.h>
+#include <QtGui/qopengl.h>
+#include <QtGui/qopenglfunctions.h>
 #include <memory>
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
