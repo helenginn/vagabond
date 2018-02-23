@@ -11,6 +11,16 @@
 
 #include "Frameworks.h"
 
-void shaderAttachFromFile(GLuint program, GLenum type, const char *filePath, bool isString);
+
+class Shader : public QObject, public QOpenGLFunctions
+{
+public:
+    Shader();
+    static void shaderAttachFromFile(GLuint program, GLenum type, const char *filePath, bool isString);
+
+private:
+	
+    GLuint shaderCompileFromFile(GLenum type, const char *filePath, bool isString);
+};
 
 #endif /* shader_hpp */
