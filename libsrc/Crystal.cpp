@@ -359,10 +359,8 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
                                  double partsFc)
 {
     realSpaceClutter();
-    fourierTransform(1);
+    fourierTransform(1, data->getMaxResolution());
     scaleToDiffraction(data);
-
-
 
     double rFac = rFactorWithDiffraction(data, true);
 
@@ -384,16 +382,17 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
             {
                 int _h, _k, _l;
                 CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_h, &_k, &_l);
+                int isAbs = CSym::ccp4spg_is_sysabs(_spaceGroup, i, j, k);
 
                 double amp = sqrt(fftData->getIntensity(_h, _k, _l));
                 bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
                 long index = _fft->element(i, j, k);
                                 
-                                vec3 ijk = make_vec3(i, j, k);    
+                vec3 ijk = make_vec3(i, j, k);    
                 mat3x3_mult_vec(_real2frac, &ijk);
                 double length = vec3_length(ijk);
 
-                if (length < minRes || length > maxRes || amp != amp || isRfree)    
+                if (length < minRes || length > maxRes || amp != amp || isRfree || isAbs)    
                 {
                     _fft->setElement(index, 0, 0);
                     _difft->setElement(index, 0, 0);
@@ -513,7 +512,7 @@ Crystal::Crystal()
     _unitCell.resize(6);
 }
 
-void Crystal::applySymOps()
+void Crystal::applySymOps(double res)
 {
     if (_spaceGroup->spg_num == 1)
     {
@@ -523,16 +522,16 @@ void Crystal::applySymOps()
     std::cout << "Applying symmetry for space group " << _spaceGroup->symbol_xHM;
     std::cout << " (" << _spaceGroup->spg_num << ")" << std::endl;
 
-    _fft->applySymmetry(_spaceGroup, false);
+    _fft->applySymmetry(_spaceGroup, res, _hkl2real);
 }
 
-void Crystal::fourierTransform(int dir)
+void Crystal::fourierTransform(int dir, double res)
 {
     _fft->fft(dir);
 
     if (dir == 1)
     {
-        applySymOps();
+        applySymOps(res);
     }
     else
     {

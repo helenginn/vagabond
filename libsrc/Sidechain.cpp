@@ -26,40 +26,31 @@ bool Sidechain::shouldRefineMagicAxis(BondPtr bond)
 
 void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
-    if (_rotamerised)
-    {
-        return;
-    }
-
     if (!canRefine()) return;
 
-    AtomGroup::refine(target, rType);
-
-    return;
-
-
-    AtomList atoms = findAtoms("CB");
-
-    for (int i = 0; i < atoms.size(); i++)
+    if (!paramCount())
     {
-        setupNelderMead();
-        setCrystal(target);
-        setScoreType(ScoreTypeCorrel);
-
-        if (atoms[i].expired())
+        switch (rType)
         {
-            continue;
+            case RefinementModelPos:
+            addParamType(ParamOptionTorsion, 4.0);
+            break;
+
+            case RefinementFine:
+            addParamType(ParamOptionTorsion, 4.0);
+            addParamType(ParamOptionKick, 0.5);
+            addParamType(ParamOptionDampen, 0.25);
+            addParamType(ParamOptionMagicAngles, 20);
+            break;
+
+            default:
+            break;
         }
-
-        AtomPtr atom = atoms[i].lock();
-        std::string conformer = atom->getAlternativeConformer();
-
-        addSampledAtoms(shared_from_this(), conformer);
-        double conformerScore = score(this);
-
-        std::cout << "conformer " << conformer <<
-        " " << conformerScore << std::endl;
     }
+
+
+    AtomGroup::refine(target, rType);
+    clearParams();
 }
 
 void Sidechain::fixBackboneTorsions(AtomPtr betaTorsion)
@@ -77,6 +68,7 @@ void Sidechain::fixBackboneTorsions(AtomPtr betaTorsion)
     {
         ToBondPtr(model)->setTorsionAtoms(betaTorsion);
     }
+
 }
 
 void Sidechain::setInitialDampening()

@@ -30,10 +30,32 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
     std::cout << getMonomer()->getResCode() << std::flush;
 
-    if (rType != RefinementFine)
+    if (!paramCount())
     {
-        AtomGroup::refine(target, rType);
+        double range = 4;
+
+        if (_timesRefined >= 3)
+        {
+            range = 1;
+        }
+
+        switch (rType)
+        {
+            case RefinementModelPos:
+            addParamType(ParamOptionTorsion, range);
+            break;
+
+            case RefinementFine:
+            addParamType(ParamOptionTorsion, range);
+            break;
+
+            default:
+            break;
+        }
     }
+
+    AtomGroup::refine(target, rType);
+    clearParams();
 }
 
 AtomPtr Backbone::betaCarbonTorsionAtom()
