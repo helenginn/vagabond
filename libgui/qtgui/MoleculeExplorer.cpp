@@ -33,7 +33,7 @@ void MoleculeExplorer::displayMonomer(MonomerPtr monomer)
 {
     delete _monomerExplorer;
     _monomerExplorer = new MonomerExplorer(this, monomer);
-    _monomerExplorer->setGeometry(0, 50, 400, 350);
+    _monomerExplorer->setGeometry(0, 50, 400, 380);
     _monomerExplorer->setKeeper(_keeper);
     _monomerExplorer->show();
 }

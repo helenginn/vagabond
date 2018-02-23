@@ -214,6 +214,9 @@ void Options::parse()
             VBondReader vReader = VBondReader();
             vReader.setFilename(vbond_name);
             CrystalPtr crystal = vReader.getCrystal();
+//            PolymerPtr polymer = ToPolymerPtr(crystal->molecule(0));
+//            polymer->splitConformers();
+
             understood = true;
 
             if (!crystal)
@@ -252,6 +255,7 @@ void Options::parse()
         {
             std::string kick_string = arg.substr(prefix.size());
             _kick = atof(kick_string.c_str());
+            understood = true;
         }
 
         prefix = "--bfactor=";

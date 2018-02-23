@@ -38,6 +38,7 @@ public:
     void addMonomer(MonomerPtr monomer);
     virtual void summary();
     virtual void tieAtomsUp();
+    void splitConformers();
     virtual void refine(CrystalPtr target, RefinementType rType);
     virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal);
     virtual void graph(std::string graphName);
@@ -60,6 +61,7 @@ public:
     virtual void reportParameters();
     void downWeightResidues(int start, int end, double value);
 
+    void refineToEnd(int monNum, CrystalPtr target, RefinementType rType);
     bool test();
     ModelPtr getAnchorModel();
     void changeAnchor(int num);
@@ -107,6 +109,11 @@ public:
         return static_cast<Polymer *>(object)->_transTensor.vals[0];
     }
 
+    static double getTransTensor21(void *object)
+    {
+        return static_cast<Polymer *>(object)->_transTensor.vals[3];
+    }
+
     static double getTransTensor12(void *object)
     {
         return static_cast<Polymer *>(object)->_transTensor.vals[1];
@@ -151,6 +158,11 @@ public:
     static void setTransTensor12(void *object, double value)
     {
         static_cast<Polymer *>(object)->_transTensor.vals[1] = value;
+        static_cast<Polymer *>(object)->applyTranslationTensor();
+    }
+
+    static void setTransTensor21(void *object, double value)
+    {
         static_cast<Polymer *>(object)->_transTensor.vals[3] = value;
         static_cast<Polymer *>(object)->applyTranslationTensor();
     }

@@ -74,6 +74,7 @@ private:
     QFileDialog *_fileDialogue;   
     
     void updateExplorerButton();
+    void refineToEnd();
     QLabel *_lStatus;
 
     /* Buttons down the side */

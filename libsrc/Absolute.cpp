@@ -165,8 +165,9 @@ std::vector<BondSample> *Absolute::getManyPositions()
 
     double occTotal = 0;
 
-    int samples = 101;
+    int samples = 40;
     int rnd = 1;
+    int layers = 4;
 
     std::vector<vec3> points;
     double offset = 2. / (double)samples;
@@ -174,7 +175,6 @@ std::vector<BondSample> *Absolute::getManyPositions()
 
     _sphereAngles.clear();
 
-    double m = meanSqDisp;
 
     for (int i = 0; i < samples; i++)
     {
@@ -186,10 +186,17 @@ std::vector<BondSample> *Absolute::getManyPositions()
         double x = cos(phi) * r;
         double z = sin(phi) * r;
 
-        vec3 point = make_vec3(x * m, y * m, z * m);
+        double rnd = (double)rand() / (double)RAND_MAX;
 
-        points.push_back(point);
-        _sphereAngles.push_back(point);
+        for (int j = 1; j <= layers; j++)
+        {
+            double m = meanSqDisp * (double)j / layers;
+
+            vec3 point = make_vec3(x * m, y * m, z * m);
+
+            points.push_back(point);
+            _sphereAngles.push_back(point);
+        }
     }
 
     for (int i = 0; i < points.size(); i++)

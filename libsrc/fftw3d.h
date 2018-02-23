@@ -200,7 +200,8 @@ public:
 	}
 
 	void printSlice(double zVal = 0);
-	void applySymmetry(CSym::CCP4SPG *spaceGroup, bool collapse);
+	void applySymmetry(CSym::CCP4SPG *spaceGroup, double max_res,
+                           mat3x3 real2frac);
 
     long nx,ny,nz,nn;
     fftwf_complex *data;

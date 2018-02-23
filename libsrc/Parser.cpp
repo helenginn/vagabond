@@ -481,11 +481,13 @@ char *Parser::parseNextArray(char *block)
         {
             char *comma = strchr(block, ',');
             char *bracket = strchr(block, ')');
-            if (bracket != NULL && bracket < comma)
+            if (bracket != NULL && (bracket < comma))
             {
                 comma = bracket;
                 more = false;
             }
+
+            if (comma == NULL) break;
 
             *comma = 0;
             

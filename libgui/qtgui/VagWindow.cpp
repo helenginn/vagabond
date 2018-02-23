@@ -21,6 +21,8 @@
 #include "InstructionThread.h"
 #include "Dialogue.h"
 #include "../../libsrc/Crystal.h"
+#include "../../libsrc/Monomer.h"
+#include "../../libsrc/Polymer.h"
 #include "ChainMenuAction.h"
 #include "../../libsrc/FileReader.h"
 
@@ -179,6 +181,10 @@ void VagWindow::waitForInstructions()
             options->fitWholeMolecule(false, true);
             break;
 
+            case InstructionTypeRefineToEnd: 
+            refineToEnd();
+            break;
+
             case InstructionTypeRefineDensity: 
             options->refineAll(RefinementFine, 1);
             break;
@@ -234,6 +240,17 @@ bool VagWindow::isRunningSomething()
     {
         return true;
     }
+}
+
+void VagWindow::refineToEnd()
+{
+    std::cout << "Refining to end?" << std::endl;
+    OptionsPtr options = Options::getRuntimeOptions();
+    CrystalPtr crystal = options->getActiveCrystal();
+
+    MonomerPtr monomer = *(static_cast<MonomerPtr *>(getObject())); 
+    PolymerPtr polymer = monomer->getPolymer();
+    polymer->refineToEnd(monomer->getResidueNum(), crystal, RefinementFine); 
 }
 
 void VagWindow::enable()

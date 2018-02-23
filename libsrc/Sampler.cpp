@@ -104,25 +104,25 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
                i_to_str(k));
 
     addSampled(bond->getMajor());
-    addTorsion(bond, deg2rad(range), deg2rad(interval));
 
-    if (addAngle && bond->getRefineBondAngle())
+    if (addAngle) 
     {
         addBendAngle(bond, deg2rad(0.01), deg2rad(0.001));
     }
 
-    if (addFlex)
-    {
-        addTorsionBlur(bond, 0.5, 0.001);
-        addDampening(bond, 0.25, 0.001);
-        addMagicAngle(bond, deg2rad(20), 0.001);
-    }
+    addParamsForBond(bond);
 
     addAtomsForBond(bond, k);
 
     BondPtr returnBond = BondPtr();
 
     int bondCount = 1;
+
+    if (_params.count(ParamOptionNumBonds))
+    {
+//        bondNum = _params[ParamOptionNumBonds] + 0.2;
+    }
+
 
     for (int i = 0; i < bondNum; i++)
     {
@@ -165,21 +165,13 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
                 returnBond = nextBond;
             }
 
-            addTorsion(nextBond, deg2rad(range), deg2rad(interval));
-
-            if (addAngle && nextBond->getRefineBondAngle())
+            if (addAngle)
             {
                 addBendAngle(nextBond, deg2rad(0.01), deg2rad(0.001));
             }
 
-            if (addFlex)
-            {
-                addTorsionBlur(nextBond, 0.5, 0.001);
-                addDampening(nextBond, 0.25, 0.001);
-                addMagicAngle(nextBond, deg2rad(20), 0.001);
-            }
-
             addAtomsForBond(nextBond, 0);
+            addParamsForBond(nextBond);
         }
 
         if (!nextBond->isRefinable())
