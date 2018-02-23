@@ -308,47 +308,27 @@ AtomList AtomGroup::topLevelAtoms()
 {
     if (!atomCount()) return AtomList();
 
-    AtomList list;
+    AtomPtr topAtom = atom(0);
 
-    for (int i = 0; i < 1; i++)
+    while (true)
     {
-        std::string conf = conformer(i);
-        int j = 0;
-        AtomPtr topAtom = atom(0);
-
-        while (topAtom->getAlternativeConformer() != conf)
+        if (!topAtom->getModel()->isBond())
         {
-            if (j >= atomCount())
-            {
-                goto giveup;
-            }
-
-            j++;
-            topAtom = atom(j);
+            break;
         }
 
-        while (true)
+        BondPtr bond = ToBondPtr(topAtom->getModel());
+
+        if (!hasAtom(bond->getMajor()))
         {
-            if (!topAtom->getModel()->isBond())
-            {
-                break;
-            }
-
-            BondPtr bond = ToBondPtr(topAtom->getModel());
-
-            if (!hasAtom(bond->getMajor()))
-            {
-                break;
-            }
-
-            topAtom = bond->getMajor();
+            break;
         }
 
-        list.push_back(topAtom);
-
-giveup:
-        continue;
+        topAtom = bond->getMajor();
     }
+
+    AtomList list;
+    list.push_back(topAtom);
 
     return list;
 }
@@ -404,7 +384,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
         scoreType = ScoreTypeCorrel;
         maxTries = 6;
         degrees = 4;
-        bondNum = 3;
+        bondNum = 2;
         refineAngles = false;
         break;
 
@@ -428,7 +408,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
     {
         AtomPtr topAtom = topAtoms[n].lock();
 
-        if (n > 0) std::cout << "'" << std::flush;
+        if (n == 1) std::cout << "'" << std::flush;
 
         while (hasAtom(topAtom))
         {
@@ -451,17 +431,17 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
                 break;
             }
 
-            if (shouldRefineMagicAxis(bond))
+            for (int k = 0; k < 1; k++)
             {
-                bond->calculateMagicAxis();
-            }
+                if (shouldRefineMagicAxis(bond))
+                {
+                    bond->calculateMagicAxis();
+                }
 
-            int count = 0;
+                int count = 0;
 
-            BondPtr topBond;
-        
-            for (int k = 0; k < bond->downstreamAtomGroupCount(); k++)
-            {
+                BondPtr topBond;
+
                 while (rType == RefinementFlexibility && count < maxTries)
                 {
                     FlexRegion flexer;
@@ -489,8 +469,8 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
                     setCrystal(target);
                     setCycles(16);
                     topBond = setupTorsionSet(bond, k, bondNum,
-                            deg2rad(degrees), deg2rad(0.04),
-                            refineAngles, addFlex);
+                                              deg2rad(degrees), deg2rad(0.04),
+                                              refineAngles, addFlex);
                     setScoreType(scoreType);
 
                     if (rType == RefinementModelPos)

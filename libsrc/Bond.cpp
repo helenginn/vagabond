@@ -962,20 +962,12 @@ void Bond::propagateChange(int depth, bool refresh)
             break;
         }
 
-        count++;
-    }
-
-    if (!refresh)
-    {
-        return;
-    }
-
-    for (int k = 0; k < propagateBonds.size(); k++)
-    {
-        BondPtr bond = propagateBonds[k];
+        if (refresh)
         {
             bond->getFinalPositions();
         }
+
+        count++;
     }
 }
 
@@ -1098,12 +1090,12 @@ void Bond::setBendAngle(void *object, double value)
     newBond->propagateChange(20);
 }
 
-bool Bond::splitBond(int start)
+bool Bond::splitBond()
 {
     BondPtr me = boost::static_pointer_cast<Bond>(shared_from_this());
     BondPtr parent = boost::static_pointer_cast<Bond>(getParentModel());
     int last = parent->downstreamAtomGroupCount();
-    BondPtr dupl = me->duplicateDownstream(parent, last, start);
+    BondPtr dupl = me->duplicateDownstream(parent, last);
     double torsion = getTorsion(&*me);
     setTorsion(&*me, torsion);
 
@@ -1116,7 +1108,7 @@ bool Bond::splitBond(int start)
     return true;
 }
 
-BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum, int start)
+BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum)
 {
     ModelPtr model = getParentModel();
 
@@ -1205,7 +1197,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum, int start)
         return duplBond;
     }
     
-    for (int i = start; i < downstreamAtomCount(0); i++)
+    for (int i = 0; i < downstreamAtomCount(0); i++)
     {
         BondPtr nextBond = boost::static_pointer_cast<Bond>(downstreamAtom(0, i)->getModel());
 
@@ -1214,7 +1206,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum, int start)
             continue;
         }
 
-        nextBond->duplicateDownstream(duplBond, 0, 0);
+        nextBond->duplicateDownstream(duplBond, 0);
     }
 
     return duplBond;
@@ -1233,11 +1225,6 @@ std::string Bond::shortDesc()
     std::ostringstream stream;
     stream << getMajor()->getMonomer()->getResidueNum() <<
     getMajor()->getAtomName() << "-" << getMinor()->getAtomName();
-    if (getMinor()->getAlternativeConformer().length())
-    {
-        stream << "_" + getMinor()->getAlternativeConformer();
-    }
-
     _shortDesc = stream.str();
     return stream.str();
 }

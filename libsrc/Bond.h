@@ -288,7 +288,7 @@ public:
     std::string shortDesc();
     std::string getPDBContribution();
     ModelPtr getParentModel();
-    bool splitBond(int start = 0);
+    bool splitBond();
 
     void setFixed(bool fixed)
     {
@@ -438,7 +438,7 @@ private:
                                                double circleAdd,
                                                double myTorsion, double ratio);
 
-    BondPtr duplicateDownstream(BondPtr newBranch, int groupNum, int start);
+    BondPtr duplicateDownstream(BondPtr newBranch, int groupNum);
     bool _usingTorsion;
 
     /* Flag to say whether recalculation should occur */
