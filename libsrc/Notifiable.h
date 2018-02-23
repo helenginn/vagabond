@@ -21,6 +21,7 @@ typedef enum
     InstructionTypeRefinePositions,
     InstructionTypeRefineFlexibility,
     InstructionTypeRefineDensity,
+    InstructionTypeRefineToEnd,
     InstructionTypeChangeBMult,
     InstructionTypeRecalculateFFT,
     InstructionTypeSetOutputDir,
@@ -117,6 +118,11 @@ public:
     }
 protected:
     InstructionType _instructionType;
+
+    void *getObject()
+    {
+        return _object;
+    }
 
 private:
     std::string _message;

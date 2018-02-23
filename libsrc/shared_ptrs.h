@@ -153,4 +153,14 @@ typedef enum
 	PDBTypeSameBFactor,
 } PDBType;
 
+typedef enum
+{
+    ParamOptionTorsion,
+    ParamOptionKick,
+    ParamOptionDampen,
+    ParamOptionMagicAngles,
+    ParamOptionNumBonds,
+} ParamOptionType;
+
+
 #endif
