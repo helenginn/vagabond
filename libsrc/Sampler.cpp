@@ -60,6 +60,7 @@ void Sampler::addAtomsForBond(BondPtr firstBond, int k)
     }
 }
 
+/*
 void Sampler::addParamsForBond(BondPtr bond)
 {
     for (ParamMap::iterator it = _params.begin(); it != _params.end(); it++)
@@ -90,6 +91,7 @@ void Sampler::addParamsForBond(BondPtr bond)
         }
     }
 }
+*/
 
 BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
                                  double range, double interval, bool addAngle,
