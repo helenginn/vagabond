@@ -115,7 +115,7 @@ void Polymer::tieAtomsUp()
             getMonomer(i)->getSidechain()->splitConformers();
 
             if ((Options::enableTests() == 1 || Options::enableTests() == 2)
-                && (i == 62 || i == 30 || i == 78 ||
+                && (i == 62 || i == 63 || i == 30 || i == 78 ||
                     i >= 123 || i == 103))
             {
                 getMonomer(i)->getSidechain()->parameteriseAsRotamers();
@@ -134,17 +134,6 @@ void Polymer::tieAtomsUp()
     }
 
     resetMagicAxes();
-}
-
-void Polymer::splitConformers()
-{
-    for (int i = 0; i < monomerCount(); i++)
-    {
-        if (getMonomer(i))
-        {
-            getMonomer(i)->getSidechain()->splitConformers();
-        }
-    }
 }
 
 void Polymer::summary()
@@ -176,28 +165,6 @@ void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
     {
         victim->refine(target, rType);
     }
-}
-
-void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
-{
-    int start = monNum;
-    int end = (monNum < _anchorNum) ? -1 : monomerCount();
-    int skip = (monNum < _anchorNum) ? -1 : 1;
-
-    for (int i = start; i != end; i += skip)
-    {
-        MonomerPtr monomer = getMonomer(i);
-        if (!monomer)
-        {
-            continue;
-        }
-
-        copyParams(monomer->getSidechain());
-        copyParams(monomer->getBackbone());
-        refineMonomer(monomer, target, rType);
-    }
-
-    clearParams();
 }
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
@@ -1119,7 +1086,6 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
     {
         nelderMead->addParameter(this, getTransTensor11, setTransTensor11, 0.5, 0.01);
         nelderMead->addParameter(this, getTransTensor12, setTransTensor12, 0.1, 0.01);
-        nelderMead->addParameter(this, getTransTensor21, setTransTensor21, 0.1, 0.01);
         nelderMead->addParameter(this, getTransTensor13, setTransTensor13, 0.1, 0.01);
         nelderMead->addParameter(this, getTransTensor31, setTransTensor31, 0.1, 0.01);
         nelderMead->addParameter(this, getTransTensor22, setTransTensor22, 0.5, 0.01);
