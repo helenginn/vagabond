@@ -51,7 +51,7 @@ public:
 
     virtual bool shouldRefineAngles()
     {
-        return (_timesRefined > 0);
+        return (_timesRefined > 1);
     }
 
     void setInitialDampening();
