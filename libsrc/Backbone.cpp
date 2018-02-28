@@ -13,6 +13,7 @@
 #include "Absolute.h"
 #include "FileReader.h"
 #include "Anchor.h"
+#include "Sidechain.h"
 
 bool Backbone::shouldRefineMagicAxis(BondPtr bond)
 {
