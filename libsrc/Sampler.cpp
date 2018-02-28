@@ -588,43 +588,6 @@ double Sampler::getScore()
 		return 0;
 	}
 
-	if (_scoreType == ScoreTypeModelFlexiness
-	    || _scoreType == ScoreTypeModelRMSDZero)
-	{
-		double score = 0;
-		double count = 0;
-
-		for (int i = 0; i < sampleSize(); i++)
-		{
-			_sampled[i]->getModel()->propagateChange();
-		}
-
-		for (int i = 0; i < sampleSize(); i++)
-		{
-			ModelPtr model = _sampled[i]->getModel();
-
-			if (model->getClassName() != "Bond")
-			{
-				continue;
-			}
-
-			BondPtr bond = boost::static_pointer_cast<Bond>(model);
-			double target = -1;
-
-			if (_scoreType == ScoreTypeModelFlexiness)
-			{
-				target = _overallFlex;
-			}
-
-			double rmsdScore = bond->getFlexibilityPotential();
-
-			count++;
-			score += fabs(rmsdScore - target);
-		}
-
-		return score / count;
-	}
-
 	if (_scoreType == ScoreTypeModelPos)
 	{
 		double score = 0;
