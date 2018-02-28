@@ -97,6 +97,7 @@ inline void vec3_set_length(vec3 *vec, double length)
 	vec3_mult(vec, length / now);
 }
 
+bool vec3_near_vec3_box(vec3 &pos1, vec3 &pos2, double tol);
 
 
 #endif /* defined(__vagabond__vec3__) */

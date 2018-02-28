@@ -18,140 +18,151 @@
 
 typedef enum
 {
-    ModelFilePDB,
-    ModelFileVagabond,
+	ModelFilePDB,
+	ModelFileVagabond,
 } ModelFile;
 
 class Options
 {
 public:
-    Options(int argc, const char **argv);
-    void run();
+	Options(int argc, const char **argv);
+	void run();
 
-    static void setRuntimeOptions(OptionsPtr pointer)
-    {
-        Options::options = pointer;
-        pointer->setManual(true);
-    }
+	static void setRuntimeOptions(OptionsPtr pointer)
+	{
+		Options::options = pointer;
+		pointer->setManual(true);
+	}
 
-    static OptionsPtr getRuntimeOptions()
-    {
-        return options;
-    }
+	static OptionsPtr getRuntimeOptions()
+	{
+		return options;
+	}
 
-    void setNotify(Notifiable *notifiable)
-    {
-        _notify = notifiable;
-    }
+	void setNotify(Notifiable *notifiable)
+	{
+		_notify = notifiable;
+	}
 
-    Notifiable *getNotify()
-    {
-        return _notify;
-    }
+	Notifiable *getNotify()
+	{
+		return _notify;
+	}
 
-    size_t crystalCount()
-    {
-        return crystals.size();
-    }
+	size_t crystalCount()
+	{
+		return crystals.size();
+	}
 
-    CrystalPtr getCrystal(int i)
-    {
-        return crystals[i];
-    }
+	CrystalPtr getCrystal(int i)
+	{
+		return crystals[i];
+	}
 
-    CrystalPtr getActiveCrystal()
-    {
-        if (!crystals.size()) return CrystalPtr();
-        return crystals[0];
-    }
+	CrystalPtr getActiveCrystal()
+	{
+		if (!crystals.size()) return CrystalPtr();
+		return crystals[0];
+	}
 
-    static double getKick()
-    {
-        return _kick;
-    }
+	static double getKick()
+	{
+		return _kick;
+	}
 
-    static double getDampen()
-    {
-        return _dampen;
-    }
+	static double getDampen()
+	{
+		return _dampen;
+	}
 
-    static double minRes()
-    {
-        return _minRes;
-    }
+	static double minRes()
+	{
+		return _minRes;
+	}
 
-    static int enableTests()
-    {
-        return _enableTests;
-    }
+	static int enableTests()
+	{
+		return _enableTests;
+	}
 
-    static double getBStart()
-    {
-        return _bStart;
-    }
+	static double getBStart()
+	{
+		return _bStart;
+	}
 
-    static double getBMult()
-    {
-        return _bMult;
-    }
-    
-    static void setBMult(double bMult)
-    {
-        _bMult = bMult;
-    }
-    
-    void setManual(bool manual)
-    {
-        _manual = manual;
-    }
+	static double getBMult()
+	{
+		return _bMult;
+	}
 
-    static bool shouldPowder()
-    {
-        return _powder;
-    }
+	static void setBMult(double bMult)
+	{
+		_bMult = bMult;
+	}
 
-    void statusMessage(std::string message);
-    void agreementSummary();
-    void refineAll(RefinementType type, int numCycles, int *count = NULL,
-            bool keepGoing = false);
-    void superimposeAll(CrystalPtr crystal = CrystalPtr());
-    void applyBMultiplier();
-    void openModel(std::string pdbName);
-    void openMTZ(std::string mtzName);
-    void recalculateFFT();
-    void fitWholeMolecule(bool translation, bool rotation);
+	static void setProteinSampling(double sampling)
+	{
+		_sampling = sampling;	
+	}
+
+	static double getProteinSampling()
+	{
+		return _sampling;
+	}
+
+	void setManual(bool manual)
+	{
+		_manual = manual;
+	}
+
+	static bool shouldPowder()
+	{
+		return _powder;
+	}
+
+	void statusMessage(std::string message);
+	void agreementSummary();
+	void refineAll(RefinementType type, int numCycles, int *count = NULL,
+	               bool keepGoing = false);
+	void superimposeAll(CrystalPtr crystal = CrystalPtr());
+	void applyBMultiplier();
+	void openModel(std::string pdbName);
+	void openMTZ(std::string mtzName);
+	void recalculateFFT();
+	void fitWholeMolecule(bool translation, bool rotation);
 private:
-    static OptionsPtr options;
-    Notifiable *_notify;
-    void notifyGUI(bool enable);
+	static OptionsPtr options;
+	Notifiable *_notify;
+	void notifyGUI(bool enable);
 
-    void parse();
-    void displayHelp();
-    void outputCrystalInfo();
-    void refinementCycle(MoleculePtr molecule, int *count,
-                             RefinementType type);
-    bool parseJoke(std::string arg);
+	void parse();
+	void displayHelp();
+	void outputCrystalInfo();
+	void refinementCycle(MoleculePtr molecule, int *count,
+	                     RefinementType type);
+	bool parseJoke(std::string arg);
 
-    std::vector<std::string> arguments;
+	std::vector<std::string> arguments;
 
-    std::vector<ObjectPtr> objects;
-    std::vector<CrystalPtr> crystals;
-    std::vector<DatasetPtr> datasets;
-    std::vector<DiffractionPtr> diffractions;
+	std::vector<ObjectPtr> objects;
+	std::vector<CrystalPtr> crystals;
+	std::vector<DatasetPtr> datasets;
+	std::vector<DiffractionPtr> diffractions;
 
-    int _numCycles;
-    int _globalCount;
-    bool _tie;
-    bool _manual;
+	int _numCycles;
+	int _globalCount;
+	bool _tie;
+	bool _manual;
 
-    static bool _powder;
-    static double _kick;
-    static double _dampen;
-    static double _bMult;
-    static int _enableTests;
-    static double _bStart;
-    std::string _outputDir;
-        static double _minRes;
+	static bool _powder;
+	static double _kick;
+	static double _dampen;
+	static double _bMult;
+	static int _enableTests;
+	static double _bStart;
+	static double _sampling;
+	std::string _outputDir;
+	static double _minRes;
 };
 
 #endif /* defined(__vagabond__Options__) */

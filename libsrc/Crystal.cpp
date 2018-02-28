@@ -81,18 +81,27 @@ void Crystal::setHKL2Real(mat3x3 mat)
     _hkl2real = mat;
 }
 
-void Crystal::realSpaceClutter()
+void Crystal::realSpaceClutter(double maxRes)
 {
     if (!_fft)
     {
+		double sampling = Options::getProteinSampling();
+		
+		if (sampling < 0)
+		{
+			sampling = maxRes / 4.;
+			Options::setProteinSampling(sampling);
+		}
+	
+		/* Now create the FFT */
         _fft = FFTPtr(new FFT());
         _difft = FFTPtr(new FFT());
 
         vec3 uc_dims = empty_vec3();
         vec3 fft_dims = empty_vec3();
-        uc_dims.x = mat3x3_length(_hkl2real, 0) / PROTEIN_SAMPLING;
-        uc_dims.y = mat3x3_length(_hkl2real, 1) / PROTEIN_SAMPLING;
-        uc_dims.z = mat3x3_length(_hkl2real, 2) / PROTEIN_SAMPLING;
+        uc_dims.x = mat3x3_length(_hkl2real, 0) / sampling;
+        uc_dims.y = mat3x3_length(_hkl2real, 1) / sampling;
+        uc_dims.z = mat3x3_length(_hkl2real, 2) / sampling;
 
         double largest = std::max(uc_dims.x, uc_dims.y);
         largest = std::max(largest, uc_dims.z);
@@ -151,7 +160,7 @@ void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
         _fft->setAll(0);
     }
 
-    realSpaceClutter();
+    realSpaceClutter(data->getMaxResolution());
     fourierTransform(1);
     scaleToDiffraction(data);
 
@@ -165,7 +174,7 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 {
     if (!_fft || !_fft->nn)
     {
-        realSpaceClutter();
+        realSpaceClutter(data->getMaxResolution());
         scaleToDiffraction(data);
     }
 
@@ -317,13 +326,19 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
         << " of " << _maxResolution << " Å." << std::endl;
     }
 
-    std::vector<double> bins;
-    generateResolutionBins(0, _maxResolution, 20, &bins);
+	/* First, apply a scale factor to the entire range */
     double totalFc = totalToScale();
-
     double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
                                         0, _maxResolution);
     applyScaleFactor(totalFc / ratio, 0, 0);
+
+	/* Then apply to individual resolution bins */
+    std::vector<double> bins;
+    generateResolutionBins(0, _maxResolution, 20, &bins);
+	
+	/* Extend the final bin by a little bit, so as not to lose any
+	 * stragglers. */
+	bins[bins.size() - 1] *= 0.95;
 
     for (int i = 0; i < bins.size() - 1; i++)
     {
@@ -358,7 +373,7 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
                                  double partsFc)
 {
-    realSpaceClutter();
+    realSpaceClutter(data->getMaxResolution());
     fourierTransform(1, data->getMaxResolution());
     scaleToDiffraction(data);
 
@@ -522,7 +537,7 @@ void Crystal::applySymOps(double res)
     std::cout << "Applying symmetry for space group " << _spaceGroup->symbol_xHM;
     std::cout << " (" << _spaceGroup->spg_num << ")" << std::endl;
 
-    _fft->applySymmetry(_spaceGroup, res, _hkl2real);
+    _fft->applySymmetry(_spaceGroup);
 }
 
 void Crystal::fourierTransform(int dir, double res)
@@ -729,4 +744,16 @@ void Crystal::postParseTidy()
     _tied = true;
 }
 
+std::vector<AtomPtr> Crystal::getCloseAtoms(AtomPtr one, double tol)
+{
+	std::vector<AtomPtr> atoms;
+	
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		std::vector<AtomPtr> someAtoms = molecule(i)->getCloseAtoms(one, tol);
+		atoms.reserve(atoms.size() + someAtoms.size());
+		atoms.insert(atoms.end(), someAtoms.begin(), someAtoms.end());
+	}
 
+	return atoms;
+}

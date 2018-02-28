@@ -247,3 +247,28 @@ void Molecule::postParseTidy()
         model->setMolecule(shared_from_this());
     }
 }
+
+std::vector<AtomPtr> Molecule::getCloseAtoms(AtomPtr one, double tol)
+{
+	std::vector<AtomPtr> atoms;
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (one == atom(i))
+		{
+			continue;
+		}
+
+		if (!one->closeToAtom(atom(i)))
+		{
+			continue;
+		}
+
+		atoms.push_back(atom(i));
+	}
+
+	return atoms;
+}
+
+
+

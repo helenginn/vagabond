@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include "../libinfo/ScatterFactors.h"
+#include "Options.h"
 
 std::vector<ElementPtr> Element::elements;
 
@@ -72,12 +73,13 @@ ElementPtr Element::getElement(std::string symbol)
 
 double Element::getVoxelValue(void *object, double x, double y, double z)
 {
+	double sampling = Options::getProteinSampling();
     Element *me = static_cast<Element *>(object);
     int totalScatterPoints = ScatterFactors::numScatter;
 
     double distSq =    (x * x + y * y + z * z);
     double dist = sqrt(distSq);
-    dist *= PROTEIN_SAMPLING;
+    dist *= sampling;
 
     double val = 0;
 

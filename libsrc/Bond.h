@@ -382,6 +382,16 @@ protected:
     virtual void addProperties();
     virtual void linkReference(ParserPtr object, std::string category);
     virtual void postParseTidy();    
+
+	void setTorsionStepMult(double mult)
+	{
+		_torsionStepMult = mult;
+	}
+	
+	double getTorsionStepMult()
+	{
+		return _torsionStepMult;
+	}
 private:
     std::string _shortDesc;
 
@@ -412,6 +422,7 @@ private:
     double _blurTotal;
     double _occupancy;
     double _occMult;
+	double _torsionStepMult;
 
     /* Should not be refined */
     bool _fixed;

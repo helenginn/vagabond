@@ -90,9 +90,8 @@ FFTPtr Atom::getBlur()
     return modelDist;
 }
 
-double Atom::scoreWithMap(CrystalPtr crystal, std::vector<double> *xs,
-                          std::vector<double> *ys, bool diff,
-                          MapScoreType mapScore)
+double Atom::scoreWithMap(CrystalPtr crystal, std::vector<CoordVal> *vals,
+                          bool diff, MapScoreType mapScore)
 {
     FFTPtr fft = crystal->getFFT();
 
@@ -101,11 +100,11 @@ double Atom::scoreWithMap(CrystalPtr crystal, std::vector<double> *xs,
         fft = crystal->getDiFFT();
     }
 
-    return scoreWithMap(fft, crystal->getReal2Frac(), xs, ys, mapScore);
+    return scoreWithMap(fft, crystal->getReal2Frac(), vals, mapScore);
 }
 
 double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell,
-                          std::vector<double> *xs, std::vector<double> *ys,
+                          std::vector<CoordVal> *vals,
                           MapScoreType mapScore)
 {
     FFTPtr atomDist = _element->getDistribution();
@@ -122,7 +121,7 @@ double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell,
         return 0;
     }
 
-    double score = FFT::score(fft, modelDist, pos, xs, ys, mapScore);
+    double score = FFT::score(fft, modelDist, pos, vals, mapScore);
 
     return score;
 }
@@ -446,3 +445,22 @@ void Atom::postParseTidy()
     }
 }
 
+bool Atom::closeToAtom(AtomPtr another, double tolerance)
+{
+	vec3 pos1 = getAbsolutePosition();
+	vec3 pos2 = another->getAbsolutePosition();
+
+	bool closeish = vec3_near_vec3_box(pos1, pos2, tolerance);
+	
+	if (!closeish)
+	{
+		return false;
+	}
+
+	if (closeish)
+	{
+		vec3 diff = vec3_subtract_vec3(pos1, pos2);
+		double length = vec3_length(diff);
+		return (length < tolerance);
+	}
+}

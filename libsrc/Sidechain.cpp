@@ -20,299 +20,299 @@
 
 bool Sidechain::shouldRefineMagicAxis(BondPtr bond)
 {
-    return false;
-    return (bond->getMinor()->getAtomName() == "CB");
+	return false;
+	return (bond->getMinor()->getAtomName() == "CB");
 }
 
 void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
-    if (!canRefine()) return;
+	if (!canRefine()) return;
 
-    if (!paramCount())
-    {
-        switch (rType)
-        {
-            case RefinementModelPos:
-            addParamType(ParamOptionTorsion, 0.07);
-            break;
+	if (!paramCount())
+	{
+		switch (rType)
+		{
+			case RefinementModelPos:
+			addParamType(ParamOptionTorsion, 0.1);
+			break;
 
-            case RefinementFine:
-            addParamType(ParamOptionTorsion, 0.07);
-            addParamType(ParamOptionKick, 0.5);
-            addParamType(ParamOptionDampen, 0.25);
-            addParamType(ParamOptionMagicAngles, 20);
-            break;
+			case RefinementFine:
+			addParamType(ParamOptionTorsion, 0.1);
+			addParamType(ParamOptionKick, 0.5);
+			addParamType(ParamOptionDampen, 0.25);
+			addParamType(ParamOptionMagicAngles, 20);
+			break;
 
-            default:
-            break;
-        }
-    }
+			default:
+			break;
+		}
+	}
 
 
-    AtomGroup::refine(target, rType);
-    clearParams();
+	AtomGroup::refine(target, rType);
+	clearParams();
 }
 
 void Sidechain::fixBackboneTorsions(AtomPtr betaTorsion)
 {
-    AtomPtr atom = findAtom("CB");
+	AtomPtr atom = findAtom("CB");
 
-    if (!atom)
-    {
-        return;
-    }
+	if (!atom)
+	{
+		return;
+	}
 
-    ModelPtr model = atom->getModel();
+	ModelPtr model = atom->getModel();
 
-    if (model->isBond())
-    {
-        ToBondPtr(model)->setTorsionAtoms(betaTorsion);
-    }
+	if (model->isBond())
+	{
+		ToBondPtr(model)->setTorsionAtoms(betaTorsion);
+	}
 
 }
 
 void Sidechain::setInitialDampening()
 {
-    for (int i = 0; i < atomCount(); i++)
-    {
-        if (atom(i)->isBackbone())
-        {
-            continue;
-        }
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->isBackbone())
+		{
+			continue;
+		}
 
-        BondPtr bond = BondPtr();
+		BondPtr bond = BondPtr();
 
-        if (atom(i)->getModel()->isBond())
-        {
-            bond = ToBondPtr(atom(i)->getModel());
-        }
-        else
-        {
-            continue;
-        }
+		if (atom(i)->getModel()->isBond())
+		{
+			bond = ToBondPtr(atom(i)->getModel());
+		}
+		else
+		{
+			continue;
+		}
 
-        Bond::setDampening(&*bond, -0.0);
+		Bond::setDampening(&*bond, -0.0);
 
-        double kick = 0.2;
-        std::string id = getMonomer()->getIdentifier();
+		double kick = 0.2;
+		std::string id = getMonomer()->getIdentifier();
 
-        if (id == "tyr" || id == "phe" || id == "trp" || id == "his")
-        {
-            kick = 0.1;
-        }
+		if (id == "tyr" || id == "phe" || id == "trp" || id == "his")
+		{
+			kick = 0.1;
+		}
 
-        if (bond->isRefinable() && atom(i)->getAtomName() == "CB")
-        {
-            Bond::setTorsionBlur(&*bond, kick);
-        }
-    }
+		if (bond->isRefinable() && atom(i)->getAtomName() == "CB")
+		{
+			Bond::setTorsionBlur(&*bond, kick);
+		}
+	}
 }
 
 void Sidechain::splitConformers(int count)
 {
-    if (count < 0)
-    {
-        count = conformerCount();
-    }
+	if (count < 0)
+	{
+		count = conformerCount();
+	}
 
-    if (count <= 1) return;
+	if (count <= 1) return;
 
-    if (getMonomer()->getBackbone()->findAtoms("N").size() != 1)
-    {
-        std::cout << "Not splitting whole residue conformer, "
-        << getMonomer()->getResidueNum() << getMonomer()->getIdentifier() << std::endl;
-//        return;
-    }
+	if (getMonomer()->getBackbone()->findAtoms("N").size() != 1)
+	{
+		std::cout << "Not splitting whole residue conformer, "
+		<< getMonomer()->getResidueNum() << getMonomer()->getIdentifier() << std::endl;
+		//        return;
+	}
 
-    AtomPtr start = findAtom("CB");
+	AtomPtr start = findAtom("CB");
 
-    if (!start || !start->getModel()->isBond())
-    {
-        return;
-    }
+	if (!start || !start->getModel()->isBond())
+	{
+		return;
+	}
 
-    BondPtr bond = ToBondPtr(start->getModel());
+	BondPtr bond = ToBondPtr(start->getModel());
 
-    for (int i = 1; i < count; i++)
-    {
-        bond->splitBond();
-    }
+	for (int i = 1; i < count; i++)
+	{
+		bond->splitBond();
+	}
 
-    AtomList atoms = findAtoms("CB");
+	AtomList atoms = findAtoms("CB");
 
-    for (int i = 0; i < atoms.size(); i++)
-    {
-        if (atoms[i].expired()) continue;
+	for (int i = 0; i < atoms.size(); i++)
+	{
+		if (atoms[i].expired()) continue;
 
-        AtomPtr atom = atoms[i].lock();
-        if (atom->getModel()->isBond())
-        {
-            BondPtr bond = ToBondPtr(atom->getModel());
-            double origOcc = atom->getOriginalOccupancy();
-            Bond::setOccupancy(&*bond, origOcc);
-        }
-    }
+		AtomPtr atom = atoms[i].lock();
+		if (atom->getModel()->isBond())
+		{
+			BondPtr bond = ToBondPtr(atom->getModel());
+			double origOcc = atom->getOriginalOccupancy();
+			Bond::setOccupancy(&*bond, origOcc);
+		}
+	}
 
-    for (int i = 0; i < getMonomer()->atomCount(); i++)
-    {
-        AtomPtr atom = getMonomer()->atom(i);
+	for (int i = 0; i < getMonomer()->atomCount(); i++)
+	{
+		AtomPtr atom = getMonomer()->atom(i);
 
-        if (atom->getModel()->isAbsolute() && atom->getAlternativeConformer().length())
-        {
-            atom->setWeighting(0);
-        }
-    }
+		if (atom->getModel()->isAbsolute() && atom->getAlternativeConformer().length())
+		{
+			atom->setWeighting(0);
+		}
+	}
 }
 
 void Sidechain::parameteriseAsRotamers()
 {
-    RotamerTable *table = RotamerTable::getTable();
-    std::string res = getMonomer()->getIdentifier();
+	RotamerTable *table = RotamerTable::getTable();
+	std::string res = getMonomer()->getIdentifier();
 
-    std::vector<Rotamer> rotamers = table->rotamersFor(res);
+	std::vector<Rotamer> rotamers = table->rotamersFor(res);
 
-    if (!rotamers.size())
-    {
-        return;
-    }
+	if (!rotamers.size())
+	{
+		return;
+	}
 
-    // do the stuff
-    _rotamerised = true;
-    _canRefine = false;
+	// do the stuff
+	_rotamerised = true;
+	_canRefine = false;
 
-    splitConformers(rotamers.size());
+	splitConformers(rotamers.size());
 
-    // rotamers.size() should equal size of atoms list.
-    std::cout << "Multi-rotamer model for residue " << i_to_str(_resNum) << std::endl;
+	// rotamers.size() should equal size of atoms list.
+	std::cout << "Multi-rotamer model for residue " << i_to_str(_resNum) << std::endl;
 
-    for (int i = 0; i < rotamers.size(); i++)
-    {
-        for (int j = 0; j < rotamers[i].torsions.size(); j++)
-        {
-            TorsionAngle angle = rotamers[i].torsions[j];
-            double torsionValue = deg2rad(angle.torsion);
-            std::string atomID = angle.secondAtom;
+	for (int i = 0; i < rotamers.size(); i++)
+	{
+		for (int j = 0; j < rotamers[i].torsions.size(); j++)
+		{
+			TorsionAngle angle = rotamers[i].torsions[j];
+			double torsionValue = deg2rad(angle.torsion);
+			std::string atomID = angle.secondAtom;
 
-            AtomList atoms = findAtoms(atomID);
+			AtomList atoms = findAtoms(atomID);
 
-            if (atoms.size() != rotamers.size())
-            {
-                std::cout << "Ooooo no" << std::endl;
-            }
+			if (atoms.size() != rotamers.size())
+			{
+				std::cout << "Ooooo no" << std::endl;
+			}
 
-            if (atoms[i].expired())
-            {
-                continue;
-            }
+			if (atoms[i].expired())
+			{
+				continue;
+			}
 
-            AtomPtr atom = atoms[i].lock();
-            if (!atom->getModel()->isBond())
-            {
-                continue;
-            }
+			AtomPtr atom = atoms[i].lock();
+			if (!atom->getModel()->isBond())
+			{
+				continue;
+			}
 
-            BondPtr bond = ToBondPtr(atom->getModel());
+			BondPtr bond = ToBondPtr(atom->getModel());
 
-            Bond::setTorsion(&*bond, torsionValue);
+			Bond::setTorsion(&*bond, torsionValue);
 
-            if (bond->getMinor()->getAtomName() == "CB")
-            {
-                BackbonePtr bb = getMonomer()->getBackbone();
+			if (bond->getMinor()->getAtomName() == "CB")
+			{
+				BackbonePtr bb = getMonomer()->getBackbone();
 
-                if (!bb)
-                {
-                    std::cout << "Cannot find backbone for " << getMonomer()->getResidueNum() << std::endl;
-                    continue;
-                }
+				if (!bb)
+				{
+					std::cout << "Cannot find backbone for " << getMonomer()->getResidueNum() << std::endl;
+					continue;
+				}
 
-                AtomPtr heavy = bb->findAtom("N");
+				AtomPtr heavy = bb->findAtom("N");
 
-                if (!heavy)
-                {
-                    std::cout << "Cannot find nitrogen atom of backbone." << std::endl;
-                    continue;
-                }
+				if (!heavy)
+				{
+					std::cout << "Cannot find nitrogen atom of backbone." << std::endl;
+					continue;
+				}
 
-                bond->recalculateTorsion(heavy, torsionValue);
-            }
+				bond->recalculateTorsion(heavy, torsionValue);
+			}
 
-            bond->setFixed(true);
-        }
-    }
+			bond->setFixed(true);
+		}
+	}
 
-    AtomList cbs = findAtoms("CB");
+	AtomList cbs = findAtoms("CB");
 
-    for (int i = 0; i < cbs.size(); i++)
-    {
-        if (cbs[i].expired()) continue;
+	for (int i = 0; i < cbs.size(); i++)
+	{
+		if (cbs[i].expired()) continue;
 
-        AtomPtr cb = cbs[i].lock();
-        if (!cb->getModel()->isBond()) continue;
+		AtomPtr cb = cbs[i].lock();
+		if (!cb->getModel()->isBond()) continue;
 
-        BondPtr bond = ToBondPtr(cb->getModel());
-        bond->setFixed(false);
-        bond->setUsingTorsion(false);
+		BondPtr bond = ToBondPtr(cb->getModel());
+		bond->setFixed(false);
+		bond->setUsingTorsion(false);
 
-        double occ = rotamers[i].allOccupancy;
-        Bond::setOccupancy(&*bond, occ);
-    }
+		double occ = rotamers[i].allOccupancy;
+		Bond::setOccupancy(&*bond, occ);
+	}
 
-    refreshRotamers();
+	refreshRotamers();
 }
 
 void Sidechain::refreshRotamers()
 {
-    if (!_rotamerised)
-    {
-        warn_user("Trying to refresh rotamers without having rotamerised");
-    }
+	if (!_rotamerised)
+	{
+		warn_user("Trying to refresh rotamers without having rotamerised");
+	}
 
-    AtomList atoms = findAtoms("CB");
-    double occTotal = 0;
-    double occWeight = 0;
-    double expTotal = 0;
+	AtomList atoms = findAtoms("CB");
+	double occTotal = 0;
+	double occWeight = 0;
+	double expTotal = 0;
 
-    for (int i = 0; i < atoms.size(); i++)
-    {
-        AtomPtr atom = atoms[i].lock();
-        if (atom->getModel()->isBond())
-        {
-            BondPtr bond = ToBondPtr(atom->getModel());
-            double occ = Bond::getOccupancy(&*bond);
-            double myExp = exp(-_exponent * occTotal * occTotal);
+	for (int i = 0; i < atoms.size(); i++)
+	{
+		AtomPtr atom = atoms[i].lock();
+		if (atom->getModel()->isBond())
+		{
+			BondPtr bond = ToBondPtr(atom->getModel());
+			double occ = Bond::getOccupancy(&*bond);
+			double myExp = exp(-_exponent * occTotal * occTotal);
 
-            expTotal += myExp;
-            occTotal += occ;
-            occWeight += occ * myExp;
-        }
-    }
+			expTotal += myExp;
+			occTotal += occ;
+			occWeight += occ * myExp;
+		}
+	}
 
-    occWeight /= expTotal;
+	occWeight /= expTotal;
 
-    occTotal = 0;
-    double test = 0;
-    for (int i = 0; i < atoms.size(); i++)
-    {
-        AtomPtr atom = atoms[i].lock();
-        if (atom->getModel()->isBond())
-        {
-            BondPtr bond = ToBondPtr(atom->getModel());
-            double myExp = exp(-_exponent * occTotal * occTotal);
-            double mult = myExp / (occWeight * expTotal);
-            occTotal += Bond::getOccupancy(&*bond);
-            bond->setOccupancyMult(mult);
+	occTotal = 0;
+	double test = 0;
+	for (int i = 0; i < atoms.size(); i++)
+	{
+		AtomPtr atom = atoms[i].lock();
+		if (atom->getModel()->isBond())
+		{
+			BondPtr bond = ToBondPtr(atom->getModel());
+			double myExp = exp(-_exponent * occTotal * occTotal);
+			double mult = myExp / (occWeight * expTotal);
+			occTotal += Bond::getOccupancy(&*bond);
+			bond->setOccupancyMult(mult);
 
-            double newOcc = bond->getMultOccupancy();
-        //    std::cout << "New occupancy state " << i << ", " << newOcc << std::endl;
-            test += newOcc;
-        }
-    }
+			double newOcc = bond->getMultOccupancy();
+			//    std::cout << "New occupancy state " << i << ", " << newOcc << std::endl;
+			test += newOcc;
+		}
+	}
 }
 
 void Sidechain::addProperties()
 {
-    addBoolProperty("rotamerised", &_rotamerised);
-    addBoolProperty("can_refine", &_canRefine);
-    addIntProperty("res_num", &_resNum);
-    AtomGroup::addProperties();
+	addBoolProperty("rotamerised", &_rotamerised);
+	addBoolProperty("can_refine", &_canRefine);
+	addIntProperty("res_num", &_resNum);
+	AtomGroup::addProperties();
 }

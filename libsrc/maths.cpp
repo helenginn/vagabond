@@ -243,6 +243,7 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
 	return r;
 }
 
+/* Produces in real space */
 void generateResolutionBins(double minD, double maxD,
 							int binCount, std::vector<double> *bins)
 {

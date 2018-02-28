@@ -1,11 +1,11 @@
 /*
- *  fftw.h
- *  phaseit3d
- *
- *  Created by Anton Barty on 26/07/11.
- *  Copyright 2011 Anton Barty. All rights reserved.
- *
- */
+*  fftw.h
+*  phaseit3d
+*
+*  Created by Anton Barty on 26/07/11.
+*  Copyright 2011 Anton Barty. All rights reserved.
+*
+*/
 
 #ifndef fftw3d_h
 #define fftw3d_h
@@ -50,16 +50,24 @@ typedef struct
 	fftwf_plan iplan;
 } FourierDimension;
 
+typedef struct
+{
+	vec3 pos;
+	double fo;
+	double fc;
+	double mask;
+} CoordVal;
+
 class FFT {
-    
+
 public:
-    FFT();
+	FFT();
 	FFT(FFT &other);
 	FFT(long);
-    ~FFT();
-    
-    void create(long);
-    void create(long, long, long);
+	~FFT();
+
+	void create(long);
+	void create(long, long, long);
 
 	void setupMask();
 
@@ -90,6 +98,17 @@ public:
 		return mask[i];
 	}
 
+	/* Will set those w real component above the value to 1 in the mask,
+	* and all those below the value to 0. */
+	void aboveValueToMask(double value);
+
+	/* If not writing to mask = 0, then mask will not apply to the
+	* "add" command in FFT::operation. */
+	void avoidWriteToMaskZero(bool set = false)
+	{
+		_writeToMaskZero = set;
+	}
+
 	void collapse(long *x, long *y, long *z)
 	{
 		while (*x < 0) *x += nx;
@@ -100,6 +119,11 @@ public:
 
 		while (*z < 0) *z += nz;
 		while (*z >= nz) *z -= nz;
+	}
+
+	long element(vec3 xyz)
+	{
+		return element(xyz.x, xyz.y, xyz.z);
 	}
 
 	long element(long x, long y, long z)
@@ -117,11 +141,11 @@ public:
 	long elementFromUncorrectedFrac(double xfrac, double yfrac, double zfrac);
 
 	void createFFTWplan(int nthreads, unsigned fftw_flags = FFTW_MEASURE);
-    void fft(int direction);
-    
-    void shift(long, long, long);
-    void shiftToCorner(void);
-    void shiftToCenter(void);
+	void fft(int direction);
+
+	void shift(long, long, long);
+	void shiftToCorner(void);
+	void shiftToCenter(void);
 	void shiftToCentre();
 
 	double getReal(long index);
@@ -140,26 +164,24 @@ public:
 	void addToReal(double xfrac, double yfrac, double zfrac, double real);
 	static void collapseFrac(double *xfrac, double *yfrac, double *zfrac);
 	static void multiply(FFTPtr fftEdit, FFTPtr fftConst);
-    void setAll(float);
-    void multiplyAll(float);
+	void setAll(float);
+	void multiplyAll(float);
 
 	double interpolate(vec3 fractionalVoxel, bool imaginary = false);
 
 	static void add(FFTPtr fftEdit, FFTPtr fftConst,
-					vec3 add, bool sameScale = false)
+	                vec3 add, bool sameScale = false)
 	{
 		operation(fftEdit, fftConst, add);
 	}
 
 	static double operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
-							MapScoreType mapScoreType = MapScoreTypeNone,
-							std::vector<double> *xs = NULL,
-							std::vector<double> *ys = NULL);
+	                        MapScoreType mapScoreType = MapScoreTypeNone,
+	std::vector<CoordVal> *vals = NULL);
 
 	static double score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 position,
-						std::vector<double> *xs = NULL,
-						std::vector<double> *ys = NULL,
-						MapScoreType mapScore = MapScoreTypeCorrel);
+	                    std::vector<CoordVal> *vals = NULL,
+	MapScoreType mapScore = MapScoreTypeCorrel);
 
 	void normalise();
 
@@ -200,20 +222,19 @@ public:
 	}
 
 	void printSlice(double zVal = 0);
-	void applySymmetry(CSym::CCP4SPG *spaceGroup, double max_res,
-                           mat3x3 real2frac);
+	void applySymmetry(CSym::CCP4SPG *spaceGroup);
 
-    long nx,ny,nz,nn;
-    fftwf_complex *data;
+	void writeReciprocalToFile(std::string filename, double maxResolution = 0,
+	                           CSym::CCP4SPG *mtzspg = NULL,
+	std::vector<double> unitCell = std::vector<double>(),
+	mat3x3 real2Frac = make_mat3x3(),
+	FFTPtr data = FFTPtr());
+
+	long nx,ny,nz,nn;
+	fftwf_complex *data;
 	int *mask; // not char due to cpu speed
 
 	double scales[3];
-
-	void writeReciprocalToFile(std::string filename, double maxResolution = 0,
-							   CSym::CCP4SPG *mtzspg = NULL,
-							   std::vector<double> unitCell = std::vector<double>(),
-							   mat3x3 real2Frac = make_mat3x3(),
-							   FFTPtr data = FFTPtr());
 private:
 	FourierDimension *_myDims;
 
@@ -223,6 +244,7 @@ private:
 	/* Transformation from Angstroms into basis vectors for FFT voxels */
 	mat3x3 _inverse;
 
+	bool _writeToMaskZero;
 	static std::deque<FourierDimension> _dimensions;
 };
 

@@ -24,6 +24,7 @@ double Options::_bMult = 0.6;
 double Options::_minRes = 0.0;
 int Options::_enableTests = 3;
 bool Options::_powder = false;
+double Options::_sampling = -1;
 
 Options::Options(int argc, const char **argv)
 {
@@ -421,12 +422,6 @@ void Options::outputCrystalInfo()
     }
 
     shout_at_user("Sorry I do actually need a data set.");
-
-    for (int i = 0; i < crystals.size(); i++)
-    {
-        crystals[i]->realSpaceClutter();
-        crystals[i]->fourierTransform(1);
-    }
 }
 
 void Options::refineAll(RefinementType type, int numCycles, int *count, bool keepGoing)

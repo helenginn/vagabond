@@ -140,6 +140,8 @@ public:
         return static_cast<Molecule *>(object)->_rotationCentre.x;
     }
 
+	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol);
+
 protected:
     virtual std::string getParserIdentifier()
     {

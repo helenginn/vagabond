@@ -40,6 +40,7 @@ void Bond::initialize()
     _blurTotal = 0;
     _occupancy = 1.0;
     _occMult = 1.0;
+	_torsionStepMult = 1.0;
     _anisotropyExtent = 0.0;
     double initialKick = Options::getKick();
 

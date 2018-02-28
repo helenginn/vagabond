@@ -167,7 +167,7 @@ void RefinementStrategy::finish()
 			{
 				double objectValue = (*getters[i])(objects[i]);
 				std::cout << tags[i] << "=" << objectValue * rad2degscale <<
-				(_toDegrees ? "º" : "") << ", ";
+				(_toDegrees ? "°" : "") << ", ";
 			}
 
 			std::cout << "(" << startingScore << " to " << endScore << ")" << std::endl;

@@ -122,3 +122,23 @@ double ewald_wavelength(vec3 &index)
 
     return ewald_wavelength;
 }
+
+bool vec3_near_vec3_box(vec3 &pos1, vec3 &pos2, double tol)
+{
+	if (fabs(pos1.x - pos2.x) > tol) 
+	{
+		return false;
+	}
+	if (fabs(pos1.y - pos2.y) > tol) 
+	{
+		return false;
+	}
+	if (fabs(pos1.z - pos2.z) > tol) 
+	{
+		return false;
+	}
+
+	return true;
+}
+
+

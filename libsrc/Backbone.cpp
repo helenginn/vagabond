@@ -32,11 +32,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
     if (!paramCount())
     {
-        double range = 0.15;
+        double range = 2.;
 
         if (_timesRefined >= 3)
         {
-            range = 0.07;
+            range = 0.1;
         }
 
         switch (rType)

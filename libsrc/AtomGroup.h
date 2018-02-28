@@ -20,134 +20,134 @@
 class AtomGroup : public boost::enable_shared_from_this<AtomGroup>, public Sampler, public Parser
 {
 public:
-    AtomPtr findAtom(std::string atomType);
-    AtomPtr findAtom(std::string atomType, std::string confID);
-    AtomList findAtoms(std::string atomType);
+	AtomPtr findAtom(std::string atomType);
+	AtomPtr findAtom(std::string atomType, std::string confID);
+	AtomList findAtoms(std::string atomType);
 
-    double scoreWithMap(ScoreType scoreType, CrystalPtr crystal);
-    static double scoreWithMap(std::vector<AtomPtr> atoms, ScoreType scoreType,
-                               FFTPtr map, mat3x3 real2Frac);
-    double scoreWithMap(ScoreType scoreType, FFTPtr map, mat3x3 real2Frac);
+	double scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plot = false);
+	static double scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
+									  bool plot = false,
+									  std::vector<AtomPtr> selected = std::vector<AtomPtr>());
 
-    void setMonomer(MonomerPtr monomer)
-    {
-        _monomer = monomer;
-    }
+	void setMonomer(MonomerPtr monomer)
+	{
+		_monomer = monomer;
+	}
 
-    MonomerPtr getMonomer()
-    {
-        return _monomer.lock();
-    }
+	MonomerPtr getMonomer()
+	{
+		return _monomer.lock();
+	}
 
-    virtual void addAtom(AtomPtr atom)
-    {
-        std::vector<AtomPtr>::iterator it;
-        it = std::find(_atoms.begin(), _atoms.end(), atom);
+	virtual void addAtom(AtomPtr atom)
+	{
+		std::vector<AtomPtr>::iterator it;
+		it = std::find(_atoms.begin(), _atoms.end(), atom);
 
-        if (it == _atoms.end())
-        {
-            _atoms.push_back(atom);
-        }
-    }
+		if (it == _atoms.end())
+		{
+			_atoms.push_back(atom);
+		}
+	}
 
-    long atomCount()
-    {
-        return _atoms.size();
-    }
+	long atomCount()
+	{
+		return _atoms.size();
+	}
 
-    bool hasAtom(AtomPtr anAtom);
-    
-    AtomPtr atom(int i)
-    {
-        return _atoms[i];
-    }
+	bool hasAtom(AtomPtr anAtom);
 
-    void addBond(BondPtr bond)
-    {
-        _bonds.push_back(bond);
-    }
+	AtomPtr atom(int i)
+	{
+		return _atoms[i];
+	}
 
-    int bondCount()
-    {
-        return _bonds.size();
-    }
+	void addBond(BondPtr bond)
+	{
+		_bonds.push_back(bond);
+	}
 
-    BondPtr bond(int i)
-    {
-        return _bonds[i].lock();
-    }
+	int bondCount()
+	{
+		return _bonds.size();
+	}
 
-    double totalElectrons();
-    double getAverageBFactor(bool initial = false);
-    double getAverageDisplacement();
+	BondPtr bond(int i)
+	{
+		return _bonds[i].lock();
+	}
 
-    std::string getPDBContribution(PDBType pdbType,
-                                   CrystalPtr crystal = CrystalPtr());
+	double totalElectrons();
+	double getAverageBFactor(bool initial = false);
+	double getAverageDisplacement();
 
-    void setTied()
-    {
-        _beenTied = true;
-    }
+	std::string getPDBContribution(PDBType pdbType,
+			CrystalPtr crystal = CrystalPtr());
 
-    virtual bool shouldRefineAngles()
-    {
-        return false;
-    }
+	void setTied()
+	{
+		_beenTied = true;
+	}
 
-    void setUseAbsolute();
-    int totalElectrons(int *fcWeighted);
+	virtual bool shouldRefineAngles()
+	{
+		return false;
+	}
+
+	void setUseAbsolute();
+	int totalElectrons(int *fcWeighted);
 
 
-    static double refine(void *object)
-    {
-        static_cast<AtomGroup *>(object)->privateRefine();
-        return 0;
-    }
+	static double refine(void *object)
+	{
+		static_cast<AtomGroup *>(object)->privateRefine();
+		return 0;
+	}
 
-    void setTargetRefinement(CrystalPtr target, RefinementType rType);
-    virtual void refine(CrystalPtr target, RefinementType rType);
-    void setWeighting(double value);
-    void resetMagicAxes();
-    int conformerCount();
-    std::string conformer(int i);
-    void propagateChange();
-    void refreshPositions(bool quick = true);
+	void setTargetRefinement(CrystalPtr target, RefinementType rType);
+	virtual void refine(CrystalPtr target, RefinementType rType);
+	void setWeighting(double value);
+	void resetMagicAxes();
+	int conformerCount();
+	std::string conformer(int i);
+	void propagateChange();
+	void refreshPositions(bool quick = true);
 protected:
-    AtomGroup();
-    void addAtomsFrom(AtomGroupPtr child);
-    virtual AtomList topLevelAtoms();
-    int _timesRefined;
+	AtomGroup();
+	void addAtomsFrom(AtomGroupPtr child);
+	virtual AtomList topLevelAtoms();
+	int _timesRefined;
 
-    bool isTied()
-    {
-        return _beenTied;
-    }
+	bool isTied()
+	{
+		return _beenTied;
+	}
 
-    virtual std::string getClassName()
-    {
-        return "AtomGroup";
-    }
+	virtual std::string getClassName()
+	{
+		return "AtomGroup";
+	}
 
-    virtual std::string getParserIdentifier()
-    {
-        return "AtomGroupSomething";
-    }
+	virtual std::string getParserIdentifier()
+	{
+		return "AtomGroupSomething";
+	}
 
-    virtual void addProperties();
-    virtual void addObject(ParserPtr object, std::string category);
-    virtual void linkReference(ParserPtr object, std::string category);
+	virtual void addProperties();
+	virtual void addObject(ParserPtr object, std::string category);
+	virtual void linkReference(ParserPtr object, std::string category);
 private:
-    MonomerWkr _monomer;
+	MonomerWkr _monomer;
 
-    std::vector<BondWkr> _bonds;
-    std::vector<AtomPtr> _atoms;
+	std::vector<BondWkr> _bonds;
+	std::vector<AtomPtr> _atoms;
 
-    bool _beenTied;
-    CrystalPtr _target;
-    RefinementType _rType;
-   
-    void privateRefine(); 
-    std::map<std::string, int> conformerMap();
+	bool _beenTied;
+	CrystalPtr _target;
+	RefinementType _rType;
+
+	void privateRefine(); 
+	std::map<std::string, int> conformerMap();
 
 };
 
