@@ -600,14 +600,14 @@ double myTorsion, double ratio)
 	BondPtr nextBond = ToBondPtr(nextAtom->getModel());
 	double nextRatio = getGeomRatio(_activeGroup, 0);
 
-	vec3 averageMinorPos = make_vec3(0, 0, 0);
-	vec3 averageBondDir = make_vec3(0, 0, 0);
+	vec3 prevMinorPosAve = make_vec3(0, 0, 0);
+	vec3 myCurrentPosAve = make_vec3(0, 0, 0);
+	vec3 nextCurrentPosAve = make_vec3(0, 0, 0);
 
 	for (int i = 0; i < prevs->size(); i++)
 	{
 		double torsionAngle = (*prevs)[i].torsion + circleAdd;
 
-		averageMinorPos = vec3_add_vec3(averageMinorPos, (*prevs)[i].start);
 		mat3x3 oldBasis = (*prevs)[i].basis;
 		vec3 prevMinorPos = (*prevs)[i].start;
 		vec3 prevHeavyPos = (*prevs)[i].old_start;
@@ -620,15 +620,22 @@ double myTorsion, double ratio)
 		vec3 nextCurrentPos;
 		nextCurrentPos = nextBond->positionFromTorsion(newBasis, myTorsion,
 		                                               nextRatio, myCurrentPos);
-		vec3 bondDir = vec3_subtract_vec3(nextCurrentPos, myCurrentPos);
-		vec3_set_length(&bondDir, 1.);
-		averageBondDir = vec3_add_vec3(averageBondDir, bondDir);
+		myCurrentPosAve = vec3_add_vec3(myCurrentPosAve, myCurrentPos);
+		nextCurrentPosAve = vec3_add_vec3(nextCurrentPosAve, nextCurrentPos);
+		prevMinorPosAve = vec3_add_vec3(prevMinorPosAve, prevMinorPos);
 	}
 
-	vec3_mult(&averageBondDir, 1 / (double)prevs->size());
-	vec3_mult(&averageMinorPos, 1 / (double)prevs->size());
+	vec3_mult(&myCurrentPosAve, 1 / (double)prevs->size());
+	vec3_mult(&prevMinorPosAve, 1 / (double)prevs->size());
+	vec3_mult(&nextCurrentPosAve, 1 / (double)prevs->size());
+	vec3 prevBondDir = vec3_subtract_vec3(myCurrentPosAve, prevMinorPosAve);
+	vec3 averageBondDir = vec3_subtract_vec3(nextCurrentPosAve, myCurrentPosAve);
+	vec3_set_length(&averageBondDir, 1.);
+	vec3_set_length(&prevBondDir, 1.);
+	
+	vec3 crossDir = vec3_cross_vec3(averageBondDir, prevBondDir);
 
-	mat3x3 magicMat = getMagicMat(averageBondDir);
+	mat3x3 magicMat = getMagicMat(crossDir);
 
 	for (int i = 0; i < prevs->size(); i++)
 	{
@@ -651,7 +658,7 @@ double myTorsion, double ratio)
 		vec3 myBondVec = vec3_subtract_vec3(myCurrentPos, prevMinorPos);
 
 		/* Difference between perfect and deviant position of major atom */
-		vec3 nextDifference = vec3_subtract_vec3(prevMinorPos, averageMinorPos);
+		vec3 nextDifference = vec3_subtract_vec3(myCurrentPos, myCurrentPosAve);
 
 		/* Find out what this deviation is if beam axis is set to z */
 		mat3x3_mult_vec(magicMat, &nextDifference);
