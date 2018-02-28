@@ -1141,8 +1141,6 @@ bool Polymer::test()
 {
 	bool bondsOk = true;
 
-	std::cout << "Testing polymer... silence is good." << std::endl;
-
 	for (int i = 0; i < atomCount(); i++)
 	{
 		if (!atom(i)->getModel())
