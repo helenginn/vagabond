@@ -48,9 +48,17 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		}
 	}
 
+	MonomerPtr monomer = getMonomer();
+	BackbonePtr backbone = monomer->getBackbone();
+	
+	if (backbone && rType == RefinementFine)
+	{
+		addIncludeForRefinement(backbone);
+	}
 
 	AtomGroup::refine(target, rType);
 	clearParams();
+	clearIncludeForRefinements();
 }
 
 void Sidechain::fixBackboneTorsions(AtomPtr betaTorsion)
