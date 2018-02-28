@@ -54,8 +54,8 @@ void Polymer::checkChainContinuity()
 			// Now the monomers have started again
 
 			shout_at_user("Continuity break in chain " + getChainID()
-					+ " residues " + i_to_str(foundFirst) + "-"
-					+ i_to_str(foundGap) + "\nPlease rebuild and rerun.");
+			              + " residues " + i_to_str(foundFirst) + "-"
+			+ i_to_str(foundGap) + "\nPlease rebuild and rerun.");
 		}
 
 		if (getMonomer(i))
@@ -75,8 +75,8 @@ void Polymer::tieAtomsUp()
 	if (!getMonomer(_anchorNum) || !getMonomer(_anchorNum)->findAtom("N"))
 	{
 		shout_at_user("Anchor point specified isn't an available residue.\n"\
-				"Please specify an existing residue as an anchor point\n"\
-				"with option --anchor-res=");
+		              "Please specify an existing residue as an anchor point\n"\
+		"with option --anchor-res=");
 	}
 
 	checkChainContinuity();
@@ -115,19 +115,19 @@ void Polymer::tieAtomsUp()
 			getMonomer(i)->getSidechain()->splitConformers();
 
 			if ((Options::enableTests() == 1 || Options::enableTests() == 2)
-					&& (i == 62 || i == 30 || i == 78 ||
-						i >= 123 || i == 103))
+			    && (i == 62 || i == 30 || i == 78 ||
+			        i >= 123 || i == 103))
 			{
 				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
 			}
 			/*
-			   if ((Options::enableTests() == 3)
-			   && (i == 857 || i == 962 || i == 1011 || i == 1012 ||
-			   i == 1015 || i == 1028 || i == 1053 || i == 1068))
-			   {
-			   getMonomer(i)->getSidechain()->parameteriseAsRotamers();
-			   }
-			   */
+			if ((Options::enableTests() == 3)
+			    && (i == 857 || i == 962 || i == 1011 || i == 1012 ||
+			        i == 1015 || i == 1028 || i == 1053 || i == 1068))
+			{
+				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
+			}
+			*/
 
 			getMonomer(i)->getSidechain()->setInitialDampening();
 		}
@@ -155,7 +155,7 @@ void Polymer::summary()
 }
 
 void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
-		RefinementType rType)
+                            RefinementType rType)
 {
 	if (!monomer)
 	{
@@ -336,7 +336,7 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 		sumCC += cc;
 
 		double diffcc = -getMonomer(n)->scoreWithMap(ScoreTypeMultiply,
-				diffCrystal);
+		                                             diffCrystal);
 		sumDiffCC += diffcc;
 
 		tempCCs.push_back(cc);
@@ -381,7 +381,7 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 void Polymer::graph(std::string graphName)
 {
 	CSVPtr csv = CSVPtr(new CSV(7, "resnum", "newB", "oldB",
-				"pos", "sidepos", "flex", "ellipsoid"));
+	                            "pos", "sidepos", "flex", "ellipsoid"));
 	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB"));
@@ -428,7 +428,7 @@ void Polymer::graph(std::string graphName)
 			double flex = caBond->getFlexibilityPotential();
 
 			csv->addEntry(7, value, meanSq, ca->getInitialBFactor(),
-					posDisp, sideDisp, flex, rad2deg(angleBetween));
+			              posDisp, sideDisp, flex, rad2deg(angleBetween));
 			caDampen = Bond::getDampening(&*caBond);
 			caBlur = Bond::getTorsionBlur(&*caBond);
 
@@ -646,7 +646,7 @@ void Polymer::findAnchorNearestCentroid()
 	else
 	{
 		std::cout << "Anchoring at residue " << anchorRes << ", chain "
-			<< getChainID() << std::endl;
+		<< getChainID() << std::endl;
 	}
 
 	setAnchor(anchorRes);
@@ -661,8 +661,8 @@ void Polymer::changeAnchor(int num)
 	if (!newMono)
 	{
 		shout_at_helen("Attempt to anchor residue " + i_to_str(num - 1) +
-				" failed because it doesn't exist on Chain "
-				+ getChainID() + ".");
+		               " failed because it doesn't exist on Chain "
+		+ getChainID() + ".");
 		return;
 	}
 
@@ -671,7 +671,7 @@ void Polymer::changeAnchor(int num)
 	if (!newAnchorAtom)
 	{
 		shout_at_helen("Anchor position CA does not exist\n"\
-				"for residue " + i_to_str(num));
+		               "for residue " + i_to_str(num));
 	}
 
 	newMono->getBackbone()->setAnchor();
@@ -895,8 +895,8 @@ void Polymer::superimpose()
 			double yMove = getCentroidOffsets()[i].y;
 			double zMove = getCentroidOffsets()[i].z;
 			csv->addEntry(10, sphereAngles[i].x, sphereAngles[i].y,
-					sphereAngles[i].z, xMove, yMove, zMove, angle,
-					axis.x, axis.y, axis.z); 
+			              sphereAngles[i].z, xMove, yMove, zMove, angle,
+			axis.x, axis.y, axis.z); 
 		}
 
 		csv->writeToFile("kabsch.csv");
@@ -1134,7 +1134,7 @@ void Polymer::downWeightResidues(int start, int end, double value) // inclusive
 	}
 
 	std::cout << "Set " << count << " residues in region " << getChainID()
-		<< start << "-" << end << " to weighting of " << 0 << std::endl;
+	<< start << "-" << end << " to weighting of " << 0 << std::endl;
 }
 
 bool Polymer::test()
@@ -1181,7 +1181,7 @@ void Polymer::reportParameters()
 	}
 
 	std::cout << "Chain " << getChainID() << " has " << count
-		<< " refinable bonds." << std::endl;
+	<< " refinable bonds." << std::endl;
 }
 
 void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
