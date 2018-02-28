@@ -112,6 +112,16 @@ public:
 	std::string conformer(int i);
 	void propagateChange();
 	void refreshPositions(bool quick = true);
+	
+	void clearIncludeForRefinements()
+	{
+		_includeForRefine.clear();
+	}
+	
+	void addIncludeForRefinement(AtomGroupPtr group)
+	{
+		_includeForRefine.push_back(group);
+	}
 protected:
 	AtomGroup();
 	void addAtomsFrom(AtomGroupPtr child);
@@ -145,6 +155,7 @@ private:
 	bool _beenTied;
 	CrystalPtr _target;
 	RefinementType _rType;
+	std::vector<AtomGroupPtr> _includeForRefine;
 
 	void privateRefine(); 
 	std::map<std::string, int> conformerMap();
