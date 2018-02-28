@@ -581,7 +581,11 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 
 	/* Calculate appropriate box size and setup FFT */
 	double scales = Options::getProteinSampling() / 2;
-	int n = 2 * (maxDistance + 3.0) / scales;
+	if (scales < 0.25)
+	{
+		scales = 0.25;
+	}
+	int n = 2 * (maxDistance + 2.0) / scales;
 	if (n % 2 == 1) n--;
 
 	FFTPtr segment = FFTPtr(new FFT());
