@@ -494,8 +494,13 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					                          deg2rad(degrees), deg2rad(0.04),
 					refineAngles, addFlex);
 					setScoreType(scoreType);
+					
+					for (int l = 0; l < _includeForRefine.size(); l++)
+					{
+						addSampledAtoms(_includeForRefine[l]);
+					}
 
-					if (rType == RefinementModelPos)
+					if (rType == RefinementModelPos || rType == RefinementFine)
 					{
 						setSilent();
 					}
