@@ -82,8 +82,8 @@ void FlexRegion::addSingleBondParameter(int i)
         shout_at_helen("Trying to add single bond param when strategy not ready.");
     }
 
-//    _strategy->addParameter(&*_bonds[i], Bond::getTorsionBlur, Bond::setTorsionBlur, 0.002, 0.0001, "kick");
-//    _strategy->addParameter(&*_bonds[i], Bond::getDampening, Bond::setDampening, 0.01, 0.0001, "dampen");
+    _strategy->addParameter(&*_bonds[i], Bond::getTorsionBlur, Bond::setTorsionBlur, 0.002, 0.0001, "kick");
+    _strategy->addParameter(&*_bonds[i], Bond::getDampening, Bond::setDampening, 0.01, 0.0001, "dampen");
     _strategy->addParameter(&*_bonds[i], Bond::getMagicPhi, Bond::setMagicPhi, deg2rad(10), deg2rad(1), "phi");
     _strategy->addParameter(&*_bonds[i], Bond::getMagicPsi, Bond::setMagicPsi, deg2rad(10), deg2rad(1), "psi");
 }

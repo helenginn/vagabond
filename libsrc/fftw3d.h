@@ -170,7 +170,7 @@ public:
 	double interpolate(vec3 fractionalVoxel, bool imaginary = false);
 
 	static void add(FFTPtr fftEdit, FFTPtr fftConst,
-	                vec3 add, bool sameScale = false)
+	                vec3 add)
 	{
 		operation(fftEdit, fftConst, add);
 	}
@@ -222,7 +222,7 @@ public:
 	}
 
 	void printSlice(double zVal = 0);
-	void applySymmetry(CSym::CCP4SPG *spaceGroup);
+	void applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes);
 
 	void writeReciprocalToFile(std::string filename, double maxResolution = 0,
 	                           CSym::CCP4SPG *mtzspg = NULL,

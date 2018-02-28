@@ -537,7 +537,7 @@ void Crystal::applySymOps(double res)
     std::cout << "Applying symmetry for space group " << _spaceGroup->symbol_xHM;
     std::cout << " (" << _spaceGroup->spg_num << ")" << std::endl;
 
-    _fft->applySymmetry(_spaceGroup);
+    _fft->applySymmetry(_spaceGroup, res);
 }
 
 void Crystal::fourierTransform(int dir, double res)

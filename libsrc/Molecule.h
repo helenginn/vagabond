@@ -33,7 +33,7 @@ public:
     void tiedUpScattering(double *tied, double *all);
     virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal);
     virtual void graph(std::string) {};
-    virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst) {};
+    virtual void differenceGraphs(std::string, CrystalPtr) {};
     void resetInitialPositions();
     void setAnchors();
     void makePowderList();
