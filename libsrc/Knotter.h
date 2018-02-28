@@ -13,7 +13,7 @@
 #include "shared_ptrs.h"
 
 /* Takes a side chain and ties all the atoms up together
- * with bonds! */
+* with bonds! */
 
 class Knotter
 {

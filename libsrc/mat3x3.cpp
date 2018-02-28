@@ -25,45 +25,45 @@ struct mat3x3 make_mat3x3()
 	mat.vals[0] = 1;
 	mat.vals[4] = 1;
 	mat.vals[8] = 1;
-	
+
 	return mat;
 }
 
 mat3x3 mat3x3_subtract_mat3x3(mat3x3 &one, mat3x3 &two)
 {
-    mat3x3 mat = make_mat3x3();
-    for (int i = 0; i < 9; i++)
-    {
-        mat.vals[i] = one.vals[i] - two.vals[i];
-    }
+	mat3x3 mat = make_mat3x3();
+	for (int i = 0; i < 9; i++)
+	{
+		mat.vals[i] = one.vals[i] - two.vals[i];
+	}
 
-    return mat;
+	return mat;
 }
 
 double mat3x3_abs_sum_all(mat3x3 &mat)
 {
-    double score = 0;
+	double score = 0;
 
-    // penalise being too big more
-    double extraPenalty = 4;
-    
-    for (int i = 0; i < 9; i++)
-    {   
-        double add = mat.vals[i];
+	// penalise being too big more
+	double extraPenalty = 4;
 
-        if (mat.vals[i] > 0)
-        {
-            add *= extraPenalty;       
-        }
-        else
-        {
-            add *= -1;
-        }
+	for (int i = 0; i < 9; i++)
+	{   
+		double add = mat.vals[i];
 
-        score += add; 
-    }
+		if (mat.vals[i] > 0)
+		{
+			add *= extraPenalty;       
+		}
+		else
+		{
+			add *= -1;
+		}
 
-    return score;
+		score += add; 
+	}
+
+	return score;
 }
 
 vec3 mat3x3_mult_vec(struct mat3x3 mat, struct vec3 vec)
@@ -146,8 +146,8 @@ mat3x3 mat3x3_inverse(mat3x3 &mat)
 mat3x3 mat3x3_from_unit_cell(double *unitCell)
 {
 	return mat3x3_from_unit_cell(unitCell[0], unitCell[1],
-								 unitCell[2], unitCell[3],
-								 unitCell[4], unitCell[5]);
+	                             unitCell[2], unitCell[3],
+	unitCell[4], unitCell[5]);
 }
 
 void unit_cell_from_mat3x3(mat3x3 mat, double *vals)
@@ -330,7 +330,7 @@ mat3x3 mat3x3_rhbasis(vec3 aVec, vec3 bVec)
 
 
 /* Rotate vector (vec1) around axis (axis) by angle theta. Find value of
- * theta for which the angle between (vec1) and (vec2) is minimised. */
+* theta for which the angle between (vec1) and (vec2) is minimised. */
 mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis, double *best)
 {
 	/* Let's have unit vectors */
@@ -339,7 +339,7 @@ mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis, double *best)
 	vec3_set_length(&axis, 1);
 
 	/* Redeclaring these to try and maintain readability and
-	 * check-ability against the maths I wrote down */
+	* check-ability against the maths I wrote down */
 	double a = vec2.x; double b = vec2.y; double c = vec2.z;
 	double p = vec1.x; double q = vec1.y; double r = vec1.z;
 	double x = axis.x; double y = axis.y; double z = axis.z;
@@ -354,15 +354,15 @@ mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis, double *best)
 	double tan_theta = - B / A;
 	double theta = atan(tan_theta);
 
-//	double sinSq = tan_theta * tan_theta / (1 + tan_theta * tan_theta);
+	//	double sinSq = tan_theta * tan_theta / (1 + tan_theta * tan_theta);
 	double sinSq = pow(sin(theta), 2);
 	double cc = sqrt(1 - sinSq);
 	double s = sqrt(sinSq);
 
 	/* Now we have two possible solutions, theta or theta+pi
-	 * and we need to work out which one. This could potentially be
-	 * simplified - do we really need so many cos/sins? maybe check
-	 * the 2nd derivative instead? */
+	* and we need to work out which one. This could potentially be
+	* simplified - do we really need so many cos/sins? maybe check
+	* the 2nd derivative instead? */
 	double C = 1 - cc;
 	double occ = -cc;
 	double oC = 1 - occ;
@@ -390,7 +390,7 @@ mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis, double *best)
 	else
 	{
 		/* Don't return an identity matrix which has been rotated by
-		 * theta around "axis", but do assign it to twizzle. */
+		* theta around "axis", but do assign it to twizzle. */
 		return mat3x3_unit_vec_rotation(axis, bestAngle);
 	}
 }
@@ -531,7 +531,7 @@ mat3x3 mat3x3_make_tensor(mat3x3 &tensify, vec3 &lengths)
 	scaling.vals[8] = lengths.z;
 	mat3x3 combo1 = mat3x3_mult_mat3x3(scaling, transpose);
 	mat3x3 combo2 = mat3x3_mult_mat3x3(tensify, combo1);
-	
+
 	return combo2;
 }
 
@@ -543,13 +543,13 @@ double mat3x3_diff_from_identity(mat3x3 &mat, double target)
 		target = (mat.vals[0] + mat.vals[4] + mat.vals[8]) / 3;
 	}
 
-//	std::cout << "---" << std::endl;
+	//	std::cout << "---" << std::endl;
 
 	for (int i = 0; i < 9; i++)
 	{
 		double this_target = (i % 4 == 0) ? target : 0;
 		double add = fabs(mat.vals[i] - this_target);
-	//	std::cout << this_target << " " << mat.vals[i] << std::endl;
+		//	std::cout << this_target << " " << mat.vals[i] << std::endl;
 
 		diff += add;
 	}
@@ -567,24 +567,24 @@ void mat3x3_mult_scalar(mat3x3 *mat, double scale)
 
 double mat3x3_rotation_angle(mat3x3 &mat)
 {
-    double angle = 0;
-    double a = mat.vals[0];
-    double b = mat.vals[4];
-    double c = mat.vals[8];
+	double angle = 0;
+	double a = mat.vals[0];
+	double b = mat.vals[4];
+	double c = mat.vals[8];
 
-    double cosTheta = (a + b + c - 1) / 2;
-    double theta = acos(cosTheta);
+	double cosTheta = (a + b + c - 1) / 2;
+	double theta = acos(cosTheta);
 
-    return theta;
+	return theta;
 }
 
 vec3 mat3x3_rotation_axis(mat3x3 &mat)
 {
-    double angle = mat3x3_rotation_angle(mat);
-    double cosangle = cos(angle);
-    double x = sqrt((mat.vals[0] - cosangle) / (1 - cosangle));
-    double y = sqrt((mat.vals[5] - cosangle) / (1 - cosangle));
-    double z = sqrt((mat.vals[8] - cosangle) / (1 - cosangle));
+	double angle = mat3x3_rotation_angle(mat);
+	double cosangle = cos(angle);
+	double x = sqrt((mat.vals[0] - cosangle) / (1 - cosangle));
+	double y = sqrt((mat.vals[5] - cosangle) / (1 - cosangle));
+	double z = sqrt((mat.vals[8] - cosangle) / (1 - cosangle));
 
-    return make_vec3(x, y, z);
+	return make_vec3(x, y, z);
 }

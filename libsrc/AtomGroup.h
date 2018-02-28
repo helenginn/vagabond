@@ -26,8 +26,8 @@ public:
 
 	double scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plot = false);
 	static double scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
-									  bool plot = false,
-									  std::vector<AtomPtr> selected = std::vector<AtomPtr>());
+	                                  bool plot = false,
+	std::vector<AtomPtr> selected = std::vector<AtomPtr>());
 
 	void setMonomer(MonomerPtr monomer)
 	{
@@ -82,7 +82,7 @@ public:
 	double getAverageDisplacement();
 
 	std::string getPDBContribution(PDBType pdbType,
-			CrystalPtr crystal = CrystalPtr());
+	                               CrystalPtr crystal = CrystalPtr());
 
 	void setTied()
 	{
@@ -112,12 +112,12 @@ public:
 	std::string conformer(int i);
 	void propagateChange();
 	void refreshPositions(bool quick = true);
-	
+
 	void clearIncludeForRefinements()
 	{
 		_includeForRefine.clear();
 	}
-	
+
 	void addIncludeForRefinement(AtomGroupPtr group)
 	{
 		_includeForRefine.push_back(group);

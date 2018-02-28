@@ -17,13 +17,13 @@
 class TextManager
 {
 private:
-    static TextManagerPtr textManager;
-    
-    TextManager();
-    
+	static TextManagerPtr textManager;
+
+	TextManager();
+
 public:
-    static void text_malloc(png_byte **pointer, std::string text, int *width, int *height);
-    static void text_free(png_byte **pointer);
+	static void text_malloc(png_byte **pointer, std::string text, int *width, int *height);
+	static void text_free(png_byte **pointer);
 };
 
 #endif /* defined(__cppxfel__TextManager__) */

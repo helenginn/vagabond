@@ -14,125 +14,125 @@
 
 typedef enum
 {
-    InstructionTypeNone,
-    InstructionTypeOpenPDB,
-    InstructionTypeOpenMTZ,
-    InstructionTypeSuperimpose,
-    InstructionTypeRefinePositions,
-    InstructionTypeRefineFlexibility,
-    InstructionTypeRefineDensity,
-    InstructionTypeRefineToEnd,
-    InstructionTypeChangeBMult,
-    InstructionTypeRecalculateFFT,
-    InstructionTypeSetOutputDir,
-    InstructionTypeSetObjectValue,
-    InstructionTypeGetObjectValue,
-    InstructionTypeFitWholeMoleculeTranslation,
-    InstructionTypeFitWholeMoleculeRotation,
+	InstructionTypeNone,
+	InstructionTypeOpenPDB,
+	InstructionTypeOpenMTZ,
+	InstructionTypeSuperimpose,
+	InstructionTypeRefinePositions,
+	InstructionTypeRefineFlexibility,
+	InstructionTypeRefineDensity,
+	InstructionTypeRefineToEnd,
+	InstructionTypeChangeBMult,
+	InstructionTypeRecalculateFFT,
+	InstructionTypeSetOutputDir,
+	InstructionTypeSetObjectValue,
+	InstructionTypeGetObjectValue,
+	InstructionTypeFitWholeMoleculeTranslation,
+	InstructionTypeFitWholeMoleculeRotation,
 } InstructionType;
 
 class Notifiable
 {
 public:
-    Notifiable()
-    {
-        _value = 0;
-        _result = 0;
-        _setter = NULL;
-        _getter = NULL;
-        _object = NULL;
-        _enabled = false;
-        _atomGroup = AtomGroupPtr();
-    }
-    
-    virtual void enable()
-    {
-        _enabled = true;
-    }
+	Notifiable()
+	{
+		_value = 0;
+		_result = 0;
+		_setter = NULL;
+		_getter = NULL;
+		_object = NULL;
+		_enabled = false;
+		_atomGroup = AtomGroupPtr();
+	}
 
-    virtual void disable()
-    {
-        _enabled = false;
-    }
+	virtual void enable()
+	{
+		_enabled = true;
+	}
 
-    virtual bool isRunningSomething() = 0;
+	virtual void disable()
+	{
+		_enabled = false;
+	}
 
-    virtual void setMessage(std::string message)
-    {
-        _message = message;
-    }
+	virtual bool isRunningSomething() = 0;
 
-    void setObject(void *object)
-    {
-        _object = object;
-    }
+	virtual void setMessage(std::string message)
+	{
+		_message = message;
+	}
 
-    void setSetter(Setter setter, double value)
-    {
-        _value = value;
-        _setter = setter;
-    }    
+	void setObject(void *object)
+	{
+		_object = object;
+	}
 
-    void setGetter(Getter getter)
-    {
-        _getter = getter;
-    }
+	void setSetter(Setter setter, double value)
+	{
+		_value = value;
+		_setter = setter;
+	}    
 
-    void performObjectSet()
-    {
-        disable();
-        (*_setter)(_object, _value);
+	void setGetter(Getter getter)
+	{
+		_getter = getter;
+	}
 
-        if (_atomGroup)
-        {
-            _atomGroup->refreshPositions(false);
-        } 
+	void performObjectSet()
+	{
+		disable();
+		(*_setter)(_object, _value);
 
-        enable();
-    }
+		if (_atomGroup)
+		{
+			_atomGroup->refreshPositions(false);
+		} 
 
-    void performObjectGet()
-    {
-        disable();
-        _result = (*_getter)(_object);
+		enable();
+	}
 
-        if (_atomGroup)
-        {
-            _atomGroup->refreshPositions(true);
-        }
+	void performObjectGet()
+	{
+		disable();
+		_result = (*_getter)(_object);
 
-        enable();
-    }
+		if (_atomGroup)
+		{
+			_atomGroup->refreshPositions(true);
+		}
 
-    void setInstruction(InstructionType type)
-    {
-        _instructionType = type;
-        wakeup();
-    }
+		enable();
+	}
 
-    virtual void wakeup() = 0;
+	void setInstruction(InstructionType type)
+	{
+		_instructionType = type;
+		wakeup();
+	}
 
-    void setRefreshGroup(AtomGroupPtr group)
-    {
-        _atomGroup = group;
-    }
+	virtual void wakeup() = 0;
+
+	void setRefreshGroup(AtomGroupPtr group)
+	{
+		_atomGroup = group;
+	}
 protected:
-    InstructionType _instructionType;
+	InstructionType _instructionType;
 
-    void *getObject()
-    {
-        return _object;
-    }
+	void *getObject()
+	{
+		return _object;
+	}
 
 private:
-    std::string _message;
-    bool _enabled;
-    void *_object;
-    Setter _setter;
-    Getter _getter;
-    double _value;
-    double _result;
-    AtomGroupPtr _atomGroup;
+	std::string _message;
+	bool _enabled;
+	void *_object;
+	Setter _setter;
+	Getter _getter;
+	double _value;
+	double _result;
+	AtomGroupPtr _atomGroup;
 };
 
 #endif

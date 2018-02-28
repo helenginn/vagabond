@@ -11,16 +11,16 @@
 class VBondReader
 {
 public:
-    VBondReader();
-    
-    void setFilename(std::string filename)
-    {
-        _filename = filename;
-    }
+	VBondReader();
 
-    CrystalPtr getCrystal();
+	void setFilename(std::string filename)
+	{
+		_filename = filename;
+	}
+
+	CrystalPtr getCrystal();
 private:
-    std::string _filename;
+	std::string _filename;
 };
 
 

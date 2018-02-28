@@ -14,41 +14,41 @@
 
 typedef enum
 {
-    FlexTargetMaximiseIsotropy,
-    FlexTargetMatchOrigBFactor,
+	FlexTargetMaximiseIsotropy,
+	FlexTargetMatchOrigBFactor,
 } FlexTarget;
 
 class FlexGlobal
 {
 public:
-    FlexGlobal();
+	FlexGlobal();
 
-    void setAtomGroup(AtomGroupPtr group)
-    {
-        _atomGroup = group;
-    }
+	void setAtomGroup(AtomGroupPtr group)
+	{
+		_atomGroup = group;
+	}
 
-    static double score(void *object);
+	static double score(void *object);
 
-    void maximiseIsotropy();
+	void maximiseIsotropy();
 
-    void matchOriginalBees()
-    {
-        _targetType = FlexTargetMatchOrigBFactor;
-    }
+	void matchOriginalBees()
+	{
+		_targetType = FlexTargetMatchOrigBFactor;
+	}
 
-    void setTargetBFactor(double value)
-    {
-        _targetIsoB = value;
-    }
+	void setTargetBFactor(double value)
+	{
+		_targetIsoB = value;
+	}
 private:
-    double _targetIsoB;
+	double _targetIsoB;
 
-    double matchOriginalBeeScore();
-    double maximiseIsotropyScore();
-    AtomGroupPtr _atomGroup;
+	double matchOriginalBeeScore();
+	double maximiseIsotropyScore();
+	AtomGroupPtr _atomGroup;
 
-    FlexTarget _targetType;
+	FlexTarget _targetType;
 };
 
 #endif /* FlexGlobal_hpp */

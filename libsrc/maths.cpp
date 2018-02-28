@@ -28,13 +28,13 @@ double scale_factor_by_sum(std::vector<double> &set1, std::vector<double> &set2)
 	double grad = (y_sum / x_sum);
 
 	if (grad < 0)
-		grad = -1;
+	grad = -1;
 
 	return grad;
 }
 
 double scale_factor_cutoff(std::vector<double> &set1, std::vector<double> &set2,
-					double cutoff)
+                           double cutoff)
 {
 	/* Misnamed */
 	double x_squared = 0;
@@ -57,7 +57,7 @@ double scale_factor_cutoff(std::vector<double> &set1, std::vector<double> &set2,
 	double grad = (x_y / x_squared);
 
 	if (grad < 0)
-		grad = -1;
+	grad = -1;
 
 	return grad;
 }
@@ -91,7 +91,7 @@ double r_factor(std::vector<double> &set1, std::vector<double> &set2)
 }
 
 double scaled_r_factor(std::vector<double> &set1, std::vector<double> &set2,
-					   double cutoff)
+                       double cutoff)
 {
 	double scale = scale_factor_cutoff(set1, set2, cutoff);
 
@@ -135,7 +135,7 @@ double mean(std::vector<double> &vec1)
 
 		sum_weight++;
 	}
-	
+
 	return sum_x / sum_weight;
 }
 
@@ -167,7 +167,7 @@ double weightedMapScore(std::vector<double> &vec1, std::vector<double> &vec2)
 }
 
 double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
-				   double cutoff)
+                   double cutoff)
 {
 	double sum_x = 0;
 	double sum_y = 0;
@@ -202,7 +202,7 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
 	double mean_y = sum_y / sum_weight;
 
 	if (mean_x != mean_x || mean_y != mean_y)
-		return 0;
+	return 0;
 
 	double sum_x_y_minus_mean_x_y = 0;
 	double sum_x_minus_mean_x_sq = 0;
@@ -239,13 +239,13 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
 
 	double r = sum_x_y_minus_mean_x_y
 	/ (sqrt(sum_x_minus_mean_x_sq) * sqrt(sum_y_minus_mean_y_sq));
-	
+
 	return r;
 }
 
 /* Produces in real space */
 void generateResolutionBins(double minD, double maxD,
-							int binCount, std::vector<double> *bins)
+                            int binCount, std::vector<double> *bins)
 {
 	double minRadius = (minD == 0) ? 0 : 1 / minD;
 	double maxRadius = 1 / maxD;

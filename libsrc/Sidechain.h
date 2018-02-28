@@ -17,89 +17,89 @@
 class Sidechain : public AtomGroup
 {
 public:
-    Sidechain()
-    {
-        _canRefine = false;
-        _rotamerised = false;
-        _exponent = 0;
-    }
+	Sidechain()
+	{
+		_canRefine = false;
+		_rotamerised = false;
+		_exponent = 0;
+	}
 
-    bool canRefine()
-    {
-        return _canRefine;
-    }
+	bool canRefine()
+	{
+		return _canRefine;
+	}
 
-    void setCanRefine(bool canRefine)
-    {
-        _canRefine = canRefine;
-    }
+	void setCanRefine(bool canRefine)
+	{
+		_canRefine = canRefine;
+	}
 
-    void setResNum(int resNum)
-    {
-        _resNum = resNum;
-    }
+	void setResNum(int resNum)
+	{
+		_resNum = resNum;
+	}
 
-    void setPolymer(PolymerPtr poly)
-    {
-        _myPolymer = poly;
-    }
+	void setPolymer(PolymerPtr poly)
+	{
+		_myPolymer = poly;
+	}
 
-    PolymerPtr getPolymer()
-    {
-        return _myPolymer.lock();
-    }
+	PolymerPtr getPolymer()
+	{
+		return _myPolymer.lock();
+	}
 
-    virtual bool shouldRefineAngles()
-    {
-        return (_timesRefined > 0);
-    }
+	virtual bool shouldRefineAngles()
+	{
+		return (_timesRefined > 0);
+	}
 
-    void setInitialDampening();
-    void fixBackboneTorsions(AtomPtr betaTorsion);
-    void splitConformers(int count = -1);
-    void parameteriseAsRotamers();
-    virtual void refine(CrystalPtr target, RefinementType rType);
+	void setInitialDampening();
+	void fixBackboneTorsions(AtomPtr betaTorsion);
+	void splitConformers(int count = -1);
+	void parameteriseAsRotamers();
+	virtual void refine(CrystalPtr target, RefinementType rType);
 
 
-    static void setRotamerExponent(void *object, double exp)
-    {
-        if (exp < 0) exp = 0;
-        Sidechain *side = static_cast<Sidechain *>(object);
-        side->_exponent = exp;
-        side->refreshRotamers();
+	static void setRotamerExponent(void *object, double exp)
+	{
+		if (exp < 0) exp = 0;
+		Sidechain *side = static_cast<Sidechain *>(object);
+		side->_exponent = exp;
+		side->refreshRotamers();
 
-    }
+	}
 
-    static double getRotamerExponent(void *object)
-    {
-        return static_cast<Sidechain *>(object)->_exponent;
-    }
+	static double getRotamerExponent(void *object)
+	{
+		return static_cast<Sidechain *>(object)->_exponent;
+	}
 
 protected:
-    virtual bool shouldRefineMagicAxis(BondPtr bond);
-    virtual AtomList topLevelAtoms()
-    {
-        return findAtoms("CB");
-    }
+	virtual bool shouldRefineMagicAxis(BondPtr bond);
+	virtual AtomList topLevelAtoms()
+	{
+		return findAtoms("CB");
+	}
 
-    virtual std::string getClassName()
-    {
-        return "Sidechain";
-    }
+	virtual std::string getClassName()
+	{
+		return "Sidechain";
+	}
 
-    virtual std::string getParserIdentifier()
-    {
-        return "side_" + i_to_str(_resNum);
-    }
+	virtual std::string getParserIdentifier()
+	{
+		return "side_" + i_to_str(_resNum);
+	}
 
-    virtual void addProperties();
+	virtual void addProperties();
 private:
-    void refreshRotamers();
-    bool _rotamerised;
-    bool _canRefine;
-    int _resNum;
-    double _exponent; /* For rotamer weighting */
-    PolymerWkr _myPolymer;
+	void refreshRotamers();
+	bool _rotamerised;
+	bool _canRefine;
+	int _resNum;
+	double _exponent; /* For rotamer weighting */
+	PolymerWkr _myPolymer;
 };
 
 #endif /* defined(__vagabond__Sidechain__) */

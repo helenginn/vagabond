@@ -28,83 +28,83 @@ int RefinementGridSearch::_refine_counter = 0;
 
 void RefinementGridSearch::recursiveEvaluation(ParamList referenceList, ParamList workingList, ResultMap *results)
 {
-    size_t paramCount = objects.size();
-    size_t workingCount = workingList.size();
+	size_t paramCount = objects.size();
+	size_t workingCount = workingList.size();
 	double grid_length = stepSizes[workingCount] / otherValues[workingCount];
 
-    if (workingCount < paramCount)
-    {
-        if (workingCount == 1)
-        {
-       //     std::cout << "." << std::flush;
-        }
-        
-        for (int i = -grid_length / 2; i <= (int)(grid_length / 2 + 0.5); i++)
-        {
-            double mean = referenceList[workingCount];
-            double step = otherValues[workingCount];
-            double value = mean + i * step;
-            
-            ParamList extended = workingList;
-            extended.push_back(value);
-            recursiveEvaluation(referenceList, extended, results);
-        }
-        
-        return;
-    }
-    
-    for (int i = 0; i < workingList.size(); i++)
-    {
-        Setter setter = setters[i];
-        (*setter)(objects[i], workingList[i]);
-    }
-    
-    double result = (*evaluationFunction)(evaluateObject);
-    (*results)[workingList] = result;
+	if (workingCount < paramCount)
+	{
+		if (workingCount == 1)
+		{
+			//     std::cout << "." << std::flush;
+		}
+
+		for (int i = -grid_length / 2; i <= (int)(grid_length / 2 + 0.5); i++)
+		{
+			double mean = referenceList[workingCount];
+			double step = otherValues[workingCount];
+			double value = mean + i * step;
+
+			ParamList extended = workingList;
+			extended.push_back(value);
+			recursiveEvaluation(referenceList, extended, results);
+		}
+
+		return;
+	}
+
+	for (int i = 0; i < workingList.size(); i++)
+	{
+		Setter setter = setters[i];
+		(*setter)(objects[i], workingList[i]);
+	}
+
+	double result = (*evaluationFunction)(evaluateObject);
+	(*results)[workingList] = result;
 	reverseResults[result] = workingList;
-    
-    orderedParams.push_back(workingList);
-    orderedResults.push_back(result);
-    
-    reportProgress(result);
+
+	orderedParams.push_back(workingList);
+	orderedResults.push_back(result);
+
+	reportProgress(result);
 }
 
 void RefinementGridSearch::refine()
 {
-    RefinementStrategy::refine();
-    
-    ParamList currentValues;
-    CSVPtr csv = CSVPtr(new CSV());
+	RefinementStrategy::refine();
 
-    for (int i = 0; i < objects.size(); i++)
-    {
-        Getter getter = getters[i];
-        currentValues.push_back((*getter)(objects[i]));
-        csv->addHeader(tags[i]);
-    }
-    
-    csv->addHeader("result");
-    
-    recursiveEvaluation(currentValues, ParamList(), &results);
+	ParamList currentValues;
+	CSVPtr csv = CSVPtr(new CSV());
 
-    double minResult = (*evaluationFunction)(evaluateObject);
-    ParamList minParams;
+	for (int i = 0; i < objects.size(); i++)
+	{
+		Getter getter = getters[i];
+		currentValues.push_back((*getter)(objects[i]));
+		csv->addHeader(tags[i]);
+	}
+
+	csv->addHeader("result");
+
+	recursiveEvaluation(currentValues, ParamList(), &results);
+
+	double minResult = (*evaluationFunction)(evaluateObject);
+	ParamList minParams;
 	bool changed = false;
 
-    for (ResultMap::iterator it = results.begin(); it != results.end(); it++)
-    {
-        if (it->second < minResult)
-        {
-            minResult = it->second;
-            minParams = it->first;
+	for (ResultMap::iterator it = results.begin(); it != results.end(); it++)
+	{
+		if (it->second < minResult)
+		{
+			minResult = it->second;
+			minParams = it->first;
 			changed = true;
-        }
-        
-        std::vector<double> result = it->first;
-        result.push_back(it->second);
-        
-        csv->addEntry(result);
-    }
+		}
+
+		std::vector<double> result = it->first;
+		result.push_back(it->second);
+
+		csv->addEntry(result);
+	}
 
 	for (int i = 0; i < minParams.size(); i++)
 	{
@@ -146,6 +146,6 @@ void RefinementGridSearch::refine()
 
 	_refine_counter++;
 
-    finish();
+	finish();
 }
 

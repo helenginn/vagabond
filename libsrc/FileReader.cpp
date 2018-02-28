@@ -19,18 +19,18 @@
 std::string FileReader::outputDir;
 
 std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
-    std::stringstream ss(s);
-    std::string item;
-    while (std::getline(ss, item, delim)) {
-        elems.push_back(item);
-    }
-    return elems;
+	std::stringstream ss(s);
+	std::string item;
+	while (std::getline(ss, item, delim)) {
+		elems.push_back(item);
+	}
+	return elems;
 }
 
 std::vector<std::string> split(const std::string &s, char delim) {
-    std::vector<std::string> elems;
-    split(s, delim, elems);
-    return elems;
+	std::vector<std::string> elems;
+	split(s, delim, elems);
+	return elems;
 }
 
 bool file_exists(const std::string& name)
@@ -41,24 +41,24 @@ bool file_exists(const std::string& name)
 
 std::string get_file_contents(std::string filename)
 {
-    std::ifstream in(filename, std::ios::in | std::ios::binary);
-    
-    if (in)
-    {
-        std::string contents;
-        in.seekg(0, std::ios::end);
-        contents.resize((unsigned long)in.tellg());
-        in.seekg(0, std::ios::beg);
-        in.read(&contents[0], contents.size());
-        in.close();
-        return(contents);
-    }
-	
+	std::ifstream in(filename, std::ios::in | std::ios::binary);
 
-    std::string errString = "Could not get file contents for file " + std::string(filename);
+	if (in)
+	{
+		std::string contents;
+		in.seekg(0, std::ios::end);
+		contents.resize((unsigned long)in.tellg());
+		in.seekg(0, std::ios::beg);
+		in.read(&contents[0], contents.size());
+		in.close();
+		return(contents);
+	}
+
+
+	std::string errString = "Could not get file contents for file " + std::string(filename);
 	std::cout << errString << std::endl;
 
-    throw(errno);
+	throw(errno);
 }
 
 
@@ -66,7 +66,7 @@ std::string getFilename(std::string filename)
 {
 	size_t pos = filename.rfind("/");
 	if(pos == std::string::npos)  //No path.
-		return filename;
+	return filename;
 
 	return filename.substr(pos + 1, filename.length());
 }
@@ -76,10 +76,10 @@ std::string getBaseFilename(std::string filename)
 	std::string fName = getFilename(filename);
 	size_t pos = fName.rfind(".");
 	if(pos == std::string::npos)  //No extension.
-		return fName;
+	return fName;
 
 	if(pos == 0)    //. is at the front. Not an extension.
-		return fName;
+	return fName;
 
 	return fName.substr(0, pos);
 }

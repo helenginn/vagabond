@@ -168,7 +168,7 @@ mat3x3 Kabsch::run()
 	free_2d_array(matrix);
 	free_2d_array(v);
 	free(w);
-	
+
 	return mat2;
 }
 

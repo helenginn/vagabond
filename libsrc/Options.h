@@ -131,7 +131,7 @@ public:
 	void openMTZ(std::string mtzName);
 	void recalculateFFT();
 	void fitWholeMolecule(bool translation, bool rotation);
-	
+
 	static std::string rTypeString(RefinementType type);
 private:
 	static OptionsPtr options;

@@ -13,7 +13,7 @@
 
 class Object
 {
-	
+
 };
 
 #endif /* defined(__vagabond__Object__) */

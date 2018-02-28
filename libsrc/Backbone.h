@@ -17,52 +17,52 @@
 class Backbone : public AtomGroup
 {
 public:
-    void setPolymer(PolymerPtr poly)
-    {
-        _myPolymer = poly;
-    }
-    
-    PolymerPtr getPolymer()
-    {
-        return _myPolymer.lock();
-    }
+	void setPolymer(PolymerPtr poly)
+	{
+		_myPolymer = poly;
+	}
 
-    void setResNum(int resNum)
-    {
-        _resNum = resNum;
-    }
+	PolymerPtr getPolymer()
+	{
+		return _myPolymer.lock();
+	}
 
-    int getResNum()
-    {
-        return _resNum;
-    }
+	void setResNum(int resNum)
+	{
+		_resNum = resNum;
+	}
 
-    virtual bool shouldRefineAngles()
-    {
-        return (_timesRefined > 0);
-    }
+	int getResNum()
+	{
+		return _resNum;
+	}
 
-    AtomPtr betaCarbonTorsionAtom();
+	virtual bool shouldRefineAngles()
+	{
+		return (_timesRefined > 0);
+	}
 
-    virtual void refine(CrystalPtr target, RefinementType rType);
-    void setAnchor();
+	AtomPtr betaCarbonTorsionAtom();
+
+	virtual void refine(CrystalPtr target, RefinementType rType);
+	void setAnchor();
 protected:
-    virtual void addProperties();
-    virtual bool shouldRefineMagicAxis(BondPtr bond);
+	virtual void addProperties();
+	virtual bool shouldRefineMagicAxis(BondPtr bond);
 
-    virtual std::string getClassName()
-    {
-        return "Backbone";
-    }
+	virtual std::string getClassName()
+	{
+		return "Backbone";
+	}
 
-    virtual std::string getParserIdentifier()
-    {
-        return "back_" + i_to_str(_resNum);
-    }
+	virtual std::string getParserIdentifier()
+	{
+		return "back_" + i_to_str(_resNum);
+	}
 
 private:
-    int _resNum;
-    PolymerWkr _myPolymer;
+	int _resNum;
+	PolymerWkr _myPolymer;
 };
 
 #endif /* defined(__vagabond__Backbone__) */

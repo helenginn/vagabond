@@ -14,7 +14,7 @@ double LocalCC::localCorrelation(FFTPtr fft1, FFTPtr fft2)
 {
 	double sumCC = 0;
 	double count = 0;
-        return 0;
+	return 0;
 
 	for (long k = -fft2->nz / 2; k < fft2->nz / 2; k++)
 	{
@@ -37,7 +37,7 @@ double LocalCC::localCorrelation(FFTPtr fft1, FFTPtr fft2)
 							fft2->collapse(&new_x, &new_y, &new_z);
 
 							if (new_x * base_x < 0 || new_y * base_y < 0 ||
-								new_z * base_z < 0) // wrong!!
+							    new_z * base_z < 0) // wrong!!
 							{
 								continue;
 							}

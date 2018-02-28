@@ -17,234 +17,234 @@ bool Model::_useMutex = false;
 
 Model::Model()
 {
-    _realSpaceTensor = make_mat3x3();
+	_realSpaceTensor = make_mat3x3();
 }
 
 void Model::addToMonomer(MonomerPtr monomer)
 {
-    monomer->addModel(shared_from_this());
+	monomer->addModel(shared_from_this());
 
-    PolymerPtr polymer = monomer->getPolymer();
-    MoleculePtr molecule = boost::static_pointer_cast<Molecule>(polymer);
+	PolymerPtr polymer = monomer->getPolymer();
+	MoleculePtr molecule = boost::static_pointer_cast<Molecule>(polymer);
 }
 
 double returnOne(void *object, double x, double y, double z)
 {
-    return 1;
+	return 1;
 }
 
 FFTPtr Model::getZeroDistribution()
 {
-    double n = ATOM_SAMPLING_COUNT;
-    double scale = 2 * MAX_SCATTERING_DSTAR;
-    prepareDistribution(n, scale, this, &returnOne);
+	double n = ATOM_SAMPLING_COUNT;
+	double scale = 2 * MAX_SCATTERING_DSTAR;
+	prepareDistribution(n, scale, this, &returnOne);
 
-    return getDistributionCopy();
+	return getDistributionCopy();
 }
 
 std::vector<vec3> Model::polymerCorrectedPositions()
 {
-    std::vector<vec3> posOnly;
-    std::vector<BondSample> *positions = getManyPositions();
-    posOnly.reserve(positions->size());
+	std::vector<vec3> posOnly;
+	std::vector<BondSample> *positions = getManyPositions();
+	posOnly.reserve(positions->size());
 
-    MoleculePtr molecule = getMolecule();
-    std::vector<vec3> offsets;
-    std::vector<vec3> transTensorOffsets;
-    std::vector<vec3> rotationCentres;
-    std::vector<mat3x3> rotations;
-    std::vector<mat3x3> extraRotations;
-    vec3 rotCentre;
+	MoleculePtr molecule = getMolecule();
+	std::vector<vec3> offsets;
+	std::vector<vec3> transTensorOffsets;
+	std::vector<vec3> rotationCentres;
+	std::vector<mat3x3> rotations;
+	std::vector<mat3x3> extraRotations;
+	vec3 rotCentre;
 
-    if (molecule)
-    {
-        offsets = molecule->getCentroidOffsets();
-        rotations = molecule->getRotationCorrections();
-        rotationCentres = molecule->getRotationCentres();
-        transTensorOffsets = molecule->getTransTensorOffsets();
-        extraRotations = molecule->getExtraRotations();
-        rotCentre = molecule->getExtraRotationCentre();
-    }
+	if (molecule)
+	{
+		offsets = molecule->getCentroidOffsets();
+		rotations = molecule->getRotationCorrections();
+		rotationCentres = molecule->getRotationCentres();
+		transTensorOffsets = molecule->getTransTensorOffsets();
+		extraRotations = molecule->getExtraRotations();
+		rotCentre = molecule->getExtraRotationCentre();
+	}
 
-    bool hasCentre = true;
+	bool hasCentre = true;
 
-    if (rotCentre.x != rotCentre.x)
-    {
-        hasCentre = false;
-    }
+	if (rotCentre.x != rotCentre.x)
+	{
+		hasCentre = false;
+	}
 
-    for (int i = 0; i < positions->size(); i++)
-    {
-        vec3 subtract = positions->at(i).start;
+	for (int i = 0; i < positions->size(); i++)
+	{
+		vec3 subtract = positions->at(i).start;
 
-        // perform rotation element of superposition
+		// perform rotation element of superposition
 
-        if (rotations.size() > i && rotationCentres.size() > i)
-        {
-            vec3 tmp = vec3_add_vec3(subtract, rotationCentres[i]);
-            mat3x3_mult_vec(rotations[i], &tmp);
-            subtract = vec3_subtract_vec3(tmp, rotationCentres[i]);
-        }
+		if (rotations.size() > i && rotationCentres.size() > i)
+		{
+			vec3 tmp = vec3_add_vec3(subtract, rotationCentres[i]);
+			mat3x3_mult_vec(rotations[i], &tmp);
+			subtract = vec3_subtract_vec3(tmp, rotationCentres[i]);
+		}
 
-        // remove translation aspect of superposition
+		// remove translation aspect of superposition
 
-        if (offsets.size() > i)
-        {
-            subtract = vec3_subtract_vec3(subtract, offsets[i]);
-        }
+		if (offsets.size() > i)
+		{
+			subtract = vec3_subtract_vec3(subtract, offsets[i]);
+		}
 
-        // additional rotations applying to whole-molecule
+		// additional rotations applying to whole-molecule
 
-        if (extraRotations.size() > i && rotationCentres.size() > i)
-        {
-            vec3 *bestVec = &rotationCentres[i];
-            
-            if (hasCentre)
-            {
-                bestVec = &rotCentre;
-            }
+		if (extraRotations.size() > i && rotationCentres.size() > i)
+		{
+			vec3 *bestVec = &rotationCentres[i];
 
-            vec3 tmp = vec3_add_vec3(subtract, *bestVec); 
-            mat3x3_mult_vec(extraRotations[i], &tmp);
-            subtract = vec3_subtract_vec3(tmp, *bestVec);
-        }
+			if (hasCentre)
+			{
+				bestVec = &rotCentre;
+			}
 
-        // remove the translation from the tensor for translation
+			vec3 tmp = vec3_add_vec3(subtract, *bestVec); 
+			mat3x3_mult_vec(extraRotations[i], &tmp);
+			subtract = vec3_subtract_vec3(tmp, *bestVec);
+		}
 
-        if (transTensorOffsets.size() > i)
-        {
-            subtract = vec3_subtract_vec3(subtract, transTensorOffsets[i]);
-        }
+		// remove the translation from the tensor for translation
 
-        posOnly.push_back(subtract);
-    }
+		if (transTensorOffsets.size() > i)
+		{
+			subtract = vec3_subtract_vec3(subtract, transTensorOffsets[i]);
+		}
 
-    return posOnly;
+		posOnly.push_back(subtract);
+	}
+
+	return posOnly;
 }
 
 vec3 meanOfManyPositions(std::vector<BondSample> *positions)
 {
-    vec3 sum = make_vec3(0, 0, 0);
-    double weights = 0;
+	vec3 sum = make_vec3(0, 0, 0);
+	double weights = 0;
 
-    for (int i = 0; i < positions->size(); i++)
-    {
-        vec3 tmp = (*positions)[i].start;
-        vec3_mult(&tmp, (*positions)[i].occupancy);
-        sum = vec3_add_vec3(sum, tmp);
-        weights += (*positions)[i].occupancy;
-    }
+	for (int i = 0; i < positions->size(); i++)
+	{
+		vec3 tmp = (*positions)[i].start;
+		vec3_mult(&tmp, (*positions)[i].occupancy);
+		sum = vec3_add_vec3(sum, tmp);
+		weights += (*positions)[i].occupancy;
+	}
 
-    vec3_mult(&sum, 1 / weights);
+	vec3_mult(&sum, 1 / weights);
 
-    return sum;
+	return sum;
 }
 
 std::vector<BondSample> Model::getFinalPositions()
 {
-    std::vector<BondSample> *positions = getManyPositions();
-    std::vector<BondSample> copyPos = *positions;
-    std::vector<vec3> posOnly = polymerCorrectedPositions();
+	std::vector<BondSample> *positions = getManyPositions();
+	std::vector<BondSample> copyPos = *positions;
+	std::vector<vec3> posOnly = polymerCorrectedPositions();
 
-    for (int i = 0; i < copyPos.size(); i++)
-    {
-        if (i < posOnly.size())
-        {
-            copyPos[i].start = posOnly[i];
-        }
-    }
+	for (int i = 0; i < copyPos.size(); i++)
+	{
+		if (i < posOnly.size())
+		{
+			copyPos[i].start = posOnly[i];
+		}
+	}
 
-    _absolute = meanOfManyPositions(&copyPos);
+	_absolute = meanOfManyPositions(&copyPos);
 
-    if (_useMutex)
-    {
-        std::lock_guard<std::mutex> lock(guiLock);
-        _finalPositions = posOnly;
-    }
-    else
-    {
-        _finalPositions = posOnly;
-    }
+	if (_useMutex)
+	{
+		std::lock_guard<std::mutex> lock(guiLock);
+		_finalPositions = posOnly;
+	}
+	else
+	{
+		_finalPositions = posOnly;
+	}
 
-    return copyPos;
+	return copyPos;
 }
 
 void Model::propagateChange(int depth, bool refresh)
 {
-    
+
 }
 
 
 /* For GUI */
 std::vector<vec3> Model::fishPositions()
 {
-    std::vector<vec3> positions;
-    std::lock_guard<std::mutex> lock(guiLock);
-    positions = _finalPositions;
+	std::vector<vec3> positions;
+	std::lock_guard<std::mutex> lock(guiLock);
+	positions = _finalPositions;
 
-    return positions;
+	return positions;
 }
 
 
 void Model::getAnisotropy(bool withKabsch)
 {
-    if (withKabsch)
-    {
-        std::vector<BondSample> finals = getFinalPositions();
-        std::vector<vec3> finalPoints;
+	if (withKabsch)
+	{
+		std::vector<BondSample> finals = getFinalPositions();
+		std::vector<vec3> finalPoints;
 
-        for (int i = 0; i < finals.size(); i++)
-        {
-            finalPoints.push_back(finals[i].start);
-        }
+		for (int i = 0; i < finals.size(); i++)
+		{
+			finalPoints.push_back(finals[i].start);
+		}
 
-        Anisotropicator tropicator;
-        tropicator.setPoints(finalPoints);
-        _realSpaceTensor = tropicator.getTensor();
-        _anisotropyExtent = tropicator.anisotropyExtent();
-        _longest = tropicator.longestAxis();
-        _isotropicAverage = tropicator.isotropicAverage();
+		Anisotropicator tropicator;
+		tropicator.setPoints(finalPoints);
+		_realSpaceTensor = tropicator.getTensor();
+		_anisotropyExtent = tropicator.anisotropyExtent();
+		_longest = tropicator.longestAxis();
+		_isotropicAverage = tropicator.isotropicAverage();
 
-        return;
-    }
-    else
-    {
-        std::vector<BondSample> *positions = getManyPositions();
-        std::vector<vec3> points;
+		return;
+	}
+	else
+	{
+		std::vector<BondSample> *positions = getManyPositions();
+		std::vector<vec3> points;
 
-        for (int i = 0; i < positions->size(); i++)
-        {
-            points.push_back((*positions)[i].start);
-        }
+		for (int i = 0; i < positions->size(); i++)
+		{
+			points.push_back((*positions)[i].start);
+		}
 
-        Anisotropicator tropicator;
-        tropicator.setPoints(points);
-        //        _realSpaceTensor = tropicator.getTensor();
-        _anisotropyExtent = tropicator.anisotropyExtent();
-        return;
-    }
+		Anisotropicator tropicator;
+		tropicator.setPoints(points);
+		//        _realSpaceTensor = tropicator.getTensor();
+		_anisotropyExtent = tropicator.anisotropyExtent();
+		return;
+	}
 }
 
 vec3 Model::longestAxis()
 {
-    getAnisotropy(true);
-    return _longest;
+	getAnisotropy(true);
+	return _longest;
 }
 
 double Model::anisotropyExtent(bool withKabsch)
 {
-    getAnisotropy(withKabsch);
-    return _anisotropyExtent;
+	getAnisotropy(withKabsch);
+	return _anisotropyExtent;
 }
 
 
 mat3x3 Model::getRealSpaceTensor()
 {
-    longestAxis();
-    return _realSpaceTensor;
+	longestAxis();
+	return _realSpaceTensor;
 }
 
 void Model::addProperties()
 {
-    addMat3x3Property("real_space_tensor", &_realSpaceTensor);
+	addMat3x3Property("real_space_tensor", &_realSpaceTensor);
 }

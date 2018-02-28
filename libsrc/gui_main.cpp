@@ -12,31 +12,31 @@
 #include "../libgui/qtgui/VagWindow.h"
 
 void handler(int sig) {
-    void *array[10];
-    size_t size;
+	void *array[10];
+	size_t size;
 
-    // get void*'s for all entries on the stack
-    size = backtrace(array, 10);
+	// get void*'s for all entries on the stack
+	size = backtrace(array, 10);
 
-    // print out all the frames to stderr
-    fprintf(stderr, "Error: signal %d:\n", sig);
-    backtrace_symbols_fd(array, (int)size, STDERR_FILENO);
-    exit(1);
+	// print out all the frames to stderr
+	fprintf(stderr, "Error: signal %d:\n", sig);
+	backtrace_symbols_fd(array, (int)size, STDERR_FILENO);
+	exit(1);
 }
 
 int main(int argc, char * argv[])
 {
-    // insert code here...
+	// insert code here...
 
-    signal(SIGSEGV, handler);
-    signal(SIGABRT, handler);
+	signal(SIGSEGV, handler);
+	signal(SIGABRT, handler);
 
-    std::cout << "Qt version: " << qVersion() << std::endl;
-    
-    QApplication app(argc, argv);
-    
-    VagWindow window(NULL, argc, argv);
-    window.show();
-    
-    return app.exec();
+	std::cout << "Qt version: " << qVersion() << std::endl;
+
+	QApplication app(argc, argv);
+
+	VagWindow window(NULL, argc, argv);
+	window.show();
+
+	return app.exec();
 }

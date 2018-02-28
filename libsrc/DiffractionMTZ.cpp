@@ -15,7 +15,7 @@
 #include "fftw3d.h"
 
 void getCol(std::vector<std::string> names, CMtz::MTZ *mtz,
-			CMtz::MTZCOL **column)
+            CMtz::MTZCOL **column)
 {
 
 	for (int i = 0; i < names.size(); i++)
@@ -36,21 +36,21 @@ void DiffractionMtz::load()
 	/* Assume that the filename is an MTZ file! */
 
 	CMtz::MTZ *mtz = CMtz::MtzGet(_filename.c_str(), 0);
-//	int spgNum = MtzSpacegroupNumber(mtz);
+	//	int spgNum = MtzSpacegroupNumber(mtz);
 
 	if (mtz == NULL)
-		return;
+	return;
 
 	float *refldata;
 	refldata= (float *) CCP4::ccp4_utils_malloc((mtz->ncol_read + 1)
-												* mtz->nref_filein
-												* sizeof(float));
+	                                            * mtz->nref_filein
+	* sizeof(float));
 
 	memset(refldata, '\0', (mtz->ncol_read + 1) *
-		   mtz->nref_filein * sizeof(float));
+	       mtz->nref_filein * sizeof(float));
 
 	float *adata = (float *) CCP4::ccp4_utils_malloc((mtz->ncol_read)
-													 * sizeof(float));
+	                                                 * sizeof(float));
 
 	CMtz::MtzRrefl(mtz->filein, mtz->ncol_read * mtz->nref_filein, refldata);
 
@@ -66,7 +66,7 @@ void DiffractionMtz::load()
 	if (!col_f)
 	{
 		shout_at_user("I could not find your amplitude column in\n"
-					  + _filename + " - please label as F or FP.");
+		              + _filename + " - please label as F or FP.");
 	}
 
 	std::vector<std::string> errNames;
@@ -77,8 +77,8 @@ void DiffractionMtz::load()
 	if (!col_sigf)
 	{
 		warn_user("I could not find your sigma/error column in\n"
-				  + _filename + " - please label as SIGF or SIGFP.\n"
-				  "I can do without and will keep going.");
+		          + _filename + " - please label as SIGF or SIGFP.\n"
+		"I can do without and will keep going.");
 	}
 
 
@@ -92,8 +92,8 @@ void DiffractionMtz::load()
 	if (!col_rfree)
 	{
 		warn_user("I could not find your R-free-flag column in\n"
-				  + _filename + " - please label as FREE or RFREE.\n"
-				  "I can do without and will keep going.");
+		          + _filename + " - please label as FREE or RFREE.\n"
+		"I can do without and will keep going.");
 	}
 
 	CMtz::MTZCOL *col_h = MtzColLookup(mtz, "H");
@@ -103,8 +103,8 @@ void DiffractionMtz::load()
 	if (!col_h || !col_k || !col_l)
 	{
 		shout_at_user("I could not find some or all of your\n"\
-					  "HKL indices columns " + _filename + " - please\n"\
-					  "label as H, K and L.");
+		              "HKL indices columns " + _filename + " - please\n"\
+		"label as H, K and L.");
 	}
 
 	MtzResLimits(mtz, &_minRes, &_maxRes);
@@ -126,11 +126,11 @@ void DiffractionMtz::load()
 
 	largest *= 2;
 	largest += 1;
-	
+
 	if (largest == 0)
 	{
 		shout_at_user("Problem determining resolution limits.\n"\
-					  "Do you have a unit cell and some reflections?");
+		              "Do you have a unit cell and some reflections?");
 	}
 
 	fft = FFTPtr(new FFT());
@@ -186,12 +186,12 @@ void DiffractionMtz::syminfoCheck()
 	if (!spg)
 	{
 		shout_at_user("I can't seem to load space group P1!\n" \
-		"If CCP4 is installed, it may need sourcing.\n"\
+		              "If CCP4 is installed, it may need sourcing.\n"\
 		"Please make sure the value of the\n"\
 		"environment variable $SYMINFO is set correctly.\n"\
 		"Something like (bash):\n\texport SYMINFO=/path/to/ccp4-vX.X.X/lib/data/syminfo.lib\n"\
 		"Something like (csh):\n\tsetenv SYMINFO /path/to/ccp4-vX.X.X/lib/data/syminfo.lib\n"\
-					  "\t(... make sure you correct these paths!)");
+		"\t(... make sure you correct these paths!)");
 
 	}
 }

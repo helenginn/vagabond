@@ -48,7 +48,7 @@ std::string mat4x4_desc(mat4x4 mat)
 }
 
 mat4x4 mat4x4_frustum(float left, float right, float top,
-					  float bottom, float near, float far)
+                      float bottom, float near, float far)
 {
 	mat4x4 mat = make_mat4x4();
 
@@ -71,7 +71,7 @@ mat4x4 mat4x4_frustum(float left, float right, float top,
 }
 
 mat4x4 mat4x4_ortho(float left, float right, float top,
-					float bottom, float near, float far)
+                    float bottom, float near, float far)
 {
 	mat4x4 mat = make_mat4x4();
 

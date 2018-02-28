@@ -18,55 +18,55 @@
 class Element : public Distributor
 {
 public:
-    static void setupElements();
+	static void setupElements();
 
-    Element(std::string symbol, std::string name, double electrons,
-            const float *scatter);
-    static ElementPtr getElement(std::string symbol);
-    virtual FFTPtr getDistribution(bool quick = false);
+	Element(std::string symbol, std::string name, double electrons,
+	        const float *scatter);
+	static ElementPtr getElement(std::string symbol);
+	virtual FFTPtr getDistribution(bool quick = false);
 
-    std::string getSymbol()
-    {
-        return _symbol;
-    }
+	std::string getSymbol()
+	{
+		return _symbol;
+	}
 
-    std::string getName()
-    {
-        return _name;
-    }
+	std::string getName()
+	{
+		return _name;
+	}
 
-    double electronCount()
-    {
-        return _electrons;
-    }
+	double electronCount()
+	{
+		return _electrons;
+	}
 
-    virtual std::string getClassName()
-    {
-        return "Element";
-    }
-    
+	virtual std::string getClassName()
+	{
+		return "Element";
+	}
+
 protected:
-    static double getVoxelValue(void *obj, double x, double y, double z);
+	static double getVoxelValue(void *obj, double x, double y, double z);
 
 private:
-    std::string _symbol;
-    std::string _name;
-    double _electrons;
-    
-    float _scattering[62];
-    FFTPtr _fft;
+	std::string _symbol;
+	std::string _name;
+	double _electrons;
 
-    static std::vector<ElementPtr> elements;
+	float _scattering[62];
+	FFTPtr _fft;
 
-    void setSymbol(std::string symbol)
-    {
-        _symbol = symbol;
-    }
+	static std::vector<ElementPtr> elements;
 
-    void setName(std::string name)
-    {
-        _name = name;
-    }
+	void setSymbol(std::string symbol)
+	{
+		_symbol = symbol;
+	}
+
+	void setName(std::string name)
+	{
+		_name = name;
+	}
 };
 
 #endif /* defined(__vagabond__Element__) */

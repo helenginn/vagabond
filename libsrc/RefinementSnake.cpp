@@ -71,8 +71,8 @@ void RefinementSnake::refine()
 			std::vector<double> nextList;
 			nextList = bond(tryPointer)->getNextResult(nTries[tryPointer]);
 
-	//		std::cout << "Trying next attempt... (" << tryPointer
-	//		<< "/" << nTries[tryPointer] << ")" << std::endl;
+			//		std::cout << "Trying next attempt... (" << tryPointer
+			//		<< "/" << nTries[tryPointer] << ")" << std::endl;
 
 			Bond::setTorsion(&*bond(tryPointer), nextList[0]);
 

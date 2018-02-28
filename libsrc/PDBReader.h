@@ -23,7 +23,7 @@ public:
 	CrystalPtr getCrystal();
 
 	static std::string writeLine(AtomPtr atom, vec3 placement, int count,
-								 double occupancy, double bFactor);
+	                             double occupancy, double bFactor);
 
 private:
 	std::string filename;

@@ -16,23 +16,23 @@
 #include <float.h>
 
 double scale_factor_cutoff(std::vector<double> &set1, std::vector<double> &set2,
-					double cutoff = -FLT_MAX);
+                           double cutoff = -FLT_MAX);
 double scale_factor(std::vector<double> &set1, std::vector<double> &set2);
 double scale_factor_by_sum(std::vector<double> &set1, std::vector<double> &set2);
 
 double scaled_r_factor(std::vector<double> &set1, std::vector<double> &set2,
-					   double cutoff = -FLT_MAX);
+                       double cutoff = -FLT_MAX);
 double r_factor(std::vector<double> &set1, std::vector<double> &set2);
 double weightedMapScore(std::vector<double> &set1, std::vector<double> &set2);
 double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
-				   double cutoff = -FLT_MAX);
+                   double cutoff = -FLT_MAX);
 double mean(std::vector<double> &vec1);
 
 typedef double (*two_dataset_op)(std::vector<double>&, std::vector<double>&);
 
 /* Dstar */
 void generateResolutionBins(double minD, double maxD,
-							int binCount, std::vector<double> *bins);
+                            int binCount, std::vector<double> *bins);
 
 inline double normal_distribution(double x, double sigma)
 {

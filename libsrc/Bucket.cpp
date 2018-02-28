@@ -11,8 +11,8 @@
 #include "fftw3d.h"
 
 /* The "checking shifts" are the shifts which need to be applied to a given
- * set of i,j,ks which are NOT within the dangerous zone of an edge - which
- * must be treated separately for speed issues */
+* set of i,j,ks which are NOT within the dangerous zone of an edge - which
+* must be treated separately for speed issues */
 void Bucket::makeCheckingShifts(FFTPtr map)
 {
 	double waterRadius = WATER_RADIUS;
@@ -36,7 +36,7 @@ void Bucket::findBulkSolvent(FFTPtr map)
 {
 	makeCheckingShifts(map);
 	int count = 0;
-	
+
 	for (int k = 0; k < map->nz; k++)
 	{
 		for (int j = 0; j < map->ny; j++)

@@ -31,35 +31,35 @@ typedef std::map<double, ParamList> ReverseMap;
 class RefinementGridSearch : public RefinementStrategy
 {
 private:
-    int gridLength;
-    int gridJumps;
+	int gridLength;
+	int gridJumps;
 	bool _writeCSV;
 	ReverseMap reverseResults;
-    std::vector<double> orderedResults;
-    std::vector<ParamList> orderedParams;
+	std::vector<double> orderedResults;
+	std::vector<ParamList> orderedParams;
 	static int _refine_counter; /* thread care! */
 
 public:
-    RefinementGridSearch() : RefinementStrategy()
-    {
+	RefinementGridSearch() : RefinementStrategy()
+	{
 		gridJumps = 8;
-        gridLength = 15;
-        cycleNum = 1;
+		gridLength = 15;
+		cycleNum = 1;
 		_writeCSV = false;
-    };
-    
-    void setGridLength(int length)
-    {
-        gridLength = length;
-    }
-    
-    void setCheckGridNum(int _jumps)
-    {
-        gridJumps = _jumps;
-    }
-    
-    ResultMap results;
-    void recursiveEvaluation(ParamList referenceList, ParamList workingList, ResultMap *results);
+	};
+
+	void setGridLength(int length)
+	{
+		gridLength = length;
+	}
+
+	void setCheckGridNum(int _jumps)
+	{
+		gridJumps = _jumps;
+	}
+
+	ResultMap results;
+	void recursiveEvaluation(ParamList referenceList, ParamList workingList, ResultMap *results);
 
 	std::vector<double> getNextResult(int num)
 	{
@@ -74,12 +74,12 @@ public:
 	}
 
 	virtual void clearParameters()
-    {
-        orderedResults.clear();
-        orderedParams.clear();
-        RefinementStrategy::clearParameters();
-    }
-    virtual void refine();
+	{
+		orderedResults.clear();
+		orderedParams.clear();
+		RefinementStrategy::clearParameters();
+	}
+	virtual void refine();
 };
 
 #endif /* defined(__cppxfel__RefinementGridSearch__) */

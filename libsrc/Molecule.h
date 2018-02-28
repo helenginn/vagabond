@@ -23,163 +23,163 @@ struct vec3;
 class Molecule : public AtomGroup
 {
 public:
-    Molecule();
+	Molecule();
 
-    void addToMap(FFTPtr fft, mat3x3 _real2frac);
+	void addToMap(FFTPtr fft, mat3x3 _real2frac);
 
-    virtual void summary();
-    virtual void tieAtomsUp();
-    virtual void refine(CrystalPtr target, RefinementType rType);
-    void tiedUpScattering(double *tied, double *all);
-    virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal);
-    virtual void graph(std::string) {};
-    virtual void differenceGraphs(std::string, CrystalPtr) {};
-    void resetInitialPositions();
-    void setAnchors();
-    void makePowderList();
+	virtual void summary();
+	virtual void tieAtomsUp();
+	virtual void refine(CrystalPtr target, RefinementType rType);
+	void tiedUpScattering(double *tied, double *all);
+	virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal);
+	virtual void graph(std::string) {};
+	virtual void differenceGraphs(std::string, CrystalPtr) {};
+	void resetInitialPositions();
+	void setAnchors();
+	void makePowderList();
 
-    virtual void reportParameters();
+	virtual void reportParameters();
 
-    double getAbsoluteBFacSubtract()
-    {
-            return _absoluteBFacSubtract;
-    }
+	double getAbsoluteBFacSubtract()
+	{
+		return _absoluteBFacSubtract;
+	}
 
-    void setAbsoluteBFacSubtract(double subtract)
-    {
-         _absoluteBFacSubtract = subtract;
-    }
+	void setAbsoluteBFacSubtract(double subtract)
+	{
+		_absoluteBFacSubtract = subtract;
+	}
 
-    double getAbsoluteBFacMult()
-    {
-          return _absoluteBFacMult;
-    }
+	double getAbsoluteBFacMult()
+	{
+		return _absoluteBFacMult;
+	}
 
-    void setAbsoluteBFacMult(double mult);
+	void setAbsoluteBFacMult(double mult);
 
-    void setChainID(std::string chain)
-    {
-        _chainID = chain;
-    }
+	void setChainID(std::string chain)
+	{
+		_chainID = chain;
+	}
 
-    std::string getChainID()
-    {
-        return _chainID;
-    }
+	std::string getChainID()
+	{
+		return _chainID;
+	}
 
-    std::vector<vec3> getCentroidOffsets()
-    {
-        return _centroidOffsets;
-    }
+	std::vector<vec3> getCentroidOffsets()
+	{
+		return _centroidOffsets;
+	}
 
-    std::vector<mat3x3> getRotationCorrections()
-    {
-        return _rotations;
-    }
+	std::vector<mat3x3> getRotationCorrections()
+	{
+		return _rotations;
+	}
 
-    std::vector<vec3> getRotationCentres()
-    {
-        return _centroids;
-    }
+	std::vector<vec3> getRotationCentres()
+	{
+		return _centroids;
+	}
 
-    std::vector<vec3> getTransTensorOffsets()
-    {
-        return _transTensorOffsets;
-    }
+	std::vector<vec3> getTransTensorOffsets()
+	{
+		return _transTensorOffsets;
+	}
 
-    std::vector<mat3x3> getExtraRotations();
+	std::vector<mat3x3> getExtraRotations();
 
-    vec3 getExtraRotationCentre()
-    {
-        return _rotationCentre;
-    }
+	vec3 getExtraRotationCentre()
+	{
+		return _rotationCentre;
+	}
 
-    virtual std::string getClassName()
-    {
-        return "Molecule";
-    }
+	virtual std::string getClassName()
+	{
+		return "Molecule";
+	}
 
-    bool isPolymer()
-    {
-        return (getClassName() == "Polymer");
-    }
+	bool isPolymer()
+	{
+		return (getClassName() == "Polymer");
+	}
 
-    MoleculePtr shared_from_this()
-    {
-        AtomGroupPtr groupPtr = AtomGroup::shared_from_this();
-        return ToMoleculePtr(groupPtr);
-    }
+	MoleculePtr shared_from_this()
+	{
+		AtomGroupPtr groupPtr = AtomGroup::shared_from_this();
+		return ToMoleculePtr(groupPtr);
+	}
 
-    static void setRotCentreZ(void *object, double value)
-    {
-        static_cast<Molecule *>(object)->_rotationCentre.z = value;
-    }
+	static void setRotCentreZ(void *object, double value)
+	{
+		static_cast<Molecule *>(object)->_rotationCentre.z = value;
+	}
 
-    static double getRotCentreZ(void *object)
-    {
-        return static_cast<Molecule *>(object)->_rotationCentre.z;
-    }
+	static double getRotCentreZ(void *object)
+	{
+		return static_cast<Molecule *>(object)->_rotationCentre.z;
+	}
 
-    static void setRotCentreY(void *object, double value)
-    {
-        static_cast<Molecule *>(object)->_rotationCentre.y = value;
-    }
+	static void setRotCentreY(void *object, double value)
+	{
+		static_cast<Molecule *>(object)->_rotationCentre.y = value;
+	}
 
-    static double getRotCentreY(void *object)
-    {
-        return static_cast<Molecule *>(object)->_rotationCentre.y;
-    }
+	static double getRotCentreY(void *object)
+	{
+		return static_cast<Molecule *>(object)->_rotationCentre.y;
+	}
 
-    static void setRotCentreX(void *object, double value)
-    {
-        static_cast<Molecule *>(object)->_rotationCentre.x = value;
-    }
+	static void setRotCentreX(void *object, double value)
+	{
+		static_cast<Molecule *>(object)->_rotationCentre.x = value;
+	}
 
-    static double getRotCentreX(void *object)
-    {
-        return static_cast<Molecule *>(object)->_rotationCentre.x;
-    }
+	static double getRotCentreX(void *object)
+	{
+		return static_cast<Molecule *>(object)->_rotationCentre.x;
+	}
 
 	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol);
 
 protected:
-    virtual std::string getParserIdentifier()
-    {
-        return "chain_" + _chainID; 
-    }
+	virtual std::string getParserIdentifier()
+	{
+		return "chain_" + _chainID; 
+	}
 
-    virtual void addProperties();
-    virtual void postParseTidy();    
+	virtual void addProperties();
+	virtual void postParseTidy();    
 
-    std::vector<vec3> _centroidOffsets;
-    std::vector<vec3> _centroids; // after offset correction
-    std::vector<mat3x3> _rotations;
+	std::vector<vec3> _centroidOffsets;
+	std::vector<vec3> _centroids; // after offset correction
+	std::vector<mat3x3> _rotations;
 
-    std::vector<vec3> _transTensorOffsets;
-    std::vector<mat3x3> _extraRotationMats; // currently unused
+	std::vector<vec3> _transTensorOffsets;
+	std::vector<mat3x3> _extraRotationMats; // currently unused
 
-    virtual void calculateExtraRotations() {};
+	virtual void calculateExtraRotations() {};
 
-    // this axis calculates the angular response to the reaction sphere
-    vec3 _magicRotAxis;
+	// this axis calculates the angular response to the reaction sphere
+	vec3 _magicRotAxis;
 
-    // this axis is that of the rotation matrices applied to the structure
-    vec3 _rotationAxis;
-    vec3 _rotationCentre;
+	// this axis is that of the rotation matrices applied to the structure
+	vec3 _rotationAxis;
+	vec3 _rotationCentre;
 
-    double _rotationAngle;
+	double _rotationAngle;
 
-    void setChangedRotation()
-    {
-        _changedRotations = true;
-    }
-    
+	void setChangedRotation()
+	{
+		_changedRotations = true;
+	}
+
 private:
-    double _absoluteBFacSubtract;
-    double _absoluteBFacMult;
+	double _absoluteBFacSubtract;
+	double _absoluteBFacMult;
 
-    bool _changedRotations;
-    std::string _chainID;
+	bool _changedRotations;
+	std::string _chainID;
 };
 
 #endif /* defined(__vagabond__Molecule__) */

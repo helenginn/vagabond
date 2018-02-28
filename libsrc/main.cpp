@@ -37,5 +37,5 @@ int main(int argc, const char * argv[])
 	Options options(argc, argv);
 	options.run();
 
-    return 0;
+	return 0;
 }

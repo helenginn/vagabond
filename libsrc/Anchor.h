@@ -52,14 +52,14 @@ public:
 private:
 
 	/* Anchor will copy each of the input bonds and take a static
-	 * copy of them. Anchor will then behave like a bond, but return
-	 * the appropriate copy depending on what _callingBond is */
+	* copy of them. Anchor will then behave like a bond, but return
+	* the appropriate copy depending on what _callingBond is */
 	BondPtr _trappedToNTerminus;
 	BondPtr _trappedToCTerminus;
 	bool _flipNTerminus;
 
 	/* Temporary holding of static start position for anchor, heavy atom and
-	 * bond group */
+	* bond group */
 	vec3 _anchorStart;
 	vec3 _majorStart;
 	BondGroup *_newHeavyStoredGroup;

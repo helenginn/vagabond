@@ -17,7 +17,7 @@ class RefinementSnake : public RefinementStrategy
 public:
 	RefinementSnake() : RefinementStrategy()
 	{
-		
+
 	};
 
 	void addBond(BondPtr bond)

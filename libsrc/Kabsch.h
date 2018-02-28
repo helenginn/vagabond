@@ -102,7 +102,7 @@ public:
 	{
 		return static_cast<Kabsch *>(object)->_unitCell[5];
 	}
-	
+
 private:
 	std::vector<std::vector<double> > _positions[2];
 	std::vector<vec3> _vecs[2];

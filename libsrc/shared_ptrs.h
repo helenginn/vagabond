@@ -155,11 +155,11 @@ typedef enum
 
 typedef enum
 {
-    ParamOptionTorsion,
-    ParamOptionKick,
-    ParamOptionDampen,
-    ParamOptionMagicAngles,
-    ParamOptionNumBonds,
+	ParamOptionTorsion,
+	ParamOptionKick,
+	ParamOptionDampen,
+	ParamOptionMagicAngles,
+	ParamOptionNumBonds,
 } ParamOptionType;
 
 

@@ -654,7 +654,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	/* Fractional offset in atomic coordinates, for each atom as a
 	* 	fraction of the crystal voxel. */
 	atomOffset = vec3_add_vec3(atomOffset, shiftRemainder);
-	
+
 	/* We loop around these crystal voxel limits now (ss -> ms -> fs).
 	* We also break the loop if it exceeds the limits of our atom voxels
 	* during the loop itself. */
@@ -695,7 +695,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 	/* Values in this vec3 will be used to break the loop appropriately */
 	vec3 atomPos = make_vec3(0, 0, 0);
-	
+
 	/* min/maxAtoms are in crystal coordinates.*/
 	for (double k = minAtom.z; k < maxAtom.z; k += step)
 	{
@@ -755,12 +755,12 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				if (finalCrystalVox.x < 0) finalCrystalVox.x += fftCrystal->nx;
 				if (finalCrystalVox.y < 0) finalCrystalVox.y += fftCrystal->ny;
 				if (finalCrystalVox.z < 0) finalCrystalVox.z += fftCrystal->nz;
-				
-				
+
+
 				/* Get the index of this final crystal voxel. */
 				long crystalIndex = fftCrystal->element(finalCrystalVox.x,
 				                                        finalCrystalVox.y,
-				                                        finalCrystalVox.z);
+				finalCrystalVox.z);
 
 				count++;
 
@@ -868,61 +868,61 @@ void FFT::normalise()
 
 void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 {
-    fftwf_complex *tempData;
-    tempData = (fftwf_complex *)fftwf_malloc(nn * sizeof(FFTW_DATA_TYPE));
-    memset(tempData, 0, sizeof(FFTW_DATA_TYPE) * nn);
+	fftwf_complex *tempData;
+	tempData = (fftwf_complex *)fftwf_malloc(nn * sizeof(FFTW_DATA_TYPE));
+	memset(tempData, 0, sizeof(FFTW_DATA_TYPE) * nn);
 
-    int count = 0;
+	int count = 0;
 
-    for (int k = -nz / 2; k <= nz / 2; k++)
-    {
-        for (int j = -ny / 2; j <= ny / 2; j++)
-        {
-            for (int i = -nx / 2; i <= nx / 2; i++)
-            {
-                count++;
-                long index = element(i, j, k);
-                double xOrig = data[index][0];
-                double yOrig = data[index][1];
-                double myPhase = getPhase(i, j, k);
+	for (int k = -nz / 2; k <= nz / 2; k++)
+	{
+		for (int j = -ny / 2; j <= ny / 2; j++)
+		{
+			for (int i = -nx / 2; i <= nx / 2; i++)
+			{
+				count++;
+				long index = element(i, j, k);
+				double xOrig = data[index][0];
+				double yOrig = data[index][1];
+				double myPhase = getPhase(i, j, k);
 
-                int throw1, throw2, throw3;
-                int isym = CSym::ccp4spg_put_in_asu(spaceGroup, i, j, k,
-                                                    &throw1, &throw2, &throw3);
-                int jsym = (isym - 1) / 2;
-                int isign = (isym % 2) ? 1 : -1;
+				int throw1, throw2, throw3;
+				int isym = CSym::ccp4spg_put_in_asu(spaceGroup, i, j, k,
+				                                    &throw1, &throw2, &throw3);
+				int jsym = (isym - 1) / 2;
+				int isign = (isym % 2) ? 1 : -1;
 
-                float *trn = spaceGroup->invsymop[jsym].trn;
+				float *trn = spaceGroup->invsymop[jsym].trn;
 
-                if (isign == -1) // in positive asu, weirdly
-                {
-                    trn = spaceGroup->symop[jsym].trn;
-                }
+				if (isign == -1) // in positive asu, weirdly
+				{
+					trn = spaceGroup->symop[jsym].trn;
+				}
 
-                double deg = CSym::ccp4spg_phase_shift(i, j, k, myPhase,
-                                                       trn, isign);
-                double phase = deg2rad(deg);
-                double amp = sqrt(xOrig * xOrig + yOrig * yOrig);
+				double deg = CSym::ccp4spg_phase_shift(i, j, k, myPhase,
+				                                       trn, isign);
+				double phase = deg2rad(deg);
+				double amp = sqrt(xOrig * xOrig + yOrig * yOrig);
 
-                double x = amp * cos(phase);
-                double y = amp * sin(phase);
+				double x = amp * cos(phase);
+				double y = amp * sin(phase);
 
-                for (int l = 1; l <= spaceGroup->nsymop * 2; l++)
-                {
-                    int _h, _k, _l;
-                    CSym::ccp4spg_generate_indices(spaceGroup, l, i, j, k,
-                                                   &_h, &_k, &_l);
-                    long sym_index = element(_h, _k, _l);
+				for (int l = 1; l <= spaceGroup->nsymop * 2; l++)
+				{
+					int _h, _k, _l;
+					CSym::ccp4spg_generate_indices(spaceGroup, l, i, j, k,
+					                               &_h, &_k, &_l);
+					long sym_index = element(_h, _k, _l);
 
-                    tempData[sym_index][0] += x;
-                    tempData[sym_index][1] += y;
-                }
-            }
-        }
-    }
+					tempData[sym_index][0] += x;
+					tempData[sym_index][1] += y;
+				}
+			}
+		}
+	}
 
-    memcpy(data, tempData, sizeof(FFTW_DATA_TYPE) * nn);
-    free(tempData);
+	memcpy(data, tempData, sizeof(FFTW_DATA_TYPE) * nn);
+	free(tempData);
 }
 
 void FFT::writeReciprocalToFile(std::string filename, double maxResolution,

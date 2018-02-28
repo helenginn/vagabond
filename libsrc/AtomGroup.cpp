@@ -494,7 +494,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					                          deg2rad(degrees), deg2rad(0.04),
 					refineAngles, addFlex);
 					setScoreType(scoreType);
-					
+
 					for (int l = 0; l < _includeForRefine.size(); l++)
 					{
 						addSampledAtoms(_includeForRefine[l]);
@@ -679,7 +679,7 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 			double mask = vals[i].mask;
 
 			vec3 pos = vals[i].pos;
-			
+
 			if (fc < cutoff) continue;
 
 			csv->addEntry(6, pos.x, pos.y, pos.z, fo, fc, mask);
@@ -698,7 +698,7 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 		plotMap["style0"] = "scatter";
 		csv->plotPNG(plotMap);
 	}
-	
+
 	/* Clear out the massive vectors */
 	vals.clear();
 	std::vector<CoordVal>().swap(vals);

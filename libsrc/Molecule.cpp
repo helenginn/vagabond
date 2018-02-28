@@ -20,107 +20,107 @@
 
 Molecule::Molecule()
 {
-    _absoluteBFacSubtract = 0.0;
-    _absoluteBFacMult = 1.0;
-    _magicRotAxis = make_vec3(1, 0, 0);
-    _rotationAxis = make_vec3(1, 0, 0);
-    _rotationCentre = make_vec3(nan(" "), nan(" "), nan(" "));
-    _rotationAngle = 0;
-    _changedRotations = true;
+	_absoluteBFacSubtract = 0.0;
+	_absoluteBFacMult = 1.0;
+	_magicRotAxis = make_vec3(1, 0, 0);
+	_rotationAxis = make_vec3(1, 0, 0);
+	_rotationCentre = make_vec3(nan(" "), nan(" "), nan(" "));
+	_rotationAngle = 0;
+	_changedRotations = true;
 }
 
 void Molecule::makePowderList()
 {
-    CSVPtr csvAngles = CSVPtr(new CSV(3, "dist1", "dist2", "angle"));
-    CSVPtr csvDist = CSVPtr(new CSV(1, "dist1"));
-    double maxDistance = 5.0;
+	CSVPtr csvAngles = CSVPtr(new CSV(3, "dist1", "dist2", "angle"));
+	CSVPtr csvDist = CSVPtr(new CSV(1, "dist1"));
+	double maxDistance = 5.0;
 
-    for (int i = 1; i < atomCount() - 1; i++)
-    {
-        vec3 iPos = atom(i)->getAbsolutePosition();
+	for (int i = 1; i < atomCount() - 1; i++)
+	{
+		vec3 iPos = atom(i)->getAbsolutePosition();
 
-        for (int j = 0; j < i; j++)
-        {
-            vec3 jPos = atom(j)->getAbsolutePosition();
+		for (int j = 0; j < i; j++)
+		{
+			vec3 jPos = atom(j)->getAbsolutePosition();
 
-            vec3 diff1 = vec3_subtract_vec3(jPos, iPos);
+			vec3 diff1 = vec3_subtract_vec3(jPos, iPos);
 
-            double aLength = vec3_length(diff1);
-            if (aLength > maxDistance)
-            {
-                continue;
-            }
+			double aLength = vec3_length(diff1);
+			if (aLength > maxDistance)
+			{
+				continue;
+			}
 
-            csvDist->addEntry(1, aLength);
+			csvDist->addEntry(1, aLength);
 
-            for (int k = 0; k < atomCount(); k++)
-            {
-                if (k == j) continue;
-                if (k == i) continue;
+			for (int k = 0; k < atomCount(); k++)
+			{
+				if (k == j) continue;
+				if (k == i) continue;
 
-                vec3 kPos = atom(k)->getAbsolutePosition();
-                vec3 diff2 = vec3_subtract_vec3(kPos, jPos);
-                double cosine = vec3_cosine_with_vec3(diff2, diff1);
-                double angle = acos(cosine); 
-//                if (cosine < 0) angle += deg2rad(90);
+				vec3 kPos = atom(k)->getAbsolutePosition();
+				vec3 diff2 = vec3_subtract_vec3(kPos, jPos);
+				double cosine = vec3_cosine_with_vec3(diff2, diff1);
+				double angle = acos(cosine); 
+				//                if (cosine < 0) angle += deg2rad(90);
 
-                if (angle != angle) continue;
+				if (angle != angle) continue;
 
-                double bLength = vec3_length(diff2);
+				double bLength = vec3_length(diff2);
 
-                if (bLength > maxDistance)
-                {
-                    continue;
-                }
+				if (bLength > maxDistance)
+				{
+					continue;
+				}
 
-                csvAngles->addEntry(3, aLength, bLength, rad2deg(angle));
-                csvAngles->addEntry(3, bLength, aLength, rad2deg(angle));
-                vec3 diff3 = vec3_subtract_vec3(kPos, iPos);
-                cosine = vec3_cosine_with_vec3(diff3, diff1);
-                angle = acos(cosine); 
-//                if (cosine < 0) angle += deg2rad(90);
+				csvAngles->addEntry(3, aLength, bLength, rad2deg(angle));
+				csvAngles->addEntry(3, bLength, aLength, rad2deg(angle));
+				vec3 diff3 = vec3_subtract_vec3(kPos, iPos);
+				cosine = vec3_cosine_with_vec3(diff3, diff1);
+				angle = acos(cosine); 
+				//                if (cosine < 0) angle += deg2rad(90);
 
-                if (angle != angle) continue;
+				if (angle != angle) continue;
 
-                double cLength = vec3_length(diff3);
-                if (cLength > maxDistance)
-                {
-                    continue;
-                }
+				double cLength = vec3_length(diff3);
+				if (cLength > maxDistance)
+				{
+					continue;
+				}
 
-                csvAngles->addEntry(3, aLength, cLength, rad2deg(angle));
-                csvAngles->addEntry(3, cLength, aLength, rad2deg(angle));
-            }
-        }
-    }
+				csvAngles->addEntry(3, aLength, cLength, rad2deg(angle));
+				csvAngles->addEntry(3, cLength, aLength, rad2deg(angle));
+			}
+		}
+	}
 
-    csvDist->writeToFile(getChainID() + "_distances.csv");
-    csvAngles->writeToFile(getChainID() + "_angles.csv");
+	csvDist->writeToFile(getChainID() + "_distances.csv");
+	csvAngles->writeToFile(getChainID() + "_angles.csv");
 }
 
 void Molecule::tieAtomsUp()
 {
-    if (getClassName() != "Polymer")
-    {
-        double mult = Options::getBMult();
-        std::cout << "Setting HETATM B factor multiplier to " << mult <<
-        " for Chain " << getChainID() << std::endl;
-        setAbsoluteBFacMult(mult);
-    }
+	if (getClassName() != "Polymer")
+	{
+		double mult = Options::getBMult();
+		std::cout << "Setting HETATM B factor multiplier to " << mult <<
+		" for Chain " << getChainID() << std::endl;
+		setAbsoluteBFacMult(mult);
+	}
 }
 
 void Molecule::addToMap(FFTPtr fft, mat3x3 _real2frac)
 {
-    for (int i = 0; i < atomCount(); i++)
-    {
-        atom(i)->addToMap(fft, _real2frac);
-    }
+	for (int i = 0; i < atomCount(); i++)
+	{
+		atom(i)->addToMap(fft, _real2frac);
+	}
 }
 
 void Molecule::summary()
 {
-    std::cout << "| I am chain " << getChainID() << std::endl;
-    std::cout << "| Atoms: " << atomCount() << std::endl;
+	std::cout << "| I am chain " << getChainID() << std::endl;
+	std::cout << "| Atoms: " << atomCount() << std::endl;
 }
 
 void Molecule::refine(CrystalPtr target, RefinementType rType)
@@ -130,7 +130,7 @@ void Molecule::refine(CrystalPtr target, RefinementType rType)
 
 std::string Molecule::makePDB(PDBType pdbType, CrystalPtr crystal)
 {
-    return "";
+	return "";
 }
 
 void Molecule::reportParameters()
@@ -140,112 +140,112 @@ void Molecule::reportParameters()
 
 void Molecule::tiedUpScattering(double *tied, double *all)
 {
-    double total = 0;
-    double totalCount = 0;
-    double some = 0;
-    double someCount = 0;
+	double total = 0;
+	double totalCount = 0;
+	double some = 0;
+	double someCount = 0;
 
-    for (int i = 0; i < atomCount(); i++)
-    {
-        if (!atom(i)->getElement())
-        {
-            std::cout << "Warning! Atom has no element: " << atom(i)->shortDesc() << std::endl;
-        }
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (!atom(i)->getElement())
+		{
+			std::cout << "Warning! Atom has no element: " << atom(i)->shortDesc() << std::endl;
+		}
 
-        if (!atom(i)->getModel())
-        {
-            std::cout << "Warning! Atom has no model: " << atom(i)->shortDesc() << std::endl;
-        }
+		if (!atom(i)->getModel())
+		{
+			std::cout << "Warning! Atom has no model: " << atom(i)->shortDesc() << std::endl;
+		}
 
-        if (atom(i)->getModel()->isBond())
-        {
-            some += atom(i)->getElement()->electronCount();
-            someCount++;
-        }
+		if (atom(i)->getModel()->isBond())
+		{
+			some += atom(i)->getElement()->electronCount();
+			someCount++;
+		}
 
-        total += atom(i)->getElement()->electronCount();
-        totalCount++;
-    }
+		total += atom(i)->getElement()->electronCount();
+		totalCount++;
+	}
 
-    *tied += some;
-    *all += total;
+	*tied += some;
+	*all += total;
 }
 
 void Molecule::resetInitialPositions()
 {
-    for (int i = 0; i < atomCount(); i++)
-    {
-        vec3 pos = atom(i)->getPosition();
-        atom(i)->setInitialPosition(pos);
+	for (int i = 0; i < atomCount(); i++)
+	{
+		vec3 pos = atom(i)->getPosition();
+		atom(i)->setInitialPosition(pos);
 
-        ModelPtr model = atom(i)->getModel();
+		ModelPtr model = atom(i)->getModel();
 
-        if (model->isBond())
-        {
-            ToBondPtr(model)->resetBondDirection();
-        }
-    }
+		if (model->isBond())
+		{
+			ToBondPtr(model)->resetBondDirection();
+		}
+	}
 }
 
 std::vector<mat3x3> Molecule::getExtraRotations()
 {
-    if (!_changedRotations && _extraRotationMats.size())
-    {
-        return _extraRotationMats;
-    }
+	if (!_changedRotations && _extraRotationMats.size())
+	{
+		return _extraRotationMats;
+	}
 
-    _extraRotationMats.clear();
-    
-    calculateExtraRotations();
+	_extraRotationMats.clear();
 
-    _changedRotations = false;
+	calculateExtraRotations();
 
-    return _extraRotationMats;
+	_changedRotations = false;
+
+	return _extraRotationMats;
 }
 
 void Molecule::addProperties()
 {
-    addStringProperty("chain_id", &_chainID);
-    addDoubleProperty("absolute_bfac_mult", &_absoluteBFacMult);
-    addDoubleProperty("absolute_bfac_subtract", &_absoluteBFacSubtract);
-    addVec3ArrayProperty("centroids", &_centroids);
-    addVec3ArrayProperty("centroid_offsets", &_centroidOffsets);
-    addVec3ArrayProperty("trans_tensor_offsets", &_transTensorOffsets);
-    addVec3Property("magic_rot_axis", &_magicRotAxis);
-    addVec3Property("rotation_axis", &_rotationAxis);
-    addVec3Property("rot_centre", &_rotationCentre);
-    addDoubleProperty("rotation_angle", &_rotationAngle);
-    addMat3x3ArrayProperty("extra_rotations", &_extraRotationMats);
-    addMat3x3ArrayProperty("rotations", &_rotations);
+	addStringProperty("chain_id", &_chainID);
+	addDoubleProperty("absolute_bfac_mult", &_absoluteBFacMult);
+	addDoubleProperty("absolute_bfac_subtract", &_absoluteBFacSubtract);
+	addVec3ArrayProperty("centroids", &_centroids);
+	addVec3ArrayProperty("centroid_offsets", &_centroidOffsets);
+	addVec3ArrayProperty("trans_tensor_offsets", &_transTensorOffsets);
+	addVec3Property("magic_rot_axis", &_magicRotAxis);
+	addVec3Property("rotation_axis", &_rotationAxis);
+	addVec3Property("rot_centre", &_rotationCentre);
+	addDoubleProperty("rotation_angle", &_rotationAngle);
+	addMat3x3ArrayProperty("extra_rotations", &_extraRotationMats);
+	addMat3x3ArrayProperty("rotations", &_rotations);
 
-    for (int i = 0; i < atomCount(); i++)
-    {
-        addChild("atom", atom(i));
-    }
+	for (int i = 0; i < atomCount(); i++)
+	{
+		addChild("atom", atom(i));
+	}
 }
 
 void Molecule::setAbsoluteBFacMult(double mult)
 {
-    _absoluteBFacMult = mult;
-    for (int i = 0; i < atomCount(); i++)
-    {
-        ModelPtr model = atom(i)->getModel();
-        model->recalculate();
-    }
+	_absoluteBFacMult = mult;
+	for (int i = 0; i < atomCount(); i++)
+	{
+		ModelPtr model = atom(i)->getModel();
+		model->recalculate();
+	}
 }
 
 void Molecule::postParseTidy()
 {
-    for (int i = 0; i < atomCount(); i++)
-    {
-        ModelPtr model = atom(i)->getModel();
-        if (!model) 
-        {
-            continue;
-        }
+	for (int i = 0; i < atomCount(); i++)
+	{
+		ModelPtr model = atom(i)->getModel();
+		if (!model) 
+		{
+			continue;
+		}
 
-        model->setMolecule(shared_from_this());
-    }
+		model->setMolecule(shared_from_this());
+	}
 }
 
 std::vector<AtomPtr> Molecule::getCloseAtoms(AtomPtr one, double tol)
