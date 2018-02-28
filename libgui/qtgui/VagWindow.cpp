@@ -244,7 +244,6 @@ bool VagWindow::isRunningSomething()
 
 void VagWindow::refineToEnd()
 {
-    std::cout << "Refining to end?" << std::endl;
     OptionsPtr options = Options::getRuntimeOptions();
     CrystalPtr crystal = options->getActiveCrystal();
 
