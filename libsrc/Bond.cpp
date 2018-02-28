@@ -107,6 +107,7 @@ Bond::Bond(Bond &other)
 {
     _occupancy = other._occupancy;
     _occMult = other._occMult;
+	_torsionStepMult = other._torsionStepMult;
     _usingTorsion = other._usingTorsion;
     _activated = other._activated;
     _major = other._major;
