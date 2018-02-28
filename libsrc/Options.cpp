@@ -457,10 +457,6 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool kee
 			std::cout << "Going for another cycle..." << std::endl;
 			numCycles++;
 		}
-		else if (i + 1 == numCycles)
-		{
-			std::cout << "Leaving it there." << std::endl;
-		}
 
 		lastRWork = newRWork;
 	}
