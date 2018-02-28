@@ -184,6 +184,35 @@ void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 	int end = (monNum < _anchorNum) ? -1 : monomerCount();
 	int skip = (monNum < _anchorNum) ? -1 : 1;
 
+	int count = 0;
+	double startCCAve = 0;
+	std::map<MonomerPtr, double> preScores;
+	
+	std::cout << "Refining chain " << getChainID() << " from anchor to ";
+	std::cout << (skip > 0 ? "C" : "N");
+	std::cout <<  "-terminus...";
+	std::cout << "\t";
+
+	for (int i = start; i != end; i += skip)
+	{
+		MonomerPtr monomer = getMonomer(i);
+		if (!monomer)
+		{
+			continue;
+		}
+		
+		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);
+		startCCAve += score;
+
+		preScores[monomer] = score;
+		count++;
+	}
+
+	startCCAve /= (double)count;
+	count = 0;
+	
+	double endCCAve = 0;
+
 	for (int i = start; i != end; i += skip)
 	{
 		MonomerPtr monomer = getMonomer(i);
@@ -195,7 +224,33 @@ void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 		copyParams(monomer->getSidechain());
 		copyParams(monomer->getBackbone());
 		refineMonomer(monomer, target, rType);
+
+		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);	
+		double pre = preScores[monomer];
+		
+		/* Scores are negative by default */
+		double diff = (score - pre) * 100.;
+		/* improvement of 2% will be 20 + symbols after the residue! */
+		int signs = fabs(diff * 10);
+		int dir = (diff < 0);	
+		
+		std::cout << " ";
+		for (int j = 0; j < signs; j++)
+		{
+			std::cout << (dir ? "+" : "-");
+		}
+		std::cout << std::endl << "\t";
+		
+		endCCAve += score;
+		count++;
 	}
+
+	endCCAve /= (double)count;
+	
+	std::cout << "Average CC of monomers went ";
+	std::cout << ((endCCAve < startCCAve) ? "up " : "down ");
+	std::cout << "from " << -startCCAve * 100 << " to " << -endCCAve * 100;
+	std::cout << "." << std::endl;
 
 	clearParams();
 }
