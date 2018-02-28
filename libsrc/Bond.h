@@ -370,6 +370,16 @@ public:
     static void encodeBondGroup(void *bond, void *bondGroup,
                                 std::ofstream &stream, int indent);
     static char *decodeBondGroup(void *bond, void *bondGroup, char *block);
+
+	void setTorsionStepMult(double mult)
+	{
+		_torsionStepMult = mult;
+	}
+
+	double getTorsionStepMult()
+	{
+		return _torsionStepMult;
+	}
 protected:
 
     AtomWkr _minor;
@@ -383,15 +393,6 @@ protected:
     virtual void linkReference(ParserPtr object, std::string category);
     virtual void postParseTidy();    
 
-	void setTorsionStepMult(double mult)
-	{
-		_torsionStepMult = mult;
-	}
-	
-	double getTorsionStepMult()
-	{
-		return _torsionStepMult;
-	}
 private:
     std::string _shortDesc;
 
