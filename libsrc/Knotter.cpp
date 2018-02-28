@@ -132,7 +132,7 @@ void Knotter::tieTowardsNTerminus()
     if (prevCAlpha->getModel()->getClassName() == "Bond")
     {
         BondPtr nitro2Carbon = BondPtr(new Bond(prevNitrogen, carbonylCarbon));
-		nitro2Carbon->setTorsionStepMult(0.2);
+//		nitro2Carbon->setTorsionStepMult(0.2);
         nitro2Carbon->setTorsionAtoms(prevCAlpha, cAlpha);
         nitro2Carbon->activate(_backbone);
     //    Bond::setTorsion(&*nitro2Carbon, deg2rad(180));
@@ -275,6 +275,7 @@ void Knotter::tieTowardsCTerminus()
         BondPtr carbonyl2nextN = BondPtr(new Bond(carbonylCarbon, nextNSpine));
         carbonyl2nextN->setTorsionAtoms(cAlpha, nextCalpha);
         carbonyl2nextN->activate(_backbone, inherit);
+//		carbonyl2nextN->setTorsionStepMult(0.2);
 //        Bond::setTorsion(&*carbonyl2nextN, deg2rad(180));
 
     }
