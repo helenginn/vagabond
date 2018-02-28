@@ -552,6 +552,11 @@ bool Sampler::sample(bool clear)
 		std::cout << std::endl;
 	}
 
+	if (_scoreType == ScoreTypeCorrel)
+	{
+		AtomGroup::scoreWithMapGeneral(_scoreType, _crystal, true, _sampled);
+	}
+
 	if (sampleSize() && _strategy->parameterCount())
 	{
 		_strategy->setJobName(_jobName);
