@@ -190,7 +190,7 @@ void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 	
 	std::cout << "Refining chain " << getChainID() << " from anchor to ";
 	std::cout << (skip > 0 ? "C" : "N");
-	std::cout <<  "-terminus...";
+	std::cout <<  "-terminus..." << std::endl;
 	std::cout << "\t";
 
 	for (int i = start; i != end; i += skip)
