@@ -296,6 +296,8 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 		return;
 	}
 
+	double mult = bond->getTorsionStepMult();
+	range *= mult;
 
 	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
 	                        range, interval,
