@@ -164,11 +164,6 @@ double Crystal::totalToScale()
 
 void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 {
-	if (_fft)
-	{
-		_fft->setAll(0);
-	}
-
 	realSpaceClutter(data->getMaxResolution());
 	fourierTransform(1);
 	scaleToDiffraction(data);
