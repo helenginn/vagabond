@@ -165,7 +165,7 @@ double Crystal::totalToScale()
 void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 {
 	realSpaceClutter(data->getMaxResolution());
-	fourierTransform(1);
+	fourierTransform(1, data->getMaxResolution());
 	scaleToDiffraction(data);
 
 	std::string outputFileOnly = prefix + "_" + _filename + "_vbond.mtz";
