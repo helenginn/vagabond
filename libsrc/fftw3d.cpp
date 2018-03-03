@@ -16,6 +16,7 @@
 #include "mat3x3.h"
 #include "vec3.h"
 #include <iostream>
+#include <iomanip>
 #include <vector>
 #include <algorithm>
 #include "maths.h"
