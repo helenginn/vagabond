@@ -92,7 +92,7 @@ public:
 	                            bool verbose = false, double lowRes = 0,
 	double highRes = 0);
 	double getDataInformation(DiffractionPtr data, double partsFo = 2,
-	                          double partsFc = 1);
+	                          double partsFc = 1, std::string prefix = "");
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);
 
 	void reconfigureUnitCell();

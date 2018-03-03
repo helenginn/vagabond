@@ -380,7 +380,7 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 }
 
 double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
-                                   double partsFc)
+                                   double partsFc, std::string prefix)
 {
 	realSpaceClutter(data->getMaxResolution());
 	fourierTransform(1, data->getMaxResolution());
@@ -604,8 +604,10 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	std::cout << "\tCycle " << cycleNum << std::endl;
 
 	std::string refineCount = "refine_" + i_to_str(cycleNum);
+
 	writeMillersToFile(data, refineCount);
-	double rFac = getDataInformation(data, 2, 1);
+	
+	double rFac = getDataInformation(data, 2, 1, refineCount);
 	makePDBs(refineCount);
 
 	for (int i = 0; i < moleculeCount(); i++)
