@@ -1021,7 +1021,7 @@ mat3x3 real2Frac, FFTPtr data)
 	{
 		for (int j = -nLimit; j < nLimit; j++)
 		{
-			for (int k = 0; k < nLimit; k++)
+			for (int k = -nLimit; k < nLimit; k++)
 			{
 				bool asu = CSym::ccp4spg_is_in_asu(mtzspg, i, j, k);
 
