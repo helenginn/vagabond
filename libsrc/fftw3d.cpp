@@ -884,12 +884,12 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 	std::cout << std::flush;
 	
 	/* Loop through and convert data into amplitude and phase */
-	for (int n = 0; false && n < nn; n++)
+	for (int n = 0; n < nn; n++)
 	{
 		double xOrig = data[n][0];
 		double yOrig = data[n][1];
 		double myAmp = sqrt(xOrig * xOrig + yOrig * yOrig);
-		double myPhase = atan2(xOrig, yOrig) * 180 / M_PI;
+		double myPhase = atan2(yOrig, xOrig) * 180 / M_PI;
 		while (myPhase >= 360) myPhase-= 360;
 		while (myPhase < 0) myPhase += 360;
 
