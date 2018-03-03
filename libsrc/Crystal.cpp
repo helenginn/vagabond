@@ -95,6 +95,10 @@ void Crystal::realSpaceClutter(double maxRes)
 		if (sampling < 0)
 		{
 			sampling = maxRes / 4.;
+			if (maxRes <= 1.2)
+			{
+				sampling = maxRes / 3.;
+			}
 			Options::setProteinSampling(sampling);
 		}
 
