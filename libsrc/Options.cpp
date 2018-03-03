@@ -685,8 +685,6 @@ void Options::fitWholeMolecule(bool translation, bool rotation)
 	CrystalPtr crystal = getActiveCrystal();
 	crystal->fitWholeMolecules(translation, rotation);
 
-	recalculateFFT();
-
 	notifyGUI(true);
 }
 
