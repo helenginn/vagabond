@@ -884,32 +884,17 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 	std::cout << std::flush;
 	
 	/* Loop through and convert data into amplitude and phase */
-	for (int k = -nz / 2; k <= nz / 2; k++)
+	for (int n = 0; false && n < nn; n++)
 	{
-		for (int j = -ny / 2; j <= ny / 2; j++)
-		{
-			for (int i = -nx / 2; i <= nx / 2; i++)
-			{
-				int abs = CSym::ccp4spg_is_sysabs(spaceGroup, i, j, k);
+		double xOrig = data[n][0];
+		double yOrig = data[n][1];
+		double myAmp = sqrt(xOrig * xOrig + yOrig * yOrig);
+		double myPhase = atan2(xOrig, yOrig) * 180 / M_PI;
+		while (myPhase >= 360) myPhase-= 360;
+		while (myPhase < 0) myPhase += 360;
 
-				if (abs)
-				{
-					continue;	
-				}
-
-				count++;
-				long index = element(i, j, k);
-				double xOrig = data[index][0];
-				double yOrig = data[index][1];
-				double myAmp = sqrt(xOrig * xOrig + yOrig * yOrig);
-				double myPhase = atan2(xOrig, yOrig) * 180 / M_PI;
-				while (myPhase >= 360) myPhase-= 360;
-				while (myPhase < 0) myPhase += 360;
-
-				data[index][0] = myAmp;
-				data[index][1] = myPhase;
-			}
-		}
+		data[n][0] = myAmp;
+		data[n][1] = myPhase;
 	}
 
 	
@@ -925,11 +910,11 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 		}
 		std::cout << std::flush;
 
-		for (int k = -nz / 2; k <= nz / 2; k++)
+		for (int k = -nz / 2; k < nz / 2; k++)
 		{
-			for (int j = -ny / 2; j <= ny / 2; j++)
+			for (int j = -ny / 2; j < ny / 2; j++)
 			{
-				for (int i = -nx / 2; i <= nx / 2; i++)
+				for (int i = -nx / 2; i < nx / 2; i++)
 				{
 					int abs = CSym::ccp4spg_is_sysabs(spaceGroup, i, j, k);
 					
