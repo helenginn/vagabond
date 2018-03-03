@@ -875,46 +875,95 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 	memset(tempData, 0, sizeof(FFTW_DATA_TYPE) * nn);
 
 	int count = 0;
+	
+//	spaceGroup = CSym::ccp4spg_load_by_ccp4_num(155);
+	std::cout << "Applying symmetry for space group " << spaceGroup->symbol_xHM;
+	std::cout << " (" << spaceGroup->spg_num << ")" << std::endl;
 
+	std::cout << "Applying " << spaceGroup->nsymop << " operations: ";
+	std::cout << std::flush;
+	
+	/* Loop through and convert data into amplitude and phase */
 	for (int k = -nz / 2; k <= nz / 2; k++)
 	{
 		for (int j = -ny / 2; j <= ny / 2; j++)
 		{
 			for (int i = -nx / 2; i <= nx / 2; i++)
 			{
+				int abs = CSym::ccp4spg_is_sysabs(spaceGroup, i, j, k);
+
+				if (abs)
+				{
+					continue;	
+				}
+
 				count++;
 				long index = element(i, j, k);
 				double xOrig = data[index][0];
 				double yOrig = data[index][1];
-				double myPhase = getPhase(i, j, k);
+				double myAmp = sqrt(xOrig * xOrig + yOrig * yOrig);
+				double myPhase = atan2(xOrig, yOrig) * 180 / M_PI;
+				while (myPhase >= 360) myPhase-= 360;
+				while (myPhase < 0) myPhase += 360;
 
-				int throw1, throw2, throw3;
-				int isym = CSym::ccp4spg_put_in_asu(spaceGroup, i, j, k,
-				                                    &throw1, &throw2, &throw3);
-				int jsym = (isym - 1) / 2;
-				int isign = (isym % 2) ? 1 : -1;
+				data[index][0] = myAmp;
+				data[index][1] = myPhase;
+			}
+		}
+	}
 
-				float *trn = spaceGroup->invsymop[jsym].trn;
+	
+	for (int l = 0; l < spaceGroup->nsymop; l++)
+	{
+		float *rot = &spaceGroup->invsymop[l].rot[0][0];
+		count = 0;
 
-				if (isign == -1) // in positive asu, weirdly
+		std::cout << l + 1;
+		if (l < spaceGroup->nsymop - 1)
+		{
+			std::cout << ", ";
+		}
+		std::cout << std::flush;
+
+		for (int k = -nz / 2; k <= nz / 2; k++)
+		{
+			for (int j = -ny / 2; j <= ny / 2; j++)
+			{
+				for (int i = -nx / 2; i <= nx / 2; i++)
 				{
-					trn = spaceGroup->symop[jsym].trn;
-				}
+					int abs = CSym::ccp4spg_is_sysabs(spaceGroup, i, j, k);
+					
+					if (abs)
+					{
+						continue;	
+					}
+					
+					count++;
+					long index = element(i, j, k);
+					double myAmp = data[index][0];
+					double myPhase = data[index][1];
 
-				double deg = CSym::ccp4spg_phase_shift(i, j, k, myPhase,
-				                                       trn, isign);
-				double phase = deg2rad(deg);
-				double amp = sqrt(xOrig * xOrig + yOrig * yOrig);
-
-				double x = amp * cos(phase);
-				double y = amp * sin(phase);
-
-				for (int l = 1; l <= spaceGroup->nsymop * 2; l++)
-				{
+					/* rotation */
 					int _h, _k, _l;
-					CSym::ccp4spg_generate_indices(spaceGroup, l, i, j, k,
-					                               &_h, &_k, &_l);
+					_h = (int) rint(i*rot[0] + j*rot[3] + k*rot[6]);
+					_k = (int) rint(i*rot[1] + j*rot[4] + k*rot[7]);
+					_l = (int) rint(i*rot[2] + j*rot[5] + k*rot[8]);
+					
 					long sym_index = element(_h, _k, _l);
+					/* translation */
+					float *trn = spaceGroup->symop[l].trn;
+
+					double shift = (float)_h * trn[0];
+					shift += (float)_k * trn[1];
+					shift += (float)_l * trn[2];
+					shift = fmod(shift, 1.);
+
+					double deg = myPhase + shift * 360.;
+					double newPhase = deg2rad(deg);
+
+					/* add to temporary data array */
+					double x = myAmp * cos(newPhase);
+					double y = myAmp * sin(newPhase);
 
 					tempData[sym_index][0] += x;
 					tempData[sym_index][1] += y;
@@ -922,6 +971,8 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 			}
 		}
 	}
+	
+	std::cout << "... done." << std::endl;
 
 	memcpy(data, tempData, sizeof(FFTW_DATA_TYPE) * nn);
 	free(tempData);
