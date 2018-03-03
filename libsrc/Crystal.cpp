@@ -535,11 +535,8 @@ void Crystal::applySymOps(double res)
 {
 	if (_spaceGroup->spg_num == 1)
 	{
-		return;
+//		return;
 	}
-
-	std::cout << "Applying symmetry for space group " << _spaceGroup->symbol_xHM;
-	std::cout << " (" << _spaceGroup->spg_num << ")" << std::endl;
 
 	_fft->applySymmetry(_spaceGroup, res);
 }
