@@ -83,6 +83,11 @@ void Crystal::setHKL2Real(mat3x3 mat)
 
 void Crystal::realSpaceClutter(double maxRes)
 {
+	if (_fft)
+	{
+		_fft->setAll(0);	
+	}
+	
 	if (!_fft)
 	{
 		double sampling = Options::getProteinSampling();
