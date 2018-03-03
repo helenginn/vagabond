@@ -337,6 +337,7 @@ void FFT::setAll(float value)
 	}
 }
 
+// in degrees.
 double FFT::getPhase(long x, long y, long z)
 {
 	long index = element(x, y, z);
