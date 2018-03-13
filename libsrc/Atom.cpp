@@ -126,23 +126,24 @@ MapScoreType mapScore)
 	return score;
 }
 
-void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool useNew)
+void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask)
 {
-	FFTPtr atomDist = _element->getDistribution();
 	FFTPtr modified;
+	FFTPtr atomDist = _element->getDistribution();
 
-	if (!useNew)
+	if (!mask)
 	{
 		modified = getBlur();
+		FFT::multiply(modified, atomDist);
+		modified->fft(1);
+		modified->invertScale();
 	}
 	else
 	{
-		modified = _model->getDistribution();
+		modified = atomDist;		
+		double occ = _model->getEffectiveOccupancy();
+		modified->multiplyAll(occ);
 	}
-
-	FFT::multiply(modified, atomDist);
-	modified->fft(1);
-	modified->invertScale();
 
 	vec3 pos = _model->getAbsolutePosition();
 

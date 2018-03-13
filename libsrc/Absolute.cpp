@@ -143,7 +143,7 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 /*  Absolute distribution only needs to be the blurring due to the atomic
 *  B factor. The position should be provided by a different function. */
 
-FFTPtr Absolute::getDistribution(bool quick)
+FFTPtr Absolute::getDistribution(bool, int)
 {
 	double n = ATOM_SAMPLING_COUNT;
 	double scale = 2 * MAX_SCATTERING_DSTAR;

@@ -445,7 +445,7 @@ void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign, int groupNum)
 }
 
 
-FFTPtr Bond::getDistribution(bool absOnly)
+FFTPtr Bond::getDistribution(bool absOnly, int)
 {
 	std::vector<BondSample> positions = getFinalPositions();
 

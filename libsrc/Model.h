@@ -33,7 +33,7 @@ class Model : public boost::enable_shared_from_this<Model>, public Distributor, 
 public:
 	Model();
 
-	virtual FFTPtr getDistribution(bool quick = false) = 0;
+	virtual FFTPtr getDistribution(bool quick = false, int n = -1) = 0;
 
 	virtual void addToMonomer(MonomerPtr monomer);
 	virtual void addToMolecule(MoleculePtr molecule) {};

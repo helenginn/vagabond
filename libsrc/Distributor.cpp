@@ -13,17 +13,16 @@
 FFTPtr Distributor::prepareDistribution(double n, double scale, void *object,
                                         get_voxel_value *voxel_value)
 {
-	if (_calculated && _fft)
+	if (_precalcFFTs.count(n) && _precalcFFTs[n])
 	{
-		return _fft;
+		return _precalcFFTs[n];
 	}
 
-	_fft = FFTPtr(new FFT());
+	FFTPtr _fft = FFTPtr(new FFT());
 	_fft->create(n);
 	_fft->setScales(scale);
-
 	_fft->createFFTWplan(1);
-
+	
 	for (double x = -0.5; x <= 0.5; x += 1 / n)
 	{
 		for (double y = -0.5; y <= 0.5; y += 1 / n)
@@ -41,7 +40,7 @@ FFTPtr Distributor::prepareDistribution(double n, double scale, void *object,
 		}
 	}
 
-	_calculated = true;
-
+	_precalcFFTs[n] = _fft;
+	
 	return _fft;
 }

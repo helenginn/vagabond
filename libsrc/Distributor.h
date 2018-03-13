@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "shared_ptrs.h"
 #include "fftw3d.h"
+#include <map>
 
 typedef double(get_voxel_value)(void *obj, double x, double y, double z);
 
@@ -21,35 +22,43 @@ public:
 	Distributor()
 	{
 		_calculated = false;
+		_activeNum = 0;
 	}
 
-	virtual FFTPtr getDistribution(bool quick = false) = 0;
+	virtual FFTPtr getDistribution(bool quick = false, int n = -1) = 0;
 
 	void recalculate()
 	{
 		_calculated = true;
 	}
-
 protected:
 	bool _calculated;
 
 	FFTPtr getDistributionCopy()
 	{
+		if (_activeNum <= 0) return FFTPtr();
+
 		FFTPtr newPtr;
-		newPtr.reset(new FFT(*_fft));
+		newPtr.reset(new FFT(*_precalcFFTs[_activeNum]));
 		return newPtr;
 	}
 
 	FFTPtr prepareDistribution(double n, double scale, void *object,
 	                           get_voxel_value *voxel_value);
 
+	FFTPtr getFFT(int n)
+	{
+		return _precalcFFTs[n];	
+	}
+	
 	virtual std::string getClassName()
 	{
 		return "Distributor";
 	}
 
 private:
-	FFTPtr _fft;
+	int _activeNum;
+	std::map<int, FFTPtr> _precalcFFTs;
 };
 
 #endif /* defined(__vagabond__Distributor__) */
