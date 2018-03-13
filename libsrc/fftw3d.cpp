@@ -328,6 +328,25 @@ void FFT::shiftToCenter(void)
 	shift(sx,sy,sz);
 }
 
+void FFT::valueMinus(float value)
+{
+	for(long i=0; i<nn; i++)
+	{
+		data[i][0] = value - data[i][0];
+	}
+}
+
+void FFT::cap(float value)
+{
+	for(long i=0; i<nn; i++)
+	{
+		if (data[i][0] > value)
+		{
+			data[i][0] = value;
+		}
+	}
+}
+
 void FFT::setAll(float value)
 {
 	for(long i=0; i<nn; i++)
@@ -590,8 +609,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 	FFT *fftCrystal = &*fftEdit;
 	FFT *fftAtom = &*fftConst;
-	double volume = fftAtom->getScale(0) * fftAtom->getScale(1)
-	* fftAtom->getScale(2);
+	double volume = 1;// fftAtom->getScale(0) * fftAtom->getScale(1)
+//	* fftAtom->getScale(2);
 
 	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
 	FFT::collapseFrac(&add.x, &add.y, &add.z);

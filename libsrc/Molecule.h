@@ -25,7 +25,7 @@ class Molecule : public AtomGroup
 public:
 	Molecule();
 
-	void addToMap(FFTPtr fft, mat3x3 _real2frac);
+	void addToMap(FFTPtr fft, mat3x3 _real2frac, bool mask = false);
 
 	virtual void summary();
 	virtual void tieAtomsUp();

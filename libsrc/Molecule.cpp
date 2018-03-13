@@ -109,11 +109,13 @@ void Molecule::tieAtomsUp()
 	}
 }
 
-void Molecule::addToMap(FFTPtr fft, mat3x3 _real2frac)
+void Molecule::addToMap(FFTPtr fft, mat3x3 _real2frac, bool mask)
 {
+	vec3 offset = make_vec3(0, 0, 0);
+
 	for (int i = 0; i < atomCount(); i++)
 	{
-		atom(i)->addToMap(fft, _real2frac);
+		atom(i)->addToMap(fft, _real2frac, offset, mask);
 	}
 }
 

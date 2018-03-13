@@ -47,6 +47,7 @@ public:
 
 protected:
 	static double getVoxelValue(void *obj, double x, double y, double z);
+	static double getSolventMaskValue(void *obj, double x, double y, double z);
 
 private:
 	std::string _symbol;

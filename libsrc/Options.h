@@ -101,6 +101,11 @@ public:
 		_bMult = bMult;
 	}
 
+	static bool getAddSolvent()
+	{
+		return _solvent;
+	}
+	
 	static void setProteinSampling(double sampling)
 	{
 		_sampling = sampling;	
@@ -159,6 +164,7 @@ private:
 
 	static bool _powder;
 	static double _kick;
+	static int _solvent;
 	static double _dampen;
 	static double _bMult;
 	static int _enableTests;

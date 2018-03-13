@@ -165,7 +165,9 @@ public:
 	static void collapseFrac(double *xfrac, double *yfrac, double *zfrac);
 	static void multiply(FFTPtr fftEdit, FFTPtr fftConst);
 	void setAll(float);
+	void cap(float);
 	void multiplyAll(float);
+	void valueMinus(float value);
 
 	double interpolate(vec3 fractionalVoxel, bool imaginary = false);
 

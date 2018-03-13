@@ -18,6 +18,7 @@
 
 OptionsPtr Options::options;
 double Options::_kick = 0.01;
+int Options::_solvent = 1;
 double Options::_dampen = 0.08;
 double Options::_bStart = 1.5;
 double Options::_bMult = 0.6;
@@ -247,6 +248,15 @@ void Options::parse()
 			objects.push_back(diffraction);
 			datasets.push_back(diffraction);
 			diffractions.push_back(diffraction);
+			understood = true;
+		}
+
+		prefix = "--solvent=";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			std::string solvent_string = arg.substr(prefix.size());
+			_solvent = atoi(solvent_string.c_str());
 			understood = true;
 		}
 

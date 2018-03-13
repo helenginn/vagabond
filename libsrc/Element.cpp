@@ -98,11 +98,49 @@ double Element::getVoxelValue(void *object, double x, double y, double z)
 	return val;
 }
 
-FFTPtr Element::getDistribution(bool quick)
+FFTPtr Element::getMask()
+{
+	get_voxel_value *func = getSolventMaskValue;	
+	double n = 12;
+	double scale = Options::getProteinSampling();
+
+	FFTPtr fft = FFTPtr(new FFT());
+	fft->create(n);
+	fft->setScales(scale);
+
+	for (int x = -fft->nx / 2; x <= fft->nx / 2; x++)
+	{
+		for (int y = -fft->ny / 2; y <= fft->ny / 2; y++)
+		{
+			for (int z = -fft->nz / 2; z <= fft->nz / 2; z++)
+			{
+				double xAng = x * scale;
+				double yAng = y * scale;
+				double zAng = z * scale;
+
+				double val = getSolventMaskValue(this, xAng, yAng, zAng);
+				long element = fft->element(x, y, z);
+				fft->setElement(element, val, 0);
+			}
+		}
+	}
+
+	return fft;
+}
+
+FFTPtr Element::getDistribution(bool, int new_n)
 {
 	double n = ATOM_SAMPLING_COUNT;
+	
+	if (new_n > 0)
+	{
+		n = new_n;	
+	}
+	
 	double scale = 2 * MAX_SCATTERING_DSTAR;
+	
+	get_voxel_value *func = getVoxelValue;
 
-	prepareDistribution(n, scale, this, getVoxelValue);
+	prepareDistribution(n, scale, this, func);
 	return getDistributionCopy();
 }

@@ -87,6 +87,9 @@ public:
 
 	void fourierTransform(int dir, double res = FLT_MAX);
 	void scaleToDiffraction(DiffractionPtr data);
+	void scaleComponents(DiffractionPtr data);
+	void scaleSolvent(DiffractionPtr data);
+	double scaleAndAddSolventScore(DiffractionPtr data = DiffractionPtr());
 	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
 	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 	                            bool verbose = false, double lowRes = 0,
@@ -94,6 +97,28 @@ public:
 	double getDataInformation(DiffractionPtr data, double partsFo = 2,
 	                          double partsFc = 1, std::string prefix = "");
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);
+
+	static double scaleSolventScore(void *object);
+	
+	static double getSolvScale(void *object)
+	{
+		return static_cast<Crystal *>(object)->_solvScale;
+	}
+	
+	static void setSolvScale(void *object, double value)
+	{
+		static_cast<Crystal *>(object)->_solvScale = value;
+	}
+
+	static double getSolvBFac(void *object)
+	{
+		return static_cast<Crystal *>(object)->_solvBFac;
+	}
+	
+	static void setSolvBFac(void *object, double value)
+	{
+		static_cast<Crystal *>(object)->_solvBFac = value;
+	}
 
 	void reconfigureUnitCell();
 	void setupSymmetry();
@@ -196,8 +221,13 @@ private:
 	double _rFree;
 	double _ccWork;
 	double _ccFree;
+	
+	double _solvScale;
+	double _solvBFac;
+	DiffractionPtr _data;
 
 	FFTPtr _fft;
+	FFTPtr _solvent;
 	FFTPtr _difft;
 };
 
