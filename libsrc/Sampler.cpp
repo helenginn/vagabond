@@ -120,7 +120,7 @@ bool addFlex)
 
 	if (_params.count(ParamOptionNumBonds))
 	{
-		//        bondNum = _params[ParamOptionNumBonds] + 0.2;
+		bondNum = _params[ParamOptionNumBonds] + 0.2;
 	}
 
 
