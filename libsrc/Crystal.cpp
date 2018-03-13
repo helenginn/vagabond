@@ -541,13 +541,19 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 				mat3x3_mult_vec(_real2frac, &ijk);
 				double length = vec3_length(ijk);
 
-				if (length < minRes || length > maxRes || amp != amp || isRfree || isAbs)    
-				{
+				if (length < minRes || length > maxRes || isRfree || isAbs)    
+				{	
 					_fft->setElement(index, 0, 0);
 					_difft->setElement(index, 0, 0);
 
 					continue;
 				}
+
+				if (amp != amp)
+				{
+					continue;
+				}
+
 
 				vec2 complex;
 				complex.x = _fft->getReal(index);
@@ -555,7 +561,8 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 				double old_amp = sqrt(complex.x * complex.x +
 				                      complex.y * complex.y);
 
-				double new_amp = partsFo * amp - partsFc * old_amp;
+				double new_amp = old_amp;
+				new_amp = partsFo * amp - partsFc * old_amp;
 				new_amp /= old_amp;
 
 				double diff_scale = amp - old_amp;
@@ -566,8 +573,11 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 				complex.x *= new_amp;
 				complex.y *= new_amp;
 
-				diff_complex.x *= diff_scale;
-				diff_complex.y *= diff_scale;
+				if (amp == amp)
+				{
+					diff_complex.x *= diff_scale;
+					diff_complex.y *= diff_scale;
+				}
 
 				_fft->setElement(index, complex.x, complex.y);
 				_difft->setElement(index, diff_complex.x, diff_complex.y);
