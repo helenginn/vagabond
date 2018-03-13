@@ -300,128 +300,148 @@ void Knotter::tie()
 	MonomerPtr monomer = _sidechain->getMonomer();
 	std::string residue = monomer->getIdentifier();
 
-	bool convertable = false;
+	bool convertible = false;
 
 	if (residue == "ala")
 	{
-		convertable = true;
+		convertible = true;
 		makeAlanine();
 	}
 
 	if (residue == "lys")
 	{
-		convertable = true;
+		convertible = true;
 		makeLysine();
 	}
 
 	if (residue == "pro")
 	{
-		convertable = true;
+		convertible = true;
 		makeProline();
 	}
 
 	if (residue == "ser")
 	{
-		convertable = true;
+		convertible = true;
 		makeSerine();
 	}
 
 	if (residue == "met")
 	{
-		convertable = true;
+		convertible = true;
 		makeMethionine();
 	}
 
 	if (residue == "leu")
 	{
-		convertable = true;
+		convertible = true;
 		makeLeucine();
 	}
 
 	if (residue == "ile")
 	{
-		convertable = true;
+		convertible = true;
 		makeIsoleucine();
 	}
 
 	if (residue == "arg")
 	{
-		convertable = true;
+		convertible = true;
 		makeArginine();
 	}
 
 	if (residue == "phe")
 	{
-		convertable = true;
+		convertible = true;
 		makePhenylalanine();
 	}
 
 	if (residue == "gln")
 	{
-		convertable = true;
+		convertible = true;
 		makeGlutamine();
 	}
 
 	if (residue == "glu")
 	{
-		convertable = true;
+		convertible = true;
 		makeGlutamate();
 	}
 
 	if (residue == "asn")
 	{
-		convertable = true;
+		convertible = true;
 		makeAsparagine();
 	}
 
 	if (residue == "asp")
 	{
-		convertable = true;
+		convertible = true;
 		makeAspartate();
 	}
 	if (residue == "tyr")
 	{
-		convertable = true;
+		convertible = true;
 		makeTyrosine();
 	}
 
 	if (residue == "cys")
 	{
-		convertable = true;
+		convertible = true;
 		makeCysteine();
 	}
 
 	if (residue == "val")
 	{
-		convertable = true;
+		convertible = true;
 		makeValine();
 	}
 
 	if (residue == "thr")
 	{
-		convertable = true;
+		convertible = true;
 		makeThreonine();
 	}
 
 	if (residue == "his")
 	{
-		convertable = true;
+		convertible = true;
 		makeHistidine();
 	}
 
 	if (residue == "trp")
 	{
-		convertable = true;
+		convertible = true;
 		makeTryptophan();
 	}
 
 	if (residue == "gly")
 	{
-		convertable = true;
+		convertible = true;
 		makeGlycine();
 	}
+	
+	if (convertible)
+	{
+		AtomPtr cbAtom = _sidechain->findAtom("CB");
+		
+		if (cbAtom)
+		{
+			BondPtr cbBond = ToBondPtr(cbAtom->getModel());
 
-	if (!convertable)
+			for (int i = 0; i < _sidechain->atomCount(); i++)
+			{
+				AtomPtr otherAtom = _sidechain->atom(i);
+				
+				if (otherAtom != cbAtom)
+				{
+					cbBond->addExtraTorsionSample(otherAtom, 0);	
+				}
+			}	
+		}
+	}
+
+	if (!convertible)
 	{
 		warn_user("Knotter doesn't know how to tie up " + residue);
 	           }
