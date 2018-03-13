@@ -481,7 +481,14 @@ char *Parser::parseNextArray(char *block)
 		{
 			char *comma = strchr(block, ',');
 			char *bracket = strchr(block, ')');
-			if (bracket != NULL && bracket < comma)
+			
+			if (bracket == NULL && comma == NULL)
+			{
+				std::cout << "Error - truncated file?" << std::endl;
+				return NULL;	
+			}
+			
+			if ((bracket != NULL && bracket < comma) || comma == NULL)
 			{
 				comma = bracket;
 				more = false;
