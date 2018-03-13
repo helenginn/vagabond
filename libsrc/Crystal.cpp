@@ -24,6 +24,7 @@
 #include "LocalCC.h"
 #include "Atom.h"
 #include "Kabsch.h"
+#include "RefinementGridSearch.h"
 
 #include "../libccp4/cmtzlib.h"
 #include "../libccp4/csymlib.h"
