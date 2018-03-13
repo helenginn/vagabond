@@ -524,6 +524,16 @@ void Sampler::setCrystal(CrystalPtr crystal)
 	_fft = crystal->getFFT();
 }
 
+void Sampler::setupCloseAtoms()
+{
+	_crystal->clearCloseCache();
+
+	for (int i = 0; i < sampleSize(); i++)
+	{
+		_crystal->getCloseAtoms(_sampled[i], 9.0, true);
+	}
+}
+
 bool Sampler::sample(bool clear)
 {
 	if (_mock)
@@ -554,6 +564,7 @@ bool Sampler::sample(bool clear)
 
 	if (_scoreType == ScoreTypeCorrel)
 	{
+		setupCloseAtoms();
 		AtomGroup::scoreWithMapGeneral(_scoreType, _crystal, true, _sampled);
 	}
 

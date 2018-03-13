@@ -177,6 +177,7 @@ protected:
 private:
 	void addAtomsForBond(BondPtr bond, int k);
 	void addParamsForBond(BondPtr bond);
+	void setupCloseAtoms();
 	CrystalPtr _crystal;
 
 	std::vector<AtomPtr> _sampled;

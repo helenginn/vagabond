@@ -250,9 +250,15 @@ void Molecule::postParseTidy()
 	}
 }
 
-std::vector<AtomPtr> Molecule::getCloseAtoms(AtomPtr one, double tol)
+std::vector<AtomPtr> Molecule::getCloseAtoms(AtomPtr one, double tol, bool cache)
 {
 	std::vector<AtomPtr> atoms;
+	std::vector<AtomPtr> *atomListPtr = &atoms;
+	
+	if (cache)
+	{
+		atomListPtr = &_closeishAtoms;	
+	}
 
 	for (int i = 0; i < atomCount(); i++)
 	{
@@ -266,7 +272,12 @@ std::vector<AtomPtr> Molecule::getCloseAtoms(AtomPtr one, double tol)
 			continue;
 		}
 
-		atoms.push_back(atom(i));
+		atomListPtr->push_back(atom(i));
+	}
+	
+	if (cache)
+	{
+		_closeishAtoms = atoms;	
 	}
 
 	return atoms;

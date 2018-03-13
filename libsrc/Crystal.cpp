@@ -900,16 +900,26 @@ void Crystal::postParseTidy()
 	_tied = true;
 }
 
-std::vector<AtomPtr> Crystal::getCloseAtoms(AtomPtr one, double tol)
+std::vector<AtomPtr> Crystal::getCloseAtoms(AtomPtr one, double tol, bool cache)
 {
 	std::vector<AtomPtr> atoms;
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
-		std::vector<AtomPtr> someAtoms = molecule(i)->getCloseAtoms(one, tol);
+		std::vector<AtomPtr> someAtoms = molecule(i)->getCloseAtoms(one, tol, cache);
 		atoms.reserve(atoms.size() + someAtoms.size());
 		atoms.insert(atoms.end(), someAtoms.begin(), someAtoms.end());
 	}
 
 	return atoms;
 }
+
+void Crystal::clearCloseCache()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		molecule(i)->clearCloseCache();
+	}	
+}
+
+

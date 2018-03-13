@@ -128,7 +128,9 @@ public:
 	void tieAtomsUp();
 
 	/* Tolerance in Angstroms. */
-	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol = 2);
+	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol = 2, bool cache = false);
+	
+	void clearCloseCache();
 
 	void setFilename(std::string file)
 	{

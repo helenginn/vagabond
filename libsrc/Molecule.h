@@ -140,7 +140,12 @@ public:
 		return static_cast<Molecule *>(object)->_rotationCentre.x;
 	}
 
-	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol);
+	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol, bool cache = false);
+	
+	void clearCloseCache()
+	{
+		_closeishAtoms.clear();
+	}
 
 protected:
 	virtual std::string getParserIdentifier()
@@ -180,6 +185,7 @@ private:
 
 	bool _changedRotations;
 	std::string _chainID;
+	std::vector<AtomPtr> _closeishAtoms;
 };
 
 #endif /* defined(__vagabond__Molecule__) */
