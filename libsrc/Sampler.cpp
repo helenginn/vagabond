@@ -541,7 +541,7 @@ bool Sampler::sample(bool clear)
 		_strategy->isMock();
 		_mock = false;
 	}
-
+	
 	if (_scoreType == ScoreTypeModelPos)
 	{
 		int paramCount = _strategy->parameterCount();
