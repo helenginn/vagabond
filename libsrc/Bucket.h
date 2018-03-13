@@ -17,15 +17,18 @@
 class Bucket
 {
 public:
-	virtual void addSolvent(FFTPtr map) = 0;
+	virtual void addSolvent() = 0;
+	
+	void setMap(FFTPtr map)
+	{
+		_map = map;	
+	}
 
 protected:
-	void findBulkSolvent(FFTPtr map);
 
 private:
-	void makeCheckingShifts(FFTPtr map);
-
-	std::vector<vec3> fullCheckVecs;
+	
+	FFTPtr _map;
 };
 
 #endif /* defined(__vagabond__Bucket__) */

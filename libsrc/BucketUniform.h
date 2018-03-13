@@ -15,7 +15,7 @@
 class BucketUniform : public Bucket
 {
 public:
-	virtual void addSolvent(FFTPtr map);
+	virtual void addSolvent();
 private:
 };
 

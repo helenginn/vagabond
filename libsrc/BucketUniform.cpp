@@ -9,8 +9,7 @@
 #include "fftw3d.h"
 #include "BucketUniform.h"
 
-void BucketUniform::addSolvent(FFTPtr map)
+void BucketUniform::addSolvent()
 {
-	Bucket::findBulkSolvent(map);
 
 }
