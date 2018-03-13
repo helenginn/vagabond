@@ -71,13 +71,40 @@ ElementPtr Element::getElement(std::string symbol)
 	return ElementPtr();
 }
 
+double Element::getSolventMaskValue(void *object, double x, double y, double z)
+{
+	Element *me = static_cast<Element *>(object);
+
+	double distSq = (x * x + y * y + z * z);
+	double dist = sqrt(distSq);
+	
+	const double min = 1.8;
+	const double max = 2.5;
+	
+	if (dist <= min)
+	{
+		return 1;
+	}
+	else if (dist > max)
+	{
+		return 0;	
+	}
+	else
+	{
+		double extra = dist - min;
+		extra /= (max - min);
+		
+		return 1 - extra;
+	}
+}
+
 double Element::getVoxelValue(void *object, double x, double y, double z)
 {
 	double sampling = Options::getProteinSampling();
 	Element *me = static_cast<Element *>(object);
 	int totalScatterPoints = ScatterFactors::numScatter;
 
-	double distSq =    (x * x + y * y + z * z);
+	double distSq = (x * x + y * y + z * z);
 	double dist = sqrt(distSq);
 	dist *= sampling;
 
