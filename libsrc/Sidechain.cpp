@@ -27,6 +27,17 @@ bool Sidechain::shouldRefineMagicAxis(BondPtr bond)
 void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
 	if (!canRefine()) return;
+	
+	if (getMonomer()->getResCode() == "C" || getMonomer()->getResCode() == "M")
+	{
+		return;	
+	}
+	
+	if (rType == RefinementSidechain)
+	{
+		std::cout << getMonomer()->getResCode() << std::flush;
+		rType = RefinementFine;
+	}
 
 	if (!paramCount())
 	{

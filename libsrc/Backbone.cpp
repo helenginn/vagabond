@@ -28,6 +28,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 	{
 		return;
 	}
+	
+	if (rType == RefinementSidechain)
+	{
+		return;
+	}
 
 	std::cout << getMonomer()->getResCode() << std::flush;
 

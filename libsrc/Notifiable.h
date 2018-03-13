@@ -21,6 +21,7 @@ typedef enum
 	InstructionTypeRefinePositions,
 	InstructionTypeRefineFlexibility,
 	InstructionTypeRefineDensity,
+	InstructionTypeSidechainsToEnd,
 	InstructionTypeRefineToEnd,
 	InstructionTypeChangeBMult,
 	InstructionTypeRecalculateFFT,

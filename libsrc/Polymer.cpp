@@ -188,7 +188,7 @@ void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 	double startCCAve = 0;
 	std::map<MonomerPtr, double> preScores;
 
-	std::cout << "Refining chain " << getChainID() << " from anchor to ";
+	std::cout << "Refining chain " << getChainID() << " from point to ";
 	std::cout << (skip > 0 ? "C" : "N");
 	std::cout <<  "-terminus..." << std::endl;
 	std::cout << "\t";
