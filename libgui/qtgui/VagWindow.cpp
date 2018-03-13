@@ -181,12 +181,16 @@ void VagWindow::waitForInstructions()
             options->fitWholeMolecule(false, true);
             break;
 
+            case InstructionTypeSidechainsToEnd: 
+            sidechainsToEnd();
+            break;
+
             case InstructionTypeRefineToEnd: 
             refineToEnd();
             break;
 
             case InstructionTypeRefineDensity: 
-            options->refineAll(RefinementFine, 1);
+            options->refineAll(RefinementSidechain, 1);
             break;
 
             case InstructionTypeChangeBMult:
@@ -242,13 +246,26 @@ bool VagWindow::isRunningSomething()
     }
 }
 
-void VagWindow::refineToEnd()
+void VagWindow::getPolymerMonomerCrystal(PolymerPtr *poly, CrystalPtr *cryst, MonomerPtr *monomer)
 {
     OptionsPtr options = Options::getRuntimeOptions();
-    CrystalPtr crystal = options->getActiveCrystal();
+    *cryst = options->getActiveCrystal();
 
-    MonomerPtr monomer = *(static_cast<MonomerPtr *>(getObject())); 
-    PolymerPtr polymer = monomer->getPolymer();
+    *monomer = *(static_cast<MonomerPtr *>(getObject())); 
+	*poly = (*monomer)->getPolymer();
+}
+
+void VagWindow::sidechainsToEnd()
+{
+	PolymerPtr polymer;	CrystalPtr crystal; MonomerPtr monomer;
+	getPolymerMonomerCrystal(&polymer, &crystal, &monomer);
+    polymer->refineToEnd(monomer->getResidueNum(), crystal, RefinementSidechain); 
+}
+
+void VagWindow::refineToEnd()
+{
+	PolymerPtr polymer;	CrystalPtr crystal; MonomerPtr monomer;
+	getPolymerMonomerCrystal(&polymer, &crystal, &monomer);
     polymer->refineToEnd(monomer->getResidueNum(), crystal, RefinementFine); 
 }
 
@@ -415,8 +432,6 @@ void VagWindow::openModel()
     {
         fileNames = _fileDialogue->selectedFiles();
     }
-    
-    std::cout << "Understood " << fileNames.size() << std::endl;
     
     if (fileNames.size() >= 1)
     {

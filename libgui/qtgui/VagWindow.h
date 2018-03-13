@@ -75,6 +75,8 @@ private:
     
     void updateExplorerButton();
     void refineToEnd();
+    void sidechainsToEnd();
+	void getPolymerMonomerCrystal(PolymerPtr *poly, CrystalPtr *cryst, MonomerPtr *monomer);
     QLabel *_lStatus;
 
     /* Buttons down the side */
