@@ -219,9 +219,7 @@ void Model::getAnisotropy(bool withKabsch)
 
 		Anisotropicator tropicator;
 		tropicator.setPoints(points);
-		//        _realSpaceTensor = tropicator.getTensor();
 		_anisotropyExtent = tropicator.anisotropyExtent();
-		return;
 	}
 }
 
