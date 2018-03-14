@@ -421,7 +421,7 @@ void Knotter::tie()
 		makeGlycine();
 	}
 	
-	if (convertible)
+	if (convertible && false)
 	{
 		AtomPtr cbAtom = _sidechain->findAtom("CB");
 		
