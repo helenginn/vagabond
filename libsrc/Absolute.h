@@ -194,6 +194,12 @@ public:
 	{
 		_isOfManyPositions = true;
 	}
+	
+	virtual double getEffectiveOccupancy()
+	{
+		return _occupancy;	
+	}
+	
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 
