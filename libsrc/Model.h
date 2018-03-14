@@ -36,7 +36,7 @@ public:
 	virtual FFTPtr getDistribution(bool quick = false, int n = -1) = 0;
 
 	virtual void addToMonomer(MonomerPtr monomer);
-	virtual void addToMolecule(MoleculePtr molecule) {};
+	virtual void addToMolecule(MoleculePtr) {};
 
 	virtual std::string getClassName() = 0;
 
