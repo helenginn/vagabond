@@ -41,7 +41,15 @@ mat3x3 Absolute::getRealSpaceTensor()
 		return Model::getRealSpaceTensor();
 	}
 
-	return _tensor;
+	if (!_usingTensor)
+	{
+		mat3x3 realSpaceTensor = make_mat3x3();
+		double scale = _bFactor / (8 * M_PI * M_PI);
+		mat3x3_mult_scalar(&realSpaceTensor, scale);
+		return realSpaceTensor;
+	}
+
+	return _realSpaceTensor;
 }
 
 void Absolute::getAnisotropy(bool withKabsch)
