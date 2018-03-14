@@ -511,7 +511,7 @@ void Options::applyBMultiplier()
 {
 	notifyGUI(false);
 
-	CrystalPtr crystal = crystals[0];
+	CrystalPtr crystal = getActiveCrystal();
 
 	for (int i = 0; i < crystal->moleculeCount(); i++)
 	{
@@ -695,6 +695,7 @@ void Options::fitWholeMolecule(bool translation, bool rotation)
 	CrystalPtr crystal = getActiveCrystal();
 	crystal->fitWholeMolecules(translation, rotation);
 
+	statusMessage("Ready.");
 	notifyGUI(true);
 }
 
