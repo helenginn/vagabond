@@ -998,14 +998,20 @@ void Knotter::makeTyrosine()
 
 
 	BondPtr ca2cb = tieBetaCarbon(cGamma);
+	ca2cb->addExtraTorsionSample(cEpsilon1, 0);
+	ca2cb->addExtraTorsionSample(cEpsilon2, 0);
+	ca2cb->addExtraTorsionSample(cDelta1, 0);
+	ca2cb->addExtraTorsionSample(cDelta2, 0);
 	ca2cb->addExtraTorsionSample(cOmega, 0);
 	ca2cb->addExtraTorsionSample(oxygen, 0);
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->setTorsionAtoms(cAlpha, cDelta1);
+	cb2cg->addExtraTorsionSample(cDelta1, 0);
+	cb2cg->addExtraTorsionSample(cDelta2, 0);
+	cb2cg->addExtraTorsionSample(cOmega, 0);
+	cb2cg->addExtraTorsionSample(oxygen, 0);
 	cb2cg->activate(_sidechain, inherit);
-	cb2cg->addExtraTorsionSample(cEpsilon1, 0);
-	cb2cg->addExtraTorsionSample(cEpsilon2, 0);
 
 	if (Options::enableTests() >= 2)
 	{
@@ -1084,16 +1090,18 @@ void Knotter::makePhenylalanine()
 
 	AtomPtr inherit = cAlpha;
 
-
 	BondPtr ca2cb = tieBetaCarbon(cGamma);
-	if (!ca2cb) return;
+	ca2cb->addExtraTorsionSample(cEpsilon1, 0);
+	ca2cb->addExtraTorsionSample(cEpsilon2, 0);
+	ca2cb->addExtraTorsionSample(cDelta1, 0);
+	ca2cb->addExtraTorsionSample(cDelta2, 0);
 	ca2cb->addExtraTorsionSample(cOmega, 0);
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->setTorsionAtoms(cAlpha, cDelta1);
+	cb2cg->addExtraTorsionSample(cOmega, 0);
 	cb2cg->activate(_sidechain, inherit);
-	cb2cg->addExtraTorsionSample(cEpsilon1, 0);
-	cb2cg->addExtraTorsionSample(cEpsilon2, 0);
+
 
 	if (Options::enableTests() >= 2)
 	{
