@@ -16,6 +16,7 @@ typedef enum
 {
 	FlexTargetMaximiseIsotropy,
 	FlexTargetMatchOrigBFactor,
+	FlexTargetMatchElectronDensity,
 } FlexTarget;
 
 class FlexGlobal
@@ -32,6 +33,11 @@ public:
 
 	void maximiseIsotropy();
 
+	void matchElectronDensity()
+	{
+		_targetType = FlexTargetMatchElectronDensity;
+	}
+
 	void matchOriginalBees()
 	{
 		_targetType = FlexTargetMatchOrigBFactor;
@@ -41,12 +47,19 @@ public:
 	{
 		_targetIsoB = value;
 	}
+	
+	void setCrystal(CrystalPtr crystal)
+	{
+		_crystal = crystal;	
+	}
 private:
 	double _targetIsoB;
 
 	double matchOriginalBeeScore();
 	double maximiseIsotropyScore();
+	double matchElectronDensityScore();
 	AtomGroupPtr _atomGroup;
+	CrystalPtr _crystal;
 
 	FlexTarget _targetType;
 };

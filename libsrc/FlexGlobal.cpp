@@ -11,11 +11,22 @@
 #include "Atom.h"
 #include "Bond.h"
 #include "Anisotropicator.h"
+#include "Shouter.h"
 
 FlexGlobal::FlexGlobal()
 {
 	_targetType = FlexTargetMaximiseIsotropy;
 	_targetIsoB = 8;
+}
+
+double FlexGlobal::matchElectronDensityScore()
+{
+	if (!_crystal)
+	{
+		shout_at_helen("Helen trying to fit electron density"\
+		               "to missing crystal");	
+	}
+	return _atomGroup->scoreWithMap(ScoreTypeCorrel, _crystal);
 }
 
 double FlexGlobal::matchOriginalBeeScore()
@@ -136,6 +147,13 @@ double FlexGlobal::score(void *object)
 
 		case FlexTargetMatchOrigBFactor:
 		score = flexer->matchOriginalBeeScore();
+		break;
+
+		case FlexTargetMatchElectronDensity:
+		score = flexer->matchElectronDensityScore();
+		break;
+		
+		default:
 		break;
 	}
 
