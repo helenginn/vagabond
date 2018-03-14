@@ -331,7 +331,7 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 		return;
 	}
 	
-	setSolvScale(this, 2.0);
+	setSolvScale(this, 4.0);
 	setSolvBFac(this, 400);
 	
 	_data = data;
