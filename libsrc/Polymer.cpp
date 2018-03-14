@@ -1215,10 +1215,14 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	nelderMead->setVerbose(true);
 
 	double bFac = getAverageBFactor();
+	
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 
 	FlexGlobal target;
 	target.setAtomGroup(AtomGroup::shared_from_this());
 	target.matchOriginalBees();
+	target.setCrystal(crystal);
+	target.matchElectronDensity();
 	nelderMead->setEvaluationFunction(FlexGlobal::score, &target);
 	nelderMead->refine();
 }
