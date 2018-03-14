@@ -41,10 +41,17 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 	if (!paramCount())
 	{
+		double range = 1.;
+
+		if (_timesRefined >= 3)
+		{
+			range = 0.1;
+		}
+
 		switch (rType)
 		{
 			case RefinementModelPos:
-			addParamType(ParamOptionTorsion, 0.1);
+			addParamType(ParamOptionTorsion, range);
 			break;
 
 			case RefinementFine:
