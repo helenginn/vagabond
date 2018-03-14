@@ -161,6 +161,7 @@ public:
 	double getIntensity(long x, long y, long z);
 	double getPhase(long x, long y, long z);
 	void setReal(double xfrac, double yfrac, double zfrac, double real);
+	void addBlurredToReal(double xfrac, double yfrac, double zfrac, double real);
 	void addToReal(double xfrac, double yfrac, double zfrac, double real);
 	static void collapseFrac(double *xfrac, double *yfrac, double *zfrac);
 	static void multiply(FFTPtr fftEdit, FFTPtr fftConst);

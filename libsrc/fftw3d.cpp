@@ -411,6 +411,39 @@ void FFT::addToReal(double xfrac, double yfrac, double zfrac, double real)
 	data[index][0] += real;
 }
 
+void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real)
+{
+	collapseFrac(&xfrac, &yfrac, &zfrac);
+
+	double x = xfrac * nx;
+	double y = yfrac * ny;
+	double z = zfrac * nz;
+
+	double shifts[] = {-1.0, 0, 1.0};
+	
+	for (int i = 0; i < 3; i++)
+	{
+		double sx = x + shifts[i];
+		for (int j = 0; j < 3; j++)
+		{
+			double sy = y + shifts[j];
+			for (int k = 0; k < 3; k++)
+			{
+				double sz = z + shifts[k];
+				
+				vec3 svec = make_vec3(shifts[i], shifts[j], shifts[k]);
+				double length = vec3_length(svec);
+				
+				long index = element(sx + 0.5, sy + 0.5, sz + 0.5);
+				data[index][0] += real / 2.5;
+			}
+		}
+	}
+
+	long index = element(x + 0.5, y + 0.5, z + 0.5);
+	data[index][0] += real / 2;
+}
+
 void FFT::multiplyAll(float value)
 {
 	for(long i=0; i<nn; i++)

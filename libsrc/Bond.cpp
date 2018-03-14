@@ -478,7 +478,7 @@ FFTPtr Bond::getDistribution(bool absOnly, int)
 			continue;
 		}
 
-		fft->addToReal(relative.x, relative.y, relative.z, occupancy);
+		fft->addBlurredToReal(relative.x, relative.y, relative.z, occupancy);
 	}
 
 	fft->fft(1);
