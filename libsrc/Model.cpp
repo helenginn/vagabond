@@ -198,14 +198,14 @@ void Model::getAnisotropy(bool withKabsch)
 			finalPoints.push_back(finals[i].start);
 		}
 
+		if (!finalPoints.size()) return;
+		
 		Anisotropicator tropicator;
 		tropicator.setPoints(finalPoints);
 		_realSpaceTensor = tropicator.getTensor();
 		_anisotropyExtent = tropicator.anisotropyExtent();
 		_longest = tropicator.longestAxis();
 		_isotropicAverage = tropicator.isotropicAverage();
-
-		return;
 	}
 	else
 	{
