@@ -364,7 +364,7 @@ public:
 
 	bool getRefineBondAngle()
 	{
-		return _refineBondAngle * !isFixed();
+		return _refineBondAngle && !isFixed();
 	}
 
 	static void encodeBondGroup(void *bond, void *bondGroup,
