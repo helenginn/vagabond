@@ -461,7 +461,6 @@ FFTPtr Bond::getDistribution(bool absOnly, int)
 	fft->create(n);
 	fft->setScales(scale);
 	fft->createFFTWplan(1);
-	double occSum = 0;
 
 	for (int i = 0; i < positions.size(); i++)
 	{
@@ -469,7 +468,6 @@ FFTPtr Bond::getDistribution(bool absOnly, int)
 
 		vec3 relative = vec3_subtract_vec3(placement, _absolute);
 		double occupancy = positions[i].occupancy;
-		occSum += occupancy;
 
 		vec3_mult(&relative, 1 / realLimits);
 
