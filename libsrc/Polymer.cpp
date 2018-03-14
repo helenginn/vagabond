@@ -1203,9 +1203,9 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 
 	if (rotation)
 	{
-		nelderMead->addParameter(this, getRotPhi, setRotPhi, 1.0, 0.0001);
-		nelderMead->addParameter(this, getRotPsi, setRotPsi, 1.0, 0.0001);
-		nelderMead->addParameter(this, getRotAngle, setRotAngle, 0.01, 0.0001);
+		nelderMead->addParameter(this, getRotPhi, setRotPhi, 0.2, 0.0001);
+		nelderMead->addParameter(this, getRotPsi, setRotPsi, 0.2, 0.0001);
+		nelderMead->addParameter(this, getRotAngle, setRotAngle, 0.001, 0.0001);
 		nelderMead->addParameter(this, getRotCentreX, setRotCentreX, 5.0, 0.01);
 		nelderMead->addParameter(this, getRotCentreY, setRotCentreY, 5.0, 0.01);
 		nelderMead->addParameter(this, getRotCentreZ, setRotCentreZ, 5.0, 0.01);
