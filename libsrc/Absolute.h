@@ -103,6 +103,11 @@ public:
 	{
 		return _hetatm;
 	}
+	
+	bool isUsingTensor()
+	{
+		return _usingTensor;	
+	}
 
 	static void setPosX(void *object, double x)
 	{
