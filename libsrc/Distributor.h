@@ -29,7 +29,7 @@ public:
 
 	void recalculate()
 	{
-		_calculated = true;
+		_precalcFFTs.clear();
 	}
 protected:
 	bool _calculated;

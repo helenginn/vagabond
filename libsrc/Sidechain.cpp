@@ -30,7 +30,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 	
 	if (getMonomer()->getResCode() == "C" || getMonomer()->getResCode() == "M")
 	{
-		return;	
+//		return;	
 	}
 	
 	if (rType == RefinementSidechain)

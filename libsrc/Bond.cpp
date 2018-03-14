@@ -451,8 +451,8 @@ FFTPtr Bond::getDistribution(bool absOnly, int)
 
 	if (absOnly) return FFTPtr();
 
-	double n = ATOM_SAMPLING_COUNT;
-	/* Don't panic, invert scale below */
+	double n = fftGridLength();
+	/* Don't panic, invert scale below... this is in real space */
 	double scale = 1 / (2 * MAX_SCATTERING_DSTAR);
 
 	double realLimits = (scale * n);

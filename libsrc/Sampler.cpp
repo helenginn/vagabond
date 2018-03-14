@@ -551,7 +551,7 @@ bool Sampler::sample(bool clear)
 		_strategy->setCycles(cycles);
 	}
 
-	if (!_silent && false)
+	if (!_silent)
 	{
 		std::cout << "Sampling ";
 

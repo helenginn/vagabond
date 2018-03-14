@@ -128,19 +128,24 @@ MapScoreType mapScore)
 
 void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask)
 {
-	FFTPtr modified;
-	FFTPtr atomDist = _element->getDistribution();
-
+	FFTPtr atomDist, modified;
+	
+	if (getModel()->getEffectiveOccupancy() <= 0) return;
+	
 	if (!mask)
 	{
 		modified = getBlur();
+		atomDist = _element->getDistribution(false, modified->nx);
 		FFT::multiply(modified, atomDist);
 		modified->fft(1);
 		modified->invertScale();
+		modified->setTotal(_element->electronCount() * 10e4);
+		double occ = _model->getEffectiveOccupancy();
+		modified->multiplyAll(occ);
 	}
 	else
 	{
-		modified = atomDist;		
+		modified = _element->getMask();		
 		double occ = _model->getEffectiveOccupancy();
 		modified->multiplyAll(occ);
 	}

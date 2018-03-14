@@ -125,7 +125,7 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 		// it is 2 * M_PI * M_PI, not 8.
 		aniso = exp((2 * M_PI * M_PI) * -(multByTranspose));
 
-		return aniso * me->_occupancy;
+		return aniso;
 	}
 
 	double distSq = (x * x + y * y + z * z);
@@ -143,7 +143,6 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 
 	double exponent = (-0.25) * bf * distSq;
 	double value = exp(exponent);
-	value *= me->_occupancy;
 
 	return value;
 }
@@ -153,9 +152,9 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 
 FFTPtr Absolute::getDistribution(bool, int)
 {
-	double n = ATOM_SAMPLING_COUNT;
+	double n = fftGridLength();
 	double scale = 2 * MAX_SCATTERING_DSTAR;
-
+	
 	prepareDistribution(n, scale, this, Absolute::getExpValue);
 
 	return getDistributionCopy();

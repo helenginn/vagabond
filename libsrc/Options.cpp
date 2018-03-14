@@ -92,6 +92,7 @@ void Options::run()
 		outputCrystalInfo();
 	}
 
+	std::cout << std::setprecision(3) << std::endl;
 	std::cout << "Running in " << (_manual ? "manual" : "automatic") << " mode." << std::endl;
 
 	if (diffractions.size() == 1)

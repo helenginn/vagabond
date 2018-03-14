@@ -58,6 +58,8 @@ public:
 
 	virtual double getMeanSquareDeviation() = 0;
 	virtual mat3x3 getRealSpaceTensor();
+	double biggestStdevDim();
+	int fftGridLength();
 
 	bool hasMolecule()
 	{

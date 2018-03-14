@@ -642,8 +642,11 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 	FFT *fftCrystal = &*fftEdit;
 	FFT *fftAtom = &*fftConst;
-	double volume = 1;// fftAtom->getScale(0) * fftAtom->getScale(1)
-//	* fftAtom->getScale(2);
+	double volume = 1;
+	/*
+	double volume =  fftAtom->getScale(0) * fftAtom->getScale(1)
+	* fftAtom->getScale(2);
+	*/
 
 	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
 	FFT::collapseFrac(&add.x, &add.y, &add.z);
@@ -911,6 +914,26 @@ void FFT::printSlice(double zVal)
 		std::cout << " |" << std::endl;
 	}
 	std::cout << std::endl;
+}
+
+int FFT::setTotal(float newTotal)
+{
+	float total = 0;
+	
+	for (int i = 0; i < nn; i++)
+	{
+		total += data[i][0];
+	}
+	
+	if (total <= 0) return 1;
+	float scale = newTotal / total;
+	
+	for (int i = 0; i < nn; i++)
+	{
+		data[i][0] *= scale;
+	}
+	
+	return 0;
 }
 
 void FFT::normalise()

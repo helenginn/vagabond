@@ -13,8 +13,9 @@
 FFTPtr Distributor::prepareDistribution(double n, double scale, void *object,
                                         get_voxel_value *voxel_value)
 {
-	if (_precalcFFTs.count(n) && _precalcFFTs[n])
+	if (_precalcFFTs.count(n) && _precalcFFTs[(int)n])
 	{
+		_activeNum = n;
 		return _precalcFFTs[n];
 	}
 
@@ -40,6 +41,7 @@ FFTPtr Distributor::prepareDistribution(double n, double scale, void *object,
 		}
 	}
 
+	_activeNum = n;
 	_precalcFFTs[n] = _fft;
 	
 	return _fft;

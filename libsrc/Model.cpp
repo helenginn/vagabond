@@ -42,6 +42,39 @@ FFTPtr Model::getZeroDistribution()
 	return getDistributionCopy();
 }
 
+/* In Angstroms */
+double Model::biggestStdevDim()
+{
+	getAnisotropy(true);
+	double max = 0;
+	mat3x3 mat = getRealSpaceTensor();
+	
+	for (int i = 0; i < 3; i++)
+	{
+		vec3 axis = mat3x3_axis(mat, i);
+		double sqlength = vec3_sqlength(axis);
+		
+		if (sqlength > max) max = sqlength;
+	}
+	
+	return sqrt(max);
+}
+
+int Model::fftGridLength()
+{
+	double scale = 2 * MAX_SCATTERING_DSTAR;
+	/* Target dimension in Angstroms */
+	double dim = biggestStdevDim() * 2;
+	
+	/* Add 3 Angstroms for good luck */
+	dim += 2;
+	dim *= 2;
+	
+	int n = scale * dim + 0.5;
+	//n = ATOM_SAMPLING_COUNT;
+	return n;
+}
+
 std::vector<vec3> Model::polymerCorrectedPositions()
 {
 	std::vector<vec3> posOnly;

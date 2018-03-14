@@ -168,6 +168,7 @@ public:
 	void setAll(float);
 	void cap(float);
 	void multiplyAll(float);
+	int setTotal(float value);
 	void valueMinus(float value);
 
 	double interpolate(vec3 fractionalVoxel, bool imaginary = false);
