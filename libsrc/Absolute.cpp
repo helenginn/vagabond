@@ -165,8 +165,8 @@ std::vector<BondSample> *Absolute::getManyPositions()
 
 	double occTotal = 0;
 
-	int samples = 40;
-	int layers = 4;
+	int samples = 50;
+	int layers = 6;
 	int rnd = 1;
     std::vector<vec3> points;
     double offset = 2. / (double)samples;
