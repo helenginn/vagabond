@@ -100,13 +100,12 @@ double Element::getSolventMaskValue(void *object, double x, double y, double z)
 
 double Element::getVoxelValue(void *object, double x, double y, double z)
 {
-	double sampling = Options::getProteinSampling();
 	Element *me = static_cast<Element *>(object);
 	int totalScatterPoints = ScatterFactors::numScatter;
 
 	double distSq = (x * x + y * y + z * z);
 	double dist = sqrt(distSq);
-	dist *= sampling;
+	dist *= Options::getProteinSampling();
 
 	double val = 0;
 
