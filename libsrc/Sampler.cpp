@@ -612,36 +612,6 @@ double Sampler::getScore()
 		}
 
 		return score / count;
-
-		for (int i = 1; i < sampleSize(); i++)
-		{
-			BondPtr bond = ToBondPtr(_sampled[i]->getModel());
-			bond->getDistribution();
-			vec3 bestPos = bond->getAbsolutePosition();
-			vec3 initialPos = _sampled[i]->getPDBPosition();
-
-			for (int j = 0; j < i - 1; j++)
-			{
-				BondPtr jBond = ToBondPtr(_sampled[j]->getModel());
-				vec3 jBestPos = jBond->getAbsolutePosition();
-				vec3 jInitialPos = _sampled[j]->getPDBPosition();
-
-				// take (opposite) differences
-				vec3 bestPosDiff = vec3_subtract_vec3(jBestPos, bestPos);
-				vec3 initialDiff = vec3_subtract_vec3(initialPos, jInitialPos);
-
-				// add them up and take the length of the remainder.
-				vec3 addDiff = vec3_add_vec3(initialDiff, bestPosDiff);
-				double length = vec3_length(addDiff);
-
-				score += length;
-				count++;
-			}
-		}
-
-		score /= count;
-
-		return score;
 	}
 
 	return AtomGroup::scoreWithMapGeneral(_scoreType, _crystal, false, _sampled);
