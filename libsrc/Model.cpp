@@ -67,7 +67,7 @@ int Model::fftGridLength()
 	double dim = biggestStdevDim() * 2;
 	
 	/* Add 3 Angstroms for good luck */
-	dim += 2;
+	dim += 4;
 	dim *= 2;
 	
 	int n = scale * dim + 0.5;
