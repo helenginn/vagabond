@@ -96,12 +96,18 @@ void Crystal::realSpaceClutter(double maxRes)
 		if (sampling < 0)
 		{
 			sampling = maxRes / 4.;
+			if (maxRes >= 2.5)
+			{
+				sampling = maxRes / 5.;
+			}
 			if (maxRes <= 1.2)
 			{
 				sampling = maxRes / 3.;
 			}
 			Options::setProteinSampling(sampling);
 		}
+		
+		if (sampling >= 1) sampling = 1;
 
 		/* Now create the FFT */
 		_fft = FFTPtr(new FFT());
