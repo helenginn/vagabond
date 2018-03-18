@@ -181,6 +181,10 @@ void VagWindow::waitForInstructions()
             options->fitWholeMolecule(false, true);
             break;
 
+            case InstructionTypeSqueezeToEnd: 
+            squeezeToEnd();
+            break;
+
             case InstructionTypeSidechainsToEnd: 
             sidechainsToEnd();
             break;
@@ -260,6 +264,13 @@ void VagWindow::sidechainsToEnd()
 	PolymerPtr polymer;	CrystalPtr crystal; MonomerPtr monomer;
 	getPolymerMonomerCrystal(&polymer, &crystal, &monomer);
     polymer->refineToEnd(monomer->getResidueNum(), crystal, RefinementSidechain); 
+}
+
+void VagWindow::squeezeToEnd()
+{
+	PolymerPtr polymer;	CrystalPtr crystal; MonomerPtr monomer;
+	getPolymerMonomerCrystal(&polymer, &crystal, &monomer);
+    polymer->refineToEnd(monomer->getResidueNum(), crystal, RefinementModelRMSDZero); 
 }
 
 void VagWindow::refineToEnd()

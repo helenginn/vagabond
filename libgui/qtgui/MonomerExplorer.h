@@ -50,6 +50,7 @@ private slots:
 	void clickedAtomListItem();
 	void pushRefineDensity();
 	void pushSidechainsToEnd();
+	void pushSqueezeToEnd();
 	void pushRefineToEnd();
 	void setSliderValue();
 private:
@@ -82,6 +83,7 @@ private:
 	QPushButton *_bRefineDensity;
 	QPushButton *_bRefineToEnd;
 	QPushButton *_bSidechainsToEnd;
+	QPushButton *_bSqueezeToEnd;
 	QLabel *_lCorrel;
 
 	OptionMap _optionMap;
