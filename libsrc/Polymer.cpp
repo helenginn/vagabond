@@ -1210,15 +1210,15 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 
 	if (translation)
 	{
-		nelderMead->addParameter(this, getTransTensor11, setTransTensor11, 0.5, 0.01);
+		nelderMead->addParameter(this, getTransTensor11, setTransTensor11, 0.1, 0.01);
 		nelderMead->addParameter(this, getTransTensor12, setTransTensor12, 0.1, 0.01);
 		nelderMead->addParameter(this, getTransTensor21, setTransTensor21, 0.1, 0.01);
 		nelderMead->addParameter(this, getTransTensor13, setTransTensor13, 0.1, 0.01);
 		nelderMead->addParameter(this, getTransTensor31, setTransTensor31, 0.1, 0.01);
-		nelderMead->addParameter(this, getTransTensor22, setTransTensor22, 0.5, 0.01);
+		nelderMead->addParameter(this, getTransTensor22, setTransTensor22, 0.1, 0.01);
 		nelderMead->addParameter(this, getTransTensor23, setTransTensor23, 0.1, 0.01);
 		nelderMead->addParameter(this, getTransTensor32, setTransTensor32, 0.1, 0.01);
-		nelderMead->addParameter(this, getTransTensor33, setTransTensor33, 0.5, 0.01);
+		nelderMead->addParameter(this, getTransTensor33, setTransTensor33, 0.1, 0.01);
 	}
 
 	if (rotation)
