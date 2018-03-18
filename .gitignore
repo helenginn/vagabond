@@ -55,6 +55,10 @@ sites
 *.swp
 tags
 
+# AppImage stuff
+Vagabond-x86_64.AppImage
+vagabond.AppDir
+
 ./libsrc/vagabond
 vagabond
 Makefile
