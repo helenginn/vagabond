@@ -265,6 +265,28 @@ void Atom::setKeepModel()
 	_distModelOnly = _model;
 }
 
+double Atom::fullPositionDisplacement()
+{
+	BondPtr bond = ToBondPtr(getModel());
+	std::vector<BondSample> samples = bond->getFinalPositions();
+	vec3 initialPos = getInitialPosition();
+	initialPos = getPDBPosition();
+
+	double score = 0;
+	
+	for (int i = 0; i < samples.size(); i++)
+	{
+		vec3 aPos = samples[i].start;
+		vec3 diff = vec3_subtract_vec3(aPos, initialPos);
+		double sqlength = vec3_sqlength(diff);
+		score += sqlength;
+	}
+	
+	score /= (double)samples.size();
+
+	return score;
+}
+
 double Atom::posDisplacement()
 {
 	BondPtr bond = ToBondPtr(getModel());

@@ -192,6 +192,26 @@ void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 	std::cout << (skip > 0 ? "C" : "N");
 	std::cout <<  "-terminus..." << std::endl;
 	std::cout << "\t";
+	
+	if (rType == RefinementModelRMSDZero)
+	{
+		for (int i = start; i != end; i += skip)
+		{
+			MonomerPtr monomer = getMonomer(i);
+			if (!monomer)
+			{
+				continue;
+			}
+
+			for (int j = 0; j < monomer->atomCount(); j++)
+			{
+				AtomPtr atom = monomer->atom(j);
+				atom->getModel()->getFinalPositions();	
+				vec3 pos = atom->getAbsolutePosition();
+				atom->setInitialPosition(pos);
+			}
+		}
+	}
 
 	for (int i = start; i != end; i += skip)
 	{

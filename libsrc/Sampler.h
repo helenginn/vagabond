@@ -25,7 +25,7 @@ typedef enum
 	RefinementBroad = 0,
 	RefinementFine = 1,
 	RefinementSidechain = 2,
-	RefinementModelRMSD = 3,
+	RefinementModelRMSDZero = 3,
 	RefinementModelPos = 4,
 	RefinementFlexibility = 5,
 } RefinementType;

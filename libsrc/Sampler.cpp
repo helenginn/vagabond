@@ -599,14 +599,29 @@ double Sampler::getScore()
 		return 0;
 	}
 
-	if (_scoreType == ScoreTypeModelPos)
+	if (_scoreType == ScoreTypeModelPos || _scoreType == ScoreTypeModelRMSDZero)
 	{
 		double score = 0;
 		double count = 0;
 
 		for (int i = 0; i < sampleSize(); i++)
 		{
-			double oneScore = _sampled[i]->posDisplacement();
+			double oneScore = 0;
+			
+			switch (_scoreType)
+			{
+				case ScoreTypeModelPos:
+				oneScore = _sampled[i]->posDisplacement();
+				break;
+				
+				case ScoreTypeModelRMSDZero:
+				oneScore = _sampled[i]->fullPositionDisplacement();
+				break;
+				
+				default:
+				break;
+			}
+
 			score += oneScore;
 			count += 1;
 		}

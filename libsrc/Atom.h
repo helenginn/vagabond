@@ -35,6 +35,7 @@ public:
 	vec3 getPosition();
 	vec3 getAbsolutePosition();
 	double posDisplacement();
+	double fullPositionDisplacement();
 
 	void setElement(ElementPtr element)
 	{
