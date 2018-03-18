@@ -140,9 +140,9 @@ void MonomerExplorer::makeRefinementButtons()
 
 	makeSlider(ParamOptionTorsion, 0, "Torsion", 0, 200, 1000, 100, "º");
 	makeSlider(ParamOptionKick, 1, "Kick", 0, 100, 100, 50, "");
-	makeSlider(ParamOptionDampen, 2, "Dampen", 0, 100, 100, 25, "");
+	makeSlider(ParamOptionDampen, 2, "Dampen", 0, 50, 100, 25, "");
 	makeSlider(ParamOptionMagicAngles, 3, "Phi/psi", 0, 90, 1, 20, "º");
-	makeSlider(ParamOptionNumBonds, 4, "Bonds", 0, 8, 1, 3, "");
+	makeSlider(ParamOptionNumBonds, 4, "Bonds", 0, 12, 1, 3, "");
 }
 
 void MonomerExplorer::populateList()
