@@ -33,71 +33,72 @@
 
 class VagWindow : public QMainWindow, public Notifiable
 {
-    Q_OBJECT
-    
+	Q_OBJECT
+
 public:
-    VagWindow(QWidget *parent = 0, int argc = 0, char *argv[] = NULL);
-    ~VagWindow();
+	VagWindow(QWidget *parent = 0, int argc = 0, char *argv[] = NULL);
+	~VagWindow();
 
-    virtual void disable();
-    virtual void enable();
-    void waitForInstructions();
-    virtual bool isRunningSomething();
-    void receiveDialogue(DialogueType type, std::string diagString);
+	virtual void disable();
+	virtual void enable();
+	void waitForInstructions();
+	virtual bool isRunningSomething();
+	void receiveDialogue(DialogueType type, std::string diagString);
 
-    virtual void setMessage(std::string message);
-    virtual void wakeup();
+	virtual void setMessage(std::string message);
+	virtual void wakeup();
 protected:
-    virtual void resizeEvent(QResizeEvent *event);
+	virtual void resizeEvent(QResizeEvent *event);
 private slots:
-    void pushSuperimpose();
-    void pushFitWholeR();
-    void pushFitWholeT();
-    void pushRefinePositions();
-    void pushRefineFlexibility();
-    void pushBMultiplier();
-    void pushExploreMcule();
-    void pushRefineDensity();
-    void recalculateFFT();
+	void pushSuperimpose();
+	void pushFitWholeR();
+	void pushFitWholeT();
+	void pushRefinePositions();
+	void pushRefineFlexibility();
+	void pushBMultiplier();
+	void pushExploreMcule();
+	void pushRefineDensity();
+	void recalculateFFT();
 
-    void openModel();
-    void openMTZ();
-    void setOutput();
+	void openModel();
+	void openMTZ();
+	void setOutput();
 
 private:
-    VagabondGLWidget *display;
-    QWaitCondition wait;
-    QMutex mutex;
-    InstructionThread _instructionThread;
-    Dialogue *_myDialogue;
-    MoleculeExplorer *_explorer;
-    QFileDialog *_fileDialogue;   
-    
-    void updateExplorerButton();
-    void refineToEnd();
-    void sidechainsToEnd();
+	VagabondGLWidget *display;
+	QWaitCondition wait;
+	QMutex mutex;
+	InstructionThread _instructionThread;
+	Dialogue *_myDialogue;
+	MoleculeExplorer *_explorer;
+	QFileDialog *_fileDialogue;   
+
+	void squeezeToEnd();
+	void updateExplorerButton();
+	void refineToEnd();
+	void sidechainsToEnd();
 	void getPolymerMonomerCrystal(PolymerPtr *poly, CrystalPtr *cryst, MonomerPtr *monomer);
-    QLabel *_lStatus;
+	QLabel *_lStatus;
 
-    /* Buttons down the side */
-    QPushButton *bSuperimpose;
-    QPushButton *bRefinePos;
-    QPushButton *bRefineFlex;
-    QPushButton *bChangeBMult;
-    QPushButton *bExploreMolecule;
-    QPushButton *bRecalculate;
-    QPushButton *bRefineDensity;
-    QPushButton *bFitWholeR;
-    QPushButton *bFitWholeT;
+	/* Buttons down the side */
+	QPushButton *bSuperimpose;
+	QPushButton *bRefinePos;
+	QPushButton *bRefineFlex;
+	QPushButton *bChangeBMult;
+	QPushButton *bExploreMolecule;
+	QPushButton *bRecalculate;
+	QPushButton *bRefineDensity;
+	QPushButton *bFitWholeR;
+	QPushButton *bFitWholeT;
 
-    std::string _outputDir;
-    std::string _pdbName; 
-    std::string _mtzName;
-    int _argc;
-    char **_argv;
+	std::string _outputDir;
+	std::string _pdbName; 
+	std::string _mtzName;
+	int _argc;
+	char **_argv;
 
-    void makeMenu();
-    void makeButtons();
+	void makeMenu();
+	void makeButtons();
 };
 
 #endif /* defined(__Vagabond__VagWindow__) */
