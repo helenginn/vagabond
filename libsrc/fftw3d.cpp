@@ -823,10 +823,15 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 				if (mapScoreType == MapScoreTypeCorrel)
 				{
+					if ((!fftCrystal->_writeToMaskZero &&
+					     fftCrystal->getMask(crystalIndex) == 0) &&
+					     mapScoreType == MapScoreTypeCorrel)
+					{
+						continue;
+					}
+
 					/* We do NOT need to interpolate */
 					double realCryst = fftCrystal->getReal(crystalIndex);
-
-					if (atomReal < 0.1) continue;
 
 					if (vals)
 					{

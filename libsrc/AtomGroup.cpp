@@ -614,7 +614,8 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 	* surrounding atoms, but first we convert all non-zero values to
 	* a mask, as we do not want to merely extend the problem to the
 	* next atom.*/
-	segment->aboveValueToMask(0.1);
+	double cutoff = 50;
+	segment->aboveValueToMask(cutoff);
 	segment->avoidWriteToMaskZero();
 
 	/* Now we can add neighbouring atoms from the same Crystal
@@ -653,7 +654,7 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 	std::vector<double> xs, ys;
 	std::vector<CoordVal> vals;
 
-	double cutoff = FFT::score(map, segment, ave, &vals);
+	FFT::score(map, segment, ave, &vals);
 
 	/* For correlation calculations */
 	for (int i = 0; i < vals.size(); i++)
