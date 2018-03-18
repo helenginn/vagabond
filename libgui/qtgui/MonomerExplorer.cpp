@@ -129,6 +129,8 @@ void MonomerExplorer::makeRefinementButtons()
 
 	if (crystal && !running)
 	{
+		crystal->clearCloseCache();
+
 		delete _lCorrel;
 		double score = -_monomer->scoreWithMap(ScoreTypeCorrel, crystal, true);
 		std::string scoreString = "CC (2Fo-Fc): " + f_to_str(score, 3);
