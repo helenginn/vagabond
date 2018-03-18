@@ -65,6 +65,7 @@ public:
 	static double magicAxisStaticScore(void *object);
 	bool test();
 	double getEffectiveOccupancy();
+	void resetBondAngles();
 
 	AtomPtr getMajor()
 	{

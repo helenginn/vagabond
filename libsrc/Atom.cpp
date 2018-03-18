@@ -64,6 +64,37 @@ AtomType Atom::getGeomType()
 	return _geomType;
 }
 
+void Atom::convertToDisulphide()
+{
+	if (_geomType == AtomCysCB)
+	{
+		_geomType == AtomCysCBS;
+	}	
+	else if (_geomType == AtomCysSG)
+	{
+		_geomType == AtomCysSGS;	
+	}
+	else
+	{
+		return;
+	}
+	
+	if (!getModel()->isBond())
+	{
+		return;
+	}
+	
+	BondPtr bond = ToBondPtr(getModel());
+	ModelPtr parent = bond->getParentModel();
+	
+	if (!parent->isBond())
+	{
+		return;	
+	}
+	
+	ToBondPtr(parent)->resetBondAngles();
+}
+
 void Atom::inheritParents()
 {
 	getMonomer()->addAtom(shared_from_this());

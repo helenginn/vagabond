@@ -517,6 +517,10 @@ GeomTable::GeomTable()
     addBondLength(AtomCysCA, AtomCysCB, 1.526);
     addBondLength(AtomCysCB, AtomCysSG, 1.812);
 
+	/* For disulphides */
+    addBondLength(AtomCysCA, AtomCysCBS, 1.535);
+    addBondLength(AtomCysCB, AtomCysSGS, 1.818);
+
     addBondAngle(AtomNH1, AtomCysCA, AtomC, C_CH1E_NH1_ANGLE);
     addBondAngle(AtomCysCA, AtomC, AtomO, CH1E_C_O_ANGLE);
     addBondAngle(AtomC, AtomNH1, AtomCysCA, C_NH1_CH1E_ANGLE);
@@ -524,6 +528,11 @@ GeomTable::GeomTable()
     addBondAngle(AtomNH1, AtomCysCA, AtomCysCB, 110.8);
     addBondAngle(AtomCysCB, AtomCysCA, AtomC, 111.5);
     addBondAngle(AtomCysCA, AtomCysCB, AtomCysSG, 114.2);
+
+	/* For disulphides */
+    addBondAngle(AtomNH1, AtomCysCA, AtomCysCBS, 110.6);
+    addBondAngle(AtomCysCBS, AtomCysCA, AtomC, 110.4);
+    addBondAngle(AtomCysCA, AtomCysCBS, AtomCysSGS, 114.0);
 
     addBondLength(AtomC, AtomHisCA, 1.525);
     addBondLength(AtomNH1, AtomHisCA, 1.459);

@@ -158,6 +158,7 @@ public:
 	std::string pdbLineBeginning(std::string start = "ATOM  ");
 
 	AtomType getGeomType();
+	void convertToDisulphide();
 
 	MonomerPtr getMonomer()
 	{

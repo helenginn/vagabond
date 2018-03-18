@@ -40,7 +40,7 @@ typedef enum
 	AtomMetCA, AtomMetCB, AtomMetCG, AtomMetSD, AtomMetCE,
 	AtomLysCA, AtomLysCB, AtomLysCG, AtomLysCD, AtomLysCE, AtomLysNZ,
 	AtomSerCA, AtomSerCB, AtomSerOG,
-	AtomCysCA, AtomCysCB, AtomCysSG,
+	AtomCysCA, AtomCysCB, AtomCysCBS, AtomCysSG, AtomCysSGS,
 	AtomThrCA, AtomThrCB, AtomThrOG1, AtomThrCG2,
 	AtomValCA, AtomValCB, AtomValCG1, AtomValCG2,
 	AtomAspCA, AtomAspCB, AtomAspCG, AtomAspOD1, AtomAspOD2,

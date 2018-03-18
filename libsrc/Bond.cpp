@@ -173,6 +173,20 @@ double Bond::deriveBondAngle(AtomPtr atom)
 	return angle;
 }
 
+void Bond::resetBondAngles()
+{
+	for (int i = 0; i < downstreamAtomGroupCount(); i++)
+	{
+		for (int j = 0; j < downstreamAtomCount(i); j++)
+		{
+			double angle = deriveBondAngle(downstreamAtom(i, j));
+			_bondGroups[i].atoms[j].expectedAngle = angle;
+			double ratio = tan(angle - M_PI / 2);
+			_bondGroups[i].atoms[j].geomRatio = ratio;
+		}	
+	}	
+}
+
 void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 {
 	while (_bondGroups.size() <= group)
