@@ -811,6 +811,17 @@ std::vector<vec3> Polymer::getAnchorSphereDiffs()
 	return results;
 }
 
+void Polymer::applyPolymerChanges()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (!atom(i)) continue;
+
+		ModelPtr model = atom(i)->getModel();
+		model->setPolymerChanged();	
+	}
+}
+
 void Polymer::applyTranslationTensor()
 {
 	_transTensorOffsets.clear();

@@ -93,6 +93,11 @@ public:
 	{
 		return (getClassName() == "Anchor");
 	}
+	
+	void setPolymerChanged()
+	{
+		_recalcFinal = true;	
+	}
 
 	vec3 longestAxis();
 	std::vector<vec3> fishPositions();
@@ -105,7 +110,7 @@ protected:
 	/* What should be returned when asking for an atom's position
 	* for drawing into a map... */
 	vec3 _absolute;
-	/* And a record of the final positions */
+	/* And a record of the final positions just for GUI display */
 	std::vector<vec3> _finalPositions;
 
 	/* Expect interference from GUI */
@@ -117,6 +122,8 @@ protected:
 	virtual void getAnisotropy(bool withKabsch);
 	double anisotropyExtent(bool withKabsch = false);
 	double _isotropicAverage;
+	bool _recalcFinal;
+	std::vector<BondSample> _finalSamples;
 
 	virtual std::string getParserIdentifier()
 	{

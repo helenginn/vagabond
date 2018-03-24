@@ -264,14 +264,18 @@ void AtomGroup::refreshPositions(bool quick)
 	{
 		if (!atom(i)) continue;
 
-		if (quick)
-		{
-			atom(i)->getModel()->propagateChange(0);
-			atom(i)->getModel()->getFinalPositions();
-			continue;
-		}
+		atom(i)->getModel()->propagateChange(0);
+		atom(i)->getModel()->getFinalPositions();
+	}
+	
+	if (quick) return;
 
-		atom(i)->getModel()->propagateChange(-1, true);
+	AtomList list = topLevelAtoms();
+	
+	for (int i = 0; i < list.size(); i++)
+	{
+		AtomPtr atom = list[i].lock();
+		atom->getModel()->propagateChange(-1, true);
 	}
 }
 

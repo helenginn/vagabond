@@ -17,6 +17,7 @@ bool Model::_useMutex = false;
 
 Model::Model()
 {
+	_recalcFinal = true;
 	_realSpaceTensor = make_mat3x3();
 }
 
@@ -175,20 +176,31 @@ vec3 meanOfManyPositions(std::vector<BondSample> *positions)
 
 std::vector<BondSample> Model::getFinalPositions()
 {
+	if (!_recalcFinal)
+	{
+		return _finalSamples;	
+	}
+	
+	/* Recalculate final positions */
+
 	std::vector<BondSample> *positions = getManyPositions();
-	std::vector<BondSample> copyPos = *positions;
+	_finalSamples = *positions;
 	std::vector<vec3> posOnly = polymerCorrectedPositions();
 
-	for (int i = 0; i < copyPos.size(); i++)
+	for (int i = 0; i < _finalSamples.size(); i++)
 	{
 		if (i < posOnly.size())
 		{
-			copyPos[i].start = posOnly[i];
+			_finalSamples[i].start = posOnly[i];
 		}
 	}
 
-	_absolute = meanOfManyPositions(&copyPos);
-
+	_absolute = meanOfManyPositions(&_finalSamples);
+	
+	/* Deset flag */
+	
+	_recalcFinal = false;
+	
 	if (_useMutex)
 	{
 		std::lock_guard<std::mutex> lock(guiLock);
@@ -199,12 +211,12 @@ std::vector<BondSample> Model::getFinalPositions()
 		_finalPositions = posOnly;
 	}
 
-	return copyPos;
+	return _finalSamples;
 }
 
 void Model::propagateChange(int depth, bool refresh)
 {
-
+	_recalcFinal = true;
 }
 
 

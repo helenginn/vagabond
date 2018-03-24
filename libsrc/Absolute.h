@@ -53,9 +53,10 @@ public:
 		trim(_resName); to_lower(_resName);
 	}
 
-	virtual void propagateChange(int depth = -1)
+	virtual void propagateChange(int depth, bool refresh)
 	{
 		_calculated = false;
+		Model::propagateChange(depth, refresh);
 	}
 
 	void setAlternativeConformerName(std::string conformer)

@@ -953,6 +953,9 @@ void Bond::propagateChange(int depth, bool refresh)
 		return;
 	}
 
+	/* Will force recalculation of final positions */
+	Model::propagateChange(depth, refresh);
+
 	/* Iterative now */
 	std::vector<BondPtr> propagateBonds;
 	propagateBonds.push_back(ToBondPtr(shared_from_this()));
@@ -977,6 +980,7 @@ void Bond::propagateChange(int depth, bool refresh)
 
 		bond->_changedPos = true;
 		bond->_changedSamples = true;
+		bond->Model::propagateChange(depth, refresh);
 
 		if (depth >= 0 && count > depth)
 		{

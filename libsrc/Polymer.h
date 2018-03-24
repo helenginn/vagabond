@@ -61,6 +61,7 @@ public:
 	virtual void reportParameters();
 	void downWeightResidues(int start, int end, double value);
 
+	void applyPolymerChanges();
 	void refineToEnd(int monNum, CrystalPtr target, RefinementType rType);
 	bool test();
 	ModelPtr getAnchorModel();
