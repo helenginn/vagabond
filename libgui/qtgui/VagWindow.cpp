@@ -162,6 +162,9 @@ VagWindow::VagWindow(QWidget *parent,
     _instructionType = InstructionTypeNone;
     _instructionThread.setVagWindow(this);
     _instructionThread.start(); 
+
+	display->setFocus();
+	display->setFocusPolicy(Qt::StrongFocus);
 }
 
 void VagWindow::waitForInstructions()
@@ -252,6 +255,7 @@ void VagWindow::waitForInstructions()
             break;
         }
         
+		display->setFocus();
         mutex.unlock();
     }
 }
