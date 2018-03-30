@@ -20,6 +20,7 @@
 class AtomGroup : public boost::enable_shared_from_this<AtomGroup>, public Sampler, public Parser
 {
 public:
+	AtomGroup();
 	AtomPtr findAtom(std::string atomType);
 	AtomPtr findAtom(std::string atomType, std::string confID);
 	AtomList findAtoms(std::string atomType);
@@ -49,6 +50,8 @@ public:
 			_atoms.push_back(atom);
 		}
 	}
+	
+	void addAtomsFrom(AtomGroupPtr group);
 
 	long atomCount()
 	{
@@ -123,8 +126,6 @@ public:
 		_includeForRefine.push_back(group);
 	}
 protected:
-	AtomGroup();
-	void addAtomsFrom(AtomGroupPtr child);
 	virtual AtomList topLevelAtoms();
 	int _timesRefined;
 
