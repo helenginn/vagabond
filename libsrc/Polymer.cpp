@@ -845,6 +845,8 @@ void Polymer::applyTranslationTensor()
 		vec3 movement = vec3_subtract_vec3(diffTensored, diff);
 		_transTensorOffsets.push_back(movement);
 	}
+	
+	applyPolymerChanges();
 }
 
 void Polymer::calculateExtraRotations()
@@ -881,6 +883,8 @@ void Polymer::calculateExtraRotations()
 		mat3x3 rot = mat3x3_unit_vec_rotation(_rotationAxis, angle);
 		_extraRotationMats.push_back(rot);
 	}    
+	
+	applyPolymerChanges();
 }
 
 void Polymer::superimpose()
