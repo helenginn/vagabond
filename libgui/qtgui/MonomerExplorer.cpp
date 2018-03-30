@@ -17,6 +17,7 @@ void MonomerExplorer::initialise(MonomerPtr monomer)
 	_bSidechainsToEnd = NULL;
 	_bRefineToEnd = NULL;
 	_bSqueezeToEnd = NULL;
+	_bModelPosToEnd = NULL;
 	_lCorrel = NULL;
 	_lModel = NULL;
 	_lTorsion = NULL;
@@ -121,6 +122,12 @@ void MonomerExplorer::makeRefinementButtons()
 	_bSqueezeToEnd->setGeometry(250, 300, 150, 25);
 	_bSqueezeToEnd->show(); 
 	connect(_bSqueezeToEnd, SIGNAL(clicked()), this, SLOT(pushSqueezeToEnd()));
+
+	delete _bModelPosToEnd;
+	_bModelPosToEnd = new QPushButton("Model pos to end", this);
+	_bModelPosToEnd->setGeometry(250, 325, 150, 25);
+	_bModelPosToEnd->show(); 
+	connect(_bModelPosToEnd, SIGNAL(clicked()), this, SLOT(pushModelPosToEnd()));
 
 	OptionsPtr options = Options::getRuntimeOptions();
 	CrystalPtr crystal = options->getActiveCrystal();
@@ -293,6 +300,12 @@ void MonomerExplorer::pushSidechainsToEnd()
 {
 	Notifiable *notify = preparePolymer();
 	notify->setInstruction(InstructionTypeSidechainsToEnd);
+}
+
+void MonomerExplorer::pushModelPosToEnd()
+{
+	Notifiable *notify = preparePolymer();
+	notify->setInstruction(InstructionTypeModelPosToEnd);
 }
 
 void MonomerExplorer::pushSqueezeToEnd()

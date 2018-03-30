@@ -51,6 +51,7 @@ private slots:
 	void pushRefineDensity();
 	void pushSidechainsToEnd();
 	void pushSqueezeToEnd();
+	void pushModelPosToEnd();
 	void pushRefineToEnd();
 	void setSliderValue();
 private:
@@ -84,6 +85,7 @@ private:
 	QPushButton *_bRefineToEnd;
 	QPushButton *_bSidechainsToEnd;
 	QPushButton *_bSqueezeToEnd;
+	QPushButton *_bModelPosToEnd;
 	QLabel *_lCorrel;
 
 	OptionMap _optionMap;

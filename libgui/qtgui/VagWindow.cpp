@@ -189,6 +189,10 @@ void VagWindow::waitForInstructions()
             sidechainsToEnd();
             break;
 
+            case InstructionTypeModelPosToEnd: 
+            modelPosToEnd();
+            break;
+
             case InstructionTypeRefineToEnd: 
             refineToEnd();
             break;
@@ -271,6 +275,13 @@ void VagWindow::squeezeToEnd()
 	PolymerPtr polymer;	CrystalPtr crystal; MonomerPtr monomer;
 	getPolymerMonomerCrystal(&polymer, &crystal, &monomer);
     polymer->refineToEnd(monomer->getResidueNum(), crystal, RefinementModelRMSDZero); 
+}
+
+void VagWindow::modelPosToEnd()
+{
+	PolymerPtr polymer;	CrystalPtr crystal; MonomerPtr monomer;
+	getPolymerMonomerCrystal(&polymer, &crystal, &monomer);
+    polymer->refineToEnd(monomer->getResidueNum(), crystal, RefinementModelPos); 
 }
 
 void VagWindow::refineToEnd()

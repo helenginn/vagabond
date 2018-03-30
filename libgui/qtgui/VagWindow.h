@@ -76,6 +76,7 @@ private:
 	void squeezeToEnd();
 	void updateExplorerButton();
 	void refineToEnd();
+	void modelPosToEnd();
 	void sidechainsToEnd();
 	void getPolymerMonomerCrystal(PolymerPtr *poly, CrystalPtr *cryst, MonomerPtr *monomer);
 	QLabel *_lStatus;
