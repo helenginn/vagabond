@@ -454,6 +454,7 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 	if (_maxResolution <= 0)
 	{
 		_maxResolution = data->getMaxResolution();
+		std::cout << std::setprecision(2);
 		std::cout << "Using the resolution from " << data->getFilename()
 		<< " of " << _maxResolution << " Å." << std::endl;
 	}
