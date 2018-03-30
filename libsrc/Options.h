@@ -136,6 +136,7 @@ public:
 	void openMTZ(std::string mtzName);
 	void recalculateFFT();
 	void fitWholeMolecule(bool translation, bool rotation);
+	void findDisulphides();
 
 	static std::string rTypeString(RefinementType type);
 private:

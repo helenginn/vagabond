@@ -15,6 +15,7 @@
 #include "Polymer.h"
 #include "FileReader.h"
 #include "VBondReader.h"
+#include "SSRigger.h"
 
 OptionsPtr Options::options;
 double Options::_kick = 0.01;
@@ -527,6 +528,23 @@ void Options::applyBMultiplier()
 		}
 	}
 
+	recalculateFFT();
+
+	notifyGUI(true);
+}
+
+void Options::findDisulphides()
+{
+	notifyGUI(false);
+
+	CrystalPtr crystal = getActiveCrystal();
+
+	statusMessage("Finding disulphide bonds.");
+
+	SSRigger rigger;
+	rigger.setCrystal(crystal);
+	rigger.findDisulphides();
+	
 	recalculateFFT();
 
 	notifyGUI(true);
