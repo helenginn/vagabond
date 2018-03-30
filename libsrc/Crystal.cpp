@@ -250,7 +250,8 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 
 	if (op == r_factor)
 	{
-		csv->writeToFile("correlplot.csv");
+		_correlPlotNum++;
+		csv->writeToFile("correlplot_" + i_to_str(_correlPlotNum) + ".csv");
 
 		std::map<std::string, std::string> plotMap;
 		plotMap["filename"] = "correlplot";
@@ -670,6 +671,7 @@ void Crystal::changeAnchors(int newAnchor)
 
 Crystal::Crystal()
 {
+	_correlPlotNum = 0;
 	_tied = false;
 	_spaceGroup = NULL;
 	_spgNum = 0;

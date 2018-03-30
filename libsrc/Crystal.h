@@ -226,6 +226,7 @@ private:
 	
 	double _solvScale;
 	double _solvBFac;
+	int _correlPlotNum;
 	DiffractionPtr _data;
 
 	FFTPtr _fft;

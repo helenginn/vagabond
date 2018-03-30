@@ -24,6 +24,7 @@ typedef enum
 	InstructionTypeSidechainsToEnd,
 	InstructionTypeSqueezeToEnd,
 	InstructionTypeRefineToEnd,
+	InstructionTypeModelPosToEnd,
 	InstructionTypeChangeBMult,
 	InstructionTypeRecalculateFFT,
 	InstructionTypeSetOutputDir,
@@ -31,6 +32,7 @@ typedef enum
 	InstructionTypeGetObjectValue,
 	InstructionTypeFitWholeMoleculeTranslation,
 	InstructionTypeFitWholeMoleculeRotation,
+	InstructionTypeFindDisulphides,
 } InstructionType;
 
 class Notifiable
