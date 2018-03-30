@@ -94,17 +94,14 @@ void Sampler::addParamsForBond(BondPtr bond)
 	}
 }
 
-BondPtr Sampler::setupThoroughSet(BondPtr bond, int k, int bondNum,
+BondPtr Sampler::setupThoroughSet(BondPtr bond, int bondNum,
                                  double range, double interval, bool addAngle,
 bool addFlex)
 {
-	bond->setActiveGroup(k);
-
 	reportInDegrees();
 	setScoreType(ScoreTypeCorrel);
 
-	setJobName("torsion_set_" + bond->shortDesc() + "_g" +
-	           i_to_str(k));
+	setJobName("torsion_set_" + bond->shortDesc() + "_g");
 
 	int bondCount = 0;
 
@@ -135,13 +132,11 @@ bool addFlex)
 
 		if (num <= 0)
 		{
-			k = 0;
 			continue;	
 		}
 		
 		bondCount++;
 		addParamsForBond(bond);
-		addAtomsForBond(bond, k);
 
 		if (addAngle) 
 		{
@@ -154,21 +149,22 @@ bool addFlex)
 			continue;
 		}
 
-		/* Take the chosen group and check for futures */
-		for (int i = 0; i < bond->downstreamAtomCount(k); i++)
+		for (int j = 0; j < bond->downstreamAtomGroupCount(); j++)
 		{
-			AtomPtr downstreamAtom = bond->downstreamAtom(k, i);
-			BondPtr nextBond = ToBondPtr(downstreamAtom->getModel());
-			
-			BondInt entry;
-			entry.bond = nextBond;
-			entry.num = num - 1;
-			remaining.push_back(entry);
+			addAtomsForBond(bond, j);
+
+			/* Take the chosen group and check for futures */
+			for (int i = 0; i < bond->downstreamAtomCount(j); i++)
+			{
+				AtomPtr downstreamAtom = bond->downstreamAtom(j, i);
+				BondPtr nextBond = ToBondPtr(downstreamAtom->getModel());
+
+				BondInt entry;
+				entry.bond = nextBond;
+				entry.num = num - 1;
+				remaining.push_back(entry);
+			}
 		}
-		
-		
-		/* Further groups will be checking conformer 0 only */
-		k = 0;
 	}
 	
 	return BondPtr();
