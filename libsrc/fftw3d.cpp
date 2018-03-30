@@ -821,10 +821,10 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 
 				/* Get the index of this final crystal voxel. */
-				long crystalIndex = fftCrystal->element(finalCrystalVox.x,
-				                                        finalCrystalVox.y,
-				finalCrystalVox.z);
-
+				long crystalIndex = fftCrystal->element(finalCrystalVox.x + 0.5,
+				                                        finalCrystalVox.y + 0.5,
+				finalCrystalVox.z + 0.5);
+				
 				count++;
 
 				if (mapScoreType == MapScoreTypeCorrel)
