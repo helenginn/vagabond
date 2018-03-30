@@ -174,7 +174,6 @@ protected:
 	virtual void linkReference(ParserPtr, std::string) {};
 	virtual void postParseTidy() {};
 
-	void setParent(Parser *parent);
 	void addStringProperty(std::string className, std::string *ptr);
 	void addDoubleProperty(std::string className, double *ptr);
 	void addIntProperty(std::string className, int *ptr);
@@ -217,6 +216,7 @@ private:
 	bool _setup;
 
 	void outputContents(std::ofstream &stream, int in);
+	void setParent(Parser *parent);
 	static ParserPtr objectOfType(char *className);
 	bool parseNextChunk(char **blockPtr);
 	char *parse(char *block);
