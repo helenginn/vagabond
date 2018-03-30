@@ -66,9 +66,6 @@ public:
 	void reverseDownstreamAtoms(int group);
 	void resetBondDirection();
 	bool isRefinable();
-	void calculateMagicAxis();
-	double magicAxisScore();
-	static double magicAxisStaticScore(void *object);
 	bool test();
 	double getEffectiveOccupancy();
 	void resetBondAngles();
@@ -489,17 +486,6 @@ private:
 
 	/* Downstream groups of bonds */
 	std::vector<BondGroup> _bondGroups;
-	std::vector<AtomWkr> _magicAxisAtoms;
-
-	int magicAtomCount()
-	{
-		return _magicAxisAtoms.size();
-	}
-
-	AtomPtr getMagicAtom(int i)
-	{
-		return _magicAxisAtoms[i].lock();
-	}
 
 	double _dampening;
 	bool _activated;

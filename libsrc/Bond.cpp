@@ -527,57 +527,6 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 	return final;
 }
 
-
-
-void Bond::calculateMagicAxis()
-{
-	/* Prepare queried atoms */
-
-	BondPtr downBond = ToBondPtr(shared_from_this());
-	int count = 0;
-
-	while (count < FUTURE_MAGIC_ATOMS && downBond &&
-	       downBond->downstreamAtomGroupCount()
-	&& downBond->downstreamAtomCount(0))
-	{
-		AtomPtr downAtom = downBond->downstreamAtom(0, 0);
-		_magicAxisAtoms.push_back(downAtom);
-
-		downBond = ToBondPtr(downAtom->getModel());
-		count++;
-	}
-
-	NelderMeadPtr nelder = NelderMeadPtr(new NelderMead());
-	nelder->setCycles(20);
-	nelder->addParameter(this, getMagicPhi, setMagicPhi, deg2rad(10), deg2rad(0.1));
-	nelder->addParameter(this, getMagicPsi, setMagicPsi, deg2rad(10), deg2rad(0.1));
-	nelder->setEvaluationFunction(magicAxisStaticScore, this);
-	nelder->setSilent(true);
-	nelder->refine();
-
-}
-
-double Bond::magicAxisScore()
-{
-	propagateChange(FUTURE_MAGIC_ATOMS);
-	double sum = 0;
-
-	for (int i = 0; i < magicAtomCount(); i++)
-	{
-		AtomPtr magicAtom = getMagicAtom(i);
-		BondPtr bond = ToBondPtr(magicAtom->getModel());
-		sum += bond->anisotropyExtent();
-	}
-
-	sum /= (double)magicAtomCount();
-
-	return sum;
-}
-double Bond::magicAxisStaticScore(void *object)
-{
-	return static_cast<Bond *>(object)->magicAxisScore();
-}
-
 mat3x3 Bond::getMagicMat(vec3 direction)
 {
 	mat3x3 rot = make_mat3x3();

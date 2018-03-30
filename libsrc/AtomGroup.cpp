@@ -463,11 +463,6 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 				break;
 			}
 
-			if (shouldRefineMagicAxis(bond))
-			{
-				bond->calculateMagicAxis();
-			}
-
 			int count = 0;
 
 			BondPtr topBond;
