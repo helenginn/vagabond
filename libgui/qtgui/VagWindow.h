@@ -59,6 +59,7 @@ private slots:
 	void pushExploreMcule();
 	void pushRefineDensity();
 	void recalculateFFT();
+	void findDisulphides();
 
 	void openModel();
 	void openMTZ();

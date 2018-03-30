@@ -255,6 +255,10 @@ void VagWindow::waitForInstructions()
             options->openMTZ(_mtzName);
             break;
 
+            case InstructionTypeFindDisulphides:
+            options->findDisulphides();
+            break;
+
             case InstructionTypeRecalculateFFT:
             options->recalculateFFT();
             break;
@@ -400,6 +404,12 @@ void VagWindow::pushRefineDensity()
 void VagWindow::recalculateFFT()
 {
     _instructionType = InstructionTypeRecalculateFFT;
+    wait.wakeAll();
+}
+
+void VagWindow::findDisulphides()
+{
+    _instructionType = InstructionTypeFindDisulphides;
     wait.wakeAll();
 }
 
