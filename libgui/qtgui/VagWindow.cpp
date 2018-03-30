@@ -41,25 +41,31 @@ void VagWindow::makeMenu()
 
 void VagWindow::makeButtons()
 {
+	buttons.clear();
+
     bSuperimpose = new QPushButton("Superimpose", this);
     bSuperimpose->setGeometry(700, 0, 200, 50);
     bSuperimpose->setEnabled(false);
     connect(bSuperimpose, SIGNAL(clicked()), this, SLOT(pushSuperimpose()));
+	buttons.push_back(bSuperimpose);
     
     bFitWholeT = new QPushButton("Fit molecule translation", this);
     bFitWholeT->setGeometry(700, 50, 200, 25);
     bFitWholeT->setEnabled(false);
     connect(bFitWholeT, SIGNAL(clicked()), this, SLOT(pushFitWholeT()));
+	buttons.push_back(bFitWholeT);
     
     bFitWholeR = new QPushButton("Fit molecule rotation", this);
     bFitWholeR->setGeometry(700, 75, 200, 25);
     bFitWholeR->setEnabled(false);
     connect(bFitWholeR, SIGNAL(clicked()), this, SLOT(pushFitWholeR()));
+	buttons.push_back(bFitWholeR);
     
     bRefinePos = new QPushButton("Refine positions to PDB", this);
     bRefinePos->setGeometry(700, 100, 200, 50);
     bRefinePos->setEnabled(false);
     connect(bRefinePos, SIGNAL(clicked()), this, SLOT(pushRefinePositions()));
+	buttons.push_back(bRefinePos);
 
     bRefineFlex = new QPushButton("Refine flexibility to PDB", this);
     bRefineFlex->setGeometry(700, 150, 200, 50);
@@ -70,21 +76,32 @@ void VagWindow::makeButtons()
     bRefineDensity->setGeometry(700, 200, 200, 50);
     bRefineDensity->setEnabled(false);
     connect(bRefineDensity, SIGNAL(clicked()), this, SLOT(pushRefineDensity()));
+	buttons.push_back(bRefineDensity);
 
     bRecalculate = new QPushButton("Recalculate FFT", this);
     bRecalculate->setGeometry(700, 250, 200, 50);
     bRecalculate->setEnabled(false);
     connect(bRecalculate, SIGNAL(clicked()), this, SLOT(recalculateFFT()));    
+	buttons.push_back(bRecalculate);
+
     bChangeBMult = new QPushButton("Set hetatm B multiplier", this);
     bChangeBMult->setGeometry(700, 300, 200, 50);
     bChangeBMult->setEnabled(false);
     connect(bChangeBMult, SIGNAL(clicked()), this, SLOT(pushBMultiplier()));
+	buttons.push_back(bChangeBMult);
+    
+    bFindSS = new QPushButton("Find disulphides", this);
+    bFindSS->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 300, BUTTON_WIDTH , 50);
+    bFindSS->setEnabled(false);
+    connect(bFindSS, SIGNAL(clicked()), this, SLOT(findDisulphides()));
+	buttons.push_back(bFindSS);
+    
     
     bExploreMolecule = new QPushButton("Explore molecule", this);
     bExploreMolecule->setGeometry(700, 350, 200, 50);
     bExploreMolecule->setEnabled(false);
     bExploreMolecule->setMenu(new QMenu(this));
-
+	buttons.push_back(bExploreMolecule);
     
     _myDialogue = NULL;
     _explorer = NULL;
