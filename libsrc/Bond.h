@@ -53,7 +53,7 @@ typedef struct
 
 class Anisotropicator;
 
-class Bond : public Model, public Sampler
+class Bond : public Model
 {
 public:
 	Bond(AtomPtr major, AtomPtr minor, int group = 0);
