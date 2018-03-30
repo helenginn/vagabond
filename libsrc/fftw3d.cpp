@@ -176,6 +176,8 @@ void FFT::collapseFrac(double *xfrac, double *yfrac, double *zfrac)
 
 long FFT::elementFromFrac(double xfrac, double yfrac, double zfrac)
 {
+	return elementFromUncorrectedFrac(xfrac, yfrac, zfrac);
+
 	collapseFrac(&xfrac, &yfrac, &zfrac);
 
 	double x = xfrac * nx;
@@ -195,7 +197,7 @@ long FFT::elementFromUncorrectedFrac(double xfrac, double yfrac, double zfrac)
 	double y = yfrac * ny;
 	double z = zfrac * nz;
 
-	long index = element(x, y, z);
+	long index = element(lrint(x), lrint(y), lrint(z));
 
 	return index;
 }
