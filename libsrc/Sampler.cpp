@@ -666,7 +666,6 @@ bool Sampler::sample(bool clear)
 	_bonds.clear();
 	_sampled.clear();
 	_unsampled.clear();
-	clearParams();
 	_joint = false;
 
 	return changed;
