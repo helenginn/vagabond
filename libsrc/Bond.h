@@ -207,6 +207,14 @@ public:
 		return _bondGroups[group].atoms[i].atom.lock();
 	}
 
+	/**
+	* 	Returns the appropriate group/number for a given atom, expected
+	* 	to be called by a direct descendant of a given bond.
+	*	\param atom One of the atoms in one of the groups of this bond.
+	*	\param group pointer to be filled with the expected group.
+	*	\return -1 if atom isn't found, and the atom number if found.
+	*		
+	*/
 	int downstreamAtomNum(AtomPtr atom, int *group)
 	{
 		for (int j = 0; j < downstreamAtomGroupCount(); j++)
