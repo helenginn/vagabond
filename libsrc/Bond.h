@@ -60,8 +60,8 @@ public:
 	Bond(Bond &other);
 	Bond();
 	void initialize();
-	void activate(AtomGroupPtr group = AtomGroupPtr(),
-	              AtomPtr inherit = AtomPtr());
+
+	void activate(AtomGroupPtr group = AtomGroupPtr());
 	ModelPtr reverse(BondPtr upstreamBond);
 	void reverseDownstreamAtoms(int group);
 	void resetBondDirection();

@@ -361,7 +361,7 @@ void Bond::setMinor(AtomPtr newMinor)
 	_bondDirection = difference;
 }
 
-void Bond::activate(AtomGroupPtr group, AtomPtr inherit)
+void Bond::activate(AtomGroupPtr group)
 {
 	if (_disabled)
 	return;
