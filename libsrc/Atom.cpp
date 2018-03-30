@@ -76,11 +76,11 @@ AtomType Atom::getGeomType()
 
 void Atom::convertToDisulphide()
 {
-	if (_geomType == AtomCysCB)
+	if (getGeomType() == AtomCysCB)
 	{
 		_geomType == AtomCysCBS;
 	}	
-	else if (_geomType == AtomCysSG)
+	else if (getGeomType() == AtomCysSG)
 	{
 		_geomType == AtomCysSGS;	
 	}
