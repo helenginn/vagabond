@@ -291,18 +291,6 @@ void Sampler::setupNelderMead()
 
 }
 
-void Sampler::addOverallKickAndDampen(PolymerPtr polymer)
-{
-	_strategy->addParameter(&*polymer, Polymer::getBackboneDampening, Polymer::setBackboneDampening, 0.02, 0.02, "dampen");
-	//    _strategy->addParameter(&*polymer, Polymer::getInitialKick, Polymer::setInitialKick, 0.05, 0.02, "kick");
-}
-
-void Sampler::addSidechainDampen(PolymerPtr polymer)
-{
-	//    _strategy->addParameter(&*polymer, Polymer::getSidechainDampening, Polymer::setSidechainDampening, 0.02, 0.01, "side_dampen");
-	//    _strategy->addParameter(&*polymer, Polymer::getSideKick, Polymer::setSideKick, 0.02, 0.01, "side_kick");
-}
-
 void Sampler::addOccupancy(BondPtr bond, double range, double interval)
 {
 	//    double number = fabs(range / interval);

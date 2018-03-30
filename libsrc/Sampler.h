@@ -50,9 +50,6 @@ public:
 	void addSampled(AtomPtr atom);
 	void addSampled(std::vector<AtomPtr> atoms);
 
-	void addOverallKickAndDampen(PolymerPtr polymer);
-	void addSidechainDampen(PolymerPtr polymer);
-
 	void addTorsion(BondPtr bond, double range, double interval);
 	void addTorsionBlur(BondPtr bond, double range, double interval);
 	void addDampening(BondPtr bond, double range, double interval);
@@ -76,13 +73,6 @@ public:
 	void setJointSampling()
 	{
 		_joint = true;
-	}
-
-	void copyTarget(Sampler *other)
-	{
-		_fft = other->_fft;
-		_real2Frac = other->_real2Frac;
-		_scoreType = other->_scoreType;
 	}
 
 	void reportInDegrees()
