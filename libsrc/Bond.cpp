@@ -47,8 +47,8 @@ void Bond::initialize()
 	BondGroup aGroup;
 	aGroup.torsionAngle = 0;
 	aGroup.torsionBlur = initialKick;
-	aGroup.magicPhi = 0;
-	aGroup.magicPsi = 0;
+	aGroup.magicPhi = deg2rad(0);
+	aGroup.magicPsi = deg2rad(0);
 	_bondGroups.push_back(aGroup);
 }
 
