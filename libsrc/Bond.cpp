@@ -1772,6 +1772,7 @@ void Bond::linkReference(ParserPtr object, std::string category)
 
 void Bond::postParseTidy()
 {
+	/* Get real references to the downstream atoms */
 	for (int i = 0; i < downstreamAtomGroupCount(); i++)
 	{
 		for (int j = 0; j < downstreamAtomCount(i); j++)
@@ -1791,4 +1792,32 @@ void Bond::postParseTidy()
 			_bondGroups[i].atoms[j].placeholder = NULL;
 		}
 	}
+	
+	/* If fixed, add oneself to the last non-fixed bond as
+	* 	an extra torsion sample */
+	/* This may be buggy. */
+	
+	if (!isFixed())
+	{
+		return;	
+	}
+	
+	ModelPtr lastModel = getParentModel();
+	if (!lastModel) return;
+
+	BondPtr lastBond = ToBondPtr(lastModel);
+	
+	while (lastBond->isFixed())
+	{
+		lastModel = lastBond->getParentModel();
+		
+		if (!lastModel) return;
+		
+		lastBond = ToBondPtr(lastModel);
+		
+		if (!lastBond) return;
+	}
+
+	/* FIXME: may not be zero */
+	lastBond->addExtraTorsionSample(getMinor(), 0);
 }
