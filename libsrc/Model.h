@@ -58,6 +58,8 @@ public:
 	* 	Will return from cache if not flagged to recalculate. */
 	virtual std::vector<BondSample> getFinalPositions();
 
+	/** Occupancy for a given atom after all modifiers applied.
+	* 	\return value between 0 and 1. */
 	virtual double getEffectiveOccupancy() { return 1; }
 
 	virtual double getMeanSquareDeviation() = 0;
@@ -75,6 +77,11 @@ public:
 	* \return standard deviation (Angstroms)
 	*/
 	double biggestStdevDim();
+	
+	/**
+	* Suggests a grid length to use for an FFT containing this atom.
+	* \return integer grid length for x=y=z.
+	*/
 	int fftGridLength();
 
 	bool hasMolecule()
