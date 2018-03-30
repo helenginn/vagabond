@@ -23,7 +23,14 @@
 #include <iostream>
 #include "Parser.h"
 
-#define HARD_CODED_RESOLUTION 1.0
+/**
+ * \class Crystal
+ * \brief The concept of a crystal arranged in a certain lattice containing
+ * various molecules and solvent.
+ * Crystal looks after the calculation of Fcs and also compares against a
+ * separate DiffractionData object, but it endeavours to be separate from the
+ * DiffractionData conceptually.
+ */
 
 typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
@@ -167,9 +174,19 @@ public:
 	void makePowders();
 	void tieAtomsUp();
 
-	/* Tolerance in Angstroms. */
+	/**
+	* Find all close atoms within this crystal to a chosen atom.
+	* \param one chosen atom.
+	* \param tol tolerance in Angstroms - furthest point from a given atom.
+	* \param cache if true, instead of returning atoms, cache given atoms for
+	* quicker checking routine. Until cache is cleared, this subset will be
+	* searched in the future.
+	*/
 	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol = 2, bool cache = false);
 	
+	/**
+	* 	Clear close atom cache and research the entire Crystal next time
+	* 	getCloseAtoms is called. */
 	void clearCloseCache();
 
 	void setFilename(std::string file)
@@ -187,6 +204,7 @@ public:
 		_spaceGroup = spg;
 	}
 
+	/**	Set unit cell dimensions of Crystal. Nothing else is updated. */
 	void setUnitCell(double a, double b, double c,
 	                 double alpha, double beta, double gamma)
 	{

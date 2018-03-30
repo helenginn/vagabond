@@ -14,6 +14,27 @@
 #include <iostream>
 #include "mat3x3.h"
 
+/**
+ * \class Parser
+ * \brief Parser objects provide support for reading and writing from Vagabond
+ * file formats.
+ * 
+ * An Object of a type Parser can be organised in a hierarchy which is then
+ * read and written to disk in a .vbond format. To be a Parser, a small number
+ * of functions must be implemented in subclasses.
+ *
+ * The three functions getClassName(), addProperties() and
+ * getParserIdentifier() must be implemented for writing to files. Use
+ * addChild() to add other Parsers in a hierarchical fashion.
+ *
+ * To read back, basic properties (doubles, ints, vectors of int, vec3, mat3x3
+ * etc.) are automatically populated. Objects are given back to a Parser from
+ * a file using addObject(). If child objects have been specified,
+ * linkReference(ParserPtr, std::string) needs to be added. In some cases,
+ * postParseTidy() might need to be implemented. This is only called once all
+ * Parser objects have been initialised and are in place.
+ */
+
 typedef enum
 {
 	ParserTypeObject,
@@ -165,13 +186,45 @@ public:
 		return _absolutePath;
 	}
 
+	/**
+	* 	Implementation of getClassName should return the name of the class
+	* 	itself.
+	*/
 	virtual std::string getClassName() = 0;
 	static ParserPtr processBlock(char *block);
 protected:
+	/**
+	* 	Implementation of the parser identifier should return a name of the
+	* 	Parser object which is unique within a set of siblings. This will be
+	* 	incorporated into a long, descriptive name including the hierarchy.
+	*/
 	virtual std::string getParserIdentifier() = 0;
+	
+	/**
+	* 	All basic properties should be added in this implementation by calling
+	* 	the various property functions such as addStringProperty(),
+	* 	addDoubleProperty(), addIntProperty(), addVec3Property(),
+	* 	addMat3x3Property() and addCustomProperty(). Also use addChild() here
+	* 	to add other Parser objects. */
 	virtual void addProperties() = 0;
-	virtual void addObject(ParserPtr, std::string) {};
+	
+	/**
+	*   This function should be implemented to add an object back from a file,
+	*   which was specified using addChild() in addProperties().
+	*/
+	virtual void addObject(ParserPtr /* parser */, std::string /*name */) {};
+	
+	/**
+	* 	This function will be called when all Parser objects have been
+	* 	initialised, and now the cross-references to Parsers have to be added.
+	*/
 	virtual void linkReference(ParserPtr, std::string) {};
+	
+	/**
+	*  Once all the cross-references to Parsers have been completed and all
+	*  Parsers exist in memory, this function is called. Here it may be
+	*  appropriate to perform some final tidying functions.	
+	*/
 	virtual void postParseTidy() {};
 
 	void addStringProperty(std::string className, std::string *ptr);

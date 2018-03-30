@@ -16,6 +16,20 @@
 
 typedef double(get_voxel_value)(void *obj, double x, double y, double z);
 
+/**
+* \class Distributor
+* \brief Creates FFT grids for reciprocal space distributions.
+*
+* A number of classes require population of a three-dimensional grid
+* containing reciprocal space information in preparation for a Fourier
+* transform. This is an abstracted way to make sure that these classes provide
+* suitable transforms, and re-use old calculations where necessary.
+*
+* A notable exception to the subclassing of Distributor is Bond. This is
+* because Bond-derived distributions are calculated in real space.
+*
+*/
+
 class Distributor
 {
 public:

@@ -16,6 +16,20 @@
 #include <mutex>
 #include "Parser.h"
 
+/**
+ * \class Model
+* \brief Abstract class providing a template for anything which is capable of
+* determining an atom's position and distribution.
+*
+* The two major classes of Model (as of March 2018) are Absolute and Bond
+* models. The Absolute class is akin to an entry in a PDB file, whereas the
+* Bond class is for Vagabond-specific recursive refinement.
+*
+* The Model abstract class does look after a few things, like whole-molecule
+* rotations and translations, caching of the absolute position(s) and allowing
+* the GUI to fish out the positions for display.
+ */
+
 typedef struct
 {
 	mat3x3 basis;   /* Defines bond axis of previous bond */
@@ -24,9 +38,6 @@ typedef struct
 	double torsion; /* Defines torsion of next atom */
 	double occupancy;
 } BondSample;
-
-// Anything which is capable of predicting electron positions.
-//
 
 class Model : public boost::enable_shared_from_this<Model>, public Distributor, public Parser
 {

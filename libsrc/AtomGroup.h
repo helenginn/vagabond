@@ -17,6 +17,12 @@
 #include "Parser.h"
 #include <map>
 
+/**
+ * \class AtomGroup
+ * \brief AtomGroup looks after the concept of any sensible group of Atoms,
+ * and is often (but does not need to be) subclassed.
+ */
+
 class AtomGroup : public boost::enable_shared_from_this<AtomGroup>, public Sampler, public Parser
 {
 public:
@@ -107,6 +113,9 @@ public:
 	void setWeighting(double value);
 	int conformerCount();
 	std::string conformer(int i);
+	
+	/** Instructs the models of all the atoms inside to propagate a change of
+	* parameters. See also: Model::propagateChange(). */
 	void propagateChange();
 	void refreshPositions(bool quick = true);
 

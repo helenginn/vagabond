@@ -18,15 +18,44 @@
 #include "Bond.h"
 #include "Parser.h"
 
+/**
+ * \class Absolute
+ *
+ * \brief This class directly adopts the properties describing the
+ * flexibility of an atom in a PDB file, and so is a type of Model which
+ * explicitly describes an atom in terms of a position (x, y, z) and a B
+ * factor (one B or a tensor).
+ *
+ * These are usually created directly from information from the PDB file.
+ * This is best initialised with Absolute(vec3, double, std::string, double).
+ *
+ * Some Absolute atoms (namely anchors) have had setAnchorPoint() called. This
+ * means that this atom can provide a sampling of atom positions, which are
+ * namely used as the origin of a recursive bonded structure. The anisotropic
+ * tensor is adjusted to compensate for this, and therefore the B factor and
+ * anisotropic tensor are not necessarily the same as in the original PDB
+ * file.
+ */
+
 class Anisotropicator;
 
 class Absolute : public Model
 {
 public:
+	/**
+	* Best initialiser for Absolute which prepares the basic information it
+	* needs.
+	* 	\param pos vec3 containing x,y,z of atom positions in Angstroms.
+	* 	\param bFac Isotropic B factor describing atom flexibility
+	* 	\param element string containing element symbol in upper case.
+	* 	\param occValue occupancy between 0 and 1.
+	*/
 	Absolute(vec3 pos, double bFac, std::string element, double occValue);
+	
+	/**
+	* 	Creates an empty Absolute object and initialises default variables. */
 	Absolute();
 
-	// Model virtual functions:
 	virtual std::vector<BondSample> *getManyPositions();
 	virtual FFTPtr getDistribution(bool = false, int new_n = -1);
 	virtual vec3 getAbsolutePosition()
@@ -34,11 +63,13 @@ public:
 		return _position;
 	}
 
-	virtual void addToMolecule(MoleculePtr molecule);
+	/** Makes the corresponding atom when added to the molecule. */
 	virtual void addToMonomer(MonomerPtr monomer);
+	virtual void addToMolecule(MoleculePtr molecule);
 	virtual mat3x3 getRealSpaceTensor();
 	virtual void getAnisotropy(bool withKabsch);
 
+	/** Sets a number of fields which would be present in the PDB file. */
 	void setIdentity(int resNumValue, std::string chainID,
 	                 std::string resName, std::string atomName, int atomNum)
 	{
@@ -186,6 +217,10 @@ public:
 		return _nextAtoms.size();
 	}
 
+	/** Returns the offsets for an anchor residue on which a molecule may
+	* calculate translations and offsets.
+	* \return x, y, z values centred around the origin.
+	* */
 	std::vector<vec3> getSphereAngles()
 	{
 		return _sphereAngles;

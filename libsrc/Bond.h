@@ -7,11 +7,16 @@
 //
 
 /**
- * \class Bond
- *
- * The Bond class is the most complex type of Model, which controls an Atom.
- *
- */
+* \class Bond
+*
+* \brief The Bond class is the most complex type of Model, which controls a
+* single Atom. Bonds create a network and recursively inherit and build upon
+* one another.
+*
+* These consist of several linked atoms. A bond controls a single atom, the minor atom (available through setMinor() and getMinor()). This immediately branches from the major atom (setMajor() and getMajor()) which is controlled by the parent bond. Groups of downstream atoms (one for every conformer) can be accessed using downstreamAtom(int, int).
+*
+* A small number of bonds will have a parent Absolute model (those next to the anchor atom of a Polymer) and therefore getParentModel() should not be assumed to be a Bond.
+*/
 
 
 #ifndef __vagabond__Bond__
