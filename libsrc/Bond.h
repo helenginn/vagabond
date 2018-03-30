@@ -326,11 +326,6 @@ public:
 		return _bondGroups[group].extraTorsionSamples[i].lock();
 	}
 
-	vec3 getAbsolutePosition()
-	{
-		return _absolute;
-	}
-
 	void setAnchored()
 	{
 		_anchored = true;
