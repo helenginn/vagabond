@@ -33,10 +33,10 @@ public:
         if (!timer) return;
         timer->start(100);
     }
+    virtual void resizeGL();
 protected:
     virtual void initializeGL();
     virtual void paintGL();
-    virtual void resizeGL(int w, int h);
     
     virtual void keyPressEvent(QKeyEvent *event);
     virtual void keyReleaseEvent(QKeyEvent *event);

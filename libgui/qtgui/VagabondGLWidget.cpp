@@ -87,9 +87,14 @@ void VagabondGLWidget::initializeGL()
 	timer->start();
 }
 
-void VagabondGLWidget::resizeGL(int w, int h)
+void VagabondGLWidget::resizeGL()
 {
-	keeper->changeSize(w, h);
+	int w = width();
+	int h = height();
+	if (keeper)
+	{
+		keeper->changeSize(w, h);
+	}
 }
 
 void VagabondGLWidget::paintGL()
