@@ -1223,42 +1223,58 @@ void Polymer::reportParameters()
 
 void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 {
-	std::cout << "Optimising whole molecule shifts to match the PDB file." << std::endl;
+	std::cout << "Optimising whole molecule shifts to match the electron density." << std::endl;
 
 	NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
 
 	if (translation)
 	{
-		nelderMead->addParameter(this, getTransTensor11, setTransTensor11, 0.1, 0.01);
-		nelderMead->addParameter(this, getTransTensor12, setTransTensor12, 0.1, 0.01);
-		nelderMead->addParameter(this, getTransTensor21, setTransTensor21, 0.1, 0.01);
-		nelderMead->addParameter(this, getTransTensor13, setTransTensor13, 0.1, 0.01);
-		nelderMead->addParameter(this, getTransTensor31, setTransTensor31, 0.1, 0.01);
-		nelderMead->addParameter(this, getTransTensor22, setTransTensor22, 0.1, 0.01);
-		nelderMead->addParameter(this, getTransTensor23, setTransTensor23, 0.1, 0.01);
-		nelderMead->addParameter(this, getTransTensor32, setTransTensor32, 0.1, 0.01);
-		nelderMead->addParameter(this, getTransTensor33, setTransTensor33, 0.1, 0.01);
+		nelderMead->addParameter(this, getTransTensor11, setTransTensor11, 0.5, 0.01, "t11");
+		nelderMead->addParameter(this, getTransTensor12, setTransTensor12, 0.1, 0.01, "t12");
+		nelderMead->addParameter(this, getTransTensor21, setTransTensor21, 0.1, 0.01, "t21");
+		nelderMead->addParameter(this, getTransTensor13, setTransTensor13, 0.1, 0.01, "t13");
+		nelderMead->addParameter(this, getTransTensor22, setTransTensor22, 0.5, 0.01, "t22");
+		nelderMead->addParameter(this, getTransTensor31, setTransTensor31, 0.1, 0.01, "t31");
+		nelderMead->addParameter(this, getTransTensor23, setTransTensor23, 0.1, 0.01, "t23");
+		nelderMead->addParameter(this, getTransTensor32, setTransTensor32, 0.1, 0.01, "t32");
+		nelderMead->addParameter(this, getTransTensor33, setTransTensor33, 0.5, 0.01, "t33");
 	}
 
 	if (rotation)
 	{
 		nelderMead->addParameter(this, getRotPhi, setRotPhi, 0.2, 0.0001);
 		nelderMead->addParameter(this, getRotPsi, setRotPsi, 0.2, 0.0001);
-		nelderMead->addParameter(this, getRotAngle, setRotAngle, 0.001, 0.0001);
-		nelderMead->addParameter(this, getRotCentreX, setRotCentreX, 5.0, 0.01);
-		nelderMead->addParameter(this, getRotCentreY, setRotCentreY, 5.0, 0.01);
-		nelderMead->addParameter(this, getRotCentreZ, setRotCentreZ, 5.0, 0.01);
+		nelderMead->addParameter(this, getRotAngle, setRotAngle, 0.01, 0.0001);
+		nelderMead->addParameter(this, getRotCentreX, setRotCentreX, 2.0, 0.01);
+		nelderMead->addParameter(this, getRotCentreY, setRotCentreY, 2.0, 0.01);
+		nelderMead->addParameter(this, getRotCentreZ, setRotCentreZ, 2.0, 0.01);
 	}
 
-	nelderMead->setCycles(30);
+	nelderMead->setCycles(25);
 	nelderMead->setVerbose(true);
 
 	double bFac = getAverageBFactor();
 	
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	
+	AtomGroupPtr allBackbone = AtomGroupPtr(new AtomGroup());
+
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (!getMonomer(i))
+		{
+			continue;
+		}
+		
+		BackbonePtr bone = getMonomer(i)->getBackbone();
+		if (bone)
+		{
+			allBackbone->addAtomsFrom(bone);
+		}
+	}
 
 	FlexGlobal target;
-	target.setAtomGroup(AtomGroup::shared_from_this());
+	target.setAtomGroup(allBackbone);
 	target.matchOriginalBees();
 	target.setCrystal(crystal);
 	target.matchElectronDensity();
