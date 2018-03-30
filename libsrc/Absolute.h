@@ -213,6 +213,7 @@ protected:
 	virtual void addObject(ParserPtr object, std::string category) {};
 	virtual void linkReference(ParserPtr object, std::string category);
 private:
+	void initialise();
 	AtomPtr _atom;
 	std::vector<AtomWkr> _nextAtoms;
 	std::string _element;

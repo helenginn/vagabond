@@ -34,6 +34,11 @@
 
 Absolute::Absolute()
 {
+	initialise();
+}
+
+void Absolute::initialise()
+{
 	_position = make_vec3(0, 0, 0);
 	_bFactor = 0;
 	_element = "";
@@ -73,6 +78,7 @@ void Absolute::getAnisotropy(bool withKabsch)
 
 Absolute::Absolute(vec3 pos, double bFac, std::string element, double occValue)
 {
+	initialise();
 	_position = pos;
 	_bFactor = bFac;
 	_element = element;
