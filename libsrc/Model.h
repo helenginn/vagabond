@@ -92,8 +92,6 @@ public:
 		_molecule = mole;
 	}
 
-	FFTPtr getZeroDistribution();
-	
 	/**
 	* For recursive models (e.g. Bonds) downstream models are flagged
 	* to indicate that they need to be recalculated before using stored
