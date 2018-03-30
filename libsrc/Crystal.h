@@ -104,10 +104,21 @@ public:
 		return _difft;
 	}
 
+	/** Calculates the anchor residue for each Polymer and assigns to each. */
 	void setAnchors();
 	void changeAnchors(int newAnchor);
+	
+	/** Prints scattering proportion in this crystal determined by bonds. */
 	void tiedUpScattering();
+	
+	/** Loops through all molecules and places them in the map.
+	* 	\param maxRes max resolution used to determine voxel spacing if it has
+	* 	not yet been determined, in Angstroms. */
 	void realSpaceClutter(double maxRes);
+	
+	/** Creates an MTZ file to open in Coot.
+	* 	\param data diffraction data to get F-obs from.
+	* 	\param prefix for choosing a filename */
 	void writeMillersToFile(DiffractionPtr data, std::string prefix = "");
 
 	void fourierTransform(int dir, double res = FLT_MAX);
