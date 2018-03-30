@@ -721,7 +721,7 @@ void Crystal::fourierTransform(int dir, double res)
 void Crystal::makePDBs(std::string suffix)
 {
 	std::vector<std::string> prefices; std::vector<PDBType> pdbTypes;
-	prefices.push_back("e_"); pdbTypes.push_back(PDBTypeEnsemble);
+//	prefices.push_back("e_"); pdbTypes.push_back(PDBTypeEnsemble);
 	prefices.push_back("a_"); pdbTypes.push_back(PDBTypeAverage);
 	prefices.push_back("p_"); pdbTypes.push_back(PDBTypeSamePosition);
 	prefices.push_back("b_"); pdbTypes.push_back(PDBTypeSameBFactor);
