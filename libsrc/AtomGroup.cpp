@@ -306,10 +306,6 @@ void AtomGroup::setWeighting(double value)
 	}
 }
 
-void AtomGroup::resetMagicAxes()
-{
-}
-
 AtomList AtomGroup::topLevelAtoms()
 {
 	if (!atomCount()) return AtomList();

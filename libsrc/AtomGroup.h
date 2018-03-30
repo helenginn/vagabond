@@ -75,11 +75,6 @@ public:
 		return _bonds.size();
 	}
 
-	BondPtr bond(int i)
-	{
-		return _bonds[i].lock();
-	}
-
 	double totalElectrons();
 	double getAverageBFactor(bool initial = false);
 	double getAverageDisplacement();
@@ -110,7 +105,6 @@ public:
 	void setTargetRefinement(CrystalPtr target, RefinementType rType);
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	void setWeighting(double value);
-	void resetMagicAxes();
 	int conformerCount();
 	std::string conformer(int i);
 	void propagateChange();
