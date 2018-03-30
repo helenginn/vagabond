@@ -13,6 +13,12 @@
 #include <vector>
 #include <stdio.h>
 
+/**
+ * \class Anisotropicator
+ *
+ * Class takes a bunch of points and performs SVD to recalculate a
+ * tensor from them.
+ */
 
 class Anisotropicator
 {

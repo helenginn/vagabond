@@ -43,7 +43,6 @@ FFTPtr Model::getZeroDistribution()
 	return getDistributionCopy();
 }
 
-/* In Angstroms */
 double Model::biggestStdevDim()
 {
 	getAnisotropy(true);

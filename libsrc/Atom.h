@@ -196,6 +196,11 @@ public:
 		_tensor = tensor;
 	}
 
+	/**
+	* Get the tensor as described in the original PDB file.
+	* This may be different from the tensor rederived from Vagabond models.
+	* \return symmetric matrix with 6 unique values
+	*/
 	mat3x3 getTensor()
 	{
 		return _tensor;

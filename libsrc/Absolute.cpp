@@ -6,6 +6,17 @@
 //  Copyright (c) 2017 Strubi. All rights reserved.
 //
 
+
+/**
+ * \class Absolute
+ *
+ * This class directly adopts the properties describing the flexibility of an
+ * atom in a PDB file, and so is a type of Model which explicitly describes
+ * an atom in terms of a position (x, y, z) and a B factor (one B or a
+ * tensor).
+ *
+ */
+
 #include "Absolute.h"
 #include "shared_ptrs.h"
 #include "Atom.h"

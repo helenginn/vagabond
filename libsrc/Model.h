@@ -40,24 +40,40 @@ public:
 
 	virtual std::string getClassName() = 0;
 
-	/* Static position if no blurring factors applied (for bonds) */
-
-	/* Actual mean position of blurred positions (may not be same as static) */
+	/** Actual mean position of blurred positions including whole-molecule
+	* 	deviations. */
 	virtual vec3 getAbsolutePosition()
 	{
 		return _absolute;
 	}
 
-	/* Get blurred position array */
+	/** Mean position of blurred positions without including whole-molecule
+	* 	deviations. Should not be used for final atom position calculations. */
 	virtual std::vector<BondSample> *getManyPositions() = 0;
 
+	/** Individual positions including whole-molecule deviations. */
 	std::vector<vec3> polymerCorrectedPositions();
+
+	/** Positions and associated data including whole-molecule deviations.
+	* 	Will return from cache if not flagged to recalculate. */
 	virtual std::vector<BondSample> getFinalPositions();
 
 	virtual double getEffectiveOccupancy() { return 1; }
 
 	virtual double getMeanSquareDeviation() = 0;
+	
+	/**
+	* Get the tensor as described by Vagabond model. May be different to
+	* that rederived from the Vagabond models. 
+	* \return symmetric matrix with 6 unique values
+	*/
 	virtual mat3x3 getRealSpaceTensor();
+	
+	/**
+	* Reports the standard deviation of the longest dimension of the 
+	* anisotropic tensor corresponding to this distribution.
+	* \return standard deviation (Angstroms)
+	*/
 	double biggestStdevDim();
 	int fftGridLength();
 
@@ -77,6 +93,14 @@ public:
 	}
 
 	FFTPtr getZeroDistribution();
+	
+	/**
+	* For recursive models (e.g. Bonds) downstream models are flagged
+	* to indicate that they need to be recalculated before using stored
+	* position information.
+	* \param maximum depth to flag propagation in number of models.
+	* \param refresh immediately recalculate atom positions if true.
+	*/
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 
 	bool isBond()
@@ -104,16 +128,18 @@ public:
 protected:
 	mat3x3 _realSpaceTensor;
 
-	/* Molecule which can provide offsets/rotations/etc. */
+	/** Molecule which provides whole-molecule offsets/rotations */
 	MoleculeWkr _molecule;
 
-	/* What should be returned when asking for an atom's position
-	* for drawing into a map... */
+	/** Caching of an atom's position. */
 	vec3 _absolute;
-	/* And a record of the final positions just for GUI display */
+
+	/** A record of the final positions just for GUI display */
 	std::vector<vec3> _finalPositions;
 
-	/* Expect interference from GUI */
+	/** 
+	* 	If using mutex, lock while modifying positions to prevent interference
+	* from GUI */
 	static bool _useMutex;
 
 	vec3 _longest;
