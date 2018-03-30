@@ -542,6 +542,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		}
 	}
 
+	_includeForRefine.clear();
 	refreshPositions(true);
 }
 
