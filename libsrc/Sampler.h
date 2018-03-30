@@ -56,8 +56,8 @@ public:
 	void addBondLength(BondPtr bond, double range, double interval);
 	void addBendAngle(BondPtr bond, double range, double interval);
 	void addOccupancy(BondPtr bond, double range, double interval);
-	void addSampledBackbone(PolymerPtr polymer, int from = 0, int to = 0);
-	void addSampledSidechains(PolymerPtr polymer);
+
+	/** Add sampled atoms from a given atom group and conformer name */
 	void addSampledAtoms(AtomGroupPtr group, std::string conformer = "");
 	void addRamachandranAngles(PolymerPtr polymer, int from, int to);
 	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
@@ -69,11 +69,6 @@ public:
 
 	void setupGrid();
 	void setupNelderMead();
-
-	void setJointSampling()
-	{
-		_joint = true;
-	}
 
 	void reportInDegrees()
 	{
@@ -126,11 +121,6 @@ public:
 		_scoreType = type;
 	}
 
-	void setTargetFlexibility(double value)
-	{
-		_overallFlex = value;
-	}
-
 	void clearParams()
 	{
 		_params.clear();
@@ -151,7 +141,6 @@ public:
 		sampler->_params = _params;
 	}
 
-	std::vector<double> getNextResult(int num);
 
 protected:
 	BondPtr setupTorsionSet(BondPtr bond, int k, int bondNum,
@@ -164,7 +153,7 @@ protected:
 	mat3x3 _real2Frac;
 
 	int _refinedMagicAxisCount;
-	virtual bool shouldRefineMagicAxis(BondPtr bond) { return false; }
+	virtual bool shouldRefineMagicAxis(BondPtr) { return false; }
 	virtual double getScore();
 private:
 	void addAtomsForBond(BondPtr bond, int k);
@@ -178,9 +167,7 @@ private:
 	ParamMap _params;
 
 	bool _mock;
-	bool _joint;
 	bool _silent;
-	double _overallFlex;
 
 	std::string _jobName;
 	ScoreType _scoreType;

@@ -28,10 +28,8 @@ typedef struct
 Sampler::Sampler()
 {
 	_mock = false;
-	_joint = false;
 	_scoreType = ScoreTypeCorrel;
 	_refinedMagicAxisCount = 0;
-	_overallFlex = 0;
 	_silent = false;
 }
 
@@ -442,7 +440,6 @@ void Sampler::addAbsolutePosition(AbsolutePtr abs, double range, double interval
 		return;
 	}
 
-	//    double number = fabs(range / interval);
 	_strategy->addParameter(&*abs, Absolute::getPosX, Absolute::setPosX,
 	                        range, interval, "pos_x");
 	_strategy->addParameter(&*abs, Absolute::getPosY, Absolute::setPosY,
@@ -467,65 +464,8 @@ void Sampler::addAbsoluteBFactor(AbsolutePtr abs, double range, double interval)
 		return;
 	}
 
-	//    double number = fabs(range / interval);
 	_strategy->addParameter(&*abs, Absolute::getB, Absolute::setB,
 	                        range, interval, "bfactor");
-}
-
-void Sampler::addSampledSidechains(PolymerPtr polymer)
-{
-	for (int i = 0; i < polymer->monomerCount(); i++)
-	{
-		if (!polymer->getMonomer(i))
-		{
-			continue;
-		}
-
-		SidechainPtr sidechain = polymer->getMonomer(i)->getSidechain();
-		addSampledAtoms(sidechain);
-	}
-}
-
-void Sampler::addSampledBackbone(PolymerPtr polymer, int from, int to)
-{
-	if (from == 0 && to == 0)
-	{
-		from = 0;
-		to = polymer->monomerCount();
-	}
-
-	int step = (from < to) ? 1 : -1;
-
-	for (int i = from - 1; i != to - 1; i += step)
-	{
-		if (!polymer->getMonomer(i))
-		{
-			continue;
-		}
-
-		BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
-		SidechainPtr sidechain = polymer->getMonomer(i)->getSidechain();
-
-		AtomPtr ca = backbone->findAtom("CA");
-		addSampled(ca);
-		AtomPtr cb = sidechain->findAtom("CB");
-		if (polymer->getMonomer(i)->getIdentifier() == "pro")
-		{
-			addSampledAtoms(sidechain);
-		}
-		else
-		{
-			addSampled(cb);
-		}
-
-
-		AtomPtr o = backbone->findAtom("O");
-		addSampled(o);
-		AtomPtr c = backbone->findAtom("C");
-		addSampled(c);
-		AtomPtr n = backbone->findAtom("N");
-		addSampled(n);
-	}
 }
 
 void Sampler::addSampled(std::vector<AtomPtr> atoms)
@@ -654,7 +594,6 @@ bool Sampler::sample(bool clear)
 	_bonds.clear();
 	_sampled.clear();
 	_unsampled.clear();
-	_joint = false;
 
 	return changed;
 }
@@ -697,14 +636,6 @@ double Sampler::getScore()
 	}
 
 	return AtomGroup::scoreWithMapGeneral(_scoreType, _crystal, false, _sampled);
-}
-
-std::vector<double> Sampler::getNextResult(int num)
-{
-	RefinementGridSearchPtr grid;
-	grid = boost::static_pointer_cast<RefinementGridSearch>(_strategy);
-
-	return grid->getNextResult(num);
 }
 
 

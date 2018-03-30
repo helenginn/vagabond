@@ -61,18 +61,6 @@ public:
 	ResultMap results;
 	void recursiveEvaluation(ParamList referenceList, ParamList workingList, ResultMap *results);
 
-	std::vector<double> getNextResult(int num)
-	{
-		ReverseMap::iterator it = reverseResults.begin();
-
-		for (int i = 0; i < num; i++)
-		{
-			it++;
-		}
-
-		return it->second;
-	}
-
 	virtual void clearParameters()
 	{
 		orderedResults.clear();
