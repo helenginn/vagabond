@@ -277,6 +277,14 @@ void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
 {
+	if (rType == RefinementSidechain)
+	{
+		refineToEnd(getAnchor() - 1, target, rType);
+		refineToEnd(getAnchor(), target, rType);
+		
+		return;	
+	}
+	
 	time_t wall_start;
 	time(&wall_start);
 
