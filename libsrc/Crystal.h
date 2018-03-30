@@ -32,13 +32,28 @@ class Crystal : public Object, public boost::enable_shared_from_this<Crystal>, p
 public:
 	Crystal();
 	void addMolecule(MoleculePtr molecule);
+	
+	/**
+	* 	Conclude refinement finishes a round of refinement and triggesr an
+	* 	FFT, PDB output, graphing and statistics.
+	* 	\param cycleNum cycle number to output filenames appropriately
+	* 	\param data diffraction data against which statistics should be generated.
+	*/
 	double concludeRefinement(int cycleNum, DiffractionPtr data);
 
+	/**
+	* How many molecules are included in a Crystal.
+	*/
 	long int moleculeCount()
 	{
 		return _molecules.size();
 	}
 
+	/**
+	* 	get the stored molecule. Cannot guarantee order of molecules will be
+	* 	the same as in the PDB file, but adequate for looping over molecules.
+	*   \param i molecule number to obtain.
+	* 	*/
 	MoleculePtr molecule(long int i)
 	{
 		MoleculeMap::iterator it = _molecules.begin();
@@ -46,6 +61,9 @@ public:
 		return it->second;
 	}
 
+	/**
+	* 	get the stored molecule by chain name.
+	*/
 	MoleculePtr molecule(std::string chain)
 	{
 		if (_molecules.count(chain))
@@ -57,13 +75,20 @@ public:
 	}
 
 	void setReal2Frac(mat3x3 mat);
+
 	void setHKL2Real(mat3x3 mat);
 
+	/**
+	* 	Returns matrix turning real coordinates (of atoms) to fractional
+	* 	coordinates of the unit cell. */
 	mat3x3 getReal2Frac()
 	{
 		return _real2frac;
 	}
 
+	/**
+	* 	Returns matrix turning Miller index coordinates to fractional
+	* 	coordinates of the reciprocal cell. */
 	mat3x3 getHKL2Real()
 	{
 		return _hkl2real;
@@ -96,6 +121,12 @@ public:
 	double highRes = 0);
 	double getDataInformation(DiffractionPtr data, double partsFo = 2,
 	                          double partsFc = 1, std::string prefix = "");
+	
+	/** Applies scale factor within the resolution ranges.
+	* 	\param scale factor (multiplies Fc with this)
+	* 	\param lowRes low resolution in Angstroms, 0 ignores this
+	* 	\param highRes high resolution in Angstroms, 0 ignores this
+	*/
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);
 
 	static double scaleSolventScore(void *object);
@@ -159,11 +190,17 @@ public:
 		_unitCell.push_back(gamma);
 	}
 
+	/** Returns unit cell for Crystal
+ * 	\return vector with 6 params, three dimensions in Angstroms, three angles
+ * 	in degrees. */
 	std::vector<double> getUnitCell()
 	{
 		return _unitCell;	
 	}
 
+	/** Set maximum resolution
+	* 	\param maxRes resolution in Angstroms.
+	* 	*/
 	void setMaxResolution(double maxRes)
 	{
 		_maxResolution = maxRes;
@@ -182,6 +219,8 @@ public:
 		return _anchorResidues.size();
 	}
 
+	/** Returns a string describing the R factors and CCs.
+	* 	\return summary string in human-readable format. */
 	std::string agreementSummary();
 
 	virtual std::string getClassName()
@@ -189,8 +228,10 @@ public:
 		return "Crystal";
 	}
 
+	/** Fit whole molecules to electron density as a refinement protocol.
+	* 	\param translation if true, will refine translation parameters
+	* 	\param rotation if true, will refine rotation parameters. */
 	void fitWholeMolecules(bool translation = false, bool rotation = true);
-
 protected:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual std::string getParserIdentifier()

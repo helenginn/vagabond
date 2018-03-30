@@ -174,8 +174,6 @@ bool addFlex)
 	return BondPtr();
 }
 	
-	/* Old */
-	
 BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
                                  double range, double interval, bool
 								 addAngle, bool addFlex)

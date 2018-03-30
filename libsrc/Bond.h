@@ -61,13 +61,28 @@ public:
 	Bond();
 	void initialize();
 
+	/**
+	* After a bond has been initialised with a major and minor (pre-existing)
+	* atom, it must be activated. It must be activated after all parent bonds
+	* have been activated. It then sets up the references to the other atoms. 
+	* \param group AtomGroup to which bond should be added */
 	void activate(AtomGroupPtr group = AtomGroupPtr());
 	ModelPtr reverse(BondPtr upstreamBond);
 	void reverseDownstreamAtoms(int group);
 	void resetBondDirection();
+	
+	
+	/** Returns true if the torsion angle should be refined. */
 	bool isRefinable();
+	
+	/** Returns true if the bond angles and lengths for the first atom agree
+	* with default geometry or are otherwise refinable to non-default values.
+	* */
 	bool test();
 	double getEffectiveOccupancy();
+	
+	/** Resets bond angles to the default from geometry (n.b. used for fixing
+	* disulphides. */
 	void resetBondAngles();
 
 	/**
@@ -92,6 +107,7 @@ public:
 		_major = newMajor;
 	}
 
+	/** Sets minor atom and re-derives bond length for the bond. */
 	void setMinor(AtomPtr newMinor);
 
 	/**
@@ -223,7 +239,7 @@ public:
 	static void setBendAngle(void *object, double value);
 
 	/**
-	/*	Adds a downstream atom to a given group. Groups represent split
+	*	Adds a downstream atom to a given group. Groups represent split
 	* 	downstream bonds.
 	*   \param atom to add to downstream
 	*   \param group to add atom to in the current bond
