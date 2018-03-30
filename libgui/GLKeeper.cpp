@@ -19,6 +19,19 @@
 
 bool GLKeeper::everMovedMouse = false;
 
+void GLKeeper::updateProjection()
+{
+    zNear = 10;
+    zFar = 100;
+	
+    float correctedNear = zNear;
+    if (zNear <= 0.1) correctedNear = 0.1;
+    double side = 0.5;
+    float aspect = height / width;
+    projMat = mat4x4_frustum(side, -side, side * aspect, -side * aspect,
+                             correctedNear, zFar);
+}
+
 void GLKeeper::setupCamera(void)
 {
     _translation = make_vec3(0, 0, START_Z);
@@ -27,17 +40,10 @@ void GLKeeper::setupCamera(void)
     camAlpha = 0;
     camBeta = 0;
     camGamma = 0;
-    zNear = 10;
-    zFar = 100;
     modelMat = make_mat4x4();
     rotMat = make_mat4x4();
 
-    float correctedNear = zNear;
-    if (zNear <= 0.1) correctedNear = 0.1;
-    double side = 0.5;
-    float aspect = height / width;
-    projMat = mat4x4_frustum(side, -side, side * aspect, -side * aspect,
-                             correctedNear, zFar);
+	updateProjection();
 
     updateCamera();
 }
@@ -171,6 +177,7 @@ void GLKeeper::changeSize(int newWidth, int newHeight)
     width = newWidth;
     height = newHeight;
 
+	updateProjection();
     setShouldRender();
 }
 
