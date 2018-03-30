@@ -20,54 +20,55 @@
 class GLKeeper : public GLObject
 {
 private:
-    std::vector<GLObjectPtr> _objects;
+	std::vector<GLObjectPtr> _objects;
 
-    float camAlpha, camBeta, camGamma;
-    float zNear, zFar;
-    static bool everMovedMouse;
-    GLfloat width, height;
-    bool _rendered;
+	float camAlpha, camBeta, camGamma;
+	float zNear, zFar;
+	static bool everMovedMouse;
+	GLfloat width, height;
+	bool _rendered;
 
-    vec3 _centre;
-    vec3 _translation;
-    vec3 _totalCentroid;
+	vec3 _centre;
+	vec3 _translation;
+	vec3 _totalCentroid;
 
-    void setupVBOs (void);
-    void setupBuffers(void);
-    void setupCamera(void);
-    void updateCamera(void);
+	void setupVBOs (void);
+	void setupBuffers(void);
+	void setupCamera(void);
+	void updateCamera(void);
+	void updateProjection();
+    
+	mat4x4 rotMat;
 
-    mat4x4 rotMat;
+	void zoom(float x, float y, float z);
 
-    void zoom(float x, float y, float z);
-
-    GLubyte *newIndices;
-    void initialisePrograms();
+	GLubyte *newIndices;
+	void initialisePrograms();
 
 public:
-    GLKeeper(int width, int height);
-    void changeSize(int newWidth, int newHeight);
+	GLKeeper(int width, int height);
+	void changeSize(int newWidth, int newHeight);
 
-    virtual void render(void);
-    void cleanup(void);
-    void focusOnPosition(vec3 pos);    
-    
-    void rotateAngles(float alpha, float beta, float gamma);
-    
-    void keyPressed(char key);
-    void draggedLeftMouse(float x, float y);
-    void draggedRightMouse(float x, float y);
-    void panned(float x, float y);
+	virtual void render(void);
+	void cleanup(void);
+	void focusOnPosition(vec3 pos);    
 
-    bool shouldRender()
-    {
-        return !_rendered;
-    }
+	void rotateAngles(float alpha, float beta, float gamma);
 
-    void setShouldRender()
-    {
-        _rendered = false;
-    }
+	void keyPressed(char key);
+	void draggedLeftMouse(float x, float y);
+	void draggedRightMouse(float x, float y);
+	void panned(float x, float y);
+
+	bool shouldRender()
+	{
+		return !_rendered;
+	}
+
+	void setShouldRender()
+	{
+		_rendered = false;
+	}
 };
 
 #endif /* defined(__RaddoseViewer__GLKeeper__) */
