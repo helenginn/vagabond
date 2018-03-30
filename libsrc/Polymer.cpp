@@ -132,8 +132,6 @@ void Polymer::tieAtomsUp()
 			getMonomer(i)->getSidechain()->setInitialDampening();
 		}
 	}
-
-	resetMagicAxes();
 }
 
 void Polymer::splitConformers()
@@ -713,7 +711,6 @@ void Polymer::changeAnchor(int num)
 		BackbonePtr bone = getMonomer(i)->getBackbone();
 		AtomPtr betaCarbon = bone->betaCarbonTorsionAtom();
 		getMonomer(i)->getSidechain()->fixBackboneTorsions(betaCarbon);
-		getMonomer(i)->resetMagicAxes();
 	}
 
 	_anchorNum = num;
