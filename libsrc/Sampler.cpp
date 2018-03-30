@@ -20,6 +20,12 @@
 #include "Monomer.h"
 #include "Backbone.h"
 
+typedef struct
+{
+	BondPtr bond;
+	int num;
+} BondInt;
+
 Sampler::Sampler()
 {
 	_mock = false;
@@ -91,7 +97,7 @@ void Sampler::addParamsForBond(BondPtr bond)
 	}
 }
 
-BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
+BondPtr Sampler::setupThoroughSet(BondPtr bond, int k, int bondNum,
                                  double range, double interval, bool addAngle,
 bool addFlex)
 {
@@ -103,6 +109,95 @@ bool addFlex)
 	setJobName("torsion_set_" + bond->shortDesc() + "_g" +
 	           i_to_str(k));
 
+	int bondCount = 0;
+
+	if (_params.count(ParamOptionNumBonds))
+	{
+		bondNum = _params[ParamOptionNumBonds] + 0.2;
+	}
+	
+	/* Logic: bond add map keeps remaining bonds (and remaining
+ * 	additions) in memory for adding (allowing branches). When a
+ * 	branched bond needs adding it is appended to this list with
+ * 	one fewer remaining additions and the old entry deleted. */
+
+	std::vector<BondInt> remaining;
+	BondInt entry;
+	entry.bond = bond;
+	entry.num = bondNum;
+	remaining.push_back(entry);
+	addSampled(bond->getMajor());
+
+	while (remaining.size())
+	{
+		BondInt first = remaining[0];
+		BondPtr bond = first.bond;
+		int num = first.num;
+		
+		remaining.erase(remaining.begin());
+
+		if (num <= 0)
+		{
+			k = 0;
+			continue;	
+		}
+		
+		bondCount++;
+		addParamsForBond(bond);
+		addAtomsForBond(bond, k);
+
+		if (addAngle) 
+		{
+			addBendAngle(bond, deg2rad(0.01), deg2rad(0.001));
+		}
+
+		if (!bond->isRefinable())
+		{
+			/* No hope! Give up! */
+			continue;
+		}
+
+		/* Take the chosen group and check for futures */
+		for (int i = 0; i < bond->downstreamAtomCount(k); i++)
+		{
+			AtomPtr downstreamAtom = bond->downstreamAtom(k, i);
+			BondPtr nextBond = ToBondPtr(downstreamAtom->getModel());
+			
+			BondInt entry;
+			entry.bond = nextBond;
+			entry.num = num - 1;
+			remaining.push_back(entry);
+		}
+		
+		
+		/* Further groups will be checking conformer 0 only */
+		k = 0;
+	}
+	
+	return BondPtr();
+}
+	
+	/* Old */
+	
+BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
+                                 double range, double interval, bool
+								 addAngle, bool addFlex)
+{
+	bond->setActiveGroup(k);
+
+	reportInDegrees();
+	setScoreType(ScoreTypeCorrel);
+
+	setJobName("torsion_set_" + bond->shortDesc() + "_g" +
+	           i_to_str(k));
+
+	int bondCount = 0;
+
+	if (_params.count(ParamOptionNumBonds))
+	{
+		bondNum = _params[ParamOptionNumBonds] + 0.2;
+	}
+	
 	addSampled(bond->getMajor());
 
 	if (addAngle) 
@@ -111,18 +206,9 @@ bool addFlex)
 	}
 
 	addParamsForBond(bond);
-
 	addAtomsForBond(bond, k);
 
 	BondPtr returnBond = BondPtr();
-
-	int bondCount = 1;
-
-	if (_params.count(ParamOptionNumBonds))
-	{
-		bondNum = _params[ParamOptionNumBonds] + 0.2;
-	}
-
 
 	for (int i = 0; i < bondNum; i++)
 	{
@@ -564,6 +650,11 @@ bool Sampler::sample(bool clear)
 
 	if (_scoreType == ScoreTypeCorrel)
 	{
+		int paramCount = _strategy->parameterCount();
+		int cycles = 16 + paramCount;
+
+		_strategy->setCycles(cycles);
+
 		setupCloseAtoms();
 		AtomGroup::scoreWithMapGeneral(_scoreType, _crystal, true, _sampled);
 	}
