@@ -361,18 +361,12 @@ void Bond::setMinor(AtomPtr newMinor)
 	_bondDirection = difference;
 }
 
-void Bond::activate(AtomGroupPtr group)
+void Bond::activate()
 {
 	if (_disabled)
 	return;
 
 	getMinor()->setModel(shared_from_this());
-
-	if (group)
-	{
-		BondPtr myself = boost::static_pointer_cast<Bond>(shared_from_this());
-		group->addBond(myself);
-	}
 
 	_activated = true;
 

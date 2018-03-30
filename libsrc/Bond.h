@@ -69,9 +69,9 @@ public:
 	/**
 	* After a bond has been initialised with a major and minor (pre-existing)
 	* atom, it must be activated. It must be activated after all parent bonds
-	* have been activated. It then sets up the references to the other atoms. 
-	* \param group AtomGroup to which bond should be added */
-	void activate(AtomGroupPtr group = AtomGroupPtr());
+	* have been activated. It then sets up the references to the other atoms.
+	* */
+	void activate();
 	ModelPtr reverse(BondPtr upstreamBond);
 	void reverseDownstreamAtoms(int group);
 	void resetBondDirection();

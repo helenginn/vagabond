@@ -49,13 +49,13 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
 	{
 		// tie to C terminus so hAlpha then cBeta
 		BondPtr ca2ha = BondPtr(new Bond(cAlpha, hAlpha));
-		ca2ha->activate(_sidechain);
+		ca2ha->activate();
 		ca2cb = BondPtr(new Bond(cAlpha, cBeta));
 		if (torsionAtom && spineAtom)
 		{
 			ca2cb->setTorsionAtoms(spineAtom, torsionAtom);
 		}
-		ca2cb->activate(_sidechain);
+		ca2cb->activate();
 	}
 	else
 	{
@@ -65,9 +65,9 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
 		{
 			ca2cb->setTorsionAtoms(spineAtom, torsionAtom);
 		}
-		ca2cb->activate(_sidechain);
+		ca2cb->activate();
 		BondPtr ca2ha = BondPtr(new Bond(cAlpha, hAlpha));
-		ca2ha->activate(_sidechain);
+		ca2ha->activate();
 	}
 
 	if (Options::enableTests() >= 2)
@@ -137,7 +137,7 @@ void Knotter::tieTowardsNTerminus()
 		BondPtr nitro2Carbon = BondPtr(new Bond(prevNitrogen, carbonylCarbon));
 		//		nitro2Carbon->setTorsionStepMult(0.2);
 		nitro2Carbon->setTorsionAtoms(prevCAlpha, cAlpha);
-		nitro2Carbon->activate(_backbone);
+		nitro2Carbon->activate();
 		//    Bond::setTorsion(&*nitro2Carbon, deg2rad(180));
 	}
 
@@ -154,10 +154,10 @@ void Knotter::tieTowardsNTerminus()
 
 	BondPtr carbonyl2CAlpha = BondPtr(new Bond(carbonylCarbon, cAlpha));
 	carbonyl2CAlpha->setTorsionAtoms(prevNitrogen, nSpine);
-	carbonyl2CAlpha->activate(_backbone);
+	carbonyl2CAlpha->activate();
 
 	BondPtr carbonyl2oxy = BondPtr(new Bond(carbonylCarbon, carbonylOxygen));
-	carbonyl2oxy->activate(_backbone);
+	carbonyl2oxy->activate();
 
 	BondPtr cAlpha2NSpine = BondPtr(new Bond(cAlpha, nSpine));
 
@@ -166,12 +166,12 @@ void Knotter::tieTowardsNTerminus()
 		cAlpha2NSpine->setTorsionAtoms(carbonylCarbon, nextCalpha);
 	}
 
-	cAlpha2NSpine->activate(_backbone);
+	cAlpha2NSpine->activate();
 
 	if (nSpine && nSpine->getModel()->isBond())
 	{
 		BondPtr nSpine2hydrogen = BondPtr(new Bond(nSpine, nHydrogen));
-		nSpine2hydrogen->activate(_backbone);
+		nSpine2hydrogen->activate();
 	}
 }
 
@@ -243,12 +243,12 @@ void Knotter::tieTowardsCTerminus()
 		nSpine2cAlpha->setTorsionAtoms(prevCarbonylCarbon, carbonylCarbon);
 	}
 
-	nSpine2cAlpha->activate(_backbone);
+	nSpine2cAlpha->activate();
 
 	if (nSpine && nSpine->getModel()->isBond())
 	{
 		BondPtr nSpine2hydrogen = BondPtr(new Bond(nSpine, nHydrogen));
-		nSpine2hydrogen->activate(_backbone);
+		nSpine2hydrogen->activate();
 	}
 
 
@@ -264,20 +264,20 @@ void Knotter::tieTowardsCTerminus()
 		cAlpha2Carbonyl->setTorsionAtoms(nSpine, carbonylOxygen);
 	}
 
-	cAlpha2Carbonyl->activate(_backbone);
+	cAlpha2Carbonyl->activate();
 
 	//    BondPtr cAlpha2hAlpha = BondPtr(new Bond(cAlpha, hAlpha));
-	//    cAlpha2hAlpha->activate(_backbone);
+	//    cAlpha2hAlpha->activate();
 
 	if (nextBackbone)
 	{
 		BondPtr carbonyl2nextN = BondPtr(new Bond(carbonylCarbon, nextNSpine));
 		carbonyl2nextN->setTorsionAtoms(cAlpha, nextCalpha);
-		carbonyl2nextN->activate(_backbone);
+		carbonyl2nextN->activate();
 	}
 
 	BondPtr carbonyl2oxy = BondPtr(new Bond(carbonylCarbon, carbonylOxygen));
-	carbonyl2oxy->activate(_backbone);
+	carbonyl2oxy->activate();
 }
 
 void Knotter::tie()
@@ -476,14 +476,14 @@ void Knotter::makeMethionine()
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->setTorsionAtoms(cAlpha, sDelta);
-	cb2cg->activate(_sidechain);
+	cb2cg->activate();
 
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
 
 	BondPtr cg2sd = BondPtr(new Bond(cGamma, sDelta));
 	cg2sd->setTorsionAtoms(cBeta, cEpsilon);
-	cg2sd->activate(_sidechain);
+	cg2sd->activate();
 
 	if (Options::enableTests() >= 2)
 	{
@@ -495,21 +495,21 @@ void Knotter::makeMethionine()
 	BondPtr cg2hg3 = BondPtr(new Bond(cGamma, hGamma3));
 
 	BondPtr sd2ce = BondPtr(new Bond(sDelta, cEpsilon));
-	sd2ce->activate(_sidechain);
+	sd2ce->activate();
 
 	BondPtr ce2he1 = BondPtr(new Bond(cEpsilon, hEpsilon1));
 	BondPtr ce2he2 = BondPtr(new Bond(cEpsilon, hEpsilon2));
 	BondPtr ce2he3 = BondPtr(new Bond(cEpsilon, hEpsilon3));
 
-	ce2he1->activate(_sidechain);
-	ce2he2->activate(_sidechain);
-	ce2he3->activate(_sidechain);
+	ce2he1->activate();
+	ce2he2->activate();
+	ce2he3->activate();
 
-	cg2hg2->activate(_sidechain);
-	cg2hg3->activate(_sidechain);
+	cg2hg2->activate();
+	cg2hg3->activate();
 
-	cb2hb3->activate(_sidechain);
-	cb2hb2->activate(_sidechain);
+	cb2hb3->activate();
+	cb2hb2->activate();
 }
 
 void Knotter::makeArginine()
@@ -545,21 +545,21 @@ void Knotter::makeArginine()
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->setTorsionAtoms(cAlpha, cDelta);
-	cb2cg->activate(_sidechain);
+	cb2cg->activate();
 
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
 
 	BondPtr cg2cd = BondPtr(new Bond(cGamma, cDelta));
 	cg2cd->setTorsionAtoms(cBeta, nEpsilon);
-	cg2cd->activate(_sidechain);
+	cg2cd->activate();
 
 	BondPtr cg2hg2 = BondPtr(new Bond(cGamma, hGamma2));
 	BondPtr cg2hg3 = BondPtr(new Bond(cGamma, hGamma3));
 
 	BondPtr cd2ce = BondPtr(new Bond(cDelta, nEpsilon));
 	cd2ce->setTorsionAtoms(cGamma, cOmega);
-	cd2ce->activate(_sidechain);
+	cd2ce->activate();
 
 	BondPtr cd2hd2 = BondPtr(new Bond(cDelta, hDelta2));
 	BondPtr cd2hd3 = BondPtr(new Bond(cDelta, hDelta3));
@@ -567,33 +567,33 @@ void Knotter::makeArginine()
 	BondPtr ne2cz = BondPtr(new Bond(nEpsilon, cOmega));
 	BondPtr ne2he = BondPtr(new Bond(nEpsilon, hEpsilon));
 	ne2cz->setTorsionAtoms(cDelta, nOmega1);
-	ne2cz->activate(_sidechain);
-	ne2he->activate(_sidechain);
+	ne2cz->activate();
+	ne2he->activate();
 
 	BondPtr ce2nh1= BondPtr(new Bond(cOmega, nOmega1));
 	BondPtr ce2nh2 = BondPtr(new Bond(cOmega, nOmega2));
-	ce2nh1->activate(_sidechain);
-	ce2nh2->activate(_sidechain);
+	ce2nh1->activate();
+	ce2nh2->activate();
 
 	BondPtr nz1hz11 = BondPtr(new Bond(nOmega1, hh11));
 	BondPtr nz1hz12 = BondPtr(new Bond(nOmega1, hh12));
 	BondPtr nz2hz21 = BondPtr(new Bond(nOmega2, hh21));
 	BondPtr nz2hz22 = BondPtr(new Bond(nOmega2, hh22));
 
-	nz1hz11->activate(_sidechain);
-	nz1hz11->activate(_sidechain);
-	nz2hz21->activate(_sidechain);
-	nz2hz22->activate(_sidechain);
+	nz1hz11->activate();
+	nz1hz11->activate();
+	nz2hz21->activate();
+	nz2hz22->activate();
 
 
-	cd2hd2->activate(_sidechain);
-	cd2hd3->activate(_sidechain);
+	cd2hd2->activate();
+	cd2hd3->activate();
 
-	cg2hg2->activate(_sidechain);
-	cg2hg3->activate(_sidechain);
+	cg2hg2->activate();
+	cg2hg3->activate();
 
-	cb2hb3->activate(_sidechain);
-	cb2hb2->activate(_sidechain);
+	cb2hb3->activate();
+	cb2hb2->activate();
 }
 
 void Knotter::makeLysine()
@@ -627,27 +627,27 @@ void Knotter::makeLysine()
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->setTorsionAtoms(cAlpha, cDelta);
-	cb2cg->activate(_sidechain);
+	cb2cg->activate();
 
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
 
 	BondPtr cg2cd = BondPtr(new Bond(cGamma, cDelta));
 	cg2cd->setTorsionAtoms(cBeta, cEpsilon);
-	cg2cd->activate(_sidechain);
+	cg2cd->activate();
 
 	BondPtr cg2hg2 = BondPtr(new Bond(cGamma, hGamma2));
 	BondPtr cg2hg3 = BondPtr(new Bond(cGamma, hGamma3));
 
 	BondPtr cd2ce = BondPtr(new Bond(cDelta, cEpsilon));
 	cd2ce->setTorsionAtoms(cGamma, nOmega);
-	cd2ce->activate(_sidechain);
+	cd2ce->activate();
 
 	BondPtr cd2hd2 = BondPtr(new Bond(cDelta, hDelta2));
 	BondPtr cd2hd3 = BondPtr(new Bond(cDelta, hDelta3));
 
 	BondPtr ce2nz = BondPtr(new Bond(cEpsilon, nOmega));
-	ce2nz->activate(_sidechain);
+	ce2nz->activate();
 
 	BondPtr ce2he2 = BondPtr(new Bond(cEpsilon, hEpsilon2));
 	BondPtr ce2he3 = BondPtr(new Bond(cEpsilon, hEpsilon3));
@@ -656,21 +656,21 @@ void Knotter::makeLysine()
 	BondPtr nz2hz2 = BondPtr(new Bond(nOmega, hOmega2));
 	BondPtr nz2hz3 = BondPtr(new Bond(nOmega, hOmega3));
 
-	nz2hz1->activate(_sidechain);
-	nz2hz2->activate(_sidechain);
-	nz2hz3->activate(_sidechain);
+	nz2hz1->activate();
+	nz2hz2->activate();
+	nz2hz3->activate();
 
-	ce2he2->activate(_sidechain);
-	ce2he3->activate(_sidechain);
+	ce2he2->activate();
+	ce2he3->activate();
 
-	cd2hd2->activate(_sidechain);
-	cd2hd3->activate(_sidechain);
+	cd2hd2->activate();
+	cd2hd3->activate();
 
-	cg2hg2->activate(_sidechain);
-	cg2hg3->activate(_sidechain);
+	cg2hg2->activate();
+	cg2hg3->activate();
 
-	cb2hb3->activate(_sidechain);
-	cb2hb2->activate(_sidechain);
+	cb2hb3->activate();
+	cb2hb2->activate();
 }
 
 void Knotter::makeProline()
@@ -707,26 +707,26 @@ void Knotter::makeProline()
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	//    cb2cg->setFixed(true);
 	cb2cg->setTorsionAtoms(cAlpha, cDelta);
-	cb2cg->activate(_sidechain);
+	cb2cg->activate();
 	//    Bond::setTorsion(&*cb2cg, deg2rad(-34.61));
 
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb2->activate(_sidechain);
-	cb2hb3->activate(_sidechain);
+	cb2hb2->activate();
+	cb2hb3->activate();
 
 	BondPtr cg2cd = BondPtr(new Bond(cGamma, cDelta));
 	//    cg2cd->setFixed(true);
-	cg2cd->activate(_sidechain);
+	cg2cd->activate();
 
 	BondPtr cg2hg2 = BondPtr(new Bond(cGamma, hGamma2));
-	cg2hg2->activate(_sidechain);
+	cg2hg2->activate();
 	BondPtr cg2hg3 = BondPtr(new Bond(cGamma, hGamma3));
-	cg2hg3->activate(_sidechain);
+	cg2hg3->activate();
 	BondPtr cd2hd2 = BondPtr(new Bond(cDelta, hDelta2));
-	cd2hd2->activate(_sidechain);
+	cd2hd2->activate();
 	BondPtr cd2hd3 = BondPtr(new Bond(cDelta, hDelta3));
-	cd2hd3->activate(_sidechain);
+	cd2hd3->activate();
 }
 
 
@@ -750,15 +750,15 @@ void Knotter::makeSerine()
 	tieBetaCarbon(oGamma);
 
 	BondPtr cb2og = BondPtr(new Bond(cBeta, oGamma));
-	cb2og->activate(_sidechain);
+	cb2og->activate();
 
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate();
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate();
 
 	BondPtr og2hg = BondPtr(new Bond(oGamma, hGamma));
-	og2hg->activate(_sidechain);
+	og2hg->activate();
 }
 
 void Knotter::makeCysteine()
@@ -780,15 +780,15 @@ void Knotter::makeCysteine()
 	tieBetaCarbon(sGamma);
 
 	BondPtr cb2sg = BondPtr(new Bond(cBeta, sGamma));
-	cb2sg->activate(_sidechain);
+	cb2sg->activate();
 
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate();
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate();
 
 	BondPtr sg2hg = BondPtr(new Bond(sGamma, hGamma));
-	sg2hg->activate(_sidechain);
+	sg2hg->activate();
 }
 
 void Knotter::makeValine()
@@ -815,26 +815,26 @@ void Knotter::makeValine()
 	tieBetaCarbon(cGamma1);
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma1));
-	cb2cg1->activate(_sidechain);
+	cb2cg1->activate();
 
 	BondPtr cg1hg11 = BondPtr(new Bond(cGamma1, hGamma11));
-	cg1hg11->activate(_sidechain);
+	cg1hg11->activate();
 	BondPtr cg1hg12 = BondPtr(new Bond(cGamma1, hGamma12));
-	cg1hg12->activate(_sidechain);
+	cg1hg12->activate();
 	BondPtr cg1hg13 = BondPtr(new Bond(cGamma1, hGamma13));
-	cg1hg13->activate(_sidechain);
+	cg1hg13->activate();
 
 	BondPtr cb2cg2 = BondPtr(new Bond(cBeta, cGamma2));
-	cb2cg2->activate(_sidechain);
+	cb2cg2->activate();
 	BondPtr cb2hb = BondPtr(new Bond(cBeta, hBeta));
-	cb2hb->activate(_sidechain);
+	cb2hb->activate();
 
 	BondPtr cg2hg21 = BondPtr(new Bond(cGamma2, hGamma21));
-	cg2hg21->activate(_sidechain);
+	cg2hg21->activate();
 	BondPtr cg2hg22 = BondPtr(new Bond(cGamma2, hGamma22));
-	cg2hg22->activate(_sidechain);
+	cg2hg22->activate();
 	BondPtr cg2hg23 = BondPtr(new Bond(cGamma2, hGamma23));
-	cg2hg23->activate(_sidechain);
+	cg2hg23->activate();
 }
 
 void Knotter::makeAlanine()
@@ -855,11 +855,11 @@ void Knotter::makeAlanine()
 	tieBetaCarbon(AtomPtr());
 
 	BondPtr cb2hb1 = BondPtr(new Bond(cBeta, hBeta1));
-	cb2hb1->activate(_sidechain);
+	cb2hb1->activate();
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate();
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate();
 }
 
 
@@ -895,7 +895,7 @@ void Knotter::makeHistidine()
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->setTorsionAtoms(cAlpha, nDelta1);
-	cb2cg->activate(_sidechain);
+	cb2cg->activate();
 	cb2cg->addExtraTorsionSample(nEpsilon2, 0);
 	cb2cg->addExtraTorsionSample(cEpsilon1, 0);
 	cb2cg->addExtraTorsionSample(cDelta2, 0);
@@ -906,41 +906,41 @@ void Knotter::makeHistidine()
 	}
 
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate();
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate();
 
 	BondPtr cg2nd1 = BondPtr(new Bond(cGamma, nDelta1));
 	cg2nd1->setFixed(true);
 	cg2nd1->setTorsionAtoms(cBeta, cEpsilon1);
-	cg2nd1->activate(_sidechain);
+	cg2nd1->activate();
 
 	BondPtr cg2cd2 = BondPtr(new Bond(cGamma, cDelta2));
 	cg2cd2->setTorsionAtoms(cBeta, nEpsilon2);
 	cg2cd2->setFixed(true);
-	cg2cd2->activate(_sidechain);
+	cg2cd2->activate();
 
 	BondPtr nd12ce1 = BondPtr(new Bond(nDelta1, cEpsilon1));
 	nd12ce1->setTorsionAtoms(cGamma, hEpsilon1);
 	nd12ce1->setFixed(true);
-	nd12ce1->activate(_sidechain);
+	nd12ce1->activate();
 	BondPtr nd12hd1 = BondPtr(new Bond(nDelta1, hDelta1));
-	nd12hd1->activate(_sidechain);
+	nd12hd1->activate();
 
 
 	BondPtr ce12he1 = BondPtr(new Bond(cEpsilon1, hEpsilon1));
-	ce12he1->activate(_sidechain);
+	ce12he1->activate();
 
 	BondPtr cd22ne2 = BondPtr(new Bond(cDelta2, nEpsilon2));
 	cd22ne2->setTorsionAtoms(cGamma, hEpsilon2);
 	cd22ne2->setFixed(true);
-	cd22ne2->activate(_sidechain);
+	cd22ne2->activate();
 
 	BondPtr cd22hd2 = BondPtr(new Bond(cDelta2, hDelta2));
-	cd22hd2->activate(_sidechain);
+	cd22hd2->activate();
 
 	BondPtr ne22he2 = BondPtr(new Bond(nEpsilon2, hEpsilon2));
-	ne22he2->activate(_sidechain);
+	ne22he2->activate();
 }
 
 void Knotter::makeTyrosine()
@@ -984,7 +984,7 @@ void Knotter::makeTyrosine()
 	cb2cg->addExtraTorsionSample(cDelta2, 0);
 	cb2cg->addExtraTorsionSample(cOmega, 0);
 	cb2cg->addExtraTorsionSample(oxygen, 0);
-	cb2cg->activate(_sidechain);
+	cb2cg->activate();
 
 	if (Options::enableTests() >= 2)
 	{
@@ -993,47 +993,47 @@ void Knotter::makeTyrosine()
 	}
 
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate();
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate();
 
 	BondPtr cg2cd1 = BondPtr(new Bond(cGamma, cDelta1));
 	cg2cd1->setTorsionAtoms(cBeta, cEpsilon1);
 	cg2cd1->setFixed(true);
-	cg2cd1->activate(_sidechain);
+	cg2cd1->activate();
 
 	BondPtr cg2cd2 = BondPtr(new Bond(cGamma, cDelta2));
 	cg2cd2->setTorsionAtoms(cBeta, cEpsilon2);
 	cg2cd2->setFixed(true);
-	cg2cd2->activate(_sidechain);
+	cg2cd2->activate();
 
 	BondPtr cd22ce2 = BondPtr(new Bond(cDelta2, cEpsilon2));
 	cd22ce2->setTorsionAtoms(cGamma, cOmega);
 	cd22ce2->setFixed(true);
-	cd22ce2->activate(_sidechain);
+	cd22ce2->activate();
 	BondPtr cd22hd2 = BondPtr(new Bond(cDelta2, hDelta2));
-	cd22hd2->activate(_sidechain);
+	cd22hd2->activate();
 
 	BondPtr cd12ce1 = BondPtr(new Bond(cDelta1, cEpsilon1));
 	cd12ce1->setTorsionAtoms(cGamma, hEpsilon1);
 	cd12ce1->setFixed(true);
-	cd12ce1->activate(_sidechain);
+	cd12ce1->activate();
 	BondPtr cd12hd1 = BondPtr(new Bond(cDelta1, hDelta1));
-	cd12hd1->activate(_sidechain);
+	cd12hd1->activate();
 	BondPtr ce12he1 = BondPtr(new Bond(cEpsilon1, hEpsilon1));
-	ce12he1->activate(_sidechain);
+	ce12he1->activate();
 
 	BondPtr ce22cz = BondPtr(new Bond(cEpsilon2, cOmega));
 	ce22cz->setTorsionAtoms(cDelta2, oxygen);
 	ce22cz->setFixed(true);
-	ce22cz->activate(_sidechain);
+	ce22cz->activate();
 
 	BondPtr ce22he2 = BondPtr(new Bond(cEpsilon2, hEpsilon2));
-	ce22he2->activate(_sidechain);
+	ce22he2->activate();
 	BondPtr cz2oh = BondPtr(new Bond(cOmega, oxygen));
-	cz2oh->activate(_sidechain);
+	cz2oh->activate();
 	BondPtr oh2hh = BondPtr(new Bond(oxygen, hydrogen));
-	oh2hh->activate(_sidechain);
+	oh2hh->activate();
 }
 
 void Knotter::makePhenylalanine()
@@ -1071,7 +1071,7 @@ void Knotter::makePhenylalanine()
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->setTorsionAtoms(cAlpha, cDelta1);
 	cb2cg->addExtraTorsionSample(cOmega, 0);
-	cb2cg->activate(_sidechain);
+	cb2cg->activate();
 
 
 	if (Options::enableTests() >= 2)
@@ -1081,50 +1081,50 @@ void Knotter::makePhenylalanine()
 	}
 
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate();
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate();
 
 	BondPtr cg2cd1 = BondPtr(new Bond(cGamma, cDelta1));
 	cg2cd1->setTorsionAtoms(cBeta, cEpsilon1);
 	cg2cd1->setFixed(true);
-	cg2cd1->activate(_sidechain);
+	cg2cd1->activate();
 	Bond::setTorsion(&*cg2cd1, deg2rad(180));
 
 	BondPtr cg2cd2 = BondPtr(new Bond(cGamma, cDelta2));
 	cg2cd2->setTorsionAtoms(cBeta, cEpsilon2);
 	cg2cd2->setFixed(true);
-	cg2cd2->activate(_sidechain);
+	cg2cd2->activate();
 	Bond::setTorsion(&*cg2cd2, deg2rad(180));
 
 	BondPtr cd22ce2 = BondPtr(new Bond(cDelta2, cEpsilon2));
 	cd22ce2->setTorsionAtoms(cGamma, cOmega);
 	cd22ce2->setFixed(true);
-	cd22ce2->activate(_sidechain);
+	cd22ce2->activate();
 	Bond::setTorsion(&*cd22ce2, deg2rad(0));
 	BondPtr cd22hd2 = BondPtr(new Bond(cDelta2, hDelta2));
-	cd22hd2->activate(_sidechain);
+	cd22hd2->activate();
 
 	BondPtr cd12ce1 = BondPtr(new Bond(cDelta1, cEpsilon1));
 	cd12ce1->setTorsionAtoms(cGamma, hEpsilon1);
 	cd12ce1->setFixed(true);
-	cd12ce1->activate(_sidechain);
+	cd12ce1->activate();
 	Bond::setTorsion(&*cd12ce1, deg2rad(0));
 	BondPtr cd12hd1 = BondPtr(new Bond(cDelta1, hDelta1));
-	cd12hd1->activate(_sidechain);
+	cd12hd1->activate();
 	BondPtr ce12he1 = BondPtr(new Bond(cEpsilon1, hEpsilon1));
-	ce12he1->activate(_sidechain);
+	ce12he1->activate();
 
 	BondPtr ce22cz = BondPtr(new Bond(cEpsilon2, cOmega));
 	ce22cz->setTorsionAtoms(cDelta2, hOmega);
 	ce22cz->setFixed(true);
-	ce22cz->activate(_sidechain);
+	ce22cz->activate();
 	Bond::setTorsion(&*ce22cz, deg2rad(180));
 
 	BondPtr ce22he2 = BondPtr(new Bond(cEpsilon2, hEpsilon2));
-	ce22he2->activate(_sidechain);
+	ce22he2->activate();
 	BondPtr cz2hz = BondPtr(new Bond(cOmega, hOmega));
-	cz2hz->activate(_sidechain);
+	cz2hz->activate();
 
 }
 
@@ -1163,7 +1163,7 @@ void Knotter::makeTryptophan()
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->setTorsionAtoms(cAlpha, cDelta1);
-	cb2cg->activate(_sidechain);
+	cb2cg->activate();
 	cb2cg->addExtraTorsionSample(cDelta1, 0);
 	cb2cg->addExtraTorsionSample(cDelta2, 0);
 	cb2cg->addExtraTorsionSample(nEpsilon1, 0);
@@ -1180,54 +1180,54 @@ void Knotter::makeTryptophan()
 	}
 
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate();
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate();
 
 	BondPtr cg2cd1 = BondPtr(new Bond(cGamma, cDelta1));
 	cg2cd1->setTorsionAtoms(cBeta, nEpsilon1);
 	cg2cd1->setFixed(true);
-	cg2cd1->activate(_sidechain);
+	cg2cd1->activate();
 
 	BondPtr cg2cd2 = BondPtr(new Bond(cGamma, cDelta2));
 	cg2cd2->setTorsionAtoms(cBeta, cEpsilon3);
 	cg2cd2->setFixed(true);
-	cg2cd2->activate(_sidechain);
+	cg2cd2->activate();
 
 	BondPtr cd22ce2 = BondPtr(new Bond(cDelta2, cEpsilon3));
 	cd22ce2->setTorsionAtoms(cGamma, cOmega3);
 	cd22ce2->setFixed(true);
-	cd22ce2->activate(_sidechain);
+	cd22ce2->activate();
 	//    BondPtr cd22hd2 = BondPtr(new Bond(cDelta2, hDelta2));
-	//    cd22hd2->activate(_sidechain);
+	//    cd22hd2->activate();
 
 	BondPtr cd12ce1 = BondPtr(new Bond(cDelta1, nEpsilon1));
 	cd12ce1->setTorsionAtoms(cGamma, cEpsilon2);
 	cd12ce1->setFixed(true);
-	cd12ce1->activate(_sidechain);
+	cd12ce1->activate();
 
 	BondPtr cd12hd1 = BondPtr(new Bond(cDelta1, hDelta1));
-	cd12hd1->activate(_sidechain);
+	cd12hd1->activate();
 
 	BondPtr ne12ce2 = BondPtr(new Bond(nEpsilon1, cEpsilon2));
 	ne12ce2->setTorsionAtoms(cDelta1, cOmega2);
-	ne12ce2->activate(_sidechain);
+	ne12ce2->activate();
 
 	BondPtr ce22cz = BondPtr(new Bond(cEpsilon2, cOmega2));
 	ce22cz->setTorsionAtoms(cDelta2, hOmega2);
 	ce22cz->setFixed(true);
-	ce22cz->activate(_sidechain);
+	ce22cz->activate();
 
 	BondPtr ce22he2 = BondPtr(new Bond(cEpsilon3, cOmega3));
 	ce22he2->setTorsionAtoms(cDelta2, ch2);
-	ce22he2->activate(_sidechain);
+	ce22he2->activate();
 	BondPtr cz2hz = BondPtr(new Bond(cOmega3, hOmega3));
-	cz2hz->activate(_sidechain);
+	cz2hz->activate();
 
 	BondPtr ce32he3 = BondPtr(new Bond(cOmega3, ch2));
-	ce32he3->activate(_sidechain);
+	ce32he3->activate();
 	BondPtr ch2hh2 = BondPtr(new Bond(ch2, hh2));
-	ch2hh2->activate(_sidechain);
+	ch2hh2->activate();
 
 }
 
@@ -1260,32 +1260,32 @@ void Knotter::makeIsoleucine()
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma1));
 	cb2cg1->setTorsionAtoms(cAlpha, cDelta1);
-	cb2cg1->activate(_sidechain);
+	cb2cg1->activate();
 	BondPtr cb2hb = BondPtr(new Bond(cBeta, hBeta));
-	cb2hb->activate(_sidechain);
+	cb2hb->activate();
 	BondPtr cb2cg2 = BondPtr(new Bond(cBeta, cGamma2));
-	cb2cg2->activate(_sidechain);
+	cb2cg2->activate();
 
 	BondPtr cg1cd11 = BondPtr(new Bond(cGamma1, cDelta1));
-	cg1cd11->activate(_sidechain);
+	cg1cd11->activate();
 	BondPtr cg1hg12 = BondPtr(new Bond(cGamma1, hGamma12));
-	cg1hg12->activate(_sidechain);
+	cg1hg12->activate();
 	BondPtr cg1hg13 = BondPtr(new Bond(cGamma1, hGamma13));
-	cg1hg13->activate(_sidechain);
+	cg1hg13->activate();
 
 	BondPtr cg2hg21 = BondPtr(new Bond(cGamma2, hGamma21));
-	cg2hg21->activate(_sidechain);
+	cg2hg21->activate();
 	BondPtr cg2hg22 = BondPtr(new Bond(cGamma2, hGamma22));
-	cg2hg22->activate(_sidechain);
+	cg2hg22->activate();
 	BondPtr cg2hg23 = BondPtr(new Bond(cGamma2, hGamma23));
-	cg2hg23->activate(_sidechain);
+	cg2hg23->activate();
 
 	BondPtr cd1hg21 = BondPtr(new Bond(cDelta1, hDelta11));
-	cd1hg21->activate(_sidechain);
+	cd1hg21->activate();
 	BondPtr cd1hg22 = BondPtr(new Bond(cDelta1, hDelta12));
-	cd1hg22->activate(_sidechain);
+	cd1hg22->activate();
 	BondPtr cd1hg23 = BondPtr(new Bond(cDelta1, hDelta13));
-	cd1hg23->activate(_sidechain);
+	cd1hg23->activate();
 
 }
 
@@ -1318,32 +1318,32 @@ void Knotter::makeLeucine()
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg1->setTorsionAtoms(cAlpha, cDelta1);
-	cb2cg1->activate(_sidechain);
+	cb2cg1->activate();
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate();
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate();
 
 	BondPtr cg1cd1 = BondPtr(new Bond(cGamma, cDelta1));
-	cg1cd1->activate(_sidechain);
+	cg1cd1->activate();
 	BondPtr cg1cd2 = BondPtr(new Bond(cGamma, cDelta2));
-	cg1cd2->activate(_sidechain);
+	cg1cd2->activate();
 	BondPtr cg1hg = BondPtr(new Bond(cGamma, hGamma));
-	cg1hg->activate(_sidechain);
+	cg1hg->activate();
 
 	BondPtr cd1hd11 = BondPtr(new Bond(cDelta1, hDelta11));
-	cd1hd11->activate(_sidechain);
+	cd1hd11->activate();
 	BondPtr cd1hd12 = BondPtr(new Bond(cDelta1, hDelta12));
-	cd1hd12->activate(_sidechain);
+	cd1hd12->activate();
 	BondPtr cd1hd13 = BondPtr(new Bond(cDelta1, hDelta13));
-	cd1hd13->activate(_sidechain);
+	cd1hd13->activate();
 
 	BondPtr cd2hd21 = BondPtr(new Bond(cDelta2, hDelta21));
-	cd2hd21->activate(_sidechain);
+	cd2hd21->activate();
 	BondPtr cd2hd22 = BondPtr(new Bond(cDelta2, hDelta22));
-	cd2hd22->activate(_sidechain);
+	cd2hd22->activate();
 	BondPtr cd2hd23 = BondPtr(new Bond(cDelta2, hDelta23));
-	cd2hd23->activate(_sidechain);
+	cd2hd23->activate();
 }
 
 
@@ -1369,7 +1369,7 @@ void Knotter::makeAspartate()
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg1->setTorsionAtoms(cAlpha, oDelta1);
-	cb2cg1->activate(_sidechain);
+	cb2cg1->activate();
 
 	if (Options::enableTests() >= 2)
 	{
@@ -1377,14 +1377,14 @@ void Knotter::makeAspartate()
 	}
 
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate();
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate();
 
 	BondPtr cg1cd1 = BondPtr(new Bond(cGamma, oDelta1));
-	cg1cd1->activate(_sidechain);
+	cg1cd1->activate();
 	BondPtr cg1cd2 = BondPtr(new Bond(cGamma, oDelta2));
-	cg1cd2->activate(_sidechain);
+	cg1cd2->activate();
 }
 
 void Knotter::makeAsparagine()
@@ -1410,20 +1410,20 @@ void Knotter::makeAsparagine()
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg1->setTorsionAtoms(cAlpha, oDelta1);
-	cb2cg1->activate(_sidechain);
+	cb2cg1->activate();
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate();
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate();
 
 	BondPtr cg1nd2 = BondPtr(new Bond(cGamma, nDelta2));
-	cg1nd2->activate(_sidechain);
+	cg1nd2->activate();
 	BondPtr cg1od1 = BondPtr(new Bond(cGamma, oDelta1));
-	cg1od1->activate(_sidechain);
+	cg1od1->activate();
 	BondPtr nd22hd21 = BondPtr(new Bond(nDelta2, hDelta21));
-	nd22hd21->activate(_sidechain);
+	nd22hd21->activate();
 	BondPtr nd22hd22 = BondPtr(new Bond(nDelta2, hDelta22));
-	nd22hd22->activate(_sidechain);
+	nd22hd22->activate();
 }
 
 void Knotter::makeGlutamine()
@@ -1452,28 +1452,28 @@ void Knotter::makeGlutamine()
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg1->setTorsionAtoms(cAlpha, cDelta);
-	cb2cg1->activate(_sidechain);
+	cb2cg1->activate();
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate();
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate();
 
 	BondPtr cg2cd1 = BondPtr(new Bond(cGamma, cDelta));
 	cg2cd1->setTorsionAtoms(cAlpha, oEpsilon1);
-	cg2cd1->activate(_sidechain);
+	cg2cd1->activate();
 	BondPtr cg2hg2 = BondPtr(new Bond(cGamma, hGamma2));
-	cg2hg2->activate(_sidechain);
+	cg2hg2->activate();
 	BondPtr cg2hg3 = BondPtr(new Bond(cGamma, hGamma3));
-	cg2hg3->activate(_sidechain);
+	cg2hg3->activate();
 
 	BondPtr cd2ce1 = BondPtr(new Bond(cDelta, oEpsilon1));
-	cd2ce1->activate(_sidechain);
+	cd2ce1->activate();
 	BondPtr cd2ce2 = BondPtr(new Bond(cDelta, nEpsilon2));
-	cd2ce2->activate(_sidechain);
+	cd2ce2->activate();
 	BondPtr nd22hd21 = BondPtr(new Bond(nEpsilon2, hEpsilon21));
-	nd22hd21->activate(_sidechain);
+	nd22hd21->activate();
 	BondPtr nd22hd22 = BondPtr(new Bond(nEpsilon2, hEpsilon22));
-	nd22hd22->activate(_sidechain);
+	nd22hd22->activate();
 }
 
 
@@ -1501,24 +1501,24 @@ void Knotter::makeGlutamate()
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg1->setTorsionAtoms(cAlpha, cDelta);
-	cb2cg1->activate(_sidechain);
+	cb2cg1->activate();
 	BondPtr cb2hb2 = BondPtr(new Bond(cBeta, hBeta2));
-	cb2hb2->activate(_sidechain);
+	cb2hb2->activate();
 	BondPtr cb2hb3 = BondPtr(new Bond(cBeta, hBeta3));
-	cb2hb3->activate(_sidechain);
+	cb2hb3->activate();
 
 	BondPtr cg2cd1 = BondPtr(new Bond(cGamma, cDelta));
 	cg2cd1->setTorsionAtoms(cAlpha, oEpsilon1);
-	cg2cd1->activate(_sidechain);
+	cg2cd1->activate();
 	BondPtr cg2hg2 = BondPtr(new Bond(cGamma, hGamma2));
-	cg2hg2->activate(_sidechain);
+	cg2hg2->activate();
 	BondPtr cg2hg3 = BondPtr(new Bond(cGamma, hGamma3));
-	cg2hg3->activate(_sidechain);
+	cg2hg3->activate();
 
 	BondPtr cd2ce1 = BondPtr(new Bond(cDelta, oEpsilon1));
-	cd2ce1->activate(_sidechain);
+	cd2ce1->activate();
 	BondPtr cd2ce2 = BondPtr(new Bond(cDelta, oEpsilon2));
-	cd2ce2->activate(_sidechain);
+	cd2ce2->activate();
 }
 
 void Knotter::makeThreonine()
@@ -1544,20 +1544,20 @@ void Knotter::makeThreonine()
 	ca2cb->setRefineBondAngle(false);
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, oGamma1));
-	cb2cg1->activate(_sidechain);
+	cb2cg1->activate();
 	BondPtr cb2hb = BondPtr(new Bond(cBeta, hBeta));
-	cb2hb->activate(_sidechain);
+	cb2hb->activate();
 	BondPtr cb2cg2 = BondPtr(new Bond(cBeta, cGamma2));
-	cb2cg2->activate(_sidechain);
+	cb2cg2->activate();
 
 	BondPtr og1hg11 = BondPtr(new Bond(oGamma1, hGamma11));
-	og1hg11->activate(_sidechain);
+	og1hg11->activate();
 
 	BondPtr cg2hg21 = BondPtr(new Bond(cGamma2, hGamma21));
-	cg2hg21->activate(_sidechain);
+	cg2hg21->activate();
 	BondPtr cg2hg22 = BondPtr(new Bond(cGamma2, hGamma22));
-	cg2hg22->activate(_sidechain);
+	cg2hg22->activate();
 	BondPtr cg2hg23 = BondPtr(new Bond(cGamma2, hGamma23));
-	cg2hg23->activate(_sidechain);
+	cg2hg23->activate();
 
 }

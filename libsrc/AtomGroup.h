@@ -71,16 +71,6 @@ public:
 		return _atoms[i];
 	}
 
-	void addBond(BondPtr bond)
-	{
-		_bonds.push_back(bond);
-	}
-
-	int bondCount()
-	{
-		return _bonds.size();
-	}
-
 	double totalElectrons();
 	double getAverageBFactor(bool initial = false);
 	double getAverageDisplacement();
@@ -153,7 +143,6 @@ protected:
 private:
 	MonomerWkr _monomer;
 
-	std::vector<BondWkr> _bonds;
 	std::vector<AtomPtr> _atoms;
 
 	bool _beenTied;
