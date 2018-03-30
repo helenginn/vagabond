@@ -629,20 +629,16 @@ bool Sampler::sample(bool clear)
 		_strategy->setCycles(cycles);
 	}
 
+	int paramCount = _strategy->parameterCount();
+
 	if (!_silent)
 	{
-		std::cout << "Sampling ";
-
-		for (int i = 0; i < sampleSize(); i++)
-		{
-			std::cout << _sampled[i]->shortDesc() << ", ";
-		}
-		std::cout << std::endl;
+		std::cout << "Sampling " << sampleSize() << " atoms, ";
+		std::cout << "refining " << paramCount << " parameters." << std::endl;
 	}
 
 	if (_scoreType == ScoreTypeCorrel)
 	{
-		int paramCount = _strategy->parameterCount();
 		int cycles = 16 + paramCount;
 
 		_strategy->setCycles(cycles);
