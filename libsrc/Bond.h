@@ -65,11 +65,18 @@ public:
 	double getEffectiveOccupancy();
 	void resetBondAngles();
 
+	/**
+	*  Major atom from which bond is drawn. Bond does not dictate position
+	*  of the major atom.
+	*/
 	AtomPtr getMajor()
 	{
 		return _major.lock();
 	}
 
+	/**
+	*  Bond directly controls the distribution of the minor atom.
+	*/
 	AtomPtr getMinor()
 	{
 		return _minor.lock();
@@ -82,11 +89,22 @@ public:
 
 	void setMinor(AtomPtr newMinor);
 
+	/**
+	*  This is the first (preceding) atom on which the torsion angle is
+	*  calculated.
+	*  \return heavy alignment atom.	
+	*/
 	AtomPtr getHeavyAlign()
 	{
 		return _heavyAlign.lock();
 	}
 
+	/**
+	*  This is the second atom on which the torsion angle is
+	*  calculated. Perfect alignment of heavy atom and light atom will
+	*  be a torsion angle of 0.
+	*  \return light alignment atom.	
+	*/
 	AtomPtr getLightAlign()
 	{
 		return _lightAlign.lock();
@@ -102,6 +120,10 @@ public:
 		static_cast<Bond *>(object)->_bondLength = length;
 	}
 
+	/**
+	* 	Returns torsion value for the primary atom in a given group.
+	* 	\return torsion in radians.
+	*/
 	double getTorsion(int group)
 	{
 		return _bondGroups[group].torsionAngle;
@@ -190,18 +212,39 @@ public:
 	static double getBendAngle(void *object);
 	static void setBendAngle(void *object, double value);
 
+	/**
+	/*	Adds a downstream atom to a given group. Groups represent split
+	* 	downstream bonds.
+	*   \param atom to add to downstream
+	*   \param group to add atom to in the current bond
+	*   \param skipGeometry if set to true, geometry is not recalculated
+	*   	from default values.
+	*/
 	void addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry = false);
 
+	/**
+	*   \param group which group to query.
+	* 	\return Number of downstream atoms in a given group (conformer).
+	*/
 	int downstreamAtomCount(int group)
 	{
 		return _bondGroups[group].atoms.size();
 	}
 
+	/**
+	* 	\return Number of downstream conformers.
+	*/
 	int downstreamAtomGroupCount()
 	{
 		return _bondGroups.size();
 	}
 
+	/**
+	*  Returns a minor atom from the immediate descendent bond.	
+	*  \param group group to fetch atom from.
+	*  \param i number of the atom in the array within the group.
+	*  \return pointer to downstream atom.
+	*/
 	AtomPtr downstreamAtom(int group, int i)
 	{
 		return _bondGroups[group].atoms[i].atom.lock();
@@ -243,14 +286,38 @@ public:
 		return _usingTorsion;
 	}
 
+	/** 
+	* 	Bond torsion does something other than change hydrogen atom position.
+	*/
 	bool isNotJustForHydrogens();
 
+	/**
+	*  This is updated when the geometry is recalculated. This is the expected
+	*  angle from default geometry.
+	*  \return expected bond angle in radians between upstream->major->minor.
+	*/
 	double getExpectedAngle();
+	
+	/**
+	*  Geometry ratio for direct calculation of atom position. Consider
+	*  using getBendAngle if you want a biologically interpretable value.
+	*  \param group group to fetch from.
+	*  \param i number of the atom in the array within the group.
+	*  \return ratio between the x/y coordinates in a basis where the
+	*  preceding bond angle is along axis z.
+	*
+	*/
 	double getGeomRatio(int n, int i)
 	{
 		return _bondGroups[n].atoms[i].geomRatio;
 	}
 
+	
+	/**
+	*  In cases where there are multiple downstream bonds, this returns the
+	*  offset of the torsion from the first atom in the downstream atom array.
+	*  \return fraction of a circle (0-1) to add to the first torsion angle.
+	*/
 	double getCirclePortion(int n, int i)
 	{
 		return _bondGroups[n].atoms[i].circlePortion;
@@ -295,6 +362,15 @@ public:
 	std::string shortDesc();
 	std::string getPDBContribution();
 	ModelPtr getParentModel();
+
+	/**
+	* 	 Splits all downstream atoms and creates new copies of atoms and
+	* 	 bonds. Sets initial torsion angle difference to 180 degrees of first
+	* 	 bond, and divides the occupancies by 2 by default.
+	* 	 \param start if set, downstream atoms will only be duplicated from
+	* 	 this position in the array.
+	*	\return Always returns true, at the moment.
+	*/
 	bool splitBond(int start = 0);
 
 	void setFixed(bool fixed)
