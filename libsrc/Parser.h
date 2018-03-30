@@ -171,7 +171,7 @@ protected:
 	virtual std::string getParserIdentifier() = 0;
 	virtual void addProperties() = 0;
 	virtual void addObject(ParserPtr, std::string) {};
-	virtual void linkReference(ParserPtr, std::string category) {};
+	virtual void linkReference(ParserPtr, std::string) {};
 	virtual void postParseTidy() {};
 
 	void setParent(Parser *parent);
