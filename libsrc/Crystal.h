@@ -122,9 +122,7 @@ public:
 	void writeMillersToFile(DiffractionPtr data, std::string prefix = "");
 
 	void fourierTransform(int dir, double res = FLT_MAX);
-	void scaleToDiffraction(DiffractionPtr data);
 	void scaleComponents(DiffractionPtr data);
-	void scaleSolvent(DiffractionPtr data);
 	double scaleAndAddSolventScore(DiffractionPtr data = DiffractionPtr());
 	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
 	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
@@ -284,6 +282,9 @@ private:
 	FFTPtr _fft;
 	FFTPtr _solvent;
 	FFTPtr _difft;
+
+	void scaleSolvent(DiffractionPtr data);
+	void scaleToDiffraction(DiffractionPtr data);
 };
 
 #endif /* defined(__vagabond__Crystal__) */
