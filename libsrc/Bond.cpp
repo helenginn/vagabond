@@ -37,7 +37,6 @@ void Bond::initialize()
 	_changedSamples = true;
 	_refineBondAngle = false;
 	_fixed = false;
-	_blurTotal = 0;
 	_occupancy = 1.0;
 	_occMult = 1.0;
 	_torsionStepMult = 1.0;
@@ -608,7 +607,6 @@ double myTorsion, double ratio)
 	set.reserve(prevs->size());
 	const vec3 none = make_vec3(0, 0, 0);
 
-	_blurTotal = 0;
 	AtomPtr nextAtom = downstreamAtom(_activeGroup, 0);
 	BondPtr nextBond = ToBondPtr(nextAtom->getModel());
 	double nextRatio = getGeomRatio(_activeGroup, 0);
@@ -710,8 +708,6 @@ double myTorsion, double ratio)
 		undoBlur *= dampValue;
 		undoBlur *= fabs(_dampening);
 
-		_blurTotal += fabs(undoBlur);
-
 		/* This will only apply for a kicked bond */
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;
 
@@ -729,8 +725,6 @@ double myTorsion, double ratio)
 		simple.start = nextCurrentPos;
 		set.push_back(simple);
 	}
-
-	_blurTotal /= (double)prevs->size();
 
 	return set;
 }
@@ -1372,11 +1366,6 @@ ModelPtr Bond::reverse(BondPtr upstreamBond)
 	activate();
 
 	return nextBond;
-}
-
-double Bond::getFlexibilityPotential()
-{
-	return _blurTotal;
 }
 
 bool Bond::isRefinable()

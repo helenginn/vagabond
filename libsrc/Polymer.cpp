@@ -408,8 +408,8 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 
 void Polymer::graph(std::string graphName)
 {
-	CSVPtr csv = CSVPtr(new CSV(7, "resnum", "newB", "oldB",
-	                            "pos", "sidepos", "flex", "ellipsoid"));
+	CSVPtr csv = CSVPtr(new CSV(6, "resnum", "newB", "oldB",
+	                            "pos", "sidepos", "ellipsoid"));
 	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB"));
@@ -453,10 +453,9 @@ void Polymer::graph(std::string graphName)
 
 			double posDisp = ca->posDisplacement();
 			double sideDisp = sidechain->getAverageDisplacement();
-			double flex = caBond->getFlexibilityPotential();
 
-			csv->addEntry(7, value, meanSq, ca->getInitialBFactor(),
-			              posDisp, sideDisp, flex, rad2deg(angleBetween));
+			csv->addEntry(6, value, meanSq, ca->getInitialBFactor(),
+			              posDisp, sideDisp, rad2deg(angleBetween));
 			caDampen = Bond::getDampening(&*caBond);
 			caBlur = Bond::getTorsionBlur(&*caBond);
 

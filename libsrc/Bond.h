@@ -342,11 +342,6 @@ public:
 		propagateChange(0);
 	}
 
-	int getActiveGroup()
-	{
-		return _activeGroup;
-	}
-
 	BondGroup *getBondGroup(int i)
 	{
 		return &_bondGroups[i];
@@ -394,8 +389,6 @@ public:
 	}
 
 	virtual double getMeanSquareDeviation();
-
-	double getFlexibilityPotential();
 
 	AtomPtr extraTorsionSample(int group, int i)
 	{
@@ -498,7 +491,6 @@ private:
 	double _dampening;
 	bool _activated;
 	int _activeGroup;
-	double _blurTotal;
 	double _occupancy;
 	double _occMult;
 	double _torsionStepMult;
