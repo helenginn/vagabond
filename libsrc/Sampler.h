@@ -47,10 +47,30 @@ class Sampler
 public:
 	Sampler();
 
+	/**
+	* 	 Add an atom from the sensitive area in real space
+	*/
 	void addSampled(AtomPtr atom);
+	
+	/**
+	*  Add a bunch of atoms from the sensitive area in real space	
+	*/
 	void addSampled(std::vector<AtomPtr> atoms);
 
+	/**
+	* Add torsion angle to sampled parameters
+	* \param bond bond to vary torsion around
+	* \param range step size for angle in degrees
+	* \param interval unused usually, but could be stopping point. 	 
+	*/
 	void addTorsion(BondPtr bond, double range, double interval);
+
+	/**
+	* Add torsion blur (kick function) to sampled parameters
+	* \param bond bond to vary kick for
+	* \param range step size in degree offset per degree
+	* \param interval unused usually, but could be stopping point. 	 
+	*/
 	void addTorsionBlur(BondPtr bond, double range, double interval);
 	void addDampening(BondPtr bond, double range, double interval);
 	void addBondLength(BondPtr bond, double range, double interval);
@@ -60,7 +80,10 @@ public:
 	/** Add sampled atoms from a given atom group and conformer name */
 	void addSampledAtoms(AtomGroupPtr group, std::string conformer = "");
 	void addRamachandranAngles(PolymerPtr polymer, int from, int to);
+	
+	/** Add absolute position for an atom controlled by Absolute class */
 	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
+	/** Add absolute B factor for an atom controlled by Absolute class */
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
 	void addRotamer(Sidechain *side, double range, double interval);
 	void addMagicAngle(BondPtr bond, double range, double interval);
@@ -111,6 +134,11 @@ public:
 		return _sampled.size();
 	}
 
+	/**
+	* 	If mock is set, then the refinement is performed only to see the
+	* 	change in target function and then the original values for the
+	* 	parameters are restored.
+	*/
 	void setMock()
 	{
 		_mock = true;
