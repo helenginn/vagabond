@@ -84,6 +84,7 @@ void DiffractionMtz::load()
 
 	std::vector<std::string> rFreeNames;
 	rFreeNames.push_back("RFREE");
+	rFreeNames.push_back("FREER");
 	rFreeNames.push_back("FREE");
 	rFreeNames.push_back("FreeR_flag");
 
