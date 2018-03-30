@@ -53,6 +53,14 @@ AtomPtr AtomGroup::findAtom(std::string atomType, std::string confID)
 	return AtomPtr();
 }
 
+void AtomGroup::addAtomsFrom(AtomGroupPtr group)
+{
+	for (int i = 0; i < group->atomCount(); i++)
+	{
+		addAtom(group->atom(i));	
+	}
+}
+
 std::map<std::string, int> AtomGroup::conformerMap()
 {
 	std::map<std::string, int> conformerList;
@@ -180,14 +188,6 @@ void AtomGroup::setUseAbsolute()
 	for (int i = 0; i < atomCount(); i++)
 	{
 		atom(i)->setKeepModel();
-	}
-}
-
-void AtomGroup::addAtomsFrom(AtomGroupPtr child)
-{
-	for (int i = 0; i < child->atomCount(); i++)
-	{
-		addAtom(child->atom(i));
 	}
 }
 
