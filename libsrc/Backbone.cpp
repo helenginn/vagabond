@@ -15,11 +15,9 @@
 #include "Anchor.h"
 #include "Sidechain.h"
 
-bool Backbone::shouldRefineMagicAxis(BondPtr bond)
+bool Backbone::shouldRefineMagicAxis(BondPtr)
 {
 	return false;
-	return (bond->getMinor()->getAtomName() == "CA" ||
-	        bond->getMajor()->getAtomName() == "CA");
 }
 
 void Backbone::refine(CrystalPtr target, RefinementType rType)

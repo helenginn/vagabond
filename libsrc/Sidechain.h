@@ -76,7 +76,7 @@ public:
 	}
 
 protected:
-	virtual bool shouldRefineMagicAxis(BondPtr bond);
+	virtual bool shouldRefineMagicAxis(BondPtr);
 	virtual AtomList topLevelAtoms()
 	{
 		return findAtoms("CB");

@@ -48,7 +48,7 @@ public:
 	void setAnchor();
 protected:
 	virtual void addProperties();
-	virtual bool shouldRefineMagicAxis(BondPtr bond);
+	virtual bool shouldRefineMagicAxis(BondPtr);
 
 	virtual std::string getClassName()
 	{
