@@ -500,9 +500,20 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					setupNelderMead();
 					setCrystal(target);
 					setCycles(16);
-					topBond = setupTorsionSet(bond, k, bondNum,
-					                          deg2rad(degrees), deg2rad(0.04),
-					refineAngles, addFlex);
+					if (rType != RefinementFine)
+					{
+						topBond = setupTorsionSet(bond, k, bondNum,
+						                          deg2rad(degrees), deg2rad(0.04),
+						refineAngles, addFlex);
+					}
+					else
+					{
+						topBond = setupThoroughSet(bond, k, bondNum,
+						                           deg2rad(degrees), deg2rad(0.04),
+						refineAngles, addFlex);
+						
+					}
+					
 					setScoreType(scoreType);
 
 					for (int l = 0; l < _includeForRefine.size(); l++)
