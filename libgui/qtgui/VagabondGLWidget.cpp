@@ -63,7 +63,7 @@ void VagabondGLWidget::mouseMoveEvent(QMouseEvent *e)
 	{
 		if (_controlPressed)
 		{
-			keeper->panned(xDiff, yDiff);
+			keeper->panned(xDiff * 2, yDiff * 2);
 		}
 		else
 		{
