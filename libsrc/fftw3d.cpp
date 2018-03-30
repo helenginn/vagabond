@@ -963,8 +963,8 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 	int count = 0;
 	
 //	spaceGroup = CSym::ccp4spg_load_by_ccp4_num(155);
-	std::cout << "Applying symmetry operations for space group " << spaceGroup->symbol_xHM << ": ";
-	std::cout << " (" << spaceGroup->spg_num << ")" << std::flush;
+	std::cout << "Applying symmetry operations for space group " << spaceGroup->symbol_xHM;
+	std::cout << " (" << spaceGroup->spg_num << ")"  << ": " << std::flush;
 
 	/* Loop through and convert data into amplitude and phase */
 	for (int n = 0; n < nn; n++)
