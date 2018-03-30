@@ -53,6 +53,16 @@ Atom::Atom(Atom &other)
 	_ellipsoidLongestAxis = other._ellipsoidLongestAxis;
 }
 
+int Atom::getResidueNum()
+{
+	if (getMonomer())
+	{
+		return getMonomer()->getResidueNum();	
+	}	
+	
+	return 0;
+}
+
 AtomType Atom::getGeomType()
 {
 	if (_geomType == AtomUnassigned)

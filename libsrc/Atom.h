@@ -200,6 +200,8 @@ public:
 	{
 		return _tensor;
 	}
+	
+	int getResidueNum();
 
 	std::string shortDesc();
 
