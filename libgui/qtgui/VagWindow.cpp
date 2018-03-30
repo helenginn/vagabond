@@ -8,6 +8,8 @@
 
 #define DEFAULT_WIDTH 900
 #define DEFAULT_HEIGHT 660
+#define STATUS_HEIGHT 60
+#define BUTTON_WIDTH 200
 
 #include "../../libsrc/shared_ptrs.h"
 #include "VagWindow.h"
@@ -44,48 +46,51 @@ void VagWindow::makeButtons()
 	buttons.clear();
 
     bSuperimpose = new QPushButton("Superimpose", this);
-    bSuperimpose->setGeometry(700, 0, 200, 50);
+    bSuperimpose->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 0, BUTTON_WIDTH , 50);
     bSuperimpose->setEnabled(false);
     connect(bSuperimpose, SIGNAL(clicked()), this, SLOT(pushSuperimpose()));
 	buttons.push_back(bSuperimpose);
     
     bFitWholeT = new QPushButton("Fit molecule translation", this);
-    bFitWholeT->setGeometry(700, 50, 200, 25);
+    bFitWholeT->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 50, BUTTON_WIDTH , 25);
     bFitWholeT->setEnabled(false);
     connect(bFitWholeT, SIGNAL(clicked()), this, SLOT(pushFitWholeT()));
 	buttons.push_back(bFitWholeT);
     
     bFitWholeR = new QPushButton("Fit molecule rotation", this);
-    bFitWholeR->setGeometry(700, 75, 200, 25);
+    bFitWholeR->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 75, BUTTON_WIDTH , 25);
     bFitWholeR->setEnabled(false);
     connect(bFitWholeR, SIGNAL(clicked()), this, SLOT(pushFitWholeR()));
 	buttons.push_back(bFitWholeR);
     
     bRefinePos = new QPushButton("Refine positions to PDB", this);
-    bRefinePos->setGeometry(700, 100, 200, 50);
+    bRefinePos->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 100, BUTTON_WIDTH , 50);
     bRefinePos->setEnabled(false);
     connect(bRefinePos, SIGNAL(clicked()), this, SLOT(pushRefinePositions()));
 	buttons.push_back(bRefinePos);
 
+	/*
     bRefineFlex = new QPushButton("Refine flexibility to PDB", this);
-    bRefineFlex->setGeometry(700, 150, 200, 50);
+    bRefineFlex->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 150, BUTTON_WIDTH , 50);
     bRefineFlex->setEnabled(false);
     connect(bRefineFlex, SIGNAL(clicked()), this, SLOT(pushRefineFlexibility()));
+	buttons.push_back(bRefineFlex);
+	*/
 
     bRefineDensity = new QPushButton("Refine sidechains to density", this);
-    bRefineDensity->setGeometry(700, 200, 200, 50);
+    bRefineDensity->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 150, BUTTON_WIDTH , 50);
     bRefineDensity->setEnabled(false);
     connect(bRefineDensity, SIGNAL(clicked()), this, SLOT(pushRefineDensity()));
 	buttons.push_back(bRefineDensity);
 
     bRecalculate = new QPushButton("Recalculate FFT", this);
-    bRecalculate->setGeometry(700, 250, 200, 50);
+    bRecalculate->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 200, BUTTON_WIDTH , 50);
     bRecalculate->setEnabled(false);
     connect(bRecalculate, SIGNAL(clicked()), this, SLOT(recalculateFFT()));    
 	buttons.push_back(bRecalculate);
 
     bChangeBMult = new QPushButton("Set hetatm B multiplier", this);
-    bChangeBMult->setGeometry(700, 300, 200, 50);
+    bChangeBMult->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 250, BUTTON_WIDTH , 50);
     bChangeBMult->setEnabled(false);
     connect(bChangeBMult, SIGNAL(clicked()), this, SLOT(pushBMultiplier()));
 	buttons.push_back(bChangeBMult);
@@ -98,7 +103,7 @@ void VagWindow::makeButtons()
     
     
     bExploreMolecule = new QPushButton("Explore molecule", this);
-    bExploreMolecule->setGeometry(700, 350, 200, 50);
+    bExploreMolecule->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 350, BUTTON_WIDTH , 50);
     bExploreMolecule->setEnabled(false);
     bExploreMolecule->setMenu(new QMenu(this));
 	buttons.push_back(bExploreMolecule);
@@ -137,6 +142,21 @@ void VagWindow::updateExplorerButton()
     connect(bExploreMolecule, SIGNAL(clicked()), bExploreMolecule, SLOT(showMenu())); 
 }
 
+void VagWindow::resizeEvent(QResizeEvent *)
+{
+    int w = width();
+    int h = height();
+
+	display->setGeometry(0, 0, w - BUTTON_WIDTH, h - STATUS_HEIGHT);
+	display->resizeGL();
+	_lStatus->setGeometry(10, h - STATUS_HEIGHT, w - BUTTON_WIDTH, STATUS_HEIGHT);
+
+	for (int i = 0; i < buttons.size(); i++)
+	{
+		buttons[i]->move(w - BUTTON_WIDTH, buttons[i]->y());
+	}
+}
+
 VagWindow::VagWindow(QWidget *parent,
                      int argc, char *argv[]) : QMainWindow(parent)
 {
@@ -145,7 +165,8 @@ VagWindow::VagWindow(QWidget *parent,
     this->setWindowTitle("Vagabond");
     
     display = new VagabondGLWidget(this);
-    display->setGeometry(0, 0, 700, 600);
+	display->setGeometry(0, 0, DEFAULT_WIDTH - BUTTON_WIDTH, DEFAULT_HEIGHT -
+	                     STATUS_HEIGHT);
     
     makeButtons();
     makeMenu();    
@@ -153,7 +174,7 @@ VagWindow::VagWindow(QWidget *parent,
     QFont bigFont = QFont("Helvetica", 16);
     _lStatus = new QLabel("Vagabond at your service.", this);
     _lStatus->setFont(bigFont);
-    _lStatus->setGeometry(10, 600, 680, 60);
+    _lStatus->setGeometry(10, DEFAULT_HEIGHT - STATUS_HEIGHT, 680, STATUS_HEIGHT);
     _lStatus->show();
 
     _argc = argc;
@@ -314,42 +335,18 @@ void VagWindow::refineToEnd()
 
 void VagWindow::enable()
 {
-    bSuperimpose->setEnabled(true);
-    bRefinePos->setEnabled(true);
-    bRefineFlex->setEnabled(true);
-    bChangeBMult->setEnabled(true);
-    bExploreMolecule->setEnabled(true);
-    bRecalculate->setEnabled(true);
-    bRefineDensity->setEnabled(true);
-    bFitWholeR->setEnabled(true);
-    bFitWholeT->setEnabled(true);
+	for (int i = 0; i < buttons.size(); i++)
+	{
+		buttons[i]->setEnabled(true);
+	}
 }
 
 void VagWindow::disable()
 {
-    bSuperimpose->setEnabled(false);
-    bRefinePos->setEnabled(false);
-    bRefineFlex->setEnabled(false);
-    bChangeBMult->setEnabled(false);
-    bExploreMolecule->setEnabled(false);
-    bRecalculate->setEnabled(false);
-    bRefineDensity->setEnabled(false);
-    bFitWholeR->setEnabled(false);
-    bFitWholeT->setEnabled(false);
-}
-
-void VagWindow::resizeEvent(QResizeEvent *event)
-{
-    int w = width();
-    int h = height();
-    int max_w = w;
-    int max_h = h;
-    
-    h = (h < w) ? h : w;
-    w = (w < h) ? w : h;
-    
-    int top = max_h / 2 - h / 2;
-    int left = max_w / 2 - w / 2;
+	for (int i = 0; i < buttons.size(); i++)
+	{
+		buttons[i]->setEnabled(false);
+	}
 }
 
 void VagWindow::pushSuperimpose()
@@ -546,7 +543,7 @@ VagWindow::~VagWindow()
 {
     delete bSuperimpose;
     delete bRefinePos;
-    delete bRefineFlex;
+//    delete bRefineFlex;
     delete bExploreMolecule;
     delete bChangeBMult;
     delete bRecalculate;

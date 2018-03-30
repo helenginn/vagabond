@@ -91,6 +91,8 @@ private:
 	QPushButton *bRefineDensity;
 	QPushButton *bFitWholeR;
 	QPushButton *bFitWholeT;
+	QPushButton *bFindSS;
+	std::vector<QPushButton *> buttons;
 
 	std::string _outputDir;
 	std::string _pdbName; 
