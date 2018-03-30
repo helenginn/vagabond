@@ -601,11 +601,12 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 	}
 
 	/* Calculate appropriate box size and setup FFT */
-	double scales = Options::getProteinSampling() / 2;
-	if (scales < 0.25)
+	double scales = Options::getProteinSampling();
+	if (scales < 0.5)
 	{
-		scales = 0.25;
+		scales = 0.5;
 	}
+
 	int n = 2 * (maxDistance + 2.0) / scales;
 	if (n % 2 == 1) n--;
 
