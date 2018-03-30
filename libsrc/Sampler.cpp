@@ -9,7 +9,6 @@
 #include "Sampler.h"
 #include "RefinementGridSearch.h"
 #include "RefinementNelderMead.h"
-#include "RefinementSnake.h"
 #include "Bond.h"
 #include "Atom.h"
 #include "Crystal.h"
@@ -276,13 +275,6 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 	}
 
 	return returnBond;
-}
-
-void Sampler::setupSnake()
-{
-	_strategy = RefinementStrategyPtr(new RefinementSnake());
-	RefinementSnakePtr snake = boost::static_pointer_cast<RefinementSnake>(_strategy);
-	snake->setParentSampler(this);
 }
 
 void Sampler::setupGrid()

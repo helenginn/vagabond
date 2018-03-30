@@ -72,7 +72,6 @@ public:
 
 	void setupGrid();
 	void setupNelderMead();
-	void setupSnake();
 
 	void setJointSampling()
 	{

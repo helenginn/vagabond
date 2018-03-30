@@ -54,8 +54,6 @@ public:
 	void initialize();
 	void activate(AtomGroupPtr group = AtomGroupPtr(),
 	              AtomPtr inherit = AtomPtr());
-	void setupSampling();
-	std::vector<AtomPtr> importantAtoms();
 	ModelPtr reverse(BondPtr upstreamBond);
 	void reverseDownstreamAtoms(int group);
 	void resetBondDirection();

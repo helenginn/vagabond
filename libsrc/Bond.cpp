@@ -1305,23 +1305,6 @@ double Bond::getMeanSquareDeviation()
 	return _isotropicAverage * 8 * M_PI * M_PI;
 }
 
-std::vector<AtomPtr> Bond::importantAtoms()
-{
-	std::vector<AtomPtr> atoms;
-
-	for (int i = 0; i < downstreamAtomCount(_activeGroup); i++)
-	{
-		atoms.push_back(downstreamAtom(_activeGroup, i));
-	}
-
-	for (int i = 0; i < extraTorsionSampleCount(_activeGroup); i++)
-	{
-		atoms.push_back(extraTorsionSample(_activeGroup, i));
-	}
-
-	return atoms;
-}
-
 void Bond::resetBondDirection()
 {
 	vec3 majorPos = getMajor()->getPosition();
@@ -1337,18 +1320,6 @@ void Bond::resetBondDirection()
 
 	_bondDirection = vec3_subtract_vec3(majorPos, minorPos);
 	vec3_set_length(&_bondDirection, _bondLength);
-}
-
-void Bond::setupSampling()
-{
-	setupGrid();
-	ModelPtr model = shared_from_this();
-	BondPtr bond = boost::static_pointer_cast<Bond>(model);
-	setJobName("bond_" + shortDesc());
-	setSilent(true);
-
-	addTorsion(bond, deg2rad(5), deg2rad(0.4));
-	addSampled(importantAtoms());
 }
 
 void Bond::reverseDownstreamAtoms(int group)
