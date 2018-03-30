@@ -64,7 +64,7 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 	SidechainPtr sidechain = monomer->getSidechain();
 	if (sidechain && rType == RefinementFine)
 	{
-		addIncludeForRefinement(sidechain);
+//		addIncludeForRefinement(sidechain);
 	}
 
 	AtomGroup::refine(target, rType);
