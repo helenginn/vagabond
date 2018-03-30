@@ -430,18 +430,22 @@ void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real
 			for (int k = 0; k < 3; k++)
 			{
 				double sz = z + shifts[k];
+				long lx = lrint(sx);
+				long ly = lrint(sy);
+				long lz = lrint(sz);
 				
-				vec3 svec = make_vec3(shifts[i], shifts[j], shifts[k]);
-				double length = vec3_length(svec);
+				int moves = fabs(shifts[i]) + fabs(shifts[j]) + fabs(shifts[k]) + 0.5;
 				
-				long index = element(sx + 0.5, sy + 0.5, sz + 0.5);
-				data[index][0] += real / 2.5;
+				float factor = 1;
+				
+				factor = normal_distribution(moves, 1.);
+
+				long index = element(lx, ly, lz);
+
+				data[index][0] += real * factor;
 			}
 		}
 	}
-
-	long index = element(x + 0.5, y + 0.5, z + 0.5);
-	data[index][0] += real / 2;
 }
 
 void FFT::multiplyAll(float value)
