@@ -6,6 +6,14 @@
 //  Copyright (c) 2017 Strubi. All rights reserved.
 //
 
+/**
+ * \class Bond
+ *
+ * The Bond class is the most complex type of Model, which controls an Atom.
+ *
+ */
+
+
 #ifndef __vagabond__Bond__
 #define __vagabond__Bond__
 
@@ -209,6 +217,11 @@ public:
 		bond->propagateChange(20);
 	}
 
+	/**
+	* 	Returns the bond angle for a bond, between upstream->major->minor.
+	*   \param object C pointer to the bond object, cast as void *.
+	* 	\return angle in radians.
+	*/
 	static double getBendAngle(void *object);
 	static void setBendAngle(void *object, double value);
 
