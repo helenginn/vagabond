@@ -48,7 +48,7 @@ public:
 	virtual void setMessage(std::string message);
 	virtual void wakeup();
 protected:
-	virtual void resizeEvent(QResizeEvent *event);
+	virtual void resizeEvent(QResizeEvent *);
 private slots:
 	void pushSuperimpose();
 	void pushFitWholeR();
