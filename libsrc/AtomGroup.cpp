@@ -648,12 +648,15 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 	}
 
 	double scale = scale_factor_cutoff(xs, ys, cutoff);
-	cutoff /= scale;	
 
-	for (int i = 0; i < ys.size(); i++)
+	if (scoreType == ScoreTypeRFactor)
 	{
-		ys[i] /= scale;
-		vals[i].fc /= scale;
+		cutoff /= scale;	
+		for (int i = 0; i < ys.size(); i++)
+		{
+			ys[i] /= scale;
+			vals[i].fc /= scale;
+		}
 	}
 
 	/* Debugging ... writes cc_score.csv and cc_score.png, csv can be
