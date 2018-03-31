@@ -14,6 +14,8 @@
 #include "Shouter.h"
 #include "CSV.h"
 
+typedef std::map<int, double> DensityScoreMap;
+
 BoneDensity::BoneDensity()
 {
 
@@ -24,26 +26,53 @@ void BoneDensity::analyse()
 {
 	/* Check everything is set that needs setting */
 	validate();
-	
-	/* Scale entire map to the backbone density */
-	AtomGroupPtr allBones = _polymer->getAllBackbone();
-	allBones->scoreWithMap(ScoreTypeScaleOnly, _crystal);
+
+	std::cout << "Backbone density analysis" << std::endl;
 
 	/* Score gradient of every monomer */
 	
+	DensityScoreMap densityMap;
 	CSVPtr csv = CSVPtr(new CSV(2, "resnum", "gradient"));
+	double sum = 0;
+	double count = 0;
 	
 	for (int i = 0; i < _polymer->monomerCount(); i++)
 	{
-		MonomerPtr monomer = _polymer->getMonomer(i);
-		if (!monomer)
+		AtomGroupPtr trio = AtomGroupPtr(new AtomGroup());
+			
+		for (int j = -1; j < 2; j++)
+		{
+			MonomerPtr monomer = _polymer->getMonomer(i + j);
+			if (!monomer)
+			{
+				continue;	
+			}
+			
+			trio->addAtomsFrom(monomer);
+		}
+		
+		if (trio->atomCount() == 0)
 		{
 			continue;	
 		}
 		
-		double gradient = monomer->scoreWithMap(ScoreTypeMultiply, _crystal);
+		double gradient = -trio->scoreWithMap(ScoreTypeMultiply, _crystal);
 		csv->addEntry(2, (double)i, gradient);
+		sum += gradient;
+		count++;
 	}
+	
+	sum /= count;
+	
+	for (int i = 0; i < csv->entryCount(); i++)
+	{
+		double grad = csv->valueForEntry("gradient", i);
+		grad /= sum;
+		csv->setValueForEntry(i, "gradient", grad);
+		densityMap[i] = grad;
+	}
+	
+	std::cout << "Weighted sum of map voxels for monomer trios." << std::endl;
 	
 	std::map<std::string, std::string> plotMap;
 	plotMap["filename"] = "gradients";
@@ -56,6 +85,17 @@ void BoneDensity::analyse()
 	plotMap["style0"] = "line";
 
 	csv->writeToFile("gradients.csv");
+	csv->plotPNG(plotMap);
+
+	int anchor = _polymer->getAnchor();
+	
+	if (densityMap.count(anchor) == 0)
+	{
+		shout_at_helen("Somehow, the density anchor is missing during/n"\
+		               "backbone density analysis.");
+	}
+	
+	std::cout << "Anchor for chain " << _polymer->getChainID() << " has score: " << densityMap[anchor] << std::endl;
 }
 
 
