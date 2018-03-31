@@ -155,10 +155,10 @@ double weightedMapScore(std::vector<double> &vec1, std::vector<double> &vec2)
 			continue;
 		}
 
-		double addition = vec1[i] * vec2[i];
-		double weight = vec2[i] * vec2[i];
+		double addition = vec1[i];
+		double weight = vec2[i];
 
-		sum_xy += addition;
+		sum_xy += addition * weight;
 		sum_weight += weight;
 	}
 
