@@ -17,7 +17,6 @@
 #include "maths.h"
 #include "Shouter.h"
 #include "../libccp4/ccp4_spg.h"
-#include "FlexRegion.h"
 #include "Options.h"
 
 AtomPtr AtomGroup::findAtom(std::string atomType)
@@ -416,12 +415,6 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		degrees = 4;
 		break;
 
-		case RefinementFlexibility:
-		scoreType = ScoreTypeModelPos;
-		maxTries = 3;
-		degrees = 4;
-		break;
-
 		default:
 		shout_at_helen("Unimplemented refinement option?");
 		break;
@@ -465,23 +458,6 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 
 			for (int k = 0; k < bond->downstreamAtomGroupCount(); k++)
 			{
-				while (rType == RefinementFlexibility && count < maxTries)
-				{
-					FlexRegion flexer;
-					flexer.setup();
-					flexer.addBond(ToBondPtr(bond), 8);
-					flexer.addSingleBondParameters();
-					flexer.sample();
-					count++;
-				}
-
-				if (rType == RefinementFlexibility)
-				{
-					rType = RefinementModelPos;
-					count = 0;
-					maxTries = 60;
-				}
-
 				bool changed = true;
 				bool addFlex = (rType == RefinementFine);
 

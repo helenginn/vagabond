@@ -209,10 +209,6 @@ void VagWindow::waitForInstructions()
             case InstructionTypeRefinePositions:
             options->refineAll(RefinementModelPos, 1);
             break;
-            
-            case InstructionTypeRefineFlexibility:
-            options->refineAll(RefinementFlexibility, 1);
-            break;
 
             case InstructionTypeFitWholeMoleculeTranslation: 
             options->fitWholeMolecule(true, false);

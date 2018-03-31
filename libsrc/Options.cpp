@@ -128,7 +128,6 @@ void Options::run()
 			if (!_manual)
 			{
 				refineAll(RefinementModelPos, 3, &count);
-				refineAll(RefinementFlexibility, 20, &count);
 				refineAll(RefinementModelPos, 3, &count);
 				refineAll(RefinementFine, _numCycles, &count);
 			}
@@ -673,8 +672,6 @@ std::string Options::rTypeString(RefinementType type)
 		return "Torsions against PDB positions";
 		case RefinementFine:
 		return "Torsions against electron density";
-		case RefinementFlexibility:
-		return "Flexibility against PDB";
 		default:
 		return "Unknown";
 	}

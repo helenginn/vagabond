@@ -27,7 +27,6 @@ typedef enum
 	RefinementSidechain = 2,
 	RefinementModelRMSDZero = 3,
 	RefinementModelPos = 4,
-	RefinementFlexibility = 5,
 } RefinementType;
 
 typedef enum
