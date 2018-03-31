@@ -25,6 +25,7 @@
 #include "Atom.h"
 #include "Kabsch.h"
 #include "RefinementGridSearch.h"
+#include "BoneDensity.h"
 
 #include "../libccp4/cmtzlib.h"
 #include "../libccp4/csymlib.h"
@@ -786,8 +787,9 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 			polymer->closenessSummary();
 		}
 	}
-
+	
 	writeVagabondFile(cycleNum);
+	backboneDensityAnalysis();
 
 	return rFac;
 }
@@ -856,6 +858,15 @@ std::string Crystal::agreementSummary()
 	ss << "Rwork/free: " << _rWork * 100 << ", " << _rFree * 100 << "%; ";
 	ss << "CCwork/free: " << _ccWork << ", " << _ccFree << std::endl;
 	return ss.str();
+}
+
+void Crystal::backboneDensityAnalysis()
+{
+	BoneDensity density;
+	density.setCrystal(shared_from_this());
+	PolymerPtr polymer = ToPolymerPtr(molecule(0));
+	density.setPolymer(polymer);
+	density.analyse();
 }
 
 void Crystal::fitWholeMolecules(bool translation, bool rotation)

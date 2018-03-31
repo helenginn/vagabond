@@ -262,6 +262,10 @@ public:
 	* 	\param translation if true, will refine translation parameters
 	* 	\param rotation if true, will refine rotation parameters. */
 	void fitWholeMolecules(bool translation = false, bool rotation = true);
+	
+	
+	/** Analysis of backbone density and generation of heuristics */
+	void backboneDensityAnalysis();
 protected:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual std::string getParserIdentifier()
