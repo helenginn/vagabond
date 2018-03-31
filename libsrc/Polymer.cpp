@@ -406,8 +406,8 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 
 void Polymer::graph(std::string graphName)
 {
-	CSVPtr csv = CSVPtr(new CSV(6, "resnum", "newB", "oldB",
-	                            "pos", "sidepos", "ellipsoid"));
+	CSVPtr csv = CSVPtr(new CSV(5, "resnum", "newB", "oldB",
+	                            "pos", "sidepos"));
 	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB"));
@@ -441,19 +441,12 @@ void Polymer::graph(std::string graphName)
 		{
 			BondPtr caBond = boost::static_pointer_cast<Bond>(caModel);
 			double meanSq = caBond->getMeanSquareDeviation();
-			vec3 origEllipsoid = ca->getEllipsoidLongestAxis();
-			vec3 newEllipsoid = caBond->longestAxis();
-			double angleBetween = vec3_angle_with_vec3(newEllipsoid, origEllipsoid);
-			if (angleBetween > deg2rad(90))
-			{
-				angleBetween -= deg2rad(90);
-			}
 
 			double posDisp = ca->posDisplacement();
 			double sideDisp = sidechain->getAverageDisplacement();
 
-			csv->addEntry(6, value, meanSq, ca->getInitialBFactor(),
-			              posDisp, sideDisp, rad2deg(angleBetween));
+			csv->addEntry(5, value, meanSq, ca->getInitialBFactor(),
+			              posDisp, sideDisp);
 			caDampen = Bond::getDampening(&*caBond);
 			caBlur = Bond::getTorsionBlur(&*caBond);
 
@@ -499,25 +492,6 @@ void Polymer::graph(std::string graphName)
 
 	csv->plotPNG(plotMap);
 	csv->writeToFile(graphName + ".csv");
-
-	{
-		std::map<std::string, std::string> plotMap;
-		plotMap["height"] = "700";
-		plotMap["width"] = "1200";
-		plotMap["xHeader0"] = "resnum";
-		plotMap["colour0"] = "black";
-		plotMap["colour1"] = "red";
-		plotMap["yMin0"] = "0";
-		plotMap["yMax0"] = "180";
-
-		plotMap["xTitle0"] = "Residue number";
-		plotMap["style0"] = "line";
-		plotMap["filename"] = "ellipsoid_" + graphName;
-		plotMap["yHeader0"] = "ellipsoid";
-		plotMap["yTitle0"] = "Ellipsoid angle";
-
-		csv->plotPNG(plotMap);
-	}
 
 	{
 		std::map<std::string, std::string> plotMap;
