@@ -1256,8 +1256,25 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	double bFac = getAverageBFactor();
 	
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	AtomGroupPtr allBackbone = getAllBackbone();
+
+	FlexGlobal target;
+	target.setAtomGroup(allBackbone);
+	target.matchOriginalBees();
+	target.setCrystal(crystal);
+	target.matchElectronDensity();
+	nelderMead->setEvaluationFunction(FlexGlobal::score, &target);
+	nelderMead->refine();
+}
+
+AtomGroupPtr Polymer::getAllBackbone()
+{
+	if (_allBackbones)
+	{
+		return _allBackbones;
+	}
 	
-	AtomGroupPtr allBackbone = AtomGroupPtr(new AtomGroup());
+	_allBackbones = AtomGroupPtr(new AtomGroup());
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -1269,17 +1286,11 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 		BackbonePtr bone = getMonomer(i)->getBackbone();
 		if (bone)
 		{
-			allBackbone->addAtomsFrom(bone);
+			_allBackbones->addAtomsFrom(bone);
 		}
 	}
-
-	FlexGlobal target;
-	target.setAtomGroup(allBackbone);
-	target.matchOriginalBees();
-	target.setCrystal(crystal);
-	target.matchElectronDensity();
-	nelderMead->setEvaluationFunction(FlexGlobal::score, &target);
-	nelderMead->refine();
+	
+	return _allBackbones;
 }
 
 void Polymer::addProperties()

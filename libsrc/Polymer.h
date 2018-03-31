@@ -249,6 +249,8 @@ public:
 	virtual void addProperties();
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();
+	
+	AtomGroupPtr getAllBackbone();
 protected:
 	virtual double getScore()
 	{
@@ -282,6 +284,8 @@ private:
 	void minimiseCentroids();
 	void minimiseRotations();
 	void applyTranslationTensor();
+
+	AtomGroupPtr _allBackbones;
 
 };
 
