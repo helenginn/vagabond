@@ -15,7 +15,6 @@
 #include <math.h>
 #include <fstream>
 #include <time.h>
-#include "BucketUniform.h"
 #include "Shouter.h"
 #include "Diffraction.h"
 #include "Polymer.h"
