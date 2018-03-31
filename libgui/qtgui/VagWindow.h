@@ -47,6 +47,12 @@ public:
 
 	virtual void setMessage(std::string message);
 	virtual void wakeup();
+	
+	InstructionThread *getInstructionThread()
+	{
+		return &_instructionThread;	
+	}
+	
 protected:
 	virtual void resizeEvent(QResizeEvent *);
 private slots:

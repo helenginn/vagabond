@@ -278,6 +278,14 @@ void VagWindow::waitForInstructions()
             break;
         }
         
+		InstructionThread *thread = NULL;
+		thread =  static_cast<InstructionThread *>(QThread::currentThread());
+
+		if (thread->shouldDie())
+		{
+			QThread::currentThread()->exit(0);
+		}
+
 		display->setFocus();
         mutex.unlock();
     }

@@ -38,5 +38,12 @@ int main(int argc, char * argv[])
 	VagWindow window(NULL, argc, argv);
 	window.show();
 
-	return app.exec();
+	int status = app.exec();
+	
+	if (status == 0)
+	{
+		InstructionThread *thread = window.getInstructionThread();
+	}
+	
+	return status;
 }

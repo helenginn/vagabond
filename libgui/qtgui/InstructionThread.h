@@ -10,12 +10,12 @@ class InstructionThread : public QThread
 public:
     InstructionThread() : QThread(NULL)
     {
-    
+    	_mustDie = false;
     }
 
 	InstructionThread(QObject *object) : QThread(object)
 	{
-	
+    	_mustDie = false;
 	}
     
     void run();
@@ -25,8 +25,18 @@ public:
         _window = window;
     }
 
+	void setShouldDie()
+	{
+		_mustDie = true;
+	}
+	
+	bool shouldDie()
+	{
+		return _mustDie;	
+	}
 private:
     VagWindow *_window;
+	bool _mustDie;
 };
 
 #endif
