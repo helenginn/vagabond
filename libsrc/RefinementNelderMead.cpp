@@ -19,10 +19,29 @@
 
 #include "RefinementNelderMead.h"
 #include <algorithm>
+#include <iostream>
 
-bool converged()
+bool NelderMead::converged()
 {
-	return false;
+	for (int i = 0; i < getters.size(); i++)
+	{
+		double limit = otherValues[i];
+		
+		if (_stepMap.count(i) == 0)
+		{
+			return false;	
+		}
+		
+		double lastDiff = _stepMap[i];
+		
+		if (lastDiff > limit)
+		{
+			_lastTag = tags[i];
+			return false;	
+		}
+	}
+	
+	return true;
 }
 
 void NelderMead::addPoints(std::vector<double> *point, std::vector<double> pointToAdd)
@@ -92,6 +111,11 @@ TestPoint NelderMead::reflectOrExpand(std::vector<double> centroid, double scale
 	scalePoint(&diffVec, scale);
 	std::vector<double> reflectedVec = centroid;
 	addPoints(&reflectedVec, diffVec);
+	
+	for (int i = 0; i < getters.size(); i++)
+	{
+		_stepMap[i] = fabs(diffVec[i]);
+	}
 
 	TestPoint reflection = std::make_pair(reflectedVec, 0);
 	evaluateTestPoint(&reflection);

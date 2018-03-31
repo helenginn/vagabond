@@ -73,11 +73,11 @@ void Sampler::addParamsForBond(BondPtr bond)
 		switch (option)
 		{
 			case ParamOptionTorsion:
-			addTorsion(bond, deg2rad(range), 0.001);
+			addTorsion(bond, deg2rad(range), deg2rad(0.01));
 			break;
 
 			case ParamOptionKick:
-			addTorsionBlur(bond, range, 0.001);
+			addTorsionBlur(bond, range, 0.01);
 			break;
 
 			case ParamOptionDampen:
@@ -85,7 +85,7 @@ void Sampler::addParamsForBond(BondPtr bond)
 			break;
 
 			case ParamOptionMagicAngles:
-			addMagicAngle(bond, deg2rad(range), 0.001);
+			addMagicAngle(bond, deg2rad(range), deg2rad(0.1));
 			break;
 
 			default:
@@ -545,7 +545,7 @@ bool Sampler::sample(bool clear)
 	if (_scoreType == ScoreTypeModelPos)
 	{
 		int paramCount = _strategy->parameterCount();
-		int cycles = paramCount * 1;
+		int cycles = paramCount / 2;
 		if (cycles < 10) cycles = 10;
 
 		_strategy->setCycles(cycles);

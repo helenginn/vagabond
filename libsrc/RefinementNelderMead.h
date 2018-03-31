@@ -23,8 +23,10 @@
 #include <stdio.h>
 #include "shared_ptrs.h"
 #include "RefinementStrategy.h"
+#include <map>
 
 typedef std::pair<std::vector<double>, double> TestPoint;
+typedef std::map<int, double> StepMap;
 
 class NelderMead : public RefinementStrategy
 {
@@ -33,6 +35,9 @@ private:
 	double gamma;
 	double rho;
 	double sigma;
+	
+	StepMap _stepMap;
+	std::string _lastTag;
 
 	std::vector<TestPoint> testPoints;
 
@@ -49,6 +54,7 @@ private:
 	TestPoint expandedPoint(std::vector<double> centroid);
 	TestPoint contractedPoint(std::vector<double> centroid);
 	void reduction();
+	bool converged();
 
 	void addPoints(std::vector<double> *point, std::vector<double> pointToAdd);
 	void scalePoint(std::vector<double> *point, double scale);
