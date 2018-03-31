@@ -249,7 +249,6 @@ protected:
 	* Crystal).
 	*/
 	void writeToFile(std::ofstream &stream, int indent);
-	void clearContents();
 
 	static ParserPtr resolveReference(std::string reference);
 private:
@@ -276,6 +275,7 @@ private:
 	bool _setup;
 
 	void outputContents(std::ofstream &stream, int in);
+	void clearContents();
 	void setParent(Parser *parent);
 	static ParserPtr objectOfType(char *className);
 	bool parseNextChunk(char **blockPtr);
