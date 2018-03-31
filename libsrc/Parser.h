@@ -227,6 +227,8 @@ protected:
 	*/
 	virtual void postParseTidy() {};
 
+	/** \name Adding property functions */
+	/**@{*/
 	void addStringProperty(std::string className, std::string *ptr);
 	void addDoubleProperty(std::string className, double *ptr);
 	void addIntProperty(std::string className, int *ptr);
@@ -240,7 +242,12 @@ protected:
 	void addReference(std::string category, ParserPtr cousin);
 	void addVec3ArrayProperty(std::string className, std::vector<vec3> *ptr);
 	void addMat3x3ArrayProperty(std::string className, std::vector<mat3x3> *ptr);
+	/**@}*/
 
+	/**
+	* Top level object should be called to write to a stream (usually a
+	* Crystal).
+	*/
 	void writeToFile(std::ofstream &stream, int indent);
 	void clearContents();
 
