@@ -10,7 +10,16 @@
 #define __vagabond__BoneDensity__
 
 #include <map>
+#include <vector>
 #include "shared_ptrs.h"
+#include "Sampler.h"
+
+typedef struct
+{
+	int startRes;
+	int endRes;
+	RefinementType rType;
+} BackboneInstruction;
 
 /**
  * \class BoneDensity
@@ -35,6 +44,16 @@ public:
 	{
 		_polymer = polymer;
 	}
+	
+	size_t instructionCount()
+	{
+		return _instructions.size();
+	}
+	
+	BackboneInstruction instruction(int i)
+	{
+		return _instructions[i];
+	}
 private:
 	void validate();
 	void perMonomerScores();
@@ -42,6 +61,8 @@ private:
 	void createRefinementStrategies();
 	DensityScoreMap _densityMap;
 	DensityScoreMap _summaryMap;
+	
+	std::vector<BackboneInstruction> _instructions;
 	
 	CrystalPtr _crystal;
 	PolymerPtr _polymer;

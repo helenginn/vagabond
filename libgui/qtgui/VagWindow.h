@@ -60,6 +60,7 @@ private slots:
 	void pushRefineDensity();
 	void recalculateFFT();
 	void findDisulphides();
+	void pushBackboneAnalysis();
 
 	void openModel();
 	void openMTZ();
@@ -86,6 +87,7 @@ private:
 	QPushButton *bSuperimpose;
 	QPushButton *bRefinePos;
 	QPushButton *bRefineFlex;
+	QPushButton *bBackbone;
 	QPushButton *bChangeBMult;
 	QPushButton *bExploreMolecule;
 	QPushButton *bRecalculate;

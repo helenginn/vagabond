@@ -128,6 +128,7 @@ public:
 
 	void statusMessage(std::string message);
 	void agreementSummary();
+	void backboneAnalysis();
 	void refineAll(RefinementType type, int numCycles, int *count = NULL,
 	               bool keepGoing = false);
 	void superimposeAll(CrystalPtr crystal = CrystalPtr());

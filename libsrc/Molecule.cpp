@@ -17,6 +17,8 @@
 #include "mat3x3.h"
 #include "Options.h"
 #include "CSV.h"
+#include "Sidechain.h"
+#include "Monomer.h"
 
 Molecule::Molecule()
 {

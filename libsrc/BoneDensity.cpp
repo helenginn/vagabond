@@ -14,7 +14,6 @@
 #include "Shouter.h"
 #include "CSV.h"
 #include "polyfit.h"
-#include "Sampler.h"
 
 BoneDensity::BoneDensity()
 {
@@ -56,16 +55,22 @@ void BoneDensity::createRefinementStrategies()
 			         RefinementModelRMSDZero);
 
 			int refineEnd = i + skip * 3;
-
-			std::cout << "Refining from " << refineStart << " to " <<
-			refineEnd << " using strategy " << rType << std::endl;
 			
-			refineStart = i - skip * 3;
+			BackboneInstruction inst;
+			inst.startRes = refineStart;
+			inst.endRes = refineEnd;
+			inst.rType = rType;
+			_instructions.push_back(inst);
+			
+			refineStart = i - skip * 1;
 		}
 		
-		std::cout << "Refining from " << refineStart << " to " <<
-		end << " using strategy " << lastR << std::endl;
-		
+		BackboneInstruction inst;
+		inst.startRes = refineStart;
+		inst.endRes = end;
+		inst.rType = lastR;
+		_instructions.push_back(inst);
+
 		stage++;
 	}
 }
@@ -74,6 +79,9 @@ void BoneDensity::analyse()
 {
 	/* Check everything is set that needs setting */
 	validate();
+	_densityMap.clear();
+	_summaryMap.clear();
+	_instructions.clear();
 
 	std::cout << "*************************" << std::endl;
 	std::cout << "Backbone density analysis" << std::endl;
@@ -98,7 +106,6 @@ void BoneDensity::findInflections()
 	double biggestVal = 0;
 	int biggestResidue = 0;
 	
-
 	for (int i = window; i < _polymer->monomerCount() - window; i++)
 	{
 		for (int j = -window; j <= window; j++)
@@ -156,9 +163,6 @@ void BoneDensity::findInflections()
 			if (run >= 4)
 			{
 				direction = prevDir;
-
-				std::string verdict = (direction > 0) ? "Not disordered enough at " : "Not compact enough at ";
-				std::cout << verdict << biggestResidue << std::endl;
 				_summaryMap[biggestResidue] = biggestVal * direction;
 
 				run = 0;

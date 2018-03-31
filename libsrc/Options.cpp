@@ -435,6 +435,17 @@ void Options::outputCrystalInfo()
 	shout_at_user("Sorry I do actually need a data set.");
 }
 
+void Options::backboneAnalysis()
+{
+	notifyGUI(false);
+
+	getActiveCrystal()->backboneDensityAnalysis();
+	statusMessage("Refining via backbone-derived plan.");
+
+	notifyGUI(true);
+	statusMessage("Ready.");
+}
+
 void Options::refineAll(RefinementType type, int numCycles, int *count, bool keepGoing)
 {
 	notifyGUI(false);

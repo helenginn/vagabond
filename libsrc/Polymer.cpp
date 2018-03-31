@@ -180,7 +180,18 @@ void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 {
 	int start = monNum;
 	int end = (monNum < _anchorNum) ? -1 : monomerCount();
-	int skip = (monNum < _anchorNum) ? -1 : 1;
+	
+	refineRange(start, end, target, rType);
+}
+
+void Polymer::refineRange(int start, int end, CrystalPtr target, RefinementType rType)
+{
+	int skip = (start < _anchorNum) ? -1 : 1;
+	if ((_anchorNum > start && _anchorNum < end) ||
+	    (_anchorNum > end && _anchorNum < start))
+	{
+		shout_at_helen("Trying to refine a range which straddles the anchor.");	
+	}
 
 	int count = 0;
 	double startCCAve = 0;
@@ -242,6 +253,8 @@ void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 		copyParams(monomer->getSidechain());
 		copyParams(monomer->getBackbone());
 		refineMonomer(monomer, target, rType);
+		monomer->getSidechain()->clearParams();
+		monomer->getBackbone()->clearParams();
 
 		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);	
 		double pre = preScores[monomer];

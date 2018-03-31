@@ -69,41 +69,39 @@ void VagWindow::makeButtons()
     connect(bRefinePos, SIGNAL(clicked()), this, SLOT(pushRefinePositions()));
 	buttons.push_back(bRefinePos);
 
-	/*
-    bRefineFlex = new QPushButton("Refine flexibility to PDB", this);
-    bRefineFlex->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 150, BUTTON_WIDTH , 50);
-    bRefineFlex->setEnabled(false);
-    connect(bRefineFlex, SIGNAL(clicked()), this, SLOT(pushRefineFlexibility()));
-	buttons.push_back(bRefineFlex);
-	*/
+    bBackbone = new QPushButton("Refine backbone", this);
+    bBackbone->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 150, BUTTON_WIDTH , 50);
+    bBackbone->setEnabled(false);
+    connect(bBackbone, SIGNAL(clicked()), this, SLOT(pushBackboneAnalysis()));
+	buttons.push_back(bBackbone);
 
     bRefineDensity = new QPushButton("Refine sidechains to density", this);
-    bRefineDensity->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 150, BUTTON_WIDTH , 50);
+    bRefineDensity->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 200, BUTTON_WIDTH , 50);
     bRefineDensity->setEnabled(false);
     connect(bRefineDensity, SIGNAL(clicked()), this, SLOT(pushRefineDensity()));
 	buttons.push_back(bRefineDensity);
 
     bRecalculate = new QPushButton("Recalculate FFT", this);
-    bRecalculate->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 200, BUTTON_WIDTH , 50);
+    bRecalculate->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 250, BUTTON_WIDTH , 50);
     bRecalculate->setEnabled(false);
     connect(bRecalculate, SIGNAL(clicked()), this, SLOT(recalculateFFT()));    
 	buttons.push_back(bRecalculate);
 
     bChangeBMult = new QPushButton("Set hetatm B multiplier", this);
-    bChangeBMult->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 250, BUTTON_WIDTH , 50);
+    bChangeBMult->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 300, BUTTON_WIDTH , 50);
     bChangeBMult->setEnabled(false);
     connect(bChangeBMult, SIGNAL(clicked()), this, SLOT(pushBMultiplier()));
 	buttons.push_back(bChangeBMult);
     
     bFindSS = new QPushButton("Find disulphides", this);
-    bFindSS->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 300, BUTTON_WIDTH , 50);
+    bFindSS->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 350, BUTTON_WIDTH , 50);
     bFindSS->setEnabled(false);
     connect(bFindSS, SIGNAL(clicked()), this, SLOT(findDisulphides()));
 	buttons.push_back(bFindSS);
     
     
     bExploreMolecule = new QPushButton("Explore molecule", this);
-    bExploreMolecule->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 350, BUTTON_WIDTH , 50);
+    bExploreMolecule->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 400, BUTTON_WIDTH , 50);
     bExploreMolecule->setEnabled(false);
     bExploreMolecule->setMenu(new QMenu(this));
 	buttons.push_back(bExploreMolecule);
@@ -209,6 +207,10 @@ void VagWindow::waitForInstructions()
             case InstructionTypeRefinePositions:
             options->refineAll(RefinementModelPos, 1);
             break;
+
+			case InstructionTypeBackboneAnalysis:
+			options->backboneAnalysis();
+			break;
 
             case InstructionTypeFitWholeMoleculeTranslation: 
             options->fitWholeMolecule(true, false);
@@ -400,6 +402,12 @@ void VagWindow::pushRefineDensity()
 void VagWindow::recalculateFFT()
 {
     _instructionType = InstructionTypeRecalculateFFT;
+    wait.wakeAll();
+}
+
+void VagWindow::pushBackboneAnalysis()
+{
+    _instructionType = InstructionTypeBackboneAnalysis;
     wait.wakeAll();
 }
 

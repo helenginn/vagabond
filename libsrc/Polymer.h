@@ -63,6 +63,8 @@ public:
 
 	void applyPolymerChanges();
 	void refineToEnd(int monNum, CrystalPtr target, RefinementType rType);
+	void refineRange(int start, int end, 
+	                 CrystalPtr target, RefinementType rType);
 	bool test();
 	ModelPtr getAnchorModel();
 	void changeAnchor(int num);

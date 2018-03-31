@@ -792,7 +792,6 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	}
 	
 	writeVagabondFile(cycleNum);
-	backboneDensityAnalysis();
 
 	return rFac;
 }
@@ -865,11 +864,53 @@ std::string Crystal::agreementSummary()
 
 void Crystal::backboneDensityAnalysis()
 {
-	BoneDensity density;
-	density.setCrystal(shared_from_this());
-	PolymerPtr polymer = ToPolymerPtr(molecule(0));
-	density.setPolymer(polymer);
-	density.analyse();
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+
+		BoneDensity density;
+		density.setCrystal(shared_from_this());
+		PolymerPtr polymer = ToPolymerPtr(molecule(i));
+		density.setPolymer(polymer);
+		density.analyse();
+		
+		for (int j = 0; j < density.instructionCount(); j++)
+		{
+			BackboneInstruction inst = density.instruction(j);
+
+			std::cout << "Refining from " << inst.startRes << " to " <<
+			inst.endRes << " by ";
+			std::cout << (inst.rType == RefinementFine ? "correlation."
+			: "squeezing.") << std::endl;
+			polymer->clearParams();
+
+			switch (inst.rType)
+			{
+				case RefinementFine:
+				polymer->addParamType(ParamOptionTorsion, 0.02);
+				polymer->addParamType(ParamOptionKick, 0.05);
+				polymer->addParamType(ParamOptionMagicAngles, 3);
+				polymer->addParamType(ParamOptionNumBonds, 8);
+				break;
+				
+				case RefinementModelRMSDZero:
+				polymer->addParamType(ParamOptionTorsion, 0.02);
+				polymer->addParamType(ParamOptionDampen, 0.01);
+				polymer->addParamType(ParamOptionMagicAngles, 3);
+				polymer->addParamType(ParamOptionNumBonds, 12);
+				break;
+				
+				default:
+				break;
+			}
+			
+			polymer->refineRange(inst.startRes, inst.endRes,
+			                     shared_from_this(), inst.rType);
+		}
+	}
 }
 
 void Crystal::fitWholeMolecules(bool translation, bool rotation)

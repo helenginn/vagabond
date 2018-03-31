@@ -403,7 +403,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 
 		case RefinementFine:
 		scoreType = ScoreTypeCorrel;
-		maxTries = 4;
+		maxTries = 3;
 		degrees = 4;
 		bondNum = 3;
 		refineAngles = false;
