@@ -268,6 +268,15 @@ std::vector<AtomPtr> Molecule::getCloseAtoms(AtomPtr one, double tol, bool cache
 		{
 			continue;
 		}
+		
+		if (atom(i)->getMonomer())
+		{
+			SidechainPtr side = atom(i)->getMonomer()->getSidechain();
+			if (side->isRotamerised())
+			{
+				continue;	
+			}
+		}
 
 		if (!one->closeToAtom(atom(i)))
 		{

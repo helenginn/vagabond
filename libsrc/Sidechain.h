@@ -53,6 +53,11 @@ public:
 	{
 		return (_timesRefined > 0);
 	}
+	
+	bool isRotamerised()
+	{
+		return _rotamerised;	
+	}
 
 	void setInitialDampening();
 	void fixBackboneTorsions(AtomPtr betaTorsion);
