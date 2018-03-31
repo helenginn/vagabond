@@ -610,7 +610,7 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 
 	for (int i = 0; i < selected.size(); i++)
 	{
-		std::vector<AtomPtr> clAtoms = crystal->getCloseAtoms(selected[i], 3.0);
+		std::vector<AtomPtr> clAtoms = crystal->getCloseAtoms(selected[i], 4.5);
 
 		for (int j = 0; j < clAtoms.size(); j++)
 		{
