@@ -82,3 +82,5 @@ ltmain.sh
 .qmake.stash
 missing
 
+# Documentation
+doc/
