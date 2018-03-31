@@ -712,6 +712,12 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 		double mult = weightedMapScore(xs, ys);
 		return -mult;
 	}
+	else if (scoreType == ScoreTypeScaleOnly)
+	{
+		/* Scale the map (x) to match the AtomGroup (y)!! */
+		double scale = scale_factor_cutoff(xs, ys, cutoff);
+		crystal->multiplyMap(scale);
+	}
 
 	return 0;
 }

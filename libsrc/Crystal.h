@@ -110,6 +110,9 @@ public:
 	{
 		return _difft;
 	}
+	
+	
+	void multiplyMap(double scale);
 
 	/** Calculates the anchor residue for each Polymer and assigns to each. */
 	void setAnchors();

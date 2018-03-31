@@ -383,6 +383,12 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 	}
 }
 
+void Crystal::multiplyMap(double scale)
+{
+	_fft->multiplyAll(scale);
+	_difft->multiplyAll(scale);
+}
+
 double Crystal::scaleSolventScore(void *object)
 {
 	return static_cast<Crystal *>(object)->scaleAndAddSolventScore();
