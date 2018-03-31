@@ -37,7 +37,6 @@ typedef enum
 	ScoreTypeModelRMSDZero = 3,
 	ScoreTypeModelPos = 4,
 	ScoreTypeModelFlexiness = 5,
-	ScoreTypeScaleOnly = 5,
 } ScoreType;
 
 typedef std::map<ParamOptionType, double> ParamMap;
