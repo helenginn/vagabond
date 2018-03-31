@@ -9,6 +9,7 @@
 #ifndef __vagabond__BoneDensity__
 #define __vagabond__BoneDensity__
 
+#include <map>
 #include "shared_ptrs.h"
 
 /**
@@ -16,6 +17,8 @@
  * \brief Analysis of backbone density and generation of heuristics (maybe)
  * for other parts of the program.
  */
+
+typedef std::map<int, double> DensityScoreMap;
 
 class BoneDensity
 {
@@ -34,6 +37,11 @@ public:
 	}
 private:
 	void validate();
+	void perMonomerScores();
+	void findInflections();
+	void createRefinementStrategies();
+	DensityScoreMap _densityMap;
+	DensityScoreMap _summaryMap;
 	
 	CrystalPtr _crystal;
 	PolymerPtr _polymer;

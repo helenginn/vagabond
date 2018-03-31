@@ -386,8 +386,12 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 
 void Crystal::multiplyMap(double scale)
 {
+	double current = _fft->averageAll();
+	std::cout << "Current average: " << current << std::endl;
 	_fft->multiplyAll(scale);
 	_difft->multiplyAll(scale);
+	current = _fft->averageAll();
+	std::cout << "New average: " << current << std::endl;
 }
 
 double Crystal::scaleSolventScore(void *object)
