@@ -558,6 +558,8 @@ double myTorsion, double ratio)
 	vec3 myCurrentPosAve = make_vec3(0, 0, 0);
 	vec3 nextCurrentPosAve = make_vec3(0, 0, 0);
 
+	/* This loop gets average positions for the previous, current and next
+	* atom positions */
 	for (int i = 0; i < prevs->size(); i++)
 	{
 		double torsionAngle = (*prevs)[i].torsion + circleAdd;
