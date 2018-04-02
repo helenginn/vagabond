@@ -73,7 +73,7 @@ void Sampler::addParamsForBond(BondPtr bond)
 		switch (option)
 		{
 			case ParamOptionTorsion:
-			addTorsion(bond, deg2rad(range), deg2rad(0.01));
+			addTorsion(bond, deg2rad(range), deg2rad(0.010));
 			break;
 
 			case ParamOptionKick:
@@ -81,11 +81,11 @@ void Sampler::addParamsForBond(BondPtr bond)
 			break;
 
 			case ParamOptionDampen:
-			addDampening(bond, range, 0.001);
+			addDampening(bond, range, 0.0001);
 			break;
 
 			case ParamOptionMagicAngles:
-			addMagicAngle(bond, deg2rad(range), deg2rad(0.1));
+			addMagicAngle(bond, deg2rad(range), deg2rad(0.10));
 			break;
 
 			default:
