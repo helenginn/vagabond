@@ -42,7 +42,7 @@ void BoneDensity::createRefinementStrategies()
 			}
 			
 			double value = _summaryMap[i];
-			if (value < 0 && abs(i - anchor) < 2)
+			if (value < 0 && abs(i - anchor) < 4)
 			{
 				std::cout << "Ignoring resi " << i << " - too close to "\
 				"anchor." << std::endl;
@@ -62,7 +62,7 @@ void BoneDensity::createRefinementStrategies()
 			inst.rType = rType;
 			_instructions.push_back(inst);
 			
-			refineStart = i - skip * 1;
+			refineStart = i - skip * 3;
 		}
 		
 		BackboneInstruction inst;
