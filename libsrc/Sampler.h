@@ -20,23 +20,23 @@
 /* More of an abstraction, but will take a series of (bond) parameters,
 * take a target function, and supply them to a refinement strategy. */
 
+/** Flags to set refinement strategies for a protein chain. */
 typedef enum
 {
-	RefinementBroad = 0,
-	RefinementFine = 1,
-	RefinementSidechain = 2,
-	RefinementModelRMSDZero = 3,
-	RefinementModelPos = 4,
-} RefinementType;
+	RefinementFine = 1, /** Refinement against electron density */
+	RefinementSidechain = 2, /** Sidechains against electron density */
+	RefinementModelRMSDZero = 3, /** Squeeze protein chain to PDB positions */
+	RefinementModelPos = 4, /** Positions to PDB positions */
+} RefinementType; 
 
+/** Scoring functions against map or PDB file */
 typedef enum
 {
-	ScoreTypeCorrel = 0,
-	ScoreTypeMultiply = 1,
-	ScoreTypeRFactor = 2,
-	ScoreTypeModelRMSDZero = 3,
-	ScoreTypeModelPos = 4,
-	ScoreTypeModelFlexiness = 5,
+	ScoreTypeCorrel = 0, /** Correlation between map and model density */
+	ScoreTypeMultiply = 1, /** Weighted (by model) sum of map voxels */
+	ScoreTypeRFactor = 2, /** R factor in real space for electron density */
+	ScoreTypeModelRMSDZero = 3, /** All ensemble positions against PDB */
+	ScoreTypeModelPos = 4, /** Average ensemble position against PDB */
 } ScoreType;
 
 typedef std::map<ParamOptionType, double> ParamMap;
