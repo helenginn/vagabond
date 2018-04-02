@@ -44,6 +44,11 @@ typedef enum
 	ParserTypeArray,
 } ParserType;
 
+typedef void (*Encoder)(void *, void *, std::ofstream &, int);
+typedef char *(*Decoder)(void *, void *, char *block);
+
+/** \cond SHOW_PARSER_PROPERTY_STRUCTS */
+
 typedef struct
 {
 	std::string *stringPtr;
@@ -86,14 +91,12 @@ typedef struct
 	std::string ptrName;
 } BoolProperty;
 
+
 typedef struct
 {
 	int *intPtr;
 	std::string ptrName;
 } IntProperty;
-
-typedef void (*Encoder)(void *, void *, std::ofstream &, int);
-typedef char *(*Decoder)(void *, void *, char *block);
 
 typedef struct
 {
@@ -103,6 +106,8 @@ typedef struct
 	Encoder encoder;
 	Decoder decoder;
 } CustomProperty;
+
+/** \endcond */
 
 inline std::string indent(int num)
 {

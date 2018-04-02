@@ -41,6 +41,8 @@ inline void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, float *resul
 	result[1] = 2 * comp1[0] * comp2[1];
 }
 
+/** \cond SHOW_FOURIER_DIMENSION */
+
 typedef struct
 {
 	int nx;
@@ -50,6 +52,10 @@ typedef struct
 	fftwf_plan iplan;
 } FourierDimension;
 
+/** \endcond */
+
+/** \cond SHOW_COORD_VAL */
+
 typedef struct
 {
 	vec3 pos;
@@ -57,6 +63,8 @@ typedef struct
 	double fc;
 	double mask;
 } CoordVal;
+
+/** \endcond */
 
 class FFT {
 

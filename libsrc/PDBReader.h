@@ -14,6 +14,12 @@
 #include "shared_ptrs.h"
 #include "vec3.h"
 
+/**
+ * \class PDBReader
+ * \brief Reads in a PDB file and generates a Vagabond-style definition of
+ * the contents.
+ */
+
 class PDBReader
 {
 public:

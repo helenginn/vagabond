@@ -15,8 +15,7 @@
 
 /**
  * \class Anisotropicator
- *
- * Class takes a bunch of points and performs SVD to recalculate a
+ * \brief Class takes a bunch of points and performs SVD to recalculate a
  * tensor from them.
  */
 

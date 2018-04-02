@@ -36,6 +36,12 @@ typedef enum
 	InstructionTypeFindDisulphides,
 } InstructionType;
 
+/**
+ * \class Notifiable
+ * \brief Allows interface to a GUI. This should be overloaded by a class in
+ * the GUI in order to respond to changes from Vagabond during refinement.
+ */
+
 class Notifiable
 {
 public:

@@ -14,6 +14,15 @@
 #include "Sampler.h"
 #include "FileReader.h"
 
+/**
+ * \class Backbone
+ * \brief A class containing references to the atoms in a backbone of a
+ * single Monomer, including the shared atom between the Monomer and the
+ * Sidechain.
+ */
+
+
+
 class Backbone : public AtomGroup
 {
 public:

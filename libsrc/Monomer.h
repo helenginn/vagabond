@@ -17,6 +17,12 @@
 #include "AtomGroup.h"
 #include "FileReader.h"
 
+/**
+ * \class Monomer
+ * \brief A class containing references to the atoms contained within a
+ * residue of a Polymer.
+ */
+
 class Monomer : public AtomGroup
 {
 public:

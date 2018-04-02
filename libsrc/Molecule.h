@@ -20,6 +20,11 @@
 
 struct vec3;
 
+/**
+ * \class Molecule
+ * \brief The highest level group of atoms directly referenced by a Crystal object.
+ */
+
 class Molecule : public AtomGroup
 {
 public:

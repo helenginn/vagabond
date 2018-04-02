@@ -14,6 +14,14 @@
 #include "Sampler.h"
 #include "FileReader.h"
 
+/**
+ * \class Sidechain
+ * \brief A class containing references to the atoms in a sidechain of a
+ * single Monomer, including the shared atom between the Monomer and the
+ * Backbone.
+ */
+
+
 class Sidechain : public AtomGroup
 {
 public:

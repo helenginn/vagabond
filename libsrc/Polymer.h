@@ -16,8 +16,13 @@
 #include <map>
 #include "Options.h"
 
-class Polymer :
-public Molecule
+/**
+ * \class Polymer
+ * \brief A subclass of Molecule which contains a series of Monomer objects,
+ * forming a polymer chain.
+ */
+
+class Polymer : public Molecule
 {
 public:
 	Polymer()

@@ -15,6 +15,20 @@
 #include "shared_ptrs.h"
 #include "mat3x3.h"
 
+/**
+ * \class Kabsch
+ * \brief Takes arrays of a series of vec3 points and generates
+ * rotations/translations in order to superimpose the arrays.
+ *
+ * Used primarily in order to superimpose polymers on top of each other.
+ * Named after Wolfgang Kabsch's algorithm to superimpose proteins in a
+ * single step using SVD. This implementation superimposes them against the
+ * average structure, which means that theoretically this needs to be
+ * repeated several times to converge. In practice, the second cycle turns
+ * out to be negligible.
+ */
+
+
 class Kabsch
 {
 public:
