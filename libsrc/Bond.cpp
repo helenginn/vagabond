@@ -592,6 +592,9 @@ double myTorsion, double ratio)
 	vec3 crossDir = vec3_cross_vec3(averageBondDir, prevBondDir);
 
 	mat3x3 magicMat = getMagicMat(crossDir);
+	
+	/* Keeps track of the average kick+dampen per bond */
+	double averageModulation = 0;
 
 	for (int i = 0; i < prevs->size(); i++)
 	{
@@ -662,13 +665,24 @@ double myTorsion, double ratio)
 		{
 			undoBlur = 0; addBlur = 0;
 		}
+		
+		double totalBlur = undoBlur + addBlur;
+		
+		averageModulation += totalBlur;
 
 		BondSample simple;
-		simple.torsion = myTorsion + undoBlur + addBlur;
+		simple.torsion = myTorsion + totalBlur;
 		simple.occupancy = getMultOccupancy();
 		simple.basis = make_mat3x3();
 		simple.start = nextCurrentPos;
 		set.push_back(simple);
+	}
+	
+	averageModulation /= (double)prevs->size();
+
+	for (int i = 0; i < set.size(); i++)
+	{
+		set[i].torsion -= averageModulation;
 	}
 
 	return set;
