@@ -663,24 +663,6 @@ void Crystal::setAnchors()
 	}
 }
 
-void Crystal::changeAnchors(int newAnchor)
-{
-	if (_anchorResidues.size() >= newAnchor)
-	{
-		return;
-	}
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (molecule(i)->getClassName() == "Polymer")
-		{
-			PolymerPtr polymer = ToPolymerPtr(molecule(i));
-
-			polymer->changeAnchor(_anchorResidues[newAnchor]);
-		}
-	}
-}
-
 Crystal::Crystal()
 {
 	_correlPlotNum = 0;

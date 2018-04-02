@@ -12,7 +12,6 @@
 #include "Atom.h"
 #include "Absolute.h"
 #include "FileReader.h"
-#include "Anchor.h"
 #include "Sidechain.h"
 
 bool Backbone::shouldRefineMagicAxis(BondPtr)
@@ -90,69 +89,6 @@ AtomPtr Backbone::betaCarbonTorsionAtom()
 	}
 
 	return AtomPtr();
-}
-
-void Backbone::setAnchor()
-{
-	// the backbone N should become an anchor point
-	AtomPtr nitrogen = findAtom("N");
-	ModelPtr model = nitrogen->getModel();
-	BondPtr bond = ToBondPtr(model);
-	// This will become dodgy if we have multiple conformers on backbone
-	AtomPtr downstreamAtom = bond->downstreamAtom(0, 0);
-	ModelPtr nextModel = downstreamAtom->getModel();
-	BondPtr nextBond = ToBondPtr(nextModel);
-
-	AnchorPtr anchor = AnchorPtr(new Anchor(bond, nextBond));
-	ModelPtr modelAnchor = ToModelPtr(ToBondPtr(anchor));
-
-	ModelPtr currentReversal = model;
-	BondPtr oldReversal = BondPtr();
-
-	while (currentReversal->getClassName() == "Bond")
-	{
-		BondPtr reverseBond = ToBondPtr(currentReversal);
-		currentReversal = reverseBond->reverse(oldReversal);
-		oldReversal = reverseBond;
-	}
-
-	std::cout << "Reanchoring on atom " << nitrogen->shortDesc() << std::endl;
-
-	ToAnchorPtr(modelAnchor)->activate();
-
-	if (currentReversal->getClassName() == "Absolute" ||
-	    currentReversal->isAnchor())
-	{
-		for (int k = 0; k < bond->downstreamAtomGroupCount(); k++)
-		{
-			oldReversal->getBondGroup(k)->atoms.clear();
-
-			if (currentReversal->isAnchor())
-			{
-				ToAnchorPtr(currentReversal)->setCallingBond(&*oldReversal);
-				BondPtr bond = ToAnchorPtr(currentReversal)->getAppropriateBond(true);
-
-				oldReversal->addDownstreamAtom(bond->getMajor(), k);
-
-				for (int i = bond->downstreamAtomCount(k) - 1; i > 0; i--)
-				{
-					oldReversal->addDownstreamAtom(bond->downstreamAtom(k, i), 0);
-				}
-			}
-			else
-			{
-				AbsolutePtr absolute = ToAbsolutePtr(currentReversal);
-				for (int i = 0; i < absolute->nextAtomCount(); i++)
-				{
-					AtomPtr atom = absolute->getNextAtom(i);
-					if (atom != oldReversal->getMajor())
-					{
-						oldReversal->addDownstreamAtom(atom, k);
-					}
-				}
-			}
-		}
-	}
 }
 
 void Backbone::addProperties()

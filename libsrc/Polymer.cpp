@@ -15,7 +15,6 @@
 #include "Backbone.h"
 #include "Shouter.h"
 #include "Atom.h"
-#include "Anchor.h"
 #include "Absolute.h"
 #include "CSV.h"
 #include <sstream>
@@ -662,45 +661,6 @@ void Polymer::findAnchorNearestCentroid()
 	}
 
 	setAnchor(anchorRes);
-}
-
-void Polymer::changeAnchor(int num)
-{
-	resetInitialPositions();
-
-	MonomerPtr newMono = getMonomer(num);
-
-	if (!newMono)
-	{
-		shout_at_helen("Attempt to anchor residue " + i_to_str(num - 1) +
-		               " failed because it doesn't exist on Chain "
-		+ getChainID() + ".");
-		return;
-	}
-
-	AtomPtr newAnchorAtom = newMono->getBackbone()->findAtom("CA");
-
-	if (!newAnchorAtom)
-	{
-		shout_at_helen("Anchor position CA does not exist\n"\
-		               "for residue " + i_to_str(num));
-	}
-
-	newMono->getBackbone()->setAnchor();
-
-	for (int i = 0; i < monomerCount(); i++)
-	{
-		if (!getMonomer(i))
-		{
-			continue;
-		}
-
-		BackbonePtr bone = getMonomer(i)->getBackbone();
-		AtomPtr betaCarbon = bone->betaCarbonTorsionAtom();
-		getMonomer(i)->getSidechain()->fixBackboneTorsions(betaCarbon);
-	}
-
-	_anchorNum = num;
 }
 
 void Polymer::setInitialKick(void *object, double value)

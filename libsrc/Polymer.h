@@ -72,7 +72,6 @@ public:
 	                 CrystalPtr target, RefinementType rType);
 	bool test();
 	ModelPtr getAnchorModel();
-	void changeAnchor(int num);
 	void findAnchorNearestCentroid();
 	void checkChainContinuity();
 	void setAnchor(int num)

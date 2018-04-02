@@ -116,7 +116,6 @@ public:
 
 	/** Calculates the anchor residue for each Polymer and assigns to each. */
 	void setAnchors();
-	void changeAnchors(int newAnchor);
 	
 	/** Prints scattering proportion in this crystal determined by bonds. */
 	void tiedUpScattering();

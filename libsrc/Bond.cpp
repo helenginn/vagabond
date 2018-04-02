@@ -12,7 +12,6 @@
 
 #include "Bond.h"
 #include "Atom.h"
-#include "Anchor.h"
 #include "fftw3d.h"
 #include "Shouter.h"
 #include "AtomGroup.h"
@@ -96,7 +95,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 		ToBondPtr(upModel)->addDownstreamAtom(minor, group);
 	}
 
-	if (upModel->getClassName() == "Absolute" || upModel->getClassName() == "Anchor")
+	if (upModel->getClassName() == "Absolute")
 	{
 		ToAbsolutePtr(upModel)->addNextAtom(minor);
 	}
@@ -751,7 +750,6 @@ std::vector<BondSample> *Bond::getManyPositions()
 	}
 
 	BondPtr prevBond = boost::static_pointer_cast<Bond>(model);
-	prevBond = Anchor::sanitiseBond(this, prevBond);
 	int myGroup = -1;
 	double torsionNumber = prevBond->downstreamAtomNum(getMinor(), &myGroup);
 
