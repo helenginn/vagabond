@@ -715,7 +715,7 @@ std::vector<BondSample> *Bond::getManyPositions()
 			vec3 majorPos = (*absPos)[i].start;
 			vec3 heavyPos = getHeavyAlign()->getInitialPosition();
 			vec3 none = {0, 0, 1};
-			vec3 actualMajor = getMajor()->getPosition();
+			vec3 actualMajor = getMajor()->getAbsolutePosition();
 			vec3 start = vec3_subtract_vec3(majorPos, _bondDirection);
 			vec3 perfectStart = vec3_subtract_vec3(actualMajor, _bondDirection);
 
@@ -1258,8 +1258,8 @@ double Bond::getMeanSquareDeviation()
 
 void Bond::resetBondDirection()
 {
-	vec3 majorPos = getMajor()->getPosition();
-	vec3 minorPos = getMinor()->getPosition();
+	vec3 majorPos = getMajor()->getAbsolutePosition();
+	vec3 minorPos = getMinor()->getAbsolutePosition();
 
 	if (getParentModel()->isBond())
 	{
