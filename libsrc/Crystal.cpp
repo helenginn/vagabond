@@ -270,13 +270,11 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 
 	if (verbose)
 	{
-		double ccLocal = LocalCC::localCorrelation(_fft, fftData);
 		_ccWork = correlation(set1, set2);
 		_ccFree = correlation(free1, free2);
 		_rFree = (*op)(free1, free2);
 		double diff = _rFree - _rWork; 
 
-		std::cout << "CClocal: " << ccLocal * 100 <<  "%." << std::endl;
 		std::cout << "CCwork/CCfree: " << _ccWork * 100 << ", " << _ccFree * 100
 		<< " %." << std::endl;
 
