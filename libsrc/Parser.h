@@ -6,13 +6,13 @@
 #ifndef __vagabond__Parser__
 #define __vagabond__Parser__
 
+#include "ParserTypes.h"
 #include "shared_ptrs.h"
 #include <map>
 #include <fstream>
-#include "vec3.h"
 #include <sstream>
 #include <iostream>
-#include "mat3x3.h"
+#include "StateValue.h"
 
 /**
  * \class Parser
@@ -43,71 +43,6 @@ typedef enum
 	ParserTypeProperty,
 	ParserTypeArray,
 } ParserType;
-
-typedef void (*Encoder)(void *, void *, std::ofstream &, int);
-typedef char *(*Decoder)(void *, void *, char *block);
-
-/** \cond SHOW_PARSER_PROPERTY_STRUCTS */
-
-typedef struct
-{
-	std::string *stringPtr;
-	std::string ptrName;
-} StringProperty;
-
-typedef struct
-{
-	double *doublePtr;
-	std::string ptrName;
-} DoubleProperty;
-
-typedef struct
-{
-	mat3x3 *mat3x3Ptr;
-	std::string ptrName;
-} Mat3x3Property;
-
-typedef struct
-{
-	vec3 *vec3Ptr;
-	std::string ptrName;
-} Vec3Property;
-
-typedef struct
-{
-	std::vector<vec3> *vec3ArrayPtr;
-	std::string ptrName;
-} Vec3ArrayProperty;
-
-typedef struct
-{
-	std::vector<mat3x3> *mat3x3ArrayPtr;
-	std::string ptrName;
-} Mat3x3ArrayProperty;
-
-typedef struct
-{
-	bool *boolPtr; 
-	std::string ptrName;
-} BoolProperty;
-
-
-typedef struct
-{
-	int *intPtr;
-	std::string ptrName;
-} IntProperty;
-
-typedef struct
-{
-	void *objPtr;
-	std::string ptrName;
-	void *delegate;
-	Encoder encoder;
-	Decoder decoder;
-} CustomProperty;
-
-/** \endcond */
 
 inline std::string indent(int num)
 {
@@ -181,9 +116,13 @@ typedef std::map<std::string, std::vector<ParserPtr> > ReferenceList;
 typedef std::map<std::string, std::vector<std::string> > ResolveList;
 typedef std::map<std::string, ParserPtr> ParserMap;
 
-class Parser 
+class StateValue;
+typedef std::vector<StateValue> StateValueList;
+
+class Parser
 {
 public:
+	friend class StateValue;
 	Parser();
 
 	std::string getAbsolutePath()
@@ -197,6 +136,14 @@ public:
 	*/
 	virtual std::string getClassName() = 0;
 	static ParserPtr processBlock(char *block);
+
+	size_t stateCount()
+	{
+		return _states.size();	
+	}
+	
+	static void saveState();
+	static void restoreState(int num);
 protected:
 	/**
 	* 	Implementation of the parser identifier should return a name of the
@@ -261,6 +208,7 @@ private:
 	std::string _identifier;
 	std::string _absolutePath;    
 	Parser *_parent;
+	std::vector<StateValueList> _states;
 
 	std::vector<StringProperty> _stringProperties;
 	std::vector<DoubleProperty> _doubleProperties;
@@ -278,6 +226,14 @@ private:
 	void makePath();
 	void setup(bool isNew = false);
 	bool _setup;
+	
+	void privateSaveState();
+	void privateRestoreState(int num);
+	
+	Parser *getParent()
+	{
+		return _parent;	
+	}
 
 	void outputContents(std::ofstream &stream, int in);
 	void clearContents();

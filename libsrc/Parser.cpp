@@ -34,6 +34,11 @@ void Parser::setup(bool isNew)
 		_className = getClassName();
 
 		makePath();
+		
+		std::string path = getAbsolutePath();
+//		ParserPtr newPointer;
+//		newPointer.reset(this);
+//		_allParsers[path] = newPointer;
 	}
 
 	addProperties();
@@ -143,7 +148,7 @@ Decoder decoder)
 void Parser::addChild(std::string category, ParserPtr child)
 {
 	if (!child) return;
-
+	
 	child->setParent(this);
 	_parserList[category].push_back(child);
 	child->setup();
@@ -323,8 +328,154 @@ void Parser::outputContents(std::ofstream &stream, int in)
 	stream << indent(in) << "}" << std::endl;
 }
 
+void Parser::restoreState(int num)
+{
+	int count = _allParsers.size();
+	
+	if (count == 0) return;
+	
+	int totalStates = _allParsers.begin()->second->stateCount();
+	
+	/* If we specify state -1, we want the last-but-one state */
+	if (num < 0)
+	{
+		num = totalStates + num - 1;
+		std::cout << "Restoring state: " << num << std::endl;
+	}
+	
+	if (num < 0 || num >= totalStates)
+	{
+		std::cout << "Cannot restore state: " << num << std::endl;
+		return;
+	}
+
+	for (ParserMap::iterator it = _allParsers.begin();
+	     it != _allParsers.end(); it++) 
+	{
+		it->second->privateRestoreState(num);	
+	}
+	
+}
+
+void Parser::privateRestoreState(int num)
+{
+	StateValueList *list = &_states[num];
+	
+	for (int i = 0; i < list->size(); i++)
+	{
+		list->at(i).applyToParser(this);
+	}
+	
+	if (_states.size() <= 1) return;
+	
+	for (int i = num; i < _states.size(); i++)
+	{
+		_states.erase(_states.begin() + i);
+	}
+}
+
+void Parser::saveState()
+{
+	std::cout << "Total parsers: " << _allParsers.size() << std::endl;
+	
+	for (ParserMap::iterator it = _allParsers.begin();
+	     it != _allParsers.end(); it++) 
+	{
+		it->second->privateSaveState();	
+	}
+}
+
+void Parser::privateSaveState()
+{
+	StateValueList list;
+
+	for (int i = 0; i < _stringProperties.size(); i++)
+	{
+		StateValue value;
+		value.addStringValue(_stringProperties[i].ptrName,
+		                         *_stringProperties[i].stringPtr);	
+		list.push_back(value);
+	}
+
+	for (int i = 0; i < _doubleProperties.size(); i++)
+	{
+		StateValue value;
+		value.addDoubleValue(_doubleProperties[i].ptrName,
+		                         *_doubleProperties[i].doublePtr);	
+		list.push_back(value);
+	}
+
+	for (int i = 0; i < _mat3x3Properties.size(); i++)
+	{
+		StateValue value;
+		value.addMat3x3Value(_mat3x3Properties[i].ptrName,
+		                         *_mat3x3Properties[i].mat3x3Ptr);	
+		list.push_back(value);
+	}
+
+	for (int i = 0; i < _vec3Properties.size(); i++)
+	{
+		StateValue value;
+		value.addVec3Value(_vec3Properties[i].ptrName,
+		                       *_vec3Properties[i].vec3Ptr);	
+		list.push_back(value);
+	}
+
+	for (int i = 0; i < _vec3ArrayProperties.size(); i++)
+	{
+		StateValue value;
+		value.addVec3ArrayValue(_vec3ArrayProperties[i].ptrName,
+		                            *_vec3ArrayProperties[i].vec3ArrayPtr);	
+		list.push_back(value);
+	}
+
+	for (int i = 0; i < _mat3x3ArrayProperties.size(); i++)
+	{
+		StateValue value;
+		value.addMat3x3ArrayValue(_mat3x3ArrayProperties[i].ptrName,
+		                              *_mat3x3ArrayProperties[i].mat3x3ArrayPtr);	
+		list.push_back(value);
+	}
+
+	for (int i = 0; i < _boolProperties.size(); i++)
+	{
+		StateValue value;
+		value.addBoolValue(_boolProperties[i].ptrName,
+		                       *_boolProperties[i].boolPtr);	
+		list.push_back(value);
+	}
+
+	for (int i = 0; i < _intProperties.size(); i++)
+	{
+		StateValue value;
+		value.addIntValue(_intProperties[i].ptrName,
+		                      *_intProperties[i].intPtr);	
+		list.push_back(value);
+	}
+	
+	for (int i = 0; i < _customProperties.size(); i++)
+	{
+		StateValue value;
+		void *ptr = _customProperties[i].objPtr;
+		void *delegate = _customProperties[i].delegate;
+		if (!ptr) continue;
+
+		std::ostringstream stream;
+		Encoder encoder = _customProperties[i].encoder;
+		(*encoder)(delegate, ptr, stream, 1);
+		stream << "\n }\n END\n";
+
+		value.addCustomValue(_customProperties[i].ptrName,
+		                        stream.str());	
+		list.push_back(value);
+	}
+
+	_states.push_back(list);
+}
+
 void Parser::clearContents()
 {
+	_setup = false;
 	_stringProperties.clear();
 	_doubleProperties.clear();
 	_intProperties.clear();
@@ -349,11 +500,12 @@ void Parser::clearContents()
 	}
 
 	_parserList.clear();
-	_allParsers.clear();
 }
 
 void Parser::writeToFile(std::ofstream &stream, int in)
 {
+	clearContents();
+
 	setup();
 
 	stream << "vagabond data structure v0.0" << std::endl;
@@ -361,8 +513,6 @@ void Parser::writeToFile(std::ofstream &stream, int in)
 	outputContents(stream, in);
 
 	stream << std::endl << "END" << std::endl;
-
-	clearContents();
 }
 
 
@@ -481,13 +631,13 @@ char *Parser::parseNextArray(char *block)
 		{
 			char *comma = strchr(block, ',');
 			char *bracket = strchr(block, ')');
-			
+
 			if (bracket == NULL && comma == NULL)
 			{
 				std::cout << "Error - truncated file?" << std::endl;
 				return NULL;	
 			}
-			
+
 			if ((bracket != NULL && bracket < comma) || comma == NULL)
 			{
 				comma = bracket;
@@ -669,7 +819,6 @@ char *Parser::parseNextObject(char *block)
 
 	if (block[0] == '}')
 	{
-		//        std::cout << "Found a } after end of category" << std::endl;
 		block++;
 		incrementIndent(&block);
 	}
@@ -679,8 +828,6 @@ char *Parser::parseNextObject(char *block)
 
 void Parser::setProperty(std::string property, std::string value)
 {
-	//    std::cout << "Setting property " << property << " to " << value << std::endl;
-
 	for (int i = 0; i < _stringProperties.size(); i++)
 	{
 		if (_stringProperties[i].ptrName == property)
@@ -1040,6 +1187,8 @@ ParserPtr Parser::objectOfType(char *className)
 
 ParserPtr Parser::processBlock(char *block)
 {
+	_allParsers.clear();
+
 	char *comma = strchr(block, ',');
 	*comma = '\0';
 
@@ -1058,6 +1207,9 @@ ParserPtr Parser::processBlock(char *block)
 	// Resolve dangling references.
 	object->resolveReferences();
 
+	// Add parent to complete parser list
+	_allParsers[object->getAbsolutePath()] = object;
+
 	// Loop through all objects to allow them to finish up.
 	for (ParserMap::iterator it = _allParsers.begin();
 	     it != _allParsers.end(); it++)
@@ -1067,7 +1219,6 @@ ParserPtr Parser::processBlock(char *block)
 	}
 
 	object->postParseTidy();
-	object->clearContents();
 
 	if (success != NULL)
 	{

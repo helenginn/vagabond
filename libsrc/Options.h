@@ -128,6 +128,7 @@ public:
 
 	void statusMessage(std::string message);
 	void agreementSummary();
+	void previousState();
 	void backboneAnalysis();
 	void refineAll(RefinementType type, int numCycles, int *count = NULL,
 	               bool keepGoing = false);
@@ -135,7 +136,7 @@ public:
 	void applyBMultiplier();
 	void openModel(std::string pdbName);
 	void openMTZ(std::string mtzName);
-	void recalculateFFT();
+	void recalculateFFT(bool saveState = true);
 	void fitWholeMolecule(bool translation, bool rotation);
 	void findDisulphides();
 

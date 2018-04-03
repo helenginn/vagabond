@@ -30,6 +30,7 @@ typedef enum
 	InstructionTypeSetOutputDir,
 	InstructionTypeSetObjectValue,
 	InstructionTypeGetObjectValue,
+	InstructionTypePreviousState,
 	InstructionTypeBackboneAnalysis,
 	InstructionTypeFitWholeMoleculeTranslation,
 	InstructionTypeFitWholeMoleculeRotation,

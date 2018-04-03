@@ -470,7 +470,7 @@ public:
 	}
 
 	static void encodeBondGroup(void *bond, void *bondGroup,
-	                            std::ofstream &stream, int indent);
+	                            std::ostream &stream, int indent);
 	static char *decodeBondGroup(void *bond, void *bondGroup, char *block);
 
 	void setTorsionStepMult(double mult)
@@ -494,6 +494,7 @@ protected:
 	virtual void addProperties();
 	virtual void linkReference(ParserPtr object, std::string category);
 	virtual void postParseTidy();    
+	friend class StateValue;
 
 private:
 	std::string _shortDesc;

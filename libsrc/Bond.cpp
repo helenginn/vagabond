@@ -921,10 +921,9 @@ void Bond::propagateChange(int depth, bool refresh)
 		{
 			for (int i = 0; i < bond->downstreamAtomCount(j); i++)
 			{
-				ModelPtr model = bond->downstreamAtom(j, i)->getModel();
+				AtomPtr atom = bond->downstreamAtom(j, i);
+				ModelPtr model = atom->getModel();
 				BondPtr bond = ToBondPtr(model);
-
-				if (bond->_anchored) continue;
 
 				propagateBonds.push_back(bond);
 			}
@@ -1569,15 +1568,17 @@ bool parseBondGroup(char **blockPtr, BondGroup *group)
 
 char *Bond::decodeBondGroup(void *bond, void *bondGroup, char *block)
 {
+	char *start = block;
 	std::vector<BondGroup> *bondGroups = NULL;
 	bondGroups = static_cast<std::vector<BondGroup> *>(bondGroup); 
+	
 	bondGroups->clear();
 
-	//    std::cout << "Decoding bond group" << std::endl;
 	// poised at "object", hopefully. Let's check.
 	while (true)
 	{    
 		char *white = strchrwhite(block);
+		
 		*white = 0;
 
 		if (block[0] == '}')
@@ -1588,12 +1589,16 @@ char *Bond::decodeBondGroup(void *bond, void *bondGroup, char *block)
 		if (strcmp(block, "object") != 0)
 		{
 			std::cout << "Was expecting an object for a BondGroup." << std::endl;
-			std::cout << "Instead... " << block[0] << std::endl;
+			
+			std::cout << "Instead, " << block[0] << std::endl;
+
 			return NULL;
 		}
 
 		block = white + 1;
 		incrementIndent(&block);
+
+		/* Starting contents of object */
 
 		if (block[0] != '{')
 		{
@@ -1630,7 +1635,7 @@ char *Bond::decodeBondGroup(void *bond, void *bondGroup, char *block)
 }
 
 void Bond::encodeBondGroup(void *bond, void *bondGroup,
-                           std::ofstream &stream, int in)
+                           std::ostream &stream, int in)
 {
 	std::vector<BondGroup> *groups = NULL;
 	groups = static_cast<std::vector<BondGroup> *>(bondGroup);
@@ -1717,7 +1722,7 @@ void Bond::linkReference(ParserPtr object, std::string category)
 }
 
 void Bond::postParseTidy()
-{
+{	
 	/* Get real references to the downstream atoms */
 	for (int i = 0; i < downstreamAtomGroupCount(); i++)
 	{
@@ -1732,6 +1737,11 @@ void Bond::postParseTidy()
 
 			ParserPtr parser = Parser::resolveReference(str);
 			AtomPtr atom = ToAtomPtr(parser);
+			
+			if (!atom)
+			{
+				shout_at_helen("Post parse tidy fail in Bond.");
+			}
 
 			_bondGroups[i].atoms[j].atom = atom;
 			delete _bondGroups[i].atoms[j].placeholder;
@@ -1762,6 +1772,11 @@ void Bond::postParseTidy()
 		lastBond = ToBondPtr(lastModel);
 		
 		if (!lastBond) return;
+	}
+	
+	if (lastBond->downstreamAtomGroupCount() == 0)
+	{
+		return;	
 	}
 
 	/* FIXME: may not be zero */

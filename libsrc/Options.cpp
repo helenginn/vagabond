@@ -726,7 +726,7 @@ void Options::fitWholeMolecule(bool translation, bool rotation)
 	notifyGUI(true);
 }
 
-void Options::recalculateFFT()
+void Options::recalculateFFT(bool saveState)
 {
 	if (!diffractions.size()) return;
 	if (!crystals.size()) return;
@@ -734,8 +734,31 @@ void Options::recalculateFFT()
 	_globalCount++;
 	DiffractionPtr mtz = diffractions[0];
 	statusMessage("Calculating R factors...");
-	crystals[0]->concludeRefinement(_globalCount, mtz);
+	
+	getActiveCrystal()->concludeRefinement(_globalCount, mtz);
 	agreementSummary();
+	
+	if (saveState)
+	{
+		getActiveCrystal()->saveState();
+	}
+
+	std::cout << "Total states: " << crystals[0]->stateCount() << std::endl;
+}
+
+void Options::previousState()
+{
+	int state = -1;
+	
+	if (crystals[0]->stateCount() == 1)
+	{
+		state = 0;	
+	}
+	
+	statusMessage("Restoring previous state...");
+	crystals[0]->restoreState(state);
+	
+	recalculateFFT(false);
 }
 
 void Options::statusMessage(std::string message)
