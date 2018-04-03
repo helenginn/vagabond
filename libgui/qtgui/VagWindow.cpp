@@ -99,12 +99,17 @@ void VagWindow::makeButtons()
     connect(bFindSS, SIGNAL(clicked()), this, SLOT(findDisulphides()));
 	buttons.push_back(bFindSS);
     
-    
     bExploreMolecule = new QPushButton("Explore molecule", this);
     bExploreMolecule->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 400, BUTTON_WIDTH , 50);
     bExploreMolecule->setEnabled(false);
     bExploreMolecule->setMenu(new QMenu(this));
 	buttons.push_back(bExploreMolecule);
+    
+    bPrevious = new QPushButton("Restore previous state", this);
+    bPrevious->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 450, BUTTON_WIDTH , 50);
+    bPrevious->setEnabled(false);
+    connect(bPrevious, SIGNAL(clicked()), this, SLOT(restorePreviousState()));
+	buttons.push_back(bPrevious);
     
     _myDialogue = NULL;
     _explorer = NULL;
@@ -274,6 +279,10 @@ void VagWindow::waitForInstructions()
             Notifiable::performObjectGet();
             break;
 
+            case InstructionTypePreviousState:
+			options->previousState();
+            break;
+
             default:
             break;
         }
@@ -423,6 +432,12 @@ void VagWindow::findDisulphides()
 {
     _instructionType = InstructionTypeFindDisulphides;
     wait.wakeAll();
+}
+
+void VagWindow::restorePreviousState()
+{
+    _instructionType = InstructionTypePreviousState;
+	wait.wakeAll();
 }
 
 void VagWindow::pushExploreMcule()

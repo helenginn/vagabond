@@ -67,6 +67,7 @@ private slots:
 	void recalculateFFT();
 	void findDisulphides();
 	void pushBackboneAnalysis();
+	void restorePreviousState();
 
 	void openModel();
 	void openMTZ();
@@ -101,6 +102,7 @@ private:
 	QPushButton *bFitWholeR;
 	QPushButton *bFitWholeT;
 	QPushButton *bFindSS;
+	QPushButton *bPrevious;
 	std::vector<QPushButton *> buttons;
 
 	std::string _outputDir;
