@@ -8,6 +8,12 @@
 
 #include "shared_ptrs.h"
 
+/**
+ * \class VBondReader
+ * \brief Takes a filename of .vbond format and generates the equivalent
+ * Vagabond-style model corresponding to it.
+ */
+
 class VBondReader
 {
 public:

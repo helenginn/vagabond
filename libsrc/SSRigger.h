@@ -8,6 +8,12 @@
 
 #include "shared_ptrs.h"
 
+/**
+ * \class SSRigger
+ * \brief Detects disulphide bonds and reconfigures the basic geometry to
+ * reflect bonded sulphurs in cysteines.
+ */
+
 class SSRigger
 {
 public:
