@@ -32,7 +32,6 @@ public:
 	bool isBackbone();
 	bool isBackboneAndSidechain();
 
-	vec3 getPosition();
 	vec3 getAbsolutePosition();
 	double posDisplacement();
 	double fullPositionDisplacement();
@@ -211,7 +210,6 @@ public:
 	std::string shortDesc();
 
 	MoleculePtr getMolecule();
-	void setKeepModel();
 	std::string getPDBContribution(int ensembleNum = -1);
 	std::string averagePDBContribution(bool samePos, bool sameB);
 	std::string anisouPDBLine(CrystalPtr crystal);

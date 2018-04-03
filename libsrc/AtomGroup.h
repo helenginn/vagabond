@@ -88,9 +88,7 @@ public:
 		return false;
 	}
 
-	void setUseAbsolute();
 	int totalElectrons(int *fcWeighted);
-
 
 	static double refine(void *object)
 	{

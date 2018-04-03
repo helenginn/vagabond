@@ -214,11 +214,6 @@ vec3 Atom::getAbsolutePosition()
 	return _model->getAbsolutePosition();
 }
 
-vec3 Atom::getPosition()
-{
-	return getAbsolutePosition(); 
-}
-
 bool Atom::isBackbone()
 {
 	if (_atomName == "C") return true;
@@ -268,11 +263,6 @@ std::string Atom::pdbLineBeginning(std::string start)
 	line << "  ";
 
 	return line.str();
-}
-
-void Atom::setKeepModel()
-{
-	_distModelOnly = _model;
 }
 
 double Atom::fullPositionDisplacement()

@@ -182,14 +182,6 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal)
 	return stream.str();
 }
 
-void AtomGroup::setUseAbsolute()
-{
-	for (int i = 0; i < atomCount(); i++)
-	{
-		atom(i)->setKeepModel();
-	}
-}
-
 double AtomGroup::getAverageDisplacement()
 {
 	double sum = 0;
