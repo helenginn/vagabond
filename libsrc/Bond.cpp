@@ -6,7 +6,7 @@
 //  Copyright (c) 2017 Strubi. All rights reserved.
 //
 
-#include <iostream>
+#include <ostream>
 #include <sstream>
 #include <iomanip>
 
