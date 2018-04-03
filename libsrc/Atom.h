@@ -20,6 +20,12 @@
 #include "Parser.h"
 #include "FileReader.h"
 
+/**
+ * \class Atom
+ * \brief Responsible for the PDB-derived properties of a
+ * single ATOM or HETATM line from a PDB.
+ */
+
 class Atom : public boost::enable_shared_from_this<Atom>, public Parser
 {
 public:
@@ -33,7 +39,13 @@ public:
 	bool isBackboneAndSidechain();
 
 	vec3 getAbsolutePosition();
+	
+	/** Positional displacement between average ensemble position and
+	* reference position (usually from PDB). */
 	double posDisplacement();
+	
+	/** Sum of squares of positional displacements between every ensemble
+	* position and reference position (usually from PDB). */
 	double fullPositionDisplacement();
 
 	void setElement(ElementPtr element)
