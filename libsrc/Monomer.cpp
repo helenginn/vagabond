@@ -46,9 +46,14 @@ void Monomer::addAtom(AtomPtr atom)
 		//              + "\nCurrently only side chains are supported.");
 	}
 
+	AtomGroup::addAtom(atom);
+
 	atom->setMonomer(shared_from_this());
 
-	AtomGroup::addAtom(atom);
+	if (getPolymer())
+	{
+		getPolymer()->addAtom(atom);
+	}
 
 	bool isBoth = atom->isBackboneAndSidechain();
 

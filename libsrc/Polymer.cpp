@@ -25,6 +25,7 @@
 #include "Options.h"
 #include "FlexGlobal.h"
 #include "RefinementNelderMead.h"
+#include "Hydrogenator.h"
 
 void Polymer::addMonomer(MonomerPtr monomer)
 {
@@ -661,6 +662,22 @@ void Polymer::findAnchorNearestCentroid()
 	}
 
 	setAnchor(anchorRes);
+}
+
+void Polymer::hydrogenateContents()
+{
+	Hydrogenator hydrogenator;
+
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (!getMonomer(i))
+		{
+			continue;
+		}	
+		
+		hydrogenator.setMonomer(getMonomer(i));
+		hydrogenator.hydrogenate();
+	}
 }
 
 void Polymer::setInitialKick(void *object, double value)

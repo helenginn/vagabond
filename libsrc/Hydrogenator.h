@@ -10,6 +10,7 @@
 #define __vagabond__Hydrogenator__
 
 #include "shared_ptrs.h"
+#include <cstdarg>
 
 class Hydrogenator
 {
@@ -25,6 +26,13 @@ public:
 
 private:
 	MonomerPtr _monomer;
+	void addHydrogens(AtomPtr minor, std::vector<std::string> hNames);
+	void addHydrogens(AtomList group, int hNum, ...);
+	bool hasHydrogens(BondPtr bond);
+	void setNewGeometry(AtomList group, double bondAngle, double torsion);
+	void setSpin(AtomList group);
+
+	AtomPtr prepareNewHydrogen(AtomPtr parent);
 };
 
 

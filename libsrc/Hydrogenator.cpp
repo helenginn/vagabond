@@ -7,12 +7,207 @@
 //
 
 #include "Hydrogenator.h"
+#include "Element.h"
+#include "Bond.h"
+#include "Monomer.h"
+#include "Backbone.h"
+#include "Sidechain.h"
+#include "Polymer.h"
 
 Hydrogenator::Hydrogenator()
 {
 	
 }
 
+AtomPtr Hydrogenator::prepareNewHydrogen(AtomPtr parent)
+{
+	ElementPtr hydrogenElement = Element::getElement("H");
+
+	AtomPtr hydrogen = AtomPtr(new Atom());
+
+	PolymerPtr poly = _monomer->getPolymer();
+	
+	hydrogen->setFromPDB(false);
+	hydrogen->setInitialBFactor(parent->getInitialBFactor());
+	hydrogen->setElement(hydrogenElement);
+	hydrogen->setOriginalOccupancy(1.);
+	hydrogen->setAtomNum(poly->issueAtomNumber());
+	_monomer->addAtom(hydrogen);
+	
+	return hydrogen;
+}
+
+bool Hydrogenator::hasHydrogens(BondPtr bond)
+{
+	for (int i = 0; i < bond->downstreamAtomGroupCount(); i++)
+	{
+		for (int j = 0; j < bond->downstreamAtomCount(i); j++)
+		{
+			AtomPtr atom = bond->downstreamAtom(i, j);
+			
+			if (atom->getElement()->electronCount() == 1)
+			{
+				return true;
+			}
+		}
+	}
+	
+	return false;
+}
+
+void Hydrogenator::setSpin(AtomList group)
+{
+	for (int i = 0; i < group.size(); i++)
+	{
+		AtomPtr atom = group[i].lock();
+		
+		BondPtr bond = ToBondPtr(atom->getModel());
+		BondPtr parent = ToBondPtr(bond->getParentModel());
+
+		parent->setUsingTorsion(true);
+		Bond::setTorsionBlur(&*parent, 2.);
+	}
+}
+
+void Hydrogenator::setNewGeometry(AtomList group, double bondAngle, 
+                                  double torsion)
+{
+	for (int i = 0; i < group.size(); i++)
+	{
+		AtomPtr atom = group[i].lock();
+		
+		BondPtr bond = ToBondPtr(atom->getModel());
+		
+		Bond::setBendAngle(&*bond, deg2rad(bondAngle));	
+		
+		BondPtr parent = ToBondPtr(bond->getParentModel());
+		
+		if (parent->downstreamAtomNum(atom, NULL) > 0)
+		{
+			continue;
+		}
+		
+		Bond::setTorsion(&*parent, deg2rad(torsion));
+	}
+}
+
+void Hydrogenator::addHydrogens(AtomList group, int hNum, ...)
+{
+	if (hNum > 2) return;
+	
+	va_list arguments;
+	va_start(arguments, hNum);
+	std::vector<std::string> hNames;
+	
+	for (int i = 0; i < hNum; i++)
+	{
+		char *value = va_arg(arguments, char *);
+		hNames.push_back(std::string(value));
+	}
+	
+	for (int i = 0; i < group.size(); i++)
+	{
+		addHydrogens(group[i].lock(), hNames);
+	}
+}
+
+void Hydrogenator::addHydrogens(AtomPtr minor, std::vector<std::string> hNames)
+{
+	if (!minor)
+	{
+		return;
+	}
+	
+	ModelPtr model = minor->getModel();
+	
+	if (!model) return;
+	if (!model->isBond()) return;
+	
+	BondPtr bond = ToBondPtr(model);
+	
+	if (hasHydrogens(bond))
+	{
+		return;
+	}
+	
+	for (int i = 0; i < bond->downstreamAtomGroupCount(); i++)
+	{
+		/* Find the fraction of the complete "torsion circle" made by the
+		* final atom in the downstream atoms. */
+		int currentTotal = bond->downstreamAtomCount(i);
+		
+		int finalTotal = (currentTotal + hNames.size());
+		
+		double bondAngle = 0;
+		
+		switch (finalTotal)
+		{
+			/* Linear */
+			case 1:
+			bondAngle = deg2rad(180.);
+			break;
+			
+			/* Trigonal */
+			case 2:
+			bondAngle = deg2rad(120.);
+			break;
+			
+			/* Tetrahedral */
+			case 3:
+			bondAngle = deg2rad(109.5);
+			break;
+			
+			default:
+			break;	
+		}
+		
+		double circlePortion = 0;
+		
+		if (currentTotal > 0)
+		{
+			circlePortion = bond->getCirclePortion(i, currentTotal - 1);
+		}
+
+		if (circlePortion < 0) circlePortion += 1;
+
+		/* Divide the remainder into an appropriate addition per hydrogen. */
+		double remaining = 1 - circlePortion;
+		
+		if (circlePortion > 0.5)
+		{
+			remaining = -circlePortion;	
+		}
+		
+		remaining /= (double)(hNames.size() + 1);
+		
+		if (circlePortion > 0 && false)
+		{
+			std::cout << bond->description() << std::endl;
+			std::cout << "Last circle portion: " << circlePortion << std::endl;
+			std::cout << "Adding each time: " << remaining << std::endl;
+		}
+		
+		double nextPortion = circlePortion + remaining;
+
+		for (int j = 0; j < hNames.size(); j++)
+		{
+			AtomPtr hydrogen = prepareNewHydrogen(minor);
+			hydrogen->setAtomName(hNames[j]);
+
+			/* Set the bond length for the new hydrogen */
+			BondPtr newBond = BondPtr(new Bond(minor, hydrogen, i));
+			newBond->activate();
+			Bond::setBondLength(&*newBond, 0.968);
+
+			/* Bond angle... no idea so just going for a tetrahedral thingy */
+			Bond::setBendAngle(&*newBond, bondAngle);
+			
+			/* Set circle portion and increment for the next hydrogen */
+			Bond::setCirclePortion(&*newBond, nextPortion * 2 * M_PI);
+			nextPortion += remaining;
+		}
+	}
+}
 
 void Hydrogenator::hydrogenate()
 {
@@ -28,17 +223,209 @@ void Hydrogenator::hydrogenate()
 		return;	
 	}
 	
-	AtomPtr nitrogen = bone->findAtom("N");
-	ElementPtr hydrogenElement = Elemen 
+	AtomList nitrogen = bone->findAtoms("N");
+	addHydrogens(nitrogen, 1, "H");
 	
-	if (nitrogen)
-	{
-		AtomPtr nHydrogen = AtomPtr(new Atom());
-		nHydrogen->setFromPDB(false);
+	/* If anchored to C-terminus, required angle is different */
+	AtomPtr prevMajor = bone->betaCarbonTorsionAtom();
+	
+	double angle = (prevMajor->getAtomName() == "C") ? 124.29 : 117.0;
 
-		nHydrogen->setInitialBFactor(nitrogen->getInitialBFactor());
-		nHydrogen->setElement(hydrogenElement);
-		nHydrogen->setAtomName("H");
-		nHydrogen->setOriginalOccupancy(1.);
+	setNewGeometry(_monomer->findAtoms("H"), angle, 0.);
+
+	AtomList cAlpha = bone->findAtoms("CA");
+	
+	if (_monomer->getIdentifier() == "gly")
+	{
+		addHydrogens(cAlpha, 2, "HA2", "HA3");
+	}
+	else
+	{
+		addHydrogens(cAlpha, 1, "HA");
+	}
+	
+	return;
+	
+	SidechainPtr side = _monomer->getSidechain();
+	
+	if (_monomer->getIdentifier() == "met")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("CG"), 2, "HG2", "HG3");
+		addHydrogens(side->findAtoms("CE"), 3, "HE1", "HE2", "HE3");
+	}
+
+	if (_monomer->getIdentifier() == "arg")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("CG"), 2, "HG2", "HG3");
+		addHydrogens(side->findAtoms("CD"), 2, "HD2", "HD3");
+		addHydrogens(side->findAtoms("NE"), 1, "HE");
+		addHydrogens(side->findAtoms("NH1"), 2, "HH11", "HH12");
+		addHydrogens(side->findAtoms("NH2"), 2, "HH21", "HH22");
+	}
+	
+	if (_monomer->getIdentifier() == "lys")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("CG"), 2, "HG2", "HG3");
+		addHydrogens(side->findAtoms("CD"), 2, "HD2", "HD3");
+		addHydrogens(side->findAtoms("CE"), 2, "HE1", "HE2");
+		addHydrogens(side->findAtoms("NZ"), 3, "HZ1", "HZ2", "HZ3");
+	}
+
+	if (_monomer->getIdentifier() == "pro")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("CG"), 2, "HG2", "HG3");
+		addHydrogens(side->findAtoms("CD"), 2, "HD2", "HD3");
+	}
+	
+	if (_monomer->getIdentifier() == "ser")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("OG"), 1, "HG");
+		
+		setNewGeometry(_monomer->findAtoms("HG"), 120., 180.);
+		setSpin(_monomer->findAtoms("HG"));
+	}
+
+	if (_monomer->getIdentifier() == "cys")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("SG"), 1, "HG");
+
+		setNewGeometry(_monomer->findAtoms("HG"), 120., 180.);
+		setSpin(_monomer->findAtoms("HG"));
+	}
+	
+	if (_monomer->getIdentifier() == "val")
+	{
+		addHydrogens(side->findAtoms("CB"), 1, "HB");
+		addHydrogens(side->findAtoms("CG1"), 3, "HG11", "HG12", "HG13");
+		addHydrogens(side->findAtoms("CG2"), 3, "HG21", "HG22", "HG23");
+	}
+	
+	if (_monomer->getIdentifier() == "ala")
+	{
+		addHydrogens(side->findAtoms("CB1"), 3, "HB11", "HB12", "HB13");
+	}
+
+	if (_monomer->getIdentifier() == "his")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("ND1"), 1, "HD1");
+		addHydrogens(side->findAtoms("CE1"), 1, "HE1");
+		addHydrogens(side->findAtoms("CD2"), 1, "HD2");
+		addHydrogens(side->findAtoms("NE2"), 1, "HE2");
+		
+		setNewGeometry(_monomer->findAtoms("HE1"), 120., 180.);
+		setNewGeometry(_monomer->findAtoms("HE2"), 120., 180.);
+	}
+
+	if (_monomer->getIdentifier() == "tyr")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("CD1"), 1, "HD1");
+		addHydrogens(side->findAtoms("CE1"), 1, "HE1");
+		addHydrogens(side->findAtoms("CE2"), 1, "HE2");
+		addHydrogens(side->findAtoms("CD2"), 1, "HD2");
+		addHydrogens(side->findAtoms("OH"), 1, "HH");
+		
+		setNewGeometry(_monomer->findAtoms("HE1"), 120., 180.);
+		setNewGeometry(_monomer->findAtoms("HH"), 120., 180.);
+		setSpin(_monomer->findAtoms("HH"));
+	}
+
+	if (_monomer->getIdentifier() == "phe")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("CD1"), 1, "HD1");
+		addHydrogens(side->findAtoms("CE1"), 1, "HE1");
+		addHydrogens(side->findAtoms("CE2"), 1, "HE2");
+		addHydrogens(side->findAtoms("CD2"), 1, "HD2");
+		addHydrogens(side->findAtoms("CZ"), 1, "HZ");
+		
+		setNewGeometry(_monomer->findAtoms("HE1"), 120., 180.);
+		setNewGeometry(_monomer->findAtoms("HZ"), 120., 180.);
+
+	}
+
+	if (_monomer->getIdentifier() == "trp")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("CD1"), 1, "HD1");
+		addHydrogens(side->findAtoms("CD2"), 1, "HD2");
+		addHydrogens(side->findAtoms("NE1"), 1, "HE1");
+		addHydrogens(side->findAtoms("CE2"), 1, "HE2");
+		addHydrogens(side->findAtoms("CE3"), 1, "HE3");
+		addHydrogens(side->findAtoms("CZ2"), 1, "HZ2");
+		addHydrogens(side->findAtoms("CZ3"), 1, "HZ3");
+		addHydrogens(side->findAtoms("CH2"), 1, "HH2");
+		
+		setNewGeometry(_monomer->findAtoms("HH1"), 120., 180.);
+		setNewGeometry(_monomer->findAtoms("HZ2"), 120., 180.);
+
+	}
+	
+	if (_monomer->getIdentifier() == "ile")
+	{
+		addHydrogens(side->findAtoms("CB"), 1, "HB");
+		addHydrogens(side->findAtoms("CG1"), 2, "HG12", "HG13");
+		addHydrogens(side->findAtoms("CD1"), 3, "HD11", "HD12", "HD13");
+		addHydrogens(side->findAtoms("CG2"), 3, "HG21", "HG22", "HG23");
+	}
+	
+	if (_monomer->getIdentifier() == "leu")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("CG"), 1, "HG");
+		addHydrogens(side->findAtoms("CD1"), 3, "HD11", "HD12", "HD13");
+		addHydrogens(side->findAtoms("CD2"), 3, "HD21", "HD22", "HD23");
+	}
+
+	if (_monomer->getIdentifier() == "asp")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+	}
+	
+	if (_monomer->getIdentifier() == "asn")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("ND2"), 2, "HD21", "HD22");
+	}
+
+	if (_monomer->getIdentifier() == "glu")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("CG"), 2, "HG2", "HG3");
+	}
+
+	if (_monomer->getIdentifier() == "gln")
+	{
+		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		addHydrogens(side->findAtoms("CG"), 2, "HG2", "HG3");
+		addHydrogens(side->findAtoms("NE2"), 2, "HE21", "HE22");
+	}
+
+	if (_monomer->getIdentifier() == "thr")
+	{
+		addHydrogens(side->findAtoms("CB"), 1, "HB");
+		addHydrogens(side->findAtoms("OG1"), 1, "HG1");
+		addHydrogens(side->findAtoms("CG2"), 3, "HG21", "HG22", "HG23");
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+

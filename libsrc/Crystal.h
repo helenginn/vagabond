@@ -175,7 +175,9 @@ public:
 
 	void makePowders();
 	void tieAtomsUp();
-
+	
+	void hydrogenateContents();
+	
 	/**
 	* Find all close atoms within this crystal to a chosen atom.
 	* \param one chosen atom.

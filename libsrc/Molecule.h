@@ -32,6 +32,8 @@ public:
 
 	void addToMap(FFTPtr fft, mat3x3 _real2frac, bool mask = false);
 
+	virtual void addAtom(AtomPtr atom);
+	
 	virtual void summary();
 	virtual void tieAtomsUp();
 	virtual void refine(CrystalPtr target, RefinementType rType);
@@ -152,6 +154,11 @@ public:
 		_closeishAtoms.clear();
 	}
 
+	int issueAtomNumber()
+	{
+		return _largestNum + 1;
+	}
+	
 protected:
 	virtual std::string getParserIdentifier()
 	{
@@ -187,6 +194,8 @@ protected:
 private:
 	double _absoluteBFacSubtract;
 	double _absoluteBFacMult;
+
+	int _largestNum;
 
 	bool _changedRotations;
 	std::string _chainID;

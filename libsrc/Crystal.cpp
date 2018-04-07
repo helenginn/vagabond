@@ -842,6 +842,21 @@ std::string Crystal::agreementSummary()
 	return ss.str();
 }
 
+void Crystal::hydrogenateContents()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+
+		PolymerPtr polymer = ToPolymerPtr(molecule(i));
+		
+		polymer->hydrogenateContents();
+	}
+}
+
 void Crystal::backboneDensityAnalysis()
 {
 	for (int i = 0; i < moleculeCount(); i++)

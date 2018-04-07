@@ -240,6 +240,8 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 			nextBond = boost::static_pointer_cast<Bond>(nextAtom->getModel());
 		}
 
+		addAtomsForBond(nextBond, 0);
+		
 		/* Now if we have a better bond, go forth */
 		if (nextAtom && nextBond->isRefinable())
 		{
@@ -253,7 +255,6 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 				addBendAngle(nextBond, deg2rad(0.01), deg2rad(0.001));
 			}
 
-			addAtomsForBond(nextBond, 0);
 			addParamsForBond(nextBond);
 		}
 
@@ -502,25 +503,15 @@ void Sampler::addSampled(AtomPtr atom)
 		return;
 	}
 
-	double electrons = atom->getElement()->electronCount();
-
-	if (electrons <= 1)
+	/* No repeats! */
+	for (int i = 0; i < sampleSize(); i++)
 	{
-		// hydrogen
-		_unsampled.push_back(atom);
-	}
-	else
-	{
-		/* No repeats! */
-		for (int i = 0; i < sampleSize(); i++)
+		if (_sampled[i] == atom)
 		{
-			if (_sampled[i] == atom)
-			{
-				return;
-			}
+			return;
 		}
-		_sampled.push_back(atom);
 	}
+	_sampled.push_back(atom);
 }
 
 void Sampler::setCrystal(CrystalPtr crystal)

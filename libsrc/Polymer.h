@@ -73,6 +73,7 @@ public:
 	bool test();
 	ModelPtr getAnchorModel();
 	void findAnchorNearestCentroid();
+	void hydrogenateContents();
 	void checkChainContinuity();
 	void setAnchor(int num)
 	{

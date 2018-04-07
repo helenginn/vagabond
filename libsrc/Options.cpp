@@ -601,16 +601,18 @@ void Options::openModel(std::string pdbName)
 		reader.setFilename(pdbName);
 		crystal = reader.getCrystal();
 	}
-
+	
 	objects.push_back(crystal);
 	crystals.push_back(crystal);
 
 	if (modelType == ModelFilePDB && _tie)
 	{
 		statusMessage("Tying up atoms...");
-		crystals[0]->setAnchors();
-		crystals[0]->tieAtomsUp();
+		getActiveCrystal()->setAnchors();
+		getActiveCrystal()->tieAtomsUp();
 	}
+
+	getActiveCrystal()->hydrogenateContents();
 
 	for (int i = 0; i < crystal->moleculeCount(); i++)
 	{
