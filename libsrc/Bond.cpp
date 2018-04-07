@@ -67,10 +67,13 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	{
 		return;
 	}
-
-	if (getMinor()->getModel()->getClassName() == "Bond")
+	
+	if (getMinor()->getModel())
 	{
-		std::cout << "Warning!" << std::endl;
+		if (getMinor()->getModel()->getClassName() == "Bond")
+		{
+			std::cout << "Warning!" << std::endl;
+		}
 	}
 
 	vec3 majorPos = getMajor()->getInitialPosition();
