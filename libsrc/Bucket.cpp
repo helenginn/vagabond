@@ -10,3 +10,12 @@
 #include <iostream>
 #include "fftw3d.h"
 
+
+void Bucket::scaleSolvent()
+{
+	if (!_data)
+	{
+		shout_at_helen("Need diffraction data to scale solvent");
+	}
+}
+

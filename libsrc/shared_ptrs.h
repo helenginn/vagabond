@@ -49,6 +49,7 @@ typedef boost::shared_ptr<FFT> FFTPtr;
 
 class Crystal;
 typedef boost::shared_ptr<Crystal> CrystalPtr;
+typedef boost::weak_ptr<Crystal> CrystalWkr;
 
 class Molecule;
 typedef boost::shared_ptr<Molecule> MoleculePtr;
@@ -90,10 +91,10 @@ typedef boost::shared_ptr<Bond> BondPtr;
 typedef boost::weak_ptr<Bond> BondWkr;
 
 class Bucket;
-class BucketUniform;
+class BucketBulkSolvent;
 
 typedef boost::shared_ptr<Bucket> BucketPtr;
-typedef boost::shared_ptr<BucketUniform> BucketUniformPtr;
+typedef boost::shared_ptr<BucketBulkSolvent> BucketBulkSolventPtr;
 
 class Dataset;
 class Diffraction;

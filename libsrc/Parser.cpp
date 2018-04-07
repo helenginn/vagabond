@@ -376,8 +376,6 @@ void Parser::privateRestoreState(int num)
 
 void Parser::saveState()
 {
-	std::cout << "Total parsers: " << _allParsers.size() << std::endl;
-	
 	for (ParserMap::iterator it = _allParsers.begin();
 	     it != _allParsers.end(); it++) 
 	{

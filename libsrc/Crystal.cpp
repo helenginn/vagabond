@@ -25,6 +25,7 @@
 #include "Kabsch.h"
 #include "RefinementGridSearch.h"
 #include "BoneDensity.h"
+#include "BucketBulkSolvent.h"
 
 #include "../libccp4/cmtzlib.h"
 #include "../libccp4/csymlib.h"
@@ -112,7 +113,6 @@ void Crystal::realSpaceClutter(double maxRes)
 		/* Now create the FFT */
 		_fft = FFTPtr(new FFT());
 		_difft = FFTPtr(new FFT());
-		_solvent = FFTPtr(new FFT());
 
 		vec3 uc_dims = empty_vec3();
 		vec3 fft_dims = empty_vec3();
@@ -156,6 +156,14 @@ void Crystal::realSpaceClutter(double maxRes)
 
 	if (Options::getAddSolvent())
 	{
+		if (!_bucket)
+		{
+			_bucket = BucketPtr(new BucketBulkSolvent());
+		}
+		
+		_bucket->setCrystal(shared_from_this());
+		_bucket->addSolvent();
+		
 		for (int i = 0; i < moleculeCount(); i++)
 		{
 			molecule(i)->addToMap(_solvent, _real2frac, true);
@@ -184,8 +192,13 @@ double Crystal::totalToScale()
 void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 {
 	std::string outputFileOnly = prefix + "_" + _filename + "_vbond.mtz";
+	std::string solventFileOnly = prefix + "_s_" + _filename + "_vbond.mtz";
 	getFFT()->writeReciprocalToFile(outputFileOnly, _maxResolution, _spaceGroup,
 	                                _unitCell, _real2frac, data->getFFT());
+
+	_solvent->writeReciprocalToFile(solventFileOnly , _maxResolution, _spaceGroup,
+	                                _unitCell, _real2frac);
+
 }
 
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
@@ -342,7 +355,8 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 	
 	_data = data;
 	
-	RefinementStrategyPtr grid = RefinementStrategyPtr(new RefinementGridSearch());
+	RefinementStrategyPtr grid;
+	grid = RefinementStrategyPtr(new RefinementGridSearch());
 	grid->setJobName("solvent_scale_grid_search");
 	grid->setEvaluationFunction(scaleSolventScore, this);
 	grid->addParameter(this, getSolvScale, setSolvScale, 8.0, 0.4, "scale");
@@ -886,7 +900,7 @@ void Crystal::backboneDensityAnalysis()
 			{
 				case RefinementFine:
 				polymer->addParamType(ParamOptionTorsion, 0.02);
-				polymer->addParamType(ParamOptionKick, 0.01);
+				polymer->addParamType(ParamOptionKick, 0.010);
 				polymer->addParamType(ParamOptionDampen, 0.005);
 				polymer->addParamType(ParamOptionMagicAngles, 3);
 				polymer->addParamType(ParamOptionNumBonds, 8);

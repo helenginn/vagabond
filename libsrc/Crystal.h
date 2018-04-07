@@ -309,6 +309,8 @@ private:
 	FFTPtr _solvent;
 	FFTPtr _difft;
 
+	BucketPtr _bucket;
+	
 	void scaleSolvent(DiffractionPtr data);
 	void scaleToDiffraction(DiffractionPtr data);
 };

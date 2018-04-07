@@ -66,7 +66,7 @@ ElementPtr Element::getElement(std::string symbol)
 		}
 	}
 
-	shout_at_user("Missing element of symbol " + symbol);
+	shout_at_user("Missing element of symbol \"" + symbol + "\"");
 
 	return ElementPtr();
 }
@@ -78,8 +78,10 @@ double Element::getSolventMaskValue(void *object, double x, double y, double z)
 	double distSq = (x * x + y * y + z * z);
 	double dist = sqrt(distSq);
 	
-	const double min = 1.8;
-	const double max = 2.5;
+	/** Point at which solvent should be completely disallowed */
+	double min = 1.8;
+	/** Point at which solvent is completely free to exist */
+	double max = 2.5;
 	
 	if (dist <= min)
 	{

@@ -18,17 +18,28 @@ class Bucket
 {
 public:
 	virtual void addSolvent() = 0;
+
+	void scaleSolvent();
 	
-	void setMap(FFTPtr map)
+	void setCrystal(CrystalPtr crystal)
 	{
-		_map = map;	
+		_crystal = crystal;
 	}
-
-protected:
-
-private:
 	
-	FFTPtr _map;
+	void setData(FFTPtr data)
+	{
+		_data = data;
+	}
+protected:
+	CrystalWkr _crystal;
+	FFTPtr _solvent;
+	FFTPtr _data;
+	
+	CrystalPtr getCrystal()
+	{
+		return _crystal.lock();
+	}
+private:
 };
 
 #endif /* defined(__vagabond__Bucket__) */
