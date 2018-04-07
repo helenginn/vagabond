@@ -17,6 +17,10 @@ class BucketBulkSolvent : public Bucket
 public:
 	virtual void addSolvent();
 private:
+	void removeSlivers();
+	bool sliverRemovalIteration(vec3 limits);
+	void clearSliver(long i, long j, long k,
+	                 long p, long q, long r);
 };
 
 #endif /* defined(__vagabond__BucketBulkSolvent__) */

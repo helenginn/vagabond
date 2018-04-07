@@ -100,6 +100,7 @@ FFT::FFT(FFT &other)
 
 	_basis = other._basis;
 	_inverse = other._inverse;
+	_writeToMaskZero = other._writeToMaskZero;
 }
 
 

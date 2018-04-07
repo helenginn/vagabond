@@ -74,6 +74,11 @@ ElementPtr Element::getElement(std::string symbol)
 double Element::getSolventMaskValue(void *object, double x, double y, double z)
 {
 	Element *me = static_cast<Element *>(object);
+	
+	if (me->electronCount() <= 1)
+	{
+		return 0;
+	}
 
 	double distSq = (x * x + y * y + z * z);
 	double dist = sqrt(distSq);

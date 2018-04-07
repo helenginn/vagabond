@@ -147,28 +147,6 @@ public:
 	*/
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);
 
-	static double scaleSolventScore(void *object);
-	
-	static double getSolvScale(void *object)
-	{
-		return static_cast<Crystal *>(object)->_solvScale;
-	}
-	
-	static void setSolvScale(void *object, double value)
-	{
-		static_cast<Crystal *>(object)->_solvScale = value;
-	}
-
-	static double getSolvBFac(void *object)
-	{
-		return static_cast<Crystal *>(object)->_solvBFac;
-	}
-	
-	static void setSolvBFac(void *object, double value)
-	{
-		static_cast<Crystal *>(object)->_solvBFac = value;
-	}
-
 	void reconfigureUnitCell();
 	void setupSymmetry();
 	void summary();
@@ -208,6 +186,11 @@ public:
 		_spaceGroup = spg;
 	}
 
+	CSym::CCP4SPG *getSpaceGroup()
+	{
+		return _spaceGroup;
+	}
+	
 	/**	Set unit cell dimensions of Crystal. Nothing else is updated. */
 	void setUnitCell(double a, double b, double c,
 	                 double alpha, double beta, double gamma)
@@ -306,7 +289,6 @@ private:
 	DiffractionPtr _data;
 
 	FFTPtr _fft;
-	FFTPtr _solvent;
 	FFTPtr _difft;
 
 	BucketPtr _bucket;

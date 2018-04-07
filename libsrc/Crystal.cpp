@@ -129,24 +129,20 @@ void Crystal::realSpaceClutter(double maxRes)
 		_fft->setupMask();
 
 		_difft->create(fft_dims.x, fft_dims.y, fft_dims.z);
-		_solvent->create(fft_dims.x, fft_dims.y, fft_dims.z);
 
 		double scaling = 1 / largest;
 
 		_fft->setBasis(_hkl2real, scaling);
 		_difft->setBasis(_hkl2real, scaling);
-		_solvent->setBasis(_hkl2real, scaling);
 	}
 	else
 	{
 		_fft->setAll(0);
 		_difft->setAll(0);
-		_solvent->setAll(0);
 	}
 
 	_fft->createFFTWplan(8);
 	_difft->createFFTWplan(8);
-	_solvent->createFFTWplan(8);
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
@@ -163,14 +159,6 @@ void Crystal::realSpaceClutter(double maxRes)
 		
 		_bucket->setCrystal(shared_from_this());
 		_bucket->addSolvent();
-		
-		for (int i = 0; i < moleculeCount(); i++)
-		{
-			molecule(i)->addToMap(_solvent, _real2frac, true);
-		}
-
-		_solvent->cap(1);
-		_solvent->valueMinus(1);
 	}
 }
 
@@ -192,13 +180,13 @@ double Crystal::totalToScale()
 void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 {
 	std::string outputFileOnly = prefix + "_" + _filename + "_vbond.mtz";
-	std::string solventFileOnly = prefix + "_s_" + _filename + "_vbond.mtz";
 	getFFT()->writeReciprocalToFile(outputFileOnly, _maxResolution, _spaceGroup,
 	                                _unitCell, _real2frac, data->getFFT());
-
-	_solvent->writeReciprocalToFile(solventFileOnly , _maxResolution, _spaceGroup,
-	                                _unitCell, _real2frac);
-
+	
+	if (_bucket)
+	{
+		_bucket->writeMillersToFile(prefix, _maxResolution);	
+	}
 }
 
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
@@ -345,55 +333,13 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes)
 
 void Crystal::scaleSolvent(DiffractionPtr data)
 {
-	if (!Options::getAddSolvent())
+	if (!Options::getAddSolvent() || !_bucket)
 	{
 		return;
 	}
 	
-	setSolvScale(this, 4.0);
-	setSolvBFac(this, 400);
-	
-	_data = data;
-	
-	RefinementStrategyPtr grid;
-	grid = RefinementStrategyPtr(new RefinementGridSearch());
-	grid->setJobName("solvent_scale_grid_search");
-	grid->setEvaluationFunction(scaleSolventScore, this);
-	grid->addParameter(this, getSolvScale, setSolvScale, 8.0, 0.4, "scale");
-	grid->addParameter(this, getSolvBFac, setSolvBFac, 800, 40.0, "bfac");
-	grid->refine();
-
-	double nLimit = _fft->nx;
-
-	for (int i = -nLimit; i < nLimit; i++)
-	{
-		for (int j = -nLimit; j < nLimit; j++)
-		{
-			for (int k = -nLimit; k < nLimit; k++)
-			{
-				vec3 ijk = make_vec3(i, j, k);
-				mat3x3_mult_vec(_real2frac, &ijk);
-				double length = vec3_length(ijk);
-				double d = 1 / length;
-				double four_d_sq = (4 * d * d);
-				double bFacMod = exp(-2 * _solvBFac / four_d_sq);
-
-				long nModel = _fft->element(i, j, k);
-				float realProtein = _fft->data[nModel][0];
-				float imagProtein = _fft->data[nModel][1];
-				float realSolvent = _solvent->data[nModel][0];	
-				float imagSolvent = _solvent->data[nModel][1];	
-				realSolvent *= _solvScale * bFacMod;
-				imagSolvent *= _solvScale * bFacMod;
-
-				float real = realProtein + realSolvent;
-				float imag = imagProtein + imagSolvent;
-
-				_fft->data[nModel][0] = real;
-				_fft->data[nModel][1] = imag;
-			}
-		}
-	}
+	_bucket->setData(data);
+	_bucket->scaleSolvent();
 }
 
 void Crystal::multiplyMap(double scale)
@@ -406,71 +352,6 @@ void Crystal::multiplyMap(double scale)
 	std::cout << "New average: " << current << std::endl;
 }
 
-double Crystal::scaleSolventScore(void *object)
-{
-	return static_cast<Crystal *>(object)->scaleAndAddSolventScore();
-}
-
-double Crystal::scaleAndAddSolventScore(DiffractionPtr data)
-{
-	if (!data)
-	{
-		data = _data;
-	}
-	
-	FFTPtr fftData = data->getFFT();
-	double nLimit = std::min(fftData->nx, _fft->nx);
-	nLimit /= 2;
-
-	std::vector<double> fData, fModel;
-
-	for (int i = -nLimit; i < nLimit; i++)
-	{
-		for (int j = -nLimit; j < nLimit; j++)
-		{
-			for (int k = -nLimit; k < nLimit; k++)
-			{
-				bool isRfree = (fftData->getMask(i, j, k) == 0);
-
-				if (isRfree) continue;
-
-				vec3 ijk = make_vec3(i, j, k);
-				mat3x3_mult_vec(_real2frac, &ijk);
-				double length = vec3_length(ijk);
-				double d = 1 / length;
-				double four_d_sq = (4 * d * d);
-				double bFacMod = exp(-2 * _solvBFac / four_d_sq);
-
-				int _i = 0; int _j = 0; int _k = 0;	
-				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k,
-				                         &_i, &_j, &_k);
-				float ref = sqrt(fftData->getIntensity(_i, _j, _k));
-
-				if (ref != ref) continue;
-
-				long nModel = _fft->element(i, j, k);
-				float realProtein = _fft->data[nModel][0];
-				float imagProtein = _fft->data[nModel][1];
-
-				float realSolvent = _solvent->data[nModel][0];	
-				float imagSolvent = _solvent->data[nModel][1];	
-				realSolvent *= _solvScale * bFacMod;
-				imagSolvent *= _solvScale * bFacMod;
-
-				float real = realProtein + realSolvent;
-				float imag = imagProtein + imagSolvent;
-				float amp = sqrt(real * real + imag * imag);
-
-				fData.push_back(ref);
-				fModel.push_back(amp);
-			}
-		}
-	}
-
-	double correl = correlation(fData, fModel);
-	
-	return -correl;
-}
 
 void Crystal::scaleToDiffraction(DiffractionPtr data)
 {
@@ -695,33 +576,20 @@ void Crystal::applySymOps(double res)
 	}
 
 	_fft->applySymmetry(_spaceGroup, res);
-	
-	if (_solvent)
-	{
-		_solvent->applySymmetry(_spaceGroup, res);
-	}
 }
 
 void Crystal::fourierTransform(int dir, double res)
 {
 	_fft->fft(dir);
 
-	if (_solvent)
-	{
-		_solvent->fft(dir);
-	}
-
 	if (dir == 1)
 	{
 		applySymOps(res);
 	}
-	
-	if (_solvent)
-	{
-		_solvent->normalise();
-	}
 
 	_fft->normalise();
+	
+	_bucket->fourierTransform(dir, res);
 }
 
 void Crystal::makePDBs(std::string suffix)

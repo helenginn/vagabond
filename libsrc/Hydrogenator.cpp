@@ -244,8 +244,6 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(cAlpha, 1, "HA");
 	}
 	
-	return;
-	
 	SidechainPtr side = _monomer->getSidechain();
 	
 	if (_monomer->getIdentifier() == "met")
