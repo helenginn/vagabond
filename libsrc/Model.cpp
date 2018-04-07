@@ -12,6 +12,7 @@
 #include "Monomer.h"
 #include "Atom.h"
 #include "Anisotropicator.h"
+#include "Element.h"
 
 bool Model::_useMutex = false;
 
@@ -57,8 +58,15 @@ int Model::fftGridLength()
 	/* Target dimension in Angstroms */
 	double dim = biggestStdevDim() * 2;
 	
-	/* Add 3 Angstroms for good luck */
-	dim += 4;
+	int some = 4;
+	
+	if (getAtom()->getElement()->electronCount() <= 1)
+	{
+		some = 2;	
+	}
+	
+	/* Add some Angstroms for good luck */
+	dim += some;
 	dim *= 2;
 	
 	int n = scale * dim + 0.5;

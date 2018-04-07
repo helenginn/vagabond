@@ -197,7 +197,7 @@ public:
 		return "Absolute";
 	}
 
-	AtomPtr getAtom()
+	virtual AtomPtr getAtom()
 	{
 		return _atom;
 	}

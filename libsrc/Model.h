@@ -94,6 +94,8 @@ public:
 	* \return integer grid length for x=y=z.
 	*/
 	int fftGridLength();
+	
+	virtual AtomPtr getAtom() = 0;
 
 	bool hasMolecule()
 	{

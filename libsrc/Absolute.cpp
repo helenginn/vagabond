@@ -238,7 +238,6 @@ void Absolute::addToMonomer(MonomerPtr monomer)
 	makeAtom();
 
 	monomer->addAtom(_atom);
-	monomer->getPolymer()->addAtom(_atom);
 	setMolecule(monomer->getPolymer());
 
 	Model::addToMonomer(monomer);
