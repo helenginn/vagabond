@@ -312,13 +312,20 @@ public:
 			{
 				if (downstreamAtom(j, i) == atom)
 				{
-					*group = j;
+					if (group)
+					{
+						*group = j;
+					}
+
 					return i;
 				}
 			}
 		}
 
-		*group = -1;
+		if (group)
+		{
+			*group = -1;
+		}
 		return -1;
 	}
 
