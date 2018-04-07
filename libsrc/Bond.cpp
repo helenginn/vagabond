@@ -216,7 +216,8 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 		/* This is the first atom */
 		portion = 0;
 	}
-	else if (_bondGroups[group].atoms.size() > 0 && atom->getElement()->electronCount() > 1)
+	else if (_bondGroups[group].atoms.size() > 0 &&
+	         atom->getElement()->electronCount() > 1)
 	{
 		/* Calculate from data */
 		if (group == 0 && !_heavyAlign.expired() && _usingTorsion)
