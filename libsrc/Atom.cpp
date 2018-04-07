@@ -267,14 +267,18 @@ std::string Atom::pdbLineBeginning(std::string start)
 
 double Atom::fullPositionDisplacement()
 {
-	BondPtr bond = ToBondPtr(getModel());
-	std::vector<BondSample> samples = bond->getFinalPositions();
+	if (!isFromPDB())
+	{
+		return 0;
+	}
+
+	std::vector<BondSample> samples = getModel()->getFinalPositions();
 	vec3 initialPos = getInitialPosition();
 	initialPos = getPDBPosition();
 
 	double score = 0;
 	
-	for (int i = 0; i < samples.size(); i++)
+	for (size_t i = 0; i < samples.size(); i++)
 	{
 		vec3 aPos = samples[i].start;
 		vec3 diff = vec3_subtract_vec3(aPos, initialPos);
@@ -289,9 +293,13 @@ double Atom::fullPositionDisplacement()
 
 double Atom::posDisplacement()
 {
-	BondPtr bond = ToBondPtr(getModel());
-	bond->getFinalPositions();
-	vec3 bestPos = bond->getAbsolutePosition();
+	if (!isFromPDB())
+	{
+		return 0;
+	}
+
+	getModel()->getFinalPositions();
+	vec3 bestPos = getModel()->getAbsolutePosition();
 	vec3 initialPos = getPDBPosition();
 
 	vec3 diff = vec3_subtract_vec3(bestPos, initialPos);
