@@ -523,8 +523,7 @@ bool Atom::closeToAtom(AtomPtr another, double tolerance)
 	{
 		return false;
 	}
-
-	if (closeish)
+	else
 	{
 		vec3 diff = vec3_subtract_vec3(pos1, pos2);
 		double length = vec3_length(diff);
