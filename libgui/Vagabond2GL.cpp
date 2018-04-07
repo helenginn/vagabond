@@ -99,7 +99,8 @@ bool Vagabond2GL::shouldGetBonds()
 
             for (int k = 0; k < molecule->atomCount(); k++)
             {
-                if (molecule->atom(k)->getModel()->isBond())
+				if (molecule->atom(k)->getModel() &&
+				    molecule->atom(k)->getModel()->isBond())
                 {
                     existing++;
                 }
@@ -155,12 +156,12 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
     {
         AtomPtr atom = molecule->atom(i);
 
-        if (!atom->getModel()->isBond())
+        if (atom->getElement() && atom->getElement()->electronCount() <= 1)
         {
             continue;
         }
 
-        if (atom->getElement()->electronCount() <= 1)
+        if (atom->getModel() && !atom->getModel()->isBond())
         {
             continue;
         }
