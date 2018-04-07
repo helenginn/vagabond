@@ -36,6 +36,9 @@ public:
 	FFTPtr getBlur();
 
 	bool isBackbone();
+	
+	/** If atom is considered both part of backbone and sidechain, such as
+	* C-alphas for protein chains. */
 	bool isBackboneAndSidechain();
 
 	vec3 getAbsolutePosition();
@@ -52,7 +55,10 @@ public:
 	{
 		_element = element;
 	}
-
+	
+	/** Set the monomer for this atom with no frilly bits. Do not use if
+	* you've made a new atom to assign to a monomer. Use Monomer::addAtom()
+	* instead. */
 	void setMonomer(MonomerPtr monomer)
 	{
 		_monomer = monomer;

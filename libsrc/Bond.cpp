@@ -872,8 +872,6 @@ std::vector<BondSample> *Bond::getManyPositions()
 	return newSamples;
 }
 
-/* This gets the position of the minor atom. */
-
 bool Bond::isNotJustForHydrogens()
 {
 	if (getMinor()->getElement()->electronCount() > 1)

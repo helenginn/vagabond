@@ -33,6 +33,8 @@
 #include "Model.h"
 #include <mutex>
 
+/** \struct AtomValue
+ * \brief Stores some downstream atom information in Bond. */
 typedef struct
 {
 	AtomWkr atom;
@@ -42,6 +44,8 @@ typedef struct
 	std::string *placeholder;
 } AtomValue;
 
+/** \struct BondGroup 
+ * \brief Stores the main information for one conformer of a bond. */
 typedef struct
 {
 	std::vector<AtomValue> atoms;
@@ -246,6 +250,12 @@ public:
 	* 	\return angle in radians.
 	*/
 	static double getBendAngle(void *object);
+	
+	/**
+	* 	Sets the bond angle for a bond between upstream->major->minor.
+	* 	\param object C pointer to the bond object, cast as void *.
+	* 	\param value value of new angle in radians.
+	*/
 	static void setBendAngle(void *object, double value);
 
 	/**
@@ -439,10 +449,10 @@ public:
 	}
 
 
-	/* Will aim to define torsion basis as:
-	x: along line of 0º torsion angle.
-	y: completes the right-handed coordinate system
-	z: along bond direction, from heavy-to-light alignment atoms.
+	/** Will define torsion basis as:
+	* x: along line of 0º torsion angle.
+	* y: completes the right-handed coordinate system
+	* z: along bond direction, from heavy-to-light alignment atoms.
 	*/
 	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
 	                        vec3 miPos, vec3 lPos, double *newAngle = NULL);
@@ -514,6 +524,7 @@ private:
 	/* Downstream groups of bonds */
 	std::vector<BondGroup> _bondGroups;
 
+	/* Dampening should be associated with a bond group - woops */
 	double _dampening;
 	bool _activated;
 	int _activeGroup;

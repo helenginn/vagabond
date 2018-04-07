@@ -15,6 +15,12 @@
 #include "shared_ptrs.h"
 #include "Distributor.h"
 
+/**
+ * \class Element
+ * \brief Maintains the scattering factors and pre-calculated distributions
+ * for a single element of the periodic table.
+ */
+
 class Element : public Distributor
 {
 public:

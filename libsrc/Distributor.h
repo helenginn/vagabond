@@ -39,8 +39,14 @@ public:
 		_activeNum = 0;
 	}
 
+	/** To be reimplemented by downstream classes in order to prepare and then
+	* return a copy of the distribution using prepareDistribution() and
+	* getDistributionCopy(). */
 	virtual FFTPtr getDistribution(bool quick = false, int n = -1) = 0;
 
+	/** Call this if the subclass has changed (e.g., an Absolute atom has had
+	* its B factor altered), and an appropriate FFT will be recalculated on
+	* demand. */
 	void recalculate()
 	{
 		_precalcFFTs.clear();
@@ -48,6 +54,8 @@ public:
 protected:
 	bool _calculated;
 
+	/** Get a copy of the distribution which is then alterable without
+	* affecting the stored version. */
 	FFTPtr getDistributionCopy()
 	{
 		if (_activeNum <= 0) return FFTPtr();
@@ -57,6 +65,14 @@ protected:
 		return newPtr;
 	}
 
+	/** Prepare a distribution if it has not already been made for a given
+	* size.
+	* \param n number of voxels along each edge
+	* \param scale reciprocal scale in Ang^-1.
+	* \param object pointer to an object to be called upon when filling the FFT with values.
+	* \param voxel_value function to be called in order to fill the FFT with values, also passing in the object parameter.
+	* \return reciprocal space FFT.
+	*/
 	FFTPtr prepareDistribution(double n, double scale, void *object,
 	                           get_voxel_value *voxel_value);
 

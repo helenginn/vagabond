@@ -19,11 +19,17 @@ typedef enum
 	FlexTargetMatchElectronDensity,
 } FlexTarget;
 
+/**
+ * \class FlexGlobal
+ * \brief Looks after scoring function for whole molecule movements.
+ */
+
 class FlexGlobal
 {
 public:
 	FlexGlobal();
 
+	/** Set atoms to consider in the target function. */
 	void setAtomGroup(AtomGroupPtr group)
 	{
 		_atomGroup = group;
@@ -31,23 +37,32 @@ public:
 
 	static double score(void *object);
 
+	/** Try to remove all anisotropic components, also use
+	* setTargetBFactor(double) to choose the target B factor. */
 	void maximiseIsotropy();
 
+	/** Match the electron density of the AtomGroup using correlation
+	* 	as a target function. */
 	void matchElectronDensity()
 	{
 		_targetType = FlexTargetMatchElectronDensity;
 	}
 
+	/** Tries to match the anisotropic tensor to that found in the PDB file.
+	* [Not recommended]
+	*/
 	void matchOriginalBees()
 	{
 		_targetType = FlexTargetMatchOrigBFactor;
 	}
 
+	/** Sets the target B factor if also using maximiseIsotropy(). */
 	void setTargetBFactor(double value)
 	{
 		_targetIsoB = value;
 	}
 	
+	/** Crystal against which electron density should be matched. */
 	void setCrystal(CrystalPtr crystal)
 	{
 		_crystal = crystal;	

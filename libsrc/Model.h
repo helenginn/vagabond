@@ -30,13 +30,17 @@
 * the GUI to fish out the positions for display.
  */
 
+/** \struct BondSample
+ *  \brief Transfers information between Bonds for calculation of positional
+ *  information.
+ */
 typedef struct
 {
-	mat3x3 basis;   /* Defines bond axis of previous bond */
-	vec3 start;     /* position of last minor */
-	vec3 old_start; /* position of torsion-defining atom */
-	double torsion; /* Defines torsion of next atom */
-	double occupancy;
+	mat3x3 basis;     /**< Defines bond axis of previous bond */
+	vec3 start;       /**< position of last minor */
+	vec3 old_start;   /**< position of torsion-defining atom */
+	double torsion;   /**< Defines torsion of next atom */
+	double occupancy; /**< Relative occupancy (usually 1) */
 } BondSample;
 
 class Model : public boost::enable_shared_from_this<Model>, public Distributor, public Parser
