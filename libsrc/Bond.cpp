@@ -1073,7 +1073,7 @@ void Bond::setBendAngle(void *object, double value)
 		newBond->setGeomRatio(myGroup, i, ratio);
 	}
 
-	newBond->propagateChange(20);
+	newBond->propagateChange(10);
 }
 
 bool Bond::splitBond(int start)
