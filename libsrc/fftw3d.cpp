@@ -437,14 +437,21 @@ void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real
 				long ly = lrint(sy);
 				long lz = lrint(sz);
 				
-				int moves = fabs(shifts[i]) + fabs(shifts[j]) + fabs(shifts[k]) + 0.5;
+				long index = element(lx, ly, lz);
+
+				if (!_writeToMaskZero && mask[index] == 0)
+				{
+					continue;
+				}
+
+				int moves = fabs(shifts[i]) + fabs(shifts[j]) 
+				+ fabs(shifts[k]) + 0.5;
 				
 				float factor = 1;
 				
 				factor = normal_distribution(moves, 1.);
 
-				long index = element(lx, ly, lz);
-
+				
 				data[index][0] += real * factor;
 			}
 		}
@@ -650,10 +657,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	FFT *fftCrystal = &*fftEdit;
 	FFT *fftAtom = &*fftConst;
 	double volume = 1;
-	/*
-	double volume =  fftAtom->getScale(0) * fftAtom->getScale(1)
-	* fftAtom->getScale(2);
-	*/
 
 	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
 	FFT::collapseFrac(&add.x, &add.y, &add.z);
@@ -847,7 +850,11 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 						val.fo = realCryst;
 						val.fc = atomReal;
 						long atomEle = fftAtom->element(offsetPos);
-						val.mask = fftAtom->getMask(atomEle);
+						val.mask = 0;
+						if (fftAtom->mask)
+						{
+							val.mask = fftAtom->getMask(atomEle);
+						}
 
 						vals->push_back(val);
 					}
@@ -898,6 +905,22 @@ void FFT::multiply(FFTPtr fftEdit, FFTPtr fftConst)
 		float imag = fftBig->data[i][0] * fftSmall->data[i][1]
 		+ fftBig->data[i][1] * fftSmall->data[i][0];
 		fftBig->data[i][1] = imag;
+	}
+}
+
+/*  For multiplying point-wise
+*  Assumes identical nx/ny/nz/scales.
+*/
+void FFT::addSimple(FFTPtr fftEdit, FFTPtr fftConst)
+{
+	for (long int i = 0; i < fftEdit->nn; i++)
+	{
+		if (!fftEdit->_writeToMaskZero && fftEdit->mask[i] == 0)
+		{
+			 continue;
+		}
+
+		fftEdit->data[i][0] += fftConst->data[i][0];
 	}
 }
 

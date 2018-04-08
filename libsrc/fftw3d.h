@@ -112,9 +112,9 @@ public:
 
 	/* If not writing to mask = 0, then mask will not apply to the
 	* "add" command in FFT::operation. */
-	void avoidWriteToMaskZero(bool set = false)
+	void avoidWriteToMaskZero(bool set = true)
 	{
-		_writeToMaskZero = set;
+		_writeToMaskZero = !set;
 	}
 
 	void collapse(long *x, long *y, long *z)
@@ -191,6 +191,7 @@ public:
 	                        MapScoreType mapScoreType = MapScoreTypeNone,
 	std::vector<CoordVal> *vals = NULL);
 
+	static void addSimple(FFTPtr fftEdit, FFTPtr fftConst);
 	static double score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 position,
 	                    std::vector<CoordVal> *vals = NULL,
 	MapScoreType mapScore = MapScoreTypeCorrel);
