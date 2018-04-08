@@ -49,8 +49,6 @@ void BucketBulkSolvent::removeSlivers()
 	uc_dims.y = (int)(maxDist / uc_dims.y + 0.5);
 	uc_dims.z = (int)(maxDist / uc_dims.z + 0.5);
 	
-	std::cout << "Voxel limits for sliver: " << vec3_desc(uc_dims) << std::endl;
-	
 	bool changed = true;
 
 	while (changed)
@@ -134,7 +132,6 @@ bool BucketBulkSolvent::sliverRemovalIteration(vec3 limits)
 		}
 	}
 	
-	std::cout << "Removed " << changed << " slivers." << std::endl;
 	return changed > 0;
 }
 
