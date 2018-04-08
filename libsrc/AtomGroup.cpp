@@ -6,6 +6,9 @@
 //  Copyright (c) 2017 Strubi. All rights reserved.
 //
 
+#define MAP_VALUE_CUTOFF 50.
+
+#include "Timer.h"
 #include "AtomGroup.h"
 #include "Atom.h"
 #include "Element.h"
@@ -18,6 +21,8 @@
 #include "Shouter.h"
 #include "../libccp4/ccp4_spg.h"
 #include "Options.h"
+#include "fftw3d.h"
+#include <time.h>
 
 AtomPtr AtomGroup::findAtom(std::string atomType)
 {
@@ -371,8 +376,11 @@ void AtomGroup::setTargetRefinement(CrystalPtr target, RefinementType rType)
 
 void AtomGroup::privateRefine()
 {
+	time_t wall_start;
+	time(&wall_start);
 	std::cout << "Refining one residue." << std::endl;
 	refine(_target, _rType);
+	shout_timer(wall_start, "refinement");
 }
 
 void AtomGroup::refine(CrystalPtr target, RefinementType rType)
@@ -512,12 +520,18 @@ double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plo
 	{
 		selected.push_back(atom(i));
 	}
+	
+//	if (plot)
+	{
+		return scoreWithMapQuick(scoreType, crystal, plot, selected);	
+	}
 
 	return scoreWithMapGeneral(scoreType, crystal, plot, selected);
 }
 
-double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
-                                      bool plot, std::vector<AtomPtr> selected)
+FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
+                                    std::vector<AtomPtr> selected,
+mat3x3 *basis, vec3 *ave)
 {
 	double maxDistance = 0;
 	FFTPtr map = crystal->getFFT();
@@ -528,7 +542,7 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 	/* Find centroid of atom set */
 	for (int i = 0; i < selected.size(); i++)
 	{
-		selected[i]->getModel()->getDistribution(true);
+		selected[i]->getModel()->getFinalPositions();
 		vec3 offset = selected[i]->getModel()->getAbsolutePosition();
 		sum = vec3_add_vec3(sum, offset);	
 	}
@@ -540,7 +554,7 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 		return 0;
 	}
 
-	vec3 ave = sum;
+	*ave = sum;
 
 	/* Find the longest distance from the centroid to determine
 	* the max FFT dimensions.*/
@@ -566,17 +580,136 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 	{
 		scales = 0.5;
 	}
+	
+	scales = 1 / (2 * MAX_SCATTERING_DSTAR);
 
-	int n = 2 * (maxDistance + 2.0) / scales;
+	int n = 2 * (maxDistance + 3.0) / scales;
 	if (n % 2 == 1) n--;
-
+	
 	FFTPtr segment = FFTPtr(new FFT());
 	segment->create(n);
 	segment->setScales(scales);
 
-	mat3x3 basis = make_mat3x3();
+	*basis = make_mat3x3();
 	double toReal = 1 / (scales*(double)n);
-	mat3x3_scale(&basis, toReal, toReal, toReal);
+	mat3x3_scale(basis, toReal, toReal, toReal);
+	
+	return segment;
+}
+
+double AtomGroup::addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected, 
+                                  mat3x3 basis, vec3 ave)
+{
+	std::vector<ElementPtr> elements = Element::elementList(selected);
+	
+	std::vector<AtomPtr> traditional;
+	int allElementElectrons = 0;
+	
+	Timer tReal("real space");
+	Timer tFFT("fft");
+	
+	FFTPtr tmpSegment = FFTPtr(new FFT(*segment));
+	tmpSegment->setAll(0);
+	tmpSegment->setupMask();
+	tmpSegment->avoidWriteToMaskZero(false);
+
+	/* For each element, make a new map and add all real space atom
+	*  positions in one fell swoop, if possible */
+	for (int i = 0; i < elements.size(); i++)
+	{
+		int totalElectrons = 0;
+		FFTPtr elesegment = FFTPtr(new FFT(*segment));
+
+		tReal.start();
+		for (int j = 0; j < selected.size(); j++)
+		{
+			if (selected[j]->getElement() != elements[i])
+			{
+				continue;
+			}
+			
+			ModelPtr model = selected[j]->getModel();
+			model->getFinalPositions();
+
+			/** This needs to be added in the old way at the end. */
+			if (!model->hasExplicitPositions())
+			{
+				traditional.push_back(selected[j]);
+				continue;
+			}
+
+			totalElectrons += elements[i]->electronCount();
+			vec3 pos = selected[j]->getAbsolutePosition();
+			pos = vec3_subtract_vec3(pos, ave);
+			
+			model->addRealSpacePositions(elesegment, pos);
+		}
+		tReal.stop();
+
+		/* Must include models which are not explicit too */
+		allElementElectrons += elements[i]->electronCount() * selected.size();
+		
+		elesegment->createFFTWplan(1);
+
+		tFFT.start();
+		elesegment->fft(1);
+		tFFT.stop();
+
+		FFTPtr elementDist = elements[i]->getDistribution(false,
+		                                                  elesegment->nx);
+		FFT::multiply(elesegment, elementDist);
+		tFFT.start();
+		elesegment->fft(-1);
+		tFFT.stop();
+
+		/* But this total electron count for a given element should not */
+		elesegment->setTotal(totalElectrons * 10e4);
+
+		FFT::addSimple(tmpSegment, elesegment);
+	}
+	
+//	tReal.report();
+//	tFFT.report();
+	
+	for (int i = 0; i < traditional.size(); i++)
+	{
+		traditional[i]->addToMap(tmpSegment, basis, ave);
+	}
+
+	tmpSegment->setTotal(allElementElectrons * 10e2);
+
+	FFT::addSimple(segment, tmpSegment);
+}
+
+double AtomGroup::scoreWithMapQuick(ScoreType scoreType, CrystalPtr crystal,
+                                    bool plot, std::vector<AtomPtr> selected)
+{
+	mat3x3 basis;
+	vec3 ave;
+	FFTPtr segment = prepareMapSegment(crystal, selected, &basis, &ave);
+	
+	addAtomsQuickly(segment, selected, basis, ave);
+
+	double cutoff = MAP_VALUE_CUTOFF;
+	segment->aboveValueToMask(cutoff);
+	segment->avoidWriteToMaskZero();
+
+	/* Neighbours */
+	std::vector<AtomPtr> extra = crystal->getCloseAtoms(selected, 1.5);
+	addAtomsQuickly(segment, extra, basis, ave);
+
+	double score = scoreFinalMap(crystal, segment, plot, scoreType, ave);
+	return score;
+}
+
+double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
+                                      bool plot, std::vector<AtomPtr> selected)
+{
+	mat3x3 basis;
+	vec3 ave;
+	FFTPtr segment = prepareMapSegment(crystal, selected, &basis, &ave);
+
+	mat3x3 real2Frac = crystal->getReal2Frac();
 
 	for (int i = 0; i < selected.size(); i++)
 	{
@@ -590,7 +723,7 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 	* surrounding atoms, but first we convert all non-zero values to
 	* a mask, as we do not want to merely extend the problem to the
 	* next atom.*/
-	double cutoff = 50;
+	double cutoff = MAP_VALUE_CUTOFF;
 	segment->aboveValueToMask(cutoff);
 	segment->avoidWriteToMaskZero();
 
@@ -598,30 +731,25 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 	* with impunity, and they won't go over the borderline already
 	* established.*/
 
-	std::vector<AtomPtr> extra; // to check for duplicates
+	std::vector<AtomPtr> extra; 
 
-	for (int i = 0; i < selected.size(); i++)
+	extra = crystal->getCloseAtoms(selected, 4.5);
+
+	for (int i = 0; i < extra.size(); i++)
 	{
-		std::vector<AtomPtr> clAtoms = crystal->getCloseAtoms(selected[i], 3.0);
-
-		for (int j = 0; j < clAtoms.size(); j++)
-		{
-			if (std::find(selected.begin(), selected.end(), clAtoms[j]) !=
-			    selected.end())
-			{
-				continue;
-			}
-
-			if (std::find(extra.begin(), extra.end(), clAtoms[j]) !=
-			    extra.end())
-			{
-				continue;
-			}
-
-			clAtoms[j]->addToMap(segment, basis, ave);
-			extra.push_back(clAtoms[j]);
-		}
+		extra[i]->addToMap(segment, basis, ave);
 	}
+
+	double score = scoreFinalMap(crystal, segment, plot, scoreType, ave);
+	return score;
+}
+
+double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
+                                bool plot, ScoreType scoreType,
+								vec3 ave)
+{
+	double cutoff = MAP_VALUE_CUTOFF;
+	mat3x3 real2Frac = crystal->getReal2Frac();
 
 	/* Convert real2Frac to crystal coords to get correct segment
 	* of the big real space map. */
@@ -630,6 +758,8 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 	std::vector<double> xs, ys;
 	std::vector<CoordVal> vals;
 
+	FFTPtr map = crystal->getFFT();
+	
 	FFT::score(map, segment, ave, &vals);
 
 	/* For correlation calculations */
