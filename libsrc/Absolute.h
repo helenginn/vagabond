@@ -232,6 +232,11 @@ public:
 		_isOfManyPositions = true;
 	}
 	
+	virtual bool hasExplicitPositions()
+	{
+		return _isOfManyPositions;
+	}
+	
 	virtual double getEffectiveOccupancy()
 	{
 		return _occupancy;	

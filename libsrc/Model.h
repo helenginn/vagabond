@@ -153,6 +153,8 @@ public:
 
 	vec3 longestAxis();
 	std::vector<vec3> fishPositions();
+	
+	virtual bool hasExplicitPositions() = 0;
 protected:
 	mat3x3 _realSpaceTensor;
 

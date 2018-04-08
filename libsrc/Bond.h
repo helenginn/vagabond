@@ -340,6 +340,12 @@ public:
 		return _usingTorsion;
 	}
 
+
+	virtual bool hasExplicitPositions()
+	{
+		return true;
+	}
+
 	/** 
 	* 	Bond torsion does something other than change hydrogen atom position.
 	*/
