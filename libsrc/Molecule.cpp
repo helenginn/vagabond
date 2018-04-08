@@ -295,7 +295,15 @@ std::vector<AtomPtr> Molecule::getCloseAtoms(AtomPtr one, double tol, bool cache
 		{
 			continue;
 		}
+		
+		std::vector<AtomPtr>::iterator it;
+		it = std::find(atomListPtr->begin(), atomListPtr->end(), atom(i));
 
+		if (it != atomListPtr->end())
+		{
+			continue;	
+		}
+		
 		atomListPtr->push_back(atom(i));
 	}
 	

@@ -849,6 +849,36 @@ void Crystal::postParseTidy()
 	_tied = true;
 }
 
+std::vector<AtomPtr> Crystal::getCloseAtoms(std::vector<AtomPtr> atoms, 
+                                            double tol)
+{
+	std::vector<AtomPtr> extra;
+	
+	for (size_t i = 0; i < atoms.size(); i++)
+	{
+		std::vector<AtomPtr> clAtoms = getCloseAtoms(atoms[i], tol);
+		
+		for (int j = 0; j < clAtoms.size(); j++)
+		{
+			if (std::find(atoms.begin(), atoms.end(), clAtoms[j]) !=
+			    atoms.end())
+			{
+				continue;
+			}
+
+			if (std::find(extra.begin(), extra.end(), clAtoms[j]) !=
+			    extra.end())
+			{
+				continue;
+			}
+
+			extra.push_back(clAtoms[j]);
+		}
+	}
+	
+	return extra;
+}
+
 std::vector<AtomPtr> Crystal::getCloseAtoms(AtomPtr one, double tol, bool cache)
 {
 	std::vector<AtomPtr> atoms;
