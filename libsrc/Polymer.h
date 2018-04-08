@@ -38,6 +38,8 @@ public:
 		_tmpPhi = 0;
 		_tmpPsi = 0;
 	}
+	
+	virtual ~Polymer() {}
 
 	void closenessSummary();
 	void addMonomer(MonomerPtr monomer);

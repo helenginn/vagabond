@@ -119,11 +119,12 @@ typedef std::map<std::string, ParserPtr> ParserMap;
 class StateValue;
 typedef std::vector<StateValue> StateValueList;
 
-class Parser
+class Parser : public boost::enable_shared_from_this<Parser>
 {
 public:
 	friend class StateValue;
 	Parser();
+	virtual ~Parser() {};
 
 	std::string getAbsolutePath()
 	{

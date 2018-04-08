@@ -24,6 +24,8 @@ public:
 		_maxRes = 0;
 	}
 
+	virtual ~Diffraction() {};
+
 	void setFilename(std::string filename)
 	{
 		_filename = filename;

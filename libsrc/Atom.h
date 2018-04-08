@@ -26,11 +26,18 @@
  * single ATOM or HETATM line from a PDB.
  */
 
-class Atom : public boost::enable_shared_from_this<Atom>, public Parser
+class Atom : public Parser
 {
 public:
+	AtomPtr shared_from_this()
+	{
+		return ToAtomPtr(Parser::shared_from_this());
+	}
+	
 	Atom();
 	Atom(Atom &other);
+
+	virtual ~Atom() {}	
 
 	void setModel(ModelPtr model);
 	FFTPtr getBlur();

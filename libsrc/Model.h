@@ -43,10 +43,16 @@ typedef struct
 	double occupancy; /**< Relative occupancy (usually 1) */
 } BondSample;
 
-class Model : public boost::enable_shared_from_this<Model>, public Distributor, public Parser
+class Model : public Distributor, public Parser
 {
 public:
+	ModelPtr shared_from_this()
+	{
+		return ToModelPtr(Parser::shared_from_this());
+	}
+
 	Model();
+	virtual ~Model() {};
 
 	virtual FFTPtr getDistribution(bool quick = false, int n = -1) = 0;
 

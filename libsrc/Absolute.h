@@ -55,6 +55,7 @@ public:
 	/**
 	* 	Creates an empty Absolute object and initialises default variables. */
 	Absolute();
+	virtual ~Absolute() {};
 
 	virtual std::vector<BondSample> *getManyPositions();
 	virtual FFTPtr getDistribution(bool = false, int new_n = -1);

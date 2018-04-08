@@ -38,32 +38,6 @@ typedef void (*Setter)(void *, double newValue);
 
 class RefinementStrategy
 {
-protected:
-	Getter evaluationFunction;
-	Getter finishFunction;
-	int maxCycles;
-	void *evaluateObject;
-	std::string jobName;
-	int cycleNum;
-	int _changed;
-	bool _mock;
-	bool _toDegrees;
-	bool _silent;
-
-	std::vector<int> couplings;
-	std::vector<void *> objects;
-	std::vector<Getter> getters;
-	std::vector<Setter> setters;
-	std::vector<double> stepSizes;
-	std::vector<double> otherValues;
-	std::vector<std::string> tags;
-	std::vector<double> startingValues;
-	double startingScore;
-	bool _verbose;
-
-	void reportProgress(double score);
-	void finish();
-
 public:
 	RefinementStrategy()
 	{
@@ -78,6 +52,8 @@ public:
 		_mock = false;
 		_toDegrees = false;
 	};
+
+	virtual ~RefinementStrategy() {};
 
 	static RefinementStrategyPtr userChosenStrategy();
 
@@ -151,6 +127,32 @@ public:
 	{
 		return getters.size();
 	}
+protected:
+	Getter evaluationFunction;
+	Getter finishFunction;
+	int maxCycles;
+	void *evaluateObject;
+	std::string jobName;
+	int cycleNum;
+	int _changed;
+	bool _mock;
+	bool _toDegrees;
+	bool _silent;
+
+	std::vector<int> couplings;
+	std::vector<void *> objects;
+	std::vector<Getter> getters;
+	std::vector<Setter> setters;
+	std::vector<double> stepSizes;
+	std::vector<double> otherValues;
+	std::vector<std::string> tags;
+	std::vector<double> startingValues;
+	double startingScore;
+	bool _verbose;
+
+	void reportProgress(double score);
+	void finish();
+
 };
 
 #endif /* defined(__cppxfel__RefinementStrategy__) */

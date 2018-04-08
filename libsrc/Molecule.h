@@ -29,6 +29,7 @@ class Molecule : public AtomGroup
 {
 public:
 	Molecule();
+	virtual ~Molecule() {};
 
 	void addToMap(FFTPtr fft, mat3x3 _real2frac, bool mask = false);
 

@@ -34,10 +34,16 @@
 
 typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
-class Crystal : public Object, public boost::enable_shared_from_this<Crystal>, public Parser
+class Crystal : public Object, public Parser
 {
 public:
+	CrystalPtr shared_from_this()
+	{
+		return ToCrystalPtr(Parser::shared_from_this());
+	}
+	
 	Crystal();
+	virtual ~Crystal() {};
 	void addMolecule(MoleculePtr molecule);
 	
 	/**

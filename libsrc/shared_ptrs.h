@@ -36,6 +36,7 @@
 #define ToBackbonePtr(a) (boost::static_pointer_cast<Backbone>((a)))
 #define ToCrystalPtr(a) (boost::static_pointer_cast<Crystal>((a)));
 #define ToAtomPtr(a) (boost::static_pointer_cast<Atom>((a)));
+#define ToAtomGroupPtr(a) (boost::static_pointer_cast<AtomGroup>((a)));
 #define ToMonomerPtr(a) (boost::static_pointer_cast<Monomer>((a)));
 
 class Notifiable;

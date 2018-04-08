@@ -26,6 +26,8 @@
 class Backbone : public AtomGroup
 {
 public:
+	virtual ~Backbone() {};
+	
 	void setPolymer(PolymerPtr poly)
 	{
 		_myPolymer = poly;

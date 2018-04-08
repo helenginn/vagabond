@@ -23,10 +23,16 @@
  * and is often (but does not need to be) subclassed.
  */
 
-class AtomGroup : public boost::enable_shared_from_this<AtomGroup>, public Sampler, public Parser
+class AtomGroup : public Sampler, public Parser
 {
 public:
+	AtomGroupPtr shared_from_this()
+	{
+		return ToAtomGroupPtr(Parser::shared_from_this());
+	}
+
 	AtomGroup();
+	virtual ~AtomGroup() {};
 	AtomPtr findAtom(std::string atomType);
 	AtomPtr findAtom(std::string atomType, std::string confID);
 	AtomList findAtoms(std::string atomType);

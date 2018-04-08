@@ -31,6 +31,8 @@ public:
 		_rotamerised = false;
 		_exponent = 0;
 	}
+	
+	virtual ~Sidechain() {};
 
 	bool canRefine()
 	{

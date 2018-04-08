@@ -34,7 +34,7 @@ Atom::Atom()
 	_tensor = make_mat3x3();
 }
 
-Atom::Atom(Atom &other) : boost::enable_shared_from_this<Atom>()
+Atom::Atom(Atom &other)
 {
 	_initialPosition = other._initialPosition;
 	_initialB = other._initialB;

@@ -68,6 +68,7 @@ public:
 	Bond(AtomPtr major, AtomPtr minor, int group = 0);
 	Bond(Bond &other);
 	Bond();
+	virtual ~Bond() {};
 	void initialize();
 
 	/**

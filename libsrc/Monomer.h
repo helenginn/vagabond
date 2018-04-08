@@ -27,6 +27,7 @@ class Monomer : public AtomGroup
 {
 public:
 	Monomer();
+	virtual ~Monomer() {};
 	void setup();
 	void tieAtomsUp();
 
