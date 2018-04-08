@@ -105,9 +105,6 @@ void Options::run()
 			CrystalPtr crystal = getActiveCrystal();
 
 			/* sandbox */
-			crystal->writeMillersToFile(data, "pre");
-			crystal->getDataInformation(data, 2, 1);
-
 			if (_tie)
 			{
 				crystal->setAnchors();
@@ -117,7 +114,8 @@ void Options::run()
 			crystal->tiedUpScattering();
 
 			int count = 0;
-			crystal->concludeRefinement(count, data);
+			recalculateFFT();
+			_notify->setInstruction(InstructionTypeResetExplorer);
 
 			if (shouldPowder())
 			{
@@ -450,7 +448,6 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool kee
 {
 	notifyGUI(false);
 
-	double lastRWork = 200;
 	if (count == NULL)
 	{
 		count = &_globalCount;
@@ -468,19 +465,7 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool kee
 
 		statusMessage("Calculating R factors...");
 
-		double newRWork = getActiveCrystal()->concludeRefinement(*count,
-		                                                         diffractions[0]);
-
-		agreementSummary();
-
-		/* Do we go for another cycle? */
-		if (keepGoing && i + 1 == numCycles && newRWork < lastRWork)
-		{
-			std::cout << "Going for another cycle..." << std::endl;
-			numCycles++;
-		}
-
-		lastRWork = newRWork;
+		recalculateFFT();
 	}
 
 	notifyGUI(true);
@@ -705,13 +690,6 @@ void Options::refinementCycle(MoleculePtr molecule, int *count,
 
 		statusMessage("Refining structure, chain " + molecule->getChainID() + "...");
 		molecule->refine(crystals[0], type);
-
-		if (_manual) return;
-
-		if (molecule->getClassName() == "Polymer" && (*count == 1))
-		{
-			polymer->superimpose();
-		}
 	}
 }
 
@@ -745,7 +723,8 @@ void Options::recalculateFFT(bool saveState)
 		getActiveCrystal()->saveState();
 	}
 
-	std::cout << "Total states: " << crystals[0]->stateCount() << std::endl;
+	std::cout << "Total states: " << getActiveCrystal()->stateCount() <<
+	std::endl;
 }
 
 void Options::previousState()

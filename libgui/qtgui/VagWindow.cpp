@@ -200,9 +200,21 @@ void VagWindow::waitForInstructions()
     
     while (true)
     {
+		/* Returned instructions to GUI */
+		switch (_instructionType)
+		{
+            case InstructionTypeResetExplorer:
+			updateExplorerButton();
+            break;
+
+			default:
+			break;
+		}
+	
         mutex.lock();
         wait.wait(&mutex);
-        
+
+		/* GUI instructions to Vagabond */
         switch (_instructionType)
         {
             case InstructionTypeSuperimpose:

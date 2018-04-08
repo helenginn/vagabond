@@ -17,6 +17,7 @@ typedef enum
 	InstructionTypeNone,
 	InstructionTypeOpenPDB,
 	InstructionTypeOpenMTZ,
+	InstructionTypeResetExplorer,
 	InstructionTypeSuperimpose,
 	InstructionTypeRefinePositions,
 	InstructionTypeRefineFlexibility,
@@ -128,6 +129,7 @@ public:
 	{
 		_atomGroup = group;
 	}
+
 protected:
 	InstructionType _instructionType;
 
