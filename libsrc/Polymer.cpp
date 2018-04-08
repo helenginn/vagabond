@@ -7,6 +7,7 @@
 //
 
 #include "Polymer.h"
+#include "Timer.h"
 #include "Crystal.h"
 #include "Sidechain.h"
 #include "Monomer.h"
@@ -296,9 +297,6 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 		return;	
 	}
 	
-	time_t wall_start;
-	time(&wall_start);
-
 	std::cout << std::endl;
 	std::cout << "Refining chain " << getChainID() << " from anchor to N-terminus...";
 	std::cout << std::endl << std::endl << "\t";
@@ -340,7 +338,6 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 	std::cout << std::endl << std::endl;
 
-	shout_timer(wall_start, "refinement");
 
 }
 
@@ -1190,7 +1187,7 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	std::cout << "Optimising whole molecule shifts to match the electron density." << std::endl;
 
 	NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
-
+	
 	if (translation)
 	{
 		nelderMead->addParameter(this, getTransTensor11, setTransTensor11, 0.5, 0.01, "t11");
@@ -1221,6 +1218,8 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	AtomGroupPtr allBackbone = getAllBackbone();
+	
+	Timer timer("whole molecule fit", true);
 
 	FlexGlobal target;
 	target.setAtomGroup(allBackbone);
@@ -1228,7 +1227,10 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	target.setCrystal(crystal);
 	target.matchElectronDensity();
 	nelderMead->setEvaluationFunction(FlexGlobal::score, &target);
+	FlexGlobal::score(&target);
 	nelderMead->refine();
+	
+	timer.report();
 }
 
 AtomGroupPtr Polymer::getAllBackbone()

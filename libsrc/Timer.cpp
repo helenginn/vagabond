@@ -42,6 +42,11 @@ void Timer::stop()
 
 void Timer::report()
 {
+	if (wall > 0)
+	{
+		stop();
+	}
+	
 	time_t seconds = (accumulative % 60);
 	time_t minutes = (accumulative - seconds) / 60;
 
