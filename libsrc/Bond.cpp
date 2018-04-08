@@ -457,10 +457,6 @@ void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign, int groupNum)
 
 FFTPtr Bond::getDistribution(bool absOnly, int)
 {
-	std::vector<BondSample> positions = getFinalPositions();
-
-	if (absOnly) return FFTPtr();
-
 	double n = fftGridLength();
 	/* Don't panic, invert scale below... this is in real space */
 	double scale = 1 / (2 * MAX_SCATTERING_DSTAR);
@@ -472,23 +468,7 @@ FFTPtr Bond::getDistribution(bool absOnly, int)
 	fft->setScales(scale);
 	fft->createFFTWplan(1);
 
-	for (int i = 0; i < positions.size(); i++)
-	{
-		vec3 placement = positions[i].start;
-
-		vec3 relative = vec3_subtract_vec3(placement, _absolute);
-		double occupancy = positions[i].occupancy;
-
-		vec3_mult(&relative, 1 / realLimits);
-
-		if (relative.x != relative.x)
-		{
-			continue;
-		}
-
-//		fft->addToReal(relative.x, relative.y, relative.z, occupancy);
-		fft->addBlurredToReal(relative.x, relative.y, relative.z, occupancy);
-	}
+	Model::addRealSpacePositions(fft, empty_vec3());
 
 	fft->fft(1);
 	fft->invertScale();

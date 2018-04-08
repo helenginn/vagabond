@@ -150,6 +150,8 @@ public:
 	{
 		_recalcFinal = true;	
 	}
+	
+	void addRealSpacePositions(FFTPtr real, vec3 offset);
 
 	vec3 longestAxis();
 	std::vector<vec3> fishPositions();

@@ -13,6 +13,8 @@
 #include "Atom.h"
 #include "Anisotropicator.h"
 #include "Element.h"
+#include "Shouter.h"
+#include "fftw3d.h"
 
 bool Model::_useMutex = false;
 
@@ -288,4 +290,37 @@ mat3x3 Model::getRealSpaceTensor()
 void Model::addProperties()
 {
 	addMat3x3Property("real_space_tensor", &_realSpaceTensor);
+}
+
+
+void Model::addRealSpacePositions(FFTPtr real, vec3 offset)
+{
+	if (!hasExplicitPositions())
+	{
+		shout_at_helen("Inexplicit model asked to add positions");	
+	}
+	
+	std::vector<BondSample> positions = getFinalPositions();
+	
+	double realLimits = real->scales[0] * real->nx;
+	vec3 absolute = getAbsolutePosition();
+
+	for (int i = 0; i < positions.size(); i++)
+	{
+		vec3 placement = positions[i].start;
+		placement = vec3_add_vec3(placement, offset);
+		vec3 relative = vec3_subtract_vec3(placement, absolute);
+
+		double occupancy = positions[i].occupancy;
+
+		vec3_mult(&relative, 1 / realLimits);
+
+		if (relative.x != relative.x)
+		{
+			continue;
+		}
+		
+		real->addBlurredToReal(relative.x, relative.y, relative.z, occupancy);
+	}
+
 }
