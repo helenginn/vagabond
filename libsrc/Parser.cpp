@@ -28,6 +28,7 @@ void Parser::setup(bool isNew)
 {
 	if (_setup) return;
 
+	/* If these objects are already fully operational... */
 	if (!isNew)
 	{
 		_identifier = getParserIdentifier(); 
@@ -36,9 +37,8 @@ void Parser::setup(bool isNew)
 		makePath();
 		
 		std::string path = getAbsolutePath();
-//		ParserPtr newPointer;
-//		newPointer.reset(this);
-//		_allParsers[path] = newPointer;
+		ParserPtr newPointer = shared_from_this();
+		_allParsers[path] = newPointer;
 	}
 
 	addProperties();
