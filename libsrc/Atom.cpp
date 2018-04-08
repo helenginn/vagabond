@@ -341,7 +341,7 @@ std::string Atom::averagePDBContribution(bool samePos, bool sameB)
 		return "";
 	}
 
-	getModel()->getDistribution(true);
+	getModel()->getFinalPositions();
 	std::string atomName = getAtomName();
 	ElementPtr element = getElement();
 
