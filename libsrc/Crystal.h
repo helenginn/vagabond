@@ -290,6 +290,9 @@ private:
 	double _rFree;
 	double _ccWork;
 	double _ccFree;
+	double _lastRWork;
+	double _bestRWork;
+	int _sinceBestNum;
 	
 	double _solvScale;
 	double _solvBFac;

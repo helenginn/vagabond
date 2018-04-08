@@ -558,6 +558,9 @@ void Crystal::setAnchors()
 
 Crystal::Crystal()
 {
+	_lastRWork = FLT_MAX;
+	_bestRWork = FLT_MAX;
+	_sinceBestNum = 0;
 	_correlPlotNum = 0;
 	_tied = false;
 	_spaceGroup = NULL;
@@ -654,6 +657,17 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	}
 	
 	writeVagabondFile(cycleNum);
+	_lastRWork = rFac;
+	
+	if (rFac < _bestRWork)
+	{
+		_bestRWork = rFac;
+		_sinceBestNum = 0;
+	}
+	else
+	{
+		_sinceBestNum++;
+	}
 
 	return rFac;
 }
