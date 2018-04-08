@@ -7,6 +7,7 @@
 //
 
 #include "Element.h"
+#include "Atom.h"
 #include <math.h>
 #include "Shouter.h"
 #include "fftw3d.h"
@@ -177,3 +178,24 @@ FFTPtr Element::getDistribution(bool, int new_n)
 	prepareDistribution(n, scale, this, func);
 	return getDistributionCopy();
 }
+
+
+std::vector<ElementPtr> Element::elementList(std::vector<AtomPtr> atoms)
+{
+	std::vector<ElementPtr> elements;
+	
+	for (size_t i = 0; i < atoms.size(); i++)
+	{
+		ElementPtr element = atoms[i]->getElement();
+		std::vector<ElementPtr>::iterator it;
+		it = std::find(elements.begin(), elements.end(), element);
+		
+		if (it == elements.end())
+		{
+			elements.push_back(element);
+		}
+	}
+	
+	return elements;
+}
+

@@ -52,6 +52,7 @@ public:
 		return "Element";
 	}
 
+	static std::vector<ElementPtr> elementList(std::vector<AtomPtr> atoms);
 protected:
 	static double getVoxelValue(void *obj, double x, double y, double z);
 	static double getSolventMaskValue(void *obj, double x, double y, double z);
