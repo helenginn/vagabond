@@ -23,10 +23,21 @@ class Thing
 public:
 	Thing();
 	
+	ThingPtr dealWithFunction(std::string function, std::string contents);
+	void printDescription();
+	std::string description();
+	
+	virtual void addThing(ThingPtr right);
+	
 	void setThingType(std::string type);
 	void setThingType(ThingType type)
 	{
 		_type = type;	
+	}
+	
+	bool isNumber()
+	{
+		return _type == ThingInt || _type == ThingDouble;
 	}
 	
 	ThingType getThingType()
@@ -57,11 +68,21 @@ public:
 	
 	int getIntValue()
 	{
+		if (_type == ThingDouble)
+		{
+			return _doubleValue;
+		}
+		
 		return _intValue;
 	}
 	
 	double getDoubleValue()
 	{
+		if (_type == ThingInt)
+		{
+			return _intValue;
+		}
+		
 		return _doubleValue;
 	}
 	
@@ -76,13 +97,13 @@ public:
 	}
 protected:
 	ThingType _type;
+	int _intValue;
+	double _doubleValue;
+	std::string _stringValue;
 	
 private:	
 	ParserPtr _parser;
 
-	int _intValue;
-	double _doubleValue;
-	std::string _stringValue;
 };
 
 #endif

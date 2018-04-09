@@ -142,6 +142,7 @@ public:
 
 	static std::string rTypeString(RefinementType type);
 private:
+	void executeScript();
 	static OptionsPtr options;
 	Notifiable *_notify;
 	void notifyGUI(bool enable);
@@ -164,6 +165,7 @@ private:
 	int _globalCount;
 	bool _tie;
 	bool _manual;
+	std::string _scriptName;
 
 	static bool _powder;
 	static double _kick;

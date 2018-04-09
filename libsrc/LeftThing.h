@@ -13,7 +13,6 @@ class LeftThing : public Thing
 {
 public:
 	void setThingName(std::string name);
-	ThingPtr dealWithFunction(std::string function, std::string contents);
 
 	std::string getThingName()
 	{

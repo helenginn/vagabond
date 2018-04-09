@@ -142,11 +142,11 @@ protected:
 	/**@}*/
 
 	
-friend class LeftThing;
+friend class Thing;
 	std::string *getStringProperty(std::string className);
 	double *getDoubleProperty(std::string className);
 	int *getIntProperty(std::string className);
-	ParserPtr *getParserProperty(std::string className);
+	ParserPtr getChild(std::string className, int num);
 	int getChildCount(std::string className);
 	
 	/**
@@ -189,7 +189,7 @@ private:
 		return _parent;	
 	}
 
-	void addToAllParsers(std::string key, ParserPtr parser);
+	static void addToAllParsers(std::string key, ParserPtr parser);
 	void outputContents(std::ofstream &stream, int in);
 	void clearContents();
 	void setParent(Parser *parent);

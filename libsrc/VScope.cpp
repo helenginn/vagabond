@@ -6,6 +6,7 @@
 #include "VScope.h"
 #include "VScript.h"
 #include "LeftThing.h"
+#include <iostream>
 
 VScope::VScope()
 {

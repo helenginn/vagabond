@@ -7,6 +7,7 @@
 //
 
 #include "Options.h"
+#include "VScript.h"
 #include <iostream>
 #include "PDBReader.h"
 #include "DiffractionMTZ.h"
@@ -131,6 +132,7 @@ void Options::run()
 			}
 			else if (_notify)
 			{
+				executeScript();
 				_notify->enable();
 			}
 		}
@@ -143,6 +145,15 @@ void Options::run()
 		std::cout << std::endl << "**** Finished. ****" << std::endl;
 		std::cout << std::endl;
 	}
+}
+
+void Options::executeScript()
+{
+	VScript script = VScript();
+	std::string contents = get_file_contents(_scriptName);
+	
+	script.loadScript(contents);
+	script.execute();
 }
 
 void Options::displayHelp()
@@ -203,6 +214,13 @@ void Options::parse()
 
 			objects.push_back(crystal);
 			crystals.push_back(crystal);
+			understood = true;
+		}
+
+		prefix = "--with-vscript=";
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			_scriptName = arg.substr(prefix.size());
 			understood = true;
 		}
 

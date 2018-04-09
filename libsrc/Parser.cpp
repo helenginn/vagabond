@@ -201,6 +201,16 @@ void Parser::addChild(std::string category, ParserPtr child)
 	child->setup();
 }
 
+ParserPtr Parser::getChild(std::string className, int num)
+{
+	if (!_parserList.count(className))
+	{
+		return ParserPtr();	
+	}
+
+	return _parserList[className][num];
+}
+
 int Parser::getChildCount(std::string className)
 {
 	if (!_parserList.count(className))
@@ -846,7 +856,7 @@ char *Parser::parseNextObject(char *block)
 			shout_at_user("Duplicate object " + path);
 		}
 
-		_allParsers[path] = object;
+		addToAllParsers(path, object);
 
 		if (block == NULL)
 		{
@@ -1276,7 +1286,7 @@ ParserPtr Parser::processBlock(char *block)
 	object->resolveReferences();
 
 	// Add parent to complete parser list
-	_allParsers[object->getAbsolutePath()] = object;
+	addToAllParsers(object->getAbsolutePath(), object);
 
 	// Loop through all objects to allow them to finish up.
 	for (ParserMap::iterator it = _allParsers.begin();

@@ -12,6 +12,7 @@ typedef enum
 {
 	VErrorInvalidThingType,
 	VErrorThingRedeclaration,
+	VErrorImmutableObject,
 	VErrorLeftThingNotFound,
 	VErrorReachedEOF,
 	VErrorExpectedSemicolon,
@@ -21,7 +22,12 @@ typedef enum
 	VErrorSimpleTypeFunctionCall,
 	VErrorMissingImplementation,
 	VErrorAssignmentOfVoid,
+	VErrorOperationOnVoid,
 	VErrorTypeMismatch,
+	VErrorExpectedEquals,
+	VErrorBeyondArrayBounds,
+	VErrorMissingParameter,
+	VErrorInappropriateOperation,
 } VScriptError;
 
 /**
@@ -42,24 +48,30 @@ private:
 	char *_char;
 
 	void repairScript();
-	void parse();
+	bool parse();
 
 	size_t charactersIn(char *pos);
 	LeftThingPtr getLeftThing(std::string name);
 	
 	/* Decides if the future thing is a Thing. Send in a temporary
 	* 	character position instead of the master. */
-	bool isThing(char *white, char *tmp);
-	ThingPtr getThing(char **pos);
+	bool isThing(char *tmp, char *white, bool nowind = false);
+	ThingPtr getThing(char **pos, bool nowind = false, ThingPtr left = ThingPtr());
+	ThingPtr processRest(char **_char, ThingPtr rightThing);
 	LeftThingPtr createLeftThing(std::string type, std::string name);
+
+	ThingPtr getStringThing(char **pos);
+	ThingPtr getNumberThing(char **pos);
 
 	void makeNewScope();
 	void loseScope();
+	void reportLine();
 
 	void validate(char *pos);
 	void incrementAndValidate(char **pos);
 	char *nextWhiteValidate(char *pos);
 	void wrapNextWord(char **pos, char **white);
+	void handleError(VScriptError error);
 
 	VScopePtr currentScope()
 	{

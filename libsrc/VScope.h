@@ -9,6 +9,8 @@
 
 /** Looks after a bunch of LeftThings */
 
+typedef std::map<std::string, LeftThingPtr> ThingMap;
+
 class VScope
 {
 public:
@@ -18,5 +20,5 @@ public:
 	LeftThingPtr findThing(std::string name);
 private:	
 	
-	std::map<std::string, LeftThingPtr> _things;
+	ThingMap _things;
 };
