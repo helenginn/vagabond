@@ -15,8 +15,10 @@
 #include "Sidechain.h"
 #include "Backbone.h"
 #include "Shouter.h"
+#include "charmanip.h"
 
 ParserMap Parser::_allParsers;
+ClassMap Parser::_allClasses;
 
 Parser::Parser()
 {
@@ -76,6 +78,21 @@ void Parser::addStringProperty(std::string className, std::string *ptr)
 	_stringProperties.push_back(property);
 }
 
+std::string *Parser::getStringProperty(std::string className)
+{
+	std::vector<StringProperty>::iterator it;
+	
+	for (int i = 0; i < _stringProperties.size(); i++)
+	{
+		if (_stringProperties[i].ptrName == className)
+		{
+			return _stringProperties[i].stringPtr;	
+		}
+	}
+
+	return NULL;
+}
+
 void Parser::addDoubleProperty(std::string className, double *ptr)
 {
 	DoubleProperty property;
@@ -84,12 +101,42 @@ void Parser::addDoubleProperty(std::string className, double *ptr)
 	_doubleProperties.push_back(property);
 }
 
+double *Parser::getDoubleProperty(std::string className)
+{
+	std::vector<DoubleProperty>::iterator it;
+	
+	for (int i = 0; i < _doubleProperties.size(); i++)
+	{
+		if (_doubleProperties[i].ptrName == className)
+		{
+			return _doubleProperties[i].doublePtr;	
+		}
+	}
+	
+	return NULL;
+}
+
 void Parser::addIntProperty(std::string className, int *ptr)
 {
 	IntProperty property;
 	property.ptrName = className;
 	property.intPtr = ptr;
 	_intProperties.push_back(property);
+}
+
+int *Parser::getIntProperty(std::string className)
+{
+	std::vector<IntProperty>::iterator it;
+	
+	for (int i = 0; i < _intProperties.size(); i++)
+	{
+		if (_intProperties[i].ptrName == className)
+		{
+			return _intProperties[i].intPtr;	
+		}
+	}
+
+	return NULL;
 }
 
 void Parser::addMat3x3Property(std::string className, mat3x3 *ptr)
@@ -152,6 +199,16 @@ void Parser::addChild(std::string category, ParserPtr child)
 	child->setParent(this);
 	_parserList[category].push_back(child);
 	child->setup();
+}
+
+int Parser::getChildCount(std::string className)
+{
+	if (!_parserList.count(className))
+	{
+		return 0;	
+	}
+
+	return _parserList[className].size();
 }
 
 void Parser::outputContents(std::ofstream &stream, int in)
@@ -1181,6 +1238,19 @@ ParserPtr Parser::objectOfType(char *className)
 
 	//    std::cout << "Making object of type " << className << std::endl;
 	return object;
+}
+
+void Parser::addToAllParsers(std::string key, ParserPtr parser)
+{
+	_allParsers[key] = parser;
+	std::string name = parser->getClassName();
+
+	if (_allClasses.count(name) == 0)
+	{
+		_allClasses[name] = 0;
+	}
+	
+	_allClasses[name]++;
 }
 
 ParserPtr Parser::processBlock(char *block)

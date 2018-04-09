@@ -8,3 +8,5 @@ command! Doxy !doxygen Doxyfile
 
 command Indent normal 0ggggVG=
 
+:inoremap <C-J> <Esc>"=expand("%:r:t")<C-M>pa
+

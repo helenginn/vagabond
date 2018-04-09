@@ -38,6 +38,9 @@
 #define ToAtomPtr(a) (boost::static_pointer_cast<Atom>((a)));
 #define ToAtomGroupPtr(a) (boost::static_pointer_cast<AtomGroup>((a)));
 #define ToMonomerPtr(a) (boost::static_pointer_cast<Monomer>((a)));
+#define ToParserPtr(a) (boost::static_pointer_cast<Parser>((a)));
+
+#define ToThingPtr(a) (boost::static_pointer_cast<Thing>((a)));
 
 class Notifiable;
 typedef boost::shared_ptr<Notifiable> NotifiablePtr;
@@ -132,6 +135,13 @@ typedef std::vector<AtomWkr> AtomList;
 
 class Parser;
 typedef boost::shared_ptr<Parser> ParserPtr;
+
+class VScope;
+class LeftThing;
+class Thing;
+typedef boost::shared_ptr<VScope> VScopePtr;
+typedef boost::shared_ptr<LeftThing> LeftThingPtr;
+typedef boost::shared_ptr<Thing> ThingPtr;
 
 typedef enum
 {

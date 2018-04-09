@@ -10,7 +10,6 @@
 #include "shared_ptrs.h"
 #include <map>
 #include <fstream>
-#include <sstream>
 #include <iostream>
 #include "StateValue.h"
 
@@ -44,77 +43,12 @@ typedef enum
 	ParserTypeArray,
 } ParserType;
 
-inline std::string indent(int num)
-{
-	std::ostringstream stream;
-
-	for (int i = 0; i < num; i++)
-	{
-		stream << "  ";
-	}
-	return stream.str();
-}
-
-inline char *strchrwhite(char *block)
-{
-	char *space = strchr(block, ' ');
-	char *newline = strchr(block, '\n');
-	char *tab = strchr(block, '\t');
-
-	if (tab != NULL && tab < newline) newline = tab;
-	if (space != NULL && space < newline) newline = space;
-
-	return newline;
-}
-
-inline void incrementIndent(char **block)
-{
-	while ((*block)[0] == ' ' || (*block)[0] == '\t' || (*block)[0] == '\n' || (*block)[0] == '\0')
-	{
-		(*block)++;
-	}
-}
-
-inline char *keywordValue(char *block, char **keyword, char **value) 
-{
-	char *space = strchrwhite(block);
-
-	if (space == NULL)
-	{
-		std::cout << "Space is just null" << std::endl;
-		return NULL;
-	}
-
-	*space = '\0';
-	*keyword = block;
-	block = space + 1;
-	incrementIndent(&block);
-
-	// Don't panic, we probably just have an 'object'.
-	if (block[0] != '=')
-	{
-		//        std::cout << "keyword: " << *keyword << " - block char " << *block << std::endl;
-		return block;
-	}
-
-	block++;
-	incrementIndent(&block);
-
-	space = strchrwhite(block);
-	*space = '\0';
-
-	*value = block;
-	block = space + 1;
-	incrementIndent(&block);
-
-	return block;
-}
-
 
 typedef std::map<std::string, std::vector<ParserPtr> > ParserList;
 typedef std::map<std::string, std::vector<ParserPtr> > ReferenceList;
 typedef std::map<std::string, std::vector<std::string> > ResolveList;
 typedef std::map<std::string, ParserPtr> ParserMap;
+typedef std::map<std::string, int> ClassMap;
 
 class StateValue;
 typedef std::vector<StateValue> StateValueList;
@@ -145,6 +79,16 @@ public:
 	
 	static void saveState();
 	static void restoreState(int num);
+
+	static int classCount(std::string name)
+	{
+		if (_allClasses.count(name) == 0)
+		{
+			return 0;
+		}
+		
+		return _allClasses[name];
+	}
 protected:
 	/**
 	* 	Implementation of the parser identifier should return a name of the
@@ -197,6 +141,14 @@ protected:
 	void addMat3x3ArrayProperty(std::string className, std::vector<mat3x3> *ptr);
 	/**@}*/
 
+	
+friend class LeftThing;
+	std::string *getStringProperty(std::string className);
+	double *getDoubleProperty(std::string className);
+	int *getIntProperty(std::string className);
+	ParserPtr *getParserProperty(std::string className);
+	int getChildCount(std::string className);
+	
 	/**
 	* Top level object should be called to write to a stream (usually a
 	* Crystal).
@@ -204,6 +156,7 @@ protected:
 	void writeToFile(std::ofstream &stream, int indent);
 
 	static ParserPtr resolveReference(std::string reference);
+	
 private:
 	std::string _className;
 	std::string _identifier;
@@ -236,6 +189,7 @@ private:
 		return _parent;	
 	}
 
+	void addToAllParsers(std::string key, ParserPtr parser);
 	void outputContents(std::ofstream &stream, int in);
 	void clearContents();
 	void setParent(Parser *parent);
@@ -251,6 +205,7 @@ private:
 	void resolveReferences();
 
 	static ParserMap _allParsers;
+	static ClassMap _allClasses;
 };
 
 

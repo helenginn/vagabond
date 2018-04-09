@@ -32,6 +32,7 @@
 #include "Sampler.h"
 #include "Model.h"
 #include <mutex>
+#include "charmanip.h"
 
 /** \struct AtomValue
  * \brief Stores some downstream atom information in Bond. */
