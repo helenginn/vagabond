@@ -9,6 +9,7 @@
 #include "LeftThing.h"
 #include "Thing.h"
 #include "Options.h"
+#include "Shouter.h"
 
 VScript::VScript()
 {
@@ -59,38 +60,40 @@ void VScript::incrementAndValidate(char **pos)
 	validate(*pos);
 }
 
-char *VScript::nextWhiteValidate(char *pos)
+std::string VScript::getNextWord(char **white, char limit)
 {
-	char *white = strchrwhite(pos);
-	validate(white);
+	char *pos = *white;
+	incrementAndValidate(&pos);
+	if (limit == '\0')
+	{
+		*white = strchrwhite(pos);
+	}
+	else
+	{
+		*white = strchr(pos, limit);	
+	}
+
+	validate(*white);
+
+	char tmp = **white;
+	**white = '\0';
+	std::string word = pos;
+	**white = tmp;
 	
-	*white = '\0';
-	return white;
-}
-
-/** pos will be placed at beginning of word, white will be placed at end of
- * word and set to NULL. Starting positions: *white at the end of the last
- * word. */
-void VScript::wrapNextWord(char **pos, char **white)
-{
-	*pos = *white + 1;
-	incrementAndValidate(&*pos);
-	*white = nextWhiteValidate(*pos);
-}
-
-bool VScript::isThing(char *tmp, char *white, bool nowind)
-{
-	if (!nowind)
+	/* if limit is not a white character, it cannot be automatically
+	* incremented, so we must push it forwards one */
+	
+	if (limit != '\0')
 	{
-		wrapNextWord(&tmp, &white);
+		(*white)++;
 	}
 
-	std::string firstWord = std::string(tmp);
+	return word;
+}
 
-	if (!nowind)
-	{
-		*white = ' ';
-	}
+bool VScript::isBetterThing(char *tmp)
+{
+	std::string firstWord = getNextWord(&tmp);
 	
 	if (firstWord[0] >= '0' && firstWord[0] <= '9')
 	{
@@ -102,11 +105,12 @@ bool VScript::isThing(char *tmp, char *white, bool nowind)
 
 bool VScript::parse()
 {
-	char *white;
+	std::string word;
+
+	char *first = _char;
 	try
 	{
-		incrementAndValidate(&_char);
-		white = nextWhiteValidate(_char);
+		word = getNextWord(&_char);
 	}
 	catch (const VScriptError &error)
 	{
@@ -117,11 +121,11 @@ bool VScript::parse()
 	}
 	
 	/* check reserved keywords */
-	if (_char == "if")
+	if (word == "if")
 	{
 		throw VErrorMissingImplementation;
 	}
-	else if (_char == "while")
+	else if (word == "while")
 	{
 		throw VErrorMissingImplementation;
 	}
@@ -130,25 +134,24 @@ bool VScript::parse()
 
 	/* we make a temporary char because we need to rewind if it's a
 	* Thing. */
-	
-	bool right = isThing(_char, white, true);
+
+	bool right = isBetterThing(first);
+
 
 	if (right)
 	{
-		getThing(&_char, true);
-		/* Ignore output */
+		_char = first;
+		getThing(&_char);
 		goto check_semicolon;
 	}
 	else
 	{
-		*white = '\0';
-		std::string firstWord = std::string(_char);
+		std::string firstWord = word;//std::string(_char);
 
 		/* It wasn't suitable, so we carry on with tmp as default and
 		* 	find out the next word. */
 
-		wrapNextWord(&_char, &white);
-		std::string secondWord = std::string(_char);
+		std::string secondWord = getNextWord(&_char);
 		
 		/* Confirm an equals sign in the middle */
 
@@ -172,11 +175,10 @@ bool VScript::parse()
 			/* This might be the declaration of a LeftThing. */
 			LeftThingPtr thing = createLeftThing(firstWord, secondWord);
 			
-			wrapNextWord(&_char, &white);
-			/* Confirm an equals sign in the middle */
-			std::string secondWord = std::string(_char);
+			std::string thirdWord = getNextWord(&_char);
 
-			if (secondWord != "=")
+			/* Confirm an equals sign in the middle */
+			if (thirdWord != "=")
 			{
 				throw VErrorExpectedEquals;
 			}
@@ -242,15 +244,13 @@ void VScript::reportLine()
 	
 	std::cout << "\t\t";
 	
-	for (size_t i = 0; i < errorPlace - 1; i++)
+	for (size_t i = 0; i < errorPlace; i++)
 	{
 		std::cout << " ";
 	}
 	
 	std::cout << "^ - here" << std::endl;
 	std::cout << std::endl;
-	
-	std::cout << _script << std::endl;
 }
 
 void VScript::handleError(VScriptError error)
@@ -381,6 +381,7 @@ void VScript::repairScript()
 
 ThingPtr VScript::getNumberThing(char **pos)
 {
+	incrementAndValidate(pos);
 	char *first = *pos;
 	bool isDouble = false;
 	
@@ -421,6 +422,7 @@ ThingPtr VScript::getNumberThing(char **pos)
 
 ThingPtr VScript::getStringThing(char **pos)
 {
+	incrementAndValidate(pos);
 	bool freePass = false;
 	char *first = *pos;
 	(*pos)++;
@@ -441,10 +443,13 @@ ThingPtr VScript::getStringThing(char **pos)
 		}
 	}	
 	
+	char tmp = **pos;
 	**pos = '\0';
-	*first++;
+	first++;
 
 	std::string aString = first;
+	**pos = tmp;
+
 	ThingPtr thing = ThingPtr(new Thing());
 	thing->setThingType(ThingString);
 	thing->setStringValue(aString);
@@ -455,54 +460,39 @@ ThingPtr VScript::getStringThing(char **pos)
 }
 
 /* Could be a function too, in which case may return ThingPtr(). */
-ThingPtr VScript::getThing(char **pos, bool nowind, ThingPtr thing)
+ThingPtr VScript::getThing(char **pos, ThingPtr thing, bool defRight)
 {
 	char *white = *pos;
 
 	/* Something is "right" if it involves a function on a LeftThing.
- 	 * It is always false if "thing" is an object, as this will have
-	 * occurred at some point up the stack already. */
-	bool right = (thing != ThingPtr());
+	* It is always false if "thing" is an object, as this will have
+	* occurred at some point up the stack already. */
+	bool right =  isBetterThing(*pos) || defRight;
 
-	/* If Thing is not set, however, we should check to see if it is
-	 * a right thing. */
-	if (!thing)
-	{
-		char *tmp = *pos;
-		right = isThing(tmp, white, nowind);
-	}
-
-	if (!nowind)
-	{
-		white = *pos;
-		wrapNextWord(pos, &white);
-	}
-
-	/* Start with reserved things... like numbers, strings */
-	if (**pos >= '0' && **pos <= '9')
-	{
-		ThingPtr thing = getNumberThing(pos);
-		thing = processRest(pos, thing);
-		return thing;
-	}
-	else if (**pos == '\"')
-	{
-		/* Restore the white character again */
-		*white = ' ';
-
-		ThingPtr thing = getStringThing(pos);
-		thing = processRest(pos, thing);
-		return thing;
-	}
-
-	/* If we are here but it's not a function, it must be a leftThing */
 	if (!right)
 	{
-		/* Last option is it's a LeftThing masquerading as a Thing. */
-		/* n.b. we should have a trailing semicolon. */
+		char *orig = *pos;
+		std::string word = getNextWord(pos);
 
-		std::string word = std::string(*pos);
-		*white = ' ';
+		/* Start with reserved things... like numbers, strings */
+		if (word[0] >= '0' && word[0] <= '9')
+		{
+			*pos = orig;
+			ThingPtr thing = getNumberThing(pos);
+			incrementAndValidate(pos);
+			thing = processRest(pos, thing);
+			return thing;
+		}
+		else if (word[0] == '\"')
+		{
+			*pos = orig;
+			ThingPtr thing = getStringThing(pos);
+			incrementAndValidate(pos);
+			thing = processRest(pos, thing);
+			return thing;
+		}
+
+		/* Last option is it's a LeftThing masquerading as a Thing. */
 
 		bool hasSemicolon = false;
 
@@ -514,11 +504,14 @@ ThingPtr VScript::getThing(char **pos, bool nowind, ThingPtr thing)
 		if (hasSemicolon)
 		{
 			word.pop_back();
+			(*pos)--;
+		}
+		else
+		{
+			incrementAndValidate(pos);
 		}
 
 		/* Place cursor at the semicolon when we return */
-		*pos += word.length();
-
 		LeftThingPtr left = getLeftThing(word);
 		ThingPtr right = ToThingPtr(left);
 		right = processRest(pos, right);
@@ -527,62 +520,43 @@ ThingPtr VScript::getThing(char **pos, bool nowind, ThingPtr thing)
 	
 	/* Now it's a function being performed on a thing. */
 	
-	char *dot = strchr(*pos, '.');
-	validate(dot);
-	*dot = '\0';
-	
 	ThingPtr left = thing;
-	
 	if (!thing)
 	{
-		/* word should now contain the left thing */
-		std::string word = std::string(*pos);
+		/* We need to get the thing from the right of the left dot */
+		std::string word = getNextWord(pos, '.');
 		left = getLeftThing(word);
 	}
 	
-	*pos = dot + 1;
-	validate(*pos);
+	std::string function = getNextWord(pos, '(');
+	std::string contents = getNextWord(pos, ')');
 	
-	char *leftBracket = strchr(*pos, '(');
-	validate(leftBracket);
-	*leftBracket = '\0';
-	std::string function = std::string(*pos);
-	
-	leftBracket++;
-	char *rightBracket = strchr(leftBracket, ')');
-	validate(rightBracket);
-	*rightBracket = '\0';
-	std::string contents = std::string(leftBracket);
-	
-	*pos = rightBracket + 1;
-
 	ThingPtr rightThing = left->dealWithFunction(function, contents);	
 	rightThing = processRest(pos, rightThing);
 	return rightThing;
 }
 
-ThingPtr VScript::processRest(char **_char, ThingPtr rightThing)
+ThingPtr VScript::processRest(char **pos, ThingPtr rightThing)
 {
-	incrementAndValidate(_char);
-	
-	if (**_char == ';')
+	if (**pos == ';')
 	{
 		return rightThing;
 	}
-	else if (**_char == '.')
+	else if (**pos == '.')
 	{
-		rightThing = getThing(_char, true, rightThing);
+		(*pos)++;
+		rightThing = getThing(pos, rightThing, true);
 	}
-	else if (**_char == '+')
+	else if (**pos == '+')
 	{
 		if (!rightThing)
 		{
 			throw VErrorOperationOnVoid;
 		}
-//		(*_char)++;
-//		incrementAndValidate(_char);
+		(*pos)++;
+		incrementAndValidate(pos);
 		
-		ThingPtr secondThing = getThing(_char);
+		ThingPtr secondThing = getThing(pos);
 		
 		rightThing->addThing(secondThing);
 	}
@@ -606,6 +580,7 @@ LeftThingPtr VScript::getLeftThing(std::string name)
 	
 	if (!thing)
 	{
+		warn_user("Cannot find " + name);
 		throw VErrorLeftThingNotFound;
 	}
 	

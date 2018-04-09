@@ -55,8 +55,10 @@ private:
 	
 	/* Decides if the future thing is a Thing. Send in a temporary
 	* 	character position instead of the master. */
-	bool isThing(char *tmp, char *white, bool nowind = false);
-	ThingPtr getThing(char **pos, bool nowind = false, ThingPtr left = ThingPtr());
+	bool isBetterThing(char *tmp);
+
+	ThingPtr getThing(char **pos, ThingPtr left = ThingPtr(), 
+	                  bool defRight = false);
 	ThingPtr processRest(char **_char, ThingPtr rightThing);
 	LeftThingPtr createLeftThing(std::string type, std::string name);
 
@@ -69,8 +71,7 @@ private:
 
 	void validate(char *pos);
 	void incrementAndValidate(char **pos);
-	char *nextWhiteValidate(char *pos);
-	void wrapNextWord(char **pos, char **white);
+	std::string getNextWord(char **white, char limit = '\0');
 	void handleError(VScriptError error);
 
 	VScopePtr currentScope()

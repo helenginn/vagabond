@@ -210,6 +210,8 @@ ThingPtr Thing::dealWithFunction(std::string function, std::string contents)
 	}
 	
 	std::cout << "Could not identify function?" << std::endl;
+	std::cout << function << "(" << contents << ")" << std::endl;
+
 	throw VErrorMissingImplementation;
 	
 	
