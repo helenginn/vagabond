@@ -135,6 +135,7 @@ typedef std::vector<AtomWkr> AtomList;
 
 class Parser;
 typedef boost::shared_ptr<Parser> ParserPtr;
+typedef boost::weak_ptr<Parser> ParserWkr;
 
 class VScope;
 class LeftThing;
