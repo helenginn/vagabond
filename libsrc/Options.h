@@ -66,6 +66,12 @@ public:
 		return crystals[0];
 	}
 
+	DiffractionPtr getActiveData()
+	{
+		if (!diffractions.size()) return DiffractionPtr();
+		return diffractions[0];
+	}
+
 	static double getKick()
 	{
 		return _kick;

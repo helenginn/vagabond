@@ -116,7 +116,11 @@ void Options::run()
 
 			int count = 0;
 			recalculateFFT();
-			_notify->setInstruction(InstructionTypeResetExplorer);
+			
+			if (_notify)
+			{
+				_notify->setInstruction(InstructionTypeResetExplorer);
+			}
 
 			if (shouldPowder())
 			{
@@ -124,15 +128,10 @@ void Options::run()
 				goto finished;
 			}
 
-			if (!_manual)
+			executeScript();
+
+			if (_notify)
 			{
-				refineAll(RefinementModelPos, 3, &count);
-				refineAll(RefinementModelPos, 3, &count);
-				refineAll(RefinementFine, _numCycles, &count);
-			}
-			else if (_notify)
-			{
-				executeScript();
 				_notify->enable();
 			}
 		}
@@ -149,6 +148,11 @@ void Options::run()
 
 void Options::executeScript()
 {
+	if (!_scriptName.length())
+	{
+		return;
+	}
+
 	VScript script = VScript();
 	std::string contents = get_file_contents(_scriptName);
 	
@@ -316,6 +320,7 @@ void Options::parse()
 		{
 			std::string dampen_string = arg.substr(prefix.size());
 			_dampen = atof(dampen_string.c_str());
+			understood = true;
 		}
 
 		prefix = "--anchor-res=";
@@ -479,8 +484,6 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool kee
 			refinementCycle(molecule, count, type);
 		}
 
-		(*count)++;
-
 		statusMessage("Calculating R factors...");
 
 		recalculateFFT();
@@ -536,8 +539,6 @@ void Options::applyBMultiplier()
 		{
 			std::cout << "Changing B multiplier for HETATMs to: " << _bMult << std::endl;
 			molecule->setAbsoluteBFacMult(_bMult);
-			molecule->propagateChange();
-			molecule->refreshPositions();
 		}
 	}
 
