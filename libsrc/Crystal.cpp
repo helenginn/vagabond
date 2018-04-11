@@ -559,6 +559,7 @@ void Crystal::setAnchors()
 
 Crystal::Crystal()
 {
+	_cycleNum = 0;
 	_lastRWork = FLT_MAX;
 	_bestRWork = FLT_MAX;
 	_sinceBestNum = 0;
@@ -633,6 +634,7 @@ void Crystal::writeVagabondFile(int cycleNum)
 
 double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 {
+	_cycleNum = cycleNum;
 	std::cout << "*******************************" << std::endl;
 	std::cout << "\tCycle " << cycleNum << std::endl;
 

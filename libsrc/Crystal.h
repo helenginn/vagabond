@@ -293,6 +293,7 @@ private:
 	double _lastRWork;
 	double _bestRWork;
 	int _sinceBestNum;
+	int _cycleNum;
 	
 	double _solvScale;
 	double _solvBFac;
