@@ -26,6 +26,7 @@
 #include "RefinementGridSearch.h"
 #include "BoneDensity.h"
 #include "BucketBulkSolvent.h"
+#include "Options.h"
 
 #include "../libccp4/cmtzlib.h"
 #include "../libccp4/csymlib.h"
