@@ -3,6 +3,9 @@
 // Created by Helen Ginn
 // Copyright (c) 2018 Helen Ginn. All rights reserved.
 
+#ifndef __vagabond__VScript__
+#define __vagabond__VScript__
+
 #include <string>
 #include <vector>
 
@@ -16,6 +19,8 @@ typedef enum
 	VErrorLeftThingNotFound,
 	VErrorReachedEOF,
 	VErrorExpectedSemicolon,
+	VErrorExpectedComma,
+	VErrorExpectedBracket,
 	VErrorGetterDoesNotExist,
 	VErrorCounterDoesNotExist,
 	VErrorCounterInappropriate,
@@ -25,10 +30,21 @@ typedef enum
 	VErrorOperationOnVoid,
 	VErrorTypeMismatch,
 	VErrorExpectedEquals,
+	VErrorExpectedOperator,
 	VErrorBeyondArrayBounds,
 	VErrorMissingParameter,
+	VErrorInappropriateParameter,
 	VErrorInappropriateOperation,
+	VErrorInappropriateScopeEnd,
 } VScriptError;
+
+typedef enum
+{
+	VCompEqual,
+	VCompLessThan,
+	VCompGreaterThan,
+	VCompUnassigned,
+} VScriptComparison;
 
 /**
  * \class VScript
@@ -65,10 +81,14 @@ private:
 	ThingPtr getStringThing(char **pos);
 	ThingPtr getNumberThing(char **pos);
 
+	void skipNextScope(char **_char);
+	void executeNextScope(char **_char);
+
 	void makeNewScope();
 	void loseScope();
 	void reportLine();
 
+	bool evaluateCondition(char **_char);
 	void validate(char *pos);
 	void incrementAndValidate(char **pos);
 	std::string getNextWord(char **white, char limit = '\0');
@@ -82,3 +102,5 @@ private:
 	/* Will act like a stack */
 	std::vector<VScopePtr> _scopes;
 };
+
+#endif

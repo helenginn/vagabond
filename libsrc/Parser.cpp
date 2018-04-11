@@ -40,7 +40,7 @@ void Parser::setup(bool isNew)
 		
 		std::string path = getAbsolutePath();
 		ParserPtr newPointer = shared_from_this();
-		_allParsers[path] = newPointer;
+		addToAllParsers(path, newPointer);
 	}
 
 	addProperties();
@@ -211,6 +211,16 @@ ParserPtr Parser::getChild(std::string className, int num)
 	return _parserList[className][num];
 }
 
+void Parser::exposeFunction(std::string funcName, Getter func)
+{
+	_functionList[funcName] = func;
+}
+
+void Parser::exposeFunction(std::string funcName, Setter func)
+{
+	_setterList[funcName] = func;
+}
+
 int Parser::getChildCount(std::string className)
 {
 	if (!_parserList.count(className))
@@ -342,7 +352,7 @@ void Parser::outputContents(std::ofstream &stream, int in)
 
 		for (int j = 0; j < it->second.size(); j++)
 		{
-			ParserPtr child = it->second.at(j);
+			ParserPtr child = it->second.at(j).lock();
 			stream << indent(in) << child->getAbsolutePath() << std::endl;
 		}
 
@@ -401,7 +411,7 @@ void Parser::restoreState(int num)
 	
 	if (count == 0) return;
 	
-	int totalStates = _allParsers.begin()->second->stateCount();
+	int totalStates = _allParsers.begin()->second.lock()->stateCount();
 	
 	/* If we specify state -1, we want the last-but-one state */
 	if (num < 0)
@@ -419,9 +429,14 @@ void Parser::restoreState(int num)
 	for (ParserMap::iterator it = _allParsers.begin();
 	     it != _allParsers.end(); it++) 
 	{
-		it->second->privateRestoreState(num);	
+		it->second.lock()->privateRestoreState(num);	
 	}
 	
+	for (ParserMap::iterator it = _allParsers.begin();
+	     it != _allParsers.end(); it++) 
+	{
+		it->second.lock()->postRestoreState();	
+	}
 }
 
 void Parser::privateRestoreState(int num)
@@ -446,7 +461,12 @@ void Parser::saveState()
 	for (ParserMap::iterator it = _allParsers.begin();
 	     it != _allParsers.end(); it++) 
 	{
-		it->second->privateSaveState();	
+		if (it->second.expired())
+		{
+			continue;
+		}
+
+		it->second.lock()->privateSaveState();	
 	}
 }
 
@@ -570,7 +590,7 @@ void Parser::clearContents()
 void Parser::writeToFile(std::ofstream &stream, int in)
 {
 	clearContents();
-
+	
 	setup();
 
 	stream << "vagabond data structure v0.0" << std::endl;
@@ -1292,7 +1312,7 @@ ParserPtr Parser::processBlock(char *block)
 	for (ParserMap::iterator it = _allParsers.begin();
 	     it != _allParsers.end(); it++)
 	{
-		ParserPtr aParser = it->second;
+		ParserPtr aParser = it->second.lock();
 		aParser->postParseTidy();
 	}
 
@@ -1308,7 +1328,7 @@ ParserPtr Parser::processBlock(char *block)
 
 ParserPtr Parser::resolveReference(std::string reference)
 {
-	return _allParsers[reference];
+	return _allParsers[reference].lock();
 }
 
 void Parser::resolveReferences()

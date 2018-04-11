@@ -12,6 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include "StateValue.h"
+#include "RefinementStrategy.h"
 
 /**
  * \class Parser
@@ -45,9 +46,11 @@ typedef enum
 
 
 typedef std::map<std::string, std::vector<ParserPtr> > ParserList;
-typedef std::map<std::string, std::vector<ParserPtr> > ReferenceList;
+typedef std::map<std::string, std::vector<ParserWkr> > ReferenceList;
 typedef std::map<std::string, std::vector<std::string> > ResolveList;
-typedef std::map<std::string, ParserPtr> ParserMap;
+typedef std::map<std::string, Getter > FunctionList;
+typedef std::map<std::string, Setter > SetterList;
+typedef std::map<std::string, ParserWkr> ParserMap;
 typedef std::map<std::string, int> ClassMap;
 
 class StateValue;
@@ -139,8 +142,29 @@ protected:
 	void addReference(std::string category, ParserPtr cousin);
 	void addVec3ArrayProperty(std::string className, std::vector<vec3> *ptr);
 	void addMat3x3ArrayProperty(std::string className, std::vector<mat3x3> *ptr);
+	void exposeFunction(std::string funcName, Getter func);
+	void exposeFunction(std::string funcName, Setter func);
 	/**@}*/
 
+	bool hasFunction(std::string funcName)
+	{
+		return (_functionList.count(funcName) > 0);		
+	}
+	
+	Getter getFunction(std::string funcName)
+	{
+		return _functionList[funcName];
+	}
+	
+	bool hasSetter(std::string funcName)
+	{
+		return (_setterList.count(funcName) > 0);		
+	}
+	
+	Setter getSetter(std::string funcName)
+	{
+		return _setterList[funcName];
+	}
 	
 friend class Thing;
 	std::string *getStringProperty(std::string className);
@@ -157,6 +181,8 @@ friend class Thing;
 
 	static ParserPtr resolveReference(std::string reference);
 	
+	void privateRestoreState(int num);
+	virtual void postRestoreState() {};
 private:
 	std::string _className;
 	std::string _identifier;
@@ -176,13 +202,14 @@ private:
 	ResolveList _resolveList;
 	ParserList _parserList;
 	ReferenceList _referenceList;
+	FunctionList _functionList;
+	SetterList _setterList;
 
 	void makePath();
 	void setup(bool isNew = false);
 	bool _setup;
 	
 	void privateSaveState();
-	void privateRestoreState(int num);
 	
 	Parser *getParent()
 	{

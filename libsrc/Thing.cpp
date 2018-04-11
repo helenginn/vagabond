@@ -90,11 +90,9 @@ std::vector<std::string> splitContents(std::string contents)
 	return params;
 }
 
-/* This will need to be moved into Thing */
-ThingPtr Thing::dealWithFunction(std::string function, std::string contents)
+ThingPtr Thing::dealWithFunction(std::string function, 
+                                 std::vector<ThingPtr> things)
 {
-	std::vector<std::string> params = splitContents(contents);
-	
 	/* Some special function calls... get_molecule, or count_molecule for
  * 	* example - we can try and find it now. */
 	
@@ -176,12 +174,17 @@ ThingPtr Thing::dealWithFunction(std::string function, std::string contents)
 		}
 		else if (_subThing == ThingParser && get)
 		{
-			if (params.size() < 1)
+			if (things.size() < 1)
 			{
 				throw VErrorMissingParameter;	
 			}
-			
-			int get_num = atoi(params[0].c_str());
+
+			if (!things[0]->isNumber())
+			{
+				throw VErrorInappropriateParameter;
+			}
+
+			int get_num = things[0]->getIntValue();
 			
 			if (get_num >= childCount)
 			{
@@ -208,9 +211,47 @@ ThingPtr Thing::dealWithFunction(std::string function, std::string contents)
 		printDescription();
 		return ThingPtr();
 	}
+
+	if (function == "class")
+	{
+		if (_type != ThingParser)
+		{
+			throw VErrorSimpleTypeFunctionCall;
+		}
+		
+		ThingPtr right = ThingPtr(new Thing());
+		right->setThingType(ThingString);
+		std::string name = getParserValue()->getClassName();
+		right->setStringValue(name);
+		return right;
+	}
+	
+	
+	if (getParserValue()->hasFunction(function))
+	{
+		Parser *ptr = &*(getParserValue()); 
+		Getter func = getParserValue()->getFunction(function);
+		(*func)(&*ptr);
+		return ThingPtr();
+	}
+	
+	if (getParserValue()->hasSetter(function))
+	{
+		ParserPtr parser = getParserValue();
+		Parser *ptr = &*(getParserValue()); 
+		
+		if (!things[0]->isNumber())
+		{
+			throw VErrorInappropriateParameter;
+		}
+		
+		double get_double = things[0]->getDoubleValue();
+		Setter func = getParserValue()->getSetter(function);
+		(*func)(ptr, get_double);
+		return ThingPtr();
+	}
 	
 	std::cout << "Could not identify function?" << std::endl;
-	std::cout << function << "(" << contents << ")" << std::endl;
 
 	throw VErrorMissingImplementation;
 	
@@ -255,5 +296,25 @@ void Thing::addThing(ThingPtr right)
 	throw VErrorInappropriateOperation;
 }
 
-
+VScriptComparison Thing::compareToThing(ThingPtr other)
+{
+	if (this->getThingType() == ThingInt && other->isNumber())
+	{
+		int val1 = getIntValue();
+		int val2 = other->getIntValue();
+		return compare(val1, val2);
+	}	
+	else if (this->getThingType() == ThingDouble && other->isNumber())
+	{
+		double val1 = getDoubleValue();
+		double val2 = other->getDoubleValue();
+		return compare(val1, val2);
+	}	
+	else if (this->getThingType() == ThingString)
+	{
+		std::string val1 = getStringValue();
+		std::string val2 = other->getStringValue();
+		return compare(val1, val2);
+	}
+}
 

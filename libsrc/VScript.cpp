@@ -31,6 +31,11 @@ void VScript::makeNewScope()
 
 void VScript::loseScope()
 {
+	if (_scopes.size() <= 1)
+	{
+		throw VErrorInappropriateScopeEnd;
+	}
+	
 	_scopes.pop_back();
 }
 
@@ -60,6 +65,7 @@ void VScript::incrementAndValidate(char **pos)
 	validate(*pos);
 }
 
+/* Will put the 'white' character to the one after the word ending */
 std::string VScript::getNextWord(char **white, char limit)
 {
 	char *pos = *white;
@@ -91,16 +97,133 @@ std::string VScript::getNextWord(char **white, char limit)
 	return word;
 }
 
+inline bool looksLikeNumber(char *tmp)
+{
+	if (*tmp >= '0' && *tmp <= '9')
+	{
+		return true;
+	}
+	else if (*tmp == '.' || *tmp == '-')
+	{
+		return true;
+	}
+	
+	return false;
+}
+
 bool VScript::isBetterThing(char *tmp)
 {
 	std::string firstWord = getNextWord(&tmp);
 	
-	if (firstWord[0] >= '0' && firstWord[0] <= '9')
+	if (looksLikeNumber(&firstWord[0]))
 	{
 		return false;
 	}
 	
 	return (firstWord.find('.') != std::string::npos);
+}
+
+/* Condition reads like: (variable > 0) with brackets */
+bool VScript::evaluateCondition(char **_char)
+{
+	(*_char)++;
+	incrementAndValidate(_char);
+
+	if (**_char != '(')
+	{
+		throw VErrorExpectedBracket;
+	}
+	
+	(*_char)++;
+	incrementAndValidate(_char);
+	ThingPtr firstSide = getThing(_char);
+	
+	std::string op = getNextWord(_char);
+	
+	if (op != "==" && op != ">" && op != "<")
+	{
+		throw VErrorExpectedOperator;
+	}
+	
+	VScriptComparison comp;
+
+	if (op == "==")
+	{
+		comp = VCompEqual;
+	}
+	else if (op == ">")
+	{
+		comp = VCompGreaterThan;
+	}
+	else if (op == "<")
+	{
+		comp = VCompLessThan;
+	}
+	
+	ThingPtr secondSide = getThing(_char);
+
+	if (**_char != ')')
+	{
+		throw VErrorExpectedBracket;
+	}
+	
+	(*_char)++;
+	incrementAndValidate(_char);
+	
+	VScriptComparison actual = firstSide->compareToThing(secondSide);
+	
+	return (actual == comp);
+}
+
+void VScript::skipNextScope(char **_char)
+{
+	if (**_char != '{')
+	{
+		throw VErrorExpectedBracket;
+	}
+	
+	int brackets = 1;
+	
+	while (brackets > 0)
+	{
+		(*_char)++;
+		validate(*_char);
+		
+		if (**_char == '{')
+		{
+			brackets++;
+		}
+		else if (**_char == '}')
+		{
+			brackets--;
+		}
+	}
+	
+	(*_char)++;
+	validate(*_char);
+}
+
+void VScript::executeNextScope(char **_char)
+{
+	if (**_char != '{')
+	{
+		throw VErrorExpectedBracket;
+	}
+	
+	(*_char)++;
+	incrementAndValidate(_char);
+
+	makeNewScope();
+	
+	bool more = true;
+
+	while (more)
+	{
+		more = parse();
+	}
+	
+	(*_char)++;
+	validate(*_char);
 }
 
 bool VScript::parse()
@@ -121,13 +244,49 @@ bool VScript::parse()
 	}
 	
 	/* check reserved keywords */
+	if (word == "}")
+	{
+		loseScope();
+		return false;
+	}
 	if (word == "if")
 	{
-		throw VErrorMissingImplementation;
+		bool proceed = evaluateCondition(&_char);
+		
+		if (!proceed)
+		{
+			skipNextScope(&_char);
+		}
+		else
+		{
+			executeNextScope(&_char);
+		}
+
+		return true;
 	}
 	else if (word == "while")
 	{
-		throw VErrorMissingImplementation;
+		char *first = _char;
+
+		bool proceed = evaluateCondition(&_char);
+		
+		if (!proceed)
+		{
+			skipNextScope(&_char);
+		}
+		else
+		{	
+			while (proceed)
+			{
+				executeNextScope(&_char);
+				_char = first;
+				proceed = evaluateCondition(&_char);
+			}
+
+			skipNextScope(&_char);
+		}
+
+		return true;
 	}
 
 	/* must be expecting a left thing ... or up to two words. */
@@ -203,7 +362,7 @@ check_semicolon:
 		throw VErrorExpectedSemicolon;
 	}
 	
-	_char++;
+	(_char)++;
 	return true;
 }
 
@@ -277,12 +436,20 @@ void VScript::handleError(VScriptError error)
 		std::cout << "Unexpectedly reached end of file";
 		break;
 		
+		case VErrorExpectedBracket:
+		std::cout << "Expected a bracket" << std::endl;
+		break;
+		
 		case VErrorExpectedEquals:
-		std::cout << "Expected a = sign." << std::endl;
+		std::cout << "Expected a = sign" << std::endl;
 		break;
 		
 		case VErrorExpectedSemicolon:
 		std::cout << "Expecting semicolon";
+		break;
+		
+		case VErrorExpectedOperator:
+		std::cout << "Expected comparison operator (==, < or >)";
 		break;
 		
 		case VErrorGetterDoesNotExist:
@@ -312,6 +479,18 @@ void VScript::handleError(VScriptError error)
 		
 		case VErrorInappropriateOperation:
 		std::cout << "Inappropriate operation on object types";
+		break;
+		
+		case VErrorInappropriateScopeEnd:
+		std::cout << "Inappropriate end of scope";
+		break;
+		
+		case VErrorExpectedComma:
+		std::cout << "Expecting comma";
+		break;
+		
+		case VErrorInappropriateParameter:
+		std::cout << "Inappropriate parameter for function";
 		break;
 		
 		case VErrorAssignmentOfVoid:
@@ -385,7 +564,7 @@ ThingPtr VScript::getNumberThing(char **pos)
 	char *first = *pos;
 	bool isDouble = false;
 	
-	while ((**pos >= '0' && **pos <= '9') || **pos == '.')
+	while (looksLikeNumber(*pos))
 	{
 		if (**pos == '.')
 		{
@@ -475,7 +654,7 @@ ThingPtr VScript::getThing(char **pos, ThingPtr thing, bool defRight)
 		std::string word = getNextWord(pos);
 
 		/* Start with reserved things... like numbers, strings */
-		if (word[0] >= '0' && word[0] <= '9')
+		if (looksLikeNumber(&word[0]))
 		{
 			*pos = orig;
 			ThingPtr thing = getNumberThing(pos);
@@ -494,19 +673,25 @@ ThingPtr VScript::getThing(char **pos, ThingPtr thing, bool defRight)
 
 		/* Last option is it's a LeftThing masquerading as a Thing. */
 
-		bool hasSemicolon = false;
+		bool hasEndRubbish = false;
+		bool done = false;
 
-		if (word[word.length() - 1] == ';')
+		while (!done)
 		{
-			hasSemicolon = true;
+			char finalchar = word[word.length() - 1];
+			if (finalchar == ';' || finalchar == ')' || finalchar == ',')
+			{
+				hasEndRubbish = true;
+				word.pop_back();
+				(*pos)--;
+			}
+			else
+			{
+				break;
+			}
 		}
 
-		if (hasSemicolon)
-		{
-			word.pop_back();
-			(*pos)--;
-		}
-		else
+		if (!hasEndRubbish)
 		{
 			incrementAndValidate(pos);
 		}
@@ -529,9 +714,29 @@ ThingPtr VScript::getThing(char **pos, ThingPtr thing, bool defRight)
 	}
 	
 	std::string function = getNextWord(pos, '(');
-	std::string contents = getNextWord(pos, ')');
+
+	std::vector<ThingPtr> things;
+
+	while (**pos != ')')
+	{
+		incrementAndValidate(pos);
+		ThingPtr thing = getThing(pos);
+		things.push_back(thing);
+		
+		if (**pos != ',' && **pos != ')')
+		{
+			throw VErrorExpectedComma;	
+		}
+		else if (**pos == ',')
+		{
+			(*pos)++;
+		}
+	}
+
+	(*pos)++;
+	incrementAndValidate(pos);	
 	
-	ThingPtr rightThing = left->dealWithFunction(function, contents);	
+	ThingPtr rightThing = left->dealWithFunction(function, things);	
 	rightThing = processRest(pos, rightThing);
 	return rightThing;
 }
@@ -557,8 +762,9 @@ ThingPtr VScript::processRest(char **pos, ThingPtr rightThing)
 		incrementAndValidate(pos);
 		
 		ThingPtr secondThing = getThing(pos);
-		
 		rightThing->addThing(secondThing);
+		
+		return rightThing;
 	}
 	
 	return rightThing;

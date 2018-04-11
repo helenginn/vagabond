@@ -7,6 +7,7 @@
 #define __vagabond__Thing__
 
 #include "shared_ptrs.h"
+#include "VScript.h"
 
 typedef enum
 {
@@ -23,12 +24,14 @@ class Thing
 public:
 	Thing();
 	
-	ThingPtr dealWithFunction(std::string function, std::string contents);
+	ThingPtr dealWithFunction(std::string function, 
+	                          std::vector<ThingPtr> things);
 	void printDescription();
 	std::string description();
 	
 	virtual void addThing(ThingPtr right);
 	
+	VScriptComparison compareToThing(ThingPtr other);
 	void setThingType(std::string type);
 	void setThingType(ThingType type)
 	{
@@ -105,5 +108,23 @@ private:
 	ParserPtr _parser;
 
 };
+
+template <class T>
+VScriptComparison compare(T &one, T &two)
+{
+	if (one == two)
+	{
+		return VCompEqual;
+	}
+	else if (one > two)
+	{
+		return VCompGreaterThan;
+	}
+	else if (one < two)
+	{
+		return VCompLessThan;
+	}
+}
+
 
 #endif
