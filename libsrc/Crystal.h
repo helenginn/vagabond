@@ -53,6 +53,8 @@ public:
 	* 	\param data diffraction data against which statistics should be generated.
 	*/
 	double concludeRefinement(int cycleNum, DiffractionPtr data);
+	static double vsConcludeRefinement(void *object);
+	static void vsRestoreState(void *object, double val);
 
 	/**
 	* How many molecules are included in a Crystal.
@@ -258,7 +260,9 @@ public:
 	
 	/** Analysis of backbone density and generation of heuristics */
 	void backboneDensityAnalysis();
+	static double vsRefineBackboneToDensity(void *object);
 protected:
+	virtual void postRestoreState();
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual std::string getParserIdentifier()
 	{

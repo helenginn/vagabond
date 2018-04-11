@@ -756,6 +756,14 @@ void Crystal::hydrogenateContents()
 	}
 }
 
+double Crystal::vsRefineBackboneToDensity(void *object)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Crystal *crystal = dynamic_cast<Crystal *>(parser);
+
+	crystal->backboneDensityAnalysis();
+}
+
 void Crystal::backboneDensityAnalysis()
 {
 	for (int i = 0; i < moleculeCount(); i++)
@@ -835,6 +843,7 @@ void Crystal::addProperties()
 	addDoubleProperty("r_free", &_rFree);
 	addDoubleProperty("cc_work", &_ccWork);
 	addDoubleProperty("cc_free", &_ccFree);
+	addIntProperty("cycles_since_best", &_sinceBestNum);
 
 	_spgNum = 0;
 	if (_spaceGroup)
@@ -848,6 +857,19 @@ void Crystal::addProperties()
 	{
 		addChild("molecule", molecule(i));
 	}
+	
+	exposeFunction("recalculate_map", Crystal::vsConcludeRefinement);
+	exposeFunction("restore_state", Crystal::vsRestoreState);
+	exposeFunction("refine_backbone_to_density",
+	               Crystal::vsRefineBackboneToDensity);
+}
+
+void Crystal::vsRestoreState(void *object, double val)
+{
+	int value = lrint(val);
+
+	Parser *parser = static_cast<Parser *>(object);
+	parser->restoreState(value);
 }
 
 void Crystal::addObject(ParserPtr object, std::string category)
@@ -918,4 +940,27 @@ void Crystal::clearCloseCache()
 	}	
 }
 
+double Crystal::vsConcludeRefinement(void *object)
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	DiffractionPtr data = options->getActiveData();
+	
+	Parser *parser = static_cast<Parser *>(object);
+	Crystal *crystal = dynamic_cast<Crystal *>(parser);
+	crystal->_cycleNum++;
+	int num = crystal->_cycleNum;
+	crystal->concludeRefinement(num, data);
+	crystal->saveState();
+	
+	return 0;
+}
+
+void Crystal::postRestoreState()
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	DiffractionPtr data = options->getActiveData();
+	
+	_cycleNum++;
+	concludeRefinement(_cycleNum, data);
+}
 

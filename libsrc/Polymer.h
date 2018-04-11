@@ -47,6 +47,11 @@ public:
 	virtual void tieAtomsUp();
 	void splitConformers();
 	virtual void refine(CrystalPtr target, RefinementType rType);
+	
+	static void refineVScript(void *object, RefinementType rType);
+	static double vsRefineSidechainsToDensity(void *object);
+	static double vsRefinePositionsToPDB(void *object);
+	
 	virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal);
 	virtual void graph(std::string graphName);
 	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst);
@@ -65,6 +70,16 @@ public:
 
 	void scaleSidechainsToBFactor();
 	void superimpose();
+	
+	static double vsSuperimpose(void *object)
+	{
+		Parser *parser = static_cast<Parser *>(object);
+		Polymer *polymer = dynamic_cast<Polymer *>(parser);
+		
+		polymer->superimpose();
+		return 0;
+	}
+	
 	virtual void reportParameters();
 	void downWeightResidues(int start, int end, double value);
 
@@ -213,6 +228,10 @@ public:
 		static_cast<Polymer *>(object)->applyTranslationTensor();
 	}
 
+	static void vsTransTensorOverall(void *object, double value);
+	static double vsFitRotation(void *object);
+	static double vsFitTranslation(void *object);
+
 	static void setRotPhi(void *object, double value)
 	{
 		Polymer *polymer = static_cast<Polymer *>(object);
@@ -239,6 +258,14 @@ public:
 		return static_cast<Polymer *>(object)->_tmpPsi;
 	}
 
+	static void vsSetRotAngle(void *object, double value)
+	{
+		Parser *parser = static_cast<Parser *>(object);
+		Polymer *polymer = dynamic_cast<Polymer *>(parser);
+		setRotAngle(polymer, value);
+		std::cout << "Rot: " << polymer->_rotationAngle << std::endl;
+	}
+	
 	static void setRotAngle(void *object, double value)
 	{
 		Polymer *polymer = static_cast<Polymer *>(object);

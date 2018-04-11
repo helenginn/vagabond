@@ -234,6 +234,9 @@ void Molecule::addProperties()
 	addDoubleProperty("rotation_angle", &_rotationAngle);
 	addMat3x3ArrayProperty("extra_rotations", &_extraRotationMats);
 	addMat3x3ArrayProperty("rotations", &_rotations);
+	
+	exposeFunction("set_absolute_bfac_mult", vsSetAbsoluteBFacMult);
+	exposeFunction("set_absolute_bfac_subtract", vsSetAbsoluteBFacSubtract);
 
 	for (int i = 0; i < atomCount(); i++)
 	{
@@ -244,11 +247,19 @@ void Molecule::addProperties()
 void Molecule::setAbsoluteBFacMult(double mult)
 {
 	_absoluteBFacMult = mult;
+	std::cout << "Setting absolute B factor multiplier to " << mult << std::endl;
+	refreshBModels();
+}
+
+void Molecule::refreshBModels()
+{
 	for (int i = 0; i < atomCount(); i++)
 	{
 		ModelPtr model = atom(i)->getModel();
 		model->recalculate();
 	}
+	propagateChange();
+	refreshPositions();
 }
 
 void Molecule::postParseTidy()

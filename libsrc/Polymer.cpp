@@ -287,6 +287,29 @@ void Polymer::refineRange(int start, int end, CrystalPtr target, RefinementType 
 	clearParams();
 }
 
+void Polymer::refineVScript(void *object, RefinementType rType)
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr active = options->getActiveCrystal();
+	
+	Parser *parser = static_cast<Parser *>(object);
+	Polymer *polymer = dynamic_cast<Polymer *>(parser);
+	polymer->refine(active, rType);
+}
+
+double Polymer::vsRefinePositionsToPDB(void *object)
+{
+	refineVScript(object, RefinementModelPos);
+	return 0;
+}
+
+double Polymer::vsRefineSidechainsToDensity(void *object)
+{
+	refineVScript(object, RefinementSidechain);
+	return 0;	
+}
+
+
 void Polymer::refine(CrystalPtr target, RefinementType rType)
 {
 	if (rType == RefinementSidechain)
@@ -296,6 +319,8 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 		
 		return;	
 	}
+	
+	Timer timer = Timer("refinement", true);
 	
 	std::cout << std::endl;
 	std::cout << "Refining chain " << getChainID() << " from anchor to N-terminus...";
@@ -338,7 +363,7 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 	std::cout << std::endl << std::endl;
 
-
+	timer.report();
 }
 
 std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal)
@@ -1182,6 +1207,32 @@ void Polymer::reportParameters()
 	<< " refinable bonds." << std::endl;
 }
 
+void Polymer::vsTransTensorOverall(void *object, double value)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Polymer *polymer = dynamic_cast<Polymer *>(parser);
+
+	polymer->_transTensor = make_mat3x3();
+	mat3x3_mult_scalar(&polymer->_transTensor, value);
+	polymer->applyTranslationTensor();
+}
+
+double Polymer::vsFitTranslation(void *object)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Polymer *polymer = dynamic_cast<Polymer *>(parser);
+
+	polymer->optimiseWholeMolecule(true, false);
+}
+
+double Polymer::vsFitRotation(void *object)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Polymer *polymer = dynamic_cast<Polymer *>(parser);
+
+	polymer->optimiseWholeMolecule(false, true);
+}
+
 void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 {
 	std::cout << "Optimising whole molecule shifts to match the electron density." << std::endl;
@@ -1272,6 +1323,14 @@ void Polymer::addProperties()
 
 		addChild("monomer", getMonomer(i));
 	}
+	
+	exposeFunction("set_rot_angle", vsSetRotAngle);
+	exposeFunction("refine_positions_to_pdb", vsRefinePositionsToPDB);
+	exposeFunction("refine_sidechains_to_density", vsRefineSidechainsToDensity);
+	exposeFunction("superimpose", vsSuperimpose);
+	exposeFunction("set_overall_translation", vsTransTensorOverall);
+	exposeFunction("fit_translation", vsFitTranslation);
+	exposeFunction("fit_rotation", vsFitRotation);
 }
 
 void Polymer::addObject(ParserPtr object, std::string category)

@@ -56,6 +56,15 @@ public:
 	void setAbsoluteBFacSubtract(double subtract)
 	{
 		_absoluteBFacSubtract = subtract;
+		std::cout << "Setting absolute B factor subtractor to " << subtract << std::endl;
+		refreshBModels();
+	}
+
+	static void vsSetAbsoluteBFacSubtract(void *object, double value)
+	{
+		Parser *parser = static_cast<Parser *>(object);
+		Molecule *molecule = dynamic_cast<Molecule *>(parser);
+		molecule->setAbsoluteBFacSubtract(value);	
 	}
 
 	double getAbsoluteBFacMult()
@@ -63,7 +72,14 @@ public:
 		return _absoluteBFacMult;
 	}
 
+	void refreshBModels();
 	void setAbsoluteBFacMult(double mult);
+	static void vsSetAbsoluteBFacMult(void *object, double mult)
+	{
+		Parser *parser = static_cast<Parser *>(object);
+		Molecule *molecule = dynamic_cast<Molecule *>(parser);
+		molecule->setAbsoluteBFacMult(mult);	
+	}
 
 	void setChainID(std::string chain)
 	{

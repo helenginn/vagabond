@@ -178,9 +178,9 @@ void Monomer::tieAtomsUp()
 
 void Monomer::setBackboneDampening(double value)
 {
-	for (int i = 0; i < atomCount(); i++)
+	for (int i = 0; i < getBackbone()->atomCount(); i++)
 	{
-		if (atom(i)->getModel()->isBond())
+		if (getBackbone()->atom(i)->getModel()->isBond())
 		{
 			BondPtr bond = ToBondPtr(atom(i)->getModel());
 
