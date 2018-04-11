@@ -521,10 +521,12 @@ double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plo
 		selected.push_back(atom(i));
 	}
 	
-//	if (plot)
+	/*
+	if (plot)
 	{
 		return scoreWithMapQuick(scoreType, crystal, plot, selected);	
 	}
+	*/
 
 	return scoreWithMapGeneral(scoreType, crystal, plot, selected);
 }
