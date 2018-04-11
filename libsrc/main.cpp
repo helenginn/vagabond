@@ -33,9 +33,9 @@ int main(int argc, const char * argv[])
 	signal(SIGSEGV, handler);
 	signal(SIGABRT, handler);
 
-
-	Options options(argc, argv);
-	options.run();
+    OptionsPtr options = OptionsPtr(new Options(argc, (const char **)argv));
+    Options::setRuntimeOptions(options);
+    options->run();
 
 	return 0;
 }
