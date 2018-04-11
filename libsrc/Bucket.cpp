@@ -146,11 +146,16 @@ void Bucket::applySymOps(CSym::CCP4SPG *spaceGroup, double res)
 
 void Bucket::fourierTransform(int dir, double res)
 {
-	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
+	/* Only care about reciprocal space */
+	if (dir == 1)
+	{
+		CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
 
-	_solvent->fft(dir);
-	applySymOps(spg, res);
-	_solvent->normalise();
+		_solvent->fft(dir);
+		applySymOps(spg, res);
+		_solvent->normalise();
+	}
+
 }
 
 void Bucket::writeMillersToFile(std::string prefix, double maxRes)
