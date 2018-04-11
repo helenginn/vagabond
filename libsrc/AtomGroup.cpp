@@ -553,7 +553,7 @@ mat3x3 *basis, vec3 *ave)
 
 	if (sum.x != sum.x)
 	{
-		return 0;
+		return FFTPtr();
 	}
 
 	*ave = sum;
