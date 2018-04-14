@@ -986,6 +986,13 @@ double Bond::getCirclePortion(void *object)
 	return 0;
 }
 
+bool Bond::connectsAtom(std::string name)
+{
+	return (getMinor()->getAtomName() == name ||
+	        getMajor()->getAtomName() == name);
+
+}
+
 double Bond::getBendAngle(void *object)
 {
 	Bond *bond = static_cast<Bond *>(object);
