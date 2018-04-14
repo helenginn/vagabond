@@ -461,13 +461,6 @@ public:
 		return _bondGroups[group].extraTorsionSamples[i].lock();
 	}
 
-	void setAnchored()
-	{
-		_anchored = true;
-		_changedPos = false;
-		_changedSamples = false;
-	}
-
 
 	/** Will define torsion basis as:
 	* x: along line of 0º torsion angle.
@@ -483,8 +476,6 @@ public:
 
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 	std::vector<BondSample> *getManyPositions();
-
-	std::vector<vec3> polymerCorrectedPositions();
 
 	static void useMutex()
 	{
