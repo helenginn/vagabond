@@ -70,7 +70,6 @@ public:
 	Bond(Bond &other);
 	Bond();
 	virtual ~Bond() {};
-	void initialize();
 
 	/**
 	* After a bond has been initialised with a major and minor (pre-existing)
@@ -532,6 +531,7 @@ protected:
 	friend class StateValue;
 
 private:
+	void initialize();
 	std::string _shortDesc;
 
 	AtomWkr _major;
