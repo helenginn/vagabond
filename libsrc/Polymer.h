@@ -22,12 +22,15 @@
  * forming a polymer chain.
  */
 
+class FlexGlobal;
+
 class Polymer : public Molecule
 {
 public:
 	Polymer()
 	{
-		_dampening = 0.05;
+		_dampening = Options::getDampen();
+		_kick = Options::getKick();
 		_sideDampening = 0.05;
 		_sideKick = 0;
 		_anchorNum = 0;
@@ -59,6 +62,9 @@ public:
 	static double getBackboneDampening(void *object);
 	static void setBackboneDampening(void *object, double value);
 
+	static double getBackboneKick(void *object);
+	static void setBackboneKick(void *object, double value);
+
 	static double getSidechainDampening(void *object);
 	static void setSidechainDampening(void *object, double value);
 
@@ -68,9 +74,15 @@ public:
 	static double getSideKick(void *object);
 	static void setSideKick(void *object, double value);
 
+	static double findOverallKickAndDampen(void *object);
+	static double vsFindKickAndDampen(void *object);
+	
 	void scaleSidechainsToBFactor();
 	void superimpose();
 	
+	void attachTargetToRefinement(RefinementStrategyPtr strategy,
+	                              FlexGlobal &target);
+
 	static double vsSuperimpose(void *object)
 	{
 		Parser *parser = static_cast<Parser *>(object);
@@ -314,6 +326,7 @@ private:
 	double _tmpPsi;
 	double _startB;
 	double _dampening;
+	double _kick;
 	double _sideDampening;
 	double _sideKick;
 	double _totalMonomers;

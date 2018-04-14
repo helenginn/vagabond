@@ -182,7 +182,16 @@ void Monomer::setBackboneDampening(double value)
 	{
 		if (getBackbone()->atom(i)->getModel()->isBond())
 		{
-			BondPtr bond = ToBondPtr(atom(i)->getModel());
+			ModelPtr model = atom(i)->getModel();
+			
+			if (!model || !model->isBond()) continue;
+
+			BondPtr bond = ToBondPtr(model);
+			
+			if (!bond->connectsAtom("CA"))
+			{
+				continue;
+			}
 
 			if (bond->isRefinable())
 			{
@@ -198,7 +207,12 @@ void Monomer::setSidechainDampening(double value)
 	{
 		ModelPtr model = getSidechain()->atom(i)->getModel();
 
-		if (model->isBond())
+		if (!model || !model->isBond())
+		{
+			continue;
+		}
+
+		if (ToBondPtr(model)->isRefinable())
 		{
 			Bond::setDampening(&*model, value);
 		}

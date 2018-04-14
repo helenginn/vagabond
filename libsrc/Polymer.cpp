@@ -702,6 +702,43 @@ void Polymer::hydrogenateContents()
 	}
 }
 
+
+double Polymer::getBackboneKick(void *object)
+{
+	return static_cast<Polymer *>(object)->_kick;
+}
+
+void Polymer::setBackboneKick(void *object, double value)
+{
+	Polymer *poly = static_cast<Polymer *>(object);
+	int anchor = poly->getAnchor();
+	poly->_kick = value;
+
+	for (int i = 0; i < poly->atomCount(); i++)
+	{
+		ModelPtr model = poly->atom(i)->getModel();
+		if (!model || !model->isBond())
+		{
+			continue;
+		}
+		
+		BondPtr bond = ToBondPtr(model);
+		
+		if (!bond->connectsAtom("CA"))
+		{
+			continue;	
+		}
+		
+		double mult = 1;
+		if (poly->atom(i)->getResidueNum() < anchor)
+		{
+			mult = -1;
+		}
+		
+		Bond::setTorsionBlur(&*bond, value * mult);
+	}
+}
+
 void Polymer::setInitialKick(void *object, double value)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
@@ -1265,20 +1302,10 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	nelderMead->setCycles(25);
 	nelderMead->setVerbose(true);
 
-	double bFac = getAverageBFactor();
-	
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	AtomGroupPtr allBackbone = getAllBackbone();
-	
 	Timer timer("whole molecule fit", true);
 
 	FlexGlobal target;
-	target.setAtomGroup(allBackbone);
-	target.matchOriginalBees();
-	target.setCrystal(crystal);
-	target.matchElectronDensity();
-	nelderMead->setEvaluationFunction(FlexGlobal::score, &target);
-	FlexGlobal::score(&target);
+	attachTargetToRefinement(nelderMead, target);
 	nelderMead->refine();
 	
 	timer.report();
@@ -1310,6 +1337,49 @@ AtomGroupPtr Polymer::getAllBackbone()
 	return _allBackbones;
 }
 
+void Polymer::attachTargetToRefinement(RefinementStrategyPtr strategy,
+                                       FlexGlobal &target)
+{
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	AtomGroupPtr allBackbone = getAllBackbone();
+	target.setAtomGroup(allBackbone);
+	target.matchOriginalBees();
+	target.setCrystal(crystal);
+	target.matchElectronDensity();
+	strategy->setEvaluationFunction(FlexGlobal::score, &target);
+	FlexGlobal::score(&target);
+}
+
+double Polymer::vsFindKickAndDampen(void *object)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Polymer *polymer = dynamic_cast<Polymer *>(parser);
+	
+	return findOverallKickAndDampen(polymer);
+}
+
+double Polymer::findOverallKickAndDampen(void *object)
+{
+	Polymer *poly = static_cast<Polymer *>(object);
+	NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
+
+	nelderMead->addParameter(poly, getBackboneKick, setBackboneKick,
+	                         0.001, 0.0001);
+	nelderMead->addParameter(poly, getBackboneDampening, setBackboneDampening,
+	                         0.01, 0.0005);
+	nelderMead->setVerbose(true);
+	
+	Timer timer("overall kick and dampen", true);
+
+	FlexGlobal target;
+	poly->attachTargetToRefinement(nelderMead, target);
+	nelderMead->refine();
+
+	timer.report();
+
+	return 0;
+}
+
 void Polymer::addProperties()
 {
 	Molecule::addProperties();
@@ -1331,6 +1401,7 @@ void Polymer::addProperties()
 	exposeFunction("set_overall_translation", vsTransTensorOverall);
 	exposeFunction("fit_translation", vsFitTranslation);
 	exposeFunction("fit_rotation", vsFitRotation);
+	exposeFunction("fit_kick_and_dampen", vsFindKickAndDampen);
 }
 
 void Polymer::addObject(ParserPtr object, std::string category)
