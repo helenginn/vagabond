@@ -34,7 +34,6 @@ void Parser::setup(bool isNew)
 	if (!isNew)
 	{
 		_identifier = getParserIdentifier(); 
-		_className = getClassName();
 
 		makePath();
 		
@@ -42,6 +41,8 @@ void Parser::setup(bool isNew)
 		ParserPtr newPointer = shared_from_this();
 		addToAllParsers(path, newPointer);
 	}
+
+	_className = getClassName();
 
 	addProperties();
 }
