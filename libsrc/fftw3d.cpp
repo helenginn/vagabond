@@ -795,7 +795,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				* falling between two voxels, in atomic voxels */
 				vec3 offsetPos = vec3_add_vec3(atomPos, atomOffset);
 
-				if (fftAtom->getReal(offsetPos.x, offsetPos.y, offsetPos.z) <= 0)
+				/* If this value is within floating point error, stop now. */
+				if (fftAtom->getReal(offsetPos.x, offsetPos.y, offsetPos.z) <= 10e-6)
 				{
 					continue;
 				}
