@@ -772,6 +772,10 @@ void Crystal::backboneDensityAnalysis()
 		{
 			continue;
 		}
+		
+		ToPolymerPtr(molecule(i))->refineBackbone();
+		
+		continue;
 
 		BoneDensity density;
 		density.setCrystal(shared_from_this());
