@@ -592,7 +592,7 @@ void FFT::invertScale()
 	setBasis(_inverse, 1);
 }
 
-double FFT::interpolate(vec3 vox000, bool im)
+double FFT::interpolate(vec3 vox000, size_t im)
 {
 	vec3 remain = make_vec3(vox000.x - (double)((int)vox000.x),
 	                        vox000.y - (double)((int)vox000.y),
