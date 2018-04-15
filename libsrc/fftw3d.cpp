@@ -785,6 +785,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 					continue;
 				}
 
+
 				/* Now we must find the relative crystal voxel to write this
 				* density value to, given that the atom was wrapped around
 				* the origin (center). This should work regardless of odd/
@@ -846,15 +847,17 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 					if (vals)
 					{
 						CoordVal val;
-						val.pos = offsetPos;
 						val.fo = realCryst;
 						val.fc = atomReal;
 						long atomEle = fftAtom->element(offsetPos);
+#ifdef COORDVAL_FULL
+						val.pos = offsetPos;
 						val.mask = 0;
 						if (fftAtom->mask)
 						{
 							val.mask = fftAtom->getMask(atomEle);
 						}
+#endif
 
 						vals->push_back(val);
 					}
