@@ -569,6 +569,9 @@ mat3x3 *basis, vec3 *ave)
 	/* Find the longest distance from the centroid to determine
 	* the max FFT dimensions.*/
 
+	double ns[3];
+	ns[0] = 0; ns[1] = 0; ns[2] = 0;
+
 	for (int i = 0; i < selected.size(); i++)
 	{
 		/* Refresh absolute position */
@@ -576,33 +579,38 @@ mat3x3 *basis, vec3 *ave)
 		vec3 offset = selected[i]->getModel()->getAbsolutePosition();
 
 		vec3 diff = vec3_subtract_vec3(offset, sum);
-		double distance = vec3_length(diff);
+		
+		ns[0] = std::max(fabs(diff.x), ns[0]);
+		ns[1] = std::max(fabs(diff.y), ns[1]);
+		ns[2] = std::max(fabs(diff.z), ns[2]);
+	}
+	
+	double scales = 1.0 / (2 * MAX_SCATTERING_DSTAR);
 
-		if (distance > maxDistance)
-		{
-			maxDistance = distance;
-		}
+	long nl[3];
+
+	for (int i = 0; i < 3; i++)
+	{
+		nl[i] = (2 * (ns[i] + 3.5)) / scales;
+		if (nl[i] % 2 == 1) nl[i]++;
 	}
 
 	/* Calculate appropriate box size and setup FFT */
-	double scales = Options::getProteinSampling();
-	if (scales < 0.5)
-	{
-		scales = 0.5;
-	}
-	
-	scales = 1 / (2 * MAX_SCATTERING_DSTAR);
 
-	int n = 2 * (maxDistance + 3.0) / scales;
-	if (n % 2 == 1) n--;
-	
 	FFTPtr segment = FFTPtr(new FFT());
-	segment->create(n);
+	segment->create(nl[0], nl[1], nl[2]);
 	segment->setScales(scales);
 
 	*basis = make_mat3x3();
-	double toReal = 1 / (scales*(double)n);
-	mat3x3_scale(basis, toReal, toReal, toReal);
+
+	double toReal[3];
+
+	for (int i = 0; i < 3; i++)
+	{
+		toReal[i] = 1 / (scales * nl[i]);
+	}
+
+	mat3x3_scale(basis, toReal[0], toReal[1], toReal[2]);
 	
 	return segment;
 }
@@ -743,7 +751,7 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 
 	std::vector<AtomPtr> extra; 
 
-	extra = crystal->getCloseAtoms(selected, 4.5);
+	extra = crystal->getCloseAtoms(selected, 3.0);
 
 	for (int i = 0; i < extra.size(); i++)
 	{
