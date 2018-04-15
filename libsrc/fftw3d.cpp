@@ -123,7 +123,7 @@ void FFT::create(long nnx, long nny, long nnz)
 	data = (FFTW_DATA_TYPE*) fftwf_malloc(nn*sizeof(FFTW_DATA_TYPE));
 	if (!data)
 	{
-		printf("ERROR in fftwData: Malloc failed\n");
+		printf("ERROR in fftwData: Malloc failed for nn = %i\n", nn);
 		exit(1);
 	}
 
