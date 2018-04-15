@@ -836,8 +836,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				if (mapScoreType == MapScoreTypeCorrel)
 				{
 					if ((!fftCrystal->_writeToMaskZero &&
-					     fftCrystal->getMask(crystalIndex) == 0) &&
-					     mapScoreType == MapScoreTypeCorrel)
+					     fftCrystal->getMask(crystalIndex) == 0))
 					{
 						continue;
 					}
