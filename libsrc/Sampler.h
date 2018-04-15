@@ -27,6 +27,7 @@ typedef enum
 	RefinementSidechain = 2, /** Sidechains against electron density */
 	RefinementModelRMSDZero = 3, /** Squeeze protein chain to PDB positions */
 	RefinementModelPos = 4, /** Positions to PDB positions */
+	RefinementRMSDZero = 5, /** Squeeze protein chain to minimise flexibility */
 } RefinementType; 
 
 /** Scoring functions against map or PDB file */
@@ -37,6 +38,7 @@ typedef enum
 	ScoreTypeRFactor = 2, /** R factor in real space for electron density */
 	ScoreTypeModelRMSDZero = 3, /** All ensemble positions against PDB */
 	ScoreTypeModelPos = 4, /** Average ensemble position against PDB */
+	ScoreTypeRMSDZero = 5, /** Sum of squares of anisotropic tensor */
 } ScoreType;
 
 typedef std::map<ParamOptionType, double> ParamMap;
