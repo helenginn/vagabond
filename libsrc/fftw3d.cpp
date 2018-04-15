@@ -726,14 +726,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	* We also break the loop if it exceeds the limits of our atom voxels
 	* during the loop itself. */
 
-	std::vector<double> crystalVals, thingVals;
-	crystalVals.reserve(fftAtom->nn); // may be over-estimate, nm.
-	thingVals.reserve(fftAtom->nn);
-
-	std::vector<double> orderedVals;
-	double sumVals = 0;
-
-	/* Temp calculation of mean... delete me... */
 	int count = 0;
 
 	/* Determine bounding box - 9th Dec 2017 */
