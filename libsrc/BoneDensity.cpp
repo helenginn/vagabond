@@ -153,7 +153,10 @@ BackboneState BoneDensity::stateOfBackbone(int start, int end)
 	std::vector<double> poly = polyfit(xs, ys, 2);
 
 	double inflect = -poly[1] / (2 * poly[2]);
-	bool inRange = (inflect > start && inflect <= end);
+	
+	std::cout << "Inflection point at " << inflect << std::endl;
+
+	bool inRange = (inflect >= start && inflect <= end);
 	
 	/* This is a dubious situation so we make no verdict */
 	if (inRange) 
