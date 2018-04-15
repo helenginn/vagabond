@@ -679,7 +679,8 @@ ThingPtr VScript::getThing(char **pos, ThingPtr thing, bool defRight)
 		while (!done)
 		{
 			char finalchar = word[word.length() - 1];
-			if (finalchar == ';' || finalchar == ')' || finalchar == ',')
+			if (finalchar == ';' || finalchar == ')' || 
+			    finalchar == ',' || finalchar == '.')
 			{
 				hasEndRubbish = true;
 				word = word.substr(0, word.length() - 1);
