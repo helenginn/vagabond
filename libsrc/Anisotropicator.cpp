@@ -43,6 +43,19 @@ double Anisotropicator::anisotropyExtent()
 	return ave;
 }
 
+double Anisotropicator::smallness()
+{
+	double total = 0;
+
+	for (int i = 0; i < 3; i++)
+	{
+		double sqlength = vec3_sqlength(_axes[i]);
+		total += sqlength;
+	}
+	
+	return total;
+}
+
 vec3 Anisotropicator::longestAxis()
 {
 	int index = 0;

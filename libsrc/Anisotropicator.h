@@ -50,6 +50,7 @@ public:
 	}
 
 	double anisotropyExtent();
+	double smallness();
 	vec3 longestAxis();
 private:
 	std::vector<vec3> _points;
