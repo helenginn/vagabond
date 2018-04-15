@@ -115,6 +115,7 @@ void Options::run()
 			crystal->tiedUpScattering();
 
 			int count = 0;
+			
 			recalculateFFT();
 			
 			if (_notify)
