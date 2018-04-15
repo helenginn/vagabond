@@ -452,7 +452,7 @@ void Parser::privateRestoreState(int num)
 	if (_states.size() <= 1) return;
 	
 	/* Remove all the states after the one just restored */
-	for (int i = num; i < _states.size();)
+	for (int i = num; i < _states.size(); i++)
 	{
 		_states.erase(_states.begin() + i);
 	}
