@@ -415,6 +415,12 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		degrees = 4;
 		break;
 
+		case RefinementRMSDZero:
+		scoreType = ScoreTypeRMSDZero;
+		maxTries = 10;
+		degrees = 4;
+		break;
+
 		default:
 		shout_at_helen("Unimplemented refinement option?");
 		break;
@@ -488,7 +494,8 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 						addSampledAtoms(_includeForRefine[l]);
 					}
 
-					if (rType == RefinementModelPos || rType == RefinementFine || rType == RefinementModelRMSDZero)
+					if (rType == RefinementModelPos || rType == RefinementFine 
+					    || rType == RefinementModelRMSDZero)
 					{
 						setSilent();
 					}
