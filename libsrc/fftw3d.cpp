@@ -841,8 +841,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 						CoordVal val;
 						val.fo = realCryst;
 						val.fc = atomReal;
-						long atomEle = fftAtom->element(offsetPos);
 #ifdef COORDVAL_FULL
+						long atomEle = fftAtom->element(offsetPos);
 						val.pos = offsetPos;
 						val.mask = 0;
 						if (fftAtom->mask)
