@@ -78,6 +78,8 @@ public:
 	static double vsFindKickAndDampen(void *object);
 	
 	void scaleSidechainsToBFactor();
+	void refineBackbone();
+	static double vsRefineBackbone(void *object);
 	void superimpose();
 	
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,

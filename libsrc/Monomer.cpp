@@ -176,6 +176,52 @@ void Monomer::tieAtomsUp()
 	_sidechain->setTied();
 }
 
+double Monomer::vsRefine(void *object)
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr active = options->getActiveCrystal();
+
+	Parser *parser = static_cast<Parser *>(object);
+	Monomer *monomer = dynamic_cast<Monomer *>(parser);
+
+	SidechainPtr victim = monomer->getSidechain();
+	
+	if (!victim || !victim->canRefine())
+	{
+		return 0;
+	}
+
+	std::cout << "Refining monomer " << monomer->getResidueNum() << std::endl;
+	victim->addParamType(ParamOptionTorsion, 0.04);
+	victim->addParamType(ParamOptionKick, 0.25);
+	victim->addParamType(ParamOptionDampen, 0.10);
+	victim->addParamType(ParamOptionMagicAngles, 20.);
+	victim->addParamType(ParamOptionNumBonds, 5);
+
+	victim->refine(active, RefinementFine);
+
+	return 0;
+}
+
+void Monomer::refine(CrystalPtr target,
+                     RefinementType rType)
+{
+	BackbonePtr backbone = getBackbone();
+
+	if (backbone)
+	{
+		backbone->refine(target, rType);
+	}
+
+
+	SidechainPtr victim = getSidechain();
+
+	if (victim && victim->canRefine())
+	{
+		victim->refine(target, rType);
+	}
+}
+
 void Monomer::setBackboneDampening(double value)
 {
 	for (int i = 0; i < getBackbone()->atomCount(); i++)
@@ -239,6 +285,9 @@ void Monomer::addProperties()
 	addIntProperty("res_num", &_residueNum);
 	addChild("sidechain", _sidechain);
 	addChild("backbone", _backbone);
+	
+	exposeFunction("refine_sidechain_to_density", vsRefine);
+	
 	AtomGroup::addProperties();
 }
 

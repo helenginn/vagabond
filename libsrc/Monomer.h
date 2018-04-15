@@ -121,6 +121,10 @@ public:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();
 	virtual void linkReference(ParserPtr object, std::string category);
+	
+	static double vsRefine(void *object);
+	void refine(CrystalPtr target,
+	            RefinementType rType);
 private:
 	std::string _identifier; // e.g. three-letter code
 	int _residueNum; // number in protein sequence including missing ones.

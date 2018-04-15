@@ -153,6 +153,86 @@ void Polymer::summary()
 
 }
 
+double Polymer::vsRefineBackbone(void *object)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Polymer *polymer = dynamic_cast<Polymer *>(parser);
+	
+	polymer->refineBackbone();
+	return 0;
+}
+
+void Polymer::refineBackbone()
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr crystal = options->getActiveCrystal();
+	
+	const int windowSize = 10;
+	const int checkSize = 5;
+	const int difference = windowSize - checkSize;
+	RefinementType rType = RefinementFine;
+	
+	int skip = -1;
+
+	while (true)
+	{
+		int start = (skip > 0) ? getAnchor() : getAnchor() - 1;
+		int end = (skip > 0) ? monomerCount() : 0;
+		std::cout << "Refining from " << start << " to " << end;
+		std::cout << " using skip of " << skip << std::endl;
+
+		for (int i = start; i != end; i += skip * windowSize)
+		{
+			if (i > monomerCount() || i < 0)
+			{
+				break;
+			}
+
+			std::cout << "Refining using correlation with density." << std::endl;
+			addParamType(ParamOptionTorsion, 0.02);
+			addParamType(ParamOptionKick, 0.010);
+			addParamType(ParamOptionDampen, 0.005);
+			addParamType(ParamOptionNumBonds, 12);
+			refineRange(i, i + skip * windowSize, crystal, rType);
+
+			BoneDensity density;
+			density.setCrystal(crystal);
+			density.setPolymer(shared_from_this());
+			density.setRange(i + skip * windowSize, i);
+			density.analyse();
+
+			BackboneState state = density.stateOfBackbone(i + skip * windowSize,
+			                                              i + skip * difference);
+
+			if (state == BackboneExpanding)
+			{
+				std::cout << "Squeezing chain to reduce expansion." << std::endl;
+				refineRange(i, i + skip * windowSize,
+				            crystal, RefinementRMSDZero);
+
+				std::cout << "Re-refining torsion angles." << std::endl;
+				addParamType(ParamOptionTorsion, 0.02);
+				addParamType(ParamOptionNumBonds, 8);
+				refineRange(i, i + skip * windowSize, crystal, rType);
+			}
+			else
+			{
+				std::cout << "Chain looking OK." << std::endl;
+			}
+		}
+
+		if (skip < 0)
+		{
+			break;
+		}
+		else
+		{
+			skip = -1;
+		}
+	}
+
+}
+
 void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
                             RefinementType rType)
 {
@@ -161,20 +241,7 @@ void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
 		return;
 	}
 
-	BackbonePtr backbone = monomer->getBackbone();
-
-	if (backbone)
-	{
-		backbone->refine(target, rType);
-	}
-
-
-	SidechainPtr victim = monomer->getSidechain();
-
-	if (victim && victim->canRefine())
-	{
-		victim->refine(target, rType);
-	}
+	monomer->refine(target, rType);
 }
 
 void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
@@ -194,13 +261,16 @@ void Polymer::refineRange(int start, int end, CrystalPtr target, RefinementType 
 		shout_at_helen("Trying to refine a range which straddles the anchor.");	
 	}
 
+	Timer timer("refine range", true);
+
 	int count = 0;
 	double startCCAve = 0;
 	std::map<MonomerPtr, double> preScores;
 
-	std::cout << "Refining chain " << getChainID() << " from point to ";
+	std::cout << "Refining chain " << getChainID();
+	std::cout  << " from residue " << start << " to ";
 	std::cout << (skip > 0 ? "C" : "N");
-	std::cout <<  "-terminus..." << std::endl;
+	std::cout <<  "-terminus (residue " << end << ") ..." << std::endl;
 	std::cout << "\t";
 	
 	if (rType == RefinementModelRMSDZero)
@@ -283,6 +353,8 @@ void Polymer::refineRange(int start, int end, CrystalPtr target, RefinementType 
 	std::cout << ((endCCAve < startCCAve) ? "up " : "down ");
 	std::cout << "from " << -startCCAve * 100 << " to " << -endCCAve * 100;
 	std::cout << "." << std::endl;
+	
+	timer.report();
 
 	clearParams();
 }
@@ -1397,6 +1469,7 @@ void Polymer::addProperties()
 	exposeFunction("set_rot_angle", vsSetRotAngle);
 	exposeFunction("refine_positions_to_pdb", vsRefinePositionsToPDB);
 	exposeFunction("refine_sidechains_to_density", vsRefineSidechainsToDensity);
+	exposeFunction("refine_backbone_to_density", vsRefineBackbone);
 	exposeFunction("superimpose", vsSuperimpose);
 	exposeFunction("set_overall_translation", vsTransTensorOverall);
 	exposeFunction("fit_translation", vsFitTranslation);
