@@ -596,7 +596,7 @@ double Sampler::getScore()
 		return 0;
 	}
 
-	if (_scoreType == ScoreTypeModelPos || _scoreType == ScoreTypeModelRMSDZero)
+	if (_scoreType == ScoreTypeModelPos || _scoreType == ScoreTypeModelRMSDZero || _scoreType == ScoreTypeRMSDZero)
 	{
 		double score = 0;
 		double count = 0;

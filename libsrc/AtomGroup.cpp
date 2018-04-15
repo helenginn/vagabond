@@ -495,7 +495,8 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					}
 
 					if (rType == RefinementModelPos || rType == RefinementFine 
-					    || rType == RefinementModelRMSDZero)
+					    || rType == RefinementModelRMSDZero
+					|| rType == RefinementRMSDZero)
 					{
 						setSilent();
 					}
