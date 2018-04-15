@@ -853,8 +853,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 						vals->push_back(val);
 					}
-
-					sumVals += atomReal;
 				}
 				else if (mapScoreType == MapScoreTypeCopyToSmaller)
 				{
