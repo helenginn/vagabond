@@ -11,6 +11,31 @@
 #include <vector>
 #include <iostream>
 
+double standard_deviation(std::vector<double> &values) 
+{
+	double squaredSum = 0;
+	double weightSqSum = 0;
+	double ave = mean(values);
+
+	for (int i = 0; i < values.size(); i++)
+	{
+		double value = values[i];
+
+		if (value != value || value == FLT_MAX)
+		continue;
+
+		squaredSum += pow(ave - value, 2);
+
+		double weight = 1;
+
+		weightSqSum += weight;
+	}
+
+	double stdev = sqrt(squaredSum / weightSqSum);
+
+	return stdev;
+}
+
 double scale_factor_by_sum(std::vector<double> &set1, std::vector<double> &set2)
 {
 	double x_sum = 0;

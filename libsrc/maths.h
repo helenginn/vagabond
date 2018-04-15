@@ -27,6 +27,7 @@ double weightedMapScore(std::vector<double> &set1, std::vector<double> &set2);
 double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
                    double cutoff = -FLT_MAX);
 double mean(std::vector<double> &vec1);
+double standard_deviation(std::vector<double> &values);
 
 typedef double (*two_dataset_op)(std::vector<double>&, std::vector<double>&);
 
