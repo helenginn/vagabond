@@ -249,6 +249,7 @@ void Model::getAnisotropy(bool withKabsch)
 		tropicator.setPoints(finalPoints);
 		_realSpaceTensor = tropicator.getTensor();
 		_anisotropyExtent = tropicator.anisotropyExtent();
+		_smallness = tropicator.smallness();
 		_longest = tropicator.longestAxis();
 		_isotropicAverage = tropicator.isotropicAverage();
 	}
@@ -264,6 +265,7 @@ void Model::getAnisotropy(bool withKabsch)
 
 		Anisotropicator tropicator;
 		tropicator.setPoints(points);
+		_smallness = tropicator.smallness();
 		_anisotropyExtent = tropicator.anisotropyExtent();
 	}
 }
@@ -278,6 +280,12 @@ double Model::anisotropyExtent(bool withKabsch)
 {
 	getAnisotropy(withKabsch);
 	return _anisotropyExtent;
+}
+
+double Model::smallness()
+{
+	getAnisotropy(true);
+	return _smallness;
 }
 
 

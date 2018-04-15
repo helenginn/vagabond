@@ -154,6 +154,7 @@ public:
 	void addRealSpacePositions(FFTPtr real, vec3 offset);
 
 	vec3 longestAxis();
+	double smallness();
 	std::vector<vec3> fishPositions();
 	
 	virtual bool hasExplicitPositions() = 0;
@@ -176,6 +177,7 @@ protected:
 
 	vec3 _longest;
 	double _anisotropyExtent;
+	double _smallness;
 
 	virtual void getAnisotropy(bool withKabsch);
 	double anisotropyExtent(bool withKabsch = false);
