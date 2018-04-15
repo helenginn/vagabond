@@ -55,6 +55,11 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 			addParamType(ParamOptionMagicAngles, 20);
 			break;
 
+			case RefinementRMSDZero:
+			addParamType(ParamOptionDampen, 0.01);
+			addParamType(ParamOptionMagicAngles, 3);
+			break;
+
 			default:
 			break;
 		}

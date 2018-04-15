@@ -1439,7 +1439,7 @@ double Polymer::findOverallKickAndDampen(void *object)
 	nelderMead->addParameter(poly, getBackboneKick, setBackboneKick,
 	                         0.001, 0.0001);
 	nelderMead->addParameter(poly, getBackboneDampening, setBackboneDampening,
-	                         0.01, 0.0005);
+	                         0.005, 0.0005);
 	nelderMead->setVerbose(true);
 	
 	Timer timer("overall kick and dampen", true);
