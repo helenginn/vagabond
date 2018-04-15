@@ -7,6 +7,7 @@
 //
 
 #include "BoneDensity.h"
+#include "maths.h"
 #include "AtomGroup.h"
 #include "Crystal.h"
 #include "Monomer.h"
@@ -17,7 +18,18 @@
 
 BoneDensity::BoneDensity()
 {
+	_start = -1;
+	_end = -1;
+}
 
+bool BoneDensity::liesInRange(int i)
+{
+	if (_start < 0 || _end < 0)
+	{
+		return true;
+	}
+	
+	else return (i >= _start && i <= _end);
 }
 
 void BoneDensity::createRefinementStrategies()
@@ -36,6 +48,11 @@ void BoneDensity::createRefinementStrategies()
 
 		for (int i = start; i != end; i += skip)
 		{
+			if (!liesInRange(i))	
+			{
+				continue;
+			}
+
 			if (_summaryMap.count(i) == 0)
 			{
 				continue;	
@@ -96,6 +113,88 @@ void BoneDensity::analyse()
 
 }
 
+BackboneState BoneDensity::stateOfBackbone(int start, int end)
+{
+	if (end < start)
+	{
+		int tmp = end;
+		end = start;
+		start = tmp;
+	}
+
+	int anchor = _polymer->getAnchor();
+	std::vector<double> xs, ys;
+	
+	/* This shouldn't really ever be called */
+	if (anchor > start && anchor < end)
+	{
+		return BackboneStraddlesAnchor;
+	}
+
+	/* Prepare data for polyfit */
+	for (int i = start; i <= end; i++)
+	{
+		if ((_densityMap.count(i) == 0))
+		{
+			continue;	
+		}
+
+		xs.push_back(i);
+		ys.push_back(_densityMap[i]);
+	}
+	
+	if (xs.size() < 2)
+	{
+		std::cout << "Not enough data points" << std::endl;
+		return BackboneUnassigned;
+	}
+
+	/* Fit a quadratic polynomial */
+	std::vector<double> poly = polyfit(xs, ys, 2);
+
+	double inflect = -poly[1] / (2 * poly[2]);
+	bool inRange = (inflect > start && inflect <= end);
+	
+	/* This is a dubious situation so we make no verdict */
+	if (inRange) 
+	{
+		std::cout << "Inflection point in range" << std::endl;
+		return BackboneUnassigned;
+	}
+	
+	std::vector<double> linear = polyfit(xs, ys, 1);
+
+	bool positive = (linear[1] > 0);
+	
+	/* If we are on the N-terminal side of the anchor point,
+	* 	we expect the reverse situation. */
+	if (start < anchor)
+	{
+		positive = !positive;
+	}
+
+	/* Some kind of threshold needs to be reached */
+	double stdev = standard_deviation(ys);
+	double ave = mean(ys);
+	double standerr = stdev / ave;
+	
+	std::cout << "Standard error: " << standerr << std::endl;
+	if (standerr < 0.1)
+	{
+		std::cout << "Error is not high enough" << std::endl;
+		return BackboneUnassigned;
+	}
+	
+	if (!positive) 
+	{
+		std::cout << "Backbone is contracting" << std::endl;
+		return BackboneContracting;
+	}
+
+	std::cout << "Backbone is expanding" << std::endl;
+	return BackboneExpanding;
+}
+
 void BoneDensity::findInflections()
 {
 	std::vector<double> xs, ys;
@@ -108,6 +207,11 @@ void BoneDensity::findInflections()
 	
 	for (int i = window; i < _polymer->monomerCount() - window; i++)
 	{
+		if (!liesInRange(i))	
+		{
+			continue;
+		}
+
 		for (int j = -window; j <= window; j++)
 		{
 			if ((_densityMap.count(i + j) == 0))
@@ -194,6 +298,11 @@ void BoneDensity::perMonomerScores()
 	
 	for (int i = 0; i < _polymer->monomerCount(); i++)
 	{
+		if (!liesInRange(i))	
+		{
+			continue;
+		}
+
 		AtomGroupPtr trio = AtomGroupPtr(new AtomGroup());
 			
 		for (int j = -1; j < 2; j++)
@@ -251,13 +360,11 @@ void BoneDensity::perMonomerScores()
 
 	int anchor = _polymer->getAnchor();
 	
-	if (_densityMap.count(anchor) == 0)
+	if (_densityMap.count(anchor) != 0)
 	{
-		shout_at_helen("Somehow, the density anchor is missing during/n"\
-		               "backbone density analysis.");
+		std::cout << "Anchor (" << anchor << ") for chain " << _polymer->getChainID() << " has score: " << _densityMap[anchor] << std::endl;
 	}
 	
-	std::cout << "Anchor (" << anchor << ") for chain " << _polymer->getChainID() << " has score: " << _densityMap[anchor] << std::endl;
 }
 
 
@@ -274,3 +381,17 @@ void BoneDensity::validate()
 		shout_at_helen("Trying to analyse backbone density\nwithout a polymer.");	
 	}
 }
+
+void BoneDensity::setRange(int start, int end)
+{
+	if (end < start)
+	{
+		int tmp = end;
+		end = start;
+		start = tmp;
+	}
+	
+	_start = start;
+	_end = end;
+}
+

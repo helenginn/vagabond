@@ -21,6 +21,14 @@ typedef struct
 	RefinementType rType;
 } BackboneInstruction;
 
+typedef enum
+{
+	BackboneExpanding,
+	BackboneContracting,
+	BackboneStraddlesAnchor,
+	BackboneUnassigned,
+} BackboneState;
+
 /**
  * \class BoneDensity
  * \brief Analysis of backbone density and generation of heuristics (maybe)
@@ -54,7 +62,11 @@ public:
 	{
 		return _instructions[i];
 	}
+	
+	void setRange(int start, int end);
+	BackboneState stateOfBackbone(int start, int end);
 private:
+	bool liesInRange(int i);
 	void validate();
 	void perMonomerScores();
 	void findInflections();
@@ -62,6 +74,8 @@ private:
 	DensityScoreMap _densityMap;
 	DensityScoreMap _summaryMap;
 	
+	int _start;
+	int _end;
 	std::vector<BackboneInstruction> _instructions;
 	
 	CrystalPtr _crystal;
