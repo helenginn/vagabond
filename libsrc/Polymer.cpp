@@ -189,12 +189,22 @@ void Polymer::refineBackbone()
 				break;
 			}
 
+			std::cout << "Squeezing chain to reduce expansion." << std::endl;
+			refineRange(i, i + skip * windowSize,
+			            crystal, RefinementRMSDZero);
+
+			std::cout << "Re-refining torsion angles." << std::endl;
+			addParamType(ParamOptionTorsion, 0.02);
+			addParamType(ParamOptionNumBonds, 8);
+			refineRange(i, i + skip * windowSize, crystal, rType);
+
 			std::cout << "Refining using correlation with density." << std::endl;
 			addParamType(ParamOptionTorsion, 0.02);
 			addParamType(ParamOptionKick, 0.010);
 			addParamType(ParamOptionDampen, 0.005);
 			addParamType(ParamOptionNumBonds, 12);
 			refineRange(i, i + skip * windowSize, crystal, rType);
+			continue;
 
 			BoneDensity density;
 			density.setCrystal(crystal);
@@ -202,19 +212,12 @@ void Polymer::refineBackbone()
 			density.setRange(i + skip * windowSize, i);
 			density.analyse();
 
+
 			BackboneState state = density.stateOfBackbone(i + skip * windowSize,
-			                                              i + skip * difference);
+			                                              i);
 
 			if (state == BackboneExpanding)
 			{
-				std::cout << "Squeezing chain to reduce expansion." << std::endl;
-				refineRange(i, i + skip * windowSize,
-				            crystal, RefinementRMSDZero);
-
-				std::cout << "Re-refining torsion angles." << std::endl;
-				addParamType(ParamOptionTorsion, 0.02);
-				addParamType(ParamOptionNumBonds, 8);
-				refineRange(i, i + skip * windowSize, crystal, rType);
 			}
 			else
 			{
