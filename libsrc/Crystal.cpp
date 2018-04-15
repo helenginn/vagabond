@@ -959,8 +959,10 @@ void Crystal::postRestoreState()
 {
 	OptionsPtr options = Options::getRuntimeOptions();
 	DiffractionPtr data = options->getActiveData();
+	CrystalPtr crystal = options->getActiveCrystal();
 	
 	_cycleNum++;
 	concludeRefinement(_cycleNum, data);
+	crystal->saveState();
 }
 
