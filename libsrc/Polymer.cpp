@@ -173,7 +173,7 @@ void Polymer::refineBackbone()
 	const int difference = windowSize - checkSize;
 	RefinementType rType = RefinementFine;
 	
-	int skip = -1;
+	int skip = 1;
 
 	while (true)
 	{
@@ -184,28 +184,20 @@ void Polymer::refineBackbone()
 
 		for (int i = start; i != end; i += skip * windowSize)
 		{
+			double diff = 0;
 			if (i > monomerCount() || i < 0)
 			{
 				break;
 			}
-
-			std::cout << "Squeezing chain to reduce expansion." << std::endl;
-			refineRange(i, i + skip * windowSize,
-			            crystal, RefinementRMSDZero);
-
-			std::cout << "Re-refining torsion angles." << std::endl;
-			addParamType(ParamOptionTorsion, 0.02);
-			addParamType(ParamOptionNumBonds, 8);
-			refineRange(i, i + skip * windowSize, crystal, rType);
 
 			std::cout << "Refining using correlation with density." << std::endl;
 			addParamType(ParamOptionTorsion, 0.02);
 			addParamType(ParamOptionKick, 0.010);
 			addParamType(ParamOptionDampen, 0.005);
 			addParamType(ParamOptionNumBonds, 12);
-			refineRange(i, i + skip * windowSize, crystal, rType);
-			continue;
+			diff += refineRange(i, i + skip * windowSize, crystal, rType);
 
+			/*
 			BoneDensity density;
 			density.setCrystal(crystal);
 			density.setPolymer(shared_from_this());
@@ -216,8 +208,21 @@ void Polymer::refineBackbone()
 			BackboneState state = density.stateOfBackbone(i + skip * windowSize,
 			                                              i);
 
-			if (state == BackboneExpanding)
+			*/
+
+			std::cout << "(Difference: " << diff << ")" << std::endl;
+
+			if (diff < -0.01)
 			{
+				std::cout << "Squeezing chain to reduce expansion." << std::endl;
+				refineRange(i, i + skip * windowSize,
+				            crystal, RefinementRMSDZero);
+
+				std::cout << "Re-refining torsion angles." << std::endl;
+				addParamType(ParamOptionTorsion, 0.02);
+				addParamType(ParamOptionNumBonds, 10);
+				diff += refineRange(i, i + skip * windowSize, crystal, rType);
+
 			}
 			else
 			{
@@ -256,7 +261,7 @@ void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 	refineRange(start, end, target, rType);
 }
 
-void Polymer::refineRange(int start, int end, CrystalPtr target, RefinementType rType)
+double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementType rType)
 {
 	int skip = (start < _anchorNum) ? -1 : 1;
 	if ((_anchorNum > start && _anchorNum < end) ||
@@ -361,6 +366,8 @@ void Polymer::refineRange(int start, int end, CrystalPtr target, RefinementType 
 	timer.report();
 
 	clearParams();
+	
+	return -endCCAve + startCCAve;
 }
 
 void Polymer::refineVScript(void *object, RefinementType rType)
