@@ -353,8 +353,7 @@ void Crystal::multiplyMap(double scale)
 	std::cout << "New average: " << current << std::endl;
 }
 
-
-void Crystal::scaleToDiffraction(DiffractionPtr data)
+double Crystal::getMaxResolution(DiffractionPtr data)
 {
 	if (_maxResolution <= 0)
 	{
@@ -363,6 +362,23 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 		std::cout << "Using the resolution from " << data->getFilename()
 		<< " of " << _maxResolution << " Å." << std::endl;
 	}
+	
+	return _maxResolution;
+}
+
+/* bigger number is more detail */
+double Crystal::getMaximumDStar(DiffractionPtr data)
+{
+	double maxRes = getMaxResolution(data);
+	maxRes = 1 / maxRes;
+	maxRes *= 1.4;
+
+	return maxRes;
+}
+
+void Crystal::scaleToDiffraction(DiffractionPtr data)
+{
+	getMaxResolution(data);
 	
 	/* First, apply a scale factor to the entire range */
 	double totalFc = totalToScale();

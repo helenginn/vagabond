@@ -459,7 +459,8 @@ FFTPtr Bond::getDistribution(bool absOnly, int)
 {
 	double n = fftGridLength();
 	/* Don't panic, invert scale below... this is in real space */
-	double scale = 1 / (2 * MAX_SCATTERING_DSTAR);
+	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
+	double scale = 1.0 / (2 * maxDStar);
 
 	double realLimits = (scale * n);
 

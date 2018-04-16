@@ -29,6 +29,8 @@ public:
 	Options(int argc, const char **argv);
 	void run();
 
+	double getActiveCrystalDStar();
+	
 	static void setRuntimeOptions(OptionsPtr pointer)
 	{
 		Options::options = pointer;

@@ -171,7 +171,8 @@ FFTPtr Element::getDistribution(bool, int new_n)
 		n = new_n;	
 	}
 	
-	double scale = 2 * MAX_SCATTERING_DSTAR;
+	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
+	double scale = 2.0 * maxDStar;
 	
 	get_voxel_value *func = getVoxelValue;
 

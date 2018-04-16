@@ -261,6 +261,7 @@ public:
 	/** Analysis of backbone density and generation of heuristics */
 	void backboneDensityAnalysis();
 	static double vsRefineBackboneToDensity(void *object);
+	double getMaximumDStar(DiffractionPtr data);
 protected:
 	virtual void postRestoreState();
 	virtual void addObject(ParserPtr object, std::string category);
@@ -286,6 +287,7 @@ private:
 	std::vector<int> _anchorResidues;
 	double totalToScale();
 
+	double getMaxResolution(DiffractionPtr data);
 	void makePDBs(std::string suffix);
 	void writeVagabondFile(int cycleNum);
 	void applySymOps(double res = FLT_MAX);

@@ -56,7 +56,9 @@ double Model::biggestStdevDim()
 
 int Model::fftGridLength()
 {
-	double scale = 2 * MAX_SCATTERING_DSTAR;
+	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
+	double scale = 2.0 * maxDStar;
+
 	/* Target dimension in Angstroms */
 	double dim = biggestStdevDim() * 2;
 	

@@ -585,7 +585,8 @@ mat3x3 *basis, vec3 *ave)
 		ns[2] = std::max(fabs(diff.z), ns[2]);
 	}
 	
-	double scales = 1.0 / (2 * MAX_SCATTERING_DSTAR);
+	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
+	double scales = 1.0 / (2 * maxDStar);
 
 	long nl[3];
 

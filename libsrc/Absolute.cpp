@@ -160,7 +160,8 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 FFTPtr Absolute::getDistribution(bool, int)
 {
 	double n = fftGridLength();
-	double scale = 2 * MAX_SCATTERING_DSTAR;
+	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
+	double scale = 2 * maxDStar;
 	
 	prepareDistribution(n, scale, this, Absolute::getExpValue);
 

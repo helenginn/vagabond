@@ -794,3 +794,10 @@ bool Options::parseJoke(std::string arg)
 }
 
 
+double Options::getActiveCrystalDStar()
+{
+	CrystalPtr crystal = getActiveCrystal();
+	DiffractionPtr data = getActiveData();
+	
+	return crystal->getMaximumDStar(data);
+}
