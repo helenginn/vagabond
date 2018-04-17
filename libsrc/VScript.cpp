@@ -120,7 +120,25 @@ bool VScript::isBetterThing(char *tmp)
 		return false;
 	}
 	
-	return (firstWord.find('.') != std::string::npos);
+	int pos = 0;
+	int brackstack = 0;
+	
+	while (pos < firstWord.length())
+	{
+		if (firstWord[pos] == '(') brackstack++;
+		if (firstWord[pos] == ')') brackstack--;
+		
+		if (brackstack < 0) return false;
+		
+		if (firstWord[pos] == '.')
+		{
+			return true;
+		}
+		
+		pos++;	
+	}
+	
+	return false;
 }
 
 /* Condition reads like: (variable > 0) with brackets */
@@ -680,7 +698,7 @@ ThingPtr VScript::getThing(char **pos, ThingPtr thing, bool defRight)
 		{
 			char finalchar = word[word.length() - 1];
 			if (finalchar == ';' || finalchar == ')' || 
-			    finalchar == ',' || finalchar == '.')
+			    finalchar == ',')
 			{
 				hasEndRubbish = true;
 				word = word.substr(0, word.length() - 1);
@@ -775,19 +793,34 @@ LeftThingPtr VScript::getLeftThing(std::string name)
 {
 	LeftThingPtr thing;
 
+	std::string sanitised;
+	for (int i = 0; i < name.length(); i++)
+	{
+		if ((name[i] >= 'A' && name[i] <= 'Z') || (name[i] == '_') ||
+		    (name[i] >= 'a' && name[i] <= 'z') ||
+			(name[i] >= '0' && name[i] <= '9' && i > 0))
+		{
+			sanitised.push_back(name[i]);	
+		}
+		else
+		{
+			break;
+		}
+	}
+
 	/** Prioritise latest scopes first */
 	for (int i = _scopes.size() - 1; i >= 0; i--)
 	{
 		VScopePtr scope = _scopes[i];
 		
-		thing = scope->findThing(name);
+		thing = scope->findThing(sanitised);
 		
 		if (thing) break;
 	}
 	
 	if (!thing)
 	{
-		warn_user("Cannot find " + name);
+		warn_user("Cannot find " + sanitised);
 		throw VErrorLeftThingNotFound;
 	}
 	
