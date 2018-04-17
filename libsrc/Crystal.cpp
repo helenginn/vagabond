@@ -610,7 +610,10 @@ void Crystal::fourierTransform(int dir, double res)
 
 	_fft->normalise();
 	
-	_bucket->fourierTransform(dir, res);
+	if (_bucket)
+	{
+		_bucket->fourierTransform(dir, res);
+	}
 }
 
 void Crystal::makePDBs(std::string suffix)
