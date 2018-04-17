@@ -523,7 +523,7 @@ void Parser::privateSaveState()
 	{
 		StateValue value;
 		value.addVec3Value(_vec3Properties[i].ptrName,
-		                       *_vec3Properties[i].vec3Ptr);	
+		                   *_vec3Properties[i].vec3Ptr);	
 		list.push_back(value);
 	}
 
