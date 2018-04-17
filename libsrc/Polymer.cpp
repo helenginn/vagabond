@@ -194,7 +194,8 @@ void Polymer::refineBackbone()
 			addParamType(ParamOptionTorsion, 0.02);
 			addParamType(ParamOptionKick, 0.010);
 			addParamType(ParamOptionDampen, 0.005);
-			addParamType(ParamOptionNumBonds, 12);
+			addParamType(ParamOptionMagicAngles, 5.0);
+			addParamType(ParamOptionNumBonds, 10);
 			diff += refineRange(i, i + skip * windowSize, crystal, rType);
 
 			/*
@@ -212,7 +213,7 @@ void Polymer::refineBackbone()
 
 			std::cout << "(Difference: " << diff << ")" << std::endl;
 
-			if (diff < -0.01)
+			if (diff < -0.008)
 			{
 				std::cout << "Squeezing chain to reduce expansion." << std::endl;
 				refineRange(i, i + skip * windowSize,
@@ -223,6 +224,10 @@ void Polymer::refineBackbone()
 				addParamType(ParamOptionNumBonds, 10);
 				diff += refineRange(i, i + skip * windowSize, crystal, rType);
 
+			}
+			else if (diff != diff)
+			{
+				break;
 			}
 			else
 			{
