@@ -57,6 +57,7 @@ public:
 	                       png_byte *red, png_byte *green, png_byte *blue);
 	void drawArrow(float xDir, float yDir, float centreX, float centreY, float transparency, png_byte red, png_byte green, png_byte blue);
 
+	~PNGFile();
 	PNGFile(std::string filename, int width = 2400, int height = 2400);
 
 	void setCentre(int newX, int newY)

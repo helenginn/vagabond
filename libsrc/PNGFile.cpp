@@ -43,7 +43,8 @@ int PNGFile::writeImage(std::string filename, int width, int height, std::string
 
 	// Initialize info structure
 	info_ptr = png_create_info_struct(png_ptr);
-	if (info_ptr == NULL) {
+	if (info_ptr == NULL)
+	{
 		fprintf(stderr, "Could not allocate info struct\n");
 		code = 1;
 		goto finalise;
@@ -98,7 +99,13 @@ int PNGFile::writeImage(std::string filename, int width, int height, std::string
 
 	if (png_ptr != NULL)
 	{
-		png_destroy_write_struct(&png_ptr, (png_infopp)NULL);
+		png_infop destroyPtr = NULL;
+		if (info_ptr != NULL)
+		{
+			destroyPtr = info_ptr;			
+		}
+
+		png_destroy_write_struct(&png_ptr, &destroyPtr);
 
 	}
 
@@ -445,5 +452,15 @@ void PNGFile::drawLine(int x1, int y1, int x2, int y2, float transparency, png_b
 
 void PNGFile::dropImage()
 {
-	free(data);
+	if (data)
+	{
+		free(data);
+	}
+	
+	data = NULL;
+}
+
+PNGFile::~PNGFile()
+{
+	dropImage();
 }

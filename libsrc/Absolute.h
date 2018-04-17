@@ -200,7 +200,7 @@ public:
 
 	virtual AtomPtr getAtom()
 	{
-		return _atom;
+		return _atom.lock();
 	}
 
 	void addNextAtom(AtomPtr atom)
@@ -255,7 +255,7 @@ protected:
 	virtual void linkReference(ParserPtr object, std::string category);
 private:
 	void initialise();
-	AtomPtr _atom;
+	AtomWkr _atom;
 	std::vector<AtomWkr> _nextAtoms;
 	std::string _element;
 	double _occupancy;
@@ -272,7 +272,7 @@ private:
 	double _bFactor;
 	bool _isOfManyPositions;
 
-	void makeAtom();
+	AtomPtr makeAtom();
 };
 
 #endif /* defined(__vagabond__Absolute__) */

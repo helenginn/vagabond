@@ -209,7 +209,7 @@ ParserPtr Parser::getChild(std::string className, int num)
 		return ParserPtr();	
 	}
 
-	return _parserList[className][num];
+	return _parserList[className][num].lock();
 }
 
 void Parser::exposeFunction(std::string funcName, Getter func)
@@ -330,7 +330,7 @@ void Parser::outputContents(std::ofstream &stream, int in)
 
 		for (int i = 0; i < it->second.size(); i++)
 		{
-			ParserPtr child = it->second.at(i);
+			ParserPtr child = it->second.at(i).lock();
 			if (!child)
 			{
 				continue;
@@ -579,7 +579,7 @@ void Parser::clearContents()
 	{
 		for (int i = 0; i < it->second.size(); i++)
 		{
-			ParserPtr child = it->second.at(i);
+			ParserPtr child = it->second.at(i).lock();
 			if (!child) continue;
 
 			child->clearContents();
@@ -1351,10 +1351,10 @@ void Parser::resolveReferences()
 	{
 		for (int j = 0; j < it->second.size(); j++)
 		{
-			ParserPtr child = it->second[j];
+			ParserPtr child = it->second[j].lock();
 			if (!child) continue;
 
-			it->second[j]->resolveReferences();
+			child->resolveReferences();
 		}
 	}
 }

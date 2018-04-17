@@ -40,6 +40,7 @@ void Bond::initialize()
 	_occMult = 1.0;
 	_torsionStepMult = 1.0;
 	_anisotropyExtent = 0.0;
+	_bondDirection = make_vec3(0, 0, 0);
 	double initialKick = Options::getKick();
 
 	BondGroup aGroup;

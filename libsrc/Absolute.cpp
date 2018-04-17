@@ -80,7 +80,7 @@ Absolute::Absolute(vec3 pos, double bFac, std::string element, double occValue)
 	_isOfManyPositions = false;
 }
 
-void Absolute::makeAtom()
+AtomPtr Absolute::makeAtom()
 {
 	AtomPtr myAtom = AtomPtr(new Atom());
 	myAtom->setModel(shared_from_this());
@@ -96,12 +96,13 @@ void Absolute::makeAtom()
 	myAtom->setOriginalOccupancy(_occupancy);
 
 	_atom = myAtom;
+	return myAtom;
 }
 
 void Absolute::addToMolecule(MoleculePtr molecule)
 {
-	makeAtom();
-	molecule->addAtom(_atom);
+	AtomPtr atom = makeAtom();
+	molecule->addAtom(atom);
 	setMolecule(molecule);
 }
 
@@ -236,9 +237,9 @@ std::vector<BondSample> *Absolute::getManyPositions()
 
 void Absolute::addToMonomer(MonomerPtr monomer)
 {
-	makeAtom();
+	AtomPtr newAtom = makeAtom();
 
-	monomer->addAtom(_atom);
+	monomer->addAtom(newAtom);
 	setMolecule(monomer->getPolymer());
 
 	Model::addToMonomer(monomer);
@@ -281,7 +282,7 @@ void Absolute::addProperties()
 	addDoubleProperty("bfactor", &_bFactor);
 	addBoolProperty("many_positions", &_isOfManyPositions);
 
-	addReference("atom", _atom);
+	addReference("atom", _atom.lock());
 
 	Model::addProperties();
 }

@@ -112,10 +112,6 @@ void DiffractionMtz::load()
 	_minRes = 1.0 / sqrt(_minRes);
 	_maxRes = 1.0 / sqrt(_maxRes);
 
-	CMtz::MTZXTAL **xtals = MtzXtals(mtz);
-	float *cell = (float *)malloc(sizeof(float) * 6);
-	ccp4_lrcell(xtals[0], cell);
-
 	int largest = 0;
 
 	int indexLimitH = std::max(fabs(col_h->min), fabs(col_h->max));
@@ -174,6 +170,8 @@ void DiffractionMtz::load()
 			maskCount++;
 		}
 	}
+	
+	free(adata);
 
 	std::cout << "Loaded " << count << " reflections into"\
 	" memory from " << _filename << "." << std::endl;

@@ -45,7 +45,7 @@ typedef enum
 } ParserType;
 
 
-typedef std::map<std::string, std::vector<ParserPtr> > ParserList;
+typedef std::map<std::string, std::vector<ParserWkr> > ParserList;
 typedef std::map<std::string, std::vector<ParserWkr> > ReferenceList;
 typedef std::map<std::string, std::vector<std::string> > ResolveList;
 typedef std::map<std::string, Getter > FunctionList;

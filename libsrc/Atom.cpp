@@ -26,6 +26,8 @@
 Atom::Atom()
 {
 	_initialPosition = make_vec3(0, 0, 0);
+	_pdbPosition = make_vec3(0, 0, 0);
+	_ellipsoidLongestAxis = make_vec3(0, 0, 0);
 	_initialB = 0;
 	_geomType = AtomUnassigned;
 	_weighting = 1;

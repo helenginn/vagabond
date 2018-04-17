@@ -86,10 +86,15 @@ void Anisotropicator::findPrincipleAxes()
 
 	if (!success)
 	{
+		free(matrix);
+		free(v);
 		return;
 	}
 
 	mat3x3 axes = mat3x3_from_2d_array(matrix);
+	free_2d_array(matrix);
+	free_2d_array(v);
+	
 	_axisMatrix = axes;
 	axes = mat3x3_transpose(_axisMatrix);
 	_isotropicAverage = 0;
