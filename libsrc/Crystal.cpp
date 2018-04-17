@@ -187,6 +187,7 @@ void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 	if (_bucket)
 	{
 		_bucket->writeMillersToFile(prefix, _maxResolution);	
+		_bucket->abandonCalculations();
 	}
 }
 

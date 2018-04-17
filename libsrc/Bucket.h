@@ -27,6 +27,7 @@ public:
 	void applySymOps(CSym::CCP4SPG *spaceGroup, double res);
 	void fourierTransform(int dir, double res);
 	void writeMillersToFile(std::string prefix, double maxRes);
+	void abandonCalculations();
 	
 	void setCrystal(CrystalPtr crystal)
 	{
@@ -59,7 +60,6 @@ public:
 	}
 
 protected:
-	void abandonCalculations();
 	CrystalWkr _crystal;
 	FFTPtr _solvent;
 	DiffractionPtr _data;

@@ -70,7 +70,6 @@ void Bucket::scaleSolvent()
 	
 	/** remove the solvent from memory */
 
-	abandonCalculations();
 }
 
 double Bucket::scaleSolventScore(void *object)
