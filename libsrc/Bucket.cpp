@@ -67,6 +67,10 @@ void Bucket::scaleSolvent()
 			}
 		}
 	}
+	
+	/** remove the solvent from memory */
+
+	abandonCalculations();
 }
 
 double Bucket::scaleSolventScore(void *object)
@@ -155,7 +159,11 @@ void Bucket::fourierTransform(int dir, double res)
 		applySymOps(spg, res);
 		_solvent->normalise();
 	}
+}
 
+void Bucket::abandonCalculations()
+{
+	_solvent = FFTPtr();
 }
 
 void Bucket::writeMillersToFile(std::string prefix, double maxRes)

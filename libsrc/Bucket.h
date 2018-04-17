@@ -59,6 +59,7 @@ public:
 	}
 
 protected:
+	void abandonCalculations();
 	CrystalWkr _crystal;
 	FFTPtr _solvent;
 	DiffractionPtr _data;
