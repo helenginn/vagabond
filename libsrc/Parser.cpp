@@ -460,6 +460,8 @@ void Parser::privateRestoreState(int num)
 
 void Parser::saveState()
 {
+	int count = 0;
+
 	for (ParserMap::iterator it = _allParsers.begin();
 	     it != _allParsers.end(); it++) 
 	{
@@ -469,6 +471,23 @@ void Parser::saveState()
 		}
 
 		it->second.lock()->privateSaveState();	
+		count = it->second.lock()->stateCount();
+	}
+
+	if (count > 10)
+	{
+		for (ParserMap::iterator it = _allParsers.begin();
+		     it != _allParsers.end(); it++) 
+		{
+			if (it->second.expired())
+			{
+				continue;
+			}
+
+			ParserPtr parser = it->second.lock();
+			parser->_states.erase(parser->_states.begin());
+		}
+
 	}
 }
 
