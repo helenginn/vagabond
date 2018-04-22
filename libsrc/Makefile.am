@@ -53,5 +53,5 @@ Absolute.cpp \
 Atom.cpp \
 Thing.cpp \
 LeftThing.cpp \
-PNGFile.cpp 
-
+PNGFile.cpp \
+Node.cpp
