@@ -182,7 +182,7 @@ void RefinementStepSearch::refine()
 			bestScore = FLT_MAX;
 		}
 
-		for (int j = 0; j < objects.size(); j++)
+		for (size_t j = 0; j < objects.size(); j++)
 		{
 			bool coupled = (couplings[j] > 1);
 

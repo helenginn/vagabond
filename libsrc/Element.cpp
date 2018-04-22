@@ -59,7 +59,7 @@ ElementPtr Element::getElement(std::string symbol)
 		setupElements();
 	}
 
-	for (int i = 0; i < elements.size(); i++)
+	for (size_t i = 0; i < elements.size(); i++)
 	{
 		if (elements[i]->getSymbol() == symbol)
 		{
@@ -134,7 +134,6 @@ double Element::getVoxelValue(void *object, double x, double y, double z)
 
 FFTPtr Element::getMask()
 {
-	get_voxel_value *func = getSolventMaskValue;	
 	double n = 12;
 	double scale = Options::getProteinSampling();
 

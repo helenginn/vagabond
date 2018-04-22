@@ -212,7 +212,7 @@ std::vector<BondSample> *Absolute::getManyPositions()
         }
     }
 
-	for (int i = 0; i < points.size(); i++)
+	for (size_t i = 0; i < points.size(); i++)
 	{
 		vec3 full = vec3_add_vec3(points[i], _position);
 		double occ = 1;
@@ -227,7 +227,7 @@ std::vector<BondSample> *Absolute::getManyPositions()
 		bondSamples->push_back(sample);
 	}
 
-	for (int i = 0; i < bondSamples->size(); i++)
+	for (size_t i = 0; i < bondSamples->size(); i++)
 	{
 		(*bondSamples)[i].occupancy /= occTotal;
 	}

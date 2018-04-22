@@ -18,7 +18,7 @@ void getCol(std::vector<std::string> names, CMtz::MTZ *mtz,
             CMtz::MTZCOL **column)
 {
 
-	for (int i = 0; i < names.size(); i++)
+	for (size_t i = 0; i < names.size(); i++)
 	{
 		*column = MtzColLookup(mtz, names[i].c_str());
 
