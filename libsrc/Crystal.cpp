@@ -541,6 +541,13 @@ void Crystal::tiedUpScattering()
 // N.B. I say powder, because it reminds me of indexing.
 void Crystal::makePowders()
 {
+	std::cout << "Analysing solvent density." << std::endl;
+
+	if (_bucket)
+	{
+		_bucket->analyseSolvent(1.8);
+	}
+
 	std::cout << "Making distance/angle lists." << std::endl;
 
 	for (int i = 0; i < moleculeCount(); i++)

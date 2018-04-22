@@ -7,12 +7,21 @@
 //
 
 #include "Bucket.h"
+#include "Atom.h"
+#include "Node.h"
 #include <iostream>
+#include <iomanip>
 #include "fftw3d.h"
 #include "RefinementGridSearch.h"
 #include "Shouter.h"
 #include "Crystal.h"
 #include "Diffraction.h"
+#include "CSV.h"
+#include "Options.h"
+
+#define MAX_CHECK_DISTANCE 6.0
+#define MIN_CHECK_DISTANCE 1.0
+#define CHECK_DISTANCE_STEP 0.30
 
 void Bucket::scaleSolvent()
 {
@@ -74,9 +83,6 @@ void Bucket::scaleSolvent()
 			}
 		}
 	}
-	
-	/** remove the solvent from memory */
-
 }
 
 double Bucket::scaleSolventScore(void *object)
@@ -161,9 +167,37 @@ void Bucket::fourierTransform(int dir, double res)
 	{
 		CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
 
+		_maskedRegions = FFTPtr(new FFT(*_solvent));
+		processMaskedRegions();
 		_solvent->fft(dir);
 		applySymOps(spg, res);
 		_solvent->normalise();
+	}
+}
+
+void Bucket::processMaskedRegions()
+{
+	_maskedRegions->setupMask();
+	mat3x3 real2Frac = getCrystal()->getReal2Frac();
+	mat3x3 frac2Real = mat3x3_inverse(real2Frac);
+
+	for (long i = 0; i < _maskedRegions->nn; i++)
+	{
+		if (_maskedRegions->data[i][0] > 0.5)
+		{
+			_maskedRegions->setMask(i, 1);
+			continue;
+		}
+
+		vec3 newfrac = _maskedRegions->fracFromElement(i);
+		vec3 pos = mat3x3_mult_vec(frac2Real, newfrac);
+		
+		AtomPtr atom = getCrystal()->getClosestAtom(pos);
+		
+		if (atom->isHeteroAtom())
+		{
+			_maskedRegions->setMask(i, 2);
+		}
 	}
 }
 
@@ -184,3 +218,133 @@ void Bucket::writeMillersToFile(std::string prefix, double maxRes)
 	                                spg, unitCell, real2frac);
 	
 }
+
+/* Left, centre and right are the vec3s of interest */
+void Bucket::populateHistogram(Node *node, vec3 centre, vec3 left)
+{
+	mat3x3 real2Frac = getCrystal()->getReal2Frac();
+	vec3 ldiff = vec3_subtract_vec3(left, centre);
+	double step = CHECK_DISTANCE_STEP;
+
+	FFTPtr fft = getCrystal()->getFFT();
+
+	vec3 transCentre = mat3x3_mult_vec(real2Frac, centre);
+	vec3 transLeft = mat3x3_mult_vec(real2Frac, left);
+	double centreDensity = fft->getRealFromFrac(transCentre);
+	double leftDensity = fft->getRealFromFrac(transLeft);
+	
+	for (double x = -MAX_CHECK_DISTANCE;
+	     x <= MAX_CHECK_DISTANCE; x += step)
+	{
+		for (double y = -MAX_CHECK_DISTANCE;
+		     y <= MAX_CHECK_DISTANCE; y += step)
+		{
+			for (double z = -MAX_CHECK_DISTANCE;
+			     z <= MAX_CHECK_DISTANCE; z += step)
+			{
+				vec3 offset = make_vec3(x, y, z);
+				double rlength = vec3_length(offset);
+				if (rlength < MIN_CHECK_DISTANCE ||
+				    rlength > MAX_CHECK_DISTANCE)
+				{
+					continue;
+				}
+
+				vec3 right = vec3_add_vec3(centre, offset);
+				
+				double angle = vec3_angle_with_vec3(ldiff, offset);
+				double degrees = rad2deg(angle);
+				
+				if (degrees < 0) degrees = - degrees;
+				
+				vec3 transRight = mat3x3_mult_vec(real2Frac, right);
+				double rightDensity = fft->getRealFromFrac(transRight);
+
+				double mult = (leftDensity * rightDensity) * centreDensity;
+				
+				if (mult != mult || degrees != degrees || rlength != rlength)
+				{
+					continue;	
+				}
+				
+				add_to_node(node, rlength, degrees, mult);
+			}
+		}
+	}
+
+}
+
+void Bucket::addAnalysisForSolventPos(Node *node, vec3 centre, double distance)
+{
+	double step = CHECK_DISTANCE_STEP;
+	double minDist = distance - step / 3;
+	double maxDist = distance + step / 3;
+
+	mat3x3 real2Frac = getCrystal()->getReal2Frac();
+	vec3 transCentre = mat3x3_mult_vec(real2Frac, centre);
+
+	double val = _maskedRegions->getRealFromFrac(transCentre);
+
+	if (val <= 0.8)
+	{
+		return;
+	}
+	
+	double centreDensity = getCrystal()->getFFT()->getRealFromFrac(transCentre);
+	
+	if (centreDensity < 0)
+	{
+		return;
+	}
+	
+	std::cout << "Adding data from " << vec3_desc(centre) << std::endl;
+	for (double x = -maxDist - step; x <= maxDist + step; x += step)
+	{
+		for (double y = -maxDist - step; y <= maxDist + step; y += step)
+		{
+			for (double z = -maxDist - step; z <= maxDist + step; z += step)
+			{
+				vec3 offset = make_vec3(x, y, z);
+				vec3 left = vec3_add_vec3(centre, offset);
+				
+				/* Temporary removal of some distances */
+	
+				vec3 ldiff = vec3_subtract_vec3(left, centre);
+				double llength = vec3_length(ldiff);
+				if (llength < minDist || llength > maxDist)
+				{
+					continue;
+				}
+
+				populateHistogram(node, centre, left);
+			}
+		}
+	}
+
+	CSVPtr csv = CSV::nodeToCSV(node);
+	csv->writeToFile("solvent_density_analysis.csv");
+}
+
+void Bucket::analyseSolvent(double distance)
+{
+	Node *node = malloc_node();
+	prepare_node(node, 5, 0, 0, MAX_CHECK_DISTANCE + 1, 180);
+
+	mat3x3 real2Frac = getCrystal()->getReal2Frac();
+	mat3x3 frac2Real = mat3x3_inverse(real2Frac);
+
+	for (int i = 0; i < _maskedRegions->nn; i+=2)
+	{
+		if (_maskedRegions->data[i][0] < 0.8) continue;
+
+		vec3 newfrac = getCrystal()->getFFT()->fracFromElement(i);
+		vec3 centre = mat3x3_mult_vec(frac2Real, newfrac);
+
+		addAnalysisForSolventPos(node, centre, distance);
+	}
+
+	free_node(node);
+}
+
+
+

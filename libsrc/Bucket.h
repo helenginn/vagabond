@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include "shared_ptrs.h"
+#include "Node.h"
 #include <vector>
 #include "vec3.h"
 #include "../libccp4/csymlib.h"
@@ -61,9 +62,13 @@ public:
 		static_cast<Bucket *>(object)->_solvBFac = value;
 	}
 
+	void analyseSolvent(double distance);
 protected:
+	void populateHistogram(Node *node, vec3 centre, vec3 left);
+	void addAnalysisForSolventPos(Node *node, vec3 centre, double distance);
 	CrystalWkr _crystal;
 	FFTPtr _solvent;
+	FFTPtr _maskedRegions;
 	DiffractionPtr _data;
 	
 	CrystalPtr getCrystal()
@@ -71,6 +76,9 @@ protected:
 		return _crystal.lock();
 	}
 private:
+	/* Mask regions with protein = 0, solvent = 1 and protein/solvent
+	* interface = 2 */
+	void processMaskedRegions();
 	double _solvScale;
 	double _solvBFac;
 };
