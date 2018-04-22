@@ -1,5 +1,5 @@
 ACLOCAL_AMFLAGS = -I m4
-AM_CXXFLAGS = --std=c++0x -O3 -I../ -L../libs/.libs/ -L../libfftw/ -lccp4c -lpng -lica -lfftw3f -lvbondinfo
+AM_CXXFLAGS = -pg --std=c++0x -O3 -I../ -L../libs/.libs/ -L../libfftw/ -lccp4c -lpng -lica -lfftw3f -lvbondinfo
 
 bin_PROGRAMS = vagabond
 vagabond_SOURCES = Element.cpp \
