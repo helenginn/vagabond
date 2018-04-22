@@ -32,6 +32,13 @@ void Bucket::scaleSolvent()
 	grid->addParameter(this, getSolvBFac, setSolvBFac, 800, 40.0, "bfac");
 	grid->refine();
 	
+	/** If we are doing powder analysis we don't actually want
+	* 	to add the solvent */
+	if (Options::shouldPowder())
+	{
+		return;
+	}	
+	
 	/** Now add this into the FFT */
 	
 	FFTPtr fft = getCrystal()->getFFT();
