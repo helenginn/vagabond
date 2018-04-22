@@ -67,6 +67,17 @@ FFT::~FFT()
 	fftwf_cleanup_threads();
 }
 
+void FFT::cleanupPlans()
+{
+	for (int i = 0; i < _dimensions.size(); i++)
+	{
+//		fftwf_destroy_plan(_dimensions[i].plan);
+//		fftwf_destroy_plan(_dimensions[i].iplan);
+	} 
+	
+	fftwf_cleanup();
+}
+
 void FFT::create(long n)
 {
 	create(n,n,n);

@@ -145,6 +145,8 @@ void Options::run()
 		std::cout << std::endl << "**** Finished. ****" << std::endl;
 		std::cout << std::endl;
 	}
+	
+	FFT::cleanupPlans();
 }
 
 void Options::executeScript()

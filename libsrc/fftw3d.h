@@ -76,6 +76,7 @@ public:
 	FFT(long);
 	~FFT();
 
+	static void cleanupPlans();
 	void create(long);
 	void create(long, long, long);
 
