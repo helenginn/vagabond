@@ -47,6 +47,7 @@ typedef enum
 typedef std::vector<double> Entry;
 typedef std::map<int, char> Row;
 typedef std::map<int, Row > Plot;
+class Node;
 
 class CSV
 {
@@ -81,7 +82,7 @@ public:
 		va_end(arguments);
 	}
 
-
+	static CSVPtr nodeToCSV(Node *node);
 	void setupHistogram(double start, double end, double interval, std::string catHeader, int count, ...)
 	{
 		va_list arguments;
@@ -124,6 +125,7 @@ public:
 	void histogram(std::map<double, int> histogram);
 	std::string plotColumns(int col1, int col2);
 	void resetColumn(std::string header, double value = 0);
+	void addToCSV(Node *node);
 
 	void setValueForEntry(int entry, std::string header, double value);
 
@@ -170,6 +172,7 @@ public:
 		maxY = _maxY;
 		didSetMinMaxXY = true;
 	}
+	
 };
 
 #endif /* defined(__cppxfel__CSV__) */
