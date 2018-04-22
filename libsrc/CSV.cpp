@@ -19,6 +19,7 @@
 
 
 #include "CSV.h"
+#include "Node.h"
 #include <fstream>
 #include <float.h>
 #include <sstream>
@@ -122,7 +123,6 @@ void CSV::addOneToFrequency(double category, int column, double weight, int cate
 		}
 	}
 }
-
 
 void CSV::addOneToFrequency(double category, std::string whichHeader, double weight, std::string categoryHeader)
 {
@@ -772,3 +772,33 @@ CSV::~CSV()
 	std::vector<std::string>().swap(headers);
 	std::vector<Entry>().swap(entries);
 }
+
+void CSV::addToCSV(Node *node)
+{	
+	if (node->nextNodes[0] == NULL)
+	{
+		double xMid = (node->xMax + node->xMin) / 2;
+		double yMid = (node->yMax + node->yMin) / 2;
+		double val = node->value / (double)node->count;
+		
+		if (val != val) val = 0;
+
+		addEntry(3, xMid, yMid, val);
+		return;
+	}
+	
+	for (int i = 0; i < 4; i++)
+	{
+		addToCSV(node->nextNodes[i]);
+	}
+}
+
+CSVPtr CSV::nodeToCSV(Node *node)
+{
+	CSVPtr csv = CSVPtr(new CSV(3, "x", "y", "z"));
+	csv->addToCSV(node);
+	
+	return csv;
+}
+
+
