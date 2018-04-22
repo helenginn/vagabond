@@ -205,6 +205,16 @@ public:
 		_weighting = weighting;
 	}
 
+	void setHetatm(int hetatm)
+	{
+		_hetatm = hetatm;
+	}
+	
+	bool isHeteroAtom()
+	{
+		return (_hetatm == 1);
+	}
+
 	void setEllipsoidLongestAxis(vec3 axis)
 	{
 		_ellipsoidLongestAxis = axis;
@@ -273,6 +283,7 @@ private:
 	std::string _conformer;
 	std::string _elementSymbol;
 	bool _fromPDB;
+	int _hetatm;
 	mat3x3 _tensor;
 
 	AtomType _geomType;

@@ -7,6 +7,7 @@
 //
 
 #include "Atom.h"
+#include "Absolute.h"
 #include "fftw3d.h"
 #include "mat3x3.h"
 #include <math.h>
@@ -34,6 +35,7 @@ Atom::Atom()
 	_origOccupancy = 1.0;
 	_fromPDB = true;
 	_tensor = make_mat3x3();
+	_hetatm = -1;
 }
 
 Atom::Atom(Atom &other)
@@ -474,6 +476,7 @@ void Atom::addProperties()
 	addDoubleProperty("init_occupancy", &_origOccupancy);
 	addStringProperty("conformer", &_conformer);
 	addBoolProperty("from_pdb", &_fromPDB);
+	addIntProperty("hetatm", &_hetatm);
 	addDoubleProperty("weighting", &_weighting);
 
 	if (_element)
@@ -511,6 +514,14 @@ void Atom::postParseTidy()
 	{
 		std::cout << "Warning: element not found for " << shortDesc() << std::endl;
 		std::cout << "Element symbol is: " << _elementSymbol << std::endl;
+	}
+	
+	if (_hetatm < 0)
+	{
+		if (getModel()->isAbsolute())
+		{
+			_hetatm = ToAbsolutePtr(getModel())->isHeteroAtom();
+		}
 	}
 }
 

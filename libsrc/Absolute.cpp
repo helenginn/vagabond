@@ -87,6 +87,7 @@ AtomPtr Absolute::makeAtom()
 	myAtom->setInitialPosition(_position);
 	myAtom->setInitialBFactor(_bFactor);
 	myAtom->setPDBPosition(_position);
+	myAtom->setHetatm(_hetatm);
 	myAtom->setAtomNum(_atomNum);
 	myAtom->setAlternativeConformer(_conformer);
 	ElementPtr element = Element::getElement(_element);
