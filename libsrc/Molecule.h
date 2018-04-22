@@ -164,6 +164,7 @@ public:
 		return static_cast<Molecule *>(object)->_rotationCentre.x;
 	}
 
+	AtomPtr getClosestAtom(vec3 pos);
 	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol, bool cache = false);
 	
 	void clearCloseCache()
