@@ -92,7 +92,7 @@ public:
 		return reals / (double)nn;
 	}
 
-	void setMask(long i, MaskType value)
+	void setMask(long i, int value)
 	{
 		mask[i] = value;
 	}
