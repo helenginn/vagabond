@@ -912,6 +912,29 @@ void Crystal::postParseTidy()
 	_tied = true;
 }
 
+AtomPtr Crystal::getClosestAtom(vec3 pos)
+{
+	AtomPtr atom;
+	double small_dist = FLT_MAX;
+
+	for (size_t i = 0; i < moleculeCount(); i++)
+	{
+		AtomPtr tmp = molecule(i)->getClosestAtom(pos);
+		vec3 tmp_pos = tmp->getAbsolutePosition();
+
+		vec3 diff = vec3_subtract_vec3(pos, tmp_pos);
+		double dist = vec3_length(diff);
+		
+		if (dist < small_dist)
+		{
+			small_dist = dist;
+			atom = tmp;
+		}
+	}
+	
+	return atom;
+}
+
 std::vector<AtomPtr> Crystal::getCloseAtoms(std::vector<AtomPtr> atoms, 
                                             double tol)
 {

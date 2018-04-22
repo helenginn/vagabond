@@ -177,6 +177,11 @@ public:
 	std::vector<AtomPtr> getCloseAtoms(std::vector<AtomPtr> atoms, double tol = 2);
 	
 	/**
+	* 	
+	*/
+	AtomPtr getClosestAtom(vec3 pos);
+	
+	/**
 	* 	Clear close atom cache and research the entire Crystal next time
 	* 	getCloseAtoms is called. */
 	void clearCloseCache();
