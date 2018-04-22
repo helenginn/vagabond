@@ -129,12 +129,12 @@ void Molecule::summary()
 	std::cout << "| Atoms: " << atomCount() << std::endl;
 }
 
-void Molecule::refine(CrystalPtr target, RefinementType rType)
+void Molecule::refine(CrystalPtr, RefinementType)
 {
 
 }
 
-std::string Molecule::makePDB(PDBType pdbType, CrystalPtr crystal)
+std::string Molecule::makePDB(PDBType, CrystalPtr)
 {
 	return "";
 }

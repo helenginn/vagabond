@@ -20,6 +20,8 @@ class Bucket
 {
 public:
 	virtual void addSolvent() = 0;
+	
+	virtual ~Bucket() {}
 
 	void scaleSolvent();
 	static double scaleSolventScore(void *object);

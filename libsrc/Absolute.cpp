@@ -58,7 +58,7 @@ mat3x3 Absolute::getRealSpaceTensor()
 	return _realSpaceTensor;
 }
 
-void Absolute::getAnisotropy(bool withKabsch)
+void Absolute::getAnisotropy(bool)
 {
 	if (_isOfManyPositions)
 	{
@@ -250,7 +250,7 @@ double Absolute::getMeanSquareDeviation()
 	return _bFactor;
 }
 
-void Absolute::setTensor(mat3x3 tensor, CrystalPtr crystal)
+void Absolute::setTensor(mat3x3 tensor, CrystalPtr)
 {
 	_tensor = tensor;
 	_usingTensor = true;

@@ -251,7 +251,7 @@ protected:
 	}
 
 	virtual void addProperties();
-	virtual void addObject(ParserPtr object, std::string category) {};
+	virtual void addObject(ParserPtr, std::string) {};
 	virtual void linkReference(ParserPtr object, std::string category);
 private:
 	void initialise();

@@ -16,6 +16,8 @@ class BucketBulkSolvent : public Bucket
 {
 public:
 	virtual void addSolvent();
+	
+	virtual ~BucketBulkSolvent() {}
 private:
 	void removeSlivers();
 	bool sliverRemovalIteration(vec3 limits);
