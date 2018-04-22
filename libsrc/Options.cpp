@@ -418,7 +418,7 @@ void Options::parse()
 			understood = true;
 		}
 
-		prefix = "--powder";
+		prefix = "--solvent-analysis";
 
 		if (!arg.compare(0, prefix.size(), prefix))
 		{
