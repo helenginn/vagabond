@@ -258,7 +258,6 @@ PNGFile::PNGFile(std::string filename, int width, int height)
 	this->filename = filename;
 
 	size_t arraySize = sizeof(png_byte) * bytesPerPixel * height * pixelsPerRow;
-
 	data = (png_bytep)malloc(arraySize);
 	memset(data, 255, arraySize);
 
@@ -294,6 +293,7 @@ png_byte PNGFile::valueAt(int x, int y)
 void PNGFile::pixelAt(int x, int y, png_byte **bytes)
 {
 	int offset = y * bytesPerPixel * pixelsPerRow +  x * bytesPerPixel;
+
 
 	*bytes = &data[offset];
 
