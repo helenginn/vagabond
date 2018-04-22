@@ -200,7 +200,16 @@ public:
 
 	void normalise();
 
+	double getRealFromFrac(vec3 frac)
+	{
+		frac.x *= nx;
+		frac.y *= ny;
+		frac.z *= nz;
+		return interpolate(frac, 0);
+	}
+
 	long int elementFromFrac(double xFrac, double yFrac, double zFrac);
+	vec3 fracFromElement(long int element);
 
 	inline void setElement(long int index, float real, float imag)
 	{

@@ -57,7 +57,6 @@ FFT::FFT(long n)
 	create(n);
 }
 
-
 FFT::~FFT()
 {
 	free(mask);
@@ -185,7 +184,7 @@ long FFT::elementFromFrac(double xfrac, double yfrac, double zfrac)
 	double y = yfrac * ny;
 	double z = zfrac * nz;
 
-	long index = element(x + 0.5, y + 0.5, z + 0.5);
+	long index = element(x, y, z);
 
 	return index;
 }
@@ -359,6 +358,25 @@ void FFT::setAll(float value)
 	}
 }
 
+vec3 FFT::fracFromElement(long int element)
+{
+	long x = element % nx;
+	element -= x;
+	element /= nx;
+	
+	long y = element % ny;
+	element -= y;
+	element /= ny;
+	
+	long z = element;
+
+	double xfrac = (double)x / (double)nx;
+	double yfrac = (double)y / (double)ny;
+	double zfrac = (double)z / (double)nz;
+	
+	return make_vec3(xfrac, yfrac, zfrac);
+}
+
 // in degrees.
 double FFT::getPhase(long x, long y, long z)
 {
@@ -529,7 +547,6 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 	/* Generate FFTW plans */
 	_myDims->plan = fftwf_plan_dft_3d((int)nx, (int)ny, (int)nz, data, data, 1, fftw_flags);
 	_myDims->iplan = fftwf_plan_dft_3d((int)nx, (int)ny, (int)nz, data, data, -1, fftw_flags);
-
 
 	/*  Export wisdom to file */
 	int success = fftwf_export_wisdom_to_filename(wisdomFile);
