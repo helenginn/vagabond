@@ -125,6 +125,8 @@ public:
 	{
 		_includeForRefine.push_back(group);
 	}
+
+	AtomPtr getClosestAtom(CrystalPtr crystal, vec3 pos);
 protected:
 	virtual AtomList topLevelAtoms();
 	int _timesRefined;
