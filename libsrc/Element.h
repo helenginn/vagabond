@@ -26,6 +26,7 @@ class Element : public Distributor
 public:
 	static void setupElements();
 
+	~Element() {}
 	Element(std::string symbol, std::string name, double electrons,
 	        const float *scatter);
 	static ElementPtr getElement(std::string symbol);
