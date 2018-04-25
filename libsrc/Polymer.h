@@ -126,7 +126,7 @@ public:
 		return MonomerPtr();
 	}
 
-	long monomerCount()
+	int monomerCount()
 	{
 		//        return _monomers.size();
 		return _totalMonomers;
@@ -331,7 +331,7 @@ private:
 	double _kick;
 	double _sideDampening;
 	double _sideKick;
-	double _totalMonomers;
+	int _totalMonomers;
 	void minimiseCentroids();
 	void minimiseRotations();
 	void applyTranslationTensor();

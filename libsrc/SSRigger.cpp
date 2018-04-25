@@ -20,7 +20,7 @@ SSRigger::SSRigger()
 
 void SSRigger::findCysteineSulphurs()
 {
-	for (int i = 0; i < _crystal->moleculeCount(); i++)
+	for (size_t i = 0; i < _crystal->moleculeCount(); i++)
 	{
 		MoleculePtr molecule = _crystal->molecule(i);
 		AtomList sulphurs = molecule->findAtoms("SG");
@@ -28,7 +28,7 @@ void SSRigger::findCysteineSulphurs()
 		/* Append to growing list */
 		_cysSGs.reserve(_cysSGs.size() + sulphurs.size());
 
-		for (int j = 0; j < sulphurs.size(); j++)
+		for (size_t j = 0; j < sulphurs.size(); j++)
 		{
 			if (!sulphurs[j].expired())
 			{
@@ -42,7 +42,7 @@ void SSRigger::convertCysteine(AtomPtr oneAtom)
 {
 	MonomerPtr monomer = oneAtom->getMonomer();
 
-	for (int i = 0; i < monomer->atomCount(); i++)
+	for (size_t i = 0; i < monomer->atomCount(); i++)
 	{
 		AtomPtr atom = monomer->atom(i);
 		atom->convertToDisulphide();	
@@ -53,9 +53,9 @@ void SSRigger::convertCysteine(AtomPtr oneAtom)
 
 void SSRigger::findCloseCysteines()
 {
-	for (int i = 0; i < _cysSGs.size() - 1; i++)
+	for (size_t i = 0; i < _cysSGs.size() - 1; i++)
 	{
-		for (int j = i + 1; j < _cysSGs.size(); j++)
+		for (size_t j = i + 1; j < _cysSGs.size(); j++)
 		{
 			AtomPtr aSulphur = _cysSGs[i];
 			AtomPtr bSulphur = _cysSGs[j];	

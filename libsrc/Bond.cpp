@@ -117,7 +117,7 @@ Bond::Bond(Bond &other)
 	_activeGroup = other._activeGroup;
 	_bondGroups = other._bondGroups;
 
-	for (int i = 0; i < _bondGroups.size(); i++)
+	for (size_t i = 0; i < _bondGroups.size(); i++)
 	{
 		_bondGroups[i].atoms.clear();
 	}
@@ -177,9 +177,9 @@ double Bond::deriveBondAngle(AtomPtr atom)
 
 void Bond::resetBondAngles()
 {
-	for (int i = 0; i < downstreamAtomGroupCount(); i++)
+	for (size_t i = 0; i < downstreamAtomGroupCount(); i++)
 	{
-		for (int j = 0; j < downstreamAtomCount(i); j++)
+		for (size_t j = 0; j < downstreamAtomCount(i); j++)
 		{
 			double angle = deriveBondAngle(downstreamAtom(i, j));
 			_bondGroups[i].atoms[j].expectedAngle = angle;
@@ -239,7 +239,7 @@ void Bond::addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry)
 		}
 		else
 		{
-			int atomsNow = _bondGroups[group].atoms.size();
+			size_t atomsNow = _bondGroups[group].atoms.size();
 			portion = _bondGroups[0].atoms[atomsNow].circlePortion;
 		}
 	}
@@ -545,7 +545,7 @@ double myTorsion, double ratio)
 
 	/* This loop gets average positions for the previous, current and next
 	* atom positions */
-	for (int i = 0; i < prevs->size(); i++)
+	for (size_t i = 0; i < prevs->size(); i++)
 	{
 		double torsionAngle = (*prevs)[i].torsion + circleAdd;
 
@@ -581,7 +581,7 @@ double myTorsion, double ratio)
 	/* Keeps track of the average kick+dampen per bond */
 	double averageModulation = 0;
 
-	for (int i = 0; i < prevs->size(); i++)
+	for (size_t i = 0; i < prevs->size(); i++)
 	{
 		double torsionAngle = (*prevs)[i].torsion + circleAdd;
 
@@ -665,7 +665,7 @@ double myTorsion, double ratio)
 	
 	averageModulation /= (double)prevs->size();
 
-	for (int i = 0; i < set.size(); i++)
+	for (size_t i = 0; i < set.size(); i++)
 	{
 		set[i].torsion -= averageModulation;
 	}
@@ -696,7 +696,7 @@ std::vector<BondSample> *Bond::getManyPositions()
 		/* We must be connected to something else, oh well */
 		/* Torsion basis must be the same. */
 
-		for (int i = 0; i < absPos->size(); i++)
+		for (size_t i = 0; i < absPos->size(); i++)
 		{
 			vec3 majorPos = (*absPos)[i].start;
 			vec3 heavyPos = getHeavyAlign()->getInitialPosition();
@@ -796,7 +796,7 @@ std::vector<BondSample> *Bond::getManyPositions()
 		myTorsions.clear();
 		myTorsions.reserve(prevSamples->size());
 
-		for (int i = 0; i < prevSamples->size(); i++)
+		for (size_t i = 0; i < prevSamples->size(); i++)
 		{
 			BondSample simple;
 			simple.torsion = _bondGroups[_activeGroup].torsionAngle;
@@ -810,10 +810,9 @@ std::vector<BondSample> *Bond::getManyPositions()
 	double occTotal = 0;
 	newSamples->reserve(prevSamples->size());
 
-	for (int i = 0; i < (*prevSamples).size(); i++)
+	for (size_t i = 0; i < (*prevSamples).size(); i++)
 	{
 		double currentTorsion = (*prevSamples)[i].torsion + circleAdd;
-		double occupancy = getMultOccupancy();
 
 		if (torsionNumber < 0)
 		{
@@ -870,7 +869,7 @@ bool Bond::isNotJustForHydrogens()
 		return false;
 	}
 
-	for (int i = 0; i < downstreamAtomCount(0); i++)
+	for (size_t i = 0; i < downstreamAtomCount(0); i++)
 	{
 		AtomPtr atom = downstreamAtom(i, 0);
 		if (atom->getElement()->electronCount() > 1)
@@ -897,13 +896,13 @@ void Bond::propagateChange(int depth, bool refresh)
 	propagateBonds.push_back(ToBondPtr(shared_from_this()));
 	int count = 0;
 
-	for (int k = 0; k < propagateBonds.size(); k++)
+	for (size_t k = 0; k < propagateBonds.size(); k++)
 	{
 		BondPtr bond = propagateBonds[k];
 
-		for (int j = 0; j < bond->downstreamAtomGroupCount(); j++)
+		for (size_t j = 0; j < bond->downstreamAtomGroupCount(); j++)
 		{
-			for (int i = 0; i < bond->downstreamAtomCount(j); i++)
+			for (size_t i = 0; i < bond->downstreamAtomCount(j); i++)
 			{
 				AtomPtr atom = bond->downstreamAtom(j, i);
 				ModelPtr model = atom->getModel();
@@ -930,7 +929,7 @@ void Bond::propagateChange(int depth, bool refresh)
 		return;
 	}
 
-	for (int k = 0; k < propagateBonds.size(); k++)
+	for (size_t k = 0; k < propagateBonds.size(); k++)
 	{
 		BondPtr bond = propagateBonds[k];
 		{
@@ -1105,7 +1104,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum, int start)
 	bool changed = false;
 
 	/* Existing atoms: list.size() */
-	for (int i = 0; i < list.size(); i++)
+	for (size_t i = 0; i < list.size(); i++)
 	{
 		if (list[i].expired()) continue;
 		AtomPtr atom = list[i].lock();
@@ -1125,7 +1124,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum, int start)
 		char conformer[] = "a";
 		getMinor()->setAlternativeConformer(conformer);
 
-		for (int i = 0; i < list.size(); i++)
+		for (size_t i = 0; i < list.size(); i++)
 		{
 			conformer[0]++;
 		}
@@ -1147,7 +1146,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum, int start)
 
 	if (groupNum != 0)
 	{
-		for (int i = 0; i < newBranch->downstreamAtomCount(0); i++)
+		for (size_t i = 0; i < newBranch->downstreamAtomCount(0); i++)
 		{
 			if (newBranch->downstreamAtom(0, i)->getAtomName() != duplAtom->getAtomName())
 			{
@@ -1161,7 +1160,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum, int start)
 	setTorsion(&*newBranch, torsion);
 	newBranch->setActiveGroup(0);
 
-	for (int i = 0; i < newBranch->downstreamAtomCount(groupNum); i++)
+	for (size_t i = 0; i < newBranch->downstreamAtomCount(groupNum); i++)
 	{
 		double portion = myParent->_bondGroups[0].atoms[i].circlePortion;
 		newBranch->_bondGroups[groupNum].atoms[i].circlePortion = portion;
@@ -1172,7 +1171,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum, int start)
 		return duplBond;
 	}
 
-	for (int i = start; i < downstreamAtomCount(0); i++)
+	for (size_t i = start; i < downstreamAtomCount(0); i++)
 	{
 		BondPtr nextBond = boost::static_pointer_cast<Bond>(downstreamAtom(0, i)->getModel());
 
@@ -1221,9 +1220,9 @@ std::string Bond::description()
 	stream << "Bond downstream atoms (first) ("
 	<< downstreamAtomCount(0) << "):" << std::endl;
 
-	for (int i = 0; i < downstreamAtomGroupCount(); i++)
+	for (size_t i = 0; i < downstreamAtomGroupCount(); i++)
 	{
-		for (int j = 0; j < downstreamAtomCount(i); j++)
+		for (size_t j = 0; j < downstreamAtomCount(i); j++)
 		{
 			stream << "\t" << downstreamAtom(i, j)->shortDesc()
 			<< "(" << &*downstreamAtom(i, j) << ")" << std::endl;
@@ -1268,7 +1267,7 @@ void Bond::reverseDownstreamAtoms(int group)
 	std::vector<AtomValue> newAtoms;
 	newAtoms.push_back(_bondGroups[group].atoms[0]);
 
-	for (int i = downstreamAtomCount(group) - 1; i > 0; i--)
+	for (int i = (int)downstreamAtomCount(group) - 1; i > 0; i--)
 	{
 		newAtoms.push_back(_bondGroups[group].atoms[i]);
 	}
@@ -1291,7 +1290,7 @@ ModelPtr Bond::reverse(BondPtr upstreamBond)
 
 	vec3_mult(&_bondDirection, -1);
 
-	for (int i = 0; i < downstreamAtomGroupCount(); i++)
+	for (size_t i = 0; i < downstreamAtomGroupCount(); i++)
 	{
 		if (upstreamBond)
 		{
@@ -1301,7 +1300,7 @@ ModelPtr Bond::reverse(BondPtr upstreamBond)
 			// FIXME
 			upstreamBond->addDownstreamAtom(major, i);
 
-			for (int j = downstreamAtomCount(i) - 1; j >= 0; j--)
+			for (int j = (int)downstreamAtomCount(i) - 1; j >= 0; j--)
 			{
 				AtomPtr atom = downstreamAtom(i, j);
 				upstreamBond->addDownstreamAtom(atom, i);
@@ -1325,9 +1324,9 @@ bool Bond::test()
 	bool ok = true;
 
 	/* Test of geometry for multiple downstream atoms */
-	for (int i = 0; i < downstreamAtomGroupCount(); i++)
+	for (size_t i = 0; i < downstreamAtomGroupCount(); i++)
 	{
-		for (int j = -1; j < downstreamAtomCount(i); j++)
+		for (size_t j = -1; j < downstreamAtomCount(i); j++)
 		{
 			AtomPtr atom1 = getMajor();
 			if (j >= 0)
@@ -1340,7 +1339,7 @@ bool Bond::test()
 				continue;
 			}
 
-			for (int k = 0; k < downstreamAtomCount(i); k++)
+			for (size_t k = 0; k < downstreamAtomCount(i); k++)
 			{
 				AtomPtr atom3 = downstreamAtom(i, (k + 1) % downstreamAtomCount(i));
 
@@ -1425,7 +1424,7 @@ double Bond::getEffectiveOccupancy()
 	std::vector<BondSample> *samples = getManyPositions();
 	double total = 0;
 
-	for (int i = 0; i < samples->size(); i++)
+	for (size_t i = 0; i < samples->size(); i++)
 	{
 		total += samples->at(i).occupancy;
 	}
@@ -1633,7 +1632,7 @@ void Bond::encodeBondGroup(void *bond, void *bondGroup,
 
 	stream << std::setprecision(8);
 
-	for (int i = 0; i < groups->size(); i++)
+	for (size_t i = 0; i < groups->size(); i++)
 	{
 		stream << indent(in) << "object " << std::endl;
 		stream << indent(in) << "{" << std::endl;
@@ -1643,7 +1642,7 @@ void Bond::encodeBondGroup(void *bond, void *bondGroup,
 		stream << indent(in) << "phi = " << (*groups)[i].magicPhi << std::endl;
 		stream << indent(in) << "psi = " << (*groups)[i].magicPsi << std::endl;
 
-		for (int j = 0; j < (*groups)[i].atoms.size(); j++)
+		for (size_t j = 0; j < (*groups)[i].atoms.size(); j++)
 		{
 			AtomValue *atom = &(*groups)[i].atoms[j];
 			stream << indent(in) << "object " << std::endl;
@@ -1715,9 +1714,9 @@ void Bond::linkReference(ParserPtr object, std::string category)
 void Bond::postParseTidy()
 {	
 	/* Get real references to the downstream atoms */
-	for (int i = 0; i < downstreamAtomGroupCount(); i++)
+	for (size_t i = 0; i < downstreamAtomGroupCount(); i++)
 	{
-		for (int j = 0; j < downstreamAtomCount(i); j++)
+		for (size_t j = 0; j < downstreamAtomCount(i); j++)
 		{
 			if (!_bondGroups[i].atoms[j].placeholder)
 			{

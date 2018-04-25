@@ -26,7 +26,7 @@
 
 AtomPtr AtomGroup::findAtom(std::string atomType)
 {
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (atom(i)->getAtomName() == atomType)
 		{
@@ -41,7 +41,7 @@ AtomPtr AtomGroup::findAtom(std::string atomType, std::string confID)
 {
 	AtomList atoms = findAtoms(atomType);
 
-	for (int i = 0; i < atoms.size(); i++)
+	for (size_t i = 0; i < atoms.size(); i++)
 	{
 		if (atoms[i].expired())
 		{
@@ -59,17 +59,17 @@ AtomPtr AtomGroup::findAtom(std::string atomType, std::string confID)
 
 void AtomGroup::addAtomsFrom(AtomGroupPtr group)
 {
-	for (int i = 0; i < group->atomCount(); i++)
+	for (size_t i = 0; i < group->atomCount(); i++)
 	{
 		addAtom(group->atom(i));	
 	}
 }
 
-std::map<std::string, int> AtomGroup::conformerMap()
+std::map<std::string, size_t> AtomGroup::conformerMap()
 {
-	std::map<std::string, int> conformerList;
+	std::map<std::string, size_t> conformerList;
 
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		std::string conformer = atom(i)->getAlternativeConformer();
 
@@ -86,19 +86,19 @@ std::map<std::string, int> AtomGroup::conformerMap()
 
 int AtomGroup::conformerCount()
 {
-	std::map<std::string, int> conformerList = conformerMap();
+	std::map<std::string, size_t> conformerList = conformerMap();
 
 	return conformerList.size();
 }
 
-std::string AtomGroup::conformer(int i)
+std::string AtomGroup::conformer(size_t i)
 {
 	if (i > conformerMap().size()) return "";
 
-	std::map<std::string, int> conformerList = conformerMap();
-	std::map<std::string, int>::iterator it = conformerList.begin();
+	std::map<std::string, size_t> conformerList = conformerMap();
+	std::map<std::string, size_t>::iterator it = conformerList.begin();
 
-	for (int j = 0; j < i; j++) it++;
+	for (size_t j = 0; j < i; j++) it++;
 
 	return it->first;
 }
@@ -107,7 +107,7 @@ AtomList AtomGroup::findAtoms(std::string atomType)
 {
 	AtomList list;
 
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (atom(i)->getAtomName() == atomType)
 		{
@@ -122,7 +122,7 @@ double AtomGroup::totalElectrons()
 {
 	double total = 0;
 
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		total += atom(i)->getElement()->electronCount();
 	}
@@ -133,7 +133,7 @@ double AtomGroup::totalElectrons()
 std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal)
 {
 	std::ostringstream stream;
-	int numConf = 0;
+	size_t numConf = 0;
 
 	if (!atomCount())
 	{
@@ -147,11 +147,11 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal)
 
 		numConf = samples->size();
 
-		for (int j = 0; j < numConf; j++)
+		for (size_t j = 0; j < numConf; j++)
 		{
 			stream << "MODEL " << std::setw(8) << j << std::setw(66) << " " << std::endl;
 
-			for (int i = 0; i < atomCount(); i++)
+			for (size_t i = 0; i < atomCount(); i++)
 			{
 				if (!atom(i)->getMonomer())
 				{
@@ -173,7 +173,7 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal)
 		return stream.str();
 	}
 
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		bool samePos = (pdbType == PDBTypeSamePosition);
 		bool sameB = (pdbType == PDBTypeSameBFactor);
@@ -192,7 +192,7 @@ double AtomGroup::getAverageDisplacement()
 	double sum = 0;
 	double count = 0;
 
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (atom(i)->getElement()->electronCount() <= 1)
 		{
@@ -213,7 +213,7 @@ double AtomGroup::getAverageBFactor(bool initial)
 	double sum = 0;
 	double count = 0;
 
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (atom(i)->getElement()->electronCount() <= 1)
 		{
@@ -248,7 +248,7 @@ AtomGroup::AtomGroup()
 
 void AtomGroup::propagateChange()
 {
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		atom(i)->getModel()->propagateChange(0);
 	}
@@ -256,7 +256,7 @@ void AtomGroup::propagateChange()
 
 void AtomGroup::refreshPositions(bool quick)
 {
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (!atom(i)) continue;
 
@@ -268,7 +268,7 @@ void AtomGroup::refreshPositions(bool quick)
 
 	AtomList list = topLevelAtoms();
 	
-	for (int i = 0; i < list.size(); i++)
+	for (size_t i = 0; i < list.size(); i++)
 	{
 		AtomPtr atom = list[i].lock();
 		atom->getModel()->propagateChange(-1, true);
@@ -281,7 +281,7 @@ int AtomGroup::totalElectrons(int *fcWeighted)
 	double sum = 0;
 	double weighted = 0;
 
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		double e = atom(i)->getElement()->electronCount();
 		sum += e;
@@ -296,7 +296,7 @@ int AtomGroup::totalElectrons(int *fcWeighted)
 
 void AtomGroup::setWeighting(double value)
 {
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		atom(i)->setWeighting(value);
 	}
@@ -308,10 +308,10 @@ AtomList AtomGroup::topLevelAtoms()
 
 	AtomList list;
 
-	for (int i = 0; i < 1; i++)
+	for (size_t i = 0; i < 1; i++)
 	{
 		std::string conf = conformer(i);
-		int j = 0;
+		size_t j = 0;
 		AtomPtr topAtom = atom(0);
 
 		while (topAtom->getAlternativeConformer() != conf)
@@ -357,7 +357,7 @@ bool AtomGroup::hasAtom(AtomPtr anAtom)
 
 	if (!anAtom) return false;
 
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (atom(i) == anAtom)
 		{
@@ -431,7 +431,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		bondNum = 3;
 	}
 
-	for (int n = 0; n < topAtoms.size(); n++)
+	for (size_t n = 0; n < topAtoms.size(); n++)
 	{
 		AtomPtr topAtom = topAtoms[n].lock();
 
@@ -489,7 +489,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					
 					setScoreType(scoreType);
 
-					for (int l = 0; l < _includeForRefine.size(); l++)
+					for (size_t l = 0; l < _includeForRefine.size(); l++)
 					{
 						addSampledAtoms(_includeForRefine[l]);
 					}
@@ -524,7 +524,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plot)
 {
 	std::vector<AtomPtr> selected;
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		selected.push_back(atom(i));
 	}
@@ -550,7 +550,7 @@ mat3x3 *basis, vec3 *ave)
 	vec3 sum = make_vec3(0, 0, 0);
 
 	/* Find centroid of atom set */
-	for (int i = 0; i < selected.size(); i++)
+	for (size_t i = 0; i < selected.size(); i++)
 	{
 		selected[i]->getModel()->getFinalPositions();
 		vec3 offset = selected[i]->getModel()->getAbsolutePosition();
@@ -572,7 +572,7 @@ mat3x3 *basis, vec3 *ave)
 	double ns[3];
 	ns[0] = 0; ns[1] = 0; ns[2] = 0;
 
-	for (int i = 0; i < selected.size(); i++)
+	for (size_t i = 0; i < selected.size(); i++)
 	{
 		/* Refresh absolute position */
 		selected[i]->getModel()->getDistribution();
@@ -634,13 +634,13 @@ double AtomGroup::addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected,
 
 	/* For each element, make a new map and add all real space atom
 	*  positions in one fell swoop, if possible */
-	for (int i = 0; i < elements.size(); i++)
+	for (size_t i = 0; i < elements.size(); i++)
 	{
 		int totalElectrons = 0;
 		FFTPtr elesegment = FFTPtr(new FFT(*segment));
 
 		tReal.start();
-		for (int j = 0; j < selected.size(); j++)
+		for (size_t j = 0; j < selected.size(); j++)
 		{
 			if (selected[j]->getElement() != elements[i])
 			{
@@ -690,7 +690,7 @@ double AtomGroup::addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected,
 //	tReal.report();
 //	tFFT.report();
 	
-	for (int i = 0; i < traditional.size(); i++)
+	for (size_t i = 0; i < traditional.size(); i++)
 	{
 		traditional[i]->addToMap(tmpSegment, basis, ave);
 	}
@@ -730,7 +730,7 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 
 	mat3x3 real2Frac = crystal->getReal2Frac();
 
-	for (int i = 0; i < selected.size(); i++)
+	for (size_t i = 0; i < selected.size(); i++)
 	{
 		selected[i]->addToMap(segment, basis, ave);
 	}
@@ -754,7 +754,7 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 
 	extra = crystal->getCloseAtoms(selected, 3.0);
 
-	for (int i = 0; i < extra.size(); i++)
+	for (size_t i = 0; i < extra.size(); i++)
 	{
 		extra[i]->addToMap(segment, basis, ave);
 	}
@@ -782,7 +782,7 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	FFT::score(map, segment, ave, &vals);
 
 	/* For correlation calculations */
-	for (int i = 0; i < vals.size(); i++)
+	for (size_t i = 0; i < vals.size(); i++)
 	{
 		xs.push_back(vals[i].fo);
 		ys.push_back(vals[i].fc);
@@ -793,7 +793,7 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	if (scoreType == ScoreTypeRFactor)
 	{
 		cutoff /= scale;	
-		for (int i = 0; i < ys.size(); i++)
+		for (size_t i = 0; i < ys.size(); i++)
 		{
 			ys[i] /= scale;
 			vals[i].fc /= scale;
@@ -807,7 +807,7 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	{
 		CSVPtr csv = CSVPtr(new CSV(6, "x", "y", "z", "fo", "fc", "mask"));
 
-		for (int i = 0; i < vals.size(); i++)
+		for (size_t i = 0; i < vals.size(); i++)
 		{
 			double fo = vals[i].fo;
 			double fc = vals[i].fc;
@@ -869,7 +869,7 @@ void AtomGroup::addProperties()
 	addBoolProperty("been_tied", &_beenTied);
 	addIntProperty("times_refined", &_timesRefined);
 
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		addReference("atom", atom(i));
 	}

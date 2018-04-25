@@ -20,7 +20,7 @@ void BucketBulkSolvent::addSolvent()
 	mat3x3 real2frac = crystal->getReal2Frac();
 	_solvent->setAll(0);
 
-	for (int i = 0; i < crystal->moleculeCount(); i++)
+	for (size_t i = 0; i < crystal->moleculeCount(); i++)
 	{
 		crystal->molecule(i)->addToMap(_solvent, real2frac, true);
 	}

@@ -34,7 +34,7 @@ double FlexGlobal::matchOriginalBeeScore()
 	double score = 0;
 	double count = 0;
 
-	for (int i = 0; i < _atomGroup->atomCount(); i++)
+	for (size_t i = 0; i < _atomGroup->atomCount(); i++)
 	{
 		AtomPtr atom = _atomGroup->atom(i);
 
@@ -69,7 +69,7 @@ double FlexGlobal::maximiseIsotropyScore()
 
 	std::vector<vec3> allPos;
 
-	for (int i = 0; i < _atomGroup->atomCount(); i++)
+	for (size_t i = 0; i < _atomGroup->atomCount(); i++)
 	{
 		AtomPtr atom = _atomGroup->atom(i);
 
@@ -83,7 +83,7 @@ double FlexGlobal::maximiseIsotropyScore()
 		vec3 meanPos = bond->getAbsolutePosition();
 		allPos.reserve(allPos.size() + samples.size());
 
-		for (int i = 0; i < samples.size(); i++)
+		for (size_t i = 0; i < samples.size(); i++)
 		{
 			vec3 diff = vec3_subtract_vec3(samples[i].start, meanPos);
 			allPos.push_back(diff);
@@ -112,7 +112,7 @@ void FlexGlobal::maximiseIsotropy()
 	double sum = 0;
 	double count = 0;
 
-	for (int i = 0; i < _atomGroup->atomCount(); i++)
+	for (size_t i = 0; i < _atomGroup->atomCount(); i++)
 	{
 		AtomPtr atom = _atomGroup->atom(i);
 

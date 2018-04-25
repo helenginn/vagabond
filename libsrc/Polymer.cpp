@@ -49,7 +49,7 @@ void Polymer::checkChainContinuity()
 	int foundFirst = -1;
 	int foundGap = -1;
 
-	for (int i = 0; i < monomerCount(); i++)
+	for (size_t i = 0; i < monomerCount(); i++)
 	{
 		if (foundFirst >= 0 && foundGap >= 0 && getMonomer(i))
 		{
@@ -496,7 +496,7 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 	sumCC /= tempNs.size();
 	sumDiffCC /= tempNs.size();
 
-	for (int i = 0; i < tempNs.size(); i++)
+	for (size_t i = 0; i < tempNs.size(); i++)
 	{
 		double ccRelative = tempCCs[i];
 		double diffCCRelative = tempDiffCCs[i] / sumDiffCC - 1;
@@ -909,14 +909,14 @@ std::vector<vec3> Polymer::getAnchorSphereDiffs()
 	std::vector<BondSample> *finals = getAnchorModel()->getManyPositions();
 	vec3 sum = make_vec3(0, 0, 0);
 
-	for (int i = 0; i < finals->size(); i++)
+	for (size_t i = 0; i < finals->size(); i++)
 	{
 		sum = vec3_add_vec3(sum, finals->at(i).start);
 	}
 
 	vec3_mult(&sum, 1/(double)finals->size());
 
-	for (int i = 0; i < finals->size(); i++)
+	for (size_t i = 0; i < finals->size(); i++)
 	{
 		vec3 onePos = finals->at(i).start;
 		vec3 diff = vec3_subtract_vec3(onePos, sum);
@@ -928,7 +928,7 @@ std::vector<vec3> Polymer::getAnchorSphereDiffs()
 
 void Polymer::applyPolymerChanges()
 {
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (!atom(i)) continue;
 
@@ -944,7 +944,7 @@ void Polymer::applyTranslationTensor()
 
 	std::vector<vec3> sphereDiffs = getAnchorSphereDiffs();
 
-	for (int i = 0; i < sphereDiffs.size(); i++)
+	for (size_t i = 0; i < sphereDiffs.size(); i++)
 	{
 		vec3 diff = sphereDiffs[i];
 		vec3 diffTensored = diff;
@@ -969,7 +969,7 @@ void Polymer::calculateExtraRotations()
 		return;
 	}
 
-	for (int i = 0; i < sphereDiffs.size(); i++)
+	for (size_t i = 0; i < sphereDiffs.size(); i++)
 	{
 		vec3 diff = sphereDiffs[i];
 		double cosine = vec3_cosine_with_vec3(diff, _magicRotAxis);
@@ -1020,7 +1020,7 @@ void Polymer::superimpose()
 		std::vector<vec3> poss;
 		poss = one->polymerCorrectedPositions();
 
-		for (int i = 0; i < poss.size(); i++)
+		for (size_t i = 0; i < poss.size(); i++)
 		{
 			vec3 pos = poss[i];
 			csv->addEntry(3, pos.x, pos.y, pos.z);
@@ -1035,7 +1035,7 @@ void Polymer::superimpose()
 		CSVPtr csv = CSVPtr(new CSV(10, "psi", "phi", "theta", "corr_x", "corr_y", "corr_z", "rot_angle", "rot_axis_x", "rot_axis_y", "rot_axis_z"));
 		CSVPtr one = CSVPtr(new CSV(3, "x", "y", "z"));
 
-		for (int i = 0; i < sphereAngles.size(); i++)
+		for (size_t i = 0; i < sphereAngles.size(); i++)
 		{
 			mat3x3 rotMat = getRotationCorrections()[i];
 			double angle = mat3x3_rotation_angle(rotMat);
@@ -1070,7 +1070,7 @@ void Polymer::minimiseCentroids()
 	getAnchorModel()->getFinalPositions();
 	vec3 oldPos = getAnchorModel()->getAbsolutePosition();
 
-	for (int i = 0; i < monomerCount(); i++)
+	for (size_t i = 0; i < monomerCount(); i++)
 	{
 		if (!getMonomer(i))
 		{
@@ -1093,7 +1093,7 @@ void Polymer::minimiseCentroids()
 			addedVecs = std::vector<vec3>(samples->size(), make_vec3(0, 0, 0));;
 		}
 
-		for (int j = 0; j < samples->size(); j++)
+		for (size_t j = 0; j < samples->size(); j++)
 		{
 			addedVecs[j] = vec3_add_vec3(addedVecs[j], samples->at(j).start);
 		}
@@ -1104,14 +1104,14 @@ void Polymer::minimiseCentroids()
 
 	// now we divide every state of the anchor by this.
 
-	for (int i = 0; i < addedVecs.size(); i++)
+	for (size_t i = 0; i < addedVecs.size(); i++)
 	{
 		vec3_mult(&addedVecs[i], mult);
 	}
 
 	vec3 meanPos = make_vec3(0, 0, 0); // mean of all centroids
 
-	for (int i = 0; i < addedVecs.size(); i++)
+	for (size_t i = 0; i < addedVecs.size(); i++)
 	{
 		meanPos = vec3_add_vec3(meanPos, addedVecs[i]);
 	}
@@ -1126,7 +1126,7 @@ void Polymer::minimiseCentroids()
 	_centroidOffsets.clear();
 
 	// Find the offsets to bring all centroids to the mean value
-	for (int i = 0; i < addedVecs.size(); i++)
+	for (size_t i = 0; i < addedVecs.size(); i++)
 	{
 		vec3 offset = vec3_subtract_vec3(addedVecs[i], meanPos);
 		_centroidOffsets.push_back(offset);
@@ -1142,7 +1142,7 @@ void Polymer::minimiseCentroids()
 	// Find the difference.
 	vec3 backToOld = vec3_subtract_vec3(oldPos, newPos);
 
-	for (int i = 0; i < _centroidOffsets.size(); i++)
+	for (size_t i = 0; i < _centroidOffsets.size(); i++)
 	{
 		vec3 offset = vec3_add_vec3(_centroidOffsets[i], backToOld);
 		_centroidOffsets[i] = offset;
@@ -1153,11 +1153,11 @@ void Polymer::minimiseCentroids()
 
 void Polymer::minimiseRotations()
 {
-	int num = 0;
+	size_t num = 0;
 
 	std::vector<vec3> tmpCentroids;
 
-	for (int i = 0; i < monomerCount(); i++)
+	for (size_t i = 0; i < monomerCount(); i++)
 	{
 		if (!getMonomer(i))
 		{
@@ -1177,12 +1177,12 @@ void Polymer::minimiseRotations()
 
 	std::vector<mat3x3> tmpMats;
 
-	for (int i = 0; i < num; i++)
+	for (size_t i = 0; i < num; i++)
 	{
 		std::vector<double> weights;
 		std::vector<vec3> fixedVecs, variantVecs;
 
-		for (int j = 0; j < monomerCount(); j++)
+		for (size_t j = 0; j < monomerCount(); j++)
 		{
 			if (!getMonomer(j))
 			{
@@ -1191,7 +1191,7 @@ void Polymer::minimiseRotations()
 
 			BackbonePtr bone = getMonomer(j)->getBackbone();
 
-			for (int k = 0; k < bone->atomCount(); k++)
+			for (size_t k = 0; k < bone->atomCount(); k++)
 			{
 				AtomPtr anAtom = bone->atom(k);
 				if (!anAtom) continue;
@@ -1247,7 +1247,7 @@ void Polymer::closenessSummary()
 	double bSum = 0;
 	int count = 0;
 
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (!atom(i)->isFromPDB())
 		{
@@ -1291,7 +1291,7 @@ bool Polymer::test()
 {
 	bool bondsOk = true;
 
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (!atom(i)->getModel())
 		{
@@ -1317,7 +1317,7 @@ void Polymer::reportParameters()
 {
 	int count = 0;
 
-	for (int i = 0; i < atomCount(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (atom(i)->getModel()->isBond())
 		{
@@ -1408,7 +1408,7 @@ AtomGroupPtr Polymer::getAllBackbone()
 	
 	_allBackbones = AtomGroupPtr(new AtomGroup());
 
-	for (int i = 0; i < monomerCount(); i++)
+	for (size_t i = 0; i < monomerCount(); i++)
 	{
 		if (!getMonomer(i))
 		{
@@ -1475,7 +1475,7 @@ void Polymer::addProperties()
 	addIntProperty("anchor_res", &_anchorNum);
 	addMat3x3Property("trans_tensor", &_transTensor);
 
-	for (int i = 0; i < monomerCount(); i++)
+	for (size_t i = 0; i < monomerCount(); i++)
 	{
 		if (!getMonomer(i)) continue;
 

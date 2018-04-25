@@ -68,7 +68,7 @@ public:
 	
 	void addAtomsFrom(AtomGroupPtr group);
 
-	long atomCount()
+	size_t atomCount()
 	{
 		return _atoms.size();
 	}
@@ -109,7 +109,7 @@ public:
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	void setWeighting(double value);
 	int conformerCount();
-	std::string conformer(int i);
+	std::string conformer(size_t i);
 	
 	/** Instructs the models of all the atoms inside to propagate a change of
 	* parameters. See also: Model::propagateChange(). */
@@ -169,7 +169,7 @@ private:
 	std::vector<AtomGroupPtr> _includeForRefine;
 
 	void privateRefine(); 
-	std::map<std::string, int> conformerMap();
+	std::map<std::string, size_t> conformerMap();
 
 };
 

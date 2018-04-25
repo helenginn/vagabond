@@ -59,7 +59,7 @@ public:
 	/**
 	* How many molecules are included in a Crystal.
 	*/
-	long int moleculeCount()
+	size_t moleculeCount()
 	{
 		return _molecules.size();
 	}

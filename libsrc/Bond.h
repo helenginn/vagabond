@@ -278,7 +278,7 @@ public:
 	*   \param group which group to query.
 	* 	\return Number of downstream atoms in a given group (conformer).
 	*/
-	int downstreamAtomCount(int group)
+	size_t downstreamAtomCount(int group)
 	{
 		return _bondGroups[group].atoms.size();
 	}
@@ -286,7 +286,7 @@ public:
 	/**
 	* 	\return Number of downstream conformers.
 	*/
-	int downstreamAtomGroupCount()
+	size_t downstreamAtomGroupCount()
 	{
 		return _bondGroups.size();
 	}

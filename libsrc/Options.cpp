@@ -197,7 +197,7 @@ void Options::notifyGUI(bool enable)
 
 void Options::parse()
 {
-	for (int i = 0; i < arguments.size(); i++)
+	for (size_t i = 0; i < arguments.size(); i++)
 	{
 		bool understood = false;
 		std::string arg = arguments[i];
@@ -481,7 +481,7 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool kee
 
 	for (int i = 0; i < numCycles; i++)
 	{
-		for (int j = 0; j < crystals[0]->moleculeCount(); j++)
+		for (size_t j = 0; j < crystals[0]->moleculeCount(); j++)
 		{
 			MoleculePtr molecule = crystals[0]->molecule(j);
 			refinementCycle(molecule, count, type);
@@ -510,7 +510,7 @@ void Options::superimposeAll(CrystalPtr crystal)
 		else return;
 	}
 
-	for (int i = 0; i < crystal->moleculeCount(); i++)
+	for (size_t i = 0; i < crystal->moleculeCount(); i++)
 	{
 		MoleculePtr molecule = crystal->molecule(i);
 		if (molecule->isPolymer())
@@ -534,7 +534,7 @@ void Options::applyBMultiplier()
 
 	CrystalPtr crystal = getActiveCrystal();
 
-	for (int i = 0; i < crystal->moleculeCount(); i++)
+	for (size_t i = 0; i < crystal->moleculeCount(); i++)
 	{
 		MoleculePtr molecule = crystal->molecule(i);
 
@@ -621,7 +621,7 @@ void Options::openModel(std::string pdbName)
 
 	getActiveCrystal()->hydrogenateContents();
 
-	for (int i = 0; i < crystal->moleculeCount(); i++)
+	for (size_t i = 0; i < crystal->moleculeCount(); i++)
 	{
 		MoleculePtr molecule = crystal->molecule(i);
 		if (molecule->isPolymer())
