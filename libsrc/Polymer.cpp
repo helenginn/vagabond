@@ -170,7 +170,6 @@ void Polymer::refineBackbone()
 	
 	const int windowSize = 10;
 	const int checkSize = 5;
-	const int difference = windowSize - checkSize;
 	RefinementType rType = RefinementFine;
 	
 	int skip = 1;
@@ -471,7 +470,6 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 	double sumCC = 0; double sumDiffCC = 0;
 	FFTPtr fft = diffCrystal->getFFT();
 	FFTPtr difft = diffCrystal->getDiFFT();
-	mat3x3 real2Frac = diffCrystal->getReal2Frac();
 
 	for (int n = 0; n < monomerCount(); n++)
 	{
