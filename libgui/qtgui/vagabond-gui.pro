@@ -9,7 +9,8 @@ LIBS += -L../../libs/.libs/ -L../../libfftw/.libs -L/usr/local/lib -L/usr/lib64
 LIBS += -lpng -lfftw3f -lica -lccp4c
 QMAKE_LFLAGS += -Wl,-rpath,/usr/local/lib
 QMAKE_CXXFLAGS += -O3 -g
-QMAKE_CXXFLAGS_RELEASE -= -O2 -Wall
+QMAKE_CXXFLAGS_RELEASE -= -O2
+CONFIG += warn_off
 QT += widgets
 QT += opengl
 
