@@ -999,6 +999,41 @@ void FFT::normalise()
 	multiplyAll(mult);
 }
 
+vec3 FFT::collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup)
+{
+	vec3 ijk = frac;
+
+	for (int l = 0; l < spaceGroup->nsymop; l++)
+	{
+		float *trn = spaceGroup->symop[l].trn;
+		float *rot = &spaceGroup->symop[l].rot[0][0];
+
+		ijk.x = (int) rint(frac.x*rot[0] + frac.y*rot[3] + frac.z*rot[6]);
+		ijk.y = (int) rint(frac.x*rot[1] + frac.y*rot[4] + frac.z*rot[7]);
+		ijk.z = (int) rint(frac.x*rot[2] + frac.y*rot[5] + frac.z*rot[8]);
+		
+		ijk.x += trn[0];
+		ijk.y += trn[1];
+		ijk.z += trn[2];
+		
+		if (ijk.x < 0 || ijk.y < 0 || ijk.z < 0)
+		{
+			continue;
+		}
+		
+		float *lim = spaceGroup->mapasu_zero;
+		
+		if (ijk.x > lim[0] || ijk.y > lim[1] || ijk.z > lim[2])
+		{
+			continue;
+		}
+		
+		return ijk;
+	}
+	
+	return frac;
+}
+
 void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 {
 	fftwf_complex *tempData;
