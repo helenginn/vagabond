@@ -456,14 +456,12 @@ void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign, int groupNum)
 }
 
 
-FFTPtr Bond::getDistribution(bool absOnly, int)
+FFTPtr Bond::getDistribution(bool, int)
 {
 	double n = fftGridLength();
 	/* Don't panic, invert scale below... this is in real space */
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double scale = 1.0 / (2 * maxDStar);
-
-	double realLimits = (scale * n);
 
 	FFTPtr fft = FFTPtr(new FFT());
 	fft->create(n);
