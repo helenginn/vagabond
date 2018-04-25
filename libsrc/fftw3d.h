@@ -201,6 +201,12 @@ public:
 
 	void normalise();
 
+	int getMaskFromFrac(vec3 frac)
+	{
+		long ele = elementFromFrac(frac.x, frac.y, frac.z);
+		return mask[ele];
+	}
+
 	double getRealFromFrac(vec3 frac)
 	{
 		frac.x *= nx;
