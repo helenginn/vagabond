@@ -189,15 +189,33 @@ void Bucket::fourierTransform(int dir, double res)
 
 void Bucket::processMaskedRegions()
 {
+	if (!Options::shouldPowder())
+	{
+		return;
+	}
+	
 	_maskedRegions->setupMask();
 	mat3x3 real2Frac = getCrystal()->getReal2Frac();
 	mat3x3 frac2Real = mat3x3_inverse(real2Frac);
+	FFTPtr fft = getCrystal()->getFFT();
+	int additions[] = {0, 0, 0};
+	double sums[] = {0., 0., 0.};
+
+	std::cout << "Total voxels: " << _maskedRegions->nn << std::endl;
 
 	for (long i = 0; i < _maskedRegions->nn; i++)
 	{
-		if (_maskedRegions->data[i][0] > 0.5)
+		if (i % 10000 == 0)
 		{
+			std::cout << "i = " << i << std::endl;
+		}
+
+		if (_maskedRegions->data[i][0] > 0.8)
+		{
+			/* solvent */
 			_maskedRegions->setMask(i, 1);
+			additions[1]++;
+			sums[1] += fft->data[i][0];
 			continue;
 		}
 
@@ -209,8 +227,37 @@ void Bucket::processMaskedRegions()
 		if (atom->isHeteroAtom())
 		{
 			_maskedRegions->setMask(i, 2);
+			additions[2]++;
+			sums[2] += fft->data[i][0];
+			continue;
 		}
+
+		additions[0]++;
+		sums[0] += fft->data[i][0];
 	}
+	
+	double percentages[3] = {0., 0., 0.};
+	
+	for (int i = 0; i < 3; i++)
+	{
+		sums[i] /= (double)additions[i];
+		percentages[i] = (double)additions[i] / (double)_maskedRegions->nn;
+		_averages[i] = sums[i];
+	}
+	
+	std::cout << std::setprecision(2);
+	std::cout << "Protein voxels: " << additions[0];
+	std::cout << " (" << percentages[0] * 100 << "%)";
+	std::cout << " average value: " << std::setprecision(4)
+	<< sums[0] << std::endl;
+	std::cout << "Interface voxels: " << additions[2];
+	std::cout << " (" << percentages[1] * 100 << "%)";
+	std::cout << " average value: " << std::setprecision(4)
+	<< sums[1] << std::endl;
+	std::cout << "Solvent voxels: " << additions[1];
+	std::cout << " (" << percentages[2] * 100 << "%)";
+	std::cout << " average value: " << std::setprecision(4)
+	<< sums[2] << std::endl;
 }
 
 void Bucket::abandonCalculations()
@@ -243,7 +290,9 @@ void Bucket::populateHistogram(Node *node, vec3 centre, vec3 left)
 	vec3 transCentre = mat3x3_mult_vec(real2Frac, centre);
 	vec3 transLeft = mat3x3_mult_vec(real2Frac, left);
 	double centreDensity = fft->getRealFromFrac(transCentre);
+	centreDensity -= _averages[_wanted];
 	double leftDensity = fft->getRealFromFrac(transLeft);
+	leftDensity -= _averages[_wanted];
 	
 	for (double x = -MAX_CHECK_DISTANCE;
 	     x <= MAX_CHECK_DISTANCE; x += step)
@@ -254,8 +303,10 @@ void Bucket::populateHistogram(Node *node, vec3 centre, vec3 left)
 			for (double z = -MAX_CHECK_DISTANCE;
 			     z <= MAX_CHECK_DISTANCE; z += step)
 			{
+				/* difference from centre to right vector */
 				vec3 offset = make_vec3(x, y, z);
 				double rlength = vec3_length(offset);
+
 				if (rlength < MIN_CHECK_DISTANCE ||
 				    rlength > MAX_CHECK_DISTANCE)
 				{
@@ -264,6 +315,7 @@ void Bucket::populateHistogram(Node *node, vec3 centre, vec3 left)
 
 				vec3 right = vec3_add_vec3(centre, offset);
 				
+				/* Populate array with result */
 				double angle = vec3_angle_with_vec3(ldiff, offset);
 				double degrees = rad2deg(angle);
 				
@@ -271,6 +323,7 @@ void Bucket::populateHistogram(Node *node, vec3 centre, vec3 left)
 				
 				vec3 transRight = mat3x3_mult_vec(real2Frac, right);
 				double rightDensity = fft->getRealFromFrac(transRight);
+				rightDensity -= _averages[_wanted];
 
 				double mult = (leftDensity * rightDensity) * centreDensity;
 				
@@ -295,14 +348,15 @@ void Bucket::addAnalysisForSolventPos(Node *node, vec3 centre, double distance)
 	mat3x3 real2Frac = getCrystal()->getReal2Frac();
 	vec3 transCentre = mat3x3_mult_vec(real2Frac, centre);
 
-	double val = _maskedRegions->getRealFromFrac(transCentre);
+	int val = _maskedRegions->getMaskFromFrac(transCentre);
 
-	if (val <= 0.8)
+	if (val != _wanted)
 	{
 		return;
 	}
 	
 	double centreDensity = getCrystal()->getFFT()->getRealFromFrac(transCentre);
+	centreDensity -= _averages[_wanted];
 	
 	if (centreDensity < 0)
 	{
@@ -345,10 +399,8 @@ void Bucket::analyseSolvent(double distance)
 	mat3x3 real2Frac = getCrystal()->getReal2Frac();
 	mat3x3 frac2Real = mat3x3_inverse(real2Frac);
 
-	for (int i = 0; i < _maskedRegions->nn; i+=2)
+	for (int i = 0; i < _maskedRegions->nn; i += 2)
 	{
-		if (_maskedRegions->data[i][0] < 0.8) continue;
-
 		vec3 newfrac = getCrystal()->getFFT()->fracFromElement(i);
 		vec3 centre = mat3x3_mult_vec(frac2Real, newfrac);
 
