@@ -114,8 +114,6 @@ void Options::run()
 
 			crystal->tiedUpScattering();
 
-			int count = 0;
-			
 			recalculateFFT();
 			
 			if (_notify)
@@ -470,7 +468,7 @@ void Options::backboneAnalysis()
 	statusMessage("Ready.");
 }
 
-void Options::refineAll(RefinementType type, int numCycles, int *count, bool keepGoing)
+void Options::refineAll(RefinementType type, int numCycles, int *count, bool)
 {
 	notifyGUI(false);
 
@@ -484,7 +482,7 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool kee
 		for (size_t j = 0; j < crystals[0]->moleculeCount(); j++)
 		{
 			MoleculePtr molecule = crystals[0]->molecule(j);
-			refinementCycle(molecule, count, type);
+			refinementCycle(molecule, type);
 		}
 
 		statusMessage("Calculating R factors...");
@@ -697,8 +695,7 @@ std::string Options::rTypeString(RefinementType type)
 	}
 }
 
-void Options::refinementCycle(MoleculePtr molecule, int *count,
-                              RefinementType type)
+void Options::refinementCycle(MoleculePtr molecule, RefinementType type)
 {
 	DiffractionPtr data = diffractions[0];
 
