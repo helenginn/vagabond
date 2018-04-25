@@ -276,35 +276,6 @@ void Molecule::postParseTidy()
 	}
 }
 
-AtomPtr Molecule::getClosestAtom(vec3 pos)
-{
-	double small_dist = FLT_MAX;
-	AtomPtr best;
-	
-	for (int i = 0; i < atomCount(); i++)
-	{
-		vec3 tmp = atom(i)->getAbsolutePosition();
-		bool closeish = vec3_near_vec3_box(tmp, pos, small_dist);
-
-		if (!closeish)
-		{
-			continue;
-		}
-		else
-		{
-			vec3 diff = vec3_subtract_vec3(tmp, pos);
-			double dist = vec3_length(diff);
-			if (dist < small_dist)
-			{
-				small_dist = dist;
-				best = atom(i);
-			}
-		}
-	}
-	
-	return best;
-}
-
 std::vector<AtomPtr> Molecule::getCloseAtoms(AtomPtr one, double tol, bool cache)
 {
 	std::vector<AtomPtr> atoms;
