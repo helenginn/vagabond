@@ -49,6 +49,7 @@ public:
 	bool isBackboneAndSidechain();
 
 	vec3 getAbsolutePosition();
+	vec3 getAsymUnitPosition(CrystalPtr crystal);
 	
 	/** Positional displacement between average ensemble position and
 	* reference position (usually from PDB). */

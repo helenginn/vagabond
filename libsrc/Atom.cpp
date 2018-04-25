@@ -218,6 +218,22 @@ vec3 Atom::getAbsolutePosition()
 	return _model->getAbsolutePosition();
 }
 
+/* Need to add symops. */
+vec3 Atom::getAsymUnitPosition(CrystalPtr crystal)
+{
+	vec3 pos = getAbsolutePosition();
+	mat3x3 real2frac = crystal->getReal2Frac();
+	mat3x3 frac2real = crystal->getHKL2Real();
+
+	mat3x3_mult_vec(real2frac, &pos);
+	FFT::collapseFrac(&pos.x, &pos.y, &pos.z);
+	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
+	pos = FFT::collapseToRealASU(pos, spg);
+	mat3x3_mult_vec(frac2real, &pos);
+	
+	return pos;
+}
+
 bool Atom::isBackbone()
 {
 	if (_atomName == "C") return true;
