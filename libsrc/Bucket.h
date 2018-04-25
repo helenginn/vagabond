@@ -20,6 +20,7 @@
 class Bucket
 {
 public:
+	Bucket();
 	virtual void addSolvent() = 0;
 	
 	virtual ~Bucket() {}
@@ -81,6 +82,9 @@ private:
 	void processMaskedRegions();
 	double _solvScale;
 	double _solvBFac;
+	int _wanted;
+	
+	double _averages[3];
 };
 
 #endif /* defined(__vagabond__Bucket__) */

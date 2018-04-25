@@ -23,6 +23,18 @@
 #define MIN_CHECK_DISTANCE 1.0
 #define CHECK_DISTANCE_STEP 0.30
 
+Bucket::Bucket()
+{
+	_solvBFac = 0;
+	_solvScale = 0;
+	_wanted = 1;
+	
+	for (int i = 0; i < 3; i++)
+	{
+		_averages[i] = 0;
+	}
+}
+
 void Bucket::scaleSolvent()
 {
 	if (!_data)
