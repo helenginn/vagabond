@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include "shared_ptrs.h"
-#include "Node.h"
+#include "MDNode.h"
 #include <vector>
 #include "vec3.h"
 #include "../libccp4/csymlib.h"
@@ -65,8 +65,8 @@ public:
 
 	void analyseSolvent(double distance);
 protected:
-	void populateHistogram(Node *node, vec3 centre, vec3 left);
-	void addAnalysisForSolventPos(Node *node, vec3 centre, double distance);
+	void populateHistogram(MDNode *node, vec3 centre, vec3 left);
+	void addAnalysisForSolventPos(MDNode *node, vec3 centre, double distance);
 	CrystalWkr _crystal;
 	FFTPtr _solvent;
 	FFTPtr _maskedRegions;

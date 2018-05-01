@@ -19,7 +19,7 @@
 
 
 #include "CSV.h"
-#include "Node.h"
+#include "MDNode.h"
 #include <fstream>
 #include <float.h>
 #include <sstream>
@@ -773,29 +773,14 @@ CSV::~CSV()
 	std::vector<Entry>().swap(entries);
 }
 
-void CSV::addToCSV(Node *node)
+void CSV::addToCSV(MDNode *node)
 {	
-	if (node->nextNodes[0] == NULL)
-	{
-		double xMid = (node->xMax + node->xMin) / 2;
-		double yMid = (node->yMax + node->yMin) / 2;
-		double val = node->value / (double)node->count;
-		
-		if (val != val) val = 0;
-
-		addEntry(3, xMid, yMid, val);
-		return;
-	}
-	
-	for (int i = 0; i < 4; i++)
-	{
-		addToCSV(node->nextNodes[i]);
-	}
+	node->addToCSV(this);
 }
 
-CSVPtr CSV::nodeToCSV(Node *node)
+CSVPtr CSV::nodeToCSV(MDNode *node)
 {
-	CSVPtr csv = CSVPtr(new CSV(3, "x", "y", "z"));
+	CSVPtr csv = CSVPtr(new CSV());
 	csv->addToCSV(node);
 	
 	return csv;

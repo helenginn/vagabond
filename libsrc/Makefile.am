@@ -54,4 +54,5 @@ Atom.cpp \
 Thing.cpp \
 LeftThing.cpp \
 PNGFile.cpp \
-Node.cpp
+Node.cpp \
+MDNode.cpp

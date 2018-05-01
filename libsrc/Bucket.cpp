@@ -279,7 +279,7 @@ void Bucket::writeMillersToFile(std::string prefix, double maxRes)
 }
 
 /* Left, centre and right are the vec3s of interest */
-void Bucket::populateHistogram(Node *node, vec3 centre, vec3 left)
+void Bucket::populateHistogram(MDNode *node, vec3 centre, vec3 left)
 {
 	mat3x3 real2Frac = getCrystal()->getReal2Frac();
 	vec3 ldiff = vec3_subtract_vec3(left, centre);
@@ -332,14 +332,14 @@ void Bucket::populateHistogram(Node *node, vec3 centre, vec3 left)
 					continue;	
 				}
 				
-				add_to_node(node, rlength, degrees, mult);
+				node->addToNode(mult, 2, rlength, degrees);
 			}
 		}
 	}
 
 }
 
-void Bucket::addAnalysisForSolventPos(Node *node, vec3 centre, double distance)
+void Bucket::addAnalysisForSolventPos(MDNode *node, vec3 centre, double distance)
 {
 	double step = CHECK_DISTANCE_STEP;
 	double minDist = distance - step / 3;
@@ -393,8 +393,10 @@ void Bucket::addAnalysisForSolventPos(Node *node, vec3 centre, double distance)
 
 void Bucket::analyseSolvent(double distance)
 {
-	Node *node = malloc_node();
-	prepare_node(node, 5, 0, 0, MAX_CHECK_DISTANCE + 1, 180);
+	MDNode mdnode = MDNode(2);
+	mdnode.setDimension(0, 0, MAX_CHECK_DISTANCE + 1);
+	mdnode.setDimension(1, 0, 180);
+	mdnode.splitNode(5, 5);
 
 	mat3x3 real2Frac = getCrystal()->getReal2Frac();
 	mat3x3 frac2Real = mat3x3_inverse(real2Frac);
@@ -404,10 +406,8 @@ void Bucket::analyseSolvent(double distance)
 		vec3 newfrac = getCrystal()->getFFT()->fracFromElement(i);
 		vec3 centre = mat3x3_mult_vec(frac2Real, newfrac);
 
-		addAnalysisForSolventPos(node, centre, distance);
+		addAnalysisForSolventPos(&mdnode, centre, distance);
 	}
-
-	free_node(node);
 }
 
 
