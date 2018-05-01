@@ -143,7 +143,7 @@ public:
 	
 	/**
 	* 	If an atom of a given name is part of this bond.
-	* \return If the minor or major bond contains this atom name (e.g. "CA").*/
+	* \return If the minor or major atom contains this atom name (e.g. "CA").*/
 	bool connectsAtom(std::string testName);
 
 	static double getBondLength(void *object)
