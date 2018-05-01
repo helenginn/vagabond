@@ -400,7 +400,7 @@ AtomPtr AtomGroup::getClosestAtom(CrystalPtr crystal, vec3 pos)
 		else
 		{
 			vec3 diff = vec3_subtract_vec3(tmp, pos);
-			double dist = vec3_length(diff);
+			double dist = vec3_sqlength(diff);
 			if (dist < small_dist)
 			{
 				small_dist = dist;
