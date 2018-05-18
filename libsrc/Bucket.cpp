@@ -7,10 +7,11 @@
 //
 
 #include "Bucket.h"
+#include "FileReader.h"
 #include "Atom.h"
-#include "Node.h"
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
 #include "fftw3d.h"
 #include "RefinementGridSearch.h"
 #include "Shouter.h"
@@ -18,13 +19,13 @@
 #include "Diffraction.h"
 #include "CSV.h"
 #include "Options.h"
+#include "Plucker.h"
 
-#define MAX_CHECK_DISTANCE 6.0
-#define MIN_CHECK_DISTANCE 1.0
 #define CHECK_DISTANCE_STEP 0.30
 
 Bucket::Bucket()
 {
+	_mdnode = new MDNode(3);
 	_solvBFac = 0;
 	_solvScale = 0;
 	_wanted = 1;
@@ -42,6 +43,11 @@ void Bucket::scaleSolvent()
 		shout_at_helen("Need diffraction data to scale solvent");
 	}
 	
+	/*
+	setSolvScale(this, 0.2);
+	setSolvBFac(this, 20);
+	*/
+	
 	setSolvScale(this, 4.0);
 	setSolvBFac(this, 400);
 	
@@ -51,6 +57,10 @@ void Bucket::scaleSolvent()
 	grid->setEvaluationFunction(scaleSolventScore, this);
 	grid->addParameter(this, getSolvScale, setSolvScale, 8.0, 0.4, "scale");
 	grid->addParameter(this, getSolvBFac, setSolvBFac, 800, 40.0, "bfac");
+	/*
+	grid->addParameter(this, getSolvScale, setSolvScale, 0.2, 0.01, "scale");
+	grid->addParameter(this, getSolvBFac, setSolvBFac, 20, 1.0, "bfac");
+	*/
 	grid->refine();
 	
 	/** If we are doing powder analysis we don't actually want
@@ -64,7 +74,13 @@ void Bucket::scaleSolvent()
 	
 	FFTPtr fft = getCrystal()->getFFT();
 	mat3x3 real2frac = getCrystal()->getReal2Frac();
-	double nLimit = fft->nx;
+	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
+	FFTPtr fftData = _data->getFFT();
+	double nLimit = std::min(fftData->nx, fft->nx);
+	nLimit /= 2;
+
+	std::vector<double> fData, fModel;
+	CSVPtr csv = CSVPtr(new CSV(2, "fo", "fc"));
 
 	for (int i = -nLimit; i < nLimit; i++)
 	{
@@ -179,25 +195,30 @@ void Bucket::fourierTransform(int dir, double res)
 	{
 		CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
 
-		_maskedRegions = FFTPtr(new FFT(*_solvent));
-		processMaskedRegions();
 		_solvent->fft(dir);
 		applySymOps(spg, res);
 		_solvent->normalise();
 	}
 }
 
+bool Bucket::isSolvent(vec3 pos)
+{
+	mat3x3 real2Frac = getCrystal()->getReal2Frac();
+	mat3x3_mult_vec(real2Frac, &pos);
+	
+	long index = _maskedRegions->elementFromFrac(pos.x, pos.y, pos.z);
+	int mask = _maskedRegions->getMask(index);
+	
+	return (mask == 1);
+}
+
 void Bucket::processMaskedRegions()
 {
-	if (!Options::shouldPowder())
-	{
-		return;
-	}
-	
+	_maskedRegions = FFTPtr(new FFT(*_solvent));
 	_maskedRegions->setupMask();
+	FFTPtr fft = getCrystal()->getFFT();
 	mat3x3 real2Frac = getCrystal()->getReal2Frac();
 	mat3x3 frac2Real = mat3x3_inverse(real2Frac);
-	FFTPtr fft = getCrystal()->getFFT();
 	int additions[] = {0, 0, 0};
 	double sums[] = {0., 0., 0.};
 
@@ -205,11 +226,6 @@ void Bucket::processMaskedRegions()
 
 	for (long i = 0; i < _maskedRegions->nn; i++)
 	{
-		if (i % 10000 == 0)
-		{
-			std::cout << "i = " << i << std::endl;
-		}
-
 		if (_maskedRegions->data[i][0] > 0.8)
 		{
 			/* solvent */
@@ -218,6 +234,11 @@ void Bucket::processMaskedRegions()
 			sums[1] += fft->data[i][0];
 			continue;
 		}
+		
+		additions[0]++;
+		_maskedRegions->setMask(i, 0);
+		sums[0] += fft->data[i][0];
+		continue;
 
 		vec3 newfrac = _maskedRegions->fracFromElement(i);
 		vec3 pos = mat3x3_mult_vec(frac2Real, newfrac);
@@ -238,7 +259,7 @@ void Bucket::processMaskedRegions()
 	
 	double percentages[3] = {0., 0., 0.};
 	
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 2; i++)
 	{
 		sums[i] /= (double)additions[i];
 		percentages[i] = (double)additions[i] / (double)_maskedRegions->nn;
@@ -250,14 +271,16 @@ void Bucket::processMaskedRegions()
 	std::cout << " (" << percentages[0] * 100 << "%)";
 	std::cout << " average value: " << std::setprecision(4)
 	<< sums[0] << std::endl;
-	std::cout << "Interface voxels: " << additions[2];
+/*
+ * std::cout << "Interface voxels: " << additions[2];
 	std::cout << " (" << percentages[1] * 100 << "%)";
 	std::cout << " average value: " << std::setprecision(4)
 	<< sums[1] << std::endl;
+	*/
 	std::cout << "Solvent voxels: " << additions[1];
-	std::cout << " (" << percentages[2] * 100 << "%)";
+	std::cout << " (" << percentages[1] * 100 << "%)";
 	std::cout << " average value: " << std::setprecision(4)
-	<< sums[2] << std::endl;
+	<< sums[1] << std::endl;
 }
 
 void Bucket::abandonCalculations()
@@ -283,6 +306,7 @@ void Bucket::populateHistogram(MDNode *node, vec3 centre, vec3 left)
 {
 	mat3x3 real2Frac = getCrystal()->getReal2Frac();
 	vec3 ldiff = vec3_subtract_vec3(left, centre);
+	double llength = vec3_length(ldiff);
 	double step = CHECK_DISTANCE_STEP;
 
 	FFTPtr fft = getCrystal()->getFFT();
@@ -293,6 +317,8 @@ void Bucket::populateHistogram(MDNode *node, vec3 centre, vec3 left)
 	centreDensity -= _averages[_wanted];
 	double leftDensity = fft->getRealFromFrac(transLeft);
 	leftDensity -= _averages[_wanted];
+	
+	if (leftDensity < 0) return;
 	
 	for (double x = -MAX_CHECK_DISTANCE;
 	     x <= MAX_CHECK_DISTANCE; x += step)
@@ -324,22 +350,36 @@ void Bucket::populateHistogram(MDNode *node, vec3 centre, vec3 left)
 				vec3 transRight = mat3x3_mult_vec(real2Frac, right);
 				double rightDensity = fft->getRealFromFrac(transRight);
 				rightDensity -= _averages[_wanted];
+				
+				if (rightDensity < 0) continue;
 
-				double mult = (leftDensity * rightDensity) * centreDensity;
+				double mult = std::min(leftDensity, rightDensity);
+				mult = std::min(centreDensity, mult);
+				
+				vec3 diff = vec3_subtract_vec3(left, offset);
+				double dlength = vec3_length(diff);
+				
+				double dr_ang = vec3_angle_with_vec3(diff, offset);
+				double dl_ang = vec3_angle_with_vec3(diff, left);
+				
+				double dr_deg = rad2deg(dr_ang);
+				double dl_deg = rad2deg(dl_ang);
 				
 				if (mult != mult || degrees != degrees || rlength != rlength)
 				{
 					continue;	
 				}
 				
-				node->addToNode(mult, 2, rlength, degrees);
+				node->addToNode(mult, 3, llength, rlength, degrees);
+				node->addToNode(mult, 3, llength, dlength, dl_deg);
+				node->addToNode(mult, 3, rlength, dlength, dr_deg);
 			}
 		}
 	}
 
 }
 
-void Bucket::addAnalysisForSolventPos(MDNode *node, vec3 centre, double distance)
+int Bucket::addAnalysisForSolventPos(MDNode *node, vec3 centre, double distance)
 {
 	double step = CHECK_DISTANCE_STEP;
 	double minDist = distance - step / 3;
@@ -348,20 +388,10 @@ void Bucket::addAnalysisForSolventPos(MDNode *node, vec3 centre, double distance
 	mat3x3 real2Frac = getCrystal()->getReal2Frac();
 	vec3 transCentre = mat3x3_mult_vec(real2Frac, centre);
 
-	int val = _maskedRegions->getMaskFromFrac(transCentre);
-
-	if (val != _wanted)
-	{
-		return;
-	}
-	
 	double centreDensity = getCrystal()->getFFT()->getRealFromFrac(transCentre);
 	centreDensity -= _averages[_wanted];
 	
-	if (centreDensity < 0)
-	{
-		return;
-	}
+	if (centreDensity < 0) return 0;
 	
 	std::cout << "Adding data from " << vec3_desc(centre) << std::endl;
 	for (double x = -maxDist - step; x <= maxDist + step; x += step)
@@ -371,13 +401,14 @@ void Bucket::addAnalysisForSolventPos(MDNode *node, vec3 centre, double distance
 			for (double z = -maxDist - step; z <= maxDist + step; z += step)
 			{
 				vec3 offset = make_vec3(x, y, z);
+				double llength = vec3_length(offset);
 				vec3 left = vec3_add_vec3(centre, offset);
 				
 				/* Temporary removal of some distances */
 	
 				vec3 ldiff = vec3_subtract_vec3(left, centre);
-				double llength = vec3_length(ldiff);
-				if (llength < minDist || llength > maxDist)
+				if (llength < MIN_CHECK_DISTANCE
+				    || llength > MAX_CHECK_DISTANCE)
 				{
 					continue;
 				}
@@ -389,26 +420,87 @@ void Bucket::addAnalysisForSolventPos(MDNode *node, vec3 centre, double distance
 
 	CSVPtr csv = CSV::nodeToCSV(node);
 	csv->writeToFile("solvent_density_analysis.csv");
+	
+	return 1;
+}
+
+void Bucket::setupNodes(int split)
+{
+	_mdnode->setDimension(0, MIN_CHECK_DISTANCE, MAX_CHECK_DISTANCE);
+	_mdnode->setDimension(1, MIN_CHECK_DISTANCE, MAX_CHECK_DISTANCE);
+	_mdnode->setDimension(2, 0, 180);
+	_mdnode->splitNode(split, split);
+	
 }
 
 void Bucket::analyseSolvent(double distance)
 {
-	MDNode mdnode = MDNode(2);
-	mdnode.setDimension(0, 0, MAX_CHECK_DISTANCE + 1);
-	mdnode.setDimension(1, 0, 180);
-	mdnode.splitNode(5, 5);
+	const int split = 5;
+	setupNodes(split);
 
 	mat3x3 real2Frac = getCrystal()->getReal2Frac();
 	mat3x3 frac2Real = mat3x3_inverse(real2Frac);
+	
+	std::vector<long> shuffled;
 
-	for (int i = 0; i < _maskedRegions->nn; i += 2)
+	for (long i = 0; i < _maskedRegions->nn; i += 1)
 	{
-		vec3 newfrac = getCrystal()->getFFT()->fracFromElement(i);
-		vec3 centre = mat3x3_mult_vec(frac2Real, newfrac);
+		int val = _maskedRegions->getMask(i);
 
-		addAnalysisForSolventPos(&mdnode, centre, distance);
+		if (val != _wanted)
+		{
+			continue;
+		}
+
+		shuffled.push_back(i);
+	}
+	
+	std::random_shuffle(shuffled.begin(), shuffled.end());
+	int count = 0;
+	
+	for (size_t i = 0; i < shuffled.size() && count < 1; i++)
+	{
+		vec3 newfrac = getCrystal()->getFFT()->fracFromElement(shuffled[i]);
+		vec3 centre = mat3x3_mult_vec(frac2Real, newfrac);
+		count += addAnalysisForSolventPos(_mdnode, centre, distance);
 	}
 }
 
+int Bucket::getReallyRandomValues(double left, double *right, double *angle)
+{
+	*right = (rand() / (double)RAND_MAX) * 6.;
+	*angle = (rand() / (double)RAND_MAX) * 180.;
+	
+	return 1;
+}
 
+int Bucket::getRandomValues(double left, double *right, double *angle)
+{
+	double last = -1;
+	Plucker *pluck = NULL;
 
+	for (PluckerItr it = _pluckerMap.begin(); it != _pluckerMap.end(); it++)
+	{
+		if (last > 0)
+		{
+			if (it->first < left && it->first > last)
+			{
+				pluck = it->second;
+			}
+		}
+		
+		last = it->first;
+	}
+	
+	if (pluck == NULL)
+	{
+		return 0;
+	}
+	
+	MDNode *node = static_cast<MDNode *>(pluck->pluck());
+	
+	*right = node->aveDimension(1);
+	*angle = node->aveDimension(2);
+	
+	return 1;
+}
