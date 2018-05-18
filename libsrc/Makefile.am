@@ -11,6 +11,7 @@ Sidechain.cpp \
 mat4x4.cpp \
 Kabsch.cpp \
 Bucket.cpp \
+BucketMonteCarlo.cpp \
 RefinementGridSearch.cpp \
 Bond.cpp \
 SSRigger.cpp \
