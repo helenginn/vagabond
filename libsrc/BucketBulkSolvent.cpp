@@ -11,6 +11,8 @@
 #include "Crystal.h"
 #include "mat3x3.h"
 #include "Molecule.h"
+#include "Atom.h"
+#include "Model.h"
 
 void BucketBulkSolvent::addSolvent()
 {
