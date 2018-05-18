@@ -20,6 +20,8 @@
 
 struct vec3;
 
+class Plucker;
+
 /**
  * \class Molecule
  * \brief The highest level group of atoms directly referenced by a Crystal object.
@@ -45,6 +47,7 @@ public:
 	void resetInitialPositions();
 	void setAnchors();
 	void makePowderList();
+	void expandWaters();
 
 	virtual void reportParameters();
 

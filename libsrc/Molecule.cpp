@@ -7,13 +7,16 @@
 //
 
 #include "shared_ptrs.h"
+#include "Bucket.h"
+#include "Plucker.h"
 #include "Molecule.h"
 #include "Atom.h"
+#include "Absolute.h"
 #include "Element.h"
 #include "Bond.h"
 #include <float.h>
 #include <iostream>
-#include <climits>
+#include <fstream>
 #include "fftw3d.h"
 #include "mat3x3.h"
 #include "Options.h"
@@ -296,7 +299,7 @@ std::vector<AtomPtr> Molecule::getCloseAtoms(AtomPtr one, double tol, bool cache
 			}
 		}
 
-		if (!one->closeToAtom(atom(i)))
+		if (!one->closeToAtom(atom(i), tol))
 		{
 			continue;
 		}
