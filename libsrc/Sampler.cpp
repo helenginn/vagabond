@@ -82,6 +82,10 @@ void Sampler::addParamsForBond(BondPtr bond)
 			addTorsion(bond, deg2rad(range), deg2rad(0.010));
 			break;
 
+			case ParamOptionBondAngle:
+			addBendAngle(bond, deg2rad(range), deg2rad(0.010));
+			break;
+
 			case ParamOptionKick:
 			addTorsionBlur(bond, range, 0.01);
 			break;
