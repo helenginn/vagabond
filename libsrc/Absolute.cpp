@@ -296,3 +296,21 @@ void Absolute::linkReference(ParserPtr object, std::string category)
 		_atom = atom;
 	}
 }
+
+vec3 Absolute::getRandomPosition()
+{
+	/** Assuming isotropic */
+	vec3 randvec = make_vec3(0, 0, 0);	
+	double stdev = sqrt(_bFactor / (8 * M_PI * M_PI));
+	
+	for (int i = 0; i < 3; i++)
+	{
+		double deviation = random_norm_dist(0, stdev);
+		*(&randvec.x + i) = deviation;
+	}
+	
+	vec3 absPos = getAbsolutePosition();
+	vec3 total = vec3_add_vec3(absPos, randvec);
+	
+	return total;
+}

@@ -242,6 +242,9 @@ public:
 		return _occupancy;	
 	}
 	
+	vec3 getRandomPosition();
+
+	AtomPtr makeAtom();
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 
@@ -271,8 +274,6 @@ private:
 	vec3 _position;
 	double _bFactor;
 	bool _isOfManyPositions;
-
-	AtomPtr makeAtom();
 };
 
 #endif /* defined(__vagabond__Absolute__) */
