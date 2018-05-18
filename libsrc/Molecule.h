@@ -170,11 +170,6 @@ public:
 	{
 		_closeishAtoms.clear();
 	}
-
-	int issueAtomNumber()
-	{
-		return _largestNum + 1;
-	}
 	
 protected:
 	virtual std::string getParserIdentifier()
@@ -212,7 +207,6 @@ private:
 	double _absoluteBFacSubtract;
 	double _absoluteBFacMult;
 
-	int _largestNum;
 
 	bool _changedRotations;
 	std::string _chainID;

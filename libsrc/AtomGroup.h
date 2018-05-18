@@ -127,6 +127,15 @@ public:
 	}
 
 	AtomPtr getClosestAtom(CrystalPtr crystal, vec3 pos);
+
+	int issueAtomNumber()
+	{
+		if (_largestNum == -INT_MAX)
+		{
+			return 0;
+		}
+		return _largestNum + 1;
+	}
 protected:
 	virtual AtomList topLevelAtoms();
 	int _timesRefined;
@@ -162,6 +171,7 @@ private:
 	vec3 ave);
 
 	MonomerWkr _monomer;
+	int _largestNum;
 
 	std::vector<AtomPtr> _atoms;
 

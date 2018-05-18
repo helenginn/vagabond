@@ -30,7 +30,6 @@ Molecule::Molecule()
 	_rotationCentre = make_vec3(nan(" "), nan(" "), nan(" "));
 	_rotationAngle = 0;
 	_changedRotations = true;
-	_largestNum = -INT_MAX;
 }
 
 void Molecule::makePowderList()
@@ -180,11 +179,6 @@ void Molecule::tiedUpScattering(double *tied, double *all)
 void Molecule::addAtom(AtomPtr atom)
 {
 	AtomGroup::addAtom(atom);
-	
-	if (atom->getAtomNum() > _largestNum)
-	{
-		_largestNum = atom->getAtomNum();
-	}
 }
 
 
