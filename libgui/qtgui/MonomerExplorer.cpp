@@ -284,6 +284,8 @@ void MonomerExplorer::applyParamOptions(SamplerPtr sampled)
 
 		sampled->addParamType(param.optionType, param.value);
 	}
+	
+	sampled->addParamType(ParamOptionBondAngle, 0.5);
 }
 
 Notifiable *MonomerExplorer::preparePolymer()
