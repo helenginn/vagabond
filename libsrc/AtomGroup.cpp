@@ -434,7 +434,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		scoreType = ScoreTypeCorrel;
 		maxTries = 3;
 		degrees = 4;
-		bondNum = 3;
+		bondNum = 4;
 		refineAngles = false;
 		break;
 
@@ -523,7 +523,8 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 						addSampledAtoms(_includeForRefine[l]);
 					}
 
-					if (rType == RefinementModelPos || rType == RefinementFine 
+					if (rType == RefinementModelPos 
+					    || rType == RefinementFine 
 					    || rType == RefinementModelRMSDZero
 					|| rType == RefinementRMSDZero)
 					{
