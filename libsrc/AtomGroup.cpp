@@ -19,6 +19,7 @@
 #include <iomanip>
 #include "CSV.h"
 #include "maths.h"
+#include "Plucker.h"
 #include "Shouter.h"
 #include "../libccp4/ccp4_spg.h"
 #include "Options.h"
@@ -384,6 +385,49 @@ void AtomGroup::privateRefine()
 	refine(_target, _rType);
 	shout_timer(wall_start, "refinement");
 }
+
+void AtomGroup::addAtom(AtomPtr atom)
+{
+	std::vector<AtomPtr>::iterator it;
+	it = std::find(_atoms.begin(), _atoms.end(), atom);
+
+	if (it == _atoms.end())
+	{
+		_atoms.push_back(atom);
+		if (atom->getAtomNum() > _largestNum)
+		{
+			_largestNum = atom->getAtomNum();
+		}
+	}
+}
+
+Plucker *AtomGroup::makePluckableWaters()
+{
+	Plucker *plucker = new Plucker();
+	plucker->setGranularity(0.2);
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		AtomPtr atm = atom(i);
+		
+		if (!atm->isHeteroAtom() || !(atm->getAtomName() == "O"))
+		{
+			continue;
+		}
+		
+		// we have a water
+		atm->cacheCloseWaters(4.);
+		
+		if (atm->pluckCount())
+		{
+			double occupancy = atm->getModel()->getEffectiveOccupancy();
+			plucker->addPluckable(&*atm, occupancy);
+		}
+	}
+	
+	return plucker;
+}
+	
 
 AtomPtr AtomGroup::getClosestAtom(CrystalPtr crystal, vec3 pos)
 {

@@ -44,6 +44,7 @@ public:
 	static double scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 	                                  bool plot = false,
 	std::vector<AtomPtr> selected = std::vector<AtomPtr>());
+	Plucker *makePluckableWaters();
 
 	double scoreWithMapQuick(ScoreType scoreType, CrystalPtr crystal,
 	                         bool plot, std::vector<AtomPtr> selected);
@@ -58,17 +59,8 @@ public:
 		return _monomer.lock();
 	}
 
-	virtual void addAtom(AtomPtr atom)
-	{
-		std::vector<AtomPtr>::iterator it;
-		it = std::find(_atoms.begin(), _atoms.end(), atom);
+	virtual void addAtom(AtomPtr atom);
 
-		if (it == _atoms.end())
-		{
-			_atoms.push_back(atom);
-		}
-	}
-	
 	void addAtomsFrom(AtomGroupPtr group);
 
 	size_t atomCount()
