@@ -265,8 +265,22 @@ void Atom::findAtomType(std::string resName)
 
 std::string Atom::pdbLineBeginning(std::string start)
 {
-	std::string residueName = getMonomer()->getIdentifier();
-	int resNum = getMonomer()->getResidueNum();
+	std::string residueName = "UNK";
+
+	int resNum = 1;
+	std::string chainID = "Z";
+
+	if (getMonomer())
+	{
+		residueName = getMonomer()->getIdentifier();
+		resNum = getMonomer()->getResidueNum();
+	}
+
+	if (getMolecule())
+	{
+		chainID = getMolecule()->getChainID()[0];
+	}
+
 	to_upper(residueName);
 	std::ostringstream line;
 
@@ -281,7 +295,7 @@ std::string Atom::pdbLineBeginning(std::string start)
 	line << " " << std::right << std::setfill(' ') << std::setw(4) << _atomName;
 	line << std::right << conformer;
 	line << std::setw(3) << residueName;
-	line << " " << getMolecule()->getChainID()[0];
+	line << " " << chainID;
 	line << std::setfill(' ') << std::setw(4) << resNum;
 	line << "  ";
 
@@ -359,11 +373,6 @@ std::string Atom::anisouPDBLine(CrystalPtr)
 
 std::string Atom::averagePDBContribution(bool samePos, bool sameB)
 {
-	if (!getMonomer())
-	{
-		return "";
-	}
-
 	getModel()->getFinalPositions();
 	std::string atomName = getAtomName();
 	ElementPtr element = getElement();
