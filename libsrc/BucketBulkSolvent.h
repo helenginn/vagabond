@@ -1,5 +1,5 @@
 //
-//  BucketUniform.h
+//  BucketBulkSolvent.h
 //  vagabond
 //
 //  Created by Helen Ginn on 17/07/2017.

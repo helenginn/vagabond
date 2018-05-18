@@ -3,7 +3,7 @@
 //  vagabond
 //
 //  Created by Helen Ginn on 13/07/2017.
-//  Copyright (c) 2017 Strubi. All rights reserved.
+//  Copyright (c) 2017-8 Helen Ginn. All rights reserved.
 //
 
 #include "Crystal.h"
