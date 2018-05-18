@@ -1256,7 +1256,7 @@ void Knotter::makeIsoleucine()
 	AtomPtr hBackbone = _sidechain->findAtom("HA");
 
 	BondPtr ca2cb = tieBetaCarbon(cGamma1);
-	ca2cb->setRefineBondAngle(false);
+//	ca2cb->setRefineBondAngle(false);
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma1));
 	cb2cg1->setTorsionAtoms(cAlpha, cDelta1);
