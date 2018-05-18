@@ -36,6 +36,8 @@ public:
 		_anchorNum = 0;
 		_totalMonomers = 0;
 		_transTensor = make_mat3x3();
+		_overallScale = 1;
+		//_rotMatrix = make_mat3x3();
 		_startB = Options::getBStart();
 		_extraRotParams = {1, 0, 0};
 		_tmpPhi = 0;
@@ -242,6 +244,17 @@ public:
 		static_cast<Polymer *>(object)->applyTranslationTensor();
 	}
 
+	static void setOverallScale(void *object, double value)
+	{
+		static_cast<Polymer *>(object)->_overallScale = value;
+		static_cast<Polymer *>(object)->applyTranslationTensor();
+	}
+	
+	static double getOverallScale(void *object)
+	{
+		return static_cast<Polymer *>(object)->_overallScale;
+	}
+	
 	static void vsTransTensorOverall(void *object, double value);
 	static double vsFitRotation(void *object);
 	static double vsFitTranslation(void *object);
@@ -323,6 +336,8 @@ private:
 	}
 
 	mat3x3 _transTensor;
+//	mat3x3 _rotMatrix;
+	double _overallScale;
 	int _anchorNum;
 	double _tmpPhi;
 	double _tmpPsi;
