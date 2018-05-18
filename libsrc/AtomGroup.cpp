@@ -808,7 +808,7 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 
 	for (size_t i = 0; i < selected.size(); i++)
 	{
-		selected[i]->addToMap(segment, basis, ave);
+		selected[i]->addToMap(segment, basis, ave, false, true);
 	}
 
 	/* We must fix a problem: because the atoms we add are typically
@@ -832,7 +832,7 @@ double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
 
 	for (size_t i = 0; i < extra.size(); i++)
 	{
-		extra[i]->addToMap(segment, basis, ave);
+		extra[i]->addToMap(segment, basis, ave, false, true);
 	}
 
 	double score = scoreFinalMap(crystal, segment, plot, scoreType, ave);
