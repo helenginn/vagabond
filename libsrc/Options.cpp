@@ -28,6 +28,7 @@ double Options::_minRes = 0.0;
 int Options::_enableTests = 3;
 bool Options::_powder = false;
 double Options::_sampling = -1;
+std::string Options::_solventFile;
 
 Options::Options(int argc, const char **argv)
 {
@@ -72,6 +73,12 @@ Options::Options(int argc, const char **argv)
 void Options::run()
 {
 	parse();
+
+	if (_diffMatrix.length())
+	{
+		std::cout << "Yeah" << std::endl;
+		diffMatrix();
+	}
 
 	if (arguments.size() <= 1)
 	{
@@ -124,9 +131,10 @@ void Options::run()
 			if (shouldPowder())
 			{
 				crystal->makePowders();
+				recalculateFFT();
 				goto finished;
 			}
-
+			
 			executeScript();
 
 			if (_notify)
@@ -193,11 +201,26 @@ void Options::notifyGUI(bool enable)
 	}
 }
 
+int Options::parseParameter(std::string arg, std::string prefix, double *ptr)
+{
+	if (!arg.compare(0, prefix.size(), prefix))
+	{
+		std::string val_string = arg.substr(prefix.size());
+		*ptr = atof(val_string.c_str());
+		std::cout << "Parsing " << prefix << ", setting to " << *ptr
+		<< " units." << std::endl;
+
+		return true;
+	}
+	
+	return false;
+}
+
 void Options::parse()
 {
 	for (size_t i = 0; i < arguments.size(); i++)
 	{
-		bool understood = false;
+		int understood = false;
 		std::string arg = arguments[i];
 
 		std::string prefix("--help");
@@ -226,6 +249,13 @@ void Options::parse()
 		if (!arg.compare(0, prefix.size(), prefix))
 		{
 			_scriptName = arg.substr(prefix.size());
+			understood = true;
+		}
+
+		prefix = "--solvent-file=";
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			_solventFile = arg.substr(prefix.size());
 			understood = true;
 		}
 
@@ -282,47 +312,10 @@ void Options::parse()
 			understood = true;
 		}
 
-		prefix = "--kick=";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			std::string kick_string = arg.substr(prefix.size());
-			_kick = atof(kick_string.c_str());
-			understood = true;
-		}
-
-		prefix = "--bfactor=";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			std::string bee_string = arg.substr(prefix.size());
-			_bStart = atof(bee_string.c_str());
-
-			understood = true;
-		}
-
-
-		prefix = "--min-res=";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			std::string min_string = arg.substr(prefix.size());
-			_minRes = atof(min_string.c_str());
-			std::cout << "Minimum resolution set to " << _minRes
-			<< " Å." << std::endl;
-
-			understood = true;
-		}
-
-
-		prefix = "--dampen=";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			std::string dampen_string = arg.substr(prefix.size());
-			_dampen = atof(dampen_string.c_str());
-			understood = true;
-		}
+		understood |= parseParameter(arg, "--min-res=", &_minRes);
+		understood |= parseParameter(arg, "--bfactor=", &_bStart);
+		understood |= parseParameter(arg, "--kick=", &_kick);
+		understood |= parseParameter(arg, "--dampen=", &_dampen);
 
 		prefix = "--anchor-res=";
 
@@ -426,6 +419,15 @@ void Options::parse()
 			understood = true;
 		}
 
+		prefix = "--diff-matrix=";
+
+		if (!arg.compare(0, prefix.size(), prefix))
+		{
+			std::string diff = arg.substr(prefix.size());
+			_diffMatrix = diff;
+			understood = true;
+		}
+
 		prefix = "--no-tie";
 
 		if (!arg.compare(0, prefix.size(), prefix))
@@ -491,6 +493,57 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool)
 	}
 
 	notifyGUI(true);
+}
+
+void Options::diffMatrix()
+{
+	std::string contents = get_file_contents(_diffMatrix);
+	std::vector<std::string> lines = split(contents, '\n');
+	
+	std::vector<vec3> pos1s, pos2s;
+	
+	for (int i = 0; i < lines.size(); i++)
+	{
+		std::vector<std::string> components = split(lines[i], ',');
+		
+		if (components.size() < 6) continue;
+		
+		vec3 a; vec3 b;
+		a.x = atof(components[0].c_str());
+		a.y = atof(components[1].c_str());
+		a.z = atof(components[2].c_str());
+		b.x = atof(components[3].c_str());
+		b.y = atof(components[4].c_str());
+		b.z = atof(components[5].c_str());
+		
+		pos1s.push_back(a);
+		pos2s.push_back(b);
+	}
+	
+	std::cout << "i, j, value" << std::endl;
+	
+	for (int i = 0; i < pos1s.size(); i++)
+	{
+		for (int j = 0; j < pos1s.size(); j++)
+		{
+			vec3 a = pos1s[i];
+			vec3 other_a = pos1s[j];
+			vec3 b = pos2s[j];
+			vec3 other_b = pos2s[i];
+
+			vec3 diff1 = vec3_subtract_vec3(a, b);
+			vec3 diff2 = vec3_subtract_vec3(other_a, other_b);
+			
+			double length1 = vec3_length(diff1);	
+			double length2 = vec3_length(diff2);	
+
+			std::cout << i << ", " << j << ", " << length2 - length1;
+			std::cout << std::endl;
+		}
+		
+	}
+
+	std::cout << std::endl;
 }
 
 void Options::superimposeAll(CrystalPtr crystal)

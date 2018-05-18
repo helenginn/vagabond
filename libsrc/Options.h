@@ -74,6 +74,8 @@ public:
 		return diffractions[0];
 	}
 
+	int parseParameter(std::string arg, std::string prefix, double *ptr);
+	
 	static double getKick()
 	{
 		return _kick;
@@ -98,6 +100,12 @@ public:
 	{
 		return _bStart;
 	}
+
+	static std::string getSolventFile()
+	{
+		return _solventFile;
+	}
+
 
 	static double getBMult()
 	{
@@ -160,6 +168,7 @@ private:
 	void outputCrystalInfo();
 	void refinementCycle(MoleculePtr molecule, RefinementType type);
 	bool parseJoke(std::string arg);
+	void diffMatrix();
 
 	std::vector<std::string> arguments;
 
@@ -175,6 +184,7 @@ private:
 	std::string _scriptName;
 
 	static bool _powder;
+	static std::string _solventFile;
 	static double _kick;
 	static int _solvent;
 	static double _dampen;
@@ -182,6 +192,7 @@ private:
 	static int _enableTests;
 	static double _bStart;
 	static double _sampling;
+	std::string _diffMatrix;
 	std::string _outputDir;
 	static double _minRes;
 };
