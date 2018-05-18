@@ -10,6 +10,7 @@
 
 #include "Timer.h"
 #include "AtomGroup.h"
+#include <climits>
 #include "Atom.h"
 #include "Element.h"
 #include "Bond.h"

@@ -16,6 +16,9 @@
 #include "Sampler.h"
 #include "Parser.h"
 #include <map>
+#include <climits>
+
+class Plucker;
 
 /**
  * \class AtomGroup
