@@ -256,6 +256,11 @@ public:
 	{
 		return "Crystal";
 	}
+	
+	BucketPtr getBucket()
+	{
+		return _bucket;
+	}
 
 	/** Fit whole molecules to electron density as a refinement protocol.
 	* 	\param translation if true, will refine translation parameters

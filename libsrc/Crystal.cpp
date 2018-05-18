@@ -26,6 +26,7 @@
 #include "RefinementGridSearch.h"
 #include "BoneDensity.h"
 #include "BucketBulkSolvent.h"
+#include "BucketMonteCarlo.h"
 #include "Options.h"
 
 #include "../libccp4/cmtzlib.h"
@@ -545,19 +546,7 @@ void Crystal::makePowders()
 
 	if (_bucket)
 	{
-		_bucket->analyseSolvent(1.8);
-	}
-
-	std::cout << "Making distance/angle lists." << std::endl;
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (molecule(i)->getClassName() != "Molecule")
-		{
-			continue;
-		}
-
-		molecule(i)->makePowderList();
+		_bucket->analyseSolvent(2.0);
 	}
 }
 
