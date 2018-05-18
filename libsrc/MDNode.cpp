@@ -7,6 +7,7 @@
 //
 
 #include "Shouter.h"
+#include "Plucker.h"
 #include "MDNode.h"
 #include <iostream>
 #include <vector>
@@ -28,6 +29,7 @@ MDNode::MDNode(int dims)
 	_value = 0;
 	_weight = 0;
 	
+	_plucker = NULL;
 	_nodes = NULL;
 }
 
@@ -87,14 +89,23 @@ void MDNode::splitNode(int divisions, int remaining)
 
 void MDNode::addToNode(double *dimvals, double value)
 {
+	MDNode *node = findNode(dimvals);
+	
+	if (node)
+	{
+		node->_value += value;
+		node->_weight += 1;
+	}
+}
+
+MDNode *MDNode::findNode(double *dimvals)
+{
+	int node = 0;
+	
 	if (_nodes == NULL)
 	{
-		_value += value;
-		_weight += 1;
-		return;
+		return this;
 	}
-	
-	int node = 0;
 
 	for (int i = 0; i < _dims; i++)
 	{
@@ -115,7 +126,7 @@ void MDNode::addToNode(double *dimvals, double value)
 		
 		if (side == -1)
 		{
-			return;		
+			return NULL;		
 		}
 
 		if (side == 1)
@@ -124,10 +135,48 @@ void MDNode::addToNode(double *dimvals, double value)
 		}
 	}
 	
-	if (node >= 0)
+	return _nodes[node]->findNode(dimvals);
+}
+
+void MDNode::addNodesToPlucker(Plucker *pluck, int dim,
+                               double value, double subtract)
+{
+	double min = _mins[dim];
+	double max = _maxes[dim];
+
+	if (value < min || value > max)
 	{
-		_nodes[node]->addToNode(dimvals, value);
+		return;
 	}
+
+	for (int i = 0; i < nodeCount(); i++)
+	{
+		node(i)->addNodesToPlucker(pluck, dim, value, subtract);
+	}
+	
+	if (_nodes != NULL)
+	{
+		return;
+	}
+
+	double val = getValue();
+	val -= subtract;
+
+	pluck->addPluckable(this, val);
+}
+
+void MDNode::makePlucker(int dim, double value, double subtract)
+{
+	if (_plucker)
+	{
+		delete _plucker;
+		_plucker = NULL;
+	}
+	
+	_plucker = new Plucker();
+	_plucker->setGranularity(0.04);
+
+	addNodesToPlucker(_plucker, dim, value, 0.20);
 }
 
 void MDNode::addChildrenToCSV(CSV *csv)
@@ -150,7 +199,7 @@ void MDNode::addChildrenToCSV(CSV *csv)
 			double ave = (_mins[i] + _maxes[i]) / 2;
 			entry.push_back(ave);
 		}
-
+		
 		entry.push_back(_value / _weight);
 		
 		csv->addEntry(entry);
@@ -171,14 +220,23 @@ void MDNode::addToCSV(CSV *csv)
 
 MDNode::~MDNode()
 {
-	int total = pow(2, _dims);
-	
-	for (int i = 0; i < total; i++)
+	if (_plucker != NULL)
 	{
-		delete _nodes[i];
+		delete _plucker;
+		_plucker = NULL;
 	}
 	
-	delete [] _nodes;
+	if (_nodes != NULL)
+	{
+		int total = pow(2, _dims);
+
+		for (int i = 0; i < total; i++)
+		{
+			delete _nodes[i];
+		}
+
+		delete [] _nodes;
+	}
 	
 	delete [] _mins;
 	delete [] _maxes;
