@@ -1031,7 +1031,9 @@ void Polymer::superimpose()
 	if (model->isAbsolute())
 	{
 		std::vector<vec3> sphereAngles = ToAbsolutePtr(model)->getSphereAngles();
-		CSVPtr csv = CSVPtr(new CSV(10, "psi", "phi", "theta", "corr_x", "corr_y", "corr_z", "rot_angle", "rot_axis_x", "rot_axis_y", "rot_axis_z"));
+		CSVPtr csv = CSVPtr(new CSV(10, "psi", "phi", "theta", "corr_x",
+		                            "corr_y", "corr_z", "rot_angle",
+		"rot_axis_x", "rot_axis_y", "rot_axis_z"));
 		CSVPtr one = CSVPtr(new CSV(3, "x", "y", "z"));
 
 		for (size_t i = 0; i < sphereAngles.size(); i++)
@@ -1294,7 +1296,8 @@ bool Polymer::test()
 	{
 		if (!atom(i)->getModel())
 		{
-			std::cout << "Missing model for " << atom(i)->shortDesc() << std::endl;
+			std::cout << "Missing model for " << atom(i)->shortDesc() <<
+			std::endl;
 			bondsOk = 0;
 		}
 
@@ -1306,7 +1309,8 @@ bool Polymer::test()
 
 	if (!bondsOk)
 	{
-		std::cout << "Bonds FAILED test for polymer " << getChainID() << std::endl;
+		std::cout << "Bonds FAILED test for polymer " << getChainID() <<
+		std::endl;
 	}
 
 	return true;
