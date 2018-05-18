@@ -635,15 +635,20 @@ double FFT::interpolate(vec3 vox000, size_t im)
 
 	collapse(&vox000x, &vox000y, &vox000z);
 	collapse(&vox000xm, &vox000ym, &vox000zm);
+	
+	vox000y  *= nx;
+	vox000ym *= nx;
+	vox000z  *= nx * ny;
+	vox000zm *= nx * ny;
 
-	long int idx000 = quickElement(vox000x, vox000y, vox000z);
-	long int idx100 = quickElement(vox000xm, vox000y, vox000z);
-	long int idx010 = quickElement(vox000x, vox000ym, vox000z);
-	long int idx110 = quickElement(vox000xm, vox000ym, vox000z);
-	long int idx001 = quickElement(vox000x, vox000y, vox000zm);
-	long int idx101 = quickElement(vox000xm, vox000y, vox000zm);
-	long int idx011 = quickElement(vox000x, vox000ym, vox000zm);
-	long int idx111 = quickElement(vox000xm, vox000ym, vox000zm);
+	long int idx000 = vox000x + vox000y + vox000z;
+	long int idx100 = vox000xm + vox000y + vox000z;
+	long int idx010 = vox000x + vox000ym + vox000z;
+	long int idx110 = vox000xm + vox000ym + vox000z;
+	long int idx001 = vox000x + vox000y + vox000zm;
+	long int idx101 = vox000xm + vox000y + vox000zm;
+	long int idx011 = vox000x + vox000ym + vox000zm;
+	long int idx111 = vox000xm + vox000ym + vox000zm;
 
 	double val00 = data[idx000][im] * (1 - remain.x) +
 	data[idx100][im] * remain.x;
