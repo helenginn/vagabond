@@ -150,7 +150,7 @@ bool addFlex)
 
 		if (addAngle) 
 		{
-			addBendAngle(bond, deg2rad(0.01), deg2rad(0.001));
+			addBendAngle(bond, deg2rad(0.2), deg2rad(0.001));
 		}
 
 		if (!bond->isRefinable())
@@ -423,8 +423,6 @@ void Sampler::addMagicAngle(BondPtr bond, double range, double interval)
 
 void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 {
-	//    double number = fabs(range / interval);
-
 	if (!bond->getRefineBondAngle())
 	{
 		return;
@@ -432,8 +430,21 @@ void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 
 	_strategy->addParameter(&*bond, Bond::getBendAngle, Bond::setBendAngle,
 	                        range, interval, "b0" + bond->shortDesc());
-	_strategy->addParameter(&*bond, Bond::getCirclePortion, Bond::setCirclePortion,
-	                        range, interval, "b1" + bond->shortDesc());
+	
+	ModelPtr parent = bond->getParentModel();
+
+	if (parent && parent->isBond())
+	{
+		BondPtr pBond = ToBondPtr(parent);
+		int result = pBond->downstreamAtomNum(bond->getMinor(), NULL);
+		if (result > 0)
+		{
+			_strategy->addParameter(&*bond, Bond::getCirclePortion, 
+			                        Bond::setCirclePortion,
+			range, interval, "b1" + bond->shortDesc());
+		}
+	}
+	
 
 	_bonds.push_back(bond);
 }
