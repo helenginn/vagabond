@@ -17,6 +17,7 @@
 #include "Element.h"
 #include "Monomer.h"
 #include "Polymer.h"
+#include "Plucker.h"
 #include <iomanip>
 #include "FileReader.h"
 #include <sstream>
@@ -26,6 +27,7 @@
 
 Atom::Atom()
 {
+	_waterPlucker = NULL;
 	_initialPosition = make_vec3(0, 0, 0);
 	_pdbPosition = make_vec3(0, 0, 0);
 	_ellipsoidLongestAxis = make_vec3(0, 0, 0);
@@ -171,7 +173,8 @@ MapScoreType mapScore)
 	return score;
 }
 
-void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask)
+void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
+                    bool sameScale)
 {
 	FFTPtr atomDist, modified;
 	
@@ -210,7 +213,7 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask)
 		return;
 	}
 
-	FFT::add(fft, modified, pos);
+	FFT::add(fft, modified, pos, sameScale);
 }
 
 vec3 Atom::getAbsolutePosition()
@@ -439,6 +442,36 @@ std::string Atom::getPDBContribution(int ensembleNum)
 	return stream.str();
 }
 
+void Atom::cacheCloseWaters(double tolerance)
+{
+	if (_waterPlucker != NULL)
+	{
+		delete _waterPlucker;
+		_waterPlucker = NULL;
+	}
+	
+	_waterPlucker = new Plucker();
+	_waterPlucker->setGranularity(0.2);
+	
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	
+	std::vector<AtomPtr> atoms = crystal->getCloseAtoms(shared_from_this(),
+	                                                    tolerance);
+	
+	for (int i = 0; i < atoms.size(); i++)
+	{
+		AtomPtr atm = atoms[i];
+		
+		if (atm->getAtomName() != "O")
+		{
+			continue;
+		}
+		
+		double occ = atm->getModel()->getEffectiveOccupancy();
+		_waterPlucker->addPluckable(&*atm, occ);
+	}
+}
+
 std::string Atom::shortDesc()
 {
 	if (!getMonomer())
@@ -558,4 +591,35 @@ bool Atom::closeToAtom(AtomPtr another, double tolerance)
 		double length = vec3_length(diff);
 		return (length < tolerance);
 	}
+}
+
+double Atom::getDistanceFrom(Atom *other)
+{
+	vec3 me = getAbsolutePosition();
+	vec3 you = other->getAbsolutePosition();
+	vec3 apart = vec3_subtract_vec3(me, you);
+	
+	double dist = vec3_length(apart);
+	
+	return dist;
+}
+
+Atom *Atom::pluckAnother()
+{
+	if (_waterPlucker == NULL)
+	{
+		return NULL;
+	}
+	
+	return static_cast<Atom *>(_waterPlucker->pluck());
+}
+
+size_t Atom::pluckCount()
+{
+	if (_waterPlucker == NULL)
+	{
+		return 0;
+	}
+
+	return _waterPlucker->pluckCount();
 }

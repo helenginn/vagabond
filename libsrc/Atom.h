@@ -26,6 +26,8 @@
  * single ATOM or HETATM line from a PDB.
  */
 
+class Plucker;
+
 class Atom : public Parser
 {
 public:
@@ -103,7 +105,8 @@ public:
 
 	/* Returns a FFT for the model dist, for reuse */
 	void addToMap(FFTPtr fft, mat3x3 unit_cell,
-	              vec3 offset = make_vec3(0, 0, 0), bool mask = false);
+	              vec3 offset = make_vec3(0, 0, 0), bool mask = false,
+	bool sameScale = false);
 
 	void setOriginalOccupancy(double occ)
 	{
@@ -252,8 +255,15 @@ public:
 
 	/* Tolerance in Angstroms. */
 	bool closeToAtom(AtomPtr another, double tolerance = 2);
+	
+	void cacheCloseWaters(double tolerance = 5);
 
+	double getDistanceFrom(Atom *other);
 	static double getAngle(AtomPtr atom1, AtomPtr atom2, AtomPtr atom3);
+	
+	size_t pluckCount();
+	
+	Atom *pluckAnother();
 protected:
 	virtual std::string getClassName()
 	{
@@ -288,6 +298,8 @@ private:
 	mat3x3 _tensor;
 
 	AtomType _geomType;
+	
+	Plucker *_waterPlucker;
 };
 
 #endif /* defined(__vagabond__Atom__) */
