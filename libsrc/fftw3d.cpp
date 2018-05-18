@@ -678,7 +678,8 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos,
 *  No assumption that interpolation is not needed.
 */
 double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
-                      MapScoreType mapScoreType, std::vector<CoordVal> *vals)
+                      MapScoreType mapScoreType, std::vector<CoordVal> *vals,
+bool sameScale)
 {
 	/* I rarely comment something so heavily but I will get confused if
 	* I don't, this time, as I can't soak the protocol into the variable
@@ -715,7 +716,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	/* Prepare a matrix to convert atomic voxels into crystal voxels */
 	mat3x3 atomVox2Crystal = mat3x3_mult_mat3x3(fftCrystal->getBasisInverse(),
 	                                            fftAtom->getBasis());
-
+	
 	/* Apply this offset and reverse it. This small offset must be added
 	* to all future atomic coordinates prior to interpolation. This
 	* is therefore now in atom voxels.*/
@@ -785,9 +786,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 	double step = 1;
 
-	/* Values in this vec3 will be used to break the loop appropriately */
-	vec3 atomPos = make_vec3(0, 0, 0);
-
 	/* min/maxAtoms are in crystal coordinates.*/
 	for (double k = minAtom.z; k < maxAtom.z; k += step)
 	{
@@ -797,19 +795,23 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 			{
 				/* Position currently in crystal coords - change to atom. */
 				vec3 crystalPos = make_vec3(i, j, k);
-				atomPos = mat3x3_mult_vec(crystal2AtomVox, crystalPos);
-
-				if (atomPos.x < 0 || atomPos.y < 0 || atomPos.z < 0)
+				vec3 atomPos = crystalPos;
+				
+				if (!sameScale)
 				{
-					continue;
-				}
+					atomPos = mat3x3_mult_vec(crystal2AtomVox, crystalPos);
 
-				if (atomPos.x > fftAtom->nx || atomPos.y > fftAtom->ny
-				    || atomPos.z > fftAtom->nz)
-				{
-					continue;
-				}
+					if (atomPos.x < 0 || atomPos.y < 0 || atomPos.z < 0)
+					{
+						continue;
+					}
 
+					if (atomPos.x > fftAtom->nx || atomPos.y > fftAtom->ny
+					    || atomPos.z > fftAtom->nz)
+					{
+						continue;
+					}
+				}
 
 				/* Now we must find the relative crystal voxel to write this
 				* density value to, given that the atom was wrapped around
@@ -834,13 +836,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				if (offsetPos.z < 0) offsetPos.z += fftAtom->nz;
 
 				atomReal = fftAtom->interpolate(offsetPos, 0);
-
-				double atomImag = 0;
-
-				if (mapScoreType == MapScoreTypeNone)
-				{
-					atomImag = fftAtom->interpolate(offsetPos, 1);
-				}
 
 				/* We add the atom offset so we don't end up with thousands
 				* of atoms at the very centre of our map */
@@ -904,7 +899,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 					    fftCrystal->getMask(crystalIndex) != 0)
 					{
 						fftCrystal->data[crystalIndex][0] += atomReal * volume;
-						fftCrystal->data[crystalIndex][1] += atomImag * volume;
 					}
 				}
 			}

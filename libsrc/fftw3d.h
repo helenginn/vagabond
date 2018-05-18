@@ -185,14 +185,14 @@ public:
 	double interpolate(vec3 fractionalVoxel, size_t imaginary = false);
 
 	static void add(FFTPtr fftEdit, FFTPtr fftConst,
-	                vec3 add)
+	                vec3 add, bool sameScale)
 	{
-		operation(fftEdit, fftConst, add);
+		operation(fftEdit, fftConst, add, MapScoreTypeNone, NULL, sameScale);
 	}
 
 	static double operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	                        MapScoreType mapScoreType = MapScoreTypeNone,
-	std::vector<CoordVal> *vals = NULL);
+	std::vector<CoordVal> *vals = NULL, bool sameScale = false);
 
 	static void addSimple(FFTPtr fftEdit, FFTPtr fftConst);
 	static double score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 position,
