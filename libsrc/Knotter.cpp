@@ -28,7 +28,9 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
 	AtomPtr cBeta = _sidechain->findAtom("CB");
 	AtomPtr spineAtom = _backbone->betaCarbonTorsionAtom();
 
-	if (_backbone->getMonomer()->getIdentifier() == "gly")
+	bool isGlycine = (_backbone->getMonomer()->getIdentifier() == "gly");
+
+	if (isGlycine)
 	{
 		cBeta= _sidechain->findAtom("HA2");
 		hAlpha = _backbone->findAtom("HA3");
@@ -55,6 +57,7 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
 		{
 			ca2cb->setTorsionAtoms(spineAtom, torsionAtom);
 		}
+
 		ca2cb->activate();
 	}
 	else
@@ -124,7 +127,8 @@ void Knotter::tieTowardsNTerminus()
 	AtomPtr cAlpha = _backbone->findAtom("CA");
 	AtomPtr hAlpha = _backbone->findAtom("HA");
 
-	if (_backbone->getMonomer()->getIdentifier() == "gly")
+	bool isGlycine = (_backbone->getMonomer()->getIdentifier() == "gly");
+	if (isGlycine)
 	{
 		hAlpha = _backbone->findAtom("HA3");
 	}
@@ -167,6 +171,12 @@ void Knotter::tieTowardsNTerminus()
 	}
 
 	cAlpha2NSpine->activate();
+	
+	if (isGlycine)
+	{
+		carbonyl2CAlpha->setRefineBondAngle();
+		cAlpha2NSpine->setRefineBondAngle();
+	}
 
 	if (nSpine && nSpine->getModel()->isBond())
 	{
@@ -969,7 +979,6 @@ void Knotter::makeTyrosine()
 	AtomPtr hDelta2 = _sidechain->findAtom("HD2");
 	AtomPtr hBackbone = _sidechain->findAtom("HA");
 
-
 	BondPtr ca2cb = tieBetaCarbon(cGamma);
 	ca2cb->addExtraTorsionSample(cEpsilon1, 0);
 	ca2cb->addExtraTorsionSample(cEpsilon2, 0);
@@ -1314,7 +1323,6 @@ void Knotter::makeLeucine()
 	AtomPtr hBackbone = _sidechain->findAtom("HA");
 
 	BondPtr ca2cb = tieBetaCarbon(cGamma);
-	ca2cb->setRefineBondAngle(false);
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg1->setTorsionAtoms(cAlpha, cDelta1);
