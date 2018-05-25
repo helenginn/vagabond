@@ -405,6 +405,12 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 		double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
 		                                    bins[i], bins[i + 1]);
 		double scale = totalFc / ratio;
+		
+		if (scale != scale)
+		{
+			scale = 0;
+		}
+
 		applyScaleFactor(scale, bins[i], bins[i + 1]);
 	}
 
