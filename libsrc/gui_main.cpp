@@ -9,7 +9,8 @@
 #include "Options.h"
 #include <execinfo.h>
 #include <signal.h>
-#include "../libgui/qtgui/VagWindow.h"
+#include "../libgui/qtgui/StartScreen.h"
+#include <QtWidgets/qapplication.h>
 
 void handler(int sig) {
 	void *array[10];
@@ -35,14 +36,14 @@ int main(int argc, char * argv[])
 
 	QApplication app(argc, argv);
 
-	VagWindow window(NULL, argc, argv);
-	window.show();
+	StartScreen startScreen(NULL, argc, argv);
+	startScreen.show();
 
 	int status = app.exec();
 	
 	if (status == 0)
 	{
-		InstructionThread *thread = window.getInstructionThread();
+//		InstructionThread *thread = window.getInstructionThread();
 	}
 	
 	return status;
