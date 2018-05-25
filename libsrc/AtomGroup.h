@@ -157,6 +157,7 @@ protected:
 	virtual void addProperties();
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void linkReference(ParserPtr object, std::string category);
+	std::vector<AtomPtr> _atoms;
 private:
 	static FFTPtr prepareMapSegment(CrystalPtr crystal,
 	                                std::vector<AtomPtr> selected,
@@ -172,7 +173,6 @@ private:
 	MonomerWkr _monomer;
 	int _largestNum;
 
-	std::vector<AtomPtr> _atoms;
 
 	bool _beenTied;
 	CrystalPtr _target;
