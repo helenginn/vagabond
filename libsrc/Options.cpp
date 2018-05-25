@@ -670,6 +670,8 @@ std::string Options::rTypeString(RefinementType type)
 		return "Torsions against PDB positions";
 		case RefinementFine:
 		return "Torsions against electron density";
+		case RefinementSidechain:
+		return "Sidechains only against electron density";
 		default:
 		return "Unknown";
 	}
