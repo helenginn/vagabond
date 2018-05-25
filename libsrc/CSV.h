@@ -60,6 +60,7 @@ private:
 
 	std::string mapToAscii(Plot plot);
 	void writeStringToPlot(std::string text, Plot *plot, int x, int y);
+	std::string _subdir;
 public:
 	CSV()
 	{
@@ -128,6 +129,11 @@ public:
 	void addToCSV(MDNode *node);
 
 	void setValueForEntry(int entry, std::string header, double value);
+	
+	void setSubDirectory(std::string name)
+	{
+		_subdir = name;
+	}
 
 	void reserveEntries(unsigned long num)
 	{
