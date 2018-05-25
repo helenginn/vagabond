@@ -497,6 +497,18 @@ void Sampler::setupCloseAtoms()
 	}
 }
 
+void Sampler::setupScoreWithMap()
+{
+	_workspace.scoreType = _scoreType;
+	_workspace.crystal = _crystal;
+	_workspace.selectAtoms = _sampled;
+	_workspace.segment = FFTPtr();
+	_workspace.ave = empty_vec3();
+	_workspace.basis = make_mat3x3();
+		
+	AtomGroup::scoreWithMapGeneral(&_workspace);
+}
+
 bool Sampler::sample(bool clear)
 {
 	if (_mock)
@@ -529,9 +541,8 @@ bool Sampler::sample(bool clear)
 		int cycles = 16 + paramCount;
 
 		_strategy->setCycles(cycles);
-
 		setupCloseAtoms();
-		AtomGroup::scoreWithMapGeneral(_scoreType, _crystal, true, _sampled);
+		setupScoreWithMap();
 	}
 
 	if (sampleSize() && _strategy->parameterCount())
@@ -553,6 +564,7 @@ bool Sampler::sample(bool clear)
 	_bonds.clear();
 	_sampled.clear();
 	_unsampled.clear();
+	_crystal->clearCloseCache();
 
 	return changed;
 }
@@ -598,7 +610,7 @@ double Sampler::getScore()
 		return score / count;
 	}
 
-	return AtomGroup::scoreWithMapGeneral(_scoreType, _crystal, false, _sampled);
+	AtomGroup::scoreWithMapGeneral(&_workspace);
 }
 
 

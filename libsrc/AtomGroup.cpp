@@ -607,19 +607,20 @@ double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plo
 		selected.push_back(atom(i));
 	}
 	
-	/*
-	if (plot)
-	{
-		return scoreWithMapQuick(scoreType, crystal, plot, selected);	
-	}
-	*/
+	MapScoreWorkspace workspace;
+	workspace.scoreType = scoreType;
+	workspace.crystal = crystal;
+	workspace.selectAtoms = selected;
+	workspace.segment = FFTPtr();
+	workspace.ave = empty_vec3();
+	workspace.basis = make_mat3x3();
 
-	return scoreWithMapGeneral(scoreType, crystal, plot, selected);
+	return scoreWithMapGeneral(&workspace, plot);
 }
 
 FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
                                     std::vector<AtomPtr> selected,
-mat3x3 *basis, vec3 *ave)
+                                    mat3x3 *basis, vec3 *ave)
 {
 	double maxDistance = 0;
 	FFTPtr map = crystal->getFFT();
@@ -800,51 +801,69 @@ double AtomGroup::scoreWithMapQuick(ScoreType scoreType, CrystalPtr crystal,
 	return score;
 }
 
-double AtomGroup::scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
-                                      bool plot, std::vector<AtomPtr> selected)
+double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
+                                      bool plot)
 {
-	mat3x3 basis;
-	vec3 ave;
-	FFTPtr segment = prepareMapSegment(crystal, selected, &basis, &ave);
+	CrystalPtr crystal = workspace->crystal;
+	std::vector<AtomPtr> selected = workspace->selectAtoms;
+	bool first = (workspace->segment == FFTPtr());
 
-	mat3x3 real2Frac = crystal->getReal2Frac();
-
-	for (size_t i = 0; i < selected.size(); i++)
+	if (first)
 	{
-		selected[i]->addToMap(segment, basis, ave, false, true);
+		workspace->segment = prepareMapSegment(crystal, selected,
+		                                       &workspace->basis,
+		                                       &workspace->ave);
+		
+		workspace->constant = FFTPtr(new FFT(*workspace->segment));
 	}
-
-	/* We must fix a problem: because the atoms we add are typically
-	* connected to other atoms, the tail-ends of the sampled bit
-	* will overlap with other atoms, throwing up high-Fo and low-Fc regions
-	* which mess up the correlation. We need to add those extra
-	* surrounding atoms, but first we convert all non-zero values to
-	* a mask, as we do not want to merely extend the problem to the
-	* next atom.*/
-	double cutoff = MAP_VALUE_CUTOFF;
-	segment->aboveValueToMask(cutoff);
-	segment->avoidWriteToMaskZero();
-
+	else
+	{
+		workspace->segment->copyFrom(workspace->constant);
+	}
+	
 	/* Now we can add neighbouring atoms from the same Crystal
 	* with impunity, and they won't go over the borderline already
 	* established.*/
-
-	std::vector<AtomPtr> extra; 
-
-	extra = crystal->getCloseAtoms(selected, 3.0);
-
-	for (size_t i = 0; i < extra.size(); i++)
+	if (first)
 	{
-		extra[i]->addToMap(segment, basis, ave, false, true);
+		double xAng = workspace->segment->nx * workspace->segment->scales[0];
+		double yAng = workspace->segment->ny * workspace->segment->scales[1];
+		double zAng = workspace->segment->nz * workspace->segment->scales[2];
+
+		workspace->extra = crystal->getAtomsInBox(workspace->ave, 
+		                                          xAng, yAng, zAng);
+
+		for (size_t i = 0; i < workspace->extra.size(); i++)
+		{
+			AtomPtr anAtom = workspace->extra[i];
+			
+			if (std::find(selected.begin(), selected.end(), anAtom) == selected.end())
+			{
+				continue;
+			}
+			
+			workspace->extra[i]->addToMap(workspace->constant, workspace->basis,
+			                              workspace->ave, false, true, true);
+			
+			workspace->segment->copyFrom(workspace->constant);
+		}
 	}
 
-	double score = scoreFinalMap(crystal, segment, plot, scoreType, ave);
+	for (size_t i = 0; i < selected.size(); i++)
+	{
+		selected[i]->addToMap(workspace->segment, workspace->basis, 
+		                      workspace->ave, false, true, true);
+	}
+
+	double score = scoreFinalMap(crystal, workspace->segment, plot,
+	                             workspace->scoreType, workspace->ave);
+
 	return score;
 }
 
 double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
                                 bool plot, ScoreType scoreType,
-								vec3 ave)
+                                vec3 ave)
 {
 	double cutoff = MAP_VALUE_CUTOFF;
 	mat3x3 real2Frac = crystal->getReal2Frac();

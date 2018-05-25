@@ -174,10 +174,11 @@ protected:
 	int _refinedMagicAxisCount;
 	virtual bool shouldRefineMagicAxis(BondPtr) { return false; }
 	virtual double getScore();
+	void setupCloseAtoms();
+	void setupScoreWithMap();
 private:
 	void addAtomsForBond(BondPtr bond, int k);
 	void addParamsForBond(BondPtr bond);
-	void setupCloseAtoms();
 	CrystalPtr _crystal;
 
 	std::vector<AtomPtr> _sampled;
@@ -192,6 +193,7 @@ private:
 	ScoreType _scoreType;
 
 	RefinementStrategyPtr _strategy;
+	MapScoreWorkspace _workspace;
 };
 
 
