@@ -79,6 +79,7 @@ public:
 	static void cleanupPlans();
 	void create(long);
 	void create(long, long, long);
+	void copyFrom(FFTPtr other);
 
 	void setupMask();
 

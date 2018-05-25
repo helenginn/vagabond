@@ -115,6 +115,11 @@ FFT::FFT(FFT &other)
 	_writeToMaskZero = other._writeToMaskZero;
 }
 
+void FFT::copyFrom(FFTPtr other)
+{
+	memcpy(data, other->data, nn * sizeof(FFTW_DATA_TYPE));
+}
+
 
 void FFT::create(long nnx, long nny, long nnz)
 {
