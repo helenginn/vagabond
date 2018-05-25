@@ -714,7 +714,7 @@ void Crystal::makePDBs(std::string suffix)
 void Crystal::writeVagabondFile(int cycleNum)
 {
 	std::ofstream file;
-	std::string filename = "refine_" + i_to_str(cycleNum) + ".vbond";
+	std::string filename = "cycle_" + i_to_str(cycleNum) + ".vbond";
 	std::string vbondFile = FileReader::addOutputDirectory(filename);
 	file.open(vbondFile);
 	writeToFile(file, 0);
@@ -727,22 +727,24 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	std::cout << "*******************************" << std::endl;
 	std::cout << "\tCycle " << cycleNum << std::endl;
 
-	std::string refineCount = "refine_" + i_to_str(cycleNum);
+	std::string refineCount = "cycle_" + i_to_str(cycleNum);
 
 	double rFac = getDataInformation(data, 2, 1, refineCount);
-	makePDBs(refineCount);
+	makePDBs(i_to_str(cycleNum));
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		if (molecule(i)->getClassName() == "Polymer")
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
+
 			if (cycleNum > 0)
 			{
 				polymer->differenceGraphs("density_" + polymer->getChainID() +
-				                          "_" + i_to_str(cycleNum), shared_from_this());
+				                          "_" + i_to_str(cycleNum),
+				                          shared_from_this());
 			}
-			polymer->graph("chain_" + polymer->getChainID() +
+			polymer->graph("bfactor_" + polymer->getChainID() +
 			               "_" + i_to_str(cycleNum));
 			polymer->closenessSummary();
 		}
