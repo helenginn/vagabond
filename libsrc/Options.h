@@ -182,11 +182,14 @@ private:
 	std::vector<DatasetPtr> datasets;
 	std::vector<DiffractionPtr> diffractions;
 
-	int _numCycles;
+	bool _parsed;
 	int _globalCount;
 	bool _tie;
 	bool _manual;
 	std::string _scriptName;
+	
+	std::string _modelFile;
+	std::string _mtzFile;
 
 	static bool _powder;
 	static std::string _solventFile;

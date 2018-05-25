@@ -33,6 +33,7 @@ std::string Options::_solventFile;
 
 Options::Options(int argc, const char **argv)
 {
+	_parsed = false;
 	_manual = false;
 	_notify = NULL;
 	_globalCount = 0;
@@ -48,7 +49,6 @@ Options::Options(int argc, const char **argv)
 	std::cout << "              -_______-     -_______-\n\n";
 	std::cout << "             Vagabond at your service.\n" << std::endl;
 
-	_numCycles = 0;
 	_tie = true;
 
 	/* Note that argv includes our program name */
