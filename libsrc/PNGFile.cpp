@@ -23,7 +23,7 @@ int PNGFile::writeImage(std::string filename, int width, int height, std::string
 	png_structp png_ptr = NULL;
 	png_infop info_ptr = NULL;
 
-	std::string path = FileReader::addOutputDirectory(filename);
+	std::string path = FileReader::addOutputDirectory(filename, _subdir);
 
 	// Open file for writing (binary mode)
 	fp = fopen(path.c_str(), "wb");

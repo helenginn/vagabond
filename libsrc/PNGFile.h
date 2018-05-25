@@ -31,6 +31,7 @@ private:
 	bool plain;
 	std::string filename;
 	std::string rootName;
+	std::string _subdir;
 	int bytesPerPixel;
 	int pixelsPerRow;
 	int writeImage(std::string filename, int width, int height, std::string title);
@@ -56,6 +57,11 @@ public:
 	static void HSB_to_RGB(float hue, float sat, float bright,
 	                       png_byte *red, png_byte *green, png_byte *blue);
 	void drawArrow(float xDir, float yDir, float centreX, float centreY, float transparency, png_byte red, png_byte green, png_byte blue);
+	
+	void setSubDirectory(std::string dir)
+	{
+		_subdir = dir;
+	}
 
 	~PNGFile();
 	PNGFile(std::string filename, int width = 2400, int height = 2400);
