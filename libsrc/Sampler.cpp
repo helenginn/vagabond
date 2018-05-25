@@ -95,7 +95,7 @@ void Sampler::addParamsForBond(BondPtr bond)
 			break;
 
 			case ParamOptionMagicAngles:
-			addMagicAngle(bond, deg2rad(range), deg2rad(0.10));
+			addMagicAngle(bond, deg2rad(range), deg2rad(1.0));
 			break;
 
 			default:
