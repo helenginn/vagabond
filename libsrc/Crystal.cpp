@@ -895,7 +895,6 @@ void Crystal::backboneDensityAnalysis()
 				break;
 				
 				case RefinementModelRMSDZero:
-				polymer->addParamType(ParamOptionTorsion, 0.04);
 				polymer->addParamType(ParamOptionDampen, 0.005);
 				polymer->addParamType(ParamOptionMagicAngles, 3);
 				polymer->addParamType(ParamOptionNumBonds, 12);
