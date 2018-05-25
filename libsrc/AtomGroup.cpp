@@ -653,24 +653,25 @@ mat3x3 *basis, vec3 *ave)
 	for (size_t i = 0; i < selected.size(); i++)
 	{
 		/* Refresh absolute position */
-		selected[i]->getModel()->getDistribution();
+		selected[i]->getModel()->getFinalPositions();
 		vec3 offset = selected[i]->getModel()->getAbsolutePosition();
 
 		vec3 diff = vec3_subtract_vec3(offset, sum);
-		
+
 		ns[0] = std::max(fabs(diff.x), ns[0]);
 		ns[1] = std::max(fabs(diff.y), ns[1]);
 		ns[2] = std::max(fabs(diff.z), ns[2]);
 	}
-	
+
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double scales = 1.0 / (2 * maxDStar);
 
 	long nl[3];
+	const double buffer = 2.5;
 
 	for (int i = 0; i < 3; i++)
 	{
-		nl[i] = (2 * (ns[i] + 3.5)) / scales;
+		nl[i] = (2 * (ns[i] + buffer)) / scales;
 		if (nl[i] % 2 == 1) nl[i]++;
 	}
 
