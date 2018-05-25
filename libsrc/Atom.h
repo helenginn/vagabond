@@ -158,6 +158,8 @@ public:
 	{
 		_pdbPosition = pdbPos;
 	}
+	
+	double getBFactor();
 
 	double getInitialBFactor()
 	{

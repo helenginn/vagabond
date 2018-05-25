@@ -398,6 +398,11 @@ std::string Atom::averagePDBContribution(bool samePos, bool sameB)
 	                            placement, 0, occupancy, bFactor);
 }
 
+double Atom::getBFactor()
+{
+	return _model->getMeanSquareDeviation();
+}
+
 std::string Atom::getPDBContribution(int ensembleNum)
 {
 	std::string atomName = getAtomName();
