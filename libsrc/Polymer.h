@@ -36,8 +36,8 @@ public:
 		_anchorNum = 0;
 		_totalMonomers = 0;
 		_transTensor = make_mat3x3();
+		mat3x3_scale(&_transTensor, 1.5, 1.5, 1.5);
 		_overallScale = 1;
-		//_rotMatrix = make_mat3x3();
 		_startB = Options::getBStart();
 		_extraRotParams = {1, 0, 0};
 		_tmpPhi = 0;
