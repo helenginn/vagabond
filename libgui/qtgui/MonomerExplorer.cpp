@@ -283,9 +283,12 @@ void MonomerExplorer::applyParamOptions(SamplerPtr sampled)
 		if (param.isZero) continue;
 
 		sampled->addParamType(param.optionType, param.value);
+		
+		if (param.optionType == ParamOptionTorsion)
+		{
+			sampled->addParamType(ParamOptionBondAngle, param.value);
+		}
 	}
-	
-	sampled->addParamType(ParamOptionBondAngle, 0.5);
 }
 
 Notifiable *MonomerExplorer::preparePolymer()
