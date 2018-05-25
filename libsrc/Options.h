@@ -22,9 +22,11 @@ typedef enum
 	ModelFileVagabond,
 } ModelFile;
 
+class StartScreen;
 
 class Options
 {
+	friend StartScreen;
 public:
 	Options(int argc, const char **argv);
 	void run();
