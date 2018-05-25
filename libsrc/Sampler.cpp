@@ -374,7 +374,7 @@ void Sampler::addMagicAngle(BondPtr bond, double range, double interval)
 
 void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 {
-	if (!bond->getRefineBondAngle())
+	if (!bond->getRefineBondAngle() || bond->isFixed())
 	{
 		return;
 	}
