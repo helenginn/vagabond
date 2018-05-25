@@ -6,6 +6,7 @@ libtool
 # Qt5
 
 moc_*.cpp
+moc_*.h
 
 # Prerequisites
 *.d
