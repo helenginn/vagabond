@@ -41,10 +41,13 @@ public:
 	AtomPtr findAtom(std::string atomType, std::string confID);
 	AtomList findAtoms(std::string atomType);
 
-	double scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plot = false);
-	static double scoreWithMapGeneral(ScoreType scoreType, CrystalPtr crystal,
-	                                  bool plot = false,
-	std::vector<AtomPtr> selected = std::vector<AtomPtr>());
+	double scoreWithMap(ScoreType scoreType, CrystalPtr crystal, 
+	                    bool plot = false);
+
+	
+	static double scoreWithMapGeneral(MapScoreWorkspace *workspace,
+	                                  bool plot = false);
+
 	Plucker *makePluckableWaters();
 
 	double scoreWithMapQuick(ScoreType scoreType, CrystalPtr crystal,
@@ -156,9 +159,9 @@ protected:
 	virtual void linkReference(ParserPtr object, std::string category);
 private:
 	static FFTPtr prepareMapSegment(CrystalPtr crystal,
-	                         std::vector<AtomPtr> selected,
-	mat3x3 *basis, vec3 *ave);
-	
+	                                std::vector<AtomPtr> selected,
+	                                mat3x3 *basis, vec3 *ave);
+
 	double addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected, 
 	                       mat3x3 basis, vec3 ave);
 

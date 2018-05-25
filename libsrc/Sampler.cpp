@@ -280,6 +280,26 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 	return returnBond;
 }
 
+double Sampler::preScanParameter(BondPtr bond, Getter getter, Setter setter,
+                               double stepSize)
+{
+	return 0;
+	SamplerPtr test = SamplerPtr(new Sampler());
+	test->setupGrid();
+	test->setCrystal(this->_crystal);
+	test->reportInDegrees();
+	test->setJobName("scan");
+	test->addAtomsForBond(bond, 0);
+	test->setMock();
+	test->setScoreType(_scoreType);
+	test->_strategy->addParameter(&*bond, getter, setter, deg2rad(120.),
+	                              deg2rad(0.01));
+	RefinementGridSearchPtr grid = ToGridPtr(test->_strategy);
+	grid->setWriteCSV();
+	test->sample();
+	exit(0);
+}
+
 void Sampler::setupGrid()
 {
 	_strategy = RefinementStrategyPtr(new RefinementGridSearch());
@@ -318,11 +338,12 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 
 	double mult = bond->getTorsionStepMult();
 	range *= mult;
+	
+	preScanParameter(bond, Bond::getTorsion, Bond::setTorsion, interval / 5);
 
 	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
 	                        range, interval,
 	"t" + bond->shortDesc());
-
 
 	_bonds.push_back(bond);
 }
@@ -497,6 +518,18 @@ void Sampler::setupCloseAtoms()
 	}
 }
 
+void Sampler::setupScoreWithMap()
+{
+	_workspace.scoreType = _scoreType;
+	_workspace.crystal = _crystal;
+	_workspace.selectAtoms = _sampled;
+	_workspace.segment = FFTPtr();
+	_workspace.ave = empty_vec3();
+	_workspace.basis = make_mat3x3();
+		
+	AtomGroup::scoreWithMapGeneral(&_workspace);
+}
+
 bool Sampler::sample(bool clear)
 {
 	if (_mock)
@@ -529,9 +562,8 @@ bool Sampler::sample(bool clear)
 		int cycles = 16 + paramCount;
 
 		_strategy->setCycles(cycles);
-
 		setupCloseAtoms();
-		AtomGroup::scoreWithMapGeneral(_scoreType, _crystal, true, _sampled);
+		setupScoreWithMap();
 	}
 
 	if (sampleSize() && _strategy->parameterCount())
@@ -553,6 +585,7 @@ bool Sampler::sample(bool clear)
 	_bonds.clear();
 	_sampled.clear();
 	_unsampled.clear();
+	_crystal->clearCloseCache();
 
 	return changed;
 }
@@ -580,7 +613,7 @@ double Sampler::getScore()
 				break;
 				
 				case ScoreTypeModelRMSDZero:
-				oneScore = _sampled[i]->fullPositionDisplacement();
+				oneScore = _sampled[i]->getBFactor();
 				break;
 				
 				case ScoreTypeRMSDZero:
@@ -598,7 +631,7 @@ double Sampler::getScore()
 		return score / count;
 	}
 
-	return AtomGroup::scoreWithMapGeneral(_scoreType, _crystal, false, _sampled);
+	AtomGroup::scoreWithMapGeneral(&_workspace);
 }
 
 

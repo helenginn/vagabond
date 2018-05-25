@@ -75,6 +75,7 @@ public:
 	}
 
 	int parseParameter(std::string arg, std::string prefix, double *ptr);
+	int parseParameter(std::string arg, std::string prefix, std::string *ptr);
 	
 	static double getKick()
 	{
@@ -89,6 +90,11 @@ public:
 	static double minRes()
 	{
 		return _minRes;
+	}
+
+	static double maxRes()
+	{
+		return _maxRes;
 	}
 
 	static int enableTests()
@@ -153,6 +159,7 @@ public:
 	void openModel(std::string pdbName);
 	void openMTZ(std::string mtzName);
 	void recalculateFFT(bool saveState = true);
+	void openInCoot();
 	void fitWholeMolecule(bool translation, bool rotation);
 	void findDisulphides();
 
@@ -177,11 +184,14 @@ private:
 	std::vector<DatasetPtr> datasets;
 	std::vector<DiffractionPtr> diffractions;
 
-	int _numCycles;
+	bool _parsed;
 	int _globalCount;
 	bool _tie;
 	bool _manual;
 	std::string _scriptName;
+	
+	std::string _modelFile;
+	std::string _mtzFile;
 
 	static bool _powder;
 	static std::string _solventFile;
@@ -195,6 +205,7 @@ private:
 	std::string _diffMatrix;
 	std::string _outputDir;
 	static double _minRes;
+	static double _maxRes;
 };
 
 #endif /* defined(__vagabond__Options__) */

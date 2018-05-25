@@ -106,7 +106,7 @@ public:
 	/* Returns a FFT for the model dist, for reuse */
 	void addToMap(FFTPtr fft, mat3x3 unit_cell,
 	              vec3 offset = make_vec3(0, 0, 0), bool mask = false,
-	bool sameScale = false);
+	              bool sameScale = false, bool noWrap = false);
 
 	void setOriginalOccupancy(double occ)
 	{

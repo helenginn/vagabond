@@ -33,6 +33,7 @@ typedef enum
 	MapScoreTypeCorrel,
 	MapScoreTypeRadialMagnitude,
 	MapScoreTypeCopyToSmaller,
+	MapScoreAddNoWrap,
 } MapScoreType;
 
 inline void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, float *result)
@@ -79,6 +80,7 @@ public:
 	static void cleanupPlans();
 	void create(long);
 	void create(long, long, long);
+	void copyFrom(FFTPtr other);
 
 	void setupMask();
 
@@ -159,8 +161,17 @@ public:
 	void shiftToCenter(void);
 	void shiftToCentre();
 
-	double getReal(long index);
-	double getReal(long x, long y, long z);
+	double getReal(long index)
+	{
+		return data[index][0];
+	}
+
+	double getReal(long x, long y, long z)
+	{
+		long index = element(x, y, z);
+
+		return data[index][0];
+	}
 
 	double getImaginary(long x, long y, long z);
 
@@ -278,6 +289,10 @@ private:
 
 	bool _writeToMaskZero;
 	static std::deque<FourierDimension> _dimensions;
+
+	bool _setupBlurring;
+	void setupBlurring();
+	std::vector<float> _blurAmounts;
 };
 
 #endif /* fftw3d_h */

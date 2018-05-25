@@ -19,7 +19,8 @@
 #include <map>
 
 /* More of an abstraction, but will take a series of (bond) parameters,
-* take a target function, and supply them to a refinement strategy. */
+* take a target function, and supply them to a refinement strategy.
+* Make sure the crystal target is set. */
 
 /** Flags to set refinement strategies for a protein chain. */
 typedef enum
@@ -174,10 +175,13 @@ protected:
 	int _refinedMagicAxisCount;
 	virtual bool shouldRefineMagicAxis(BondPtr) { return false; }
 	virtual double getScore();
+	void setupCloseAtoms();
+	void setupScoreWithMap();
 private:
+	double preScanParameter(BondPtr bond, Getter getter, Setter setter,
+	                      double stepSize);
 	void addAtomsForBond(BondPtr bond, int k);
 	void addParamsForBond(BondPtr bond);
-	void setupCloseAtoms();
 	CrystalPtr _crystal;
 
 	std::vector<AtomPtr> _sampled;
@@ -192,6 +196,7 @@ private:
 	ScoreType _scoreType;
 
 	RefinementStrategyPtr _strategy;
+	MapScoreWorkspace _workspace;
 };
 
 

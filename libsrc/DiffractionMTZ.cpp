@@ -74,7 +74,7 @@ void DiffractionMtz::load()
 	errNames.push_back("SIGFP");
 
 	getCol(errNames, mtz, &col_sigf);
-	if (!col_sigf)
+	if (!col_sigf && false)
 	{
 		warn_user("I could not find your sigma/error column in\n"
 		          + _filename + " - please label as SIGF or SIGFP.\n"
@@ -154,6 +154,8 @@ void DiffractionMtz::load()
 		}
 
 		if (flag != flag) flag = 1;
+		
+		if (flag == 0 && amplitude != amplitude) flag = 1;
 
 		int mask = flag;
 

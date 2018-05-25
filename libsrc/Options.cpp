@@ -19,12 +19,13 @@
 #include "SSRigger.h"
 
 OptionsPtr Options::options;
-double Options::_kick = 0.01;
+double Options::_kick = 0.005;
 int Options::_solvent = 1;
 double Options::_dampen = 0.08;
 double Options::_bStart = 1.5;
 double Options::_bMult = 1;
-double Options::_minRes = 0.0;
+double Options::_minRes = -1.0;
+double Options::_maxRes = -1.0;
 int Options::_enableTests = 3;
 bool Options::_powder = false;
 double Options::_sampling = -1;
@@ -32,6 +33,7 @@ std::string Options::_solventFile;
 
 Options::Options(int argc, const char **argv)
 {
+	_parsed = false;
 	_manual = false;
 	_notify = NULL;
 	_globalCount = 0;
@@ -47,7 +49,6 @@ Options::Options(int argc, const char **argv)
 	std::cout << "              -_______-     -_______-\n\n";
 	std::cout << "             Vagabond at your service.\n" << std::endl;
 
-	_numCycles = 0;
 	_tie = true;
 
 	/* Note that argv includes our program name */
@@ -72,17 +73,72 @@ Options::Options(int argc, const char **argv)
 
 void Options::run()
 {
-	parse();
-
-	if (_diffMatrix.length())
+	if (!_parsed)
 	{
-		std::cout << "Yeah" << std::endl;
-		diffMatrix();
+		parse();
+	}
+	
+	if (_minRes < 0) _minRes = 0;
+
+	if (_mtzFile.length())
+	{
+		DiffractionMtzPtr mtz;
+		mtz = DiffractionMtzPtr(new DiffractionMtz());
+		DiffractionPtr diffraction;
+		diffraction = boost::static_pointer_cast<Diffraction>(mtz);
+		diffraction->setFilename(_mtzFile);
+		diffraction->load();
+
+		objects.push_back(diffraction);
+		datasets.push_back(diffraction);
+		diffractions.push_back(diffraction);
+	}
+	
+	int pdbFile = -1;
+
+	if (_modelFile.length())
+	{
+		if (_modelFile.substr(_modelFile.length() - 3, 3) == "pdb")
+		{
+			std::cout << "Guessing PDB file" << std::endl;
+			pdbFile = 1;
+		}	
+		else
+		{
+			std::cout << "Guessing vbond file" << std::endl;
+			pdbFile = 0;
+		}
 	}
 
-	if (arguments.size() <= 1)
+	if (pdbFile == 1)
 	{
-		return;
+		PDBReader pdb = PDBReader();
+		pdb.setFilename(_modelFile);
+		CrystalPtr crystal = pdb.getCrystal();
+
+		if (!crystal)
+		{
+			std::cout << "Read of " << _modelFile << " failed." << std::endl;
+		}
+		else
+		{
+			objects.push_back(crystal);
+			crystals.push_back(crystal);
+		}
+	}
+	else
+	{
+		VBondReader vReader = VBondReader();
+		vReader.setFilename(_modelFile);
+		CrystalPtr crystal = vReader.getCrystal();
+
+		objects.push_back(crystal);
+		crystals.push_back(crystal);
+	}
+	
+	if (_outputDir.length())
+	{
+		FileReader::setOutputDirectory(_outputDir);
 	}
 
 	if (!_manual && !crystals.size())
@@ -175,13 +231,14 @@ void Options::displayHelp()
 	std::cout << "Takes an atomistic PDB file and refines it against" << std::endl;
 	std::cout << "a reflection list in torsion space.\n\n" << std::endl;
 	std::cout << "--help\t\t\t\tDisplays command list.\n" << std::endl;
-	std::cout << "--with-pdb=<filename>\t\tName of the input PDB file to refine.\n" << std::endl;
-	std::cout << "--with-mtz=<filename>\t\tName of the MTZ file to refine.\n" << std::endl;
+	std::cout << "--with-model=<filename>\t\tName of the input PDB or Vagabond model file to refine.\n" << std::endl;
+	std::cout << "--with-mtz=<filename>\t\tName of the MTZ file to refine against.\n" << std::endl;
 	std::cout << "--output-dir=<directory>\tOptional name of a directory to dump processing.\n" << std::endl;
-	std::cout << "--anchor-res=<num>\t\tOptional override default anchor residue for all\n\t\t\t\tchains (under development)\n" << std::endl;
 	std::cout << "--kick=<num>\t\t\tOptional override for kick fraction for initial bond\n" << std::endl;
 	std::cout << "--dampen=<num>\t\t\tOptional override for dampen fraction for all bonds\n" << std::endl;
-	std::cout << "--enable-tests=<num>\t\tEnable whatever it is Helen is currently working on\n" << std::endl;
+	std::cout << "--bfactor=<num>\t\t\tOptional override for the assigned B factor for anchor residues\n" << std::endl;
+	std::cout << "--min-res=<value>\t\tOptional override for the minimum resolution in Ångströms.\n" << std::endl;
+	std::cout << "--max-res=<value>\t\tOptional override for the maximum resolution in Ångströms.\n" << std::endl;
 	std::cout << std::endl;
 	std::cout << "Baseline command to start running vagabond:\n" << std::endl;
 	std::cout << "\tvagabond --with-pdb=start.pdb --with-mtz=start.mtz\n" << std::endl;
@@ -216,6 +273,22 @@ int Options::parseParameter(std::string arg, std::string prefix, double *ptr)
 	return false;
 }
 
+int Options::parseParameter(std::string arg, std::string prefix,
+                            std::string *ptr)
+{
+	if (!arg.compare(0, prefix.size(), prefix))
+	{
+		std::string val_string = arg.substr(prefix.size());
+		*ptr = val_string;
+		std::cout << "Parsing " << prefix << ", setting to " << *ptr
+		<< std::endl;
+
+		return true;
+	}
+	
+	return false;
+}
+
 void Options::parse()
 {
 	for (size_t i = 0; i < arguments.size(); i++)
@@ -230,78 +303,11 @@ void Options::parse()
 			displayHelp();
 		}
 
-		prefix = "--with-pdb=";
+		understood |= parseParameter(arg, "--with-vscript=", &_scriptName);
+		understood |= parseParameter(arg, "--solvent-file=", &_solventFile);
 
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			std::string pdb_name = arg.substr(prefix.size());
-
-			PDBReader pdb = PDBReader();
-			pdb.setFilename(pdb_name);
-			CrystalPtr crystal = pdb.getCrystal();
-
-			objects.push_back(crystal);
-			crystals.push_back(crystal);
-			understood = true;
-		}
-
-		prefix = "--with-vscript=";
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			_scriptName = arg.substr(prefix.size());
-			understood = true;
-		}
-
-		prefix = "--solvent-file=";
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			_solventFile = arg.substr(prefix.size());
-			understood = true;
-		}
-
-		prefix = "--with-vbond=";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			std::string vbond_name = arg.substr(prefix.size());
-
-			VBondReader vReader = VBondReader();
-			vReader.setFilename(vbond_name);
-			CrystalPtr crystal = vReader.getCrystal();
-			//            PolymerPtr polymer = ToPolymerPtr(crystal->molecule(0));
-			//            polymer->splitConformers();
-
-			understood = true;
-
-			if (!crystal)
-			{
-				std::cout << "Read failed." << std::endl;
-			}
-			else
-			{
-				objects.push_back(crystal);
-				crystals.push_back(crystal);
-			}
-		}
-
-		prefix = "--with-mtz=";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			std::string mtz_name = arg.substr(prefix.size());
-
-			DiffractionMtzPtr mtz;
-			mtz = DiffractionMtzPtr(new DiffractionMtz());
-			DiffractionPtr diffraction;
-			diffraction = boost::static_pointer_cast<Diffraction>(mtz);
-			diffraction->setFilename(mtz_name);
-			diffraction->load();
-
-			objects.push_back(diffraction);
-			datasets.push_back(diffraction);
-			diffractions.push_back(diffraction);
-			understood = true;
-		}
+		understood |= parseParameter(arg, "--with-model=", &_modelFile);
+		understood |= parseParameter(arg, "--with-mtz=", &_mtzFile);
 
 		prefix = "--solvent=";
 
@@ -316,90 +322,9 @@ void Options::parse()
 		understood |= parseParameter(arg, "--bfactor=", &_bStart);
 		understood |= parseParameter(arg, "--kick=", &_kick);
 		understood |= parseParameter(arg, "--dampen=", &_dampen);
+		understood |= parseParameter(arg, "--max-res=", &_maxRes);
+		understood |= parseParameter(arg, "--output-dir=", &_outputDir);
 
-		prefix = "--anchor-res=";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			if (crystals.size() == 0)
-			{
-				shout_at_user("Anchor residue specified, but a coordinate\n"\
-				              "file has not been specified yet. Please use\n"\
-				"--with-pdb= to specify some atomic coordinates.");
-			}
-
-			std::string anchor_string = arg.substr(prefix.size());
-
-			size_t comma = anchor_string.find(",");
-			CrystalPtr crystal = crystals.at(crystals.size() - 1);
-
-			while (true)
-			{
-				std::string number = anchor_string;
-
-				if (comma < anchor_string.size())
-				{
-					number = anchor_string.substr(0, comma);
-					anchor_string = anchor_string.substr(comma + 1);
-					comma = anchor_string.find(",");
-				}
-
-				int anchor = atoi(number.c_str());
-				crystal->addAnchorResidue(anchor);
-
-				if (comma >= anchor_string.size())
-				{
-					int anchor = atoi(anchor_string.c_str());
-					crystal->addAnchorResidue(anchor);
-					break;
-				}
-			}
-
-			understood = true;
-		}
-
-		prefix = "--max-res=";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			std::string max_res = arg.substr(prefix.size());
-			double maxRes = atof(max_res.c_str());
-
-			if (crystals.size() == 0)
-			{
-				shout_at_user("Max resolution specified, but a coordinate\n"\
-				              "file has not been specified yet. Please use\n"\
-				"--with-pdb= to specify some atomic coordinates.");
-			}
-			else
-			{
-				CrystalPtr crystal = crystals.at(crystals.size() - 1);
-				crystal->setMaxResolution(maxRes);
-				std::cout << "Setting " << crystal->getFilename()
-				<< " to resolution " << maxRes << " Å." << std::endl;
-				understood = true;
-			}
-		}
-
-		prefix = "--num-cycles=";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			std::string result = arg.substr(prefix.size());
-			_numCycles = atoi(result.c_str());
-			understood = true;
-		}
-
-		prefix = "--output-dir=";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			_outputDir = arg.substr(prefix.size());
-			std::cout << "Setting output directory to ";
-			std::cout << _outputDir << "." << std::endl << std::endl;
-			FileReader::setOutputDirectory(_outputDir);
-			understood = true;
-		}
 		prefix = "--enable-tests=";
 
 		if (!arg.compare(0, prefix.size(), prefix))
@@ -447,6 +372,8 @@ void Options::parse()
 			}
 		}
 	}
+	
+	_parsed = true;
 }
 
 void Options::outputCrystalInfo()
@@ -743,6 +670,8 @@ std::string Options::rTypeString(RefinementType type)
 		return "Torsions against PDB positions";
 		case RefinementFine:
 		return "Torsions against electron density";
+		case RefinementSidechain:
+		return "Sidechains only against electron density";
 		default:
 		return "Unknown";
 	}
@@ -797,6 +726,12 @@ void Options::recalculateFFT(bool saveState)
 
 	std::cout << "Total states: " << getActiveCrystal()->stateCount() <<
 	std::endl;
+}
+
+void Options::openInCoot()
+{
+	CrystalPtr crystal = getActiveCrystal();
+	crystal->openInCoot();
 }
 
 void Options::previousState()

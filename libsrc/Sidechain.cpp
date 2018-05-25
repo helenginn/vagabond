@@ -27,6 +27,11 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
 	if (!canRefine()) return;
 	
+	if (rType == RefinementRMSDZero)
+	{
+		return;
+	}
+	
 	if (rType == RefinementSidechain)
 	{
 		std::cout << getMonomer()->getResCode() << std::flush;

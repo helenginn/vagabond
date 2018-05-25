@@ -531,6 +531,86 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 	perCA->plotPNG(plotMap);
 }
 
+void Polymer::weightStrands()
+{
+	CSVPtr strandsCSV = CSVPtr(new CSV(1, "resnum"));
+	CSVPtr sumstrandsCSV = CSVPtr(new CSV(2, "resnum", "sum"));
+	
+	std::vector<BondSample> positions = getAnchorModel()->getFinalPositions();
+
+	for (int i = 0; i < positions.size(); i++)
+	{
+		strandsCSV->addHeader("strand_" + i_to_str(i));		
+	}
+
+	for (int j = 0; j < monomerCount(); j++)
+	{
+		if (!getMonomer(j))
+		{
+			continue;
+		}
+
+		AtomPtr ca = getMonomer(j)->findAtom("CA");
+		std::vector<BondSample> positions = ca->getModel()->getFinalPositions();
+		double bfac = ca->getBFactor();
+		vec3 average = ca->getAbsolutePosition();
+		std::vector<double> values;
+		values.push_back(j);
+
+		for (int i = 0; i < positions.size(); i++)
+		{
+			vec3 one = positions[i].start;
+			vec3 diff = vec3_subtract_vec3(one, average);
+			double length = vec3_length(diff);
+			values.push_back(length);
+		}
+		
+		strandsCSV->addEntry(values);
+	}
+	
+	double total = 0;
+	double mult = 1.5;
+
+	for (int i = 1; i < strandsCSV->headerCount(); i++)
+	{
+		double sum = 0;
+
+		for (int j = 0; j < strandsCSV->entryCount(); j++)
+		{
+			double value = strandsCSV->valueForEntry(i, j);
+			value *= value;
+			sum += value;
+		}
+		
+		sum /= strandsCSV->entryCount();
+		sum = sqrt(sum);
+		
+		sumstrandsCSV->addEntry(2, (double)i, sum);
+		
+		total += exp(-mult * sum * sum);
+	}
+	
+	strandsCSV->writeToFile("strands.csv");
+	sumstrandsCSV->writeToFile("sumstrands.csv");
+	
+	std::vector<double> occupancies;
+
+	for (int i = 0; i < sumstrandsCSV->entryCount(); i++)
+	{
+		double sum = sumstrandsCSV->valueForEntry("sum", i);
+		sum = exp(-mult * sum * sum);
+		double occupancy = sum / total;
+		
+		printf("Occupancy %.5f\n", occupancy);
+
+		occupancies.push_back(occupancy);
+	}
+	
+	AbsolutePtr abs = ToAbsolutePtr(getAnchorModel());
+	abs->setOccupancies(occupancies);
+	propagateChange();
+}
+
 void Polymer::graph(std::string graphName)
 {
 	CSVPtr csv = CSVPtr(new CSV(5, "resnum", "newB", "oldB",
@@ -538,6 +618,7 @@ void Polymer::graph(std::string graphName)
 	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB"));
+	
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -597,7 +678,7 @@ void Polymer::graph(std::string graphName)
 	}
 
 	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = graphName;
+	plotMap["filename"] = "mainchain_" + graphName;
 	plotMap["height"] = "700";
 	plotMap["width"] = "1200";
 	plotMap["xHeader0"] = "resnum";
@@ -617,8 +698,9 @@ void Polymer::graph(std::string graphName)
 	plotMap["style0"] = "line";
 	plotMap["style1"] = "line";
 
+	csv->setSubDirectory("bfactor_plots");
 	csv->plotPNG(plotMap);
-	csv->writeToFile(graphName + ".csv");
+	csv->writeToFile("mainchain_" + graphName + ".csv");
 
 	{
 		std::map<std::string, std::string> plotMap;
@@ -641,13 +723,15 @@ void Polymer::graph(std::string graphName)
 		plotMap["style0"] = "line";
 		plotMap["style1"] = "line";
 
+		csv->setSubDirectory("positional_error_plots");
+		sidechainCsv->setSubDirectory("bfactor_plots");
 		sidechainCsv->plotPNG(plotMap);
 		sidechainCsv->writeToFile("sidechain_" + graphName + ".csv");
 	}
 
 	{
 		std::map<std::string, std::string> plotMap;
-		plotMap["filename"] = "displacement_" + graphName;
+		plotMap["filename"] = "mainchain_" + graphName;
 		plotMap["height"] = "700";
 		plotMap["width"] = "1200";
 		plotMap["xHeader0"] = "resnum";
@@ -666,8 +750,9 @@ void Polymer::graph(std::string graphName)
 		plotMap["style0"] = "line";
 		plotMap["style1"] = "line";
 
+		csv->setSubDirectory("positional_error_plots");
 		csv->plotPNG(plotMap);
-		csv->writeToFile("displacement_" + graphName + ".csv");
+		csv->writeToFile("mainchain_" + graphName + ".csv");
 	}
 }
 
@@ -1031,7 +1116,7 @@ void Polymer::superimpose()
 			csv->addEntry(3, pos.x, pos.y, pos.z);
 		}
 
-		csv->writeToFile("ca_pos.csv");
+//		csv->writeToFile("ca_pos.csv");
 	}
 
 	if (model->isAbsolute())
@@ -1039,7 +1124,7 @@ void Polymer::superimpose()
 		std::vector<vec3> sphereAngles = ToAbsolutePtr(model)->getSphereAngles();
 		CSVPtr csv = CSVPtr(new CSV(10, "psi", "phi", "theta", "corr_x",
 		                            "corr_y", "corr_z", "rot_angle",
-		"rot_axis_x", "rot_axis_y", "rot_axis_z"));
+		                            "rot_axis_x", "rot_axis_y", "rot_axis_z"));
 		CSVPtr one = CSVPtr(new CSV(3, "x", "y", "z"));
 
 		for (size_t i = 0; i < sphereAngles.size(); i++)
@@ -1056,7 +1141,7 @@ void Polymer::superimpose()
 			axis.x, axis.y, axis.z); 
 		}
 
-		csv->writeToFile("kabsch.csv");
+//		csv->writeToFile("kabsch.csv");
 	}
 
 	applyTranslationTensor();
@@ -1377,7 +1462,7 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	{
 		NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
 		nelderMead->addParameter(this, getOverallScale, setOverallScale,
-		                         1, 0.01, "overall_scale");
+		                         1.5, 0.01, "overall_scale");
 		nelderMead->setCycles(25);
 		nelderMead->setVerbose(true);
 		FlexGlobal target;

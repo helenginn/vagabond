@@ -41,6 +41,7 @@ inline void fftwf_add(fftwf_complex comp1, fftwf_complex comp2, float *result)
 
 FFT::FFT()
 {
+	_setupBlurring = false;
 	nx = 0;
 	ny = 0;
 	nz = 0;
@@ -85,6 +86,7 @@ void FFT::create(long n)
 
 FFT::FFT(FFT &other)
 {
+	_setupBlurring = false;
 	nx = other.nx;
 	ny = other.ny;
 	nz = other.nz;
@@ -111,6 +113,11 @@ FFT::FFT(FFT &other)
 	_basis = other._basis;
 	_inverse = other._inverse;
 	_writeToMaskZero = other._writeToMaskZero;
+}
+
+void FFT::copyFrom(FFTPtr other)
+{
+	memcpy(data, other->data, nn * sizeof(FFTW_DATA_TYPE));
 }
 
 
@@ -409,23 +416,11 @@ double FFT::getIntensity(long x, long y, long z)
 	return (data[index][0] * data[index][0] + data[index][1] * data[index][1]);
 }
 
-double FFT::getReal(long x, long y, long z)
-{
-	long index = element(x, y, z);
-
-	return data[index][0];
-}
-
 double FFT::getImaginary(long x, long y, long z)
 {
 	long index = element(x, y, z);
 
 	return data[index][1];
-}
-
-double FFT::getReal(long index)
-{
-	return data[index][0];
 }
 
 void FFT::setReal(double xfrac, double yfrac, double zfrac, double real)
@@ -443,28 +438,52 @@ void FFT::addToReal(double xfrac, double yfrac, double zfrac, double real)
 	data[index][0] += real;
 }
 
+void FFT::setupBlurring()
+{
+	_blurAmounts.clear();
+	
+	for (int i = -1; i < 2; i++)
+	{
+		for (int j = -1; j < 2; j++)
+		{
+			for (int k = -1; k < 2; k++)
+			{
+				int moves = abs(i) + abs(j) + abs(k);
+				float factor = normal_distribution(moves, 1.);
+				_blurAmounts.push_back(factor);
+			}
+		}
+	}		
+	
+	_setupBlurring = true;
+}
+
 void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real)
 {
+	if (!_setupBlurring)
+	{
+		setupBlurring();
+	}
+	
 	collapseFrac(&xfrac, &yfrac, &zfrac);
 
 	double x = xfrac * nx;
 	double y = yfrac * ny;
 	double z = zfrac * nz;
 
-	double shifts[] = {-1.0, 0, 1.0};
-	
-	for (int i = 0; i < 3; i++)
+	int count = 0;
+	for (int k = -1; k < 2; k++)
 	{
-		double sx = x + shifts[i];
-		for (int j = 0; j < 3; j++)
+		double sz = z + (double)k;
+		for (int j = -1; j < 2; j++)
 		{
-			double sy = y + shifts[j];
-			for (int k = 0; k < 3; k++)
+			double sy = y + (double)j;
+			for (int i = -1; i < 2; i++)
 			{
-				double sz = z + shifts[k];
-				long lx = lrint(sx);
-				long ly = lrint(sy);
-				long lz = lrint(sz);
+				double sx = x + (double)i;
+				long lx = (int)floor(sx);
+				long ly = (int)floor(sy);
+				long lz = (int)floor(sz);
 				
 				long index = element(lx, ly, lz);
 
@@ -473,15 +492,46 @@ void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real
 					continue;
 				}
 
-				int moves = fabs(shifts[i]) + fabs(shifts[j]) 
-				+ fabs(shifts[k]) + 0.5;
+				float factor = _blurAmounts[count];
+				count++;
 				
-				float factor = 1;
+				/*
+				lx = (int)lrint(sx);
+				ly = (int)lrint(sy);
+				lz = (int)lrint(sz);
 				
-				factor = normal_distribution(moves, 1.);
+				index = element(lx, ly, lz);
+				data[index][0] += factor * real;
+				*/
 
+				double xProps[2];
+				double yProps[2];
+				double zProps[2];
 				
-				data[index][0] += real * factor;
+				xProps[1] = fmod(sx + 1, 1.);
+				yProps[1] = fmod(sy + 1, 1.);
+				zProps[1] = fmod(sz + 1, 1.);
+				
+				xProps[0] = 1 - xProps[1];
+				yProps[0] = 1 - yProps[1];
+				zProps[0] = 1 - zProps[1];
+				
+				for (int p = 0; p < 2; p++)
+				{
+					for (int q = 0; q < 2; q++)
+					{
+						for (int r = 0; r < 2; r++)
+						{
+							int sx1 = lx + p;
+							int sy1 = ly + q;
+							int sz1 = lz + r;
+
+							long index = element(sx1, sy1, sz1);
+							double prop = xProps[p] * yProps[q] * zProps[r];
+							data[index][0] += prop * real * factor;
+						}	
+					}
+				}
 			}
 		}
 	}
@@ -693,7 +743,10 @@ bool sameScale)
 	double volume = 1;
 
 	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
-	FFT::collapseFrac(&add.x, &add.y, &add.z);
+	if (mapScoreType != MapScoreAddNoWrap)
+	{
+		FFT::collapseFrac(&add.x, &add.y, &add.z);
+	}
 
 	/* Multiply by the relative dimensions of the crystal */
 	double multX = add.x * fftCrystal->nx;
@@ -799,7 +852,7 @@ bool sameScale)
 				
 				if (!sameScale)
 				{
-					atomPos = mat3x3_mult_vec(crystal2AtomVox, crystalPos);
+					mat3x3_mult_vec(crystal2AtomVox, &atomPos);
 
 					if (atomPos.x < 0 || atomPos.y < 0 || atomPos.z < 0)
 					{
@@ -820,26 +873,43 @@ bool sameScale)
 
 				/* We add the tiny offset which resulted from the atom
 				* falling between two voxels, in atomic voxels */
-				vec3 offsetPos = vec3_add_vec3(atomPos, atomOffset);
+				vec3_add_to_vec3(&atomPos, atomOffset);
 
 				/* If this value is within floating point error, stop now. */
-				if (fftAtom->getReal(offsetPos.x, offsetPos.y, offsetPos.z) <= 10e-6)
+				if (fftAtom->getReal(atomPos.x, atomPos.y, atomPos.z) <= 10e-6)
 				{
 					continue;
 				}
 
-				/* Find the interpolated value which offsetPos falls on */
+				/* Find the interpolated value which atomPos falls on */
 				double atomReal = 0;
 
-				if (offsetPos.x < 0) offsetPos.x += fftAtom->nx;
-				if (offsetPos.y < 0) offsetPos.y += fftAtom->ny;
-				if (offsetPos.z < 0) offsetPos.z += fftAtom->nz;
+				if (atomPos.x < 0) atomPos.x += fftAtom->nx;
+				if (atomPos.y < 0) atomPos.y += fftAtom->ny;
+				if (atomPos.z < 0) atomPos.z += fftAtom->nz;
 
-				atomReal = fftAtom->interpolate(offsetPos, 0);
+				atomReal = fftAtom->interpolate(atomPos, 0);
 
 				/* We add the atom offset so we don't end up with thousands
 				* of atoms at the very centre of our map */
 				vec3 finalCrystalVox = vec3_add_vec3(crystalPos, cornerCrystal);
+
+				if (mapScoreType == MapScoreAddNoWrap)
+				{
+					if (finalCrystalVox.x < -fftCrystal->nx / 2 || 
+					    finalCrystalVox.y < -fftCrystal->ny / 2 ||
+					    finalCrystalVox.z < -fftCrystal->nz / 2)
+					{
+						continue;
+					}					
+					
+					if (finalCrystalVox.x > fftCrystal->nx / 2 ||
+					    finalCrystalVox.y > fftCrystal->ny / 2 ||
+					    finalCrystalVox.z > fftCrystal->nz / 2)
+					{
+						continue;
+					}
+				}
 
 				if (finalCrystalVox.x < 0) finalCrystalVox.x += fftCrystal->nx;
 				if (finalCrystalVox.y < 0) finalCrystalVox.y += fftCrystal->ny;
@@ -849,7 +919,7 @@ bool sameScale)
 				/* Get the index of this final crystal voxel. */
 				long crystalIndex = fftCrystal->element(finalCrystalVox.x + 0.5,
 				                                        finalCrystalVox.y + 0.5,
-				finalCrystalVox.z + 0.5);
+				                                        finalCrystalVox.z + 0.5);
 				
 				count++;
 
@@ -870,8 +940,8 @@ bool sameScale)
 						val.fo = realCryst;
 						val.fc = atomReal;
 #ifdef COORDVAL_FULL
-						long atomEle = fftAtom->element(offsetPos);
-						val.pos = offsetPos;
+						long atomEle = fftAtom->element(atomPos);
+						val.pos = atomPos;
 						val.mask = 0;
 						if (fftAtom->mask)
 						{
@@ -885,13 +955,14 @@ bool sameScale)
 				else if (mapScoreType == MapScoreTypeCopyToSmaller)
 				{
 					double realCryst = fftCrystal->interpolate(finalCrystalVox);
-					int ele = fftAtom->element(offsetPos.x, offsetPos.y,
-					                           offsetPos.z);
+					int ele = fftAtom->element(atomPos.x, atomPos.y,
+					                           atomPos.z);
 
 
 					fftAtom->setElement(ele, realCryst, 0);
 				}
-				else if (mapScoreType == MapScoreTypeNone)
+				else if (mapScoreType == MapScoreTypeNone ||
+				         mapScoreType == MapScoreAddNoWrap)
 				{
 					/* Add the density to the real value of the crystal voxel.*/
 
@@ -1204,7 +1275,7 @@ mat3x3 real2Frac, FFTPtr data)
 	colout[0] = MtzAddColumn(mtzout, set, "H", "H");
 	colout[1] = MtzAddColumn(mtzout, set, "K", "H");
 	colout[2] = MtzAddColumn(mtzout, set, "L", "H");
-	colout[3] = MtzAddColumn(mtzout, set, "FREE", "I");
+	colout[3] = MtzAddColumn(mtzout, set, "FREE", "R");
 	colout[4] = MtzAddColumn(mtzout, set, "FP", "F");
 	colout[5] = MtzAddColumn(mtzout, set, "FC", "F");
 	colout[6] = MtzAddColumn(mtzout, set, "FWT", "F");
@@ -1242,10 +1313,11 @@ mat3x3 real2Frac, FFTPtr data)
 
 				int free = 1;
 				double foInt = intensity;
+
 				if (data)
 				{
 					foInt = data->getIntensity(i, j, k);
-					free = getMask(i, j, k);
+					free = data->getMask(i, j, k);
 				}
 				else
 				{
@@ -1253,6 +1325,14 @@ mat3x3 real2Frac, FFTPtr data)
 				}
 
 				double foAmp = sqrt(foInt);
+				double fofofc = 2 * foAmp - calcAmp;
+				double fofc = foAmp - calcAmp;
+				
+				if (foAmp != foAmp)
+				{
+//					fofofc = calcAmp;
+					fofc = 0;
+				}
 
 				// i.e. 0 when mask is free flag.
 
@@ -1264,9 +1344,9 @@ mat3x3 real2Frac, FFTPtr data)
 				fdata[3] = free;
 				fdata[4] = foAmp;
 				fdata[5] = calcAmp;
-				fdata[6] = 2 * foAmp - calcAmp;
+				fdata[6] = fofofc;
 				fdata[7] = phase;
-				fdata[8] = foAmp - calcAmp;
+				fdata[8] = fofc;
 				fdata[9] = phase;
 
 				num++;
