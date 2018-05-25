@@ -1313,10 +1313,11 @@ mat3x3 real2Frac, FFTPtr data)
 
 				int free = 1;
 				double foInt = intensity;
+
 				if (data)
 				{
 					foInt = data->getIntensity(i, j, k);
-					free = getMask(i, j, k);
+					free = data->getMask(i, j, k);
 				}
 				else
 				{
