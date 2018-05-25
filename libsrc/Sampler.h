@@ -71,7 +71,6 @@ public:
 
 	/** Add sampled atoms from a given atom group and conformer name */
 	void addSampledAtoms(AtomGroupPtr group, std::string conformer = "");
-	void addRamachandranAngles(PolymerPtr polymer, int from, int to);
 	
 	/** Add absolute position for an atom controlled by Absolute class */
 	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);

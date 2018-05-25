@@ -304,55 +304,6 @@ void Sampler::addOccupancy(BondPtr bond, double range, double interval)
 	_bonds.push_back(bond);
 }
 
-void Sampler::addRamachandranAngles(PolymerPtr polymer, int from, int to)
-{
-	int step = (from < to) ? 1 : -1;
-
-	for (int i = from - 1; i != to - 1; i += step)
-	{
-		if (!polymer->getMonomer(i))
-		{
-			continue;
-		}
-
-		std::string ramaAtom = "N";
-		std::string peptideAtom = "C";
-
-		if (polymer->getAnchor() >= polymer->getMonomer(i)->getResidueNum())
-		{
-			ramaAtom = "C";
-			peptideAtom = "N";
-		}
-
-		reportInDegrees();
-		BackbonePtr backbone = polymer->getMonomer(i)->getBackbone();
-		AtomPtr ca = backbone->findAtom("CA");
-		AtomPtr rama = backbone->findAtom(ramaAtom);
-		AtomPtr peptide = backbone->findAtom(peptideAtom);
-		std::vector<AtomPtr> atoms;
-
-		BondPtr caBond = ToBondPtr(ca->getModel());
-
-		BondPtr ramaBond = ToBondPtr(rama->getModel());
-		BondPtr peptideBond = ToBondPtr(peptide->getModel());
-
-
-		bool last = (i == to - 1 - step);
-
-		if (!last)
-		{
-			addTorsion(peptideBond, ANGLE_SAMPLING, deg2rad(0.05));
-			addTorsion(ramaBond, ANGLE_SAMPLING, deg2rad(0.05));
-			addTorsion(caBond, ANGLE_SAMPLING, deg2rad(0.05));
-		}
-		else
-		{
-			addTorsion(ramaBond, ANGLE_SAMPLING, deg2rad(0.05));
-			addTorsion(caBond, ANGLE_SAMPLING, deg2rad(0.05));
-		}
-	}
-}
-
 void Sampler::addTorsion(BondPtr bond, double range, double interval)
 {
 	if (!bond || !bond->isBond())
