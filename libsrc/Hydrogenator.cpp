@@ -93,8 +93,6 @@ void Hydrogenator::setNewGeometry(AtomList group, double bondAngle,
 
 void Hydrogenator::addHydrogens(AtomList group, int hNum, ...)
 {
-	if (hNum > 2) return;
-	
 	va_list arguments;
 	va_start(arguments, hNum);
 	std::vector<std::string> hNames;
