@@ -57,6 +57,11 @@ public:
 	{
 		gridJumps = _jumps;
 	}
+	
+	void setWriteCSV(bool write = true)
+	{
+		_writeCSV = write;
+	}
 
 	ResultMap results;
 	void recursiveEvaluation(ParamList referenceList, ParamList workingList, ResultMap *results);
