@@ -159,6 +159,7 @@ public:
 	void openModel(std::string pdbName);
 	void openMTZ(std::string mtzName);
 	void recalculateFFT(bool saveState = true);
+	void openInCoot();
 	void fitWholeMolecule(bool translation, bool rotation);
 	void findDisulphides();
 

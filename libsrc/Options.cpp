@@ -728,6 +728,12 @@ void Options::recalculateFFT(bool saveState)
 	std::endl;
 }
 
+void Options::openInCoot()
+{
+	CrystalPtr crystal = getActiveCrystal();
+	crystal->openInCoot();
+}
+
 void Options::previousState()
 {
 	int state = -1;
