@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <math.h>
 #include <fstream>
+#include <cstdlib>
 #include <time.h>
 #include "Shouter.h"
 #include "Diffraction.h"
@@ -184,6 +185,9 @@ void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 	std::string outputFileOnly = prefix + "_" + _filename + "_vbond.mtz";
 	getFFT()->writeReciprocalToFile(outputFileOnly, _maxResolution, _spaceGroup,
 	                                _unitCell, _real2frac, data->getFFT());
+	std::string outputFile = FileReader::addOutputDirectory(outputFileOnly);
+	
+	_lastMtz = outputFile;
 	
 	if (_bucket)
 	{
@@ -668,15 +672,23 @@ void Crystal::fourierTransform(int dir, double res)
 void Crystal::makePDBs(std::string suffix)
 {
 	std::vector<std::string> prefices; std::vector<PDBType> pdbTypes;
-//	prefices.push_back("e_"); pdbTypes.push_back(PDBTypeEnsemble);
-	prefices.push_back("a_"); pdbTypes.push_back(PDBTypeAverage);
-	prefices.push_back("p_"); pdbTypes.push_back(PDBTypeSamePosition);
-	prefices.push_back("b_"); pdbTypes.push_back(PDBTypeSameBFactor);
+	prefices.push_back("ensemble_"); pdbTypes.push_back(PDBTypeEnsemble);
+	prefices.push_back("average_"); pdbTypes.push_back(PDBTypeAverage);
 
 	for (int i = 0; i < prefices.size(); i++)
 	{
 		std::string path;
 		path = FileReader::addOutputDirectory(prefices[i] + suffix + ".pdb");
+		
+		if (i == 0)
+		{
+			_lastEnsemblePDB = path;
+		}
+		else
+		{
+			_lastAveragePDB = path;
+		}
+		
 		std::ofstream file;
 		file.open(path);
 
@@ -1060,5 +1072,15 @@ void Crystal::postRestoreState()
 	_cycleNum++;
 	concludeRefinement(_cycleNum, data);
 	crystal->saveState();
+}
+
+void Crystal::openInCoot()
+{
+	std::string command = "coot " + _lastMtz + " " + _lastEnsemblePDB
+	+ " " + _lastAveragePDB + " &\n";
+	
+	std::cout << "Terminal command: " << command << std::endl;
+
+	system(command.c_str());
 }
 

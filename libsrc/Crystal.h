@@ -272,6 +272,7 @@ public:
 	void backboneDensityAnalysis();
 	static double vsRefineBackboneToDensity(void *object);
 	double getMaximumDStar(DiffractionPtr data);
+	void openInCoot();
 protected:
 	virtual void postRestoreState();
 	virtual void addObject(ParserPtr object, std::string category);
@@ -301,6 +302,10 @@ private:
 	void makePDBs(std::string suffix);
 	void writeVagabondFile(int cycleNum);
 	void applySymOps(double res = FLT_MAX);
+	
+	std::string _lastEnsemblePDB;
+	std::string _lastAveragePDB;
+	std::string _lastMtz;
 
 	double _rWork;
 	double _rFree;
