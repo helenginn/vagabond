@@ -57,6 +57,12 @@ inline bool vec2_less_vec2(vec2 x, vec2 y)
 	return x.x > y.x;
 }
 
+inline void vec3_add_to_vec3(vec3 *bVec, vec3 &aVec)
+{
+	bVec->x += aVec.x;
+	bVec->y += aVec.y;
+	bVec->z += aVec.z;
+}
 
 double vec3_sqlength(vec3 &vec);
 struct vec3 vec3_add_vec3(vec3 &aVec, vec3 &bVec);
