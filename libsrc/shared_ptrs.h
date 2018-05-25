@@ -39,6 +39,7 @@
 #define ToAtomGroupPtr(a) (boost::static_pointer_cast<AtomGroup>((a)));
 #define ToMonomerPtr(a) (boost::static_pointer_cast<Monomer>((a)));
 #define ToParserPtr(a) (boost::static_pointer_cast<Parser>((a)));
+#define ToGridPtr(a) (boost::static_pointer_cast<RefinementGridSearch>(a));
 
 #define ToThingPtr(a) (boost::static_pointer_cast<Thing>((a)));
 
