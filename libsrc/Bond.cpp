@@ -40,7 +40,8 @@ void Bond::initialize()
 	_occMult = 1.0;
 	_torsionStepMult = 1.0;
 	_anisotropyExtent = 0.0;
-	_bondDirection = make_vec3(0, 0, 0);
+	_bondDirection = empty_vec3();
+	_magicAxis = empty_vec3();
 	double initialKick = Options::getKick();
 
 	BondGroup aGroup;
@@ -518,9 +519,11 @@ mat3x3 Bond::getMagicMat(vec3 direction)
 
 	vec3 xAxis = make_vec3(1, 0, 0);
 	vec3 zAxis = make_vec3(0, 0, 1);
+	
+	vec3 cross = vec3_cross_vec3(zAxis, direction);
 
 	/* Find the twizzle to put z axis onto the magic axis (around the x) */
-	mat3x3 firstTwizzle = mat3x3_closest_rot_mat(direction, zAxis, xAxis);
+	mat3x3 firstTwizzle = mat3x3_closest_rot_mat(direction, zAxis, cross);
 	mat3x3 multed = mat3x3_mult_mat3x3(rot, firstTwizzle);
 
 	return multed;
@@ -574,8 +577,10 @@ double myTorsion, double ratio)
 	vec3_set_length(&prevBondDir, 1.);
 	
 	vec3 crossDir = vec3_cross_vec3(averageBondDir, prevBondDir);
+	vec3_set_length(&crossDir, 1.);
 
 	mat3x3 magicMat = getMagicMat(crossDir);
+	_magicAxis = mat3x3_axis(magicMat, 2); 
 	
 	/* Keeps track of the average kick+dampen per bond */
 	double averageModulation = 0;
@@ -691,6 +696,8 @@ std::vector<BondSample> *Bond::getManyPositions()
 	{
 		std::vector<BondSample> *absPos = model->getManyPositions();
 		mat3x3 magicMat = getMagicMat(_bondDirection);
+		
+		_magicAxis = mat3x3_axis(magicMat, 2); 
 
 		/* We must be connected to something else, oh well */
 		/* Torsion basis must be the same. */
@@ -913,6 +920,7 @@ void Bond::propagateChange(int depth, bool refresh)
 
 		bond->_changedPos = true;
 		bond->_changedSamples = true;
+		bond->_recalcDist = true;
 		bond->Model::propagateChange(depth, refresh);
 
 		if (depth >= 0 && count > depth)
@@ -1681,6 +1689,7 @@ void Bond::addProperties()
 	addBoolProperty("disabled", &_disabled);
 
 	addVec3Property("bond_direction", &_bondDirection);
+	addVec3Property("magic_axis", &_magicAxis);
 
 	addCustomProperty("bond_group", &_bondGroups, this,
 	                  encodeBondGroup, decodeBondGroup);

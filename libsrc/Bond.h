@@ -216,6 +216,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_bondGroups[bond->_activeGroup].magicPsi = angle;
+		static_cast<Bond *>(object)->propagateChange(20);
 	}
 
 	static double getMagicPhi(void *object)
@@ -228,6 +229,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_bondGroups[bond->_activeGroup].magicPhi = angle;
+		static_cast<Bond *>(object)->propagateChange(20);
 	}
 
 	static double getOccupancy(void *object)
@@ -564,6 +566,8 @@ private:
 	* calculated because it's connected to an Absolute PDB.
 	* Otherwise use as a reference for torsion matrix updates. */
 	vec3 _bondDirection;
+	
+	vec3 _magicAxis;
 
 	vec3 positionFromTorsion(mat3x3 torsionBasis, double angle,
 	                         double ratio, vec3 start);
