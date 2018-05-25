@@ -174,7 +174,7 @@ MapScoreType mapScore)
 }
 
 void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
-                    bool sameScale)
+                    bool sameScale, bool noWrap)
 {
 	FFTPtr atomDist, modified;
 	
@@ -213,7 +213,8 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
 		return;
 	}
 
-	FFT::add(fft, modified, pos, sameScale);
+	MapScoreType type = (noWrap ? MapScoreAddNoWrap : MapScoreTypeNone);
+	FFT::operation(fft, modified, pos, type, NULL, sameScale);
 }
 
 vec3 Atom::getAbsolutePosition()
