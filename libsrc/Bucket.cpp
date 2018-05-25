@@ -201,6 +201,11 @@ void Bucket::fourierTransform(int dir, double res)
 	}
 }
 
+bool Bucket::isSolvent(int index)
+{
+	return (_solvent->data[index][0] > 0.8);
+}
+
 bool Bucket::isSolvent(vec3 pos)
 {
 	mat3x3 real2Frac = getCrystal()->getReal2Frac();

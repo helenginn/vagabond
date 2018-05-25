@@ -91,6 +91,8 @@ public:
 	bool isSolvent(vec3 pos);
 	void processMaskedRegions();
 	
+	bool isSolvent(int index);
+	
 	FFTPtr getMaskedRegions()
 	{
 		return _maskedRegions;
