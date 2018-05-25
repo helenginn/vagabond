@@ -159,7 +159,7 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 /*  Absolute distribution only needs to be the blurring due to the atomic
 *  B factor. The position should be provided by a different function. */
 
-FFTPtr Absolute::getDistribution(bool, int)
+FFTPtr Absolute::makeDistribution()
 {
 	double n = fftGridLength();
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();

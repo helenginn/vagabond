@@ -21,6 +21,7 @@ bool Model::_useMutex = false;
 Model::Model()
 {
 	_recalcFinal = true;
+	_recalcDist = true;
 	_realSpaceTensor = make_mat3x3();
 }
 
@@ -62,8 +63,8 @@ int Model::fftGridLength()
 	/* Target dimension in Angstroms */
 	double dim = biggestStdevDim() * 2;
 	
-	int some = 4;
-	
+	int some = 2;
+
 	if (getAtom()->getElement()->electronCount() <= 1)
 	{
 		some = 2;	
@@ -72,6 +73,7 @@ int Model::fftGridLength()
 	/* Add some Angstroms for good luck */
 	dim += some;
 	dim *= 2;
+	dim += 2;
 	
 	int n = scale * dim + 0.5;
 	//n = ATOM_SAMPLING_COUNT;
@@ -216,6 +218,16 @@ std::vector<BondSample> Model::getFinalPositions()
 	return _finalSamples;
 }
 
+FFTPtr Model::getDistribution()
+{
+	if (_recalcDist)
+	{
+		_lastDistribution = makeDistribution();
+	}
+	
+	return _lastDistribution;
+}
+
 void Model::propagateChange(int depth, bool refresh)
 {
 	_recalcFinal = true;
@@ -332,5 +344,4 @@ void Model::addRealSpacePositions(FFTPtr real, vec3 offset)
 		
 		real->addBlurredToReal(relative.x, relative.y, relative.z, occupancy);
 	}
-
 }

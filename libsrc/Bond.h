@@ -165,10 +165,10 @@ public:
 		return _bondGroups[group].torsionAngle;
 	}
 
+	virtual FFTPtr makeDistribution();
 	void setTorsionAtoms(AtomPtr heavyAlign = AtomPtr(),
 	                     AtomPtr lightAlign = AtomPtr(),
 	int groupNum = 0);
-	virtual FFTPtr getDistribution(bool quick = false, int new_n = -1);
 	
 	virtual AtomPtr getAtom()
 	{

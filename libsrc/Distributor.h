@@ -39,11 +39,6 @@ public:
 		_activeNum = 0;
 	}
 
-	/** To be reimplemented by downstream classes in order to prepare and then
-	* return a copy of the distribution using prepareDistribution() and
-	* getDistributionCopy(). */
-	virtual FFTPtr getDistribution(bool quick = false, int n = -1) = 0;
-
 	/** Call this if the subclass has changed (e.g., an Absolute atom has had
 	* its B factor altered), and an appropriate FFT will be recalculated on
 	* demand. */

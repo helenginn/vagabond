@@ -456,7 +456,8 @@ void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign, int groupNum)
 }
 
 
-FFTPtr Bond::getDistribution(bool, int)
+/* n.b. this ought to store previous info! */
+FFTPtr Bond::makeDistribution()
 {
 	double n = fftGridLength();
 	/* Don't panic, invert scale below... this is in real space */

@@ -58,7 +58,7 @@ public:
 	virtual ~Absolute() {};
 
 	virtual std::vector<BondSample> *getManyPositions();
-	virtual FFTPtr getDistribution(bool = false, int new_n = -1);
+	virtual FFTPtr makeDistribution();
 	virtual vec3 getAbsolutePosition()
 	{
 		return _position;

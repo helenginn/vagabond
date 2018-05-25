@@ -54,7 +54,8 @@ public:
 	Model();
 	virtual ~Model() {};
 
-	virtual FFTPtr getDistribution(bool quick = false, int n = -1) = 0;
+	virtual FFTPtr makeDistribution() = 0;
+	FFTPtr getDistribution();
 
 	virtual void addToMonomer(MonomerPtr monomer);
 	virtual void addToMolecule(MoleculePtr) {};
@@ -149,6 +150,7 @@ public:
 	void setPolymerChanged()
 	{
 		_recalcFinal = true;	
+		_recalcDist = true;
 	}
 	
 	void addRealSpacePositions(FFTPtr real, vec3 offset);
@@ -178,11 +180,13 @@ protected:
 	vec3 _longest;
 	double _anisotropyExtent;
 	double _smallness;
+	FFTPtr _lastDistribution;
 
 	virtual void getAnisotropy(bool withKabsch);
 	double anisotropyExtent(bool withKabsch = false);
 	double _isotropicAverage;
 	bool _recalcFinal;
+	bool _recalcDist;
 	std::vector<BondSample> _finalSamples;
 
 	virtual std::string getParserIdentifier()
