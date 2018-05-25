@@ -38,12 +38,9 @@ class FileReader
 {
 
 public:
-
-	inline static void setOutputDirectory(std::string _dir)
+	static void makeDirectoryIfNeeded(std::string _dir)
 	{
-		outputDir = _dir;
-
-		DIR *dir = opendir(outputDir.c_str());
+		DIR *dir = opendir(_dir.c_str());
 
 		if (dir)
 		{
@@ -51,12 +48,19 @@ public:
 		}
 		else if (ENOENT == errno)
 		{
-			mkdir(outputDir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+			mkdir(_dir.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
 		}
-
 	}
 
-	inline static std::string addOutputDirectory(std::string filename)
+	static void setOutputDirectory(std::string _dir)
+	{
+		outputDir = _dir;
+
+		makeDirectoryIfNeeded(outputDir);
+	}
+
+	static std::string addOutputDirectory(std::string filename,
+	                                      std::string subdir = "")
 	{
 		if (!outputDir.length())
 		{
@@ -67,8 +71,14 @@ public:
 		{
 			return outputDir + "/" + filename;
 		}
+		
+		if (subdir.length())
+		{
+			makeDirectoryIfNeeded("./" + outputDir + "/" + subdir);
+			subdir += "/";
+		}
 
-		std::string fullPath = "./" + outputDir + "/" + filename;
+		std::string fullPath = "./" + outputDir + "/" + subdir + filename;
 		return fullPath;
 	}
 
