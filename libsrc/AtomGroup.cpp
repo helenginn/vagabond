@@ -151,7 +151,7 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal)
 
 		for (size_t j = 0; j < numConf; j++)
 		{
-			stream << "MODEL " << std::setw(8) << j << std::setw(66) << " " << std::endl;
+			stream << "MODEL " << std::setw(8) << j + 1 << std::setw(66) << " " << std::endl;
 
 			for (size_t i = 0; i < atomCount(); i++)
 			{
