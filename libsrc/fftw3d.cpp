@@ -743,7 +743,10 @@ bool sameScale)
 	double volume = 1;
 
 	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
-	FFT::collapseFrac(&add.x, &add.y, &add.z);
+	if (mapScoreType != MapScoreAddNoWrap)
+	{
+		FFT::collapseFrac(&add.x, &add.y, &add.z);
+	}
 
 	/* Multiply by the relative dimensions of the crystal */
 	double multX = add.x * fftCrystal->nx;
@@ -849,7 +852,7 @@ bool sameScale)
 				
 				if (!sameScale)
 				{
-					atomPos = mat3x3_mult_vec(crystal2AtomVox, crystalPos);
+					mat3x3_mult_vec(crystal2AtomVox, &atomPos);
 
 					if (atomPos.x < 0 || atomPos.y < 0 || atomPos.z < 0)
 					{
@@ -870,26 +873,43 @@ bool sameScale)
 
 				/* We add the tiny offset which resulted from the atom
 				* falling between two voxels, in atomic voxels */
-				vec3 offsetPos = vec3_add_vec3(atomPos, atomOffset);
+				vec3_add_to_vec3(&atomPos, atomOffset);
 
 				/* If this value is within floating point error, stop now. */
-				if (fftAtom->getReal(offsetPos.x, offsetPos.y, offsetPos.z) <= 10e-6)
+				if (fftAtom->getReal(atomPos.x, atomPos.y, atomPos.z) <= 10e-6)
 				{
 					continue;
 				}
 
-				/* Find the interpolated value which offsetPos falls on */
+				/* Find the interpolated value which atomPos falls on */
 				double atomReal = 0;
 
-				if (offsetPos.x < 0) offsetPos.x += fftAtom->nx;
-				if (offsetPos.y < 0) offsetPos.y += fftAtom->ny;
-				if (offsetPos.z < 0) offsetPos.z += fftAtom->nz;
+				if (atomPos.x < 0) atomPos.x += fftAtom->nx;
+				if (atomPos.y < 0) atomPos.y += fftAtom->ny;
+				if (atomPos.z < 0) atomPos.z += fftAtom->nz;
 
-				atomReal = fftAtom->interpolate(offsetPos, 0);
+				atomReal = fftAtom->interpolate(atomPos, 0);
 
 				/* We add the atom offset so we don't end up with thousands
 				* of atoms at the very centre of our map */
 				vec3 finalCrystalVox = vec3_add_vec3(crystalPos, cornerCrystal);
+
+				if (mapScoreType == MapScoreAddNoWrap)
+				{
+					if (finalCrystalVox.x < -fftCrystal->nx / 2 || 
+					    finalCrystalVox.y < -fftCrystal->ny / 2 ||
+					    finalCrystalVox.z < -fftCrystal->nz / 2)
+					{
+						continue;
+					}					
+					
+					if (finalCrystalVox.x > fftCrystal->nx / 2 ||
+					    finalCrystalVox.y > fftCrystal->ny / 2 ||
+					    finalCrystalVox.z > fftCrystal->nz / 2)
+					{
+						continue;
+					}
+				}
 
 				if (finalCrystalVox.x < 0) finalCrystalVox.x += fftCrystal->nx;
 				if (finalCrystalVox.y < 0) finalCrystalVox.y += fftCrystal->ny;
@@ -899,7 +919,7 @@ bool sameScale)
 				/* Get the index of this final crystal voxel. */
 				long crystalIndex = fftCrystal->element(finalCrystalVox.x + 0.5,
 				                                        finalCrystalVox.y + 0.5,
-				finalCrystalVox.z + 0.5);
+				                                        finalCrystalVox.z + 0.5);
 				
 				count++;
 
@@ -920,8 +940,8 @@ bool sameScale)
 						val.fo = realCryst;
 						val.fc = atomReal;
 #ifdef COORDVAL_FULL
-						long atomEle = fftAtom->element(offsetPos);
-						val.pos = offsetPos;
+						long atomEle = fftAtom->element(atomPos);
+						val.pos = atomPos;
 						val.mask = 0;
 						if (fftAtom->mask)
 						{
@@ -935,13 +955,14 @@ bool sameScale)
 				else if (mapScoreType == MapScoreTypeCopyToSmaller)
 				{
 					double realCryst = fftCrystal->interpolate(finalCrystalVox);
-					int ele = fftAtom->element(offsetPos.x, offsetPos.y,
-					                           offsetPos.z);
+					int ele = fftAtom->element(atomPos.x, atomPos.y,
+					                           atomPos.z);
 
 
 					fftAtom->setElement(ele, realCryst, 0);
 				}
-				else if (mapScoreType == MapScoreTypeNone)
+				else if (mapScoreType == MapScoreTypeNone ||
+				         mapScoreType == MapScoreAddNoWrap)
 				{
 					/* Add the density to the real value of the crystal voxel.*/
 
