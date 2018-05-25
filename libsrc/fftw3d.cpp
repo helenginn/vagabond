@@ -1325,6 +1325,14 @@ mat3x3 real2Frac, FFTPtr data)
 				}
 
 				double foAmp = sqrt(foInt);
+				double fofofc = 2 * foAmp - calcAmp;
+				double fofc = foAmp - calcAmp;
+				
+				if (foAmp != foAmp)
+				{
+//					fofofc = calcAmp;
+					fofc = 0;
+				}
 
 				// i.e. 0 when mask is free flag.
 
@@ -1336,9 +1344,9 @@ mat3x3 real2Frac, FFTPtr data)
 				fdata[3] = free;
 				fdata[4] = foAmp;
 				fdata[5] = calcAmp;
-				fdata[6] = 2 * foAmp - calcAmp;
+				fdata[6] = fofofc;
 				fdata[7] = phase;
-				fdata[8] = foAmp - calcAmp;
+				fdata[8] = fofc;
 				fdata[9] = phase;
 
 				num++;
