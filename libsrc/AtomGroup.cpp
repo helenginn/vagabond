@@ -266,11 +266,11 @@ void AtomGroup::refreshPositions(bool quick)
 		atom(i)->getModel()->propagateChange(0);
 		atom(i)->getModel()->getFinalPositions();
 	}
-	
+
 	if (quick) return;
 
 	AtomList list = topLevelAtoms();
-	
+
 	for (size_t i = 0; i < list.size(); i++)
 	{
 		AtomPtr atom = list[i].lock();
@@ -409,31 +409,31 @@ Plucker *AtomGroup::makePluckableWaters()
 	for (int i = 0; i < atomCount(); i++)
 	{
 		AtomPtr atm = atom(i);
-		
+
 		if (!atm->isHeteroAtom() || !(atm->getAtomName() == "O"))
 		{
 			continue;
 		}
-		
+
 		// we have a water
 		atm->cacheCloseWaters(4.);
-		
+
 		if (atm->pluckCount())
 		{
 			double occupancy = atm->getModel()->getEffectiveOccupancy();
 			plucker->addPluckable(&*atm, occupancy);
 		}
 	}
-	
+
 	return plucker;
 }
-	
+
 
 AtomPtr AtomGroup::getClosestAtom(CrystalPtr crystal, vec3 pos)
 {
 	double small_dist = FLT_MAX;
 	AtomPtr best;
-	
+
 	for (int i = 0; i < atomCount(); i++)
 	{
 		vec3 tmp = atom(i)->getAsymUnitPosition(crystal);
@@ -454,7 +454,7 @@ AtomPtr AtomGroup::getClosestAtom(CrystalPtr crystal, vec3 pos)
 			}
 		}
 	}
-	
+
 	return best;
 }
 
@@ -551,17 +551,19 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					if (rType != RefinementFine)
 					{
 						topBond = setupTorsionSet(bond, k, bondNum,
-						                          deg2rad(degrees), deg2rad(0.04),
-						refineAngles, addFlex);
+						                          deg2rad(degrees), 
+						                          deg2rad(0.04),
+						                          refineAngles, addFlex);
 					}
 					else
 					{
 						topBond = setupThoroughSet(bond, bondNum,
-						                           deg2rad(degrees), deg2rad(0.04),
-						refineAngles, addFlex);
-						
+						                           deg2rad(degrees), 
+						                           deg2rad(0.04),
+						                           refineAngles, addFlex);
+
 					}
-					
+
 					setScoreType(scoreType);
 
 					for (size_t l = 0; l < _includeForRefine.size(); l++)
@@ -572,7 +574,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					if (rType == RefinementModelPos 
 					    || rType == RefinementFine 
 					    || rType == RefinementModelRMSDZero
-					|| rType == RefinementRMSDZero)
+					    || rType == RefinementRMSDZero)
 					{
 						setSilent();
 					}
