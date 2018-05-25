@@ -338,6 +338,7 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
 	}
 
 	PNGFilePtr png = PNGFilePtr(new PNGFile(filename, width, height));
+	png->setSubDirectory(_subdir);
 	png->setPlain();
 	png->setCentre(width * (1 - xAxis) / 2, height * (yAxis + 1) / 2);
 	png->drawLine(0, 0, width * xAxis, 0, 0, 0, 0, 0);
