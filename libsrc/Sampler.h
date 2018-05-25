@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include <vector>
+#include "MapScoreWorkspace.h"
 #include "mat3x3.h"
 #include "shared_ptrs.h"
 #include "RefinementStrategy.h"
@@ -30,16 +31,6 @@ typedef enum
 	RefinementRMSDZero = 5, /** Squeeze protein chain to minimise flexibility */
 } RefinementType; 
 
-/** Scoring functions against map or PDB file */
-typedef enum
-{
-	ScoreTypeCorrel = 0, /** Correlation between map and model density */
-	ScoreTypeMultiply = 1, /** Weighted (by model) sum of map voxels */
-	ScoreTypeRFactor = 2, /** R factor in real space for electron density */
-	ScoreTypeModelRMSDZero = 3, /** All ensemble positions against PDB */
-	ScoreTypeModelPos = 4, /** Average ensemble position against PDB */
-	ScoreTypeRMSDZero = 5, /** Sum of squares of anisotropic tensor */
-} ScoreType;
 
 typedef std::map<ParamOptionType, double> ParamMap;
 

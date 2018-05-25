@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include "shared_ptrs.h"
+#include "MapScoreWorkspace.h"
 #include "Sampler.h"
 #include "Parser.h"
 #include <map>
