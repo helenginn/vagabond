@@ -1050,6 +1050,33 @@ std::vector<AtomPtr> Crystal::getCloseAtoms(AtomPtr one, double tol, bool cache)
 	return atoms;
 }
 
+std::vector<AtomPtr> Crystal::getAtomsInBox(vec3 target, double tolx,
+                                            double toly, double tolz)
+{
+	std::vector<AtomPtr> atoms;
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		for (int j = 0; j < molecule(i)->atomCount(); j++)
+		{
+			AtomPtr anAtom = molecule(i)->atom(j);
+			vec3 pos = anAtom->getAbsolutePosition();
+			
+			vec3 diff = vec3_subtract_vec3(pos, target);
+			
+			if (fabs(diff.x) > tolx || fabs(diff.y) > toly
+			    || fabs(diff.z) > tolz)
+			{
+				continue;
+			}
+			
+			atoms.push_back(anAtom);
+		}
+	}
+
+	return atoms;
+}
+
 void Crystal::clearCloseCache()
 {
 	for (int i = 0; i < moleculeCount(); i++)
