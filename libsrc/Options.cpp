@@ -19,12 +19,13 @@
 #include "SSRigger.h"
 
 OptionsPtr Options::options;
-double Options::_kick = 0.01;
+double Options::_kick = 0.005;
 int Options::_solvent = 1;
 double Options::_dampen = 0.08;
 double Options::_bStart = 1.5;
 double Options::_bMult = 1;
-double Options::_minRes = 0.0;
+double Options::_minRes = -1.0;
+double Options::_maxRes = -1.0;
 int Options::_enableTests = 3;
 bool Options::_powder = false;
 double Options::_sampling = -1;

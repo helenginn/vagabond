@@ -91,6 +91,11 @@ public:
 		return _minRes;
 	}
 
+	static double maxRes()
+	{
+		return _maxRes;
+	}
+
 	static int enableTests()
 	{
 		return _enableTests;
@@ -195,6 +200,7 @@ private:
 	std::string _diffMatrix;
 	std::string _outputDir;
 	static double _minRes;
+	static double _maxRes;
 };
 
 #endif /* defined(__vagabond__Options__) */
