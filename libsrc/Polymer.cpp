@@ -1462,7 +1462,7 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	{
 		NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
 		nelderMead->addParameter(this, getOverallScale, setOverallScale,
-		                         1, 0.01, "overall_scale");
+		                         1.5, 0.01, "overall_scale");
 		nelderMead->setCycles(25);
 		nelderMead->setVerbose(true);
 		FlexGlobal target;
