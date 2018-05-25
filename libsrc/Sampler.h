@@ -19,7 +19,8 @@
 #include <map>
 
 /* More of an abstraction, but will take a series of (bond) parameters,
-* take a target function, and supply them to a refinement strategy. */
+* take a target function, and supply them to a refinement strategy.
+* Make sure the crystal target is set. */
 
 /** Flags to set refinement strategies for a protein chain. */
 typedef enum
