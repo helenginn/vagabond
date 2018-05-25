@@ -1275,7 +1275,7 @@ mat3x3 real2Frac, FFTPtr data)
 	colout[0] = MtzAddColumn(mtzout, set, "H", "H");
 	colout[1] = MtzAddColumn(mtzout, set, "K", "H");
 	colout[2] = MtzAddColumn(mtzout, set, "L", "H");
-	colout[3] = MtzAddColumn(mtzout, set, "FREE", "I");
+	colout[3] = MtzAddColumn(mtzout, set, "FREE", "R");
 	colout[4] = MtzAddColumn(mtzout, set, "FP", "F");
 	colout[5] = MtzAddColumn(mtzout, set, "FC", "F");
 	colout[6] = MtzAddColumn(mtzout, set, "FWT", "F");
