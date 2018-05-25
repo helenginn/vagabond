@@ -442,7 +442,7 @@ std::string Atom::getPDBContribution(int ensembleNum)
 		}
 
 		vec3 placement = positions[i].start;
-		double occupancy = 50 * positions[i].occupancy / double(tries);
+		double occupancy = positions[i].occupancy * positions.size();
 		stream << PDBReader::writeLine(shared_from_this(), placement, count, occupancy, 0);
 
 		if (ensembleNum >= 0)
