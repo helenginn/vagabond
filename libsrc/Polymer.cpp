@@ -284,8 +284,7 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 	std::cout  << " from residue " << start << " to ";
 	std::cout << (skip > 0 ? "C" : "N");
 	std::cout <<  "-terminus (residue " << end << ") ..." << std::endl;
-	std::cout << "\t";
-	
+
 	if (rType == RefinementModelRMSDZero)
 	{
 		for (int i = start; i != end; i += skip)
@@ -328,6 +327,12 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 
 	for (int i = start; i != end; i += skip)
 	{
+		if (i % 10 == 0)
+		{
+			std::cout << i;
+		}
+		
+		std::cout << "\t";
 		MonomerPtr monomer = getMonomer(i);
 		if (!monomer)
 		{
@@ -354,7 +359,8 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 		{
 			std::cout << (dir ? "+" : "-");
 		}
-		std::cout << std::endl << "\t";
+
+		std::cout << std::endl;
 
 		endCCAve += score;
 		count++;
