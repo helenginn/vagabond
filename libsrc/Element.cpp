@@ -167,7 +167,7 @@ FFTPtr Element::getDistribution(bool, int new_n)
 	
 	if (new_n > 0)
 	{
-		n = new_n;	
+		n = new_n;
 	}
 	
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
