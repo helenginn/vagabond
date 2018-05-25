@@ -41,6 +41,7 @@ inline void fftwf_add(fftwf_complex comp1, fftwf_complex comp2, float *result)
 
 FFT::FFT()
 {
+	_setupBlurring = false;
 	nx = 0;
 	ny = 0;
 	nz = 0;
@@ -85,6 +86,7 @@ void FFT::create(long n)
 
 FFT::FFT(FFT &other)
 {
+	_setupBlurring = false;
 	nx = other.nx;
 	ny = other.ny;
 	nz = other.nz;
@@ -443,28 +445,52 @@ void FFT::addToReal(double xfrac, double yfrac, double zfrac, double real)
 	data[index][0] += real;
 }
 
+void FFT::setupBlurring()
+{
+	_blurAmounts.clear();
+	
+	for (int i = -1; i < 2; i++)
+	{
+		for (int j = -1; j < 2; j++)
+		{
+			for (int k = -1; k < 2; k++)
+			{
+				int moves = abs(i) + abs(j) + abs(k);
+				float factor = normal_distribution(moves, 1.);
+				_blurAmounts.push_back(factor);
+			}
+		}
+	}		
+	
+	_setupBlurring = true;
+}
+
 void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real)
 {
+	if (!_setupBlurring)
+	{
+		setupBlurring();
+	}
+	
 	collapseFrac(&xfrac, &yfrac, &zfrac);
 
 	double x = xfrac * nx;
 	double y = yfrac * ny;
 	double z = zfrac * nz;
 
-	double shifts[] = {-1.0, 0, 1.0};
-	
-	for (int i = 0; i < 3; i++)
+	int count = 0;
+	for (int k = -1; k < 2; k++)
 	{
-		double sx = x + shifts[i];
-		for (int j = 0; j < 3; j++)
+		double sz = z + (double)k;
+		for (int j = -1; j < 2; j++)
 		{
-			double sy = y + shifts[j];
-			for (int k = 0; k < 3; k++)
+			double sy = y + (double)j;
+			for (int i = -1; i < 2; i++)
 			{
-				double sz = z + shifts[k];
-				long lx = lrint(sx);
-				long ly = lrint(sy);
-				long lz = lrint(sz);
+				double sx = x + (double)i;
+				long lx = (int)floor(sx);
+				long ly = (int)floor(sy);
+				long lz = (int)floor(sz);
 				
 				long index = element(lx, ly, lz);
 
@@ -473,15 +499,46 @@ void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real
 					continue;
 				}
 
-				int moves = fabs(shifts[i]) + fabs(shifts[j]) 
-				+ fabs(shifts[k]) + 0.5;
+				float factor = _blurAmounts[count];
+				count++;
 				
-				float factor = 1;
+				/*
+				lx = (int)lrint(sx);
+				ly = (int)lrint(sy);
+				lz = (int)lrint(sz);
 				
-				factor = normal_distribution(moves, 1.);
+				index = element(lx, ly, lz);
+				data[index][0] += factor * real;
+				*/
 
+				double xProps[2];
+				double yProps[2];
+				double zProps[2];
 				
-				data[index][0] += real * factor;
+				xProps[1] = fmod(sx + 1, 1.);
+				yProps[1] = fmod(sy + 1, 1.);
+				zProps[1] = fmod(sz + 1, 1.);
+				
+				xProps[0] = 1 - xProps[1];
+				yProps[0] = 1 - yProps[1];
+				zProps[0] = 1 - zProps[1];
+				
+				for (int p = 0; p < 2; p++)
+				{
+					for (int q = 0; q < 2; q++)
+					{
+						for (int r = 0; r < 2; r++)
+						{
+							int sx1 = lx + p;
+							int sy1 = ly + q;
+							int sz1 = lz + r;
+
+							long index = element(sx1, sy1, sz1);
+							double prop = xProps[p] * yProps[q] * zProps[r];
+							data[index][0] += prop * real * factor;
+						}	
+					}
+				}
 			}
 		}
 	}

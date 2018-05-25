@@ -278,6 +278,10 @@ private:
 
 	bool _writeToMaskZero;
 	static std::deque<FourierDimension> _dimensions;
+
+	bool _setupBlurring;
+	void setupBlurring();
+	std::vector<float> _blurAmounts;
 };
 
 #endif /* fftw3d_h */
