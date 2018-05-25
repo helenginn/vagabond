@@ -867,10 +867,10 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 		ys.push_back(vals[i].fc);
 	}
 
-	double scale = scale_factor_cutoff(xs, ys, cutoff);
-
 	if (scoreType == ScoreTypeRFactor)
 	{
+		double scale = scale_factor_cutoff(xs, ys, cutoff);
+
 		cutoff /= scale;	
 		for (size_t i = 0; i < ys.size(); i++)
 		{
