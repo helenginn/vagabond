@@ -396,6 +396,8 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 	double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
 	                                    0, _maxResolution);
 	applyScaleFactor(totalFc / ratio, 0, 0);
+	
+	return;
 
 	/* Then apply to individual resolution bins */
 	std::vector<double> bins;
