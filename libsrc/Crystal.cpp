@@ -433,7 +433,8 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 		std::cout << "*******************************" << std::endl;
 	}
 
-	double rFactor = valueWithDiffraction(data, &r_factor, verbose, lowRes, highRes);
+	double rFactor = valueWithDiffraction(data, &r_factor, verbose, 
+	                                      lowRes, highRes);
 
 	if (verbose)
 	{
@@ -507,7 +508,8 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 				mat3x3_mult_vec(_real2frac, &ijk);
 				double length = vec3_length(ijk);
 
-				if (length < minRes || length > maxRes || isRfree || isAbs)    
+				if (length < minRes || length > maxRes
+				    || (isRfree && amp == amp) || isAbs)    
 				{	
 					_fft->setElement(index, 0, 0);
 					_difft->setElement(index, 0, 0);
