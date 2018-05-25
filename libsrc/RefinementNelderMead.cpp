@@ -206,6 +206,7 @@ void NelderMead::refine()
 	if (tags.size() == 0)
 	return;
 
+	/* Each test point is a vertex? */
 	for (int i = 0; i < testPoints.size(); i++)
 	{
 		testPoints[i].second = 0;
@@ -213,17 +214,21 @@ void NelderMead::refine()
 
 		for (int j = 0; j < tags.size(); j++)
 		{
+			/* First test point is in the centre */
 			if (i == 0)
 			{
 				testPoints[i].first[j] = (*getters[j])(objects[j]);
 			}
 
+			/* All other test points increase the step size by a
+ 			 * certain amount in one direction. */
 			if (i > 0)
 			{
 				int minJ = i - 1;
-				double scale = 2;
+				double scale = 1;
+				double neg = 1;
 
-				testPoints[i].first[j] = testPoints[0].first[j] + (j == minJ) * scale * stepSizes[j];
+				testPoints[i].first[j] = testPoints[0].first[j] + (j == minJ) * scale * stepSizes[j] * neg;
 			}
 		}
 	}
