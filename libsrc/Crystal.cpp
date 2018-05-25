@@ -259,6 +259,7 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 	{
 		_correlPlotNum++;
 		std::string correlName = "correlplot_" + i_to_str(_correlPlotNum);
+		csv->setSubDirectory("correlation_plots");
 		csv->writeToFile(correlName + ".csv");
 
 		std::map<std::string, std::string> plotMap;
