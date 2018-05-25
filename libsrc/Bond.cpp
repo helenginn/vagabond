@@ -614,22 +614,36 @@ double myTorsion, double ratio)
 		double notZ = sqrt(nextDifference.y * nextDifference.y +
 		                   nextDifference.x * nextDifference.x);
 		double tanX = nextDifference.z / notZ;
+
+		/*
+		double angle = atan(tanX);
+		
+		// Normalise angle so (deg) -90 to +90 becomes -1 to +1. 
+		angle /= deg2rad(90);
+		
+		if (angle != angle) angle = 0;
+
+		angle *= 6;
+		double kickValue = exp(-fabs(angle));
+		double dampValue = 1 - kickValue;
+		dampValue = 1;
+		
+		if (angle < 0) kickValue *= -1;
+		*/
+		
 		double dampValue = sin(atan(tanX));
-		double yValue = sqrt(1 - dampValue * dampValue);
-
-		if (yValue != yValue)
-		{
-			yValue = 0;
-		}
-
-		yValue -= 0.5; // so the kick is applied equally in both directions.
-
-		/* We want to correct if the deviation is close to the magic angle */
 		if (dampValue != dampValue)
 		{
 			dampValue = 0;
 		}
+		
+		double kickValue = sqrt(1 - dampValue * dampValue);
+		if (kickValue != kickValue)
+		{
+			kickValue = 0;
+		}
 
+		/* We want to correct if the deviation is close to the magic angle */
 		double rotAngle = 0;
 
 		/* Find the best angle for dampening */
@@ -648,7 +662,7 @@ double myTorsion, double ratio)
 		/* This will only apply for a kicked bond */
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;
 
-		addBlur *= yValue;
+		addBlur *= kickValue;
 
 		if (isFixed())
 		{
