@@ -33,6 +33,7 @@ typedef enum
 	MapScoreTypeCorrel,
 	MapScoreTypeRadialMagnitude,
 	MapScoreTypeCopyToSmaller,
+	MapScoreAddNoWrap,
 } MapScoreType;
 
 inline void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, float *result)
