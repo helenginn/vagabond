@@ -188,7 +188,6 @@ void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 	if (_bucket)
 	{
 		_bucket->writeMillersToFile(prefix, _maxResolution);	
-		_bucket->abandonCalculations();
 	}
 }
 
@@ -437,6 +436,14 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
                                    double partsFc, std::string prefix)
 {
 	realSpaceClutter(data->getMaxResolution());
+	
+	std::vector<double> real_calcs;
+	int skip = 10;
+	for (int i = 0; i < _fft->nn; i += skip)
+	{
+		real_calcs.push_back(_fft->data[i][0]);
+	}
+	
 	fourierTransform(1, data->getMaxResolution());
 	scaleComponents(data);
 	
@@ -452,6 +459,23 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	double lowRes = Options::minRes();
 	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
 	double maxRes = (1 / _maxResolution);
+	
+	int bad = 0;
+	for (int i = 0; i < _fft->nn; i++)
+	{
+		double val = _fft->data[i][0];
+		
+		if (val != val)
+		{
+			bad++;
+		}
+	}
+	
+	if (bad > 0)
+	{
+		std::cout << "There were " << bad << " bad reflections";
+		std::cout << " out of " << _fft->nn << "!" << std::endl;
+	}
 
 	/* symmetry issues */
 	for (int i = -nLimit; i < nLimit; i++)
@@ -509,6 +533,11 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 					diff_complex.x *= diff_scale;
 					diff_complex.y *= diff_scale;
 				}
+				
+				if (complex.x != complex.x || complex.y != complex.y)
+				{
+					continue;
+				}
 
 				_fft->setElement(index, complex.x, complex.y);
 				_difft->setElement(index, diff_complex.x, diff_complex.y);
@@ -520,6 +549,29 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	fourierTransform(-1);
 	_difft->fft(-1);
 
+	CSVPtr csv = CSVPtr(new CSV(3, "real_obs", "real_calc", "solvent"));
+	std::vector<double> real_mixed, chosen_calc;
+	int count = 0;
+	
+	for (int i = 0; i < _fft->nn; i += skip)
+	{
+		double obs = _fft->data[i][0];
+		double calc = real_calcs[count];
+		count++;
+		if (calc <= 0) continue;
+
+		double solvent = _bucket->isSolvent(i);
+
+		real_mixed.push_back(obs);
+		chosen_calc.push_back(calc);
+		csv->addEntry(3, obs, calc, solvent);
+	}
+	
+	double correl = correlation(chosen_calc, real_mixed);
+	csv->writeToFile("real_space_cc.csv");
+	printf("Real space correlation coefficient: %.3f\n", correl);
+	
+	_bucket->abandonCalculations();
 	return rFac;
 }
 
