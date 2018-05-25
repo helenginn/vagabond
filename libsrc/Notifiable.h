@@ -15,8 +15,6 @@
 typedef enum
 {
 	InstructionTypeNone,
-	InstructionTypeOpenPDB,
-	InstructionTypeOpenMTZ,
 	InstructionTypeResetExplorer,
 	InstructionTypeSuperimpose,
 	InstructionTypeRefinePositions,
@@ -28,7 +26,7 @@ typedef enum
 	InstructionTypeModelPosToEnd,
 	InstructionTypeChangeBMult,
 	InstructionTypeRecalculateFFT,
-	InstructionTypeSetOutputDir,
+	InstructionTypeOpenInCoot,
 	InstructionTypeSetObjectValue,
 	InstructionTypeGetObjectValue,
 	InstructionTypePreviousState,

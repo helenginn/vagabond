@@ -65,13 +65,10 @@ private slots:
 	void pushExploreMcule();
 	void pushRefineDensity();
 	void recalculateFFT();
+	void openInCoot();
 	void findDisulphides();
 	void pushBackboneAnalysis();
 	void restorePreviousState();
-
-	void openModel();
-	void openMTZ();
-	void setOutput();
 
 private:
 	VagabondGLWidget *display;
@@ -93,7 +90,6 @@ private:
 	/* Buttons down the side */
 	QPushButton *bSuperimpose;
 	QPushButton *bRefinePos;
-	QPushButton *bRefineFlex;
 	QPushButton *bBackbone;
 	QPushButton *bChangeBMult;
 	QPushButton *bExploreMolecule;
@@ -103,15 +99,12 @@ private:
 	QPushButton *bFitWholeT;
 	QPushButton *bFindSS;
 	QPushButton *bPrevious;
+	QPushButton *bCoot;
 	std::vector<QPushButton *> buttons;
 
-	std::string _outputDir;
-	std::string _pdbName; 
-	std::string _mtzName;
 	int _argc;
 	char **_argv;
 
-	void makeMenu();
 	void makeButtons();
 };
 
