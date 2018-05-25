@@ -178,6 +178,7 @@ mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double 
 	{
 		std::cout << "Unit cell calculation problem - angles add up to "
 		<< alpha + beta + gamma << "º!" << std::endl;
+		printf("%.3f %.3f %.3f\n", alpha, beta, gamma);
 	}
 
 	double sinC = sin(deg2rad(gamma));
