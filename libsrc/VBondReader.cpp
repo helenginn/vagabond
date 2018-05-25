@@ -6,9 +6,15 @@
 #include "VBondReader.h"
 #include "FileReader.h"
 #include "Crystal.h"
+#include "Shouter.h"
 
 CrystalPtr VBondReader::getCrystal()
 {
+	if (!file_exists(_filename))
+	{
+		shout_at_user("File " + _filename + " does not exist.");
+	}
+
 	std::string vbondStr = get_file_contents(_filename);
 
 	char *vbond = &vbondStr[0];
