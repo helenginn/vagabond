@@ -243,6 +243,11 @@ public:
 	}
 	
 	vec3 getRandomPosition();
+	
+	void setOccupancies(std::vector<double> occ)
+	{
+		_occupancies = occ;
+	}
 
 	AtomPtr makeAtom();
 protected:
@@ -271,6 +276,7 @@ private:
 	std::vector<BondSample> _bondSamples;
 	std::vector<vec3> _sphereAngles;
 
+	std::vector<double> _occupancies;
 	vec3 _position;
 	double _bFactor;
 	bool _isOfManyPositions;

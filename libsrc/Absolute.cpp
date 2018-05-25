@@ -230,9 +230,16 @@ std::vector<BondSample> *Absolute::getManyPositions()
 
 	for (size_t i = 0; i < bondSamples->size(); i++)
 	{
-		(*bondSamples)[i].occupancy /= occTotal;
+		if (_occupancies.size() == bondSamples->size())
+		{
+			(*bondSamples)[i].occupancy = _occupancies[i];
+		}
+		else
+		{
+			(*bondSamples)[i].occupancy /= occTotal;
+		}
 	}
-
+	
 	return bondSamples;
 }
 
