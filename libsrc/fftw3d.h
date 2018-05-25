@@ -160,8 +160,17 @@ public:
 	void shiftToCenter(void);
 	void shiftToCentre();
 
-	double getReal(long index);
-	double getReal(long x, long y, long z);
+	double getReal(long index)
+	{
+		return data[index][0];
+	}
+
+	double getReal(long x, long y, long z)
+	{
+		long index = element(x, y, z);
+
+		return data[index][0];
+	}
 
 	double getImaginary(long x, long y, long z);
 

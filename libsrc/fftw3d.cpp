@@ -416,23 +416,11 @@ double FFT::getIntensity(long x, long y, long z)
 	return (data[index][0] * data[index][0] + data[index][1] * data[index][1]);
 }
 
-double FFT::getReal(long x, long y, long z)
-{
-	long index = element(x, y, z);
-
-	return data[index][0];
-}
-
 double FFT::getImaginary(long x, long y, long z)
 {
 	long index = element(x, y, z);
 
 	return data[index][1];
-}
-
-double FFT::getReal(long index)
-{
-	return data[index][0];
 }
 
 void FFT::setReal(double xfrac, double yfrac, double zfrac, double real)
