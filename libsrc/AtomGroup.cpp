@@ -691,7 +691,7 @@ mat3x3 *basis, vec3 *ave)
 	}
 
 	mat3x3_scale(basis, toReal[0], toReal[1], toReal[2]);
-	
+
 	return segment;
 }
 
@@ -699,13 +699,13 @@ double AtomGroup::addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected,
                                   mat3x3 basis, vec3 ave)
 {
 	std::vector<ElementPtr> elements = Element::elementList(selected);
-	
+
 	std::vector<AtomPtr> traditional;
 	int allElementElectrons = 0;
-	
+
 	Timer tReal("real space");
 	Timer tFFT("fft");
-	
+
 	FFTPtr tmpSegment = FFTPtr(new FFT(*segment));
 	tmpSegment->setAll(0);
 	tmpSegment->setupMask();
@@ -725,7 +725,7 @@ double AtomGroup::addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected,
 			{
 				continue;
 			}
-			
+
 			ModelPtr model = selected[j]->getModel();
 			model->getFinalPositions();
 
@@ -739,14 +739,14 @@ double AtomGroup::addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected,
 			totalElectrons += elements[i]->electronCount();
 			vec3 pos = selected[j]->getAbsolutePosition();
 			pos = vec3_subtract_vec3(pos, ave);
-			
+
 			model->addRealSpacePositions(elesegment, pos);
 		}
 		tReal.stop();
 
 		/* Must include models which are not explicit too */
 		allElementElectrons += elements[i]->electronCount() * selected.size();
-		
+
 		elesegment->createFFTWplan(1);
 
 		tFFT.start();
@@ -765,10 +765,10 @@ double AtomGroup::addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected,
 
 		FFT::addSimple(tmpSegment, elesegment);
 	}
-	
-//	tReal.report();
-//	tFFT.report();
-	
+
+	//	tReal.report();
+	//	tFFT.report();
+
 	for (size_t i = 0; i < traditional.size(); i++)
 	{
 		traditional[i]->addToMap(tmpSegment, basis, ave);
@@ -785,7 +785,7 @@ double AtomGroup::scoreWithMapQuick(ScoreType scoreType, CrystalPtr crystal,
 	mat3x3 basis;
 	vec3 ave;
 	FFTPtr segment = prepareMapSegment(crystal, selected, &basis, &ave);
-	
+
 	addAtomsQuickly(segment, selected, basis, ave);
 
 	double cutoff = MAP_VALUE_CUTOFF;
@@ -857,7 +857,7 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	std::vector<CoordVal> vals;
 
 	FFTPtr map = crystal->getFFT();
-	
+
 	FFT::score(map, segment, ave, &vals);
 
 	/* For correlation calculations */
