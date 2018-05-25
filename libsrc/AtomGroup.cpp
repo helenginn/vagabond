@@ -892,11 +892,11 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 			double fc = vals[i].fc;
 			double mask = 0;
 			vec3 pos = make_vec3(0, 0, 0);
-			
-#ifdef COORDVAL_FULL
+
+			#ifdef COORDVAL_FULL
 			mask = vals[i].mask;
-			vec3 pos = vals[i].pos;
-#endif
+			pos = vals[i].pos;
+			#endif
 
 			if (fc < cutoff) continue;
 
