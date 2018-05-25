@@ -592,7 +592,7 @@ double Sampler::getScore()
 				break;
 				
 				case ScoreTypeModelRMSDZero:
-				oneScore = _sampled[i]->fullPositionDisplacement();
+				oneScore = _sampled[i]->getBFactor();
 				break;
 				
 				case ScoreTypeRMSDZero:
