@@ -522,7 +522,9 @@ bool Sampler::sample(bool clear)
 		std::cout << "refining " << paramCount << " parameters." << std::endl;
 	}
 
-	if (_scoreType == ScoreTypeCorrel)
+	if (_scoreType == ScoreTypeCorrel ||
+	    _scoreType == ScoreTypeRFactor ||
+	    _scoreType == ScoreTypeMultiply)
 	{
 		int cycles = 16 + paramCount;
 
