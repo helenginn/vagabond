@@ -26,7 +26,8 @@ double FlexGlobal::matchElectronDensityScore()
 		shout_at_helen("Helen trying to fit electron density"\
 		               "to missing crystal");	
 	}
-	return _atomGroup->scoreWithMap(ScoreTypeCorrel, _crystal);
+	
+	return AtomGroup::scoreWithMapGeneral(&_workspace);
 }
 
 double FlexGlobal::matchOriginalBeeScore()
@@ -131,6 +132,18 @@ void FlexGlobal::maximiseIsotropy()
 	sum /= count;
 	_targetIsoB = sum;
 	_targetType = FlexTargetMaximiseIsotropy;
+}
+
+void FlexGlobal::prepareWorkspace()
+{
+	_workspace.scoreType = ScoreTypeCorrel;
+	_workspace.crystal = _crystal;
+	_workspace.selectAtoms = _atomGroup->getAtoms();
+	_workspace.segment = FFTPtr();
+	_workspace.ave = empty_vec3();
+	_workspace.basis = make_mat3x3();
+	
+	AtomGroup::scoreWithMapGeneral(&_workspace);
 }
 
 double FlexGlobal::score(void *object)

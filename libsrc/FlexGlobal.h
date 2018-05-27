@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include "shared_ptrs.h"
+#include "MapScoreWorkspace.h"
 
 typedef enum
 {
@@ -46,6 +47,7 @@ public:
 	void matchElectronDensity()
 	{
 		_targetType = FlexTargetMatchElectronDensity;
+		prepareWorkspace();
 	}
 
 	/** Tries to match the anisotropic tensor to that found in the PDB file.
@@ -73,10 +75,14 @@ private:
 	double matchOriginalBeeScore();
 	double maximiseIsotropyScore();
 	double matchElectronDensityScore();
+	
+	void prepareWorkspace();
+
 	AtomGroupPtr _atomGroup;
 	CrystalPtr _crystal;
 
 	FlexTarget _targetType;
+	MapScoreWorkspace _workspace;
 };
 
 #endif /* FlexGlobal_hpp */
