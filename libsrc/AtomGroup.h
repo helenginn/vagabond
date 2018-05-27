@@ -135,6 +135,11 @@ public:
 		}
 		return _largestNum + 1;
 	}
+	
+	std::vector<AtomPtr> getAtoms()
+	{
+		return _atoms;
+	}
 protected:
 	virtual AtomList topLevelAtoms();
 	int _timesRefined;
