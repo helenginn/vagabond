@@ -837,7 +837,8 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		{
 			AtomPtr anAtom = workspace->extra[i];
 			
-			if (std::find(selected.begin(), selected.end(), anAtom) == selected.end())
+			if (std::find(selected.begin(), selected.end(), anAtom) 
+			    == selected.end())
 			{
 				continue;
 			}
