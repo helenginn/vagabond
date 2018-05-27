@@ -1004,12 +1004,29 @@ std::vector<vec3> Polymer::getAnchorSphereDiffs()
 	}
 
 	vec3_mult(&sum, 1/(double)finals->size());
+	vec3 total = empty_vec3();
 
 	for (size_t i = 0; i < finals->size(); i++)
 	{
 		vec3 onePos = finals->at(i).start;
-		vec3 diff = vec3_subtract_vec3(onePos, sum);
-		results.push_back(diff);
+		
+		if (_centroidOffsets.size() > i)
+		{
+			vec3 offset = _centroidOffsets[i];
+			vec3_mult(&offset, -1);
+			vec3_add_to_vec3(&onePos, offset);
+		}
+		
+		vec3_add_to_vec3(&total, onePos);
+		
+		results.push_back(onePos);
+	}
+	
+	vec3_mult(&total, 1 / (double)finals->size());
+	
+	for (size_t i = 0; i < results.size(); i++)
+	{
+		results[i] = vec3_subtract_vec3(results[i], total);
 	}
 
 	return results;
@@ -1036,6 +1053,7 @@ void Polymer::applyTranslationTensor()
 	for (size_t i = 0; i < sphereDiffs.size(); i++)
 	{
 		vec3 diff = sphereDiffs[i];
+		vec3_add_to_vec3(&diff, _sphereDiffOffset);
 		vec3 diffTensored = diff;
 		mat3x3_mult_vec(_transTensor, &diffTensored);
 		vec3 movement = vec3_subtract_vec3(diffTensored, diff);
@@ -1462,7 +1480,11 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	{
 		NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
 		nelderMead->addParameter(this, getOverallScale, setOverallScale,
-		                         1.5, 0.01, "overall_scale");
+		                         0.4, 0.01, "overall_scale");
+		
+		nelderMead->addParameter(this, getSphereDiffOffsetX, setSphereDiffOffsetX, 0.04, 0.005);
+		nelderMead->addParameter(this, getSphereDiffOffsetY, setSphereDiffOffsetY, 0.04, 0.005);
+		nelderMead->addParameter(this, getSphereDiffOffsetZ, setSphereDiffOffsetZ, 0.04, 0.005);
 		nelderMead->setCycles(25);
 		nelderMead->setVerbose(true);
 		FlexGlobal target;
@@ -1546,7 +1568,6 @@ void Polymer::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	AtomGroupPtr allBackbone = getAllBackbone();
 	target.setAtomGroup(allBackbone);
-	target.matchOriginalBees();
 	target.setCrystal(crystal);
 	target.matchElectronDensity();
 	strategy->setEvaluationFunction(FlexGlobal::score, &target);

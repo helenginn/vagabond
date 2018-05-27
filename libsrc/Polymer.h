@@ -37,7 +37,7 @@ public:
 		_totalMonomers = 0;
 		_transTensor = make_mat3x3();
 		mat3x3_scale(&_transTensor, 1.5, 1.5, 1.5);
-		_overallScale = 1;
+		_overallScale = 0;
 		_startB = Options::getBStart();
 		_extraRotParams = {1, 0, 0};
 		_tmpPhi = 0;
@@ -305,6 +305,39 @@ public:
 	static double getRotAngle(void *object)
 	{
 		return static_cast<Polymer *>(object)->_rotationAngle;
+	}
+
+	static double getSphereDiffOffsetX(void *object)
+	{
+		return static_cast<Polymer *>(object)->_sphereDiffOffset.x;
+	}
+
+	static void setSphereDiffOffsetX(void *object, double value)
+	{
+		static_cast<Polymer *>(object)->_sphereDiffOffset.x = value;
+		static_cast<Polymer *>(object)->applyTranslationTensor();
+	}
+
+	static double getSphereDiffOffsetY(void *object)
+	{
+		return static_cast<Polymer *>(object)->_sphereDiffOffset.y;
+	}
+
+	static void setSphereDiffOffsetY(void *object, double value)
+	{
+		static_cast<Polymer *>(object)->_sphereDiffOffset.y = value;
+		static_cast<Polymer *>(object)->applyTranslationTensor();
+	}
+
+	static double getSphereDiffOffsetZ(void *object)
+	{
+		return static_cast<Polymer *>(object)->_sphereDiffOffset.z;
+	}
+
+	static void setSphereDiffOffsetZ(void *object, double value)
+	{
+		static_cast<Polymer *>(object)->_sphereDiffOffset.z = value;
+		static_cast<Polymer *>(object)->applyTranslationTensor();
 	}
 
 	virtual void calculateExtraRotations();

@@ -188,7 +188,7 @@ protected:
 	std::vector<mat3x3> _rotations;
 
 	std::vector<vec3> _transTensorOffsets;
-	std::vector<mat3x3> _extraRotationMats; // currently unused
+	std::vector<mat3x3> _extraRotationMats;
 
 	virtual void calculateExtraRotations() {};
 
@@ -198,6 +198,7 @@ protected:
 	// this axis is that of the rotation matrices applied to the structure
 	vec3 _rotationAxis;
 	vec3 _rotationCentre;
+	vec3 _sphereDiffOffset;
 
 	double _rotationAngle;
 
@@ -209,7 +210,6 @@ protected:
 private:
 	double _absoluteBFacSubtract;
 	double _absoluteBFacMult;
-
 
 	bool _changedRotations;
 	std::string _chainID;

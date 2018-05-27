@@ -31,6 +31,7 @@ Molecule::Molecule()
 	_magicRotAxis = make_vec3(1, 0, 0);
 	_rotationAxis = make_vec3(1, 0, 0);
 	_rotationCentre = make_vec3(nan(" "), nan(" "), nan(" "));
+	_sphereDiffOffset = empty_vec3();
 	_rotationAngle = 0;
 	_changedRotations = true;
 }
