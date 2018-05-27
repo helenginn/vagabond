@@ -58,7 +58,7 @@ typedef struct
 
 /** \cond SHOW_COORD_VAL */
 
-#define COORDVAL_FULL
+//#define COORDVAL_FULL
 
 typedef struct
 {
