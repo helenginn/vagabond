@@ -117,7 +117,10 @@ FFT::FFT(FFT &other)
 
 void FFT::copyFrom(FFTPtr other)
 {
-	memcpy(data, other->data, nn * sizeof(FFTW_DATA_TYPE));
+	for (int i = 0; i < nn; i++)
+	{
+		data[i][0] = other->data[i][0];
+	}
 }
 
 
@@ -765,7 +768,7 @@ bool sameScale)
 	double multZ = add.z * fftCrystal->nz;
 
 	/* Get the remainder after subtracting a number of whole voxels */
-	vec3 atomOffset; // in crystal coordinates actually.
+	vec3 atomOffset; // in crystal coordinates actually, converted later.
 	atomOffset.x = fmod(multX, 1.);
 	atomOffset.y = fmod(multY, 1.);
 	atomOffset.z = fmod(multZ, 1.);
@@ -789,19 +792,23 @@ bool sameScale)
 
 	fftAtom->shiftToCentre();
 
-	vec3 shift = make_vec3((double)(-fftAtom->nx) * 0.5,
+	/* There will be an additional shift having moved the atom by
+	 * half the dimension length which needs to be taken into account, 
+	 * unfortunately. */
+	vec3 atomShift = make_vec3((double)(-fftAtom->nx) * 0.5,
 	                       (double)(-fftAtom->ny) * 0.5,
-	(double)(-fftAtom->nz) * 0.5);
-	mat3x3_mult_vec(atomVox2Crystal, &shift);
+	                       (double)(-fftAtom->nz) * 0.5);
+	vec3 shift = mat3x3_mult_vec(atomVox2Crystal, atomShift);
 
-	/* In crystal voxels at the moment */
+	/* In crystal voxels at the moment - don't worry about fractional
+	 * shifts. */
 	vec3 shiftRemainder = make_vec3(fmod(shift.x, 1),
 	                                fmod(shift.y, 1),
-	fmod(shift.z, 1));
+	                                fmod(shift.z, 1));
 
 	vec3 wholeShiftOnly = make_vec3(shift.x - shiftRemainder.x - 1,
 	                                shift.y - shiftRemainder.y - 1,
-	shift.z - shiftRemainder.z - 1);
+	                                shift.z - shiftRemainder.z - 1);
 
 	shiftRemainder.x = 1 + shiftRemainder.x;
 	shiftRemainder.y = 1 + shiftRemainder.y;
@@ -819,6 +826,7 @@ bool sameScale)
 	/* Fractional offset in atomic coordinates, for each atom as a
 	* 	fraction of the crystal voxel. */
 	atomOffset = vec3_add_vec3(atomOffset, shiftRemainder);
+	vec3 crystOffset = mat3x3_mult_vec(atomVox2Crystal, atomOffset);
 
 	/* We loop around these crystal voxel limits now (ss -> ms -> fs).
 	* We also break the loop if it exceeds the limits of our atom voxels
@@ -849,6 +857,11 @@ bool sameScale)
 	}
 
 	double step = 1;
+	
+	for (int i = 0; i < fftAtom->nn; i++)
+	{
+		fftAtom->data[i][1] = std::nan(" ");
+	}
 
 	/* min/maxAtoms are in crystal coordinates.*/
 	for (double k = minAtom.z; k < maxAtom.z; k += step)
@@ -887,10 +900,12 @@ bool sameScale)
 				vec3_add_to_vec3(&atomPos, atomOffset);
 
 				/* If this value is within floating point error, stop now. */
+				/*
 				if (fftAtom->getReal(atomPos.x, atomPos.y, atomPos.z) <= 10e-6)
 				{
 					continue;
 				}
+				*/
 
 				/* Find the interpolated value which atomPos falls on */
 				double atomReal = 0;
@@ -934,7 +949,8 @@ bool sameScale)
 				
 				count++;
 
-				if (mapScoreType == MapScoreTypeCorrel)
+				if (mapScoreType == MapScoreTypeCorrel ||
+				    mapScoreType == MapScoreTypeCorrelCopy)
 				{
 					if ((!fftCrystal->_writeToMaskZero &&
 					     fftCrystal->getMask(crystalIndex) == 0))
@@ -944,6 +960,21 @@ bool sameScale)
 
 					/* We do NOT need to interpolate */
 					double realCryst = fftCrystal->getReal(crystalIndex);
+					
+					/* not working yet */
+					if (mapScoreType == MapScoreTypeCorrelCopy)
+					{
+						vec3 intCrystPos = vec3_add_vec3(finalCrystalVox,
+						                                 crystOffset);
+						
+						vec3 unshifted = vec3_subtract_vec3(atomPos,
+						                                    shift);
+
+						double intp = fftCrystal->interpolate(intCrystPos);
+						long ele = fftAtom->element(unshifted);
+
+						fftAtom->data[ele][1] = intp;
+					}
 
 					if (vals)
 					{

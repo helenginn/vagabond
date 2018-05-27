@@ -31,6 +31,7 @@ typedef enum
 {
 	MapScoreTypeNone,
 	MapScoreTypeCorrel,
+	MapScoreTypeCorrelCopy,
 	MapScoreTypeRadialMagnitude,
 	MapScoreTypeCopyToSmaller,
 	MapScoreAddNoWrap,

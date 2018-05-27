@@ -855,11 +855,74 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		selected[i]->addToMap(workspace->segment, workspace->basis, 
 		                      workspace->ave, false, true, true);
 	}
+	
+	double score = 0;
 
-	double score = scoreFinalMap(crystal, workspace->segment, plot,
-	                             workspace->scoreType, workspace->ave);
+	if (first || true)
+	{
+		score = scoreFinalMap(crystal, workspace->segment, plot,
+		                      workspace->scoreType, workspace->ave);
 
+		/*
+		std::vector<double> obs, calc;
+
+		for (int i = 0; i < workspace->segment->nn; i++)
+		{
+			double c = workspace->segment->data[i][0];
+			double o = workspace->segment->data[i][1];
+			
+			if (c == c && o == o)
+			{
+				obs.push_back(o);
+				calc.push_back(c);
+			}
+		}		
+		
+		score = scoreFinalValues(obs, calc, workspace->scoreType);
+		std::cout << "Score is now " << score << std::endl;
+		*/
+	}
+	else
+	{
+		std::vector<double> obs, calc;
+
+		for (int i = 0; i < workspace->segment->nn; i++)
+		{
+			double c = workspace->segment->data[i][0];
+			double o = workspace->segment->data[i][1];
+			
+			obs.push_back(o);
+			calc.push_back(c);
+		}		
+		
+		score = scoreFinalValues(obs, calc, workspace->scoreType);
+	}
+	
 	return score;
+}
+
+double AtomGroup::scoreFinalValues(std::vector<double> xs,
+                                   std::vector<double> ys,
+                                   ScoreType scoreType)
+{
+	double cutoff = MAP_VALUE_CUTOFF;
+	if (scoreType == ScoreTypeCorrel)
+	{
+		double correl = correlation(xs, ys, cutoff);
+		return -correl;
+	}
+	else if (scoreType == ScoreTypeRFactor)
+	{
+		double rFactor = scaled_r_factor(xs, ys, cutoff);
+		return rFactor;
+	}
+	else if (scoreType == ScoreTypeMultiply)
+	{
+		double mult = weightedMapScore(xs, ys);
+		return -mult;
+	}
+	
+	return 0;
 }
 
 double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
@@ -878,7 +941,7 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 
 	FFTPtr map = crystal->getFFT();
 
-	FFT::score(map, segment, ave, &vals);
+	FFT::score(map, segment, ave, &vals, MapScoreTypeCorrelCopy);
 
 	/* For correlation calculations */
 	for (size_t i = 0; i < vals.size(); i++)
@@ -940,27 +1003,10 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	/* Clear out the massive vectors */
 	vals.clear();
 	std::vector<CoordVal>().swap(vals);
-	/* n.b. this is fucked. please unfuck before continuing. */
-	/*    FFT::score(map, obsSeg, zero, NULL, NULL, MapScoreTypeCopyToSmaller);
-	*  when you need this ^ check the commits from before 26th Feb. */
 
-	if (scoreType == ScoreTypeCorrel)
-	{
-		double correl = correlation(xs, ys, cutoff);
-		return -correl;
-	}
-	else if (scoreType == ScoreTypeRFactor)
-	{
-		double rFactor = scaled_r_factor(xs, ys, cutoff);
-		return rFactor;
-	}
-	else if (scoreType == ScoreTypeMultiply)
-	{
-		double mult = weightedMapScore(xs, ys);
-		return -mult;
-	}
+	double score = scoreFinalValues(xs, ys, scoreType);
 
-	return 0;
+	return score;
 }
 
 void AtomGroup::addProperties()
