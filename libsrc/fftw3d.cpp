@@ -458,6 +458,53 @@ void FFT::setupBlurring()
 	_setupBlurring = true;
 }
 
+void FFT::addInterpolatedToReal(double sx, double sy, double sz, double val)
+{
+	long lx = (int)floor(sx);
+	long ly = (int)floor(sy);
+	long lz = (int)floor(sz);
+
+	double xProps[2];
+	double yProps[2];
+	double zProps[2];
+
+	xProps[1] = fmod(sx + 1, 1.);
+	yProps[1] = fmod(sy + 1, 1.);
+	zProps[1] = fmod(sz + 1, 1.);
+
+	xProps[0] = 1 - xProps[1];
+	yProps[0] = 1 - yProps[1];
+	zProps[0] = 1 - zProps[1];
+
+	for (int p = 0; p < 2; p++)
+	{
+		for (int q = 0; q < 2; q++)
+		{
+			for (int r = 0; r < 2; r++)
+			{
+				int sx1 = lx + p;
+				int sy1 = ly + q;
+				int sz1 = lz + r;
+
+				long index = element(sx1, sy1, sz1);
+				double prop = xProps[p] * yProps[q] * zProps[r];
+				data[index][0] += prop * val;
+			}	
+		}
+	}
+}
+
+void FFT::addInterpolatedToFrac(double fx, double fy, double fz, double val)
+{
+	collapseFrac(&fx, &fy, &fz);
+	
+	double sx = fx * nx;
+	double sy = fy * ny;
+	double sz = fz * nz;
+
+	addInterpolatedToReal(sx, sy, sz, val);
+}
+
 void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real)
 {
 	if (!_setupBlurring)
@@ -494,44 +541,8 @@ void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real
 
 				float factor = _blurAmounts[count];
 				count++;
-				
-				/*
-				lx = (int)lrint(sx);
-				ly = (int)lrint(sy);
-				lz = (int)lrint(sz);
-				
-				index = element(lx, ly, lz);
-				data[index][0] += factor * real;
-				*/
 
-				double xProps[2];
-				double yProps[2];
-				double zProps[2];
-				
-				xProps[1] = fmod(sx + 1, 1.);
-				yProps[1] = fmod(sy + 1, 1.);
-				zProps[1] = fmod(sz + 1, 1.);
-				
-				xProps[0] = 1 - xProps[1];
-				yProps[0] = 1 - yProps[1];
-				zProps[0] = 1 - zProps[1];
-				
-				for (int p = 0; p < 2; p++)
-				{
-					for (int q = 0; q < 2; q++)
-					{
-						for (int r = 0; r < 2; r++)
-						{
-							int sx1 = lx + p;
-							int sy1 = ly + q;
-							int sz1 = lz + r;
-
-							long index = element(sx1, sy1, sz1);
-							double prop = xProps[p] * yProps[q] * zProps[r];
-							data[index][0] += prop * real * factor;
-						}	
-					}
-				}
+				addInterpolatedToReal(sx, sy, sz, real * factor);
 			}
 		}
 	}
