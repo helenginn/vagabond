@@ -199,6 +199,8 @@ protected:
 	vec3 _rotationAxis;
 	vec3 _rotationCentre;
 	vec3 _sphereDiffOffset;
+	double _transExponent;
+	double _rotExponent;
 
 	double _rotationAngle;
 

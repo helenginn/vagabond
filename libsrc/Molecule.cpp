@@ -230,6 +230,7 @@ void Molecule::addProperties()
 	addVec3Property("rotation_axis", &_rotationAxis);
 	addVec3Property("rot_centre", &_rotationCentre);
 	addDoubleProperty("rotation_angle", &_rotationAngle);
+	addDoubleProperty("trans_exponent", &_transExponent);
 	addMat3x3ArrayProperty("extra_rotations", &_extraRotationMats);
 	addMat3x3ArrayProperty("rotations", &_rotations);
 	
