@@ -1070,6 +1070,10 @@ void Polymer::applyTranslationTensor()
 
 	std::vector<vec3> sphereDiffs = getAnchorSphereDiffs();
 
+	vec3 sum = empty_vec3();
+	double nonExpLength = 0;
+	double expLength = 0;
+
 	for (size_t i = 0; i < sphereDiffs.size(); i++)
 	{
 		vec3 diff = sphereDiffs[i];
@@ -1077,10 +1081,31 @@ void Polymer::applyTranslationTensor()
 		vec3 diffTensored = diff;
 		mat3x3_mult_vec(_transTensor, &diffTensored);
 		vec3 movement = vec3_subtract_vec3(diffTensored, diff);
+		
+		double length = vec3_length(movement);
+
+		double mult = exp(length * _transExponent);
 		vec3_mult(&movement, _overallScale);
+
+		nonExpLength += vec3_length(movement);
+
+		vec3_mult(&movement, mult);
+		expLength += vec3_length(movement);
+
 		_transTensorOffsets.push_back(movement);
+		vec3_add_to_vec3(&sum, movement);
 	}
 	
+	double normalise = nonExpLength / expLength;
+	
+	vec3_mult(&sum, -1 / (double)_transTensorOffsets.size());
+
+	for (size_t i = 0; i < _transTensorOffsets.size(); i++)
+	{
+		vec3_mult(&_transTensorOffsets[i], normalise);
+		vec3_add_to_vec3(&_transTensorOffsets[i], sum);
+	}
+
 	applyPolymerChanges();
 }
 
