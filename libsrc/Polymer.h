@@ -290,6 +290,31 @@ public:
 	{
 		return static_cast<Polymer *>(object)->_rotationAngle;
 	}
+	
+	static void setRotExponent(void *object, double value)
+	{
+		Polymer *polymer = static_cast<Polymer *>(object);
+		polymer->_rotExponent = value;
+		polymer->setChangedRotation();
+		polymer->getExtraRotations();
+	}
+
+	static double getRotExponent(void *object)
+	{
+		return static_cast<Polymer *>(object)->_rotExponent;
+	}
+
+	static void setTransExponent(void *object, double value)
+	{
+		Polymer *polymer = static_cast<Polymer *>(object);
+		polymer->_transExponent = value;
+		polymer->applyTranslationTensor();
+	}
+
+	static double getTransExponent(void *object)
+	{
+		return static_cast<Polymer *>(object)->_transExponent;
+	}
 
 	static double getSphereDiffOffsetX(void *object)
 	{
