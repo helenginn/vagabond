@@ -121,6 +121,7 @@ public:
 		stepSizes.clear();
 		otherValues.clear();
 		tags.clear();
+		startingValues.clear();
 	}
 
 	int parameterCount()
