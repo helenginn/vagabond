@@ -1365,12 +1365,16 @@ void Polymer::minimiseRotations()
 
 				double bee = model->getMeanSquareDeviation();
 				double weight = 1 / (bee * bee);
-				weights.push_back(weight);
+				
 
 				samples = model->getManyPositions();
 				vec3 fixed = model->getAbsolutePosition();
 
 				vec3 variant = samples->at(i).start;
+				
+				if (weight != weight) continue;
+				
+				weights.push_back(weight);
 				fixedVecs.push_back(fixed);
 				variantVecs.push_back(variant);
 			}
