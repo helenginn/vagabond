@@ -34,6 +34,7 @@ private:
 	int gridLength;
 	int gridJumps;
 	bool _writeCSV;
+	bool _writePNG;
 	ReverseMap reverseResults;
 	std::vector<double> orderedResults;
 	std::vector<ParamList> orderedParams;
@@ -46,6 +47,7 @@ public:
 		gridLength = 15;
 		cycleNum = 1;
 		_writeCSV = false;
+		_writePNG = false;
 	};
 
 	void setGridLength(int length)
@@ -61,6 +63,11 @@ public:
 	void setWriteCSV(bool write = true)
 	{
 		_writeCSV = write;
+	}
+
+	void setWritePNG(bool write = true)
+	{
+		_writePNG = write;
 	}
 
 	ResultMap results;

@@ -120,7 +120,7 @@ void RefinementGridSearch::refine()
 		}
 	}
 
-	if (tags.size() == 2)
+	if (tags.size() == 2 && _writePNG)
 	{
 		int stride = stepSizes[0] / otherValues[0];
 
@@ -137,7 +137,7 @@ void RefinementGridSearch::refine()
 		plotMap["style0"] = "heatmap";
 		plotMap["stride"] = i_to_str(stride);
 
-//		csv->plotPNG(plotMap);
+		csv->plotPNG(plotMap);
 	}
 	else if (_writeCSV)
 	{
