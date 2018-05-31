@@ -1529,24 +1529,24 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 
 	Timer timer("whole molecule fit", true);
 	
+	FlexGlobal target;
+	NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
+
 	if (translation)
 	{
-		NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
+		attachTargetToRefinement(nelderMead, target);
 		nelderMead->addParameter(this, getOverallScale, setOverallScale,
-		                         0.4, 0.01, "overall_scale");
+		                         0.2, 0.01, "overall_scale");
 		
-		nelderMead->addParameter(this, getSphereDiffOffsetX, setSphereDiffOffsetX, 0.04, 0.005);
-		nelderMead->addParameter(this, getSphereDiffOffsetY, setSphereDiffOffsetY, 0.04, 0.005);
-		nelderMead->addParameter(this, getSphereDiffOffsetZ, setSphereDiffOffsetZ, 0.04, 0.005);
+		nelderMead->addParameter(this, getTransExponent, setTransExponent, 2.0, 0.01);
 		nelderMead->setCycles(25);
 		nelderMead->setVerbose(true);
-		FlexGlobal target;
-		attachTargetToRefinement(nelderMead, target);
 		nelderMead->refine();
+		nelderMead->clearParameters();
 	}
-
-	NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
 	
+	attachTargetToRefinement(nelderMead, target);
+
 	if (translation)
 	{
 		nelderMead->addParameter(this, getTransTensor11, setTransTensor11,
@@ -1573,7 +1573,8 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	{
 		nelderMead->addParameter(this, getRotPhi, setRotPhi, 0.2, 0.0001);
 		nelderMead->addParameter(this, getRotPsi, setRotPsi, 0.2, 0.0001);
-		nelderMead->addParameter(this, getRotAngle, setRotAngle, 0.01, 0.0001);
+		nelderMead->addParameter(this, getRotAngle, setRotAngle, 0.002, 0.0001);
+		nelderMead->addParameter(this, getRotExponent, setRotExponent, 0.5, 0.01);
 		nelderMead->addParameter(this, getRotCentreX, setRotCentreX, 2.0, 0.01);
 		nelderMead->addParameter(this, getRotCentreY, setRotCentreY, 2.0, 0.01);
 		nelderMead->addParameter(this, getRotCentreZ, setRotCentreZ, 2.0, 0.01);
@@ -1582,9 +1583,8 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	nelderMead->setCycles(25);
 	nelderMead->setVerbose(true);
 
-	FlexGlobal target;
-	attachTargetToRefinement(nelderMead, target);
 	nelderMead->refine();
+	nelderMead->clearParameters();
 
 	timer.report();
 }
