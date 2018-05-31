@@ -906,12 +906,10 @@ bool sameScale)
 				vec3_add_to_vec3(&atomPos, atomOffset);
 
 				/* If this value is within floating point error, stop now. */
-				/*
 				if (fftAtom->getReal(atomPos.x, atomPos.y, atomPos.z) <= 10e-6)
 				{
 					continue;
 				}
-				*/
 
 				/* Find the interpolated value which atomPos falls on */
 				double atomReal = 0;
