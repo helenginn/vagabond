@@ -134,6 +134,7 @@ void Options::run()
 
 		objects.push_back(crystal);
 		crystals.push_back(crystal);
+		_tie = false;
 	}
 	
 	if (_outputDir.length())
