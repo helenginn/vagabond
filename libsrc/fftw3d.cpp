@@ -445,14 +445,20 @@ void FFT::setupBlurring()
 {
 	_blurAmounts.clear();
 	
+	double bfac = 10.89;
+	bfac /= 8 * M_PI * M_PI;
+	
 	for (int i = -1; i < 2; i++)
 	{
 		for (int j = -1; j < 2; j++)
 		{
 			for (int k = -1; k < 2; k++)
 			{
-				int moves = abs(i) + abs(j) + abs(k);
-				float factor = normal_distribution(moves, 1.);
+				vec3 shift = make_vec3(i, j, k);
+				mat3x3_mult_vec(_basis, &shift);
+				double movement = vec3_sqlength(shift);
+				
+				float factor = normal_distribution(movement, bfac);
 				_blurAmounts.push_back(factor);
 			}
 		}
