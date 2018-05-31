@@ -58,7 +58,7 @@ Options::Options(int argc, const char **argv)
 	if (argc <= 1)
 	{
 		std::cout << "Please specify a macromolecular model." << std::endl;
-		std::cout << "\te.g., vagabond --with-pdb=xxxx.pdb" << std::endl;
+		std::cout << "\te.g., vagabond --with-model=xxxx.pdb" << std::endl;
 		std::cout << std::endl;
 		std::cout << "Alternatively, see all options:" << std::endl;
 		std::cout << "\tvagabond --help\n" << std::endl;
