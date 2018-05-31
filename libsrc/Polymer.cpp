@@ -27,7 +27,27 @@
 #include "Options.h"
 #include "FlexGlobal.h"
 #include "RefinementNelderMead.h"
+#include "RefinementGridSearch.h"
 #include "Hydrogenator.h"
+
+Polymer::Polymer()
+{
+	_dampening = Options::getDampen();
+	_kick = Options::getKick();
+	_sideDampening = 0.05;
+	_sideKick = 0;
+	_anchorNum = 0;
+	_totalMonomers = 0;
+	_transTensor = make_mat3x3();
+	_transExponent = 0;
+	_rotExponent = 0;
+	mat3x3_scale(&_transTensor, 1.5, 1.5, 1.5);
+	_overallScale = 0;
+	_startB = Options::getBStart();
+	_extraRotParams = {1, 0, 0};
+	_tmpPhi = 0;
+	_tmpPsi = 0;
+}
 
 void Polymer::addMonomer(MonomerPtr monomer)
 {
