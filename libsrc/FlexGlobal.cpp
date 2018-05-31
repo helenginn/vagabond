@@ -17,6 +17,7 @@ FlexGlobal::FlexGlobal()
 {
 	_targetType = FlexTargetMaximiseIsotropy;
 	_targetIsoB = 8;
+	_prepared = false;
 }
 
 double FlexGlobal::matchElectronDensityScore()
@@ -136,6 +137,8 @@ void FlexGlobal::maximiseIsotropy()
 
 void FlexGlobal::prepareWorkspace()
 {
+	if (_prepared) return;
+
 	_workspace.scoreType = ScoreTypeCorrel;
 	_workspace.crystal = _crystal;
 	_workspace.selectAtoms = _atomGroup->getAtoms();
@@ -143,6 +146,7 @@ void FlexGlobal::prepareWorkspace()
 	_workspace.ave = empty_vec3();
 	_workspace.basis = make_mat3x3();
 	
+	_prepared = true;
 	AtomGroup::scoreWithMapGeneral(&_workspace);
 }
 

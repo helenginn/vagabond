@@ -71,6 +71,7 @@ public:
 	}
 private:
 	double _targetIsoB;
+	bool _prepared;
 
 	double matchOriginalBeeScore();
 	double maximiseIsotropyScore();
