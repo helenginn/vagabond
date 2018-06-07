@@ -1533,7 +1533,7 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	{
 		attachTargetToRefinement(nelderMead, target);
 		nelderMead->addParameter(this, getOverallScale, setOverallScale,
-		                         0.2, 0.01, "overall_scale");
+		                         0.5, 0.01, "overall_scale");
 		
 		nelderMead->addParameter(this, getTransExponent, setTransExponent, 2.0, 0.01);
 		nelderMead->setCycles(25);
