@@ -55,12 +55,23 @@ public:
 	{
 		return _absoluteBFacSubtract;
 	}
+	
+	static double getAbsoluteBFacSubtract(void *object)
+	{
+		return static_cast<Molecule *>(object)->_absoluteBFacSubtract;
+	}
 
 	void setAbsoluteBFacSubtract(double subtract)
 	{
 		_absoluteBFacSubtract = subtract;
 		std::cout << "Setting absolute B factor subtractor to " << subtract << std::endl;
 		refreshBModels();
+	}
+	
+	static void setAbsoluteBFacSubtract(void *object, double subtract)
+	{
+		static_cast<Molecule *>(object)->_absoluteBFacSubtract = subtract;
+		static_cast<Molecule *>(object)->refreshBModels();
 	}
 
 	static void vsSetAbsoluteBFacSubtract(void *object, double value)
