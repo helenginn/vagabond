@@ -1098,6 +1098,11 @@ void Polymer::applyTranslationTensor()
 	
 	double normalise = nonExpLength / expLength;
 	
+	if (normalise != normalise)
+	{
+		normalise = 1;
+	}
+	
 	vec3_mult(&sum, -1 / (double)_transTensorOffsets.size());
 
 	for (size_t i = 0; i < _transTensorOffsets.size(); i++)
