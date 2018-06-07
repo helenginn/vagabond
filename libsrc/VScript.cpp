@@ -143,6 +143,8 @@ bool VScript::isBetterThing(char *tmp)
 		if (firstWord[pos] == '(') brackstack++;
 		if (firstWord[pos] == ')') brackstack--;
 		
+		/* If we are completing a previous bracket stack,
+		 * nope. */
 		if (brackstack < 0) return false;
 		
 		if (firstWord[pos] == '.')
