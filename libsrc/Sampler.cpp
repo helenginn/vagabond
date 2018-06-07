@@ -94,7 +94,7 @@ void Sampler::addParamsForBond(BondPtr bond)
 			break;
 
 			case ParamOptionKick:
-			addTorsionBlur(bond, range, 0.01);
+			addTorsionBlur(bond, range, 0.0002);
 			break;
 
 			case ParamOptionDampen:
