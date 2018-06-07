@@ -273,6 +273,10 @@ public:
 	* 	\param rotation if true, will refine rotation parameters. */
 	void fitWholeMolecules(bool translation = false, bool rotation = true);
 	
+	int getCycleNum()
+	{
+		return _cycleNum;
+	}
 	
 	/** Analysis of backbone density and generation of heuristics */
 	void backboneDensityAnalysis();
