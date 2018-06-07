@@ -1339,8 +1339,9 @@ mat3x3 real2Frac, FFTPtr data)
 			for (int k = -nLimit; k < nLimit; k++)
 			{
 				bool asu = CSym::ccp4spg_is_in_asu(mtzspg, i, j, k);
-
-				if (!asu)
+				bool f000 = (i == 0 && j == 0 && k == 0);
+				
+				if (!asu && !f000)
 				{
 					continue;
 				}
@@ -1348,10 +1349,11 @@ mat3x3 real2Frac, FFTPtr data)
 				vec3 pos = make_vec3(i, j, k);
 				mat3x3_mult_vec(real2Frac, &pos);
 
-				if (vec3_length(pos) > dStar)
+				if (vec3_length(pos) > dStar && !f000)
 				{
 					continue;
 				}
+
 				double phase = getPhase(i, j, k);
 
 				double intensity = getIntensity(i, j, k);
@@ -1383,6 +1385,12 @@ mat3x3 real2Frac, FFTPtr data)
 				// i.e. 0 when mask is free flag.
 
 				/* MTZ file stuff */
+
+				if (f000)
+				{
+					fofofc = calcAmp;
+					fofc = 0;
+				}
 
 				fdata[0] = i;
 				fdata[1] = j;
