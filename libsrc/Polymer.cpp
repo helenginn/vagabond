@@ -1108,7 +1108,7 @@ void Polymer::applyTranslationTensor()
 	for (size_t i = 0; i < _transTensorOffsets.size(); i++)
 	{
 		vec3_mult(&_transTensorOffsets[i], normalise);
-		vec3_add_to_vec3(&_transTensorOffsets[i], sum);
+//		vec3_add_to_vec3(&_transTensorOffsets[i], sum);
 	}
 
 	applyPolymerChanges();
