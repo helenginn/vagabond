@@ -63,6 +63,8 @@ public:
 	static double findOverallKickAndDampen(void *object);
 	static double vsFindKickAndDampen(void *object);
 	
+	static double vsSandbox(void *object);
+	
 	void scaleSidechainsToBFactor();
 	void refineBackbone();
 	static double vsRefineBackbone(void *object);
@@ -377,6 +379,8 @@ private:
 		_rotationAxis = mat3x3_axis(rot, 0);
 		setChangedRotation();
 	}
+	void refineEverything(int start);
+	void refineLoop(int start, bool magic);
 
 	mat3x3 _transTensor;
 //	mat3x3 _rotMatrix;

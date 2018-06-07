@@ -1657,6 +1657,99 @@ double Polymer::findOverallKickAndDampen(void *object)
 	return 0;
 }
 
+double Polymer::vsSandbox(void *object)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Polymer *polymer = dynamic_cast<Polymer *>(parser);
+	
+	polymer->refineLoop(67, false);
+	polymer->refineLoop(66, false);
+	polymer->refineLoop(67, true);
+	polymer->refineLoop(66, true);
+	return 0;
+	
+	int anchorNum = polymer->getAnchor();
+	polymer->refineEverything(anchorNum - 2);
+	polymer->refineEverything(anchorNum + 2);
+}
+
+void Polymer::refineLoop(int start, bool magic)
+{
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	MonomerPtr monomer = getMonomer(start);
+	setupNelderMead();
+	setCrystal(crystal);
+
+	if (!magic)
+	{
+		addParamType(ParamOptionKick, 0.005);
+	}
+	else
+	{
+		addParamType(ParamOptionMagicAngles, 20);
+	}
+	
+	if (!monomer) return;
+	AtomPtr nitro = monomer->findAtom("CA");
+	if (!nitro) return;
+	BondPtr nitroBond = ToBondPtr(nitro->getModel());
+	if (!nitroBond) return;
+	setupTorsionSet(nitroBond, 0, 300, 0, 0, 0, 0);
+
+	setScoreType(ScoreTypeBFactorAgreement);
+	
+//	setSilent();
+	setCycles(200);
+	
+	sample();
+	clearParams();
+}
+
+void Polymer::refineEverything(int start)
+{
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	MonomerPtr monomer = getMonomer(start);
+	
+	if (!monomer) return;
+	
+	AtomPtr nitro = monomer->findAtom("N");
+	
+	if (!nitro) return;
+	
+	BondPtr nitroBond = ToBondPtr(nitro->getModel());
+	
+	if (!nitroBond) return;
+	
+	setupNelderMead();
+	setCrystal(crystal);
+	
+	addParamType(ParamOptionMagicAngles, 20);
+	/*
+	addParamType(ParamOptionKick, 0.05);
+	addParamType(ParamOptionDampen, 0.02);
+	*/
+	setupTorsionSet(nitroBond, 0, 1000, 0, 0, 0, 0);
+	
+	setVerbose();
+	setCycles(100);
+	
+	sample();
+	clearParams();
+	return;
+
+	setupNelderMead();
+	setCrystal(crystal);
+	
+	addParamType(ParamOptionMagicAngles, 20);
+	setupTorsionSet(nitroBond, 0, 1000, 0, 0, 0, 0);
+	
+	setVerbose();
+	setCycles(400);
+	
+	sample();
+	clearParams();
+}
+
 void Polymer::addProperties()
 {
 	Molecule::addProperties();
@@ -1680,7 +1773,7 @@ void Polymer::addProperties()
 	exposeFunction("set_overall_translation", vsTransTensorOverall);
 	exposeFunction("fit_translation", vsFitTranslation);
 	exposeFunction("fit_rotation", vsFitRotation);
-	exposeFunction("fit_kick_and_dampen", vsFindKickAndDampen);
+	exposeFunction("sandbox", vsSandbox);
 }
 
 void Polymer::addObject(ParserPtr object, std::string category)
