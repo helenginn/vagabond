@@ -713,7 +713,8 @@ void Options::recalculateFFT(bool saveState)
 	if (!diffractions.size()) return;
 	if (!crystals.size()) return;
 
-	_globalCount++;
+	_globalCount = getActiveCrystal()->getCycleNum() + 1;
+
 	DiffractionPtr mtz = diffractions[0];
 	statusMessage("Calculating R factors...");
 	
