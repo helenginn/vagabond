@@ -681,13 +681,13 @@ ThingPtr VScript::getThing(char **pos, ThingPtr thing, bool defRight)
 	/* Something is "right" if it involves a function on a LeftThing.
 	* It is always false if "thing" is an object, as this will have
 	* occurred at some point up the stack already. */
-	bool right =  isBetterThing(*pos) || defRight;
+	bool right = isBetterThing(*pos) || defRight;
 
 	if (!right)
 	{
 		char *orig = *pos;
 		std::string word = getNextWord(pos);
-
+		
 		/* Start with reserved things... like numbers, strings */
 		if (looksLikeNumber(&word[0]))
 		{
