@@ -604,7 +604,7 @@ double Sampler::getScore()
 		return 0;
 	}
 
-	if (_scoreType == ScoreTypeModelPos || _scoreType == ScoreTypeModelRMSDZero || _scoreType == ScoreTypeRMSDZero)
+	if (_scoreType != ScoreTypeCorrel && _scoreType != ScoreTypeRFactor)
 	{
 		double score = 0;
 		double count = 0;
@@ -623,6 +623,11 @@ double Sampler::getScore()
 				oneScore = _sampled[i]->getBFactor();
 				break;
 				
+				case ScoreTypeBFactorAgreement:
+				oneScore = pow(_sampled[i]->getBFactor() -
+				            _sampled[i]->getInitialBFactor() + 6.3, 2.0);
+				break;
+				
 				case ScoreTypeRMSDZero:
 				oneScore = _sampled[i]->getModel()->smallness();
 				break;
@@ -638,7 +643,10 @@ double Sampler::getScore()
 		return score / count;
 	}
 
-	AtomGroup::scoreWithMapGeneral(&_workspace);
+	double score = AtomGroup::scoreWithMapGeneral(&_workspace);
+	
+	score *= (1 / bPenalty);
+	return score;
 }
 
 
