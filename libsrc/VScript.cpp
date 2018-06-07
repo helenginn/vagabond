@@ -111,11 +111,26 @@ inline bool looksLikeNumber(char *tmp)
 	return false;
 }
 
+inline bool looksLikeString(char *tmp)
+{
+	if (*tmp == '"')
+	{
+		return true;
+	}
+
+	return false;
+}
+
 bool VScript::isBetterThing(char *tmp)
 {
 	std::string firstWord = getNextWord(&tmp);
 	
 	if (looksLikeNumber(&firstWord[0]))
+	{
+		return false;
+	}
+	
+	if (looksLikeString(&firstWord[0]))
 	{
 		return false;
 	}
