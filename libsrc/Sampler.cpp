@@ -69,6 +69,13 @@ void Sampler::addAtomsForBond(BondPtr firstBond, int k)
 	}
 }
 
+void Sampler::addCustomParameter(void *object, Getter getter, Setter setter,
+                                 double range, double interval,
+                                 std::string name)
+{
+	_strategy->addParameter(object, getter, setter, range, interval, name);
+}
+
 void Sampler::addParamsForBond(BondPtr bond)
 {
 	for (ParamMap::iterator it = _params.begin(); it != _params.end(); it++)

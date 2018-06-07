@@ -162,6 +162,9 @@ public:
 	}
 
 
+	void addCustomParameter(void *object, Getter getter, Setter setter,
+                                 double range, double interval,
+                                 std::string name);
 protected:
 	BondPtr setupTorsionSet(BondPtr bond, int k, int bondNum,
 	                        double range, double interval,
