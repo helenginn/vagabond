@@ -645,7 +645,6 @@ double Sampler::getScore()
 
 	double score = AtomGroup::scoreWithMapGeneral(&_workspace);
 	
-	score *= (1 / bPenalty);
 	return score;
 }
 
