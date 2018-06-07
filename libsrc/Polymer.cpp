@@ -1133,13 +1133,9 @@ void Polymer::calculateExtraRotations()
 		double cosine = vec3_cosine_with_vec3(diff, _magicRotAxis);
 		vec3 cross = vec3_cross_vec3(diff, _magicRotAxis);
 
-		/* If the angle is far, make it more extreme to simulate
-		 * a bell curve. */
-		double angleMult = cosine;
-		double mult = exp(angleMult * _rotExponent);
-		angleMult *= mult;
-
 		// Need to make sure the poles are opposite. 
+		// Choice of doing so is relatively arbitrary.
+		double angleMult = cosine;
 		if (cross.x < 0)
 		{
 			angleMult *= -1;
