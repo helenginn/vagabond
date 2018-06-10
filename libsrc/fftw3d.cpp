@@ -432,10 +432,11 @@ void FFT::addToReal(double xfrac, double yfrac, double zfrac, double real)
 void FFT::setupBlurring()
 {
 	_blurAmounts.clear();
-	
+
 	double bfac = 10.89;
+	//	bfac = 0.1;
 	bfac /= 8 * M_PI * M_PI;
-	
+
 	for (int i = -1; i < 2; i++)
 	{
 		for (int j = -1; j < 2; j++)
