@@ -24,6 +24,7 @@ Parser::Parser()
 {
 	_setup = false;
 	_parent = NULL;
+	setupKnownClasses();
 }
 
 void Parser::setup(bool isNew)
@@ -1303,6 +1304,12 @@ ParserPtr Parser::objectOfType(char *className)
 
 	//    std::cout << "Making object of type " << className << std::endl;
 	return object;
+}
+
+void Parser::setupKnownClasses()
+{
+	_allClasses["Molecule"] = 1;
+	_allClasses["Model"] = 1;
 }
 
 void Parser::addToAllParsers(std::string key, ParserPtr parser)
