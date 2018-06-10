@@ -730,22 +730,11 @@ void Options::fitWholeMolecule(bool translation, bool rotation)
 
 void Options::recalculateFFT(bool saveState)
 {
-	if (!diffractions.size()) return;
-	if (!crystals.size()) return;
-
-	_globalCount = getActiveCrystal()->getCycleNum() + 1;
-
-	DiffractionPtr mtz = diffractions[0];
 	statusMessage("Calculating R factors...");
 	
-	getActiveCrystal()->concludeRefinement(_globalCount, mtz);
+	Crystal::vsConcludeRefinement(&*(getActiveCrystal()));
 	agreementSummary();
 	
-	if (saveState)
-	{
-		getActiveCrystal()->saveState();
-	}
-
 	std::cout << "Total states: " << getActiveCrystal()->stateCount() <<
 	std::endl;
 }
