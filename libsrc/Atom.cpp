@@ -137,42 +137,6 @@ FFTPtr Atom::getBlur()
 	return modelDist;
 }
 
-double Atom::scoreWithMap(CrystalPtr crystal, std::vector<CoordVal> *vals,
-                          bool diff, MapScoreType mapScore)
-{
-	FFTPtr fft = crystal->getFFT();
-
-	if (diff)
-	{
-		fft = crystal->getDiFFT();
-	}
-
-	return scoreWithMap(fft, crystal->getReal2Frac(), vals, mapScore);
-}
-
-double Atom::scoreWithMap(FFTPtr fft, mat3x3 unit_cell,
-                          std::vector<CoordVal> *vals,
-MapScoreType mapScore)
-{
-	FFTPtr atomDist = _element->getDistribution();
-	FFTPtr modelDist = getBlur();
-	FFT::multiply(modelDist, atomDist);
-	modelDist->fft(1);
-	modelDist->invertScale();
-
-	vec3 pos = _model->getAbsolutePosition();
-	mat3x3_mult_vec(unit_cell, &pos);
-
-	if (pos.x != pos.x)
-	{
-		return 0;
-	}
-
-	double score = FFT::score(fft, modelDist, pos, vals, mapScore);
-
-	return score;
-}
-
 void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
                     bool sameScale, bool noWrap)
 {

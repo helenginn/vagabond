@@ -94,15 +94,6 @@ public:
 		return _element;
 	}
 
-	/* Fit with FFT for the element dist only */
-	double scoreWithMap(FFTPtr fft, mat3x3 unit_cell,
-	                    std::vector<CoordVal> *vals,
-	MapScoreType mapScore = MapScoreTypeCorrel);
-
-	double scoreWithMap(CrystalPtr crystal, std::vector<CoordVal> *vals,
-	                    bool diff = false,
-	MapScoreType mapScore = MapScoreTypeCorrel);
-
 	/* Returns a FFT for the model dist, for reuse */
 	void addToMap(FFTPtr fft, mat3x3 unit_cell,
 	              vec3 offset = make_vec3(0, 0, 0), bool mask = false,
