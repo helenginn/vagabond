@@ -44,6 +44,7 @@ typedef struct
 	std::vector<AtomPtr> selectAtoms;
 	std::vector<AtomPtr> extra;
 	FFTPtr segment;
+	FFTPtr fcSegment;
 	FFTPtr constant;
 	vec3 ave;
 	mat3x3 basis;
