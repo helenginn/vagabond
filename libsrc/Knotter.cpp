@@ -711,11 +711,11 @@ void Knotter::makeProline()
 	{
 		torsion = deg2rad(27.27);
 	}
-	//    Bond::setTorsion(&*ca2cb, torsion);
 	ca2cb->setRefineBondAngle(false);
+	ca2cb->setRefineFlexibility(false);
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
-	//    cb2cg->setFixed(true);
+	cb2cg->setRefineFlexibility(false);
 	cb2cg->setTorsionAtoms(cAlpha, cDelta);
 	cb2cg->activate();
 	//    Bond::setTorsion(&*cb2cg, deg2rad(-34.61));
@@ -726,7 +726,7 @@ void Knotter::makeProline()
 	cb2hb3->activate();
 
 	BondPtr cg2cd = BondPtr(new Bond(cGamma, cDelta));
-	//    cg2cd->setFixed(true);
+	cg2cd->setRefineFlexibility(false);
 	cg2cd->activate();
 
 	BondPtr cg2hg2 = BondPtr(new Bond(cGamma, hGamma2));
@@ -1265,7 +1265,6 @@ void Knotter::makeIsoleucine()
 	AtomPtr hBackbone = _sidechain->findAtom("HA");
 
 	BondPtr ca2cb = tieBetaCarbon(cGamma1);
-//	ca2cb->setRefineBondAngle(false);
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma1));
 	cb2cg1->setTorsionAtoms(cAlpha, cDelta1);
@@ -1373,7 +1372,6 @@ void Knotter::makeAspartate()
 	AtomPtr hBackbone = _sidechain->findAtom("HA");
 
 	BondPtr ca2cb = tieBetaCarbon(cGamma);
-	//    ca2cb->setRefineBondAngle(false);
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg1->setTorsionAtoms(cAlpha, oDelta1);
@@ -1549,7 +1547,6 @@ void Knotter::makeThreonine()
 	AtomPtr hBackbone = _sidechain->findAtom("HA");
 
 	BondPtr ca2cb = tieBetaCarbon(oGamma1);
-	ca2cb->setRefineBondAngle(false);
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, oGamma1));
 	cb2cg1->activate();
