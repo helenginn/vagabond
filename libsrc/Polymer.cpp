@@ -403,11 +403,12 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 void Polymer::refineVScript(void *object, RefinementType rType)
 {
 	OptionsPtr options = Options::getRuntimeOptions();
-	CrystalPtr active = options->getActiveCrystal();
+	CrystalPtr crystal = options->getActiveCrystal();
 	
 	Parser *parser = static_cast<Parser *>(object);
 	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	polymer->refine(active, rType);
+	polymer->refine(crystal, rType);
+	crystal->addComment("Refining against " + Options::rTypeString(rType));
 }
 
 double Polymer::vsRefinePositionsToPDB(void *object)
@@ -1154,6 +1155,9 @@ void Polymer::calculateExtraRotations()
 
 void Polymer::superimpose()
 {
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	crystal->addComment("Superimposing ensemble for chain " + getChainID());
+	
 	_centroids.clear();
 	_centroidOffsets.clear();
 	_rotations.clear();
@@ -1502,6 +1506,11 @@ void Polymer::vsTransTensorOverall(void *object, double value)
 	polymer->_transTensor = make_mat3x3();
 	mat3x3_mult_scalar(&polymer->_transTensor, value);
 	polymer->applyTranslationTensor();
+
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	crystal->addComment("Changing overall translation scale to "
+	                    + f_to_str(value, 2) + " for chain " + 
+	                    polymer->getChainID());
 }
 
 double Polymer::vsFitTranslation(void *object)
@@ -1510,6 +1519,9 @@ double Polymer::vsFitTranslation(void *object)
 	Polymer *polymer = dynamic_cast<Polymer *>(parser);
 
 	polymer->optimiseWholeMolecule(true, false);
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	crystal->addComment("Refining overall translation matrix for chain "
+	                    + polymer->getChainID());
 }
 
 double Polymer::vsFitRotation(void *object)
@@ -1518,6 +1530,9 @@ double Polymer::vsFitRotation(void *object)
 	Polymer *polymer = dynamic_cast<Polymer *>(parser);
 
 	polymer->optimiseWholeMolecule(false, true);
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	crystal->addComment("Refining overall rotation parameters for chain "
+	                    + polymer->getChainID());
 }
 
 void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
