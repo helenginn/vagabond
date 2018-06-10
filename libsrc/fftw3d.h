@@ -73,6 +73,7 @@ public:
 	void create(long);
 	void create(long, long, long);
 	void copyFrom(FFTPtr other);
+	void scaleToFFT(FFTPtr other);
 
 	void setupMask();
 

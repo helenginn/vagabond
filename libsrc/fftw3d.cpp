@@ -150,6 +150,16 @@ void FFT::create(long nnx, long nny, long nnz)
 	memset(data, 0, sizeof(FFTW_DATA_TYPE) * nn);
 }
 
+void FFT::scaleToFFT(FFTPtr other)
+{
+	double ave1 = averageAll();
+	double ave2 = other->averageAll();
+	
+	double scale = ave2 / ave1;
+	
+	multiplyAll(scale);
+}
+
 void FFT::setupMask()
 {
 	if (mask)
