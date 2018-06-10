@@ -332,4 +332,14 @@ std::vector<AtomPtr> Molecule::getCloseAtoms(AtomPtr one, double tol, bool cache
 }
 
 
+void Molecule::setAbsoluteBFacSubtract(void *object, double subtract)
+{
+	Molecule *obj = static_cast<Molecule *>(object);
+	obj->_absoluteBFacSubtract = subtract;
+	obj->refreshBModels();
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	crystal->addComment("Absolute B factor subtractor changed to "
+	+ f_to_str(subtract, 2) + " for " + obj->getChainID());
+}
+
 

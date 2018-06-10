@@ -68,11 +68,7 @@ public:
 		refreshBModels();
 	}
 	
-	static void setAbsoluteBFacSubtract(void *object, double subtract)
-	{
-		static_cast<Molecule *>(object)->_absoluteBFacSubtract = subtract;
-		static_cast<Molecule *>(object)->refreshBModels();
-	}
+	static void setAbsoluteBFacSubtract(void *object, double subtract);
 
 	static void vsSetAbsoluteBFacSubtract(void *object, double value)
 	{
