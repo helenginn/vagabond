@@ -30,6 +30,13 @@ typedef enum
 	ScoreTypeRMSDZero = 6, /** Sum of squares of anisotropic tensor */
 } ScoreType;
 
+typedef enum
+{
+	MapScoreFlagNone = 0,
+	MapScoreFlagDifference = 1,
+	MapScoreFlagSubtractFc = 2,
+} MapScoreFlag;
+
 typedef struct 
 {
 	ScoreType scoreType;
@@ -40,6 +47,7 @@ typedef struct
 	FFTPtr constant;
 	vec3 ave;
 	mat3x3 basis;
+	unsigned int flag;
 } MapScoreWorkspace;
 
 
