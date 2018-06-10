@@ -210,6 +210,7 @@ private:
 	bool _setup;
 	
 	void privateSaveState();
+	void sanitise(std::string *str, std::string from, std::string to);
 	
 	Parser *getParent()
 	{

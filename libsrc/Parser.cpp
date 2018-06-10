@@ -232,6 +232,18 @@ int Parser::getChildCount(std::string className)
 	return _parserList[className].size();
 }
 
+void Parser::sanitise(std::string *str, std::string from, std::string to)
+{
+	size_t pos = str->find(from, pos);
+
+	while (pos != std::string::npos)
+	{
+		str->replace(pos, from.length(), to);
+		pos += to.length();
+		pos = str->find(from, pos);
+	}
+}
+
 void Parser::outputContents(std::ofstream &stream, int in)
 {
 	stream << std::setprecision(5);
@@ -244,6 +256,9 @@ void Parser::outputContents(std::ofstream &stream, int in)
 	{
 		std::string name = _stringProperties[i].ptrName;
 		std::string *ptr = _stringProperties[i].stringPtr;
+		
+		sanitise(ptr, "\n", "\\n");
+		
 		if (!ptr) continue;
 		if (ptr->length())        
 		{
@@ -944,6 +959,7 @@ void Parser::setProperty(std::string property, std::string value)
 				return; 
 			}
 
+			sanitise(&value, "\\n", "\n");
 			*_stringProperties[i].stringPtr = value;
 
 			return;
@@ -1056,7 +1072,7 @@ char *Parser::parseNextProperty(std::string property, char *block)
 
 	block++;
 	incrementIndent(&block);
-	char *white = strchrwhite(block); 
+	char *white = strchr(block, '\n');
 	*white = '\0';
 
 	// now we expect the value between block and white...
@@ -1180,8 +1196,6 @@ char *Parser::parse(char *block)
 	*newline = '\0';
 	std::string path = std::string(block);
 	_absolutePath = path;
-
-	//    std::cout << "Found path " << path << std::endl;
 
 	// we also want to isolate the final identifier
 	char *slash = strrchr(block, '/');
