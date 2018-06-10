@@ -816,6 +816,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		                                       &workspace->ave);
 		
 		workspace->constant = FFTPtr(new FFT(*workspace->segment));
+		workspace->fcSegment = FFTPtr(new FFT(*workspace->segment));
 	}
 	else
 	{
@@ -850,6 +851,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 			
 			workspace->segment->copyFrom(workspace->constant);
 		}
+		
 	}
 
 	for (size_t i = 0; i < selected.size(); i++)
@@ -858,56 +860,52 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		                      workspace->ave, false, true, true);
 	}
 	
-	double score = 0;
-
-	if (first || true)
+	if (workspace->flag & MapScoreFlagSubtractFc)
 	{
-		score = scoreFinalMap(crystal, workspace->segment, plot,
-		                      workspace->scoreType, workspace->ave);
-
-		/*
-		std::vector<double> obs, calc;
-
-		for (int i = 0; i < workspace->segment->nn; i++)
+		if (first)
 		{
-			double c = workspace->segment->data[i][0];
-			double o = workspace->segment->data[i][1];
+			FFTPtr fcSegment = workspace->fcSegment;
+			FFTPtr map = crystal->getCalculatedMap();
+			FFT::score(map, fcSegment, workspace->ave,
+			           NULL, MapScoreTypeCopyToSmaller);
+			fcSegment->scaleToFFT(workspace->segment);
 			
-			if (c == c && o == o)
-			{
-				obs.push_back(o);
-				calc.push_back(c);
-			}
-		}		
-		
-		score = scoreFinalValues(obs, calc, workspace->scoreType);
-		std::cout << "Score is now " << score << std::endl;
-		*/
-	}
-	else
-	{
-		std::vector<double> obs, calc;
+			std::vector<CoordVal> vals;
+			FFT::score(workspace->segment, fcSegment, empty_vec3(),
+			           &vals, MapScoreTypeCorrel);
+			plotCoordVals(vals, 0, 0, "cc_fcs");
 
-		for (int i = 0; i < workspace->segment->nn; i++)
-		{
-			double c = workspace->segment->data[i][0];
-			double o = workspace->segment->data[i][1];
 			
-			obs.push_back(o);
-			calc.push_back(c);
-		}		
-		
-		score = scoreFinalValues(obs, calc, workspace->scoreType);
+			/* Get ready for subtraction! */
+			fcSegment->multiplyAll(-1);
+		}
+
+		/* Remove the last calculated map from the segment, which
+		 * is already negative. */
+		FFT::addSimple(workspace->segment, workspace->fcSegment);	
 	}
 	
+	double score = 0;
+
+	/* In the middle of making calculation really quick?? */
+	bool difference = (workspace->flag & MapScoreFlagDifference);
+	
+	score = scoreFinalMap(crystal, workspace->segment, plot,
+	                      workspace->scoreType, workspace->ave,
+	                      difference);
+
 	return score;
 }
 
 double AtomGroup::scoreFinalValues(std::vector<double> xs,
                                    std::vector<double> ys,
-                                   ScoreType scoreType)
+                                   ScoreType scoreType,
+                                   bool ignoreCutoff)
 {
 	double cutoff = MAP_VALUE_CUTOFF;
+	
+	if (ignoreCutoff) cutoff = -FLT_MAX;
+	
 	if (scoreType == ScoreTypeCorrel)
 	{
 		double correl = correlation(xs, ys, cutoff);
@@ -966,7 +964,7 @@ void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals,
 
 double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
                                 bool plot, ScoreType scoreType,
-                                vec3 ave)
+                                vec3 ave, bool difference)
 {
 	double cutoff = MAP_VALUE_CUTOFF;
 	mat3x3 real2Frac = crystal->getReal2Frac();
@@ -979,6 +977,11 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	std::vector<CoordVal> vals;
 
 	FFTPtr map = crystal->getFFT();
+	
+	if (difference)
+	{
+		map = crystal->getDiFFT();
+	}
 
 	FFT::score(map, segment, ave, &vals, MapScoreTypeCorrelCopy);
 
@@ -1009,11 +1012,12 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 		plotCoordVals(vals, difference, cutoff, "cc_score");
 	}
 
+
 	/* Clear out the massive vectors */
 	vals.clear();
 	std::vector<CoordVal>().swap(vals);
 
-	double score = scoreFinalValues(xs, ys, scoreType);
+	double score = scoreFinalValues(xs, ys, scoreType, difference);
 
 	return score;
 }

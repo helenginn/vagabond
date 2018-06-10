@@ -175,11 +175,12 @@ private:
 
 	static double scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	                            bool plot, ScoreType scoreType,
-	                            vec3 ave);
+	                            vec3 ave, bool difference = false);
 
 	static double scoreFinalValues(std::vector<double> xs,
 	                               std::vector<double> ys,
-	                               ScoreType scoreType);
+	                               ScoreType scoreType,
+	                               bool ignoreCutoff = false);
 
 	MonomerWkr _monomer;
 	int _largestNum;
