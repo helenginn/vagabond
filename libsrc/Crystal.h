@@ -119,6 +119,10 @@ public:
 		return _difft;
 	}
 	
+	FFTPtr getCalculatedMap()
+	{
+		return _calcCopy;
+	}
 	
 	void multiplyMap(double scale);
 
@@ -342,6 +346,7 @@ private:
 
 	FFTPtr _fft;
 	FFTPtr _difft;
+	FFTPtr _calcCopy;
 
 	BucketPtr _bucket;
 	

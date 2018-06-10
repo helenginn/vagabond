@@ -496,6 +496,8 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 		std::cout << " out of " << _fft->nn << "!" << std::endl;
 	}
 
+	_calcCopy = FFTPtr(new FFT(*_fft));
+
 	/* symmetry issues */
 	for (int i = -nLimit; i < nLimit; i++)
 	{
@@ -564,10 +566,62 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 			}
 		}
 	}
+	
+	for (int i = -nLimit; i < nLimit; i++)
+	{
+		for (int j = -nLimit; j < nLimit; j++)
+		{
+			for (int k = -nLimit; k < nLimit; k++)
+			{
+				bool f000 = (i == 0 && j == 0 && k == 0);
+				int _h, _k, _l;
+				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_h, &_k, &_l);
 
+				double obs_amp = sqrt(fftData->getIntensity(_h, _k, _l));
+
+				vec2 complex;
+				int index = _calcCopy->element(i, j, k);
+
+				int isAbs = CSym::ccp4spg_is_sysabs(_spaceGroup, i, j, k);
+				vec3 ijk = make_vec3(i, j, k);    
+				mat3x3_mult_vec(_real2frac, &ijk);
+				double length = vec3_length(ijk);
+
+				bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
+
+				if (length < minRes || length > maxRes
+				    || (isRfree) || isAbs || f000)    
+				{	
+					continue;
+				}
+
+				complex.x = _calcCopy->data[index][0];
+				complex.y = _calcCopy->data[index][1];
+
+				double calc_amp = sqrt(_calcCopy->data[index][0] *
+				                       _calcCopy->data[index][0] +
+				                       _calcCopy->data[index][1] *
+				                       _calcCopy->data[index][1]);
+
+				double diff_scale = obs_amp - calc_amp;
+				diff_scale /= calc_amp;
+
+				if (diff_scale != diff_scale) continue;
+
+				complex.x *= diff_scale;
+				complex.y *= diff_scale;
+				
+				_difft->data[index][0] = complex.x;
+				_difft->data[index][1] = complex.y;
+			}
+		}
+	}
+	
 	/* Back to real space */
 	fourierTransform(-1);
 	_difft->fft(-1);
+
+	_calcCopy->scaleToFFT(_fft);
 
 	CSVPtr csv = CSVPtr(new CSV(3, "real_obs", "real_calc", "solvent"));
 	std::vector<double> real_mixed, chosen_calc;
