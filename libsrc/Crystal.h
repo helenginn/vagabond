@@ -296,6 +296,7 @@ protected:
 private:
 	MoleculeMap _molecules;
 	std::string _filename;
+	std::string _vbondFile;
 
 	std::vector<double> _unitCell;
 	mat3x3 _hkl2real;

@@ -722,8 +722,8 @@ void Crystal::writeVagabondFile(int cycleNum)
 {
 	std::ofstream file;
 	std::string filename = "cycle_" + i_to_str(cycleNum) + ".vbond";
-	std::string vbondFile = FileReader::addOutputDirectory(filename);
-	file.open(vbondFile);
+	_vbondFile = FileReader::addOutputDirectory(filename);
+	file.open(_vbondFile);
 	writeToFile(file, 0);
 	file.close();
 }
