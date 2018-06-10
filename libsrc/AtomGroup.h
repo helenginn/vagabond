@@ -164,6 +164,8 @@ protected:
 	virtual void linkReference(ParserPtr object, std::string category);
 	std::vector<AtomPtr> _atoms;
 private:
+	static void plotCoordVals(std::vector<CoordVal> &vals, bool difference,
+	                          double cutoff, std::string filename);
 	static FFTPtr prepareMapSegment(CrystalPtr crystal,
 	                                std::vector<AtomPtr> selected,
 	                                mat3x3 *basis, vec3 *ave);

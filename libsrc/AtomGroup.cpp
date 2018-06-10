@@ -926,6 +926,43 @@ double AtomGroup::scoreFinalValues(std::vector<double> xs,
 	return 0;
 }
 
+void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals, 
+                              bool difference, double cutoff,
+                              std::string filename)
+{
+	CSVPtr csv = CSVPtr(new CSV(6, "x", "y", "z", "fo", "fc", "mask"));
+
+	for (size_t i = 0; i < vals.size(); i++)
+	{
+		double fo = vals[i].fo;
+		double fc = vals[i].fc;
+		double mask = 0;
+		vec3 pos = make_vec3(0, 0, 0);
+
+		#ifdef COORDVAL_FULL
+		mask = vals[i].mask;
+		pos = vals[i].pos;
+		#endif
+
+		if (!difference && fc < cutoff) continue;
+
+		csv->addEntry(6, pos.x, pos.y, pos.z, fo, fc, mask);
+	}
+
+	csv->writeToFile(filename + ".csv");
+
+	std::map<std::string, std::string> plotMap;
+	plotMap["filename"] = filename;
+	plotMap["xHeader0"] = "fc";
+	plotMap["yHeader0"] = "fo";
+	plotMap["colour0"] = "black";
+
+	plotMap["xTitle0"] = "Fc density";
+	plotMap["yTitle0"] = "Fo density";
+	plotMap["style0"] = "scatter";
+	csv->plotPNG(plotMap);
+}
+
 double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
                                 bool plot, ScoreType scoreType,
                                 vec3 ave)
@@ -968,37 +1005,7 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 
 	if (plot)
 	{
-		CSVPtr csv = CSVPtr(new CSV(6, "x", "y", "z", "fo", "fc", "mask"));
-
-		for (size_t i = 0; i < vals.size(); i++)
-		{
-			double fo = vals[i].fo;
-			double fc = vals[i].fc;
-			double mask = 0;
-			vec3 pos = make_vec3(0, 0, 0);
-
-			#ifdef COORDVAL_FULL
-			mask = vals[i].mask;
-			pos = vals[i].pos;
-			#endif
-
-			if (fc < cutoff) continue;
-
-			csv->addEntry(6, pos.x, pos.y, pos.z, fo, fc, mask);
-		}
-
-		csv->writeToFile("cc_score.csv");
-
-		std::map<std::string, std::string> plotMap;
-		plotMap["filename"] = "cc_score";
-		plotMap["xHeader0"] = "fc";
-		plotMap["yHeader0"] = "fo";
-		plotMap["colour0"] = "black";
-
-		plotMap["xTitle0"] = "Fc amplitude";
-		plotMap["yTitle0"] = "Fo amplitude";
-		plotMap["style0"] = "scatter";
-		csv->plotPNG(plotMap);
+		plotCoordVals(vals, difference, cutoff, "cc_score");
 	}
 
 	/* Clear out the massive vectors */
