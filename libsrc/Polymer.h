@@ -383,7 +383,6 @@ private:
 	void refineLoop(int start, bool magic);
 
 	mat3x3 _transTensor;
-//	mat3x3 _rotMatrix;
 	double _overallScale;
 	int _anchorNum;
 	double _tmpPhi;
