@@ -1103,6 +1103,10 @@ double Crystal::vsConcludeRefinement(void *object)
 	crystal->concludeRefinement(num, data);
 	crystal->saveState();
 	
+	Options::getRuntimeOptions()->agreementSummary();
+	std::string agreement = crystal->agreementSummary();
+	crystal->addComment("Recalculated: " + agreement);
+	
 	return 0;
 }
 
