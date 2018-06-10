@@ -895,7 +895,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				vec3_add_to_vec3(&atomPos, atomOffset);
 
 				/* If this value is within floating point error, stop now. */
-				if (fftAtom->getReal(atomPos.x, atomPos.y, atomPos.z) <= 10e-6)
+				if (fftAtom->getReal(atomPos.x, atomPos.y, atomPos.z) <= 10e-6
+				    && mapScoreType != MapScoreTypeCopyToSmaller)
 				{
 					continue;
 				}
@@ -910,56 +911,56 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				atomReal = fftAtom->interpolate(atomPos, 0);
 
 				/* We add the atom offset so we don't end up with thousands
-				* of atoms at the very centre of our map */
-				vec3 finalCrystalVox = vec3_add_vec3(crystalPos, cornerCrystal);
+				 * of atoms at the very centre of our map */
+				vec3 cVox = vec3_add_vec3(crystalPos, cornerCrystal);
 
 				if (mapScoreType == MapScoreAddNoWrap)
 				{
-					if (finalCrystalVox.x < -fftCrystal->nx / 2 || 
-					    finalCrystalVox.y < -fftCrystal->ny / 2 ||
-					    finalCrystalVox.z < -fftCrystal->nz / 2)
+					if (cVox.x < -fftCrystal->nx / 2 || 
+					    cVox.y < -fftCrystal->ny / 2 ||
+					    cVox.z < -fftCrystal->nz / 2)
 					{
 						continue;
 					}					
-					
-					if (finalCrystalVox.x > fftCrystal->nx / 2 ||
-					    finalCrystalVox.y > fftCrystal->ny / 2 ||
-					    finalCrystalVox.z > fftCrystal->nz / 2)
+
+					if (cVox.x > fftCrystal->nx / 2 ||
+					    cVox.y > fftCrystal->ny / 2 ||
+					    cVox.z > fftCrystal->nz / 2)
 					{
 						continue;
 					}
 				}
 
-				if (finalCrystalVox.x < 0) finalCrystalVox.x += fftCrystal->nx;
-				if (finalCrystalVox.y < 0) finalCrystalVox.y += fftCrystal->ny;
-				if (finalCrystalVox.z < 0) finalCrystalVox.z += fftCrystal->nz;
+				if (cVox.x < 0) cVox.x += fftCrystal->nx;
+				if (cVox.y < 0) cVox.y += fftCrystal->ny;
+				if (cVox.z < 0) cVox.z += fftCrystal->nz;
 
 
 				/* Get the index of this final crystal voxel. */
-				long crystalIndex = fftCrystal->element(finalCrystalVox.x + 0.5,
-				                                        finalCrystalVox.y + 0.5,
-				                                        finalCrystalVox.z + 0.5);
-				
+				long cIndex = fftCrystal->element(cVox.x + 0.5,
+				                                  cVox.y + 0.5,
+				                                  cVox.z + 0.5);
+
 				count++;
 
 				if (mapScoreType == MapScoreTypeCorrel ||
 				    mapScoreType == MapScoreTypeCorrelCopy)
 				{
 					if ((!fftCrystal->_writeToMaskZero &&
-					     fftCrystal->getMask(crystalIndex) == 0))
+					     fftCrystal->getMask(cIndex) == 0))
 					{
 						continue;
 					}
 
 					/* We do NOT need to interpolate */
-					double realCryst = fftCrystal->getReal(crystalIndex);
-					
+					double realCryst = fftCrystal->getReal(cIndex);
+
 					/* not working yet */
 					if (mapScoreType == MapScoreTypeCorrelCopy)
 					{
-						vec3 intCrystPos = vec3_add_vec3(finalCrystalVox,
+						vec3 intCrystPos = vec3_add_vec3(cVox,
 						                                 crystOffset);
-						
+
 						vec3 unshifted = vec3_subtract_vec3(atomPos,
 						                                    shift);
 
@@ -974,7 +975,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 						CoordVal val;
 						val.fo = realCryst;
 						val.fc = atomReal;
-#ifdef COORDVAL_FULL
+						#ifdef COORDVAL_FULL
 						long atomEle = fftAtom->element(atomPos);
 						val.pos = atomPos;
 						val.mask = 0;
@@ -982,19 +983,21 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 						{
 							val.mask = fftAtom->getMask(atomEle);
 						}
-#endif
+						#endif
 
 						vals->push_back(val);
 					}
 				}
 				else if (mapScoreType == MapScoreTypeCopyToSmaller)
 				{
-					double realCryst = fftCrystal->interpolate(finalCrystalVox);
+					vec3 intCrystPos = vec3_subtract_vec3(cVox,
+					                                      crystOffset);
+
+					double intp = fftCrystal->interpolate(intCrystPos);
 					int ele = fftAtom->element(atomPos.x, atomPos.y,
 					                           atomPos.z);
 
-
-					fftAtom->setElement(ele, realCryst, 0);
+					fftAtom->setElement(ele, intp, 0);
 				}
 				else if (mapScoreType == MapScoreTypeNone ||
 				         mapScoreType == MapScoreAddNoWrap)
