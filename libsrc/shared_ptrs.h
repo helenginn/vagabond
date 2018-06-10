@@ -34,14 +34,14 @@
 #define ToMoleculePtr(a) (boost::static_pointer_cast<Molecule>((a)))
 #define ToSidechainPtr(a) (boost::static_pointer_cast<Sidechain>((a)))
 #define ToBackbonePtr(a) (boost::static_pointer_cast<Backbone>((a)))
-#define ToCrystalPtr(a) (boost::static_pointer_cast<Crystal>((a)));
-#define ToAtomPtr(a) (boost::static_pointer_cast<Atom>((a)));
-#define ToAtomGroupPtr(a) (boost::static_pointer_cast<AtomGroup>((a)));
-#define ToMonomerPtr(a) (boost::static_pointer_cast<Monomer>((a)));
-#define ToParserPtr(a) (boost::static_pointer_cast<Parser>((a)));
-#define ToGridPtr(a) (boost::static_pointer_cast<RefinementGridSearch>(a));
+#define ToCrystalPtr(a) (boost::static_pointer_cast<Crystal>((a)))
+#define ToAtomPtr(a) (boost::static_pointer_cast<Atom>((a)))
+#define ToAtomGroupPtr(a) (boost::static_pointer_cast<AtomGroup>((a)))
+#define ToMonomerPtr(a) (boost::static_pointer_cast<Monomer>((a)))
+#define ToParserPtr(a) (boost::static_pointer_cast<Parser>((a)))
+#define ToGridPtr(a) (boost::static_pointer_cast<RefinementGridSearch>(a))
 
-#define ToThingPtr(a) (boost::static_pointer_cast<Thing>((a)));
+#define ToThingPtr(a) (boost::static_pointer_cast<Thing>((a)))
 
 class Notifiable;
 typedef boost::shared_ptr<Notifiable> NotifiablePtr;
