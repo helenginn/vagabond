@@ -412,7 +412,27 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool)
 		for (size_t j = 0; j < crystals[0]->moleculeCount(); j++)
 		{
 			MoleculePtr molecule = crystals[0]->molecule(j);
-			refinementCycle(molecule, type);
+			
+			if (molecule->isPolymer())
+			{
+				void *polymer = &*(ToParserPtr(molecule));
+				switch (type)
+				{
+					case RefinementModelPos:
+					Polymer::vsRefinePositionsToPDB(polymer);
+					break;
+					
+					case RefinementSidechain:
+					Polymer::vsRefineSidechainsToDensity(polymer);
+					break;
+					
+					default:
+					std::cout << "(n.b. not going through VScript function)" 
+					<< std::endl;
+					refinementCycle(molecule, type);
+					break;
+				}
+			}
 		}
 
 		statusMessage("Calculating R factors...");
