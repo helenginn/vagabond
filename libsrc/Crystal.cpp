@@ -505,16 +505,16 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 			{
 				int _h, _k, _l;
 				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_h, &_k, &_l);
-				int isAbs = CSym::ccp4spg_is_sysabs(_spaceGroup, i, j, k);
 
 				double amp = sqrt(fftData->getIntensity(_h, _k, _l));
-				bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
 				long index = _fft->element(i, j, k);
 
+				int isAbs = CSym::ccp4spg_is_sysabs(_spaceGroup, i, j, k);
 				vec3 ijk = make_vec3(i, j, k);    
 				mat3x3_mult_vec(_real2frac, &ijk);
 				double length = vec3_length(ijk);
 
+				bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
 				if (length < minRes || length > maxRes
 				    || (isRfree && amp == amp) || isAbs)    
 				{	
