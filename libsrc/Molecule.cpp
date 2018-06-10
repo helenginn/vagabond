@@ -247,6 +247,10 @@ void Molecule::setAbsoluteBFacMult(double mult)
 {
 	_absoluteBFacMult = mult;
 	std::cout << "Setting absolute B factor multiplier to " << mult << std::endl;
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	crystal->addComment("Absolute B factor multiplier changed to "
+	+ f_to_str(mult, 2) + " for " + getChainID());
+
 	refreshBModels();
 }
 
