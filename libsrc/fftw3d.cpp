@@ -1,11 +1,11 @@
 /*
-*  fftw.cpp
-*    A simple object wrapper for 3D FFTs
-*
-*  Created by Anton Barty on 26/07/11.
-*  Copyright 2011 Anton Barty, 2017 Helen Ginn. All rights reserved.
-*
-*/
+ *  fftw.cpp
+ *    A simple object wrapper for 3D FFTs
+ *
+ *  Created by Anton Barty on 26/07/11.
+ *  Copyright 2011 Anton Barty, 2017 Helen Ginn. All rights reserved.
+ *
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -72,10 +72,10 @@ void FFT::cleanupPlans()
 {
 	for (int i = 0; i < _dimensions.size(); i++)
 	{
-//		fftwf_destroy_plan(_dimensions[i].plan);
-//		fftwf_destroy_plan(_dimensions[i].iplan);
+		//		fftwf_destroy_plan(_dimensions[i].plan);
+		//		fftwf_destroy_plan(_dimensions[i].iplan);
 	} 
-	
+
 	fftwf_cleanup();
 }
 
@@ -179,9 +179,9 @@ void FFT::aboveValueToMask(double value)
 }
 
 /*
-*    Convert 3D (xyz) triple into 1D array index
-*    x is fastest axis, z is slowest axis
-*/
+ *    Convert 3D (xyz) triple into 1D array index
+ *    x is fastest axis, z is slowest axis
+ */
 
 void FFT::collapseFrac(double *xfrac, double *yfrac, double *zfrac)
 {
@@ -285,9 +285,9 @@ void FFT::shiftToCentre()
 }
 
 /*
-*    Shift the array in 3D by (nx,ny,nz) pixels
-*    Wrap around at the edges
-*/
+ *    Shift the array in 3D by (nx,ny,nz) pixels
+ *    Wrap around at the edges
+ */
 void FFT::shift(long sx, long sy, long sz)
 {
 	//  printf("Shift: (%li, %li, %li)\n", sx, sy, sz);
@@ -384,17 +384,17 @@ vec3 FFT::fracFromElement(long int element)
 	long x = element % nx;
 	element -= x;
 	element /= nx;
-	
+
 	long y = element % ny;
 	element -= y;
 	element /= ny;
-	
+
 	long z = element;
 
 	double xfrac = (double)x / (double)nx;
 	double yfrac = (double)y / (double)ny;
 	double zfrac = (double)z / (double)nz;
-	
+
 	return make_vec3(xfrac, yfrac, zfrac);
 }
 
@@ -457,13 +457,14 @@ void FFT::setupBlurring()
 				vec3 shift = make_vec3(i, j, k);
 				mat3x3_mult_vec(_basis, &shift);
 				double movement = vec3_sqlength(shift);
-				
+
 				float factor = normal_distribution(movement, bfac);
+
 				_blurAmounts.push_back(factor);
 			}
 		}
 	}		
-	
+
 	_setupBlurring = true;
 }
 
@@ -506,7 +507,7 @@ void FFT::addInterpolatedToReal(double sx, double sy, double sz, double val)
 void FFT::addInterpolatedToFrac(double fx, double fy, double fz, double val)
 {
 	collapseFrac(&fx, &fy, &fz);
-	
+
 	double sx = fx * nx;
 	double sy = fy * ny;
 	double sz = fz * nz;
@@ -520,7 +521,7 @@ void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real
 	{
 		setupBlurring();
 	}
-	
+
 	collapseFrac(&xfrac, &yfrac, &zfrac);
 
 	double x = xfrac * nx;
@@ -540,7 +541,7 @@ void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real
 				long lx = (int)floor(sx);
 				long ly = (int)floor(sy);
 				long lz = (int)floor(sz);
-				
+
 				long index = element(lx, ly, lz);
 
 				if (!_writeToMaskZero && mask[index] == 0)
@@ -576,7 +577,7 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 	{
 		if (_dimensions[i].nx == nx
 		    && _dimensions[i].ny == ny
-		&& _dimensions[i].nz == nz)
+		    && _dimensions[i].nz == nz)
 		{
 			_myDims = &_dimensions[i];
 			return;
@@ -585,8 +586,8 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 
 
 	/*
-	*    Sanity check
-	*/
+	 *    Sanity check
+	 */
 	if (nx<=0 || ny<=0 || nz<=0)
 	{
 		printf("Illogical FFT dimensions: %li x %li x %li\n", nx,ny,nz);
@@ -602,9 +603,9 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 	fftwf_plan_with_nthreads(nthreads);
 
 	/*
-	*    Read Wisdom from file
-	*    Size of fftwf_complex used to determine whether we are using fftwf_ or fftwf_
-	*/
+	 *    Read Wisdom from file
+	 *    Size of fftwf_complex used to determine whether we are using fftwf_ or fftwf_
+	 */
 
 	if (sizeof(FFTW_DATA_TYPE) == 2*sizeof(float))
 	{
@@ -651,8 +652,8 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 
 
 /*
-*    Do the FFT
-*/
+ *    Do the FFT
+ */
 void FFT::fft(int direction)
 {
 	int tries = 0;
@@ -694,7 +695,7 @@ double FFT::interpolate(vec3 vox000, size_t im)
 {
 	vec3 remain = make_vec3(vox000.x - (double)((int)vox000.x),
 	                        vox000.y - (double)((int)vox000.y),
-	vox000.z - (double)((int)vox000.z));
+	                        vox000.z - (double)((int)vox000.z));
 
 	long vox000x = vox000.x;
 	long vox000y = vox000.y;
@@ -705,7 +706,7 @@ double FFT::interpolate(vec3 vox000, size_t im)
 
 	collapse(&vox000x, &vox000y, &vox000z);
 	collapse(&vox000xm, &vox000ym, &vox000zm);
-	
+
 	vox000y  *= nx;
 	vox000ym *= nx;
 	vox000z  *= nx * ny;
@@ -745,18 +746,18 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos,
 
 
 /*  For multiplying point-wise
-*  No assumption that interpolation is not needed.
-*/
+ *  No assumption that interpolation is not needed.
+ */
 double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
                       MapScoreType mapScoreType, std::vector<CoordVal> *vals,
-bool sameScale)
+                      bool sameScale)
 {
 	/* I rarely comment something so heavily but I will get confused if
-	* I don't, this time, as I can't soak the protocol into the variable
-	* names. Bear in mind the three coordinate systems:
-	* (a) Angstroms
-	* (b) Crystal voxels
-	* (c) Atom voxels */
+	 * I don't, this time, as I can't soak the protocol into the variable
+	 * names. Bear in mind the three coordinate systems:
+	 * (a) Angstroms
+	 * (b) Crystal voxels
+	 * (c) Atom voxels */
 
 	FFT *fftCrystal = &*fftEdit;
 	FFT *fftAtom = &*fftConst;
@@ -789,10 +790,10 @@ bool sameScale)
 	/* Prepare a matrix to convert atomic voxels into crystal voxels */
 	mat3x3 atomVox2Crystal = mat3x3_mult_mat3x3(fftCrystal->getBasisInverse(),
 	                                            fftAtom->getBasis());
-	
+
 	/* Apply this offset and reverse it. This small offset must be added
-	* to all future atomic coordinates prior to interpolation. This
-	* is therefore now in atom voxels.*/
+	 * to all future atomic coordinates prior to interpolation. This
+	 * is therefore now in atom voxels.*/
 	mat3x3_mult_vec(crystal2AtomVox, &atomOffset);
 	vec3_mult(&atomOffset, -1);
 
@@ -802,8 +803,8 @@ bool sameScale)
 	 * half the dimension length which needs to be taken into account, 
 	 * unfortunately. */
 	vec3 atomShift = make_vec3((double)(-fftAtom->nx) * 0.5,
-	                       (double)(-fftAtom->ny) * 0.5,
-	                       (double)(-fftAtom->nz) * 0.5);
+	                           (double)(-fftAtom->ny) * 0.5,
+	                           (double)(-fftAtom->nz) * 0.5);
 	vec3 shift = mat3x3_mult_vec(atomVox2Crystal, atomShift);
 
 	/* In crystal voxels at the moment - don't worry about fractional
@@ -821,7 +822,7 @@ bool sameScale)
 	shiftRemainder.z = 1 + shiftRemainder.z;
 
 	/* The crystal voxels must be converted to atomic voxels to determine
-	* final offset for atom sampling. */
+	 * final offset for atom sampling. */
 
 	mat3x3_mult_vec(crystal2AtomVox, &shiftRemainder);
 	vec3_mult(&shiftRemainder, -1);
@@ -830,13 +831,13 @@ bool sameScale)
 	vec3 cornerCrystal = vec3_add_vec3(wholeShiftOnly, atomWholeCoords);
 
 	/* Fractional offset in atomic coordinates, for each atom as a
-	* 	fraction of the crystal voxel. */
+	 * 	fraction of the crystal voxel. */
 	atomOffset = vec3_add_vec3(atomOffset, shiftRemainder);
 	vec3 crystOffset = mat3x3_mult_vec(atomVox2Crystal, atomOffset);
 
 	/* We loop around these crystal voxel limits now (ss -> ms -> fs).
-	* We also break the loop if it exceeds the limits of our atom voxels
-	* during the loop itself. */
+	 * We also break the loop if it exceeds the limits of our atom voxels
+	 * during the loop itself. */
 
 	int count = 0;
 
@@ -863,7 +864,7 @@ bool sameScale)
 	}
 
 	double step = 1;
-	
+
 	for (int i = 0; i < fftAtom->nn; i++)
 	{
 		fftAtom->data[i][1] = std::nan(" ");
@@ -879,7 +880,7 @@ bool sameScale)
 				/* Position currently in crystal coords - change to atom. */
 				vec3 crystalPos = make_vec3(i, j, k);
 				vec3 atomPos = crystalPos;
-				
+
 				if (!sameScale)
 				{
 					mat3x3_mult_vec(crystal2AtomVox, &atomPos);
@@ -897,12 +898,12 @@ bool sameScale)
 				}
 
 				/* Now we must find the relative crystal voxel to write this
-				* density value to, given that the atom was wrapped around
-				* the origin (center). This should work regardless of odd/
-				* even dimension lengths. */
+				 * density value to, given that the atom was wrapped around
+				 * the origin (center). This should work regardless of odd/
+				 * even dimension lengths. */
 
 				/* We add the tiny offset which resulted from the atom
-				* falling between two voxels, in atomic voxels */
+				 * falling between two voxels, in atomic voxels */
 				vec3_add_to_vec3(&atomPos, atomOffset);
 
 				/* If this value is within floating point error, stop now. */
@@ -1013,21 +1014,26 @@ bool sameScale)
 					/* Add the density to the real value of the crystal voxel.*/
 
 					if (fftCrystal->_writeToMaskZero ||
-					    fftCrystal->getMask(crystalIndex) != 0)
+					    fftCrystal->getMask(cIndex) != 0)
 					{
-						fftCrystal->data[crystalIndex][0] += atomReal * volume;
+						fftCrystal->data[cIndex][0] += atomReal * volume;
 					}
 				}
 			}
 		}
+	}
+	
+	if (mapScoreType == MapScoreTypeCopyToSmaller)
+	{
+//		fftAtom->shiftToCentre();
 	}
 
 	return 0;
 }
 
 /*  For multiplying point-wise
-*  Assumes no differences in FFT scales.
-*/
+ *  Assumes no differences in FFT scales.
+ */
 void FFT::multiply(FFTPtr fftEdit, FFTPtr fftConst)
 {
 	FFT *fftSmall = &*fftConst;
@@ -1046,15 +1052,15 @@ void FFT::multiply(FFTPtr fftEdit, FFTPtr fftConst)
 }
 
 /*  For multiplying point-wise
-*  Assumes identical nx/ny/nz/scales.
-*/
+ *  Assumes identical nx/ny/nz/scales.
+ */
 void FFT::addSimple(FFTPtr fftEdit, FFTPtr fftConst)
 {
 	for (long int i = 0; i < fftEdit->nn; i++)
 	{
 		if (!fftEdit->_writeToMaskZero && fftEdit->mask[i] == 0)
 		{
-			 continue;
+			continue;
 		}
 
 		fftEdit->data[i][0] += fftConst->data[i][0];
@@ -1091,20 +1097,20 @@ void FFT::printSlice(double zVal)
 int FFT::setTotal(float newTotal)
 {
 	float total = 0;
-	
+
 	for (int i = 0; i < nn; i++)
 	{
 		total += data[i][0];
 	}
-	
+
 	if (total <= 0) return 1;
 	float scale = newTotal / total;
-	
+
 	for (int i = 0; i < nn; i++)
 	{
 		data[i][0] *= scale;
 	}
-	
+
 	return 0;
 }
 
@@ -1127,26 +1133,26 @@ vec3 FFT::collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup)
 		ijk.x = (int) rint(frac.x*rot[0] + frac.y*rot[3] + frac.z*rot[6]);
 		ijk.y = (int) rint(frac.x*rot[1] + frac.y*rot[4] + frac.z*rot[7]);
 		ijk.z = (int) rint(frac.x*rot[2] + frac.y*rot[5] + frac.z*rot[8]);
-		
+
 		ijk.x += trn[0];
 		ijk.y += trn[1];
 		ijk.z += trn[2];
-		
+
 		if (ijk.x < 0 || ijk.y < 0 || ijk.z < 0)
 		{
 			continue;
 		}
-		
+
 		float *lim = spaceGroup->mapasu_zero;
-		
+
 		if (ijk.x > lim[0] || ijk.y > lim[1] || ijk.z > lim[2])
 		{
 			continue;
 		}
-		
+
 		return ijk;
 	}
-	
+
 	return frac;
 }
 
@@ -1157,8 +1163,8 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 	memset(tempData, 0, sizeof(FFTW_DATA_TYPE) * nn);
 
 	int count = 0;
-	
-//	spaceGroup = CSym::ccp4spg_load_by_ccp4_num(155);
+
+	//	spaceGroup = CSym::ccp4spg_load_by_ccp4_num(155);
 	std::cout << "Applying symmetry operations for space group " << spaceGroup->symbol_xHM;
 	std::cout << " (" << spaceGroup->spg_num << ")"  << ": " << std::flush;
 
@@ -1176,7 +1182,7 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 		data[n][1] = myPhase;
 	}
 
-	
+
 	for (int l = 0; l < spaceGroup->nsymop; l++)
 	{
 		float *rot = &spaceGroup->invsymop[l].rot[0][0];
@@ -1196,12 +1202,12 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 				for (int i = -nx / 2; i < nx / 2; i++)
 				{
 					int abs = CSym::ccp4spg_is_sysabs(spaceGroup, i, j, k);
-					
+
 					if (abs)
 					{
 						continue;	
 					}
-					
+
 					count++;
 					long index = element(i, j, k);
 					double myAmp = data[index][0];
@@ -1212,7 +1218,7 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 					_h = (int) rint(i*rot[0] + j*rot[3] + k*rot[6]);
 					_k = (int) rint(i*rot[1] + j*rot[4] + k*rot[7]);
 					_l = (int) rint(i*rot[2] + j*rot[5] + k*rot[8]);
-					
+
 					long sym_index = element(_h, _k, _l);
 					/* translation */
 					float *trn = spaceGroup->symop[l].trn;
@@ -1235,7 +1241,7 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 			}
 		}
 	}
-	
+
 	std::cout << "... done." << std::endl;
 
 	memcpy(data, tempData, sizeof(FFTW_DATA_TYPE) * nn);
@@ -1244,7 +1250,7 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 
 void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
                                 CSym::CCP4SPG *mtzspg, std::vector<double> unitCell,
-mat3x3 real2Frac, FFTPtr data)
+                                mat3x3 real2Frac, FFTPtr data)
 {
 	double nLimit = nx;
 	nLimit = nLimit - ((int)nLimit % 2); // make even
@@ -1298,7 +1304,7 @@ mat3x3 real2Frac, FFTPtr data)
 
 	mtzout = CMtz::MtzMalloc(0, 0);
 	ccp4_lwtitl(mtzout, "Written from Helen's XFEL tasks ", 0);
-	            mtzout->refs_in_memory = 0;
+	mtzout->refs_in_memory = 0;
 	mtzout->fileout = CMtz::MtzOpenForWrite(outputFile.c_str());
 
 	if (!mtzout->fileout)
@@ -1340,7 +1346,7 @@ mat3x3 real2Frac, FFTPtr data)
 			{
 				bool asu = CSym::ccp4spg_is_in_asu(mtzspg, i, j, k);
 				bool f000 = (i == 0 && j == 0 && k == 0);
-				
+
 				if (!asu && !f000)
 				{
 					continue;
@@ -1375,10 +1381,10 @@ mat3x3 real2Frac, FFTPtr data)
 				double foAmp = sqrt(foInt);
 				double fofofc = 2 * foAmp - calcAmp;
 				double fofc = foAmp - calcAmp;
-				
+
 				if (foAmp != foAmp)
 				{
-//					fofofc = calcAmp;
+					//					fofofc = calcAmp;
 					fofc = 0;
 				}
 
