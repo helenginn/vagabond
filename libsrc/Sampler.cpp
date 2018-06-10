@@ -535,6 +535,7 @@ void Sampler::setupScoreWithMap()
 	_workspace.segment = FFTPtr();
 	_workspace.ave = empty_vec3();
 	_workspace.basis = make_mat3x3();
+	_workspace.flag = MapScoreFlagNone;
 		
 	AtomGroup::scoreWithMapGeneral(&_workspace);
 }

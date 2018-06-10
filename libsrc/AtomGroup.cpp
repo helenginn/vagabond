@@ -599,7 +599,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 	refreshPositions(true);
 }
 
-double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plot)
+double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plot, unsigned int flags)
 {
 	std::vector<AtomPtr> selected;
 	for (size_t i = 0; i < atomCount(); i++)
@@ -614,6 +614,7 @@ double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plo
 	workspace.segment = FFTPtr();
 	workspace.ave = empty_vec3();
 	workspace.basis = make_mat3x3();
+	workspace.flag = flags;
 
 	return scoreWithMapGeneral(&workspace, plot);
 }
