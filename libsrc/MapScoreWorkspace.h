@@ -5,6 +5,19 @@
 #include "mat3x3.h"
 #include <vector>
 
+#define COORDVAL_FULL
+
+
+typedef struct
+{
+#ifdef COORDVAL_FULL
+	vec3 pos;
+	double mask;
+#endif
+	double fo;
+	double fc;
+} CoordVal;
+
 /** Scoring functions against map or PDB file */
 typedef enum
 {

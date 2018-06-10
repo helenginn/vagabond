@@ -11,6 +11,7 @@
 #define fftw3d_h
 
 #include "../libfftw/api/fftw3.h"
+#include "MapScoreWorkspace.h"
 #include <deque>
 #include "mat3x3.h"
 #include "shared_ptrs.h"
@@ -57,18 +58,6 @@ typedef struct
 /** \endcond */
 
 /** \cond SHOW_COORD_VAL */
-
-//#define COORDVAL_FULL
-
-typedef struct
-{
-#ifdef COORDVAL_FULL
-	vec3 pos;
-	double mask;
-#endif
-	double fo;
-	double fc;
-} CoordVal;
 
 /** \endcond */
 
