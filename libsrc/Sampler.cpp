@@ -358,6 +358,8 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
 {
 	if (!bond) return;
+	
+	if (!bond->getRefineFlexibility()) return;
 
 	_strategy->addParameter(&*bond, Bond::getTorsionBlur, Bond::setTorsionBlur,
 	                        range, interval, "b" + bond->shortDesc());
@@ -378,8 +380,8 @@ void Sampler::addBondLength(BondPtr bond, double range, double interval)
 void Sampler::addDampening(BondPtr bond, double range, double interval)
 {
 	if (!bond) return;
+	if (!bond->getRefineFlexibility()) return;
 
-	//    double number = fabs(range / interval);
 	_strategy->addParameter(&*bond, Bond::getDampening,
 	                        Bond::setDampening, range,
 	interval, "d" + bond->shortDesc());
