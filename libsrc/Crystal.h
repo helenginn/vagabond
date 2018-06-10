@@ -278,6 +278,13 @@ public:
 		return _cycleNum;
 	}
 	
+	void addComment(std::string comment)
+	{
+		_comments += "(" + _vbondFile + ") ";
+		_comments += comment;
+		_comments += "\n";
+	}
+	
 	/** Analysis of backbone density and generation of heuristics */
 	void backboneDensityAnalysis();
 	static double vsRefineBackboneToDensity(void *object);
@@ -317,6 +324,7 @@ private:
 	std::string _lastEnsemblePDB;
 	std::string _lastAveragePDB;
 	std::string _lastMtz;
+	std::string _comments;
 
 	double _rWork;
 	double _rFree;

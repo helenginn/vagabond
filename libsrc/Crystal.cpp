@@ -656,6 +656,7 @@ Crystal::Crystal()
 	_solvScale = 0.5;
 	_solvBFac = 10;
 	_unitCell.resize(6);
+	_comments = "";
 }
 
 void Crystal::applySymOps(double res)
@@ -944,6 +945,7 @@ void Crystal::addProperties()
 	addDoubleProperty("r_free", &_rFree);
 	addDoubleProperty("cc_work", &_ccWork);
 	addDoubleProperty("cc_free", &_ccFree);
+	addStringProperty("comments", &_comments);
 	addIntProperty("cycles_since_best", &_sinceBestNum);
 
 	_spgNum = 0;
