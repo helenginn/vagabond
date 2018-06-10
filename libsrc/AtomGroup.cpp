@@ -826,9 +826,10 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	* established.*/
 	if (first)
 	{
-		double xAng = workspace->segment->nx * workspace->segment->scales[0];
-		double yAng = workspace->segment->ny * workspace->segment->scales[1];
-		double zAng = workspace->segment->nz * workspace->segment->scales[2];
+		double xAng, yAng, zAng;
+		xAng = workspace->segment->nx * workspace->segment->scales[0] / 2;
+		yAng = workspace->segment->ny * workspace->segment->scales[1] / 2;
+		zAng = workspace->segment->nz * workspace->segment->scales[2] / 2;
 
 		workspace->extra = crystal->getAtomsInBox(workspace->ave, 
 		                                          xAng, yAng, zAng);
