@@ -329,28 +329,6 @@ void FFT::shift(long sx, long sy, long sz)
 	data = temp;
 }
 
-
-void FFT::shiftToCorner(void)
-{
-	long sx,sy,sz;
-	sx = -nx/2;
-	sy = -ny/2;
-	sz = -nz/2;
-
-	shift(sx,sy,sz);
-
-}
-
-void FFT::shiftToCenter(void)
-{
-	long sx,sy,sz;
-	sx = nx/2;
-	sy = ny/2;
-	sz = nz/2;
-
-	shift(sx,sy,sz);
-}
-
 void FFT::valueMinus(float value)
 {
 	for(long i=0; i<nn; i++)

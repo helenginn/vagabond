@@ -149,8 +149,6 @@ public:
 	void fft(int direction);
 
 	void shift(long, long, long);
-	void shiftToCorner(void);
-	void shiftToCenter(void);
 	void shiftToCentre();
 
 	double getReal(long index)
