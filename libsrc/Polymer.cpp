@@ -490,11 +490,10 @@ std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal)
 
 void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 {
-	return;
-	CSVPtr perCA = CSVPtr(new CSV(3, "resnum", "cc", "diffcc"));
+	CSVPtr perCA = CSVPtr(new CSV(4, "resnum", "cc", "diffbackbone", "diffsidechain"));
 
 	std::vector<double> tempCCs, tempDiffCCs, tempNs;
-	double sumCC = 0; double sumDiffCC = 0;
+	double sumCC = 0;
 	FFTPtr fft = diffCrystal->getFFT();
 	FFTPtr difft = diffCrystal->getDiFFT();
 
@@ -505,27 +504,22 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 			continue;
 		}
 
-		BackbonePtr backbone = getMonomer(n)->getBackbone();
-		double cc = -getMonomer(n)->scoreWithMap(ScoreTypeCorrel, diffCrystal);
+		MonomerPtr monomer = getMonomer(n);
+
+		BackbonePtr backbone = monomer->getBackbone();
+		SidechainPtr sidechain = monomer->getSidechain();
+		double cc = -monomer->scoreWithMap(ScoreTypeCorrel, diffCrystal);
 		sumCC += cc;
 
-		double diffcc = -getMonomer(n)->scoreWithMap(ScoreTypeMultiply,
-		                                             diffCrystal);
-		sumDiffCC += diffcc;
+		double backboneCC = -backbone->scoreWithMap(ScoreTypeMultiply,
+		                                            diffCrystal, false,
+		                                            MapScoreFlagDifference);
+		
+		double sidechainCC = -sidechain->scoreWithMap(ScoreTypeMultiply,
+		                                              diffCrystal, false,
+		                                              MapScoreFlagDifference);
 
-		tempCCs.push_back(cc);
-		tempDiffCCs.push_back(diffcc);
-		tempNs.push_back(n + 1);
-	}
-
-	sumCC /= tempNs.size();
-	sumDiffCC /= tempNs.size();
-
-	for (size_t i = 0; i < tempNs.size(); i++)
-	{
-		double ccRelative = tempCCs[i];
-		double diffCCRelative = tempDiffCCs[i] / sumDiffCC - 1;
-		perCA->addEntry(3, tempNs[i], ccRelative, diffCCRelative);
+		perCA->addEntry(4, (double)n, cc, backboneCC, sidechainCC);
 	}
 
 	std::map<std::string, std::string> plotMap;
@@ -534,21 +528,16 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 	plotMap["width"] = "1200";
 	plotMap["xHeader0"] = "resnum";
 	plotMap["yHeader0"] = "cc";
-	plotMap["xHeader1"] = "resnum";
-	plotMap["yHeader1"] = "diffcc";
 	plotMap["yMin0"] = "0";
 	plotMap["yMax0"] = "1";
-	plotMap["yMin1"] = "-10";
-	plotMap["yMax1"] = "10";
 
 	plotMap["colour0"] = "black";
-	plotMap["colour1"] = "red";
 	plotMap["xTitle0"] = "Residue number";
 	plotMap["yTitle0"] = "Correlation coefficient";
 	plotMap["style0"] = "line";
-	plotMap["style1"] = "line";
 
-	perCA->writeToFile("diffmap_" + graphName + ".csv");
+	perCA->setSubDirectory("density_ccs");
+	perCA->writeToFile("stats_" + graphName + ".csv");
 	perCA->plotPNG(plotMap);
 }
 
