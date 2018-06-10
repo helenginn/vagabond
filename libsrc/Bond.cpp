@@ -35,6 +35,7 @@ void Bond::initialize()
 	_changedPos = true;
 	_changedSamples = true;
 	_refineBondAngle = false;
+	_refineFlexibility = true;
 	_fixed = false;
 	_occupancy = 1.0;
 	_occMult = 1.0;
@@ -130,6 +131,7 @@ Bond::Bond(Bond &other)
 	_molecule = other._molecule;
 
 	_refineBondAngle = other._refineBondAngle;
+	_refineFlexibility = other._refineFlexibility;
 	_dampening = other._dampening;
 	_bondLength = other._bondLength;
 	_changedPos = true;
@@ -1699,6 +1701,7 @@ void Bond::addProperties()
 	addBoolProperty("anchored", &_anchored);
 	addBoolProperty("using_torsion", &_usingTorsion);
 	addBoolProperty("refine_bond_angle", &_refineBondAngle);
+	addBoolProperty("refine_flexibility", &_refineFlexibility);
 	addBoolProperty("activated", &_activated);
 	addBoolProperty("disabled", &_disabled);
 

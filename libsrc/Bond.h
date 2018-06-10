@@ -488,6 +488,16 @@ public:
 	{
 		return _occupancy * _occMult;
 	}
+	
+	void setRefineFlexibility(bool value = true)
+	{
+		_refineFlexibility = value;
+	}
+	
+	bool getRefineFlexibility()
+	{
+		return _refineFlexibility && !isFixed();
+	}
 
 	void setRefineBondAngle(bool value = true)
 	{
@@ -581,6 +591,7 @@ private:
 	/* Flag to say whether recalculation should occur */
 	bool _changedPos, _changedSamples;
 	bool _refineBondAngle;
+	bool _refineFlexibility;
 
 	mat3x3 getMagicMat(vec3 direction);
 
