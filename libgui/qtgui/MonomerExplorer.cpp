@@ -92,6 +92,33 @@ void MonomerExplorer::makeSlider(ParamOptionType option, int num, QString name,
 	_optionMap[slider] = param;
 }
 
+void MonomerExplorer::updateCorrelation(bool force)
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr crystal = options->getActiveCrystal();
+	Notifiable *notify = options->getNotify();
+	bool running = notify->isRunningSomething();
+
+	if ((crystal && !running) || (crystal && force))
+	{
+		crystal->clearCloseCache();
+
+		if (!_lCorrel)
+		{
+			delete _lCorrel;
+			
+			_lCorrel = new QLabel("", this); 
+			_lCorrel->setGeometry(250, 200, 150, 25);
+			_lCorrel->show();
+		}
+
+		double score = -_monomer->scoreWithMap(ScoreTypeCorrel, crystal, true);
+		std::string scoreString = "CC (2Fo-Fc): " + f_to_str(score, 3);
+
+		_lCorrel->setText(QString::fromStdString(scoreString));
+	}
+}
+
 void MonomerExplorer::makeRefinementButtons()
 {
 	delete _lRefineOpts;
@@ -129,23 +156,7 @@ void MonomerExplorer::makeRefinementButtons()
 	_bModelPosToEnd->show(); 
 	connect(_bModelPosToEnd, SIGNAL(clicked()), this, SLOT(pushModelPosToEnd()));
 
-	OptionsPtr options = Options::getRuntimeOptions();
-	CrystalPtr crystal = options->getActiveCrystal();
-	Notifiable *notify = options->getNotify();
-	bool running = notify->isRunningSomething();
-
-	if (crystal && !running)
-	{
-		crystal->clearCloseCache();
-
-		delete _lCorrel;
-		double score = -_monomer->scoreWithMap(ScoreTypeCorrel, crystal, true);
-		std::string scoreString = "CC (2Fo-Fc): " + f_to_str(score, 3);
-
-		_lCorrel = new QLabel(QString::fromStdString(scoreString), this); 
-		_lCorrel->setGeometry(250, 200, 150, 25);
-		_lCorrel->show();
-	}
+	updateCorrelation();
 
 	makeSlider(ParamOptionTorsion, 0, "Torsion", 0, 200, 100, 10, "º");
 	makeSlider(ParamOptionKick, 1, "Kick", 0, 100, 100, 50, "");

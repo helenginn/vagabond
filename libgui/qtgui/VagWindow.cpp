@@ -276,6 +276,7 @@ void VagWindow::waitForInstructions()
 
 			case InstructionTypeGetObjectValue:
 			Notifiable::performObjectGet();
+			_explorer->updateCorrelation();
 			break;
 
 			case InstructionTypePreviousState:

@@ -38,6 +38,14 @@ void MoleculeExplorer::displayMonomer(MonomerPtr monomer)
     _monomerExplorer->show();
 }
 
+void MoleculeExplorer::updateCorrelation()
+{
+	if (_monomerExplorer)
+	{
+		_monomerExplorer->updateCorrelation(true);
+	}
+}
+
 MoleculeExplorer::~MoleculeExplorer()
 {
     delete _monomerExplorer;

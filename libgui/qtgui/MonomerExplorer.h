@@ -44,6 +44,7 @@ public:
 		return _keeper;
 	}
 
+	void updateCorrelation(bool force = false);
 	void setKeeper(GLKeeper *keeper);
 	~MonomerExplorer();
 private slots:

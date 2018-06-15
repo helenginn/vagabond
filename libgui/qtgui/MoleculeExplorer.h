@@ -26,22 +26,25 @@ class GLKeeper;
 
 class MoleculeExplorer : public QMainWindow
 {
-    Q_OBJECT
-    
-public:
-    MoleculeExplorer(QWidget *parent = 0, MoleculePtr molecule = MoleculePtr());
-    ~MoleculeExplorer();
+	Q_OBJECT
 
-    void displayMonomer(MonomerPtr monomer);
-    void setGLKeeper(GLKeeper *keeper);
+public:
+	MoleculeExplorer(QWidget *parent = 0,
+	                 MoleculePtr molecule = MoleculePtr());
+	~MoleculeExplorer();
+
+	void displayMonomer(MonomerPtr monomer);
+	void setGLKeeper(GLKeeper *keeper);
+	void updateCorrelation();
+
 private slots:
 
 private:
-    GLKeeper *_keeper;
-    MonomerExplorer *_monomerExplorer;
-    MoleculePtr _molecule;
-    SequenceView *_sequenceView;
-    QScrollArea *_scrollArea;
+	GLKeeper *_keeper;
+	MonomerExplorer *_monomerExplorer;
+	MoleculePtr _molecule;
+	SequenceView *_sequenceView;
+	QScrollArea *_scrollArea;
 };
 
 #endif
