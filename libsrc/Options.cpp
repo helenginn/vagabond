@@ -29,6 +29,7 @@ double Options::_minRes = -1.0;
 double Options::_maxRes = -1.0;
 int Options::_enableTests = 3;
 bool Options::_powder = false;
+bool Options::_shellScale = false;
 double Options::_sampling = -1;
 std::string Options::_solventFile;
 
@@ -407,6 +408,7 @@ void Options::parse()
 			_tie = false;
 			understood = true;
 		}
+		understood |= parseParameter(arg, "shell-scale", &_shellScale);
 
 		if (!understood)
 		{

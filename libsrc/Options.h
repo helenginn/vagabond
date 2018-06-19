@@ -152,6 +152,11 @@ public:
 		return _powder;
 	}
 
+	static bool getShellScale()
+	{
+		return _shellScale;
+	}
+	
 	static double getGlobalBFactor()
 	{
 		return _bReal;
@@ -202,6 +207,7 @@ private:
 	std::string _modelFile;
 	std::string _mtzFile;
 
+	static bool _shellScale;
 	static bool _powder;
 	static std::string _solventFile;
 	static double _kick;
