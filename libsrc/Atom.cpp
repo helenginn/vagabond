@@ -162,23 +162,47 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
 		modified->multiplyAll(occ);
 	}
 
-	vec3 pos = _model->getAbsolutePosition();
-
-	if (_distModelOnly)
-	{
-		pos = _distModelOnly->getAbsolutePosition();
-	}
-
-	pos = vec3_subtract_vec3(pos, offset);
-	mat3x3_mult_vec(unit_cell, &pos);
-
-	if (pos.x != pos.x)
-	{
-		return;
-	}
-
 	MapScoreType type = (noWrap ? MapScoreAddNoWrap : MapScoreTypeNone);
-	FFT::operation(fft, modified, pos, type, NULL, sameScale);
+	
+	int solvent = Options::getAddSolvent();
+
+	if (!mask || (mask && solvent < 2))
+	{
+		vec3 pos = _model->getAbsolutePosition();
+
+		if (_distModelOnly)
+		{
+			pos = _distModelOnly->getAbsolutePosition();
+		}
+
+		pos = vec3_subtract_vec3(pos, offset);
+		mat3x3_mult_vec(unit_cell, &pos);
+
+		if (pos.x != pos.x)
+		{
+			return;
+		}
+
+		FFT::operation(fft, modified, pos, type, NULL, sameScale);
+	}
+	else
+	{
+		std::vector<BondSample> samples = _model->getFinalPositions();
+
+		/* Each addition should only contribute the right occupancy */
+		modified->multiplyAll(1 / (double)samples.size());
+		
+		/* Loop through each position and add separately */
+		
+		for (int i = 0; i < samples.size(); i++)
+		{
+			vec3 pos = samples[i].start;
+			pos = vec3_subtract_vec3(pos, offset);
+			mat3x3_mult_vec(unit_cell, &pos);
+
+			FFT::operation(fft, modified, pos, type, NULL, sameScale);
+		}
+	}
 }
 
 vec3 Atom::getAbsolutePosition()
