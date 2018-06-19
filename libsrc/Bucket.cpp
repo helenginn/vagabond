@@ -198,6 +198,8 @@ void Bucket::fourierTransform(int dir, double res)
 		_solvent->fft(dir);
 		applySymOps(spg, res);
 		_solvent->normalise();
+		_solvent->data[0][0] = 0;
+		_solvent->data[0][1] = 0;
 	}
 }
 
