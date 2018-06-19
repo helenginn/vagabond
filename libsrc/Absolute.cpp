@@ -157,14 +157,14 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 }
 
 /*  Absolute distribution only needs to be the blurring due to the atomic
-*  B factor. The position should be provided by a different function. */
+ *  B factor. The position should be provided by a different function. */
 
 FFTPtr Absolute::makeDistribution()
 {
 	double n = fftGridLength();
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double scale = 2 * maxDStar;
-	
+
 	prepareDistribution(n, scale, this, Absolute::getExpValue);
 
 	return getDistributionCopy();
@@ -239,7 +239,7 @@ std::vector<BondSample> *Absolute::getManyPositions()
 			(*bondSamples)[i].occupancy /= occTotal;
 		}
 	}
-	
+
 	return bondSamples;
 }
 
@@ -309,15 +309,15 @@ vec3 Absolute::getRandomPosition()
 	/** Assuming isotropic */
 	vec3 randvec = make_vec3(0, 0, 0);	
 	double stdev = sqrt(_bFactor / (8 * M_PI * M_PI));
-	
+
 	for (int i = 0; i < 3; i++)
 	{
 		double deviation = random_norm_dist(0, stdev);
 		*(&randvec.x + i) = deviation;
 	}
-	
+
 	vec3 absPos = getAbsolutePosition();
 	vec3 total = vec3_add_vec3(absPos, randvec);
-	
+
 	return total;
 }
