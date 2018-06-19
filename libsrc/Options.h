@@ -152,6 +152,11 @@ public:
 		return _powder;
 	}
 
+	static double getGlobalBFactor()
+	{
+		return _bReal;
+	}
+
 	void statusMessage(std::string message);
 	void agreementSummary();
 	void previousState();
@@ -203,6 +208,7 @@ private:
 	static int _solvent;
 	static double _dampen;
 	static double _bMult;
+	static double _bReal;
 	static int _enableTests;
 	static double _bStart;
 	static double _sampling;

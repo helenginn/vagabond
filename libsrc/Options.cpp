@@ -24,6 +24,7 @@ int Options::_solvent = 1;
 double Options::_dampen = 0.08;
 double Options::_bStart = 1.5;
 double Options::_bMult = 1;
+double Options::_bReal = 2.;
 double Options::_minRes = -1.0;
 double Options::_maxRes = -1.0;
 int Options::_enableTests = 3;
@@ -365,6 +366,7 @@ void Options::parse()
 
 		understood |= parseParameter(arg, "--min-res=", &_minRes);
 		understood |= parseParameter(arg, "--bfactor=", &_bStart);
+		understood |= parseParameter(arg, "--global-b=", &_bReal);
 		understood |= parseParameter(arg, "--kick=", &_kick);
 		understood |= parseParameter(arg, "--dampen=", &_dampen);
 		understood |= parseParameter(arg, "--max-res=", &_maxRes);
