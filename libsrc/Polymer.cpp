@@ -1331,39 +1331,28 @@ void Polymer::minimiseRotations()
 		std::vector<double> weights;
 		std::vector<vec3> fixedVecs, variantVecs;
 
-		for (size_t j = 0; j < monomerCount(); j++)
+		for (size_t k = 0; k < backbone->atomCount(); k++)
 		{
-			if (!getMonomer(j))
+			AtomPtr anAtom = backbone->atom(k);
+			if (!anAtom) continue;
+
+			std::vector<BondSample> *samples;
+			ModelPtr model = anAtom->getModel();
+
+			if (!model)
 			{
-				continue;
+				shout_at_helen("Missing model for backbone atom!");
 			}
 
-			BackbonePtr bone = getMonomer(j)->getBackbone();
+			double weight = 1;
+			weights.push_back(weight);
 
-			for (size_t k = 0; k < bone->atomCount(); k++)
-			{
-				AtomPtr anAtom = bone->atom(k);
-				if (!anAtom) continue;
+			samples = model->getManyPositions();
+			vec3 fixed = model->getAbsolutePosition();
 
-				std::vector<BondSample> *samples;
-				ModelPtr model = anAtom->getModel();
-
-				if (!model)
-				{
-					shout_at_helen("Missing model for backbone atom!");
-				}
-
-				double bee = model->getMeanSquareDeviation();
-				double weight = 1 / (bee * bee);
-				weights.push_back(weight);
-
-				samples = model->getManyPositions();
-				vec3 fixed = model->getAbsolutePosition();
-
-				vec3 variant = samples->at(i).start;
-				fixedVecs.push_back(fixed);
-				variantVecs.push_back(variant);
-			}
+			vec3 variant = samples->at(i).start;
+			fixedVecs.push_back(fixed);
+			variantVecs.push_back(variant);
 		}
 
 		Kabsch kabsch;
