@@ -21,6 +21,7 @@
 #include <algorithm>
 #include "maths.h"
 #include "FileReader.h"
+#include "Options.h"
 #include <sys/stat.h>
 
 #include "../libccp4/cmtzlib.h"
@@ -429,19 +430,21 @@ void FFT::addToReal(double xfrac, double yfrac, double zfrac, double real)
 	data[index][0] += real;
 }
 
+#define START_LOOP -1
+#define END_LOOP 2
+
 void FFT::setupBlurring()
 {
 	_blurAmounts.clear();
 
-	double bfac = 10.89;
-	//	bfac = 0.1;
+	double bfac = Options::getGlobalBFactor();
 	bfac /= 8 * M_PI * M_PI;
 
-	for (int i = -1; i < 2; i++)
+	for (int i = START_LOOP; i < END_LOOP; i++)
 	{
-		for (int j = -1; j < 2; j++)
+		for (int j = START_LOOP; j < END_LOOP; j++)
 		{
-			for (int k = -1; k < 2; k++)
+			for (int k = START_LOOP; k < END_LOOP; k++)
 			{
 				vec3 shift = make_vec3(i, j, k);
 				mat3x3_mult_vec(_basis, &shift);
@@ -518,13 +521,13 @@ void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real
 	double z = zfrac * nz;
 
 	int count = 0;
-	for (int k = -1; k < 2; k++)
+	for (int k = START_LOOP; k < END_LOOP; k++)
 	{
 		double sz = z + (double)k;
-		for (int j = -1; j < 2; j++)
+		for (int j = START_LOOP; j < END_LOOP; j++)
 		{
 			double sy = y + (double)j;
-			for (int i = -1; i < 2; i++)
+			for (int i = START_LOOP; i < END_LOOP; i++)
 			{
 				double sx = x + (double)i;
 				long lx = (int)floor(sx);
