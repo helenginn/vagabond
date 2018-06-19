@@ -127,7 +127,7 @@ public:
 		_bMult = bMult;
 	}
 
-	static bool getAddSolvent()
+	static int getAddSolvent()
 	{
 		return _solvent;
 	}
