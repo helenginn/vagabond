@@ -274,6 +274,21 @@ int Options::parseParameter(std::string arg, std::string prefix, double *ptr)
 	return false;
 }
 
+int Options::parseParameter(std::string arg, std::string prefix, int *ptr)
+{
+	if (!arg.compare(0, prefix.size(), prefix))
+	{
+		std::string val_string = arg.substr(prefix.size());
+		*ptr = atoi(val_string.c_str());
+		std::cout << "Parsing " << prefix << ", setting to " << *ptr
+		<< " units." << std::endl;
+
+		return true;
+	}
+	
+	return false;
+}
+
 int Options::parseParameter(std::string arg, std::string prefix,
                             std::string *ptr)
 {

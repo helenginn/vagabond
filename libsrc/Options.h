@@ -78,6 +78,7 @@ public:
 
 	int parseParameter(std::string arg, std::string prefix, double *ptr);
 	int parseParameter(std::string arg, std::string prefix, std::string *ptr);
+	int parseParameter(std::string arg, std::string prefix, int *ptr);
 	
 	static double getKick()
 	{
