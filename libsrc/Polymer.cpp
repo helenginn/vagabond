@@ -1310,24 +1310,20 @@ void Polymer::minimiseRotations()
 
 	std::vector<vec3> tmpCentroids;
 
-	for (size_t i = 0; i < monomerCount(); i++)
-	{
-		if (!getMonomer(i))
-		{
-			continue;
-		}
+	AtomGroupPtr backbone = getAllBackbone();
 
-		AtomPtr ca = getMonomer(i)->findAtom("CA");
-		if (!ca) continue;
+	/* Find the number of samples */
+	for (size_t i = 0; i < backbone->atomCount(); i++)
+	{
+		AtomPtr atom = backbone->atom(i);
 
 		std::vector<BondSample> *samples;
-		samples = ca->getModel()->getManyPositions();
+		samples = atom->getModel()->getManyPositions();
 
 		num = samples->size();
-
 		break;
 	}
-
+	
 	std::vector<mat3x3> tmpMats;
 
 	for (size_t i = 0; i < num; i++)
