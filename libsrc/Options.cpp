@@ -305,6 +305,35 @@ int Options::parseParameter(std::string arg, std::string prefix,
 	return false;
 }
 
+int Options::parseParameter(std::string arg, std::string prefix,
+                            bool *ptr)
+{
+	std::string pos = "--" + prefix;
+	std::string neg = "--no-" + prefix;
+
+	if (!arg.compare(0, pos.size(), pos))
+	{
+		std::string val_string = arg.substr(pos.size());
+		*ptr = true;
+		std::cout << "Setting property " + prefix + " to Yes."
+		<< std::endl;
+
+		return true;
+	}
+	else if (!arg.compare(0, neg.size(), neg))
+	{
+		std::string val_string = arg.substr(neg.size());
+		*ptr = false;
+		std::cout << "Setting property " + prefix + " to No."
+		<< std::endl;
+
+		return true;
+	}
+	
+	return false;
+	
+}
+
 void Options::parse()
 {
 	for (size_t i = 0; i < arguments.size(); i++)
