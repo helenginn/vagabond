@@ -401,13 +401,7 @@ void Options::parse()
 			understood = true;
 		}
 
-		prefix = "--no-tie";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			_tie = false;
-			understood = true;
-		}
+		understood |= parseParameter(arg, "tie", &_tie);
 		understood |= parseParameter(arg, "shell-scale", &_shellScale);
 
 		if (!understood)
