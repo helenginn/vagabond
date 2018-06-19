@@ -176,42 +176,56 @@ std::vector<BondSample> *Absolute::getManyPositions()
 	bondSamples->clear();
 
 	/* B factor isotropic only atm, get mean square displacement in
-	* each dimension. */
+	 * each dimension. */
 	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
 	meanSqDisp = sqrt(meanSqDisp);
 
 	double occTotal = 0;
 
-	int samples = 50;
-	int layers = 6;
+	int totalPoints = 300;
+	double totalSurfaces = 0;
+	int layers = 10;
+	std::vector<double> layerSurfaces;
+
+	/* Work out relative ratios of the surfaces on which points
+	 * will be generated. */
+	for (int i = 0; i < layers; i++)
+	{
+		layerSurfaces.push_back(i * i);
+		totalSurfaces += i * i;
+	}
+
+	double scale = totalPoints / (double)totalSurfaces;
+
 	int rnd = 1;
-    std::vector<vec3> points;
-    double offset = 2. / (double)samples;
-    double increment = M_PI * (3.0 - sqrt(5));
+	std::vector<vec3> points;
+	double increment = M_PI * (3.0 - sqrt(5));
 
-    _sphereAngles.clear();
+	_sphereAngles.clear();
 
+	for (int j = 0; j < layers; j++)
+	{
+		double m = meanSqDisp * (double)(j + 1) / (double)layers;
 
-    for (int i = 0; i < samples; i++)
-    {
-        double y = (((double)i * offset) - 1) + (offset / 2);
-        double r = sqrt(1 - y * y);
+		int samples = layerSurfaces[j] * scale;
+		double offset = 2. / (double)samples;
 
-        double phi = (double)((i + rnd) % samples) * increment;
+		for (int i = 0; i < samples; i++)
+		{
+			double y = (((double)i * offset) - 1) + (offset / 2);
+			double r = sqrt(1 - y * y);
 
-        double x = cos(phi) * r;
-        double z = sin(phi) * r;
+			double phi = (double)((i + rnd) % samples) * increment;
 
-        for (int j = 1; j <= layers; j++)
-        {
-            double m = meanSqDisp * (double)j / layers;
+			double x = cos(phi) * r;
+			double z = sin(phi) * r;
 
-            vec3 point = make_vec3(x * m, y * m, z * m);
+			vec3 point = make_vec3(x * m, y * m, z * m);
 
-            points.push_back(point);
-            _sphereAngles.push_back(point);
-        }
-    }
+			points.push_back(point);
+			_sphereAngles.push_back(point);
+		}
+	}
 
 	for (size_t i = 0; i < points.size(); i++)
 	{
