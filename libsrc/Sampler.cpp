@@ -9,6 +9,7 @@
 #include "Sampler.h"
 #include "RefinementGridSearch.h"
 #include "RefinementNelderMead.h"
+#include "RefinementStepSearch.h"
 #include "Bond.h"
 #include "Atom.h"
 #include "Crystal.h"
@@ -318,7 +319,13 @@ void Sampler::setupNelderMead()
 	_strategy = RefinementStrategyPtr(new NelderMead());
 	_strategy->setEvaluationFunction(Sampler::score, this);
 	_strategy->setCycles(20);
+}
 
+void Sampler::setupStepSearch()
+{
+	_strategy = RefinementStrategyPtr(new RefinementStepSearch());
+	_strategy->setEvaluationFunction(Sampler::score, this);
+	_strategy->setCycles(20);
 }
 
 void Sampler::addOccupancy(BondPtr bond, double range, double interval)

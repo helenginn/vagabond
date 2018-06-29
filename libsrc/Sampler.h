@@ -84,6 +84,7 @@ public:
 
 	void setupGrid();
 	void setupNelderMead();
+	void setupStepSearch();
 
 	void reportInDegrees()
 	{
