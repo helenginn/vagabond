@@ -404,6 +404,7 @@ void Sampler::addDampening(BondPtr bond, double range, double interval)
 void Sampler::addMagicAngle(BondPtr bond, double range, double interval)
 {
 	if (!bond) return;
+	if (!bond->getRefineFlexibility()) return;
 
 	_strategy->addParameter(&*bond, Bond::getMagicPhi,
 	                        Bond::setMagicPhi, range, interval,
