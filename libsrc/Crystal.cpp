@@ -108,6 +108,7 @@ void Crystal::realSpaceClutter(double maxRes)
 			{
 				sampling = maxRes / 3.;
 			}
+
 			Options::setProteinSampling(sampling);
 		}
 		
@@ -382,7 +383,7 @@ double Crystal::getMaximumDStar(DiffractionPtr data)
 {
 	double maxRes = getMaxResolution(data);
 	maxRes = 1 / maxRes;
-	maxRes *= 1.4;
+	maxRes *= 1.6;
 
 	return maxRes;
 }
