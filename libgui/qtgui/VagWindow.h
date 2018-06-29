@@ -41,7 +41,7 @@ public:
 
 	virtual void disable();
 	virtual void enable();
-	void waitForInstructions();
+	int waitForInstructions();
 	virtual bool isRunningSomething();
 	void receiveDialogue(DialogueType type, std::string diagString);
 

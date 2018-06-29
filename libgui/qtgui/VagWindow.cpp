@@ -180,119 +180,138 @@ VagWindow::VagWindow(QWidget *parent,
 
 	_argc = argc;
 	_argv = argv;
+	display->setFocus();
+	display->setFocusPolicy(Qt::StrongFocus);
 
 	_instructionType = InstructionTypeNone;
 	_instructionThread.setVagWindow(this);
 	_instructionThread.start(); 
-
-	display->setFocus();
-	display->setFocusPolicy(Qt::StrongFocus);
 }
 
-void VagWindow::waitForInstructions()
+int VagWindow::waitForInstructions()
 {
 	OptionsPtr options = Options::getRuntimeOptions();
 	options->setNotify((Notifiable *)this);
-	options->run();
+	InstructionThread *thread = NULL;
+	thread =  static_cast<InstructionThread *>(QThread::currentThread());
+
+	try
+	{
+		options->run();
+	}
+	catch (int e)
+	{
+		if (e == 10)
+		{
+			return 1;
+		}
+	}
 
 	while (true)
 	{
-		/* Returned instructions to GUI */
-		switch (_instructionType)
+		try
 		{
-			case InstructionTypeResetExplorer:
-			updateExplorerButton();
-			break;
+			/* Returned instructions to GUI */
+			switch (_instructionType)
+			{
+				case InstructionTypeResetExplorer:
+				updateExplorerButton();
+				break;
 
-			default:
-			break;
+				default:
+				break;
+			}
+
+			mutex.lock();
+			wait.wait(&mutex);
+
+			/* GUI instructions to Vagabond */
+			switch (_instructionType)
+			{
+				case InstructionTypeSuperimpose:
+				options->superimposeAll();
+				break;
+
+				case InstructionTypeRefinePositions:
+				options->refineAll(RefinementModelPos, 1);
+				break;
+
+				case InstructionTypeBackboneAnalysis:
+				options->backboneAnalysis();
+				break;
+
+				case InstructionTypeFitWholeMoleculeTranslation: 
+				options->fitWholeMolecule(true, false);
+				break;
+
+				case InstructionTypeFitWholeMoleculeRotation: 
+				options->fitWholeMolecule(false, true);
+				break;
+
+				case InstructionTypeSqueezeToEnd: 
+				squeezeToEnd();
+				break;
+
+				case InstructionTypeSidechainsToEnd: 
+				sidechainsToEnd();
+				break;
+
+				case InstructionTypeModelPosToEnd: 
+				modelPosToEnd();
+				break;
+
+				case InstructionTypeRefineToEnd: 
+				refineToEnd();
+				break;
+
+				case InstructionTypeRefineDensity: 
+				options->refineAll(RefinementSidechain, 1);
+				break;
+
+				case InstructionTypeChangeBMult:
+				options->applyBMultiplier();
+				break;
+
+				case InstructionTypeFindDisulphides:
+				options->findDisulphides();
+				break;
+
+				case InstructionTypeRecalculateFFT:
+				options->recalculateFFT();
+				break;
+
+				case InstructionTypeOpenInCoot:
+				options->openInCoot();
+				break;
+
+				case InstructionTypeSetObjectValue:
+				Notifiable::performObjectSet();
+				break;
+
+				case InstructionTypeGetObjectValue:
+				Notifiable::performObjectGet();
+				_explorer->updateCorrelation();
+				break;
+
+				case InstructionTypePreviousState:
+				options->previousState();
+				break;
+
+				default:
+				break;
+			}
 		}
-
-		mutex.lock();
-		wait.wait(&mutex);
-
-		/* GUI instructions to Vagabond */
-		switch (_instructionType)
+		catch (int e)
 		{
-			case InstructionTypeSuperimpose:
-			options->superimposeAll();
-			break;
-
-			case InstructionTypeRefinePositions:
-			options->refineAll(RefinementModelPos, 1);
-			break;
-
-			case InstructionTypeBackboneAnalysis:
-			options->backboneAnalysis();
-			break;
-
-			case InstructionTypeFitWholeMoleculeTranslation: 
-			options->fitWholeMolecule(true, false);
-			break;
-
-			case InstructionTypeFitWholeMoleculeRotation: 
-			options->fitWholeMolecule(false, true);
-			break;
-
-			case InstructionTypeSqueezeToEnd: 
-			squeezeToEnd();
-			break;
-
-			case InstructionTypeSidechainsToEnd: 
-			sidechainsToEnd();
-			break;
-
-			case InstructionTypeModelPosToEnd: 
-			modelPosToEnd();
-			break;
-
-			case InstructionTypeRefineToEnd: 
-			refineToEnd();
-			break;
-
-			case InstructionTypeRefineDensity: 
-			options->refineAll(RefinementSidechain, 1);
-			break;
-
-			case InstructionTypeChangeBMult:
-			options->applyBMultiplier();
-			break;
-
-			case InstructionTypeFindDisulphides:
-			options->findDisulphides();
-			break;
-
-			case InstructionTypeRecalculateFFT:
-			options->recalculateFFT();
-			break;
-
-			case InstructionTypeOpenInCoot:
-			options->openInCoot();
-			break;
-
-			case InstructionTypeSetObjectValue:
-			Notifiable::performObjectSet();
-			break;
-
-			case InstructionTypeGetObjectValue:
-			Notifiable::performObjectGet();
-			_explorer->updateCorrelation();
-			break;
-
-			case InstructionTypePreviousState:
-			options->previousState();
-			break;
-
-			default:
-			break;
+			if (e == 10)
+			{
+				return 1;
+			}
 		}
-
-		InstructionThread *thread = NULL;
-		thread =  static_cast<InstructionThread *>(QThread::currentThread());
 
 		if (thread->shouldDie())
 		{
-			QThread::currentThread()->exit(0);
+			return 0;
 		}
 
 		display->setFocus();
