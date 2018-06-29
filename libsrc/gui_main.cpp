@@ -38,8 +38,9 @@ int main(int argc, char * argv[])
 
 	StartScreen startScreen(NULL, argc, argv);
 	startScreen.show();
+	int status = 0;
 
-	int status = app.exec();
+	status = app.exec();
 	
 	if (status == 0)
 	{
