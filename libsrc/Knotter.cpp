@@ -139,20 +139,18 @@ void Knotter::tieTowardsNTerminus()
 	if (prevCAlpha->getModel()->getClassName() == "Bond")
 	{
 		BondPtr nitro2Carbon = BondPtr(new Bond(prevNitrogen, carbonylCarbon));
-		//		nitro2Carbon->setTorsionStepMult(0.2);
+		nitro2Carbon->setRefineFlexibility(false);
 		nitro2Carbon->setTorsionAtoms(prevCAlpha, cAlpha);
 		nitro2Carbon->activate();
-		//    Bond::setTorsion(&*nitro2Carbon, deg2rad(180));
 	}
 
 	AtomPtr carbonylOxygen = _backbone->findAtom("O");
 	AtomPtr nHydrogen = _backbone->findAtom("H");
 
-	AtomPtr nextCSpine, nextCalpha;
+	AtomPtr nextCalpha;
 
 	if (nextBackbone)
 	{
-		nextCSpine = nextBackbone->findAtom("C");
 		nextCalpha = nextBackbone->findAtom("CA");
 	}
 
@@ -236,6 +234,7 @@ void Knotter::tieTowardsCTerminus()
 
 	AtomPtr carbonylCarbon = _backbone->findAtom("C");
 	AtomPtr carbonylOxygen = _backbone->findAtom("O");
+	AtomPtr finalOxygen = _backbone->findAtom("OXT");
 	AtomPtr nHydrogen = _backbone->findAtom("H");
 
 	AtomPtr nextNSpine, nextCalpha;
@@ -261,7 +260,6 @@ void Knotter::tieTowardsCTerminus()
 		nSpine2hydrogen->activate();
 	}
 
-
 	nSpine2cAlpha->addExtraTorsionSample(carbonylOxygen, 0);
 
 	BondPtr cAlpha2Carbonyl = BondPtr(new Bond(cAlpha, carbonylCarbon));
@@ -276,18 +274,22 @@ void Knotter::tieTowardsCTerminus()
 
 	cAlpha2Carbonyl->activate();
 
-	//    BondPtr cAlpha2hAlpha = BondPtr(new Bond(cAlpha, hAlpha));
-	//    cAlpha2hAlpha->activate();
-
 	if (nextBackbone)
 	{
 		BondPtr carbonyl2nextN = BondPtr(new Bond(carbonylCarbon, nextNSpine));
+		carbonyl2nextN->setRefineFlexibility(false);
 		carbonyl2nextN->setTorsionAtoms(cAlpha, nextCalpha);
 		carbonyl2nextN->activate();
 	}
 
 	BondPtr carbonyl2oxy = BondPtr(new Bond(carbonylCarbon, carbonylOxygen));
 	carbonyl2oxy->activate();
+	
+	if (finalOxygen)
+	{
+		BondPtr carbonyl2oxt = BondPtr(new Bond(carbonylCarbon, finalOxygen));
+		carbonyl2oxt->activate();
+	}
 }
 
 void Knotter::tie()
