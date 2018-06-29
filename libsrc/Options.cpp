@@ -468,6 +468,17 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool)
 	{
 		count = &_globalCount;
 	}
+	
+	if (!diffractions.size())
+	{
+		if (type == RefinementSidechain)
+		{
+			std::cout << "Cannot refine sidechains to density without \n"\
+			"specifying a reflection file!" << std::endl;
+			notifyGUI(true);
+			return;
+		}
+	}
 
 	for (int i = 0; i < numCycles; i++)
 	{
@@ -779,10 +790,17 @@ void Options::refinementCycle(MoleculePtr molecule, RefinementType type)
 
 void Options::fitWholeMolecule(bool translation, bool rotation)
 {
+	if (!diffractions.size())
+	{
+		std::cout << "Cannot refine whole molecule movements to \n"\
+		"density without specifying a reflection file!" << std::endl;
+		return;
+	}
+
 	notifyGUI(false);
 
 	statusMessage("Applying whole-molecule fits...");
-
+	
 	CrystalPtr crystal = getActiveCrystal();
 	crystal->fitWholeMolecules(translation, rotation);
 
