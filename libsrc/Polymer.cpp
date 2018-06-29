@@ -297,7 +297,7 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 
 	int count = 0;
 	double startCCAve = 0;
-	std::map<MonomerPtr, double> preScores;
+	std::map<MonomerPtr, vec3> preScores;
 
 	std::cout << "Refining chain " << getChainID();
 	std::cout  << " from residue " << start << " to ";
@@ -334,8 +334,14 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 
 		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);
 		startCCAve += score;
+		
+		BackbonePtr bone = monomer->getBackbone();
+		double backScore = bone->scoreWithMap(ScoreTypeCorrel, target);
+		SidechainPtr side = monomer->getSidechain();
+		double sideScore = side->scoreWithMap(ScoreTypeCorrel, target);
 
-		preScores[monomer] = score;
+		vec3 scores = make_vec3(score, backScore, sideScore);
+		preScores[monomer] = scores;
 		count++;
 	}
 
@@ -343,6 +349,8 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 	count = 0;
 
 	double endCCAve = 0;
+	
+	std::cout << "\t  Backbone             | Sidechain" << std::endl;
 
 	for (int i = start; i != end; i += skip)
 	{
@@ -353,27 +361,53 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 		
 		std::cout << "\t";
 		MonomerPtr monomer = getMonomer(i);
+		BackbonePtr bone = monomer->getBackbone();
+		SidechainPtr side = monomer->getSidechain();
+
 		if (!monomer)
 		{
 			continue;
 		}
 
-		copyParams(monomer->getSidechain());
-		copyParams(monomer->getBackbone());
+		copyParams(side);
+		copyParams(bone);
 		refineMonomer(monomer, target, rType);
-		monomer->getSidechain()->clearParams();
-		monomer->getBackbone()->clearParams();
+		side->clearParams();
+		bone->clearParams();
 
 		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);	
-		double pre = preScores[monomer];
+		double backScore = bone->scoreWithMap(ScoreTypeCorrel, target);	
+		double sideScore = side->scoreWithMap(ScoreTypeCorrel, target);	
+		double pre = preScores[monomer].x;
+		double preBack = preScores[monomer].y;
+		double preSide = preScores[monomer].z;
 
 		/* Scores are negative by default */
 		double diff = (score - pre) * 100.;
+		double backdiff = (backScore - preBack) * 100.;
+		double sidediff = (sideScore - preSide) * 100.;
+
 		/* improvement of 2% will be 20 + symbols after the residue! */
-		int signs = fabs(diff * 10);
-		int dir = (diff < 0);	
+		/* display backbone on one side */
+		int signs = fabs(backdiff * 10);
+		int dir = (backdiff < 0);	
+		
+		if (signs > 20) signs = 20;
 
 		std::cout << " ";
+		for (int j = 0; j < signs; j++)
+		{
+			std::cout << (dir ? "+" : "-");
+		}
+		for (int j = signs; j < 20; j++)
+		{
+			std::cout << " ";	
+		}
+
+		signs = fabs(sidediff * 10);
+		dir = (sidediff < 0);	
+
+		std::cout << " | ";
 		for (int j = 0; j < signs; j++)
 		{
 			std::cout << (dir ? "+" : "-");
