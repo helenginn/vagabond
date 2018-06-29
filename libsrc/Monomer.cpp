@@ -195,7 +195,6 @@ double Monomer::vsRefine(void *object)
 	victim->addParamType(ParamOptionTorsion, 0.04);
 	victim->addParamType(ParamOptionBondAngle, 0.5);
 	victim->addParamType(ParamOptionKick, 0.25);
-	victim->addParamType(ParamOptionDampen, 0.10);
 	victim->addParamType(ParamOptionMagicAngles, 20.);
 	victim->addParamType(ParamOptionNumBonds, 5);
 

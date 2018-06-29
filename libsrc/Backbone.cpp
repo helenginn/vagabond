@@ -53,7 +53,6 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			break;
 
 			case RefinementRMSDZero:
-			addParamType(ParamOptionDampen, 0.01);
 			addParamType(ParamOptionMagicAngles, 3);
 			break;
 
