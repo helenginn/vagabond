@@ -212,7 +212,6 @@ void Polymer::refineBackbone()
 			std::cout << "Refining using correlation with density." << std::endl;
 			addParamType(ParamOptionTorsion, 0.02);
 			addParamType(ParamOptionKick, 0.010);
-			addParamType(ParamOptionDampen, 0.005);
 			addParamType(ParamOptionMagicAngles, 5.0);
 			addParamType(ParamOptionNumBonds, 10);
 			diff += refineRange(i, i + skip * windowSize, crystal, rType);
@@ -1724,7 +1723,6 @@ void Polymer::refineEverything(int start)
 	addParamType(ParamOptionMagicAngles, 20);
 	/*
 	addParamType(ParamOptionKick, 0.05);
-	addParamType(ParamOptionDampen, 0.02);
 	*/
 	setupTorsionSet(nitroBond, 0, 1000, 0, 0, 0, 0);
 	
