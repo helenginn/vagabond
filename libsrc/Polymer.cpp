@@ -1220,9 +1220,12 @@ void Polymer::minimiseCentroids()
 		return;
 	}
 
+	double totalWeights = 0;
 	getAnchorModel()->getFinalPositions();
 	vec3 oldPos = getAnchorModel()->getAbsolutePosition();
 
+	/* For every cAlpha atom in the structure, get the mean centroid
+	 * position of each conformer... */
 	for (size_t i = 0; i < monomerCount(); i++)
 	{
 		if (!getMonomer(i))
@@ -1241,38 +1244,47 @@ void Polymer::minimiseCentroids()
 		someSamples = ca->getModel()->getFinalPositions();
 		samples = &someSamples;
 
+		/* Prepare the vectors for the first time if necessary */
 		if (!addedVecs.size())
 		{
 			addedVecs = std::vector<vec3>(samples->size(), make_vec3(0, 0, 0));;
 		}
 
+		double weight = 1;//ca->getBFactor();
+		totalWeights += weight;
+
+		/* Sum over the uncorrected start positions */
 		for (size_t j = 0; j < samples->size(); j++)
 		{
-			addedVecs[j] = vec3_add_vec3(addedVecs[j], samples->at(j).start);
+			vec3 added = samples->at(j).start;
+
+			vec3_mult(&added, weight);
+
+			addedVecs[j] = vec3_add_vec3(addedVecs[j], added);
 		}
 	}
 
-	// calculate the number of atoms which have been gone into each anchor
-	double mult = 1 / (double)count;
+	/* Divide each by total weights */
+	double inverse = 1 / totalWeights;
 
-	// now we divide every state of the anchor by this.
+	for (size_t j = 0; j < addedVecs.size(); j++)
+	{
+		vec3_mult(&addedVecs[j], inverse);
+	}
+
+	/* Mean of all the centroids in the structure */
+	vec3 meanPos = make_vec3(0, 0, 0);
 
 	for (size_t i = 0; i < addedVecs.size(); i++)
 	{
-		vec3_mult(&addedVecs[i], mult);
+		vec3 addition = addedVecs[i];
+		meanPos = vec3_add_vec3(meanPos, addition);
 	}
 
-	vec3 meanPos = make_vec3(0, 0, 0); // mean of all centroids
-
-	for (size_t i = 0; i < addedVecs.size(); i++)
-	{
-		meanPos = vec3_add_vec3(meanPos, addedVecs[i]);
-	}
+	vec3_mult(&meanPos, 1 / (double)addedVecs.size());
 
 	// starting point for rotation centre of whole molecule movements
 	// Used by Model to correct for translation stuff
-
-	vec3_mult(&meanPos, 1 / (double)addedVecs.size());
 	_rotationCentre = meanPos;
 
 	// Remove the old centroid positions if not already
@@ -1344,7 +1356,7 @@ void Polymer::minimiseRotations()
 				shout_at_helen("Missing model for backbone atom!");
 			}
 
-			double weight = 1;
+			double weight = 1;//anAtom->getBFactor();
 			weights.push_back(weight);
 
 			samples = model->getManyPositions();
