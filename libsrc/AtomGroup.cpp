@@ -510,7 +510,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 	{
 		AtomPtr topAtom = topAtoms[n].lock();
 
-		if (n > 0) std::cout << "'" << std::flush;
+//		if (n > 0) std::cout << "'" << std::flush;
 
 		while (hasAtom(topAtom))
 		{
