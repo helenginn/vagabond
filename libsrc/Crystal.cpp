@@ -802,8 +802,19 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	std::cout << "\tCycle " << cycleNum << std::endl;
 
 	std::string refineCount = "cycle_" + i_to_str(cycleNum);
+	double rFac = 0;
 
-	double rFac = getDataInformation(data, 2, 1, refineCount);
+	if (!data)
+	{
+		std::cout << "No reflection file has been specified.\n"\
+		"Cannot perform map recalculation." << std::endl;
+		std::cout << std::setprecision(2);
+	}
+	else
+	{
+		rFac = getDataInformation(data, 2, 1, refineCount);
+	}
+
 	makePDBs(i_to_str(cycleNum));
 
 	for (int i = 0; i < moleculeCount(); i++)
@@ -812,9 +823,13 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
 
-			polymer->differenceGraphs("density_" + polymer->getChainID() +
-			                          "_" + i_to_str(cycleNum),
-			                          shared_from_this());
+			if (data)
+			{
+				polymer->differenceGraphs("density_" + polymer->getChainID() +
+				                          "_" + i_to_str(cycleNum),
+				                          shared_from_this());
+			}
+
 			polymer->graph("bfactor_" + polymer->getChainID() +
 			               "_" + i_to_str(cycleNum));
 			polymer->closenessSummary();
