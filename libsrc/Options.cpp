@@ -167,43 +167,38 @@ void Options::run()
 	std::cout << std::setprecision(3) << std::endl;
 	std::cout << "Running in " << (_manual ? "manual" : "automatic") << " mode." << std::endl;
 
-	if (diffractions.size() == 1)
+	if (crystals.size() == 1)
 	{
-		if (crystals.size() == 1)
+		CrystalPtr crystal = getActiveCrystal();
+
+		/* sandbox */
+		if (_tie)
 		{
-			DiffractionPtr data = diffractions[0];
+			crystal->setAnchors();
+			crystal->tieAtomsUp();
+		}
 
-			CrystalPtr crystal = getActiveCrystal();
+		crystal->tiedUpScattering();
 
-			/* sandbox */
-			if (_tie)
-			{
-				crystal->setAnchors();
-				crystal->tieAtomsUp();
-			}
+		recalculateFFT();
 
-			crystal->tiedUpScattering();
+		if (_notify)
+		{
+			_notify->setInstruction(InstructionTypeResetExplorer);
+		}
 
+		if (shouldPowder())
+		{
+			crystal->makePowders();
 			recalculateFFT();
-			
-			if (_notify)
-			{
-				_notify->setInstruction(InstructionTypeResetExplorer);
-			}
+			goto finished;
+		}
 
-			if (shouldPowder())
-			{
-				crystal->makePowders();
-				recalculateFFT();
-				goto finished;
-			}
-			
-			executeScript();
+		executeScript();
 
-			if (_notify)
-			{
-				_notify->enable();
-			}
+		if (_notify)
+		{
+			_notify->enable();
 		}
 	}
 
