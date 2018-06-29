@@ -513,14 +513,6 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 	timer.report();
 }
 
-std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal)
-{
-	std::ostringstream stream;
-	stream << getPDBContribution(pdbType, crystal);
-
-	return stream.str();
-}
-
 void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 {
 	CSVPtr perCA = CSVPtr(new CSV(4, "resnum", "cc", "diffbackbone", "diffsidechain"));

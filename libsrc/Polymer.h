@@ -41,7 +41,6 @@ public:
 	static double vsRefineSidechainsToDensity(void *object);
 	static double vsRefinePositionsToPDB(void *object);
 	
-	virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal);
 	virtual void graph(std::string graphName);
 	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst);
 
