@@ -398,7 +398,10 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 	                                    0, _maxResolution);
 	applyScaleFactor(totalFc / ratio, 0, 0);
 	
-	return;
+	if (!Options::getShellScale())
+	{
+		return;
+	}
 
 	/* Then apply to individual resolution bins */
 	std::vector<double> bins;
