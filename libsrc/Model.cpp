@@ -348,6 +348,22 @@ void Model::addRealSpacePositions(FFTPtr real, vec3 offset)
 			continue;
 		}
 		
-		real->addBlurredToReal(relative.x, relative.y, relative.z, occupancy);
+		bool interpolate = false;
+		if (interpolate)
+		{
+			FFT::collapseFrac(&relative.x, &relative.y, &relative.z);
+
+			double x = relative.x * real->nx;
+			double y = relative.y * real->ny;
+			double z = relative.z * real->nz;
+			
+			real->addInterpolatedToReal(x, y, z, occupancy);
+		}
+		else
+		{
+			real->addBlurredToReal(relative.x, relative.y, relative.z,
+			                       occupancy);
+		}
 	}
+
 }
