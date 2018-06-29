@@ -56,6 +56,7 @@ private slots:
 	void pushRefineToEnd();
 	void setSliderValue();
 private:
+	bool checkForData();
 	void initialise(MonomerPtr monomer);
 	void populateList();
 	void makeRefinementButtons();

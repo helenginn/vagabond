@@ -96,6 +96,9 @@ void MonomerExplorer::updateCorrelation(bool force)
 {
 	OptionsPtr options = Options::getRuntimeOptions();
 	CrystalPtr crystal = options->getActiveCrystal();
+	DiffractionPtr data = options->getActiveData();
+	if (!data) return;
+	
 	Notifiable *notify = options->getNotify();
 	bool running = notify->isRunningSomething();
 
@@ -312,8 +315,27 @@ Notifiable *MonomerExplorer::preparePolymer()
 	return notify;
 }
 
+bool MonomerExplorer::checkForData()
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	DiffractionPtr data = options->getActiveData();
+	if (!data)
+	{
+		std::cout << "No reflection file specified; cannot refine to density!" 
+		<< std::endl;
+		return false;
+	}
+
+	return true;	
+}
+
 void MonomerExplorer::pushSidechainsToEnd()
 {
+	if (!checkForData())
+	{
+		return;	
+	}
+
 	Notifiable *notify = preparePolymer();
 	notify->setInstruction(InstructionTypeSidechainsToEnd);
 }
@@ -332,12 +354,22 @@ void MonomerExplorer::pushSqueezeToEnd()
 
 void MonomerExplorer::pushRefineToEnd()
 {
+	if (!checkForData())
+	{
+		return;	
+	}
+
 	Notifiable *notify = preparePolymer();
 	notify->setInstruction(InstructionTypeRefineToEnd);
 }
 
 void MonomerExplorer::pushRefineDensity()
 {
+	if (!checkForData())
+	{
+		return;	
+	}
+
 	OptionsPtr options = Options::getRuntimeOptions();
 	Notifiable *notify = options->getNotify();
 
