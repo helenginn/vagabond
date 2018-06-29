@@ -370,6 +370,7 @@ void Options::parse()
 		}
 
 		understood |= parseParameter(arg, "--with-vscript=", &_scriptName);
+		understood |= parseParameter(arg, "--with-script=", &_scriptName);
 		understood |= parseParameter(arg, "--solvent-file=", &_solventFile);
 
 		understood |= parseParameter(arg, "--with-model=", &_modelFile);
