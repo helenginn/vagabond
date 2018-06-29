@@ -653,7 +653,11 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	csv->writeToFile("real_space_cc.csv");
 	printf("Real space correlation coefficient: %.3f\n", correl);
 	
-	_bucket->abandonCalculations();
+	if (_bucket)
+	{
+		_bucket->abandonCalculations();
+	}
+
 	return rFac;
 }
 
