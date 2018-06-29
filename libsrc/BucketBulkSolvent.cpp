@@ -36,7 +36,7 @@ void BucketBulkSolvent::addSolvent()
 void BucketBulkSolvent::removeSlivers()
 {
 	/** Maximum distance before sliver is allowed to stay */
-	double maxDist = 2.;
+	double maxDist = 2.0;
 
 	mat3x3 basis = _solvent->getBasis();
 	vec3 uc_dims = empty_vec3();

@@ -85,9 +85,9 @@ double Element::getSolventMaskValue(void *object, double x, double y, double z)
 	double dist = sqrt(distSq);
 	
 	/** Point at which solvent should be completely disallowed */
-	double min = 1.8;
+	double min = 1.6;
 	/** Point at which solvent is completely free to exist */
-	double max = 2.5;
+	double max = 2.0;
 	
 	if (dist <= min)
 	{
