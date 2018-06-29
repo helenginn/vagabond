@@ -134,11 +134,11 @@ double Element::getVoxelValue(void *object, double x, double y, double z)
 
 FFTPtr Element::getMask()
 {
-	double n = 12;
+	double ang = 5.5;
 	double scale = Options::getProteinSampling();
 
 	FFTPtr fft = FFTPtr(new FFT());
-	fft->create(n);
+	fft->create(ang / scale);
 	fft->setScales(scale);
 
 	for (int x = -fft->nx / 2; x <= fft->nx / 2; x++)
