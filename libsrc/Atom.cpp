@@ -232,6 +232,7 @@ bool Atom::isBackbone()
 	if (_atomName == "H") return true;
 	if (_atomName == "N") return true;
 	if (_atomName == "O") return true;
+	if (_atomName == "OXT") return true;
 	if (_atomName == "HA3") return true;
 
 	return false;
