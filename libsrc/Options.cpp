@@ -226,7 +226,17 @@ void Options::executeScript()
 	}
 
 	VScript script = VScript();
-	std::string contents = get_file_contents(_scriptName);
+	std::string contents;
+	
+	try
+	{
+		contents = get_file_contents(_scriptName);
+	}
+	catch (int e)
+	{
+		warn_user("Could not load vscript file: " + _scriptName);
+		return;
+	}
 	
 	script.loadScript(contents);
 	script.execute();
