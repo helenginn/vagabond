@@ -1646,6 +1646,7 @@ void Polymer::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	target.setAtomGroup(allBackbone);
 	target.setCrystal(crystal);
 	target.matchElectronDensity();
+//	target.maximiseIsotropy();
 	strategy->setEvaluationFunction(FlexGlobal::score, &target);
 	FlexGlobal::score(&target);
 }
