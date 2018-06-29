@@ -859,7 +859,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 	for (int i = 0; i < fftAtom->nn; i++)
 	{
-		fftAtom->data[i][1] = std::nan(" ");
+		fftAtom->data[i][1] = nan(" ");
 	}
 
 	/* min/maxAtoms are in crystal coordinates.*/
