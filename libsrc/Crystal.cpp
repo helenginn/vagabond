@@ -638,7 +638,11 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 		count++;
 		if (calc <= 0) continue;
 
-		double solvent = _bucket->isSolvent(i);
+		double solvent = 0;
+		if (_bucket)
+		{
+			solvent = _bucket->isSolvent(i);
+		}
 
 		real_mixed.push_back(obs);
 		chosen_calc.push_back(calc);
