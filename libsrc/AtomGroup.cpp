@@ -601,6 +601,13 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 
 double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plot, unsigned int flags)
 {
+	OptionsPtr options = Options::getRuntimeOptions();
+	DiffractionPtr data = options->getActiveData();
+	if (!data)
+	{
+		return 0;
+	}
+
 	std::vector<AtomPtr> selected;
 	for (size_t i = 0; i < atomCount(); i++)
 	{
