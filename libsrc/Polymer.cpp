@@ -1686,11 +1686,13 @@ double Polymer::vsSandbox(void *object)
 	Parser *parser = static_cast<Parser *>(object);
 	Polymer *polymer = dynamic_cast<Polymer *>(parser);
 	
+	/*
 	polymer->refineLoop(67, false);
 	polymer->refineLoop(66, false);
 	polymer->refineLoop(67, true);
 	polymer->refineLoop(66, true);
 	return 0;
+	*/
 	
 	int anchorNum = polymer->getAnchor();
 	polymer->refineEverything(anchorNum - 2);
