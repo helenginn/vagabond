@@ -914,7 +914,7 @@ std::string Crystal::agreementSummary()
 {
 	std::ostringstream ss;
 	ss << "Rwork/free: " << _rWork * 100 << ", " << _rFree * 100 << "%; ";
-	ss << "CCwork/free: " << _ccWork << ", " << _ccFree << std::endl;
+	ss << "CCwork/free: " << _ccWork << ", " << _ccFree;
 	return ss.str();
 }
 
