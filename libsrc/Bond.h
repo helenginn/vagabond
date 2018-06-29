@@ -184,7 +184,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_bondGroups[bond->_activeGroup].torsionBlur = value;
-		static_cast<Bond *>(object)->propagateChange(20);
+		static_cast<Bond *>(object)->propagateChange(16);
 	}
 
 	static double getTorsionBlur(void *object)
@@ -203,7 +203,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_bondGroups[bond->_activeGroup].torsionAngle = value;
-		static_cast<Bond *>(object)->propagateChange(20);
+		static_cast<Bond *>(object)->propagateChange(16);
 	}
 
 	static double getMagicPsi(void *object)
@@ -216,7 +216,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_bondGroups[bond->_activeGroup].magicPsi = angle;
-		static_cast<Bond *>(object)->propagateChange(20);
+		static_cast<Bond *>(object)->propagateChange(16);
 	}
 
 	static double getMagicPhi(void *object)
@@ -229,7 +229,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_bondGroups[bond->_activeGroup].magicPhi = angle;
-		static_cast<Bond *>(object)->propagateChange(20);
+		static_cast<Bond *>(object)->propagateChange(16);
 	}
 
 	static double getOccupancy(void *object)
@@ -249,7 +249,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_dampening = value;
-		bond->propagateChange(20);
+		bond->propagateChange(16);
 	}
 
 	/**
