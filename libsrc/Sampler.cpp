@@ -77,6 +77,11 @@ void Sampler::addCustomParameter(void *object, Getter getter, Setter setter,
 	_strategy->addParameter(object, getter, setter, range, interval, name);
 }
 
+int Sampler::hasParameter(ParamOptionType type)
+{
+	return (_params.count(type));
+}
+
 void Sampler::addParamsForBond(BondPtr bond)
 {
 	for (ParamMap::iterator it = _params.begin(); it != _params.end(); it++)

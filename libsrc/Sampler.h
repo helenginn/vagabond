@@ -162,6 +162,7 @@ public:
 		sampler->_params = _params;
 	}
 
+	int hasParameter(ParamOptionType type);
 
 	void addCustomParameter(void *object, Getter getter, Setter setter,
                                  double range, double interval,
