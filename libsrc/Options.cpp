@@ -111,6 +111,10 @@ void Options::run()
 			pdbFile = 0;
 		}
 	}
+	else
+	{
+		shout_at_user("Model file has not been specified.");
+	}
 
 	if (pdbFile == 1)
 	{
