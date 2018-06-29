@@ -73,10 +73,16 @@ int Model::fftGridLength()
 	/* Add some Angstroms for good luck */
 	dim += some;
 	dim *= 2;
-	dim += 2;
 	
 	int n = scale * dim + 0.5;
-	//n = ATOM_SAMPLING_COUNT;
+	
+	if (n % 2 == 1)
+	{
+		n += 1;
+	}
+	
+//	std::cout << "Size " << dim << ", scale " << scale << ", n = " << n << std::endl;
+
 	return n;
 }
 
