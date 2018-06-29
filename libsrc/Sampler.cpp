@@ -285,11 +285,6 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 		bondCount++;
 	}
 
-	if (bondCount <= 2)
-	{
-		//    return BondPtr();
-	}
-
 	return returnBond;
 }
 
