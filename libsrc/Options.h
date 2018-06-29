@@ -26,7 +26,7 @@ class StartScreen;
 
 class Options
 {
-	friend StartScreen;
+	friend class StartScreen;
 public:
 	Options(int argc, const char **argv);
 	void run();
