@@ -132,9 +132,33 @@ void Molecule::summary()
 	std::cout << "| Atoms: " << atomCount() << std::endl;
 }
 
-void Molecule::refine(CrystalPtr, RefinementType)
+void Molecule::refine(CrystalPtr crystal, RefinementType type)
 {
+	for (int i = 0; i < atomCount(); i++)
+	{
+		AtomPtr anAtom = atom(i);
+		if (anAtom->getElement()->getSymbol() != "O" || 
+		    !anAtom->isHeteroAtom())
+		{
+			continue;
+		}
+		
+		ModelPtr model = anAtom->getModel();
+		if (!model || !model->isAbsolute())
+		{
+			continue;
+		}
 
+		AbsolutePtr abs = ToAbsolutePtr(model);
+		
+		setupStepSearch();
+		setCrystal(crystal);
+		setCycles(20);
+		addSampled(anAtom);	
+		addAbsolutePosition(abs, 0.005, 0.0001);
+		setJobName("xyz_" + anAtom->shortDesc());
+		sample();
+	}
 }
 
 std::string Molecule::makePDB(PDBType pdbType, CrystalPtr crystal)
