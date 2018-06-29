@@ -13,6 +13,7 @@
 #include "../libccp4/cmtzlib.h"
 #include <vector>
 #include "fftw3d.h"
+#include "FileReader.h"
 
 void getCol(std::vector<std::string> names, CMtz::MTZ *mtz,
             CMtz::MTZCOL **column)
@@ -37,6 +38,11 @@ void DiffractionMtz::load()
 
 	CMtz::MTZ *mtz = CMtz::MtzGet(_filename.c_str(), 0);
 	//	int spgNum = MtzSpacegroupNumber(mtz);
+	
+	if (!file_exists(_filename))
+	{
+		shout_at_user("MTZ file " + _filename + " does not exist!");
+	}
 
 	if (mtz == NULL)
 	return;
