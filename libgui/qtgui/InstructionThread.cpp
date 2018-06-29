@@ -3,5 +3,6 @@
 
 void InstructionThread::run()
 {
-    _window->waitForInstructions();
+    int exitCode = _window->waitForInstructions();
+	QApplication::exit(exitCode);
 }
