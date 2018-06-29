@@ -295,9 +295,6 @@ void PDBReader::parse()
 {
 	if (!file_exists(filename))
 	{
-		char cwd[1024];
-		getcwd(cwd, sizeof(cwd));
-		std::cout << "Working directory: " << cwd << std::endl;
 		shout_at_user("File " + filename + " does not exist.");
 	}
 
