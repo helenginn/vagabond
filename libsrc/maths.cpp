@@ -301,3 +301,36 @@ void generateResolutionBins(double minD, double maxD,
 		r1 = r2;
 	}
 }
+
+void regression_line(std::vector<double> xs, std::vector<double> ys,
+                     double *intercept, double *gradient)
+{
+	double sigma_x = 0;
+	double sigma_y = 0;
+	double sigma_x_y = 0;
+	double sigma_x_2 = 0;
+	double weight_n = 0;
+
+	for (int i=0; i < xs.size(); i++)
+	{
+		double x = xs[i];
+		double y = ys[i];
+		double weight = 1;
+
+		sigma_x += x * weight;
+		sigma_y += y * weight;
+		sigma_x_y += x * y * weight;
+		sigma_x_2 += x * x * weight;
+		weight_n += weight;
+	}
+
+	double mean_x = sigma_x / weight_n;
+	double mean_y = sigma_y / weight_n;
+
+	double sxy = sigma_x_y - sigma_x * sigma_y / weight_n;
+	double sxx = sigma_x_2 - pow(sigma_x, 2) / weight_n;
+
+	*gradient = sxy / sxx;
+	*intercept = mean_y - *gradient * mean_x;
+}
+

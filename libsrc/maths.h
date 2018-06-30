@@ -28,6 +28,8 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
                    double cutoff = -FLT_MAX);
 double mean(std::vector<double> &vec1);
 double standard_deviation(std::vector<double> &values);
+void regression_line(std::vector<double> xs, std::vector<double> ys,
+                     double *intercept, double *gradient);
 
 typedef double (*two_dataset_op)(std::vector<double>&, std::vector<double>&);
 
