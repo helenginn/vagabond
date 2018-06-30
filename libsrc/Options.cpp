@@ -676,6 +676,8 @@ void Options::openModel(std::string pdbName)
 		crystal = reader.getCrystal();
 	}
 	
+	crystal->summary();
+
 	objects.push_back(crystal);
 	crystals.push_back(crystal);
 

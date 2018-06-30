@@ -330,8 +330,6 @@ CrystalPtr PDBReader::getCrystal()
 
 	parse();
 
-	_myCrystal->summary();
-
 	if (!_foundCrystal)
 	{
 		shout_at_user("PDB file does not contain the CRYST1\n" \
