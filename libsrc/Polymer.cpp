@@ -1557,8 +1557,9 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	
 	FlexGlobal target;
 	NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
+	_overallScale = 1;
 
-	if (translation)
+	if (false && translation)
 	{
 		attachTargetToRefinement(nelderMead, target);
 		nelderMead->addParameter(this, getOverallScale, setOverallScale,
