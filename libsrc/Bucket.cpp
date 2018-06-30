@@ -93,7 +93,7 @@ void Bucket::scaleSolvent()
 				double length = vec3_length(ijk);
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
-				double bFacMod = exp(-2 * _solvBFac / four_d_sq);
+				double bFacMod = exp(-_solvBFac / four_d_sq);
 
 				long nModel = fft->element(i, j, k);
 				float realProtein = fft->data[nModel][0];
@@ -144,7 +144,7 @@ double Bucket::scaleAndAddSolventScore()
 				double length = vec3_length(ijk);
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
-				double bFacMod = exp(-2 * _solvBFac / four_d_sq);
+				double bFacMod = exp(-_solvBFac / four_d_sq);
 
 				int _i = 0; int _j = 0; int _k = 0;	
 				CSym::ccp4spg_put_in_asu(spg, i, j, k,
