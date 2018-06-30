@@ -332,12 +332,17 @@ mat3x3 mat3x3_rhbasis(vec3 aVec, vec3 bVec)
 
 /* Rotate vector (vec1) around axis (axis) by angle theta. Find value of
 * theta for which the angle between (vec1) and (vec2) is minimised. */
-mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis, double *best)
+mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis, 
+                              double *best, bool unity)
 {
 	/* Let's have unit vectors */
-	vec3_set_length(&vec1, 1);
-	vec3_set_length(&vec2, 1);
-	vec3_set_length(&axis, 1);
+	
+	if (!unity)
+	{
+		vec3_set_length(&vec1, 1);
+		vec3_set_length(&vec2, 1);
+		vec3_set_length(&axis, 1);
+	}
 
 	/* Redeclaring these to try and maintain readability and
 	* check-ability against the maths I wrote down */
