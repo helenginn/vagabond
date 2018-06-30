@@ -196,13 +196,86 @@ void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 	}
 }
 
+double getNLimit(FFTPtr fftData, FFTPtr fftModel)
+{
+	double nLimit = std::min(fftData->nx, fftModel->nx);
+	nLimit = nLimit - ((int)nLimit % 2);
+	nLimit /= 2;
+
+	return nLimit;	
+}
+
+void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale, 
+                              double *bFactor)
+{
+	FFTPtr fftData = data->getFFT();	
+	double nLimit = getNLimit(fftData, _fft);
+	std::vector<double> xs, ys;
+	CSVPtr csv = CSVPtr(new CSV(2, "data", "model"));
+
+	for (int i = -nLimit; i < nLimit; i++)
+	{
+		for (int j = -nLimit; j < nLimit; j++)
+		{
+			for (int k = 0; k < nLimit; k++)
+			{
+				int _i = 0; int _j = 0; int _k = 0;
+				vec3 ijk = make_vec3(i, j, k);
+				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_i, &_j, &_k);
+
+				mat3x3_mult_vec(_real2frac, &ijk);
+				double length = vec3_length(ijk);
+
+				double data = fftData->getIntensity(_i, _j, _k);
+				double model = _fft->getIntensity(i, j, k);
+
+				if (data != data || model != model) continue;
+				
+				double ratio = data / model;
+				double res = 1 / length;
+				double four_dsq = 4 * res * res;
+				double right_exp = 1 / four_dsq;
+				double logratio = log(ratio);
+				
+				csv->addEntry(2, right_exp, logratio);
+				
+				xs.push_back(right_exp);
+				ys.push_back(logratio);
+			}
+		}
+	}
+	
+	std::map<std::string, std::string> plotMap;
+	plotMap["filename"] = "bfactor_fit_" + i_to_str(_cycleNum);
+	plotMap["height"] = "700";
+	plotMap["width"] = "1200";
+	plotMap["xHeader0"] = "data";
+	plotMap["yHeader0"] = "model";
+
+	plotMap["colour0"] = "black";
+	plotMap["xTitle0"] = "1 / (4dd)";
+	plotMap["yTitle0"] = "ratio";
+	plotMap["style0"] = "scatter";
+
+	csv->setSubDirectory("correlation_plots");
+	csv->plotPNG(plotMap);
+	double intercept, gradient;
+	regression_line(xs, ys, &intercept, &gradient);
+
+	double k = exp(intercept);
+	double b = -gradient;
+	
+	if (b != b) b = 0;
+	
+	*scale = k;
+	*bFactor = b;
+}
+
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
                                      bool verbose, double lowRes, double highRes)
 {
 	FFTPtr fftData = data->getFFT();
-	double nLimit = std::min(fftData->nx, _fft->nx);
-	nLimit = nLimit - ((int)nLimit % 2);
-	nLimit /= 2;
+	double nLimit = getNLimit(fftData, _fft);
 
 	std::vector<double> set1, set2, free1, free2;
 
@@ -296,7 +369,8 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 	return _rWork;
 }
 
-void Crystal::applyScaleFactor(double scale, double lowRes, double highRes)
+void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
+                               double bFactor)
 {
 	double nLimit = _fft->nx;
 	nLimit /= 2;
@@ -325,13 +399,17 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes)
 				double real = _fft->getReal(element);
 				double imag = _fft->getImaginary(element);
 
+				double d = 1 / length;
+				double four_d_sq = (4 * d * d);
+				double bFacMod = exp(- bFactor / four_d_sq);
+
 				if (real != real || imag != imag)
 				{
 					continue;
 				}
 
-				real *= scale;
-				imag *= scale;
+				real *= scale * bFacMod;
+				imag *= scale * bFacMod;
 
 				_fft->setElement(element, real, imag);
 			}
@@ -388,7 +466,7 @@ double Crystal::getMaximumDStar(DiffractionPtr data)
 	return maxRes;
 }
 
-void Crystal::scaleToDiffraction(DiffractionPtr data)
+void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 {
 	getMaxResolution(data);
 	
@@ -400,38 +478,47 @@ void Crystal::scaleToDiffraction(DiffractionPtr data)
 	
 	if (!Options::getShellScale())
 	{
-		return;
-	}
-
-	/* Then apply to individual resolution bins */
-	std::vector<double> bins;
-	generateResolutionBins(0, _maxResolution, 20, &bins);
-
-	/* Extend the final bin by a little bit, so as not to lose any
-	* stragglers. */
-	bins[bins.size() - 1] *= 0.95;
-
-	for (int i = 0; i < bins.size() - 1; i++)
-	{
-		double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
-		                                    bins[i], bins[i + 1]);
-		double scale = totalFc / ratio;
+		if (!full) return;
+		double scale, bFactor;
+		scaleAndBFactor(data, &scale, &bFactor);
+		std::cout << "Absolute scale: " << scale << " and global B factor: ";
+		std::cout << bFactor << std::endl;
 		
-		if (scale != scale)
-		{
-			scale = 0;
-		}
-
-		applyScaleFactor(scale, bins[i], bins[i + 1]);
+		std::cout << "Ignoring B factor and applying absolute scale" << std::endl;
+		applyScaleFactor(totalFc * scale, 0, 0);
+		
 	}
+	else
+	{
+		/* Then apply to individual resolution bins */
+		std::vector<double> bins;
+		generateResolutionBins(0, _maxResolution, 20, &bins);
 
+		/* Extend the final bin by a little bit, so as not to lose any
+		 * stragglers. */
+		bins[bins.size() - 1] *= 0.95;
+
+		for (int i = 0; i < bins.size() - 1; i++)
+		{
+			double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
+			                                    bins[i], bins[i + 1]);
+			double scale = totalFc / ratio;
+
+			if (scale != scale)
+			{
+				scale = 0;
+			}
+
+			applyScaleFactor(scale, bins[i], bins[i + 1]);
+		}
+	}
 }
 
 void Crystal::scaleComponents(DiffractionPtr data)
 {
 	scaleToDiffraction(data);
 	scaleSolvent(data);
-	scaleToDiffraction(data);
+	scaleToDiffraction(data, true);
 }
 
 double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
@@ -475,8 +562,7 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	double rFac = rFactorWithDiffraction(data, true);
 
 	FFTPtr fftData = data->getFFT();
-	double nLimit = std::min(fftData->nx, _fft->nx);
-	nLimit /= 2;
+	double nLimit = getNLimit(fftData, _fft);
 	std::vector<double> set1, set2;
 
 	double lowRes = Options::minRes();

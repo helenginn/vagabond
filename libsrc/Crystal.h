@@ -152,12 +152,16 @@ public:
 	double getDataInformation(DiffractionPtr data, double partsFo = 2,
 	                          double partsFc = 1, std::string prefix = "");
 	
+	void scaleAndBFactor(DiffractionPtr data, double *scale, 
+                              double *bFactor);
+
 	/** Applies scale factor within the resolution ranges.
 	* 	\param scale factor (multiplies Fc with this)
 	* 	\param lowRes low resolution in Angstroms, 0 ignores this
 	* 	\param highRes high resolution in Angstroms, 0 ignores this
 	*/
-	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0);
+	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0,
+	                      double bFactor = 0);
 
 	void reconfigureUnitCell();
 	void setupSymmetry();
@@ -351,7 +355,7 @@ private:
 	BucketPtr _bucket;
 	
 	void scaleSolvent(DiffractionPtr data);
-	void scaleToDiffraction(DiffractionPtr data);
+	void scaleToDiffraction(DiffractionPtr data, bool full = false);
 };
 
 #endif /* defined(__vagabond__Crystal__) */
