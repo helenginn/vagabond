@@ -29,7 +29,7 @@ double Options::_minRes = -1.0;
 double Options::_maxRes = -1.0;
 int Options::_enableTests = 3;
 bool Options::_powder = false;
-bool Options::_shellScale = false;
+bool Options::_shellScale = true;
 double Options::_sampling = -1;
 std::string Options::_solventFile;
 
@@ -255,7 +255,7 @@ void Options::displayHelp()
 	std::cout << "--global-b=<value>\t\tAdd a real space B factor when adding explicit atoms to the map.\n"\
 	"\t\t\t\t (default 0.).\n" << std::endl;
 	std::cout << "--shell-scale\t\tWhen calculating R factors, scale each resolution bin of Fcalc"\
-	"to Fobs\n\t\t\t\t (default off).\n" << std::endl;
+	"to Fobs\n\t\t\t\t (default on).\n" << std::endl;
 	std::cout << std::endl;
 	std::cout << "Baseline command to start running vagabond:\n" << std::endl;
 	std::cout << "\tvagabond --with-pdb=start.pdb --with-mtz=start.mtz\n" << std::endl;
