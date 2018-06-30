@@ -510,6 +510,7 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 
 mat3x3 Bond::getMagicMat(vec3 direction)
 {
+	vec3_set_length(&direction, 1.);
 	mat3x3 rot = make_mat3x3();
 	double phi = _bondGroups[_activeGroup].magicPhi;
 	double psi = _bondGroups[_activeGroup].magicPsi;
@@ -523,13 +524,22 @@ mat3x3 Bond::getMagicMat(vec3 direction)
 	vec3 zAxis = make_vec3(0, 0, 1);
 	
 	vec3 cross = vec3_cross_vec3(zAxis, direction);
+	vec3_set_length(&cross, 1.);
 
 	/* Find the twizzle to put z axis onto the magic axis (around the x) */
-	mat3x3 firstTwizzle = mat3x3_closest_rot_mat(direction, zAxis, cross);
+	mat3x3 firstTwizzle = mat3x3_closest_rot_mat(direction, zAxis, cross,
+	                                             NULL, true);
 	mat3x3 multed = mat3x3_mult_mat3x3(rot, firstTwizzle);
 
 	return multed;
 }
+
+typedef struct
+{
+	mat3x3 basis;
+	vec3 curr;
+	vec3 next;	
+} BondCache;
 
 std::vector<BondSample> Bond::getCorrectedAngles(std::vector<BondSample> *prevs,
                                                  double circleAdd,
@@ -546,6 +556,8 @@ double myTorsion, double ratio)
 	vec3 prevMinorPosAve = make_vec3(0, 0, 0);
 	vec3 myCurrentPosAve = make_vec3(0, 0, 0);
 	vec3 nextCurrentPosAve = make_vec3(0, 0, 0);
+	std::vector<BondCache> cache = std::vector<BondCache>();
+	cache.resize(prevs->size());
 
 	/* This loop gets average positions for the previous, current and next
 	* atom positions */
@@ -562,24 +574,29 @@ double myTorsion, double ratio)
 		mat3x3 newBasis = nextBond->makeTorsionBasis(prevHeavyPos, prevMinorPos,
 		                                             myCurrentPos, none);
 
+
 		vec3 nextCurrentPos;
 		nextCurrentPos = nextBond->positionFromTorsion(newBasis, myTorsion,
 		                                               nextRatio, myCurrentPos);
+
+		cache[i].basis = newBasis;
+		cache[i].curr = myCurrentPos;
+		cache[i].next = nextCurrentPos;
+
 		myCurrentPosAve = vec3_add_vec3(myCurrentPosAve, myCurrentPos);
 		nextCurrentPosAve = vec3_add_vec3(nextCurrentPosAve, nextCurrentPos);
 		prevMinorPosAve = vec3_add_vec3(prevMinorPosAve, prevMinorPos);
 	}
 
-	vec3_mult(&myCurrentPosAve, 1 / (double)prevs->size());
-	vec3_mult(&prevMinorPosAve, 1 / (double)prevs->size());
-	vec3_mult(&nextCurrentPosAve, 1 / (double)prevs->size());
+	double samples = prevs->size();
+	vec3_mult(&myCurrentPosAve, 1 / samples);
+	vec3_mult(&prevMinorPosAve, 1 / samples);
+	vec3_mult(&nextCurrentPosAve, 1 / samples);
 	vec3 prevBondDir = vec3_subtract_vec3(myCurrentPosAve, prevMinorPosAve);
 	vec3 averageBondDir = vec3_subtract_vec3(nextCurrentPosAve, myCurrentPosAve);
 	vec3_set_length(&averageBondDir, 1.);
-	vec3_set_length(&prevBondDir, 1.);
 	
 	vec3 crossDir = vec3_cross_vec3(averageBondDir, prevBondDir);
-	vec3_set_length(&crossDir, 1.);
 
 	mat3x3 magicMat = getMagicMat(crossDir);
 	_magicAxis = mat3x3_axis(magicMat, 2); 
@@ -595,14 +612,9 @@ double myTorsion, double ratio)
 		vec3 prevMinorPos = (*prevs)[i].start;
 		vec3 prevHeavyPos = (*prevs)[i].old_start;
 
-		vec3 myCurrentPos = positionFromTorsion(oldBasis, torsionAngle,
-		                                        ratio, prevMinorPos);
-		mat3x3 newBasis = nextBond->makeTorsionBasis(prevHeavyPos, prevMinorPos,
-		                                             myCurrentPos, none);
-
-		vec3 nextCurrentPos;
-		nextCurrentPos = nextBond->positionFromTorsion(newBasis, myTorsion,
-		                                               nextRatio, myCurrentPos);
+		vec3 myCurrentPos = cache[i].curr;
+		mat3x3 newBasis = cache[i].basis;
+		vec3 nextCurrentPos = cache[i].next;
 
 		vec3 nextBondVec = vec3_subtract_vec3(nextCurrentPos, myCurrentPos);
 		vec3 myBondVec = vec3_subtract_vec3(myCurrentPos, prevMinorPos);
@@ -616,22 +628,6 @@ double myTorsion, double ratio)
 		double notZ = sqrt(nextDifference.y * nextDifference.y +
 		                   nextDifference.x * nextDifference.x);
 		double tanX = nextDifference.z / notZ;
-
-		/*
-		double angle = atan(tanX);
-		
-		// Normalise angle so (deg) -90 to +90 becomes -1 to +1. 
-		angle /= deg2rad(90);
-		
-		if (angle != angle) angle = 0;
-
-		angle *= 6;
-		double kickValue = exp(-fabs(angle));
-		double dampValue = 1 - kickValue;
-		dampValue = 1;
-		
-		if (angle < 0) kickValue *= -1;
-		*/
 		
 		double dampValue = sin(atan(tanX));
 		if (dampValue != dampValue)
@@ -648,8 +644,11 @@ double myTorsion, double ratio)
 		/* We want to correct if the deviation is close to the magic angle */
 		double rotAngle = 0;
 
+		vec3_set_length(&nextBondVec, 1);
+		vec3_set_length(&myBondVec, 1);
+
 		/* Find the best angle for dampening */
-		mat3x3_closest_rot_mat(nextBondVec, averageBondDir, myBondVec, &rotAngle);
+		mat3x3_closest_rot_mat(nextBondVec, averageBondDir, myBondVec, &rotAngle, true);
 
 		if (rotAngle != rotAngle)
 		{
