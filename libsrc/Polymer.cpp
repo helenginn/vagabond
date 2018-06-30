@@ -361,6 +361,9 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 		
 		std::cout << "\t";
 		MonomerPtr monomer = getMonomer(i);
+		
+		if (!monomer) continue;
+		
 		BackbonePtr bone = monomer->getBackbone();
 		SidechainPtr side = monomer->getSidechain();
 
