@@ -128,6 +128,7 @@ public:
 	{
 		return getters.size();
 	}
+
 protected:
 	Getter evaluationFunction;
 	Getter finishFunction;
