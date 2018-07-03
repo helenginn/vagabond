@@ -186,7 +186,7 @@ vec3 meanOfManyPositions(std::vector<BondSample> *positions)
 
 std::vector<BondSample> Model::getFinalPositions()
 {
-	if (!_recalcFinal)
+	if (!_recalcFinal && _finalSamples.size())
 	{
 		return _finalSamples;	
 	}
@@ -367,3 +367,27 @@ void Model::addRealSpacePositions(FFTPtr real, vec3 offset)
 	}
 
 }
+
+FFTPtr Model::makeRealSpaceDistribution()
+{
+	double n = fftGridLength();
+	/* Don't panic, invert scale below... this is in real space */
+	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
+	double scale = 1.0 / (2 * maxDStar);
+
+	FFTPtr fft = FFTPtr(new FFT());
+	fft->create(n);
+	fft->setScales(scale);
+	fft->createFFTWplan(1);
+
+	addRealSpacePositions(fft, empty_vec3());
+
+	fft->fft(1);
+	fft->invertScale();
+
+	FFTPtr newPtr;
+	newPtr.reset(new FFT(*fft));
+	return newPtr;
+}
+
+

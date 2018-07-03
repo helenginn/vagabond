@@ -153,6 +153,11 @@ public:
 		_recalcDist = true;
 	}
 	
+	void setRecalculateDist()
+	{
+		_recalcDist = true;
+	}
+	
 	void addRealSpacePositions(FFTPtr real, vec3 offset);
 
 	vec3 longestAxis();
@@ -188,6 +193,8 @@ protected:
 	bool _recalcFinal;
 	bool _recalcDist;
 	std::vector<BondSample> _finalSamples;
+	
+	FFTPtr makeRealSpaceDistribution();
 
 	virtual std::string getParserIdentifier()
 	{
