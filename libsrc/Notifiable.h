@@ -34,6 +34,7 @@ typedef enum
 	InstructionTypeFitWholeMoleculeTranslation,
 	InstructionTypeFitWholeMoleculeRotation,
 	InstructionTypeFindDisulphides,
+	InstructionTypeRefineWaterNetwork,
 } InstructionType;
 
 /**
