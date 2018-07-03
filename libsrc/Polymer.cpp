@@ -188,81 +188,18 @@ void Polymer::refineBackbone()
 	OptionsPtr options = Options::getRuntimeOptions();
 	CrystalPtr crystal = options->getActiveCrystal();
 	
-	const int windowSize = 10;
-	const int checkSize = 5;
 	RefinementType rType = RefinementFine;
 	
-	int skip = 1;
+	int anchor = getAnchor();
 
-	while (true)
-	{
-		int start = (skip > 0) ? getAnchor() : getAnchor() - 1;
-		int end = (skip > 0) ? monomerCount() : 0;
-		std::cout << "Refining from " << start << " to " << end;
-		std::cout << " using skip of " << skip << std::endl;
+	std::cout << "Refining magic angles using correlation with density."
+	 << std::endl;
 
-		for (int i = start; i != end; i += skip * windowSize)
-		{
-			double diff = 0;
-			if (i > monomerCount() || i < 0)
-			{
-				break;
-			}
+	addParamType(ParamOptionMagicAngles, 36.0);
+	addParamType(ParamOptionNumBonds, 5);
 
-			std::cout << "Refining using correlation with density." << std::endl;
-			addParamType(ParamOptionTorsion, 0.02);
-			addParamType(ParamOptionKick, 0.010);
-			addParamType(ParamOptionMagicAngles, 5.0);
-			addParamType(ParamOptionNumBonds, 10);
-			diff += refineRange(i, i + skip * windowSize, crystal, rType);
-
-			/*
-			BoneDensity density;
-			density.setCrystal(crystal);
-			density.setPolymer(shared_from_this());
-			density.setRange(i + skip * windowSize, i);
-			density.analyse();
-
-
-			BackboneState state = density.stateOfBackbone(i + skip * windowSize,
-			                                              i);
-
-			*/
-
-			std::cout << "(Difference: " << diff << ")" << std::endl;
-
-			if (diff < -0.008)
-			{
-				std::cout << "Squeezing chain to reduce expansion." << std::endl;
-				refineRange(i, i + skip * windowSize,
-				            crystal, RefinementRMSDZero);
-
-				std::cout << "Re-refining torsion angles." << std::endl;
-				addParamType(ParamOptionTorsion, 0.02);
-				addParamType(ParamOptionNumBonds, 10);
-				diff += refineRange(i, i + skip * windowSize, crystal, rType);
-
-			}
-			else if (diff != diff)
-			{
-				break;
-			}
-			else
-			{
-				std::cout << "Chain looking OK." << std::endl;
-			}
-		}
-
-		if (skip < 0)
-		{
-			break;
-		}
-		else
-		{
-			skip = -1;
-		}
-	}
-
+	refineToEnd(anchor - 5, crystal, rType);
+	refineToEnd(anchor + 5, crystal, rType);
 }
 
 void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
@@ -351,14 +288,16 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 	double endCCAve = 0;
 	
 	std::cout << "\t  Backbone             | Sidechain" << std::endl;
+	bool changed = true;
 
 	for (int i = start; i != end; i += skip)
 	{
-		if (i % 10 == 0)
+		if (i % 10 == 0 && changed == true)
 		{
 			std::cout << i;
+			changed = false;
 		}
-		
+
 		std::cout << "\t";
 		MonomerPtr monomer = getMonomer(i);
 		
@@ -372,6 +311,8 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 			continue;
 		}
 
+		changed = true;
+		
 		copyParams(side);
 		copyParams(bone);
 		refineMonomer(monomer, target, rType);
@@ -458,7 +399,6 @@ double Polymer::vsRefineSidechainsToDensity(void *object)
 	refineVScript(object, RefinementSidechain);
 	return 0;	
 }
-
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
 {
@@ -1558,6 +1498,7 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	FlexGlobal target;
 	NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
 	_overallScale = 1;
+	applyTranslationTensor();
 
 	if (false && translation)
 	{
@@ -1650,7 +1591,6 @@ void Polymer::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	target.setAtomGroup(allBackbone);
 	target.setCrystal(crystal);
 	target.matchElectronDensity();
-//	target.maximiseIsotropy();
 	strategy->setEvaluationFunction(FlexGlobal::score, &target);
 	FlexGlobal::score(&target);
 }
