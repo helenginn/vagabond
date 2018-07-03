@@ -458,28 +458,9 @@ void Bond::setTorsionAtoms(AtomPtr heavyAlign, AtomPtr lightAlign, int groupNum)
 	_usingTorsion = true;
 }
 
-
-/* n.b. this ought to store previous info! */
 FFTPtr Bond::makeDistribution()
 {
-	double n = fftGridLength();
-	/* Don't panic, invert scale below... this is in real space */
-	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
-	double scale = 1.0 / (2 * maxDStar);
-
-	FFTPtr fft = FFTPtr(new FFT());
-	fft->create(n);
-	fft->setScales(scale);
-	fft->createFFTWplan(1);
-
-	Model::addRealSpacePositions(fft, empty_vec3());
-
-	fft->fft(1);
-	fft->invertScale();
-
-	FFTPtr newPtr;
-	newPtr.reset(new FFT(*fft));
-	return newPtr;
+	return makeRealSpaceDistribution();
 }
 
 vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
