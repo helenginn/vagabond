@@ -82,16 +82,14 @@ void VagWindow::makeButtons()
 	connect(bRecalculate, SIGNAL(clicked()), this, SLOT(recalculateFFT()));    
 	buttons.push_back(bRecalculate);
 
-	/*
-	bFindSS = new QPushButton("Find disulphides", this);
-	bFindSS->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 350, BUTTON_WIDTH , 50);
-	bFindSS->setEnabled(false);
-	connect(bFindSS, SIGNAL(clicked()), this, SLOT(findDisulphides()));
-	buttons.push_back(bFindSS);
-	*/
+	bWaterNetwork = new QPushButton("Refine water network", this);
+	bWaterNetwork->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 350, BUTTON_WIDTH , 50);
+	bWaterNetwork->setEnabled(false);
+	connect(bWaterNetwork, SIGNAL(clicked()), this, SLOT(refineWaterNetwork()));
+	buttons.push_back(bWaterNetwork);
 
 	bExploreMolecule = new QPushButton("Explore molecule", this);
-	bExploreMolecule->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 400, BUTTON_WIDTH , 50);
+	bExploreMolecule->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 450, BUTTON_WIDTH , 50);
 	bExploreMolecule->setEnabled(false);
 	bExploreMolecule->setMenu(new QMenu(this));
 	buttons.push_back(bExploreMolecule);
@@ -276,6 +274,10 @@ int VagWindow::waitForInstructions()
 				options->findDisulphides();
 				break;
 
+				case InstructionTypeRefineWaterNetwork:
+				options->refineAll(RefinementWaterNetwork, 1);
+				break;
+
 				case InstructionTypeRecalculateFFT:
 				options->recalculateFFT();
 				break;
@@ -450,6 +452,12 @@ void VagWindow::openInCoot()
 void VagWindow::pushBackboneAnalysis()
 {
 	_instructionType = InstructionTypeBackboneAnalysis;
+	wait.wakeAll();
+}
+
+void VagWindow::refineWaterNetwork()
+{
+	_instructionType = InstructionTypeRefineWaterNetwork;
 	wait.wakeAll();
 }
 

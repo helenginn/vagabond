@@ -69,6 +69,7 @@ private slots:
 	void findDisulphides();
 	void pushBackboneAnalysis();
 	void restorePreviousState();
+	void refineWaterNetwork();
 
 private:
 	VagabondGLWidget *display;
@@ -97,7 +98,7 @@ private:
 	QPushButton *bRefineDensity;
 	QPushButton *bFitWholeR;
 	QPushButton *bFitWholeT;
-	QPushButton *bFindSS;
+	QPushButton *bWaterNetwork;
 	QPushButton *bPrevious;
 	QPushButton *bCoot;
 	std::vector<QPushButton *> buttons;
