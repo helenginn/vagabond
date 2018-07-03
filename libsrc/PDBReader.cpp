@@ -15,6 +15,7 @@
 #include "mat3x3.h"
 #include "Crystal.h"
 #include "Polymer.h"
+#include "WaterNetwork.h"
 #include "Monomer.h"
 #include "Absolute.h"
 #include <sstream>
@@ -91,6 +92,7 @@ void PDBReader::validateMolecule(AbsolutePtr atom)
 		if (atom->isHeteroAtom())
 		{
 			_myPolymer = PolymerPtr();
+
 			_myMolecule = MoleculePtr(new Molecule());
 
 			_myMolecule->setAbsoluteBFacSubtract(0);
@@ -227,7 +229,14 @@ void PDBReader::addAtomToMolecule(std::string line)
 
 	if (abs->isHeteroAtom())
 	{
-		abs->addToMolecule(_myMolecule);
+		if (abs->getResName() == "hoh")
+		{
+			abs->addToMolecule(_myHOH);
+		}
+		else
+		{
+			abs->addToMolecule(_myMolecule);
+		}
 	}
 	else
 	{
@@ -297,6 +306,10 @@ void PDBReader::parse()
 	{
 		shout_at_user("File " + filename + " does not exist.");
 	}
+	
+	/* Prepare water network for HOH atoms */
+	_myHOH = WaterNetworkPtr(new WaterNetwork());
+	_myHOH->setChainID("HOH");
 
 	std::string pdbContents = get_file_contents(filename);
 
@@ -305,6 +318,11 @@ void PDBReader::parse()
 	for (int i = 0; i < lines.size(); i++)
 	{
 		parseLine(lines[i]);
+	}
+	
+	if (_myHOH->atomCount())
+	{
+		_myCrystal->addMolecule(_myHOH);
 	}
 }
 

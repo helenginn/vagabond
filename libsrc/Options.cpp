@@ -31,6 +31,7 @@ int Options::_enableTests = 3;
 bool Options::_powder = false;
 bool Options::_shellScale = true;
 double Options::_sampling = -1;
+int Options::_nSamples = 300;
 std::string Options::_solventFile;
 
 Options::Options(int argc, const char **argv)
@@ -121,6 +122,7 @@ void Options::run()
 		PDBReader pdb = PDBReader();
 		pdb.setFilename(_modelFile);
 		CrystalPtr crystal = pdb.getCrystal();
+		crystal->summary();
 
 		if (!crystal)
 		{
@@ -137,6 +139,8 @@ void Options::run()
 		VBondReader vReader = VBondReader();
 		vReader.setFilename(_modelFile);
 		CrystalPtr crystal = vReader.getCrystal();
+		crystal->summary();
+
 
 		objects.push_back(crystal);
 		crystals.push_back(crystal);
@@ -177,6 +181,8 @@ void Options::run()
 			crystal->setAnchors();
 			crystal->tieAtomsUp();
 		}
+
+		getActiveCrystal()->hydrogenateContents();
 
 		crystal->tiedUpScattering();
 
@@ -382,6 +388,7 @@ void Options::parse()
 
 		understood |= parseParameter(arg, "--min-res=", &_minRes);
 		understood |= parseParameter(arg, "--bfactor=", &_bStart);
+		understood |= parseParameter(arg, "--nsamples=", &_nSamples);
 		understood |= parseParameter(arg, "--global-b=", &_bReal);
 		understood |= parseParameter(arg, "--kick=", &_kick);
 		understood |= parseParameter(arg, "--dampen=", &_dampen);
@@ -494,12 +501,20 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool)
 					Polymer::vsRefineSidechainsToDensity(polymer);
 					break;
 					
+					case RefinementWaterNetwork:
+					break;
+					
 					default:
 					std::cout << "(n.b. not going through VScript function)" 
 					<< std::endl;
 					refinementCycle(molecule, type);
 					break;
 				}
+			}
+			else if (molecule->isWaterNetwork() && 
+			         type == RefinementWaterNetwork)
+			{
+				refinementCycle(molecule, type);
 			}
 		}
 
@@ -780,9 +795,10 @@ void Options::refinementCycle(MoleculePtr molecule, RefinementType type)
 		PolymerPtr polymer = ToPolymerPtr(molecule);
 		polymer->test();
 
-		statusMessage("Refining structure, chain " + molecule->getChainID() + "...");
-		molecule->refine(crystals[0], type);
 	}
+
+	statusMessage("Refining structure, chain " + molecule->getChainID() + "...");
+	molecule->refine(crystals[0], type);
 }
 
 void Options::fitWholeMolecule(bool translation, bool rotation)

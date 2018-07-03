@@ -36,6 +36,7 @@ private:
 
 	/* Keep track of what we're dealing with */
 	MoleculePtr _myMolecule;
+	WaterNetworkPtr _myHOH;
 	PolymerPtr _myPolymer;
 	CrystalPtr _myCrystal;
 	MonomerPtr _myMonomer;

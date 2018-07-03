@@ -116,6 +116,10 @@ public:
 		return _solventFile;
 	}
 
+	static int getNSamples()
+	{
+		return _nSamples;
+	}
 
 	static double getBMult()
 	{
@@ -218,6 +222,7 @@ private:
 	static int _enableTests;
 	static double _bStart;
 	static double _sampling;
+	static int _nSamples;
 	std::string _diffMatrix;
 	std::string _outputDir;
 	static double _minRes;
