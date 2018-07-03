@@ -37,6 +37,7 @@ void Absolute::initialise()
 	_usingTensor = false;
 	_tensor = make_mat3x3();
 	_isOfManyPositions = false;
+	_modifySample = -1;
 }
 
 mat3x3 Absolute::getRealSpaceTensor()
@@ -161,6 +162,11 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 
 FFTPtr Absolute::makeDistribution()
 {
+	if (hasExplicitPositions())
+	{
+		return makeRealSpaceDistribution();
+	}
+	
 	double n = fftGridLength();
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double scale = 2 * maxDStar;
@@ -170,9 +176,21 @@ FFTPtr Absolute::makeDistribution()
 	return getDistributionCopy();
 }
 
+void Absolute::resetSamples()
+{
+	_bondSamples.clear();
+	_recalcFinal = true;
+}
+
 std::vector<BondSample> *Absolute::getManyPositions()
 {
 	std::vector<BondSample> *bondSamples = &_bondSamples;
+	
+	if (_bondSamples.size())
+	{
+		return &_bondSamples;
+	}
+	
 	bondSamples->clear();
 
 	/* B factor isotropic only atm, get mean square displacement in
@@ -182,7 +200,7 @@ std::vector<BondSample> *Absolute::getManyPositions()
 
 	double occTotal = 0;
 
-	int totalPoints = 300;
+	int totalPoints = Options::getNSamples();
 	double totalSurfaces = 0;
 	int layers = 10;
 	std::vector<double> layerSurfaces;
@@ -334,4 +352,38 @@ vec3 Absolute::getRandomPosition()
 	vec3 total = vec3_add_vec3(absPos, randvec);
 
 	return total;
+}
+
+void Absolute::setPosN(int choice, double value)
+{
+	double *vec = &_position.x;
+
+	if (_modifySample >= 0 && _isOfManyPositions)
+	{
+		if (_modifySample >= _finalSamples.size())
+		{
+			return;
+		}
+
+		vec = &_bondSamples[_modifySample].start.x;
+		_recalcFinal = true;
+	}
+	
+	*(vec + choice) = value;
+}
+
+double Absolute::getPosN(int choice)
+{
+	double *vec = &_position.x;
+	if (_modifySample >= 0 && _isOfManyPositions)
+	{
+		if (_modifySample >= _finalSamples.size())
+		{
+			return *(&_position.x + choice);
+		}
+
+		vec = &_bondSamples[_modifySample].start.x;
+	}
+	
+	return *(vec + choice);
 }

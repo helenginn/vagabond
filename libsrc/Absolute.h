@@ -142,40 +142,43 @@ public:
 		return _usingTensor;	
 	}
 
+	void setPosN(int choice, double value);
+	double getPosN(int choice);
+
 	static void setPosX(void *object, double x)
 	{
 		Absolute *abs = static_cast<Absolute *>(object);
-		abs->_position.x = x;
+		abs->setPosN(0, x);
 	}
 
 	static void setPosY(void *object, double y)
 	{
 		Absolute *abs = static_cast<Absolute *>(object);
-		abs->_position.y = y;
-	}
-
-	static double getPosZ(void *object)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		return abs->_position.z;
-	}
-
-	static double getPosX(void *object)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		return abs->_position.x;
-	}
-
-	static double getPosY(void *object)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		return abs->_position.y;
+		abs->setPosN(1, y);
 	}
 
 	static void setPosZ(void *object, double z)
 	{
 		Absolute *abs = static_cast<Absolute *>(object);
-		abs->_position.z = z;
+		abs->setPosN(2, z);
+	}
+
+	static double getPosZ(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->getPosN(2);
+	}
+
+	static double getPosX(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->getPosN(0);
+	}
+
+	static double getPosY(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->getPosN(1);
 	}
 
 	virtual double getMeanSquareDeviation();
@@ -230,12 +233,16 @@ public:
 	void setAnchorPoint()
 	{
 		_isOfManyPositions = true;
+		_recalcFinal = true;
+		_recalcDist = true;
 	}
 	
 	virtual bool hasExplicitPositions()
 	{
 		return _isOfManyPositions;
 	}
+
+	void resetSamples();
 	
 	virtual double getEffectiveOccupancy()
 	{
@@ -250,6 +257,16 @@ public:
 	}
 
 	AtomPtr makeAtom();
+	
+	void setModifiedSample(int i)
+	{
+		_modifySample = i;
+	}
+	
+	void clearModifiedSample()
+	{
+		_modifySample = -1;
+	}
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 
@@ -280,6 +297,7 @@ private:
 	vec3 _position;
 	double _bFactor;
 	bool _isOfManyPositions;
+	int _modifySample;
 };
 
 #endif /* defined(__vagabond__Absolute__) */
