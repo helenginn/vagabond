@@ -8,6 +8,7 @@
 #include <iomanip>
 #include "Crystal.h"
 #include "Polymer.h"
+#include "WaterNetwork.h"
 #include "Atom.h"
 #include "Bond.h"
 #include "Monomer.h"
@@ -1283,6 +1284,10 @@ ParserPtr Parser::objectOfType(char *className)
 	else if (strcmp(className, "Molecule") == 0)
 	{
 		object = ParserPtr(static_cast<Molecule *>(new Molecule()));        
+	}
+	else if (strcmp(className, "WaterNetwork") == 0)
+	{
+		object = ParserPtr(static_cast<WaterNetwork *>(new WaterNetwork()));        
 	}
 	else if (strcmp(className, "Monomer") == 0)
 	{
