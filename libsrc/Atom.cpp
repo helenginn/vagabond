@@ -27,6 +27,7 @@
 
 Atom::Atom()
 {
+	_asu = -1;
 	_waterPlucker = NULL;
 	_initialPosition = make_vec3(0, 0, 0);
 	_pdbPosition = make_vec3(0, 0, 0);
@@ -38,6 +39,7 @@ Atom::Atom()
 	_fromPDB = true;
 	_tensor = make_mat3x3();
 	_hetatm = -1;
+	_hBondage = false;
 }
 
 Atom::Atom(Atom &other)
@@ -211,13 +213,25 @@ vec3 Atom::getAbsolutePosition()
 }
 
 /* Need to add symops. */
-vec3 Atom::getAsymUnitPosition(CrystalPtr crystal)
+vec3 Atom::getAsymUnitPosition(CrystalPtr crystal, int nSample)
 {
 	vec3 pos = getAbsolutePosition();
+	
+	if (nSample >= 0 && nSample < getModel()->getFinalPositions().size())
+	{
+		pos = getModel()->getFinalPositions()[nSample].start;
+	}
+	
 	mat3x3 real2frac = crystal->getReal2Frac();
 	mat3x3 frac2real = crystal->getHKL2Real();
 
 	mat3x3_mult_vec(real2frac, &pos);
+	
+	if (pos.x != pos.x || !isfinite(pos.x))
+	{
+		return pos;
+	}
+	
 	FFT::collapseFrac(&pos.x, &pos.y, &pos.z);
 	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
 	pos = FFT::collapseToRealASU(pos, spg);
@@ -255,16 +269,23 @@ void Atom::findAtomType(std::string resName)
 
 std::string Atom::pdbLineBeginning(std::string start)
 {
-	std::string residueName = "UNK";
+	std::string residueName = "HOH";
 
 	int resNum = 1;
 	std::string chainID = "Z";
-
+	
 	if (getMonomer())
 	{
 		residueName = getMonomer()->getIdentifier();
 		resNum = getMonomer()->getResidueNum();
 	}
+
+	if (isHeteroAtom())
+	{
+		start = "HETATM";
+		resNum = _atomNum;
+	}
+
 
 	if (getMolecule())
 	{
@@ -397,51 +418,26 @@ std::string Atom::getPDBContribution(int ensembleNum)
 {
 	std::string atomName = getAtomName();
 	ElementPtr element = getElement();
+	double bFac = Options::getRuntimeOptions()->getGlobalBFactor();
 
 	int tries = 10;
 
 	if (element->getSymbol() == "H")
 	{
+		return "";
 		tries = 1;
 	}
 
 	std::ostringstream stream;
 	std::vector<BondSample> positions = getModel()->getFinalPositions();
 
-	double skip = (double)positions.size() / 25.;
-
-	if (skip < 0) skip = 1;
-	const int side = 7;
+	int i = ensembleNum;
 	int count = 0;
 
-	for (double i = 0; i < positions.size(); i+= 1)
-	{
-		int l = i / (side * side);
-		int k = (i - (l * side * side)) / side;
-		int h = (i - l * side * side - k * side);
-
-		if ((ensembleNum < 0) &&
-		    ((h + k) % 2 != 0 || (k + l) % 2 != 0 || (l + h) % 2 != 0))
-		{
-			continue;
-		}
-
-		if (ensembleNum >= 0)
-		{
-			i = ensembleNum;
-		}
-
-		vec3 placement = positions[i].start;
-		double occupancy = positions[i].occupancy * positions.size();
-		stream << PDBReader::writeLine(shared_from_this(), placement, count, occupancy, 0);
-
-		if (ensembleNum >= 0)
-		{
-			break;
-		}
-
-		count++;
-	}
+	vec3 placement = positions[i].start;
+	double occupancy = positions[i].occupancy * positions.size();
+	stream << PDBReader::writeLine(shared_from_this(), placement, 
+	                               count, occupancy, bFac);
 
 	return stream.str();
 }
@@ -530,6 +526,7 @@ void Atom::addProperties()
 	addStringProperty("conformer", &_conformer);
 	addBoolProperty("from_pdb", &_fromPDB);
 	addIntProperty("hetatm", &_hetatm);
+	addBoolProperty("hbonding", &_hBondage);
 	addDoubleProperty("weighting", &_weighting);
 
 	if (_element)
@@ -597,10 +594,24 @@ bool Atom::closeToAtom(AtomPtr another, double tolerance)
 	}
 }
 
-double Atom::getDistanceFrom(Atom *other)
+double Atom::getDistanceFrom(Atom *other, int nSample, bool quick)
 {
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	vec3 me = getAbsolutePosition();
 	vec3 you = other->getAbsolutePosition();
+
+	if (nSample >= 0)
+	{
+		me = getModel()->getFinalPositions()[nSample].start;
+		you = other->getModel()->getFinalPositions()[nSample].start;
+	}
+	
+	if (!quick)
+	{
+		me = getAsymUnitPosition(crystal, nSample);
+		you = other->getAsymUnitPosition(crystal, nSample);
+	}
+	
 	vec3 apart = vec3_subtract_vec3(me, you);
 	
 	double dist = vec3_length(apart);

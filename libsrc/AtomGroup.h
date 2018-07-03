@@ -84,7 +84,8 @@ public:
 	double getAverageDisplacement();
 
 	std::string getPDBContribution(PDBType pdbType,
-	                               CrystalPtr crystal = CrystalPtr());
+	                               CrystalPtr crystal = CrystalPtr(),
+	                               int conformer = -1);
 
 	void setTied()
 	{
@@ -126,6 +127,7 @@ public:
 	}
 
 	AtomPtr getClosestAtom(CrystalPtr crystal, vec3 pos);
+	std::vector<AtomPtr> getHydrogenBonders();
 
 	int issueAtomNumber()
 	{

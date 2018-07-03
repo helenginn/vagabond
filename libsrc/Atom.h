@@ -51,7 +51,7 @@ public:
 	bool isBackboneAndSidechain();
 
 	vec3 getAbsolutePosition();
-	vec3 getAsymUnitPosition(CrystalPtr crystal);
+	vec3 getAsymUnitPosition(CrystalPtr crystal, int nSample = -1);
 	
 	/** Positional displacement between average ensemble position and
 	* reference position (usually from PDB). */
@@ -251,10 +251,20 @@ public:
 	
 	void cacheCloseWaters(double tolerance = 5);
 
-	double getDistanceFrom(Atom *other);
+	double getDistanceFrom(Atom *other, int nSample = -1, bool quick = false);
 	static double getAngle(AtomPtr atom1, AtomPtr atom2, AtomPtr atom3);
 	
 	size_t pluckCount();
+	
+	bool canBeHydrogenBonder()
+	{
+		return (_hBondage);
+	}
+	
+	void setHBonding(bool status)
+	{
+		_hBondage = status;
+	}
 	
 	Atom *pluckAnother();
 protected:
@@ -281,6 +291,7 @@ private:
 	double _initialB;
 	vec3 _pdbPosition;
 	int _atomNum;
+	int _asu;
 	double _origOccupancy;
 	vec3 _ellipsoidLongestAxis;
 	double _weighting;
@@ -289,6 +300,7 @@ private:
 	bool _fromPDB;
 	int _hetatm;
 	mat3x3 _tensor;
+	bool _hBondage;
 
 	AtomType _geomType;
 	

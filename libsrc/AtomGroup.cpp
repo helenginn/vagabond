@@ -132,7 +132,8 @@ double AtomGroup::totalElectrons()
 	return total;
 }
 
-std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal)
+std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal,
+                                          int conformer)
 {
 	std::ostringstream stream;
 	size_t numConf = 0;
@@ -149,27 +150,21 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal)
 
 		numConf = samples->size();
 
-		for (size_t j = 0; j < numConf; j++)
+		for (size_t i = 0; i < atomCount(); i++)
 		{
-			stream << "MODEL " << std::setw(8) << j + 1 << std::setw(66) << " " << std::endl;
-
-			for (size_t i = 0; i < atomCount(); i++)
+			if (atom(i)->getWeighting() <= 0)
 			{
-				if (!atom(i)->getMonomer())
-				{
-					continue;
-				}
-
-				if (atom(i)->getWeighting() <= 0)
-				{
-					continue;
-				}
-
-				stream << atom(i)->getPDBContribution(j);
+				continue;
 			}
 
-			stream << "TER" << std::setw(80) << " " << std::endl;
-			stream << "ENDMDL" << std::setw(80) << " " << std::endl;
+			if (atom(i)->getModel()->hasExplicitPositions())
+			{
+				stream << atom(i)->getPDBContribution(conformer);
+			}
+			else
+			{
+				stream << atom(i)->averagePDBContribution(false, false);
+			}
 		}
 
 		return stream.str();
@@ -1058,4 +1053,20 @@ void AtomGroup::linkReference(ParserPtr object, std::string category)
 		AtomPtr atom = ToAtomPtr(object);
 		addAtom(atom);
 	}
+}
+
+std::vector<AtomPtr> AtomGroup::getHydrogenBonders()
+{
+	std::vector<AtomPtr> returns;
+	for (int i = 0; i < atomCount(); i++)
+	{
+		bool add = atom(i)->canBeHydrogenBonder();
+
+		if (add)
+		{
+			returns.push_back(atom(i));
+		}
+	}
+	
+	return returns;
 }
