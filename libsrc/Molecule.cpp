@@ -161,10 +161,11 @@ void Molecule::refine(CrystalPtr crystal, RefinementType type)
 	}
 }
 
-std::string Molecule::makePDB(PDBType pdbType, CrystalPtr crystal)
+std::string Molecule::makePDB(PDBType pdbType, CrystalPtr crystal, 
+                              int conformer)
 {
 	std::ostringstream stream;
-	stream << getPDBContribution(pdbType, crystal);
+	stream << getPDBContribution(pdbType, crystal, conformer);
 
 	return stream.str();
 }

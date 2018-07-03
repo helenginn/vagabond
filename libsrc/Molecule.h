@@ -41,7 +41,8 @@ public:
 	virtual void tieAtomsUp();
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	void tiedUpScattering(double *tied, double *all);
-	virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal);
+	virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal,
+	                            int conformer = -1);
 	virtual void graph(std::string) {};
 	virtual void differenceGraphs(std::string, CrystalPtr) {};
 	void resetInitialPositions();
@@ -136,6 +137,11 @@ public:
 	bool isPolymer()
 	{
 		return (getClassName() == "Polymer");
+	}
+
+	bool isWaterNetwork()
+	{
+		return (getClassName() == "WaterNetwork");
 	}
 
 	MoleculePtr shared_from_this()
