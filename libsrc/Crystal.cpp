@@ -7,6 +7,7 @@
 //
 
 #include "Crystal.h"
+#include "Bond.h"
 #include "fftw3d.h"
 #include "vec3.h"
 #include <sstream>
@@ -844,31 +845,51 @@ void Crystal::makePDBs(std::string suffix)
 	prefices.push_back("ensemble_"); pdbTypes.push_back(PDBTypeEnsemble);
 	prefices.push_back("average_"); pdbTypes.push_back(PDBTypeAverage);
 
-	for (int i = 0; i < prefices.size(); i++)
-	{
-		std::string path;
-		path = FileReader::addOutputDirectory(prefices[i] + suffix + ".pdb");
-		
-		if (i == 0)
-		{
-			_lastEnsemblePDB = path;
-		}
-		else
-		{
-			_lastAveragePDB = path;
-		}
-		
-		std::ofstream file;
-		file.open(path);
+	std::string path;
+	path = FileReader::addOutputDirectory("average_" + suffix + ".pdb");
 
-		for (int j = 0; j < moleculeCount(); j++)
+	_lastAveragePDB = path;
+
+	std::ofstream file;
+	file.open(path);
+
+	for (int j = 0; j < moleculeCount(); j++)
+	{
+		CrystalPtr crystal = shared_from_this();
+		file << molecule(j)->makePDB(PDBTypeAverage, crystal); 
+	}
+
+	file.close();
+	int numConf = 0;
+	
+	if (moleculeCount() && molecule(0)->atomCount())
+	{
+		std::vector<BondSample> *samples; 
+		samples = molecule(0)->atom(0)->getModel()->getManyPositions();
+		numConf = samples->size();
+	}
+	
+	path = FileReader::addOutputDirectory("ensemble_" + suffix + ".pdb");
+	_lastEnsemblePDB = path;
+	std::ofstream ensemble;
+	ensemble.open(path);
+
+	for (int j = 0; j < numConf; j++)
+	{
+		ensemble << "MODEL " << std::setw(8) << j + 1 << std::setw(66)
+		<< " " << std::endl;
+
+		for (int i = 0; i < moleculeCount(); i++)
 		{
 			CrystalPtr crystal = shared_from_this();
-			file << molecule(j)->makePDB(pdbTypes[i], crystal); 
+			ensemble << molecule(i)->makePDB(PDBTypeEnsemble, crystal, j); 
 		}
 
-		file.close();
+		ensemble << "TER" << std::setw(80) << " " << std::endl;
+		ensemble << "ENDMDL" << std::setw(80) << " " << std::endl;
 	}
+	
+	ensemble.close();
 };
 
 void Crystal::writeVagabondFile(int cycleNum)
