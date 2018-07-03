@@ -1116,12 +1116,17 @@ void FFT::normalise()
 	multiplyAll(mult);
 }
 
-vec3 FFT::collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup)
+vec3 FFT::collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup, 
+                            int *flipped)
 {
-	vec3 ijk = frac;
-
 	for (int l = 0; l < spaceGroup->nsymop; l++)
 	{
+		if (flipped && *flipped >= 0)
+		{
+			l = *flipped;
+		}
+	
+		vec3 ijk = frac;
 		float *trn = spaceGroup->symop[l].trn;
 		float *rot = &spaceGroup->symop[l].rot[0][0];
 

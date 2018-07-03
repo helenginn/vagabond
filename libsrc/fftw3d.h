@@ -258,7 +258,8 @@ public:
 
 	void printSlice(double zVal = 0);
 	void applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes);
-	static vec3 collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup);
+	static vec3 collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup,
+	                              int *flipped = NULL);
 
 	void writeReciprocalToFile(std::string filename, double maxResolution = 0,
 	                           CSym::CCP4SPG *mtzspg = NULL,
