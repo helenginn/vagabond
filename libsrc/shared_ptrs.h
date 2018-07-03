@@ -55,6 +55,14 @@ class Crystal;
 typedef boost::shared_ptr<Crystal> CrystalPtr;
 typedef boost::weak_ptr<Crystal> CrystalWkr;
 
+class Chromosomal;
+typedef boost::shared_ptr<Chromosomal> ChromosomalPtr;
+
+class WaterNetwork;
+class WaterCluster;
+typedef boost::shared_ptr<WaterNetwork> WaterNetworkPtr;
+typedef boost::shared_ptr<WaterCluster> WaterClusterPtr;
+
 class Molecule;
 typedef boost::shared_ptr<Molecule> MoleculePtr;
 typedef boost::weak_ptr<Molecule> MoleculeWkr;
