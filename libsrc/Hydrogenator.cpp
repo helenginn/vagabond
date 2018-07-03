@@ -207,6 +207,14 @@ void Hydrogenator::addHydrogens(AtomPtr minor, std::vector<std::string> hNames)
 	}
 }
 
+void setHBonds(AtomList list)
+{
+	for (int i = 0; i < list.size(); i++)
+	{
+		list[i].lock()->setHBonding(true);
+	}
+}
+
 void Hydrogenator::hydrogenate()
 {
 	if (!_monomer)
@@ -232,6 +240,15 @@ void Hydrogenator::hydrogenate()
 	setNewGeometry(_monomer->findAtoms("H"), angle, 0.);
 
 	AtomList cAlpha = bone->findAtoms("CA");
+	AtomList nitrogens = bone->findAtoms("N");
+	AtomList carbonyls = bone->findAtoms("O");
+	
+	setHBonds(carbonyls);
+
+	if (_monomer->getIdentifier() != "pro")
+	{
+		setHBonds(nitrogens);
+	}
 	
 	if (_monomer->getIdentifier() == "gly")
 	{
@@ -259,6 +276,9 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(side->findAtoms("NE"), 1, "HE");
 		addHydrogens(side->findAtoms("NH1"), 2, "HH11", "HH12");
 		addHydrogens(side->findAtoms("NH2"), 2, "HH21", "HH22");
+		setHBonds(side->findAtoms("NE"));
+		setHBonds(side->findAtoms("NH1"));
+		setHBonds(side->findAtoms("NH2"));
 	}
 	
 	if (_monomer->getIdentifier() == "lys")
@@ -268,6 +288,7 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(side->findAtoms("CD"), 2, "HD2", "HD3");
 		addHydrogens(side->findAtoms("CE"), 2, "HE1", "HE2");
 		addHydrogens(side->findAtoms("NZ"), 3, "HZ1", "HZ2", "HZ3");
+		setHBonds(side->findAtoms("NZ"));
 	}
 
 	if (_monomer->getIdentifier() == "pro")
@@ -281,6 +302,7 @@ void Hydrogenator::hydrogenate()
 	{
 		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
 		addHydrogens(side->findAtoms("OG"), 1, "HG");
+		setHBonds(side->findAtoms("OG"));
 		
 		setNewGeometry(_monomer->findAtoms("HG"), 120., 180.);
 		setSpin(_monomer->findAtoms("HG"));
@@ -327,6 +349,7 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(side->findAtoms("CE2"), 1, "HE2");
 		addHydrogens(side->findAtoms("CD2"), 1, "HD2");
 		addHydrogens(side->findAtoms("OH"), 1, "HH");
+		setHBonds(side->findAtoms("OH"));
 		
 		setNewGeometry(_monomer->findAtoms("HE1"), 120., 180.);
 		setNewGeometry(_monomer->findAtoms("HH"), 120., 180.);
@@ -383,18 +406,24 @@ void Hydrogenator::hydrogenate()
 	if (_monomer->getIdentifier() == "asp")
 	{
 		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
+		setHBonds(side->findAtoms("OD1"));
+		setHBonds(side->findAtoms("OD2"));
 	}
 	
 	if (_monomer->getIdentifier() == "asn")
 	{
 		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
 		addHydrogens(side->findAtoms("ND2"), 2, "HD21", "HD22");
+		setHBonds(side->findAtoms("OD1"));
+		setHBonds(side->findAtoms("ND2"));
 	}
 
 	if (_monomer->getIdentifier() == "glu")
 	{
 		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
 		addHydrogens(side->findAtoms("CG"), 2, "HG2", "HG3");
+		setHBonds(side->findAtoms("OD1"));
+		setHBonds(side->findAtoms("OD2"));
 	}
 
 	if (_monomer->getIdentifier() == "gln")
@@ -402,6 +431,8 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
 		addHydrogens(side->findAtoms("CG"), 2, "HG2", "HG3");
 		addHydrogens(side->findAtoms("NE2"), 2, "HE21", "HE22");
+		setHBonds(side->findAtoms("OD1"));
+		setHBonds(side->findAtoms("ND2"));
 	}
 
 	if (_monomer->getIdentifier() == "thr")
@@ -409,6 +440,7 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(side->findAtoms("CB"), 1, "HB");
 		addHydrogens(side->findAtoms("OG1"), 1, "HG1");
 		addHydrogens(side->findAtoms("CG2"), 3, "HG21", "HG22", "HG23");
+		setHBonds(side->findAtoms("OG1"));
 	}
 }
 
