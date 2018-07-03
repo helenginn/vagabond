@@ -298,6 +298,8 @@ public:
 	static double vsRefineBackboneToDensity(void *object);
 	double getMaximumDStar(DiffractionPtr data);
 	void openInCoot();
+	
+	std::vector<AtomPtr> getHydrogenBonders();
 protected:
 	virtual void postRestoreState();
 	virtual void addObject(ParserPtr object, std::string category);

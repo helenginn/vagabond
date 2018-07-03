@@ -1317,3 +1317,19 @@ void Crystal::openInCoot()
 	system(command.c_str());
 }
 
+std::vector<AtomPtr> Crystal::getHydrogenBonders()
+{
+	std::vector<AtomPtr> returns;
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (molecule(i)->isWaterNetwork()) continue;
+
+		std::vector<AtomPtr> bonders = molecule(i)->getHydrogenBonders();
+		
+		returns.reserve(returns.size() + bonders.size());
+		returns.insert(returns.end(), bonders.begin(), bonders.end());
+	}
+	
+	return returns;
+}
