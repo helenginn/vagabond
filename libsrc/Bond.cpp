@@ -998,6 +998,7 @@ double Bond::getCirclePortion(void *object)
 		return newBond->_bondGroups[myGroup].atoms[i].circlePortion * 2 * M_PI;
 	}
 
+	std::cout << "Circle portion error!" << std::endl;
 	return 0;
 }
 
