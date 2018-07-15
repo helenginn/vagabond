@@ -1061,7 +1061,7 @@ void Bond::setBendAngle(void *object, double value)
 	}
 
 	int myGroup = -1;
-	BondPtr newBond = boost::static_pointer_cast<Bond>(model);
+	BondPtr newBond = ToBondPtr(model);
 	int i = newBond->downstreamAtomNum(bond->getMinor(), &myGroup);
 
 	if (!newBond || !newBond->isBond())

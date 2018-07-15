@@ -168,7 +168,7 @@ public:
 	virtual FFTPtr makeDistribution();
 	void setTorsionAtoms(AtomPtr heavyAlign = AtomPtr(),
 	                     AtomPtr lightAlign = AtomPtr(),
-	int groupNum = 0);
+	                     int groupNum = 0);
 	
 	virtual AtomPtr getAtom()
 	{
