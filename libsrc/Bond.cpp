@@ -159,8 +159,8 @@ void Bond::deriveBondLength()
 	}
 	else
 	{
-		std::cout << "Unassigned bond length for " << getMajor()->getAtomName()
-		<< " to " << getMinor()->getAtomName() << "." << std::endl;
+		std::cout << "Unassigned bond length for " << getMajor()->shortDesc()
+		<< " to " << getMinor()->shortDesc() << "." << std::endl;
 	}
 }
 
@@ -171,8 +171,8 @@ double Bond::deriveBondAngle(AtomPtr atom)
 
 	if (angle < 0 && atom->getElement()->electronCount() > 1)
 	{
-		std::cout << "Unassigned angle (" << getMajor()->getAtomName() << " to " <<
-		getMinor()->getAtomName() << " to " << atom->getAtomName() << ")!" << std::endl;
+		std::cout << "Unassigned angle (" << getMajor()->shortDesc() << " to " <<
+		getMinor()->shortDesc() << " to " << atom->shortDesc() << ")!" << std::endl;
 	}
 
 	return angle;
