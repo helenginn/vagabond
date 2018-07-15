@@ -1476,19 +1476,19 @@ bool parseAtomValue(char **blockPtr, AtomValue *atomv)
 
 	double val = strtod(value, NULL);
 
-	if (strcmp(keyword, "geom_ratio") == 0)
+	if (strncmp(keyword, "geom_ratio", 1) == 0)
 	{
 		atomv->geomRatio = val;
 	}
-	else if (strcmp(keyword, "expected") == 0)
+	else if (strncmp(keyword, "expected", 1) == 0)
 	{
 		atomv->expectedAngle = val;
 	} 
-	else if (strcmp(keyword, "circle_add") == 0)
+	else if (strncmp(keyword, "circle_add", 1) == 0)
 	{
 		atomv->circlePortion = val;
 	}
-	else if (strcmp(keyword, "atom") == 0)
+	else if (strncmp(keyword, "atom", 1) == 0)
 	{
 		atomv->placeholder = new std::string(value);
 	}
@@ -1517,7 +1517,7 @@ bool parseBondGroup(char **blockPtr, BondGroup *group)
 		return false;
 	}
 
-	if (strcmp(keyword, "object") == 0)
+	if (strncmp(keyword, "object", 3) == 0)
 	{
 		// do a thing to load an atom value.
 		AtomValue atomv;
@@ -1549,19 +1549,19 @@ bool parseBondGroup(char **blockPtr, BondGroup *group)
 	{
 		double val = strtod(value, NULL);
 
-		if (strcmp(keyword, "torsion") == 0)
+		if (strncmp(keyword, "torsion", 1) == 0)
 		{
 			group->torsionAngle = val;
 		}
-		else if (strcmp(keyword, "kick") == 0)
+		else if (strncmp(keyword, "kick", 1) == 0)
 		{
 			group->torsionBlur = val;
 		}
-		else if (strcmp(keyword, "phi") == 0)
+		else if (strncmp(keyword, "phi", 2) == 0)
 		{
 			group->magicPhi = val;
 		}
-		else if (strcmp(keyword, "psi") == 0)
+		else if (strncmp(keyword, "psi", 2) == 0)
 		{
 			group->magicPsi = val;
 		}
@@ -1602,7 +1602,7 @@ char *Bond::decodeBondGroup(void *bond, void *bondGroup, char *block)
 			break;
 		}
 
-		if (strcmp(block, "object") != 0)
+		if (strncmp(block, "object", 3) != 0)
 		{
 			std::cout << "Was expecting an object for a BondGroup." << std::endl;
 			
