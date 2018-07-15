@@ -29,7 +29,8 @@ private:
 	void addHydrogens(AtomPtr minor, std::vector<std::string> hNames);
 	void addHydrogens(AtomList group, int hNum, ...);
 	bool hasHydrogens(BondPtr bond);
-	void setNewGeometry(AtomList group, double bondAngle, double torsion);
+	void setNewGeometry(AtomList group, double bondAngle, double torsion,
+	                    double portion = -1);
 	void setSpin(AtomList group);
 
 	AtomPtr prepareNewHydrogen(AtomPtr parent);
