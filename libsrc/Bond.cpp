@@ -37,8 +37,10 @@ void Bond::initialize()
 	_refineBondAngle = false;
 	_refineFlexibility = true;
 	_fixed = false;
+	_splitBlock = false;
 	_occupancy = 1.0;
 	_occMult = 1.0;
+	_resetOccupancy = false;
 	_torsionStepMult = 1.0;
 	_anisotropyExtent = 0.0;
 	_bondDirection = empty_vec3();
@@ -118,6 +120,7 @@ Bond::Bond(Bond &other)
 	_minor = other._minor;
 	_activeGroup = other._activeGroup;
 	_bondGroups = other._bondGroups;
+	_resetOccupancy = other._resetOccupancy;
 
 	for (size_t i = 0; i < _bondGroups.size(); i++)
 	{
@@ -848,6 +851,14 @@ std::vector<BondSample> *Bond::getManyPositions()
 		newSamples->push_back(nextSample);
 	}
 
+	if (_resetOccupancy)
+	{
+		for (size_t i = 0; i < newSamples->size(); i++)
+		{
+			newSamples->at(i).occupancy /= occTotal;
+		}
+	}
+
 	if (false && getMultOccupancy() < 0.9)
 	{
 		std::cout << "Occ total: " << shortDesc() << " " << occTotal
@@ -1067,12 +1078,12 @@ void Bond::setBendAngle(void *object, double value)
 	newBond->propagateChange(10);
 }
 
-bool Bond::splitBond(int start)
+bool Bond::splitBond()
 {
-	BondPtr me = boost::static_pointer_cast<Bond>(shared_from_this());
-	BondPtr parent = boost::static_pointer_cast<Bond>(getParentModel());
+	BondPtr me = ToBondPtr(shared_from_this());
+	BondPtr parent = ToBondPtr(getParentModel());
 	int last = parent->downstreamAtomGroupCount();
-	BondPtr dupl = me->duplicateDownstream(parent, last, start);
+	BondPtr dupl = me->duplicateDownstream(parent, last);
 	double torsion = getTorsion(&*me);
 	setTorsion(&*me, torsion);
 
@@ -1085,28 +1096,34 @@ bool Bond::splitBond(int start)
 	return true;
 }
 
-BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum, int start)
+void Bond::copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum)
 {
-	ModelPtr model = getParentModel();
-
-	if (!isBond())
+	/* Set the torsion angle to be the same as the parent */
+	_bondGroups[groupNum].torsionAngle = copyFrom->_bondGroups[0].torsionAngle;
+	
+	/* Set the circle portions to that of the first group */
+	for (size_t i = 0; i < downstreamAtomCount(groupNum); i++)
 	{
-		return BondPtr();
+		double portion = copyFrom->_bondGroups[0].atoms[i].circlePortion;
+		_bondGroups[groupNum].atoms[i].circlePortion = portion;
 	}
+}
 
-	BondPtr myParent = boost::static_pointer_cast<Bond>(model);
+BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
+{
+	/* new branch is the duplicated parent */
 
 	BondPtr duplBond = BondPtr(new Bond(*this));
 
 	AtomPtr duplAtom = AtomPtr();
-	AtomList list = getMinor()->getMonomer()->findAtoms(getMinor()->getAtomName());
+	
+	/* We look for other atoms of the same name which haven't been tied up */
+	std::string search = getMinor()->getAtomName();
+	AtomList list = getMinor()->getMonomer()->findAtoms(search);
 
 	/* Do we have something in the list which has an Absolute model?
-	* if not, leave as default (new atom) */
+	* if not, we will create a new one. */
 
-	bool changed = false;
-
-	/* Existing atoms: list.size() */
 	for (size_t i = 0; i < list.size(); i++)
 	{
 		if (list[i].expired()) continue;
@@ -1116,16 +1133,16 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum, int start)
 		if (model->isAbsolute())
 		{
 			duplAtom = atom;
-			changed = true;
 			break;
 		}
 	}
 
-	if (!changed)
+	/* In the case where we have not found an existing atom...*/
+	if (!duplAtom)
 	{
 		duplAtom = AtomPtr(new Atom(*getMinor()));
+		/* Lower case */
 		char conformer[] = "a";
-		getMinor()->setAlternativeConformer(conformer);
 
 		for (size_t i = 0; i < list.size(); i++)
 		{
@@ -1134,57 +1151,62 @@ BondPtr Bond::duplicateDownstream(BondPtr newBranch, int groupNum, int start)
 
 		duplAtom->setAlternativeConformer(conformer);
 		duplAtom->setFromPDB(false);
+		getMinor()->getMolecule()->addAtom(duplAtom);
 	}
 
+	/* Connect this duplicated minor atom to the polymer and monomer.
+	 * The molecule should already have happened in both cases above */
 	duplAtom->inheritParents();
 	duplAtom->setModel(duplBond);
-	duplBond->setMajor(newBranch->getMinor());
+	
+	/* Set the duplicate bond's major atom to the duplicated parent's 
+	 * minor atom */
+	duplBond->setMajor(newParent->getMinor());
 	duplBond->setMinor(duplAtom);
-
-	int group = 0;
-
-	double torsion = myParent->getTorsion(group);
-
-	/* Need to add the downstream atoms from group 0 which are not duplAtom */
-
-	if (groupNum != 0)
-	{
-		for (size_t i = 0; i < newBranch->downstreamAtomCount(0); i++)
-		{
-			if (newBranch->downstreamAtom(0, i)->getAtomName() != duplAtom->getAtomName())
-			{
-				newBranch->addDownstreamAtom(newBranch->downstreamAtom(0, i), groupNum);
-			}
-		}
-	}
-
-	newBranch->addDownstreamAtom(duplAtom, groupNum);
-	newBranch->setActiveGroup(groupNum);
-	setTorsion(&*newBranch, torsion);
-	newBranch->setActiveGroup(0);
-
-	for (size_t i = 0; i < newBranch->downstreamAtomCount(groupNum); i++)
-	{
-		double portion = myParent->_bondGroups[0].atoms[i].circlePortion;
-		newBranch->_bondGroups[groupNum].atoms[i].circlePortion = portion;
-	}
-
+	
+	/* Add the new minor atom to the correct group in the parent bond */
+	newParent->addDownstreamAtom(duplAtom, groupNum);
+	
+	/* If this is the end of the chain, stop now */
 	if (!downstreamAtomGroupCount())
 	{
 		return duplBond;
 	}
-
-	for (size_t i = start; i < downstreamAtomCount(0); i++)
+	
+	/* Need to spread the duplication to the entire next set of bonds
+	 * (currently no support for duplicating already-branched bonds!! FIXME */
+	for (size_t i = 0; i < downstreamAtomCount(0); i++)
 	{
-		BondPtr nextBond = boost::static_pointer_cast<Bond>(downstreamAtom(0, i)->getModel());
+		if (_splitBlock)
+		{
+			_splitBlock = false;
+			/* Need to return occupancy to full here on out */
+			ModelPtr model = downstreamAtom(0, i)->getModel();
+			ToBondPtr(model)->_resetOccupancy = true;
+			continue;
+		}
 
-		if (!nextBond->isBond())
+		AtomPtr nextAtom = downstreamAtom(0, i);
+		ModelPtr nextModel = nextAtom->getModel();
+
+		if (!nextModel->isBond())
 		{
 			continue;
 		}
 
-		nextBond->duplicateDownstream(duplBond, 0, 0);
+		BondPtr nextBond = ToBondPtr(nextAtom->getModel());
+		nextBond->duplicateDownstream(duplBond, 0);
 	}
+	
+	/* In this case, the parent is a branched point and needs to
+	 * copy over the parameters */
+	if (groupNum > 0)
+	{
+		newParent->copyParamsFromFirstGroup(newParent, groupNum);
+	}
+	
+	/* Also copy over the parameters for the duplicate bond */
+	duplBond->copyParamsFromFirstGroup(ToBondPtr(shared_from_this()), 0);
 
 	return duplBond;
 }
@@ -1676,6 +1698,7 @@ void Bond::addProperties()
 	addDoubleProperty("dampening", &_dampening);
 	addDoubleProperty("occupancy", &_occupancy);
 	addDoubleProperty("occ_mult", &_occMult);
+	addBoolProperty("occ_reset", &_resetOccupancy);
 
 	addBoolProperty("fixed", &_fixed);
 	addBoolProperty("anchored", &_anchored);

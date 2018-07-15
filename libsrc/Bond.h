@@ -433,7 +433,7 @@ public:
 	* 	 this position in the array.
 	*	\return Always returns true, at the moment.
 	*/
-	bool splitBond(int start = 0);
+	bool splitBond();
 
 	void setFixed(bool fixed)
 	{
@@ -486,6 +486,7 @@ public:
 
 	double getMultOccupancy()
 	{
+		if (_resetOccupancy) return 1;
 		return _occupancy * _occMult;
 	}
 	
@@ -522,6 +523,11 @@ public:
 	{
 		return _torsionStepMult;
 	}
+	
+	void setSplitBlock()
+	{
+		_splitBlock = true;
+	}
 protected:
 
 	AtomWkr _minor;
@@ -557,6 +563,11 @@ private:
 	double _occupancy;
 	double _occMult;
 	double _torsionStepMult;
+	
+	bool _resetOccupancy;
+	
+	/* If blocked, do not duplicate downstream */
+	bool _splitBlock;
 
 	/* Should not be refined */
 	bool _fixed;
@@ -585,7 +596,8 @@ private:
 	                                           double circleAdd,
 	double myTorsion, double ratio);
 
-	BondPtr duplicateDownstream(BondPtr newBranch, int groupNum, int start);
+	void copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum);
+	BondPtr duplicateDownstream(BondPtr newBranch, int groupNum);
 	bool _usingTorsion;
 
 	/* Flag to say whether recalculation should occur */
