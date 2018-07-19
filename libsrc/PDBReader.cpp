@@ -213,7 +213,7 @@ void PDBReader::addAnisotropicBFactors(std::string line)
 
 	if (_myAbsolute)
 	{
-		_myAbsolute->setTensor(tensor, _myCrystal);
+		_myAbsolute->setTensor(tensor);
 	}
 	else
 	{
@@ -310,6 +310,7 @@ void PDBReader::parse()
 	/* Prepare water network for HOH atoms */
 	_myHOH = WaterNetworkPtr(new WaterNetwork());
 	_myHOH->setChainID("HOH");
+
 
 	std::string pdbContents = get_file_contents(filename);
 
