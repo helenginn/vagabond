@@ -103,6 +103,7 @@ double FlexGlobal::maximiseIsotropyScore()
 		vec3 anisoAxis = aniso.getAxis(j);
 		double sqlength = vec3_sqlength(anisoAxis);
 		double diff = fabs(sqlength - actualTarget);
+		diff *= diff;
 		score += diff;
 	}
 
