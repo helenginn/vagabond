@@ -70,7 +70,7 @@ public:
 	void superimpose();
 	
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,
-	                              FlexGlobal &target);
+	                              FlexGlobal &target, bool isotropy = false);
 
 	static double vsSuperimpose(void *object)
 	{

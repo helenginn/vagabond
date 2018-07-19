@@ -1584,13 +1584,22 @@ AtomGroupPtr Polymer::getAllBackbone()
 }
 
 void Polymer::attachTargetToRefinement(RefinementStrategyPtr strategy,
-                                       FlexGlobal &target)
+                                       FlexGlobal &target, bool isotropy)
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	AtomGroupPtr allBackbone = getAllBackbone();
 	target.setAtomGroup(allBackbone);
 	target.setCrystal(crystal);
-	target.matchElectronDensity();
+	
+	if (!isotropy)
+	{
+		target.matchElectronDensity();
+	}
+	else
+	{
+		target.maximiseIsotropy();
+	}
+
 	strategy->setEvaluationFunction(FlexGlobal::score, &target);
 	FlexGlobal::score(&target);
 }
@@ -1760,4 +1769,5 @@ void Polymer::postParseTidy()
 {
 	Molecule::postParseTidy();
 	applyTranslationTensor();
+	
 }
