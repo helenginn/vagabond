@@ -37,8 +37,10 @@ public:
 	
 	virtual void addProperties();
 	
-	virtual void refine(CrystalPtr crystal, RefinementType type);
 	void partitionNetworks(CrystalPtr crystal);
+	
+	void setMonomer(MonomerPtr _monomer);
+	static double vsRefineWaterNetwork(void *object);
 private:	
 	std::vector<WaterClusterPtr> _clusters;
 	void reportOnClusters();

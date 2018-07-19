@@ -30,9 +30,30 @@ void WaterNetwork::addProperties()
 	Molecule::addProperties();
 }
 
-void WaterNetwork::refine(CrystalPtr crystal, RefinementType type)
+double WaterNetwork::vsRefineWaterNetwork(void *object)
 {
-	partitionNetworks(crystal);
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr crystal = options->getActiveCrystal();
+
+	Parser *parser = static_cast<Parser *>(object);
+	WaterNetwork *network = dynamic_cast<WaterNetwork *>(parser);
+
+	network->partitionNetworks(crystal);
+	int count = 0;
+	
+	for (int i = network->_clusters.size() - 8; i >= 0; i--)
+	{
+		WaterClusterPtr cluster = network->_clusters[i];
+		if (cluster->waterCount() == 1)
+		{
+			cluster->refine();
+			count++;
+		}
+		
+		if (count > 5) break;
+	}
+	
+	return 0;
 }
 
 bool hasWaters(AtomGroupPtr list)
@@ -96,10 +117,6 @@ void WaterNetwork::reportOnClusters()
 	
 	std::cout << "Each cluster has an average of " << waters << " waters out";
 	std::cout << " of " << total << " hydrogen bonders." << std::endl;
-	
-	std::cout << std::endl << "Now investigating one cluster ..." << std::endl;
-	
-	_clusters[27]->findNeighbours();
 }
 
 void WaterNetwork::partitionNetworks(CrystalPtr crystal)
