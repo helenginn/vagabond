@@ -666,3 +666,10 @@ size_t Atom::pluckCount()
 
 	return _waterPlucker->pluckCount();
 }
+
+void Atom::writePositionsToFile()
+{
+	std::string filename = "atom_positions_" + shortDesc();
+	
+	_model->writePositionsToFile(filename);
+}

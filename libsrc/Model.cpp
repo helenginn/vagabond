@@ -7,6 +7,7 @@
 //
 
 #include "Model.h"
+#include "CSV.h"
 #include "shared_ptrs.h"
 #include "Polymer.h"
 #include "Monomer.h"
@@ -390,4 +391,23 @@ FFTPtr Model::makeRealSpaceDistribution()
 	return newPtr;
 }
 
+void Model::writePositionsToFile(std::string filename)
+{
+	if (!hasExplicitPositions())
+	{
+		return;
+	}
+
+	CSVPtr csv = CSVPtr(new CSV(3, "x", "y", "z"));
+	std::vector<BondSample> positions = getFinalPositions();
+	
+	for (int i = 0; i < positions.size(); i++)
+	{
+		csv->addEntry(3, positions[i].start.x, 
+		              positions[i].start.y,
+		              positions[i].start.z);
+	}
+
+	csv->writeToFile(filename);	
+}
 

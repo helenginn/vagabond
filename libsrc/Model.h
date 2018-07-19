@@ -165,6 +165,7 @@ public:
 	std::vector<vec3> fishPositions();
 	
 	virtual bool hasExplicitPositions() = 0;
+	void writePositionsToFile(std::string filename);
 protected:
 	mat3x3 _realSpaceTensor;
 
