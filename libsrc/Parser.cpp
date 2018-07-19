@@ -653,7 +653,6 @@ char *Parser::parseNextSpecial(char *block)
 	*white = 0;
 
 	std::string specialName = std::string(block);
-	//    std::cout << "Special name is " << specialName << std::endl;
 	block = white + 1;
 	incrementIndent(&block);
 
@@ -696,7 +695,7 @@ char *getCategory(char *block, std::string *catName)
 	*white = 0;
 
 	std::string categoryName = std::string(block);
-	//    std::cout << "Category name is " << categoryName << std::endl;
+//	std::cout << "Category name is " << categoryName << std::endl;
 	block = white + 1;
 	incrementIndent(&block);
 
@@ -878,7 +877,7 @@ char *Parser::parseNextObject(char *block)
 	white = strchrwhite(block);
 	*white = 0;
 
-	if (strcmp(block, "object") != 0)
+	if (strncmp(block, "object", 3) != 0)
 	{
 		std::cout << "Something's wrong - was expecting an object!" << std::endl;
 		return white;
@@ -930,7 +929,7 @@ char *Parser::parseNextObject(char *block)
 		white = strchrwhite(block);
 		*white = 0;
 
-		if (strcmp(block, "object") != 0)
+		if (strncmp(block, "object", 3) != 0)
 		{
 			stillObjects = false;
 		}
@@ -1116,19 +1115,19 @@ bool Parser::parseNextChunk(char **blockPtr)
 
 	ParserType type = ParserTypeProperty;
 
-	if (strcmp(block, "category") == 0)
+	if (strncmp(block, "category", 4) == 0)
 	{
 		type = ParserTypeObject;
 	}
-	else if (strcmp(block, "references") == 0)
+	else if (strncmp(block, "references", 4) == 0)
 	{
 		type = ParserTypeReference;
 	}
-	else if (strcmp(block, "array") == 0)
+	else if (strncmp(block, "array", 4) == 0)
 	{
 		type = ParserTypeArray;
 	}
-	else if (strcmp(block, "special") == 0)
+	else if (strncmp(block, "special", 4) == 0)
 	{
 		type = ParserTypeSpecial;
 	}
@@ -1136,8 +1135,6 @@ bool Parser::parseNextChunk(char **blockPtr)
 	char *property = block;
 	block = space + 1;
 	incrementIndent(&block);
-
-	//    std::cout << getAbsolutePath() << " " << property << std::endl;
 
 	switch (type)
 	{
@@ -1215,12 +1212,6 @@ char *Parser::parse(char *block)
 		std::cout << "Check me: no { for object " << path  << "?" << std::endl;
 		return NULL;
 	}
-	else
-	{
-		//        std::cout << "Loading properties for " << _identifier << std::endl;
-	}
-
-	//    std::cout << "Set up ok." << std::endl;
 
 	// Get past the {. 
 	block++;
@@ -1349,9 +1340,11 @@ ParserPtr Parser::processBlock(char *block)
 	// Parse the entirety of the structure.
 	char *success = object->parse(block);
 
+	std::cout << "Vagabond file parsing complete..." << std::endl;
 	// Resolve dangling references.
 	object->resolveReferences();
 
+	std::cout << "Object references resolved..." << std::endl;
 	// Add parent to complete parser list
 	addToAllParsers(object->getAbsolutePath(), object);
 
@@ -1363,7 +1356,10 @@ ParserPtr Parser::processBlock(char *block)
 		aParser->postParseTidy();
 	}
 
+
 	object->postParseTidy();
+
+	std::cout << "Post-parse object tidy done..." << std::endl;
 
 	if (success != NULL)
 	{
@@ -1375,7 +1371,15 @@ ParserPtr Parser::processBlock(char *block)
 
 ParserPtr Parser::resolveReference(std::string reference)
 {
-	return _allParsers[reference].lock();
+	ParserMap::iterator it;
+	it = _allParsers.find(reference);
+	
+	if (it == _allParsers.end())
+	{
+		return ParserPtr();
+	}
+	
+	return it->second.lock();
 }
 
 void Parser::resolveReferences()
