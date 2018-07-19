@@ -120,6 +120,11 @@ public:
 	{
 		return _nSamples;
 	}
+	
+	static void setNSamples(int n)
+	{
+		_nSamples = n;
+	}
 
 	static double getBMult()
 	{
@@ -159,6 +164,11 @@ public:
 	static bool getShellScale()
 	{
 		return _shellScale;
+	}
+	
+	void setShellScale(bool shell)
+	{
+		_shellScale = shell;
 	}
 	
 	static double getGlobalBFactor()
