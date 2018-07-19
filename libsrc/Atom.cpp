@@ -102,6 +102,11 @@ void Atom::convertToDisulphide()
 		return;
 	}
 	
+	refreshBondAngles();
+}
+
+void Atom::refreshBondAngles()
+{
 	BondPtr bond = ToBondPtr(getModel());
 	ModelPtr parent = bond->getParentModel();
 	
@@ -111,6 +116,7 @@ void Atom::convertToDisulphide()
 	}
 	
 	ToBondPtr(parent)->resetBondAngles();
+
 }
 
 void Atom::inheritParents()

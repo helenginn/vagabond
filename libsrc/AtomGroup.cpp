@@ -1070,3 +1070,11 @@ std::vector<AtomPtr> AtomGroup::getHydrogenBonders()
 	
 	return returns;
 }
+
+void AtomGroup::refreshBondAngles()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		atom(i)->refreshBondAngles();
+	}
+}

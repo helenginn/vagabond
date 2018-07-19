@@ -182,6 +182,7 @@ public:
 
 	AtomType getGeomType();
 	void convertToDisulphide();
+	void refreshBondAngles();
 
 	MonomerPtr getMonomer()
 	{

@@ -142,6 +142,8 @@ public:
 	{
 		return _atoms;
 	}
+	
+	void refreshBondAngles();
 protected:
 	virtual AtomList topLevelAtoms();
 	int _timesRefined;
