@@ -92,6 +92,7 @@ AtomPtr Absolute::makeAtom()
 	myAtom->setAtomNum(_atomNum);
 	myAtom->setAlternativeConformer(_conformer);
 	ElementPtr element = Element::getElement(_element);
+	
 	myAtom->setElement(element);
 	myAtom->setAtomName(_atomName);
 	myAtom->findAtomType(_resName);
@@ -204,13 +205,20 @@ std::vector<BondSample> *Absolute::getManyPositions()
 	double occTotal = 0;
 
 	int totalPoints = Options::getNSamples();
+	totalPoints /= kickGroups;
 	double totalSurfaces = 0;
 	int layers = 10;
+	
+	if (totalPoints < 20)
+	{
+		layers = 1;
+	}
+	
 	std::vector<double> layerSurfaces;
 
 	/* Work out relative ratios of the surfaces on which points
 	 * will be generated. */
-	for (int i = 0; i < layers; i++)
+	for (int i = 1; i <= layers; i++)
 	{
 		layerSurfaces.push_back(i * i);
 		totalSurfaces += i * i;
@@ -228,7 +236,7 @@ std::vector<BondSample> *Absolute::getManyPositions()
 	{
 		double m = meanSqDisp * (double)(j + 1) / (double)layers;
 
-		int samples = layerSurfaces[j] * scale;
+		int samples = layerSurfaces[j] * scale + 1;
 		double offset = 2. / (double)samples;
 
 		for (int i = 0; i < samples; i++)
@@ -248,19 +256,26 @@ std::vector<BondSample> *Absolute::getManyPositions()
 		}
 	}
 
-	for (size_t i = 0; i < points.size(); i++)
+	for (int j = 0; j < kickGroups; j++)
 	{
-		vec3 full = vec3_add_vec3(points[i], _position);
-		double occ = 1;
-		occTotal += occ;
+		for (size_t i = 0; i < points.size(); i++)
+		{
+			vec3 full = vec3_add_vec3(points[i], _position);
+			double occ = 1;
+			occTotal += occ;
 
-		BondSample sample;
-		sample.basis = make_mat3x3();
-		sample.occupancy = occ;
-		sample.torsion = 0;
-		sample.old_start = make_vec3(0, 0, 0);
-		sample.start = full;
-		bondSamples->push_back(sample);
+			BondSample sample;
+			sample.basis = make_mat3x3();
+			sample.occupancy = occ;
+			sample.torsion = 0;
+			sample.old_start = make_vec3(0, 0, 0);
+			sample.start = full;
+			sample.kickMult = 0.75 + ((double)j / (double)kickGroups * 0.5);
+			
+			if (kickGroups == 1) sample.kickMult = 1;
+
+			bondSamples->push_back(sample);
+		}
 	}
 
 	for (size_t i = 0; i < bondSamples->size(); i++)

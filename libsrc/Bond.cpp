@@ -646,6 +646,8 @@ double myTorsion, double ratio)
 
 		/* This will only apply for a kicked bond */
 		double addBlur = _bondGroups[_activeGroup].torsionBlur;
+		double kickMult = prevs->at(i).kickMult;
+		addBlur *= kickMult;
 
 		addBlur *= kickValue;
 
@@ -725,12 +727,14 @@ std::vector<BondSample> *Bond::getManyPositions()
 				diffValue = 0;
 			}
 
+			double kickMult = absPos->at(i).kickMult;
 			double torsionAdd = _bondGroups[_activeGroup].torsionBlur * diffValue;
 
 			BondSample newSample;
 			newSample.basis = newBasis;
 			newSample.start = start;
 			newSample.old_start = majorPos;
+			newSample.kickMult = kickMult;
 			newSample.torsion = newTorsion + torsionAdd;
 			newSample.occupancy = (*absPos)[i].occupancy;
 			newSamples->push_back(newSample);
@@ -838,14 +842,17 @@ std::vector<BondSample> *Bond::getManyPositions()
 
 		mat3x3 newBasis = makeTorsionBasis(prevHeavyPos, prevMinorPos,
 		                                   myCurrentPos, none);
+		double kickMult = prevSamples->at(i).kickMult;
 
 		BondSample nextSample;
 		nextSample.basis = newBasis;
 		nextSample.start = myCurrentPos;
 		nextSample.old_start = prevMinorPos;
+		nextSample.kickMult = kickMult;
 		nextSample.torsion = myTorsions[i].torsion;
 		nextSample.occupancy = myTorsions[i].occupancy *
 		(*prevSamples)[i].occupancy;
+		
 		occTotal += nextSample.occupancy;
 
 		newSamples->push_back(nextSample);
