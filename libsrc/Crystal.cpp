@@ -913,6 +913,15 @@ void Crystal::writeVagabondFile(int cycleNum)
 
 double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 {
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (molecule(i)->isPolymer())
+		{
+			PolymerPtr polymer = ToPolymerPtr(molecule(i));
+			polymer->test();
+		}
+	}
+
 	_cycleNum = cycleNum;
 	std::cout << "*******************************" << std::endl;
 	std::cout << "\tCycle " << cycleNum << std::endl;
