@@ -59,7 +59,7 @@ void MonomerExplorer::makeSlider(ParamOptionType option, int num, QString name,
 	ParamOption param;
 	param.optionType = option;
 
-	int height = 225 + 25 * num;
+	int height = 225 + 30 * num;
 
 	param.lOpt = new QLabel(name, this);
 	param.lOpt->setGeometry(20, height, 80, 25);
@@ -163,9 +163,9 @@ void MonomerExplorer::makeRefinementButtons()
 
 	makeSlider(ParamOptionTorsion, 0, "Torsion", 0, 200, 100, 10, "º");
 	makeSlider(ParamOptionKick, 1, "Kick", 0, 100, 100, 50, "");
-	makeSlider(ParamOptionDampen, 2, "Dampen", 0, 50, 100, 25, "");
-	makeSlider(ParamOptionMagicAngles, 3, "Phi/psi", 0, 90, 1, 20, "º");
-	makeSlider(ParamOptionNumBonds, 4, "Bonds", 0, 16, 1, 3, "");
+//	makeSlider(ParamOptionDampen, 2, "Dampen", 0, 50, 100, 25, "");
+	makeSlider(ParamOptionMagicAngles, 2, "Phi/psi", 0, 90, 1, 20, "º");
+	makeSlider(ParamOptionNumBonds, 3, "Bonds", 0, 16, 1, 3, "");
 }
 
 void MonomerExplorer::populateList()
