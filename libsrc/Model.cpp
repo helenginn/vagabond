@@ -64,6 +64,11 @@ int Model::fftGridLength()
 	/* Target dimension in Angstroms */
 	double dim = biggestStdevDim() * 2;
 	
+	if (dim != dim || dim <= 0)
+	{
+		dim = 0;
+	}
+	
 	int some = 2;
 
 	if (getAtom()->getElement()->electronCount() <= 1)
@@ -121,6 +126,12 @@ std::vector<vec3> Model::polymerCorrectedPositions()
 	for (int i = 0; i < positions->size(); i++)
 	{
 		vec3 subtract = positions->at(i).start;
+		
+		if (positions->size() <= 1)
+		{
+			posOnly.push_back(subtract);
+			break;
+		}
 
 		// perform rotation element of superposition
 
@@ -148,7 +159,7 @@ std::vector<vec3> Model::polymerCorrectedPositions()
 			{
 				bestVec = &rotCentre;
 			}
-
+			
 			vec3 tmp = vec3_add_vec3(subtract, *bestVec); 
 			mat3x3_mult_vec(extraRotations[i], &tmp);
 			subtract = vec3_subtract_vec3(tmp, *bestVec);
@@ -205,7 +216,7 @@ std::vector<BondSample> Model::getFinalPositions()
 			_finalSamples[i].start = posOnly[i];
 		}
 	}
-
+	
 	_absolute = meanOfManyPositions(&_finalSamples);
 	
 	/* Deset flag */
@@ -372,6 +383,10 @@ void Model::addRealSpacePositions(FFTPtr real, vec3 offset)
 FFTPtr Model::makeRealSpaceDistribution()
 {
 	double n = fftGridLength();
+	vec3 offset = empty_vec3();
+	
+	if (_overrideN > 0) n = _overrideN;
+	
 	/* Don't panic, invert scale below... this is in real space */
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double scale = 1.0 / (2 * maxDStar);
@@ -381,7 +396,7 @@ FFTPtr Model::makeRealSpaceDistribution()
 	fft->setScales(scale);
 	fft->createFFTWplan(1);
 
-	addRealSpacePositions(fft, empty_vec3());
+	addRealSpacePositions(fft, offset);
 
 	fft->fft(1);
 	fft->invertScale();
