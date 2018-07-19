@@ -226,7 +226,8 @@ BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
 
 	for (int i = 0; i < bondNum; i++)
 	{
-		if (!bond->downstreamAtomGroupCount() || !bond->downstreamAtomCount(k) ||
+		if (!bond->downstreamAtomGroupCount() ||
+		    !bond->downstreamAtomCount(k) ||
 		    !bond->isRefinable())
 		{
 			/* No hope! Give up! */
