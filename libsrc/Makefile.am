@@ -6,6 +6,9 @@ vagabond_SOURCES = Element.cpp \
 Sampler.cpp \
 RefinementStrategy.cpp \
 BucketBulkSolvent.cpp \
+WaterNetwork.cpp \
+WaterCluster.cpp \
+Chromosomal.cpp \
 VScope.cpp \
 Sidechain.cpp \
 mat4x4.cpp \
