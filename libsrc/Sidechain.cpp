@@ -154,10 +154,41 @@ void Sidechain::splitConformers(int count)
 	}
 
 	AtomPtr start = findAtom("CB");
+	std::string duplStart = "CB";
 
 	if (!start || !start->getModel()->isBond())
 	{
 		return;
+	}
+
+	AtomList caAtoms = findAtoms("CA");
+
+	if (caAtoms.size() > 1)
+	{
+		MonomerPtr monomer = getMonomer();
+		AtomPtr blocker;
+		
+		if (monomer->isAfterAnchor())
+		{
+			blocker = monomer->findAtom("C");
+		}
+		else
+		{
+			blocker = monomer->findAtom("N");
+		}
+		
+		if (blocker)
+		{
+			ModelPtr model = blocker->getModel();
+			
+			if (model->isBond())
+			{
+				ToBondPtr(model)->setSplitBlock();
+			}
+		}
+
+		start = findAtom("CA");
+		duplStart = "CA";
 	}
 
 	BondPtr bond = ToBondPtr(start->getModel());
@@ -167,7 +198,7 @@ void Sidechain::splitConformers(int count)
 		bond->splitBond();
 	}
 
-	AtomList atoms = findAtoms("CB");
+	AtomList atoms = findAtoms(duplStart);
 
 	for (int i = 0; i < atoms.size(); i++)
 	{
