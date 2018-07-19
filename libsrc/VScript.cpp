@@ -10,6 +10,7 @@
 #include "Thing.h"
 #include "Options.h"
 #include "Shouter.h"
+#include "Timer.h"
 
 VScript::VScript()
 {
@@ -557,6 +558,9 @@ void VScript::execute()
 	std::cout << "***************************" << std::endl;
 	std::cout << "**** Executing VScript ****" << std::endl;
 	std::cout << "***************************" << std::endl;
+	
+	Timer timer("script", true);
+	
 	_script.push_back('\n');
 	_scriptCopy = _script;
 	_char = &_script[0];
@@ -579,6 +583,7 @@ void VScript::execute()
 	std::cout << "****       End.         ****" << std::endl;
 	std::cout << "***************************" << std::endl;
 	
+	timer.report();
 	repairScript();
 }
 
