@@ -13,6 +13,11 @@
 FFTPtr Distributor::prepareDistribution(double n, double scale, void *object,
                                         get_voxel_value *voxel_value)
 {
+	if (_overrideN > 0)
+	{
+		n = _overrideN;
+	}
+	
 	if (_precalcFFTs.count(n) && _precalcFFTs[(int)n])
 	{
 		_activeNum = n;

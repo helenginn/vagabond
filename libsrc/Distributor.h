@@ -37,6 +37,7 @@ public:
 	{
 		_calculated = false;
 		_activeNum = 0;
+		_overrideN = -1;
 	}
 
 	/** Call this if the subclass has changed (e.g., an Absolute atom has had
@@ -46,8 +47,14 @@ public:
 	{
 		_precalcFFTs.clear();
 	}
+
+	void overrideLength(int n)
+	{
+		_overrideN = n;
+	}
 protected:
 	bool _calculated;
+	int _overrideN;
 
 	/** Get a copy of the distribution which is then alterable without
 	* affecting the stored version. */
