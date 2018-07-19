@@ -158,6 +158,12 @@ public:
 		_recalcDist = true;
 	}
 	
+	vec3 getSpecificPosition(int i)
+	{
+		if (i > _finalPositions.size()) return empty_vec3();
+		return getFinalPositions()[i].start;
+	}
+	
 	void addRealSpacePositions(FFTPtr real, vec3 offset);
 
 	vec3 longestAxis();
