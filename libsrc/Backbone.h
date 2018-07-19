@@ -50,7 +50,7 @@ public:
 
 	virtual bool shouldRefineAngles()
 	{
-		return (_timesRefined > 0);
+		return (_timesRefined > 2);
 	}
 
 	AtomPtr betaCarbonTorsionAtom();
