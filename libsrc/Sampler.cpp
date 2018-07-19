@@ -419,7 +419,7 @@ void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 	}
 
 	_strategy->addParameter(&*bond, Bond::getBendAngle, Bond::setBendAngle,
-	                        range, interval, "b0" + bond->shortDesc());
+	                        range, interval, "b0_" + bond->shortDesc());
 	
 	ModelPtr parent = bond->getParentModel();
 
@@ -427,11 +427,12 @@ void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 	{
 		BondPtr pBond = ToBondPtr(parent);
 		int result = pBond->downstreamAtomNum(bond->getMinor(), NULL);
+
 		if (result > 0)
 		{
 			_strategy->addParameter(&*bond, Bond::getCirclePortion, 
 			                        Bond::setCirclePortion,
-			range, interval, "b1" + bond->shortDesc());
+			range, interval, "b1_" + bond->shortDesc());
 		}
 	}
 	
