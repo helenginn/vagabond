@@ -258,6 +258,16 @@ public:
 	
 	size_t pluckCount();
 	
+	void setWater(int set = 1)
+	{
+		_isWater = set;
+	}
+	
+	bool isWater()
+	{
+		return _isWater;
+	}
+	
 	bool canBeHydrogenBonder()
 	{
 		return (_hBondage);
@@ -300,6 +310,7 @@ private:
 	std::string _conformer;
 	std::string _elementSymbol;
 	bool _fromPDB;
+	int _isWater;
 	int _hetatm;
 	mat3x3 _tensor;
 	bool _hBondage;

@@ -37,8 +37,9 @@ Atom::Atom()
 	_weighting = 1;
 	_origOccupancy = 1.0;
 	_fromPDB = true;
+	_isWater = 0;
 	_tensor = make_mat3x3();
-	_hetatm = -1;
+	_hetatm = 0;
 	_hBondage = false;
 }
 
