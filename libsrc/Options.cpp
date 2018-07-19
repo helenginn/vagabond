@@ -14,6 +14,7 @@
 #include "Shouter.h"
 #include <iomanip>
 #include "Polymer.h"
+#include "WaterNetwork.h"
 #include "FileReader.h"
 #include "VBondReader.h"
 #include "SSRigger.h"
@@ -487,18 +488,18 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool)
 		for (size_t j = 0; j < crystals[0]->moleculeCount(); j++)
 		{
 			MoleculePtr molecule = crystals[0]->molecule(j);
+			void *parser = &*(ToParserPtr(molecule));
 			
 			if (molecule->isPolymer())
 			{
-				void *polymer = &*(ToParserPtr(molecule));
 				switch (type)
 				{
 					case RefinementModelPos:
-					Polymer::vsRefinePositionsToPDB(polymer);
+					Polymer::vsRefinePositionsToPDB(parser);
 					break;
 					
 					case RefinementSidechain:
-					Polymer::vsRefineSidechainsToDensity(polymer);
+					Polymer::vsRefineSidechainsToDensity(parser);
 					break;
 					
 					case RefinementWaterNetwork:
@@ -514,7 +515,7 @@ void Options::refineAll(RefinementType type, int numCycles, int *count, bool)
 			else if (molecule->isWaterNetwork() && 
 			         type == RefinementWaterNetwork)
 			{
-				refinementCycle(molecule, type);
+				WaterNetwork::vsRefineWaterNetwork(parser);
 			}
 		}
 
