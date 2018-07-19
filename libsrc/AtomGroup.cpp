@@ -532,7 +532,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 
 			BondPtr topBond;
 
-			for (int k = 0; k < bond->downstreamAtomGroupCount(); k++)
+			for (int k = 0; k < 1; /*bond->downstreamAtomGroupCount();*/ k++)
 			{
 				bool changed = true;
 				bool addFlex = (rType == RefinementFine);
