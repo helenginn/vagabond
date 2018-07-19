@@ -41,6 +41,7 @@ typedef struct
 	vec3 old_start;   /**< position of torsion-defining atom */
 	double torsion;   /**< Defines torsion of next atom */
 	double occupancy; /**< Relative occupancy (usually 1) */
+	double kickMult;  /**< Prelim work - some sub-groups can kick more */
 } BondSample;
 
 class Model : public Distributor, public Parser
