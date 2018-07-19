@@ -74,7 +74,12 @@ public:
 	}
 
 	double scoreAgainstDensity();
+	void refine();
 
+	size_t waterCount()
+	{
+		return _waters.size();
+	}
 private:	
 	int _modifySample;
 	std::vector<AtomPtr> _waters;
@@ -84,6 +89,7 @@ private:
 	double evaluateRestraints();
 	double evaluateRestraint(int sample, int i);
 	void wipeBonding();
+	void resetModels();
 	
 	/* Genetic things */
 	virtual void randomise(double frac = 1.1);

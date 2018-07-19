@@ -47,13 +47,6 @@ void WaterCluster::addAtom(AtomPtr atom)
 
 void WaterCluster::findNeighbours()
 {
-	if (_pairs.size())
-	{	
-		evolve();
-		recalculateWaters();
-		return;
-	}
-
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	int total = 0;
 	int hBondy = 0;
@@ -113,14 +106,6 @@ void WaterCluster::findNeighbours()
 	<< total << " neighbours. " << hBondy << " have "\
 	"hydrogen bonding potential, and therefore " << allOpt << " binary"\
 	" restraint options." << std::endl;
-	
-	wipeBonding();
-	double result = scoreAgainstDensity();
-	std::cout << std::endl << "B factor CC: " << result << std::endl;
-	result = evaluate();
-	std::cout << std::endl << "No bonding CC: " << result << std::endl;
-	evolve();
-	recalculateWaters();
 }
 
 void WaterCluster::wipeBonding()
@@ -141,6 +126,47 @@ double WaterCluster::scoreAgainstDensity()
 	double score;
 	score = scoreWithMap(ScoreTypeCorrel, crystal);
 	return score;
+}
+
+void WaterCluster::resetModels()
+{
+	for (int i = 0; i < _waters.size(); i++)
+	{
+		ModelPtr model = _waters[i]->getModel();
+		if (model->isAbsolute())
+		{
+			ToAbsolutePtr(model)->setImplicitPositions();
+		}
+	}
+}
+
+void WaterCluster::refine()
+{
+	findNeighbours();
+	wipeBonding();
+	double first = scoreAgainstDensity();
+	std::cout << "B factor CC: " << first << std::endl;
+	double second = evaluate();
+	std::cout << "No bonding CC: " << second << std::endl;
+	evolve();
+	recalculateWaters();
+	double third = scoreAgainstDensity();
+
+	if (third < second)
+	{
+		std::cout << "Keeping improvement." << std::endl;
+	}
+	else if (second > first)
+	{
+		std::cout << "Resetting entirely." << std::endl;
+		resetModels();
+	}
+	else
+	{
+		std::cout << "Keeping explicit positions only." << std::endl;
+	}
+
+	evaluate();
 }
 
 double WaterCluster::recalculateWaters()
@@ -186,13 +212,13 @@ double WaterCluster::recalculateWaters()
 
 			nelderMead->addParameter(&*abs, Absolute::getPosX,
 			                         Absolute::setPosX,
-			                         0.02, 0.001, "w" + i_to_str(j) + "x");
+			                         0.02, 0.002, "w" + i_to_str(j) + "x");
 			nelderMead->addParameter(&*abs, Absolute::getPosY,
 			                         Absolute::setPosY,
-			                         0.02, 0.001, "w" + i_to_str(j) + "y");
+			                         0.02, 0.002, "w" + i_to_str(j) + "y");
 			nelderMead->addParameter(&*abs, Absolute::getPosZ,
 			                         Absolute::setPosZ,
-			                         0.02, 0.001, "w" + i_to_str(j) + "z");
+			                         0.02, 0.002, "w" + i_to_str(j) + "z");
 		}
 
 		nelderMead->refine();
@@ -214,6 +240,8 @@ double WaterCluster::evaluateRestraint(int sample, int i)
 	double contrib = 0;
 
 	AtomPtr water = _pairs[i].water;
+
+	std::vector<AtomPtr> allNeighs;
 
 	for (int j = 0; j < _pairs[i].neighbours.size(); j++)
 	{
@@ -237,9 +265,38 @@ double WaterCluster::evaluateRestraint(int sample, int i)
 		}
 		else if (type == RestraintHBond)
 		{
+			allNeighs.push_back(neighbour);
 			double dist = water->getDistanceFrom(&*neighbour, sample, quick);
-			double diff = 3.0 - dist;
+			double diff = 2.8 - dist;
 			diff *= diff;
+			contrib += diff;
+		}
+	}
+	
+	if (allNeighs.size() <= 1)
+	{
+		return contrib;		
+	}
+	
+	/* Hydrogen bond angles */
+	vec3 waterPos = water->getModel()->getSpecificPosition(sample);
+	double expected = deg2rad(104.5);
+
+	for (int i = 1; i < allNeighs.size(); i++)
+	{
+		AtomPtr iN = allNeighs[i];
+		vec3 iPos = iN->getModel()->getSpecificPosition(sample);
+		iPos = vec3_subtract_vec3(iPos, waterPos);
+
+		for (int j = 0; j < i; j++)
+		{
+			AtomPtr jN = allNeighs[j];
+			vec3 jPos = jN->getModel()->getSpecificPosition(sample);
+			jPos = vec3_subtract_vec3(jPos, waterPos);
+			
+			double angle = vec3_angle_with_vec3(iPos, jPos);
+			double diff = angle - expected;
+			diff *= 10;
 			diff *= diff;
 			contrib += diff;
 		}
@@ -281,6 +338,7 @@ void WaterCluster::randomise(double frac)
 			RestraintChoice *choice = &_pairs[i].neighbours[j].choice;
 			size_t num = choice->options.size();
 			int new_value = rand() % num;
+			new_value *= (rand() % 2);
 
 			choice->picked = new_value;
 		}
