@@ -839,6 +839,15 @@ void Crystal::fourierTransform(int dir, double res)
 	}
 }
 
+void Crystal::vsChangeSampleSize(void *object, double n)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Crystal *crystal = dynamic_cast<Crystal *>(parser);
+
+	Options::getRuntimeOptions()->setNSamples(n);
+	Options::getRuntimeOptions()->superimposeAll(crystal->shared_from_this());
+}
+
 void Crystal::makePDBs(std::string suffix)
 {
 	std::vector<std::string> prefices; std::vector<PDBType> pdbTypes;
@@ -1145,9 +1154,18 @@ void Crystal::addProperties()
 	}
 	
 	exposeFunction("recalculate_map", Crystal::vsConcludeRefinement);
+	exposeFunction("change_sample_size", Crystal::vsChangeSampleSize);
+	exposeFunction("set_shell_scale", Crystal::vsSetShellScale);
 	exposeFunction("restore_state", Crystal::vsRestoreState);
 	exposeFunction("refine_backbone_to_density",
 	               Crystal::vsRefineBackboneToDensity);
+}
+
+/* Positive number for ON, negative number for OFF */
+void Crystal::vsSetShellScale(void *object, double val)
+{
+	bool shell = (val > 0);
+	Options::getRuntimeOptions()->setShellScale(shell);
 }
 
 void Crystal::vsRestoreState(void *object, double val)

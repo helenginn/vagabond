@@ -56,6 +56,9 @@ public:
 	static double vsConcludeRefinement(void *object);
 	static void vsRestoreState(void *object, double val);
 
+	static void vsChangeSampleSize(void *object, double n);
+	static void vsSetShellScale(void *object, double val);
+
 	/**
 	* How many molecules are included in a Crystal.
 	*/
