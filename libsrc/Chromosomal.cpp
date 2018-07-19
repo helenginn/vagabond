@@ -96,8 +96,7 @@ void Chromosomal::breed()
 
 void Chromosomal::evolve()
 {
-	geneticCode();
-
+	geneticCode(); 
 	for (int i = 0; i < _sampled; i++)
 	{
 		ChromosomalPtr copy = makeCopy();
@@ -105,7 +104,7 @@ void Chromosomal::evolve()
 		_copies.push_back(copy);
 	}
 
-	for (int i = 0; i < 2; i++)	
+	for (int i = 0; i < 1; i++)	
 	{
 		testPopulation();
 		breed();

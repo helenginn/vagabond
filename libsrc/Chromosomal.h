@@ -15,9 +15,10 @@
 
 class Chromosomal
 {
+public:
+	void evolve();
 protected:
  	Chromosomal();
-	void evolve();
 
 	virtual void randomise(double = 1.1) = 0;
 	virtual void mutate() = 0;
