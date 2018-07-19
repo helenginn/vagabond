@@ -120,7 +120,7 @@ public:
 		_tensor.vals[8] = bfac;
 	}
 
-	void setTensor(mat3x3 tensor, CrystalPtr crystal);
+	void setTensor(mat3x3 tensor);
 
 	double getBFactor()
 	{

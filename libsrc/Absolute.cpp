@@ -185,11 +185,14 @@ void Absolute::resetSamples()
 std::vector<BondSample> *Absolute::getManyPositions()
 {
 	std::vector<BondSample> *bondSamples = &_bondSamples;
+	int kickGroups = 1;
 	
+	/*
 	if (_bondSamples.size())
 	{
 		return &_bondSamples;
 	}
+	*/
 	
 	bondSamples->clear();
 
@@ -290,7 +293,7 @@ double Absolute::getMeanSquareDeviation()
 	return _bFactor;
 }
 
-void Absolute::setTensor(mat3x3 tensor, CrystalPtr)
+void Absolute::setTensor(mat3x3 tensor)
 {
 	_tensor = tensor;
 	_usingTensor = true;
