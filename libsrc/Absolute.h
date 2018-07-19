@@ -229,6 +229,13 @@ public:
 	{
 		return _sphereAngles;
 	}
+	
+	void setImplicitPositions()
+	{
+		_isOfManyPositions = false;
+		_recalcFinal = true;
+		_recalcDist = true;
+	}
 
 	void setAnchorPoint()
 	{
