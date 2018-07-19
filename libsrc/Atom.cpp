@@ -128,6 +128,34 @@ FFTPtr Atom::getBlur()
 {
 	FFTPtr modelDist = _model->getDistribution();
 	/* YEAH, that line does something */
+	
+	if (false && _model->isBond())
+	{
+		mat3x3 tensor = _model->getRealSpaceTensor();
+		double bFac = getBFactor();
+		AbsolutePtr abs = AbsolutePtr(new Absolute(empty_vec3(), bFac,
+		                                           _element->getSymbol(),
+		                                           1));
+		AtomPtr atom = abs->makeAtom();
+//		abs->setTensor(tensor);
+		abs->overrideLength(_model->fftGridLength());
+		writePositionsToFile();
+
+		FFTPtr approx = abs->getDistribution();
+		approx->scaleToFFT(modelDist);
+
+		std::vector<double> xs, ys;
+		for (int i = 0; i < approx->nn; i++)
+		{
+			xs.push_back(approx->data[i][0]);
+			ys.push_back(modelDist->data[i][0]);
+		}
+
+		double correl = correlation(xs, ys);
+		double rFac = r_factor(xs, ys);
+		std::cout << shortDesc() << ": " << correl
+		<< ", " << rFac << std::endl;
+	}
 
 	if (_distModelOnly)
 	{
