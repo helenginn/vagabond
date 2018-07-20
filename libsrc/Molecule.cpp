@@ -110,8 +110,6 @@ void Molecule::tieAtomsUp()
 	if (getClassName() != "Polymer")
 	{
 		double mult = Options::getBMult();
-		std::cout << "Setting HETATM B factor multiplier to " << mult <<
-		" for Chain " << getChainID() << std::endl;
 		setAbsoluteBFacMult(mult);
 	}
 }
@@ -274,7 +272,8 @@ void Molecule::addProperties()
 void Molecule::setAbsoluteBFacMult(double mult)
 {
 	_absoluteBFacMult = mult;
-	std::cout << "Setting absolute B factor multiplier to " << mult << std::endl;
+	std::cout << "Setting absolute B factor multiplier to " << mult
+	<< " for chain " << getChainID() << std::endl;
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	crystal->addComment("Absolute B factor multiplier changed to "
 	+ f_to_str(mult, 2) + " for " + getChainID());
