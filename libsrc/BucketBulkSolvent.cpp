@@ -31,6 +31,18 @@ void BucketBulkSolvent::addSolvent()
 	_solvent->valueMinus(1);
 	
 	removeSlivers();
+	
+	int num0 = 0;
+	for (size_t i = 0; i < _solvent->nn; i++)
+	{
+		num0 += (_solvent->data[i][0] <= 0);
+	}
+	
+	num0 *= crystal->symOpCount();
+
+	double frac = (double)num0 / (double)_solvent->nn * 100;
+	frac = 100. - frac;
+	std::cout << "Fraction of solvent: " << frac << std::endl;
 }
 
 void BucketBulkSolvent::removeSlivers()
