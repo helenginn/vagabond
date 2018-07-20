@@ -122,6 +122,11 @@ public:
 		return _difft;
 	}
 	
+	size_t symOpCount()
+	{
+		return _spaceGroup->nsymop;
+	}
+	
 	FFTPtr getCalculatedMap()
 	{
 		return _calcCopy;
