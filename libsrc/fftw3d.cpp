@@ -1383,8 +1383,13 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 				double foAmp = sqrt(foInt);
 				double fofofc = 2 * foAmp - calcAmp;
 				double fofc = foAmp - calcAmp;
+				
+				if (free == 0)
+				{
+					fofofc = calcAmp;
+				}
 
-				if (foAmp != foAmp)
+				if (foAmp != foAmp || (free == 0))
 				{
 					//					fofofc = calcAmp;
 					fofc = 0;
