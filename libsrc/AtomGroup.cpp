@@ -500,6 +500,12 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 	{
 		bondNum = 3;
 	}
+	
+	if (hasParameter(ParamOptionTorsion) && paramCount() < 2 &&
+	    rType == RefinementFine)
+	{
+		maxTries = 20;
+	}
 
 	for (size_t n = 0; n < topAtoms.size(); n++)
 	{
