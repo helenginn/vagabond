@@ -66,7 +66,9 @@ public:
 	
 	void scaleSidechainsToBFactor();
 	void refineBackbone();
+	void refineBackboneFrom(int position);
 	static double vsRefineBackbone(void *object);
+	static void vsRefineBackboneFrom(void *object, double position);
 	void superimpose();
 	
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,

@@ -183,23 +183,36 @@ double Polymer::vsRefineBackbone(void *object)
 	return 0;
 }
 
-void Polymer::refineBackbone()
+void Polymer::vsRefineBackboneFrom(void *object, double position)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Polymer *polymer = dynamic_cast<Polymer *>(parser);
+	
+	polymer->refineBackboneFrom(position);
+}
+
+void Polymer::refineBackboneFrom(int position)
 {
 	OptionsPtr options = Options::getRuntimeOptions();
 	CrystalPtr crystal = options->getActiveCrystal();
 	
 	RefinementType rType = RefinementFine;
 	
-	int anchor = getAnchor();
-
 	std::cout << "Refining magic angles using correlation with density."
 	 << std::endl;
 
 	addParamType(ParamOptionMagicAngles, 36.0);
-	addParamType(ParamOptionNumBonds, 5);
+	addParamType(ParamOptionNumBonds, 4);
 
-	refineToEnd(anchor - 5, crystal, rType);
-	refineToEnd(anchor + 5, crystal, rType);
+	refineToEnd(position, crystal, rType);
+}
+
+void Polymer::refineBackbone()
+{
+	int anchor = getAnchor();
+
+	refineBackboneFrom(anchor - 5);
+	refineBackboneFrom(anchor + 5);
 }
 
 void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
@@ -1747,6 +1760,7 @@ void Polymer::addProperties()
 	exposeFunction("refine_positions_to_pdb", vsRefinePositionsToPDB);
 	exposeFunction("refine_sidechains_to_density", vsRefineSidechainsToDensity);
 	exposeFunction("refine_backbone_to_density", vsRefineBackbone);
+	exposeFunction("refine_backbone_to_density_from", vsRefineBackboneFrom);
 	exposeFunction("superimpose", vsSuperimpose);
 	exposeFunction("set_overall_translation", vsTransTensorOverall);
 	exposeFunction("fit_translation", vsFitTranslation);
