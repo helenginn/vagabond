@@ -580,6 +580,15 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	double lowRes = Options::minRes();
 	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
 	double maxRes = (1 / _maxResolution);
+	bool ignoreRfree = Options::ignoreRFree();
+	
+	if (ignoreRfree)
+	{
+		warn_user("You should not be ignoring Rfree.\n"\
+		          "All your results and any future \n"\
+		          "results derived from this are INVALID for\n"\
+		          "structure determination.");
+	}
 	
 	int bad = 0;
 	for (int i = 0; i < _fft->nn; i++)
@@ -619,8 +628,14 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 				double length = vec3_length(ijk);
 
 				bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
+				
+				if (ignoreRfree)
+				{
+					isRfree = 0;
+				}
+				
 				if (length < minRes || length > maxRes
-				    || (isRfree && amp == amp) || isAbs)    
+				    || isAbs)
 				{	
 					_fft->setElement(index, 0, 0);
 					_difft->setElement(index, 0, 0);
@@ -628,7 +643,7 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 					continue;
 				}
 
-				if (amp != amp)
+				if (amp != amp || isRfree)
 				{
 					continue;
 				}
