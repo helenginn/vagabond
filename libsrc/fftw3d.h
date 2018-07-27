@@ -186,7 +186,7 @@ public:
 	int setTotal(float value);
 	void valueMinus(float value);
 
-	double interpolate(vec3 fractionalVoxel, size_t imaginary = false);
+	double interpolate(vec3 unfractionalVoxel, size_t imaginary = false);
 
 	static void add(FFTPtr fftEdit, FFTPtr fftConst,
 	                vec3 add, bool sameScale)
