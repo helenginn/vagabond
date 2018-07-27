@@ -22,12 +22,14 @@ typedef struct
 typedef enum
 {
 	ScoreTypeCorrel = 0, /** Correlation between map and model density */
-	ScoreTypeMultiply = 1, /** Weighted (by model) sum of map voxels */
+	ScoreTypeMultiply = 1, /** Weighted (by model) average of map voxels */
 	ScoreTypeRFactor = 2, /** R factor in real space for electron density */
 	ScoreTypeModelRMSDZero = 3, /** All ensemble positions against PDB */
 	ScoreTypeBFactorAgreement = 4, /** All ensemble B factors against PDB */
 	ScoreTypeModelPos = 5, /** Average ensemble position against PDB */
 	ScoreTypeRMSDZero = 6, /** Sum of squares of anisotropic tensor */
+	ScoreTypeAddDensity = 7, /** Sum of map voxels if model positive */
+	ScoreTypeAddVoxels = 8, /** Number of map voxels if model positive */
 } ScoreType;
 
 typedef enum
@@ -35,6 +37,7 @@ typedef enum
 	MapScoreFlagNone = 0,
 	MapScoreFlagDifference = 1,
 	MapScoreFlagSubtractFc = 2,
+	MapScoreFlagNoSurround = 4,
 } MapScoreFlag;
 
 typedef struct 
