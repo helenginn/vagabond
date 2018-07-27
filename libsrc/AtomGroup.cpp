@@ -802,8 +802,10 @@ double AtomGroup::scoreWithMapQuick(ScoreType scoreType, CrystalPtr crystal,
 	segment->aboveValueToMask(cutoff);
 	segment->avoidWriteToMaskZero();
 
+	std::vector<AtomPtr> extra; 
+
 	/* Neighbours */
-	std::vector<AtomPtr> extra = crystal->getCloseAtoms(selected, 1.5);
+	extra = crystal->getCloseAtoms(selected, 1.5);
 	addAtomsQuickly(segment, extra, basis, ave);
 
 	double score = scoreFinalMap(crystal, segment, plot, scoreType, ave);
@@ -815,6 +817,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 {
 	CrystalPtr crystal = workspace->crystal;
 	std::vector<AtomPtr> selected = workspace->selectAtoms;
+
 	bool first = (workspace->segment == FFTPtr());
 
 	if (first)
