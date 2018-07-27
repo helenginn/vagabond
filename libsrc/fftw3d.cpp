@@ -1250,7 +1250,9 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 
 void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
                                 CSym::CCP4SPG *mtzspg, std::vector<double> unitCell,
-                                mat3x3 real2Frac, FFTPtr data)
+                                mat3x3 real2Frac, FFTPtr data,
+	                           std::vector<double> bins, 
+	                           std::vector<double> ampAves) 
 {
 	double nLimit = nx;
 	nLimit = nLimit - ((int)nLimit % 2); // make even
