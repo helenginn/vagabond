@@ -173,7 +173,7 @@ void DiffractionMtz::load()
 
 		count++;
 
-		if (mask == MaskFree)
+		if (mask == 0)
 		{
 			maskCount++;
 		}
