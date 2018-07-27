@@ -184,9 +184,20 @@ double Crystal::totalToScale()
 
 void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 {
+	std::vector<double> bins, ampAves;
+	generateResolutionBins(0, _maxResolution, 20, &bins);
+	ampAves.resize(bins.size());
+	
+	for (int i = 0; i < bins.size() - 1; i++)
+	{
+		ampAves[i] = valueWithDiffraction(data, two_dataset_mean,
+		                                 false, bins[i], bins[i + 1]);
+	}
+
 	std::string outputFileOnly = prefix + "_" + _filename + "_vbond.mtz";
 	getFFT()->writeReciprocalToFile(outputFileOnly, _maxResolution, _spaceGroup,
-	                                _unitCell, _real2frac, data->getFFT());
+	                                _unitCell, _real2frac, data->getFFT(),
+	                                bins, ampAves);
 	std::string outputFile = FileReader::addOutputDirectory(outputFileOnly);
 	
 	_lastMtz = outputFile;
