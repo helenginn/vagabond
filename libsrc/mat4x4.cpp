@@ -133,6 +133,43 @@ void mat4x4_rotate(mat4x4 *mat, double alpha, double beta, double gamma)
 	*mat = mult;
 }
 
+mat4x4 mat4x4_from_rot_trans(mat3x3 rot, vec3 trans)
+{
+	mat4x4 rot4 = make_mat4x4();
+
+	rot4.vals[0] = rot.vals[0];
+	rot4.vals[1] = rot.vals[1];
+	rot4.vals[2] = rot.vals[2];
+
+	rot4.vals[4] = rot.vals[3];
+	rot4.vals[5] = rot.vals[4];
+	rot4.vals[6] = rot.vals[5];
+
+	rot4.vals[8] = rot.vals[6];
+	rot4.vals[9] = rot.vals[7];
+	rot4.vals[10] = rot.vals[8];
+	
+	mat4x4 trans4 = make_mat4x4();
+	mat4x4_translate(&trans4, trans);
+
+	return mat4x4_mult_mat4x4(trans4, rot4);
+}
+
+mat3x3 mat4x4_get_rot(mat4x4 &mat)
+{
+	mat3x3 rot = make_mat3x3();
+	rot.vals[0] = mat.vals[0];
+	rot.vals[1] = mat.vals[1];
+	rot.vals[2] = mat.vals[2];
+	rot.vals[3] = mat.vals[4];
+	rot.vals[4] = mat.vals[5];
+	rot.vals[5] = mat.vals[6];
+	rot.vals[6] = mat.vals[8];
+	rot.vals[7] = mat.vals[9];
+	rot.vals[8] = mat.vals[10];
+	return rot;
+}
+
 void mat4x4_translate(mat4x4 *mat, vec3 centre)
 {
 	mat4x4 transMat = make_mat4x4();
@@ -142,4 +179,15 @@ void mat4x4_translate(mat4x4 *mat, vec3 centre)
 
 	mat4x4 mult = mat4x4_mult_mat4x4(transMat, *mat);
 	*mat = mult;
+}
+
+mat4x4 mat4x4_inverse(mat4x4 &mat)
+{
+	vec3 trans = make_vec3(mat.vals[12], mat.vals[13],
+	                        mat.vals[14]);
+	vec3_mult(&trans, -1);
+	mat3x3 rot = mat4x4_get_rot(mat);	
+	mat3x3 inv = mat3x3_transpose(rot);
+	mat4x4 both = mat4x4_from_rot_trans(inv, trans);
+	return both;
 }

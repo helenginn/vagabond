@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string>
 #include "vec3.h"
+#include "mat3x3.h"
 
 struct mat4x4
 {
@@ -27,7 +28,10 @@ mat4x4 mat4x4_ortho(float left, float right, float top,
 
 void mat4x4_rotate(mat4x4 *mat, double alpha, double beta, double gamma);
 void mat4x4_translate(mat4x4 *mat, vec3 centre);
+mat4x4 mat4x4_from_rot_trans(mat3x3 rot, vec3 trans);
+mat3x3 mat4x4_get_rot(mat4x4 &mat);
 mat4x4 mat4x4_mult_mat4x4(mat4x4 l, mat4x4 r);
 vec3 mat4x4_mult_vec(struct mat4x4 mat, struct vec3 vec);
+mat4x4 mat4x4_inverse(mat4x4 &mat);
 
 #endif /* mat4x4_hpp */
