@@ -964,6 +964,7 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	else
 	{
 		rFac = getDataInformation(data, 2, 1, refineCount);
+		Options::flagDensityChanged();
 	}
 
 	makePDBs(i_to_str(cycleNum));
