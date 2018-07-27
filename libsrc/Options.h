@@ -81,6 +81,11 @@ public:
 	int parseParameter(std::string arg, std::string prefix, bool *ptr);
 	int parseParameter(std::string arg, std::string prefix, int *ptr);
 	
+	static bool ignoreRFree()
+	{
+		return !_useRFree;
+	}
+	
 	static double getKick()
 	{
 		return _kick;
@@ -175,7 +180,13 @@ public:
 	{
 		return _bReal;
 	}
+	
+	static void flagDensityChanged()
+	{
+		Options::getRuntimeOptions()->renderDensity();
+	}
 
+	void renderDensity();
 	void statusMessage(std::string message);
 	void agreementSummary();
 	void previousState();
@@ -221,6 +232,7 @@ private:
 	std::string _modelFile;
 	std::string _mtzFile;
 
+	static bool _useRFree;
 	static bool _shellScale;
 	static bool _powder;
 	static std::string _solventFile;

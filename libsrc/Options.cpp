@@ -28,6 +28,7 @@ double Options::_bMult = 1;
 double Options::_bReal = 2.;
 double Options::_minRes = -1.0;
 double Options::_maxRes = -1.0;
+bool Options::_useRFree = true;
 int Options::_enableTests = 3;
 bool Options::_powder = false;
 bool Options::_shellScale = true;
@@ -261,9 +262,10 @@ void Options::displayHelp()
 	std::cout << "--max-res=<value>\t\tOptional override for the maximum resolution in Ångströms.\n" << std::endl;
 	std::cout << "--global-b=<value>\t\tAdd a real space B factor when adding explicit atoms to the map.\n"\
 	"\t\t\t\t (default 0.).\n" << std::endl;
-	std::cout << "--shell-scale\t\tWhen calculating R factors, scale each resolution bin of Fcalc"\
+	std::cout << "--shell-scale\t\t\tWhen calculating R factors, scale each resolution bin of Fcalc"\
 	"to Fobs\n\t\t\t\t (default on).\n" << std::endl;
 	std::cout << std::endl;
+	std::cout << "--no-rfree\t\t\tDo not use this function.\n" << std::endl;
 	std::cout << "Baseline command to start running vagabond:\n" << std::endl;
 	std::cout << "\tvagabond --with-pdb=start.pdb --with-mtz=start.mtz\n" << std::endl;
 
@@ -425,6 +427,7 @@ void Options::parse()
 		}
 
 		understood |= parseParameter(arg, "tie", &_tie);
+		understood |= parseParameter(arg, "rfree", &_useRFree);
 		understood |= parseParameter(arg, "shell-scale", &_shellScale);
 
 		if (!understood)
@@ -885,11 +888,20 @@ bool Options::parseJoke(std::string arg)
 	return false;
 }
 
-
 double Options::getActiveCrystalDStar()
 {
 	CrystalPtr crystal = getActiveCrystal();
 	DiffractionPtr data = getActiveData();
 	
 	return crystal->getMaximumDStar(data);
+}
+
+void Options::renderDensity()
+{
+	if (!_notify)
+	{
+		return;
+	}
+	
+	_notify->setRenderDensity();
 }
