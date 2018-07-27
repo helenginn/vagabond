@@ -530,7 +530,7 @@ void Crystal::scaleComponents(DiffractionPtr data)
 {
 	scaleToDiffraction(data);
 	scaleSolvent(data);
-	scaleToDiffraction(data, true);
+	scaleToDiffraction(data);
 }
 
 double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
