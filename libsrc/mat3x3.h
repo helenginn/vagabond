@@ -20,15 +20,33 @@ struct mat3x3
 	double vals[9];
 };
 
+/** Create a C++ string describing a mat3x3 matrix in
+ * human readable format. */
 std::string mat3x3_desc(mat3x3 mat);
 
+/** Simple matrix inversion */
 mat3x3 mat3x3_inverse(mat3x3 &mat);
+
+/** Calculate basis vectors for a unit cell and organise them
+ * into a matrix, using six individual variables */
 mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double beta, double gamma);
+
+/** Calculate basis vectors for a unit cell and organise them
+ * into a matrix, using a pointer to a double[6] array */
 mat3x3 mat3x3_from_unit_cell(double *unitCell);
+
+/** Calculate a unit cell from the basis vectors in a matrix */
 void unit_cell_from_mat3x3(mat3x3 mat, double *vals);
+
+/** Return an identity matrix */
 mat3x3 make_mat3x3();
+
+/** mat3x3 matrix from CCP4 symmetry operation as a 
+ * rotation matrix */
 mat3x3 mat3x3_from_ccp4(CSym::ccp4_symop symop);
 
+/** Inline method (mildly faster) to multiply a vector by
+ * a matrix, by supplying pointer to vector to change */
 inline void mat3x3_mult_vec(struct mat3x3 mat, struct vec3 *vec)
 {
 	struct vec2 v;
@@ -40,22 +58,63 @@ inline void mat3x3_mult_vec(struct mat3x3 mat, struct vec3 *vec)
 	memcpy(vec, &v.x, sizeof(double) * 2);
 }
 
+/** Grab the i'th basis vector from a matrix (column 0, 1, or 2) */
 vec3 mat3x3_axis(mat3x3 me, int i);
 
+/** Matrix multiplied by vector and returned as a fresh vector.
+ * Consider using the inline function above if you don't need to
+ * keep the old one. */
 vec3 mat3x3_mult_vec(struct mat3x3 mat, struct vec3 vec);
 
+/** Multiply every basis vector in the matrix by a scalar value */
 void mat3x3_mult_scalar(mat3x3 *mat, double scale);
+
+/** Multiply each basis vector by its own scalar value. */
 void mat3x3_scale(mat3x3 *mat, double a, double b, double c);
+
+/** Calculate the length of the i'th basis vector in a matrix */
 double mat3x3_length(mat3x3 &mat, int index);
+
+/** Transpose the matrix and return as a new one, so swapping
+ * rows and columns. Also quick way of inverting a rotation
+ * matrix */
 mat3x3 mat3x3_transpose(mat3x3 &mat);
+
+/** Calculate the determinant of the matrix */
 double mat3x3_determinant(mat3x3 &mat);
+
+/** Multiply two matrices and return the result */
 mat3x3 mat3x3_mult_mat3x3(struct mat3x3 m1, struct mat3x3 m2);
+
+/** Calculate a right-handed rotation matrix which is a rotation 
+ * around an axis by a given degree in radians. */
 mat3x3 mat3x3_unit_vec_rotation(vec3 axis, double radians);
+
+/** Calculate a right-handed rotation matrix specified by
+ * rotations around each axis x, y, z - mostly suitable for small
+ * angles when the small-angle approximation holds. */
 mat3x3 mat3x3_rotate(double alpha, double beta, double gamma);
+
+/** Quickly finds any orthonormal matrix where the last basis
+ * vector is specified by cVec, and aVec and bVec complete some
+ * kind of axis. Handedness not guaranteed. Everything comes back
+ * with unit vector bases. */
 mat3x3 mat3x3_ortho_axes(vec3 cVec);
+
+/** Calculates a right-handed matrix based on two, not necessarily
+ * right-angled basis vectors. Everything comes back with unit
+ * vector bases */
 mat3x3 mat3x3_rhbasis(vec3 aVec, vec3 cVec);
+
+/** Find the rotation matrix which maps vec2 as closely as possible
+ * onto vec1 by rotating around 'axis'. "best" returns the final
+ * closest angle between vec2 and vec1 after rotation. If unity
+ * is set to true, then you must guarantee that the incoming
+ * vectors are unit vectors, in which case those calculations
+ * are skipped and it's a bit quicker. */
 mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis,
                               double *best = NULL, bool unity = false);
+
 mat3x3 mat3x3_covariance(std::vector<vec3> points);
 mat3x3 mat3x3_make_tensor(mat3x3 &tensify, vec3 &lengths);
 mat3x3 mat3x3_subtract_mat3x3(mat3x3 &one, mat3x3 &two);
