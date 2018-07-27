@@ -334,3 +334,36 @@ void regression_line(std::vector<double> xs, std::vector<double> ys,
 	*intercept = mean_y - *gradient * mean_x;
 }
 
+double add_if_gt_zero(std::vector<double> &vec2)
+{
+	double sum = 0;
+	
+	for (int i = 0; i < vec2.size(); i++)
+	{
+		if (vec2[i] < 10e-6)
+		{
+			continue;
+		}
+		
+		sum++;
+	}
+	
+	return sum;
+}
+
+double add_if_y_gt_zero(std::vector<double> &vec1, std::vector<double> &vec2)
+{
+	double sum = 0;
+	
+	for (int i = 0; i < vec1.size(); i++)
+	{
+		if (vec2[i] < 10e-2)
+		{
+			continue;
+		}
+		
+		sum += fabs(vec1[i]);
+	}
+	
+	return sum;
+}

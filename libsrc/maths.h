@@ -27,6 +27,13 @@ double weightedMapScore(std::vector<double> &set1, std::vector<double> &set2);
 double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
                    double cutoff = -FLT_MAX);
 double mean(std::vector<double> &vec1);
+/* second vec2 is ignored */
+inline double two_dataset_mean(std::vector<double> &vec1, std::vector<double> &vec2)
+{
+	return mean(vec1);
+}
+double add_if_y_gt_zero(std::vector<double> &vec1, std::vector<double> &vec2);
+double add_if_gt_zero(std::vector<double> &vec2);
 double standard_deviation(std::vector<double> &values);
 void regression_line(std::vector<double> xs, std::vector<double> ys,
                      double *intercept, double *gradient);
