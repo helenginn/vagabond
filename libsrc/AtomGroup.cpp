@@ -844,25 +844,27 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		yAng = workspace->segment->ny * workspace->segment->scales[1] / 2;
 		zAng = workspace->segment->nz * workspace->segment->scales[2] / 2;
 
-		workspace->extra = crystal->getAtomsInBox(workspace->ave, 
-		                                          xAng, yAng, zAng);
-
-		for (size_t i = 0; i < workspace->extra.size(); i++)
+		if (!(workspace->flag & MapScoreFlagNoSurround))
 		{
-			AtomPtr anAtom = workspace->extra[i];
-			
-			if (std::find(selected.begin(), selected.end(), anAtom) 
-			    == selected.end())
+			workspace->extra = crystal->getAtomsInBox(workspace->ave, 
+			                                          xAng, yAng, zAng);
+
+			for (size_t i = 0; i < workspace->extra.size(); i++)
 			{
-				continue;
+				AtomPtr anAtom = workspace->extra[i];
+
+				if (std::find(selected.begin(), selected.end(), anAtom) 
+				    == selected.end())
+				{
+					continue;
+				}
+
+				workspace->extra[i]->addToMap(workspace->constant, workspace->basis,
+				                              workspace->ave, false, true, true);
+
+				workspace->segment->copyFrom(workspace->constant);
 			}
-			
-			workspace->extra[i]->addToMap(workspace->constant, workspace->basis,
-			                              workspace->ave, false, true, true);
-			
-			workspace->segment->copyFrom(workspace->constant);
 		}
-		
 	}
 
 	for (size_t i = 0; i < selected.size(); i++)
@@ -932,6 +934,18 @@ double AtomGroup::scoreFinalValues(std::vector<double> xs,
 		double mult = weightedMapScore(xs, ys);
 		return -mult;
 	}
+	else if (scoreType == ScoreTypeAddDensity)
+	{
+		double sum = add_if_y_gt_zero(xs, ys);
+		return sum;
+	}
+	else if (scoreType == ScoreTypeAddVoxels)
+	{
+		double sum = add_if_gt_zero(ys);
+		return sum;
+	}
+	
+	
 	
 	return 0;
 }
