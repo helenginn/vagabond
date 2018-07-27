@@ -95,9 +95,9 @@ vec3 vec3_cross_vec3(vec3 &aVec, vec3 &bVec)
 vec3 make_randomish_axis()
 {
 	struct vec3 vec;
-	vec.x = 2 * (rand() / (double)RAND_MAX - 1);
-	vec.y = 2 * (rand() / (double)RAND_MAX - 1);
-	vec.z = 2 * (rand() / (double)RAND_MAX - 1);
+	vec.x = 2 * (rand() / (double)RAND_MAX) - 1;
+	vec.y = 2 * (rand() / (double)RAND_MAX) - 1;
+	vec.z = 2 * (rand() / (double)RAND_MAX) - 1;
 
 	vec3_set_length(&vec, 1);
 
