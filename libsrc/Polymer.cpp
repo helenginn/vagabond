@@ -471,12 +471,16 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 {
+	return;
 	CSVPtr perCA = CSVPtr(new CSV(4, "resnum", "cc", "diffbackbone", "diffsidechain"));
 
 	std::vector<double> tempCCs, tempDiffCCs, tempNs;
 	double sumCC = 0;
 	FFTPtr fft = diffCrystal->getFFT();
 	FFTPtr difft = diffCrystal->getDiFFT();
+	
+	double sum = difft->averageAll() * (double)difft->nn;
+	sum /= (double)diffCrystal->symOpCount() / 2;
 
 	for (int n = 0; n < monomerCount(); n++)
 	{
@@ -492,13 +496,21 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 		double cc = -monomer->scoreWithMap(ScoreTypeCorrel, diffCrystal);
 		sumCC += cc;
 
-		double backboneCC = -backbone->scoreWithMap(ScoreTypeMultiply,
-		                                            diffCrystal, false,
-		                                            MapScoreFlagDifference);
+		double backboneCC = monomer->scoreWithMap(ScoreTypeAddDensity,
+		                                          diffCrystal, false,
+		                                          MapScoreFlagDifference |
+		                                          MapScoreFlagNoSurround);
 		
-		double sidechainCC = -sidechain->scoreWithMap(ScoreTypeMultiply,
-		                                              diffCrystal, false,
-		                                              MapScoreFlagDifference);
+		backboneCC /= sum;
+		backboneCC *= 100;
+
+		double sidechainCC = sidechain->scoreWithMap(ScoreTypeMultiply,
+		                                             diffCrystal, false,
+		                                             MapScoreFlagDifference |
+		                                             MapScoreFlagNoSurround);
+
+		sidechainCC /= sum;
+		sidechainCC *= 100;
 
 		perCA->addEntry(4, (double)n, cc, backboneCC, sidechainCC);
 	}
