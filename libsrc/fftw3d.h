@@ -234,7 +234,7 @@ public:
 		return scales[dim];
 	}
 
-	void setBasis(mat3x3 mat, double sampleScale);
+	void setBasis(mat3x3 mat, double sampleScale = 1);
 
 	void setScales(double val)
 	{
