@@ -196,7 +196,8 @@ public:
 
 	static double operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	                        MapScoreType mapScoreType = MapScoreTypeNone,
-	std::vector<CoordVal> *vals = NULL, bool sameScale = false);
+	                        std::vector<CoordVal> *vals = NULL, 
+	                        bool sameScale = false, bool interp = true);
 
 	static void addSimple(FFTPtr fftEdit, FFTPtr fftConst);
 	static double score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 position,

@@ -742,7 +742,7 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos,
  */
 double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
                       MapScoreType mapScoreType, std::vector<CoordVal> *vals,
-                      bool sameScale)
+                      bool sameScale, bool interp)
 {
 	/* I rarely comment something so heavily but I will get confused if
 	 * I don't, this time, as I can't soak the protocol into the variable
@@ -912,7 +912,16 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				if (atomPos.y < 0) atomPos.y += fftAtom->ny;
 				if (atomPos.z < 0) atomPos.z += fftAtom->nz;
 
-				atomReal = fftAtom->interpolate(atomPos, 0);
+				if (interp)
+				{
+					atomReal = fftAtom->interpolate(atomPos, 0);
+				}
+				else
+				{
+					atomReal = fftAtom->getReal(lrint(atomPos.x),
+                                                lrint(atomPos.y), 
+                                                lrint(atomPos.z));
+				}
 
 				/* We add the atom offset so we don't end up with thousands
 				 * of atoms at the very centre of our map */
