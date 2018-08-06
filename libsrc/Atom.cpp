@@ -203,7 +203,7 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
 	
 	int solvent = Options::getAddSolvent();
 
-	if (!mask || (mask && solvent < 2))
+	if (!mask || (mask && solvent < 2) || !_model->hasExplicitPositions())
 	{
 		vec3 pos = _model->getAbsolutePosition();
 
