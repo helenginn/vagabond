@@ -35,6 +35,7 @@ typedef enum
 
 typedef double (*Getter)(void *);
 typedef void (*Setter)(void *, double newValue);
+typedef void (*TwoDouble)(void *, double value1, double value2);
 
 class RefinementStrategy
 {
