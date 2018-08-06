@@ -214,6 +214,11 @@ ParserPtr Parser::getChild(std::string className, int num)
 	return _parserList[className][num];
 }
 
+void Parser::exposeFunction(std::string funcName, TwoDouble func)
+{
+	_twoDoubleList[funcName] = func;
+}
+
 void Parser::exposeFunction(std::string funcName, Getter func)
 {
 	_functionList[funcName] = func;

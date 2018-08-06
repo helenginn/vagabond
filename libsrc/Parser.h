@@ -50,6 +50,7 @@ typedef std::map<std::string, std::vector<ParserWkr> > ReferenceList;
 typedef std::map<std::string, std::vector<std::string> > ResolveList;
 typedef std::map<std::string, Getter > FunctionList;
 typedef std::map<std::string, Setter > SetterList;
+typedef std::map<std::string, TwoDouble > TwoDoubleList;
 typedef std::map<std::string, ParserWkr> ParserMap;
 typedef std::map<std::string, int> ClassMap;
 
@@ -144,6 +145,7 @@ protected:
 	void addMat3x3ArrayProperty(std::string className, std::vector<mat3x3> *ptr);
 	void exposeFunction(std::string funcName, Getter func);
 	void exposeFunction(std::string funcName, Setter func);
+	void exposeFunction(std::string funcName, TwoDouble func);
 	/**@}*/
 
 	bool hasFunction(std::string funcName)
@@ -159,6 +161,16 @@ protected:
 	bool hasSetter(std::string funcName)
 	{
 		return (_setterList.count(funcName) > 0);		
+	}
+	
+	bool hasTwoDouble(std::string funcName)
+	{
+		return (_twoDoubleList.count(funcName) > 0);		
+	}
+	
+	TwoDouble getTwoDouble(std::string funcName)
+	{
+		return _twoDoubleList[funcName];
 	}
 	
 	Setter getSetter(std::string funcName)
@@ -203,6 +215,7 @@ private:
 	ParserList _parserList;
 	ReferenceList _referenceList;
 	FunctionList _functionList;
+	TwoDoubleList _twoDoubleList;
 	SetterList _setterList;
 
 	void makePath();
