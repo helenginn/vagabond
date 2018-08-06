@@ -473,7 +473,7 @@ double Crystal::getMaximumDStar(DiffractionPtr data)
 {
 	double maxRes = getMaxResolution(data);
 	maxRes = 1 / maxRes;
-	maxRes *= 1.6;
+	maxRes *= 2.1;
 
 	return maxRes;
 }
