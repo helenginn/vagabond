@@ -1447,6 +1447,22 @@ void Polymer::closenessSummary()
 	std::cout << "\tPositional displacement from PDB (Å): " << posSum << std::endl;
 }
 
+void Polymer::vsOmitResidues(void *object, double start, double end)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Polymer *polymer = dynamic_cast<Polymer *>(parser);
+
+	polymer->downWeightResidues(start, end, 0);
+}
+
+void Polymer::vsUnomitResidues(void *object, double start, double end)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Polymer *polymer = dynamic_cast<Polymer *>(parser);
+
+	polymer->downWeightResidues(start, end, 1);
+}
+
 void Polymer::downWeightResidues(int start, int end, double value) // inclusive
 {
 	double count = 0;
@@ -1460,7 +1476,7 @@ void Polymer::downWeightResidues(int start, int end, double value) // inclusive
 	}
 
 	std::cout << "Set " << count << " residues in region " << getChainID()
-	<< start << "-" << end << " to weighting of " << 0 << std::endl;
+	<< start << "-" << end << " to weighting of " << value << std::endl;
 }
 
 bool Polymer::test()
@@ -1811,6 +1827,9 @@ void Polymer::addProperties()
 	exposeFunction("fit_translation", vsFitTranslation);
 	exposeFunction("fit_rotation", vsFitRotation);
 	exposeFunction("sandbox", vsSandbox);
+
+	exposeFunction("omit_residues", vsOmitResidues);
+	exposeFunction("unomit_residues", vsUnomitResidues);
 }
 
 void Polymer::addObject(ParserPtr object, std::string category)

@@ -70,6 +70,9 @@ public:
 	static double vsRefineBackbone(void *object);
 	static void vsRefineBackboneFrom(void *object, double position);
 	static void vsMultiplyBackboneKick(void *object, double value);
+
+	static void vsOmitResidues(void *object, double start, double end);
+	static void vsUnomitResidues(void *object, double start, double end);
 	void superimpose();
 	
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,
