@@ -683,8 +683,94 @@ void FFT::invertScale()
 	setBasis(_inverse, 1);
 }
 
+double FFT::cubic_interpolate(vec3 vox000, size_t im)
+{
+	vec3 remain = make_vec3(vox000.x - (double)((int)vox000.x),
+	                        vox000.y - (double)((int)vox000.y),
+	                        vox000.z - (double)((int)vox000.z));
+	
+	double u = remain.x;
+	double w = remain.y;
+	double v = remain.z;
+
+	long vox000x = vox000.x;
+	long vox000y = vox000.y;
+	long vox000z = vox000.z;
+	long vox000xm = vox000.x + 1;
+	long vox000ym = vox000.y + 1;
+	long vox000zm = vox000.z + 1;
+	long vox000xn = vox000.x + (remain.x > 0.5) ? 2 : -1;
+	long vox000yn = vox000.y + (remain.y > 0.5) ? 2 : -1;
+	long vox000zn = vox000.z + (remain.z > 0.5) ? 2 : -1;
+
+	collapse(&vox000x, &vox000y, &vox000z);
+	collapse(&vox000xm, &vox000ym, &vox000zm);
+	collapse(&vox000xn, &vox000yn, &vox000zn);
+
+	vox000y  *= nx;
+	vox000ym *= nx;
+	vox000yn *= nx;
+	vox000z  *= nx * ny;
+	vox000zm *= nx * ny;
+	vox000zn *= nx * ny;
+
+	long int idx000 = vox000x + vox000y + vox000z;
+	long int idx100 = vox000xm + vox000y + vox000z;
+	long int idx010 = vox000x + vox000ym + vox000z;
+	long int idx110 = vox000xm + vox000ym + vox000z;
+	long int idx001 = vox000x + vox000y + vox000zm;
+	long int idx101 = vox000xm + vox000y + vox000zm;
+	long int idx011 = vox000x + vox000ym + vox000zm;
+	long int idx111 = vox000xm + vox000ym + vox000zm;
+	
+	long int idxn00 = vox000xn + vox000y + vox000z;
+	long int idx0n0 = vox000x + vox000yn + vox000z;
+	long int idx00n = vox000x + vox000y + vox000zn;
+	
+	u = (u > 0.5) ? 1 - u : u;
+	v = (v > 0.5) ? 1 - v : v;
+	w = (w > 0.5) ? 1 - w : w;
+	
+	double p000 = data[idx000][im];
+	double p001 = data[idx001][im];
+	double p010 = data[idx010][im];
+	double p011 = data[idx011][im];
+	double p100 = data[idx100][im];
+	double p101 = data[idx101][im];
+	double p110 = data[idx110][im];
+	double p111 = data[idx111][im];
+	
+	double a = p100 - p000;
+	double b = p010 - p000;
+	double c = p110 - p000;
+	double d = p101 - p001;
+	
+	double pn00 = data[idxn00][im];
+	double p0n0 = data[idx0n0][im];
+	double p00n = data[idx00n][im];
+
+	double p8value = p100+u*(a+w*(-a+d)+v*((c-a)+w*( a-c-d-p011+p111)))
+	+ v*(b+w*(-p001+p011-b))+w*(-p000+p001);
+	
+	double mod = p000 - 0.5 * p100 - 0.5 * pn00
+	             * (u - u * u);
+	mod += p000 - 0.5 * p010 - 0.5 * p0n0
+           * (v - v * v);
+	mod += p000 - 0.5 * p001 - 0.5 * p00n
+	       * (w - w * w);
+	
+	double p11value = p8value + 0.4 * mod;
+
+	return p8value;
+}
+
 double FFT::interpolate(vec3 vox000, size_t im)
 {
+	/*
+	double test = cubic_interpolate(vox000, im);
+	return test;
+	*/
+	
 	vec3 remain = make_vec3(vox000.x - (double)((int)vox000.x),
 	                        vox000.y - (double)((int)vox000.y),
 	                        vox000.z - (double)((int)vox000.z));

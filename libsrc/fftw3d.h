@@ -187,6 +187,7 @@ public:
 	void valueMinus(float value);
 
 	double interpolate(vec3 unfractionalVoxel, size_t imaginary = false);
+	double cubic_interpolate(vec3 vox000, size_t im = false);
 
 	static void add(FFTPtr fftEdit, FFTPtr fftConst,
 	                vec3 add, bool sameScale)
