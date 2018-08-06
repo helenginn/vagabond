@@ -69,6 +69,7 @@ public:
 	void refineBackboneFrom(int position);
 	static double vsRefineBackbone(void *object);
 	static void vsRefineBackboneFrom(void *object, double position);
+	static void vsMultiplyBackboneKick(void *object, double value);
 	void superimpose();
 	
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,

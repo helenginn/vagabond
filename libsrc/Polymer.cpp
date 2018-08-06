@@ -888,6 +888,39 @@ double Polymer::getBackboneKick(void *object)
 	return static_cast<Polymer *>(object)->_kick;
 }
 
+void Polymer::vsMultiplyBackboneKick(void *object, double value)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Polymer *poly = dynamic_cast<Polymer *>(parser);
+
+	for (int i = 0; i < poly->monomerCount(); i++)
+	{
+		MonomerPtr mono = poly->getMonomer(i);
+		
+		if (!mono) continue;
+
+		BackbonePtr back = mono->getBackbone();
+		
+		for (int i = 0; i < back->atomCount(); i++)
+		{
+			AtomPtr atom = back->atom(i);
+			ModelPtr model = atom->getModel();
+			if (!model || !model->isBond())
+			{
+				continue;
+			}
+
+			BondPtr bond = ToBondPtr(model);
+			double kick = Bond::getTorsionBlur(&*bond);
+			kick *= value;
+			Bond::setTorsionBlur(&*bond, kick);
+		}
+	}
+	
+	poly->propagateChange();
+	poly->refreshPositions();
+}
+
 void Polymer::setBackboneKick(void *object, double value)
 {
 	Polymer *poly = static_cast<Polymer *>(object);
