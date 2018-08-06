@@ -41,7 +41,7 @@ Polymer::Polymer()
 	_transTensor = make_mat3x3();
 	_transExponent = 0;
 	_rotExponent = 0;
-	mat3x3_scale(&_transTensor, 1.5, 1.5, 1.5);
+	mat3x3_scale(&_transTensor, 1.0, 1.0, 1.0);
 	_overallScale = 0;
 	_startB = Options::getBStart();
 	_extraRotParams = {1, 0, 0};
