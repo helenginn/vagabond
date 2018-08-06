@@ -338,7 +338,7 @@ std::string Atom::pdbLineBeginning(std::string start)
 
 	line << start;
 	line << std::setfill(' ') << std::setw(5) << std::fixed << _atomNum;
-	line << " " << std::right << std::setfill(' ') << std::setw(4) << _atomName;
+	line << "  " << std::left << std::setfill(' ') << std::setw(3) << _atomName;
 	line << std::right << conformer;
 	line << std::setw(3) << residueName;
 	line << " " << chainID;
@@ -398,6 +398,12 @@ std::string Atom::anisouPDBLine(CrystalPtr)
 		return "";
 	}
 
+	ElementPtr element = getElement();
+	if (element->getSymbol() == "H")
+	{
+		return "";
+	}
+
 	std::ostringstream stream;
 	stream << pdbLineBeginning("ANISOU");
 
@@ -419,9 +425,14 @@ std::string Atom::anisouPDBLine(CrystalPtr)
 
 std::string Atom::averagePDBContribution(bool samePos, bool sameB)
 {
+	ElementPtr element = getElement();
+	if (element->getSymbol() == "H")
+	{
+		return "";
+	}
+
 	getModel()->getFinalPositions();
 	std::string atomName = getAtomName();
-	ElementPtr element = getElement();
 
 	double occupancy = 1;
 	occupancy = getModel()->getEffectiveOccupancy();
