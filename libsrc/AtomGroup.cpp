@@ -175,6 +175,7 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal,
 		bool samePos = (pdbType == PDBTypeSamePosition);
 		bool sameB = (pdbType == PDBTypeSameBFactor);
 		stream << atom(i)->averagePDBContribution(samePos, sameB);
+
 		if (crystal)
 		{
 			stream << atom(i)->anisouPDBLine(crystal);
@@ -220,18 +221,14 @@ double AtomGroup::getAverageBFactor(bool initial)
 		if (initial)
 		{
 			sum += atom(i)->getInitialBFactor();
-			count++;
 		}
 		else
 		{
-			if (atom(i)->getModel()->isBond())
-			{
-				BondPtr bond = ToBondPtr(atom(i)->getModel());
-				double val = bond->getMeanSquareDeviation();
-				sum += val;
-				count++;
-			}
+			double val = atom(i)->getBFactor();
+			sum += val;
 		}
+
+		count++;
 	}
 
 	return sum / count;
