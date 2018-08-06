@@ -236,8 +236,7 @@ void Vagabond2GL::findAtoms()
 {
 	OptionsPtr globalOptions = Options::getRuntimeOptions();
 
-	_vertices.clear();
-	_indices.clear();
+	clearVertices();
 	_atomMap.clear();
 	_moleculeMap.clear();
 

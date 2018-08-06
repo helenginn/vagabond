@@ -22,10 +22,20 @@ typedef struct
 	GLfloat color[4];
 } Vertex;
 
+typedef struct
+{
+	GLuint index[3];
+	GLfloat z;
+} IndexTrio;
+
 class GLObject;
 class Vagabond2GL;
+class Density2GL;
 typedef boost::shared_ptr<GLObject> GLObjectPtr;
 typedef boost::shared_ptr<Vagabond2GL> Vagabond2GLPtr;
+typedef boost::shared_ptr<Density2GL> Density2GLPtr;
+
+#define ToDensity2GLPtr(a) (boost::static_pointer_cast<Density2GL>((a)))
 
 #define FRAMEWORKS_H
 #endif

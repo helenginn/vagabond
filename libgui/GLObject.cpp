@@ -16,6 +16,7 @@ GLObject::GLObject()
 {
     _projectionUniform = 0;
     initializeOpenGLFunctions();
+	_renderType = GL_LINES;
 }
 
 void GLObject::rebindProgram()
@@ -50,7 +51,7 @@ void GLObject::render()
     glUniformMatrix4fv(_modelUniform, 1, GL_FALSE, &modelMat.vals[0]);
     checkErrors();
 
-    glDrawElements(GL_LINES, indexCount(), GL_UNSIGNED_INT, 0);
+    glDrawElements(_renderType, indexCount(), GL_UNSIGNED_INT, 0);
 
     glUseProgram(0);
 }
@@ -64,9 +65,6 @@ void GLObject::initialisePrograms()
 
     Shader::shaderAttachFromFile(_program,  GL_FRAGMENT_SHADER, Shader_fsh.c_str(), true);
     Shader::shaderAttachFromFile(_program,  GL_VERTEX_SHADER, Shader_vsh.c_str(), true);
-    
-//    shaderAttachFromFile(_program, GL_VERTEX_SHADER, "/Users/helenginn/vagabond/vagabond/vagabond/libgui/Shaders/Shader.vsh");
-//    shaderAttachFromFile(_program, GL_FRAGMENT_SHADER, "/Users/helenginn/vagabond/vagabond/vagabond/libgui/Shaders/Shader.fsh");
 
     glBindAttribLocation(_program, 0, "position");
     glBindAttribLocation(_program, 1, "normal");

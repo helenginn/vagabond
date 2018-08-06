@@ -94,6 +94,14 @@ void VagWindow::makeButtons()
 	bExploreMolecule->setMenu(new QMenu(this));
 	buttons.push_back(bExploreMolecule);
 
+	bExploreCrystal = new QPushButton("Explore crystal", this);
+	bExploreCrystal->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 500, 
+	                             BUTTON_WIDTH , 50);
+	bExploreCrystal->setEnabled(false);
+	connect(bExploreCrystal, SIGNAL(clicked()), this, 
+	        SLOT(pushExploreCrystal()));
+	buttons.push_back(bExploreCrystal);
+
 	/*
 	bPrevious = new QPushButton("Restore previous state", this);
 	bPrevious->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 450, BUTTON_WIDTH , 50);
@@ -103,13 +111,14 @@ void VagWindow::makeButtons()
 	*/
 
 	bCoot = new QPushButton("Open in Coot", this);
-	bCoot->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 500, BUTTON_WIDTH , 50);
+	bCoot->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 550, BUTTON_WIDTH , 50);
 	bCoot->setEnabled(false);
 	connect(bCoot, SIGNAL(clicked()), this, SLOT(openInCoot()));
 	buttons.push_back(bCoot);
 
 	_myDialogue = NULL;
-	_explorer = NULL;
+	_moleExplorer = NULL;
+	_xtalExplorer = NULL;
 }
 
 void VagWindow::updateExplorerButton()
@@ -292,11 +301,15 @@ int VagWindow::waitForInstructions()
 
 				case InstructionTypeGetObjectValue:
 				Notifiable::performObjectGet();
-				_explorer->updateCorrelation();
+				_moleExplorer->updateCorrelation();
 				break;
 
 				case InstructionTypePreviousState:
 				options->previousState();
+				break;
+				
+				case InstructionTypeSplitBond:
+				splitBond();
 				break;
 
 				default:
@@ -473,10 +486,25 @@ void VagWindow::restorePreviousState()
 	wait.wakeAll();
 }
 
+void VagWindow::pushExploreCrystal()
+{
+	delete _xtalExplorer;
+	_xtalExplorer = NULL;
+	
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr crystal = options->getActiveCrystal();
+	
+	if (crystal)
+	{
+		_xtalExplorer = new CrystalExplorer(this, crystal);
+		_xtalExplorer->show();
+	}
+}
+
 void VagWindow::pushExploreMcule()
 {
-	delete _explorer;
-	_explorer = NULL;
+	delete _moleExplorer;
+	_moleExplorer = NULL;
 
 	QObject *sent = sender();
 	ChainMenuAction *action = static_cast<ChainMenuAction *>(sent);
@@ -488,10 +516,42 @@ void VagWindow::pushExploreMcule()
 
 	if (molecule)
 	{
-		_explorer = new MoleculeExplorer(this, molecule);
-		_explorer->setGLKeeper(display->getKeeper());
-		_explorer->show();
+		_moleExplorer = new MoleculeExplorer(this, molecule);
+		_moleExplorer->setGLKeeper(display->getKeeper());
+		_moleExplorer->show();
 	}
+}
+
+void VagWindow::splitBond()
+{
+	double num = getValue();
+	void *obj = getObject();
+	Bond *bond = static_cast<Bond *>(obj);
+
+	Bond *blockade = bond;
+
+	/* Find split blockade */
+	for (int i = 0; i < num; i++)
+	{
+		if (blockade->downstreamAtomGroupCount() && 
+		    blockade->downstreamAtomCount(0))
+		{
+			AtomPtr newAtom = blockade->downstreamAtom(0, 0);
+			blockade = &*(ToBondPtr(newAtom->getModel())); 
+		}
+	}
+	
+	if (num >= 0)
+	{
+		std::cout << "Blocking split at " << blockade->shortDesc() 
+		<< std::endl;
+		blockade->setSplitBlock();
+	}
+	
+	std::cout << "Splitting bond at " << bond->shortDesc() << std::endl;
+	bond->splitBond();
+
+	bond->getMinor()->getMolecule()->refreshPositions();
 }
 
 void VagWindow::receiveDialogue(DialogueType type, std::string diagString)
@@ -541,6 +601,12 @@ void VagWindow::setMessage(std::string message)
 	_lStatus->setText(QString::fromStdString(message));
 }
 
+void VagWindow::setRenderDensity()
+{
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	display->renderDensity(crystal);
+}
+
 VagWindow::~VagWindow()
 {
 	delete bSuperimpose;
@@ -551,5 +617,5 @@ VagWindow::~VagWindow()
 	delete display;
 	delete _myDialogue;
 	delete _fileDialogue;
-	delete _explorer;
+	delete _moleExplorer;
 }

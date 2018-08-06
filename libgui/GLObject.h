@@ -15,20 +15,6 @@
 #include "../libsrc/mat4x4.h"
 #include <iostream>
 
-const Vertex Vertices[] = {
-	{{0.5, 0.0, -8}, {1, 0, 0}, {1, 0, 0, 1}},
-	{{0.0, 0.5, -8}, {0, 1, 0}, {0.33, 0.33, 0.33, 1}},
-	{{-0.5, 0, -8}, {0, 0, 1}, {0, 1, 0, 1}},
-	{{0.0, -0.5, -8}, {0, 0, 1}, {0, 0, 1, 1}}
-};
-
-const GLuint Indices[] = {
-	0, 1,
-	1, 2,
-	2, 3,
-	3, 0
-};
-
 inline void checkErrors()
 {
 	GLenum err = glGetError();
@@ -102,6 +88,14 @@ protected:
 	std::vector<GLuint> _indices;
 
 	void rebindProgram();
+	
+	void clearVertices()
+	{
+		_vertices.clear();
+		_indices.clear();
+	}
+	
+	GLenum _renderType;
 private:
 	void calculateCentroid();
 

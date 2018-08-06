@@ -1,3 +1,4 @@
+#include <QtWidgets/qspinbox.h>
 #include <iostream>
 #include "MonomerExplorer.h"
 #include "../../libsrc/Monomer.h"
@@ -18,6 +19,7 @@ void MonomerExplorer::initialise(MonomerPtr monomer)
 	_bRefineToEnd = NULL;
 	_bSqueezeToEnd = NULL;
 	_bModelPosToEnd = NULL;
+	_bSplitBond = NULL;
 	_lCorrel = NULL;
 	_lModel = NULL;
 	_lTorsion = NULL;
@@ -31,6 +33,7 @@ void MonomerExplorer::initialise(MonomerPtr monomer)
 	_lPsi = NULL;
 	_tPsi = NULL;
 	_lRefineOpts = NULL;
+	_atomList = NULL;
 	populateList();
 	makeRefinementButtons();
 }
@@ -163,13 +166,14 @@ void MonomerExplorer::makeRefinementButtons()
 
 	makeSlider(ParamOptionTorsion, 0, "Torsion", 0, 200, 100, 10, "º");
 	makeSlider(ParamOptionKick, 1, "Kick", 0, 100, 100, 50, "");
-//	makeSlider(ParamOptionDampen, 2, "Dampen", 0, 50, 100, 25, "");
 	makeSlider(ParamOptionMagicAngles, 2, "Phi/psi", 0, 90, 1, 20, "º");
 	makeSlider(ParamOptionNumBonds, 3, "Bonds", 0, 16, 1, 3, "");
+
 }
 
 void MonomerExplorer::populateList()
 {
+	delete _atomList;
 	_atomList = new QListWidget(this);
 	_atomList->setGeometry(0, 0, 150, 200);
 
@@ -240,6 +244,9 @@ void MonomerExplorer::clickedAtomListItem()
 	AtomListItem *item = static_cast<AtomListItem *>(_atomList->currentItem());
 	AtomPtr atom = item->getAtom();
 	QString modelType = "Model: " + QString::fromStdString(atom->getModel()->getClassName());
+	
+	delete _bSplitBond;
+	_bSplitBond = NULL;
 
 	if (atom->getModel()->isBond())
 	{
@@ -279,6 +286,28 @@ void MonomerExplorer::clickedAtomListItem()
 		makeLabelAndEdit(this, &_lPsi, &_tPsi, 5, "Psi (º)", psiText, enabledBond);
 
 		_tPsi->setSetterAndObject(&*bond, Bond::setMagicPsi, true);
+
+		// Split bond
+		QLabel *label = new QLabel("For next ", this);
+		label->setGeometry(420, 0, 100, 25);
+		label->show();
+		_widgets.push_back(label);
+		label = new QLabel(" bonds", this);
+		label->setGeometry(530, 0, 100, 25);
+		label->show();
+		_widgets.push_back(label);
+		
+		_splitNumBox = new QSpinBox(this);
+		_splitNumBox->setGeometry(480, 0, 50, 25);
+		_splitNumBox->show();
+		_splitNumBox->setRange(-1, 10);
+
+		_bSplitBond = new QPushButton("Split bond", this);
+		_bSplitBond->setGeometry(420, 28, 150, 25);
+		connect(_bSplitBond, SIGNAL(clicked()), this, SLOT(pushSplitBond()));
+		_bSplitBond->show();
+		
+		_bond = ToBondPtr(atom->getModel());
 	}
 
 	delete _lModel;
@@ -300,7 +329,7 @@ void MonomerExplorer::applyParamOptions(SamplerPtr sampled)
 		
 		if (param.optionType == ParamOptionTorsion)
 		{
-			sampled->addParamType(ParamOptionBondAngle, param.value);
+			sampled->addParamType(ParamOptionBondAngle, param.value / 5);
 		}
 	}
 }
@@ -327,6 +356,15 @@ bool MonomerExplorer::checkForData()
 	}
 
 	return true;	
+}
+
+void MonomerExplorer::pushSplitBond()
+{
+	Notifiable *notify = preparePolymer();
+	notify->setObject(&*_bond);
+	int num = _splitNumBox->value();
+	notify->setValue(num);
+	notify->setInstruction(InstructionTypeSplitBond);
 }
 
 void MonomerExplorer::pushSidechainsToEnd()
@@ -396,4 +434,7 @@ MonomerExplorer::~MonomerExplorer()
 
 	delete _tTorsion;
 	_tTorsion = NULL;
+	
+	delete _bSplitBond;
+	_bSplitBond = NULL;
 }

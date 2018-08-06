@@ -29,6 +29,7 @@
 #include "InstructionThread.h"
 #include "Dialogue.h"
 #include "MoleculeExplorer.h"
+#include "CrystalExplorer.h"
 
 
 class VagWindow : public QMainWindow, public Notifiable
@@ -47,6 +48,7 @@ public:
 
 	virtual void setMessage(std::string message);
 	virtual void wakeup();
+	virtual void setRenderDensity();
 	
 	InstructionThread *getInstructionThread()
 	{
@@ -63,6 +65,7 @@ private slots:
 	void pushRefineFlexibility();
 	void pushBMultiplier();
 	void pushExploreMcule();
+	void pushExploreCrystal();
 	void pushRefineDensity();
 	void recalculateFFT();
 	void openInCoot();
@@ -77,9 +80,11 @@ private:
 	QMutex mutex;
 	InstructionThread _instructionThread;
 	Dialogue *_myDialogue;
-	MoleculeExplorer *_explorer;
+	MoleculeExplorer *_moleExplorer;
+	CrystalExplorer *_xtalExplorer;
 	QFileDialog *_fileDialogue;   
 
+	void splitBond();
 	void squeezeToEnd();
 	void updateExplorerButton();
 	void refineToEnd();
@@ -94,6 +99,7 @@ private:
 	QPushButton *bBackbone;
 	QPushButton *bChangeBMult;
 	QPushButton *bExploreMolecule;
+	QPushButton *bExploreCrystal;
 	QPushButton *bRecalculate;
 	QPushButton *bRefineDensity;
 	QPushButton *bFitWholeR;

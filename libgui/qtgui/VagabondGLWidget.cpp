@@ -7,6 +7,8 @@
 //
 
 #include "VagabondGLWidget.h"
+#include "../Density2GL.h"
+#include "../../libsrc/shared_ptrs.h"
 
 #define PAN_SENSITIVITY 30
 
@@ -25,6 +27,10 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	if (event->key() == Qt::Key_Alt)
 	{
 		_controlPressed = true;
+	}
+	else if (event->key() == Qt::Key_D)
+	{
+		keeper->getDensity2GL()->toggleVisible();
 	}
 }
 
@@ -100,6 +106,11 @@ void VagabondGLWidget::resizeGL()
 void VagabondGLWidget::paintGL()
 {
 	keeper->render();
+}
+
+void VagabondGLWidget::renderDensity(CrystalPtr crystal)
+{
+	keeper->getDensity2GL()->makeNewDensity(crystal);
 }
 
 VagabondGLWidget::~VagabondGLWidget()

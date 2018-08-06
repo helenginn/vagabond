@@ -14,41 +14,43 @@
 class VagabondGLWidget : public QOpenGLWidget
 {
 public:
-    VagabondGLWidget(QWidget *obj = NULL);
-    ~VagabondGLWidget();
-    
-    GLKeeper *getKeeper()
-    {
-        return keeper;
-    }
+	VagabondGLWidget(QWidget *obj = NULL);
+	~VagabondGLWidget();
 
-    void startTimer()
-    {
-        if (!timer) return;
-        timer->start();
-    }
+	GLKeeper *getKeeper()
+	{
+		return keeper;
+	}
 
-    void stopTimer()
-    {
-        if (!timer) return;
-        timer->start(100);
-    }
-    virtual void resizeGL();
+	void startTimer()
+	{
+		if (!timer) return;
+		timer->start();
+	}
+
+	void stopTimer()
+	{
+		if (!timer) return;
+		timer->start(100);
+	}
+	virtual void resizeGL();
+
+	void renderDensity(CrystalPtr crystal);
 protected:
-    virtual void initializeGL();
-    virtual void paintGL();
-    
-    virtual void keyPressEvent(QKeyEvent *event);
-    virtual void keyReleaseEvent(QKeyEvent *event);
-    virtual void mousePressEvent(QMouseEvent *e);
-    virtual void mouseReleaseEvent(QMouseEvent *e);
-    virtual void mouseMoveEvent(QMouseEvent *e);
+	virtual void initializeGL();
+	virtual void paintGL();
 
-private:
-    GLKeeper *keeper;
-    QTimer *timer;
-    
-    Qt::MouseButton _mouseButton;
-    bool _controlPressed;
-    double _lastX; double _lastY;
+	virtual void keyPressEvent(QKeyEvent *event);
+	virtual void keyReleaseEvent(QKeyEvent *event);
+	virtual void mousePressEvent(QMouseEvent *e);
+	virtual void mouseReleaseEvent(QMouseEvent *e);
+	virtual void mouseMoveEvent(QMouseEvent *e);
+
+	private:
+	GLKeeper *keeper;
+	QTimer *timer;
+
+	Qt::MouseButton _mouseButton;
+	bool _controlPressed;
+	double _lastX; double _lastY;
 };

@@ -30,6 +30,7 @@ private:
 
 	vec3 _centre;
 	vec3 _translation;
+	vec3 _transOnly;
 	vec3 _totalCentroid;
 
 	void setupVBOs (void);
@@ -44,6 +45,8 @@ private:
 
 	GLubyte *newIndices;
 	void initialisePrograms();
+	
+	Density2GLPtr _density2GL;
 
 public:
 	GLKeeper(int width, int height);
@@ -59,6 +62,11 @@ public:
 	void draggedLeftMouse(float x, float y);
 	void draggedRightMouse(float x, float y);
 	void panned(float x, float y);
+	
+	Density2GLPtr getDensity2GL()
+	{
+		return _density2GL;
+	}
 
 	bool shouldRender()
 	{
@@ -68,6 +76,16 @@ public:
 	void setShouldRender()
 	{
 		_rendered = false;
+	}
+	
+	vec3 getCentre()
+	{
+		return _centre;
+	}
+	
+	vec3 getTranslation()
+	{
+		return _transOnly;
 	}
 };
 

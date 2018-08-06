@@ -2,6 +2,7 @@
 #define __Vagabond__MonomerExplorer__
 
 #include <QtWidgets/qlabel.h>
+#include <QtWidgets/qspinbox.h>
 #include <QtWidgets/qlistwidget.h>
 #include "../../libsrc/shared_ptrs.h"
 #include "AtomListItem.h"
@@ -54,6 +55,7 @@ private slots:
 	void pushSqueezeToEnd();
 	void pushModelPosToEnd();
 	void pushRefineToEnd();
+	void pushSplitBond();
 	void setSliderValue();
 private:
 	bool checkForData();
@@ -88,9 +90,14 @@ private:
 	QPushButton *_bSidechainsToEnd;
 	QPushButton *_bSqueezeToEnd;
 	QPushButton *_bModelPosToEnd;
+	QPushButton *_bSplitBond;
 	QLabel *_lCorrel;
+	
+	QSpinBox *_splitNumBox;
+	std::vector<QWidget *> _widgets;
 
 	OptionMap _optionMap;
+	BondPtr _bond;
 };
 
 
