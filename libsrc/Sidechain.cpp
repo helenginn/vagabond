@@ -143,15 +143,10 @@ void Sidechain::splitConformers(int count)
 	{
 		count = conformerCount();
 	}
+	
+	bool new_conf = (count > conformerCount());
 
 	if (count <= 1) return;
-
-	if (getMonomer()->getBackbone()->findAtoms("N").size() != 1)
-	{
-		std::cout << "Not splitting whole residue conformer, "
-		<< getMonomer()->getResidueNum() << getMonomer()->getIdentifier() << std::endl;
-		//        return;
-	}
 
 	AtomPtr start = findAtom("CB");
 	std::string duplStart = "CB";
@@ -163,7 +158,7 @@ void Sidechain::splitConformers(int count)
 
 	AtomList caAtoms = findAtoms("CA");
 
-	if (caAtoms.size() > 1)
+	if (caAtoms.size() >= 1)
 	{
 		MonomerPtr monomer = getMonomer();
 		AtomPtr blocker;
@@ -202,6 +197,11 @@ void Sidechain::splitConformers(int count)
 
 	for (int i = 0; i < atoms.size(); i++)
 	{
+		if (new_conf)
+		{
+			break;
+		}
+		
 		if (atoms[i].expired()) continue;
 
 		AtomPtr atom = atoms[i].lock();
