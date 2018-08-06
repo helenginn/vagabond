@@ -650,11 +650,11 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 		return FFTPtr();
 	}
 
+	sum = crystal->snapToGrid(sum);
 	*ave = sum;
 
 	/* Find the longest distance from the centroid to determine
 	* the max FFT dimensions.*/
-
 	double ns[3];
 	ns[0] = 0; ns[1] = 0; ns[2] = 0;
 
@@ -674,31 +674,46 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double scales = 1.0 / (2 * maxDStar);
 
+	/** Adding a buffer region */
 	long nl[3];
-	const double buffer = 2.5;
+	const double buffer = 1.5;
 
 	for (int i = 0; i < 3; i++)
 	{
-		nl[i] = (2 * (ns[i] + buffer)) / scales;
-		if (nl[i] % 2 == 1) nl[i]++;
+		nl[i] = (2 * (ns[i] + buffer));
+	}
+	
+	mat3x3 crystal_basis = crystal->getFFT()->getBasisInverse();
+	mat3x3 angs = make_mat3x3();
+	mat3x3_scale(&angs, nl[0], nl[1], nl[2]);
+	mat3x3 resized = mat3x3_mult_mat3x3(crystal_basis, angs);
+
+	for (int i = 0; i < 9; i+=3)
+	{
+		nl[i / 3] = std::max(std::max(resized.vals[i], resized.vals[i + 1]), 
+		                     resized.vals[i + 2]);
 	}
 
 	/* Calculate appropriate box size and setup FFT */
 
 	FFTPtr segment = FFTPtr(new FFT());
 	segment->create(nl[0], nl[1], nl[2]);
-	segment->setScales(scales);
+	
+	/* Basis of the segment itself needs to be in voxels to angstroms */
+	*basis = crystal->getFFT()->getBasis();
+	segment->setBasis(*basis);
 
-	*basis = make_mat3x3();
-
+	/* but the basis of the map workspace should be a mini-unit cell */
 	double toReal[3];
 
 	for (int i = 0; i < 3; i++)
 	{
-		toReal[i] = 1 / (scales * nl[i]);
+		toReal[i] = 1 / (segment->scales[i] * nl[i]);
 	}
 
-	mat3x3_scale(basis, toReal[0], toReal[1], toReal[2]);
+	mat3x3_scale(basis, nl[0], nl[1], nl[2]);
+	*basis = mat3x3_inverse(*basis);
+	
 
 	return segment;
 }
@@ -846,29 +861,43 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		{
 			workspace->extra = crystal->getAtomsInBox(workspace->ave, 
 			                                          xAng, yAng, zAng);
+			int count = 0;
+			
+			std::vector<AtomPtr> added;
 
 			for (size_t i = 0; i < workspace->extra.size(); i++)
 			{
 				AtomPtr anAtom = workspace->extra[i];
 
 				if (std::find(selected.begin(), selected.end(), anAtom) 
-				    == selected.end())
+				    != selected.end())
 				{
 					continue;
 				}
 
-				workspace->extra[i]->addToMap(workspace->constant, workspace->basis,
-				                              workspace->ave, false, true, true);
+				if (std::find(added.begin(), added.end(), anAtom) 
+				    != added.end())
+				{
+					continue;
+				}
 
-				workspace->segment->copyFrom(workspace->constant);
+				workspace->extra[i]->addToMap(workspace->constant, 
+				                              workspace->basis,
+				                              workspace->ave, 
+				                              false, false, true);
+
+				added.push_back(workspace->extra[i]);
+				count++;
 			}
+
+			workspace->segment->copyFrom(workspace->constant);
 		}
 	}
 
 	for (size_t i = 0; i < selected.size(); i++)
 	{
 		selected[i]->addToMap(workspace->segment, workspace->basis, 
-		                      workspace->ave, false, true, true);
+		                      workspace->ave, false, false, true);
 	}
 	
 	if (workspace->flag & MapScoreFlagSubtractFc)
@@ -1006,7 +1035,7 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 		map = crystal->getDiFFT();
 	}
 
-	FFT::score(map, segment, ave, &vals, MapScoreTypeCorrelCopy);
+	FFT::operation(map, segment, ave, MapScoreTypeCorrel, &vals, true);
 
 	/* For correlation calculations */
 	for (size_t i = 0; i < vals.size(); i++)
