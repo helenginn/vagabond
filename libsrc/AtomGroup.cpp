@@ -546,6 +546,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					setupNelderMead();
 					setCrystal(target);
 					setCycles(16);
+
 					if (rType != RefinementFine)
 					{
 						topBond = setupTorsionSet(bond, k, bondNum,

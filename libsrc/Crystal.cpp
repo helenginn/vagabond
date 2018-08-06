@@ -1296,6 +1296,24 @@ std::vector<AtomPtr> Crystal::getCloseAtoms(AtomPtr one, double tol, bool cache)
 	return atoms;
 }
 
+vec3 Crystal::snapToGrid(vec3 pos)
+{
+	mat3x3_mult_vec(_real2frac, &pos);
+	pos.x *= _fft->nx;
+	pos.y *= _fft->ny;
+	pos.z *= _fft->nz;
+	
+	pos.x = lrint(pos.x);
+	pos.y = lrint(pos.y);
+	pos.z = lrint(pos.z);
+	
+	pos.x /= _fft->nx;
+	pos.y /= _fft->ny;
+	pos.z /= _fft->nz;
+	mat3x3_mult_vec(_hkl2real, &pos);
+	return pos;
+}
+
 std::vector<AtomPtr> Crystal::getAtomsInBox(vec3 target, double tolx,
                                             double toly, double tolz)
 {

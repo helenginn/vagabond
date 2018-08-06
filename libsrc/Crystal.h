@@ -133,6 +133,7 @@ public:
 	}
 	
 	void multiplyMap(double scale);
+	vec3 snapToGrid(vec3 pos);
 
 	/** Calculates the anchor residue for each Polymer and assigns to each. */
 	void setAnchors();
