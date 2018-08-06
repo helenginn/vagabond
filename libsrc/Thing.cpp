@@ -251,6 +251,23 @@ ThingPtr Thing::dealWithFunction(std::string function,
 		return ThingPtr();
 	}
 	
+	if (getParserValue()->hasTwoDouble(function))
+	{
+		ParserPtr parser = getParserValue();
+		Parser *ptr = &*(getParserValue()); 
+		
+		if (!things[0]->isNumber() || !things[1]->isNumber())
+		{
+			throw VErrorInappropriateParameter;
+		}
+		
+		double double1 = things[0]->getDoubleValue();
+		double double2 = things[1]->getDoubleValue();
+		TwoDouble func = getParserValue()->getTwoDouble(function);
+		(*func)(ptr, double1, double2);
+		return ThingPtr();
+	}
+	
 	std::cout << "Could not identify function?" << std::endl;
 
 	throw VErrorMissingImplementation;
