@@ -7,7 +7,6 @@
 
 #define COORDVAL_FULL
 
-
 typedef struct
 {
 #ifdef COORDVAL_FULL
