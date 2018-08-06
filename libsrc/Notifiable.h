@@ -135,6 +135,7 @@ public:
 		_atomGroup = group;
 	}
 
+	virtual void setRenderDensity() = 0;
 protected:
 	InstructionType _instructionType;
 
