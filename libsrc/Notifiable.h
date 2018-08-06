@@ -79,6 +79,11 @@ public:
 	{
 		_object = object;
 	}
+	
+	void setValue(double value)
+	{
+		_value = value;
+	}
 
 	void setSetter(Setter setter, double value)
 	{
@@ -136,6 +141,11 @@ protected:
 	void *getObject()
 	{
 		return _object;
+	}
+	
+	double getValue()
+	{
+		return _value;
 	}
 
 private:
