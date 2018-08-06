@@ -221,15 +221,15 @@ mat3x3 mat3x3_transpose(mat3x3 &mat)
 void mat3x3_scale(mat3x3 *inverse, double a, double b, double c)
 {
 	inverse->vals[0] *= a;
-	inverse->vals[1] *= a;
-	inverse->vals[2] *= a;
+	inverse->vals[3] *= a;
+	inverse->vals[6] *= a;
 
-	inverse->vals[3] *= b;
+	inverse->vals[1] *= b;
 	inverse->vals[4] *= b;
-	inverse->vals[5] *= b;
+	inverse->vals[7] *= b;
 
-	inverse->vals[6] *= c;
-	inverse->vals[7] *= c;
+	inverse->vals[2] *= c;
+	inverse->vals[5] *= c;
 	inverse->vals[8] *= c;
 }
 
