@@ -6,10 +6,10 @@
 //  Copyright (c) 2017 Strubi. All rights reserved.
 //
 
-#include "Options.h"
+#include "../../libsrc/Options.h"
 #include <execinfo.h>
 #include <signal.h>
-#include "../libgui/qtgui/StartScreen.h"
+#include "StartScreen.h"
 #include <QtWidgets/qapplication.h>
 
 void handler(int sig) {
