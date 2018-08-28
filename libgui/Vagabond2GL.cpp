@@ -155,6 +155,11 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 	for (int i = 0; i < molecule->atomCount(); i++)
 	{
 		AtomPtr atom = molecule->atom(i);
+		
+		if (!atom)
+		{
+			continue;
+		}
 
 		if (atom->getElement() && atom->getElement()->electronCount() <= 1)
 		{
