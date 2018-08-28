@@ -32,6 +32,15 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	{
 		keeper->getDensity2GL()->toggleVisible();
 	}
+	else if (event->key() == Qt::Key_Plus ||
+	         event->key() == Qt::Key_Equal)
+	{
+		keeper->getDensity2GL()->nudgeDensity(1);
+	}
+	else if (event->key() == Qt::Key_Minus)
+	{
+		keeper->getDensity2GL()->nudgeDensity(-1);
+	}
 }
 
 void VagabondGLWidget::keyReleaseEvent(QKeyEvent *event)
