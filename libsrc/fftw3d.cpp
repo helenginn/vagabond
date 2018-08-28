@@ -66,7 +66,9 @@ FFT::~FFT()
 
 	fftwf_free(data);
 	data = NULL;
+	/*
 	fftwf_cleanup_threads();
+	*/
 }
 
 void FFT::cleanupPlans()
@@ -586,6 +588,7 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 		exit(1);
 	}
 
+	/*
 	if (fftwf_init_threads() == 0)
 	{
 		printf("\t\tCould not initialise threads\n");
@@ -593,6 +596,7 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 	}
 
 	fftwf_plan_with_nthreads(nthreads);
+	*/
 
 	/*
 	 *    Read Wisdom from file
