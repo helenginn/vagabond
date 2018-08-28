@@ -158,6 +158,8 @@ void Sidechain::splitConformers(int count)
 
 	AtomList caAtoms = findAtoms("CA");
 
+	BondPtr blockBond;
+	
 	if (caAtoms.size() >= 1)
 	{
 		MonomerPtr monomer = getMonomer();
@@ -178,8 +180,18 @@ void Sidechain::splitConformers(int count)
 			
 			if (model->isBond())
 			{
-				ToBondPtr(model)->setSplitBlock();
+				blockBond = ToBondPtr(model);
 			}
+			else
+			{
+				std::cout << "Warning! Atom " << blocker->shortDesc();
+				std::cout << " is not bonded." << std::endl;
+			}
+		}
+		else
+		{
+				std::cout << "Warning! No blocker for ";
+				std::cout << getMonomer()->getIdentifier() << std::endl;
 		}
 
 		start = findAtom("CA");
@@ -190,6 +202,7 @@ void Sidechain::splitConformers(int count)
 
 	for (int i = 1; i < count; i++)
 	{
+		blockBond->setSplitBlock();
 		bond->splitBond();
 	}
 
