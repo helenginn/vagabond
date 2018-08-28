@@ -42,7 +42,7 @@ executable('vagabond', 'libsrc/main.cpp', dependencies: dep_vag, install: true)
 
 # Pre-processing by Qt5
 
-moc_files = qt5.preprocess(moc_headers : ['libgui/qtgui/CrystalExplorer.h', 'libgui/qtgui/Dialogue.h', 'libgui/qtgui/InstructionThread.h', 'libgui/qtgui/moc_predefs.h', 'libgui/qtgui/MoleculeExplorer.h', 'libgui/qtgui/MoleListItem.h', 'libgui/qtgui/MonomerExplorer.h', 'libgui/qtgui/ResButton.h', 'libgui/qtgui/SequenceView.h', 'libgui/qtgui/SetterEdit.h', 'libgui/qtgui/StartScreen.h', 'libgui/qtgui/VagabondGLWidget.h', 'libgui/qtgui/VagWindow.h'],
+moc_files = qt5.preprocess(moc_headers : ['libgui/qtgui/CrystalExplorer.h', 'libgui/qtgui/Dialogue.h', 'libgui/qtgui/MoleculeExplorer.h', 'libgui/qtgui/MonomerExplorer.h', 'libgui/qtgui/ResButton.h', 'libgui/qtgui/SequenceView.h', 'libgui/qtgui/SetterEdit.h', 'libgui/qtgui/StartScreen.h', 'libgui/qtgui/VagWindow.h'],
 		moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'])
 
 # Non-Qt5 GUI elements (mostly OpenGL stuff)
