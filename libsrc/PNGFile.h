@@ -21,6 +21,11 @@ typedef enum
 	FlagNone, FlagThreshold
 } Flag;
 
+/**
+ * \class PNGFile
+ * \brief Controls the generation, writing/drawing to and write-out of PNG files, usually for analysis output.
+ */
+
 class PNGFile
 {
 private:

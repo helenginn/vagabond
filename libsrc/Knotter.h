@@ -12,8 +12,10 @@
 #include <stdio.h>
 #include "shared_ptrs.h"
 
-/* Takes a side chain and ties all the atoms up together
-* with bonds! */
+/**
+ * \class Knotter
+ * \brief Links atoms together using known (hard-coded) topology of
+ * protein primary sequence */
 
 class Knotter
 {
