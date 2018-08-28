@@ -14,15 +14,11 @@
 #include <vector>
 #include "../libsrc/mat4x4.h"
 #include <iostream>
+#include <QOpenGLDebugLogger>
 
 inline void checkErrors()
 {
-	GLenum err = glGetError();
 
-	if (err != 0)
-	{
-		std::cout << "OUCH!" << std::endl;
-	}
 }
 
 class GLObject : protected QOpenGLFunctions
