@@ -57,6 +57,11 @@ public:
 		_enabled = false;
 		_atomGroup = AtomGroupPtr();
 	}
+	
+	virtual ~Notifiable()
+	{
+
+	}
 
 	virtual void enable()
 	{
