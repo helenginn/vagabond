@@ -31,11 +31,13 @@ public:
 		_cubeIndices = std::vector<std::vector<GLuint> >();
 		_offset = make_vec3(-12, 3, -20);
 		_visible = true;
+		_threshold = 2.4;
 	}
 	
 	virtual void render();
 	
 	void makeNewDensity(CrystalPtr crystal = CrystalPtr());
+	void nudgeDensity(int dir);
 	
 	void toggleVisible()
 	{
@@ -65,6 +67,7 @@ private:
 	vec3 _offset;
 	vec3 getCentreOffset();
 	double _resolution;
+	double _threshold;
 	ivec _dims;
 	bool _visible;
 	std::vector<std::vector<GLuint> > _cubeIndices;
