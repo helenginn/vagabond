@@ -524,9 +524,9 @@ public:
 		return _torsionStepMult;
 	}
 	
-	void setSplitBlock()
+	void setSplitBlock(int block = 1)
 	{
-		_splitBlock = true;
+		_splitBlock = block;
 	}
 protected:
 
@@ -567,7 +567,7 @@ private:
 	bool _resetOccupancy;
 	
 	/* If blocked, do not duplicate downstream */
-	bool _splitBlock;
+	int _splitBlock;
 
 	/* Should not be refined */
 	bool _fixed;
