@@ -22,7 +22,6 @@ void shout_at_user(std::string fix_me_message)
 	std::cout << "**      Please fix me and re-run      **" << std::endl;
 	std::cout << "****************************************" << std::endl;
 
-	throw 10;
 	exit(1);
 }
 
