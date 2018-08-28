@@ -1,4 +1,5 @@
 # throwaway folders
+build/
 throwaway*/
 .fftw3f_wisdom
 libtool
