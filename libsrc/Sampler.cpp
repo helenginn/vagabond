@@ -127,6 +127,7 @@ bool addFlex)
 	setJobName("torsion_set_" + bond->shortDesc() + "_g");
 
 	int bondCount = 0;
+	BondPtr topBond = BondPtr();
 
 	if (_params.count(ParamOptionNumBonds))
 	{
@@ -181,6 +182,11 @@ bool addFlex)
 			{
 				AtomPtr downstreamAtom = bond->downstreamAtom(j, i);
 				BondPtr nextBond = ToBondPtr(downstreamAtom->getModel());
+				
+				if (!topBond)
+				{
+					topBond = nextBond;
+				}
 
 				BondInt entry;
 				entry.bond = nextBond;
@@ -190,7 +196,12 @@ bool addFlex)
 		}
 	}
 	
-	return BondPtr();
+	if (!topBond->isRefinable())
+	{
+		return BondPtr();
+	}
+	
+	return topBond;
 }
 	
 BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
