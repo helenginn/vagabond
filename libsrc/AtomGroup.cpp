@@ -302,8 +302,8 @@ AtomList AtomGroup::topLevelAtoms()
 	if (!atomCount()) return AtomList();
 
 	AtomList list;
-
-	for (size_t i = 0; i < 1; i++)
+	
+	for (size_t i = 0; i < conformerCount(); i++)
 	{
 		std::string conf = conformer(i);
 		size_t j = 0;
@@ -470,7 +470,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 
 		case RefinementFine:
 		scoreType = ScoreTypeCorrel;
-		maxTries = 3;
+		maxTries = 2;
 		degrees = 4;
 		bondNum = 4;
 		refineAngles = false;
@@ -497,100 +497,99 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 	{
 		bondNum = 3;
 	}
-	
+
 	if (hasParameter(ParamOptionTorsion) && paramCount() < 2 &&
 	    rType == RefinementFine)
 	{
-		maxTries = 20;
+//		maxTries = 20;
 	}
-
-	for (size_t n = 0; n < topAtoms.size(); n++)
+	
+	while (topAtoms.size() > 0)
 	{
-		AtomPtr topAtom = topAtoms[n].lock();
+		BondPtr topBond;
+		int count = 0;
 
-//		if (n > 0) std::cout << "'" << std::flush;
+		bool changed = true;
+		bool addFlex = (rType == RefinementFine);
 
-		while (hasAtom(topAtom))
+		while (changed && count < maxTries)
 		{
-			if (!topAtom->getModel()->isBond())
+			setupNelderMead();
+			setCrystal(target);
+			setCycles(16);
+
+			for (int i = 0; i < topAtoms.size(); i++)
 			{
-				break;
-			}
-
-			BondPtr bond = ToBondPtr(topAtom->getModel());
-
-			int groups = bond->downstreamAtomGroupCount();
-
-			if (!groups)
-			{
-				break;
-			}
-
-			if (!bond->isRefinable())
-			{
-				break;
-			}
-
-			int count = 0;
-
-			BondPtr topBond;
-
-			for (int k = 0; k < 1; /*bond->downstreamAtomGroupCount();*/ k++)
-			{
-				bool changed = true;
-				bool addFlex = (rType == RefinementFine);
-
-				while (changed && count < maxTries)
+				if (topAtoms[i].expired())
 				{
-					bond->setActiveGroup(k);
-					setupNelderMead();
-					setCrystal(target);
-					setCycles(16);
-
-					if (rType != RefinementFine)
-					{
-						topBond = setupTorsionSet(bond, k, bondNum,
-						                          deg2rad(degrees), 
-						                          deg2rad(0.04),
-						                          refineAngles, addFlex);
-					}
-					else
-					{
-						topBond = setupThoroughSet(bond, bondNum,
-						                           deg2rad(degrees), 
-						                           deg2rad(0.04),
-						                           refineAngles, addFlex);
-
-					}
-
-					setScoreType(scoreType);
-
-					for (size_t l = 0; l < _includeForRefine.size(); l++)
-					{
-						addSampledAtoms(_includeForRefine[l]);
-					}
-
-					if (rType == RefinementModelPos 
-					    || rType == RefinementFine 
-					    || rType == RefinementModelRMSDZero
-					    || rType == RefinementRMSDZero)
-					{
-						setSilent();
-					}
-
-					setJobName("torsion_" +  bond->shortDesc());
-					changed = sample();
-					count++;
+					continue;
 				}
-
-				if (!topBond)
+				
+				AtomPtr topAtom = topAtoms[i].lock();
+				
+				if (!topAtom->getModel()->isBond())
 				{
-					topAtom = AtomPtr();
+					continue;
+				}
+				
+				BondPtr bond = ToBondPtr(topAtom->getModel());
+
+				if (!bond->isRefinable())
+				{
 					continue;
 				}
 
-				topAtom = topBond->getMinor();
+				if (i == 0)
+				{
+					setJobName("torsion_" +  bond->shortDesc());
+				}
+
+				if (rType != RefinementFine)
+				{
+					topBond = setupTorsionSet(bond, 0, bondNum,
+					                          deg2rad(degrees), 
+					                          deg2rad(0.04),
+					                          refineAngles, addFlex);
+				}
+				else
+				{
+					topBond = setupThoroughSet(bond, bondNum,
+					                           deg2rad(degrees), 
+					                           deg2rad(0.04),
+					                           refineAngles, addFlex);
+				}
 			}
+
+			setScoreType(scoreType);
+
+			for (size_t l = 0; l < _includeForRefine.size(); l++)
+			{
+				addSampledAtoms(_includeForRefine[l]);
+			}
+
+			if (rType == RefinementModelPos 
+			    || rType == RefinementFine 
+			    || rType == RefinementModelRMSDZero
+			    || rType == RefinementRMSDZero)
+			{
+				setSilent();
+			}
+
+			changed = sample();
+			count++;
+		}
+
+		if (!topBond)
+		{
+			break;
+		}
+
+		AtomPtr topAtom = topBond->getMinor();
+		topAtoms = findAtoms(topAtom->getAtomName());
+		
+		if (!hasAtom(topAtom))
+		{
+			break;
 		}
 	}
 
