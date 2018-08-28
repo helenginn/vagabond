@@ -40,6 +40,11 @@ class Sampler
 {
 public:
 	Sampler();
+	
+	virtual ~Sampler()
+	{
+
+	}
 
 	/**
 	* 	 Add an atom from the sensitive area in real space
