@@ -60,6 +60,7 @@ Atom::Atom(Atom &other)
 	_origOccupancy = other._origOccupancy;
 	_conformer = other._conformer;
 	_ellipsoidLongestAxis = other._ellipsoidLongestAxis;
+	_hetatm = other._hetatm;
 }
 
 int Atom::getResidueNum()
