@@ -785,7 +785,6 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 	FFTPtr fft = crystal->getFFT();
 	mat3x3 real2frac = crystal->getReal2Frac();
 	
-	double threshold = 2.4;
 	long count = -3;
 	size_t unhandled = 0;
 	size_t handled = 0;
@@ -817,7 +816,7 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 					mat3x3_mult_vec(real2frac, &xyz);
 
 					double value = fft->getRealFromFrac(xyz);
-					int crosses = (value > threshold);
+					int crosses = (value > _threshold);
 
 					bit |= (crosses << i);
 				}
@@ -903,6 +902,21 @@ void Density2GL::reorderIndices()
 		count++;
 	}
 	
+}
+
+void Density2GL::nudgeDensity(int dir)
+{
+	if (dir > 0)
+	{
+		_threshold += 0.1;
+	}
+	else if (dir < 0)
+	{
+		_threshold -= 0.1;
+	}
+	
+	recalculate();
+	makeNewDensity();
 }
 
 void Density2GL::render()
