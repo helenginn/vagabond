@@ -37,15 +37,6 @@ void Monomer::addAtom(AtomPtr atom)
 {
 	std::string newAtomName = atom->getAtomName();
 
-	AtomPtr existingAtom = findAtom(newAtomName);
-
-	if (existingAtom)
-	{
-		//    std::string atomDesc = existingAtom->shortDesc();
-		//    warn_user("There is an existing conformation for " + atomDesc
-		//              + "\nCurrently only side chains are supported.");
-	}
-
 	AtomGroup::addAtom(atom);
 
 	atom->setMonomer(shared_from_this());
@@ -59,18 +50,15 @@ void Monomer::addAtom(AtomPtr atom)
 
 	if (isBoth)
 	{
-		if (!existingAtom)
-		{
-			_backbone->addAtom(atom);
-		}
-
+		_backbone->addAtom(atom);
 		_sidechain->addAtom(atom);
+
 		return;
 	}
 
 	bool isBackbone = atom->isBackbone();
 
-	if (isBackbone && !existingAtom)
+	if (isBackbone)
 	{
 		_backbone->addAtom(atom);
 	}
