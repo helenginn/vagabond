@@ -217,7 +217,6 @@ std::vector<BondSample> Model::getFinalPositions()
 		}
 	}
 	
-	_absolute = meanOfManyPositions(&_finalSamples);
 	
 	/* Deset flag */
 	
@@ -227,10 +226,12 @@ std::vector<BondSample> Model::getFinalPositions()
 	{
 		std::lock_guard<std::mutex> lock(guiLock);
 		_finalPositions = posOnly;
+		_absolute = meanOfManyPositions(&_finalSamples);
 	}
 	else
 	{
 		_finalPositions = posOnly;
+		_absolute = meanOfManyPositions(&_finalSamples);
 	}
 
 	return _finalSamples;
@@ -253,11 +254,15 @@ void Model::propagateChange(int depth, bool refresh)
 
 
 /* For GUI */
-std::vector<vec3> Model::fishPositions()
+std::vector<vec3> Model::fishPositions(vec3 *ave)
 {
 	std::vector<vec3> positions;
 	std::lock_guard<std::mutex> lock(guiLock);
 	positions = _finalPositions;
+	if (ave)
+	{
+		*ave = _absolute;
+	}
 
 	return positions;
 }

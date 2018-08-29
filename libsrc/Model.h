@@ -169,7 +169,7 @@ public:
 
 	vec3 longestAxis();
 	double smallness();
-	std::vector<vec3> fishPositions();
+	std::vector<vec3> fishPositions(vec3 *average = NULL);
 	
 	virtual bool hasExplicitPositions() = 0;
 	void writePositionsToFile(std::string filename);
