@@ -1091,9 +1091,20 @@ bool Bond::splitBond()
 	BondPtr me = ToBondPtr(shared_from_this());
 	BondPtr parent = ToBondPtr(getParentModel());
 	int last = parent->downstreamAtomGroupCount();
+	
+	int num = parent->downstreamAtomNum(getMinor(), NULL);
+	
 	BondPtr dupl = me->duplicateDownstream(parent, last);
 	double torsion = getTorsion(&*me);
-	setTorsion(&*me, torsion);
+	
+	if (num > 0)
+	{
+		torsion += getCirclePortion(&*me) * 2 * M_PI;
+	}
+	
+	std::cout << "Moi " << num << std::endl;
+
+	setTorsion(&*dupl, torsion);
 
 	_occupancy /= 2;
 	dupl->_occupancy /= 2;
@@ -1120,7 +1131,6 @@ void Bond::copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum)
 BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 {
 	/* new branch is the duplicated parent */
-
 	BondPtr duplBond = BondPtr(new Bond(*this));
 
 	AtomPtr duplAtom = AtomPtr();
@@ -1191,6 +1201,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 			/* Need to return occupancy to full here on out */
 			ModelPtr model = downstreamAtom(0, i)->getModel();
 			ToBondPtr(model)->_resetOccupancy = true;
+			
 			continue;
 		}
 
