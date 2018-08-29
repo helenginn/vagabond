@@ -503,9 +503,6 @@ void VagWindow::pushExploreCrystal()
 
 void VagWindow::pushExploreMcule()
 {
-	delete _moleExplorer;
-	_moleExplorer = NULL;
-
 	QObject *sent = sender();
 	ChainMenuAction *action = static_cast<ChainMenuAction *>(sent);
 
@@ -516,6 +513,9 @@ void VagWindow::pushExploreMcule()
 
 	if (molecule)
 	{
+		delete _moleExplorer;
+		_moleExplorer = NULL;
+
 		_moleExplorer = new MoleculeExplorer(this, molecule);
 		_moleExplorer->setGLKeeper(display->getKeeper());
 		_moleExplorer->show();
