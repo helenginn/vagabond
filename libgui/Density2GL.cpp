@@ -39,10 +39,10 @@ void initVertex(Vertex *vert)
 	
 	int random = rand() % 3;
 	
-	vert->color[0] = (random == 0) ? 1.0 : 0.5;
-	vert->color[1] = (random == 1) ? 1.0 : 0.5;
-	vert->color[2] = (random == 2) ? 1.0 : 0.5;
-	vert->color[3] = 0.2;
+	vert->color[0] = 0.8;
+	vert->color[1] = 0.8;
+	vert->color[2] = 0.8;
+	vert->color[3] = 0.05;
 }
 
 void Density2GL::setupIndexTable()
@@ -853,55 +853,6 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 //	std::cout << "Handled " << handled << " out of " << handled + unhandled;
 //	std::cout << " (" << (double)handled / (double)(handled + unhandled) * 100 << ")";
 //	std::cout << std::endl;
-}
-
-vec3 vec_from_pos(GLfloat *pos)
-{
-	vec3 tmpVec = make_vec3(pos[0], pos[1],
-	                        pos[2]);
-
-	return tmpVec;
-}
-
-bool Density2GL::index_behind_index(IndexTrio &one, IndexTrio &two)
-{
-	return (one.z > two.z);
-}
-
-void Density2GL::reorderIndices()
-{
-	_temp.reserve(_indices.size() / 3);
-	
-	int count = 0;
-	for (int i = 0; i < _indices.size(); i+=3)
-	{
-		int n = _indices[i];
-		vec3 tmpVec = vec_from_pos(_vertices[n].pos);
-		n = _indices[i + 1];
-		vec3 tmpVec1 = vec_from_pos(_vertices[n].pos);
-		n = _indices[i + 2];
-		vec3 tmpVec2 = vec_from_pos(_vertices[n].pos);
-		vec3_add_to_vec3(&tmpVec, tmpVec1);
-		vec3_add_to_vec3(&tmpVec, tmpVec2);
-		tmpVec = mat4x4_mult_vec(modelMat, tmpVec);
-		_temp[count].z = tmpVec.z;
-		_temp[count].index[0] = _indices[i];
-		_temp[count].index[1] = _indices[i + 1];
-		_temp[count].index[2] = _indices[i + 2];
-		count++;
-	}
-	
-	std::sort(_temp.begin(), _temp.end(), index_behind_index);
-
-	count = 0;
-	for (int i = 0; i < _indices.size(); i+=3)
-	{
-		_indices[i + 0] = _temp[count].index[0];
-		_indices[i + 1] = _temp[count].index[1];
-		_indices[i + 2] = _temp[count].index[2];
-		count++;
-	}
-	
 }
 
 void Density2GL::nudgeDensity(int dir)

@@ -103,9 +103,14 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	#endif // SETUP_BUFFERS
 
 	/* Bond model render */
-	Vagabond2GLPtr v2gl = Vagabond2GLPtr(new Vagabond2GL());
-	GLObjectPtr object = boost::static_pointer_cast<GLObject>(v2gl);
-	_totalCentroid = object->getCentroid();
+	_allBond2GL = Vagabond2GLPtr(new Vagabond2GL(false));
+	GLObjectPtr allBonds = boost::static_pointer_cast<GLObject>(_allBond2GL);
+	_totalCentroid = allBonds->getCentroid();
+	
+	/* Average pos render */
+	_aveBond2GL = Vagabond2GLPtr(new Vagabond2GL(true));
+	GLObjectPtr aveBonds = boost::static_pointer_cast<GLObject>(_aveBond2GL);
+	_aveBond2GL->setEnabled(false);
 
 	/* Density render */
 	_density2GL = Density2GLPtr(new Density2GL());
@@ -113,13 +118,12 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	_density2GL->recalculate();
 	GLObjectPtr objDen2GL = ToDensity2GLPtr(_density2GL);
 
-	_objects.push_back(object);
+	_objects.push_back(allBonds);
+	_objects.push_back(aveBonds);
 	_objects.push_back(objDen2GL);
 
 	setupCamera();
 
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	initialisePrograms();
 }
 
@@ -130,6 +134,8 @@ void GLKeeper::render(void)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	updateCamera();
 
 	for (int i = 0; i < _objects.size(); i++)
@@ -138,6 +144,13 @@ void GLKeeper::render(void)
 		_objects[i]->setModelMat(modelMat);
 		_objects[i]->render();
 	}
+}
+
+void GLKeeper::toggleBondView()
+{
+	bool enabled = _allBond2GL->isEnabled();
+	_aveBond2GL->setEnabled(enabled);
+	_allBond2GL->setEnabled(!enabled);
 }
 
 void GLKeeper::cleanup(void)

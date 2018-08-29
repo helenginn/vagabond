@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include "Frameworks.h"
+#include "Picture.h"
 #include <vector>
 #include "../libsrc/mat4x4.h"
 #include <iostream>
@@ -18,7 +19,12 @@
 
 inline void checkErrors()
 {
+	GLenum err = glGetError();
 
+	if (err != 0)
+	{
+		std::cout << "OUCH!" << std::endl;
+	}
 }
 
 class GLObject : protected QOpenGLFunctions
@@ -84,6 +90,9 @@ protected:
 	std::vector<GLuint> _indices;
 
 	void rebindProgram();
+	virtual void bindTextures() {};
+	
+	void bindOneTexture(Picture &pic);
 	
 	void clearVertices()
 	{
@@ -91,9 +100,20 @@ protected:
 		_indices.clear();
 	}
 	
+	bool _extra;
+	bool _backToFront;
 	GLenum _renderType;
+	std::string *_fragShader;
+	std::string *_vertShader;
+	
+	std::vector<GLuint> _textures;
+	void reorderIndices();
 private:
 	void calculateCentroid();
+
+	std::vector<IndexTrio> _temp; // stores with model mat
+	static bool index_behind_index(IndexTrio &one, IndexTrio &two);
+	static bool index_in_front_of_index(IndexTrio &one, IndexTrio &two);
 
 	GLint _projectionUniform;
 	GLint _modelUniform;

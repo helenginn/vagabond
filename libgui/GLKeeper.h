@@ -45,12 +45,13 @@ private:
 
 	GLubyte *newIndices;
 	void initialisePrograms();
-	
+
 	Density2GLPtr _density2GL;
 
 public:
 	GLKeeper(int width, int height);
 	void changeSize(int newWidth, int newHeight);
+	void toggleBondView();
 
 	virtual void render(void);
 	void cleanup(void);
@@ -62,6 +63,9 @@ public:
 	void draggedLeftMouse(float x, float y);
 	void draggedRightMouse(float x, float y);
 	void panned(float x, float y);
+	
+	Vagabond2GLPtr _allBond2GL;
+	Vagabond2GLPtr _aveBond2GL;
 	
 	Density2GLPtr getDensity2GL()
 	{

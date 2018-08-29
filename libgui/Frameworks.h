@@ -20,6 +20,8 @@ typedef struct
 	GLfloat pos[3];
 	GLfloat normal[3];
 	GLfloat color[4];
+	GLfloat extra[4];
+	GLfloat tex[2];
 } Vertex;
 
 typedef struct

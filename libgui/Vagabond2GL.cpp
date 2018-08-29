@@ -12,46 +12,98 @@
 #include "../libsrc/Bond.h"
 #include "../libsrc/Atom.h"
 #include "../libsrc/Element.h"
+#include "Shaders/InkBond_vsh.h"
+#include "Shaders/InkBond_fsh.h"
+
+void Vagabond2GL::setupAverage()
+{
+	if (!_average)
+	{
+		return;
+	}
+
+	_renderType = GL_TRIANGLES;
+	_vertShader = &InkBond_vsh;
+	_fragShader = &InkBond_fsh;
+	_extra = true;
+}
 
 void Vagabond2GL::updateAtoms()
 {
+	bool valid = true;
+	
 	for (AtomMap::iterator it = _atomMap.begin(); it != _atomMap.end(); it++)
 	{
 		AtomPtr atom = it->first;
 		std::pair<int, int> pair = it->second;
-		int conformer = pair.first;
-		int vertex = pair.second;
+		int total = pair.first;
+		int v = pair.second;
+		//		std::cout << "c/v: " << conformer << " " << v << std::endl;
 
 		if (!atom->getModel()->isBond()) continue;
 
 		std::vector<vec3> majBonds, minBonds;
 		getPositions(atom, &minBonds, &majBonds);
 
-		if (majBonds.size() >= conformer || minBonds.size() >= conformer)
+		for (int k = 0; k < total; k++)
 		{
-			continue;
+			vec3 majStart = majBonds[k];
+			vec3 minStart = minBonds[k];
+
+			_vertices[v].pos[0] = majStart.x;
+			_vertices[v].pos[1] = majStart.y;
+			_vertices[v].pos[2] = majStart.z;
+
+			/* Middle two vertices should be the same */
+			for (int i = 1; i < 3; i++)
+			{
+				_vertices[v + i].pos[0] = (minStart.x + majStart.x) / 2;
+				_vertices[v + i].pos[1] = (minStart.y + majStart.y) / 2;
+				_vertices[v + i].pos[2] = (minStart.z + majStart.z) / 2;
+			}
+
+			_vertices[v+3].pos[0] = minStart.x;
+			_vertices[v+3].pos[1] = minStart.y;
+			_vertices[v+3].pos[2] = minStart.z;
+
+			if (_average && valid)
+			{
+				for (int i = 0; i < 4; i++)
+				{
+					_vertices[v+i].extra[0] = k;
+				}
+
+				memcpy(_vertices[v].normal, _vertices[v+1].pos,
+				       sizeof(GLfloat) * 3);
+				memcpy(_vertices[v+1].normal, _vertices[v].pos,
+				       sizeof(GLfloat) * 3);
+				memcpy(_vertices[v+2].normal, _vertices[v+3].pos,
+				       sizeof(GLfloat) * 3);
+				memcpy(_vertices[v+3].normal, _vertices[v+2].pos,
+				       sizeof(GLfloat) * 3);
+
+				for (int i = 0; false && i < 4; i++)
+				{
+					for (int j = 0; j < 3; j++)
+					{
+						std::cout << _vertices[v + i].pos[j] << " ";
+					}
+
+					std::cout << " - ";
+
+					for (int j = 0; j < 3; j++)
+					{
+//						std::cout << _vertices[v + i].normal[j] << " ";
+					}
+
+					std::cout << "(" << _vertices[v + i].extra[0] << ")";
+
+					std::cout << std::endl;
+				}
+			}
+			
+			v += 4;
 		}
-
-		vec3 majStart = majBonds[conformer];
-		vec3 minStart = minBonds[conformer];
-
-		_vertices[vertex].pos[0] = majStart.x;
-		_vertices[vertex].pos[1] = majStart.y;
-		_vertices[vertex].pos[2] = majStart.z;
-		vertex++;
-
-		for (int i = 0; i < 2; i++)
-		{
-			_vertices[vertex + i].pos[0] = (minStart.x + majStart.x) / 2;
-			_vertices[vertex + i].pos[1] = (minStart.y + majStart.y) / 2;
-			_vertices[vertex + i].pos[2] = (minStart.z + majStart.z) / 2;
-		}
-
-		vertex += 2;
-		_vertices[vertex].pos[0] = minStart.x;
-		_vertices[vertex].pos[1] = minStart.y;
-		_vertices[vertex].pos[2] = minStart.z;
-
 	}
 }
 
@@ -60,13 +112,21 @@ void Vagabond2GL::getPositions(AtomPtr atom, std::vector<vec3> *min,
 {
 	ModelPtr minBond = atom->getModel();
 	ModelPtr majBond = (ToBondPtr(minBond))->getMajor()->getModel();
+	
+	vec3 minAve, majAve;
 
 	if (majBond->isBond())
 	{
-		*maj = ToBondPtr(majBond)->fishPositions();
+		*maj = ToBondPtr(majBond)->fishPositions(&majAve);
 	}
 
-	*min = ToBondPtr(minBond)->fishPositions();
+	*min = ToBondPtr(minBond)->fishPositions(&minAve);
+	
+	if (_average)
+	{
+		*min = std::vector<vec3>(2, minAve);
+		*maj = std::vector<vec3>(2, majAve);
+	}
 }
 
 bool Vagabond2GL::shouldGetBonds()
@@ -77,6 +137,8 @@ bool Vagabond2GL::shouldGetBonds()
 	}
 
 	_renders = 0;
+
+	/* Have there been any changes? */
 
 	OptionsPtr globalOptions = Options::getRuntimeOptions();
 
@@ -99,15 +161,31 @@ bool Vagabond2GL::shouldGetBonds()
 
 			for (int k = 0; k < molecule->atomCount(); k++)
 			{
-				if (molecule->atom(k)->getModel() &&
-				    molecule->atom(k)->getModel()->isBond())
+				AtomPtr thisAtom = molecule->atom(k);
+				
+				if (!thisAtom)
 				{
-					existing++;
+					continue;
 				}
+
+				if (!thisAtom->getModel() ||
+				    !thisAtom->getModel()->isBond())
+				{
+					continue;
+				}
+				
+				if (!thisAtom->getElement() || 
+				    thisAtom->getElement()->electronCount() <= 1)
+				{
+					continue;
+				}
+
+				existing++;
 			}
 
 			if (expected != existing)
 			{
+//				std::cout << "E/e: " << expected << " " << existing << std::endl;
 				return true;
 			}
 		}
@@ -161,10 +239,16 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 			continue;
 		}
 
-		if (atom->getElement() && atom->getElement()->electronCount() <= 1)
+		if (!atom->getElement())
 		{
 			continue;
 		}
+
+		if (atom->getElement()->electronCount() <= 1)
+		{
+			continue;
+		}
+
 
 		if (atom->getModel() && !atom->getModel()->isBond())
 		{
@@ -177,6 +261,8 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 
 			std::vector<vec3> majBonds, minBonds;
 			getPositions(atom, &minBonds, &majBonds);
+			
+			int start = count;
 
 			for (int j = 0; j < majBonds.size(); j += 1)
 			{
@@ -218,23 +304,105 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 				vertex.pos[2] = minStart.z;
 				memcpy(vertex.normal, &glNorm, 3 * sizeof(GLfloat));
 				_vertices.push_back(vertex);
-				_indices.push_back(count);
-				_indices.push_back(count + 1);
-				_indices.push_back(count + 2);
-				_indices.push_back(count + 3);
+				
+				if (_renderType == GL_LINES)
+				{
+					/* Suitable for GL_LINES */
+					_indices.push_back(count);
+					_indices.push_back(count + 1);
+					_indices.push_back(count + 2);
+					_indices.push_back(count + 3);
+				}
+				else if (j == 0)
+				{
+					/* Suitable for GL_TRIANGLES */
+					_indices.push_back(count + 1);
+					_indices.push_back(count + 0);
+					_indices.push_back(count + 4);
 
-				_atomMap[atom] = std::make_pair(j, count);
+					_indices.push_back(count + 5);
+					_indices.push_back(count + 0);
+					_indices.push_back(count + 1);
+
+					_indices.push_back(count + 2);
+					_indices.push_back(count + 3);
+					_indices.push_back(count + 7);
+
+					_indices.push_back(count + 6);
+					_indices.push_back(count + 3);
+					_indices.push_back(count + 2);
+				}
+
+				if (j == 0)
+				{
+					_atomMap[atom] = std::make_pair(majBonds.size(), count);
+				}
+
 				count += 4;
 			}
-
+			
 			if (minBonds.size() && majBonds.size())
 			{
 				bonds++;
 			}
+			
+			/* Set up texture, only if using _averages */
+
+			if (!_average)
+			{
+				continue;
+			}
+			
+			_vertices[start].tex[0] = 0;
+			_vertices[start].tex[1] = 0;
+
+			_vertices[start+1].tex[0] = 0.5;
+			_vertices[start+1].tex[1] = 1.0;
+
+			_vertices[start+2].tex[0] = 0.5;
+			_vertices[start+2].tex[1] = 0;
+
+			_vertices[start+3].tex[0] = 1.0;
+			_vertices[start+3].tex[1] = 1.0;
+
+			_vertices[start+2].tex[0] = 0;
+			_vertices[start+2].tex[1] = 0;
+
+			_vertices[start+3].tex[0] = 0.5;
+			_vertices[start+3].tex[1] = 1.0;
+
+			_vertices[start+4].tex[0] = 0;
+			_vertices[start+4].tex[1] = 1.0;
+
+			_vertices[start+5].tex[0] = 0.5;
+			_vertices[start+5].tex[1] = 0;
+
+			_vertices[start+6].tex[0] = 0.5;
+			_vertices[start+6].tex[1] = 1.0;
+
+			_vertices[start+7].tex[0] = 1.0;
+			_vertices[start+7].tex[1] = 0.0;
+
+			_vertices[start+6].tex[0] = 0.0;
+			_vertices[start+6].tex[1] = 1.0;
+
+			_vertices[start+7].tex[0] = 0.5;
+			_vertices[start+7].tex[1] = 0.0;
 		}
 	}
 
 	return bonds;
+}
+
+void Vagabond2GL::bindTextures()
+{
+	int num = 1;
+	_textures.resize(num);
+
+	glGenTextures(num, &_textures[0]);
+	glBindTexture(GL_TEXTURE_2D, _textures[0]);
+	checkErrors();
+	bindOneTexture(pic_bond);
 }
 
 void Vagabond2GL::findAtoms()
@@ -265,15 +433,25 @@ void Vagabond2GL::findAtoms()
 
 void Vagabond2GL::render()
 {
+	if (!_enabled)
+	{
+		return;
+	}
+
 	if (shouldGetBonds())
 	{
 		findAtoms();
-		rebindProgram();
 	}
 	else
 	{
 		updateAtoms();
 	}
 
+	rebindProgram();
+	
+	if (_average)
+	{
+		reorderIndices();
+	}
 	GLObject::render();
 }

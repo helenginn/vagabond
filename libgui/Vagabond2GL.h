@@ -21,14 +21,30 @@ typedef std::map<MoleculePtr, int> GLMoleculeMap;
 class Vagabond2GL : public GLObject
 {
 public:
-	Vagabond2GL()
+	Vagabond2GL(int average = false)
 	{
 		_renders = 0;
+		_average = average;
+		setupAverage();
+		
+		_enabled = true;
 	}
 
 	void findAtoms();
 
 	virtual void render();
+	
+	bool isEnabled()
+	{
+		return _enabled;
+	}
+	
+	void setEnabled(bool enabled)
+	{
+		_enabled = enabled;
+	}
+protected:
+	virtual void bindTextures();
 private:
 	int processMolecule(MoleculePtr molecule);
 	vec3 _centroid;
@@ -40,7 +56,11 @@ private:
 					  std::vector<vec3> *maj);
 	AtomMap _atomMap;
 	GLMoleculeMap _moleculeMap;
+	void setupAverage();
 	int _renders;
+	int _average;
+	bool _enabled;
+
 };
 
 #endif /* Vagabond2GL_hpp */
