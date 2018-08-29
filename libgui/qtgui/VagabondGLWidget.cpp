@@ -41,6 +41,10 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	{
 		keeper->getDensity2GL()->nudgeDensity(-1);
 	}
+	else if (event->key() == Qt::Key_B)
+	{
+		keeper->toggleBondView();
+	}
 }
 
 void VagabondGLWidget::keyReleaseEvent(QKeyEvent *event)
