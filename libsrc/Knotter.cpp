@@ -231,16 +231,14 @@ void Knotter::tieTowardsCTerminus()
 	}
 
 	BondPtr nSpine2cAlpha = BondPtr(new Bond(nSpine, cAlpha));
-
 	nSpine2cAlpha->activate();
 
 	if (nSpine && nSpine->getModel()->isBond())
 	{
 		BondPtr nSpine2hydrogen = BondPtr(new Bond(nSpine, nHydrogen));
 		nSpine2hydrogen->activate();
+		nSpine2cAlpha->addExtraTorsionSample(carbonylOxygen, 0);
 	}
-
-	nSpine2cAlpha->addExtraTorsionSample(carbonylOxygen, 0);
 
 	BondPtr cAlpha2Carbonyl = BondPtr(new Bond(cAlpha, carbonylCarbon));
 

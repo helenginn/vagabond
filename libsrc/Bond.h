@@ -47,8 +47,6 @@ typedef struct
 typedef struct
 {
 	std::vector<Bond *> bonds;
-	std::vector<BondSample> storedSamples;
-	std::vector<AtomWkr> extraTorsionSamples;
 } BondGroup;
 
 #define INITIAL_KICK 0.01
@@ -428,12 +426,12 @@ public:
 
 	void addExtraTorsionSample(AtomPtr atom, int group)
 	{
-		_bondGroups[group].extraTorsionSamples.push_back(atom);
+		_extraTorsionSamples.push_back(atom);
 	}
 
 	int extraTorsionSampleCount(int group)
 	{
-		return _bondGroups[group].extraTorsionSamples.size();
+		return _extraTorsionSamples.size();
 	}
 
 	/** Returns the B factor (function is a misnomer). */
@@ -441,7 +439,7 @@ public:
 
 	AtomPtr extraTorsionSample(int group, int i)
 	{
-		return _bondGroups[group].extraTorsionSamples[i].lock();
+		return _extraTorsionSamples[i].lock();
 	}
 
 
@@ -531,14 +529,23 @@ private:
 	{
 		return _bondGroups[group].bonds.size();
 	}
+
+	
+	Bond *nakedDownstreamBond(int group, int i)
+	{
+		return _bondGroups[group].bonds[i];
+	}
 	
 	BondPtr downstreamBond(int group, int i)
 	{
-		return _bondGroups[group].bonds[i]->shared_from_this();
+		return nakedDownstreamBond(group, i)->shared_from_this();
 	}
 
 	/* Returns upstream bond group pertaining to this bond. */
 	BondGroup *bondGroupForBond();
+
+	std::vector<AtomWkr> _extraTorsionSamples;
+	std::vector<BondSample> _storedSamples;
 
 	/* Dampening should be associated with a bond group - woops */
 	double _dampening;

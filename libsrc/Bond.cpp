@@ -80,6 +80,13 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 		}
 	}
 
+	ModelPtr upModel = getParentModel();
+
+	if (upModel->isBond())
+	{
+		ToBondPtr(upModel)->addDownstreamBond(this, group);
+	}
+
 	vec3 majorPos = getMajor()->getInitialPosition();
 	vec3 minorPos = getMinor()->getInitialPosition();
 
@@ -97,13 +104,6 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	deriveBondAngle();
 	deriveCirclePortion();
 	deriveTorsionAngle();
-
-	ModelPtr upModel = getMajor()->getModel();
-
-	if (upModel->isBond())
-	{
-		ToBondPtr(upModel)->addDownstreamBond(this, group);
-	}
 
 	if (upModel->getClassName() == "Absolute")
 	{
@@ -257,14 +257,14 @@ void Bond::deriveCirclePortion()
 	 * 	we have not yet been added to the parent */
 	int count = parent->downstreamBondCount(groups - 1);
 	
-	if (count == 0)
+	if (count == 1)
 	{
 		/* We are the first bond. */
 		return;
 	}
 	
 	/* We have a sister bond and must get a circle portion */
-	BondPtr lastBond = downstreamBond(groups, count - 1);
+	Bond *lastBond = parent->nakedDownstreamBond(groups - 1, count - 2);
 
 	AtomType central = parent->getMinor()->getGeomType();
 	AtomType preceding = parent->getMajor()->getGeomType();
@@ -329,7 +329,15 @@ void Bond::deriveCirclePortion()
 		 * We calculate the torsion angle for this atom, then subtract
 		 * that from the first bond and normalise. */
 
-		vec3 hPos = _heavyAlign.lock()->getInitialPosition();
+		if (!parent->getParentModel()->isBond())
+		{	
+			/* Grandparent is absolute - needs dealing with specially */
+			return;
+		}
+
+		BondPtr grandparent = ToBondPtr(parent->getParentModel());
+
+		vec3 hPos = grandparent->getMajor()->getInitialPosition();
 		vec3 maPos = parent->getMajor()->getInitialPosition();
 		vec3 miPos = getMajor()->getInitialPosition();
 		vec3 lPos = getMinor()->getInitialPosition();
@@ -351,6 +359,15 @@ void Bond::resetBondAngles()
 
 void Bond::addDownstreamBond(Bond *bond, int group)
 {
+	if (_bondGroups.size() <= group)
+	{
+		for (int i = 0; i < group - _bondGroups.size() + 1; i++)
+		{
+			BondGroup group;
+			_bondGroups.push_back(group);
+		}
+	}
+
 	_bondGroups[group].bonds.push_back(bond);
 }
 
@@ -595,11 +612,11 @@ std::vector<BondSample> *Bond::getManyPositions()
 {
 	std::vector<BondSample> *newSamples;
 
-	newSamples = &_bondGroups[_activeGroup].storedSamples;
+	newSamples = &_storedSamples;
 
 	if (!_changedSamples)
 	{
-		return &_bondGroups[_activeGroup].storedSamples;
+		return &_storedSamples;
 	}
 
 	ModelPtr model = getMajor()->getModel();
@@ -758,7 +775,7 @@ bool Bond::isNotJustForHydrogens()
 		return true;
 	}
 
-	if (downstreamAtomCount(0) == 0)
+	if (downstreamAtomGroupCount() == 0)
 	{
 		return false;
 	}
