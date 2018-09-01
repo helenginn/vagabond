@@ -19,7 +19,7 @@
 
 inline void checkErrors()
 {
-	GLenum err = glGetError();
+	GLenum err = 0;//glGetError();
 
 	if (err != 0)
 	{
