@@ -277,8 +277,8 @@ void Density2GL::setupIndexTable()
 	_cubeIndices[0b11010100] = _cubeIndices[0b00101011];
 
 	// type 11 checked
-	_cubeIndices[0b00101100] = makeList(9, 1, y, y2, x2, xz1, 2, 2,
-	                                    xz1, z1);
+	_cubeIndices[0b00101100] = makeList(9, 1, y, y2, x2, xz1, 2, 
+	                                    2, xz1, z1);
 	_cubeIndices[0b11010011] = _cubeIndices[0b00101100];
 
 	// type 9 checked
@@ -312,8 +312,8 @@ void Density2GL::setupIndexTable()
 	_cubeIndices[0b11001110] = _cubeIndices[0b00110001];
 
 	// type 4 checked
-	_cubeIndices[0b00110010] = makeList(9, 0, y, z, z, y, xy2, y,
-	                                    xy2, xz1);
+	_cubeIndices[0b00110010] = makeList(9, 0, y, z, z, y, xy2,
+	                                     y, xy2, xz1);
 	_cubeIndices[0b11001101] = _cubeIndices[0b00110010];
 	// 90
 
@@ -331,7 +331,7 @@ void Density2GL::setupIndexTable()
 	_cubeIndices[0b11001011] = _cubeIndices[0b00110100];
 
 	// type 6
-	_cubeIndices[0b00110101] = makeList(9, x2, xz1, z, 2, y2, xy2,
+	_cubeIndices[0b00110101] = makeList(12, x2, xz1, z, 2, y2, xy2,
 	                                    xy2, 2, 0, 0, xy2, x1);
 	_cubeIndices[0b11001010] = _cubeIndices[0b00110101];
 
@@ -423,10 +423,12 @@ void Density2GL::setupIndexTable()
 	                                    0, x1, x2);
 	_cubeIndices[0b10111001] = _cubeIndices[0b01000110];
 
-	// type 15 (type 9?)
-	_cubeIndices[0b01000111] = makeList(0);
-	// type 15 (type 9?)
-	_cubeIndices[0b10111000] = makeList(0);
+	// type 9
+	_cubeIndices[0b01000111] = makeList(12, x2, x1, y, x2, y, z1,
+	                                    x2, z1, 2, z1, y, y2);
+	// type 9
+	_cubeIndices[0b10111000] = makeList(12, y, x1, x2, y, x2, y2,
+	                                    y2, x2, z, y, y2, yz);
 
 	// type 2 fixed
 	_cubeIndices[0b01001000] = makeList(6, 2, y2, yz, 2, yz, z);
@@ -530,11 +532,13 @@ void Density2GL::setupIndexTable()
 	_cubeIndices[0b10100110] = makeList(12, 1, y, y2, 0, z, yz, 0,
 	                                    yz, x1, yz, x1, xy2);
 
-	// type 14 FIXME
-//	_cubeIndices[0b01011010] = makeList(12, 
+	// type 14 
+	_cubeIndices[0b01011010] = makeList(12, y, xy2, 0, 0, xy2, x2,
+	                                    y2, 2, z, y2, z, yz);
 
-	// type 14 FIXME
-//	_cubeIndices[0b10100101] = makeList(12, 
+	// type 14 
+	_cubeIndices[0b10100101] = makeList(12, 0, y, y2, 0, y2, 2,
+	                                    xy2, x2, z, xy2, z, yz);
 
 	// type 11
 	_cubeIndices[0b01011011] = makeList(9, x1, xz1, 1, xz1, 1, y2,
@@ -625,10 +629,12 @@ void Density2GL::setupIndexTable()
 	                                    xz1, y2, yz);
 	_cubeIndices[0b10010100] = _cubeIndices[0b01101011];
 
-	// type 14 FIXME
-	_cubeIndices[0b01101100] = makeList(0);
-	// type 14 FIXME
-	_cubeIndices[0b10010011] = makeList(0);
+	// type 15 
+	_cubeIndices[0b01101100] = makeList(12, xz1, y, yz, 2, y, xz1,
+	                                    2, xz1, x2, 2, 1, y);
+	// type 15 
+	_cubeIndices[0b10010011] = makeList(12, 2, x2, xz1, y, 2, xz1,
+	                                    1, 2, y, yz, y, xz1);
 
 	// type 4 checked
 	_cubeIndices[0b01101101] = makeList(9, 0, y, yz, 0, yz, x2, 
@@ -669,7 +675,8 @@ void Density2GL::setupIndexTable()
 	_cubeIndices[0b01110100] = makeList(12, x2, z, xz1, x1, y, z1, 
 	                                    x1, z1, xy2, z1, xy2, yz);
 	// type 6
-	_cubeIndices[0b10001011] = makeList(0);
+	_cubeIndices[0b10001011] = makeList(12, xy2, xz1, yz, x1, 1, z1,
+	                                    x1, 1, x2, 1, x2, z);
 
 	// type 7
 	_cubeIndices[0b01110101] = makeList(9, x2, 0, x1, 2, z, z1,
