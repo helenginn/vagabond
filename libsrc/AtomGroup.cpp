@@ -546,17 +546,11 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 
 				if (rType != RefinementFine)
 				{
-					topBond = setupTorsionSet(bond, 0, bondNum,
-					                          deg2rad(degrees), 
-					                          deg2rad(0.04),
-					                          refineAngles, addFlex);
+					topBond = setupThoroughSet(bond, false);
 				}
 				else
 				{
-					topBond = setupThoroughSet(bond, bondNum,
-					                           deg2rad(degrees), 
-					                           deg2rad(0.04),
-					                           refineAngles, addFlex);
+					topBond = setupThoroughSet(bond, bondNum);
 				}
 			}
 

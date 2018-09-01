@@ -117,23 +117,23 @@ void Sampler::addParamsForBond(BondPtr bond)
 	}
 }
 
-BondPtr Sampler::setupThoroughSet(BondPtr bond, int bondNum,
-                                 double range, double interval, bool addAngle,
-bool addFlex)
+BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 {
 	reportInDegrees();
 	setScoreType(ScoreTypeCorrel);
 
-	setJobName("torsion_set_" + bond->shortDesc() + "_g");
+	setJobName("torsion_set_" + bond->shortDesc());
 
 	int bondCount = 0;
 	BondPtr topBond = BondPtr();
 
-	if (_params.count(ParamOptionNumBonds))
+	if (_params.count(ParamOptionNumBonds) == 0)
 	{
-		bondNum = _params[ParamOptionNumBonds] + 0.2;
+		return BondPtr();
 	}
 	
+	int bondNum = _params[ParamOptionNumBonds] + 0.2;
+
 	/* Logic: bond add map keeps remaining bonds (and remaining
  * 	additions) in memory for adding (allowing branches). When a
  * 	branched bond needs adding it is appended to this list with
@@ -162,11 +162,6 @@ bool addFlex)
 		bondCount++;
 		addParamsForBond(bond);
 
-		if (addAngle) 
-		{
-			addBendAngle(bond, deg2rad(0.2), deg2rad(0.001));
-		}
-
 		if (!bond->isRefinable())
 		{
 			/* No hope! Give up! */
@@ -191,7 +186,11 @@ bool addFlex)
 				BondInt entry;
 				entry.bond = nextBond;
 				entry.num = num - 1;
-				remaining.push_back(entry);
+				
+				if (addBranches || (!addBranches && j == 0))
+				{
+					remaining.push_back(entry);
+				}
 			}
 		}
 	}
@@ -204,101 +203,6 @@ bool addFlex)
 	return topBond;
 }
 	
-BondPtr Sampler::setupTorsionSet(BondPtr bond, int k, int bondNum,
-                                 double range, double interval, bool
-								 addAngle, bool addFlex)
-{
-	bond->setActiveGroup(k);
-
-	reportInDegrees();
-	setScoreType(ScoreTypeCorrel);
-
-	setJobName("torsion_set_" + bond->shortDesc() + "_g" +
-	           i_to_str(k));
-
-	int bondCount = 0;
-
-	if (_params.count(ParamOptionNumBonds))
-	{
-		bondNum = _params[ParamOptionNumBonds] + 0.2;
-	}
-	
-	addSampled(bond->getMajor());
-
-	if (addAngle) 
-	{
-		addBendAngle(bond, deg2rad(0.01), deg2rad(0.001));
-	}
-
-	addParamsForBond(bond);
-	addAtomsForBond(bond, k);
-
-	BondPtr returnBond = BondPtr();
-
-	for (int i = 0; i < bondNum; i++)
-	{
-		if (!bond->downstreamAtomGroupCount() ||
-		    !bond->downstreamAtomCount(k) ||
-		    !bond->isRefinable())
-		{
-			/* No hope! Give up! */
-			break;
-		}
-
-		int trial = 0;
-
-		AtomPtr nextAtom = bond->downstreamAtom(k, trial);
-		int totalAtoms = bond->downstreamAtomCount(k);
-
-		BondPtr nextBond = boost::static_pointer_cast<Bond>(nextAtom->getModel());
-
-		/* In case the downstream atom has no future, get whatever
-		downstream atom has a refinable future.
-		Prioritise 0th bond. */
-		while (nextAtom && !nextBond->isRefinable())
-		{
-			trial++;
-
-			/* No more, give up */
-			if (trial >= totalAtoms)
-			{
-				break;
-			}
-
-			nextAtom = bond->downstreamAtom(k, trial);
-			nextBond = boost::static_pointer_cast<Bond>(nextAtom->getModel());
-		}
-
-		addAtomsForBond(nextBond, 0);
-		
-		/* Now if we have a better bond, go forth */
-		if (nextAtom && nextBond->isRefinable())
-		{
-			if (!returnBond)
-			{
-				returnBond = nextBond;
-			}
-
-			if (addAngle)
-			{
-				addBendAngle(nextBond, deg2rad(0.01), deg2rad(0.001));
-			}
-
-			addParamsForBond(nextBond);
-		}
-
-		if (!nextBond->isRefinable())
-		{
-			break;
-		}
-
-		k = 0;
-		bond = nextBond;
-		bondCount++;
-	}
-
-	return returnBond;
-}
 
 double Sampler::preScanParameter(BondPtr bond, Getter getter, Setter setter,
                                double stepSize)
@@ -365,9 +269,11 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 	double mult = bond->getTorsionStepMult();
 	range *= mult;
 	
-	preScanParameter(bond, Bond::getTorsion, Bond::setTorsion, interval / 5);
+	preScanParameter(bond, Bond::getTorsion, 
+	                 Bond::setTorsion, interval / 5);
 
-	_strategy->addParameter(&*bond, Bond::getTorsion, Bond::setTorsion,
+	_strategy->addParameter(&*bond, Bond::getTorsion, 
+	                        Bond::setTorsion,
 	                        range, interval,
 	"t" + bond->shortDesc());
 

@@ -174,12 +174,10 @@ public:
                                  double range, double interval,
                                  std::string name);
 protected:
-	BondPtr setupTorsionSet(BondPtr bond, int k, int bondNum,
-	                        double range, double interval,
-	bool addAngle = false, bool addFlex = false);
-	BondPtr setupThoroughSet(BondPtr bond, int bondNum,
-	                         double range, double interval,
-							 bool addAngle = false, bool addFlex = false);
+	/** Create a torsion set which adds the primary chain (the backbone)
+	 * 	but optionally may not add the sidechain branches. Adds the 
+	 * 	appropriate bond parameters and the sensitive atoms. */	
+	BondPtr setupThoroughSet(BondPtr bond, bool addBranches = true);
 	FFTPtr _fft;
 	mat3x3 _real2Frac;
 
