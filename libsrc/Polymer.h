@@ -384,8 +384,6 @@ private:
 		_rotationAxis = mat3x3_axis(rot, 0);
 		setChangedRotation();
 	}
-	void refineEverything(int start);
-	void refineLoop(int start, bool magic);
 
 	mat3x3 _transTensor;
 	double _overallScale;
