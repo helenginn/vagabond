@@ -152,6 +152,10 @@ public:
 	void writeMillersToFile(DiffractionPtr data, std::string prefix = "");
 
 	void fourierTransform(int dir, double res = FLT_MAX);
+	
+	/** Finds appropriate scale factor for the solvent contribution by means
+	 * of a grid search. Starts with a global scale factor, then scales
+	 * the solvent, then a full scale by resolution bin. */
 	void scaleComponents(DiffractionPtr data);
 	double scaleAndAddSolventScore(DiffractionPtr data = DiffractionPtr());
 	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
@@ -366,7 +370,8 @@ private:
 	BucketPtr _bucket;
 	
 	void scaleSolvent(DiffractionPtr data);
-	void scaleToDiffraction(DiffractionPtr data, bool full = false);
+	void scaleToDiffraction(DiffractionPtr data, bool full = false,
+	                        int shellScale = -1);
 };
 
 #endif /* defined(__vagabond__Crystal__) */

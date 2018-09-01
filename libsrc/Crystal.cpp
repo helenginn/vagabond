@@ -478,7 +478,8 @@ double Crystal::getMaximumDStar(DiffractionPtr data)
 	return maxRes;
 }
 
-void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
+void Crystal::scaleToDiffraction(DiffractionPtr data, bool full,
+                                 int shellScale)
 {
 	getMaxResolution(data);
 	
@@ -488,7 +489,11 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 	                                    0, _maxResolution);
 	applyScaleFactor(totalFc / ratio, 0, 0);
 	
-	if (!Options::getShellScale())
+	/* Either take custom argument or use global default */
+	bool scaleByShell = (shellScale < 0 ? Options::getShellScale() :
+	                     shellScale);
+	
+	if (!scaleByShell)
 	{
 		if (!full) return;
 		double scale, bFactor;
@@ -528,7 +533,7 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 
 void Crystal::scaleComponents(DiffractionPtr data)
 {
-	scaleToDiffraction(data);
+	scaleToDiffraction(data, false, 0);
 	scaleSolvent(data);
 	scaleToDiffraction(data);
 }
