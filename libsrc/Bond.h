@@ -198,7 +198,17 @@ public:
 		Bond *bond = static_cast<Bond *>(object);
 		return bond->_bondGroups[bond->_activeGroup].torsionAngle;
 	}
+	
+	/** Changes the torsion angle which affects this bond, rather than
+	 *  the downstream bond. */
+	static void setAffectingTorsion(void *object, double value);
+	
+	/** Returns the torsion angle which affects this bond, rather than
+	 *  the downstream bond. */
+	static double getAffectingTorsion(void *object);
 
+	/** Changes the torsion angle which affects
+	 *  the downstream bond. */
 	static void setTorsion(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
@@ -555,6 +565,9 @@ private:
 
 	/* Downstream groups of bonds */
 	std::vector<BondGroup> _bondGroups;
+
+	/* Returns upstream bond group pertaining to this bond. */
+	BondGroup *bondGroupForBond();
 
 	/* Dampening should be associated with a bond group - woops */
 	double _dampening;

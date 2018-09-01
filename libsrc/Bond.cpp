@@ -1086,6 +1086,54 @@ void Bond::setBendAngle(void *object, double value)
 	newBond->propagateChange(10);
 }
 
+BondGroup *Bond::bondGroupForBond()
+{
+	ModelPtr model = getParentModel();
+	
+	if (!model->isBond())
+	{
+		return NULL;
+	}
+
+	BondPtr parent = ToBondPtr(model);
+	int group = -1;
+	int num = parent->downstreamAtomNum(getMinor(), &group);
+	
+	if (group < 0)
+	{
+		shout_at_helen("Group less than zero - floating bond?");
+	}
+
+	return &parent->_bondGroups[group];
+}
+
+void Bond::setAffectingTorsion(void *object, double torsion)
+{
+	Bond *bond = static_cast<Bond *>(object);
+	BondGroup *bondGroup = bond->bondGroupForBond();
+	
+	if (bondGroup == NULL)
+	{
+		return;
+	}
+
+	ToBondPtr(bond->getParentModel())->propagateChange(16);
+	bondGroup->torsionAngle = torsion;
+}
+
+double Bond::getAffectingTorsion(void *object)
+{
+	Bond *bond = static_cast<Bond *>(object);
+	BondGroup *bondGroup = bond->bondGroupForBond();
+	
+	if (bondGroup == NULL)
+	{
+		return 0;
+	}
+	
+	return bondGroup->torsionAngle;
+}
+
 bool Bond::splitBond()
 {
 	BondPtr me = ToBondPtr(shared_from_this());
