@@ -14,9 +14,9 @@
 #include "FileReader.h"
 #include "Sidechain.h"
 
-bool Backbone::shouldRefineMagicAxis(BondPtr)
+bool Backbone::shouldRefineAtom(AtomPtr atom)
 {
-	return false;
+	return true;
 }
 
 void Backbone::refine(CrystalPtr target, RefinementType rType)

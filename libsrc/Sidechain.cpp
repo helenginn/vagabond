@@ -18,9 +18,9 @@
 #include "Backbone.h"
 #include "../libinfo/RotamerTable.h"
 
-bool Sidechain::shouldRefineMagicAxis(BondPtr)
+bool Sidechain::shouldRefineAtom(AtomPtr atom)
 {
-	return false;
+	return !atom->isBackboneAndSidechain();
 }
 
 void Sidechain::refine(CrystalPtr target, RefinementType rType)

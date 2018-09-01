@@ -58,8 +58,8 @@ public:
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	void setAnchor();
 protected:
+	virtual bool shouldRefineAtom(AtomPtr atom);
 	virtual void addProperties();
-	virtual bool shouldRefineMagicAxis(BondPtr);
 
 	virtual std::string getClassName()
 	{

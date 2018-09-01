@@ -182,7 +182,6 @@ protected:
 	mat3x3 _real2Frac;
 
 	int _refinedMagicAxisCount;
-	virtual bool shouldRefineMagicAxis(BondPtr) { return false; }
 	virtual double getScore();
 	void setupCloseAtoms();
 	void setupScoreWithMap();

@@ -145,6 +145,7 @@ public:
 	
 	void refreshBondAngles();
 protected:
+	virtual bool shouldRefineAtom(AtomPtr atom) { return true; };
 	virtual AtomList topLevelAtoms();
 	int _timesRefined;
 
