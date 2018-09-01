@@ -39,9 +39,9 @@ void initVertex(Vertex *vert)
 	
 	int random = rand() % 3;
 	
-	vert->color[0] = 0.8;
-	vert->color[1] = 0.8;
-	vert->color[2] = 0.8;
+	vert->color[0] = (random == 0 ? 1.0 : 0.8);
+	vert->color[1] = (random == 1 ? 1.0 : 0.8);
+	vert->color[2] = (random == 2 ? 1.0 : 0.8);
 	vert->color[3] = 0.05;
 }
 
