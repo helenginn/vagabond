@@ -266,14 +266,11 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 		return;
 	}
 
-	double mult = bond->getTorsionStepMult();
-	range *= mult;
-	
-	preScanParameter(bond, Bond::getTorsion, 
-	                 Bond::setTorsion, interval / 5);
+	preScanParameter(bond, Bond::getAffectingTorsion, 
+	                 Bond::setAffectingTorsion, interval / 5);
 
-	_strategy->addParameter(&*bond, Bond::getTorsion, 
-	                        Bond::setTorsion,
+	_strategy->addParameter(&*bond, Bond::getAffectingTorsion, 
+	                        Bond::setAffectingTorsion,
 	                        range, interval,
 	"t" + bond->shortDesc());
 
