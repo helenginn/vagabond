@@ -27,7 +27,7 @@ public:
 	{
 		_recalculate = 0;
 		_renderType = GL_TRIANGLES;
-		_resolution = 0.4;
+		_resolution = 0.8;
 		_cubeIndices = std::vector<std::vector<GLuint> >();
 		_offset = make_vec3(-12, 3, -20);
 		_visible = true;

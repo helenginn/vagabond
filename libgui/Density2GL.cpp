@@ -743,9 +743,9 @@ vec3 Density2GL::getCentreOffset()
 void Density2GL::makeUniformGrid()
 {
 	/* Find sensible dimensions eventually */
-	_dims.x = 20;
-	_dims.y = 20;
-	_dims.z = 20;
+	_dims.x = 14;
+	_dims.y = 14;
+	_dims.z = 14;
 	
 	/* Make a series of vertices which are three times more
 	 * numerous than the number of voxels. */
