@@ -458,50 +458,31 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 
 	ScoreType scoreType = ScoreTypeModelPos;
 	int maxTries = 0;
-	int bondNum = 4;
-	double degrees = 0;
 
 	switch (rType) {
 		case RefinementModelPos:
 		scoreType = ScoreTypeModelPos;
 		maxTries = 60;
-		degrees = 4;
 		break;
 
 		case RefinementFine:
 		scoreType = ScoreTypeCorrel;
 		maxTries = 2;
-		degrees = 4;
-		bondNum = 4;
-		refineAngles = false;
 		break;
 
 		case RefinementModelRMSDZero:
 		scoreType = ScoreTypeModelRMSDZero;
 		maxTries = 10;
-		degrees = 4;
 		break;
 
 		case RefinementRMSDZero:
 		scoreType = ScoreTypeRMSDZero;
 		maxTries = 10;
-		degrees = 4;
 		break;
 
 		default:
 		shout_at_helen("Unimplemented refinement option?");
 		break;
-	}
-
-	if (refineAngles)
-	{
-		bondNum = 3;
-	}
-
-	if (hasParameter(ParamOptionTorsion) && paramCount() < 2 &&
-	    rType == RefinementFine)
-	{
-//		maxTries = 20;
 	}
 	
 	while (topAtoms.size() > 0)
@@ -550,7 +531,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 				}
 				else
 				{
-					topBond = setupThoroughSet(bond, bondNum);
+					topBond = setupThoroughSet(bond);
 				}
 			}
 
