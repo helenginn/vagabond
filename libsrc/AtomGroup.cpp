@@ -334,7 +334,10 @@ AtomList AtomGroup::topLevelAtoms()
 				break;
 			}
 
-			topAtom = bond->getMajor();
+			if (shouldRefineAtom(bond->getMajor()))
+			{
+				topAtom = bond->getMajor();
+			}
 		}
 
 		list.push_back(topAtom);
