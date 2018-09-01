@@ -383,7 +383,7 @@ public:
 	/**
 	*  In cases where there are multiple downstream bonds, this returns the
 	*  offset of the torsion from the first atom in the downstream atom array.
-	*  \return fraction of a circle (0-1) to add to the first torsion angle.
+	*  \return number of radians to add to the first torsion angle.
 	*/
 	double getCirclePortion(int n, int i)
 	{
