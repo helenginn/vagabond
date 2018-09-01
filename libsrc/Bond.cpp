@@ -1143,16 +1143,19 @@ bool Bond::splitBond()
 	int num = parent->downstreamAtomNum(getMinor(), NULL);
 	
 	BondPtr dupl = me->duplicateDownstream(parent, last);
-	double torsion = getTorsion(&*me);
+	double torsion = parent->_bondGroups[last].torsionAngle;
 	
+	std::cout << "Pre " << torsion;
+	std::cout << " circle: " << getCirclePortion(&*me);
+
 	if (num > 0)
 	{
-		torsion += getCirclePortion(&*me) * 2 * M_PI;
+		torsion += getCirclePortion(&*me);
 	}
 	
-	std::cout << "Moi " << num << std::endl;
+	std::cout << " Post: " << torsion << std::endl;
 
-	setTorsion(&*dupl, torsion);
+	setAffectingTorsion(&*dupl, torsion);
 
 	_occupancy /= 2;
 	dupl->_occupancy /= 2;
