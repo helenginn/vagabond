@@ -1007,8 +1007,8 @@ void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals,
 	plotMap["yHeader0"] = "fo";
 	plotMap["colour0"] = "black";
 
-	plotMap["xTitle0"] = "Fc density";
-	plotMap["yTitle0"] = "Fo density";
+	plotMap["xTitle0"] = "Calc density";
+	plotMap["yTitle0"] = "Obs density";
 	plotMap["style0"] = "scatter";
 	csv->plotPNG(plotMap);
 }
