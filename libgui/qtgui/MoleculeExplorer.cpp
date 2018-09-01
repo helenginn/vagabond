@@ -48,12 +48,14 @@ void MoleculeExplorer::updateCorrelation()
 
 MoleculeExplorer::~MoleculeExplorer()
 {
+	/*
+	delete _sequenceView;
+	_sequenceView = NULL;
+	*/
+
 	delete _monomerExplorer;
 	_monomerExplorer = NULL;
 
 	delete _scrollArea;
 	_scrollArea = NULL;
-	
-	delete _sequenceView;
-	_sequenceView = NULL;
 }
