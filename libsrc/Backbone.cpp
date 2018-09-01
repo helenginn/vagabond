@@ -41,20 +41,24 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 		{
 			range = 0.2;
 		}
+		
 
 		switch (rType)
 		{
 			case RefinementModelPos:
 			addParamType(ParamOptionTorsion, range);
-			addParamType(ParamOptionBondAngle, 0.1);
+			addParamType(ParamOptionBondAngle, 0.2);
+			addParamType(ParamOptionNumBonds, 3);
 			break;
 
 			case RefinementFine:
 			addParamType(ParamOptionTorsion, range);
+			addParamType(ParamOptionNumBonds, 4);
 			break;
 
 			case RefinementRMSDZero:
 			addParamType(ParamOptionMagicAngles, 3);
+			addParamType(ParamOptionNumBonds, 4);
 			break;
 
 			default:
