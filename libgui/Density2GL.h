@@ -32,7 +32,7 @@ public:
 		_offset = make_vec3(-12, 3, -20);
 		_visible = true;
 		_threshold = 2.4;
-		_backToFront = false;
+		_backToFront = true;
 	}
 	
 	virtual void render();
