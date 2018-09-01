@@ -50,7 +50,7 @@ void Sampler::addAtomsForBond(BondPtr firstBond, int k)
 		BondPtr bond = extraTorsionBonds[i];
 		addSampled(bond->getMinor());
 
-		for (int j = 0; j < bond->downstreamAtomCount(k); j++)
+		for (int j = 0; j < bond->downstreamBondCount(k); j++)
 		{
 			AtomPtr downAtom = bond->downstreamAtom(k, j);
 			addSampled(downAtom);
@@ -168,12 +168,12 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 			continue;
 		}
 
-		for (int j = 0; j < bond->downstreamAtomGroupCount(); j++)
+		for (int j = 0; j < bond->downstreamBondGroupCount(); j++)
 		{
 			addAtomsForBond(bond, j);
 
 			/* Take the chosen group and check for futures */
-			for (int i = 0; i < bond->downstreamAtomCount(j); i++)
+			for (int i = 0; i < bond->downstreamBondCount(j); i++)
 			{
 				AtomPtr downstreamAtom = bond->downstreamAtom(j, i);
 				BondPtr nextBond = ToBondPtr(downstreamAtom->getModel());
@@ -195,7 +195,7 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 		}
 	}
 	
-	if (!topBond->isRefinable())
+	if (topBond && !topBond->isRefinable())
 	{
 		return BondPtr();
 	}
@@ -340,7 +340,7 @@ void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 	if (parent && parent->isBond())
 	{
 		BondPtr pBond = ToBondPtr(parent);
-		int result = pBond->downstreamAtomNum(bond->getMinor(), NULL);
+		int result = pBond->downstreamBondNum(&*bond, NULL);
 
 		if (result > 0)
 		{

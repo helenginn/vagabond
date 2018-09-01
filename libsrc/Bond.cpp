@@ -29,7 +29,6 @@ void Bond::initialize()
 	_anchored = false;
 	_usingTorsion = false;
 	_activated = false;
-	_activeGroup = 0;
 	_dampening = Options::getDampen();
 	_bondLength = 0;
 	_changedPos = true;
@@ -119,7 +118,6 @@ Bond::Bond(Bond &other)
 	_activated = other._activated;
 	_major = other._major;
 	_minor = other._minor;
-	_activeGroup = other._activeGroup;
 	_bondGroups = other._bondGroups;
 	_resetOccupancy = other._resetOccupancy;
 
@@ -180,6 +178,35 @@ void Bond::setTorsionAngleFrom(AtomPtr one, AtomPtr two, AtomPtr three,
 	                 &_torsion);
 }
 
+void Bond::setHeavyAlign(AtomPtr atom)
+{
+	std::cout << "Heavy align" << std::endl;
+	/* if the parent is not available, this is not meant to be
+	 * able to generate a torsion angle. Set as heavy alignment atom
+	 * for getManyPositions(). */
+	if (!getParentModel()->isBond())
+	{
+		_heavyAlign = atom;
+		return;
+	}
+	
+	BondPtr parent = ToBondPtr(getParentModel());
+	std::cout << "Trying to fix grandparent" << std::endl;
+	
+	if (!parent->getParentModel()->isBond())
+	{	
+		/* Grandparent is absolute - we can generate a torsion angle
+		 * from this heavy atom */
+
+		AtomPtr one = atom;
+		AtomPtr two = parent->getMajor();
+		AtomPtr three = getMajor();
+		AtomPtr four = getMinor();
+
+		setTorsionAngleFrom(one, two, three, four);
+	}
+}
+
 void Bond::deriveTorsionAngle()
 {
 	if (!getParentModel()->isBond())
@@ -217,7 +244,7 @@ void Bond::deriveBondAngle()
 	AtomPtr pMajor = parent->getMajor();
 	
 	_expectedAngle = -1;
-	double angle = Atom::getAngle(getMajor(), getMinor(), pMajor);
+	double angle = Atom::getAngle(getMinor(), getMajor(), pMajor);
 	
 	/* In some cases, may not be able to assign, in which case
 	 * 	we must fish from the original model */
@@ -233,6 +260,8 @@ void Bond::deriveBondAngle()
 		double angle = vec3_angle_with_vec3(abDiff, cbDiff);
 		_expectedAngle = angle;
 	}
+	
+	std::cout << "angle for " << shortDesc() << ": " << angle << std::endl;
 
 	/* Either way, we need to store the geometry ratio (means
 	 *  we don't need to constantly take the tan of something) */
@@ -251,15 +280,22 @@ void Bond::deriveCirclePortion()
 	BondPtr parent = ToBondPtr(getParentModel());
 	
 	/* We'll be in the same group as the last group */
-	int groups = parent->downstreamAtomGroupCount();
+	int groups = parent->downstreamBondGroupCount();
 
 	/* First we check to see if there is a sister bond, given that
 	 * 	we have not yet been added to the parent */
 	int count = parent->downstreamBondCount(groups - 1);
 	
+	if (getMinor()->getElement()->electronCount() == 1)
+	{
+		return;
+	}
+	
 	if (count == 1)
 	{
 		/* We are the first bond. */
+		_usingTorsion = true;
+		_circlePortion = 0;
 		return;
 	}
 	
@@ -301,18 +337,26 @@ void Bond::deriveCirclePortion()
 		double increment = 0;
 		mat3x3_closest_rot_mat(lastAtomAxis, newAtomAxis, xAxis, &increment);
 		double portion = increment / (2 * M_PI);
+		portion = 1 - portion;
 
 		if (portion == portion)
 		{
+			std::cout << "Finding portion for " << 
+			getMinor()->shortDesc() << std::endl;
+			std::cout << "Bond: " << shortDesc() << std::endl;
+			std::cout << lastBond->_circlePortion << " + " << portion;
+			std::cout << std::endl;
 			_circlePortion = lastBond->_circlePortion + portion;
 		}
 		else
 		{
 			/* We can't do this - we must derive from the model */
 			ok = false;
+			std::cout << "can't anymore" << std::endl;
 		}
 
 		/* Take out unnecessary >180º circle turns */
+		/*
 		if (_circlePortion > 0.5)
 		{
 			_circlePortion -= 1;
@@ -321,6 +365,7 @@ void Bond::deriveCirclePortion()
 		{
 			_circlePortion += 1;
 		}
+		*/
 	}
 	
 	if (!ok)
@@ -515,12 +560,6 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 {
 	const vec3 none = make_vec3(0, 0, 0);
 
-	/*
-	AtomPtr nextAtom = downstreamAtom(_activeGroup, 0);
-	BondPtr nextBond = ToBondPtr(nextAtom->getModel());
-	double nextRatio = getGeomRatio(_activeGroup, 0);
-	*/
-
 	mat3x3 aveBasis = make_mat3x3();
 	vec3 aveStart = make_vec3(0, 0, 0);
 
@@ -670,7 +709,8 @@ std::vector<BondSample> *Bond::getManyPositions()
 
 	BondPtr prevBond = boost::static_pointer_cast<Bond>(model);
 	int myGroup = -1;
-	double torsionNumber = prevBond->downstreamAtomNum(getMinor(), &myGroup);
+	double torsionNumber = prevBond->downstreamBondNum(this,
+	                                                   &myGroup);
 
 	BondPtr parent = ToBondPtr(getParentModel());
 	BondPtr sisBond = parent->downstreamBond(myGroup, 0);
@@ -678,12 +718,12 @@ std::vector<BondSample> *Bond::getManyPositions()
 	double baseTorsion = sisBond->_torsion;
 
 	bool nextBondExists = false;
-	if (_bondGroups[_activeGroup].bonds.size())
+	if (downstreamBondGroupCount())
 	{
 		nextBondExists = true;
 	}
 
-	double totalAtoms = prevBond->downstreamAtomCount(myGroup);
+	double totalAtoms = prevBond->downstreamBondCount(myGroup);
 
 	if (myGroup >= 0) // otherwise, might be next to anchor.
 	{
@@ -725,6 +765,8 @@ std::vector<BondSample> *Bond::getManyPositions()
 
 	for (size_t i = 0; i < prevSamples->size(); i++)
 	{
+//		std::cout << "circlePortion = " << circlePortion << std::endl;
+//		std::cout << "circleAdd = " << rad2deg(circleAdd) << std::endl;
 		double currentTorsion = baseTorsion + circleAdd;
 		/* Deviation from correction */
 		currentTorsion += prevSamples->at(i).torsion;
@@ -775,12 +817,12 @@ bool Bond::isNotJustForHydrogens()
 		return true;
 	}
 
-	if (downstreamAtomGroupCount() == 0)
+	if (downstreamBondGroupCount() == 0)
 	{
 		return false;
 	}
 
-	for (size_t i = 0; i < downstreamAtomCount(0); i++)
+	for (size_t i = 0; i < downstreamBondCount(0); i++)
 	{
 		AtomPtr atom = downstreamAtom(i, 0);
 		if (atom->getElement()->electronCount() > 1)
@@ -811,9 +853,9 @@ void Bond::propagateChange(int depth, bool refresh)
 	{
 		BondPtr bond = propagateBonds[k];
 
-		for (size_t j = 0; j < bond->downstreamAtomGroupCount(); j++)
+		for (size_t j = 0; j < bond->downstreamBondGroupCount(); j++)
 		{
-			for (size_t i = 0; i < bond->downstreamAtomCount(j); i++)
+			for (size_t i = 0; i < bond->downstreamBondCount(j); i++)
 			{
 				AtomPtr atom = bond->downstreamAtom(j, i);
 				ModelPtr model = atom->getModel();
@@ -861,13 +903,13 @@ ModelPtr Bond::getParentModel()
 void Bond::setCirclePortion(void *object, double value)
 {
 	Bond *bond = static_cast<Bond *>(object);
-	bond->_circlePortion = value;
+	bond->_circlePortion = value / (2 * M_PI);
 }
 
 double Bond::getCirclePortion(void *object)
 {
 	Bond *bond = static_cast<Bond *>(object);
-	return bond->_circlePortion;
+	return bond->_circlePortion * (2 * M_PI);
 }
 
 bool Bond::connectsAtom(std::string name)
@@ -909,7 +951,7 @@ BondGroup *Bond::bondGroupForBond()
 
 	BondPtr parent = ToBondPtr(model);
 	int group = -1;
-	int num = parent->downstreamAtomNum(getMinor(), &group);
+	int num = parent->downstreamBondNum(this, &group);
 	
 	if (group < 0)
 	{
@@ -923,9 +965,9 @@ bool Bond::splitBond()
 {
 	BondPtr me = ToBondPtr(shared_from_this());
 	BondPtr parent = ToBondPtr(getParentModel());
-	int last = parent->downstreamAtomGroupCount();
+	int last = parent->downstreamBondGroupCount();
 	
-	int num = parent->downstreamAtomNum(getMinor(), NULL);
+	int num = parent->downstreamBondNum(this, NULL);
 	
 	BondPtr dupl = me->duplicateDownstream(parent, last);
 	double torsion = _torsion;
@@ -1017,14 +1059,14 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 	newParent->addDownstreamBond(&*duplBond, groupNum);
 	
 	/* If this is the end of the chain, stop now */
-	if (!downstreamAtomGroupCount())
+	if (!downstreamBondGroupCount())
 	{
 		return duplBond;
 	}
 	
 	/* Need to spread the duplication to the entire next set of bonds
 	 * (currently no support for duplicating already-branched bonds!! FIXME */
-	for (size_t i = 0; i < downstreamAtomCount(0); i++)
+	for (size_t i = 0; i < downstreamBondCount(0); i++)
 	{
 		if (_splitBlock)
 		{
@@ -1091,13 +1133,13 @@ std::string Bond::description()
 	stream << "Bond torsion angle: "
 	<< _torsion << std::endl;
 	stream << "Bond downstream groups: ("
-	<< downstreamAtomGroupCount() << "):" << std::endl;
+	<< downstreamBondGroupCount() << "):" << std::endl;
 	stream << "Bond downstream atoms (first) ("
-	<< downstreamAtomCount(0) << "):" << std::endl;
+	<< downstreamBondCount(0) << "):" << std::endl;
 
-	for (size_t i = 0; i < downstreamAtomGroupCount(); i++)
+	for (size_t i = 0; i < downstreamBondGroupCount(); i++)
 	{
-		for (size_t j = 0; j < downstreamAtomCount(i); j++)
+		for (size_t j = 0; j < downstreamBondCount(i); j++)
 		{
 			stream << "\t" << downstreamAtom(i, j)->shortDesc()
 			<< "(" << &*downstreamAtom(i, j) << ")" << std::endl;
@@ -1137,60 +1179,6 @@ void Bond::resetBondDirection()
 	vec3_set_length(&_bondDirection, _bondLength);
 }
 
-/*
-void Bond::reverseDownstreamAtoms(int group)
-{
-	std::vector<AtomValue> newAtoms;
-	newAtoms.push_back(_bondGroups[group].atoms[0]);
-
-	for (int i = (int)downstreamAtomCount(group) - 1; i > 0; i--)
-	{
-		newAtoms.push_back(_bondGroups[group].atoms[i]);
-	}
-
-	_bondGroups[group].atoms = newAtoms;
-}
-
-ModelPtr Bond::reverse(BondPtr upstreamBond)
-{
-	ModelPtr nextBond = getMajor()->getModel();
-	AtomPtr minor = getMinor();
-	AtomPtr major = getMajor();
-	setMinor(major);
-	setMajor(minor);
-
-	AtomPtr heavy = getHeavyAlign();
-	AtomPtr light = getLightAlign();
-	_heavyAlign = light;
-	_lightAlign = heavy;
-
-	vec3_mult(&_bondDirection, -1);
-
-	for (size_t i = 0; i < downstreamAtomGroupCount(); i++)
-	{
-		if (upstreamBond)
-		{
-			_bondGroups[i].atoms.erase(_bondGroups[i].atoms.begin());
-			upstreamBond->_bondGroups[i].atoms.clear();
-
-			// FIXME
-			upstreamBond->addDownstreamAtom(major, i);
-
-			for (int j = (int)downstreamAtomCount(i) - 1; j >= 0; j--)
-			{
-				AtomPtr atom = downstreamAtom(i, j);
-				upstreamBond->addDownstreamAtom(atom, i);
-			}
-		}
-	}
-
-	setActiveGroup(0);
-	activate();
-
-	return nextBond;
-}
-*/
-
 bool Bond::isRefinable()
 {
 	return isNotJustForHydrogens() && !isFixed() && isUsingTorsion();
@@ -1201,9 +1189,9 @@ bool Bond::test()
 	bool ok = true;
 
 	/* Test of geometry for multiple downstream atoms */
-	for (size_t i = 0; i < downstreamAtomGroupCount(); i++)
+	for (size_t i = 0; i < downstreamBondGroupCount(); i++)
 	{
-		for (size_t j = -1; j < downstreamAtomCount(i); j++)
+		for (size_t j = -1; j < downstreamBondCount(i); j++)
 		{
 			AtomPtr atom1 = getMajor();
 			if (j >= 0)
@@ -1216,9 +1204,9 @@ bool Bond::test()
 				continue;
 			}
 
-			for (size_t k = 0; k < downstreamAtomCount(i); k++)
+			for (size_t k = 0; k < downstreamBondCount(i); k++)
 			{
-				AtomPtr atom3 = downstreamAtom(i, (k + 1) % downstreamAtomCount(i));
+				AtomPtr atom3 = downstreamAtom(i, (k + 1) % downstreamBondCount(i));
 
 				if (ToBondPtr(atom3->getModel())->getRefineBondAngle())
 				{

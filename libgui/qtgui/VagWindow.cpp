@@ -533,8 +533,8 @@ void VagWindow::splitBond()
 	/* Find split blockade */
 	for (int i = 0; i < num; i++)
 	{
-		if (blockade->downstreamAtomGroupCount() && 
-		    blockade->downstreamAtomCount(0))
+		if (blockade->downstreamBondGroupCount() && 
+		    blockade->downstreamBondCount(0))
 		{
 			AtomPtr newAtom = blockade->downstreamAtom(0, 0);
 			blockade = &*(ToBondPtr(newAtom->getModel())); 

@@ -39,9 +39,9 @@ AtomPtr Hydrogenator::prepareNewHydrogen(AtomPtr parent)
 
 bool Hydrogenator::hasHydrogens(BondPtr bond)
 {
-	for (int i = 0; i < bond->downstreamAtomGroupCount(); i++)
+	for (int i = 0; i < bond->downstreamBondGroupCount(); i++)
 	{
-		for (int j = 0; j < bond->downstreamAtomCount(i); j++)
+		for (int j = 0; j < bond->downstreamBondCount(i); j++)
 		{
 			AtomPtr atom = bond->downstreamAtom(i, j);
 			
@@ -87,7 +87,7 @@ void Hydrogenator::setNewGeometry(AtomList group, double bondAngle,
 		}
 		
 		/* Don't set a torsion angle except for the first atom */
-		if (parent->downstreamAtomNum(atom, NULL) > 0)
+		if (parent->downstreamBondNum(&*bond, NULL) > 0)
 		{
 			continue;
 		}
@@ -134,11 +134,11 @@ void Hydrogenator::addHydrogens(AtomPtr minor, std::vector<std::string> hNames)
 		return;
 	}
 	
-	for (int i = 0; i < bond->downstreamAtomGroupCount(); i++)
+	for (int i = 0; i < bond->downstreamBondGroupCount(); i++)
 	{
 		/* Find the fraction of the complete "torsion circle" made by the
 		* final atom in the downstream atoms. */
-		int currentTotal = bond->downstreamAtomCount(i);
+		int currentTotal = bond->downstreamBondCount(i);
 		
 		int finalTotal = (currentTotal + hNames.size());
 		
@@ -166,7 +166,7 @@ void Hydrogenator::addHydrogens(AtomPtr minor, std::vector<std::string> hNames)
 		}
 		
 		double circlePortion = 0;
-		bool hasBonds = bond->downstreamAtomCount(i) > 0;
+		bool hasBonds = bond->downstreamBondCount(i) > 0;
 		
 		if (currentTotal > 0)
 		{

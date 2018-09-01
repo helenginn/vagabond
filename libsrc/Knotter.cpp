@@ -87,15 +87,11 @@ void Knotter::tieTowardsNTerminus()
 	int resNum = _backbone->getResNum();
 	BackbonePtr prevBackbone, nextBackbone;
 
-	//    if (resNum > 1)
-	{
-		/* to get the previous (C-terminal) backbone residue */
-		MonomerPtr monomer = polymer->getMonomer(resNum + 1);
+	MonomerPtr monomer = polymer->getMonomer(resNum + 1);
 
-		if (monomer)
-		{
-			prevBackbone = monomer->getBackbone(); // one before
-		}
+	if (monomer)
+	{
+		prevBackbone = monomer->getBackbone(); // one before
 	}
 
 	if (resNum < polymer->monomerCount())
@@ -128,11 +124,18 @@ void Knotter::tieTowardsNTerminus()
 	bool isProline = (_backbone->getMonomer()->getIdentifier() == "pro");
 	AtomPtr carbonylCarbon = _backbone->findAtom("C");
 
-	if (prevCAlpha->getModel()->getClassName() == "Bond")
+	/* already tied up to C terminus */
+	if (prevCAlpha->getModel()->isBond())
 	{
 		BondPtr nitro2Carbon = BondPtr(new Bond(prevNitrogen, carbonylCarbon));
 		nitro2Carbon->setRefineFlexibility(false);
 		nitro2Carbon->activate();
+
+		if (!prevNitrogen->getModel()->isBond())
+		{
+			/* this is the absolute nitrogen! correct torsion */
+			nitro2Carbon->setHeavyAlign(prevCAlpha);
+		}
 	}
 
 	AtomPtr carbonylOxygen = _backbone->findAtom("O");
@@ -147,6 +150,12 @@ void Knotter::tieTowardsNTerminus()
 
 	BondPtr carbonyl2CAlpha = BondPtr(new Bond(carbonylCarbon, cAlpha));
 	carbonyl2CAlpha->activate();
+
+	if (!prevNitrogen->getModel()->isBond())
+	{
+		/* this is the absolute nitrogen! correct torsion */
+		carbonyl2CAlpha->setHeavyAlign(prevCAlpha);
+	}
 
 	BondPtr carbonyl2oxy = BondPtr(new Bond(carbonylCarbon, carbonylOxygen));
 	carbonyl2oxy->activate();
@@ -166,6 +175,7 @@ void Knotter::tieTowardsNTerminus()
 		BondPtr nSpine2hydrogen = BondPtr(new Bond(nSpine, nHydrogen));
 		nSpine2hydrogen->activate();
 	}
+	
 }
 
 void Knotter::tieTowardsCTerminus()
@@ -232,17 +242,22 @@ void Knotter::tieTowardsCTerminus()
 
 	BondPtr nSpine2cAlpha = BondPtr(new Bond(nSpine, cAlpha));
 	nSpine2cAlpha->activate();
+	nSpine2cAlpha->addExtraTorsionSample(carbonylOxygen, 0);
+
+	BondPtr cAlpha2Carbonyl = BondPtr(new Bond(cAlpha, carbonylCarbon));
+	cAlpha2Carbonyl->activate();
 
 	if (nSpine && nSpine->getModel()->isBond())
 	{
 		BondPtr nSpine2hydrogen = BondPtr(new Bond(nSpine, nHydrogen));
 		nSpine2hydrogen->activate();
-		nSpine2cAlpha->addExtraTorsionSample(carbonylOxygen, 0);
 	}
-
-	BondPtr cAlpha2Carbonyl = BondPtr(new Bond(cAlpha, carbonylCarbon));
-
-	cAlpha2Carbonyl->activate();
+	else
+	{
+		/* this is the absolute nitrogen! correct torsion */
+		nSpine2cAlpha->setHeavyAlign(prevCarbonylCarbon);
+		cAlpha2Carbonyl->setHeavyAlign(prevCarbonylCarbon);
+	}
 
 	if (nextBackbone)
 	{

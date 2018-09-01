@@ -126,6 +126,8 @@ public:
 	{
 		return _heavyAlign.lock();
 	}
+	
+	void setHeavyAlign(AtomPtr atom);
 
 	/**
 	*  This is the second atom on which the torsion angle is
@@ -262,18 +264,9 @@ public:
 	void addDownstreamAtom(AtomPtr atom, int group, bool skipGeometry = false);
 
 	/**
-	*   \param group which group to query.
-	* 	\return Number of downstream atoms in a given group (conformer).
-	*/
-	size_t downstreamAtomCount(int group)
-	{
-		return _bondGroups[group].bonds.size();
-	}
-
-	/**
 	* 	\return Number of downstream conformers.
 	*/
-	size_t downstreamAtomGroupCount()
+	size_t downstreamBondGroupCount()
 	{
 		return _bondGroups.size();
 	}
@@ -290,20 +283,30 @@ public:
 	}
 
 	/**
-	* 	Returns the appropriate group/number for a given atom, expected
+	*   \param group which group to query.
+	* 	\return Number of downstream atoms in a given group (conformer).
+	*/
+	size_t downstreamBondCount(int group)
+	{
+		return _bondGroups[group].bonds.size();
+	}
+
+
+	/**
+	* 	Returns the appropriate group/number for a given bond, expected
 	* 	to be called by a direct descendant of a given bond.
-	*	\param atom One of the atoms in one of the groups of this bond.
+	*	\param bond One of the bonds in one of the groups of this bond.
 	*	\param group pointer to be filled with the expected group.
-	*	\return -1 if atom isn't found, and the atom number if found.
+	*	\return -1 if bond isn't found, and the bond number if found.
 	*		
 	*/
-	int downstreamAtomNum(AtomPtr atom, int *group)
+	int downstreamBondNum(Bond *down, int *group)
 	{
-		for (int j = 0; j < downstreamAtomGroupCount(); j++)
+		for (int j = 0; j < downstreamBondGroupCount(); j++)
 		{
-			for (int i = 0; i < downstreamAtomCount(j); i++)
+			for (int i = 0; i < downstreamBondCount(j); i++)
 			{
-				if (downstreamAtom(j, i) == atom)
+				if (&*downstreamBond(j, i) == down)		
 				{
 					if (group)
 					{
@@ -525,11 +528,6 @@ private:
 	/* Downstream groups of bonds */
 	std::vector<BondGroup> _bondGroups;
 	
-	size_t downstreamBondCount(int group)
-	{
-		return _bondGroups[group].bonds.size();
-	}
-
 	
 	Bond *nakedDownstreamBond(int group, int i)
 	{
