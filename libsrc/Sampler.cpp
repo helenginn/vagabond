@@ -100,7 +100,7 @@ void Sampler::addParamsForBond(BondPtr bond)
 			break;
 
 			case ParamOptionKick:
-			addTorsionBlur(bond, range, 0.0002);
+			addKick(bond, range, 0.0002);
 			break;
 
 			case ParamOptionDampen:
@@ -266,24 +266,24 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 		return;
 	}
 
-	preScanParameter(bond, Bond::getAffectingTorsion, 
-	                 Bond::setAffectingTorsion, interval / 5);
+	preScanParameter(bond, Bond::getTorsion, 
+	                 Bond::setTorsion, interval / 5);
 
-	_strategy->addParameter(&*bond, Bond::getAffectingTorsion, 
-	                        Bond::setAffectingTorsion,
+	_strategy->addParameter(&*bond, Bond::getTorsion, 
+	                        Bond::setTorsion,
 	                        range, interval,
 	"t" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }
 
-void Sampler::addTorsionBlur(BondPtr bond, double range, double interval)
+void Sampler::addKick(BondPtr bond, double range, double interval)
 {
 	if (!bond) return;
 	
 	if (!bond->getRefineFlexibility()) return;
 
-	_strategy->addParameter(&*bond, Bond::getTorsionBlur, Bond::setTorsionBlur,
+	_strategy->addParameter(&*bond, Bond::getKick, Bond::setKick,
 	                        range, interval, "b" + bond->shortDesc());
 
 	_bonds.push_back(bond);

@@ -59,7 +59,10 @@ inline void mat3x3_mult_vec(struct mat3x3 mat, struct vec3 *vec)
 }
 
 /** Grab the i'th basis vector from a matrix (column 0, 1, or 2) */
-vec3 mat3x3_axis(mat3x3 me, int i);
+vec3 mat3x3_axis(mat3x3 &me, int i);
+
+/** Add contents of const into alter */
+void mat3x3_add_mat3x3(mat3x3 *alter, mat3x3 &_const);
 
 /** Matrix multiplied by vector and returned as a fresh vector.
  * Consider using the inline function above if you don't need to

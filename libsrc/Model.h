@@ -39,9 +39,8 @@ typedef struct
 	mat3x3 basis;     /**< Defines bond axis of previous bond */
 	vec3 start;       /**< position of last minor */
 	vec3 old_start;   /**< position of torsion-defining atom */
-	double torsion;   /**< Defines torsion of next atom */
+	double torsion;   /**< To be filled in by next bond */
 	double occupancy; /**< Relative occupancy (usually 1) */
-	double kickMult;  /**< Prelim work - some sub-groups can kick more */
 } BondSample;
 
 class Model : public Distributor, public Parser

@@ -270,9 +270,6 @@ std::vector<BondSample> *Absolute::getManyPositions()
 			sample.torsion = 0;
 			sample.old_start = make_vec3(0, 0, 0);
 			sample.start = full;
-			sample.kickMult = 0.75 + ((double)j / (double)kickGroups * 0.5);
-			
-			if (kickGroups == 1) sample.kickMult = 1;
 
 			bondSamples->push_back(sample);
 		}

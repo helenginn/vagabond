@@ -29,6 +29,14 @@ struct mat3x3 make_mat3x3()
 	return mat;
 }
 
+void mat3x3_add_mat3x3(mat3x3 *alter, mat3x3 &_const)
+{
+	for (int i = 0; i < 9; i++)
+	{
+		alter->vals[i] += _const.vals[i];
+	}
+}
+
 mat3x3 mat3x3_subtract_mat3x3(mat3x3 &one, mat3x3 &two)
 {
 	mat3x3 mat = make_mat3x3();
@@ -401,7 +409,7 @@ mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis,
 	}
 }
 
-vec3 mat3x3_axis(mat3x3 me, int i)
+vec3 mat3x3_axis(mat3x3 &me, int i)
 {
 	vec3 axis;
 	axis = make_vec3(me.vals[0 + i], me.vals[3 + i], me.vals[6 + i]);

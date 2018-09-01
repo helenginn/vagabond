@@ -86,24 +86,6 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 	clearIncludeForRefinements();
 }
 
-void Sidechain::fixBackboneTorsions(AtomPtr betaTorsion)
-{
-	AtomPtr atom = findAtom("CB");
-
-	if (!atom)
-	{
-		return;
-	}
-
-	ModelPtr model = atom->getModel();
-
-	if (model->isBond())
-	{
-		ToBondPtr(model)->setTorsionAtoms(betaTorsion);
-	}
-
-}
-
 void Sidechain::setInitialDampening()
 {
 	for (int i = 0; i < atomCount(); i++)
@@ -136,7 +118,7 @@ void Sidechain::setInitialDampening()
 
 		if (bond->isRefinable() && atom(i)->getAtomName() == "CB")
 		{
-			Bond::setTorsionBlur(&*bond, kick);
+			Bond::setKick(&*bond, kick);
 		}
 	}
 }

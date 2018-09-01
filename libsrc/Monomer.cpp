@@ -90,7 +90,7 @@ void Monomer::setSideKick(double value)
 		return;
 	}
 
-	Bond::setTorsionBlur(&*bond, value);
+	Bond::setKick(&*bond, value);
 }
 
 void Monomer::setKick(double value, bool beforeAnchor)
@@ -114,7 +114,7 @@ void Monomer::setKick(double value, bool beforeAnchor)
 
 	BondPtr bond = ToBondPtr(model);
 
-	Bond::setTorsionBlur(&*bond, value);
+	Bond::setKick(&*bond, value);
 }
 
 double Monomer::getKick()
@@ -128,7 +128,7 @@ double Monomer::getKick()
 
 	BondPtr bond = ToBondPtr(model);
 
-	return Bond::getTorsionBlur(&*bond);
+	return Bond::getKick(&*bond);
 }
 
 void Monomer::tieAtomsUp()

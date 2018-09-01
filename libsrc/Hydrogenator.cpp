@@ -64,8 +64,8 @@ void Hydrogenator::setSpin(AtomList group)
 		BondPtr bond = ToBondPtr(atom->getModel());
 		BondPtr parent = ToBondPtr(bond->getParentModel());
 
-		parent->setUsingTorsion(true);
-		Bond::setTorsionBlur(&*parent, 2.);
+		bond->setUsingTorsion(true);
+		Bond::setKick(&*parent, 2.);
 	}
 }
 

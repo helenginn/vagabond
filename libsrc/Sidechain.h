@@ -70,7 +70,6 @@ public:
 	}
 
 	void setInitialDampening();
-	void fixBackboneTorsions(AtomPtr betaTorsion);
 	void splitConformers(int count = -1);
 	void parameteriseAsRotamers();
 	virtual void refine(CrystalPtr target, RefinementType rType);

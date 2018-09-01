@@ -264,11 +264,11 @@ void MonomerExplorer::clickedAtomListItem()
 		                 torsionText, enabledBond);        
 		_tTorsion->setSetterAndObject(&*bond, Bond::setTorsion, true);
 
-		double kick = Bond::getTorsionBlur(&*bond);
+		double kick = Bond::getKick(&*bond);
 		QString kickText = QString::fromStdString(f_to_str(kick, 3));
 
 		makeLabelAndEdit(this, &_lKick, &_tKick, 2, "Kick:", kickText, enabledBond);
-		_tKick->setSetterAndObject(&*bond, Bond::setTorsionBlur);
+		_tKick->setSetterAndObject(&*bond, Bond::setKick);
 
 		makeLabelAndEdit(this, &_lDampen, &_tDampen, 3, "Dampen:",
 		                 dampenText, enabledBond);

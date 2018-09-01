@@ -39,9 +39,6 @@
 typedef struct
 {
 	AtomWkr atom;
-	double geomRatio;
-	double expectedAngle;
-	double circlePortion;
 	std::string *placeholder;
 } AtomValue;
 
@@ -49,11 +46,7 @@ typedef struct
  * \brief Stores the main information for one conformer of a bond. */
 typedef struct
 {
-	std::vector<AtomValue> atoms;
-	double torsionAngle;
-	double torsionBlur;
-	double magicPhi;
-	double magicPsi;
+	std::vector<Bond *> bonds;
 	std::vector<BondSample> storedSamples;
 	std::vector<AtomWkr> extraTorsionSamples;
 } BondGroup;
@@ -80,7 +73,13 @@ public:
 	ModelPtr reverse(BondPtr upstreamBond);
 	void reverseDownstreamAtoms(int group);
 	void resetBondDirection();
+	void setTorsionAngleFrom(AtomPtr one, AtomPtr two, AtomPtr three,
+	                         AtomPtr four);
 	
+	BondPtr shared_from_this()
+	{
+		return ToBondPtr(Model::shared_from_this());
+	}
 	
 	/** Returns true if the torsion angle should be refined. */
 	bool isRefinable();
@@ -156,19 +155,7 @@ public:
 		static_cast<Bond *>(object)->_bondLength = length;
 	}
 
-	/**
-	* 	Returns torsion value for the primary atom in a given group.
-	* 	\return torsion in radians.
-	*/
-	double getTorsion(int group)
-	{
-		return _bondGroups[group].torsionAngle;
-	}
-
 	virtual FFTPtr makeDistribution();
-	void setTorsionAtoms(AtomPtr heavyAlign = AtomPtr(),
-	                     AtomPtr lightAlign = AtomPtr(),
-	                     int groupNum = 0);
 	
 	virtual AtomPtr getAtom()
 	{
@@ -180,65 +167,55 @@ public:
 		return "Bond";
 	}
 
-	static void setTorsionBlur(void *object, double value)
+	static void setKick(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		bond->_bondGroups[bond->_activeGroup].torsionBlur = value;
+		bond->_kick = value;
 		static_cast<Bond *>(object)->propagateChange(16);
 	}
 
-	static double getTorsionBlur(void *object)
+	static double getKick(void *object)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		return bond->_bondGroups[bond->_activeGroup].torsionBlur;
+		return bond->_kick;
 	}
 
 	static double getTorsion(void *object)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		return bond->_bondGroups[bond->_activeGroup].torsionAngle;
+		return bond->_torsion;
 	}
 	
-	/** Changes the torsion angle which affects this bond, rather than
-	 *  the downstream bond. */
-	static void setAffectingTorsion(void *object, double value);
-	
-	/** Returns the torsion angle which affects this bond, rather than
-	 *  the downstream bond. */
-	static double getAffectingTorsion(void *object);
-
-	/** Changes the torsion angle which affects
-	 *  the downstream bond. */
 	static void setTorsion(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		bond->_bondGroups[bond->_activeGroup].torsionAngle = value;
+		bond->_torsion = value;
 		static_cast<Bond *>(object)->propagateChange(16);
 	}
 
 	static double getMagicPsi(void *object)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		return bond->_bondGroups[bond->_activeGroup].magicPsi;
+		return bond->_psi;
 	}
 
 	static void setMagicPsi(void *object, double angle)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		bond->_bondGroups[bond->_activeGroup].magicPsi = angle;
+		bond->_psi = angle;
 		static_cast<Bond *>(object)->propagateChange(16);
 	}
 
 	static double getMagicPhi(void *object)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		return bond->_bondGroups[bond->_activeGroup].magicPhi;
+		return bond->_phi;
 	}
 
 	static void setMagicPhi(void *object, double angle)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		bond->_bondGroups[bond->_activeGroup].magicPhi = angle;
+		bond->_phi = angle;
 		static_cast<Bond *>(object)->propagateChange(16);
 	}
 
@@ -292,7 +269,7 @@ public:
 	*/
 	size_t downstreamAtomCount(int group)
 	{
-		return _bondGroups[group].atoms.size();
+		return _bondGroups[group].bonds.size();
 	}
 
 	/**
@@ -311,7 +288,7 @@ public:
 	*/
 	AtomPtr downstreamAtom(int group, int i)
 	{
-		return _bondGroups[group].atoms[i].atom.lock();
+		return downstreamBond(group, i)->getMinor();
 	}
 
 	/**
@@ -376,17 +353,11 @@ public:
 	double getExpectedAngle();
 	
 	/**
-	*  Geometry ratio for direct calculation of atom position. Consider
-	*  using getBendAngle if you want a biologically interpretable value.
-	*  \param group group to fetch from.
-	*  \param i number of the atom in the array within the group.
-	*  \return ratio between the x/y coordinates in a basis where the
-	*  preceding bond angle is along axis z.
-	*
+	*  Geometry ratio for direct calculation of atom position.
 	*/
-	double getGeomRatio(int n, int i)
+	double getGeomRatio()
 	{
-		return _bondGroups[n].atoms[i].geomRatio;
+		return _geomRatio;
 	}
 
 	
@@ -397,15 +368,15 @@ public:
 	*/
 	double getCirclePortion(int n, int i)
 	{
-		return _bondGroups[n].atoms[i].circlePortion;
+		return _circlePortion;
 	}
 
 	static double getCirclePortion(void *object);
 	static void setCirclePortion(void *object, double value);
 
-	void setGeomRatio(int n, int i, double value)
+	void setGeomRatio(double value)
 	{
-		_bondGroups[n].atoms[i].geomRatio = value;
+		_geomRatio = value;
 	}
 
 	void setActiveGroup(int newGroup)
@@ -524,16 +495,6 @@ public:
 	                            std::ostream &stream, int indent);
 	static char *decodeBondGroup(void *bond, void *bondGroup, char *block);
 
-	void setTorsionStepMult(double mult)
-	{
-		_torsionStepMult = mult;
-	}
-
-	double getTorsionStepMult()
-	{
-		return _torsionStepMult;
-	}
-	
 	void setSplitBlock(int block = 1)
 	{
 		_splitBlock = block;
@@ -565,6 +526,16 @@ private:
 
 	/* Downstream groups of bonds */
 	std::vector<BondGroup> _bondGroups;
+	
+	size_t downstreamBondCount(int group)
+	{
+		return _bondGroups[group].bonds.size();
+	}
+	
+	BondPtr downstreamBond(int group, int i)
+	{
+		return _bondGroups[group].bonds[i]->shared_from_this();
+	}
 
 	/* Returns upstream bond group pertaining to this bond. */
 	BondGroup *bondGroupForBond();
@@ -575,7 +546,13 @@ private:
 	int _activeGroup;
 	double _occupancy;
 	double _occMult;
-	double _torsionStepMult;
+	double _torsion;
+	double _kick;
+	double _phi;
+	double _psi;
+	double _circlePortion;
+	double _geomRatio;
+	double _expectedAngle;
 	
 	bool _resetOccupancy;
 	
@@ -593,8 +570,10 @@ private:
 
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();
-	/* And a given bond angle for downstream atom n */
-	double deriveBondAngle(AtomPtr atom);
+	void deriveBondAngle();
+	void deriveCirclePortion();
+	void deriveTorsionAngle();
+	void addDownstreamBond(Bond *bond, int group);
 
 	/* Bond direction only used when a torsion angle can't be
 	* calculated because it's connected to an Absolute PDB.
@@ -603,11 +582,11 @@ private:
 	
 	vec3 _magicAxis;
 
+	/** Supply deviations of correct torsion angles into prevs->torsion */
+	void correctTorsionAngles(std::vector<BondSample> *prevs);
+
 	vec3 positionFromTorsion(mat3x3 torsionBasis, double angle,
 	                         double ratio, vec3 start);
-	std::vector<BondSample> getCorrectedAngles(std::vector<BondSample> *prevs,
-	                                           double circleAdd,
-	double myTorsion, double ratio);
 
 	void copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum);
 	BondPtr duplicateDownstream(BondPtr newBranch, int groupNum);

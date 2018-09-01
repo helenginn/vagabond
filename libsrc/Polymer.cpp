@@ -661,7 +661,7 @@ void Polymer::graph(std::string graphName)
 			csv->addEntry(5, value, meanSq, ca->getInitialBFactor(),
 			              posDisp, sideDisp);
 			caDampen = Bond::getDampening(&*caBond);
-			caBlur = Bond::getTorsionBlur(&*caBond);
+			caBlur = Bond::getKick(&*caBond);
 
 			if (caDampen > 0) caBlur = 0;
 		}
@@ -913,9 +913,9 @@ void Polymer::vsMultiplyBackboneKick(void *object, double value)
 			}
 
 			BondPtr bond = ToBondPtr(model);
-			double kick = Bond::getTorsionBlur(&*bond);
+			double kick = Bond::getKick(&*bond);
 			kick *= value;
-			Bond::setTorsionBlur(&*bond, kick);
+			Bond::setKick(&*bond, kick);
 		}
 	}
 	
@@ -950,7 +950,7 @@ void Polymer::setBackboneKick(void *object, double value)
 			mult = -1;
 		}
 		
-		Bond::setTorsionBlur(&*bond, value * mult);
+		Bond::setKick(&*bond, value * mult);
 	}
 }
 
@@ -975,7 +975,7 @@ void Polymer::setInitialKick(void *object, double value)
 			if (model->isBond())
 			{
 				BondPtr bond = ToBondPtr(model);
-				Bond::setTorsionBlur(&*bond, kick);
+				Bond::setKick(&*bond, kick);
 			}
 		}
 	}

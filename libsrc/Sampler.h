@@ -70,7 +70,7 @@ public:
 	* \param range step size in degree offset per degree
 	* \param interval unused usually, but could be stopping point. 	 
 	*/
-	void addTorsionBlur(BondPtr bond, double range, double interval);
+	void addKick(BondPtr bond, double range, double interval);
 	void addDampening(BondPtr bond, double range, double interval);
 	void addBondLength(BondPtr bond, double range, double interval);
 	void addBendAngle(BondPtr bond, double range, double interval);
