@@ -17,6 +17,8 @@
 #include <iostream>
 #include <QOpenGLDebugLogger>
 
+vec3 vec_from_pos(GLfloat *pos);
+
 inline void checkErrors()
 {
 	GLenum err = 0;//glGetError();
