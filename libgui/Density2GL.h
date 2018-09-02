@@ -57,6 +57,7 @@ private:
 	int _recalculate;
 	std::mutex _renderLock;
 	IntMap _flips;
+	IntMap _allBits;
 	
 	vec3 _offset;
 	vec3 getCentreOffset();
