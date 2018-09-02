@@ -18,22 +18,14 @@ struct ivec
 	int z;
 };
 
+typedef std::map<int, std::map<int, int> > IntMap;
+
 class GLKeeper;
 
 class Density2GL : public GLObject
 {
 public:
-	Density2GL()
-	{
-		_recalculate = 0;
-		_renderType = GL_TRIANGLES;
-		_resolution = 0.8;
-		_cubeIndices = std::vector<std::vector<GLuint> >();
-		_offset = make_vec3(-12, 3, -20);
-		_visible = true;
-		_threshold = 2.4;
-		_backToFront = true;
-	}
+	Density2GL();
 	
 	virtual void render();
 	
@@ -54,6 +46,8 @@ public:
 	{
 		_keeper = keeper;
 	}
+protected:
+	virtual void bindTextures();
 private:
 	CrystalPtr _crystal;
 	GLKeeper *_keeper;
@@ -62,6 +56,7 @@ private:
 	void setupIndexTable();
 	int _recalculate;
 	std::mutex _renderLock;
+	IntMap _flips;
 	
 	vec3 _offset;
 	vec3 getCentreOffset();
