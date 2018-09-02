@@ -103,6 +103,9 @@ protected:
 	}
 	
 	bool _extra;
+	bool _usesLighting;
+	GLfloat _lightPos[3];
+
 	bool _backToFront;
 	GLenum _renderType;
 	std::string *_fragShader;
@@ -119,6 +122,7 @@ private:
 
 	GLint _projectionUniform;
 	GLint _modelUniform;
+	GLint _lightUniform;
 	GLuint _colorRenderBuffer;
 	GLuint _depthRenderBuffer;
 	GLuint _vbo;

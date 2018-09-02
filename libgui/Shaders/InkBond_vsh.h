@@ -23,9 +23,9 @@ std::string InkBond_vsh =
 "    vec4 model4 = projection * model * pos;\n"\
 "    vec2 axis2 = vec2(norm4[0] - model4[0], norm4[1] - model4[1]);\n"\
 "    vec2 axis = normalize(axis2);\n"\
-"    vec2 clean_shift = vec2(-0.1, -0.3);\n"\
+"    vec2 clean_shift = vec2(-0.1, -0.2);\n"\
 "    if (extra[0] < 0.5) {\n"\
-"        clean_shift = vec2(-0.1, 0.3);\n"\
+"        clean_shift = vec2(-0.1, 0.2);\n"\
 "    }\n"\
 "    vec2 shifted;\n"\
 "    mat2 bondMat = mat2(axis[0], axis[1],\n"\

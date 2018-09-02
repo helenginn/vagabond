@@ -138,6 +138,8 @@ void GLKeeper::render(void)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	updateCamera();
 
+
+
 	for (int i = 0; i < _objects.size(); i++)
 	{
 		_objects[i]->setProjMat(projMat);

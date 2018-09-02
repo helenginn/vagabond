@@ -9,6 +9,7 @@
 #include "Density2GL.h"
 #include "GLKeeper.h"
 #include "Pencil.h"
+#include "Picture.h"
 #include "Shaders/Pencil_vsh.h"
 #include "Shaders/Pencil_fsh.h"
 #include "../../libsrc/Crystal.h"
@@ -20,12 +21,14 @@ Density2GL::Density2GL()
 {
 	_recalculate = 0;
 	_renderType = GL_TRIANGLES;
-	_resolution = 0.8;
+	_resolution = 0.6;
 	_cubeIndices = std::vector<std::vector<GLuint> >();
 	_offset = make_vec3(-12, 3, -20);
 	_visible = true;
 	_threshold = 2.4;
 	_backToFront = true;
+	_usesLighting = true;
+	_extra = true;
 	
 	_vertShader = &Pencil_vsh;
 	_fragShader = &Pencil_fsh;
@@ -57,10 +60,18 @@ void initVertex(Vertex *vert)
 	
 	int random = rand() % 3;
 	
-	vert->color[0] = (random == 0 ? 1.0 : 0.8);
-	vert->color[1] = (random == 1 ? 1.0 : 0.8);
-	vert->color[2] = (random == 2 ? 1.0 : 0.8);
-	vert->color[3] = 0.5;
+	vert->color[0] = 0.5;
+	vert->color[1] = 0.5;
+	vert->color[2] = 0.5;
+	vert->color[3] = 0.8;
+	
+	vert->extra[0] = 0;
+	vert->extra[1] = 0;
+	vert->extra[2] = 0;
+	vert->extra[3] = 0;
+	
+	vert->tex[0] = 0;
+	vert->tex[1] = 0;
 }
 
 std::vector<GLuint> rewindTriangles(std::vector<GLuint> original)
@@ -774,9 +785,9 @@ vec3 Density2GL::getCentreOffset()
 void Density2GL::makeUniformGrid()
 {
 	/* Find sensible dimensions eventually */
-	_dims.x = 14;
-	_dims.y = 14;
-	_dims.z = 14;
+	_dims.x = 20;
+	_dims.y = 20;
+	_dims.z = 20;
 	
 	/* Make a series of vertices which are three times more
 	 * numerous than the number of voxels. */
@@ -810,6 +821,8 @@ void Density2GL::makeUniformGrid()
 					_vertices[c].normal[0] = 0;
 					_vertices[c].normal[1] = 0;
 					_vertices[c].normal[2] = 0;
+					_vertices[c].color[0] = (double)x / (double)_dims.x;
+					_vertices[c].color[1] = (double)y / (double)_dims.y;
 					c++;
 				}
 			}
@@ -895,21 +908,33 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 					someIndices[i] += count;
 				}
 				
-				/* calculation of normals */
+				/* calculation of normals and textures*/
 				for (int i = 0; i < someIndices.size(); i+=3)
 				{
-					vec3 pos1 = vec_from_pos(_vertices[someIndices[i + 0]].pos);
-					vec3 pos2 = vec_from_pos(_vertices[someIndices[i + 1]].pos);
-					vec3 pos3 = vec_from_pos(_vertices[someIndices[i + 2]].pos);
+					vec3 pos1 = vec_from_pos(_vertices[someIndices[i+0]].pos);
+					vec3 pos2 = vec_from_pos(_vertices[someIndices[i+1]].pos);
+					vec3 pos3 = vec_from_pos(_vertices[someIndices[i+2]].pos);
 					
 					vec3 diff31 = vec3_subtract_vec3(pos3, pos1);
 					vec3 diff21 = vec3_subtract_vec3(pos2, pos1);
+					vec3 diff21copy = diff21;
 					
 					vec3 cross = vec3_cross_vec3(diff31, diff21);
 					vec3_set_length(&cross, 1);
 					
+					/* textures */
+					vec3_set_length(&diff21, 1);
+					
+					mat3x3 basis = mat3x3_rhbasis(cross, diff21);
+					mat3x3 inverse = mat3x3_transpose(basis);
+					
+					vec3 inv_diff31 = mat3x3_mult_vec(inverse, diff31);
+					vec3 inv_diff21 = mat3x3_mult_vec(inverse, diff21copy);
+
+					/* Normals */					
 					for (int j = 0; j < 3; j++)
 					{
+//						std::cout << "(" << _vertices[someIndices[i + j]].tex[0] << " " << _vertices[someIndices[i + j]].tex[1] << ")" << std::endl;
 						_vertices[someIndices[i + j]].normal[0] += cross.x;
 						_vertices[someIndices[i + j]].normal[1] += cross.y;
 						_vertices[someIndices[i + j]].normal[2] += cross.z;
@@ -950,6 +975,7 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 	
 	count = 0;
 	
+	return;
 	for (unsigned char i = 0; i < 255; i++)
 	{
 		for (std::map<int, int>::iterator it = _flips[i].begin();
@@ -1007,19 +1033,21 @@ void Density2GL::render()
 	
 	bool locked = _renderLock.try_lock();
 	
+	mat4x4 inv = mat4x4_inverse(modelMat);
+	vec3 light = make_vec3(0, 0, 0);
+	vec3 lightPos = mat4x4_mult_vec(inv, light);
+	_lightPos[0] = lightPos.x;
+	_lightPos[1] = lightPos.y;
+	_lightPos[2] = lightPos.z;
+
 	if (locked)
 	{
-		if (_recalculate)
-		{
-			rebindProgram();
-		}
-
+		rebindProgram();
 		reorderIndices();
 		GLObject::render();
 		_renderLock.unlock();
 	}
 	
-	mat4x4 inv = mat4x4_inverse(modelMat);
 	vec3 centre = _keeper->getCentre();
 	vec3 pan = _keeper->getTranslation();
 	pan.z = 0;

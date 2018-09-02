@@ -67,22 +67,30 @@ void GLObject::rebindProgram()
 
 void GLObject::render()
 {
-    glUseProgram(_program);
+	glUseProgram(_program);
 
-    const char *uniform_name = "projection";
-    _projectionUniform = glGetUniformLocation(_program, uniform_name);
-    glUniformMatrix4fv(_projectionUniform, 1, GL_FALSE, &projMat.vals[0]);
-    checkErrors();
+	const char *uniform_name = "projection";
+	_projectionUniform = glGetUniformLocation(_program, uniform_name);
+	glUniformMatrix4fv(_projectionUniform, 1, GL_FALSE, &projMat.vals[0]);
+	checkErrors();
 
-    const char *model_name = "model";
-    _modelUniform = glGetUniformLocation(_program, model_name);
-    glUniformMatrix4fv(_modelUniform, 1, GL_FALSE, &modelMat.vals[0]);
-    checkErrors();
+	const char *model_name = "model";
+	_modelUniform = glGetUniformLocation(_program, model_name);
+	glUniformMatrix4fv(_modelUniform, 1, GL_FALSE, &modelMat.vals[0]);
+	checkErrors();
+
+	if (_usesLighting)
+	{
+		const char *light_name = "light_pos";
+		_lightUniform = glGetUniformLocation(_program, light_name);
+		glUniform3fv(_lightUniform, 1, &_lightPos[0]);
+	}
 
 	if (_textures.size())
 	{
 		glBindTexture(GL_TEXTURE_2D, _textures[0]);
 	}
+
     glDrawElements(_renderType, indexCount(), GL_UNSIGNED_INT, 0);
 
     glUseProgram(0);
@@ -179,8 +187,8 @@ void GLObject::bindOneTexture(Picture &pic)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pic.width, pic.height, 
 	             0, GL_RGBA, GL_UNSIGNED_BYTE, pic.data);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	glGenerateMipmap(GL_TEXTURE_2D);
 	checkErrors();
@@ -207,7 +215,7 @@ vec3 vec_from_pos(GLfloat *pos)
 
 void GLObject::reorderIndices()
 {
-	_temp.reserve(_indices.size() / 3);
+	_temp.resize(_indices.size() / 3);
 	
 	int count = 0;
 	for (int i = 0; i < _indices.size(); i+=3)
@@ -238,11 +246,12 @@ void GLObject::reorderIndices()
 	}
 
 	count = 0;
-	for (int i = 0; i < _indices.size(); i+=3)
+
+	for (int i = 0; i < _temp.size(); i++)
 	{
-		_indices[i + 0] = _temp[count].index[0];
-		_indices[i + 1] = _temp[count].index[1];
-		_indices[i + 2] = _temp[count].index[2];
-		count++;
+		_indices[count + 0] = _temp[i].index[0];
+		_indices[count + 1] = _temp[i].index[1];
+		_indices[count + 2] = _temp[i].index[2];
+		count += 3;
 	}
 }
