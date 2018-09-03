@@ -126,6 +126,22 @@ void Polymer::tieAtomsUp()
 			getMonomer(i)->tieAtomsUp();
 		}
 	}
+	
+	/* Specify heavy alignment atoms around the anchor point */
+	AtomPtr ca = getMonomer(_anchorNum)->findAtom("CA");
+	AtomPtr c = getMonomer(_anchorNum)->findAtom("C");
+	AtomPtr prev_c = getMonomer(_anchorNum - 1)->findAtom("C");
+	AtomPtr prev_ca = getMonomer(_anchorNum - 1)->findAtom("CA");
+	
+	BondPtr n2ca = ToBondPtr(ca->getModel());
+	BondPtr ca2c = ToBondPtr(c->getModel());
+	BondPtr n2c = ToBondPtr(prev_c->getModel());
+	BondPtr c2ca = ToBondPtr(prev_ca->getModel());
+	
+	n2ca->setHeavyAlign(prev_c);
+	ca2c->setHeavyAlign(prev_c);
+	n2c->setHeavyAlign(ca);
+	c2ca->setHeavyAlign(ca);
 
 	double kick = Options::getKick();
 	setInitialKick(this, kick);

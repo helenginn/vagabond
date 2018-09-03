@@ -178,20 +178,20 @@ void Bond::setTorsionAngleFrom(AtomPtr one, AtomPtr two, AtomPtr three,
 	                 &_torsion);
 }
 
-void Bond::setHeavyAlign(AtomPtr atom)
+void Bond::setHeavyAlign(AtomPtr atom, bool from_sister)
 {
-	std::cout << "Heavy align" << std::endl;
+	std::cout << "Heavy alignment atom for " << shortDesc() << std::endl;
+	_heavyAlign = atom;
+
 	/* if the parent is not available, this is not meant to be
 	 * able to generate a torsion angle. Set as heavy alignment atom
 	 * for getManyPositions(). */
 	if (!getParentModel()->isBond())
 	{
-		_heavyAlign = atom;
 		return;
 	}
 	
 	BondPtr parent = ToBondPtr(getParentModel());
-	std::cout << "Trying to fix grandparent" << std::endl;
 	
 	if (!parent->getParentModel()->isBond())
 	{	
@@ -204,6 +204,35 @@ void Bond::setHeavyAlign(AtomPtr atom)
 		AtomPtr four = getMinor();
 
 		setTorsionAngleFrom(one, two, three, four);
+		
+		std::cout << "Giving custom alignment atom to ";
+		std::cout << shortDesc() << std::endl;
+		
+		/* Rederive circle portion */
+		deriveCirclePortion();
+	}
+	
+	if (from_sister)
+	{
+		return;
+	}
+	
+	/* We may also have sister bonds who should also get this alignment
+	 * atom. */
+
+	for (int i = 0; i < parent->downstreamBondGroupCount(); i++)
+	{
+		for (int j = 0; j < parent->downstreamBondCount(i); j++)
+		{
+			BondPtr sis = parent->downstreamBond(i, j);
+
+			if (&*sis == this)
+			{
+				continue;
+			}
+			
+			sis->setHeavyAlign(atom, true);
+		}
 	}
 }
 
@@ -261,13 +290,42 @@ void Bond::deriveBondAngle()
 		_expectedAngle = angle;
 	}
 	
-	std::cout << "angle for " << shortDesc() << ": " << angle << std::endl;
-
 	/* Either way, we need to store the geometry ratio (means
 	 *  we don't need to constantly take the tan of something) */
 	double ratio = tan(angle - M_PI / 2);
 	
 	_geomRatio = ratio;
+}
+
+double Bond::empiricalCirclePortion(Bond *lastBond)
+{
+	vec3 hPos;
+
+	BondPtr parent = ToBondPtr(getParentModel());
+	if (!parent->getParentModel()->isBond())
+	{	
+		/* Grandparent is absolute - needs dealing with specially */
+		hPos = getHeavyAlign()->getInitialPosition();
+	}
+	else
+	{
+		BondPtr grandparent = ToBondPtr(parent->getParentModel());
+		hPos = grandparent->getMajor()->getInitialPosition();
+	}
+
+	vec3 maPos = parent->getMajor()->getInitialPosition();
+	vec3 miPos = getMajor()->getInitialPosition();
+	vec3 lPos = getMinor()->getInitialPosition();
+
+	double newAngle = 0;
+	makeTorsionBasis(hPos, maPos, miPos, lPos, &newAngle);
+
+	double oldAngle = lastBond->_torsion;
+	double increment = newAngle - oldAngle;
+
+	increment /= (2 * M_PI);
+
+	return increment;
 }
 
 void Bond::deriveCirclePortion()
@@ -297,6 +355,20 @@ void Bond::deriveCirclePortion()
 		_usingTorsion = true;
 		_circlePortion = 0;
 		return;
+	}
+
+	/* We can't calculate and compare a circle portion if our grandparent
+	 * is an Absolute model and the heavy alignment atom is not set.
+	 * This function will be called again when it is set, for now we just
+	 * exit. */
+	if (!parent->getParentModel()->isBond())
+	{	
+		if (_heavyAlign.expired())
+		{
+			std::cout << "Giving up on " << shortDesc() << ", can't find"
+			" heavy alignment atom." << std::endl;
+			return;
+		}
 	}
 	
 	/* We have a sister bond and must get a circle portion */
@@ -331,41 +403,43 @@ void Bond::deriveCirclePortion()
 		vec3 xAxis = mat3x3_axis(bondcell, 0);
 		vec3 newAtomAxis = mat3x3_axis(bondcell, 1);
 		vec3 lastAtomAxis = mat3x3_axis(bondcell, 2);
-
-		/* This angle will always come out positive, which is
-		 * why we take the difference from the last atom */
 		double increment = 0;
 		mat3x3_closest_rot_mat(lastAtomAxis, newAtomAxis, xAxis, &increment);
-		double portion = increment / (2 * M_PI);
-		portion = 1 - portion;
+		double theoretical = increment / (2 * M_PI);
 
-		if (portion == portion)
+		/* This angle will always come out positive, so we must compare
+		 * to the original placement as well to maintain chirality */
+		double empirical = empiricalCirclePortion(lastBond);
+		
+		/* Now we clamp both the empirical and the theoretical values to
+		 * 	between -0.5 and +0.5 for comparison */
+		
+		if (empirical > 0.5) empirical -= 1;
+		if (empirical < -0.5) empirical += 1;
+		
+		if (theoretical > 0.5) theoretical -= 1;
+		if (theoretical < -0.5) theoretical += 1;
+		
+		/* there may be some remaining ambiguity around 0.5 here? */
+
+		if ((empirical < 0 && theoretical > 0) || empirical > 0 && theoretical < 0)
 		{
-			std::cout << "Finding portion for " << 
-			getMinor()->shortDesc() << std::endl;
-			std::cout << "Bond: " << shortDesc() << std::endl;
-			std::cout << lastBond->_circlePortion << " + " << portion;
-			std::cout << std::endl;
-			_circlePortion = lastBond->_circlePortion + portion;
+			theoretical *= -1;
+		}
+		
+		/* Make the portion positive again if necessary */
+		
+		if (theoretical < 0) theoretical += 1;
+
+		if (theoretical == theoretical)
+		{
+			_circlePortion = lastBond->_circlePortion + theoretical;
 		}
 		else
 		{
 			/* We can't do this - we must derive from the model */
 			ok = false;
-			std::cout << "can't anymore" << std::endl;
 		}
-
-		/* Take out unnecessary >180º circle turns */
-		/*
-		if (_circlePortion > 0.5)
-		{
-			_circlePortion -= 1;
-		}
-		else if (_circlePortion < -0.5)
-		{
-			_circlePortion += 1;
-		}
-		*/
 	}
 	
 	if (!ok)
@@ -374,26 +448,9 @@ void Bond::deriveCirclePortion()
 		 * We calculate the torsion angle for this atom, then subtract
 		 * that from the first bond and normalise. */
 
-		if (!parent->getParentModel()->isBond())
-		{	
-			/* Grandparent is absolute - needs dealing with specially */
-			return;
-		}
+		double increment = empiricalCirclePortion(lastBond);
 
-		BondPtr grandparent = ToBondPtr(parent->getParentModel());
-
-		vec3 hPos = grandparent->getMajor()->getInitialPosition();
-		vec3 maPos = parent->getMajor()->getInitialPosition();
-		vec3 miPos = getMajor()->getInitialPosition();
-		vec3 lPos = getMinor()->getInitialPosition();
-
-		double newAngle = 0;
-		makeTorsionBasis(hPos, maPos, miPos, lPos, &newAngle);
-
-		double oldAngle = lastBond->_torsion;
-		double increment = newAngle - oldAngle;
-
-		_circlePortion = lastBond->_circlePortion + increment / (2 * M_PI);
+		_circlePortion = lastBond->_circlePortion + increment;
 	}
 }
 
@@ -765,8 +822,6 @@ std::vector<BondSample> *Bond::getManyPositions()
 
 	for (size_t i = 0; i < prevSamples->size(); i++)
 	{
-//		std::cout << "circlePortion = " << circlePortion << std::endl;
-//		std::cout << "circleAdd = " << rad2deg(circleAdd) << std::endl;
 		double currentTorsion = baseTorsion + circleAdd;
 		/* Deviation from correction */
 		currentTorsion += prevSamples->at(i).torsion;

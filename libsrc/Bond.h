@@ -127,7 +127,7 @@ public:
 		return _heavyAlign.lock();
 	}
 	
-	void setHeavyAlign(AtomPtr atom);
+	void setHeavyAlign(AtomPtr atom, bool from_sister = false);
 
 	/**
 	*  This is the second atom on which the torsion angle is
@@ -578,6 +578,8 @@ private:
 	void deriveBondAngle();
 	void deriveCirclePortion();
 	void deriveTorsionAngle();
+	double empiricalCirclePortion(Bond *lastBond);
+
 	void addDownstreamBond(Bond *bond, int group);
 
 	/* Bond direction only used when a torsion angle can't be
