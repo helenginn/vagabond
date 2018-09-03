@@ -486,8 +486,15 @@ bool Sampler::sample(bool clear)
 
 	if (!_silent)
 	{
-		std::cout << "Sampling " << sampleSize() << " atoms, ";
-		std::cout << "refining " << paramCount << " parameters." << std::endl;
+		std::cout << "Refining " << paramCount << " parameters." << std::endl;
+		std::cout << "Sampling " << sampleSize() << " atoms: ";
+		
+		for (int i = 0; i < _sampled.size(); i++)
+		{
+			std::cout << _sampled[i]->shortDesc() << ", ";
+		}
+		
+		std::cout << std::endl;
 	}
 
 	if (_scoreType == ScoreTypeCorrel ||
