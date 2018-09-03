@@ -16,7 +16,7 @@ std::string InkBond_fsh =
 "	if (vColor[0] < 0.7 && vColor[1] < 0.7 && vColor[2] < 0.7) {\n"\
 "		gl_FragColor /= 2.0;\n"\
 "   }\n"\
-"	if (gl_FragColor[3] < 0.4) {\n"\
+"	if (gl_FragColor[3] < 0.5) {\n"\
 "		discard;\n"\
 "	}\n"\
 "\n"\

@@ -71,17 +71,23 @@ void Vagabond2GL::updateAtoms()
 				for (int i = 0; i < 4; i++)
 				{
 					_vertices[v+i].extra[0] = k;
+					_vertices[v+i].extra[1] = 0;
+
+					if (i == 1 || i == 2)
+					{
+						_vertices[v + i].extra[1] = 1;
+					}
 				}
 
-				memcpy(_vertices[v].normal, _vertices[v+1].pos,
+				memcpy(_vertices[v].normal, _vertices[v+3].pos,
 				       sizeof(GLfloat) * 3);
-				memcpy(_vertices[v+1].normal, _vertices[v].pos,
+				memcpy(_vertices[v+1].normal, _vertices[v+3].pos,
 				       sizeof(GLfloat) * 3);
-				memcpy(_vertices[v+2].normal, _vertices[v+3].pos,
+				memcpy(_vertices[v+2].normal, _vertices[v].pos,
 				       sizeof(GLfloat) * 3);
-				memcpy(_vertices[v+3].normal, _vertices[v+2].pos,
+				memcpy(_vertices[v+3].normal, _vertices[v].pos,
 				       sizeof(GLfloat) * 3);
-
+				
 				for (int i = 0; false && i < 4; i++)
 				{
 					for (int j = 0; j < 3; j++)
@@ -93,7 +99,7 @@ void Vagabond2GL::updateAtoms()
 
 					for (int j = 0; j < 3; j++)
 					{
-//						std::cout << _vertices[v + i].normal[j] << " ";
+						std::cout << _vertices[v + i].normal[j] << " ";
 					}
 
 					std::cout << "(" << _vertices[v + i].extra[0] << ")";
@@ -115,11 +121,7 @@ void Vagabond2GL::getPositions(AtomPtr atom, std::vector<vec3> *min,
 	
 	vec3 minAve, majAve;
 
-	if (majBond->isBond())
-	{
-		*maj = ToBondPtr(majBond)->fishPositions(&majAve);
-	}
-
+	*maj = ToBondPtr(majBond)->fishPositions(&majAve);
 	*min = ToBondPtr(minBond)->fishPositions(&minAve);
 	
 	if (_average)
@@ -320,17 +322,17 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 					_indices.push_back(count + 0);
 					_indices.push_back(count + 4);
 
-					_indices.push_back(count + 5);
-					_indices.push_back(count + 0);
 					_indices.push_back(count + 1);
+					_indices.push_back(count + 4);
+					_indices.push_back(count + 5);
 
 					_indices.push_back(count + 2);
 					_indices.push_back(count + 3);
-					_indices.push_back(count + 7);
-
 					_indices.push_back(count + 6);
+
 					_indices.push_back(count + 3);
-					_indices.push_back(count + 2);
+					_indices.push_back(count + 6);
+					_indices.push_back(count + 7);
 				}
 
 				if (j == 0)
@@ -357,37 +359,25 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 			_vertices[start].tex[1] = 0;
 
 			_vertices[start+1].tex[0] = 0.5;
-			_vertices[start+1].tex[1] = 1.0;
+			_vertices[start+1].tex[1] = 0.0;
 
 			_vertices[start+2].tex[0] = 0.5;
-			_vertices[start+2].tex[1] = 0;
+			_vertices[start+2].tex[1] = 0.0;
 
 			_vertices[start+3].tex[0] = 1.0;
-			_vertices[start+3].tex[1] = 1.0;
-
-			_vertices[start+2].tex[0] = 0;
-			_vertices[start+2].tex[1] = 0;
-
-			_vertices[start+3].tex[0] = 0.5;
-			_vertices[start+3].tex[1] = 1.0;
+			_vertices[start+3].tex[1] = 0.0;
 
 			_vertices[start+4].tex[0] = 0;
 			_vertices[start+4].tex[1] = 1.0;
 
 			_vertices[start+5].tex[0] = 0.5;
-			_vertices[start+5].tex[1] = 0;
+			_vertices[start+5].tex[1] = 1.0;
 
 			_vertices[start+6].tex[0] = 0.5;
 			_vertices[start+6].tex[1] = 1.0;
 
 			_vertices[start+7].tex[0] = 1.0;
-			_vertices[start+7].tex[1] = 0.0;
-
-			_vertices[start+6].tex[0] = 0.0;
-			_vertices[start+6].tex[1] = 1.0;
-
-			_vertices[start+7].tex[0] = 0.5;
-			_vertices[start+7].tex[1] = 0.0;
+			_vertices[start+7].tex[1] = 1.0;
 		}
 	}
 

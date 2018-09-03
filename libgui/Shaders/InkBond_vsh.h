@@ -23,18 +23,20 @@ std::string InkBond_vsh =
 "    vec4 model4 = projection * model * pos;\n"\
 "    vec2 axis2 = vec2(norm4[0] - model4[0], norm4[1] - model4[1]);\n"\
 "    vec2 axis = normalize(axis2);\n"\
-"    vec2 clean_shift = vec2(-0.1, -0.2);\n"\
+"    vec2 clean_shift = vec2(-0.2, -0.3);\n"\
+"    vColor = vec4(color[0], color[1], color[2], 1.0);\n"\
 "    if (extra[0] < 0.5) {\n"\
-"        clean_shift = vec2(-0.1, 0.2);\n"\
+"        clean_shift[1] *= -1.;\n"\
 "    }\n"\
-"    vec2 shifted;\n"\
+"    if (extra[1] > 0.5) {\n"\
+"        clean_shift[0] = 0.0;\n"\
+"    }\n"\
 "    mat2 bondMat = mat2(axis[0], axis[1],\n"\
 "	     	 			axis[1], -axis[0]);\n"\
-"    shifted = bondMat * clean_shift;\n"\
+"    vec2 shifted = bondMat * clean_shift;\n"\
 "    model4[0] += shifted[0];\n"\
 "    model4[1] += shifted[1];\n"\
 "    gl_Position = model4;\n"\
-"    vColor = vec4(color[0], color[1], color[2], 1.0);\n"\
 "    vTex = tex;\n"\
 "}";
 
