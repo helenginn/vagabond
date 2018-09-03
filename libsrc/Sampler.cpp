@@ -40,33 +40,35 @@ Sampler::Sampler()
 	_silent = false;
 }
 
-void Sampler::addAtomsForBond(BondPtr firstBond, int k)
+void Sampler::addAtomsForBond(BondPtr bond)
 {
-	std::vector<BondPtr> extraTorsionBonds;
-	extraTorsionBonds.push_back(firstBond);
+	addSampled(bond->getMinor());
+	addSampled(bond->getMajor());
 
-	for (int i = 0; i < extraTorsionBonds.size(); i++)
+	/* Stop if the bond has no parent */
+	if (!bond->getParentModel()->isBond())
 	{
-		BondPtr bond = extraTorsionBonds[i];
-		addSampled(bond->getMinor());
+		return;
+	}
 
-		for (int j = 0; j < bond->downstreamBondCount(k); j++)
+	BondPtr parent = ToBondPtr(bond->getParentModel());
+	int group = -1;
+	int num = parent->downstreamBondNum(&*bond, &group);
+
+	/* if it's the oldest sibling, we need to add all the
+	 * siblings as this torsion controls the others */
+	if (num == 0)
+	{
+		for (int j = 1; j < parent->downstreamBondCount(group); j++)
 		{
-			AtomPtr downAtom = bond->downstreamAtom(k, j);
+			AtomPtr downAtom = parent->downstreamAtom(group, j);
 			addSampled(downAtom);
-
-			if (downAtom->getModel()->isBond())
-			{
-				BondPtr downBond = ToBondPtr(downAtom->getModel());
-			}
 		}
+	}
 
-		for (int j = 0; j < bond->extraTorsionSampleCount(k); j++)
-		{
-			addSampled(bond->extraTorsionSample(k, j));
-		}
-
-		k = 0;
+	for (int j = 0; j < bond->extraTorsionSampleCount(group); j++)
+	{
+		addSampled(bond->extraTorsionSample(group, j));
 	}
 }
 
@@ -160,7 +162,7 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 		}
 		
 		bondCount++;
-		addParamsForBond(bond);
+		addAtomsForBond(bond);
 
 		if (!bond->isRefinable())
 		{
@@ -168,10 +170,10 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 			continue;
 		}
 
+		addParamsForBond(bond);
+
 		for (int j = 0; j < bond->downstreamBondGroupCount(); j++)
 		{
-			addAtomsForBond(bond, j);
-
 			/* Take the chosen group and check for futures */
 			for (int i = 0; i < bond->downstreamBondCount(j); i++)
 			{
@@ -187,7 +189,7 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 				entry.bond = nextBond;
 				entry.num = num - 1;
 				
-				if (addBranches || (!addBranches && j == 0))
+				if (addBranches || (!addBranches && i == 0))
 				{
 					remaining.push_back(entry);
 				}
@@ -213,7 +215,7 @@ double Sampler::preScanParameter(BondPtr bond, Getter getter, Setter setter,
 	test->setCrystal(this->_crystal);
 	test->reportInDegrees();
 	test->setJobName("scan");
-	test->addAtomsForBond(bond, 0);
+	test->addAtomsForBond(bond);
 	test->setMock();
 	test->setScoreType(_scoreType);
 	test->_strategy->addParameter(&*bond, getter, setter, deg2rad(120.),
@@ -349,7 +351,6 @@ void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 			range, interval, "b1_" + bond->shortDesc());
 		}
 	}
-	
 
 	_bonds.push_back(bond);
 }
