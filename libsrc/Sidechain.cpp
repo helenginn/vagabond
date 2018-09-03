@@ -18,11 +18,6 @@
 #include "Backbone.h"
 #include "../libinfo/RotamerTable.h"
 
-bool Sidechain::shouldRefineAtom(AtomPtr atom)
-{
-	return !atom->isBackboneAndSidechain();
-}
-
 void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
 	if (!canRefine()) return;

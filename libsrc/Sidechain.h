@@ -90,7 +90,6 @@ public:
 	}
 
 protected:
-	virtual bool shouldRefineAtom(AtomPtr atom);
 	virtual AtomList topLevelAtoms()
 	{
 		return findAtoms("CB");
