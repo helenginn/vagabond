@@ -1230,7 +1230,7 @@ void Bond::resetBondDirection()
 
 bool Bond::isRefinable()
 {
-	return isNotJustForHydrogens() && !isFixed() && isUsingTorsion();
+	return isNotJustForHydrogens() && !isFixed();
 }
 
 bool Bond::test()
