@@ -141,6 +141,14 @@ Bond::Bond(Bond &other)
 	_bondDirection = other._bondDirection;
 	_heavyAlign = other._heavyAlign;
 	_lightAlign = other._lightAlign;
+	
+	_torsion = other._torsion;
+	_kick = other._kick;
+	_phi = other._phi;
+	_psi = other._psi;
+	_circlePortion = other._circlePortion;
+	_geomRatio = other._geomRatio;
+	_expectedAngle = other._expectedAngle;
 }
 
 void Bond::deriveBondLength()
@@ -1047,20 +1055,16 @@ void Bond::copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum)
 {
 	/* Set the torsion angle to be the same as the parent */
 	_torsion = copyFrom->_torsion;
-	
-	/* Set the circle portions to that of the first group */
-	for (size_t i = 0; i < copyFrom->downstreamBondCount(groupNum); i++)
-	{
-		double portion = copyFrom->downstreamBond(groupNum, i)->_circlePortion;
-		_circlePortion = portion;
-	}
+	_circlePortion = copyFrom->_circlePortion;
+	_kick = copyFrom->_kick;
 }
 
 BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 {
-	/* new branch is the duplicated parent */
+	/* duplBond will be a child of newParent */
 	BondPtr duplBond = BondPtr(new Bond(*this));
 
+	/* Dealing with atom business */
 	AtomPtr duplAtom = AtomPtr();
 	
 	/* We look for other atoms of the same name which haven't been tied up */
@@ -1069,7 +1073,6 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 
 	/* Do we have something in the list which has an Absolute model?
 	* if not, we will create a new one. */
-
 	for (size_t i = 0; i < list.size(); i++)
 	{
 		if (list[i].expired()) continue;
@@ -1099,6 +1102,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 		duplAtom->setFromPDB(false);
 		getMinor()->getMolecule()->addAtom(duplAtom);
 	}
+	/* Dealt with appropriate atom business */
 
 	/* Connect this duplicated minor atom to the polymer and monomer.
 	 * The molecule should already have happened in both cases above */
@@ -1144,16 +1148,6 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 		BondPtr nextBond = ToBondPtr(nextAtom->getModel());
 		nextBond->duplicateDownstream(duplBond, 0);
 	}
-	
-	/* In this case, the parent is a branched point and needs to
-	 * copy over the parameters */
-	if (groupNum > 0)
-	{
-		newParent->copyParamsFromFirstGroup(newParent, groupNum);
-	}
-	
-	/* Also copy over the parameters for the duplicate bond */
-	duplBond->copyParamsFromFirstGroup(ToBondPtr(shared_from_this()), 0);
 
 	return duplBond;
 }
