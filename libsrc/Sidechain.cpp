@@ -51,12 +51,12 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		{
 			case RefinementModelPos:
 			addParamType(ParamOptionTorsion, range);
-			addParamType(ParamOptionBondAngle, 0.2);
+			addParamType(ParamOptionBondAngle, range / 1);
 			addParamType(ParamOptionNumBonds, 3);
 			break;
 
 			case RefinementFine:
-			addParamType(ParamOptionTorsion, 0.1);
+			addParamType(ParamOptionTorsion, 0.5);
 			addParamType(ParamOptionBondAngle, 0.5);
 			addParamType(ParamOptionKick, 0.5);
 			addParamType(ParamOptionMagicAngles, 20);
