@@ -1405,7 +1405,7 @@ void Bond::addProperties()
 	
 	for (int i = 0; i < extraTorsionSampleCount(); i++)
 	{
-		addChild("extra_sample", extraTorsionSample(i));
+		addReference("extra_sample", extraTorsionSample(i));
 	}
 	
 	Model::addProperties();
@@ -1417,12 +1417,6 @@ void Bond::addObject(ParserPtr object, std::string category)
 	{
 		BondGroupPtr group = ToBondGroupPtr(object);
 		_bondGroups.push_back(group);	
-	} 
-
-	if (category == "extra_sample")
-	{
-		AtomPtr atom = ToAtomPtr(object);
-		addExtraTorsionSample(atom);
 	} 
 }
 
@@ -1446,6 +1440,10 @@ void Bond::linkReference(ParserPtr object, std::string category)
 	{
 		_lightAlign = atom;
 	}
+	else if (category == "extra_sample")
+	{
+		addExtraTorsionSample(atom);
+	} 
 }
 
 void Bond::postParseTidy()
