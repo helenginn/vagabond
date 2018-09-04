@@ -788,6 +788,7 @@ std::vector<BondSample> *Bond::getManyPositions()
 
 			BondSample newSample;
 			newSample.basis = newBasis;
+			newSample.torsion = 0;
 			newSample.start = start;
 			newSample.old_start = majorPos;
 			newSample.occupancy = (*absPos)[i].occupancy;
