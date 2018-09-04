@@ -34,14 +34,6 @@
 #include <mutex>
 #include "charmanip.h"
 
-/** \struct AtomValue
- * \brief Stores some downstream atom information in Bond. */
-typedef struct
-{
-	AtomWkr atom;
-	std::string *placeholder;
-} AtomValue;
-
 /** \struct BondGroup 
  * \brief Stores the main information for one conformer of a bond. */
 typedef struct
