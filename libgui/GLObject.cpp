@@ -25,8 +25,6 @@ GLObject::GLObject()
 
 void GLObject::rebindProgram()
 {
-	bindTextures();
-	
     glBufferData(GL_ARRAY_BUFFER, vSize(), vPointer(), GL_STATIC_DRAW);
     checkErrors();
 
@@ -142,6 +140,8 @@ void GLObject::initialisePrograms()
     glBindBuffer(GL_ARRAY_BUFFER, _bufferID);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vbo);
     
+	bindTextures();
+	
     rebindProgram();
 }
 

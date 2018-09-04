@@ -25,6 +25,8 @@ public:
 	{
 		_renders = 0;
 		_average = average;
+		_lastEnsembleCount = 0;
+		_shouldGetBonds = true;
 		setupAverage();
 		
 		_enabled = true;
@@ -60,6 +62,8 @@ private:
 	int _renders;
 	int _average;
 	bool _enabled;
+	int _lastEnsembleCount;
+	bool _shouldGetBonds;
 
 };
 

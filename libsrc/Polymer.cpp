@@ -415,6 +415,8 @@ double Polymer::vsRefineSidechainsToDensity(void *object)
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
 {
+	target->addComment("Refining against " + Options::rTypeString(rType));
+
 	if (rType == RefinementSidechain)
 	{
 		refineToEnd(getAnchor() - 1, target, rType);

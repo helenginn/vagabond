@@ -129,17 +129,23 @@ void Vagabond2GL::getPositions(AtomPtr atom, std::vector<vec3> *min,
 		*min = std::vector<vec3>(2, minAve);
 		*maj = std::vector<vec3>(2, majAve);
 	}
+	
+	if (maj->size() != _lastEnsembleCount)
+	{
+		_lastEnsembleCount = maj->size();
+		_shouldGetBonds = true;
+	}
 }
 
 bool Vagabond2GL::shouldGetBonds()
 {
-	if (!_moleculeMap.size())
+	if (!_moleculeMap.size() || _shouldGetBonds)
 	{
 		return true;
 	}
 
 	_renders = 0;
-
+	
 	/* Have there been any changes? */
 
 	OptionsPtr globalOptions = Options::getRuntimeOptions();
@@ -381,6 +387,7 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 		}
 	}
 
+	_shouldGetBonds = false;
 	return bonds;
 }
 

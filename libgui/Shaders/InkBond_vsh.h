@@ -10,6 +10,7 @@ std::string InkBond_vsh =
 "\n"\
 "varying vec4 vColor;\n"\
 "varying vec2 vTex;\n"\
+"varying vec4 vPos;\n"\
 "\n"\
 "uniform mat4 projection;\n"\
 "uniform mat4 model;\n"\
@@ -38,6 +39,7 @@ std::string InkBond_vsh =
 "    model4[1] += shifted[1];\n"\
 "    gl_Position = model4;\n"\
 "    vTex = tex;\n"\
+"    vPos = model * pos;\n"\
 "}";
 
 
