@@ -29,17 +29,11 @@
 #include "Distributor.h"
 #include <iostream>
 #include "Atom.h"
+#include "BondGroup.h"
 #include "Sampler.h"
 #include "Model.h"
 #include <mutex>
 #include "charmanip.h"
-
-/** \struct BondGroup 
- * \brief Stores the main information for one conformer of a bond. */
-typedef struct
-{
-	std::vector<Bond *> bonds;
-} BondGroup;
 
 #define INITIAL_KICK 0.01
 #define INITIAL_DAMPENING 0.08
@@ -280,7 +274,7 @@ public:
 	*/
 	size_t downstreamBondCount(int group)
 	{
-		return _bondGroups[group].bonds.size();
+		return _bondGroups[group]->bondCount();
 	}
 
 
@@ -298,7 +292,7 @@ public:
 		{
 			for (int i = 0; i < downstreamBondCount(j); i++)
 			{
-				if (&*downstreamBond(j, i) == down)		
+				if (nakedDownstreamBond(j, i) == down)		
 				{
 					if (group)
 					{
@@ -314,6 +308,7 @@ public:
 		{
 			*group = -1;
 		}
+
 		return -1;
 	}
 
@@ -374,7 +369,7 @@ public:
 
 	BondGroupPtr getBondGroup(int i)
 	{
-		return &_bondGroups[i];
+		return _bondGroups[i];
 	}
 
 	void setOccupancyMult(double mult)
@@ -492,6 +487,7 @@ protected:
 
 	virtual void addProperties();
 	virtual void linkReference(ParserPtr object, std::string category);
+	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();    
 	friend class StateValue;
 
@@ -507,12 +503,12 @@ private:
 	double _bondLength;
 
 	/* Downstream groups of bonds */
-	std::vector<BondGroup> _bondGroups;
+	std::vector<BondGroupPtr> _bondGroups;
 	
 	
 	Bond *nakedDownstreamBond(int group, int i)
 	{
-		return _bondGroups[group].bonds[i];
+		return _bondGroups[group]->bond(i);
 	}
 	
 	BondPtr downstreamBond(int group, int i)
@@ -521,7 +517,7 @@ private:
 	}
 
 	/* Returns upstream bond group pertaining to this bond. */
-	BondGroup *bondGroupForBond();
+	BondGroupPtr bondGroupForBond();
 
 	std::vector<AtomWkr> _extraTorsionSamples;
 	std::vector<BondSample> _storedSamples;

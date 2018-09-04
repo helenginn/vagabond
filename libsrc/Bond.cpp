@@ -118,12 +118,12 @@ Bond::Bond(Bond &other)
 	_activated = other._activated;
 	_major = other._major;
 	_minor = other._minor;
-	_bondGroups = other._bondGroups;
 	_resetOccupancy = other._resetOccupancy;
 
-	for (size_t i = 0; i < _bondGroups.size(); i++)
+	for (size_t i = 0; i < other.downstreamBondGroupCount(); i++)
 	{
-		_bondGroups[i].bonds.clear();
+		BondGroupPtr group = BondGroupPtr(new BondGroup());
+		_bondGroups.push_back(group);
 	}
 
 	_fixed = other._fixed;
@@ -481,12 +481,12 @@ void Bond::addDownstreamBond(Bond *bond, int group)
 	{
 		for (int i = 0; i < group - _bondGroups.size() + 1; i++)
 		{
-			BondGroup group;
+			BondGroupPtr group = BondGroupPtr(new BondGroup());
 			_bondGroups.push_back(group);
 		}
 	}
 
-	_bondGroups[group].bonds.push_back(bond);
+	_bondGroups[group]->addBond(bond);
 }
 
 void Bond::setMinor(AtomPtr newMinor)
@@ -1023,7 +1023,7 @@ void Bond::setBendAngle(void *object, double value)
 	bond->propagateChange(10);
 }
 
-BondGroup *Bond::bondGroupForBond()
+BondGroupPtr Bond::bondGroupForBond()
 {
 	ModelPtr model = getParentModel();
 	
@@ -1041,7 +1041,7 @@ BondGroup *Bond::bondGroupForBond()
 		shout_at_helen("Group less than zero - floating bond?");
 	}
 
-	return &parent->_bondGroups[group];
+	return parent->_bondGroups[group];
 }
 
 bool Bond::splitBond()
@@ -1396,8 +1396,33 @@ void Bond::addProperties()
 
 	addVec3Property("bond_direction", &_bondDirection);
 	addVec3Property("magic_axis", &_magicAxis);
-
+	
+	for (int i = 0; i < downstreamBondGroupCount(); i++)
+	{
+		addChild("bond_group", _bondGroups[i]);
+	}
+	
+	for (int i = 0; i < extraTorsionSampleCount(); i++)
+	{
+		addChild("extra_sample", extraTorsionSample(i));
+	}
+	
 	Model::addProperties();
+}
+
+void Bond::addObject(ParserPtr object, std::string category)
+{
+	if (category == "bond_group")
+	{
+		BondGroupPtr group = ToBondGroupPtr(object);
+		_bondGroups.push_back(group);	
+	} 
+
+	if (category == "extra_sample")
+	{
+		AtomPtr atom = ToAtomPtr(object);
+		addExtraTorsionSample(atom);
+	} 
 }
 
 void Bond::linkReference(ParserPtr object, std::string category)
