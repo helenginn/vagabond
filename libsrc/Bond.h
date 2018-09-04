@@ -419,12 +419,12 @@ public:
 		return _fixed;
 	}
 
-	void addExtraTorsionSample(AtomPtr atom, int group)
+	void addExtraTorsionSample(AtomPtr atom)
 	{
 		_extraTorsionSamples.push_back(atom);
 	}
 
-	int extraTorsionSampleCount(int group)
+	int extraTorsionSampleCount()
 	{
 		return _extraTorsionSamples.size();
 	}
@@ -432,7 +432,7 @@ public:
 	/** Returns the B factor (function is a misnomer). */
 	virtual double getMeanSquareDeviation();
 
-	AtomPtr extraTorsionSample(int group, int i)
+	AtomPtr extraTorsionSample(int i)
 	{
 		return _extraTorsionSamples[i].lock();
 	}

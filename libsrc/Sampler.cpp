@@ -66,9 +66,9 @@ void Sampler::addAtomsForBond(BondPtr bond)
 		}
 	}
 
-	for (int j = 0; j < bond->extraTorsionSampleCount(group); j++)
+	for (int j = 0; j < bond->extraTorsionSampleCount(); j++)
 	{
-		addSampled(bond->extraTorsionSample(group, j));
+		addSampled(bond->extraTorsionSample(j));
 	}
 }
 
