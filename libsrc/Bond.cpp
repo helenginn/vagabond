@@ -364,7 +364,15 @@ void Bond::deriveCirclePortion()
 		_circlePortion = 0;
 		return;
 	}
-
+	
+	/* First bond should not have a circle portion */
+	int num = parent->downstreamBondNum(this, NULL);
+	
+	if (num == 0)
+	{
+		return;
+	}
+	
 	/* We can't calculate and compare a circle portion if our grandparent
 	 * is an Absolute model and the heavy alignment atom is not set.
 	 * This function will be called again when it is set, for now we just
