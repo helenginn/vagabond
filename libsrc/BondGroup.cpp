@@ -15,6 +15,8 @@ void BondGroup::addProperties()
 	{
 		addReference("bond", bondPtr(i));
 	}
+	
+	addIntProperty("group", &_group);
 }
 
 void BondGroup::linkReference(ParserPtr object, std::string category)
