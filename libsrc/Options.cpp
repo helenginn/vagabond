@@ -182,9 +182,8 @@ void Options::run()
 		{
 			crystal->setAnchors();
 			crystal->tieAtomsUp();
+			getActiveCrystal()->hydrogenateContents();
 		}
-
-		getActiveCrystal()->hydrogenateContents();
 
 		crystal->tiedUpScattering();
 
@@ -705,9 +704,8 @@ void Options::openModel(std::string pdbName)
 		statusMessage("Tying up atoms...");
 		getActiveCrystal()->setAnchors();
 		getActiveCrystal()->tieAtomsUp();
+		getActiveCrystal()->hydrogenateContents();
 	}
-
-	getActiveCrystal()->hydrogenateContents();
 
 	for (size_t i = 0; i < crystal->moleculeCount(); i++)
 	{
