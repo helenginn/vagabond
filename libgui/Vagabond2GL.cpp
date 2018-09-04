@@ -193,7 +193,6 @@ bool Vagabond2GL::shouldGetBonds()
 
 			if (expected != existing)
 			{
-//				std::cout << "E/e: " << expected << " " << existing << std::endl;
 				return true;
 			}
 		}
