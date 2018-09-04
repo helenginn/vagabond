@@ -646,6 +646,10 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	mat3x3 magicMat = getMagicMat(crossDir);
 	_magicAxis = mat3x3_axis(magicMat, 2); 
 	
+	/* Track overall change in order to readjust torsion
+	 * at the end */
+	double averageModulation = 0;
+	
 	/* Assume torsion of 0, as real torsion added later */
 	for (size_t i = 0; i < prevs->size(); i++)
 	{
@@ -655,6 +659,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 
 		/* Difference between perfect and deviant position of major atom */
 		vec3 thisDeviation = vec3_subtract_vec3(thisPos, aveStart);
+		vec3_set_length(&thisDeviation, 1.);
 		
 		/* Find out what this deviation is if beam axis is set to z */
 		mat3x3_mult_vec(magicMat, &thisDeviation);
@@ -662,14 +667,17 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 		double notZ = sqrt(thisDeviation.y * thisDeviation.y +
 		                   thisDeviation.x * thisDeviation.x);
 		double tanX = thisDeviation.z / notZ;
+		double angle = atan(tanX);
 		
-		double dampValue = sin(atan(tanX));
+		if (thisDeviation.z < 0) angle *= -1;
+		
+		double dampValue = sin(angle);
 		if (dampValue != dampValue)
 		{
 			dampValue = 0;
 		}
 		
-		double kickValue = sqrt(1 - dampValue * dampValue);
+		double kickValue = cos(angle);
 		if (kickValue != kickValue)
 		{
 			kickValue = 0;
@@ -686,7 +694,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 		vec3 thisNext = mat3x3_axis(thisBasis, 0);
 
 		/* Find the best angle for dampening */
-		mat3x3_closest_rot_mat(aveNext, thisNext, thisDir, &rotAngle, true);
+		mat3x3_closest_rot_mat(thisNext, aveNext, thisDir, &rotAngle, true);
 
 		if (rotAngle != rotAngle)
 		{
@@ -695,7 +703,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 
 		double undoBlur = 0;
 		undoBlur = rotAngle;
-		undoBlur *= dampValue;
+		undoBlur *= fabs(dampValue);
 		undoBlur *= fabs(_dampening);
 
 		/* This will only apply for a kicked bond */
@@ -706,10 +714,20 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 		{
 			undoBlur = 0; addBlur = 0;
 		}
-		
+
 		double totalBlur = undoBlur + addBlur;
 		prevs->at(i).torsion = totalBlur;	
+		
+		averageModulation += totalBlur;
 	}
+
+	averageModulation /= (double)samples;
+
+	for (size_t i = 0; i < prevs->size(); i++)
+	{
+		prevs->at(i).torsion -= averageModulation;
+	}
+
 }
 
 std::vector<BondSample> *Bond::getManyPositions()
