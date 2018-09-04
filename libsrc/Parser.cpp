@@ -33,7 +33,8 @@ void Parser::setup(bool isNew)
 {
 	if (_setup) return;
 
-	/* If these objects are already fully operational... */
+	/* If these objects have been generated during this session,
+	 * not loaded from a file... */
 	if (!isNew)
 	{
 		_identifier = getParserIdentifier(); 
