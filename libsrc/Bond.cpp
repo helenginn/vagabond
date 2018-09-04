@@ -122,7 +122,7 @@ Bond::Bond(Bond &other)
 
 	for (size_t i = 0; i < other.downstreamBondGroupCount(); i++)
 	{
-		BondGroupPtr group = BondGroupPtr(new BondGroup());
+		BondGroupPtr group = BondGroupPtr(new BondGroup(i));
 		_bondGroups.push_back(group);
 	}
 
@@ -481,7 +481,8 @@ void Bond::addDownstreamBond(Bond *bond, int group)
 	{
 		for (int i = 0; i < group - _bondGroups.size() + 1; i++)
 		{
-			BondGroupPtr group = BondGroupPtr(new BondGroup());
+			int index = _bondGroups.size();
+			BondGroupPtr group = BondGroupPtr(new BondGroup(index));
 			_bondGroups.push_back(group);
 		}
 	}

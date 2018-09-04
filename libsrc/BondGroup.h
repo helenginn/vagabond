@@ -21,13 +21,19 @@
 #include <string>
 #include <vector>
 #include "Parser.h"
+#include "FileReader.h"
 
 class BondGroup : public Parser
 {
 public:
+	BondGroup(int group)
+	{
+		_group = group;
+	}
+
 	BondGroup()
 	{
-
+		_group = -1;
 	}
 	
 	void addBond(BondPtr bond)
@@ -61,7 +67,7 @@ protected:
 	virtual void linkReference(ParserPtr object, std::string category);
 	virtual std::string getParserIdentifier()
 	{
-		return "bondgroup";
+		return "group_" + i_to_str(_group);
 	}
 	
 	virtual std::string getClassName()
@@ -70,7 +76,7 @@ protected:
 	}
 
 private:
-	
+	int _group;	
 	std::vector<Bond *> _bonds;
 };
 
