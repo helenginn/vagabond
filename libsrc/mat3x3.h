@@ -109,8 +109,8 @@ mat3x3 mat3x3_ortho_axes(vec3 cVec);
  * vector bases */
 mat3x3 mat3x3_rhbasis(vec3 aVec, vec3 cVec);
 
-/** Find the rotation matrix which maps vec2 as closely as possible
- * onto vec1 by rotating around 'axis'. "best" returns the final
+/** Find the rotation matrix which maps vec1 as closely as possible
+ * onto vec2 by rotating around 'axis'. "best" returns the final
  * closest angle between vec2 and vec1 after rotation. If unity
  * is set to true, then you must guarantee that the incoming
  * vectors are unit vectors, in which case those calculations
