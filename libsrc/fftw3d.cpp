@@ -687,25 +687,47 @@ void FFT::invertScale()
 	setBasis(_inverse, 1);
 }
 
+/* 11-point interpolation - attempted transcription from Dave's function
+ * from GAP */
 double FFT::cubic_interpolate(vec3 vox000, size_t im)
 {
+	/* vox000 has integer and real components */
+	
+	/* Pick out just the real components */
 	vec3 remain = make_vec3(vox000.x - (double)((int)vox000.x),
 	                        vox000.y - (double)((int)vox000.y),
 	                        vox000.z - (double)((int)vox000.z));
 	
-	double u = remain.x;
-	double w = remain.y;
-	double v = remain.z;
+	double uvw[3] = {remain.x, remain.y, remain.z};
 
-	long vox000x = vox000.x;
-	long vox000y = vox000.y;
-	long vox000z = vox000.z;
-	long vox000xm = vox000.x + 1;
-	long vox000ym = vox000.y + 1;
-	long vox000zm = vox000.z + 1;
-	long vox000xn = vox000.x + (remain.x > 0.5) ? 2 : -1;
-	long vox000yn = vox000.y + (remain.y > 0.5) ? 2 : -1;
-	long vox000zn = vox000.z + (remain.z > 0.5) ? 2 : -1;
+	/* Extra refers to the additional index to be fished
+	 * for 11-point interpolation. We already get 0 and 1. */
+	int extra[3] = {-1, -1, -1};
+	double central[3] = {0, 0, 0};
+	double next[3] = {1, 1, 1};
+	
+	/* If uvw components are greater than 0.5, then flip them 
+	 * make the extra index one ahead and reverse the order */
+	for (int i = 0; i < 3; i++)
+	{
+		if (uvw[i] > 0.5)
+		{
+			next[i] = 0;
+			central[i] = 1;
+			extra[i] = 2;
+			uvw[i] = 1 - uvw[i];
+		}
+	}
+
+	long vox000x = vox000.x + central[0];
+	long vox000y = vox000.y + central[1];
+	long vox000z = vox000.z + central[2];
+	long vox000xm = vox000.x + next[0];
+	long vox000ym = vox000.y + next[1];
+	long vox000zm = vox000.z + next[2];
+	long vox000xn = vox000.x + extra[0];
+	long vox000yn = vox000.y + extra[1];
+	long vox000zn = vox000.z + extra[2];
 
 	collapse(&vox000x, &vox000y, &vox000z);
 	collapse(&vox000xm, &vox000ym, &vox000zm);
@@ -731,9 +753,9 @@ double FFT::cubic_interpolate(vec3 vox000, size_t im)
 	long int idx0n0 = vox000x + vox000yn + vox000z;
 	long int idx00n = vox000x + vox000y + vox000zn;
 	
-	u = (u > 0.5) ? 1 - u : u;
-	v = (v > 0.5) ? 1 - v : v;
-	w = (w > 0.5) ? 1 - w : w;
+	double u = uvw[0];
+	double v = uvw[1];
+	double w = uvw[2];
 	
 	double p000 = data[idx000][im];
 	double p001 = data[idx001][im];
@@ -770,10 +792,7 @@ double FFT::cubic_interpolate(vec3 vox000, size_t im)
 
 double FFT::interpolate(vec3 vox000, size_t im)
 {
-	/*
 	double test = cubic_interpolate(vox000, im);
-	return test;
-	*/
 	
 	vec3 remain = make_vec3(vox000.x - (double)((int)vox000.x),
 	                        vox000.y - (double)((int)vox000.y),
@@ -816,6 +835,8 @@ double FFT::interpolate(vec3 vox000, size_t im)
 	double val1 = val01 * (1 - remain.y) + val11 * remain.y;
 
 	double value = val0 * (1 - remain.z) + val1 * remain.z;
+	
+	std::cout << test << " " << value << std::endl;
 
 	return value;
 }
