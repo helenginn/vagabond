@@ -1070,7 +1070,6 @@ void AtomGroup::addObject(ParserPtr object, std::string category)
 		AtomPtr atom = ToAtomPtr(object);
 		addAtom(atom);
 	} 
-
 }
 
 void AtomGroup::linkReference(ParserPtr object, std::string category)
