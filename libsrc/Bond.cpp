@@ -816,12 +816,6 @@ std::vector<BondSample> *Bond::getManyPositions()
 
 	double totalAtoms = prevBond->downstreamBondCount(myGroup);
 
-	if (myGroup >= 0) // otherwise, might be next to anchor.
-	{
-		/* Necessary? */
-		prevBond->setActiveGroup(myGroup);
-	}
-
 	std::vector<BondSample> *prevSamples = prevBond->getManyPositions();
 
 	/* This is just to get a set of angles, no bases */

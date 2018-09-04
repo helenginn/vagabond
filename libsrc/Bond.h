@@ -372,18 +372,7 @@ public:
 		_geomRatio = value;
 	}
 
-	void setActiveGroup(int newGroup)
-	{
-		if (_activeGroup == newGroup)
-		{
-			return;
-		}
-
-		_activeGroup = newGroup;
-		propagateChange(0);
-	}
-
-	BondGroup *getBondGroup(int i)
+	BondGroupPtr getBondGroup(int i)
 	{
 		return &_bondGroups[i];
 	}
@@ -540,7 +529,6 @@ private:
 	/* Dampening should be associated with a bond group - woops */
 	double _dampening;
 	bool _activated;
-	int _activeGroup;
 	double _occupancy;
 	double _occMult;
 	double _torsion;
