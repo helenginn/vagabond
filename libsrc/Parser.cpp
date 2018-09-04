@@ -11,6 +11,7 @@
 #include "WaterNetwork.h"
 #include "Atom.h"
 #include "Bond.h"
+#include "BondGroup.h"
 #include "Monomer.h"
 #include "Absolute.h"
 #include "Sidechain.h"
@@ -1276,6 +1277,10 @@ ParserPtr Parser::objectOfType(char *className)
 	else if (strcmp(className, "Bond") == 0)
 	{
 		object = ParserPtr(static_cast<Bond *>(new Bond()));        
+	}
+	else if (strcmp(className, "BondGroup") == 0)
+	{
+		object = ParserPtr(static_cast<BondGroup *>(new BondGroup()));        
 	}
 	else if (strcmp(className, "Molecule") == 0)
 	{
