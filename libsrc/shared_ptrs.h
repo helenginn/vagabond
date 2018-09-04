@@ -27,6 +27,7 @@
 #define rad2deg(a) ((a) / M_PI * 180)
 
 #define ToBondPtr(a) (boost::static_pointer_cast<Bond>((a)))
+#define ToBondGroupPtr(a) (boost::static_pointer_cast<BondGroup>((a)))
 #define ToAbsolutePtr(a) (boost::static_pointer_cast<Absolute>((a)))
 #define ToModelPtr(a) (boost::static_pointer_cast<Model>((a)))
 #define ToPolymerPtr(a) (boost::static_pointer_cast<Polymer>((a)))
@@ -96,11 +97,13 @@ typedef boost::shared_ptr<Element> ElementPtr;
 class Model;
 class Absolute;
 class Bond;
+class BondGroup;
 
 typedef boost::shared_ptr<Absolute> AbsolutePtr;
 typedef boost::shared_ptr<Model> ModelPtr;
 typedef boost::shared_ptr<Bond> BondPtr;
 typedef boost::weak_ptr<Bond> BondWkr;
+typedef boost::shared_ptr<BondGroup> BondGroupPtr;
 
 class Bucket;
 class BucketBulkSolvent;
