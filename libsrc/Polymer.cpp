@@ -414,7 +414,6 @@ void Polymer::refineVScript(void *object, RefinementType rType)
 	Parser *parser = static_cast<Parser *>(object);
 	Polymer *polymer = dynamic_cast<Polymer *>(parser);
 	polymer->refine(crystal, rType);
-	crystal->addComment("Refining against " + Options::rTypeString(rType));
 }
 
 double Polymer::vsRefinePositionsToPDB(void *object)
