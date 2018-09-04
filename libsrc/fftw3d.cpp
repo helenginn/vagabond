@@ -712,9 +712,9 @@ double FFT::cubic_interpolate(vec3 vox000, size_t im)
 	{
 		if (uvw[i] > 0.5)
 		{
-			next[i] = 0;
-			central[i] = 1;
 			extra[i] = 2;
+			central[i] = 1;
+			next[i] = 0;
 			uvw[i] = 1 - uvw[i];
 		}
 	}
@@ -768,31 +768,29 @@ double FFT::cubic_interpolate(vec3 vox000, size_t im)
 	
 	double a = p100 - p000;
 	double b = p010 - p000;
-	double c = p110 - p000;
+	double c = p110 - p010;
 	double d = p101 - p001;
 	
 	double pn00 = data[idxn00][im];
 	double p0n0 = data[idx0n0][im];
 	double p00n = data[idx00n][im];
 
-	double p8value = p100+u*(a+w*(-a+d)+v*((c-a)+w*( a-c-d-p011+p111)))
+	double p8value = p000+u*(a+w*(-a+d)+v*((c-a)+w*( a-c-d-p011+p111)))
 	+ v*(b+w*(-p001+p011-b))+w*(-p000+p001);
 	
-	double mod = p000 - 0.5 * p100 - 0.5 * pn00
-	             * (u - u * u);
-	mod += p000 - 0.5 * p010 - 0.5 * p0n0
-           * (v - v * v);
-	mod += p000 - 0.5 * p001 - 0.5 * p00n
-	       * (w - w * w);
+	double mod = (p000 - 0.5 * p100 - 0.5 * pn00) * (u - u * u);
+	mod += (p000 - 0.5 * p010 - 0.5 * p0n0) * (v - v * v);
+	mod += (p000 - 0.5 * p001 - 0.5 * p00n) * (w - w * w);
 	
 	double p11value = p8value + 0.4 * mod;
 
-	return p8value;
+	return p11value;
 }
 
 double FFT::interpolate(vec3 vox000, size_t im)
 {
 	double test = cubic_interpolate(vox000, im);
+	return test;
 	
 	vec3 remain = make_vec3(vox000.x - (double)((int)vox000.x),
 	                        vox000.y - (double)((int)vox000.y),
