@@ -36,6 +36,7 @@ public:
 	virtual void tieAtomsUp();
 	void splitConformers();
 	virtual void refine(CrystalPtr target, RefinementType rType);
+	void scanBondParams();
 	
 	static void refineVScript(void *object, RefinementType rType);
 	static double vsRefineSidechainsToDensity(void *object);
