@@ -1264,6 +1264,11 @@ bool Bond::isRefinable()
 	return isNotJustForHydrogens() && !isFixed();
 }
 
+bool Bond::isTorsionRefinable()
+{
+	return isNotJustForHydrogens() && !isFixed() && isUsingTorsion();
+}
+
 bool Bond::test()
 {
 	bool ok = true;

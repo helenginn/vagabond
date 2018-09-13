@@ -65,8 +65,11 @@ public:
 		return ToBondPtr(Model::shared_from_this());
 	}
 	
-	/** Returns true if the torsion angle should be refined. */
+	/** Returns true if any parameter should be refined. */
 	bool isRefinable();
+	
+	/** Returns true if the torsion angle should be refined. */
+	bool isTorsionRefinable();
 	
 	/** Returns true if the bond angles and lengths for the first atom agree
 	* with default geometry or are otherwise refinable to non-default values.
