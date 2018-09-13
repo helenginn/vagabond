@@ -285,7 +285,7 @@ void Sampler::setupGrid()
 
 void Sampler::setupNelderMead()
 {
-	_strategy = RefinementStrategyPtr(new NelderMead());
+	_strategy = RefinementStrategyPtr(new RefinementNelderMead());
 	_strategy->setEvaluationFunction(Sampler::score, this);
 	_strategy->setCycles(20);
 }

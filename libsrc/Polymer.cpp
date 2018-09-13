@@ -1733,7 +1733,7 @@ void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 	Timer timer("whole molecule fit", true);
 	
 	FlexGlobal target;
-	NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
+	NelderMeadPtr nelderMead = NelderMeadPtr(new RefinementNelderMead());
 	_overallScale = 1;
 	applyTranslationTensor();
 

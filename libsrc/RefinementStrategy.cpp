@@ -35,7 +35,7 @@ RefinementStrategyPtr RefinementStrategy::userChosenStrategy()
 		strategy = boost::static_pointer_cast<RefinementStrategy>(RefinementStepSearchPtr(new RefinementStepSearch()));
 		break;
 		case MinimizationMethodNelderMead:
-		strategy = boost::static_pointer_cast<RefinementStrategy>(NelderMeadPtr(new NelderMead()));
+		strategy = boost::static_pointer_cast<RefinementStrategy>(NelderMeadPtr(new RefinementNelderMead()));
 		break;
 		case MinimizationMethodGridSearch:
 		strategy = boost::static_pointer_cast<RefinementStrategy>(RefinementGridSearchPtr(new RefinementGridSearch()));

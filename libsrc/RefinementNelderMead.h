@@ -27,7 +27,7 @@
 typedef std::pair<std::vector<double>, double> TestPoint;
 typedef std::map<int, double> StepMap;
 
-class NelderMead : public RefinementStrategy
+class RefinementNelderMead : public RefinementStrategy
 {
 private:
 	double alpha;
@@ -60,7 +60,7 @@ private:
 	void subtractPoints(std::vector<double> *point, std::vector<double> pointToSubtract);
 public:
 	void init();
-	NelderMead() : RefinementStrategy() { init(); };
+	RefinementNelderMead() : RefinementStrategy() { init(); };
 	virtual void refine();
 
 	virtual void clearParameters();

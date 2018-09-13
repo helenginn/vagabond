@@ -20,7 +20,7 @@
 #include <algorithm>
 #include <iostream>
 
-bool NelderMead::converged()
+bool RefinementNelderMead::converged()
 {
 	for (int i = 0; i < parameterCount(); i++)
 	{
@@ -43,7 +43,7 @@ bool NelderMead::converged()
 	return true;
 }
 
-void NelderMead::addPoints(std::vector<double> *point, std::vector<double> pointToAdd)
+void RefinementNelderMead::addPoints(std::vector<double> *point, std::vector<double> pointToAdd)
 {
 	for (int i = 0; i < point->size(); i++)
 	{
@@ -51,7 +51,7 @@ void NelderMead::addPoints(std::vector<double> *point, std::vector<double> point
 	}
 }
 
-void NelderMead::subtractPoints(std::vector<double> *point, std::vector<double> pointToSubtract)
+void RefinementNelderMead::subtractPoints(std::vector<double> *point, std::vector<double> pointToSubtract)
 {
 	for (int i = 0; i < point->size(); i++)
 	{
@@ -59,7 +59,7 @@ void NelderMead::subtractPoints(std::vector<double> *point, std::vector<double> 
 	}
 }
 
-void NelderMead::scalePoint(std::vector<double> *point, double scale)
+void RefinementNelderMead::scalePoint(std::vector<double> *point, double scale)
 {
 	for (int i = 0; i < point->size(); i++)
 	{
@@ -67,18 +67,18 @@ void NelderMead::scalePoint(std::vector<double> *point, double scale)
 	}
 }
 
-void NelderMead::setWorstTestPoint(TestPoint &newPoint)
+void RefinementNelderMead::setWorstTestPoint(TestPoint &newPoint)
 {
 	testPoints[testPoints.size() - 1] = newPoint;
 }
 
-TestPoint *NelderMead::worstTestPoint()
+TestPoint *RefinementNelderMead::worstTestPoint()
 {
 	orderTestPoints();
 	return &testPoints[testPoints.size() - 1];
 }
 
-std::vector<double> NelderMead::calculateCentroid()
+std::vector<double> RefinementNelderMead::calculateCentroid()
 {
 	std::vector<double> centroid;
 	centroid.resize(parameterCount());
@@ -101,7 +101,7 @@ std::vector<double> NelderMead::calculateCentroid()
 	return centroid;
 }
 
-TestPoint NelderMead::reflectOrExpand(std::vector<double> centroid, double scale)
+TestPoint RefinementNelderMead::reflectOrExpand(std::vector<double> centroid, double scale)
 {
 	TestPoint *maxPoint = worstTestPoint();
 
@@ -122,22 +122,22 @@ TestPoint NelderMead::reflectOrExpand(std::vector<double> centroid, double scale
 	return reflection;
 }
 
-TestPoint NelderMead::reflectedPoint(std::vector<double> centroid)
+TestPoint RefinementNelderMead::reflectedPoint(std::vector<double> centroid)
 {
 	return reflectOrExpand(centroid, alpha);
 }
 
-TestPoint NelderMead::expandedPoint(std::vector<double> centroid)
+TestPoint RefinementNelderMead::expandedPoint(std::vector<double> centroid)
 {
 	return reflectOrExpand(centroid, gamma);
 }
 
-TestPoint NelderMead::contractedPoint(std::vector<double> centroid)
+TestPoint RefinementNelderMead::contractedPoint(std::vector<double> centroid)
 {
 	return reflectOrExpand(centroid, rho);
 }
 
-void NelderMead::reduction()
+void RefinementNelderMead::reduction()
 {
 	TestPoint bestPoint = testPoints[0];
 
@@ -163,24 +163,24 @@ static bool testPointWorseThanTestPoint(TestPoint one, TestPoint two)
 	return one.second < two.second;
 }
 
-void NelderMead::orderTestPoints()
+void RefinementNelderMead::orderTestPoints()
 {
 	std::sort(testPoints.begin(), testPoints.end(), testPointWorseThanTestPoint);
 }
 
-void NelderMead::evaluateTestPoint(int num)
+void RefinementNelderMead::evaluateTestPoint(int num)
 {
 	evaluateTestPoint(&testPoints[num]);
 }
 
-void NelderMead::evaluateTestPoint(TestPoint *testPoint)
+void RefinementNelderMead::evaluateTestPoint(TestPoint *testPoint)
 {
 	setTestPointParameters(testPoint);
 	double eval = evaluationFunction(evaluateObject);
 	testPoint->second = eval;
 }
 
-void NelderMead::setTestPointParameters(TestPoint *testPoint)
+void RefinementNelderMead::setTestPointParameters(TestPoint *testPoint)
 {
 	for (int i = 0; i < parameterCount(); i++)
 	{
@@ -188,14 +188,14 @@ void NelderMead::setTestPointParameters(TestPoint *testPoint)
 	}
 }
 
-void NelderMead::clearParameters()
+void RefinementNelderMead::clearParameters()
 {
 	RefinementStrategy::clearParameters();
 
 	testPoints.clear();
 }
 
-void NelderMead::refine()
+void RefinementNelderMead::refine()
 {
 	RefinementStrategy::refine();
 
@@ -284,7 +284,7 @@ void NelderMead::refine()
 	finish();
 }
 
-void NelderMead::init()
+void RefinementNelderMead::init()
 {
 	alpha = 1;
 	gamma = 2;

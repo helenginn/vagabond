@@ -125,12 +125,12 @@ class RefinementGridSearch;
 class RefinementStepSearch;
 class RefinementStrategy;
 class RefinementSnake;
-class NelderMead;
+class RefinementNelderMead;
 typedef boost::shared_ptr<RefinementStepSearch> RefinementStepSearchPtr;
 typedef boost::shared_ptr<RefinementGridSearch> RefinementGridSearchPtr;
 typedef boost::shared_ptr<RefinementStrategy> RefinementStrategyPtr;
 typedef boost::shared_ptr<RefinementSnake> RefinementSnakePtr;
-typedef boost::shared_ptr<NelderMead> NelderMeadPtr;
+typedef boost::shared_ptr<RefinementNelderMead> NelderMeadPtr;
 
 class CSV;
 class PNGFile;
