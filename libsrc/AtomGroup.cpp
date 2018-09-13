@@ -928,6 +928,11 @@ double AtomGroup::scoreFinalValues(std::vector<double> xs,
 		double correl = correlation(xs, ys, cutoff);
 		return -correl;
 	}
+	else if (scoreType == ScoreTypeHappiness)
+	{
+		double happiness = happiness_coefficient(xs, ys);
+		return -happiness;
+	}
 	else if (scoreType == ScoreTypeRFactor)
 	{
 		double rFactor = scaled_r_factor(xs, ys, cutoff);
