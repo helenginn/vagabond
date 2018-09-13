@@ -21,11 +21,11 @@ Density2GL::Density2GL()
 {
 	_recalculate = 0;
 	_renderType = GL_TRIANGLES;
-	_resolution = 0.6;
+	_resolution = 0.5;
 	_cubeIndices = std::vector<std::vector<GLuint> >();
 	_offset = make_vec3(-12, 3, -20);
 	_visible = true;
-	_threshold = 2.4;
+	_threshold = 2.3;
 	_backToFront = true;
 	_usesLighting = true;
 	_extra = true;
