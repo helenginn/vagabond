@@ -556,7 +556,8 @@ bool Sampler::sample(bool clear)
 
 	if (_scoreType == ScoreTypeCorrel ||
 	    _scoreType == ScoreTypeRFactor ||
-	    _scoreType == ScoreTypeMultiply)
+	    _scoreType == ScoreTypeMultiply ||
+		_scoreType == ScoreTypeHappiness)
 	{
 		int cycles = 16 + paramCount;
 
@@ -595,8 +596,10 @@ double Sampler::getScore()
 	{
 		return 0;
 	}
-
-	if (_scoreType != ScoreTypeCorrel && _scoreType != ScoreTypeRFactor)
+	
+	if (_scoreType != ScoreTypeCorrel 
+	    && _scoreType != ScoreTypeRFactor
+		&& _scoreType != ScoreTypeHappiness)
 	{
 		double score = 0;
 		double count = 0;
