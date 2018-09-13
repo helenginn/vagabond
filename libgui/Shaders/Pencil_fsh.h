@@ -6,16 +6,17 @@ std::string Pencil_fsh =
 "varying vec2 vTex;\n"\
 "varying vec3 vNormal;\n"\
 "varying vec4 vPos;\n"\
+"varying vec4 tPos;\n"\
 "\n"\
 "uniform sampler2D pencilTexture;\n"\
 "uniform vec3 light_pos;\n"\
 "\n"\
 "void main()\n"\
 "{\n"\
-"	if (vPos[2] > -8.) {\n"\
+"	if (tPos[2] > -8.) {\n"\
 "		discard;\n"\
 "	}\n"\
-"	if (vPos[2] < -20.) {\n"\
+"	if (tPos[2] < -20.) {\n"\
 "		discard;\n"\
 "	}\n"\
 "	vec3 pos = vec3(vPos[0], vPos[1], vPos[2]);\n"\
@@ -28,7 +29,7 @@ std::string Pencil_fsh =
 "	} else {\n"\
 "	    diff -= cutoff; diff /= 1. - cutoff;\n"\
 "	}\n"\
-"	vec2 tex = vec2(vPos[0], vPos[1]);\n"\
+"	vec2 tex = vec2(tPos[0], tPos[1]);\n"\
 "	vec4 temp = texture2D(pencilTexture, tex);\n"\
 "	gl_FragColor = temp;\n"\
 "	gl_FragColor[3] = 0.9 * diff;\n"\
