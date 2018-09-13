@@ -103,11 +103,6 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	deriveBondAngle();
 	deriveCirclePortion();
 	deriveTorsionAngle();
-
-	if (upModel->getClassName() == "Absolute")
-	{
-		ToAbsolutePtr(upModel)->addNextAtom(minor);
-	}
 }
 
 Bond::Bond(Bond &other)

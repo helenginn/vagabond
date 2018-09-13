@@ -201,24 +201,10 @@ public:
 		return "Absolute";
 	}
 
+	/** Returns the atom which this model directly controls. */
 	virtual AtomPtr getAtom()
 	{
 		return _atom.lock();
-	}
-
-	void addNextAtom(AtomPtr atom)
-	{
-		_nextAtoms.push_back(atom);
-	}
-
-	AtomPtr getNextAtom(int i)
-	{
-		return _nextAtoms[i].lock();
-	}
-
-	long nextAtomCount()
-	{
-		return _nextAtoms.size();
 	}
 
 	/** Returns the offsets for an anchor residue on which a molecule may
