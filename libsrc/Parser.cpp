@@ -284,7 +284,7 @@ void Parser::outputContents(std::ofstream &stream, int in)
 		std::string name = _doubleProperties[i].ptrName;
 		double *ptr = _doubleProperties[i].doublePtr;
 		if (!ptr) continue;
-		stream << indent(in) << name << " = " << *ptr << std::endl;
+		stream << indent(in) << name << " = " << f_to_str(*ptr, 10) << std::endl;
 	}
 
 	for (int i = 0; i < _mat3x3Properties.size(); i++)
