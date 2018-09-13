@@ -29,6 +29,7 @@ typedef enum
 	ScoreTypeRMSDZero = 6, /** Sum of squares of anisotropic tensor */
 	ScoreTypeAddDensity = 7, /** Sum of map voxels if model positive */
 	ScoreTypeAddVoxels = 8, /** Number of map voxels if model positive */
+	ScoreTypeHappiness = 9, /** Like CC but a reward function */
 } ScoreType;
 
 typedef enum
