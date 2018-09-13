@@ -191,7 +191,7 @@ void RefinementStepSearch::refine()
 
 		for (size_t j = 0; j < parameterCount(); j++)
 		{
-			bool coupled = (couplings[j] > 1);
+			bool coupled = (_params[j].coupled > 1);
 
 			if (!coupled)
 			{

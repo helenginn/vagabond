@@ -152,14 +152,6 @@ protected:
 	bool _silent;
 
 	std::vector<Parameter> _params;
-	std::vector<int> couplings;
-	std::vector<void *> objects;
-	std::vector<Getter> getters;
-	std::vector<Setter> setters;
-	std::vector<double> stepSizes;
-	std::vector<double> otherValues;
-	std::vector<std::string> tags;
-	std::vector<double> startingValues;
 	double startingScore;
 	bool _verbose;
 

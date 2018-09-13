@@ -68,7 +68,6 @@ void RefinementStrategy::addParameter(void *object, Getter getter, Setter setter
 	param.tag = tag;
 	param.coupled = 1;
 
-	tags.push_back(tag);
 	_params.push_back(param);
 }
 
@@ -160,7 +159,7 @@ void RefinementStrategy::finish()
 			for (int i = 0; i < parameterCount(); i++)
 			{
 				double value = getValueForParam(i);
-				std::cout << tags[i] << "=" << value * rad2degscale <<
+				std::cout << _params[i].tag << "=" << value * rad2degscale <<
 				(_toDegrees ? "º" : "") << ", ";
 			}
 
