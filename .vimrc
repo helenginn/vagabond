@@ -8,5 +8,7 @@ command! Doxy !doxygen Doxyfile
 
 command Indent normal 0ggggVG=
 
-:let mapleader = ","
-:imap <C-P> o{}=ko
+" Unused at present.
+":let mapleader = ","
+
+
