@@ -45,6 +45,8 @@ void Sampler::addAtomsForBond(BondPtr bond)
 	addSampled(bond->getMinor());
 	addSampled(bond->getMajor());
 
+	int count = 0;
+
 	/* Stop if the bond has no parent */
 	if (!bond->getParentModel()->isBond())
 	{
@@ -63,12 +65,27 @@ void Sampler::addAtomsForBond(BondPtr bond)
 		{
 			AtomPtr downAtom = parent->downstreamAtom(group, j);
 			addSampled(downAtom);
+			count++;
 		}
 	}
 
 	for (int j = 0; j < bond->extraTorsionSampleCount(); j++)
 	{
 		addSampled(bond->extraTorsionSample(j));
+		count++;
+	}
+	
+	if (bond->downstreamBondGroupCount())
+	{
+		for (size_t j = 0; j < bond->downstreamBondGroupCount(); j++)
+		{
+			for (size_t i = 0; i < bond->downstreamBondCount(j); i++)
+			{
+				AtomPtr downAtom = bond->downstreamAtom(j, i);
+				addSampled(downAtom);
+				count++;
+			}
+		}
 	}
 }
 
