@@ -284,7 +284,8 @@ int VagWindow::waitForInstructions()
 				break;
 
 				case InstructionTypeRefineWaterNetwork:
-				options->refineAll(RefinementWaterNetwork, 1);
+				options->scanBondParams();
+//				options->refineAll(RefinementWaterNetwork, 1);
 				break;
 
 				case InstructionTypeRecalculateFFT:
