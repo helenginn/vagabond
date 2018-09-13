@@ -14,6 +14,11 @@
 #include "shared_ptrs.h"
 #include <string>
 
+/**
+ * \class TextManager
+ * \brief Renders Helen handwriting from ASCII lookup table defined in font.h
+ */
+
 class TextManager
 {
 private:

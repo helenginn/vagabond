@@ -12,6 +12,11 @@
 #include "shared_ptrs.h"
 #include <cstdarg>
 
+/**
+ * \class Hydrogenator
+ * \brief Adds hydrogens to a model and sets the geometry to default values
+ * for each relevant atom, if hydrogens are not already present. */
+
 class Hydrogenator
 {
 public:

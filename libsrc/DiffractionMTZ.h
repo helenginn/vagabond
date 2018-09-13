@@ -12,6 +12,11 @@
 #include <stdio.h>
 #include "Diffraction.h"
 
+/**
+ * \class DiffractionMtz
+ * \brief Diffraction which obtains diffraction information from a MTZ file.
+ */
+
 class DiffractionMtz : public Diffraction
 {
 public:

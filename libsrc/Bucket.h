@@ -25,6 +25,12 @@
 typedef std::map<double, Plucker *> PluckerMap;
 typedef PluckerMap::iterator PluckerItr;
 
+/**
+ * \class Bucket
+ * \brief Abstract class for adding solvent (via implemented method),
+ * applying symmetry operations and scaling.
+ */
+
 class Bucket
 {
 public:

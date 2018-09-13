@@ -5,6 +5,11 @@
 #include "mat3x3.h"
 #include <vector>
 
+/**
+ * \struct MapScoreWorkspace
+ * \brief Stores temporary information for repeated calculations of
+ * correlation between calculated and comparison density */
+
 #define COORDVAL_FULL
 
 typedef struct

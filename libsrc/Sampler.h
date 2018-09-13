@@ -18,9 +18,11 @@
 #include <string>
 #include <map>
 
-/* More of an abstraction, but will take a series of (bond) parameters,
-* take a target function, and supply them to a refinement strategy.
-* Make sure the crystal target is set. */
+/**
+ * \class Sampler
+ * \brief Organises a target function and samples parameters to optimise
+ * that target function.
+ */
 
 /** Flags to set refinement strategies for a protein chain. */
 typedef enum
@@ -81,6 +83,7 @@ public:
 	
 	/** Add absolute position for an atom controlled by Absolute class */
 	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
+
 	/** Add absolute B factor for an atom controlled by Absolute class */
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
 	void addRotamer(Sidechain *side, double range, double interval);

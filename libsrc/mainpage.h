@@ -6,12 +6,14 @@
  *
  * \section Installation
  *
- * The easiest way to install Vagabond for users is from an AppImage (on
- * Linux) or the distributed .app file (for Mac OS X). Vagabond is not
- * available on Windows and has not been tested on it.
+ * Right now, you will need to get the latest version from Github and compile 
+ * from source (https://www.github.com/helenginn/vagabond). Vagabond is not
+ * available and will crash on Windows.
  *
- * Developers will need to get the latest version from Github and compile from
- * source (https://www.github.com/helenginn/vagabond).
+ * Vagabond uses the Meson build system (https://www.mesonbuild.com) and has
+ * the following dependencies (don't forget to install the _devel_ versions):
+ * * libpng, fftw3f
+ * * Qt5 (GUI only)
  *
  * \section Tutorial
  *
@@ -22,10 +24,14 @@
  *
  * There will be a manual on Vagabond.
  *
- * \section Code documentation
+ * \section Documentation
  *
  * Documentation on the code is available. Start by having a look at the 
  * Classes.
+ *
+ * \section License
+ * 
+ * Vagabond is released under GPL v3.
  *
  */
 

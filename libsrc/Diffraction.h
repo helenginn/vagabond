@@ -15,6 +15,11 @@
 #include "shared_ptrs.h"
 #include <string>
 
+/**
+ * \class Diffraction
+ * \brief Dataset which provides diffraction intensities of some description.
+ */
+
 class Diffraction : public Dataset
 {
 public:

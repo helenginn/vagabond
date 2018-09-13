@@ -11,6 +11,11 @@
 
 #include "Object.h"
 
+/**
+ * \class Dataset
+ * \brief Some kind of target data against which a model should be refined.
+ */
+
 class Dataset : public Object
 {
 

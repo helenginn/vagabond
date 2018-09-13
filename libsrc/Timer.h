@@ -12,6 +12,12 @@
 #include <time.h>
 #include <string>
 
+/**
+ * \class Timer
+ * \brief Start, stop and report timing in minutes/seconds within other
+ * areas of Vagabond.
+ */
+
 class Timer
 {
 public:
