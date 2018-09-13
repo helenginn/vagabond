@@ -329,7 +329,7 @@ void MonomerExplorer::applyParamOptions(SamplerPtr sampled)
 		
 		if (param.optionType == ParamOptionTorsion)
 		{
-			sampled->addParamType(ParamOptionBondAngle, param.value / 5);
+			sampled->addParamType(ParamOptionBondAngle, param.value);
 		}
 	}
 }
