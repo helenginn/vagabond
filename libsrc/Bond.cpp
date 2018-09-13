@@ -1061,14 +1061,17 @@ bool Bond::splitBond()
 	int num = parent->downstreamBondNum(this, NULL);
 	
 	BondPtr dupl = me->duplicateDownstream(parent, last);
-	double torsion = _torsion;
+
+	double torsion = getBaseTorsion();
 	
 	if (num > 0)
 	{
 		torsion += getCirclePortion(&*me);
+		setCirclePortion(&*dupl, 0.);
 	}
 	
 	setTorsion(&*dupl, torsion);
+	dupl->setUsingTorsion(true);
 
 	_occupancy /= 2;
 	dupl->_occupancy /= 2;
