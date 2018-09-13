@@ -456,6 +456,7 @@ public:
 		_refineFlexibility = value;
 	}
 	
+	/* Returns true if the phi/psi/kick angles should be refined. */
 	bool getRefineFlexibility()
 	{
 		return _refineFlexibility && !isFixed();
@@ -466,6 +467,7 @@ public:
 		_refineBondAngle = value;
 	}
 
+	/* Returns true if the bond angle should be refined. */
 	bool getRefineBondAngle()
 	{
 		return _refineBondAngle && !isFixed();
