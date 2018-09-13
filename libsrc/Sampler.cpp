@@ -368,7 +368,13 @@ void Sampler::addMagicAngle(BondPtr bond, double range, double interval)
 {
 	if (!bond) return;
 	if (!bond->getRefineFlexibility()) return;
-
+	
+	if (Bond::getKick(&*bond) < 1e-6 && 
+	    (!hasParameter(ParamOptionKick) || _params[ParamOptionKick] < 1e-6))
+	{
+		return;
+	}
+	
 	_strategy->addParameter(&*bond, Bond::getMagicPhi,
 	                        Bond::setMagicPhi, range, interval,
 	"ph" + bond->shortDesc());
