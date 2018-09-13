@@ -26,6 +26,7 @@ double r_factor(std::vector<double> &set1, std::vector<double> &set2);
 double weightedMapScore(std::vector<double> &set1, std::vector<double> &set2);
 double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
                    double cutoff = -FLT_MAX);
+double happiness_coefficient(std::vector<double> xs, std::vector<double> ys);
 double mean(std::vector<double> &vec1);
 /* second vec2 is ignored */
 inline double two_dataset_mean(std::vector<double> &vec1, std::vector<double> &vec2)

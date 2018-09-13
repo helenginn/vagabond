@@ -302,6 +302,35 @@ void generateResolutionBins(double minD, double maxD,
 	}
 }
 
+double happiness_coefficient(std::vector<double> xs, std::vector<double> ys)
+{
+	double intercept, gradient;
+	regression_line(xs, ys, &intercept, &gradient);
+	
+	double dists = 0;
+	
+	for (int i = 0; i < xs.size(); i++)
+	{
+		double x = xs[i];
+		double y = ys[i];
+		
+		double closest_x = y * gradient + x - gradient;
+		closest_x /= (1 + gradient * gradient);
+		double closest_y = y * gradient * gradient + gradient * x + intercept;
+		closest_y /= (1 + gradient * gradient);
+		
+		double dist = (closest_x - x) * (closest_x - x);
+		dist += (closest_y - y) * (closest_y - y);
+		double expo = exp(-dist);
+		
+		dists += expo;
+	}
+	
+	dists /= (double)xs.size();
+	
+	return dists;
+}
+
 void regression_line(std::vector<double> xs, std::vector<double> ys,
                      double *intercept, double *gradient)
 {
