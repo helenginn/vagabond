@@ -22,6 +22,7 @@
 #include "Polymer.h"
 #include "CSV.h"
 #include "FileReader.h"
+#include "PDBReader.h"
 #include "LocalCC.h"
 #include "Atom.h"
 #include "Kabsch.h"
@@ -892,6 +893,8 @@ void Crystal::makePDBs(std::string suffix)
 
 	std::ofstream file;
 	file.open(path);
+	
+	file << PDBReader::writeCryst(_hkl2real, _spaceGroup);
 
 	for (int j = 0; j < moleculeCount(); j++)
 	{

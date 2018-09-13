@@ -1,0 +1,10 @@
+Notes...
+
+Dependencies
+
+GUI only: Qt (+OpenGL included)
+
+Other: libpng, fftw3f
+
+Custom CCP4 MTZ library compiled within 
+

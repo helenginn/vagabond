@@ -359,6 +359,30 @@ CrystalPtr PDBReader::getCrystal()
 	return _myCrystal;
 }
 
+std::string PDBReader::writeCryst(mat3x3 frac2real, CSym::CCP4SPG *spg)
+{
+	double vals[6];
+	unit_cell_from_mat3x3(frac2real, &vals[0]);
+
+	std::ostringstream stream;
+	stream << "CRYST1";
+	stream << std::fixed;
+	
+	for (int i = 0; i < 3; i++)
+	{
+		stream << std::setw(9) << std::setprecision(3) << vals[i];
+	}
+
+	for (int i = 3; i < 6; i++)
+	{
+		stream << std::setw(7) << std::setprecision(2) << vals[i];
+	}
+
+	stream << " " << spg->symbol_xHM << std::endl;
+
+	return stream.str();
+}
+
 std::string PDBReader::writeLine(AtomPtr atom, vec3 placement, int count,
                                  double occupancy, double bFactor)
 {

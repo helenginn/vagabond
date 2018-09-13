@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <iostream>
 #include "shared_ptrs.h"
-#include "vec3.h"
+#include "mat3x3.h"
 
 /**
  * \class PDBReader
@@ -28,6 +28,8 @@ public:
 	void setFilename(std::string);
 	CrystalPtr getCrystal();
 
+
+	static std::string writeCryst(mat3x3 frac2real, CSym::CCP4SPG *spg);
 	static std::string writeLine(AtomPtr atom, vec3 placement, int count,
 	                             double occupancy, double bFactor);
 
