@@ -139,7 +139,7 @@ void RefinementGridSearch::refine()
 
 		csv->plotPNG(plotMap);
 	}
-	else if (_writeCSV)
+	if (_writeCSV)
 	{
 		csv->writeToFile(jobName + "_gridsearch.csv");
 	}
