@@ -66,6 +66,11 @@ public:
 
 	/** Makes the corresponding atom when added to the molecule. */
 	virtual void addToMonomer(MonomerPtr monomer);
+	
+
+	/** Creates an atom from the Absolute model and adds it to the molecule
+	 * of interest. Do not use if the Atom already exists. In this case,
+	 * add the Atom directly to Molecule using Molecule::addAtom */
 	virtual void addToMolecule(MoleculePtr molecule);
 	virtual mat3x3 getRealSpaceTensor();
 	virtual void getAnisotropy(bool withKabsch);
@@ -96,11 +101,13 @@ public:
 		_conformer = conformer;
 	}
 
+	/** Returns the number of the (amino acid) residue */
 	int getResNum()
 	{
 		return _resNum;
 	}
-
+ 
+	/** Returns the name of the residue, e.g. ser, gly */
 	std::string getResName()
 	{
 		return _resName;
@@ -120,6 +127,8 @@ public:
 		_tensor.vals[8] = bfac;
 	}
 
+	/** Set a tensor to describe an anisotropic B factor. If called, will
+	 * return true for isUsingTensor(). */
 	void setTensor(mat3x3 tensor);
 
 	double getBFactor()
@@ -137,6 +146,9 @@ public:
 		return _hetatm;
 	}
 	
+	/** Returns if the Absolute model uses an anisotropic B factor for whatever
+	 * reason. Certainly the case if loaded from a PDB file with an ANISO
+	 * record. */
 	bool isUsingTensor()
 	{
 		return _usingTensor;	
