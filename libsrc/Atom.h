@@ -88,6 +88,8 @@ public:
 	{
 		return _model;
 	}
+	
+	int getElectronCount();
 
 	ElementPtr getElement()
 	{

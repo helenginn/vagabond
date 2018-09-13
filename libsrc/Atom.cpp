@@ -692,3 +692,8 @@ void Atom::writePositionsToFile()
 	
 	_model->writePositionsToFile(filename);
 }
+
+int Atom::getElectronCount()
+{
+	return _element->electronCount();
+}
