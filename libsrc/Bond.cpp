@@ -759,7 +759,7 @@ std::vector<BondSample> *Bond::getManyPositions()
 		return &_storedSamples;
 	}
 
-	ModelPtr model = getMajor()->getModel();
+	ModelPtr model = getParentModel();
 
 	newSamples->clear();
 
