@@ -101,25 +101,31 @@ int Sampler::hasParameter(ParamOptionType type)
 	return (_params.count(type));
 }
 
-void Sampler::addParamsForBond(BondPtr bond)
+void Sampler::addParamsForBond(BondPtr bond, bool even)
 {
+	int mult = (even ? 1 : -1);
 	for (ParamMap::iterator it = _params.begin(); it != _params.end(); it++)
 	{
 		ParamOptionType option = it->first;
 		double range = it->second;
+		
+		if (range < 1e-6)
+		{
+			continue;
+		}
 
 		switch (option)
 		{
 			case ParamOptionTorsion:
-			addTorsion(bond, deg2rad(range), deg2rad(0.010));
+			addTorsion(bond, deg2rad(range) * mult, deg2rad(0.005));
 			break;
 
 			case ParamOptionBondAngle:
-			addBendAngle(bond, deg2rad(range), deg2rad(0.010));
+			addBendAngle(bond, deg2rad(range) * mult, deg2rad(0.005));
 			break;
 
 			case ParamOptionKick:
-			addKick(bond, range, 0.0002);
+			addKick(bond, range * mult, 0.001);
 			break;
 
 			case ParamOptionDampen:
@@ -127,7 +133,7 @@ void Sampler::addParamsForBond(BondPtr bond)
 			break;
 
 			case ParamOptionMagicAngles:
-			addMagicAngle(bond, deg2rad(range), deg2rad(1.0));
+			addMagicAngle(bond, deg2rad(range) * mult, deg2rad(1.0));
 			break;
 
 			default:
