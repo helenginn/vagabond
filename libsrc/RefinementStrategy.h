@@ -32,10 +32,21 @@ typedef enum
 	MinimizationMethodGridSearch = 2,
 } MinimizationMethod;
 
-
 typedef double (*Getter)(void *);
 typedef void (*Setter)(void *, double newValue);
 typedef void (*TwoDouble)(void *, double value1, double value2);
+
+typedef struct
+{
+	void *object;
+	Getter getter;
+	Setter setter;
+	double step_size;
+	double other_value;
+	double start_value;
+	std::string tag;
+	int coupled;
+} Parameter;
 
 class RefinementStrategy
 {
@@ -65,8 +76,12 @@ public:
 	virtual void refine();
 	void resetToInitialParameters();
 
-	void addParameter(void *object, Getter getter, Setter setter, double stepSize, double otherValue, std::string tag = "");
-	void addCoupledParameter(void *object, Getter getter, Setter setter, double stepSize, double otherValue, std::string tag = "");
+	void addParameter(void *object, Getter getter, Setter setter, 
+	                  double stepSize, double otherValue, 
+	                  std::string tag = "");
+	void addCoupledParameter(void *object, Getter getter, Setter setter, 
+	                         double stepSize, double otherValue, 
+	                         std::string tag = "");
 
 	void setEvaluationFunction(Getter function, void *evaluatedObject)
 	{
@@ -116,18 +131,12 @@ public:
 
 	virtual void clearParameters()
 	{
-		getters.clear();
-		setters.clear();
-		objects.clear();
-		stepSizes.clear();
-		otherValues.clear();
-		tags.clear();
-		startingValues.clear();
+		_params.clear();
 	}
 
 	int parameterCount()
 	{
-		return getters.size();
+		return _params.size();
 	}
 
 protected:
@@ -142,6 +151,7 @@ protected:
 	bool _toDegrees;
 	bool _silent;
 
+	std::vector<Parameter> _params;
 	std::vector<int> couplings;
 	std::vector<void *> objects;
 	std::vector<Getter> getters;
@@ -153,6 +163,8 @@ protected:
 	double startingScore;
 	bool _verbose;
 
+	double getValueForParam(int i);
+	void setValueForParam(int i, double value);
 	void reportProgress(double score);
 	void finish();
 

@@ -53,38 +53,58 @@ RefinementStrategyPtr RefinementStrategy::userChosenStrategy()
 
 void RefinementStrategy::addParameter(void *object, Getter getter, Setter setter, double stepSize, double otherValue, std::string tag)
 {
-	objects.push_back(object);
-	getters.push_back(getter);
-	setters.push_back(setter);
-	stepSizes.push_back(stepSize);
-	otherValues.push_back(otherValue);
+	Parameter param;
+	param.object = object;
+	param.getter = getter;
+	param.setter = setter;
+	param.step_size = stepSize;
+	param.other_value = otherValue;
 
 	if (!tag.length())
 	{
-		tag = "object" + i_to_str((int)objects.size());
+		tag = "object" + i_to_str((int)parameterCount());
 	}
 
+	param.tag = tag;
+	param.coupled = 1;
+
 	tags.push_back(tag);
-	couplings.push_back(1);
+	_params.push_back(param);
 }
 
 void RefinementStrategy::addCoupledParameter(void *object, Getter getter, Setter setter, double stepSize, double stepConvergence, std::string tag)
 {
-	couplings.at(couplings.size() - 1)++;
+	int last = parameterCount() - 1;
+	_params[last].coupled++;
 	addParameter(object, getter, setter, stepSize, stepConvergence, tag);
-	couplings.at(couplings.size() - 1)++;
+	_params[last + 1].coupled++;
+}
+
+double RefinementStrategy::getValueForParam(int i)
+{
+	Getter getter = _params[i].getter;
+	void *object = _params[i].object;
+	double objectValue = (*getter)(object);
+
+	return objectValue;
+}
+
+void RefinementStrategy::setValueForParam(int i, double value)
+{
+	Setter setter = _params[i].setter;
+	void *object = _params[i].object;
+	(*setter)(object, value);
 }
 
 void RefinementStrategy::refine()
 {
 	if (!jobName.length())
 	{
-		jobName = "Refinement procedure for " + i_to_str((int)objects.size()) + " objects";
+		jobName = "Refinement procedure for " 
+		+ i_to_str((int)parameterCount()) + " objects";
 	}
 
-	//   std::cout << "--- " << jobName << " ---";
-
-	if (tags.size() == 0)
+	if (parameterCount() == 0)
 	{
 		std::cout << " No parameters to refine! Exiting." << std::endl;
 		return;
@@ -93,10 +113,10 @@ void RefinementStrategy::refine()
 
 	startingScore = (*evaluationFunction)(evaluateObject);
 
-	for (int i = 0; i < objects.size(); i++)
+	for (int i = 0; i < parameterCount(); i++)
 	{
-		double objectValue = (*getters[i])(objects[i]);
-		startingValues.push_back(objectValue);
+		double value = getValueForParam(i);
+		_params[i].start_value = value;
 	}
 
 	reportProgress(startingScore);
@@ -111,10 +131,10 @@ void RefinementStrategy::reportProgress(double score)
 
 	std::cout << "Cycle " << cycleNum << "\t";
 
-	for (int i = 0; i < objects.size(); i++)
+	for (int i = 0; i < parameterCount(); i++)
 	{
-		double objectValue = (*getters[i])(objects[i]);
-		std::cout << std::setprecision(5) << objectValue << "\t";
+		double value = getValueForParam(i);
+		std::cout << std::setprecision(5) << value << "\t";
 	}
 
 	std::cout << " - score:\t";
@@ -137,10 +157,10 @@ void RefinementStrategy::finish()
 			double rad2degscale = (_toDegrees ? rad2deg(1) : 1);
 			std::cout << "No change for " << jobName << " ";
 
-			for (int i = 0; i < objects.size(); i++)
+			for (int i = 0; i < parameterCount(); i++)
 			{
-				double objectValue = (*getters[i])(objects[i]);
-				std::cout << tags[i] << "=" << objectValue * rad2degscale <<
+				double value = getValueForParam(i);
+				std::cout << tags[i] << "=" << value * rad2degscale <<
 				(_toDegrees ? "º" : "") << ", ";
 			}
 
@@ -163,14 +183,15 @@ void RefinementStrategy::finish()
 
 			std::cout << "for " << jobName << ": ";
 
-			for (int i = 0; i < objects.size(); i++)
+			for (int i = 0; i < parameterCount(); i++)
 			{
-				double objectValue = (*getters[i])(objects[i]);
-				std::cout << tags[i] << "=" << objectValue * rad2degscale <<
+				double value = getValueForParam(i);
+				std::cout << _params[i].tag << "=" << value * rad2degscale <<
 				(_toDegrees ? "°" : "") << ", ";
 			}
 
-			std::cout << "(" << startingScore << " to " << endScore << ")" << std::endl;
+			std::cout << "(" << startingScore << " to " << 
+			endScore << ")" << std::endl;
 		}
 
 		_changed = 1;
@@ -186,9 +207,9 @@ void RefinementStrategy::finish()
 
 void RefinementStrategy::resetToInitialParameters()
 {
-	for (int i = 0; i < objects.size(); i++)
+	for (int i = 0; i < parameterCount(); i++)
 	{
-		double objectValue = startingValues[i];
-		(*setters[i])(objects[i], objectValue);
+		double value = _params[i].start_value;
+		setValueForParam(i, value);
 	}
 }
