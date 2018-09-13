@@ -203,9 +203,9 @@ bool Vagabond2GL::shouldGetBonds()
 
 void Vagabond2GL::setVertexColour(AtomPtr atom, Vertex *vertex)
 {
-	vertex->color[0] = 150. / 255.;
-	vertex->color[1] = 150. / 255.;
-	vertex->color[2] = 150. / 255.;
+	vertex->color[0] = 100. / 255.;
+	vertex->color[1] = 100. / 255.;
+	vertex->color[2] = 100. / 255.;
 	vertex->color[3] = 1.0;
 
 	if (atom->getElement()->getSymbol() == "O")
