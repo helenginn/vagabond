@@ -733,6 +733,21 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 
 }
 
+double Bond::getBaseTorsion()
+{
+	ModelPtr model = getParentModel();
+	BondPtr prevBond = boost::static_pointer_cast<Bond>(model);
+	int myGroup = -1;
+	double torsionNumber = prevBond->downstreamBondNum(this,
+	                                                   &myGroup);
+
+	BondPtr parent = ToBondPtr(getParentModel());
+	BondPtr sisBond = parent->downstreamBond(myGroup, 0);
+	/* May be myself */
+	double baseTorsion = sisBond->_torsion;
+	return baseTorsion;
+}
+
 std::vector<BondSample> *Bond::getManyPositions()
 {
 	std::vector<BondSample> *newSamples;
@@ -799,11 +814,6 @@ std::vector<BondSample> *Bond::getManyPositions()
 	double torsionNumber = prevBond->downstreamBondNum(this,
 	                                                   &myGroup);
 
-	BondPtr parent = ToBondPtr(getParentModel());
-	BondPtr sisBond = parent->downstreamBond(myGroup, 0);
-	/* May be myself */
-	double baseTorsion = sisBond->_torsion;
-
 	bool nextBondExists = false;
 	if (downstreamBondGroupCount())
 	{
@@ -813,6 +823,8 @@ std::vector<BondSample> *Bond::getManyPositions()
 	double totalAtoms = prevBond->downstreamBondCount(myGroup);
 
 	std::vector<BondSample> *prevSamples = prevBond->getManyPositions();
+	
+	double baseTorsion = getBaseTorsion();
 
 	/* This is just to get a set of angles, no bases */
 	double circlePortion = 0;

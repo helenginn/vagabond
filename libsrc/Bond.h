@@ -493,6 +493,8 @@ protected:
 
 private:
 	void initialize();
+	double getBaseTorsion();
+
 	std::string _shortDesc;
 
 	AtomWkr _major;
