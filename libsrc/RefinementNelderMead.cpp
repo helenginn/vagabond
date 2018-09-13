@@ -34,7 +34,7 @@ bool NelderMead::converged()
 		
 		double lastDiff = _stepMap[i];
 		
-		if (lastDiff > limit)
+		if (fabs(lastDiff) > fabs(limit))
 		{
 			_lastTag = tags[i];
 			return false;	
