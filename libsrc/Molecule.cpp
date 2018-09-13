@@ -127,7 +127,24 @@ void Molecule::addToMap(FFTPtr fft, mat3x3 _real2frac, bool mask)
 void Molecule::summary()
 {
 	std::cout << "| I am chain " << getChainID() << std::endl;
-	std::cout << "| Atoms: " << atomCount() << std::endl;
+	
+	int hydrogen = 0;
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->getElectronCount() == 1)
+		{
+			hydrogen++;
+		}
+	}
+	
+	std::cout << "| Atoms: " << atomCount() - hydrogen;
+	
+	if (hydrogen > 0)
+	{
+		std::cout << " (+ " << hydrogen << " hydrogens)";
+	}
+	
+	std::cout << std::endl;
 }
 
 void Molecule::refine(CrystalPtr crystal, RefinementType type)
