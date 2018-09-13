@@ -28,21 +28,18 @@ int RefinementGridSearch::_refine_counter = 0;
 
 void RefinementGridSearch::recursiveEvaluation(ParamList referenceList, ParamList workingList, ResultMap *results)
 {
-	size_t paramCount = objects.size();
+	size_t paramCount = parameterCount();
 	size_t workingCount = workingList.size();
-	double grid_length = stepSizes[workingCount] / otherValues[workingCount];
+	Parameter *param = &_params[workingCount];
+	double grid_length = param->step_size / param->other_value;
 
 	if (workingCount < paramCount)
 	{
-		if (workingCount == 1)
-		{
-			//     std::cout << "." << std::flush;
-		}
-
 		for (int i = -grid_length / 2; i <= (int)(grid_length / 2 + 0.5); i++)
 		{
 			double mean = referenceList[workingCount];
-			double step = otherValues[workingCount];
+			/* in refinement grid, step is actually limit... oops */
+			double step = param->other_value;
 			double value = mean + i * step;
 
 			ParamList extended = workingList;
@@ -55,8 +52,7 @@ void RefinementGridSearch::recursiveEvaluation(ParamList referenceList, ParamLis
 
 	for (int i = 0; i < workingList.size(); i++)
 	{
-		Setter setter = setters[i];
-		(*setter)(objects[i], workingList[i]);
+		setValueForParam(i, workingList[i]);
 	}
 
 	double result = (*evaluationFunction)(evaluateObject);
@@ -76,11 +72,11 @@ void RefinementGridSearch::refine()
 	ParamList currentValues;
 	CSVPtr csv = CSVPtr(new CSV());
 
-	for (int i = 0; i < objects.size(); i++)
+	for (int i = 0; i < parameterCount(); i++)
 	{
-		Getter getter = getters[i];
-		currentValues.push_back((*getter)(objects[i]));
-		csv->addHeader(tags[i]);
+		double val = getValueForParam(i);
+		currentValues.push_back(val);
+		csv->addHeader(_params[i].tag);
 	}
 
 	csv->addHeader("result");
@@ -108,32 +104,30 @@ void RefinementGridSearch::refine()
 
 	for (int i = 0; i < minParams.size(); i++)
 	{
-		Setter setter = setters[i];
+		double value = currentValues[i];
 
 		if (!_mock && changed)
 		{
-			(*setter)(objects[i], minParams[i]);
+			value = minParams[i];
 		}
-		else
-		{
-			(*setter)(objects[i], currentValues[i]);
-		}
+
+		setValueForParam(i, value);
 	}
 
-	if (tags.size() == 2 && _writePNG)
+	if (parameterCount() == 2 && _writePNG)
 	{
-		int stride = stepSizes[0] / otherValues[0];
+		int stride = _params[0].step_size / _params[0].other_value;
 
 		std::map<std::string, std::string> plotMap;
 		plotMap["filename"] = jobName + "_gridsearch_" + i_to_str(_refine_counter);
 		plotMap["height"] = "800";
 		plotMap["width"] = "800";
-		plotMap["xHeader0"] = tags[0];
-		plotMap["yHeader0"] = tags[1];
+		plotMap["xHeader0"] = _params[0].tag;
+		plotMap["yHeader0"] = _params[1].tag;
 		plotMap["zHeader0"] = "result";
 
-		plotMap["xTitle0"] = tags[0];
-		plotMap["yTitle0"] = tags[1];
+		plotMap["xTitle0"] = _params[0].tag;
+		plotMap["yTitle0"] = _params[1].tag;
 		plotMap["style0"] = "heatmap";
 		plotMap["stride"] = i_to_str(stride);
 

@@ -27,24 +27,29 @@ double RefinementStepSearch::minimizeTwoParameters(int whichParam1, int whichPar
 	double param_trials2[9];
 	double param_scores[9];
 
-	double *meanStep1 = &stepSizes[whichParam1];
-	double *meanStep2 = &stepSizes[whichParam2];
+	Parameter *param1 = &_params[whichParam1];
+	Parameter *param2 = &_params[whichParam2];
+	
+	double *meanStep1 = &param1->step_size;
+	double *meanStep2 = &param2->step_size;
 
-	if (*meanStep1 < otherValues[whichParam1] &&
-	    *meanStep2 < otherValues[whichParam2])
-	return 1;
+	if (*meanStep1 < param1->other_value &&
+	    *meanStep2 < param2->other_value)
+	{
+		return 1;
+	}
 
 	int j = 0;
 	double param_min_score = *bestScore;
 	int param_min_num = 4;
 
-	Getter getter1 = getters[whichParam1];
-	Setter setter1 = setters[whichParam1];
-	void *object1 = objects[whichParam1];
+	Getter getter1 = param1->getter;
+	Setter setter1 = param1->setter;
+	void *object1 = param1->object;
 
-	Getter getter2 = getters[whichParam2];
-	Setter setter2 = setters[whichParam2];
-	void *object2 = objects[whichParam2];
+	Getter getter2 = param2->getter;
+	Setter setter2 = param2->setter;
+	void *object2 = param2->object;
 
 	double bestParam1 = (*getter1)(object1);
 	double bestParam2 = (*getter2)(object2);
@@ -100,15 +105,17 @@ double RefinementStepSearch::minimizeParameter(int whichParam, double *bestScore
 {
 	double param_trials[3];
 	double param_scores[3];
+	Parameter *param = &_params[whichParam];
 
-	double step = stepSizes[whichParam];
+	double step = param->step_size;
+	if (step < param->other_value)
+	{
+		return 1;
+	}
 
-	if (step < otherValues[whichParam])
-	return 1;
-
-	Getter getter = getters[whichParam];
-	Setter setter = setters[whichParam];
-	void *object = objects[whichParam];
+	Getter getter = param->getter;
+	Setter setter = param->setter;
+	void *object = param->object;
 
 	int j = 0;
 	int param_min_num = 1;
@@ -162,7 +169,7 @@ double RefinementStepSearch::minimizeParameter(int whichParam, double *bestScore
 	*bestScore = param_min_score;
 
 	if (param_min_num == 1)
-	stepSizes[whichParam] /= 2;
+	param->step_size /= 2;
 
 	return 0;
 }
@@ -182,7 +189,7 @@ void RefinementStepSearch::refine()
 			bestScore = FLT_MAX;
 		}
 
-		for (size_t j = 0; j < objects.size(); j++)
+		for (size_t j = 0; j < parameterCount(); j++)
 		{
 			bool coupled = (couplings[j] > 1);
 
@@ -212,3 +219,4 @@ void RefinementStepSearch::refine()
 
 	finish();
 }
+

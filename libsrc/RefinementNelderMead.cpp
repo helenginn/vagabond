@@ -23,9 +23,9 @@
 
 bool NelderMead::converged()
 {
-	for (int i = 0; i < getters.size(); i++)
+	for (int i = 0; i < parameterCount(); i++)
 	{
-		double limit = otherValues[i];
+		double limit = _params[i].other_value;
 		
 		if (_stepMap.count(i) == 0)
 		{
@@ -36,7 +36,7 @@ bool NelderMead::converged()
 		
 		if (fabs(lastDiff) > fabs(limit))
 		{
-			_lastTag = tags[i];
+			_lastTag = _params[i].tag;
 			return false;	
 		}
 	}
@@ -82,10 +82,10 @@ TestPoint *NelderMead::worstTestPoint()
 std::vector<double> NelderMead::calculateCentroid()
 {
 	std::vector<double> centroid;
-	centroid.resize(tags.size());
+	centroid.resize(parameterCount());
 	orderTestPoints();
 
-	for (int i = 0; i < tags.size(); i++)
+	for (int i = 0; i < parameterCount(); i++)
 	{
 		double total = 0;
 
@@ -112,7 +112,7 @@ TestPoint NelderMead::reflectOrExpand(std::vector<double> centroid, double scale
 	std::vector<double> reflectedVec = centroid;
 	addPoints(&reflectedVec, diffVec);
 	
-	for (int i = 0; i < getters.size(); i++)
+	for (int i = 0; i < parameterCount(); i++)
 	{
 		_stepMap[i] = fabs(diffVec[i]);
 	}
@@ -183,9 +183,9 @@ void NelderMead::evaluateTestPoint(TestPoint *testPoint)
 
 void NelderMead::setTestPointParameters(TestPoint *testPoint)
 {
-	for (int i = 0; i < tags.size(); i++)
+	for (int i = 0; i < parameterCount(); i++)
 	{
-		(*setters[i])(objects[i], testPoint->first[i]);
+		setValueForParam(i, testPoint->first[i]);
 	}
 }
 
@@ -200,24 +200,24 @@ void NelderMead::refine()
 {
 	RefinementStrategy::refine();
 
-	int testPointCount = (int)tags.size() + 1;
+	int testPointCount = (int)parameterCount() + 1;
 	testPoints.resize(testPointCount);
 
-	if (tags.size() == 0)
+	if (parameterCount() == 0)
 	return;
 
 	/* Each test point is a vertex? */
 	for (int i = 0; i < testPoints.size(); i++)
 	{
 		testPoints[i].second = 0;
-		testPoints[i].first.resize(tags.size());
+		testPoints[i].first.resize(parameterCount());
 
-		for (int j = 0; j < tags.size(); j++)
+		for (int j = 0; j < parameterCount(); j++)
 		{
 			/* First test point is in the centre */
 			if (i == 0)
 			{
-				testPoints[i].first[j] = (*getters[j])(objects[j]);
+				testPoints[i].first[j] = getValueForParam(j);
 			}
 
 			/* All other test points increase the step size by a
@@ -226,9 +226,9 @@ void NelderMead::refine()
 			{
 				int minJ = i - 1;
 				double scale = 1;
-				double neg = 1;
 
-				testPoints[i].first[j] = testPoints[0].first[j] + (j == minJ) * scale * stepSizes[j] * neg;
+				testPoints[i].first[j] = testPoints[0].first[j] + 
+				(j == minJ) * scale * _params[j].step_size;
 			}
 		}
 	}
@@ -245,10 +245,7 @@ void NelderMead::refine()
 		std::vector<double> centroid = calculateCentroid();
 		count++;
 
-		//  if (count % skip == 0)
-		{
-			reportProgress(testPoints[0].second);
-		}
+		reportProgress(testPoints[0].second);
 
 		TestPoint reflected = reflectedPoint(centroid);
 

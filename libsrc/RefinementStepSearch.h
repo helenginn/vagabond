@@ -26,13 +26,6 @@
 
 class RefinementStepSearch : public RefinementStrategy
 {
-private:
-	double minimizeParameter(int i, double *bestScore);
-	double minimizeTwoParameters(int whichParam1, int whichParam2, double *bestScore);
-
-	Getter afterCycleFunction;
-	void *afterCycleObject;
-
 public:
 	RefinementStepSearch() : RefinementStrategy()
 	{
@@ -47,6 +40,13 @@ public:
 	}
 
 	virtual void refine();
+
+private:
+	double minimizeParameter(int i, double *bestScore);
+	double minimizeTwoParameters(int whichParam1, int whichParam2, double *bestScore);
+
+	Getter afterCycleFunction;
+	void *afterCycleObject;
 
 };
 
