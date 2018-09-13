@@ -473,10 +473,6 @@ public:
 		return _refineBondAngle && !isFixed();
 	}
 
-	static void encodeBondGroup(void *bond, void *bondGroup,
-	                            std::ostream &stream, int indent);
-	static char *decodeBondGroup(void *bond, void *bondGroup, char *block);
-
 	void setSplitBlock(int block = 1)
 	{
 		_splitBlock = block;
