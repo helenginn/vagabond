@@ -227,7 +227,35 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 	
 	return topBond;
 }
-	
+
+double Sampler::preScanParams(BondPtr aBond, BondPtr bBond,
+                              Getter getter, Setter setter, double stepSize)
+{
+	return 0;
+	std::cout << "Bonds: " << aBond->shortDesc() << ", " << bBond->shortDesc();
+	std::cout << std::endl;
+	SamplerPtr test = SamplerPtr(new Sampler());
+	test->setupGrid();
+	test->setCrystal(this->_crystal);
+	test->reportInDegrees();
+	test->setJobName("surface");
+	test->addAtomsForBond(aBond);
+	test->addAtomsForBond(bBond);
+//	test->setMock();
+	test->setScoreType(_scoreType);
+	test->_strategy->addParameter(&*aBond, getter, setter, deg2rad(60.),
+	                              deg2rad(2));
+	test->_strategy->addParameter(&*bBond, getter, setter, deg2rad(60.),
+	                              deg2rad(2));
+	RefinementGridSearchPtr grid = ToGridPtr(test->_strategy);
+	test->setScoreType(ScoreTypeHappiness);
+	grid->setWritePNG();
+	grid->setWriteCSV();
+	test->sample();
+	AtomGroup::scoreWithMapGeneral(&test->_workspace, true);
+	exit(0);
+
+}
 
 double Sampler::preScanParameter(BondPtr bond, Getter getter, Setter setter,
                                double stepSize)

@@ -188,6 +188,9 @@ protected:
 private:
 	double preScanParameter(BondPtr bond, Getter getter, Setter setter,
 	                      double stepSize);
+
+	double preScanParams(BondPtr aBond, BondPtr bBond,
+	                     Getter getter, Setter setter, double stepSize);
 	void addAtomsForBond(BondPtr bond);
 	void addParamsForBond(BondPtr bond, bool even = true);
 	CrystalPtr _crystal;
