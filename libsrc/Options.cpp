@@ -903,3 +903,22 @@ void Options::renderDensity()
 	
 	_notify->setRenderDensity();
 }
+
+void Options::scanBondParams()
+{
+	CrystalPtr crystal = getActiveCrystal();
+
+	for (int i = 0; i < crystal->moleculeCount(); i++)
+	{
+		MoleculePtr mol = crystal->molecule(i);
+		
+		if (!mol->isPolymer())
+		{
+			continue;
+		}
+		
+		PolymerPtr pol = ToPolymerPtr(mol);
+		
+		pol->scanBondParams();
+	}
+}

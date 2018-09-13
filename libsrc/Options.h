@@ -185,7 +185,8 @@ public:
 	{
 		Options::getRuntimeOptions()->renderDensity();
 	}
-
+	
+	void scanBondParams();
 	void renderDensity();
 	void statusMessage(std::string message);
 	void agreementSummary();
