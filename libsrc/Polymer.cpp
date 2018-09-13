@@ -1665,21 +1665,28 @@ bool Polymer::test()
 
 void Polymer::reportParameters()
 {
-	int count = 0;
+	int torsionCount = 0;
+	int angleCount = 0;
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (atom(i)->getModel()->isBond())
 		{
-			if (ToBondPtr(atom(i)->getModel())->isRefinable())
+			if (ToBondPtr(atom(i)->getModel())->isTorsionRefinable())
 			{
-				count++;
+				torsionCount++;
+			}
+
+			if (ToBondPtr(atom(i)->getModel())->getRefineBondAngle())
+			{
+				angleCount++;
 			}
 		}
 	}
 
-	std::cout << "Chain " << getChainID() << " has " << count
-	<< " refinable bonds." << std::endl;
+	std::cout << "Chain " << getChainID() << " has " << torsionCount
+	<< " refinable torsion angles and " << angleCount;
+	std::cout << " refinable bond angles." << std::endl;
 }
 
 void Polymer::vsTransTensorOverall(void *object, double value)
