@@ -861,7 +861,7 @@ void Knotter::makeHistidine()
 	cb2hb3->activate();
 
 	BondPtr cg2nd1 = BondPtr(new Bond(cGamma, nDelta1));
-	cg2nd1->setFixed(true);
+//	cg2nd1->setFixed(true);
 	cg2nd1->activate();
 	cg2nd1->addExtraTorsionSample(cDelta2);
 	cg2nd1->addExtraTorsionSample(cEpsilon1);
@@ -935,7 +935,7 @@ void Knotter::makeTyrosine()
 	cb2hb3->activate();
 
 	BondPtr cg2cd1 = BondPtr(new Bond(cGamma, cDelta1));
-	cg2cd1->setFixed(true);
+//	cg2cd1->setFixed(true);
 	cg2cd1->activate();
 	cg2cd1->addExtraTorsionSample(cEpsilon1);
 	cg2cd1->addExtraTorsionSample(cEpsilon2);
@@ -1017,7 +1017,7 @@ void Knotter::makePhenylalanine()
 	cb2hb3->activate();
 
 	BondPtr cg2cd1 = BondPtr(new Bond(cGamma, cDelta1));
-	cg2cd1->setFixed(true);
+//	cg2cd1->setFixed(true);
 	cg2cd1->activate();
 	cg2cd1->addExtraTorsionSample(cEpsilon1);
 	cg2cd1->addExtraTorsionSample(cEpsilon2);
