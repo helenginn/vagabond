@@ -188,7 +188,6 @@ void Bond::setTorsionAngleFrom(AtomPtr one, AtomPtr two, AtomPtr three,
 
 void Bond::setHeavyAlign(AtomPtr atom, bool from_sister)
 {
-	std::cout << "Heavy alignment atom for " << shortDesc() << std::endl;
 	_heavyAlign = atom;
 
 	/* if the parent is not available, this is not meant to be
@@ -212,9 +211,6 @@ void Bond::setHeavyAlign(AtomPtr atom, bool from_sister)
 		AtomPtr four = getMinor();
 
 		setTorsionAngleFrom(one, two, three, four);
-		
-		std::cout << "Giving custom alignment atom to ";
-		std::cout << shortDesc() << std::endl;
 		
 		/* Rederive circle portion */
 		deriveCirclePortion();
@@ -381,8 +377,6 @@ void Bond::deriveCirclePortion()
 	{	
 		if (_heavyAlign.expired())
 		{
-			std::cout << "Giving up on " << shortDesc() << ", can't find"
-			" heavy alignment atom." << std::endl;
 			return;
 		}
 	}
