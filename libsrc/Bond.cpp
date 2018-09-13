@@ -617,13 +617,6 @@ mat3x3 Bond::getMagicMat(vec3 direction)
 	return multed;
 }
 
-typedef struct
-{
-	mat3x3 basis;
-	vec3 curr;
-	vec3 next;	
-} BondCache;
-
 void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 {
 	const vec3 none = make_vec3(0, 0, 0);
