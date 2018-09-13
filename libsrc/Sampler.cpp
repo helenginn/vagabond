@@ -193,7 +193,7 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 			continue;
 		}
 
-		addParamsForBond(bond);
+		addParamsForBond(bond, (num % 2));
 
 		for (int j = 0; j < bond->downstreamBondGroupCount(); j++)
 		{
