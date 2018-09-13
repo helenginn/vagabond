@@ -302,6 +302,7 @@ void Absolute::addToMonomer(MonomerPtr monomer)
 
 double Absolute::getMeanSquareDeviation()
 {
+	getAnisotropy(true);
 	return _bFactor;
 }
 
