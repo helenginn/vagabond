@@ -45,7 +45,7 @@ Polymer::Polymer()
 	mat3x3_scale(&_transTensor, 1.0, 1.0, 1.0);
 	_overallScale = 0;
 	_startB = Options::getBStart();
-	_extraRotParams = {1, 0, 0};
+	_extraRotParams = make_vec3(1, 0, 0);
 	_tmpPhi = 0;
 	_tmpPsi = 0;
 }
