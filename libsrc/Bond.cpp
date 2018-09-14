@@ -1025,7 +1025,7 @@ BondGroupPtr Bond::bondGroupForBond()
 	
 	if (!model->isBond())
 	{
-		return NULL;
+		return BondGroupPtr();
 	}
 
 	BondPtr parent = ToBondPtr(model);
