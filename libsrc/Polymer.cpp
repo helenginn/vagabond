@@ -1966,6 +1966,6 @@ void Polymer::addObject(ParserPtr object, std::string category)
 void Polymer::postParseTidy()
 {
 	Molecule::postParseTidy();
-	applyTranslationTensor();
+	//applyTranslationTensor();
 	
 }
