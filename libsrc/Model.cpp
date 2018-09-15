@@ -69,15 +69,8 @@ int Model::fftGridLength()
 		dim = 0;
 	}
 	
-	int some = 2;
-
-	if (getAtom()->getElement()->electronCount() <= 1)
-	{
-		some = 2;	
-	}
-	
 	/* Add some Angstroms for good luck */
-	dim += some;
+	dim += 2;
 	dim *= 2;
 	
 	int n = scale * dim + 0.5;
