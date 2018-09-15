@@ -1672,28 +1672,63 @@ bool Polymer::test()
 
 void Polymer::reportParameters()
 {
-	int torsionCount = 0;
-	int angleCount = 0;
+	int torsionCountBackbone = 0;
+	int angleCountBackbone = 0;
+	
+	int torsionCountSidechain = 0;
+	int angleCountSidechain = 0;
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		if (atom(i)->getModel()->isBond())
+		AtomPtr a = atom(i);
+		bool back = false;
+
+		if (a->isBackbone() || a->isBackboneAndSidechain())
 		{
-			if (ToBondPtr(atom(i)->getModel())->isTorsionRefinable())
+			back = true;
+		}
+
+		if (a->getModel()->isBond())
+		{
+			if (ToBondPtr(a->getModel())->isTorsionRefinable())
 			{
-				torsionCount++;
+				if (back)
+				{
+					torsionCountBackbone++;
+				}
+				else
+				{
+					torsionCountSidechain++;
+				}
 			}
 
-			if (ToBondPtr(atom(i)->getModel())->getRefineBondAngle())
+			if (ToBondPtr(a->getModel())->getRefineBondAngle())
 			{
-				angleCount++;
+				if (back)
+				{
+					angleCountBackbone++;
+				}
+				else
+				{
+					angleCountSidechain++;
+				}
 			}
 		}
 	}
-
-	std::cout << "Chain " << getChainID() << " has " << torsionCount
-	<< " refinable torsion angles and " << angleCount;
-	std::cout << " refinable bond angles." << std::endl;
+	
+	std::cout << std::endl;
+	std::cout << "|----------------" << std::endl;
+	std::cout << "| Bond-based parameter groups (" << getChainID() << "):" << std::endl;
+	std::cout << "|----------------" << std::endl;
+	std::cout << "|          |   Backbone |  Sidechain |" << std::endl;
+	std::cout << "| Torsion  |  " << std::setw(9) << torsionCountBackbone;
+	std::cout << " |  " << std::setw(9) << torsionCountSidechain;
+	std::cout << " |" << std::endl;
+	std::cout << "| Angle    |  " << std::setw(9) << angleCountBackbone;
+	std::cout << " |  " << std::setw(9) << angleCountSidechain;
+	std::cout << " |" << std::endl;
+	std::cout << "|----------------" << std::endl;
+	std::cout << std::endl;
 }
 
 void Polymer::vsTransTensorOverall(void *object, double value)
