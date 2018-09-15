@@ -186,7 +186,6 @@ void Absolute::resetSamples()
 std::vector<BondSample> *Absolute::getManyPositions()
 {
 	std::vector<BondSample> *bondSamples = &_bondSamples;
-	int kickGroups = 1;
 	
 	/*
 	if (_bondSamples.size())
@@ -205,7 +204,6 @@ std::vector<BondSample> *Absolute::getManyPositions()
 	double occTotal = 0;
 
 	int totalPoints = Options::getNSamples();
-	totalPoints /= kickGroups;
 	double totalSurfaces = 0;
 	int layers = 10;
 	
@@ -256,23 +254,20 @@ std::vector<BondSample> *Absolute::getManyPositions()
 		}
 	}
 
-	for (int j = 0; j < kickGroups; j++)
+	for (size_t i = 0; i < points.size(); i++)
 	{
-		for (size_t i = 0; i < points.size(); i++)
-		{
-			vec3 full = vec3_add_vec3(points[i], _position);
-			double occ = 1;
-			occTotal += occ;
+		vec3 full = vec3_add_vec3(points[i], _position);
+		double occ = 1;
+		occTotal += occ;
 
-			BondSample sample;
-			sample.basis = make_mat3x3();
-			sample.occupancy = occ;
-			sample.torsion = 0;
-			sample.old_start = make_vec3(0, 0, 0);
-			sample.start = full;
+		BondSample sample;
+		sample.basis = make_mat3x3();
+		sample.occupancy = occ;
+		sample.torsion = 0;
+		sample.old_start = make_vec3(0, 0, 0);
+		sample.start = full;
 
-			bondSamples->push_back(sample);
-		}
+		bondSamples->push_back(sample);
 	}
 
 	for (size_t i = 0; i < bondSamples->size(); i++)
