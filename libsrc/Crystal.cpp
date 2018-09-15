@@ -975,6 +975,7 @@ void Crystal::writeVagabondFile(int cycleNum)
 	file.open(_vbondFile);
 	writeToFile(file, 0);
 	file.close();
+	std::cout << "Written Vagabond model to " << _vbondFile << std::endl;
 }
 
 double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
