@@ -145,7 +145,6 @@ FFTPtr Atom::getBlur()
 		                                           _element->getSymbol(),
 		                                           1));
 		AtomPtr atom = abs->makeAtom();
-//		abs->setTensor(tensor);
 		abs->overrideLength(_model->fftGridLength());
 		writePositionsToFile();
 
