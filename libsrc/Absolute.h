@@ -179,20 +179,6 @@ public:
 	/** Nothing to be done in this class. */
 	void refreshPositions() {};
 	
-	void setImplicitPositions()
-	{
-		_isOfManyPositions = false;
-		_recalcFinal = true;
-		_recalcDist = true;
-	}
-
-	void setAnchorPoint()
-	{
-		_isOfManyPositions = true;
-		_recalcFinal = true;
-		_recalcDist = true;
-	}
-	
 	virtual bool hasExplicitPositions()
 	{
 		return false;
@@ -271,7 +257,6 @@ private:
 
 	vec3 _position;
 	double _bFactor;
-	bool _isOfManyPositions;
 };
 
 #endif /* defined(__vagabond__Absolute__) */

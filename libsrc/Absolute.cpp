@@ -36,7 +36,6 @@ void Absolute::initialise()
 	_hetatm = false;
 	_usingTensor = false;
 	_tensor = make_mat3x3();
-	_isOfManyPositions = false;
 }
 
 mat3x3 Absolute::getRealSpaceTensor()
@@ -64,7 +63,6 @@ Absolute::Absolute(vec3 pos, double bFac,
 	_hetatm = false;
 	_usingTensor = false;
 	_tensor = make_mat3x3();
-	_isOfManyPositions = false;
 }
 
 AtomPtr Absolute::makeAtom()
@@ -209,7 +207,6 @@ void Absolute::addProperties()
 	addVec3Property("position", &_position);
 	addMat3x3Property("tensor", &_tensor);
 	addDoubleProperty("bfactor", &_bFactor);
-	addBoolProperty("many_positions", &_isOfManyPositions);
 
 	addReference("atom", _atom.lock());
 

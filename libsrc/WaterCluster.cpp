@@ -135,7 +135,7 @@ void WaterCluster::resetModels()
 		ModelPtr model = _waters[i]->getModel();
 		if (model->isAbsolute())
 		{
-			ToAbsolutePtr(model)->setImplicitPositions();
+//			ToAbsolutePtr(model)->setImplicitPositions();
 		}
 	}
 }
