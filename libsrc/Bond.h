@@ -31,7 +31,7 @@
 #include "Atom.h"
 #include "BondGroup.h"
 #include "Sampler.h"
-#include "Model.h"
+#include "ExplicitModel.h"
 #include <mutex>
 #include "charmanip.h"
 
@@ -40,7 +40,7 @@
 
 class Anisotropicator;
 
-class Bond : public Model
+class Bond : public ExplicitModel
 {
 public:
 	Bond(AtomPtr major, AtomPtr minor, int group = 0);
@@ -144,8 +144,6 @@ public:
 		static_cast<Bond *>(object)->_bondLength = length;
 	}
 
-	virtual FFTPtr makeDistribution();
-	
 	virtual AtomPtr getAtom()
 	{
 		return getMinor();
@@ -323,12 +321,6 @@ public:
 	bool isUsingTorsion()
 	{
 		return _usingTorsion;
-	}
-
-
-	virtual bool hasExplicitPositions()
-	{
-		return true;
 	}
 
 	/** 

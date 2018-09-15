@@ -163,10 +163,12 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 
 FFTPtr Absolute::makeDistribution()
 {
+	/*
 	if (hasExplicitPositions())
 	{
 		return makeRealSpaceDistribution();
 	}
+	*/
 	
 	double n = fftGridLength();
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();

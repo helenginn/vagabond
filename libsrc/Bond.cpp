@@ -557,11 +557,6 @@ mat3x3 Bond::makeTorsionBasis(vec3 hPos, vec3 maPos,
 	return basis;
 }
 
-FFTPtr Bond::makeDistribution()
-{
-	return makeRealSpaceDistribution();
-}
-
 vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
                                double ratio, vec3 start)
 {

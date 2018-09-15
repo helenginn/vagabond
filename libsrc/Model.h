@@ -174,8 +174,6 @@ public:
 		return getFinalPositions()[i].start;
 	}
 	
-	void addRealSpacePositions(FFTPtr real, vec3 offset);
-
 	vec3 longestAxis();
 	double smallness();
 	std::vector<vec3> fishPositions(vec3 *average = NULL);
@@ -211,8 +209,6 @@ protected:
 	bool _recalcDist;
 	std::vector<BondSample> _finalSamples;
 	
-	FFTPtr makeRealSpaceDistribution();
-
 	virtual std::string getParserIdentifier()
 	{
 		return "model"; 
