@@ -197,7 +197,11 @@ void Sidechain::splitConformers(int count)
 
 	for (int i = 1; i < count; i++)
 	{
-		blockBond->setSplitBlock();
+		if (blockBond)
+		{
+			blockBond->setSplitBlock();
+		}
+
 		bond->splitBond();
 	}
 
