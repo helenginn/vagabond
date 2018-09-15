@@ -312,6 +312,8 @@ public:
 	double getMaximumDStar(DiffractionPtr data);
 	void openInCoot();
 	
+	/** Obtain the current number of samples, i.e. number of conformers
+	 * in the ensemble. */
 	int getSampleNum();
 	
 	std::vector<AtomPtr> getHydrogenBonders();
