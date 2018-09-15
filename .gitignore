@@ -4,6 +4,11 @@ throwaway*/
 .fftw3f_wisdom
 libtool
 
+# Cloc
+
+cloc.txt
+cloc.sh
+
 # Qt5
 
 moc_*.cpp
