@@ -843,7 +843,7 @@ std::vector<BondSample> *Bond::getManyPositions()
 
 	double occTotal = 0;
 	newSamples->reserve(prevSamples->size());
-
+	
 	for (size_t i = 0; i < prevSamples->size(); i++)
 	{
 		double currentTorsion = baseTorsion + circleAdd;
@@ -1148,7 +1148,6 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 	{
 		if (_splitBlock)
 		{
-			_splitBlock = false;
 			/* Need to return occupancy to full here on out */
 			ModelPtr model = downstreamAtom(0, i)->getModel();
 			ToBondPtr(model)->_resetOccupancy = true;
@@ -1167,6 +1166,8 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 		BondPtr nextBond = ToBondPtr(nextAtom->getModel());
 		nextBond->duplicateDownstream(duplBond, 0);
 	}
+
+	_splitBlock = false;
 
 	return duplBond;
 }
