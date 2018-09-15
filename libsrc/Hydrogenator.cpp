@@ -7,8 +7,8 @@
 //
 
 #include "Hydrogenator.h"
-#include "Element.h"
 #include "Bond.h"
+#include "Element.h"
 #include "Monomer.h"
 #include "Backbone.h"
 #include "Sidechain.h"
@@ -45,7 +45,7 @@ bool Hydrogenator::hasHydrogens(BondPtr bond)
 		{
 			AtomPtr atom = bond->downstreamAtom(i, j);
 			
-			if (atom->getElement()->electronCount() == 1)
+			if (atom->getElectronCount() == 1)
 			{
 				return true;
 			}

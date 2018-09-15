@@ -12,7 +12,6 @@
 #include "AtomGroup.h"
 #include <climits>
 #include "Atom.h"
-#include "Element.h"
 #include "Bond.h"
 #include <sstream>
 #include "Crystal.h"
@@ -126,7 +125,7 @@ double AtomGroup::totalElectrons()
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		total += atom(i)->getElement()->electronCount();
+		total += atom(i)->getElectronCount();
 	}
 
 	return total;
@@ -193,7 +192,7 @@ double AtomGroup::getAverageDisplacement()
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		if (atom(i)->getElement()->electronCount() <= 1)
+		if (atom(i)->getElectronCount() <= 1)
 		{
 			continue;
 		}
@@ -214,7 +213,7 @@ double AtomGroup::getAverageBFactor(bool initial)
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		if (atom(i)->getElement()->electronCount() <= 1)
+		if (atom(i)->getElectronCount() <= 1)
 		{
 			continue;
 		}
@@ -279,7 +278,7 @@ int AtomGroup::totalElectrons(int *fcWeighted)
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		double e = atom(i)->getElement()->electronCount();
+		double e = atom(i)->getElectronCount();
 		sum += e;
 		double weight = atom(i)->getWeighting();
 		weighted += e * weight;

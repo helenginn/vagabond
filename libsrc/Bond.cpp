@@ -15,7 +15,6 @@
 #include "fftw3d.h"
 #include "Shouter.h"
 #include "AtomGroup.h"
-#include "Element.h"
 #include "Absolute.h"
 #include "maths.h"
 #include "Monomer.h"
@@ -158,7 +157,7 @@ void Bond::deriveBondLength()
 	{
 		_bondLength = length;
 	}
-	else if (getMinor()->getElement()->electronCount() <= 1)
+	else if (getMinor()->getElectronCount() <= 1)
 	{
 		_bondLength = 0.967;
 	}
@@ -343,7 +342,7 @@ void Bond::deriveCirclePortion()
 	 * 	we have not yet been added to the parent */
 	int count = parent->downstreamBondCount(groups - 1);
 	
-	if (getMinor()->getElement()->electronCount() == 1)
+	if (getMinor()->getElectronCount() == 1)
 	{
 		return;
 	}
@@ -886,7 +885,7 @@ std::vector<BondSample> *Bond::getManyPositions()
 
 bool Bond::isNotJustForHydrogens()
 {
-	if (getMinor()->getElement()->electronCount() > 1)
+	if (getMinor()->getElectronCount() > 1)
 	{
 		return true;
 	}
@@ -899,7 +898,7 @@ bool Bond::isNotJustForHydrogens()
 	for (size_t i = 0; i < downstreamBondCount(0); i++)
 	{
 		AtomPtr atom = downstreamAtom(i, 0);
-		if (atom->getElement()->electronCount() > 1)
+		if (atom->getElectronCount() > 1)
 		{
 			return true;
 		}

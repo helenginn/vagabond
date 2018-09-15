@@ -12,7 +12,6 @@
 #include "Molecule.h"
 #include "Atom.h"
 #include "Absolute.h"
-#include "Element.h"
 #include "Bond.h"
 #include <float.h>
 #include <iostream>
@@ -23,6 +22,7 @@
 #include "CSV.h"
 #include "Sidechain.h"
 #include "Monomer.h"
+#include "Element.h"
 
 Molecule::Molecule()
 {
@@ -211,11 +211,11 @@ void Molecule::tiedUpScattering(double *tied, double *all)
 
 		if (atom(i)->getModel()->isBond())
 		{
-			some += atom(i)->getElement()->electronCount();
+			some += atom(i)->getElectronCount();
 			someCount++;
 		}
 
-		total += atom(i)->getElement()->electronCount();
+		total += atom(i)->getElectronCount();
 		totalCount++;
 	}
 

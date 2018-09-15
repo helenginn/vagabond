@@ -127,7 +127,7 @@ protected:
 	*  appropriate to perform some final tidying functions.	
 	*/
 	virtual void postParseTidy() {};
-
+	
 	/** \name Adding property functions */
 	/**@{*/
 	void addStringProperty(std::string className, std::string *ptr);

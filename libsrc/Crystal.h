@@ -328,7 +328,7 @@ protected:
 	{
 		return "Crystal_" + _filename;
 	}
-
+	
 	virtual void addProperties();
 	virtual void postParseTidy();
 private:
