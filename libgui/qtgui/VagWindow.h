@@ -108,10 +108,12 @@ private:
 	QPushButton *bPrevious;
 	QPushButton *bCoot;
 	std::vector<QPushButton *> buttons;
+	std::vector<QMenu *> menus;
 
 	int _argc;
 	char **_argv;
 
+	void makeMenu();
 	void makeButtons();
 };
 

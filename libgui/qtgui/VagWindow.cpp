@@ -28,6 +28,18 @@
 #include "ChainMenuAction.h"
 #include "../../libsrc/FileReader.h"
 
+#ifdef __APPLE__
+#define MENU_HAS_HEIGHT 0
+#else
+#define MENU_HAS_HEIGHT 1
+#endif
+
+void VagWindow::makeMenu()
+{
+	QMenu *scaling = menuBar()->addMenu(tr("&Scaling"));
+	menus.push_back(scaling);
+}
+
 void VagWindow::makeButtons()
 {
 	buttons.clear();
@@ -156,7 +168,15 @@ void VagWindow::resizeEvent(QResizeEvent *)
 	int w = width();
 	int h = height();
 
-	display->setGeometry(0, 0, w - BUTTON_WIDTH, h - STATUS_HEIGHT);
+	double menuHeight = 0;
+	
+	if (MENU_HAS_HEIGHT)
+	{
+		menuHeight += 30;
+	}
+	
+	display->setGeometry(0, menuHeight, w - BUTTON_WIDTH, 
+	                     h - STATUS_HEIGHT - menuHeight);
 	display->resizeGL();
 	_lStatus->setGeometry(10, h - STATUS_HEIGHT, w - BUTTON_WIDTH, STATUS_HEIGHT);
 
@@ -172,11 +192,12 @@ VagWindow::VagWindow(QWidget *parent,
 	this->resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
 	this->setWindowTitle("Vagabond");
-
+	
 	display = new VagabondGLWidget(this);
-	display->setGeometry(0, 0, DEFAULT_WIDTH - BUTTON_WIDTH, DEFAULT_HEIGHT -
-	                     STATUS_HEIGHT);
+	display->setGeometry(0, 0, DEFAULT_WIDTH - BUTTON_WIDTH, 
+	                     DEFAULT_HEIGHT - STATUS_HEIGHT);
 
+	makeMenu();
 	makeButtons();
 
 	QFont bigFont = QFont("Helvetica", 16);
