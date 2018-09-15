@@ -809,19 +809,53 @@ void Crystal::makePowders()
 
 void Crystal::setAnchors()
 {
+	std::string anchor = Options::anchorString();
+	std::vector<std::string> components = split(anchor, ',');
+	
+	for (int i = 0; i < components.size(); i++)
+	{
+		std::string chain = "";
+		std::string number = "";
+
+		for (int j = 0; j < components[i].length(); j++)
+		{
+			if (components[i][j] >= '0' && components[i][j] <= '9')
+			{
+				number.push_back(components[i][j]);
+			}
+			else
+			{
+				chain.push_back(components[i][j]);
+			}
+		}
+		
+		int anchorPoint = atoi(number.c_str());
+		
+		for (int i = 0; i < moleculeCount(); i++)
+		{
+			std::string thisChain = molecule(i)->getChainID();
+			std::string truncated = thisChain.substr(0, chain.length());
+			
+			if (molecule(i)->isPolymer() && 
+			    chain == truncated)
+			{
+				PolymerPtr polymer = ToPolymerPtr(molecule(i));
+				polymer->setAnchor(anchorPoint);
+				std::cout << "Setting custom anchor " << anchorPoint;
+				std::cout << " for chain " << chain << std::endl;
+			}
+		}
+
+	}
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		if (molecule(i)->getClassName() == "Polymer")
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
-			if (!_anchorResidues.size())
+			if (polymer->getAnchor() < 0)
 			{
 				polymer->findAnchorNearestCentroid();
-			}
-			else
-			{
-				polymer->setAnchor(_anchorResidues[0]);
 			}
 		}
 	}
