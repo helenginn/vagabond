@@ -37,8 +37,6 @@
  * file.
  */
 
-class Anisotropicator;
-
 class Absolute : public Model
 {
 public:
@@ -57,7 +55,6 @@ public:
 	Absolute();
 	virtual ~Absolute() {};
 
-	virtual std::vector<BondSample> *getManyPositions();
 	virtual FFTPtr makeDistribution();
 	virtual vec3 getAbsolutePosition()
 	{
@@ -73,8 +70,7 @@ public:
 	 * add the Atom directly to Molecule using Molecule::addAtom */
 	virtual void addToMolecule(MoleculePtr molecule);
 	virtual mat3x3 getRealSpaceTensor();
-	virtual void getAnisotropy(bool withKabsch);
-
+	
 	/** Sets a number of fields which would be present in the PDB file. */
 	void setIdentity(int resNumValue, std::string chainID,
 	                 std::string resName, std::string atomName, int atomNum)
@@ -154,45 +150,6 @@ public:
 		return _usingTensor;	
 	}
 
-	void setPosN(int choice, double value);
-	double getPosN(int choice);
-
-	static void setPosX(void *object, double x)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		abs->setPosN(0, x);
-	}
-
-	static void setPosY(void *object, double y)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		abs->setPosN(1, y);
-	}
-
-	static void setPosZ(void *object, double z)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		abs->setPosN(2, z);
-	}
-
-	static double getPosZ(void *object)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		return abs->getPosN(2);
-	}
-
-	static double getPosX(void *object)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		return abs->getPosN(0);
-	}
-
-	static double getPosY(void *object)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		return abs->getPosN(1);
-	}
-
 	virtual double getMeanSquareDeviation();
 
 	static double getB(void *object)
@@ -218,15 +175,9 @@ public:
 	{
 		return _atom.lock();
 	}
-
-	/** Returns the offsets for an anchor residue on which a molecule may
-	* calculate translations and offsets.
-	* \return x, y, z values centred around the origin.
-	* */
-	std::vector<vec3> getSphereAngles()
-	{
-		return _sphereAngles;
-	}
+	
+	/** Nothing to be done in this class. */
+	void refreshPositions() {};
 	
 	void setImplicitPositions()
 	{
@@ -244,7 +195,7 @@ public:
 	
 	virtual bool hasExplicitPositions()
 	{
-		return _isOfManyPositions;
+		return false;
 	}
 
 	void resetSamples();
@@ -255,23 +206,44 @@ public:
 	}
 	
 	vec3 getRandomPosition();
-	
-	void setOccupancies(std::vector<double> occ)
+
+	static void setPosX(void *object, double x)
 	{
-		_occupancies = occ;
+		Absolute *abs = static_cast<Absolute *>(object);
+		abs->_position.x = x;
 	}
 
+	static void setPosY(void *object, double y)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		abs->_position.y = y;
+	}
+
+	static void setPosZ(void *object, double z)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		abs->_position.z = z;
+	}
+
+	static double getPosX(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->_position.x;
+	}
+
+	static double getPosY(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->_position.y;
+	}
+
+	static double getPosZ(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->_position.z;
+	}
+	
 	AtomPtr makeAtom();
-	
-	void setModifiedSample(int i)
-	{
-		_modifySample = i;
-	}
-	
-	void clearModifiedSample()
-	{
-		_modifySample = -1;
-	}
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 
@@ -296,13 +268,10 @@ private:
 	mat3x3 _tensor;
 	std::string _conformer;
 	std::vector<BondSample> _bondSamples;
-	std::vector<vec3> _sphereAngles;
 
-	std::vector<double> _occupancies;
 	vec3 _position;
 	double _bFactor;
 	bool _isOfManyPositions;
-	int _modifySample;
 };
 
 #endif /* defined(__vagabond__Absolute__) */

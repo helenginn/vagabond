@@ -171,7 +171,8 @@ void WaterCluster::refine()
 
 double WaterCluster::recalculateWaters()
 {
-	/* Make sure all waters are an ensemble */
+	/*
+	// Make sure all waters are an ensemble //
 	for (int i = 0; i < _waters.size(); i++)
 	{
 		ModelPtr model = _waters[i]->getModel();
@@ -181,14 +182,14 @@ double WaterCluster::recalculateWaters()
 		
 		if (abs->hasExplicitPositions())
 		{
-			/* recalculate a fresh dist */
+			// recalculate a fresh dist //
 			abs->resetSamples();
 			continue;
 		}
 		
 		FFTPtr fft = abs->getDistribution();
 		abs->setAnchorPoint();
-		abs->getFinalPositions();
+		abs->refreshPositions();
 	}
 	
 	int nSamples = Options::getRuntimeOptions()->getNSamples();
@@ -201,7 +202,7 @@ double WaterCluster::recalculateWaters()
 		nelderMead->setSilent(true);
 		nelderMead->setEvaluationFunction(WaterCluster::score, this);
 
-		/* Make sure we only affect one of our samples */
+		// Make sure we only affect one of our samples //
 		for (int j = 0; j < _waters.size(); j++)
 		{
 			ModelPtr model = _waters[j]->getModel();
@@ -232,6 +233,7 @@ double WaterCluster::recalculateWaters()
 		AbsolutePtr abs = ToAbsolutePtr(model);
 		abs->clearModifiedSample();	
 	}
+	*/
 }
 
 double WaterCluster::evaluateRestraint(int sample, int i)
@@ -278,7 +280,8 @@ double WaterCluster::evaluateRestraint(int sample, int i)
 		return contrib;		
 	}
 	
-	/* Hydrogen bond angles */
+	// Hydrogen bond angles */
+	/*
 	vec3 waterPos = water->getModel()->getSpecificPosition(sample);
 	double expected = deg2rad(104.5);
 
@@ -301,6 +304,7 @@ double WaterCluster::evaluateRestraint(int sample, int i)
 			contrib += diff;
 		}
 	}
+	*/
 	
 	return contrib;
 }

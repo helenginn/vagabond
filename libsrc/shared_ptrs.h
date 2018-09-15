@@ -29,7 +29,9 @@
 #define ToBondPtr(a) (boost::static_pointer_cast<Bond>((a)))
 #define ToBondGroupPtr(a) (boost::static_pointer_cast<BondGroup>((a)))
 #define ToAbsolutePtr(a) (boost::static_pointer_cast<Absolute>((a)))
+#define ToAnchorPtr(a) (boost::static_pointer_cast<Anchor>((a)))
 #define ToModelPtr(a) (boost::static_pointer_cast<Model>((a)))
+#define ToExplicitModelPtr(a) (boost::static_pointer_cast<ExplicitModel>((a)))
 #define ToPolymerPtr(a) (boost::static_pointer_cast<Polymer>((a)))
 #define ToMoleculePtr(a) (boost::static_pointer_cast<Molecule>((a)))
 #define ToSidechainPtr(a) (boost::static_pointer_cast<Sidechain>((a)))
@@ -94,13 +96,17 @@ typedef boost::weak_ptr<Atom> AtomWkr;
 class Element;
 typedef boost::shared_ptr<Element> ElementPtr;
 
+class Anchor;
 class Model;
+class ExplicitModel;
 class Absolute;
 class Bond;
 class BondGroup;
 
 typedef boost::shared_ptr<Absolute> AbsolutePtr;
+typedef boost::shared_ptr<Anchor> AnchorPtr;
 typedef boost::shared_ptr<Model> ModelPtr;
+typedef boost::shared_ptr<ExplicitModel> ExplicitModelPtr;
 typedef boost::shared_ptr<Bond> BondPtr;
 typedef boost::weak_ptr<Bond> BondWkr;
 typedef boost::shared_ptr<BondGroup> BondGroupPtr;

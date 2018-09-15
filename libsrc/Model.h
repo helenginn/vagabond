@@ -30,18 +30,6 @@
 * the GUI to fish out the positions for display.
  */
 
-/** \struct BondSample
- *  \brief Transfers information between Bonds for calculation of positional
- *  information.
- */
-typedef struct
-{
-	mat3x3 basis;     /**< Defines bond axis of previous bond */
-	vec3 start;       /**< position of last minor */
-	vec3 old_start;   /**< position of torsion-defining atom */
-	double torsion;   /**< To be filled in by next bond */
-	double occupancy; /**< Relative occupancy (usually 1) */
-} BondSample;
 
 class Model : public Distributor, public Parser
 {
@@ -66,23 +54,12 @@ public:
 	 * models. */
 	virtual double getMeanSquareDeviation() = 0;
 
-	/** Mean position of blurred positions without including whole-molecule
-	* 	deviations. Should not be used for final atom position calculations. */
-	virtual std::vector<BondSample> *getManyPositions() = 0;
-
 	/** Actual mean position of blurred positions including whole-molecule
 	* 	deviations. */
 	virtual vec3 getAbsolutePosition()
 	{
 		return _absolute;
 	}
-
-	/** Individual positions including whole-molecule deviations. */
-	std::vector<vec3> polymerCorrectedPositions();
-
-	/** Positions and associated data including whole-molecule deviations.
-	* 	Will return from cache if not flagged to recalculate. */
-	virtual std::vector<BondSample> getFinalPositions();
 
 	/** Occupancy for a given atom after all modifiers applied.
 	* 	\return value between 0 and 1. */
@@ -141,6 +118,8 @@ public:
 	* \param refresh immediately recalculate atom positions if true.
 	*/
 	virtual void propagateChange(int depth = -1, bool refresh = false);
+	
+	virtual void refreshPositions() = 0;
 
 	bool isBond()
 	{
@@ -168,18 +147,15 @@ public:
 		_recalcDist = true;
 	}
 	
-	vec3 getSpecificPosition(int i)
-	{
-		if (i > _finalPositions.size()) return empty_vec3();
-		return getFinalPositions()[i].start;
-	}
-	
-	vec3 longestAxis();
+	virtual vec3 longestAxis();
 	double smallness();
-	std::vector<vec3> fishPositions(vec3 *average = NULL);
 	
 	virtual bool hasExplicitPositions() = 0;
-	void writePositionsToFile(std::string filename);
+	
+	double getBFactor()
+	{
+		return getMeanSquareDeviation();
+	}
 protected:
 	mat3x3 _realSpaceTensor;
 
@@ -202,12 +178,11 @@ protected:
 	double _smallness;
 	FFTPtr _lastDistribution;
 
-	virtual void getAnisotropy(bool withKabsch);
-	double anisotropyExtent(bool withKabsch = false);
+	virtual void getAnisotropy(bool) {};
+	virtual double anisotropyExtent(bool withKabsch = false);
 	double _isotropicAverage;
 	bool _recalcFinal;
 	bool _recalcDist;
-	std::vector<BondSample> _finalSamples;
 	
 	virtual std::string getParserIdentifier()
 	{
@@ -217,7 +192,6 @@ protected:
 	virtual void addProperties();
 	virtual void addObject(ParserPtr, std::string) {};
 private:
-	std::mutex guiLock;
 };
 
 #endif /* defined(__vagabond__Model__) */

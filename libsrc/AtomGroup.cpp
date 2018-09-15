@@ -145,8 +145,16 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal,
 
 	if (pdbType == PDBTypeEnsemble)
 	{
+		/* Give up if not explicit */
+		if (!atom(0)->getModel()->hasExplicitPositions())
+		{
+			stream << atom(0)->averagePDBContribution(false, false);
+			return stream.str();
+		}
+
 		/* Get the total number of conformers to worry about */
-		std::vector<BondSample> *samples = atom(0)->getModel()->getManyPositions();
+		std::vector<BondSample> *samples;
+		samples = atom(0)->getExplicitModel()->getManyPositions();
 
 		numConf = samples->size();
 
@@ -157,14 +165,7 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal,
 				continue;
 			}
 
-			if (atom(i)->getModel()->hasExplicitPositions())
-			{
-				stream << atom(i)->getPDBContribution(conformer);
-			}
-			else
-			{
-				stream << atom(i)->averagePDBContribution(false, false);
-			}
+			stream << atom(i)->getPDBContribution(conformer);
 		}
 
 		return stream.str();
@@ -256,7 +257,7 @@ void AtomGroup::refreshPositions(bool quick)
 		if (!atom(i)) continue;
 
 		atom(i)->getModel()->propagateChange(0);
-		atom(i)->getModel()->getFinalPositions();
+		atom(i)->getModel()->refreshPositions();
 	}
 
 	if (quick) return;
@@ -615,7 +616,7 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 	/* Find centroid of atom set */
 	for (size_t i = 0; i < selected.size(); i++)
 	{
-		selected[i]->getModel()->getFinalPositions();
+		selected[i]->getModel()->refreshPositions();
 		vec3 offset = selected[i]->getModel()->getAbsolutePosition();
 		sum = vec3_add_vec3(sum, offset);	
 	}
@@ -638,7 +639,7 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 	for (size_t i = 0; i < selected.size(); i++)
 	{
 		/* Refresh absolute position */
-		selected[i]->getModel()->getFinalPositions();
+		selected[i]->getModel()->refreshPositions();
 		vec3 offset = selected[i]->getModel()->getAbsolutePosition();
 
 		vec3 diff = vec3_subtract_vec3(offset, sum);
@@ -727,7 +728,7 @@ double AtomGroup::addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected,
 			}
 
 			ModelPtr model = selected[j]->getModel();
-			model->getFinalPositions();
+			model->refreshPositions();
 
 			/** This needs to be added in the old way at the end. */
 			if (!model->hasExplicitPositions())

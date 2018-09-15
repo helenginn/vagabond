@@ -742,11 +742,11 @@ std::vector<BondSample> *Bond::getManyPositions()
 		return &_storedSamples;
 	}
 
-	ModelPtr model = getParentModel();
+	ExplicitModelPtr model = getParentModel();
 
 	newSamples->clear();
 
-	if (model->getClassName() == "Absolute")
+	if (model->isAnchor())
 	{
 		std::vector<BondSample> *absPos = model->getManyPositions();
 		mat3x3 magicMat = getMagicMat(_bondDirection);
@@ -966,10 +966,10 @@ void Bond::propagateChange(int depth, bool refresh)
 	}
 }
 
-ModelPtr Bond::getParentModel()
+ExplicitModelPtr Bond::getParentModel()
 {
 	AtomPtr atom = getMajor();
-	ModelPtr model = atom->getModel();
+	ExplicitModelPtr model = atom->getExplicitModel();
 
 	return model;
 }
@@ -1220,12 +1220,6 @@ std::string Bond::description()
 	return stream.str();
 }
 
-double Bond::getMeanSquareDeviation()
-{
-	getAnisotropy(true);
-	return _isotropicAverage * 8 * M_PI * M_PI;
-}
-
 void Bond::resetBondDirection()
 {
 	vec3 majorPos = getMajor()->getAbsolutePosition();
@@ -1296,9 +1290,9 @@ bool Bond::test()
 					continue;
 				}
 				//
-				vec3 pos1 = atom1->getModel()->getManyPositions()->at(0).start;
-				vec3 pos2 = getMinor()->getModel()->getManyPositions()->at(0).start;
-				vec3 pos3 = atom3->getModel()->getManyPositions()->at(0).start;
+				vec3 pos1 = atom1->getExplicitModel()->getManyPositions()->at(0).start;
+				vec3 pos2 = getMinor()->getExplicitModel()->getManyPositions()->at(0).start;
+				vec3 pos3 = atom3->getExplicitModel()->getManyPositions()->at(0).start;
 
 				double realAngle = vec3_angle_from_three_points(pos1, pos2, pos3);
 
@@ -1334,12 +1328,12 @@ void Bond::recalculateTorsion(AtomPtr heavy, double value)
 {
 	if (!_heavyAlign.expired() && _heavyAlign.lock() != heavy)
 	{
-		heavy->getModel()->getFinalPositions();
-		_heavyAlign.lock()->getModel()->getFinalPositions();
+		heavy->getModel()->refreshPositions();
+		_heavyAlign.lock()->getModel()->refreshPositions();
 		vec3 newHPos = heavy->getModel()->getAbsolutePosition();
 		vec3 origHPos = _heavyAlign.lock()->getModel()->getAbsolutePosition();
-		getMinor()->getModel()->getFinalPositions();
-		getMajor()->getModel()->getFinalPositions();
+		getMinor()->getModel()->refreshPositions();
+		getMajor()->getModel()->refreshPositions();
 		vec3 miPos = getMinor()->getAbsolutePosition();
 		vec3 maPos = getMajor()->getAbsolutePosition();
 

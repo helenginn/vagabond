@@ -224,7 +224,7 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
 	}
 	else
 	{
-		std::vector<BondSample> samples = _model->getFinalPositions();
+		std::vector<BondSample> samples = getExplicitModel()->getFinalPositions();
 
 		/* Each addition should only contribute the right occupancy */
 		modified->multiplyAll(1 / (double)samples.size());
@@ -247,14 +247,19 @@ vec3 Atom::getAbsolutePosition()
 	return _model->getAbsolutePosition();
 }
 
+ExplicitModelPtr Atom::getExplicitModel()
+{
+	return ToExplicitModelPtr(getModel());
+}
+
 /* Need to add symops. */
 vec3 Atom::getAsymUnitPosition(CrystalPtr crystal, int nSample)
 {
 	vec3 pos = getAbsolutePosition();
-	
-	if (nSample >= 0 && nSample < getModel()->getFinalPositions().size())
+	if (nSample >= 0 && 
+	    nSample < getExplicitModel()->getFinalPositions().size())
 	{
-		pos = getModel()->getFinalPositions()[nSample].start;
+		pos = getExplicitModel()->getFinalPositions()[nSample].start;
 	}
 	
 	mat3x3 real2frac = crystal->getReal2Frac();
@@ -354,8 +359,13 @@ double Atom::fullPositionDisplacement()
 	{
 		return 0;
 	}
+	
+	if (!getModel()->hasExplicitPositions())
+	{
+		return 0;
+	}
 
-	std::vector<BondSample> samples = getModel()->getFinalPositions();
+	std::vector<BondSample> samples = getExplicitModel()->getFinalPositions();
 	vec3 initialPos = getInitialPosition();
 	initialPos = getPDBPosition();
 
@@ -381,7 +391,7 @@ double Atom::posDisplacement()
 		return 0;
 	}
 
-	getModel()->getFinalPositions();
+	getModel()->refreshPositions();
 	vec3 bestPos = getModel()->getAbsolutePosition();
 	vec3 initialPos = getPDBPosition();
 
@@ -430,8 +440,13 @@ std::string Atom::averagePDBContribution(bool samePos, bool sameB)
 	{
 		return "";
 	}
-
-	getModel()->getFinalPositions();
+	
+	if (!getModel()->hasExplicitPositions())
+	{
+		return "";
+	}
+	
+	getModel()->refreshPositions();
 	std::string atomName = getAtomName();
 
 	double occupancy = 1;
@@ -474,8 +489,14 @@ std::string Atom::getPDBContribution(int ensembleNum)
 		tries = 1;
 	}
 
+	if (!getModel()->hasExplicitPositions())
+	{
+		return "";
+	}
+	
 	std::ostringstream stream;
-	std::vector<BondSample> positions = getModel()->getFinalPositions();
+	std::vector<BondSample> positions;
+	positions = getExplicitModel()->getFinalPositions();
 
 	int i = ensembleNum;
 	int count = 0;
@@ -646,10 +667,18 @@ double Atom::getDistanceFrom(Atom *other, int nSample, bool quick)
 	vec3 me = getAbsolutePosition();
 	vec3 you = other->getAbsolutePosition();
 
+	if (!getModel()->hasExplicitPositions())
+	{
+		return -1;
+	}
+
+	ExplicitModelPtr expModel = ToExplicitModelPtr(getModel());
+	ExplicitModelPtr otherExp = ToExplicitModelPtr(other->getModel());
+
 	if (nSample >= 0)
 	{
-		me = getModel()->getFinalPositions()[nSample].start;
-		you = other->getModel()->getFinalPositions()[nSample].start;
+		me = expModel->getFinalPositions()[nSample].start;
+		you = otherExp->getFinalPositions()[nSample].start;
 	}
 	
 	if (!quick)
@@ -689,7 +718,7 @@ void Atom::writePositionsToFile()
 {
 	std::string filename = "atom_positions_" + shortDesc();
 	
-	_model->writePositionsToFile(filename);
+	getExplicitModel()->writePositionsToFile(filename);
 }
 
 int Atom::getElectronCount()

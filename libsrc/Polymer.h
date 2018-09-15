@@ -96,9 +96,8 @@ public:
 	double refineRange(int start, int end, 
 	                 CrystalPtr target, RefinementType rType);
 	bool test();
-	ModelPtr getAnchorModel();
+	ExplicitModelPtr getAnchorModel();
 	void findAnchorNearestCentroid();
-	void weightStrands();
 	void hydrogenateContents();
 	void checkChainContinuity();
 	void setAnchor(int num)

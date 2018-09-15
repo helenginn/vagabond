@@ -89,6 +89,8 @@ public:
 		return _model;
 	}
 	
+	ExplicitModelPtr getExplicitModel();
+	
 	int getElectronCount();
 
 	ElementPtr getElement()

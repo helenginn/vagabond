@@ -942,8 +942,13 @@ void Crystal::makePDBs(std::string suffix)
 	
 	if (moleculeCount() && molecule(0)->atomCount())
 	{
+		if (!molecule(0)->atom(0)->getModel()->hasExplicitPositions())
+		{
+			return;
+		}
+
 		std::vector<BondSample> *samples; 
-		samples = molecule(0)->atom(0)->getModel()->getManyPositions();
+		samples = molecule(0)->atom(0)->getExplicitModel()->getManyPositions();
 		numConf = samples->size();
 	}
 	

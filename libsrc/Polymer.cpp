@@ -17,7 +17,9 @@
 #include "Backbone.h"
 #include "Shouter.h"
 #include "Atom.h"
+#include "Anchor.h"
 #include "Absolute.h"
+#include "Bond.h"
 #include "CSV.h"
 #include <sstream>
 #include <iomanip>
@@ -251,10 +253,12 @@ void Polymer::tieAtomsUp()
 
 	AtomPtr n = getMonomer(_anchorNum)->findAtom("N");
 	ModelPtr nModel = n->getModel();
+
 	if (nModel->isAbsolute())
 	{
-		ToAbsolutePtr(nModel)->setBFactor(_startB);
-		ToAbsolutePtr(nModel)->setAnchorPoint();
+		AnchorPtr newAnchor = AnchorPtr(new Anchor(ToAbsolutePtr(nModel)));
+		newAnchor->setBFactor(_startB);
+		n->setModel(newAnchor);
 	}
 
 	for (int i = _anchorNum; i < monomerCount(); i++)
@@ -430,7 +434,7 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 			for (int j = 0; j < monomer->atomCount(); j++)
 			{
 				AtomPtr atom = monomer->atom(j);
-				atom->getModel()->getFinalPositions();	
+				atom->getModel()->refreshPositions();	
 				vec3 pos = atom->getAbsolutePosition();
 				atom->setInitialPosition(pos);
 			}
@@ -698,86 +702,6 @@ void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
 	perCA->plotPNG(plotMap);
 }
 
-void Polymer::weightStrands()
-{
-	CSVPtr strandsCSV = CSVPtr(new CSV(1, "resnum"));
-	CSVPtr sumstrandsCSV = CSVPtr(new CSV(2, "resnum", "sum"));
-	
-	std::vector<BondSample> positions = getAnchorModel()->getFinalPositions();
-
-	for (int i = 0; i < positions.size(); i++)
-	{
-		strandsCSV->addHeader("strand_" + i_to_str(i));		
-	}
-
-	for (int j = 0; j < monomerCount(); j++)
-	{
-		if (!getMonomer(j))
-		{
-			continue;
-		}
-
-		AtomPtr ca = getMonomer(j)->findAtom("CA");
-		std::vector<BondSample> positions = ca->getModel()->getFinalPositions();
-		double bfac = ca->getBFactor();
-		vec3 average = ca->getAbsolutePosition();
-		std::vector<double> values;
-		values.push_back(j);
-
-		for (int i = 0; i < positions.size(); i++)
-		{
-			vec3 one = positions[i].start;
-			vec3 diff = vec3_subtract_vec3(one, average);
-			double length = vec3_length(diff);
-			values.push_back(length);
-		}
-		
-		strandsCSV->addEntry(values);
-	}
-	
-	double total = 0;
-	double mult = 1.5;
-
-	for (int i = 1; i < strandsCSV->headerCount(); i++)
-	{
-		double sum = 0;
-
-		for (int j = 0; j < strandsCSV->entryCount(); j++)
-		{
-			double value = strandsCSV->valueForEntry(i, j);
-			value *= value;
-			sum += value;
-		}
-		
-		sum /= strandsCSV->entryCount();
-		sum = sqrt(sum);
-		
-		sumstrandsCSV->addEntry(2, (double)i, sum);
-		
-		total += exp(-mult * sum * sum);
-	}
-	
-	strandsCSV->writeToFile("strands.csv");
-	sumstrandsCSV->writeToFile("sumstrands.csv");
-	
-	std::vector<double> occupancies;
-
-	for (int i = 0; i < sumstrandsCSV->entryCount(); i++)
-	{
-		double sum = sumstrandsCSV->valueForEntry("sum", i);
-		sum = exp(-mult * sum * sum);
-		double occupancy = sum / total;
-		
-		printf("Occupancy %.5f\n", occupancy);
-
-		occupancies.push_back(occupancy);
-	}
-	
-	AbsolutePtr abs = ToAbsolutePtr(getAnchorModel());
-	abs->setOccupancies(occupancies);
-	propagateChange();
-}
-
 void Polymer::graph(std::string graphName)
 {
 	CSVPtr csv = CSVPtr(new CSV(5, "resnum", "newB", "oldB",
@@ -981,7 +905,7 @@ void Polymer::findAnchorNearestCentroid()
 			continue;
 		}
 
-		n->getModel()->getFinalPositions();
+		n->getModel()->refreshPositions();
 		vec3 absN = n->getModel()->getAbsolutePosition();
 
 		if (!n) continue;
@@ -1172,17 +1096,17 @@ double Polymer::getInitialKick(void *object)
 	return polymer->getMonomer(monomerNum)->getKick();
 }
 
-ModelPtr Polymer::getAnchorModel()
+ExplicitModelPtr Polymer::getAnchorModel()
 {
 	MonomerPtr anchoredRes = getMonomer(getAnchor());
 	if (!anchoredRes)
 	{
-		return ModelPtr();
+		return ExplicitModelPtr();
 	}
 
 	ModelPtr model = anchoredRes->findAtom("N")->getModel();
 
-	return model;
+	return ToExplicitModelPtr(model);
 }
 
 std::vector<vec3> Polymer::getAnchorSphereDiffs()
@@ -1349,30 +1273,10 @@ void Polymer::superimpose()
 
 	ModelPtr model = getAnchorModel();
 	AtomPtr ca = getMonomer(monomerCount() - 1)->findAtom("CA");
-	ModelPtr one = ca->getModel();
 
-	if (ca)
+	if (model->isAnchor())
 	{
-		AtomPtr nz = getMonomer(monomerCount() - 1)->findAtom("NZ");
-
-		if (nz) one = nz->getModel();
-
-		CSVPtr csv = CSVPtr(new CSV(3, "x", "y", "z"));
-		std::vector<vec3> poss;
-		poss = one->polymerCorrectedPositions();
-
-		for (size_t i = 0; i < poss.size(); i++)
-		{
-			vec3 pos = poss[i];
-			csv->addEntry(3, pos.x, pos.y, pos.z);
-		}
-
-//		csv->writeToFile("ca_pos.csv");
-	}
-
-	if (model->isAbsolute())
-	{
-		std::vector<vec3> sphereAngles = ToAbsolutePtr(model)->getSphereAngles();
+		std::vector<vec3> sphereAngles = ToAnchorPtr(model)->getSphereAngles();
 		CSVPtr csv = CSVPtr(new CSV(10, "psi", "phi", "theta", "corr_x",
 		                            "corr_y", "corr_z", "rot_angle",
 		                            "rot_axis_x", "rot_axis_y", "rot_axis_z"));
@@ -1411,7 +1315,7 @@ void Polymer::minimiseCentroids()
 	}
 
 	double totalWeights = 0;
-	getAnchorModel()->getFinalPositions();
+	getAnchorModel()->refreshPositions();
 	vec3 oldPos = getAnchorModel()->getAbsolutePosition();
 
 	/* For every cAlpha atom in the structure, get the mean centroid
@@ -1427,11 +1331,16 @@ void Polymer::minimiseCentroids()
 
 		if (!ca) continue;
 
+		if (!ca->getModel()->hasExplicitPositions())
+		{
+			continue;
+		}
+		
 		count++;
 
 		std::vector<BondSample> *samples;
 		std::vector<BondSample> someSamples;
-		someSamples = ca->getModel()->getFinalPositions();
+		someSamples = *(ca->getExplicitModel()->getManyPositions());
 		samples = &someSamples;
 
 		/* Prepare the vectors for the first time if necessary */
@@ -1491,7 +1400,7 @@ void Polymer::minimiseCentroids()
 
 	// This time, it should apply the offset to the anchor.
 	// But we want the anchor to remain in the same place as before.
-	anchor->getFinalPositions();
+	anchor->refreshPositions();
 	vec3 newPos = anchor->getAbsolutePosition();
 
 	// Find the difference.
@@ -1520,7 +1429,13 @@ void Polymer::minimiseRotations()
 		AtomPtr atom = backbone->atom(i);
 
 		std::vector<BondSample> *samples;
-		samples = atom->getModel()->getManyPositions();
+		
+		if (!atom->getModel()->hasExplicitPositions())
+		{
+			continue;
+		}
+		
+		samples = atom->getExplicitModel()->getManyPositions();
 
 		num = samples->size();
 		break;
@@ -1545,11 +1460,16 @@ void Polymer::minimiseRotations()
 			{
 				shout_at_helen("Missing model for backbone atom!");
 			}
+			
+			if (!model->hasExplicitPositions())
+			{
+				continue;
+			}
 
 			double weight = 1;//anAtom->getBFactor();
 			weights.push_back(weight);
 
-			samples = model->getManyPositions();
+			samples = anAtom->getExplicitModel()->getManyPositions();
 			vec3 fixed = model->getAbsolutePosition();
 
 			vec3 variant = samples->at(i).start;

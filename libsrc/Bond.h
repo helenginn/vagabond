@@ -376,7 +376,8 @@ public:
 	std::string description();
 	std::string shortDesc();
 	std::string getPDBContribution();
-	ModelPtr getParentModel();
+	ExplicitModelPtr getParentModel();
+
 
 	/**
 	* 	 Splits all downstream atoms and creates new copies of atoms and
@@ -407,9 +408,6 @@ public:
 	{
 		return _extraTorsionSamples.size();
 	}
-
-	/** Returns the B factor (function is a misnomer). */
-	virtual double getMeanSquareDeviation();
 
 	AtomPtr extraTorsionSample(int i)
 	{
@@ -515,7 +513,6 @@ private:
 	BondGroupPtr bondGroupForBond();
 
 	std::vector<AtomWkr> _extraTorsionSamples;
-	std::vector<BondSample> _storedSamples;
 
 	/* Dampening should be associated with a bond group - woops */
 	double _dampening;
