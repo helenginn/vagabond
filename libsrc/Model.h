@@ -54,13 +54,21 @@ public:
 	Model();
 	virtual ~Model() {};
 
+	/** Return an atom probability distribution from this model. Needs
+	 * 	to be reimplemented by non-abstract models. */
 	virtual FFTPtr makeDistribution() = 0;
 	FFTPtr getDistribution();
 
-	virtual void addToMonomer(MonomerPtr monomer);
-	virtual void addToMolecule(MoleculePtr) {};
-
 	virtual std::string getClassName() = 0;
+
+	/** To return the mean square deviation as a B factor (i.e.,
+	 * variance * 8 * M_PI^2. Needs to be reimplemented by non-abstract 
+	 * models. */
+	virtual double getMeanSquareDeviation() = 0;
+
+	/** Mean position of blurred positions without including whole-molecule
+	* 	deviations. Should not be used for final atom position calculations. */
+	virtual std::vector<BondSample> *getManyPositions() = 0;
 
 	/** Actual mean position of blurred positions including whole-molecule
 	* 	deviations. */
@@ -68,10 +76,6 @@ public:
 	{
 		return _absolute;
 	}
-
-	/** Mean position of blurred positions without including whole-molecule
-	* 	deviations. Should not be used for final atom position calculations. */
-	virtual std::vector<BondSample> *getManyPositions() = 0;
 
 	/** Individual positions including whole-molecule deviations. */
 	std::vector<vec3> polymerCorrectedPositions();
@@ -83,8 +87,6 @@ public:
 	/** Occupancy for a given atom after all modifiers applied.
 	* 	\return value between 0 and 1. */
 	virtual double getEffectiveOccupancy() { return 1; }
-
-	virtual double getMeanSquareDeviation() = 0;
 	
 	/**
 	* Get the tensor as described by Vagabond model. May be different to
@@ -106,13 +108,18 @@ public:
 	*/
 	int fftGridLength();
 	
+	/** Return the directly controlled atom of this model. Needs
+	 * reimplementing by non-abstract model classes. */
 	virtual AtomPtr getAtom() = 0;
 
+	/** Returns true if this model is associated with a molecule. */
 	bool hasMolecule()
 	{
 		return !_molecule.expired();
 	}
 
+	/** Returns the molecule associated with this model. Will fail if
+	 * molecule is not assigned. Check with hasMolecule() first. */
 	MoleculePtr getMolecule()
 	{
 		return _molecule.lock();
@@ -122,6 +129,9 @@ public:
 	{
 		_molecule = mole;
 	}
+
+	virtual void addToMonomer(MonomerPtr monomer);
+	virtual void addToMolecule(MoleculePtr) {};
 
 	/**
 	* For recursive models (e.g. Bonds) downstream models are flagged
