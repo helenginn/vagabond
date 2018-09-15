@@ -1453,6 +1453,7 @@ int Crystal::getSampleNum()
 	if (Options::getNSamples() >= 0)
 	{
 		_sampleNum = Options::getNSamples();
+		Options::setNSamples(-1);
 	}
 
 	if (_sampleNum < 0) 
