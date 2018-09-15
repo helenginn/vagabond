@@ -332,8 +332,9 @@ void Polymer::splitConformers()
 void Polymer::summary()
 {
 	Molecule::summary();
-	std::cout << "| I am a polymer with " << _monomers.size() << " monomers." << std::endl;
 
+	std::cout << "| I am a polymer with " << _monomers.size() << " monomers."
+	<< std::endl;
 }
 
 double Polymer::vsRefineBackbone(void *object)

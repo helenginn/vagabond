@@ -171,7 +171,7 @@ void Options::run()
 		outputCrystalInfo();
 	}
 
-	std::cout << std::setprecision(3) << std::endl;
+	std::cout << std::setprecision(3);
 	std::cout << "Running in " << (_manual ? "manual" : "automatic") << " mode." << std::endl;
 
 	if (crystals.size() == 1)

@@ -65,7 +65,6 @@ public:
 	void setAbsoluteBFacSubtract(double subtract)
 	{
 		_absoluteBFacSubtract = subtract;
-		std::cout << "Setting absolute B factor subtractor to " << subtract << std::endl;
 		refreshBModels();
 	}
 	

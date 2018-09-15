@@ -462,8 +462,6 @@ double Crystal::getMaxResolution(DiffractionPtr data)
 	{
 		_maxResolution = data->getMaxResolution();
 		std::cout << std::setprecision(2);
-		std::cout << "Using the resolution from " << data->getFilename()
-		<< " of " << _maxResolution << " Å." << std::endl;
 	}
 	
 	return _maxResolution;
