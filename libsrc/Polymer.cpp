@@ -20,6 +20,7 @@
 #include "Absolute.h"
 #include "CSV.h"
 #include <sstream>
+#include <iomanip>
 #include "maths.h"
 #include <float.h>
 #include "FileReader.h"
