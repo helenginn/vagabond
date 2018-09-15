@@ -634,7 +634,7 @@ double Sampler::getScore()
 			score += oneScore;
 			count += 1;
 		}
-
+		
 		return score / count;
 	}
 
