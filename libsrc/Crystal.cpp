@@ -1001,7 +1001,6 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	{
 		std::cout << "No reflection file has been specified.\n"\
 		"Cannot perform map recalculation." << std::endl;
-		std::cout << std::setprecision(2);
 	}
 	else
 	{
