@@ -36,7 +36,7 @@ Polymer::Polymer()
 	_kick = Options::getKick();
 	_sideDampening = 0.05;
 	_sideKick = 0;
-	_anchorNum = 0;
+	_anchorNum = -1;
 	_totalMonomers = 0;
 	_transTensor = make_mat3x3();
 	_transExponent = 0;
@@ -149,7 +149,8 @@ void Polymer::scanBondParams()
 	
 	for (int i = 0; i < atoms.size(); i++)
 	{
-		atomtarg->addEntry(2, (double)i, targets[atoms[i]]);
+		double num = i / 4 + _monomers.begin()->first;
+		atomtarg->addEntry(2, num, targets[atoms[i]]);
 	}
 
 	atomtarg->writeToFile("atom_targets_" + getChainID() + ".csv");
@@ -174,6 +175,8 @@ void Polymer::scanBondParams()
 
 			for (int j = 0; j < atoms.size(); j++)
 			{
+				double nAtom = (double)j / 4. +
+				(double) _monomers.begin()->first;
 				double bnow = atoms[j]->getBFactor();
 				double bthen = bFacs[atoms[j]];
 
@@ -186,7 +189,7 @@ void Polymer::scanBondParams()
 				
 				double grad = diff;
 
-				csv->addEntry(3, (double)j, (double)num, grad);
+				csv->addEntry(3, (double)nAtom, (double)num, grad);
 
 				if (grad > 1e-6)
 				{
@@ -197,6 +200,7 @@ void Polymer::scanBondParams()
 			}
 
 			Bond::setKick(&*b, k);
+			b->propagateChange();
 			double correl = correlation(tx, ty);
 
 			if (correl != correl)
@@ -219,6 +223,8 @@ void Polymer::scanBondParams()
 	plotMap["xHeader0"] = "kick";
 	plotMap["yHeader0"] = "atom";
 	plotMap["zHeader0"] = "response";
+//	plotMap["zMin0"] = "-10";
+//	plotMap["zMax0"] = "10";
 
 	plotMap["xTitle0"] = "kick";
 	plotMap["yTitle0"] = "atom";
