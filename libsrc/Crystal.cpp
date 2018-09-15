@@ -861,6 +861,7 @@ void Crystal::setAnchors()
 
 Crystal::Crystal()
 {
+	_sampleNum = -1;
 	_cycleNum = 0;
 	_lastRWork = FLT_MAX;
 	_bestRWork = FLT_MAX;
@@ -1215,6 +1216,7 @@ void Crystal::addProperties()
 	addDoubleProperty("cc_free", &_ccFree);
 	addStringProperty("comments", &_comments);
 	addIntProperty("cycles_since_best", &_sinceBestNum);
+	addIntProperty("sample_num", &_sampleNum);
 
 	_spgNum = 0;
 	if (_spaceGroup)
@@ -1445,3 +1447,19 @@ std::vector<AtomPtr> Crystal::getHydrogenBonders()
 	
 	return returns;
 }
+
+int Crystal::getSampleNum()
+{
+	if (Options::getNSamples() >= 0)
+	{
+		_sampleNum = Options::getNSamples();
+	}
+
+	if (_sampleNum < 0) 
+	{
+		_sampleNum = 120;
+	}
+	
+	return _sampleNum;
+}
+

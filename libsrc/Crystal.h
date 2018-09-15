@@ -312,6 +312,8 @@ public:
 	double getMaximumDStar(DiffractionPtr data);
 	void openInCoot();
 	
+	int getSampleNum();
+	
 	std::vector<AtomPtr> getHydrogenBonders();
 protected:
 	virtual void postRestoreState();
@@ -357,6 +359,7 @@ private:
 	double _bestRWork;
 	int _sinceBestNum;
 	int _cycleNum;
+	int _sampleNum;
 	
 	double _solvScale;
 	double _solvBFac;

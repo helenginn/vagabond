@@ -34,7 +34,7 @@ bool Options::_powder = false;
 std::string Options::_anchor = "";
 bool Options::_shellScale = true;
 double Options::_sampling = -1;
-int Options::_nSamples = 120;
+int Options::_nSamples = -1;
 std::string Options::_solventFile;
 
 Options::Options(int argc, const char **argv)

@@ -203,7 +203,9 @@ std::vector<BondSample> *Absolute::getManyPositions()
 
 	double occTotal = 0;
 
-	int totalPoints = Options::getNSamples();
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	int totalPoints = crystal->getSampleNum();
+
 	double totalSurfaces = 0;
 	int layers = 10;
 	
