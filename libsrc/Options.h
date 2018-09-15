@@ -186,6 +186,11 @@ public:
 		Options::getRuntimeOptions()->renderDensity();
 	}
 	
+	static std::string anchorString()
+	{
+		return _anchor;
+	}
+	
 	void scanBondParams();
 	void renderDensity();
 	void statusMessage(std::string message);
@@ -250,6 +255,7 @@ private:
 	std::string _outputDir;
 	static double _minRes;
 	static double _maxRes;
+	static std::string _anchor;
 };
 
 #endif /* defined(__vagabond__Options__) */

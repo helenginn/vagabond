@@ -31,6 +31,7 @@ double Options::_maxRes = -1.0;
 bool Options::_useRFree = true;
 int Options::_enableTests = 3;
 bool Options::_powder = false;
+std::string Options::_anchor = "";
 bool Options::_shellScale = true;
 double Options::_sampling = -1;
 int Options::_nSamples = 300;
@@ -396,6 +397,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "--dampen=", &_dampen);
 		understood |= parseParameter(arg, "--max-res=", &_maxRes);
 		understood |= parseParameter(arg, "--output-dir=", &_outputDir);
+		understood |= parseParameter(arg, "--anchor=", &_anchor);
 
 		prefix = "--enable-tests=";
 
