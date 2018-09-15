@@ -20,7 +20,7 @@
 #include "SSRigger.h"
 
 OptionsPtr Options::options;
-double Options::_kick = 0.005;
+double Options::_kick = 0.000;
 int Options::_solvent = 1;
 double Options::_dampen = 0.08;
 double Options::_bStart = 1.5;
