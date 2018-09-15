@@ -50,9 +50,6 @@ public:
 
 	Plucker *makePluckableWaters();
 
-	double scoreWithMapQuick(ScoreType scoreType, CrystalPtr crystal,
-	                         bool plot, std::vector<AtomPtr> selected);
-
 	void setMonomer(MonomerPtr monomer)
 	{
 		_monomer = monomer;
@@ -174,9 +171,6 @@ private:
 	static FFTPtr prepareMapSegment(CrystalPtr crystal,
 	                                std::vector<AtomPtr> selected,
 	                                mat3x3 *basis, vec3 *ave);
-
-	double addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected, 
-	                       mat3x3 basis, vec3 ave);
 
 	static double scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	                            bool plot, ScoreType scoreType,
