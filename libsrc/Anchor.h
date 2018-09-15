@@ -19,6 +19,7 @@ class Anchor : public ExplicitModel
 {
 public:
 	Anchor(AbsolutePtr absolute);
+	Anchor();
 	virtual ~Anchor() {};
 
 	std::vector<BondSample> *getManyPositions();
@@ -57,8 +58,11 @@ protected:
 		return "Anchor";
 	}
 	
+	virtual std::string getParserIdentifier();
+
+	virtual void addProperties();
+	virtual void linkReference(ParserPtr object, std::string category);
 private:
-	vec3 _position;
 	double _bFactor;
 	AtomWkr _atom;
 

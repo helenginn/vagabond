@@ -19,6 +19,12 @@ Anchor::Anchor(AbsolutePtr absolute)
 	_atom = absolute->getAtom();
 }
 
+Anchor::Anchor()
+{
+	_bFactor = 0;
+	_absolute = empty_vec3();
+}
+
 std::vector<BondSample> *Anchor::getManyPositions()
 {
 	std::vector<BondSample> *bondSamples = &_storedSamples;
@@ -115,3 +121,24 @@ std::vector<BondSample> *Anchor::getManyPositions()
 	return bondSamples;
 }
 
+void Anchor::addProperties()
+{
+	addDoubleProperty("bfactor", &_bFactor);
+	addVec3Property("position", &_absolute);
+	addReference("atom", _atom.lock());
+	Model::addProperties();
+}
+
+std::string Anchor::getParserIdentifier()
+{
+	return "anchor_" + i_to_str(getAtom()->getAtomNum());
+}
+
+void Anchor::linkReference(ParserPtr object, std::string category)
+{
+	if (category == "atom")
+	{
+		AtomPtr atom = ToAtomPtr(object);
+		_atom = atom;
+	}
+}

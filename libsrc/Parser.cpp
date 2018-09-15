@@ -14,6 +14,7 @@
 #include "BondGroup.h"
 #include "Monomer.h"
 #include "Absolute.h"
+#include "Anchor.h"
 #include "Sidechain.h"
 #include "Backbone.h"
 #include "Shouter.h"
@@ -1274,6 +1275,10 @@ ParserPtr Parser::objectOfType(char *className)
 	else if (strcmp(className, "Absolute") == 0)
 	{
 		object = ParserPtr(static_cast<Absolute *>(new Absolute()));        
+	}
+	else if (strcmp(className, "Anchor") == 0)
+	{
+		object = ParserPtr(static_cast<Anchor *>(new Anchor()));        
 	}
 	else if (strcmp(className, "Bond") == 0)
 	{
