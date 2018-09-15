@@ -1214,6 +1214,7 @@ void Crystal::addProperties()
 	addDoubleProperty("r_free", &_rFree);
 	addDoubleProperty("cc_work", &_ccWork);
 	addDoubleProperty("cc_free", &_ccFree);
+	addDoubleProperty("real_b_factor", &_realBFactor);
 	addStringProperty("comments", &_comments);
 	addIntProperty("cycles_since_best", &_sinceBestNum);
 	addIntProperty("sample_num", &_sampleNum);
@@ -1462,5 +1463,19 @@ int Crystal::getSampleNum()
 	}
 	
 	return _sampleNum;
+}
+
+double Crystal::getRealBFactor()
+{
+	if (Options::getGlobalBFactor() >= 0)
+	{
+		_realBFactor = Options::getGlobalBFactor();
+		Options::resetGlobalBFactor();
+	}
+	
+	if (_realBFactor < 0)
+	{
+		_realBFactor = 10;
+	}
 }
 

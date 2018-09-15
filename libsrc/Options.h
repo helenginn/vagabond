@@ -181,6 +181,11 @@ public:
 		return _bReal;
 	}
 	
+	static void resetGlobalBFactor()
+	{
+		_bReal = -1;
+	}
+	
 	static void flagDensityChanged()
 	{
 		Options::getRuntimeOptions()->renderDensity();

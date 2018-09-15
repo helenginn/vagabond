@@ -316,6 +316,10 @@ public:
 	 * in the ensemble. */
 	int getSampleNum();
 	
+	/** Obtain the current B factor applied to any many-positioned models of
+	 * atoms. */
+	double getRealBFactor();
+	
 	std::vector<AtomPtr> getHydrogenBonders();
 protected:
 	virtual void postRestoreState();
@@ -359,6 +363,9 @@ private:
 	double _ccFree;
 	double _lastRWork;
 	double _bestRWork;
+	
+	double _realBFactor;
+
 	int _sinceBestNum;
 	int _cycleNum;
 	int _sampleNum;

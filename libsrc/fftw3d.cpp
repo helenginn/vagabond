@@ -439,7 +439,8 @@ void FFT::setupBlurring()
 {
 	_blurAmounts.clear();
 
-	double bfac = Options::getGlobalBFactor();
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	double bfac = crystal->getRealBFactor();
 	bfac /= 8 * M_PI * M_PI;
 
 	for (int i = START_LOOP; i < END_LOOP; i++)
