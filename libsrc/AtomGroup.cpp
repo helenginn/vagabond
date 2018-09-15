@@ -740,7 +740,8 @@ double AtomGroup::addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected,
 			vec3 pos = selected[j]->getAbsolutePosition();
 			pos = vec3_subtract_vec3(pos, ave);
 
-			model->addRealSpacePositions(elesegment, pos);
+			/** This won't work right now */
+//			model->addRealSpacePositions(elesegment, pos);
 		}
 		tReal.stop();
 
