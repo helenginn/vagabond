@@ -41,7 +41,6 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 		{
 			range = 0.2;
 		}
-		
 
 		switch (rType)
 		{
@@ -63,6 +62,22 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 			default:
 			break;
+		}
+		
+		if (_timesRefined >= 3)
+		{
+			switch (rType)
+			{
+				case RefinementModelPos:
+				addParamType(ParamOptionBondAngle, range / 1);
+				break;
+
+				case RefinementFine:
+				addParamType(ParamOptionBondAngle, 0.1);
+
+				default:
+				break;
+			}
 		}
 	}
 
