@@ -1858,7 +1858,7 @@ double Polymer::vsFindKickAndDampen(void *object)
 double Polymer::findOverallKickAndDampen(void *object)
 {
 	Polymer *poly = static_cast<Polymer *>(object);
-	NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
+	NelderMeadPtr nelderMead = NelderMeadPtr(new RefinementNelderMead());
 
 	nelderMead->addParameter(poly, getBackboneKick, setBackboneKick,
 	                         0.001, 0.0001);
