@@ -618,7 +618,6 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	for (size_t i = 0; i < prevs->size(); i++)
 	{
 		mat3x3 thisBasis = (*prevs)[i].basis;
-		vec3 prevHeavyPos = (*prevs)[i].old_start;
 		vec3 thisPos = prevs->at(i).start;
 
 		/* Difference between perfect and deviant position of major atom */
