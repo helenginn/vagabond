@@ -133,7 +133,7 @@ void Anchor::createStartPositions(Atom *callAtom)
 	
 		double occ = 1;
 		occTotal += occ;
-		mat3x3 basis = makeTorsionBasis(points[i], next, full, empty);
+		mat3x3 basis = makeTorsionBasis(empty, next, full, empty);
 
 		BondSample sample;
 		sample.basis = basis;
