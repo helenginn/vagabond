@@ -384,7 +384,7 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 			_vertices[start+7].tex[1] = 1.0;
 		}
 	}
-
+	
 	_shouldGetBonds = false;
 	return bonds;
 }
