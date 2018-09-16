@@ -356,6 +356,13 @@ void Bond::deriveCirclePortion()
 	
 	BondPtr parent = ToBondPtr(getParentModel());
 	
+	if (!parent->isAnchor())
+	{
+		_usingTorsion = true;
+		_circlePortion = 0;
+		return;
+	}
+	
 	/* We'll be in the same group as the last group */
 	int groups = parent->downstreamBondGroupCount();
 
