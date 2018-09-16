@@ -127,6 +127,16 @@ public:
 	{
 		_useMutex = true;
 	}
+
+	virtual size_t downstreamBondCount(int)
+	{
+		return 1;
+	}
+	
+	virtual int downstreamBondNum(Bond *, int *)
+	{
+		return 0;
+	}
 protected:
 	FFTPtr makeRealSpaceDistribution();
 	void addRealSpacePositions(FFTPtr real, vec3 offset);
