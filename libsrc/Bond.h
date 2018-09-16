@@ -273,7 +273,7 @@ public:
 	*   \param group which group to query.
 	* 	\return Number of downstream atoms in a given group (conformer).
 	*/
-	size_t downstreamBondCount(int group)
+	virtual size_t downstreamBondCount(int group)
 	{
 		return _bondGroups[group]->bondCount();
 	}
@@ -287,7 +287,7 @@ public:
 	*	\return -1 if bond isn't found, and the bond number if found.
 	*		
 	*/
-	int downstreamBondNum(Bond *down, int *group)
+	virtual int downstreamBondNum(Bond *down, int *group)
 	{
 		for (int j = 0; j < downstreamBondGroupCount(); j++)
 		{
