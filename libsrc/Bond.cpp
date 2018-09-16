@@ -715,7 +715,6 @@ double Bond::getBaseTorsion()
 std::vector<BondSample> *Bond::getManyPositions(void *)
 {
 	std::vector<BondSample> *newSamples;
-
 	newSamples = &_storedSamples;
 
 	if (!_changedSamples)
