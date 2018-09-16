@@ -19,8 +19,6 @@
 #include "maths.h"
 #include "Monomer.h"
 #include "Molecule.h"
-#include "Anisotropicator.h"
-#include "RefinementNelderMead.h"
 #include "Options.h"
 
 void Bond::initialize()
