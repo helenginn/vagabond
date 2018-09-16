@@ -428,12 +428,7 @@ public:
 	void recalculateTorsion(AtomPtr heavy, double value);
 
 	virtual void propagateChange(int depth = -1, bool refresh = false);
-	std::vector<BondSample> *getManyPositions();
-
-	static void useMutex()
-	{
-		_useMutex = true;
-	}
+	std::vector<BondSample> *getManyPositions(void *object = NULL);
 
 	double getMultOccupancy()
 	{
