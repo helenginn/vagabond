@@ -33,7 +33,8 @@ public:
 		return _sphereAngles;
 	}
 
-	void setNeighbouringAtoms(AtomPtr nAtom, AtomPtr cAtom);
+	void setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom, 
+	                          AtomPtr cAtom, AtomPtr cPost);
 
 	AtomPtr getOtherAtom(AtomPtr calling);
 
@@ -71,10 +72,10 @@ private:
 
 	double _bFactor;
 	AtomWkr _atom;
-	AtomWkr _nAtom, _cAtom;
+	AtomWkr _nAtom, _cAtom, _nPre, _cPost;
 	
-	vec3 _nDir;
-	vec3 _cDir;
+	vec3 _nDir, _nDir2;
+	vec3 _cDir, _cDir2;
 
 	std::vector<vec3> _sphereAngles;
 	std::vector<double> _occupancies;

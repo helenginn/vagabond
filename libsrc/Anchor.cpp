@@ -19,17 +19,24 @@ Anchor::Anchor(AbsolutePtr absolute)
 	_atom = absolute->getAtom();
 }
 
-void Anchor::setNeighbouringAtoms(AtomPtr nAtom, AtomPtr cAtom)
+void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom, 
+                                  AtomPtr cAtom, AtomPtr cPost)
 {
 	_nAtom = nAtom;
 	_cAtom = cAtom;
+//	_nPre = nPre;
+//	_cPost = cPost;
 	
 	vec3 myPos = getAtom()->getInitialPosition();
 	vec3 nAtomPos = nAtom->getInitialPosition();
 	vec3 cAtomPos = cAtom->getInitialPosition();
+	vec3 nPrePos = nPre->getInitialPosition();
+	vec3 cPostPos = cPost->getInitialPosition();
 
 	_nDir = vec3_subtract_vec3(nAtomPos, myPos);
+	_nDir2 = vec3_subtract_vec3(nPrePos, myPos);
 	_cDir = vec3_subtract_vec3(cAtomPos, myPos);
+	_cDir2 = vec3_subtract_vec3(cPostPos, myPos);
 }
 
 Anchor::Anchor()
@@ -124,22 +131,24 @@ void Anchor::createStartPositions(Atom *callAtom)
 
 	/* Want the direction to be the opposite of the calling bond */
 	vec3 *direction = isN ? &_cDir : &_nDir;
+	vec3 *other = isN ? &_cDir2 : &_nDir2;
 	vec3 empty = empty_vec3();
 
 	for (size_t i = 0; i < points.size(); i++)
 	{
 		vec3 full = vec3_add_vec3(points[i], _absolute);
 		vec3 next = vec3_add_vec3(full, *direction);
+		vec3 prev = vec3_add_vec3(full, *other);
 	
 		double occ = 1;
 		occTotal += occ;
-		mat3x3 basis = makeTorsionBasis(empty, next, full, empty);
+		mat3x3 basis = makeTorsionBasis(prev, next, full, empty);
 
 		BondSample sample;
 		sample.basis = basis;
 		sample.occupancy = occ;
 		sample.torsion = 0;
-		sample.old_start = empty_vec3(); // used instead of atom
+		sample.old_start = prev; // used instead of atom
 		sample.start = full;
 
 		_storedSamples.push_back(sample);

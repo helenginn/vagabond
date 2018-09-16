@@ -187,10 +187,9 @@ void Bond::setHeavyAlign(AtomPtr atom, bool from_sister)
 {
 	_heavyAlign = atom;
 
-	/* if the parent is not available, this is not meant to be
-	 * able to generate a torsion angle.*/
 	if (!getParentModel()->isBond())
 	{
+		deriveTorsionAngle();
 		return;
 	}
 	
@@ -243,7 +242,7 @@ void Bond::deriveTorsionAngle()
 		AnchorPtr anchor = ToAnchorPtr(getParentModel());
 		/* It's an absolute - make relative to origin, to have
 		 * something which can be reproduced */
-		AtomPtr one = AtomPtr();
+		AtomPtr one = getHeavyAlign();
 		AtomPtr two = anchor->getOtherAtom(getMinor());
 		AtomPtr three = getMajor();
 		AtomPtr four = getMinor();
@@ -356,7 +355,7 @@ void Bond::deriveCirclePortion()
 	
 	BondPtr parent = ToBondPtr(getParentModel());
 	
-	if (!parent->isAnchor())
+	if (parent->isAnchor())
 	{
 		_usingTorsion = true;
 		_circlePortion = 0;
@@ -726,7 +725,7 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 
 	newSamples->clear();
 
-	if (model->isAnchor())
+	if (false && model->isAnchor())
 	{
 		std::vector<BondSample> *absPos = model->getManyPositions();
 		mat3x3 magicMat = getMagicMat(_bondDirection);
@@ -746,6 +745,7 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 			vec3 perfectStart = vec3_subtract_vec3(actualMajor, _bondDirection);
 
 			mat3x3 newBasis = makeTorsionBasis(heavyPos, actualMajor, perfectStart, none);
+			
 
 			vec3 majorDev = vec3_subtract_vec3(majorPos, actualMajor);
 			mat3x3_mult_vec(magicMat, &majorDev);

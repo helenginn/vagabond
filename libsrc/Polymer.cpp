@@ -254,13 +254,20 @@ void Polymer::tieAtomsUp()
 	AtomPtr n = getMonomer(_anchorNum)->findAtom("N");
 	AtomPtr to_c = getMonomer(_anchorNum)->findAtom("CA");
 	AtomPtr to_n = getMonomer(_anchorNum - 1)->findAtom("C");
+
+	/* Specify heavy alignment atoms around the anchor point */
+	AtomPtr ca = getMonomer(_anchorNum)->findAtom("CA");
+	AtomPtr c = getMonomer(_anchorNum)->findAtom("C");
+	AtomPtr prev_c = getMonomer(_anchorNum - 1)->findAtom("C");
+	AtomPtr prev_ca = getMonomer(_anchorNum - 1)->findAtom("CA");
+
 	ModelPtr nModel = n->getModel();
 
 	if (nModel->isAbsolute())
 	{
 		AnchorPtr newAnchor = AnchorPtr(new Anchor(ToAbsolutePtr(nModel)));
 		newAnchor->setBFactor(_startB);
-		newAnchor->setNeighbouringAtoms(to_n, to_c);
+		newAnchor->setNeighbouringAtoms(prev_ca, to_n, to_c, c);
 		n->setModel(newAnchor);
 	}
 
@@ -280,20 +287,14 @@ void Polymer::tieAtomsUp()
 		}
 	}
 	
-	/* Specify heavy alignment atoms around the anchor point */
-	AtomPtr ca = getMonomer(_anchorNum)->findAtom("CA");
-	AtomPtr c = getMonomer(_anchorNum)->findAtom("C");
-	AtomPtr prev_c = getMonomer(_anchorNum - 1)->findAtom("C");
-	AtomPtr prev_ca = getMonomer(_anchorNum - 1)->findAtom("CA");
-	
 	BondPtr n2ca = ToBondPtr(ca->getModel());
 	BondPtr ca2c = ToBondPtr(c->getModel());
 	BondPtr n2c = ToBondPtr(prev_c->getModel());
 	BondPtr c2ca = ToBondPtr(prev_ca->getModel());
 	
-	n2ca->setHeavyAlign(prev_c);
 	ca2c->setHeavyAlign(prev_c);
-	n2c->setHeavyAlign(ca);
+	n2ca->setHeavyAlign(prev_ca);
+	n2c->setHeavyAlign(c);
 	c2ca->setHeavyAlign(ca);
 
 	double kick = Options::getKick();
