@@ -252,12 +252,15 @@ void Polymer::tieAtomsUp()
 	checkChainContinuity();
 
 	AtomPtr n = getMonomer(_anchorNum)->findAtom("N");
+	AtomPtr to_c = getMonomer(_anchorNum)->findAtom("CA");
+	AtomPtr to_n = getMonomer(_anchorNum - 1)->findAtom("C");
 	ModelPtr nModel = n->getModel();
 
 	if (nModel->isAbsolute())
 	{
 		AnchorPtr newAnchor = AnchorPtr(new Anchor(ToAbsolutePtr(nModel)));
 		newAnchor->setBFactor(_startB);
+		newAnchor->setNeighbouringAtoms(to_n, to_c);
 		n->setModel(newAnchor);
 	}
 
