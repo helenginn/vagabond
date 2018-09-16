@@ -171,12 +171,17 @@ void Bond::deriveBondLength()
 void Bond::setTorsionAngleFrom(AtomPtr one, AtomPtr two, AtomPtr three,
                                AtomPtr four)
 {
-	vec3 hPos = one->getInitialPosition();
+	vec3 hPos = empty_vec3();
+	if (one)
+	{
+		hPos = one->getInitialPosition();
+	}
+
 	vec3 maPos = two->getInitialPosition();
 	vec3 miPos = three->getInitialPosition();
 	vec3 lPos = four->getInitialPosition();
 
-	makeTorsionBasis(hPos, maPos, miPos, lPos,
+	mat3x3 basis = makeTorsionBasis(hPos, maPos, miPos, lPos,
 	                 &_torsion);
 }
 
