@@ -785,10 +785,11 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 
 	double totalAtoms = prevBond->downstreamBondCount(myGroup);
 
-	std::vector<BondSample> *prevSamples = prevBond->getManyPositions();
+	std::vector<BondSample> *prevSamples;
+	prevSamples = prevBond->getManyPositions(&*getMinor());
 	
 	double baseTorsion = getBaseTorsion();
-
+	
 	/* This is just to get a set of angles, no bases */
 	double circlePortion = 0;
 	double circleAdd = 0;
@@ -817,14 +818,15 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 	}
 
 	double occTotal = 0;
-	newSamples->reserve(prevSamples->size());
+	_storedSamples.clear();
+	_storedSamples.reserve(prevSamples->size());
 	
 	for (size_t i = 0; i < prevSamples->size(); i++)
 	{
 		double currentTorsion = baseTorsion + circleAdd;
 		/* Deviation from correction */
 		currentTorsion += prevSamples->at(i).torsion;
-
+		
 		vec3 prevHeavyPos = (*prevSamples)[i].old_start;
 		vec3 prevMinorPos = (*prevSamples)[i].start;
 		mat3x3 oldBasis = (*prevSamples)[i].basis;
@@ -848,20 +850,20 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 		
 		occTotal += nextSample.occupancy;
 
-		newSamples->push_back(nextSample);
+		_storedSamples.push_back(nextSample);
 	}
 
 	if (_resetOccupancy)
 	{
-		for (size_t i = 0; i < newSamples->size(); i++)
+		for (size_t i = 0; i < _storedSamples.size(); i++)
 		{
-			newSamples->at(i).occupancy /= occTotal;
+			_storedSamples[i].occupancy /= occTotal;
 		}
 	}
 
 	_changedSamples = false;
 
-	return newSamples;
+	return &_storedSamples;
 }
 
 bool Bond::isNotJustForHydrogens()
