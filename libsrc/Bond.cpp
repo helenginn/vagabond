@@ -238,9 +238,17 @@ void Bond::setHeavyAlign(AtomPtr atom, bool from_sister)
 
 void Bond::deriveTorsionAngle()
 {
-	if (!getParentModel()->isBond())
+	if (getParentModel()->isAnchor())
 	{
-		/* It's an absolute - ignore */
+		AnchorPtr anchor = ToAnchorPtr(getParentModel());
+		/* It's an absolute - make relative to origin, to have
+		 * something which can be reproduced */
+		AtomPtr one = AtomPtr();
+		AtomPtr two = anchor->getOtherAtom(getMinor());
+		AtomPtr three = getMajor();
+		AtomPtr four = getMinor();
+
+		setTorsionAngleFrom(one, two, three, four);
 		return;
 	}
 	
