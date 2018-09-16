@@ -15,7 +15,7 @@
 #include "fftw3d.h"
 #include "Shouter.h"
 #include "AtomGroup.h"
-#include "Absolute.h"
+#include "Anchor.h"
 #include "maths.h"
 #include "Monomer.h"
 #include "Molecule.h"
