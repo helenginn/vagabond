@@ -256,7 +256,8 @@ void Bond::deriveTorsionAngle()
 	
 	if (!parent->getParentModel()->isBond())
 	{	
-		/* Grandparent is absolute - needs dealing with specially */
+		/* Grandparent is absolute - needs dealing with specially,
+		 * but can be relative. */
 		return;
 	}
 	
