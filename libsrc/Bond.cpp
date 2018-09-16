@@ -273,13 +273,23 @@ void Bond::deriveTorsionAngle()
 
 void Bond::deriveBondAngle()
 {
-	if (!getParentModel() || !getParentModel()->isBond())
+	if (!getParentModel())
 	{
 		return;
 	}
-
-	BondPtr parent = ToBondPtr(getParentModel());
-	AtomPtr pMajor = parent->getMajor();
+	
+	AtomPtr pMajor;
+	
+	if (getParentModel()->isAnchor())
+	{
+		AnchorPtr parent = ToAnchorPtr(getParentModel());
+		pMajor = parent->getOtherAtom(getMinor());
+	}
+	else
+	{
+		BondPtr parent = ToBondPtr(getParentModel());
+		pMajor = parent->getMajor();
+	}
 	
 	_expectedAngle = -1;
 	double angle = Atom::getAngle(getMinor(), getMajor(), pMajor);
