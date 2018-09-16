@@ -30,8 +30,6 @@ void Vagabond2GL::setupAverage()
 
 void Vagabond2GL::updateAtoms()
 {
-	bool valid = true;
-	
 	for (AtomMap::iterator it = _atomMap.begin(); it != _atomMap.end(); it++)
 	{
 		AtomPtr atom = it->first;
@@ -66,7 +64,7 @@ void Vagabond2GL::updateAtoms()
 			_vertices[v+3].pos[1] = minStart.y;
 			_vertices[v+3].pos[2] = minStart.z;
 
-			if (_average && valid)
+			if (_average)
 			{
 				for (int i = 0; i < 4; i++)
 				{
@@ -235,7 +233,8 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 	GLuint count = (int)_vertices.size();
 	int bonds = 0;
 
-	Bond::useMutex();
+	ExplicitModel::useMutex();
+
 
 	for (int i = 0; i < molecule->atomCount(); i++)
 	{
