@@ -182,6 +182,8 @@ void Anchor::addProperties()
 	addReference("n_atom", _nAtom.lock());
 	addVec3Property("n_dir", &_nDir);
 	addVec3Property("c_dir", &_cDir);
+	addVec3Property("pre_n", &_nDir2);
+	addVec3Property("post_c", &_cDir2);
 	addReference("c_atom", _cAtom.lock());
 	Model::addProperties();
 }
