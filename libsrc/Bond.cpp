@@ -190,8 +190,7 @@ void Bond::setHeavyAlign(AtomPtr atom, bool from_sister)
 	_heavyAlign = atom;
 
 	/* if the parent is not available, this is not meant to be
-	 * able to generate a torsion angle. Set as heavy alignment atom
-	 * for getManyPositions(). */
+	 * able to generate a torsion angle.*/
 	if (!getParentModel()->isBond())
 	{
 		return;
