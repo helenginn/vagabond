@@ -725,53 +725,6 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 
 	newSamples->clear();
 
-	if (false && model->isAnchor())
-	{
-		std::vector<BondSample> *absPos = model->getManyPositions();
-		mat3x3 magicMat = getMagicMat(_bondDirection);
-		
-		_magicAxis = mat3x3_axis(magicMat, 2); 
-
-		/* We must be connected to something else, oh well */
-		/* Torsion basis must be the same. */
-
-		for (size_t i = 0; i < absPos->size(); i++)
-		{
-			vec3 majorPos = (*absPos)[i].start;
-			vec3 heavyPos = getHeavyAlign()->getInitialPosition();
-			vec3 none = {0, 0, 1};
-			vec3 actualMajor = getMajor()->getAbsolutePosition();
-			vec3 start = vec3_subtract_vec3(majorPos, _bondDirection);
-			vec3 perfectStart = vec3_subtract_vec3(actualMajor, _bondDirection);
-
-			mat3x3 newBasis = makeTorsionBasis(heavyPos, actualMajor, perfectStart, none);
-			
-
-			vec3 majorDev = vec3_subtract_vec3(majorPos, actualMajor);
-			mat3x3_mult_vec(magicMat, &majorDev);
-			double notY = sqrt(majorDev.x * majorDev.x +
-			                   majorDev.z * majorDev.z);
-			double tanY = majorDev.y / notY;
-			double diffValue = sin(atan(tanY));
-
-			if (diffValue != diffValue)
-			{
-				diffValue = 0;
-			}
-
-			BondSample newSample;
-			newSample.basis = newBasis;
-			newSample.torsion = 0;
-			newSample.start = start;
-			newSample.old_start = majorPos;
-			newSample.occupancy = (*absPos)[i].occupancy;
-			newSamples->push_back(newSample);
-
-		}
-
-		return newSamples;
-	}
-
 	BondPtr prevBond = boost::static_pointer_cast<Bond>(model);
 	int myGroup = -1;
 	double torsionNumber = prevBond->downstreamBondNum(this,
