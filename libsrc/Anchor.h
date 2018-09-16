@@ -22,7 +22,7 @@ public:
 	Anchor();
 	virtual ~Anchor() {};
 
-	std::vector<BondSample> *getManyPositions();
+	std::vector<BondSample> *getManyPositions(void *object = NULL);
 
 	/** Returns the offsets for an anchor residue on which a molecule may
 	* calculate translations and offsets.
@@ -32,6 +32,10 @@ public:
 	{
 		return _sphereAngles;
 	}
+
+	void setNeighbouringAtoms(AtomPtr nAtom, AtomPtr cAtom);
+
+	AtomPtr getOtherAtom(AtomPtr calling);
 
 	void setOccupancies(std::vector<double> occ)
 	{
@@ -63,8 +67,14 @@ protected:
 	virtual void addProperties();
 	virtual void linkReference(ParserPtr object, std::string category);
 private:
+	void createStartPositions(Atom *callAtom);
+
 	double _bFactor;
 	AtomWkr _atom;
+	AtomWkr _nAtom, _cAtom;
+	
+	vec3 _nDir;
+	vec3 _cDir;
 
 	std::vector<vec3> _sphereAngles;
 	std::vector<double> _occupancies;

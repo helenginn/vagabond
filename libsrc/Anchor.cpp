@@ -19,17 +19,47 @@ Anchor::Anchor(AbsolutePtr absolute)
 	_atom = absolute->getAtom();
 }
 
+void Anchor::setNeighbouringAtoms(AtomPtr nAtom, AtomPtr cAtom)
+{
+	_nAtom = nAtom;
+	_cAtom = cAtom;
+	
+	vec3 myPos = getAtom()->getInitialPosition();
+	vec3 nAtomPos = nAtom->getInitialPosition();
+	vec3 cAtomPos = cAtom->getInitialPosition();
+
+	_nDir = vec3_subtract_vec3(nAtomPos, myPos);
+	_cDir = vec3_subtract_vec3(cAtomPos, myPos);
+}
+
 Anchor::Anchor()
 {
 	_bFactor = 0;
 	_absolute = empty_vec3();
+	_nDir = empty_vec3();
+	_cDir = empty_vec3();
 }
 
-std::vector<BondSample> *Anchor::getManyPositions()
+AtomPtr Anchor::getOtherAtom(AtomPtr calling)
 {
-	std::vector<BondSample> *bondSamples = &_storedSamples;
-	bondSamples->clear();
+	if (_nAtom.lock() == calling)
+	{
+		return _cAtom.lock();
+	}
+	else if (_cAtom.lock() == calling)
+	{
+		return _nAtom.lock();
+	}
+	else
+	{
+		std::cout << "WATCHOUT" << std::endl;
+	}
+}
 
+void Anchor::createStartPositions(Atom *callAtom)
+{
+	_storedSamples.clear();
+	
 	/* B factor isotropic only atm, get mean square displacement in
 	 * each dimension. */
 	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
@@ -89,36 +119,50 @@ std::vector<BondSample> *Anchor::getManyPositions()
 			_sphereAngles.push_back(point);
 		}
 	}
+	
+	bool isN = (callAtom == &*(_nAtom.lock()));
+
+	/* Want the direction to be the opposite of the calling bond */
+	vec3 *direction = isN ? &_cDir : &_nDir;
+	vec3 empty = empty_vec3();
 
 	for (size_t i = 0; i < points.size(); i++)
 	{
 		vec3 full = vec3_add_vec3(points[i], _absolute);
+		vec3 next = vec3_add_vec3(full, *direction);
+	
 		double occ = 1;
 		occTotal += occ;
+		mat3x3 basis = makeTorsionBasis(points[i], next, full, empty);
 
 		BondSample sample;
-		sample.basis = make_mat3x3();
+		sample.basis = basis;
 		sample.occupancy = occ;
 		sample.torsion = 0;
-		sample.old_start = make_vec3(0, 0, 0);
+		sample.old_start = empty_vec3(); // used instead of atom
 		sample.start = full;
 
-		bondSamples->push_back(sample);
+		_storedSamples.push_back(sample);
 	}
 
-	for (size_t i = 0; i < bondSamples->size(); i++)
+	for (size_t i = 0; i < _storedSamples.size(); i++)
 	{
-		if (_occupancies.size() == bondSamples->size())
+		if (_occupancies.size() == _storedSamples.size())
 		{
-			(*bondSamples)[i].occupancy = _occupancies[i];
+			_storedSamples[i].occupancy = _occupancies[i];
 		}
 		else
 		{
-			(*bondSamples)[i].occupancy /= occTotal;
+			_storedSamples[i].occupancy /= occTotal;
 		}
 	}
+}
 
-	return bondSamples;
+std::vector<BondSample> *Anchor::getManyPositions(void *caller)
+{
+	Atom *callAtom = static_cast<Atom *>(caller);
+	createStartPositions(callAtom);
+	return &_storedSamples;
 }
 
 void Anchor::addProperties()
@@ -126,6 +170,10 @@ void Anchor::addProperties()
 	addDoubleProperty("bfactor", &_bFactor);
 	addVec3Property("position", &_absolute);
 	addReference("atom", _atom.lock());
+	addReference("n_atom", _nAtom.lock());
+	addVec3Property("n_dir", &_nDir);
+	addVec3Property("c_dir", &_cDir);
+	addReference("c_atom", _cAtom.lock());
 	Model::addProperties();
 }
 
@@ -136,9 +184,18 @@ std::string Anchor::getParserIdentifier()
 
 void Anchor::linkReference(ParserPtr object, std::string category)
 {
+	AtomPtr atom = ToAtomPtr(object);
+
 	if (category == "atom")
 	{
-		AtomPtr atom = ToAtomPtr(object);
 		_atom = atom;
+	}
+	else if (category == "n_atom")
+	{
+		_nAtom = atom;
+	}
+	else if (category == "c_atom")
+	{
+		_cAtom = atom;
 	}
 }

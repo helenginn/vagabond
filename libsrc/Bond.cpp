@@ -681,7 +681,7 @@ double Bond::getBaseTorsion()
 	return baseTorsion;
 }
 
-std::vector<BondSample> *Bond::getManyPositions()
+std::vector<BondSample> *Bond::getManyPositions(void *)
 {
 	std::vector<BondSample> *newSamples;
 

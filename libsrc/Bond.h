@@ -414,20 +414,12 @@ public:
 		return _extraTorsionSamples[i].lock();
 	}
 
-
-	/** Will define torsion basis as:
-	* x: along line of 0º torsion angle.
-	* y: completes the right-handed coordinate system
-	* z: along bond direction, from heavy-to-light alignment atoms.
-	*/
-	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
-	                        vec3 miPos, vec3 lPos, double *newAngle = NULL);
-
 	/** Can determine a new torsion angle with a different heavy atom.
 	* 	Would be useful in cases where the chain needs to be reversed */
 	void recalculateTorsion(AtomPtr heavy, double value);
 
 	virtual void propagateChange(int depth = -1, bool refresh = false);
+
 	std::vector<BondSample> *getManyPositions(void *object = NULL);
 
 	double getMultOccupancy()

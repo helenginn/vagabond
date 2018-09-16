@@ -47,7 +47,7 @@ public:
 	/** Mean position of blurred positions without including whole-molecule
 	* 	deviations. Should not be used for finding final atom position
 	* 	calculations. */
-	virtual std::vector<BondSample> *getManyPositions() = 0;
+	virtual std::vector<BondSample> *getManyPositions(void *object = NULL) = 0;
 
 	/** Positions and associated data including whole-molecule deviations.
 	* 	Will return from cache if not flagged to recalculate. */
@@ -122,6 +122,11 @@ public:
 	virtual double getMeanSquareDeviation();
 
 	virtual vec3 longestAxis();
+	
+	static void useMutex()
+	{
+		_useMutex = true;
+	}
 protected:
 	FFTPtr makeRealSpaceDistribution();
 	void addRealSpacePositions(FFTPtr real, vec3 offset);
@@ -129,6 +134,14 @@ protected:
 	virtual void getAnisotropy(bool withKabsch = false);
 	virtual double anisotropyExtent(bool withKabsch = false);
 	std::vector<BondSample> _storedSamples;
+
+	/** Will define torsion basis as:
+	* x: along line of 0º torsion angle.
+	* y: completes the right-handed coordinate system
+	* z: along bond direction, from heavy-to-light alignment atoms.
+	*/
+	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
+	                        vec3 miPos, vec3 lPos, double *newAngle = NULL);
 private:
 	std::mutex guiLock;
 	std::vector<BondSample> _finalSamples;

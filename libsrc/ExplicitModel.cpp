@@ -163,6 +163,49 @@ std::vector<BondSample> ExplicitModel::getFinalPositions()
 	return _finalSamples;
 }
 
+mat3x3 ExplicitModel::makeTorsionBasis(vec3 hPos, vec3 maPos,
+                              vec3 miPos, vec3 lPos, double *newAngle)
+{
+	vec3 a2p = vec3_subtract_vec3(hPos, maPos);
+	vec3 a2l = vec3_subtract_vec3(lPos, maPos);
+	vec3 a2b = vec3_subtract_vec3(miPos, maPos);
+
+	double sql = vec3_sqlength(a2b);
+	double dotp = vec3_dot_vec3(a2p, a2b);
+	double dotl = vec3_dot_vec3(a2l, a2b);
+	double distp = dotp / sql;
+	double distl = dotl / sql;
+
+	vec3 a2bp = a2b;
+	vec3 a2bl = a2b;
+	vec3_mult(&a2bp, distp);
+	vec3_mult(&a2bl, distl);
+	vec3 heavy_join = vec3_add_vec3(maPos, a2bp);
+	vec3 light_join = vec3_add_vec3(maPos, a2bl);
+
+	vec3 reverse_bond = vec3_subtract_vec3(miPos, maPos);
+	vec3 xNew = vec3_subtract_vec3(hPos, heavy_join);
+	mat3x3 basis = mat3x3_rhbasis(xNew, reverse_bond);
+
+	if (newAngle)
+	{
+		vec3 light = vec3_subtract_vec3(lPos, light_join);
+		double angle = vec3_angle_with_vec3(light, xNew);
+
+		vec3 recross = vec3_cross_vec3(light, xNew);
+		double cosine = vec3_cosine_with_vec3(recross, reverse_bond);
+
+		if (cosine > 0)
+		{
+			angle *= -1;
+		}
+
+		*newAngle = angle;
+	}
+
+	return basis;
+}
+
 void ExplicitModel::addRealSpacePositions(FFTPtr real, vec3 offset)
 {
 	std::vector<BondSample> positions = getFinalPositions();
