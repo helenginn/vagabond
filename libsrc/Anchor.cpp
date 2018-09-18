@@ -10,6 +10,7 @@
 #include "Absolute.h"
 #include "Options.h"
 #include "Crystal.h"
+#include <sstream>
 
 Anchor::Anchor(AbsolutePtr absolute)
 {
