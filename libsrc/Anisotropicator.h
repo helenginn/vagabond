@@ -34,6 +34,7 @@ public:
 		return _axes[i];
 	}
 
+	/** Return matrix describing the principle axes of the tensor */
 	mat3x3 basis()
 	{
 		return _axisMatrix;
