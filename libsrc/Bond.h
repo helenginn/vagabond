@@ -374,7 +374,7 @@ public:
 	}
 
 	std::string description();
-	std::string shortDesc();
+	virtual std::string shortDesc();
 	std::string getPDBContribution();
 	ExplicitModelPtr getParentModel();
 
