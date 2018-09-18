@@ -17,7 +17,7 @@
 
 FlexLocal::FlexLocal()
 {
-
+	_shift = 0.10;
 }
 
 void FlexLocal::createAtomTargets()
@@ -73,7 +73,6 @@ void FlexLocal::scanBondParams()
 
 	atomtarg->writeToFile("atom_targets_" + _polymer->getChainID() + ".csv");
 	
-	double shift = 0.10;
 	CSVPtr csv = CSVPtr(new CSV(3, "atom", "kick", "response"));
 
 	for (int i = 0; i < _bonds.size(); i++)
@@ -83,7 +82,7 @@ void FlexLocal::scanBondParams()
 
 		for (int r = 0; r < 2; r++)
 		{
-			double add = (r == 0) ? shift : -shift;
+			double add = (r == 0) ? _shift : -_shift;
 			double num = (r == 0) ? i : i + 0.5;
 
 			Bond::setKick(&*b, k + add);

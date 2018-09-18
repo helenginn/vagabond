@@ -35,6 +35,8 @@ private:
 	
 	std::vector<AtomPtr> _atoms;
 	std::vector<BondPtr> _bonds;
+	
+	double _shift;
 
 };
 
