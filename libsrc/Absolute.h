@@ -230,6 +230,8 @@ public:
 	}
 	
 	AtomPtr makeAtom();
+	
+	virtual std::string shortDesc();
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 

@@ -65,6 +65,13 @@ Absolute::Absolute(vec3 pos, double bFac,
 	_tensor = make_mat3x3();
 }
 
+std::string Absolute::shortDesc()
+{
+	std::ostringstream ss;
+	ss << "Abs_" + getAtom()->shortDesc();
+	return ss.str();
+}
+
 AtomPtr Absolute::makeAtom()
 {
 	AtomPtr myAtom = AtomPtr(new Atom());

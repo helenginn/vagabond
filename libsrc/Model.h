@@ -156,6 +156,8 @@ public:
 	{
 		return getMeanSquareDeviation();
 	}
+	
+	virtual std::string shortDesc() = 0;
 protected:
 	mat3x3 _realSpaceTensor;
 

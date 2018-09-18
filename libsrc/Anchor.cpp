@@ -167,6 +167,13 @@ void Anchor::createStartPositions(Atom *callAtom)
 	}
 }
 
+std::string Anchor::shortDesc()
+{
+	std::ostringstream ss;
+	ss << "Anchor_" + getAtom()->shortDesc();
+	return ss.str();
+}
+
 std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 {
 	Atom *callAtom = static_cast<Atom *>(caller);

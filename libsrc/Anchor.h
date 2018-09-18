@@ -57,6 +57,7 @@ public:
 	{
 		return _atom.lock();
 	}
+	virtual std::string shortDesc();
 protected:
 	virtual std::string getClassName()
 	{
