@@ -24,8 +24,6 @@ void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom,
 {
 	_nAtom = nAtom;
 	_cAtom = cAtom;
-//	_nPre = nPre;
-//	_cPost = cPost;
 	
 	vec3 myPos = getAtom()->getInitialPosition();
 	vec3 nAtomPos = nAtom->getInitialPosition();
