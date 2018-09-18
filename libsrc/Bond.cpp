@@ -815,6 +815,8 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 	}
 
 	_changedSamples = false;
+	
+	sanityCheck();
 
 	return &_storedSamples;
 }
