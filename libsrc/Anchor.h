@@ -57,6 +57,7 @@ public:
 	{
 		return _atom.lock();
 	}
+	virtual void propagateChange(int depth = -1, bool refresh = false);
 	virtual std::string shortDesc();
 protected:
 	virtual std::string getClassName()

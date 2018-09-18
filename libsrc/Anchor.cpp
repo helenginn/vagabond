@@ -247,3 +247,13 @@ void Anchor::linkReference(ParserPtr object, std::string category)
 		_cAtom = atom;
 	}
 }
+
+void Anchor::propagateChange(int depth, bool refresh)
+{
+	_cAtom.lock()->getModel()->propagateChange(depth, refresh);
+	_nAtom.lock()->getModel()->propagateChange(depth, refresh);
+
+	/* Will force recalculation of final positions */
+	Model::propagateChange(depth, refresh);
+
+}
