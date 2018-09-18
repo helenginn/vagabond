@@ -1224,7 +1224,7 @@ void Crystal::addProperties()
 	addDoubleProperty("cc_work", &_ccWork);
 	addDoubleProperty("cc_free", &_ccFree);
 	addDoubleProperty("real_b_factor", &_realBFactor);
-	addStringProperty("comments", &_comments);
+//	addStringProperty("comments", &_comments);
 	addIntProperty("cycles_since_best", &_sinceBestNum);
 	addIntProperty("sample_num", &_sampleNum);
 
