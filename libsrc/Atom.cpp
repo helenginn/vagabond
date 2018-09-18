@@ -122,6 +122,26 @@ void Atom::refreshBondAngles()
 
 }
 
+std::string Atom::description()
+{
+	std::ostringstream ss;
+	ss << std::endl;
+	ss << "Atom " << shortDesc() << std::endl;
+	ss << "  Model type: " << getModel()->getClassName() << std::endl;
+	ss << "  From PDB? " << (_fromPDB ? "yes" : "no") << std::endl;
+	
+	if (_fromPDB)
+	{
+		ss << "  PDB initial position: " << 
+		vec3_desc(_initialPosition) << std::endl;
+	}
+	
+	ss << "  Is HETATM? " << (_hetatm ? "yes" : "no") << std::endl;
+	ss << std::endl;
+	
+	return ss.str();
+}
+
 void Atom::inheritParents()
 {
 	getMonomer()->addAtom(shared_from_this());

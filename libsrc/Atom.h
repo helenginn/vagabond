@@ -245,6 +245,7 @@ public:
 	
 	int getResidueNum();
 
+	std::string description();
 	std::string shortDesc();
 
 	MoleculePtr getMolecule();
