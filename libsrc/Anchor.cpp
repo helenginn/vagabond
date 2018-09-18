@@ -15,9 +15,12 @@
 Anchor::Anchor(AbsolutePtr absolute)
 {
 	_bFactor = absolute->getBFactor();
-	_absolute = absolute->getAbsolutePosition();
+	_position = absolute->getAbsolutePosition();
 	_molecule = absolute->getMolecule();
 	_atom = absolute->getAtom();
+	_translation = make_mat3x3();
+	_rotVec = make_vec3(0, 0, 0);
+	_rotCentre = make_vec3(0, 0, 0);
 }
 
 void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom, 
@@ -41,9 +44,12 @@ void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom,
 Anchor::Anchor()
 {
 	_bFactor = 0;
-	_absolute = empty_vec3();
+	_position = empty_vec3();
 	_nDir = empty_vec3();
 	_cDir = empty_vec3();
+	_rotVec = make_vec3(0, 0, 0);
+	_rotCentre = make_vec3(0, 0, 0);
+	_translation = make_mat3x3();
 }
 
 AtomPtr Anchor::getOtherAtom(AtomPtr calling)
@@ -205,21 +211,29 @@ std::string Anchor::shortDesc()
 
 std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 {
+	std::vector<BondSample> copied = _storedSamples;
 	Atom *callAtom = static_cast<Atom *>(caller);
 	createStartPositions(callAtom);
+	rotateBases();
+	translateStartPositions();
+	sanityCheck();
+	
 	return &_storedSamples;
 }
 
 void Anchor::addProperties()
 {
 	addDoubleProperty("bfactor", &_bFactor);
-	addVec3Property("position", &_absolute);
+	addVec3Property("position", &_position);
 	addReference("atom", _atom.lock());
 	addReference("n_atom", _nAtom.lock());
 	addVec3Property("n_dir", &_nDir);
 	addVec3Property("c_dir", &_cDir);
 	addVec3Property("pre_n", &_nDir2);
 	addVec3Property("post_c", &_cDir2);
+	addVec3Property("rot_vec", &_rotVec);
+	addVec3Property("rot_centre", &_rotCentre);
+	addMat3x3Property("translation", &_translation);
 	addReference("c_atom", _cAtom.lock());
 	Model::addProperties();
 }

@@ -72,6 +72,10 @@ protected:
 	virtual void linkReference(ParserPtr object, std::string category);
 private:
 	void createStartPositions(Atom *callAtom);
+	mat3x3 _translation;
+	vec3 _rotVec;
+	vec3 _rotCentre;
+	vec3 _position;
 
 	double _bFactor;
 	AtomWkr _atom;
