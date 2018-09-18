@@ -88,7 +88,7 @@ std::vector<BondSample> ExplicitModel::getFinalPositions()
 		posOnly.push_back(_finalSamples[i].start);
 	}
 	
-	/* Deset flag */
+	/* Deset flag to allow caching */
 	
 	_recalcFinal = false;
 	
