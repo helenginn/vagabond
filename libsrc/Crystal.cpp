@@ -220,13 +220,26 @@ double getNLimit(FFTPtr fftData, FFTPtr fftModel)
 	return nLimit;	
 }
 
-void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale, 
-                              double *bFactor)
+typedef struct
 {
+	double into;
+	double intc;
+} IntPair;
+
+void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale, 
+                              double *bFactor, FFTPtr model)
+{
+	if (!model)
+	{
+		model = _fft;
+	}
+
 	FFTPtr fftData = data->getFFT();	
-	double nLimit = getNLimit(fftData, _fft);
-	std::vector<double> xs, ys;
-	CSVPtr csv = CSVPtr(new CSV(2, "data", "model"));
+	double nLimit = getNLimit(fftData, model);
+
+	std::vector<double> bins;
+	generateResolutionBins(6, _maxResolution, 20, &bins);
+	std::map<int, std::vector<IntPair> > binRatios;
 
 	for (int i = -nLimit; i < nLimit; i++)
 	{
@@ -242,22 +255,56 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 				double length = vec3_length(ijk);
 
 				double data = fftData->getIntensity(_i, _j, _k);
-				double model = _fft->getIntensity(i, j, k);
+				double calc = model->getIntensity(i, j, k);
 
-				if (data != data || model != model) continue;
+				if (data != data || calc != calc) continue;
 				
-				double ratio = data / model;
-				double res = 1 / length;
-				double four_dsq = 4 * res * res;
-				double right_exp = 1 / four_dsq;
-				double logratio = log(ratio);
+				IntPair pair;
+				pair.into = data;
+				pair.intc = calc;
 				
-				csv->addEntry(2, right_exp, logratio);
-				
-				xs.push_back(right_exp);
-				ys.push_back(logratio);
+				for (int b = 0; b < bins.size() - 1; b++)
+				{
+					if (length > 1 / bins[b] && length < 1 / bins[b + 1])
+					{
+						binRatios[b].push_back(pair);
+					}
+				}
 			}
 		}
+	}
+				
+	CSVPtr csv = CSVPtr(new CSV(2, "data", "model"));
+	std::vector<double> xs, ys;
+
+	for (size_t i = 0; i < bins.size() - 1; i++)
+	{
+		if (binRatios[i].size() == 0)
+		{
+			continue;
+		}
+
+		double nom = 0;
+		double den = 0;
+		for (size_t j = 0; j < binRatios[i].size(); j++)
+		{
+			nom += binRatios[i][j].into;
+			den += binRatios[i][j].intc;
+		}
+		
+		double ratio = nom / den;
+		double length = (1/bins[i] + 1/bins[i + 1]) / 2;
+
+		double res = 1 / length;
+		double four_dsq = 4 * res * res;
+		double right_exp = 1 / four_dsq;
+		double logratio = log(ratio);
+
+//		std::cout << "Pair: " << right_exp << " " << logratio << std::endl;
+		csv->addEntry(2, right_exp, logratio);
+
+		xs.push_back(right_exp);
+		ys.push_back(logratio);
 	}
 	
 	std::map<std::string, std::string> plotMap;
@@ -270,7 +317,7 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 	plotMap["colour0"] = "black";
 	plotMap["xTitle0"] = "1 / (4dd)";
 	plotMap["yTitle0"] = "ratio";
-	plotMap["style0"] = "scatter";
+	plotMap["style0"] = "line";
 
 	csv->setSubDirectory("correlation_plots");
 	csv->plotPNG(plotMap);
@@ -417,14 +464,23 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
 				double bFacMod = exp(- bFactor / four_d_sq);
-
-				if (real != real || imag != imag)
+				
+				if (i == 0 && j == 0 && k == 0)
 				{
-					continue;
+					bFacMod = 1;
 				}
-
+				
 				real *= scale * bFacMod;
 				imag *= scale * bFacMod;
+				
+				if (!std::isfinite(real * real + imag * imag))
+				{
+					std::cout << "Warning for " << i << " " << j
+					<< " " << k << std::endl;
+					std::cout << "Scale: " << scale << std::endl;
+					std::cout << "bFactor: " << bFacMod << std::endl;
+					std::cout << "d: " << d << std::endl;
+				}
 
 				_fft->setElement(element, real, imag);
 			}
@@ -479,8 +535,15 @@ double Crystal::getMaximumDStar(DiffractionPtr data)
 	return maxRes;
 }
 
-void Crystal::scaleToDiffraction(DiffractionPtr data, bool full,
-                                 int shellScale)
+double Crystal::getAdjustBFactor()
+{
+	double change = _bFacFit;
+	_bFacFit = 0;
+	_realBFactor += change;
+	return change;
+}
+
+void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 {
 	getMaxResolution(data);
 	
@@ -489,24 +552,34 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full,
 	double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
 	                                    0, _maxResolution);
 	applyScaleFactor(totalFc / ratio, 0, 0);
-	
-	/* Either take custom argument or use global default */
-	bool scaleByShell = (shellScale < 0 ? Options::getShellScale() :
-	                     shellScale);
-	
-	if (!scaleByShell)
+
+	if (!full)
 	{
-		if (!full) return;
-		double scale, bFactor;
-		scaleAndBFactor(data, &scale, &bFactor);
+		/* If non-full scaling has been requested, just an absolute
+		 * 	scaling was all that was required. */
+		return;
+	}
+	
+	/* If full scaling requested, take global default. */
+	ScalingType scaleType = Options::getScalingType();
+	double scale, bFactor;
+	scaleAndBFactor(data, &scale, &bFactor);
+	_bFacFit = bFactor;
+
+	if (scaleType == ScalingTypeAbs)
+	{
+		/* Same as above, nothing left to do */
+		return;
+	}
+	else if (scaleType == ScalingTypeAbsBFactor)
+	{
 		std::cout << "Absolute scale: " << scale << " and global B factor: ";
 		std::cout << bFactor << std::endl;
 		
-		std::cout << "Ignoring B factor and applying absolute scale" << std::endl;
-		applyScaleFactor(totalFc * scale, 0, 0);
+		applyScaleFactor(totalFc * scale, 0, 0, bFactor);
 		
 	}
-	else
+	else if (scaleType == ScalingTypeShell)
 	{
 		/* Then apply to individual resolution bins */
 		std::vector<double> bins;
@@ -530,11 +603,15 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full,
 			applyScaleFactor(scale, bins[i], bins[i + 1]);
 		}
 	}
+	else
+	{
+		std::cout << "Unimplemented scaling method? " << std::endl;
+	}
 }
 
 void Crystal::scaleComponents(DiffractionPtr data)
 {
-	scaleToDiffraction(data, false, 0);
+	scaleToDiffraction(data, false);
 	scaleSolvent(data);
 	scaleToDiffraction(data);
 }
@@ -572,6 +649,23 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 		real_calcs.push_back(_fft->data[i][0]);
 	}
 	
+	int bad = 0;
+	for (int i = 0; i < _fft->nn; i++)
+	{
+		double val = _fft->data[i][0];
+		
+		if (val != val)
+		{
+			bad++;
+		}
+	}
+	
+	if (bad > 0)
+	{
+		std::cout << "There were " << bad << " bad voxels";
+		std::cout << " out of " << _fft->nn << "!" << std::endl;
+	}
+	
 	fourierTransform(1, data->getMaxResolution());
 	scaleComponents(data);
 	
@@ -594,23 +688,6 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 		          "All your results and any future \n"\
 		          "results derived from this are INVALID for\n"\
 		          "structure determination.");
-	}
-	
-	int bad = 0;
-	for (int i = 0; i < _fft->nn; i++)
-	{
-		double val = _fft->data[i][0];
-		
-		if (val != val)
-		{
-			bad++;
-		}
-	}
-	
-	if (bad > 0)
-	{
-		std::cout << "There were " << bad << " bad reflections";
-		std::cout << " out of " << _fft->nn << "!" << std::endl;
 	}
 
 	_calcCopy = FFTPtr(new FFT(*_fft));
@@ -1253,7 +1330,7 @@ void Crystal::addProperties()
 void Crystal::vsSetShellScale(void *object, double val)
 {
 	bool shell = (val > 0);
-	Options::getRuntimeOptions()->setShellScale(shell);
+	Options::getRuntimeOptions()->setScalingType(ScalingTypeShell);
 }
 
 void Crystal::vsRestoreState(void *object, double val)
@@ -1482,9 +1559,11 @@ double Crystal::getRealBFactor()
 		Options::resetGlobalBFactor();
 	}
 	
-	if (_realBFactor < 0)
+	if (_realBFactor <= 0)
 	{
 		_realBFactor = 10;
 	}
+	
+	return _realBFactor;
 }
 
