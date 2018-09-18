@@ -586,39 +586,6 @@ void Options::diffMatrix()
 	std::cout << std::endl;
 }
 
-void Options::superimposeAll(CrystalPtr crystal)
-{
-	notifyGUI(false);
-
-	statusMessage("Superimposing complete ensemble...");
-
-	if (!crystal)
-	{
-		if (crystalCount())
-		{
-			crystal = crystals[0];
-		}
-		else return;
-	}
-
-	for (size_t i = 0; i < crystal->moleculeCount(); i++)
-	{
-		MoleculePtr molecule = crystal->molecule(i);
-		if (molecule->isPolymer())
-		{
-			PolymerPtr polymer = ToPolymerPtr(molecule);
-			polymer->superimpose();
-			polymer->refreshPositions(true);
-		}
-	}
-
-	statusMessage("Calculating R factors...");
-
-	recalculateFFT();
-
-	notifyGUI(true);
-}
-
 void Options::applyBMultiplier()
 {
 	notifyGUI(false);

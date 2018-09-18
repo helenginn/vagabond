@@ -990,7 +990,6 @@ void Crystal::vsChangeSampleSize(void *object, double n)
 	Crystal *crystal = dynamic_cast<Crystal *>(parser);
 
 	Options::getRuntimeOptions()->setNSamples(n);
-	Options::getRuntimeOptions()->superimposeAll(crystal->shared_from_this());
 }
 
 void Crystal::makePDBs(std::string suffix)
@@ -1282,7 +1281,7 @@ void Crystal::fitWholeMolecules(bool translation, bool rotation)
 			continue;
 		}
 
-		ToPolymerPtr(molecule(i))->optimiseWholeMolecule(translation, rotation);
+		ToPolymerPtr(molecule(i))->refineAnchorMovements();
 	}
 }
 

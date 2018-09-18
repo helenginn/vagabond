@@ -59,7 +59,6 @@ public:
 protected:
 	virtual void resizeEvent(QResizeEvent *);
 private slots:
-	void pushSuperimpose();
 	void pushFitWholeR();
 	void pushFitWholeT();
 	void pushRefinePositions();
@@ -98,7 +97,6 @@ private:
 	QLabel *_lStatus;
 
 	/* Buttons down the side */
-	QPushButton *bSuperimpose;
 	QPushButton *bRefinePos;
 	QPushButton *bBackbone;
 	QPushButton *bChangeBMult;

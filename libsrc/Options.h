@@ -204,7 +204,6 @@ public:
 	void backboneAnalysis();
 	void refineAll(RefinementType type, int numCycles, int *count = NULL,
 	               bool keepGoing = false);
-	void superimposeAll(CrystalPtr crystal = CrystalPtr());
 	void applyBMultiplier();
 	void openModel(std::string pdbName);
 	void openMTZ(std::string mtzName);

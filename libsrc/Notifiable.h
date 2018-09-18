@@ -16,7 +16,6 @@ typedef enum
 {
 	InstructionTypeNone,
 	InstructionTypeResetExplorer,
-	InstructionTypeSuperimpose,
 	InstructionTypeRefinePositions,
 	InstructionTypeRefineFlexibility,
 	InstructionTypeRefineDensity,

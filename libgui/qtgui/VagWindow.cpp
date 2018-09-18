@@ -79,14 +79,6 @@ void VagWindow::makeButtons()
 	connect(bRefinePos, SIGNAL(clicked()), this, SLOT(pushRefinePositions()));
 	buttons.push_back(bRefinePos);
 
-	/*
-	bSuperimpose = new QPushButton("Superimpose", this);
-	bSuperimpose->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 50, BUTTON_WIDTH , 50);
-	bSuperimpose->setEnabled(false);
-	connect(bSuperimpose, SIGNAL(clicked()), this, SLOT(pushSuperimpose()));
-	buttons.push_back(bSuperimpose);
-	*/
-
 	bFitWholeT = new QPushButton("Fit molecule translation", this);
 	bFitWholeT->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 100, BUTTON_WIDTH , 50);
 	bFitWholeT->setEnabled(false);
@@ -287,10 +279,6 @@ int VagWindow::waitForInstructions()
 			/* GUI instructions to Vagabond */
 			switch (_instructionType)
 			{
-				case InstructionTypeSuperimpose:
-				options->superimposeAll();
-				break;
-
 				case InstructionTypeRefinePositions:
 				options->refineAll(RefinementModelPos, 1);
 				break;
@@ -457,12 +445,6 @@ void VagWindow::disable()
 	{
 		buttons[i]->setEnabled(false);
 	}
-}
-
-void VagWindow::pushSuperimpose()
-{
-	_instructionType = InstructionTypeSuperimpose;
-	wait.wakeAll();
 }
 
 void VagWindow::pushRefinePositions()
@@ -688,7 +670,6 @@ void VagWindow::adjustBFactor()
 
 VagWindow::~VagWindow()
 {
-	delete bSuperimpose;
 	delete bRefinePos;
 	delete bExploreMolecule;
 	delete bChangeBMult;
