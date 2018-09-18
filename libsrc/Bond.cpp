@@ -1146,15 +1146,19 @@ std::string Bond::description()
 	<< _torsion << std::endl;
 	stream << "Bond downstream groups: ("
 	<< downstreamBondGroupCount() << "):" << std::endl;
-	stream << "Bond downstream atoms (first) ("
-	<< downstreamBondCount(0) << "):" << std::endl;
-
-	for (size_t i = 0; i < downstreamBondGroupCount(); i++)
+	
+	if (downstreamBondGroupCount())
 	{
-		for (size_t j = 0; j < downstreamBondCount(i); j++)
+		stream << "Bond downstream atoms (first) ("
+		<< downstreamBondCount(0) << "):" << std::endl;
+
+		for (size_t i = 0; i < downstreamBondGroupCount(); i++)
 		{
-			stream << "\t" << downstreamAtom(i, j)->shortDesc()
-			<< "(" << &*downstreamAtom(i, j) << ")" << std::endl;
+			for (size_t j = 0; j < downstreamBondCount(i); j++)
+			{
+				stream << "\t" << downstreamAtom(i, j)->shortDesc()
+				<< "(" << &*downstreamAtom(i, j) << ")" << std::endl;
+			}
 		}
 	}
 
