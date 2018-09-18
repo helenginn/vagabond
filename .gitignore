@@ -3,6 +3,7 @@ build/
 throwaway*/
 .fftw3f_wisdom
 libtool
+.DS_Store
 
 # Cloc
 
