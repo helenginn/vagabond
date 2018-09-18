@@ -249,9 +249,12 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
 
 		if (pos.x != pos.x)
 		{
+			shout_at_helen("Atom " + shortDesc() + " position corrupt,"
+			               " attempted\nto add to map and failed.\n" +
+			               description());
 			return;
 		}
-
+		
 		FFT::operation(fft, modified, pos, type, NULL, sameScale);
 	}
 	else
