@@ -79,11 +79,13 @@ void VagWindow::makeButtons()
 	connect(bRefinePos, SIGNAL(clicked()), this, SLOT(pushRefinePositions()));
 	buttons.push_back(bRefinePos);
 
+	/*
 	bSuperimpose = new QPushButton("Superimpose", this);
 	bSuperimpose->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 50, BUTTON_WIDTH , 50);
 	bSuperimpose->setEnabled(false);
 	connect(bSuperimpose, SIGNAL(clicked()), this, SLOT(pushSuperimpose()));
 	buttons.push_back(bSuperimpose);
+	*/
 
 	bFitWholeT = new QPushButton("Fit molecule translation", this);
 	bFitWholeT->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 100, BUTTON_WIDTH , 50);
