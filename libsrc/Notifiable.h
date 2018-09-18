@@ -36,6 +36,7 @@ typedef enum
 	InstructionTypeFindDisulphides,
 	InstructionTypeRefineWaterNetwork,
 	InstructionTypeSplitBond,
+	InstructionTypeAdjustBFactor,
 } InstructionType;
 
 /**
