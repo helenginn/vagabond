@@ -359,6 +359,7 @@ public:
 	virtual void calculateExtraRotations();
 	std::vector<vec3> getAnchorSphereDiffs();
 	void optimiseWholeMolecule(bool translation = false, bool rotation = true);
+	void refineAnchorMovements();
 	virtual void addProperties();
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();

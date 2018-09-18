@@ -1704,8 +1704,61 @@ double Polymer::vsFitRotation(void *object)
 	                    + polymer->getChainID());
 }
 
+void Polymer::refineAnchorMovements()
+{
+	std::cout << "Optimising anchor shifts to match the electron density." << std::endl;
+
+	Timer timer("anchor fit", true);
+	
+	AnchorPtr anchor = ToAnchorPtr(getAnchorModel());
+	
+	FlexGlobal target;
+	NelderMeadPtr nelderMead = NelderMeadPtr(new RefinementNelderMead());
+
+	attachTargetToRefinement(nelderMead, target);
+
+	/*
+	nelderMead->addParameter(&*anchor, Anchor::getRotVecX,
+	                         Anchor::setRotVecX, 0.2, 0.01);
+	nelderMead->addParameter(&*anchor, Anchor::getRotVecY,
+	                         Anchor::setRotVecY, 0.2, 0.01);
+	nelderMead->addParameter(&*anchor, Anchor::getRotVecZ,
+	                         Anchor::setRotVecZ, 0.2, 0.01);
+
+	nelderMead->addParameter(&*anchor, Anchor::getRotCentreX,
+	                         Anchor::setRotCentreX, 4.0, 0.01);
+	nelderMead->addParameter(&*anchor, Anchor::getRotCentreY,
+	                         Anchor::setRotCentreY, 4.0, 0.01);
+	nelderMead->addParameter(&*anchor, Anchor::getRotCentreZ,
+	                         Anchor::setRotCentreZ, 4.0, 0.01);
+	*/
+
+	nelderMead->setCycles(24);
+	nelderMead->setVerbose(true);
+//	nelderMead->refine();
+	nelderMead->clearParameters();
+	
+	nelderMead->addParameter(&*anchor, Anchor::getTransTensor11,
+	                         Anchor::setTransTensor11, 1.0, 0.01, "t11");
+	nelderMead->addParameter(&*anchor, Anchor::getTransTensor12,
+	                         Anchor::setTransTensor12, 1.0, 0.01, "t12");
+	nelderMead->addParameter(&*anchor, Anchor::getTransTensor13,
+	                         Anchor::setTransTensor13, 1.0, 0.01, "t13");
+	nelderMead->addParameter(&*anchor, Anchor::getTransTensor22,
+	                         Anchor::setTransTensor22, 1.0, 0.01, "t22");
+	nelderMead->addParameter(&*anchor, Anchor::getTransTensor23,
+	                         Anchor::setTransTensor23, 1.0, 0.01, "t23");
+	nelderMead->addParameter(&*anchor, Anchor::getTransTensor33,
+	                         Anchor::setTransTensor33, 1.0, 0.01, "t33");
+
+	nelderMead->refine();
+}
+
 void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
 {
+	refineAnchorMovements();
+	return;
+
 	std::cout << "Optimising whole molecule shifts to match the electron density." << std::endl;
 
 	Timer timer("whole molecule fit", true);
@@ -1904,3 +1957,5 @@ void Polymer::postParseTidy()
 	//applyTranslationTensor();
 	
 }
+
+
