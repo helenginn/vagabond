@@ -275,10 +275,6 @@ int VagWindow::waitForInstructions()
 				options->refineAll(RefinementModelPos, 1);
 				break;
 
-				case InstructionTypeBackboneAnalysis:
-				options->backboneAnalysis();
-				break;
-
 				case InstructionTypeFitWholeMoleculeTranslation: 
 				options->fitWholeMolecule(true, false);
 				break;
@@ -490,12 +486,6 @@ void VagWindow::recalculateFFT()
 void VagWindow::openInCoot()
 {
 	_instructionType = InstructionTypeOpenInCoot;
-	wait.wakeAll();
-}
-
-void VagWindow::pushBackboneAnalysis()
-{
-	_instructionType = InstructionTypeBackboneAnalysis;
 	wait.wakeAll();
 }
 

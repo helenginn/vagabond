@@ -70,7 +70,6 @@ private slots:
 	void recalculateFFT();
 	void openInCoot();
 	void findDisulphides();
-	void pushBackboneAnalysis();
 	void restorePreviousState();
 	void refineWaterNetwork();
 

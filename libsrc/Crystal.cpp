@@ -1211,67 +1211,6 @@ void Crystal::hydrogenateContents()
 	}
 }
 
-double Crystal::vsRefineBackboneToDensity(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Crystal *crystal = dynamic_cast<Crystal *>(parser);
-
-	crystal->backboneDensityAnalysis();
-}
-
-void Crystal::backboneDensityAnalysis()
-{
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isPolymer())
-		{
-			continue;
-		}
-		
-//		ToPolymerPtr(molecule(i))->refineBackbone();
-		
-//		continue;
-
-		BoneDensity density;
-		density.setCrystal(shared_from_this());
-		PolymerPtr polymer = ToPolymerPtr(molecule(i));
-		density.setPolymer(polymer);
-		density.analyse();
-		
-		for (int j = 0; j < density.instructionCount(); j++)
-		{
-			BackboneInstruction inst = density.instruction(j);
-
-			std::cout << "Refining from " << inst.startRes << " to " <<
-			inst.endRes << " by ";
-			std::cout << (inst.rType == RefinementFine ? "correlation."
-			: "squeezing.") << std::endl;
-			polymer->clearParams();
-
-			switch (inst.rType)
-			{
-				case RefinementFine:
-				polymer->addParamType(ParamOptionTorsion, 0.02);
-				polymer->addParamType(ParamOptionKick, 0.010);
-				polymer->addParamType(ParamOptionMagicAngles, 3);
-				polymer->addParamType(ParamOptionNumBonds, 8);
-				break;
-				
-				case RefinementModelRMSDZero:
-				polymer->addParamType(ParamOptionMagicAngles, 3);
-				polymer->addParamType(ParamOptionNumBonds, 12);
-				break;
-				
-				default:
-				break;
-			}
-			
-			polymer->refineRange(inst.startRes, inst.endRes,
-			                     shared_from_this(), inst.rType);
-		}
-	}
-}
-
 void Crystal::fitWholeMolecules(bool translation, bool rotation)
 {
 	for (int i = 0; i < moleculeCount(); i++)
@@ -1321,8 +1260,6 @@ void Crystal::addProperties()
 	exposeFunction("change_sample_size", Crystal::vsChangeSampleSize);
 	exposeFunction("set_shell_scale", Crystal::vsSetShellScale);
 	exposeFunction("restore_state", Crystal::vsRestoreState);
-	exposeFunction("refine_backbone_to_density",
-	               Crystal::vsRefineBackboneToDensity);
 }
 
 /* Positive number for ON, negative number for OFF */

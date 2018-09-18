@@ -307,9 +307,6 @@ public:
 		_comments += "\n";
 	}
 	
-	/** Analysis of backbone density and generation of heuristics */
-	void backboneDensityAnalysis();
-	static double vsRefineBackboneToDensity(void *object);
 	double getMaximumDStar(DiffractionPtr data);
 	void openInCoot();
 	
