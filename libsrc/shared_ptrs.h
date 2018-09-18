@@ -190,6 +190,13 @@ typedef enum
 	ParamOptionNumBonds,
 } ParamOptionType;
 
+typedef enum
+{
+	ScalingTypeShell,
+	ScalingTypeAbsBFactor,
+	ScalingTypeAbs
+} ScalingType;
+
 
 
 #endif
