@@ -20,19 +20,8 @@ FlexLocal::FlexLocal()
 
 }
 
-void FlexLocal::scanBondParams()
+void FlexLocal::createAtomTargets()
 {
-	MonomerPtr anchoredRes = _polymer->getMonomer(_polymer->getAnchor());
-	AtomPtr close = anchoredRes->findAtom("CA");
-	double base_b = close->getInitialBFactor();
-	base_b -= close->getBFactor();
-
-	
-	std::map<AtomPtr, double> bFacs;
-	std::map<AtomPtr, double> targets;
-	std::vector<BondPtr> bonds;
-	std::vector<AtomPtr> atoms;
-
 	for (int i = 0; i < _polymer->atomCount(); i++)
 	{
 		AtomPtr a = _polymer->atom(i);
@@ -48,12 +37,8 @@ void FlexLocal::scanBondParams()
 			continue;
 		}
 		
-		atoms.push_back(a);
-		bFacs[a] = bf;
-
-		double init_b = a->getInitialBFactor();		
-
-		targets[a] = init_b - bf - base_b;
+		_atoms.push_back(a);
+		_atomTargets[a] = bf;
 		
 		ModelPtr m = a->getModel();
 		
@@ -70,43 +55,46 @@ void FlexLocal::scanBondParams()
 			continue;
 		}
 
-		bonds.push_back(b);
+		_bonds.push_back(b);
 	}
+}
+
+void FlexLocal::scanBondParams()
+{
+	createAtomTargets();
 	
 	CSVPtr atomtarg = CSVPtr(new CSV(2, "atom", "target"));
 	
-	for (int i = 0; i < atoms.size(); i++)
+	for (int i = 0; i < _atoms.size(); i++)
 	{
 		double num = i / 4 + _polymer->beginMonomer()->first;
-		atomtarg->addEntry(2, num, targets[atoms[i]]);
+		atomtarg->addEntry(2, num, _atomTargets[_atoms[i]]);
 	}
 
 	atomtarg->writeToFile("atom_targets_" + _polymer->getChainID() + ".csv");
 	
 	double shift = 0.10;
 	CSVPtr csv = CSVPtr(new CSV(3, "atom", "kick", "response"));
-	CSVPtr bondcc = CSVPtr(new CSV(2, "bond", "cc"));
 
-	for (int i = 0; i < bonds.size(); i++)
+	for (int i = 0; i < _bonds.size(); i++)
 	{
-		BondPtr b = bonds[i];
+		BondPtr b = _bonds[i];
 		double k = Bond::getKick(&*b);
 
 		for (int r = 0; r < 2; r++)
 		{
-			std::vector<double> tx, ty;	
 			double add = (r == 0) ? shift : -shift;
 			double num = (r == 0) ? i : i + 0.5;
 
 			Bond::setKick(&*b, k + add);
 			b->propagateChange();
 
-			for (int j = 0; j < atoms.size(); j++)
+			for (int j = 0; j < _atoms.size(); j++)
 			{
 				double nAtom = (double)j / 4. +
 				(double) _polymer->beginMonomer()->first;
-				double bnow = atoms[j]->getBFactor();
-				double bthen = bFacs[atoms[j]];
+				double bnow = _atoms[j]->getBFactor();
+				double bthen = _atomTargets[_atoms[j]];
 
 				double diff = bnow - bthen;
 				
@@ -119,22 +107,10 @@ void FlexLocal::scanBondParams()
 
 				csv->addEntry(3, (double)nAtom, (double)num, grad);
 
-				if (grad > 1e-6)
-				{
-					tx.push_back(targets[atoms[j]]);
-					ty.push_back(grad);
-				}
-
 			}
 
 			Bond::setKick(&*b, k);
 			b->propagateChange();
-			double correl = correlation(tx, ty);
-
-			if (correl != correl)
-			{
-				correl = 0;
-			}
 
 			if (r == 0)
 			{
@@ -149,8 +125,6 @@ void FlexLocal::scanBondParams()
 					std::cout << std::endl;
 				}
 			}
-
-			bondcc->addEntry(2, (double)i, correl);
 		}
 
 	}
@@ -167,9 +141,8 @@ void FlexLocal::scanBondParams()
 	plotMap["yTitle0"] = "atom";
 
 	plotMap["style0"] = "heatmap";
-	plotMap["stride"] = i_to_str(bonds.size());
+	plotMap["stride"] = i_to_str(_bonds.size());
 	
 	csv->writeToFile(plotMap["filename"] + ".csv");
-	bondcc->writeToFile(plotMap["filename"] + "_cc_bond.csv");
 	csv->plotPNG(plotMap);
 }

@@ -10,6 +10,10 @@
 #define FlexLocal_h
 
 #include "shared_ptrs.h"
+#include <map>
+
+typedef std::map<AtomPtr, double> AtomTarget;
+typedef std::map<AtomPtr, AtomTarget> AtomTargets;
 
 class FlexLocal
 {
@@ -23,9 +27,16 @@ public:
 
 	void scanBondParams();
 private:
-	PolymerPtr _polymer;
-};
+	void createAtomTargets();
 
+	PolymerPtr _polymer;
+	AtomTarget _atomTargets;
+	AtomTargets _pairwiseTargets;
+	
+	std::vector<AtomPtr> _atoms;
+	std::vector<BondPtr> _bonds;
+
+};
 
 #endif
 
