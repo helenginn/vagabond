@@ -166,7 +166,7 @@ public:
 	                          double partsFc = 1, std::string prefix = "");
 	
 	void scaleAndBFactor(DiffractionPtr data, double *scale, 
-                              double *bFactor);
+                              double *bFactor, FFTPtr model = FFTPtr());
 
 	/** Applies scale factor within the resolution ranges.
 	* 	\param scale factor (multiplies Fc with this)
@@ -175,6 +175,7 @@ public:
 	*/
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0,
 	                      double bFactor = 0);
+	double getAdjustBFactor();
 
 	void reconfigureUnitCell();
 	void setupSymmetry();
@@ -372,6 +373,7 @@ private:
 	
 	double _solvScale;
 	double _solvBFac;
+	double _bFacFit;
 	int _correlPlotNum;
 	DiffractionPtr _data;
 
@@ -382,8 +384,7 @@ private:
 	BucketPtr _bucket;
 	
 	void scaleSolvent(DiffractionPtr data);
-	void scaleToDiffraction(DiffractionPtr data, bool full = false,
-	                        int shellScale = -1);
+	void scaleToDiffraction(DiffractionPtr data, bool full = true);
 };
 
 #endif /* defined(__vagabond__Crystal__) */
