@@ -11,8 +11,6 @@
 #define __Vagabond__VagWindow__
 
 #include <stdio.h>
-#include "VagabondGLWidget.h"
-#include "../../libsrc/Notifiable.h"
 #include <QtCore/qglobal.h>
 #include <QtWidgets/qapplication.h>
 #include <QtWidgets/qmainwindow.h>
@@ -26,10 +24,13 @@
 #include <QtCore/qsignalmapper.h>
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qmutex.h>
+
 #include "InstructionThread.h"
 #include "Dialogue.h"
 #include "MoleculeExplorer.h"
 #include "CrystalExplorer.h"
+#include "VagabondGLWidget.h"
+#include "../../libsrc/Notifiable.h"
 
 
 class VagWindow : public QMainWindow, public Notifiable
@@ -74,6 +75,9 @@ private slots:
 	void restorePreviousState();
 	void refineWaterNetwork();
 
+	void toggleScaling(ScalingType type);
+	void adjustBFactor();
+
 private:
 	VagabondGLWidget *display;
 	QWaitCondition wait;
@@ -108,7 +112,13 @@ private:
 	QPushButton *bPrevious;
 	QPushButton *bCoot;
 	std::vector<QPushButton *> buttons;
+	
+	/* Scaling menu options */
+	QAction *_qaShell, *_qaKB, *_qaK;
 	std::vector<QMenu *> menus;
+	std::vector<QAction *> actions;
+
+	void displayScaling();
 
 	int _argc;
 	char **_argv;

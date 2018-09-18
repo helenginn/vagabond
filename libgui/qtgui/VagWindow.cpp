@@ -38,6 +38,35 @@ void VagWindow::makeMenu()
 {
 	QMenu *scaling = menuBar()->addMenu(tr("&Scaling"));
 	menus.push_back(scaling);
+	
+	_qaShell = scaling->addAction(tr("Shell-by-shell scaling"));
+	_qaShell->setCheckable(true);
+	connect(_qaShell, &QAction::triggered,
+			[=]{ toggleScaling(ScalingTypeShell); });
+	
+	_qaKB = scaling->addAction(tr("Absolute scale + B factor"));
+	_qaKB->setCheckable(true);
+	connect(_qaKB, &QAction::triggered,
+			[=]{ toggleScaling(ScalingTypeAbsBFactor); });
+	
+	_qaK = scaling->addAction(tr("Absolute scale only"));
+	_qaK->setCheckable(true);
+	connect(_qaK, &QAction::triggered,
+			[=]{ toggleScaling(ScalingTypeAbs); });
+	
+	actions.push_back(_qaShell);
+	actions.push_back(_qaKB);
+	actions.push_back(_qaK);
+	
+	displayScaling();
+	
+	QAction *sep = scaling->addSeparator();
+	actions.push_back(sep);
+	
+	QAction *adjust = scaling->addAction(tr("Adjust real-space B factor"));
+	connect(adjust, &QAction::triggered, this, &VagWindow::adjustBFactor);
+
+	actions.push_back(adjust);
 }
 
 void VagWindow::makeButtons()
@@ -333,6 +362,10 @@ int VagWindow::waitForInstructions()
 				case InstructionTypeSplitBond:
 				splitBond();
 				break;
+				
+				case InstructionTypeAdjustBFactor:
+				options->adjustBFactor();
+				break;
 
 				default:
 				break;
@@ -617,6 +650,21 @@ void VagWindow::wakeup()
 	wait.wakeAll();
 }
 
+void VagWindow::displayScaling()
+{
+	ScalingType type = Options::getScalingType();
+
+	_qaShell->setChecked(type == ScalingTypeShell);
+	_qaKB->setChecked(type == ScalingTypeAbsBFactor);
+	_qaK->setChecked(type == ScalingTypeAbs);
+}
+
+void VagWindow::toggleScaling(ScalingType type)
+{
+	Options::setScalingType(type);
+	displayScaling();
+}
+
 void VagWindow::setMessage(std::string message)
 {
 	Notifiable::setMessage(message);
@@ -627,6 +675,13 @@ void VagWindow::setRenderDensity()
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	display->renderDensity(crystal);
+}
+
+void VagWindow::adjustBFactor()
+{
+	std::cout << "Adjusting B factor..." << std::endl;
+	_instructionType = InstructionTypeAdjustBFactor;
+	wait.wakeAll();
 }
 
 VagWindow::~VagWindow()
@@ -641,3 +696,5 @@ VagWindow::~VagWindow()
 	delete _fileDialogue;
 	delete _moleExplorer;
 }
+
+
