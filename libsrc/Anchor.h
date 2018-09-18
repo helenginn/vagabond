@@ -238,7 +238,8 @@ protected:
 
 	virtual void sanityCheck();
 	virtual void addProperties();
-	virtual void linkReference(ParserPtr object, std::string category);
+	virtual void linkReference(ParserPtr object, std::string category); 
+
 private:
 	void createStartPositions(Atom *callAtom);
 	void translateStartPositions();
