@@ -881,7 +881,7 @@ void Options::scanBondParams()
 		
 		PolymerPtr pol = ToPolymerPtr(mol);
 		
-		pol->scanBondParams();
+		pol->refineLocalFlexibility();
 	}
 }
 

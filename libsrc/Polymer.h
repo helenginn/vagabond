@@ -36,7 +36,6 @@ public:
 	virtual void tieAtomsUp();
 	void splitConformers();
 	virtual void refine(CrystalPtr target, RefinementType rType);
-	void scanBondParams();
 	
 	static void refineVScript(void *object, RefinementType rType);
 	static double vsRefineSidechainsToDensity(void *object);
@@ -128,11 +127,17 @@ public:
 	}
 
 	void refineAnchorMovements();
+	void refineLocalFlexibility();
 	virtual void addProperties();
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();
 	
 	AtomGroupPtr getAllBackbone();
+	
+	std::map<long, MonomerPtr>::iterator beginMonomer()
+	{
+		return _monomers.begin();
+	}
 protected:
 	virtual double getScore()
 	{
