@@ -8,8 +8,10 @@
 
 #include "Anchor.h"
 #include "Absolute.h"
+#include "Anisotropicator.h"
 #include "Options.h"
 #include "Crystal.h"
+#include "mat4x4.h"
 #include <sstream>
 
 Anchor::Anchor(AbsolutePtr absolute)
@@ -169,6 +171,68 @@ void Anchor::createStartPositions(Atom *callAtom)
 		{
 			_storedSamples[i].occupancy /= occTotal;
 		}
+	}
+}
+
+void Anchor::rotateBases()
+{
+	if (vec3_length(_rotVec) < 1e-6)
+	{
+		return;
+	}
+
+	vec3 empty = empty_vec3();
+	vec3 reverseCentre = _rotCentre;
+	vec3_mult(&reverseCentre, -1);
+	
+	for (int i = 0; i < _storedSamples.size(); i++)
+	{
+		vec3 start = _storedSamples[i].start;
+		vec3 diff = vec3_subtract_vec3(start, _position);
+		double dot = vec3_dot_vec3(diff, _rotVec);
+		mat3x3 rot_mat = mat3x3_unit_vec_rotation(_rotVec, dot);
+		mat4x4 rot_mat4 = mat4x4_from_rot_trans(rot_mat, empty);
+
+		mat4x4 change = make_mat4x4();
+		mat4x4_translate(&change, _rotCentre);
+		change = mat4x4_mult_mat4x4(rot_mat4, change);
+		mat4x4_translate(&change, reverseCentre);
+
+		mat4x4 basis = mat4x4_from_rot_trans(_storedSamples[i].basis, empty);
+		mat4x4 transformed = mat4x4_mult_mat4x4(change, basis);
+
+		mat3x3 tmp = mat4x4_get_rot(transformed);
+		_storedSamples[i].basis = tmp;
+	}
+}
+
+void Anchor::translateStartPositions()
+{
+	Anisotropicator tropicator;
+	tropicator.setTensor(_translation);
+	mat3x3 trans = tropicator.basis();
+
+	vec3 sum = empty_vec3();
+
+	for (int i = 0; i < _storedSamples.size(); i++)
+	{
+		vec3 start = _storedSamples[i].start;
+		vec3 diff = vec3_subtract_vec3(start, _position);
+		vec3 moved_diff = mat3x3_mult_vec(trans, diff);
+		vec3 diffdiff = vec3_subtract_vec3(moved_diff, diff);
+		
+		vec3_add_to_vec3(&sum, diffdiff);
+
+		vec3_add_to_vec3(&_storedSamples[i].start, diffdiff);
+		vec3_add_to_vec3(&_storedSamples[i].old_start, diffdiff);
+	}
+	
+	vec3_mult(&sum, -1 / (double)_storedSamples.size());
+
+	for (int i = 0; i < _storedSamples.size(); i++)
+	{
+		vec3_add_to_vec3(&_storedSamples[i].start, sum);
+		vec3_add_to_vec3(&_storedSamples[i].old_start, sum);
 	}
 }
 
