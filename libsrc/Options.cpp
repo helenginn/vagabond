@@ -23,7 +23,7 @@ OptionsPtr Options::options;
 double Options::_kick = 0.000;
 int Options::_solvent = 1;
 double Options::_dampen = 0.08;
-double Options::_bStart = 1.5;
+double Options::_bStart = 10.;
 double Options::_bMult = 1;
 double Options::_bReal = -1;
 double Options::_minRes = -1.0;
@@ -32,7 +32,7 @@ bool Options::_useRFree = true;
 int Options::_enableTests = 3;
 bool Options::_powder = false;
 std::string Options::_anchor = "";
-bool Options::_shellScale = true;
+ScalingType Options::_scaleType = ScalingTypeShell;
 double Options::_sampling = -1;
 int Options::_nSamples = -1;
 std::string Options::_solventFile;
@@ -429,7 +429,11 @@ void Options::parse()
 
 		understood |= parseParameter(arg, "tie", &_tie);
 		understood |= parseParameter(arg, "rfree", &_useRFree);
-		understood |= parseParameter(arg, "shell-scale", &_shellScale);
+		
+		int shellNum = 0;
+		understood |= parseParameter(arg, "shell-scale", &shellNum);
+		
+		_scaleType = ScalingType(shellNum);
 
 		if (!understood)
 		{

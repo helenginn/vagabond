@@ -166,14 +166,14 @@ public:
 		return _powder;
 	}
 
-	static bool getShellScale()
+	static ScalingType getScalingType()
 	{
-		return _shellScale;
+		return _scaleType;
 	}
 	
-	void setShellScale(bool shell)
+	static void setScalingType(ScalingType shell)
 	{
-		_shellScale = shell;
+		_scaleType = shell;
 	}
 	
 	static double getGlobalBFactor()
@@ -244,7 +244,7 @@ private:
 	std::string _mtzFile;
 
 	static bool _useRFree;
-	static bool _shellScale;
+	static ScalingType _scaleType;
 	static bool _powder;
 	static std::string _solventFile;
 	static double _kick;
