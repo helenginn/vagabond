@@ -847,11 +847,6 @@ bool Bond::isNotJustForHydrogens()
 
 void Bond::propagateChange(int depth, bool refresh)
 {
-	if (_anchored)
-	{
-		return;
-	}
-
 	/* Will force recalculation of final positions */
 	Model::propagateChange(depth, refresh);
 
