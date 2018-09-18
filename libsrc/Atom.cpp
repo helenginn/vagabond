@@ -21,6 +21,7 @@
 #include <iomanip>
 #include "FileReader.h"
 #include <sstream>
+#include "Shouter.h"
 #include "Crystal.h"
 #include "PDBReader.h"
 #include "Anisotropicator.h"
@@ -185,6 +186,17 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
 	{
 		modified = getBlur();
 		atomDist = _element->getDistribution(false, modified->nx);
+
+		for (int i = 0; i < modified->nn; i++)
+		{
+			if (modified->data[i][0] != modified->data[i][0])
+			{
+				shout_at_helen("Atom " + shortDesc() + " distribution "
+				               "contains NaN.");
+
+			}
+		}
+
 		FFT::multiply(modified, atomDist);
 		modified->fft(1);
 		modified->invertScale();
