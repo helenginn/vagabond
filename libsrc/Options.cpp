@@ -928,3 +928,14 @@ void Options::scanBondParams()
 		pol->scanBondParams();
 	}
 }
+
+void Options::adjustBFactor()
+{
+	CrystalPtr crystal = getActiveCrystal();
+	double adjusted = crystal->getAdjustBFactor();
+	double newB = crystal->getRealBFactor();
+	
+	statusMessage("Adjusted real B factor by " + f_to_str(adjusted, 2)
+	              + " to " + f_to_str(newB, 2) + ".");
+}
+

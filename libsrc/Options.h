@@ -212,6 +212,7 @@ public:
 	void openInCoot();
 	void fitWholeMolecule(bool translation, bool rotation);
 	void findDisulphides();
+	void adjustBFactor();
 
 	static std::string rTypeString(RefinementType type);
 private:
