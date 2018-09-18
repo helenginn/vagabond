@@ -166,16 +166,14 @@ std::vector<BondSample> ExplicitModel::getFinalPositions()
 
 	std::vector<BondSample> *positions = getManyPositions();
 	_finalSamples = *positions;
-	std::vector<vec3> posOnly = polymerCorrectedPositions();
+	
+	std::vector<vec3> posOnly;
+	posOnly.reserve(_finalSamples.size());
 
 	for (int i = 0; i < _finalSamples.size(); i++)
 	{
-		if (i < posOnly.size())
-		{
-			_finalSamples[i].start = posOnly[i];
-		}
+		posOnly.push_back(_finalSamples[i].start);
 	}
-	
 	
 	/* Deset flag */
 	
