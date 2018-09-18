@@ -29,7 +29,6 @@ typedef enum
 	InstructionTypeSetObjectValue,
 	InstructionTypeGetObjectValue,
 	InstructionTypePreviousState,
-	InstructionTypeBackboneAnalysis,
 	InstructionTypeFitWholeMoleculeTranslation,
 	InstructionTypeFitWholeMoleculeRotation,
 	InstructionTypeFindDisulphides,
