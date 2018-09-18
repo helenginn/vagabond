@@ -57,6 +57,175 @@ public:
 	{
 		return _atom.lock();
 	}
+
+	static void setTransTensor11(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_translation.vals[0] = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+
+	static void setTransTensor12(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_translation.vals[1] = value;
+		static_cast<Anchor *>(object)->_translation.vals[3] = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+
+	static void setTransTensor21(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_translation.vals[3] = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+
+	static void setTransTensor13(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_translation.vals[2] = value;
+		static_cast<Anchor *>(object)->_translation.vals[6] = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+
+	static void setTransTensor31(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_translation.vals[6] = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+
+	static void setTransTensor22(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_translation.vals[4] = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+
+	static void setTransTensor32(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_translation.vals[7] = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+
+	static void setTransTensor23(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_translation.vals[5] = value;
+		static_cast<Anchor *>(object)->_translation.vals[7] = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+
+	static void setTransTensor33(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_translation.vals[8] = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+
+	static double getTransTensor11(void *object)
+	{
+		return static_cast<Anchor *>(object)->_translation.vals[0];
+	}
+
+	static double getTransTensor21(void *object)
+	{
+		return static_cast<Anchor *>(object)->_translation.vals[3];
+	}
+
+	static double getTransTensor12(void *object)
+	{
+		return static_cast<Anchor *>(object)->_translation.vals[1];
+	}
+
+	static double getTransTensor31(void *object)
+	{
+		return static_cast<Anchor *>(object)->_translation.vals[6];
+	}
+
+	static double getTransTensor13(void *object)
+	{
+		return static_cast<Anchor *>(object)->_translation.vals[2];
+	}
+
+	static double getTransTensor22(void *object)
+	{
+		return static_cast<Anchor *>(object)->_translation.vals[4];
+	}
+
+	static double getTransTensor23(void *object)
+	{
+		return static_cast<Anchor *>(object)->_translation.vals[5];
+	}
+
+	static double getTransTensor32(void *object)
+	{
+		return static_cast<Anchor *>(object)->_translation.vals[7];
+	}
+
+	static double getTransTensor33(void *object)
+	{
+		return static_cast<Anchor *>(object)->_translation.vals[8];
+	}
+	
+	static double getRotCentreX(void *object)
+	{
+		return static_cast<Anchor *>(object)->_rotCentre.x;
+	}
+	
+	static double getRotCentreY(void *object)
+	{
+		return static_cast<Anchor *>(object)->_rotCentre.y;
+	}
+	
+	static double getRotCentreZ(void *object)
+	{
+		return static_cast<Anchor *>(object)->_rotCentre.z;
+	}
+	
+	static void setRotCentreX(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_rotCentre.x = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+	
+	static void setRotCentreY(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_rotCentre.y = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+	
+	static void setRotCentreZ(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_rotCentre.z = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+
+	static double getRotVecX(void *object)
+	{
+		return static_cast<Anchor *>(object)->_rotVec.x;
+	}
+	
+	static double getRotVecY(void *object)
+	{
+		return static_cast<Anchor *>(object)->_rotVec.y;
+	}
+	
+	static double getRotVecZ(void *object)
+	{
+		return static_cast<Anchor *>(object)->_rotVec.z;
+	}
+	
+	static void setRotVecX(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_rotVec.x = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+	
+	static void setRotVecY(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_rotVec.y = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+	
+	static void setRotVecZ(void *object, double value)
+	{
+		static_cast<Anchor *>(object)->_rotVec.z = value;
+		static_cast<Anchor *>(object)->propagateChange(-1, true);
+	}
+
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 	virtual std::string shortDesc();
 protected:
