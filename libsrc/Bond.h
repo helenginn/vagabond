@@ -468,6 +468,7 @@ protected:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();    
 	friend class StateValue;
+	virtual void sanityCheck();
 
 private:
 	void initialize();

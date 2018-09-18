@@ -167,6 +167,36 @@ void Anchor::createStartPositions(Atom *callAtom)
 	}
 }
 
+void Anchor::sanityCheck()
+{
+	if (vec3_length(_nDir) < 1e-6)
+	{
+		std::cout << "Anchor N-direction is 0" << std::endl;
+	}
+
+	if (vec3_length(_cDir) < 1e-6)
+	{
+		std::cout << "Anchor C-direction is 0" << std::endl;
+	}
+
+	if (vec3_length(_nDir2) < 1e-6)
+	{
+		std::cout << "Anchor N2-direction is 0" << std::endl;
+	}
+
+	if (vec3_length(_cDir2) < 1e-6)
+	{
+		std::cout << "Anchor C2-direction is 0" << std::endl;
+	}
+	
+	if (_position.x != _position.x)
+	{
+		std::cout << "Position is nan" << std::endl;
+	}
+	
+	ExplicitModel::sanityCheck();
+}
+
 std::string Anchor::shortDesc()
 {
 	std::ostringstream ss;

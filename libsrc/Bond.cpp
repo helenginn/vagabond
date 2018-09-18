@@ -970,6 +970,17 @@ BondGroupPtr Bond::bondGroupForBond()
 	return parent->_bondGroups[group];
 }
 
+void Bond::sanityCheck()
+{
+	if (_torsion != _torsion)
+	{
+		std::cout << "Torsion angle is nan" << std::endl;
+		std::cout << description() << std::endl;
+	}
+	
+	ExplicitModel::sanityCheck();
+}
+
 bool Bond::splitBond()
 {
 	BondPtr me = ToBondPtr(shared_from_this());

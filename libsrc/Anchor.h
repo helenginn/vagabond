@@ -66,6 +66,7 @@ protected:
 	
 	virtual std::string getParserIdentifier();
 
+	virtual void sanityCheck();
 	virtual void addProperties();
 	virtual void linkReference(ParserPtr object, std::string category);
 private:

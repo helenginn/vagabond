@@ -140,6 +140,7 @@ public:
 protected:
 	FFTPtr makeRealSpaceDistribution();
 	void addRealSpacePositions(FFTPtr real, vec3 offset);
+	virtual void sanityCheck();
 
 	virtual void getAnisotropy(bool withKabsch = false);
 	virtual double anisotropyExtent(bool withKabsch = false);

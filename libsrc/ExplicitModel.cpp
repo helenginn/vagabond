@@ -122,6 +122,39 @@ std::vector<vec3> ExplicitModel::polymerCorrectedPositions()
 	return posOnly;
 }
 
+void ExplicitModel::sanityCheck()
+{
+	for (int i = 0; i < _storedSamples.size(); i++)
+	{
+		vec3 start = _storedSamples[i].start;
+		vec3 old_start = _storedSamples[i].old_start;
+		mat3x3 basis = _storedSamples[i].basis;
+		
+		if (start.x != start.x) 
+		{
+			std::cout << "Start position is nan for " << shortDesc() <<
+			std::endl;
+			return;
+		}
+		if (old_start.x != old_start.x)
+		{
+			std::cout << "Old start position is nan for " << shortDesc() <<
+			std::endl;
+			return;
+		}
+		
+		for (int j = 0; j < 9; j++)
+		{
+			if (basis.vals[j] != basis.vals[j])
+			{
+				std::cout << "Basis value " << j << " is nan for " <<
+				shortDesc() << std::endl;
+				return;
+			}
+		}
+	}
+}
+
 std::vector<BondSample> ExplicitModel::getFinalPositions()
 {
 	if (!_recalcFinal && _finalSamples.size())
