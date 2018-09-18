@@ -863,6 +863,7 @@ void Crystal::setAnchors()
 
 Crystal::Crystal()
 {
+	_realBFactor = -1;
 	_sampleNum = -1;
 	_cycleNum = 0;
 	_lastRWork = FLT_MAX;
