@@ -28,12 +28,6 @@ Molecule::Molecule()
 {
 	_absoluteBFacSubtract = 0.0;
 	_absoluteBFacMult = 1.0;
-	_magicRotAxis = make_vec3(1, 0, 0);
-	_rotationAxis = make_vec3(1, 0, 0);
-	_rotationCentre = make_vec3(nan(" "), nan(" "), nan(" "));
-	_sphereDiffOffset = empty_vec3();
-	_rotationAngle = 0;
-	_changedRotations = true;
 }
 
 void Molecule::makePowderList()
@@ -245,37 +239,11 @@ void Molecule::resetInitialPositions()
 	}
 }
 
-std::vector<mat3x3> Molecule::getExtraRotations()
-{
-	if (!_changedRotations && _extraRotationMats.size())
-	{
-		return _extraRotationMats;
-	}
-
-	_extraRotationMats.clear();
-
-	calculateExtraRotations();
-
-	_changedRotations = false;
-
-	return _extraRotationMats;
-}
-
 void Molecule::addProperties()
 {
 	addStringProperty("chain_id", &_chainID);
 	addDoubleProperty("absolute_bfac_mult", &_absoluteBFacMult);
 	addDoubleProperty("absolute_bfac_subtract", &_absoluteBFacSubtract);
-	addVec3ArrayProperty("centroids", &_centroids);
-	addVec3ArrayProperty("centroid_offsets", &_centroidOffsets);
-	addVec3ArrayProperty("trans_tensor_offsets", &_transTensorOffsets);
-	addVec3Property("magic_rot_axis", &_magicRotAxis);
-	addVec3Property("rotation_axis", &_rotationAxis);
-	addVec3Property("rot_centre", &_rotationCentre);
-	addDoubleProperty("rotation_angle", &_rotationAngle);
-	addDoubleProperty("trans_exponent", &_transExponent);
-	addMat3x3ArrayProperty("extra_rotations", &_extraRotationMats);
-	addMat3x3ArrayProperty("rotations", &_rotations);
 	
 	exposeFunction("set_absolute_bfac_mult", vsSetAbsoluteBFacMult);
 	exposeFunction("set_absolute_bfac_subtract", vsSetAbsoluteBFacSubtract);

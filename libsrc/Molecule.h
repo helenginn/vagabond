@@ -101,33 +101,6 @@ public:
 		return _chainID;
 	}
 
-	std::vector<vec3> getCentroidOffsets()
-	{
-		return _centroidOffsets;
-	}
-
-	std::vector<mat3x3> getRotationCorrections()
-	{
-		return _rotations;
-	}
-
-	std::vector<vec3> getRotationCentres()
-	{
-		return _centroids;
-	}
-
-	std::vector<vec3> getTransTensorOffsets()
-	{
-		return _transTensorOffsets;
-	}
-
-	std::vector<mat3x3> getExtraRotations();
-
-	vec3 getExtraRotationCentre()
-	{
-		return _rotationCentre;
-	}
-
 	virtual std::string getClassName()
 	{
 		return "Molecule";
@@ -149,36 +122,6 @@ public:
 		return ToMoleculePtr(groupPtr);
 	}
 
-	static void setRotCentreZ(void *object, double value)
-	{
-		static_cast<Molecule *>(object)->_rotationCentre.z = value;
-	}
-
-	static double getRotCentreZ(void *object)
-	{
-		return static_cast<Molecule *>(object)->_rotationCentre.z;
-	}
-
-	static void setRotCentreY(void *object, double value)
-	{
-		static_cast<Molecule *>(object)->_rotationCentre.y = value;
-	}
-
-	static double getRotCentreY(void *object)
-	{
-		return static_cast<Molecule *>(object)->_rotationCentre.y;
-	}
-
-	static void setRotCentreX(void *object, double value)
-	{
-		static_cast<Molecule *>(object)->_rotationCentre.x = value;
-	}
-
-	static double getRotCentreX(void *object)
-	{
-		return static_cast<Molecule *>(object)->_rotationCentre.x;
-	}
-
 	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol, bool cache = false);
 	
 	void clearCloseCache()
@@ -194,27 +137,6 @@ protected:
 
 	virtual void addProperties();
 	virtual void postParseTidy();    
-
-	std::vector<vec3> _centroidOffsets;
-	std::vector<vec3> _centroids; // after offset correction
-	std::vector<mat3x3> _rotations;
-
-	std::vector<vec3> _transTensorOffsets;
-	std::vector<mat3x3> _extraRotationMats;
-
-	virtual void calculateExtraRotations() {};
-
-	// this axis calculates the angular response to the reaction sphere
-	vec3 _magicRotAxis;
-
-	// this axis is that of the rotation matrices applied to the structure
-	vec3 _rotationAxis;
-	vec3 _rotationCentre;
-	vec3 _sphereDiffOffset;
-	double _transExponent;
-	double _rotExponent;
-
-	double _rotationAngle;
 
 	void setChangedRotation()
 	{

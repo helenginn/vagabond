@@ -53,9 +53,6 @@ public:
 	* 	Will return from cache if not flagged to recalculate. */
 	virtual std::vector<BondSample> getFinalPositions();
 
-	/** Individual positions including whole-molecule deviations. */
-	std::vector<vec3> polymerCorrectedPositions();
-
 	vec3 getSpecificPosition(int i)
 	{
 		if (i > _finalPositions.size()) return empty_vec3();

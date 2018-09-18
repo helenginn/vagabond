@@ -91,14 +91,6 @@ void VagWindow::makeButtons()
 	connect(bFitWholeR, SIGNAL(clicked()), this, SLOT(pushFitWholeR()));
 	buttons.push_back(bFitWholeR);
 
-	/*
-	bBackbone = new QPushButton("Refine backbone", this);
-	bBackbone->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 150, BUTTON_WIDTH , 50);
-	bBackbone->setEnabled(false);
-	connect(bBackbone, SIGNAL(clicked()), this, SLOT(pushBackboneAnalysis()));
-	buttons.push_back(bBackbone);
-	*/
-
 	bRefineDensity = new QPushButton("Refine sidechains to density", this);
 	bRefineDensity->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 200, BUTTON_WIDTH , 50);
 	bRefineDensity->setEnabled(false);

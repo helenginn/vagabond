@@ -98,7 +98,6 @@ private:
 
 	/* Buttons down the side */
 	QPushButton *bRefinePos;
-	QPushButton *bBackbone;
 	QPushButton *bChangeBMult;
 	QPushButton *bExploreMolecule;
 	QPushButton *bExploreCrystal;
