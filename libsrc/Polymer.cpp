@@ -211,8 +211,19 @@ void Polymer::scanBondParams()
 				correl = 0;
 			}
 
-			std::cout << "Done bond " << i << ", " << b->shortDesc();
-			std::cout << " correl " << correl << std::endl;
+			if (r == 0)
+			{
+				std::cout << "Done bond " << i << ", " << b->shortDesc();
+				
+				if (fabs(k) > 1e-6)
+				{
+					std::cout << " curr. kick = " << std::setprecision(2) << k << std::endl;
+				}
+				else
+				{
+					std::cout << std::endl;
+				}
+			}
 
 			bondcc->addEntry(2, (double)i, correl);
 		}
