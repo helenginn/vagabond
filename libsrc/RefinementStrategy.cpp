@@ -168,6 +168,7 @@ void RefinementStrategy::finish()
 			for (int i = 0; i < parameterCount(); i++)
 			{
 				double value = getValueForParam(i);
+				_params[i].changed = 0;
 				std::cout << _params[i].tag << "=" << value * rad2degscale <<
 				(_toDegrees ? "º" : "") << ", ";
 			}
@@ -194,6 +195,10 @@ void RefinementStrategy::finish()
 			for (int i = 0; i < parameterCount(); i++)
 			{
 				double value = getValueForParam(i);
+				double start = _params[i].start_value;
+				
+				_params[i].changed = (fabs(start - value) > 1e-4);
+				
 				std::cout << _params[i].tag << "=" << value * rad2degscale <<
 				(_toDegrees ? "°" : "") << ", ";
 			}

@@ -46,6 +46,7 @@ typedef struct
 	double start_value;
 	std::string tag;
 	int coupled;
+	int changed;
 } Parameter;
 
 class RefinementStrategy
@@ -137,6 +138,11 @@ public:
 	int parameterCount()
 	{
 		return _params.size();
+	}
+	
+	bool didChange(int i)
+	{
+		return _params[i].changed;
 	}
 
 protected:
