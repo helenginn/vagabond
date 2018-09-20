@@ -140,6 +140,16 @@ public:
 		return _params.size();
 	}
 	
+	Parameter getParamObject(int i)
+	{
+		return _params[i];
+	}
+	
+	void addParameter(Parameter &param)
+	{
+		_params.push_back(param);
+	}
+	
 	bool didChange(int i)
 	{
 		return _params[i].changed;
