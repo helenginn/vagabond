@@ -50,11 +50,12 @@ RefinementStrategyPtr RefinementStrategy::userChosenStrategy()
 	return strategy;
 }
 
-void RefinementStrategy::addParameter(void *object, Getter getter, Setter setter, double stepSize, double otherValue, std::string tag)
+void RefinementStrategy::addParameter(void *object, Getter getter, Setter setter, double stepSize, double otherValue, std::string tag, Getter gradient)
 {
 	Parameter param;
 	param.object = object;
 	param.getter = getter;
+	param.gradient = gradient;
 	param.setter = setter;
 	param.step_size = stepSize;
 	param.other_value = otherValue;
@@ -76,6 +77,15 @@ void RefinementStrategy::addCoupledParameter(void *object, Getter getter, Setter
 	_params[last].coupled++;
 	addParameter(object, getter, setter, stepSize, stepConvergence, tag);
 	_params[last + 1].coupled++;
+}
+
+double RefinementStrategy::getGradientForParam(int i)
+{
+	Getter gradient = _params[i].getter;
+	void *object = _params[i].object;
+	double grad = (*gradient)(object);
+	
+	return grad;
 }
 
 double RefinementStrategy::getValueForParam(int i)

@@ -39,6 +39,7 @@ typedef struct
 {
 	void *object;
 	Getter getter;
+	Getter gradient;
 	Setter setter;
 	double step_size;
 	double other_value;
@@ -77,7 +78,7 @@ public:
 
 	void addParameter(void *object, Getter getter, Setter setter, 
 	                  double stepSize, double otherValue, 
-	                  std::string tag = "");
+	                  std::string tag = "", Getter gradient = NULL);
 	void addCoupledParameter(void *object, Getter getter, Setter setter, 
 	                         double stepSize, double otherValue, 
 	                         std::string tag = "");
@@ -154,6 +155,7 @@ protected:
 	double startingScore;
 	bool _verbose;
 
+	double getGradientForParam(int i);
 	double getValueForParam(int i);
 	void setValueForParam(int i, double value);
 	void reportProgress(double score);
