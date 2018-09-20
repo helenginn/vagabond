@@ -1155,17 +1155,17 @@ void Polymer::refineAnchorMovements()
 	nelderMead->clearParameters();
 	
 	nelderMead->addParameter(&*anchor, Anchor::getTransTensor11,
-	                         Anchor::setTransTensor11, 1.0, 0.01, "t11");
+	                         Anchor::setTransTensor11, 0.5, 0.01, "t11");
 	nelderMead->addParameter(&*anchor, Anchor::getTransTensor12,
-	                         Anchor::setTransTensor12, 1.0, 0.01, "t12");
+	                         Anchor::setTransTensor12, 0.5, 0.01, "t12");
 	nelderMead->addParameter(&*anchor, Anchor::getTransTensor13,
-	                         Anchor::setTransTensor13, 1.0, 0.01, "t13");
+	                         Anchor::setTransTensor13, 0.5, 0.01, "t13");
 	nelderMead->addParameter(&*anchor, Anchor::getTransTensor22,
-	                         Anchor::setTransTensor22, 1.0, 0.01, "t22");
+	                         Anchor::setTransTensor22, 0.5, 0.01, "t22");
 	nelderMead->addParameter(&*anchor, Anchor::getTransTensor23,
-	                         Anchor::setTransTensor23, 1.0, 0.01, "t23");
+	                         Anchor::setTransTensor23, 0.5, 0.01, "t23");
 	nelderMead->addParameter(&*anchor, Anchor::getTransTensor33,
-	                         Anchor::setTransTensor33, 1.0, 0.01, "t33");
+	                         Anchor::setTransTensor33, 0.5, 0.01, "t33");
 
 	nelderMead->refine();
 }
