@@ -883,6 +883,8 @@ void Options::scanBondParams()
 		
 		pol->refineLocalFlexibility();
 	}
+	
+	recalculateFFT();
 }
 
 void Options::adjustBFactor()
