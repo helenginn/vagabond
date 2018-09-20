@@ -23,7 +23,6 @@
 #include "CSV.h"
 #include "FileReader.h"
 #include "PDBReader.h"
-#include "LocalCC.h"
 #include "Atom.h"
 #include "Kabsch.h"
 #include "RefinementGridSearch.h"
