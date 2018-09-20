@@ -97,6 +97,7 @@ void StartScreen::makeButtons()
 	
 	height += 40;
 
+	/*
 	_lKick = new QLabel("Initial kick:", this);
 	_lKick->setGeometry(25, height, LABEL_WIDTH, 20);
 
@@ -111,6 +112,7 @@ void StartScreen::makeButtons()
 	                       " flexible, increase to 0.01 if too rigid.", this);
 	_lKickTip->setWordWrap(true);
 	_lKickTip->setGeometry(310, height - 2, 270, 40);
+	*/
 
 	height += 40;
 
@@ -169,7 +171,7 @@ void StartScreen::pushRun()
 	_options->_mtzFile = _tMtz->text().toStdString();
 	_options->_outputDir = _tDir->text().toStdString();
 	
-	if (_tKick->text().length())
+	if (false && _tKick->text().length())
 	{
 		Options::_kick = _tKick->text().toDouble();
 	}
