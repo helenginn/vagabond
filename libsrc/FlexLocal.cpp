@@ -12,19 +12,99 @@
 #include "Polymer.h"
 #include "Monomer.h"
 #include "Anchor.h"
+#include "RefinementGridSearch.h"
+#include "RefinementNelderMead.h"
 #include <map>
 #include <iomanip>
 
 FlexLocal::FlexLocal()
 {
-	_shift = 0.10;
+	_shift = 0.05;
+	_run = 0;
+	_window = 10;
+	_direct = 0;
+	_anchorB = 0;
+}
+
+void FlexLocal::refine()
+{
+	_direct = 1;
+
+	RefinementGridSearchPtr grid;
+	grid = RefinementGridSearchPtr(new RefinementGridSearch());
+	grid->setCycles(24);
+	grid->setVerbose(true);
+	grid->setEvaluationFunction(getScore, this);
+	size_t period = (_bonds.size() / 5);
+
+	for (int i = period / 2;
+	     i < _bonds.size(); i += period)
+	{
+		int rnd = random() % period - 5;
+		int n = i + rnd;
+		
+		if (n < 0 || n >= _bonds.size())
+		{
+			continue;
+		}
+		
+		grid->addParameter(&*_bonds[n], Bond::getKick, Bond::setKick,
+		                   _shift * 2, _shift, "k" + i_to_str(n));
+	}
+
+	grid->refine();
+	
+	_direct = 1;
+
+	NelderMeadPtr nelder;
+	nelder = NelderMeadPtr(new RefinementNelderMead());
+	nelder->setCycles(24);
+	nelder->setVerbose(true);
+	nelder->setEvaluationFunction(getScore, this);
+	
+	for (int i = 0; i < grid->parameterCount(); i++)
+	{
+		bool changed = grid->didChange(i);
+		
+		if (!changed)
+		{
+			continue;
+		}
+		
+		Parameter param = grid->getParamObject(i);
+		param.other_value /= 20;
+		nelder->addParameter(param);
+	}
+	
+	nelder->refine();
+}
+
+AtomTarget FlexLocal::currentAtomValues()
+{
+	AtomTarget targ;
+
+	for (int i = 0; i < _atoms.size(); i++)
+	{
+		AtomPtr a = _atoms[i];
+		double bf = a->getBFactor();
+
+		targ[a] = bf;
+	}
+
+	return targ;
 }
 
 void FlexLocal::createAtomTargets()
 {
+	ExplicitModelPtr model = _polymer->getAnchorModel();
+	_anchorB = model->getBFactor();
+	
+	/* First, choose which atoms to worry about, and find their
+	 * starting B factors. */
 	for (int i = 0; i < _polymer->atomCount(); i++)
 	{
 		AtomPtr a = _polymer->atom(i);
+		double ibf = a->getInitialBFactor();
 		double bf = a->getBFactor();
 		
 		if (!(a->isBackbone() || a->isBackboneAndSidechain()))
@@ -38,7 +118,8 @@ void FlexLocal::createAtomTargets()
 		}
 		
 		_atoms.push_back(a);
-		_atomTargets[a] = bf;
+		_atomTargets[a] = ibf;
+		_atomOriginal[a] = bf;
 		
 		ModelPtr m = a->getModel();
 		
@@ -57,6 +138,32 @@ void FlexLocal::createAtomTargets()
 
 		_bonds.push_back(b);
 	}
+}	
+
+double FlexLocal::directSimilarity()
+{
+	std::vector<double> xs, ys;
+	for (int i = 0; i < _atoms.size(); i++)
+	{
+		double target = _atomTargets[_atoms[i]];
+		double original = _atomOriginal[_atoms[i]];
+		double current = _atoms[i]->getBFactor();
+		double transformed = (target - _anchorB - original) / 5;
+		xs.push_back(transformed);
+		ys.push_back(current - original);
+	}
+	
+	double correl = r_factor(xs, ys);
+	return correl;
+}
+
+double FlexLocal::getScore(void *object)
+{
+	FlexLocal *local = static_cast<FlexLocal *>(object);
+	local->_polymer->propagateChange();
+	
+	double score = local->directSimilarity();
+	return score;
 }
 
 void FlexLocal::scanBondParams()
@@ -93,7 +200,7 @@ void FlexLocal::scanBondParams()
 				double nAtom = (double)j / 4. +
 				(double) _polymer->beginMonomer()->first;
 				double bnow = _atoms[j]->getBFactor();
-				double bthen = _atomTargets[_atoms[j]];
+				double bthen = _atomOriginal[_atoms[j]];
 
 				double diff = bnow - bthen;
 				
@@ -101,6 +208,11 @@ void FlexLocal::scanBondParams()
 				{
 					diff = 0;
 				}
+				
+				AtomValuePair pair;
+				pair.atom = _atoms[j];
+				pair.value = diff;
+				_bondEffects[b] = pair;
 				
 				double grad = diff;
 
@@ -113,11 +225,10 @@ void FlexLocal::scanBondParams()
 
 			if (r == 0)
 			{
-				std::cout << "Done bond " << i << ", " << b->shortDesc();
-				
 				if (fabs(k) > 1e-6)
 				{
-					std::cout << " curr. kick = " << std::setprecision(2) << k << std::endl;
+					std::cout << " curr. kick = " << std::setprecision(2) << k
+					<< std::endl;
 				}
 				else
 				{
@@ -144,4 +255,9 @@ void FlexLocal::scanBondParams()
 	
 	csv->writeToFile(plotMap["filename"] + ".csv");
 	csv->plotPNG(plotMap);
+	
+	std::cout << "Determined kick-bond effect on atom flexibility."
+	<< std::endl;
 }
+
+

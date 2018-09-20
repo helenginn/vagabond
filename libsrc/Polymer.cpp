@@ -92,6 +92,7 @@ void Polymer::refineLocalFlexibility()
 	FlexLocal local;
 	local.setPolymer(shared_from_this());
 	local.scanBondParams();
+	local.refine();
 }
 
 void Polymer::tieAtomsUp()
