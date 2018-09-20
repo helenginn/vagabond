@@ -21,6 +21,7 @@
 #define __vagabond__Clusterable__
 
 #include "shared_ptrs.h"
+#include "RefinableDouble.h"
 #include <map>
 
 class RefinableDouble;
@@ -30,13 +31,22 @@ class Clusterable : public boost::enable_shared_from_this<Clusterable>
 public:
 	Clusterable(const int ndims);
 	void addParamsToStrategy(RefinementStrategyPtr strategy);
+	
+	/* Only add in the case that i < j, the appropriate other
+	 * relationship will be set up automatically. */
 	void addRelationship(ClusterablePtr cluster, double cc);
 	
+	static double gradientFunc(void *object, int tag);
+	double sumContributionToEval();
 private:
 	int _ndims;
-	std::vector<RefinableDouble> _coords;
+	std::vector<RefinableDoublePtr> _coords;
+
+	double gradient(int tag);
+	double dotWith(ClusterablePtr cluster);
 
 	std::map<ClusterableWkr, double> _ccMap;
+	std::vector<ClusterableWkr> _leftClusters, _rightClusters;
 };
 
 #endif

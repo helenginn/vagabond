@@ -10,6 +10,7 @@
 #include "CSV.h"
 #include "Bond.h"
 #include "Polymer.h"
+#include "Clusterable.h"
 #include "Monomer.h"
 #include "Anchor.h"
 #include "RefinementGridSearch.h"
@@ -28,6 +29,10 @@ FlexLocal::FlexLocal()
 
 void FlexLocal::refine()
 {
+	scanBondParams();
+	createClustering();
+	return;
+
 	_direct = 1;
 
 	RefinementGridSearchPtr grid;
@@ -140,6 +145,99 @@ void FlexLocal::createAtomTargets()
 	}
 }	
 
+double FlexLocal::bondRelationship(BondPtr bi, BondPtr bj)
+{
+	std::vector<double> xs, ys;
+	
+	for (int i = 0; i < _atoms.size(); i++)
+	{
+		AtomPtr a = _atoms[i];
+		double flexi = _bondEffects[bi][a];
+		double flexj = _bondEffects[bj][a];
+		
+		if (fabs(flexi) < 1e-6 || fabs(flexj) < 1e-6)
+		{
+			continue;
+		}
+		
+		xs.push_back(flexi);
+		ys.push_back(flexj);
+	}
+
+	double correl = correlation(xs, ys);
+	
+	if (correl < 0) correl = 0;
+	
+	return correl;
+}
+
+double FlexLocal::clusterScore(void *object)
+{
+	FlexLocal *me = static_cast<FlexLocal *>(object);
+	return me->clusterScore();
+}
+
+double FlexLocal::clusterScore()
+{
+	double fx = 0;
+
+	for (int i = 0; i < _bonds.size(); i++)
+	{
+		BondPtr b = _bonds[i];
+		double sum = _clusters[b]->sumContributionToEval();
+		fx += sum;
+	}
+	
+	fx /= (double)(_bonds.size() * _bonds.size());
+	
+	return fx;
+}
+
+void FlexLocal::createClustering()
+{
+	for (int i = 0; i < _bonds.size(); i++)
+	{
+		BondPtr bi = _bonds[i];
+		ClusterablePtr cluster = ClusterablePtr(new Clusterable(_nClusters));
+		_clusters[bi] = cluster;
+	}
+	
+	int anchor = _polymer->getAnchor();
+
+	/* Once all the clusters are made, give them pair-wise correlations */
+	for (int i = 0; i < _bonds.size() - 1; i++)
+	{
+		BondPtr bi = _bonds[i];
+		ClusterablePtr ci = _clusters[bi];
+
+		for (int j = i + 1; j < _bonds.size(); j++)
+		{
+			BondPtr bj = _bonds[j]; // giggle
+
+			/* These shouldn't even talk if they span the anchor point
+			 * as they are not interconnected. */
+			if (bi->getAtom()->getResidueNum() < anchor &&
+			    bj->getAtom()->getResidueNum() > anchor)
+			{
+				continue;
+			}
+
+			ClusterablePtr cj = _clusters[bj];
+
+			double cc = bondRelationship(bi, bj);
+			
+			if (cc != cc)
+			{
+				continue;
+			}
+			
+			ci->addRelationship(cj, cc);
+		}
+	}
+	
+	std::cout << "Starting cluster score: " << clusterScore() << std::endl;
+}
+
 double FlexLocal::directSimilarity()
 {
 	std::vector<double> xs, ys;
@@ -204,15 +302,15 @@ void FlexLocal::scanBondParams()
 
 				double diff = bnow - bthen;
 				
-				if (fabs(Bond::getKick(&*b)) < 1e-6)
+				if (r == 0)
 				{
-					diff = 0;
+					if (_bondEffects.count(b) == 0)
+					{
+						_bondEffects[b] = AtomTarget();
+					}
+
+					_bondEffects[b][_atoms[j]] = diff;
 				}
-				
-				AtomValuePair pair;
-				pair.atom = _atoms[j];
-				pair.value = diff;
-				_bondEffects[b] = pair;
 				
 				double grad = diff;
 
@@ -222,19 +320,6 @@ void FlexLocal::scanBondParams()
 
 			Bond::setKick(&*b, k);
 			b->propagateChange();
-
-			if (r == 0)
-			{
-				if (fabs(k) > 1e-6)
-				{
-					std::cout << " curr. kick = " << std::setprecision(2) << k
-					<< std::endl;
-				}
-				else
-				{
-					std::cout << std::endl;
-				}
-			}
 		}
 
 	}

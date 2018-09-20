@@ -19,7 +19,6 @@
 
 #include "Clusterable.h"
 #include "FileReader.h"
-#include "RefinableDouble.h"
 #include "RefinementStrategy.h"
 
 Clusterable::Clusterable(const int ndims)
@@ -28,12 +27,57 @@ Clusterable::Clusterable(const int ndims)
 	
 	for (int n = 0; n < _ndims; n++)
 	{
-		RefinableDouble object = RefinableDouble(n, this);
+		RefinableDoublePtr object;
+		object = RefinableDoublePtr(new RefinableDouble(n, this));
 		double value = random() / (double)RAND_MAX;
-		RefinableDouble::setDouble(&object, value);
+		RefinableDouble::setDouble(&*object, value);
+		object->setGradientFunction(gradientFunc);
 		
 		_coords.push_back(object);
 	}
+}
+
+double Clusterable::dotWith(ClusterablePtr cluster)
+{
+	double sum = 0;
+
+	for (int i = 0; i < _ndims; i++)
+	{
+		double contrib = RefinableDouble::getDouble(&cluster->_coords[i]);
+		contrib *= RefinableDouble::getDouble(&_coords[i]);
+		
+		sum += contrib;
+	}
+	
+	return sum;
+}
+
+double Clusterable::sumContributionToEval()
+{
+	double fx = 0;
+	
+	for (int i = 0; i < _leftClusters.size(); i++)
+	{
+		ClusterablePtr cluster = _leftClusters[i].lock();
+		double dot = dotWith(cluster);
+		double cc = _ccMap[cluster];
+		
+		fx += (cc - dot);
+	}
+	
+	return fx;
+}
+
+double Clusterable::gradient(int tag)
+{
+
+}
+
+double Clusterable::gradientFunc(void *object, int tag)
+{
+	Clusterable *clust = static_cast<Clusterable *>(object);
+	double grad = clust->gradient(tag);
+	return grad;
 }
 
 void Clusterable::addRelationship(ClusterablePtr cluster, double cc)
@@ -41,6 +85,9 @@ void Clusterable::addRelationship(ClusterablePtr cluster, double cc)
 	ClusterablePtr me = shared_from_this();
 	_ccMap[cluster] = cc;
 	cluster->_ccMap[me] = cc;
+	cluster->_rightClusters.push_back(me);
+	
+	_leftClusters.push_back(cluster);
 }
 
 void Clusterable::addParamsToStrategy(RefinementStrategyPtr strategy)

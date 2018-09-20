@@ -46,8 +46,10 @@
 #define ToThingPtr(a) (boost::static_pointer_cast<Thing>((a)))
 
 class Clusterable;
+class RefinableDouble;
 typedef boost::shared_ptr<Clusterable> ClusterablePtr;
 typedef boost::weak_ptr<Clusterable> ClusterableWkr;
+typedef boost::shared_ptr<RefinableDouble> RefinableDoublePtr;
 
 class Notifiable;
 typedef boost::shared_ptr<Notifiable> NotifiablePtr;

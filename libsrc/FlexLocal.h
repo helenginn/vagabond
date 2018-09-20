@@ -12,14 +12,9 @@
 #include "shared_ptrs.h"
 #include <map>
 
-typedef struct
-{
-	AtomPtr atom;
-	double value;
-} AtomValuePair;
-
 typedef std::map<AtomPtr, double> AtomTarget;
-typedef std::map<BondPtr, AtomValuePair> BondEffects;
+typedef std::map<BondPtr, AtomTarget> BondEffects;
+typedef std::map<BondPtr, ClusterablePtr> BondClusters;
 
 class FlexLocal
 {
@@ -31,12 +26,18 @@ public:
 		_polymer = pol;
 	}
 
-	void scanBondParams();
 	static double getScore(void *object);
+	
+	/** Performs preliminary work and refinement simultaneously */
 	void refine();
+	static double clusterScore(void *object);
 private:
 	void createAtomTargets();
 	AtomTarget currentAtomValues();
+	void createClustering();
+	double bondRelationship(BondPtr bi, BondPtr bj);
+	void scanBondParams();
+	double clusterScore();
 	
 	double directSimilarity();
 
@@ -46,11 +47,12 @@ private:
 	AtomTarget _atomOriginal;
 	BondEffects _bondEffects;
 	
-	/* Targets, not actual */
 	std::vector<AtomPtr> _atoms;
 	std::vector<BondPtr> _bonds;
+	BondClusters _clusters;
 	
 	double _anchorB;
+	int _nClusters;
 	int _direct;
 	int _window;
 	int _run;

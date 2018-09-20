@@ -23,16 +23,20 @@
 #include <vector>
 #include "RefinementStrategy.h"
 
+typedef double (*TaggedGetter)(void *, int);
+
 class RefinableDouble
 {
 public:
-	RefinableDouble(int num, void *parent)
+	RefinableDouble(int num, Clusterable *parent)
 	{
 		_value = 0;
 		_num = num;
+		_parent = parent;
+		_gradient = NULL;
 	}
 	
-	void setGradientFunction(Getter gradient)
+	void setGradientFunction(TaggedGetter gradient)
 	{
 		_gradient = gradient;
 	}
@@ -46,7 +50,7 @@ public:
 	static double getGradient(void *object)
 	{
 		RefinableDouble *val = static_cast<RefinableDouble *>(object);
-		return val->_value;
+		return (*(val->_gradient))(val->_parent, val->_num);
 	}
 
 	static void setDouble(void *object, double value)
@@ -59,7 +63,7 @@ private:
 	Clusterable *_parent;
 	int _num;
 	double _value;
-	Getter _gradient;
+	TaggedGetter _gradient;
 };
 
 
