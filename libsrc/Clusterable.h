@@ -38,12 +38,21 @@ public:
 	
 	static double gradientFunc(void *object, int tag);
 	double sumContributionToEval();
+	
+	double getCoord(int i)
+	{
+		return RefinableDouble::getDouble(&*_coords[i]);
+	}
+	
+	double ccWith(ClusterablePtr cluster);
+	double dotWith(ClusterablePtr cluster);
+	
+	std::vector<double> coords();
 private:
 	int _ndims;
 	std::vector<RefinableDoublePtr> _coords;
 
 	double gradient(int tag);
-	double dotWith(ClusterablePtr cluster);
 
 	std::map<ClusterableWkr, double> _ccMap;
 	std::vector<ClusterableWkr> _leftClusters, _rightClusters;

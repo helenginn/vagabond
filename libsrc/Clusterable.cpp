@@ -32,9 +32,15 @@ Clusterable::Clusterable(const int ndims)
 		double value = random() / (double)RAND_MAX;
 		RefinableDouble::setDouble(&*object, value);
 		object->setGradientFunction(gradientFunc);
+		double retrieve = RefinableDouble::getDouble(&*object);
 		
 		_coords.push_back(object);
 	}
+}
+
+double Clusterable::ccWith(ClusterablePtr cluster)
+{
+	return _ccMap[cluster];
 }
 
 double Clusterable::dotWith(ClusterablePtr cluster)
@@ -43,8 +49,8 @@ double Clusterable::dotWith(ClusterablePtr cluster)
 
 	for (int i = 0; i < _ndims; i++)
 	{
-		double contrib = RefinableDouble::getDouble(&cluster->_coords[i]);
-		contrib *= RefinableDouble::getDouble(&_coords[i]);
+		double contrib = RefinableDouble::getDouble(&*cluster->_coords[i]);
+		contrib *= RefinableDouble::getDouble(&*_coords[i]);
 		
 		sum += contrib;
 	}
@@ -62,7 +68,7 @@ double Clusterable::sumContributionToEval()
 		double dot = dotWith(cluster);
 		double cc = _ccMap[cluster];
 		
-		fx += (cc - dot);
+		fx += (cc - dot) * (cc - dot);
 	}
 	
 	return fx;
@@ -70,7 +76,29 @@ double Clusterable::sumContributionToEval()
 
 double Clusterable::gradient(int tag)
 {
+	double fx = 0;
+	
+	std::vector<ClusterableWkr> _clusters;
+	_clusters.reserve(_leftClusters.size() + _rightClusters.size());
+	_clusters.insert(_clusters.begin(),
+	                 _leftClusters.begin(), _leftClusters.end());
+	_clusters.insert(_clusters.end(),
+	                 _rightClusters.begin(), _rightClusters.end());
+	
+	double coord = RefinableDouble::getDouble(&*_coords[tag]);
 
+	for (int i = 0; i < _clusters.size(); i++)
+	{
+		ClusterablePtr cluster = _clusters[i].lock();
+		double dot = dotWith(cluster);
+		double cc = _ccMap[cluster];
+		
+		double contrib = -2 * coord * (cc - dot);
+		fx += contrib;
+	}
+	
+	return fx;
+	
 }
 
 double Clusterable::gradientFunc(void *object, int tag)
@@ -94,10 +122,21 @@ void Clusterable::addParamsToStrategy(RefinementStrategyPtr strategy)
 {
 	for (int n = 0; n < _ndims; n++)
 	{
-		strategy->addParameter(&_coords[n], RefinableDouble::getDouble,
+		strategy->addParameter(&*_coords[n], RefinableDouble::getDouble,
 		                       RefinableDouble::setDouble,
 		                       0.5, 0.01, "coord_" + i_to_str(n),
 		                       RefinableDouble::getGradient);
 	}
 }
 
+std::vector<double> Clusterable::coords()
+{
+	std::vector<double> vals;
+
+	for (int n = 0; n < _ndims; n++)
+	{
+		vals.push_back(RefinableDouble::getDouble(&*_coords[n]));
+	}
+	
+	return vals;
+}

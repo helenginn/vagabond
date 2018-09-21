@@ -52,7 +52,7 @@ private:
 	BondClusters _clusters;
 	
 	double _anchorB;
-	int _nClusters;
+	int _nDims;
 	int _direct;
 	int _window;
 	int _run;

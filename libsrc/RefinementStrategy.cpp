@@ -80,8 +80,8 @@ void RefinementStrategy::addCoupledParameter(void *object, Getter getter, Setter
 }
 
 double RefinementStrategy::getGradientForParam(int i)
-{
-	Getter gradient = _params[i].getter;
+{		
+	Getter gradient = _params[i].gradient;
 	void *object = _params[i].object;
 	double grad = (*gradient)(object);
 	

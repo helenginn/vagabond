@@ -11,26 +11,29 @@
 #include "Bond.h"
 #include "Polymer.h"
 #include "Clusterable.h"
+#include <svdcmp.h>
 #include "Monomer.h"
 #include "Anchor.h"
 #include "RefinementGridSearch.h"
 #include "RefinementNelderMead.h"
+#include "RefinementLBFGS.h"
 #include <map>
 #include <iomanip>
 
 FlexLocal::FlexLocal()
 {
-	_shift = 0.05;
+	_shift = 0.01;
 	_run = 0;
 	_window = 10;
 	_direct = 0;
 	_anchorB = 0;
+	_nDims = 10;
 }
 
 void FlexLocal::refine()
 {
 	scanBondParams();
-	createClustering();
+//	createClustering();
 	return;
 
 	_direct = 1;
@@ -157,11 +160,16 @@ double FlexLocal::bondRelationship(BondPtr bi, BondPtr bj)
 		
 		if (fabs(flexi) < 1e-6 || fabs(flexj) < 1e-6)
 		{
-			continue;
+//			continue;
 		}
 		
 		xs.push_back(flexi);
 		ys.push_back(flexj);
+	}
+	
+	if (xs.size() == 1)
+	{
+		return nan(" ");
 	}
 
 	double correl = correlation(xs, ys);
@@ -188,8 +196,6 @@ double FlexLocal::clusterScore()
 		fx += sum;
 	}
 	
-	fx /= (double)(_bonds.size() * _bonds.size());
-	
 	return fx;
 }
 
@@ -198,11 +204,14 @@ void FlexLocal::createClustering()
 	for (int i = 0; i < _bonds.size(); i++)
 	{
 		BondPtr bi = _bonds[i];
-		ClusterablePtr cluster = ClusterablePtr(new Clusterable(_nClusters));
+		ClusterablePtr cluster = ClusterablePtr(new Clusterable(_nDims));
 		_clusters[bi] = cluster;
 	}
 	
 	int anchor = _polymer->getAnchor();
+	anchor = 30;
+	double sumCC = 0;
+	double count = 0;
 
 	/* Once all the clusters are made, give them pair-wise correlations */
 	for (int i = 0; i < _bonds.size() - 1; i++)
@@ -214,28 +223,200 @@ void FlexLocal::createClustering()
 		{
 			BondPtr bj = _bonds[j]; // giggle
 
-			/* These shouldn't even talk if they span the anchor point
-			 * as they are not interconnected. */
-			if (bi->getAtom()->getResidueNum() < anchor &&
-			    bj->getAtom()->getResidueNum() > anchor)
-			{
-				continue;
-			}
-
 			ClusterablePtr cj = _clusters[bj];
 
 			double cc = bondRelationship(bi, bj);
 			
 			if (cc != cc)
 			{
-				continue;
+				cc = 0;
 			}
-			
+
+			sumCC += cc;
+			count++;
 			ci->addRelationship(cj, cc);
 		}
 	}
 	
+	sumCC /= count;
+	
+	std::cout << "Ave CC: " << sumCC << std::endl;
 	std::cout << "Starting cluster score: " << clusterScore() << std::endl;
+	
+	double cc = _clusters[_bonds[158]]->ccWith(_clusters[_bonds[168]]);
+	std::cout << "Chosen CC: " << cc << std::endl;
+	
+	RefinementLBFGSPtr lbfgs = RefinementLBFGSPtr(new RefinementLBFGS());
+
+	for (int i = 0; i < _bonds.size(); i++)
+	{
+		ClusterablePtr cluster = _clusters[_bonds[i]];
+		cluster->addParamsToStrategy(lbfgs);
+	}
+	
+	lbfgs->setSilent(true);
+	lbfgs->setEvaluationFunction(clusterScore, this);
+	lbfgs->refine();
+	
+	/* write out */
+	
+	CSVPtr csv = CSVPtr(new CSV(4, "num", "x", "y", "z"));
+	CSVPtr xy = CSVPtr(new CSV(2, "dot", "cc"));
+	
+	for (int i = 0; i < _bonds.size() - 1; i++)
+	{
+		BondPtr bi = _bonds[i];
+		ClusterablePtr ci = _clusters[bi];
+
+		for (int j = i + 1; j < _bonds.size(); j++)
+		{
+			BondPtr bj = _bonds[j]; // giggle
+			ClusterablePtr cj = _clusters[bj];
+			
+			double dot = ci->dotWith(cj);
+			double cc = ci->ccWith(cj);
+			
+			xy->addEntry(2, dot, cc);
+		}
+		
+		csv->addEntry(4, (double)i, ci->getCoord(0),
+		              ci->getCoord(1),
+		              ci->getCoord(2));
+	}
+	
+	csv->writeToFile("cluster_results.csv");
+	xy->writeToFile("dot_cc.csv");
+	
+	/* We prepare for SVD. */
+	
+	size_t size = sizeof(double) * _nDims;
+	size_t ptrSize = sizeof(double *) * _nDims;
+	
+	double **mat, **v;
+	mat = (double **)malloc(ptrSize);
+	v = (double **)malloc(ptrSize);
+	
+	for (int i = 0; i < _nDims; i++)
+	{
+		mat[i] = (double *)malloc(size);
+		v[i] = (double *)malloc(size);
+		memset(mat[i], 0, size);
+		memset(v[i], 0, size);
+	}
+	
+	/* First, find the set of averages to take away from
+	 * the covariance matrix. */
+	count = 0;
+	
+	double *ave = (double *)malloc(size);
+	memset(ave, 0, size);
+	
+	for (int k = 0; k < _bonds.size(); k++)
+	{
+		ClusterablePtr c = _clusters[_bonds[k]];
+
+		for (int i = 0; i < _nDims; i++)
+		{
+			ave[i] += c->getCoord(i);
+			count++;
+		}
+	}
+	
+	for (int k = 0; k < _nDims; k++)
+	{
+		ave[k] /= (double)count;
+		ave[k] = 0;
+	}
+	
+	/* Now we set up the covariance matrix. */
+
+	count = 0;
+	
+	for (int i = 0; i < _nDims; i++)
+	{
+		for (int j = 0; j < _nDims; j++)
+		{
+			for (int k = 0; k < _bonds.size(); k++)
+			{
+				ClusterablePtr c = _clusters[_bonds[k]];
+				
+				double add = ((c->getCoord(i) - ave[i]) *
+				              (c->getCoord(j) - ave[j]));
+				mat[i][j] += add;
+				count++;
+			}
+		}
+	}
+
+	for (int i = 0; i < _nDims; i++)
+	{
+		for (int j = 0; j < _nDims; j++)
+		{
+			mat[i][j] /= (double)count;
+		}
+	}
+	
+	double *w = (double *)malloc(size);
+	int success = svdcmp(mat, _nDims, _nDims, w, v);
+	
+	if (!success)
+	{
+		std::cout << "Could not perform SVD on bond cluster positions. " 
+		<< std::endl;
+	}
+	
+	std::cout << "SVD result: " << std::endl;
+	for (int i = 0; i < _nDims; i++)
+	{
+		std::cout << "Vec length: " << w[i] << std::endl;
+	}
+
+	std::cout << "\nPre-diagonal matrix U (not the null space?): " << std::endl;
+	for (int i = 0; i < _nDims; i++)
+	{
+		for (int j = 0; j < _nDims; j++)
+		{
+			std::cout << mat[i][j] << " ";
+		}
+		
+		std::cout << std::endl;
+	}
+
+	for (int k = 0; k < _bonds.size(); k++)
+	{
+		ClusterablePtr c = _clusters[_bonds[k]];
+		std::vector<double> vals = c->coords();
+		
+		double maxVal = -FLT_MAX;
+		int maxDim = 0;
+		
+		for (int j = 0; j < _nDims; j++)
+		{
+			double result = 0;
+			for (int i = 0; i < vals.size(); i++)
+			{
+				result += vals[i] * mat[j][i] * w[i];
+			}
+			
+			if (fabs(result) > maxVal)
+			{
+				maxVal = fabs(result);
+				maxDim = j;
+			}
+		}
+		
+		std::cout << k << ", " << maxDim <<  std::endl;
+	}
+	
+	for (int i = 0; i < _nDims; i++)
+	{
+		free(mat[i]);
+		free(v[i]);
+	}
+	
+	free(ave);
+	free(mat);
+	free(v);
 }
 
 double FlexLocal::directSimilarity()
@@ -285,7 +466,7 @@ void FlexLocal::scanBondParams()
 		BondPtr b = _bonds[i];
 		double k = Bond::getKick(&*b);
 
-		for (int r = 0; r < 2; r++)
+		for (int r = 0; r < 1; r++)
 		{
 			double add = (r == 0) ? _shift : -_shift;
 			double num = (r == 0) ? i : i + 0.5;

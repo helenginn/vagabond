@@ -21,6 +21,7 @@
 #define __vagabond__RefinableDouble__
 
 #include <vector>
+#include <iostream>
 #include "RefinementStrategy.h"
 
 typedef double (*TaggedGetter)(void *, int);

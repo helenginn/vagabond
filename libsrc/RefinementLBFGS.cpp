@@ -69,7 +69,7 @@ void RefinementLBFGS::copyInStartValues()
 {
 	for (int i = 0; i < parameterCount(); i++)
 	{
-		_xs[i] = _params[i].start_value;
+		_xs[i] = getValueForParam(i);
 	}
 }
 
