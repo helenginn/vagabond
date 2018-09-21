@@ -38,6 +38,7 @@ void StartScreen::makeButtons()
 {
 	_bRun = new QPushButton("Start", this);
 	_bRun->setGeometry(250, DEFAULT_HEIGHT - 50, 100, 25);
+	_bRun->setFocus();
 	connect(_bRun, SIGNAL(clicked()), this, SLOT(pushRun()));
 	
 	int height = 25;

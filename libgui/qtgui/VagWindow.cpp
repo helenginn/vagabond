@@ -109,7 +109,7 @@ void VagWindow::makeButtons()
 	connect(bRecalculate, SIGNAL(clicked()), this, SLOT(recalculateFFT()));    
 	buttons.push_back(bRecalculate);
 
-	bWaterNetwork = new QPushButton("Refine water network", this);
+	bWaterNetwork = new QPushButton("Scan bond params", this);
 	bWaterNetwork->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 350, BUTTON_WIDTH , 50);
 	bWaterNetwork->setEnabled(false);
 	connect(bWaterNetwork, SIGNAL(clicked()), this, SLOT(refineWaterNetwork()));
