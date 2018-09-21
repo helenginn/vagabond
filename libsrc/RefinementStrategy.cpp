@@ -118,6 +118,11 @@ void RefinementStrategy::refine()
 		return;
 	}
 
+	if (evaluationFunction == NULL || evaluateObject == NULL)
+	{
+		std::cout << "Please set evaluation function and object." << std::endl;
+		return;
+	}
 
 	startingScore = (*evaluationFunction)(evaluateObject);
 
@@ -154,6 +159,11 @@ void RefinementStrategy::reportProgress(double score)
 void RefinementStrategy::finish()
 {
 	double endScore = (*evaluationFunction)(evaluateObject);
+	
+	if (!parameterCount())
+	{
+		return;
+	}
 
 	if (endScore >= startingScore || endScore != endScore)
 	{
