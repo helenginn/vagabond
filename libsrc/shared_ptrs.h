@@ -133,6 +133,9 @@ typedef boost::shared_ptr<DiffractionMtz> DiffractionMtzPtr;
 class Object;
 typedef boost::shared_ptr<Object> ObjectPtr;
 
+class ParamBand;
+typedef boost::shared_ptr<ParamBand> ParamBandPtr;
+
 class RefinementGridSearch;
 class RefinementStepSearch;
 class RefinementStrategy;
