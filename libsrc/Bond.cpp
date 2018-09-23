@@ -1288,8 +1288,6 @@ void Bond::addProperties()
 	addReference("minor", getMinor());
 	addReference("major", getMajor());
 
-	addReference("heavy", getHeavyAlign());
-
 	addDoubleProperty("length", &_bondLength);    
 	addDoubleProperty("torsion", &_torsion);    
 	addDoubleProperty("exp_angle", &_expectedAngle);    
@@ -1345,10 +1343,6 @@ void Bond::linkReference(ParserPtr object, std::string category)
 	else if (category == "major")
 	{
 		_major = atom;
-	}
-	else if (category == "heavy")
-	{
-		_heavyAlign = atom;
 	}
 	else if (category == "extra_sample")
 	{
