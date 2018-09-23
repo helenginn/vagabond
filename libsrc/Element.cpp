@@ -42,14 +42,6 @@ Element::Element(std::string symbol, std::string name, double electrons, const f
 	_name = name;
 	_electrons = electrons;
 	memcpy(_scattering, scatter, ScatterFactors::numScatter * sizeof(float));
-
-	if (_symbol == "S")
-	{
-		for (int i = 0; i < ScatterFactors::numScatter; i++)
-		{
-			_scattering[i] += 0.2;
-		}
-	}
 }
 
 ElementPtr Element::getElement(std::string symbol)
