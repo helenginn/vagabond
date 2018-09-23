@@ -113,9 +113,10 @@ void StartScreen::makeButtons()
 	                       " flexible, increase to 0.01 if too rigid.", this);
 	_lKickTip->setWordWrap(true);
 	_lKickTip->setGeometry(310, height - 2, 270, 40);
-	*/
 
 	height += 40;
+	*/
+
 
 	_lMinRes = new QLabel("Min resolution (Å):", this);
 	_lMinRes->setGeometry(25, height, LABEL_WIDTH, 20);
