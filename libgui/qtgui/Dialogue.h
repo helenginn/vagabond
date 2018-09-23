@@ -16,47 +16,59 @@
 #include <QtWidgets/qapplication.h>
 #include <QtWidgets/qpushbutton.h>
 #include <QtWidgets/qlabel.h>
-#include <QtWidgets/qtextedit.h>
+#include <QtWidgets/qlineedit.h>
 #include <QtWidgets/qmainwindow.h>
 
 class VagWindow;
 
 typedef enum
 {
-    DialogueUndefined,
-    DialogueBMultiplier,
+	DialogueUndefined,
+	DialogueBMultiplier,
 } DialogueType;
+
+typedef void (*SimpleSet)(double);
 
 class Dialogue : public QMainWindow
 {
-    Q_OBJECT
-    
-public:
-    Dialogue(QWidget *parent = 0, std::string windowText = "",
-             std::string labelText = "", std::string defaultText = "",
-             std::string buttonText = "");
-    QPushButton *bDialogue;
-    QTextEdit *tDialogue;
-    QLabel *lDialogue;
-    
-    ~Dialogue();
-    
-    void setWindow(VagWindow *window)
-    {
-        _window = window;
-    }
-    
-    void setTag(DialogueType type)
-    {
-        _type = type;
-    }
+	Q_OBJECT
 
+public:
+	Dialogue(QWidget *parent = 0, std::string windowText = "",
+	         std::string labelText = "", std::string defaultText = "",
+	         std::string buttonText = "");
+	QPushButton *bDialogue;
+	QLineEdit *tDialogue;
+	QLabel *lDialogue;
+
+	~Dialogue();
+
+	void setWindow(VagWindow *window)
+	{
+		_window = window;
+	}
+
+	void setTag(DialogueType type)
+	{
+		_type = type;
+	}
+
+	void setFunction(void (*func)(double))
+	{
+		_func = func;
+	}
+	
+	SimpleSet getFunction()
+	{
+		return _func;
+	}
 private slots:
-    void returnClicked();
+	void returnClicked();
 
 private:
-    VagWindow *_window;
-    DialogueType _type;
+	VagWindow *_window;
+	DialogueType _type;
+	SimpleSet _func;
 };
 
 #endif /* defined(__CaroCode__QTinker__) */
