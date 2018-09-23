@@ -31,15 +31,6 @@
 
 std::deque<FourierDimension> FFT::_dimensions;
 
-inline void fftwf_add(fftwf_complex comp1, fftwf_complex comp2, float *result)
-{
-	result[0] = comp1[0];
-	result[1] = comp1[1];
-	result[0] += comp2[0];
-	result[1] += comp2[1];
-}
-
-
 FFT::FFT()
 {
 	_setupBlurring = false;
@@ -172,23 +163,6 @@ void FFT::setupMask()
 	}
 
 	mask = (int *) calloc(nn, sizeof(int));
-}
-
-void FFT::aboveValueToMask(double value)
-{
-	setupMask();
-
-	for (int i = 0; i < nn; i++)
-	{
-		if (data[i][0] >= value)
-		{
-			mask[i] = 1;
-		}
-		else
-		{
-			mask[i] = 0;
-		}
-	}
 }
 
 /*

@@ -104,10 +104,6 @@ public:
 		return mask[i];
 	}
 
-	/* Will set those w real component above the value to 1 in the mask,
-	* and all those below the value to 0. */
-	void aboveValueToMask(double value);
-
 	/* If not writing to mask = 0, then mask will not apply to the
 	* "add" command in FFT::operation. */
 	void avoidWriteToMaskZero(bool set = true)
