@@ -514,9 +514,6 @@ private:
 	/* Had a non-NULL atom input as major or minor */
 	bool _disabled;
 
-	/* Has been set as an anchor, will not respond to 'propagate change'*/
-	bool _anchored;
-
 	void initialize();
 	double getBaseTorsion();
 

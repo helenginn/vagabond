@@ -23,7 +23,6 @@
 
 void Bond::initialize()
 {
-	_anchored = false;
 	_usingTorsion = false;
 	_activated = false;
 	_dampening = Options::getDampen();
@@ -118,7 +117,6 @@ Bond::Bond(Bond &other)
 
 	_fixed = other._fixed;
 	_disabled = other._disabled;
-	_anchored = other._anchored;
 	_absolute = other._absolute;
 	_molecule = other._molecule;
 
@@ -1307,7 +1305,6 @@ void Bond::addProperties()
 	addBoolProperty("occ_reset", &_resetOccupancy);
 
 	addBoolProperty("fixed", &_fixed);
-	addBoolProperty("anchored", &_anchored);
 	addBoolProperty("using_torsion", &_usingTorsion);
 	addBoolProperty("refine_bond_angle", &_refineBondAngle);
 	addBoolProperty("refine_flexibility", &_refineFlexibility);
