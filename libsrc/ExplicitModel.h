@@ -28,7 +28,7 @@ typedef struct
 	mat3x3 basis;     /**< Defines bond axis of previous bond */
 	vec3 start;       /**< position of last minor */
 	vec3 old_start;   /**< position of torsion-defining atom */
-	double torsion;   /**< To be filled in by next bond */
+	double torsion;   /**< To be filled in by next bond temporarily */
 	double occupancy; /**< Relative occupancy (usually 1) */
 } BondSample;
 
