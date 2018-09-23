@@ -24,7 +24,6 @@
 #include "FileReader.h"
 #include "PDBReader.h"
 #include "Atom.h"
-#include "Kabsch.h"
 #include "RefinementGridSearch.h"
 #include "BucketBulkSolvent.h"
 #include "BucketMonteCarlo.h"
