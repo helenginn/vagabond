@@ -126,7 +126,8 @@ public:
 		return _nSamples;
 	}
 	
-	static void setNSamples(int n)
+	template <class T>
+	static void setNSamples(T n)
 	{
 		_nSamples = n;
 	}
