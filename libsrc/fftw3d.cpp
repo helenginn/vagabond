@@ -297,50 +297,6 @@ void FFT::shiftToCentre()
 	}
 }
 
-/*
- *    Shift the array in 3D by (nx,ny,nz) pixels
- *    Wrap around at the edges
- */
-void FFT::shift(long sx, long sy, long sz)
-{
-	//  printf("Shift: (%li, %li, %li)\n", sx, sy, sz);
-
-	long    x1,y1,z1;
-	long    e0,e1;
-
-	fftwf_complex *temp =  (FFTW_DATA_TYPE*) fftwf_malloc(nn*sizeof(FFTW_DATA_TYPE));
-
-	for(long z0=0; z0<nz; z0++)
-	{
-		z1 = z0 + sz;
-		if (z1 < 0) z1 += nz;
-		if (z1 >= nz) z1 -= nz;
-
-		for(long y0=0; y0<ny; y0++)
-		{
-			y1 = y0 + sy;
-			if (y1 < 0) y1 += ny;
-			if (y1 >= ny) y1 -= ny;
-
-			for(long x0=0; x0<nx; x0++)
-			{
-				x1 = x0 + sx;
-				if(x1 < 0) x1 += nx;
-				if(x1 >= nx) x1 -= nx;
-
-				e0 = element(x0,y0,z0);
-				e1 = element(x1,y1,z1);
-
-
-				temp[e0][0] = data[e1][0];
-				temp[e0][1] = data[e1][1];
-			}
-		}
-	}
-
-	fftwf_free(data);
-	data = temp;
-}
 
 int FFT::setTotal(float newTotal)
 {

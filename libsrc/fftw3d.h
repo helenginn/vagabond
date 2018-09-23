@@ -149,7 +149,6 @@ public:
 	void createFFTWplan(int nthreads, unsigned fftw_flags = FFTW_MEASURE);
 	void fft(int direction);
 
-	void shift(long, long, long);
 	void shiftToCentre();
 
 	double getReal(long index)
