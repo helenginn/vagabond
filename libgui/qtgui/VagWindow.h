@@ -86,6 +86,7 @@ private:
 	CrystalExplorer *_xtalExplorer;
 	QFileDialog *_fileDialogue;   
 
+	void dialogueModify(void (*func)(double), std::string title);
 	void splitBond();
 	void squeezeToEnd();
 	void updateExplorerButton();
@@ -111,6 +112,7 @@ private:
 	
 	/* Scaling menu options */
 	QAction *_qaShell, *_qaKB, *_qaK;
+	
 	std::vector<QMenu *> menus;
 	std::vector<QAction *> actions;
 

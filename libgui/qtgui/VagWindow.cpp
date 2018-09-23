@@ -66,7 +66,31 @@ void VagWindow::makeMenu()
 	QAction *adjust = scaling->addAction(tr("Adjust real-space B factor"));
 	connect(adjust, &QAction::triggered, this, &VagWindow::adjustBFactor);
 
+	QAction *chooseB = scaling->addAction(tr("Change real-space B factor..."));
+	connect(chooseB, &QAction::triggered,
+			[=]{ dialogueModify(Options::setGlobalBFactor, 
+			                    "B factor applied in real space"); });
 	actions.push_back(adjust);
+
+	QMenu *model = menuBar()->addMenu(tr("&Model"));
+	menus.push_back(model);
+	
+	QAction *samples = model->addAction(tr("Change model sampling..."));
+	connect(samples, &QAction::triggered,
+			[=]{ dialogueModify(Options::setNSamples, 
+			                    "No. samples in ensemble:"); });
+	
+	actions.push_back(samples);
+}
+
+void VagWindow::dialogueModify(SimpleSet set, std::string title)
+{
+	delete _myDialogue;
+	_myDialogue = new Dialogue(this, "New value", title, "100", "Set value");
+	_myDialogue->setFunction(set);
+	_myDialogue->setWindow(this);
+	_myDialogue->show();
+
 }
 
 void VagWindow::makeButtons()
