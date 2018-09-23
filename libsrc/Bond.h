@@ -456,7 +456,6 @@ private:
 	std::vector<BondGroupPtr> _bondGroups;
 
 	double _dampening;
-	bool _activated;
 	double _occupancy;
 	double _torsion;
 	double _kick;

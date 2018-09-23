@@ -24,7 +24,6 @@
 void Bond::initialize()
 {
 	_usingTorsion = false;
-	_activated = false;
 	_dampening = Options::getDampen();
 	_bondLength = 0;
 	_changedPos = true;
@@ -102,7 +101,6 @@ Bond::Bond(Bond &other)
 {
 	_occupancy = other._occupancy;
 	_usingTorsion = other._usingTorsion;
-	_activated = other._activated;
 	_major = other._major;
 	_minor = other._minor;
 	_resetOccupancy = other._resetOccupancy;
@@ -520,9 +518,6 @@ void Bond::activate()
 	return;
 
 	getMinor()->setModel(shared_from_this());
-
-	_activated = true;
-
 }
 
 vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
@@ -1302,7 +1297,6 @@ void Bond::addProperties()
 	addBoolProperty("using_torsion", &_usingTorsion);
 	addBoolProperty("refine_bond_angle", &_refineBondAngle);
 	addBoolProperty("refine_flexibility", &_refineFlexibility);
-	addBoolProperty("activated", &_activated);
 	addBoolProperty("disabled", &_disabled);
 
 	addVec3Property("magic_axis", &_magicAxis);
