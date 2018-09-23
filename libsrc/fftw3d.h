@@ -186,7 +186,6 @@ public:
 	int setTotal(float value);
 	void valueMinus(float value);
 
-	double interpolate(vec3 unfractionalVoxel, size_t imaginary = false);
 	double cubic_interpolate(vec3 vox000, size_t im = false);
 
 	static void add(FFTPtr fftEdit, FFTPtr fftConst,
@@ -218,7 +217,7 @@ public:
 		frac.x *= nx;
 		frac.y *= ny;
 		frac.z *= nz;
-		return interpolate(frac, 0);
+		return cubic_interpolate(frac, 0);
 	}
 
 	long int elementFromFrac(double xFrac, double yFrac, double zFrac);

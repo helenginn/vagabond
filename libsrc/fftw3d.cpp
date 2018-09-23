@@ -342,6 +342,33 @@ void FFT::shift(long sx, long sy, long sz)
 	data = temp;
 }
 
+int FFT::setTotal(float newTotal)
+{
+	float total = 0;
+
+	for (int i = 0; i < nn; i++)
+	{
+		total += data[i][0];
+	}
+
+	if (total <= 0) return 1;
+	float scale = newTotal / total;
+
+	for (int i = 0; i < nn; i++)
+	{
+		data[i][0] *= scale;
+	}
+
+	return 0;
+}
+
+void FFT::normalise()
+{
+	double total = averageAll();
+	double mult = 1 / total;
+	multiplyAll(mult);
+}
+
 void FFT::valueMinus(float value)
 {
 	for(long i=0; i<nn; i++)
@@ -788,58 +815,6 @@ double FFT::cubic_interpolate(vec3 vox000, size_t im)
 	return p11value;
 }
 
-double FFT::interpolate(vec3 vox000, size_t im)
-{
-	double test = cubic_interpolate(vox000, im);
-	return test;
-	
-	vec3 remain = make_vec3(vox000.x - (double)((int)vox000.x),
-	                        vox000.y - (double)((int)vox000.y),
-	                        vox000.z - (double)((int)vox000.z));
-
-	long vox000x = vox000.x;
-	long vox000y = vox000.y;
-	long vox000z = vox000.z;
-	long vox000xm = vox000.x + 1;
-	long vox000ym = vox000.y + 1;
-	long vox000zm = vox000.z + 1;
-
-	collapse(&vox000x, &vox000y, &vox000z);
-	collapse(&vox000xm, &vox000ym, &vox000zm);
-
-	vox000y  *= nx;
-	vox000ym *= nx;
-	vox000z  *= nx * ny;
-	vox000zm *= nx * ny;
-
-	long int idx000 = vox000x + vox000y + vox000z;
-	long int idx100 = vox000xm + vox000y + vox000z;
-	long int idx010 = vox000x + vox000ym + vox000z;
-	long int idx110 = vox000xm + vox000ym + vox000z;
-	long int idx001 = vox000x + vox000y + vox000zm;
-	long int idx101 = vox000xm + vox000y + vox000zm;
-	long int idx011 = vox000x + vox000ym + vox000zm;
-	long int idx111 = vox000xm + vox000ym + vox000zm;
-
-	double val00 = data[idx000][im] * (1 - remain.x) +
-	data[idx100][im] * remain.x;
-	double val01 = data[idx001][im] * (1 - remain.x) +
-	data[idx101][im] * remain.x;
-	double val10 = data[idx010][im] * (1 - remain.x) +
-	data[idx110][im] * remain.x;
-	double val11 = data[idx011][im] * (1 - remain.x) +
-	data[idx111][im] * remain.x;
-
-	double val0 = val00 * (1 - remain.y) + val10 * remain.y;
-	double val1 = val01 * (1 - remain.y) + val11 * remain.y;
-
-	double value = val0 * (1 - remain.z) + val1 * remain.z;
-	
-	std::cout << test << " " << value << std::endl;
-
-	return value;
-}
-
 double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos,
                   std::vector<CoordVal> *vals, MapScoreType mapScore)
 {
@@ -1024,7 +999,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 				if (interp)
 				{
-					atomReal = fftAtom->interpolate(atomPos, 0);
+					atomReal = fftAtom->cubic_interpolate(atomPos, 0);
 				}
 				else
 				{
@@ -1087,7 +1062,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 						vec3 unshifted = vec3_subtract_vec3(atomPos,
 						                                    shift);
 
-						double intp = fftCrystal->interpolate(intCrystPos);
+						double intp;
+						intp = fftCrystal->cubic_interpolate(intCrystPos);
 						long ele = fftAtom->element(unshifted);
 
 						fftAtom->data[ele][1] = intp;
@@ -1116,7 +1092,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 					vec3 intCrystPos = vec3_subtract_vec3(cVox,
 					                                      crystOffset);
 
-					double intp = fftCrystal->interpolate(intCrystPos);
+					double intp = fftCrystal->cubic_interpolate(intCrystPos);
 					int ele = fftAtom->element(atomPos.x, atomPos.y,
 					                           atomPos.z);
 
@@ -1206,33 +1182,6 @@ void FFT::printSlice(double zVal)
 		std::cout << " |" << std::endl;
 	}
 	std::cout << std::endl;
-}
-
-int FFT::setTotal(float newTotal)
-{
-	float total = 0;
-
-	for (int i = 0; i < nn; i++)
-	{
-		total += data[i][0];
-	}
-
-	if (total <= 0) return 1;
-	float scale = newTotal / total;
-
-	for (int i = 0; i < nn; i++)
-	{
-		data[i][0] *= scale;
-	}
-
-	return 0;
-}
-
-void FFT::normalise()
-{
-	double total = averageAll();
-	double mult = 1 / total;
-	multiplyAll(mult);
 }
 
 vec3 FFT::collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup, 
@@ -1468,7 +1417,7 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 				bool asu = CSym::ccp4spg_is_in_asu(mtzspg, i, j, k);
 				bool f000 = (i == 0 && j == 0 && k == 0);
 
-				if (!asu && !f000)
+				if (!asu || f000)
 				{
 					continue;
 				}
