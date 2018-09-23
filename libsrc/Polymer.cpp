@@ -36,6 +36,7 @@
 Polymer::Polymer()
 {
 	_kick = Options::getKick();
+	_kickShift = 0.1;
 	_anchorNum = -1;
 	_totalMonomers = 0;
 	_startB = Options::getBStart();
@@ -87,8 +88,9 @@ void Polymer::checkChainContinuity()
 void Polymer::refineLocalFlexibility()
 {
 	FlexLocal local;
-	local.setPolymer(shared_from_this());
+	local.setPolymer(shared_from_this(), _kickShift);
 	local.refine();
+	_kickShift = local.getShift();
 }
 
 void Polymer::tieAtomsUp()

@@ -125,6 +125,16 @@ public:
 	{
 		return _monomers.begin();
 	}
+	
+	double getKickShift()
+	{
+		return _kickShift;
+	}
+	
+	void setKickShift(double shift)
+	{
+		_kickShift = shift;
+	}
 protected:
 	virtual double getScore()
 	{
@@ -141,6 +151,7 @@ private:
 	int _anchorNum;
 	double _startB;
 	double _kick;
+	double _kickShift;
 	int _totalMonomers;
 
 	AtomGroupPtr _allBackbones;
