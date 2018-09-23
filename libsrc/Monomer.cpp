@@ -210,49 +210,6 @@ void Monomer::refine(CrystalPtr target,
 	}
 }
 
-void Monomer::setBackboneDampening(double value)
-{
-	for (int i = 0; i < getBackbone()->atomCount(); i++)
-	{
-		if (getBackbone()->atom(i)->getModel()->isBond())
-		{
-			ModelPtr model = atom(i)->getModel();
-			
-			if (!model || !model->isBond()) continue;
-
-			BondPtr bond = ToBondPtr(model);
-			
-			if (!bond->connectsAtom("CA"))
-			{
-				continue;
-			}
-
-			if (bond->isRefinable())
-			{
-				Bond::setDampening(&*bond, value);
-			}
-		}
-	}
-}
-
-void Monomer::setSidechainDampening(double value)
-{
-	for (int i = 0; i < getSidechain()->atomCount(); i++)
-	{
-		ModelPtr model = getSidechain()->atom(i)->getModel();
-
-		if (!model || !model->isBond())
-		{
-			continue;
-		}
-
-		if (ToBondPtr(model)->isRefinable())
-		{
-			Bond::setDampening(&*model, value);
-		}
-	}
-}
-
 bool Monomer::isAfterAnchor()
 {
 	int anchor = getPolymer()->getAnchor();

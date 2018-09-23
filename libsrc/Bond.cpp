@@ -24,7 +24,6 @@
 void Bond::initialize()
 {
 	_usingTorsion = false;
-	_dampening = Options::getDampen();
 	_bondLength = 0;
 	_changedPos = true;
 	_changedSamples = true;
@@ -118,7 +117,6 @@ Bond::Bond(Bond &other)
 
 	_refineBondAngle = other._refineBondAngle;
 	_refineFlexibility = other._refineFlexibility;
-	_dampening = other._dampening;
 	_bondLength = other._bondLength;
 	_changedPos = true;
 	_changedSamples = true;
@@ -631,39 +629,16 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 			kickValue = 0;
 		}
 
-		/* (dampening) We want to correct if the deviation is close to 
-		 * the magic angle */
-		double rotAngle = 0;
-		
-		/** Average direction of THIS bond (torsion-ignorant) */
-		vec3 thisDir = mat3x3_axis(thisBasis, 2);
-		
-		/** Actual direction of THIS bond (torsion-ignorant) */
-		vec3 thisNext = mat3x3_axis(thisBasis, 0);
-
-		/* Find the best angle for dampening */
-		mat3x3_closest_rot_mat(thisNext, aveNext, thisDir, &rotAngle, true);
-
-		if (rotAngle != rotAngle)
-		{
-			rotAngle = 0;
-		}
-
-		double undoBlur = 0;
-		undoBlur = rotAngle;
-		undoBlur *= fabs(dampValue);
-		undoBlur *= fabs(_dampening);
-
-		/* This will only apply for a kicked bond */
+		/* Baseline kick multiplied by kickValue */
 		double addBlur = _kick;
 		addBlur *= kickValue;
 
 		if (isFixed())
 		{
-			undoBlur = 0; addBlur = 0;
+			addBlur = 0;
 		}
 
-		double totalBlur = undoBlur + addBlur;
+		double totalBlur = addBlur;
 		prevs->at(i).torsion = totalBlur;	
 		
 		averageModulation += totalBlur;
@@ -1289,7 +1264,6 @@ void Bond::addProperties()
 	addDoubleProperty("kick", &_kick);    
 	addDoubleProperty("phi", &_phi);    
 	addDoubleProperty("psi", &_psi);    
-	addDoubleProperty("dampening", &_dampening);
 	addDoubleProperty("occupancy", &_occupancy);
 	addBoolProperty("occ_reset", &_resetOccupancy);
 

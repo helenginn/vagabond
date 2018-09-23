@@ -95,7 +95,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 	clearIncludeForRefinements();
 }
 
-void Sidechain::setInitialDampening()
+void Sidechain::setInitialKick()
 {
 	for (int i = 0; i < atomCount(); i++)
 	{
@@ -114,8 +114,6 @@ void Sidechain::setInitialDampening()
 		{
 			continue;
 		}
-
-		Bond::setDampening(&*bond, -0.0);
 
 		double kick = 0.2;
 		std::string id = getMonomer()->getIdentifier();

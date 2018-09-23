@@ -194,7 +194,6 @@ typedef enum
 	ParamOptionTorsion,
 	ParamOptionBondAngle,
 	ParamOptionKick,
-	ParamOptionDampen,
 	ParamOptionMagicAngles,
 	ParamOptionNumBonds,
 } ParamOptionType;

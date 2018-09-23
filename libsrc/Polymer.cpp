@@ -157,23 +157,8 @@ void Polymer::tieAtomsUp()
 		if (getMonomer(i))
 		{
 			getMonomer(i)->getSidechain()->splitConformers();
-
-			if ((Options::enableTests() == 1 || Options::enableTests() == 2)
-			    && (i == 62 || i == 30 || i == 78 ||
-			        i >= 123 || i == 103))
-			{
-				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
-			}
-			/*
-			if ((Options::enableTests() == 3)
-			    && (i == 857 || i == 962 || i == 1011 || i == 1012 ||
-			        i == 1015 || i == 1028 || i == 1053 || i == 1068))
-			{
-				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
-			}
-			*/
-
-			getMonomer(i)->getSidechain()->setInitialDampening();
+			getMonomer(i)->getSidechain()->parameteriseAsRotamers();
+			getMonomer(i)->getSidechain()->setInitialKick();
 		}
 	}
 }
@@ -602,10 +587,7 @@ void Polymer::graph(std::string graphName)
 
 			csv->addEntry(5, value, meanSq, ca->getInitialBFactor(),
 			              posDisp, sideDisp);
-			caDampen = Bond::getDampening(&*caBond);
 			caBlur = Bond::getKick(&*caBond);
-
-			if (caDampen > 0) caBlur = 0;
 		}
 		else
 		{

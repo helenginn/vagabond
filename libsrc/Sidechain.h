@@ -68,7 +68,7 @@ public:
 		return _rotamerised;	
 	}
 
-	void setInitialDampening();
+	void setInitialKick();
 	void splitConformers(int count = -1);
 	void parameteriseAsRotamers();
 	virtual void refine(CrystalPtr target, RefinementType rType);

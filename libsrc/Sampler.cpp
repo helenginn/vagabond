@@ -128,10 +128,6 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 			addKick(bond, range * mult, 0.001);
 			break;
 
-			case ParamOptionDampen:
-			addDampening(bond, range, 0.0001);
-			break;
-
 			case ParamOptionMagicAngles:
 			addMagicAngle(bond, deg2rad(range) * mult, deg2rad(1.0));
 			break;
@@ -296,18 +292,6 @@ void Sampler::addBondLength(BondPtr bond, double range, double interval)
 	_strategy->addParameter(&*bond, Bond::getBondLength,
 	                        Bond::setBondLength, range,
 	interval, "bond_length");
-
-	_bonds.push_back(bond);
-}
-
-void Sampler::addDampening(BondPtr bond, double range, double interval)
-{
-	if (!bond) return;
-	if (!bond->getRefineFlexibility()) return;
-
-	_strategy->addParameter(&*bond, Bond::getDampening,
-	                        Bond::setDampening, range,
-	interval, "d" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }

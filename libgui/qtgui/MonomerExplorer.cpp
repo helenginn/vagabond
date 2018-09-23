@@ -26,8 +26,6 @@ void MonomerExplorer::initialise(MonomerPtr monomer)
 	_tTorsion = NULL;
 	_lKick = NULL;
 	_tKick = NULL;
-	_lDampen = NULL;
-	_tDampen = NULL;
 	_lPhi = NULL;
 	_tPhi = NULL;
 	_lPsi = NULL;
@@ -257,9 +255,6 @@ void MonomerExplorer::clickedAtomListItem()
 		double torsion = rad2deg(Bond::getTorsion(&*bond));
 		QString torsionText = QString::number(torsion);
 
-		double dampen = Bond::getDampening(&*bond);
-		QString dampenText = QString::fromStdString(f_to_str(dampen, 3));
-
 		makeLabelAndEdit(this, &_lTorsion, &_tTorsion, 1, "Torsion (º):",
 		                 torsionText, enabledBond);        
 		_tTorsion->setSetterAndObject(&*bond, Bond::setTorsion, true);
@@ -270,20 +265,16 @@ void MonomerExplorer::clickedAtomListItem()
 		makeLabelAndEdit(this, &_lKick, &_tKick, 2, "Kick:", kickText, enabledBond);
 		_tKick->setSetterAndObject(&*bond, Bond::setKick);
 
-		makeLabelAndEdit(this, &_lDampen, &_tDampen, 3, "Dampen:",
-		                 dampenText, enabledBond);
-		_tDampen->setSetterAndObject(&*bond, Bond::setDampening);
-
 		double phi = rad2deg(Bond::getMagicPhi(&*bond));
 		QString phiText = QString::fromStdString(f_to_str(phi, 3));
 
-		makeLabelAndEdit(this, &_lPhi, &_tPhi, 4, "Phi (º)", phiText, enabledBond);
+		makeLabelAndEdit(this, &_lPhi, &_tPhi, 3, "Phi (º)", phiText, enabledBond);
 		_tPhi->setSetterAndObject(&*bond, Bond::setMagicPhi, true);
 
 		double psi = rad2deg(Bond::getMagicPsi(&*bond));
 		QString psiText = QString::fromStdString(f_to_str(psi, 3));
 
-		makeLabelAndEdit(this, &_lPsi, &_tPsi, 5, "Psi (º)", psiText, enabledBond);
+		makeLabelAndEdit(this, &_lPsi, &_tPsi, 4, "Psi (º)", psiText, enabledBond);
 
 		_tPsi->setSetterAndObject(&*bond, Bond::setMagicPsi, true);
 

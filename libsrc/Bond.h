@@ -200,18 +200,6 @@ public:
 
 	static void setOccupancy(void *object, double value);
 
-	static double getDampening(void *object)
-	{
-		return static_cast<Bond *>(object)->_dampening;
-	}
-
-	static void setDampening(void *object, double value)
-	{
-		Bond *bond = static_cast<Bond *>(object);
-		bond->_dampening = value;
-		bond->propagateChange(16);
-	}
-
 	/**
 	* 	Returns the bond angle for a bond, between upstream->major->minor.
 	*   \param object C pointer to the bond object, cast as void *.
@@ -455,7 +443,6 @@ private:
 	/* Downstream groups of bonds */
 	std::vector<BondGroupPtr> _bondGroups;
 
-	double _dampening;
 	double _occupancy;
 	double _torsion;
 	double _kick;
