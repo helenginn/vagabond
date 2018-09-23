@@ -177,7 +177,6 @@ public:
 	                      double bFactor = 0);
 	double getAdjustBFactor();
 
-	void reconfigureUnitCell();
 	void setupSymmetry();
 	void summary();
 

@@ -1130,53 +1130,6 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	return rFac;
 }
 
-void Crystal::reconfigureUnitCell()
-{
-	PolymerPtr polymer = ToPolymerPtr(molecule(0));
-
-	Kabsch kabsch;
-
-	std::vector<vec3> xs, ys;
-
-	for (int i = 0; i < polymer->atomCount(); i++)
-	{
-		if (!polymer->atom(i)->isBackbone())
-		{
-			continue;
-		}
-
-		vec3 initPos = polymer->atom(i)->getPDBPosition();
-		vec3 nowPos = polymer->atom(i)->getAbsolutePosition();
-
-		xs.push_back(nowPos);
-		ys.push_back(initPos);
-	}
-
-	kabsch.setAtoms(xs, ys);
-	kabsch.fixCentroids();
-	kabsch.run();
-
-	mat3x3 transform = kabsch.findFinalTransform();
-	//mat3x3 invTrans = mat3x3_inverse(transform);
-
-	std::cout << mat3x3_desc(transform) << std::endl;
-
-	mat3x3 potential = mat3x3_mult_mat3x3(transform, _hkl2real);
-
-	double vals[6];
-	unit_cell_from_mat3x3(potential, vals);
-
-	std::cout << "Potential new unit cell: " << std::endl;
-	std::cout << "\t" << std::endl;
-
-	for (int i = 0; i < 6; i++)
-	{
-		std::cout << vals[i] << " ";
-	}
-
-	std::cout << std::endl;
-}
-
 void Crystal::setupSymmetry()
 {
 	mat3x3 hkl2real = mat3x3_from_unit_cell(_unitCell[0], _unitCell[1],
