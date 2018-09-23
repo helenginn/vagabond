@@ -32,14 +32,6 @@
 #include <math.h>
 #include "vec3.h"
 
-void CSV::histogram(std::map<double, int> histogram)
-{
-	for (std::map<double, int>::iterator it = histogram.begin(); it != histogram.end(); it++)
-	{
-		addEntry(0, it->first, (double)it->second);
-	}
-}
-
 int CSV::findHeader(std::string whichHeader)
 {
 	int chosenHeader = -1;
@@ -60,85 +52,6 @@ int CSV::findHeader(std::string whichHeader)
 	}
 
 	return chosenHeader;
-}
-
-double CSV::valueForHistogramEntry(std::string whichHeader, double value, std::string categoryHeader)
-{
-	if (entries.size() == 0)
-	return 0;
-
-	int categoryNum = 0;
-
-	if (categoryHeader.length())
-	{
-		categoryNum = findHeader(categoryHeader);
-	}
-
-	int chosenHeader = findHeader(whichHeader);
-
-	if (categoryNum < 0 || chosenHeader < 0)
-	{
-		std::cout << "Headers asked for in histogram entry (" << whichHeader << ", " << categoryHeader << ") are not acceptable." << std::endl;
-	}
-
-	return valueForHistogramEntry(chosenHeader, value, categoryNum);
-}
-
-double CSV::valueForHistogramEntry(int chosenHeader, double value, int categoryNum)
-{
-	bool ascending = (entries[0][categoryNum] < entries[1][categoryNum]);
-
-	std::vector<double>::iterator low;
-
-	if (ascending)
-	{
-		low = std::lower_bound(histCategories.begin(), histCategories.end(), value, std::less<double>());
-	}
-	else
-	{
-		low = std::lower_bound(histCategories.begin(), histCategories.end(), value, std::greater<double>());
-	}
-
-	long num = low - histCategories.begin();
-
-	if (num >= histCategories.size())
-	{
-		return 0;
-	}
-
-	return entries[num][chosenHeader];
-}
-
-void CSV::addOneToFrequency(double category, int column, double weight, int categoryNum)
-{
-	bool ascending = (entries[0][categoryNum] < entries[1][categoryNum]);
-
-	for (int j = 0; j < entries.size() - 1; j++)
-	{
-		if ((ascending && category >= entries[j][categoryNum] && category < entries[j + 1][categoryNum])
-		    || (!ascending && category < entries[j][categoryNum] && category >= entries[j + 1][categoryNum]))
-		{
-			entries[j][column] += weight;
-			break;
-		}
-	}
-}
-
-void CSV::addOneToFrequency(double category, std::string whichHeader, double weight, std::string categoryHeader)
-{
-	if (entries.size() == 0)
-	return;
-
-	int column = findHeader(whichHeader);
-
-	int categoryNum = 0;
-
-	if (categoryHeader.length())
-	{
-		categoryNum = findHeader(categoryHeader);
-	}
-
-	addOneToFrequency(category, column, weight, categoryNum);
 }
 
 void CSV::addPartialEntry(int dummy, ...)
