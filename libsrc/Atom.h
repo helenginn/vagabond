@@ -56,10 +56,6 @@ public:
 	/** Positional displacement between average ensemble position and
 	* reference position (usually from PDB). */
 	double posDisplacement();
-	
-	/** Sum of squares of positional displacements between every ensemble
-	* position and reference position (usually from PDB). */
-	double fullPositionDisplacement();
 
 	void setElement(ElementPtr element)
 	{

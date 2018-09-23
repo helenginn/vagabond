@@ -388,37 +388,6 @@ std::string Atom::pdbLineBeginning(std::string start)
 	return line.str();
 }
 
-double Atom::fullPositionDisplacement()
-{
-	if (!isFromPDB())
-	{
-		return 0;
-	}
-	
-	if (!getModel()->hasExplicitPositions())
-	{
-		return 0;
-	}
-
-	std::vector<BondSample> samples = getExplicitModel()->getFinalPositions();
-	vec3 initialPos = getInitialPosition();
-	initialPos = getPDBPosition();
-
-	double score = 0;
-	
-	for (size_t i = 0; i < samples.size(); i++)
-	{
-		vec3 aPos = samples[i].start;
-		vec3 diff = vec3_subtract_vec3(aPos, initialPos);
-		double sqlength = vec3_sqlength(diff);
-		score += sqlength;
-	}
-	
-	score /= (double)samples.size();
-
-	return score;
-}
-
 double Atom::posDisplacement()
 {
 	if (!isFromPDB())
