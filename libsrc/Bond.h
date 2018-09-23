@@ -54,7 +54,6 @@ public:
 	* have been activated. It then sets up the references to the other atoms.
 	* */
 	void activate();
-	void resetBondDirection();
 	void setTorsionAngleFrom(AtomPtr one, AtomPtr two, AtomPtr three,
 	                         AtomPtr four);
 	
@@ -500,11 +499,6 @@ private:
 	bool _refineBondAngle;
 	bool _refineFlexibility;
 
-	/* Bond direction only used when a torsion angle can't be
-	* calculated because it's connected to an Absolute PDB.
-	* Otherwise use as a reference for torsion matrix updates. */
-	vec3 _bondDirection;
-	
 	vec3 _magicAxis;
 
 	std::vector<AtomWkr> _extraTorsionSamples;

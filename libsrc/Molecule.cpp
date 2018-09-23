@@ -222,23 +222,6 @@ void Molecule::addAtom(AtomPtr atom)
 	AtomGroup::addAtom(atom);
 }
 
-
-void Molecule::resetInitialPositions()
-{
-	for (int i = 0; i < atomCount(); i++)
-	{
-		vec3 pos = atom(i)->getAbsolutePosition();
-		atom(i)->setInitialPosition(pos);
-
-		ModelPtr model = atom(i)->getModel();
-
-		if (model->isBond())
-		{
-			ToBondPtr(model)->resetBondDirection();
-		}
-	}
-}
-
 void Molecule::addProperties()
 {
 	addStringProperty("chain_id", &_chainID);

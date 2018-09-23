@@ -38,7 +38,6 @@ void Bond::initialize()
 	_occMult = 1.0;
 	_resetOccupancy = false;
 	_anisotropyExtent = 0.0;
-	_bondDirection = empty_vec3();
 	_magicAxis = empty_vec3();
 	double initialKick = Options::getKick();
 	_kick = initialKick;
@@ -95,7 +94,6 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	deriveBondLength();
 	vec3_set_length(&difference, _bondLength);
 
-	_bondDirection = difference;
 	deriveBondLength();
 	deriveBondAngle();
 	deriveCirclePortion();
@@ -130,7 +128,6 @@ Bond::Bond(Bond &other)
 	_bondLength = other._bondLength;
 	_changedPos = true;
 	_changedSamples = true;
-	_bondDirection = other._bondDirection;
 	_heavyAlign = other._heavyAlign;
 	_lightAlign = other._lightAlign;
 	
@@ -520,7 +517,6 @@ void Bond::setMinor(AtomPtr newMinor)
 	vec3 difference = vec3_subtract_vec3(majorPos, minorPos);
 	vec3_set_length(&difference, _bondLength);
 
-	_bondDirection = difference;
 }
 
 void Bond::activate()
@@ -1167,23 +1163,6 @@ std::string Bond::description()
 	return stream.str();
 }
 
-void Bond::resetBondDirection()
-{
-	vec3 majorPos = getMajor()->getAbsolutePosition();
-	vec3 minorPos = getMinor()->getAbsolutePosition();
-
-	if (getParentModel()->isBond())
-	{
-		ToBondPtr(getParentModel())->getDistribution();
-		majorPos = ToBondPtr(getParentModel())->getAbsolutePosition();
-		getDistribution();
-		minorPos = getAbsolutePosition();
-	}
-
-	_bondDirection = vec3_subtract_vec3(majorPos, minorPos);
-	vec3_set_length(&_bondDirection, _bondLength);
-}
-
 bool Bond::isRefinable()
 {
 	return isNotJustForHydrogens() && !isFixed();
@@ -1335,7 +1314,6 @@ void Bond::addProperties()
 	addBoolProperty("activated", &_activated);
 	addBoolProperty("disabled", &_disabled);
 
-	addVec3Property("bond_direction", &_bondDirection);
 	addVec3Property("magic_axis", &_magicAxis);
 	
 	for (int i = 0; i < downstreamBondGroupCount(); i++)

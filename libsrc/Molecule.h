@@ -45,7 +45,6 @@ public:
 	                            int conformer = -1);
 	virtual void graph(std::string) {};
 	virtual void differenceGraphs(std::string, CrystalPtr) {};
-	void resetInitialPositions();
 	void setAnchors();
 	void makePowderList();
 	void expandWaters();
