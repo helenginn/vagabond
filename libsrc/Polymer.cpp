@@ -35,10 +35,7 @@
 
 Polymer::Polymer()
 {
-	_dampening = Options::getDampen();
 	_kick = Options::getKick();
-	_sideDampening = 0.05;
-	_sideKick = 0;
 	_anchorNum = -1;
 	_totalMonomers = 0;
 	_startB = Options::getBStart();
@@ -705,45 +702,6 @@ void Polymer::graph(std::string graphName)
 	}
 }
 
-
-double Polymer::getSidechainDampening(void *object)
-{
-	return static_cast<Polymer *>(object)->_sideDampening;
-}
-
-void Polymer::setSidechainDampening(void *object, double value)
-{
-	Polymer *polymer = static_cast<Polymer *>(object);
-	polymer->_sideDampening = value;
-
-	for (int i = 0; i < polymer->monomerCount(); i++)
-	{
-		if (polymer->getMonomer(i))
-		{
-			polymer->getMonomer(i)->setSidechainDampening(value);
-		}
-	}
-}
-
-double Polymer::getBackboneDampening(void *object)
-{
-	return static_cast<Polymer *>(object)->_dampening;
-}
-
-void Polymer::setBackboneDampening(void *object, double value)
-{
-	Polymer *polymer = static_cast<Polymer *>(object);
-	polymer->_dampening = value;
-
-	for (int i = 0; i < polymer->monomerCount(); i++)
-	{
-		if (polymer->getMonomer(i))
-		{
-			polymer->getMonomer(i)->setBackboneDampening(value);
-		}
-	}
-}
-
 void Polymer::findAnchorNearestCentroid()
 {
 	vec3 sum = make_vec3(0, 0, 0);
@@ -828,12 +786,6 @@ void Polymer::hydrogenateContents()
 	}
 }
 
-
-double Polymer::getBackboneKick(void *object)
-{
-	return static_cast<Polymer *>(object)->_kick;
-}
-
 void Polymer::vsMultiplyBackboneKick(void *object, double value)
 {
 	Parser *parser = static_cast<Parser *>(object);
@@ -867,37 +819,6 @@ void Polymer::vsMultiplyBackboneKick(void *object, double value)
 	poly->refreshPositions();
 }
 
-void Polymer::setBackboneKick(void *object, double value)
-{
-	Polymer *poly = static_cast<Polymer *>(object);
-	int anchor = poly->getAnchor();
-	poly->_kick = value;
-
-	for (int i = 0; i < poly->atomCount(); i++)
-	{
-		ModelPtr model = poly->atom(i)->getModel();
-		if (!model || !model->isBond())
-		{
-			continue;
-		}
-		
-		BondPtr bond = ToBondPtr(model);
-		
-		if (!bond->connectsAtom("CA"))
-		{
-			continue;	
-		}
-		
-		double mult = 1;
-		if (poly->atom(i)->getResidueNum() < anchor)
-		{
-			mult = -1;
-		}
-		
-		Bond::setKick(&*bond, value * mult);
-	}
-}
-
 void Polymer::setInitialKick(void *object, double value)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
@@ -925,28 +846,6 @@ void Polymer::setInitialKick(void *object, double value)
 	}
 }
 
-/* For side chains, obviously */
-double Polymer::getSideKick(void *object)
-{
-	return static_cast<Polymer *>(object)->_sideKick;
-}
-
-void Polymer::setSideKick(void *object, double value)
-{
-	Polymer *polymer = static_cast<Polymer *>(object);
-	polymer->_sideKick = value;
-
-	for (int i = 0; i < polymer->monomerCount(); i++)
-	{
-		if (!polymer->getMonomer(i))
-		{
-			continue;
-		}
-
-		polymer->getMonomer(i)->setSideKick(value);
-	}
-}
-
 double Polymer::getInitialKick(void *object)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
@@ -966,7 +865,6 @@ ExplicitModelPtr Polymer::getAnchorModel()
 
 	return ToExplicitModelPtr(model);
 }
-
 
 void Polymer::closenessSummary()
 {
@@ -1214,36 +1112,6 @@ void Polymer::attachTargetToRefinement(RefinementStrategyPtr strategy,
 
 	strategy->setEvaluationFunction(FlexGlobal::score, &target);
 	FlexGlobal::score(&target);
-}
-
-double Polymer::vsFindKickAndDampen(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	
-	return findOverallKickAndDampen(polymer);
-}
-
-double Polymer::findOverallKickAndDampen(void *object)
-{
-	Polymer *poly = static_cast<Polymer *>(object);
-	NelderMeadPtr nelderMead = NelderMeadPtr(new RefinementNelderMead());
-
-	nelderMead->addParameter(poly, getBackboneKick, setBackboneKick,
-	                         0.001, 0.0001);
-	nelderMead->addParameter(poly, getBackboneDampening, setBackboneDampening,
-	                         0.005, 0.0005);
-	nelderMead->setVerbose(true);
-	
-	Timer timer("overall kick and dampen", true);
-
-	FlexGlobal target;
-	poly->attachTargetToRefinement(nelderMead, target);
-	nelderMead->refine();
-
-	timer.report();
-
-	return 0;
 }
 
 double Polymer::vsSandbox(void *object)

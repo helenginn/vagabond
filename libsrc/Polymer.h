@@ -40,28 +40,15 @@ public:
 	static void refineVScript(void *object, RefinementType rType);
 	static double vsRefineSidechainsToDensity(void *object);
 	static double vsRefinePositionsToPDB(void *object);
+	static double vsRefineLocalFlexibility(void *object);
+	static double vsRefineGlobalFlexibility(void *object);
 	
 	virtual void graph(std::string graphName);
 	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst);
 
-	static double getBackboneDampening(void *object);
-	static void setBackboneDampening(void *object, double value);
-
-	static double getBackboneKick(void *object);
-	static void setBackboneKick(void *object, double value);
-
-	static double getSidechainDampening(void *object);
-	static void setSidechainDampening(void *object, double value);
-
 	static void setInitialKick(void *object, double value);
 	static double getInitialKick(void *object);
 
-	static double getSideKick(void *object);
-	static void setSideKick(void *object, double value);
-
-	static double findOverallKickAndDampen(void *object);
-	static double vsFindKickAndDampen(void *object);
-	
 	static double vsSandbox(void *object);
 	
 	void scaleSidechainsToBFactor();
@@ -153,10 +140,7 @@ private:
 
 	int _anchorNum;
 	double _startB;
-	double _dampening;
 	double _kick;
-	double _sideDampening;
-	double _sideKick;
 	int _totalMonomers;
 
 	AtomGroupPtr _allBackbones;
