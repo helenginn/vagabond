@@ -328,57 +328,6 @@ void Sidechain::parameteriseAsRotamers()
 		double occ = rotamers[i].allOccupancy;
 		Bond::setOccupancy(&*bond, occ);
 	}
-
-	refreshRotamers();
-}
-
-void Sidechain::refreshRotamers()
-{
-	if (!_rotamerised)
-	{
-		warn_user("Trying to refresh rotamers without having rotamerised");
-	}
-
-	AtomList atoms = findAtoms("CB");
-	double occTotal = 0;
-	double occWeight = 0;
-	double expTotal = 0;
-
-	for (int i = 0; i < atoms.size(); i++)
-	{
-		AtomPtr atom = atoms[i].lock();
-		if (atom->getModel()->isBond())
-		{
-			BondPtr bond = ToBondPtr(atom->getModel());
-			double occ = Bond::getOccupancy(&*bond);
-			double myExp = exp(-_exponent * occTotal * occTotal);
-
-			expTotal += myExp;
-			occTotal += occ;
-			occWeight += occ * myExp;
-		}
-	}
-
-	occWeight /= expTotal;
-
-	occTotal = 0;
-	double test = 0;
-	for (int i = 0; i < atoms.size(); i++)
-	{
-		AtomPtr atom = atoms[i].lock();
-		if (atom->getModel()->isBond())
-		{
-			BondPtr bond = ToBondPtr(atom->getModel());
-			double myExp = exp(-_exponent * occTotal * occTotal);
-			double mult = myExp / (occWeight * expTotal);
-			occTotal += Bond::getOccupancy(&*bond);
-			bond->setOccupancyMult(mult);
-
-			double newOcc = bond->getMultOccupancy();
-			//    std::cout << "New occupancy state " << i << ", " << newOcc << std::endl;
-			test += newOcc;
-		}
-	}
 }
 
 void Sidechain::addProperties()

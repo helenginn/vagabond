@@ -29,7 +29,6 @@ public:
 	{
 		_canRefine = false;
 		_rotamerised = false;
-		_exponent = 0;
 	}
 	
 	virtual ~Sidechain() {};
@@ -75,20 +74,6 @@ public:
 	virtual void refine(CrystalPtr target, RefinementType rType);
 
 
-	static void setRotamerExponent(void *object, double exp)
-	{
-		if (exp < 0) exp = 0;
-		Sidechain *side = static_cast<Sidechain *>(object);
-		side->_exponent = exp;
-		side->refreshRotamers();
-
-	}
-
-	static double getRotamerExponent(void *object)
-	{
-		return static_cast<Sidechain *>(object)->_exponent;
-	}
-
 protected:
 	virtual AtomList topLevelAtoms()
 	{
@@ -107,11 +92,9 @@ protected:
 
 	virtual void addProperties();
 private:
-	void refreshRotamers();
 	bool _rotamerised;
 	bool _canRefine;
 	int _resNum;
-	double _exponent; /* For rotamer weighting */
 	PolymerWkr _myPolymer;
 };
 

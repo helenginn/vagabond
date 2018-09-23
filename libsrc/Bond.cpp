@@ -34,7 +34,6 @@ void Bond::initialize()
 	_fixed = false;
 	_splitBlock = false;
 	_occupancy = 1.0;
-	_occMult = 1.0;
 	_resetOccupancy = false;
 	_anisotropyExtent = 0.0;
 	_magicAxis = empty_vec3();
@@ -102,7 +101,6 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 Bond::Bond(Bond &other)
 {
 	_occupancy = other._occupancy;
-	_occMult = other._occMult;
 	_usingTorsion = other._usingTorsion;
 	_activated = other._activated;
 	_major = other._major;
@@ -1298,7 +1296,6 @@ void Bond::addProperties()
 	addDoubleProperty("psi", &_psi);    
 	addDoubleProperty("dampening", &_dampening);
 	addDoubleProperty("occupancy", &_occupancy);
-	addDoubleProperty("occ_mult", &_occMult);
 	addBoolProperty("occ_reset", &_resetOccupancy);
 
 	addBoolProperty("fixed", &_fixed);

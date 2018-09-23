@@ -353,12 +353,6 @@ public:
 		return _bondGroups[i];
 	}
 
-	void setOccupancyMult(double mult)
-	{
-		_occMult = mult;
-		propagateChange();
-	}
-
 	std::string description();
 	virtual std::string shortDesc();
 	std::string getPDBContribution();
@@ -407,12 +401,6 @@ public:
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 
 	std::vector<BondSample> *getManyPositions(void *object = NULL);
-
-	double getMultOccupancy()
-	{
-		if (_resetOccupancy) return 1;
-		return _occupancy * _occMult;
-	}
 	
 	void setRefineFlexibility(bool value = true)
 	{
@@ -470,7 +458,6 @@ private:
 	double _dampening;
 	bool _activated;
 	double _occupancy;
-	double _occMult;
 	double _torsion;
 	double _kick;
 	double _phi;
