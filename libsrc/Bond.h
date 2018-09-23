@@ -54,8 +54,6 @@ public:
 	* have been activated. It then sets up the references to the other atoms.
 	* */
 	void activate();
-	ModelPtr reverse(BondPtr upstreamBond);
-	void reverseDownstreamAtoms(int group);
 	void resetBondDirection();
 	void setTorsionAngleFrom(AtomPtr one, AtomPtr two, AtomPtr three,
 	                         AtomPtr four);
@@ -471,9 +469,6 @@ protected:
 	virtual void sanityCheck();
 
 private:
-	void initialize();
-	double getBaseTorsion();
-
 	std::string _shortDesc;
 
 	AtomWkr _major;
@@ -485,24 +480,7 @@ private:
 
 	/* Downstream groups of bonds */
 	std::vector<BondGroupPtr> _bondGroups;
-	
-	
-	Bond *nakedDownstreamBond(int group, int i)
-	{
-		return _bondGroups[group]->bond(i);
-	}
-	
-	BondPtr downstreamBond(int group, int i)
-	{
-		return nakedDownstreamBond(group, i)->shared_from_this();
-	}
 
-	/* Returns upstream bond group pertaining to this bond. */
-	BondGroupPtr bondGroupForBond();
-
-	std::vector<AtomWkr> _extraTorsionSamples;
-
-	/* Dampening should be associated with a bond group - woops */
 	double _dampening;
 	bool _activated;
 	double _occupancy;
@@ -515,6 +493,22 @@ private:
 	double _geomRatio;
 	double _expectedAngle;
 	
+	bool _usingTorsion;
+
+	/* Flag to say whether recalculation should occur */
+	bool _changedPos, _changedSamples;
+	bool _refineBondAngle;
+	bool _refineFlexibility;
+
+	/* Bond direction only used when a torsion angle can't be
+	* calculated because it's connected to an Absolute PDB.
+	* Otherwise use as a reference for torsion matrix updates. */
+	vec3 _bondDirection;
+	
+	vec3 _magicAxis;
+
+	std::vector<AtomWkr> _extraTorsionSamples;
+
 	bool _resetOccupancy;
 	
 	/* If blocked, do not duplicate downstream */
@@ -529,6 +523,23 @@ private:
 	/* Has been set as an anchor, will not respond to 'propagate change'*/
 	bool _anchored;
 
+	void initialize();
+	double getBaseTorsion();
+
+	/* Returns upstream bond group pertaining to this bond. */
+	BondGroupPtr bondGroupForBond();
+
+
+	Bond *nakedDownstreamBond(int group, int i)
+	{
+		return _bondGroups[group]->bond(i);
+	}
+	
+	BondPtr downstreamBond(int group, int i)
+	{
+		return nakedDownstreamBond(group, i)->shared_from_this();
+	}
+
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();
 	void deriveBondAngle();
@@ -538,13 +549,6 @@ private:
 
 	void addDownstreamBond(Bond *bond, int group);
 
-	/* Bond direction only used when a torsion angle can't be
-	* calculated because it's connected to an Absolute PDB.
-	* Otherwise use as a reference for torsion matrix updates. */
-	vec3 _bondDirection;
-	
-	vec3 _magicAxis;
-
 	/** Supply deviations of correct torsion angles into prevs->torsion */
 	void correctTorsionAngles(std::vector<BondSample> *prevs);
 
@@ -553,15 +557,7 @@ private:
 
 	void copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum);
 	BondPtr duplicateDownstream(BondPtr newBranch, int groupNum);
-	bool _usingTorsion;
-
-	/* Flag to say whether recalculation should occur */
-	bool _changedPos, _changedSamples;
-	bool _refineBondAngle;
-	bool _refineFlexibility;
-
 	mat3x3 getMagicMat(vec3 direction);
-
 
 };
 
