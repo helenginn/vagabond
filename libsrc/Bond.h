@@ -441,9 +441,6 @@ public:
 		_splitBlock = block;
 	}
 protected:
-
-	AtomWkr _minor;
-
 	virtual std::string getParserIdentifier()
 	{
 		return "bond_" + shortDesc();
@@ -460,6 +457,8 @@ private:
 	std::string _shortDesc;
 
 	AtomWkr _major;
+	AtomWkr _minor;
+
 
 	AtomWkr _heavyAlign;
 
