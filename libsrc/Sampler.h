@@ -86,7 +86,6 @@ public:
 
 	/** Add absolute B factor for an atom controlled by Absolute class */
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
-	void addRotamer(Sidechain *side, double range, double interval);
 	void addMagicAngle(BondPtr bond, double range, double interval);
 	void setCrystal(CrystalPtr crystal);
 	bool sample(bool clear = true);
@@ -189,11 +188,6 @@ protected:
 	void setupCloseAtoms();
 	void setupScoreWithMap();
 private:
-	double preScanParameter(BondPtr bond, Getter getter, Setter setter,
-	                      double stepSize);
-
-	double preScanParams(BondPtr aBond, BondPtr bBond,
-	                     Getter getter, Setter setter, double stepSize);
 	void addAtomsForBond(BondPtr bond);
 	void addParamsForBond(BondPtr bond, bool even = true);
 	CrystalPtr _crystal;
