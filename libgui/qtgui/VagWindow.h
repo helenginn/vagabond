@@ -59,19 +59,12 @@ public:
 protected:
 	virtual void resizeEvent(QResizeEvent *);
 private slots:
-	void pushFitWholeR();
-	void pushFitWholeT();
-	void pushRefinePositions();
-	void pushRefineFlexibility();
 	void pushBMultiplier();
 	void pushExploreMcule();
 	void pushExploreCrystal();
-	void pushRefineDensity();
-	void recalculateFFT();
-	void openInCoot();
-	void findDisulphides();
 	void restorePreviousState();
 	void refineWaterNetwork();
+	void pushSendInstruction(InstructionType inst);
 
 	void toggleScaling(ScalingType type);
 	void adjustBFactor();

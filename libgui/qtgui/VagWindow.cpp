@@ -100,25 +100,23 @@ void VagWindow::makeButtons()
 	bRefinePos = new QPushButton("Refine positions to PDB", this);
 	bRefinePos->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 0, BUTTON_WIDTH , 50);
 	bRefinePos->setEnabled(false);
-	connect(bRefinePos, SIGNAL(clicked()), this, SLOT(pushRefinePositions()));
+	connect(bRefinePos, &QPushButton::clicked,
+			[=]{ pushSendInstruction(InstructionTypeRefinePositions); });
 	buttons.push_back(bRefinePos);
 
 	bFitWholeT = new QPushButton("Fit molecule translation", this);
 	bFitWholeT->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 100, BUTTON_WIDTH , 50);
 	bFitWholeT->setEnabled(false);
-	connect(bFitWholeT, SIGNAL(clicked()), this, SLOT(pushFitWholeT()));
-	buttons.push_back(bFitWholeT);
+	connect(bFitWholeT, &QPushButton::clicked,
+			[=]{ pushSendInstruction(InstructionTypeFitTranslation); });
 
-	bFitWholeR = new QPushButton("Fit molecule rotation", this);
-	bFitWholeR->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 150, BUTTON_WIDTH , 50);
-	bFitWholeR->setEnabled(false);
-	connect(bFitWholeR, SIGNAL(clicked()), this, SLOT(pushFitWholeR()));
-	buttons.push_back(bFitWholeR);
+	buttons.push_back(bFitWholeT);
 
 	bRefineDensity = new QPushButton("Refine sidechains to density", this);
 	bRefineDensity->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 200, BUTTON_WIDTH , 50);
 	bRefineDensity->setEnabled(false);
-	connect(bRefineDensity, SIGNAL(clicked()), this, SLOT(pushRefineDensity()));
+	connect(bRefineDensity, &QPushButton::clicked,
+			[=]{ pushSendInstruction(InstructionTypeRefineDensity); });
 	buttons.push_back(bRefineDensity);
 
 	bChangeBMult = new QPushButton("Set hetatm B multiplier", this);
@@ -130,7 +128,8 @@ void VagWindow::makeButtons()
 	bRecalculate = new QPushButton("Recalculate FFT", this);
 	bRecalculate->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 300, BUTTON_WIDTH , 50);
 	bRecalculate->setEnabled(false);
-	connect(bRecalculate, SIGNAL(clicked()), this, SLOT(recalculateFFT()));    
+	connect(bRecalculate, &QPushButton::clicked,
+			[=]{ pushSendInstruction(InstructionTypeRecalculateFFT); });
 	buttons.push_back(bRecalculate);
 
 	bWaterNetwork = new QPushButton("Scan bond params", this);
@@ -164,7 +163,8 @@ void VagWindow::makeButtons()
 	bCoot = new QPushButton("Open in Coot", this);
 	bCoot->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 550, BUTTON_WIDTH , 50);
 	bCoot->setEnabled(false);
-	connect(bCoot, SIGNAL(clicked()), this, SLOT(openInCoot()));
+	connect(bCoot, &QPushButton::clicked,
+			[=]{ pushSendInstruction(InstructionTypeOpenInCoot); });
 	buttons.push_back(bCoot);
 
 	_myDialogue = NULL;
@@ -299,12 +299,8 @@ int VagWindow::waitForInstructions()
 				options->refineAll(RefinementModelPos, 1);
 				break;
 
-				case InstructionTypeFitWholeMoleculeTranslation: 
+				case InstructionTypeFitTranslation: 
 				options->fitWholeMolecule(true, false);
-				break;
-
-				case InstructionTypeFitWholeMoleculeRotation: 
-				options->fitWholeMolecule(false, true);
 				break;
 
 				case InstructionTypeSqueezeToEnd: 
@@ -459,12 +455,6 @@ void VagWindow::disable()
 	}
 }
 
-void VagWindow::pushRefinePositions()
-{
-	_instructionType = InstructionTypeRefinePositions;
-	wait.wakeAll();
-}
-
 void VagWindow::pushBMultiplier()
 {
 	delete _myDialogue;
@@ -477,51 +467,15 @@ void VagWindow::pushBMultiplier()
 	_myDialogue->show();
 }
 
-void VagWindow::pushFitWholeT()
+void VagWindow::pushSendInstruction(InstructionType inst)
 {
-	_instructionType = InstructionTypeFitWholeMoleculeTranslation;
-	wait.wakeAll();
-}
-
-void VagWindow::pushFitWholeR()
-{
-	_instructionType = InstructionTypeFitWholeMoleculeRotation;
-	wait.wakeAll();
-}
-
-void VagWindow::pushRefineFlexibility()
-{
-	_instructionType = InstructionTypeRefineFlexibility;
-	wait.wakeAll();
-}
-
-void VagWindow::pushRefineDensity()
-{
-	_instructionType = InstructionTypeRefineDensity;
-	wait.wakeAll();
-}
-
-void VagWindow::recalculateFFT()
-{
-	_instructionType = InstructionTypeRecalculateFFT;
-	wait.wakeAll();
-}
-
-void VagWindow::openInCoot()
-{
-	_instructionType = InstructionTypeOpenInCoot;
+	_instructionType = inst;
 	wait.wakeAll();
 }
 
 void VagWindow::refineWaterNetwork()
 {
 	_instructionType = InstructionTypeRefineWaterNetwork;
-	wait.wakeAll();
-}
-
-void VagWindow::findDisulphides()
-{
-	_instructionType = InstructionTypeFindDisulphides;
 	wait.wakeAll();
 }
 
