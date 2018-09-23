@@ -182,6 +182,11 @@ public:
 		return _bReal;
 	}
 	
+	static void setGlobalBFactor(double val)
+	{
+		_bReal = val;
+	}
+	
 	static void resetGlobalBFactor()
 	{
 		_bReal = -1;
