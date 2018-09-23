@@ -114,17 +114,6 @@ public:
 	}
 	
 	void setHeavyAlign(AtomPtr atom, bool from_sister = false);
-
-	/**
-	*  This is the second atom on which the torsion angle is
-	*  calculated. Perfect alignment of heavy atom and light atom will
-	*  be a torsion angle of 0.
-	*  \return light alignment atom.	
-	*/
-	AtomPtr getLightAlign()
-	{
-		return _lightAlign.lock();
-	}
 	
 	/**
 	* 	If an atom of a given name is part of this bond.
@@ -473,7 +462,6 @@ private:
 	AtomWkr _major;
 
 	AtomWkr _heavyAlign;
-	AtomWkr _lightAlign;
 
 	double _bondLength;
 
