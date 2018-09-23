@@ -7,7 +7,6 @@
 //
 
 #include "Polymer.h"
-#include "BoneDensity.h"
 #include "Timer.h"
 #include "Crystal.h"
 #include "Sidechain.h"

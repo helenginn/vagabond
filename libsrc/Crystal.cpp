@@ -26,7 +26,6 @@
 #include "Atom.h"
 #include "Kabsch.h"
 #include "RefinementGridSearch.h"
-#include "BoneDensity.h"
 #include "BucketBulkSolvent.h"
 #include "BucketMonteCarlo.h"
 #include "Options.h"
