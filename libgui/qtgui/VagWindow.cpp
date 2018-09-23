@@ -645,7 +645,6 @@ void VagWindow::setRenderDensity()
 
 void VagWindow::adjustBFactor()
 {
-	std::cout << "Adjusting B factor..." << std::endl;
 	_instructionType = InstructionTypeAdjustBFactor;
 	wait.wakeAll();
 }
