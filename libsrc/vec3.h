@@ -131,6 +131,16 @@ inline void vec3_mult(vec3 *aVec, double mult)
 	aVec->z *= mult;
 }
 
+inline vec3 vec3_mult(vec3 &vec, double mult)
+{
+	vec3 aVec;
+	aVec.x = mult * aVec.x;
+	aVec.y = mult * aVec.y;
+	aVec.z = mult * aVec.z;
+	
+	return aVec;
+}
+
 
 inline void vec3_set_length(vec3 *vec, double length)
 {

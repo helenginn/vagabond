@@ -6,6 +6,7 @@
 //  Copyright (c) 2018 Helen Ginn. All rights reserved.
 //
 
+#include "RefineMat3x3.h"
 #include "Anchor.h"
 #include "Absolute.h"
 #include "Anisotropicator.h"
@@ -20,9 +21,11 @@ Anchor::Anchor(AbsolutePtr absolute)
 	_position = absolute->getAbsolutePosition();
 	_molecule = absolute->getMolecule();
 	_atom = absolute->getAtom();
-	_translation = make_mat3x3();
 	_rotVec = make_vec3(0, 0, 0);
 	_rotCentre = make_vec3(0, 0, 0);
+	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
+	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
+	_libration->setZero();
 }
 
 void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom, 
@@ -51,7 +54,9 @@ Anchor::Anchor()
 	_cDir = empty_vec3();
 	_rotVec = make_vec3(0, 0, 0);
 	_rotCentre = make_vec3(0, 0, 0);
-	_translation = make_mat3x3();
+	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
+	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
+	_libration->setZero();
 }
 
 AtomPtr Anchor::getOtherAtom(AtomPtr calling)
@@ -176,40 +181,35 @@ void Anchor::createStartPositions(Atom *callAtom)
 
 void Anchor::rotateBases()
 {
-	if (vec3_length(_rotVec) < 1e-6)
-	{
-		return;
-	}
-
 	vec3 empty = empty_vec3();
-	vec3 reverseCentre = _rotCentre;
-	vec3_mult(&reverseCentre, -1);
+	mat3x3 libration = _libration->getMat3x3();
+	Anisotropicator tropicator;
+	tropicator.setTensor(libration);
+	mat3x3 lib = tropicator.basis();
 	
 	for (int i = 0; i < _storedSamples.size(); i++)
 	{
 		vec3 start = _storedSamples[i].start;
+		vec3 neg_start = vec3_mult(start, -1);
 		vec3 diff = vec3_subtract_vec3(start, _position);
-		double dot = vec3_dot_vec3(diff, _rotVec);
-		mat3x3 rot_mat = mat3x3_unit_vec_rotation(_rotVec, dot);
-		mat4x4 rot_mat4 = mat4x4_from_rot_trans(rot_mat, empty);
-
-		mat4x4 change = make_mat4x4();
-		mat4x4_translate(&change, _rotCentre);
-		change = mat4x4_mult_mat4x4(rot_mat4, change);
-		mat4x4_translate(&change, reverseCentre);
-
-		mat4x4 basis = mat4x4_from_rot_trans(_storedSamples[i].basis, empty);
-		mat4x4 transformed = mat4x4_mult_mat4x4(change, basis);
-
-		mat3x3 tmp = mat4x4_get_rot(transformed);
-		_storedSamples[i].basis = tmp;
+//		mat3x3_mult_vec(lib, &diff);
+		for (int j = 0; j < 3; j++)
+		{
+			vec3 rot_vec = mat3x3_axis(lib, j);
+			double dot = vec3_dot_vec3(diff, rot_vec);
+			mat3x3 rot_mat = mat3x3_unit_vec_rotation(rot_vec, dot);
+			mat3x3 basis = mat3x3_mult_mat3x3(rot_mat, 
+			                                  _storedSamples[i].basis); 
+			_storedSamples[i].basis = basis;
+		}
 	}
 }
 
 void Anchor::translateStartPositions()
 {
+	mat3x3 translation = _trans->getMat3x3();
 	Anisotropicator tropicator;
-	tropicator.setTensor(_translation);
+	tropicator.setTensor(translation);
 	mat3x3 trans = tropicator.basis();
 
 	vec3 sum = empty_vec3();
@@ -275,7 +275,6 @@ std::string Anchor::shortDesc()
 
 std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 {
-	std::vector<BondSample> copied = _storedSamples;
 	Atom *callAtom = static_cast<Atom *>(caller);
 	createStartPositions(callAtom);
 	rotateBases();
@@ -297,7 +296,8 @@ void Anchor::addProperties()
 	addVec3Property("post_c", &_cDir2);
 	addVec3Property("rot_vec", &_rotVec);
 	addVec3Property("rot_centre", &_rotCentre);
-	addMat3x3Property("translation", &_translation);
+	addMat3x3Property("translation", _trans->getMat3x3Ptr());
+	addMat3x3Property("libration", _libration->getMat3x3Ptr());
 	addReference("c_atom", _cAtom.lock());
 	Model::addProperties();
 }
@@ -333,4 +333,14 @@ void Anchor::propagateChange(int depth, bool refresh)
 	/* Will force recalculation of final positions */
 	Model::propagateChange(depth, refresh);
 
+}
+
+void Anchor::addTranslationParameters(RefinementStrategyPtr strategy)
+{
+	_trans->addToStrategy(strategy, 0.5, 0.01, "tr");
+}
+
+void Anchor::addLibrationParameters(RefinementStrategyPtr strategy)
+{
+	_libration->addToStrategy(strategy, 0.2, 0.005, "li");
 }

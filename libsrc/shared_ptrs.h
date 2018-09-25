@@ -136,6 +136,9 @@ typedef boost::shared_ptr<Object> ObjectPtr;
 class ParamBand;
 typedef boost::shared_ptr<ParamBand> ParamBandPtr;
 
+class RefineMat3x3;
+typedef boost::shared_ptr<RefineMat3x3> RefineMat3x3Ptr;
+
 class RefinementGridSearch;
 class RefinementStepSearch;
 class RefinementStrategy;
