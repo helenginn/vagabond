@@ -45,6 +45,11 @@ void Vagabond2GL::updateAtoms()
 
 		for (int k = 0; k < total; k++)
 		{
+			if (majBonds.size() <= k || minBonds.size() <= k)
+			{
+				continue;
+			}
+
 			vec3 majStart = majBonds[k];
 			vec3 minStart = minBonds[k];
 
