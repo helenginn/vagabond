@@ -1026,22 +1026,6 @@ void Polymer::refineAnchorMovements()
 
 	attachTargetToRefinement(nelderMead, target);
 
-	/*
-	nelderMead->addParameter(&*anchor, Anchor::getRotVecX,
-	                         Anchor::setRotVecX, 0.2, 0.01);
-	nelderMead->addParameter(&*anchor, Anchor::getRotVecY,
-	                         Anchor::setRotVecY, 0.2, 0.01);
-	nelderMead->addParameter(&*anchor, Anchor::getRotVecZ,
-	                         Anchor::setRotVecZ, 0.2, 0.01);
-
-	nelderMead->addParameter(&*anchor, Anchor::getRotCentreX,
-	                         Anchor::setRotCentreX, 4.0, 0.01);
-	nelderMead->addParameter(&*anchor, Anchor::getRotCentreY,
-	                         Anchor::setRotCentreY, 4.0, 0.01);
-	nelderMead->addParameter(&*anchor, Anchor::getRotCentreZ,
-	                         Anchor::setRotCentreZ, 4.0, 0.01);
-	*/
-
 	nelderMead->setCycles(24);
 	nelderMead->setVerbose(true);
 	nelderMead->clearParameters();
