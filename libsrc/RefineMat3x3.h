@@ -40,58 +40,85 @@ public:
 	static void setTensor11(void *object, double value)
 	{
 		toMat(object)->_mat.vals[0] = value;
-		(*toMat(object)->_clean)(toMat(object)->_parent);
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
 	}
 
 	static void setTensor12(void *object, double value)
 	{
 		toMat(object)->_mat.vals[1] = value;
 		toMat(object)->_mat.vals[3] = value;
-		(*toMat(object)->_clean)(toMat(object)->_parent);
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
 	}
 
 	static void setTensor21(void *object, double value)
 	{
 		toMat(object)->_mat.vals[3] = value;
-		(*toMat(object)->_clean)(toMat(object)->_parent);
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
 	}
 
 	static void setTensor13(void *object, double value)
 	{
 		toMat(object)->_mat.vals[2] = value;
 		toMat(object)->_mat.vals[6] = value;
-		(*toMat(object)->_clean)(toMat(object)->_parent);
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
 	}
 
 	static void setTensor31(void *object, double value)
 	{
 		toMat(object)->_mat.vals[6] = value;
-		(*toMat(object)->_clean)(toMat(object)->_parent);
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
 	}
 
 	static void setTensor22(void *object, double value)
 	{
 		toMat(object)->_mat.vals[4] = value;
-		(*toMat(object)->_clean)(toMat(object)->_parent);
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
 	}
 
 	static void setTensor32(void *object, double value)
 	{
 		toMat(object)->_mat.vals[7] = value;
-		(*toMat(object)->_clean)(toMat(object)->_parent);
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
 	}
 
 	static void setTensor23(void *object, double value)
 	{
 		toMat(object)->_mat.vals[5] = value;
 		toMat(object)->_mat.vals[7] = value;
-		(*toMat(object)->_clean)(toMat(object)->_parent);
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
 	}
 
 	static void setTensor33(void *object, double value)
 	{
 		toMat(object)->_mat.vals[8] = value;
-		(*toMat(object)->_clean)(toMat(object)->_parent);
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
 	}
 
 	static double getTensor11(void *object)
