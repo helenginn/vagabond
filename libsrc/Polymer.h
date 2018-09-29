@@ -96,6 +96,11 @@ public:
 		return MonomerPtr();
 	}
 
+	int monomerBegin()
+	{
+		return _monomers.begin()->first;
+	}
+	
 	int monomerCount()
 	{
 		//        return _monomers.size();
