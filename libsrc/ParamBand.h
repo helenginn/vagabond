@@ -32,6 +32,7 @@ class ParamBand
 {
 public:
 	ParamBand();
+	ParamBand(ParamBand &other);
 	
 	void setPrivateGetter(Getter getter)
 	{

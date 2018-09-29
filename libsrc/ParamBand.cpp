@@ -24,6 +24,14 @@ ParamBand::ParamBand()
 	_paramValue = 0;
 }
 
+ParamBand::ParamBand(ParamBand &other)
+{
+	_getter = other._getter;
+	_setter = other._setter;
+	_paramValue = other._paramValue;
+	_objects = other._objects;
+}
+
 void ParamBand::addObject(void *object, double weight)
 {
 	ObjectWeight pair;
