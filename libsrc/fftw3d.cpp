@@ -1496,15 +1496,15 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 	if (unitCell.size() < 6)
 	{
 		unitCell.resize(6);
-		unitCell[0] = nx * scales[0];
-		unitCell[1] = ny * scales[1];
-		unitCell[2] = nz * scales[2];
-		unitCell[3] = 90;
-		unitCell[4] = 90;
-		unitCell[5] = 90;
+		unit_cell_from_mat3x3(_basis, &unitCell[0]);
+		unitCell[0] *= nx;
+		unitCell[1] *= ny;
+		unitCell[2] *= nz;
 
 		mtzspg = CSym::ccp4spg_load_by_ccp4_num(1);
-		real2Frac = mat3x3_from_unit_cell(&(unitCell[0]));
+		real2Frac = mat3x3_from_unit_cell(&unitCell[0]);
+		real2Frac = mat3x3_inverse(real2Frac);
+		
 	}
 
 	cell[0] = unitCell[0];
