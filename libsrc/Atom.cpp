@@ -419,7 +419,7 @@ vec3 Atom::getAsymUnitPosition(CrystalPtr crystal, int nSample)
 
 	mat3x3_mult_vec(real2frac, &pos);
 	
-	if (pos.x != pos.x || !isfinite(pos.x))
+	if (pos.x != pos.x || !std::isfinite(pos.x))
 	{
 		return pos;
 	}

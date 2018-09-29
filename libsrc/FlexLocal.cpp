@@ -312,7 +312,7 @@ double FlexLocal::bondRelationship(BondPtr bi, BondPtr bj)
 	return correl;
 }
 
-bool less_than(BondDegree &b1, BondDegree &b2)
+bool less_than(const BondDegree b1, const BondDegree b2)
 {
 	return (b2.degree > b1.degree);
 }
