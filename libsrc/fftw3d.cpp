@@ -1461,9 +1461,16 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 	                           std::vector<double> bins, 
 	                           std::vector<double> ampAves) 
 {
-	double nLimit = nx;
-	nLimit = nLimit - ((int)nLimit % 2); // make even
-	nLimit /= 2;
+	double nLimit[3];
+	nLimit[0] = nx;
+	nLimit[1] = ny;
+	nLimit[2] = nz;
+	
+	for (int i = 0; i < 3; i++)
+	{
+		nLimit[i] = nLimit[i] - ((int)nLimit[i] % 2); // make even
+		nLimit[i] /= 2;
+	}
 
 	double dStar = 1 / maxResolution;
 
@@ -1547,11 +1554,11 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 	int num = 0;
 
 	/* symmetry issues */
-	for (int i = -nLimit; i < nLimit; i++)
+	for (int k = -nLimit[2]; k < nLimit[2]; k++)
 	{
-		for (int j = -nLimit; j < nLimit; j++)
+		for (int j = -nLimit[1]; j < nLimit[1]; j++)
 		{
-			for (int k = -nLimit; k < nLimit; k++)
+			for (int i = -nLimit[0]; i < nLimit[0]; i++)
 			{
 				bool asu = CSym::ccp4spg_is_in_asu(mtzspg, i, j, k);
 				bool f000 = (i == 0 && j == 0 && k == 0);
