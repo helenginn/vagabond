@@ -647,7 +647,7 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 		ns[1] = std::max(fabs(diff.y), ns[1]);
 		ns[2] = std::max(fabs(diff.z), ns[2]);
 	}
-
+	
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double scales = 1.0 / (2 * maxDStar);
 
@@ -657,9 +657,11 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 
 	for (int i = 0; i < 3; i++)
 	{
-		nl[i] = (2 * (ns[i] + buffer));
+		nl[i] = 2 * (ns[i] + buffer);
 	}
 	
+	/* Correction of non-orthogonal unit cells, I think */
+
 	mat3x3 crystal_basis = crystal->getFFT()->getBasisInverse();
 	mat3x3 angs = make_mat3x3();
 	mat3x3_scale(&angs, nl[0], nl[1], nl[2]);
@@ -680,7 +682,8 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 	*basis = crystal->getFFT()->getBasis();
 	segment->setBasis(*basis);
 
-	/* but the basis of the map workspace should be a mini-unit cell */
+	/* but the basis of the map workspace should be a mini-
+	 * reciprocal unit cell */
 	double toReal[3];
 
 	for (int i = 0; i < 3; i++)
@@ -690,7 +693,6 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 
 	mat3x3_scale(basis, nl[0], nl[1], nl[2]);
 	*basis = mat3x3_inverse(*basis);
-	
 
 	return segment;
 }
@@ -722,11 +724,12 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	* established.*/
 	if (first)
 	{
+		/* Make half-box measures */
 		double xAng, yAng, zAng;
 		xAng = workspace->segment->nx * workspace->segment->scales[0] / 2;
 		yAng = workspace->segment->ny * workspace->segment->scales[1] / 2;
 		zAng = workspace->segment->nz * workspace->segment->scales[2] / 2;
-
+		
 		if (!(workspace->flag & MapScoreFlagNoSurround))
 		{
 			workspace->extra = crystal->getAtomsInBox(workspace->ave, 
@@ -735,6 +738,8 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 			
 			std::vector<AtomPtr> added;
 
+			/* We want to add anything which is static to the 
+			 * constant fraction. */
 			for (size_t i = 0; i < workspace->extra.size(); i++)
 			{
 				AtomPtr anAtom = workspace->extra[i];
@@ -759,10 +764,12 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 				added.push_back(workspace->extra[i]);
 				count++;
 			}
-
+			
+			/* Copy this constant fraction into the segment */
 			workspace->segment->copyFrom(workspace->constant);
 		}
 	}
+	
 
 	for (size_t i = 0; i < selected.size(); i++)
 	{
