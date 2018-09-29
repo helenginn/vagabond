@@ -1287,6 +1287,15 @@ void FFT::addSimple(FFTPtr fftEdit, FFTPtr fftConst)
 	}
 }
 
+void FFT::printCinema()
+{
+	for (int i = 0; i < nz; i++)
+	{
+		printSlice(i);
+		sleep(1);
+	}
+}
+
 void FFT::printSlice(int zVal)
 {
 	for (int j = 0; j < ny; j++)

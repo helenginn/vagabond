@@ -266,6 +266,7 @@ public:
 
 	void addToValueAroundPoint(vec3 pos, double radius, double value);
 	
+	void printCinema();
 	void printSlice(int zVal = 0);
 	void applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes);
 	static vec3 collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup,
