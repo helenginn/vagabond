@@ -172,7 +172,8 @@ public:
 	double getIntensity(long x, long y, long z);
 	double getPhase(long x, long y, long z);
 	void setReal(double xfrac, double yfrac, double zfrac, double real);
-	void addBlurredToReal(double xfrac, double yfrac, double zfrac, double real);
+	void addBlurredToReal(double xfrac, double yfrac, double zfrac, 
+	                      double real);
 	void addInterpolatedToReal(double sx, double sy, double sz, double val);
 	void addInterpolatedToFrac(double fx, double fy, double fz, double val);
 	void addToReal(double xfrac, double yfrac, double zfrac, double real);
