@@ -582,21 +582,6 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 		exit(1);
 	}
 
-	/*
-	if (fftwf_init_threads() == 0)
-	{
-		printf("\t\tCould not initialise threads\n");
-		exit(1);
-	}
-
-	fftwf_plan_with_nthreads(nthreads);
-	*/
-
-	/*
-	 *    Read Wisdom from file
-	 *    Size of fftwf_complex used to determine whether we are using fftwf_ or fftwf_
-	 */
-
 	if (sizeof(FFTW_DATA_TYPE) == 2*sizeof(float))
 	{
 		strcat(wisdomFile,".fftw3f_wisdom");
