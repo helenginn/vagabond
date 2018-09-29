@@ -119,12 +119,6 @@ void VagWindow::makeButtons()
 			[=]{ pushSendInstruction(InstructionTypeRefineDensity); });
 	buttons.push_back(bRefineDensity);
 
-	bChangeBMult = new QPushButton("Set hetatm B multiplier", this);
-	bChangeBMult->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 250, BUTTON_WIDTH , 50);
-	bChangeBMult->setEnabled(false);
-	connect(bChangeBMult, SIGNAL(clicked()), this, SLOT(pushBMultiplier()));
-	buttons.push_back(bChangeBMult);
-
 	bRecalculate = new QPushButton("Recalculate FFT", this);
 	bRecalculate->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 300, BUTTON_WIDTH , 50);
 	bRecalculate->setEnabled(false);
