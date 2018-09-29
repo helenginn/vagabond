@@ -46,9 +46,11 @@ void FlexLocal::refine()
 	reorganiseBondOrder();
 	chooseBestDifferenceThreshold();
 
+	std::cout << "5. Refining parameters of bond clusters..." << std::flush;
 	RefinementGridSearchPtr grid;
 	grid = RefinementGridSearchPtr(new RefinementGridSearch());
 	grid->setCycles(24);
+	grid->setSilent();
 	grid->setEvaluationFunction(getScore, this);
 	int limit = 5;
 
@@ -71,11 +73,14 @@ void FlexLocal::refine()
 	NelderMeadPtr nelder;
 	nelder = NelderMeadPtr(new RefinementNelderMead());
 	nelder->setCycles(24);
-	nelder->setVerbose(true);
+	nelder->setSilent();
 	nelder->setEvaluationFunction(getScore, this);
 	
 	for (int i = 0; i < grid->parameterCount(); i++)
 	{
+		Parameter param = grid->getParamObject(i);
+		ParamBand *band = static_cast<ParamBand *>(param.object);
+		
 		bool changed = grid->didChange(i);
 		
 		if (!changed)
@@ -83,12 +88,16 @@ void FlexLocal::refine()
 			continue;
 		}
 		
-		Parameter param = grid->getParamObject(i);
 		param.other_value /= 20;
+		
 		nelder->addParameter(param);
 	}
 	
+	double val = (1 - getScore(this)) * 100.;
+
+	
 	nelder->refine();
+	std::cout << val << "% improved. ... done." << std::endl;
 }
 
 int getHIndex(std::map<int, int> pairs)
