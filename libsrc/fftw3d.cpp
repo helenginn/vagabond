@@ -1135,8 +1135,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				vec3_add_to_vec3(&atomPos, atomOffset);
 
 				/* If this value is within floating point error, stop now. */
-				if (fftAtom->getReal(atomPos.x, atomPos.y, atomPos.z) <= 10e-6
-				    && mapScoreType != MapScoreTypeCopyToSmaller)
+				if (fftAtom->getReal(atomPos.x, atomPos.y, atomPos.z) <= 10e-6)
 				{
 					continue;
 				}
@@ -1192,8 +1191,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 				count++;
 
-				if (mapScoreType == MapScoreTypeCorrel ||
-				    mapScoreType == MapScoreTypeCorrelCopy)
+				if (mapScoreType == MapScoreTypeCorrel)
 				{
 					if ((!fftCrystal->_writeToMaskZero &&
 					     fftCrystal->getMask(cIndex) == 0))
@@ -1201,24 +1199,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 						continue;
 					}
 
-					/* We do NOT need to interpolate */
+					// We do NOT need to interpolate //
 					double realCryst = fftCrystal->getReal(cIndex);
-
-					/* not working yet */
-					if (mapScoreType == MapScoreTypeCorrelCopy)
-					{
-						vec3 intCrystPos = vec3_add_vec3(cVox,
-						                                 crystOffset);
-
-						vec3 unshifted = vec3_subtract_vec3(atomPos,
-						                                    shift);
-
-						double intp;
-						intp = fftCrystal->cubic_interpolate(intCrystPos);
-						long ele = fftAtom->element(unshifted);
-
-						fftAtom->data[ele][1] = intp;
-					}
 
 					if (vals)
 					{
@@ -1240,19 +1222,16 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				}
 				else if (mapScoreType == MapScoreTypeCopyToSmaller)
 				{
-					vec3 intCrystPos = vec3_subtract_vec3(cVox,
-					                                      crystOffset);
+					double realCryst = fftCrystal->getReal(cIndex);
+					int ele = fftAtom->element(atomPos);
 
-					double intp = fftCrystal->cubic_interpolate(intCrystPos);
-					int ele = fftAtom->element(atomPos.x, atomPos.y,
-					                           atomPos.z);
-
-					fftAtom->setElement(ele, intp, 0);
+					fftAtom->setElement(ele, realCryst, 0);
 				}
 				else if (mapScoreType == MapScoreTypeNone ||
 				         mapScoreType == MapScoreAddNoWrap)
 				{
-					/* Add the density to the real value of the crystal voxel.*/
+					/* Add the density to the real value of the crystal
+					 * voxel. */
 
 					if (fftCrystal->_writeToMaskZero ||
 					    fftCrystal->getMask(cIndex) != 0)
@@ -1266,7 +1245,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	
 	if (mapScoreType == MapScoreTypeCopyToSmaller)
 	{
-//		fftAtom->shiftToCentre();
+		fftAtom->shiftToCentre();
 	}
 
 	return 0;
