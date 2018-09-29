@@ -220,6 +220,7 @@ public:
 
 	long int elementFromFrac(double xFrac, double yFrac, double zFrac);
 	vec3 fracFromElement(long int element);
+	void nxyzFromElement(long int element, long *x, long *y, long *z);
 
 	inline void setElement(long int index, float real, float imag)
 	{

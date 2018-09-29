@@ -339,6 +339,19 @@ void FFT::setAll(float value)
 	}
 }
 
+void FFT::nxyzFromElement(long int element, long *x, long *y, long *z)
+{
+	*x = element % nx;
+	element -= *x;
+	element /= nx;
+
+	*y = element % ny;
+	element -= *y;
+	element /= ny;
+
+	*z = element;
+}
+
 vec3 FFT::fracFromElement(long int element)
 {
 	long x = element % nx;
