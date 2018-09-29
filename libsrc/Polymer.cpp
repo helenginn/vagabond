@@ -157,7 +157,6 @@ void Polymer::tieAtomsUp()
 		if (getMonomer(i))
 		{
 			getMonomer(i)->getSidechain()->splitConformers();
-			getMonomer(i)->getSidechain()->parameteriseAsRotamers();
 			getMonomer(i)->getSidechain()->setInitialKick();
 		}
 	}
