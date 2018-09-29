@@ -23,18 +23,28 @@ typedef struct
 	int degree;
 } BondDegree;
 
+/**
+ * \class FlexLocal
+ * \brief Determines effect of each bond on all atom B factors, clusters them
+ * and chooses some for refinement. */
+
 class FlexLocal
 {
 public:
 	FlexLocal();
 	
+	/** Sets polymer for which this FlexLocal object is responsible for,
+	 * and the applicable magnitude of trial kick to worry about (not too
+	 * much, not too small */
 	void setPolymer(PolymerPtr pol, double shift);
 
+	/** Evaluates target function of bond kicking parameters against data */
 	static double getScore(void *object);
 	
 	/** Performs preliminary work and refinement simultaneously */
 	void refine();
 	
+	/** Get current value of the magnitude of trial kick set */
 	double getShift()
 	{
 		return _shift;
