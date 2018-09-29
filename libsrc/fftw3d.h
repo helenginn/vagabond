@@ -76,6 +76,8 @@ public:
 	void scaleToFFT(FFTPtr other);
 
 	void setupMask();
+	
+	double sumImag();
 
 	double averageAll()
 	{

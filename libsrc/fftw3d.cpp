@@ -144,6 +144,18 @@ void FFT::create(long nnx, long nny, long nnz)
 	memset(data, 0, sizeof(FFTW_DATA_TYPE) * nn);
 }
 
+double FFT::sumImag()
+{
+	double sum = 0;
+	
+	for (int i = 0; i < nn; i++)
+	{
+		sum += fabs(data[i][1]);
+	}
+	
+	return sum;
+}
+
 void FFT::scaleToFFT(FFTPtr other)
 {
 	double ave1 = averageAll();
