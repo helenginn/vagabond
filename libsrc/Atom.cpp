@@ -89,6 +89,45 @@ AtomType Atom::getGeomType()
 	return _geomType;
 }
 
+double Atom::getSolventRadius()
+{
+	AtomType geom = getGeomType();
+
+	// carbonyl carbons and ring carbons are 2.1
+	if (geom == AtomC || geom == AtomProC ||
+		geom == AtomTyrCD1 || geom == AtomTyrCD2 ||
+		geom == AtomTyrCE1 || geom == AtomTyrCE2 ||
+		geom == AtomTyrCZ ||
+		geom == AtomPheCD1 || geom == AtomPheCD2 ||
+		geom == AtomPheCE1 || geom == AtomPheCE2 ||
+		geom == AtomHisCE1 || geom == AtomHisCD2)
+	{
+		return 2.1;
+	}
+	else if (getElement()->getSymbol() == "C")
+	{
+		return 2.3;
+	}
+	else if (getElement()->getSymbol() == "N")
+	{
+		return 1.6;
+	}
+	else if (getElement()->getSymbol() == "O")
+	{
+		return 1.6;
+	}
+	else if (getElement()->getSymbol() == "S")
+	{
+		return 1.9;
+	}
+	else if (getElement()->getSymbol() == "H")
+	{
+		return 0;
+	}
+	
+	return 2.0;
+}
+
 void Atom::convertToDisulphide()
 {
 	if (getGeomType() == AtomCysCB)
