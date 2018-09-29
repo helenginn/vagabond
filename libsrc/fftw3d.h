@@ -144,6 +144,7 @@ public:
 
 	long elementFromUncorrectedFrac(double xfrac, double yfrac, double zfrac);
 
+	void takePlansFrom(FFTPtr other);
 	void createFFTWplan(int nthreads, unsigned fftw_flags = FFTW_MEASURE);
 	void fft(int direction);
 

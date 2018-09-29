@@ -531,6 +531,11 @@ void FFT::multiplyAll(float value)
 	}
 }
 
+void FFT::takePlansFrom(FFTPtr other)
+{
+	_myDims = other->_myDims;
+}
+
 void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 {
 	nthreads = 1;
