@@ -170,6 +170,7 @@ public:
 	}
 
 	double getIntensity(long x, long y, long z);
+	double getIntensity(long element);
 	double getPhase(long x, long y, long z);
 	void setReal(double xfrac, double yfrac, double zfrac, double real);
 	void addBlurredToReal(double xfrac, double yfrac, double zfrac, 

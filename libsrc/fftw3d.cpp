@@ -385,6 +385,12 @@ double FFT::getPhase(long x, long y, long z)
 	return degrees;
 }
 
+double FFT::getIntensity(long index)
+{
+	return (data[index][0] * data[index][0] + data[index][1] * data[index][1]);
+
+}
+
 double FFT::getIntensity(long x, long y, long z)
 {
 	long index = element(x, y, z);
