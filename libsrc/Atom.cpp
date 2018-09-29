@@ -238,6 +238,80 @@ FFTPtr Atom::getBlur()
 	return modelDist;
 }
 
+void Atom::addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell,
+                                 std::vector<Atom *> *ptrs, double rad)
+{
+	double b = getBFactor();
+	/* Limiting case must be far enough away to merge 'nicely' into the
+	 * constant-1 solvent mask area */
+	double radius = 2 * sqrt(b / (8 * M_PI * M_PI));
+	radius += rad;
+
+	vec3 pos = _model->getAbsolutePosition();
+	mat3x3_mult_vec(unit_cell, &pos);
+	pos.x *= fft->nx;
+	pos.y *= fft->ny;
+	pos.z *= fft->nz;
+	
+	vec3 mins, maxs;
+	mat3x3 basis = fft->getBasis();	
+	fft->findLimitingValues(-radius, radius, -radius, 
+	                        radius, -radius, radius,
+	                        &mins, &maxs);
+	
+	for (int k = mins.z; k < maxs.z; k++)
+	{
+		for (int j = mins.y; j < maxs.y; j++)
+		{
+			for (int i = mins.x; i < maxs.x; i++)
+			{
+				long ele = fft->element(pos.x+i, pos.y+j, pos.z+k);
+				Atom *current = ptrs->at(ele);
+				
+				if (current && current->getBFactor() > b)
+				{
+					continue;
+				}
+				
+				vec3 ijk = make_vec3(i, j, k);
+				mat3x3_mult_vec(basis, &ijk);
+				
+				if (vec3_sqlength(ijk) > radius * radius)
+				{
+					continue;
+				}
+				
+				ptrs->at(ele) = this;
+			}
+		}
+	}
+}
+
+void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad)
+{
+	if (getElectronCount() <= 1)
+	{
+		return;
+	}
+
+	double radius = getSolventRadius();
+	
+	if (rad > 0)
+	{
+		radius += rad;
+	}
+	
+	if (radius <= 0)
+	{
+		return;
+	}
+	
+	vec3 pos = _model->getAbsolutePosition();
+	mat3x3_mult_vec(unit_cell, &pos);
+
+	fft->addToValueAroundPoint(pos, radius, -1);
+}
+
 void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
                     bool sameScale, bool noWrap)
 {

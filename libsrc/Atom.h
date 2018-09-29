@@ -95,6 +95,10 @@ public:
 	}
 
 	double getSolventRadius();
+	void addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double radius = -1);
+	void addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell,
+	                           std::vector<Atom *> *ptrs,
+	                           double rad = 0);
 
 	/* Returns a FFT for the model dist, for reuse */
 	void addToMap(FFTPtr fft, mat3x3 unit_cell,
