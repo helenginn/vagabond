@@ -259,7 +259,6 @@ public:
 		return _inverse;
 	}
 
-	void printSlice(double zVal = 0);
 	void shrink(double radius);
 	void findLimitingValues(double xMin, double xMax, double yMin,
 	                        double yMax, double zMin, double zMax,
@@ -267,6 +266,7 @@ public:
 
 	void addToValueAroundPoint(vec3 pos, double radius, double value);
 	
+	void printSlice(int zVal = 0);
 	void applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes);
 	static vec3 collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup,
 	                              int *flipped = NULL);

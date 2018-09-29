@@ -1287,7 +1287,7 @@ void FFT::addSimple(FFTPtr fftEdit, FFTPtr fftConst)
 	}
 }
 
-void FFT::printSlice(double zVal)
+void FFT::printSlice(int zVal)
 {
 	for (int j = 0; j < ny; j++)
 	{
@@ -1295,7 +1295,7 @@ void FFT::printSlice(double zVal)
 		for (int i = 0; i < nx; i++)
 		{
 			std::string symbol = " ";
-			double value = getReal(element(i, j, zVal * nz));
+			double value = sqrt(getIntensity(i, j, zVal));
 
 			if (value > 0.01) symbol = ".";
 			if (value > 0.02) symbol = ":";
