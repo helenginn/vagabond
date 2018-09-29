@@ -78,6 +78,10 @@ AtomType Atom::getGeomType()
 {
 	if (_geomType == AtomUnassigned)
 	{
+		if (!getMonomer())
+		{
+			return AtomUnassigned;
+		}
 		std::string id = getMonomer()->getIdentifier();
 		findAtomType(id);
 	}
