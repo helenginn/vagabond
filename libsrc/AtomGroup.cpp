@@ -713,6 +713,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		
 		workspace->constant = FFTPtr(new FFT(*workspace->segment));
 		workspace->fcSegment = FFTPtr(new FFT(*workspace->segment));
+		workspace->segment->createFFTWplan(1);
 	}
 	else
 	{
