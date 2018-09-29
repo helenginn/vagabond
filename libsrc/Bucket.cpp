@@ -13,7 +13,7 @@
 #include <iomanip>
 #include <algorithm>
 #include "fftw3d.h"
-#include "RefinementGridSearch.h"
+#include "RefinementNelderMead.h"
 #include "Shouter.h"
 #include "Crystal.h"
 #include "Diffraction.h"
@@ -43,25 +43,16 @@ void Bucket::scaleSolvent()
 		shout_at_helen("Need diffraction data to scale solvent");
 	}
 	
-	/*
-	setSolvScale(this, 0.2);
-	setSolvBFac(this, 20);
-	*/
+	setSolvScale(this, 0.0);
+	setSolvBFac(this, 40);
 	
-	setSolvScale(this, 4.0);
-	setSolvBFac(this, 400);
-	
-	RefinementStrategyPtr grid;
-	grid = RefinementStrategyPtr(new RefinementGridSearch());
-	grid->setJobName("solvent_scale_grid_search");
-	grid->setEvaluationFunction(scaleSolventScore, this);
-	grid->addParameter(this, getSolvScale, setSolvScale, 8.0, 0.4, "scale");
-	grid->addParameter(this, getSolvBFac, setSolvBFac, 800, 40.0, "bfac");
-	/*
-	grid->addParameter(this, getSolvScale, setSolvScale, 0.2, 0.01, "scale");
-	grid->addParameter(this, getSolvBFac, setSolvBFac, 20, 1.0, "bfac");
-	*/
-	grid->refine();
+	NelderMeadPtr fine;
+	fine = NelderMeadPtr(new RefinementNelderMead());
+	fine->setJobName("solvent_scale_fine");
+	fine->setEvaluationFunction(scaleSolventScore, this);
+	fine->addParameter(this, getSolvScale, setSolvScale, 0.4, 0.01, "scale");
+	fine->addParameter(this, getSolvBFac, setSolvBFac, 40, 1.0, "bfac");
+	fine->refine();
 	
 	/** If we are doing powder analysis we don't actually want
 	* 	to add the solvent */
