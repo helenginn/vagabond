@@ -100,7 +100,7 @@ public:
 		_verbose = value;
 	}
 
-	void setSilent(bool silent)
+	void setSilent(bool silent = true)
 	{
 		_silent = silent;
 	}
