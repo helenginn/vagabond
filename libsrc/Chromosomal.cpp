@@ -17,7 +17,7 @@ typedef struct
 	double score;
 } ScorePair;
 
-bool greater_score(ScorePair &a, ScorePair &b)
+bool greater_score(const ScorePair a, const ScorePair b)
 {
 	return a.score > b.score;
 }
