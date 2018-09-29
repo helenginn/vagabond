@@ -772,6 +772,211 @@ double FFT::score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 pos,
 	return operation(fftCrystal, fftThing, pos, mapScore, vals);
 }
 
+void FFT::findLimitingValues(double xMin, double xMax, double yMin,
+                             double yMax, double zMin, double zMax,
+                             vec3 *minVals, vec3 *maxVals)
+{
+	mat3x3 toCrystBasis = getBasisInverse();
+	for (double k = zMin; k <= zMax + 0.1; k += (zMax - zMin))
+	{
+		for (double j = yMin; j <= yMax + 0.1; j += (zMax - zMin))
+		{
+			for (double i = xMin; i <= xMax + 0.1; i += (zMax - zMin))
+			{
+				vec3 angCorner = make_vec3(i, j, k);
+				vec3 toCrystal = mat3x3_mult_vec(toCrystBasis, angCorner);
+				toCrystal.x = lrint(toCrystal.x);
+				toCrystal.y = lrint(toCrystal.y);
+				toCrystal.z = lrint(toCrystal.z);
+
+				vec3_min_each(minVals, toCrystal);
+				vec3_max_each(maxVals, toCrystal);
+			}
+		}
+	}
+}
+
+typedef struct
+{
+	long element;
+	double value;
+} IndexValue;
+
+void FFT::blurRealToImaginary(int x, int y, int z, mat3x3 tensor)
+{
+	long ele = element(x, y, z);
+	double val = data[ele][0];
+	
+	double longest = std::max(tensor.vals[0], 
+	                          std::max(tensor.vals[4], tensor.vals[8]));
+
+	vec3 mins = empty_vec3();
+	vec3 maxs = empty_vec3();
+	findLimitingValues(-longest, longest, -longest, longest, 
+	                   -longest, longest, &mins, &maxs);
+	
+	mat3x3 basis = getBasis();
+	
+	std::vector<IndexValue> additions;
+	double count = 0;
+
+	for (int k = mins.z; k < maxs.z; k++)
+	{
+		for (int j = mins.y; j < maxs.y; j++)
+		{
+			for (int i = mins.x; i < maxs.x; i++)
+			{
+				vec3 ijk = make_vec3(i, j, k);
+				mat3x3_mult_vec(basis, &ijk);
+				mat3x3_mult_vec(tensor, &ijk);
+
+				ijk.x *= i; ijk.y *= j; ijk.z *= k;
+				double dist = ijk.x + ijk.y + ijk.z;
+				double aniso = exp(2 * M_PI * M_PI * -(dist));
+				
+				long blele = element(x + i, y + j, z + k);
+				
+				IndexValue pair;
+				pair.element = blele;
+				pair.value = aniso * val;
+				additions.push_back(pair);
+				
+				count += aniso * val;
+				
+			}
+		}
+	}
+	
+	double ratio = 1 / count;
+	
+	for (int i = 0; i < additions.size(); i++)
+	{
+		long ele = additions[i].element;
+		double add = ratio * additions[i].value;
+		data[ele][1] += add;
+	}
+}
+
+void FFT::shrink(double radius)
+{
+	vec3 mins = make_vec3(0, 0, 0);
+	vec3 maxs = make_vec3(0, 0, 0);
+	mat3x3 basis = getBasis();
+	findLimitingValues(0, radius, 0, radius, 0, radius,
+					   &mins, &maxs);
+					
+	int count = 0;
+	int total = 0;
+	int solv = 0;
+
+	for (int z = 0; z < nz; z++)
+	{
+		for (int y = 0; y < ny; y++)
+		{
+			for (int x = 0; x < nx; x++)
+			{
+				long raw = element(x, y, z);
+				/* We only want to modify protein to become
+				 * more like solvent */
+				if (data[raw][0] == 1)
+				{
+					solv++;
+					data[raw][1] = 1;
+					continue;
+				}
+
+				/* Default is to be protein */
+				data[raw][1] = 0;
+				bool done = false;
+
+				for (int k = 0; k < maxs.z && !done; k++)
+				{
+					for (int j = 0; j < maxs.y && !done; j++)
+					{
+						for (int i = 0; i < maxs.x && !done; i++)
+						{
+							vec3 ijk = make_vec3(i, j, k);
+							mat3x3_mult_vec(basis, &ijk);
+
+							/* Doesn't matter if it goes over radial
+							 * boundary */
+							if (vec3_sqlength(ijk) > radius * radius)
+							{
+								continue;
+							}
+
+							long index = element(i + x, j + y, k + z);
+							
+							if (data[index][0] == 1)
+							{
+								count++;
+								done = true;
+								data[raw][1] = 1;
+								break;
+							}
+						}
+					}
+				}
+				
+				total++;
+			}
+		}
+	}
+	
+	for (int i = 0; i < nn; i++)
+	{
+		data[i][0] = data[i][1];
+		data[i][1] = 0;
+	}
+}
+
+void FFT::addToValueAroundPoint(vec3 pos, double radius, double value)
+{
+	/* Determine square bounding box for radius in Ang. */
+	vec3 minRadius = make_vec3(0, 0, 0);
+	vec3 maxRadius = make_vec3(0, 0, 0);
+	
+	collapseFrac(&pos.x, &pos.y, &pos.z);
+	pos.x *= nx;
+	pos.y *= ny;
+	pos.z *= nz;
+
+	findLimitingValues(-radius, radius, -radius, radius, -radius, radius,
+	                   &minRadius, &maxRadius);
+	mat3x3 basis = getBasis();
+
+	for (double k = minRadius.z; k < maxRadius.z; k++)
+	{
+		for (double j = minRadius.y; j < maxRadius.y; j++)
+		{
+			for (double i = minRadius.x; i < maxRadius.x; i++)
+			{
+				vec3 ijk = make_vec3(i, j, k);
+				mat3x3_mult_vec(basis, &ijk);
+				
+				/* Doesn't matter if it goes over radial
+				 * boundary */
+				if (vec3_sqlength(ijk) > radius * radius)
+				{
+					continue;
+				}
+
+				double x = lrint(i + pos.x);
+				double y = lrint(j + pos.y);
+				double z = lrint(k + pos.z);
+				
+				long index = element(x, y, z);
+				data[index][0] += value;
+				
+				if (data[index][0] < 0)
+				{
+					data[index][0] = 0;
+				}
+			}
+		}
+	}
+}
+
 
 /*  For multiplying point-wise
  *  No assumption that interpolation is not needed.

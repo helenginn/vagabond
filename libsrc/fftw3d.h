@@ -175,6 +175,7 @@ public:
 	void setReal(double xfrac, double yfrac, double zfrac, double real);
 	void addBlurredToReal(double xfrac, double yfrac, double zfrac, 
 	                      double real);
+	void blurRealToImaginary(int i, int j, int k, mat3x3 tensor);
 	void addInterpolatedToReal(double sx, double sy, double sz, double val);
 	void addInterpolatedToFrac(double fx, double fy, double fz, double val);
 	void addToReal(double xfrac, double yfrac, double zfrac, double real);
@@ -259,6 +260,13 @@ public:
 	}
 
 	void printSlice(double zVal = 0);
+	void shrink(double radius);
+	void findLimitingValues(double xMin, double xMax, double yMin,
+	                        double yMax, double zMin, double zMax,
+	                        vec3 *minVals, vec3 *maxVals);
+
+	void addToValueAroundPoint(vec3 pos, double radius, double value);
+	
 	void applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes);
 	static vec3 collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup,
 	                              int *flipped = NULL);
