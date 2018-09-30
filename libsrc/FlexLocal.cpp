@@ -66,6 +66,7 @@ void FlexLocal::refine()
 	if (!grid->didChange())
 	{
 		_shift *= 0.8;
+		std::cout << " not improved.\nReducing shift for next time ... done." << std::endl;
 	}
 	
 	_direct = 1;
@@ -95,9 +96,15 @@ void FlexLocal::refine()
 	
 	double val = (1 - getScore(this)) * 100.;
 
+	if (nelder->parameterCount() > 0)
+	{
+		nelder->refine();
+	}
 	
-	nelder->refine();
-	std::cout << val << "% improved. ... done." << std::endl;
+	if (grid->didChange())
+	{
+		std::cout << val << "% improved. ... done." << std::endl;
+	}
 }
 
 int getHIndex(std::map<int, int> pairs)
