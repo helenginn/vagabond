@@ -338,17 +338,16 @@ void Bond::deriveCirclePortion()
 {
 	if (!getParentModel() || !getParentModel()->isBond())
 	{
+		if (getParentModel()->isAnchor())
+		{
+			setUsingTorsion(true);
+			_circlePortion = 0;
+		}
+
 		return;
 	}
 	
 	BondPtr parent = ToBondPtr(getParentModel());
-	
-	if (parent->isAnchor())
-	{
-		_usingTorsion = true;
-		_circlePortion = 0;
-		return;
-	}
 	
 	/* We'll be in the same group as the last group */
 	int groups = parent->downstreamBondGroupCount();
@@ -365,7 +364,7 @@ void Bond::deriveCirclePortion()
 	if (count == 1)
 	{
 		/* We are the first bond. */
-		_usingTorsion = true;
+		setUsingTorsion(true);
 		_circlePortion = 0;
 		return;
 	}
