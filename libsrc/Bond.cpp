@@ -724,7 +724,7 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 	std::vector<BondSample> myTorsions;
 
 	bool usingKick = (isUsingTorsion()
-	                          && nextBondExists && !isFixed());
+	                          && !isFixed());
 
 	if (usingKick)
 	{
