@@ -44,7 +44,6 @@ public:
 	static double vsRefineGlobalFlexibility(void *object);
 	
 	virtual void graph(std::string graphName);
-	virtual void differenceGraphs(std::string graphName, CrystalPtr diffCryst);
 
 	static void setInitialKick(void *object, double value);
 	static double getInitialKick(void *object);
