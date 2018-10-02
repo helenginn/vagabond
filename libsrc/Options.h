@@ -202,6 +202,7 @@ public:
 		return _anchor;
 	}
 	
+	void omitScan();
 	void scanBondParams();
 	void renderDensity();
 	void statusMessage(std::string message);

@@ -896,3 +896,8 @@ void Options::adjustBFactor()
 	              + " to " + f_to_str(newB, 2) + ".");
 }
 
+void Options::omitScan()
+{
+	getActiveCrystal()->omitScan();
+}
+
