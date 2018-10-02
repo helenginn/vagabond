@@ -948,6 +948,7 @@ Crystal::Crystal()
 	_tied = false;
 	_spaceGroup = NULL;
 	_spgNum = 0;
+	_spgString = "";
 	_maxResolution = 0;
 	_solvScale = 0.5;
 	_solvBFac = 10;
@@ -1195,12 +1196,15 @@ void Crystal::addProperties()
 	addIntProperty("sample_num", &_sampleNum);
 
 	_spgNum = 0;
+	_spgString = "";
 	if (_spaceGroup)
 	{
 		_spgNum = _spaceGroup->spg_num;
+		_spgString = _spaceGroup->symbol_xHM;
 	}
 
 	addIntProperty("spacegroup", &(_spgNum));
+	addStringProperty("spg_symbol", &(_spgString));
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
@@ -1239,7 +1243,15 @@ void Crystal::addObject(ParserPtr object, std::string category)
 
 void Crystal::postParseTidy()
 {
-	_spaceGroup = CSym::ccp4spg_load_by_ccp4_num(_spgNum);
+	if (_spgString == "")
+	{
+		_spaceGroup = CSym::ccp4spg_load_by_ccp4_num(_spgNum);
+	}
+	else
+	{
+		_spaceGroup = CSym::ccp4spg_load_by_spgname(_spgString.c_str());
+	}
+
 	setupSymmetry();
 	_tied = true;
 }

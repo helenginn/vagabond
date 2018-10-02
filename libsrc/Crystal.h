@@ -343,6 +343,7 @@ private:
 	mat3x3 _real2frac;
 	CSym::CCP4SPG *_spaceGroup;
 	int _spgNum;
+	std::string _spgString;
 	bool _tied;
 
 	double _maxResolution;
