@@ -26,6 +26,7 @@ typedef enum
 	InstructionTypeChangeBMult,
 	InstructionTypeRecalculateFFT,
 	InstructionTypeOmitScan,
+	InstructionTypeReflex,
 	InstructionTypeOpenInCoot,
 	InstructionTypeSetObjectValue,
 	InstructionTypeGetObjectValue,

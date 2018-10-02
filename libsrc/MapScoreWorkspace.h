@@ -37,12 +37,14 @@ typedef enum
 	ScoreTypeHappiness = 9, /** Like CC but a reward function */
 } ScoreType;
 
+/* Don't forget - power of 2... */
 typedef enum
 {
 	MapScoreFlagNone = 0,
 	MapScoreFlagDifference = 1,
-	MapScoreFlagSubtractFc = 2,
+	MapScoreFlagReplaceWithObs = 2,
 	MapScoreFlagNoSurround = 4,
+	MapScoreFlagSkipScore = 8,
 } MapScoreFlag;
 
 typedef struct 
