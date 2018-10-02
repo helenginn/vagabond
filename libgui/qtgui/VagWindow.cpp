@@ -34,6 +34,15 @@
 #define MENU_HAS_HEIGHT 1
 #endif
 
+void VagWindow::menuItem(QMenu *menu, std::string title,
+                         InstructionType instr)
+{
+	QAction *action = menu->addAction(QString::fromStdString(title));
+	connect(action, &QAction::triggered,
+			[=]{ pushSendInstruction(instr); });
+	actions.push_back(action);
+}
+
 void VagWindow::makeMenu()
 {
 	QMenu *scaling = menuBar()->addMenu(tr("&Scaling"));
@@ -79,8 +88,10 @@ void VagWindow::makeMenu()
 	connect(samples, &QAction::triggered,
 			[=]{ dialogueModify(Options::setNSamples, 
 			                    "No. samples in ensemble:"); });
-	
 	actions.push_back(samples);
+	
+	menuItem(model, "Omit scan", InstructionTypeOmitScan);
+
 }
 
 void VagWindow::dialogueModify(SimpleSet set, std::string title)
@@ -336,6 +347,10 @@ int VagWindow::waitForInstructions()
 
 				case InstructionTypeOpenInCoot:
 				options->openInCoot();
+				break;
+
+				case InstructionTypeOmitScan:
+				options->omitScan();
 				break;
 
 				case InstructionTypeSetObjectValue:

@@ -87,6 +87,8 @@ private:
 	void modelPosToEnd();
 	void sidechainsToEnd();
 	void getPolymerMonomerCrystal(PolymerPtr *poly, CrystalPtr *cryst, MonomerPtr *monomer);
+	void menuItem(QMenu *menu, std::string title,
+                         InstructionType instr);
 	QLabel *_lStatus;
 
 	/* Buttons down the side */
