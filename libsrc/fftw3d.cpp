@@ -602,8 +602,10 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 	_myDims = &_dimensions[_dimensions.size() - 1];
 
 	/* Generate FFTW plans */
-	_myDims->plan = fftwf_plan_dft_3d((int)nx, (int)ny, (int)nz, data, data, 1, fftw_flags);
-	_myDims->iplan = fftwf_plan_dft_3d((int)nx, (int)ny, (int)nz, data, data, -1, fftw_flags);
+	_myDims->plan = fftwf_plan_dft_3d((int)nz, (int)ny, (int)nx, 
+	                                  data, data, 1, fftw_flags);
+	_myDims->iplan = fftwf_plan_dft_3d((int)nz, (int)ny, (int)nx, 
+	                                   data, data, -1, fftw_flags);
 
 	/*  Export wisdom to file */
 	int success = fftwf_export_wisdom_to_filename(wisdomFile);
@@ -1056,7 +1058,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 	/* The crystal voxels must be converted to atomic voxels to determine
 	 * final offset for atom sampling. */
-
 	mat3x3_mult_vec(crystal2AtomVox, &shiftRemainder);
 	vec3_mult(&shiftRemainder, -1);
 
@@ -1471,7 +1472,16 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 		nLimit[i] = nLimit[i] - ((int)nLimit[i] % 2); // make even
 		nLimit[i] /= 2;
 	}
-
+	
+	if (data)
+	{
+		// lower limit if data has smaller spacing
+		nLimit[0] = (nLimit[0] > data->nx) ? data->nx : nLimit[0];
+		nLimit[1] = (nLimit[1] > data->ny) ? data->ny : nLimit[1];
+		nLimit[2] = (nLimit[2] > data->nz) ? data->nz : nLimit[2];
+	}
+	
+	
 	double dStar = 1 / maxResolution;
 
 	if (maxResolution <= 0) dStar = FLT_MAX;
@@ -1605,7 +1615,6 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 
 				if (foAmp != foAmp || (free == 0))
 				{
-					//					fofofc = calcAmp;
 					fofc = 0;
 				}
 

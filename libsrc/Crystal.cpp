@@ -128,17 +128,40 @@ void Crystal::realSpaceClutter(double maxRes)
 		double largest = std::max(uc_dims.x, uc_dims.y);
 		largest = std::max(largest, uc_dims.z);
 
-		fft_dims.x = largest; fft_dims.y = largest; fft_dims.z = largest;
+		fft_dims = uc_dims;
+		
+		if (false)
+		{
+			fft_dims.x = largest;
+			fft_dims.y = largest;
+			fft_dims.z = largest;
+		}
+		
+		for (int i = 0; i < 3; i++)
+		{
+			double val = *(&fft_dims.x + i);
+			int fixed = lrint(val);
+			if (fixed % 2 > 0) 
+			{
+				fixed++;
+			}
+			*(&fft_dims.x + i) = fixed;
+		}
 
 		_fft->create(fft_dims.x, fft_dims.y, fft_dims.z);
 		_fft->setupMask();
 
 		_difft->create(fft_dims.x, fft_dims.y, fft_dims.z);
+		std::cout << "FFT_dims: " << vec3_desc(fft_dims) << std::endl;
 
-		double scaling = 1 / largest;
+		mat3x3 per_voxel = _hkl2real;
+		mat3x3_scale(&per_voxel, 1 / fft_dims.x, 
+		             1 / fft_dims.y, 1 / fft_dims.z);
+		
+		std::cout << "per voxel: " << mat3x3_desc(per_voxel) << std::endl;
 
-		_fft->setBasis(_hkl2real, scaling);
-		_difft->setBasis(_hkl2real, scaling);
+		_fft->setBasis(per_voxel, 1);
+		_difft->setBasis(per_voxel, 1);
 	}
 	else
 	{
@@ -240,13 +263,24 @@ void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 	}
 }
 
-double getNLimit(FFTPtr fftData, FFTPtr fftModel)
+double getNLimit(FFTPtr fftData, FFTPtr fftModel, int axis = 0)
 {
-	double nLimit = std::min(fftData->nx, fftModel->nx);
+	double nLimit = std::min(*(&fftData->nx + axis), 
+	                         *(&fftModel->nx + axis));
+
 	nLimit = nLimit - ((int)nLimit % 2);
 	nLimit /= 2;
 
 	return nLimit;	
+}
+
+vec3 getNLimits(FFTPtr data, FFTPtr fftModel)
+{
+	vec3 lims;
+	lims.x = getNLimit(data, fftModel, 0);
+	lims.y = getNLimit(data, fftModel, 1);
+	lims.z = getNLimit(data, fftModel, 2);
+	return lims;
 }
 
 typedef struct
@@ -263,18 +297,18 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 		model = _fft;
 	}
 
-	FFTPtr fftData = data->getFFT();	
-	double nLimit = getNLimit(fftData, model);
-
 	std::vector<double> bins;
 	generateResolutionBins(6, _maxResolution, 20, &bins);
 	std::map<int, std::vector<IntPair> > binRatios;
 
-	for (int i = -nLimit; i < nLimit; i++)
+	FFTPtr fftData = data->getFFT();	
+	vec3 nLimits = getNLimits(fftData, model);
+
+	for (int i = -nLimits.z; i < nLimits.z; i++)
 	{
-		for (int j = -nLimit; j < nLimit; j++)
+		for (int j = -nLimits.y; j < nLimits.y; j++)
 		{
-			for (int k = 0; k < nLimit; k++)
+			for (int k = -nLimits.x; k < nLimits.z; k++)
 			{
 				int _i = 0; int _j = 0; int _k = 0;
 				vec3 ijk = make_vec3(i, j, k);
@@ -365,9 +399,6 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
                                      bool verbose, double lowRes, double highRes)
 {
-	FFTPtr fftData = data->getFFT();
-	double nLimit = getNLimit(fftData, _fft);
-
 	std::vector<double> set1, set2, free1, free2;
 
 	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
@@ -375,12 +406,14 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 
 	CSVPtr csv = CSVPtr(new CSV(2, "fo" , "fc"));
 
-	/* symmetry issues */
-	for (int i = -nLimit; i < nLimit; i++)
+	FFTPtr fftData = data->getFFT();	
+	vec3 nLimits = getNLimits(fftData, _fft);
+
+	for (int i = -nLimits.z; i < nLimits.z; i++)
 	{
-		for (int j = -nLimit; j < nLimit; j++)
+		for (int j = -nLimits.y; j < nLimits.y; j++)
 		{
-			for (int k = 0; k < nLimit; k++)
+			for (int k = -nLimits.x; k < nLimits.z; k++)
 			{
 				int _i = 0; int _j = 0; int _k = 0;
 				vec3 ijk = make_vec3(i, j, k);
@@ -463,19 +496,21 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
                                double bFactor)
 {
-	double nLimit = _fft->nx;
-	nLimit /= 2;
+	double xLimit = _fft->nx / 2;
+	double yLimit = _fft->ny / 2;
+	double zLimit = _fft->nz / 2;
+
 	std::vector<double> set1, set2, free1, free2;
 
 	double minRes = (lowRes <= 0 ? 0 : 1 / lowRes);
 	double maxRes = (highRes <= 0 ? FLT_MAX : 1 / highRes);
 
 	/* symmetry issues */
-	for (int i = -nLimit; i < nLimit; i++)
+	for (int i = -xLimit; i < xLimit; i++)
 	{
-		for (int j = -nLimit; j < nLimit; j++)
+		for (int j = -yLimit; j < yLimit; j++)
 		{
-			for (int k = -nLimit; k < nLimit; k++)
+			for (int k = -zLimit; k < zLimit; k++)
 			{
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(_real2frac, &ijk);
@@ -547,7 +582,14 @@ double Crystal::getMaxResolution(DiffractionPtr data)
 
 	if (_maxResolution <= 0)
 	{
-		_maxResolution = data->getMaxResolution();
+		if (data)
+		{
+			_maxResolution = data->getMaxResolution();
+		}
+		else
+		{
+			_maxResolution = 1.8;
+		}
 		std::cout << std::setprecision(2);
 	}
 	
@@ -1117,6 +1159,11 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 		std::cout << "No reflection file has been specified.\n"\
 		"Cannot perform map recalculation." << std::endl;
 		std::cout << std::setprecision(4);
+		realSpaceClutter(1.8);
+		_fft->fft(1);
+		_fft->normalise();
+		_fft->writeReciprocalToFile("calc_" + i_to_str(cycleNum) + ".mtz", 1.8);
+		Options::flagDensityChanged();
 	}
 	else
 	{
