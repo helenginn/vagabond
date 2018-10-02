@@ -1125,6 +1125,8 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	{
 		_sinceBestNum++;
 	}
+	
+	differenceAttribution();
 
 	return rFac;
 }
@@ -1448,6 +1450,117 @@ int Crystal::getSampleNum()
 	}
 	
 	return _sampleNum;
+}
+
+void Crystal::differenceAttribution()
+{
+	if (!_bucket)
+	{
+		return;
+	}
+
+	double sum_solvent = 0;
+	double num_solvent = 0;
+	double sum_all = 0;
+	double sum_side = 0;
+	double sum_back = 0;
+	double sum_hetatm = 0;
+	double num_all = 0;
+	double num_side = 0;
+	double num_back = 0;
+	double num_hetatm = 0;
+	
+	for (int i = 0; i < _difft->nn; i++)
+	{
+		vec3 frac = _difft->fracFromElement(i);
+		
+		if (frac.x > _spaceGroup->mapasu_zero[0] ||
+		    frac.y > _spaceGroup->mapasu_zero[1] ||
+		    frac.z > _spaceGroup->mapasu_zero[2]) 
+		{
+			continue;
+		}
+		
+		Atom *atom = _bucket->nearbyAtom(i);
+		double density = _difft->data[i][0];
+		density *= density;
+		
+		sum_all += fabs(density);
+		num_all++;
+		
+		if (!atom)
+		{
+			sum_solvent += fabs(density);
+			num_solvent++;
+		}
+		else
+		{
+			if (atom->isHeteroAtom())
+			{
+				sum_hetatm += fabs(density);
+				num_hetatm++;
+			}
+			else if (atom->isBackbone() || atom->isBackboneAndSidechain())
+			{
+				sum_back += fabs(density);
+				num_back++;
+			}
+			else
+			{
+				sum_side += fabs(density);
+				num_side++;
+			}
+		}
+	}
+	
+	double num_atom = (num_all - num_solvent);
+	
+	double sum_protein = sum_all - sum_solvent;
+	double nearAtom = sum_protein / sum_all * 100;
+	double inSolvent = sum_solvent / sum_all * 100;
+	
+	double cNearAtom = (nearAtom / num_atom);
+	double cSolvent = (inSolvent / num_solvent);
+	double cAll = cNearAtom + cSolvent;
+	
+	double backbone = sum_back / sum_protein * 100;
+	double sidechain = sum_side / sum_protein * 100;
+	double hetatm = sum_hetatm / sum_protein * 100;
+	double cBackbone = sum_back / num_back;
+	double cSidechain = sum_side / num_side;
+	double cHetatm = sum_hetatm / num_hetatm;
+	double cProtein = cHetatm + cSidechain + cBackbone;
+	
+	cNearAtom *= 100 / cAll;
+	cSolvent *= 100 / cAll;
+	
+	cBackbone *= 100 / cProtein;
+	cSidechain *= 100 / cProtein;
+	cHetatm *= 100 / cProtein;
+	
+	std::cout << std::setprecision(2);
+	std::cout << "---------------------------------------------------" 
+	<< std::endl;
+	std::cout << "| Difference density locations  | Volume-corrected"
+	<< std::endl;
+	std::cout << "---------------------------------------------------" 
+	<< std::endl;
+	std::cout << "| Near modelled atoms: " << std::setw(5) << nearAtom << "%   ";
+	std::cout << "|  " << std::setw(5) << cNearAtom << "%" << std::endl;
+	std::cout << "| Far from any atom:   " << std::setw(5) << inSolvent << "%   ";
+	std::cout << "|  " << std::setw(5) << cSolvent << "%" << std::endl;
+	std::cout << "---------------------------------------------------" 
+	<< std::endl;
+	std::cout << "| Protein breakdown: " << std::endl;
+	std::cout << "| Backbone atoms:      " << std::setw(5) << backbone << "%   ";
+	std::cout << "|  " << std::setw(5) << cBackbone << "%" << std::endl;
+	std::cout << "| Sidechain atoms:     " << std::setw(5) << sidechain << "%   ";
+	std::cout << "|  " << std::setw(5) << cSidechain << "%" << std::endl;
+	std::cout << "| HETATM atoms:        " << std::setw(5) << hetatm << "%   ";
+	std::cout << "|  " << std::setw(5) << cHetatm << "%" << std::endl;
+	std::cout << "---------------------------------------------------" 
+	<< std::endl;
+	std::cout << std::endl;
 }
 
 double Crystal::getRealBFactor()

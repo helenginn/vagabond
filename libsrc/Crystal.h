@@ -131,6 +131,7 @@ public:
 	{
 		return _calcCopy;
 	}
+	void differenceAttribution();
 	
 	void multiplyMap(double scale);
 	vec3 snapToGrid(vec3 pos);
