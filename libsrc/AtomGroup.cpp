@@ -778,39 +778,36 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		                      workspace->ave, false, false, true);
 	}
 	
-	if (workspace->flag & MapScoreFlagSubtractFc)
+	if (false && workspace->flag & MapScoreFlagReplaceWithObs)
 	{
-		if (first)
-		{
-			FFTPtr fcSegment = workspace->fcSegment;
-			FFTPtr map = crystal->getCalculatedMap();
-			FFT::score(map, fcSegment, workspace->ave,
-			           NULL, MapScoreTypeCopyToSmaller);
-			fcSegment->scaleToFFT(workspace->segment);
-			
-			std::vector<CoordVal> vals;
-			FFT::score(workspace->segment, fcSegment, empty_vec3(),
-			           &vals, MapScoreTypeCorrel);
-			plotCoordVals(vals, 0, 0, "cc_fcs");
+		FFTPtr fcSegment = workspace->segment;
+		FFTPtr obsMap = crystal->getFFT();
 
-			
-			/* Get ready for subtraction! */
-			fcSegment->multiplyAll(-1);
-		}
-
-		/* Remove the last calculated map from the segment, which
-		 * is already negative. */
-		FFT::addSimple(workspace->segment, workspace->fcSegment);	
+		FFT::operation(obsMap, fcSegment, workspace->ave,
+		               MapScoreTypeCopyToSmaller, NULL);
+		
+		return 0;
 	}
 	
 	double score = 0;
 
+	if (workspace->flag & MapScoreFlagSkipScore)
+	{
+		return 0;
+	}
+	
 	/* In the middle of making calculation really quick?? */
+	/* What the fuck did that comment mean? ^ */
 	bool difference = (workspace->flag & MapScoreFlagDifference);
+	ScoreType type = workspace->scoreType;
+	
+	if (workspace->flag & MapScoreFlagReplaceWithObs)
+	{
+		type = ScoreTypeAddDensity;
+	}
 	
 	score = scoreFinalMap(crystal, workspace->segment, plot,
-	                      workspace->scoreType, workspace->ave,
-	                      difference);
+	                      type, workspace->ave, difference);
 
 	return score;
 }
@@ -917,8 +914,15 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	{
 		map = crystal->getDiFFT();
 	}
+	
+	MapScoreType mapType = MapScoreTypeCorrel;
 
-	FFT::operation(map, segment, ave, MapScoreTypeCorrel, &vals, true);
+	if (scoreType == ScoreTypeAddDensity)
+	{
+		mapType = MapScoreTypeCopyToSmaller;
+	}
+
+	FFT::operation(map, segment, ave, mapType, &vals, true);
 
 	/* For correlation calculations */
 	for (size_t i = 0; i < vals.size(); i++)
