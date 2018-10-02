@@ -80,6 +80,8 @@ public:
 
 	double totalElectrons();
 	double getAverageBFactor(bool initial = false);
+	
+	/** Average offset from initial PDB position */
 	double getAverageDisplacement();
 
 	std::string getPDBContribution(PDBType pdbType,
