@@ -1131,14 +1131,6 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 		if (molecule(i)->getClassName() == "Polymer")
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
-
-			if (data)
-			{
-				polymer->differenceGraphs("density_" + polymer->getChainID() +
-				                          "_" + i_to_str(cycleNum),
-				                          shared_from_this());
-			}
-
 			polymer->graph("bfactor_" + polymer->getChainID() +
 			               "_" + i_to_str(cycleNum));
 			polymer->closenessSummary();
