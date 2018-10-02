@@ -182,6 +182,38 @@ double Crystal::totalToScale()
 	return (sqrt((double)sum / (double)weighted)) * 1.0;
 }
 
+void Crystal::omitScan()
+{
+	int window = 20;
+	int half = window / 2;
+	
+	DiffractionPtr data = Options::getRuntimeOptions()->getActiveData();
+	
+	for (int j = 0; j < moleculeCount(); j++)
+	{
+		if (!molecule(j)->isPolymer())
+		{
+			continue;
+		}
+		
+		PolymerPtr pol = ToPolymerPtr(molecule(j));
+
+		int start = pol->monomerBegin();
+		int end = pol->monomerEnd();
+
+		std::cout << "Omit scan starting." << std::endl;
+
+		for (int i = start; i < end; i += half)
+		{
+			pol->downWeightResidues(i, i + window, 0);
+			concludeRefinement(_cycleNum + 1, data);
+			pol->downWeightResidues(i, i + window, 1);
+		}
+
+		std::cout << "Omit scan complete." << std::endl;
+	}
+}
+
 void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 {
 	std::vector<double> bins, ampAves;

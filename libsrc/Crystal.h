@@ -131,6 +131,9 @@ public:
 	{
 		return _calcCopy;
 	}
+
+	void omitScan();
+	
 	void differenceAttribution();
 	
 	void multiplyMap(double scale);
