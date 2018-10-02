@@ -234,6 +234,20 @@ void Crystal::omitScan()
 	}
 }
 
+void Crystal::reflex()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+
+		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		pol->reflex();
+	}
+}
+
 void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 {
 	std::vector<double> bins, ampAves;

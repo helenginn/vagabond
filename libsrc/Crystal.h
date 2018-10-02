@@ -136,6 +136,9 @@ public:
 	
 	void differenceAttribution();
 	
+	/* Calculate new flexibility */
+	void reflex();
+	
 	void multiplyMap(double scale);
 	vec3 snapToGrid(vec3 pos);
 
