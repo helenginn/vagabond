@@ -1096,6 +1096,13 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 			}
 		}
 	}
+
+	/* Set all the voxels to zero if we are going to copy across info.
+	 * We do not want any contamination with original Fc. */
+	if (mapScoreType == MapScoreTypeCopyToSmaller)
+	{
+		fftAtom->setAll(0);
+	}
 	
 	double step = 1;
 
@@ -1136,7 +1143,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				vec3_add_to_vec3(&atomPos, atomOffset);
 
 				/* If this value is within floating point error, stop now. */
-				if (fftAtom->getReal(atomPos.x, atomPos.y, atomPos.z) <= 10e-6)
+				if (fftAtom->getReal(atomPos.x, atomPos.y, atomPos.z) <= 10e-6
+				    && mapScoreType != MapScoreTypeCopyToSmaller)
 				{
 					continue;
 				}
@@ -1244,8 +1252,11 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 		}
 	}
 	
+	
 	if (mapScoreType == MapScoreTypeCopyToSmaller)
 	{
+		std::cout << "After copying across, now "
+		"sum of " << fftAtom->averageAll() * fftAtom->nn << std::endl;
 		fftAtom->shiftToCentre();
 	}
 

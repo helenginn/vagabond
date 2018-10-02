@@ -47,7 +47,7 @@ void Reflex::segmentPolymer()
 				continue;
 			}
 			
-			segment->addAtomsFrom(monomer);
+			segment->addAtomsFrom(monomer->getBackbone());
 		}
 
 		_segments.push_back(segment);
@@ -68,9 +68,8 @@ double Reflex::bFactorScore(void *object)
 	DiffractionPtr data = Options::getRuntimeOptions()->getActiveData();
 	double res = 0;
 	res = me->_workspace.crystal->getMaxResolution(data);
-	//res = 1 / (1 / res * 4);
-	res = 1 / (1 / res * 2);
 	std::vector<double> bins, obsAves, calcAves;
+
 	const int binnum = 20;
 	generateResolutionBins(0, res, binnum, &bins);
 	obsAves = std::vector<double>(binnum, 0);
@@ -104,10 +103,30 @@ double Reflex::bFactorScore(void *object)
 				float fCalc = sqrt(calc->getIntensity(ele)) * isoBMod;
 				float fObs = sqrt(obs->getIntensity(ele));
 				
-				xs.push_back(fCalc);
-				ys.push_back(fObs);
+				for (int l = 0; l < binnum - 1; l++)
+				{
+					if (d < bins[l] && d < bins[l + 1])
+					{
+						obsAves[l] += fObs;
+						calcAves[l] += fCalc;
+						counts[l]++;
+						break;
+					}
+				}
+
+//				xs.push_back(fCalc);
+//				ys.push_back(fObs);
 			}
 		}
+	}
+	
+	for (int i = 0; i < binnum - 1; i++)
+	{
+		obsAves[i] /= counts[i];
+		calcAves[i] /= counts[i];
+		
+		xs.push_back(obsAves[i]);
+		ys.push_back(calcAves[i]);
 	}
 
 	double rFac = r_factor(xs, ys);
@@ -140,13 +159,23 @@ void Reflex::prepareSegments(AtomGroupPtr segment, bool preprocess)
 
 	if (preprocess)
 	{
+		/*
+		obsSegment->normalise();
+		calcSegment->normalise();
+		
+		std::cout << "Obs: " << std::endl;
+		obsSegment->printSlice();
+		std::cout << "Calc: " << std::endl;
+		calcSegment->printSlice();
+		*/
+
 		obsSegment->fft(1);
 		calcSegment->fft(1);
-
+		
 		for (int i = 0; i < calcSegment->nn; i++)
 		{
 			calcSegment->data[i][0] *= _gradient;
-			calcSegment->data[i][0] += _intercept;
+			calcSegment->data[i][1] *= _gradient;
 		}
 
 		_calcSize = obsSegment->averageAll();
@@ -161,6 +190,7 @@ void Reflex::prepareSegments(AtomGroupPtr segment, bool preprocess)
 void Reflex::refineFlex()
 {	
 	_bFactor = 0;
+	_kAbs = 1;
 	_aniso->setZero();
 	
 	NelderMeadPtr nm;
