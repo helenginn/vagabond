@@ -108,13 +108,14 @@ void Molecule::tieAtomsUp()
 	}
 }
 
-void Molecule::addToSolventMask(FFTPtr fft, mat3x3 _real2frac, double rad)
+void Molecule::addToSolventMask(FFTPtr fft, mat3x3 _real2frac, double rad,
+	                           std::vector<Atom *> *ptrs)
 {
 	vec3 offset = make_vec3(0, 0, 0);
 
 	for (int i = 0; i < atomCount(); i++)
 	{
-		atom(i)->addToSolventMask(fft, _real2frac, rad);
+		atom(i)->addToSolventMask(fft, _real2frac, rad, ptrs);
 	}
 }
 

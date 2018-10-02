@@ -21,17 +21,13 @@ void BucketBulkSolvent::addSolvent()
 	_solvent = FFTPtr(new FFT(*crystal->getFFT()));
 	mat3x3 real2frac = crystal->getReal2Frac();
 	_solvent->setAll(1);
-	std::vector<Atom *> atomPtrs = std::vector<Atom *>(_solvent->nn, NULL);
+	_atomPtrs = std::vector<Atom *>(_solvent->nn, NULL);
 	double shrink = 0.4;
 
 	for (size_t i = 0; i < crystal->moleculeCount(); i++)
 	{
-		crystal->molecule(i)->addToSolventMask(_solvent, real2frac);
-		
-		for (int j = 0; j < crystal->molecule(i)->atomCount(); j++)
-		{
-			AtomPtr atom = crystal->molecule(i)->atom(j);
-		}
+		crystal->molecule(i)->addToSolventMask(_solvent, real2frac, -1,
+		                                       &_atomPtrs);
 	}
 	
 	_solvent->shrink(shrink);

@@ -95,8 +95,9 @@ public:
 	}
 
 	double getSolventRadius();
-	void addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double radius = -1);
-	void addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell,
+	void addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double radius,
+	                      std::vector<Atom *> *ptrs);
+	void addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell, vec3 pos,
 	                           std::vector<Atom *> *ptrs,
 	                           double rad = 0);
 

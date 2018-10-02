@@ -238,7 +238,6 @@ FFTPtr Atom::getBlur()
 	return modelDist;
 }
 
-void Atom::addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell,
 vec3 Atom::getSymRelatedPosition(int i)
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
@@ -297,15 +296,13 @@ size_t Atom::symOpCount()
 	return spg->nsymop;
 }
 
+void Atom::addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell, vec3 pos,
                                  std::vector<Atom *> *ptrs, double rad)
 {
-	double b = getBFactor();
 	/* Limiting case must be far enough away to merge 'nicely' into the
 	 * constant-1 solvent mask area */
-	double radius = 2 * sqrt(b / (8 * M_PI * M_PI));
-	radius += rad;
 
-	vec3 pos = _model->getAbsolutePosition();
+	double b = this->getBFactor();
 	mat3x3_mult_vec(unit_cell, &pos);
 	pos.x *= fft->nx;
 	pos.y *= fft->ny;
@@ -313,8 +310,8 @@ size_t Atom::symOpCount()
 	
 	vec3 mins, maxs;
 	mat3x3 basis = fft->getBasis();	
-	fft->findLimitingValues(-radius, radius, -radius, 
-	                        radius, -radius, radius,
+	fft->findLimitingValues(-rad, rad, -rad, 
+	                        rad, -rad, rad,
 	                        &mins, &maxs);
 	
 	for (int k = mins.z; k < maxs.z; k++)
@@ -334,7 +331,7 @@ size_t Atom::symOpCount()
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(basis, &ijk);
 				
-				if (vec3_sqlength(ijk) > radius * radius)
+				if (vec3_sqlength(ijk) > rad * rad)
 				{
 					continue;
 				}
@@ -345,7 +342,8 @@ size_t Atom::symOpCount()
 	}
 }
 
-void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad)
+void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
+							std::vector<Atom *> *ptrs)
 {
 	if (getElectronCount() <= 1)
 	{
@@ -364,10 +362,14 @@ void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad)
 		return;
 	}
 	
-	vec3 pos = _model->getAbsolutePosition();
+	vec3 pos = getAbsolutePosition();
 	mat3x3_mult_vec(unit_cell, &pos);
 
 	fft->addToValueAroundPoint(pos, radius, -1);
+	
+	vec3 asu = getPositionInAsu();
+	
+	addPointerToLocalArea(fft, unit_cell, asu, ptrs, radius);
 }
 
 void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
