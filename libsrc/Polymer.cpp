@@ -89,7 +89,7 @@ void Polymer::reflex()
 {
 	Reflex reflex;
 	reflex.setPolymer(shared_from_this());
-	reflex.setPieceCount(8);
+	reflex.setPieceCount(1);
 	reflex.calculate();
 }
 
