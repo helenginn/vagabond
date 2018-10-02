@@ -152,14 +152,11 @@ void Crystal::realSpaceClutter(double maxRes)
 		_fft->setupMask();
 
 		_difft->create(fft_dims.x, fft_dims.y, fft_dims.z);
-		std::cout << "FFT_dims: " << vec3_desc(fft_dims) << std::endl;
 
 		mat3x3 per_voxel = _hkl2real;
 		mat3x3_scale(&per_voxel, 1 / fft_dims.x, 
 		             1 / fft_dims.y, 1 / fft_dims.z);
 		
-		std::cout << "per voxel: " << mat3x3_desc(per_voxel) << std::endl;
-
 		_fft->setBasis(per_voxel, 1);
 		_difft->setBasis(per_voxel, 1);
 	}
