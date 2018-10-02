@@ -28,6 +28,7 @@
 #include "Options.h"
 #include "FlexGlobal.h"
 #include "FlexLocal.h"
+#include "Reflex.h"
 #include "RefinementNelderMead.h"
 #include "RefinementGridSearch.h"
 #include "Hydrogenator.h"
@@ -82,6 +83,14 @@ void Polymer::checkChainContinuity()
 			foundGap = i;
 		}
 	}
+}
+
+void Polymer::reflex()
+{
+	Reflex reflex;
+	reflex.setPolymer(shared_from_this());
+	reflex.setPieceCount(8);
+	reflex.calculate();
 }
 
 void Polymer::refineLocalFlexibility()

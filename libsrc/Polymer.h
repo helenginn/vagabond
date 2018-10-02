@@ -126,6 +126,7 @@ public:
 
 	void refineAnchorMovements();
 	void refineLocalFlexibility();
+	void reflex();
 	virtual void addProperties();
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();
