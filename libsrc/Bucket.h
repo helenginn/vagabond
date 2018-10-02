@@ -98,6 +98,7 @@ public:
 	void processMaskedRegions();
 	
 	bool isSolvent(int index);
+	Atom *nearbyAtom(int index);
 	
 	FFTPtr getMaskedRegions()
 	{
@@ -112,6 +113,7 @@ protected:
 	FFTPtr _solvent;
 	FFTPtr _maskedRegions;
 	DiffractionPtr _data;
+	std::vector<Atom *> _atomPtrs;
 	
 	CrystalPtr getCrystal()
 	{

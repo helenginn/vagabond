@@ -194,6 +194,16 @@ void Bucket::fourierTransform(int dir, double res)
 	}
 }
 
+Atom *Bucket::nearbyAtom(int index)
+{
+	if (_atomPtrs.size() <= index)
+	{
+		return NULL;
+	}
+
+	return _atomPtrs[index];
+}
+
 bool Bucket::isSolvent(int index)
 {
 	return (_solvent->data[index][0] > 0.8);
