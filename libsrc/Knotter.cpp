@@ -388,31 +388,11 @@ void Knotter::tie()
 		convertible = true;
 		makeGlycine();
 	}
-	
-	if (convertible && false)
-	{
-		AtomPtr cbAtom = _sidechain->findAtom("CB");
-		
-		if (cbAtom)
-		{
-			BondPtr cbBond = ToBondPtr(cbAtom->getModel());
-
-			for (int i = 0; i < _sidechain->atomCount(); i++)
-			{
-				AtomPtr otherAtom = _sidechain->atom(i);
-				
-				if (otherAtom != cbAtom)
-				{
-					cbBond->addExtraTorsionSample(otherAtom);	
-				}
-			}	
-		}
-	}
 
 	if (!convertible)
 	{
 		warn_user("Knotter doesn't know how to tie up " + residue);
-	           }
+	}
 }
 
 void Knotter::makeGlycine()
