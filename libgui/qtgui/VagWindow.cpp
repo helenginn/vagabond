@@ -53,10 +53,12 @@ void VagWindow::makeMenu()
 	connect(_qaShell, &QAction::triggered,
 			[=]{ toggleScaling(ScalingTypeShell); });
 	
+	/*
 	_qaKB = scaling->addAction(tr("Absolute scale + B factor"));
 	_qaKB->setCheckable(true);
 	connect(_qaKB, &QAction::triggered,
 			[=]{ toggleScaling(ScalingTypeAbsBFactor); });
+			*/
 	
 	_qaK = scaling->addAction(tr("Absolute scale only"));
 	_qaK->setCheckable(true);
@@ -608,7 +610,7 @@ void VagWindow::displayScaling()
 	ScalingType type = Options::getScalingType();
 
 	_qaShell->setChecked(type == ScalingTypeShell);
-	_qaKB->setChecked(type == ScalingTypeAbsBFactor);
+//	_qaKB->setChecked(type == ScalingTypeAbsBFactor);
 	_qaK->setChecked(type == ScalingTypeAbs);
 }
 
