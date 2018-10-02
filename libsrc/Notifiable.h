@@ -25,6 +25,7 @@ typedef enum
 	InstructionTypeModelPosToEnd,
 	InstructionTypeChangeBMult,
 	InstructionTypeRecalculateFFT,
+	InstructionTypeOmitScan,
 	InstructionTypeOpenInCoot,
 	InstructionTypeSetObjectValue,
 	InstructionTypeGetObjectValue,
