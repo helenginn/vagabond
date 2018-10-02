@@ -99,6 +99,13 @@ public:
 	{
 		return _monomers.begin()->first;
 	}
+
+	int monomerEnd()
+	{
+		std::map<long, MonomerPtr>::iterator it = _monomers.end();
+		it--;
+		return it->first;
+	}
 	
 	int monomerCount()
 	{
