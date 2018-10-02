@@ -42,8 +42,8 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
 
 	if (!betaTorsion)
 	{
-		shout_at_user("Residue " + _backbone->getPolymer()->getChainID()
-		              + i_to_str(_backbone->getResNum()) + " is missing the backbone!\n"\
+		shout_at_user("Chain " + _backbone->getPolymer()->getChainID() + ", "
+		              "residue " + i_to_str(_backbone->getResNum()) + " is missing the backbone!\n"\
 		"Please rebuild and rerun.");
 	}
 
