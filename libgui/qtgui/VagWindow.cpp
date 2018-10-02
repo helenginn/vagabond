@@ -93,6 +93,7 @@ void VagWindow::makeMenu()
 	actions.push_back(samples);
 	
 	menuItem(model, "Omit scan", InstructionTypeOmitScan);
+	menuItem(model, "Find flexibility", InstructionTypeReflex);
 
 }
 
@@ -349,6 +350,10 @@ int VagWindow::waitForInstructions()
 
 				case InstructionTypeOpenInCoot:
 				options->openInCoot();
+				break;
+
+				case InstructionTypeReflex:
+				options->reflex();
 				break;
 
 				case InstructionTypeOmitScan:
