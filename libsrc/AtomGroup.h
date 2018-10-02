@@ -75,6 +75,8 @@ public:
 	{
 		return _atoms[i];
 	}
+	
+	vec3 centroid();
 
 	double totalElectrons();
 	double getAverageBFactor(bool initial = false);

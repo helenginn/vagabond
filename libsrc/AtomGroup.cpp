@@ -1010,3 +1010,18 @@ void AtomGroup::refreshBondAngles()
 		atom(i)->refreshBondAngles();
 	}
 }
+
+vec3 AtomGroup::centroid()
+{
+	vec3 sum = empty_vec3();
+	
+	for (int i = 0; i < atomCount(); i++)
+	{
+		vec3 abs = atom(i)->getAbsolutePosition();
+		vec3_add_to_vec3(&sum, abs);
+	}
+	
+	vec3_mult(&sum, 1 / (double)atomCount());
+	
+	return sum;
+}
