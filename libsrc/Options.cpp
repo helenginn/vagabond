@@ -901,3 +901,8 @@ void Options::omitScan()
 	getActiveCrystal()->omitScan();
 }
 
+/* Calculate new flexibility? */
+void Options::reflex()
+{
+	getActiveCrystal()->reflex();
+}

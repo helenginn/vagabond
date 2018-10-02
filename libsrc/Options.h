@@ -187,6 +187,7 @@ public:
 		_bReal = val;
 	}
 	
+	
 	static void resetGlobalBFactor()
 	{
 		_bReal = -1;
@@ -203,6 +204,7 @@ public:
 	}
 	
 	void omitScan();
+	void reflex();
 	void scanBondParams();
 	void renderDensity();
 	void statusMessage(std::string message);
