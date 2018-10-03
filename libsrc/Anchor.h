@@ -60,8 +60,10 @@ public:
 		return _atom.lock();
 	}
 	
-	void addTranslationParameters(RefinementStrategyPtr strategy);
-	void addLibrationParameters(RefinementStrategyPtr strategy);
+	void addTranslationParameters(RefinementStrategyPtr strategy,
+	                              double mult = 1);
+	void addLibrationParameters(RefinementStrategyPtr strategy,
+	                              double mult = 1);
 
 	static void cleanup(void *object)
 	{

@@ -335,12 +335,14 @@ void Anchor::propagateChange(int depth, bool refresh)
 
 }
 
-void Anchor::addTranslationParameters(RefinementStrategyPtr strategy)
+void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
+                                      double mult)
 {
-	_trans->addToStrategy(strategy, 0.5, 0.01, "tr");
+	_trans->addToStrategy(strategy, 0.5 * mult, 0.01, "tr");
 }
 
-void Anchor::addLibrationParameters(RefinementStrategyPtr strategy)
+void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
+                                      double mult)
 {
-	_libration->addToStrategy(strategy, 0.2, 0.005, "li");
+	_libration->addToStrategy(strategy, 0.2 * mult, 0.005, "li");
 }
