@@ -43,6 +43,9 @@ public:
 	
 	/** Performs preliminary work and refinement simultaneously */
 	void refine();
+
+	/** Refines anchor point against target Bs */
+	void refineAnchor();
 	
 	/** Get current value of the magnitude of trial kick set */
 	double getShift()
@@ -50,12 +53,14 @@ public:
 		return _shift;
 	}
 private:
-	void createAtomTargets();
+	void createAtomTargets(bool subtract = true);
 	AtomTarget currentAtomValues();
 	void createClustering();
 	void reorganiseBondOrder();
 	double bondRelationship(BondPtr bi, BondPtr bj);
 	void scanBondParams();
+	void reflex();
+	void clear();
 	
 	double directSimilarity();
 
@@ -77,6 +82,7 @@ private:
 	std::vector<ParamBandPtr> _paramBands;
 	BondBondCC _bbCCs;
 	
+	bool _useTarget;
 	int _afterBond;
 	double _threshold;
 	double _increment;

@@ -15,8 +15,8 @@
 #include "Anchor.h"
 #include "RefinementGridSearch.h"
 #include "RefinementNelderMead.h"
-#include "RefinementLBFGS.h"
 #include "ParamBand.h"
+#include "Reflex.h"
 #include <map>
 #include <iomanip>
 
@@ -30,6 +30,7 @@ FlexLocal::FlexLocal()
 	_afterBond = -1;
 	_threshold = 0.80;
 	_increment = 6;
+	_useTarget = true;
 }
 
 void FlexLocal::setPolymer(PolymerPtr pol, double shift)
@@ -38,73 +39,142 @@ void FlexLocal::setPolymer(PolymerPtr pol, double shift)
 	_shift = shift;
 }
 
-
-void FlexLocal::refine()
+void FlexLocal::refineAnchor()
 {
-	scanBondParams();
-	createClustering();
-	reorganiseBondOrder();
-	chooseBestDifferenceThreshold();
+	std::cout << "---------------------------------------------------------"
+	<< std::endl;
+	std::cout << "|  Refining whole molecule for chain " 
+	<< _polymer->getChainID();
+	std::cout << std::endl;
+	std::cout << "---------------------------------------------------------"
+	<< std::endl;
 
-	std::cout << "5. Refining parameters of bond clusters..." << std::flush;
-	RefinementGridSearchPtr grid;
-	grid = RefinementGridSearchPtr(new RefinementGridSearch());
-	grid->setCycles(24);
-	grid->setSilent();
-	grid->setEvaluationFunction(getScore, this);
-	int limit = 5;
-
-	for (int i = 0; i < _paramBands.size() && i < limit; i++)
-	{
-		grid->addParameter(&*_paramBands[i], ParamBand::getGlobalParam,
-		                   ParamBand::setGlobalParam, _shift * 2, 
-		                   _shift, "k" + i_to_str(i));
-	}
-
-	grid->refine();
+	reflex();
+	createAtomTargets();
 	
-	if (!grid->didChange())
-	{
-		_shift *= 0.8;
-		std::cout << " not improved.\nReducing shift for next time ... done." << std::endl;
-	}
-	
-	_direct = 1;
+	std::cout << "| 1. Refining libration..." << std::flush;
 
-	NelderMeadPtr nelder;
-	nelder = NelderMeadPtr(new RefinementNelderMead());
+	AnchorPtr anchor = ToAnchorPtr(_polymer->getAnchorModel());
+
+	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
 	nelder->setCycles(24);
 	nelder->setSilent();
 	nelder->setEvaluationFunction(getScore, this);
-	
-	for (int i = 0; i < grid->parameterCount(); i++)
-	{
-		Parameter param = grid->getParamObject(i);
-		ParamBand *band = static_cast<ParamBand *>(param.object);
-		
-		bool changed = grid->didChange(i);
-		
-		if (!changed)
-		{
-			continue;
-		}
-		
-		param.other_value /= 20;
-		
-		nelder->addParameter(param);
-	}
-	
+//	anchor->addTranslationParameters(nelder, 0.2);
+	anchor->addLibrationParameters(nelder, 0.2);
+	nelder->refine();
+
 	double val = (1 - getScore(this)) * 100.;
 
-	if (nelder->parameterCount() > 0)
-	{
-		nelder->refine();
-	}
-	
-	if (grid->didChange())
+	if (nelder->didChange())
 	{
 		std::cout << val << "% improved. ... done." << std::endl;
 	}
+	else
+	{
+		std::cout << " not improved." << std::endl;
+	}
+	
+	/*
+	std::cout << "| 2. Refining libration...  " << std::flush;
+	
+	nelder->clearParameters();
+	nelder->refine();
+
+	double val2 = (1. - getScore(this)) * 100.;
+	val = val - val2;
+
+	if (nelder->didChange())
+	{
+		std::cout << val << "% improved. ... done." << std::endl;
+	}
+	else
+	{
+		std::cout << " not improved." << std::endl;
+	}
+	*/
+
+	std::cout << "---------------------------------------------------------"
+	<< std::endl;
+}
+
+void FlexLocal::refine()
+{
+	for (int i = 0; i < 3; i++)
+	{
+		scanBondParams();
+		createClustering();
+		reorganiseBondOrder();
+		chooseBestDifferenceThreshold();
+
+		bool reduceShift = false;
+
+		for (int j = 0; j < 5; j++)
+		{
+			std::cout << "| " << j + 5 << ". Refining bond clusters... " 
+			<< std::flush;
+			int limit = 5;
+
+			NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
+			nelder->setCycles(24);
+			nelder->setSilent();
+			nelder->setEvaluationFunction(getScore, this);
+
+			for (int i = 0; i < _paramBands.size() && i < limit; i++)
+			{
+				nelder->addParameter(&*_paramBands[i], ParamBand::getGlobalParam,
+				                     ParamBand::setGlobalParam, _shift * 2, 
+				                     _shift, "k" + i_to_str(i));
+			}
+
+			nelder->refine();
+
+			double val = (1 - getScore(this)) * 100.;
+
+			if (val < 0.5)
+			{
+				reduceShift = true;
+			}
+
+			if (nelder->didChange())
+			{
+				std::cout << std::setw(5) << val << 
+				"% improved. ... done." << std::endl;
+				break;
+			}
+			else
+			{
+				std::cout << " not improved.   ... done." << std::endl;
+				std::random_shuffle(_paramBands.begin(), _paramBands.end());
+			}
+		}
+
+		std::cout << "---------------------------------------------------------"
+		<< std::endl;
+
+		if (reduceShift)
+		{
+			_shift *= 0.9;
+		}
+
+		clear();
+		_run++;
+	}
+}
+
+void FlexLocal::clear()
+{
+	_atomTargets.clear();
+	_atomOriginal.clear();
+	_bondEffects.clear();
+	_atoms.clear();
+	_bonds.clear();
+	_reorderedBonds.clear();
+	_b2bDiffs.clear();
+	_degrees.clear();
+	_bondClusterIds.clear();
+	_paramBands.clear();
+	_bbCCs.clear();
 }
 
 int getHIndex(std::map<int, int> pairs)
@@ -156,7 +226,7 @@ std::map<int, int> FlexLocal::getClusterMembership(double threshold)
 
 void FlexLocal::chooseBestDifferenceThreshold()
 {
-	std::cout << "4. Subdividing into clusters..." << std::flush;
+	std::cout << "| 4. Subdividing into clusters..." << std::flush;
 	/* t threshold for a difference between two consecutive re-ordered
 	 * bonds to cause a change of cluster */
 	
@@ -232,10 +302,20 @@ AtomTarget FlexLocal::currentAtomValues()
 	return targ;
 }
 
-void FlexLocal::createAtomTargets()
+void FlexLocal::createAtomTargets(bool subtract)
 {
 	ExplicitModelPtr model = _polymer->getAnchorModel();
 	_anchorB = model->getAtom()->getInitialBFactor() - model->getBFactor();
+	
+	if (_useTarget)
+	{
+		_anchorB = model->getAtom()->getTargetB();
+	}
+	
+	if (!subtract)
+	{
+		_anchorB = 0;
+	}
 	
 	/* First, choose which atoms to worry about, and find their
 	 * starting B factors. */
@@ -243,6 +323,12 @@ void FlexLocal::createAtomTargets()
 	{
 		AtomPtr a = _polymer->atom(i);
 		double ibf = a->getInitialBFactor();
+		
+		if (_useTarget)
+		{
+			ibf = a->getTargetB() + a->getBFactor();
+		}
+
 		double bf = a->getBFactor();
 		
 		if (!(a->isBackbone() || a->isBackboneAndSidechain()))
@@ -319,7 +405,7 @@ bool less_than(const BondDegree b1, const BondDegree b2)
 
 void FlexLocal::reorganiseBondOrder()
 {
-	std::cout << "3. Reorganising bonds into similar groups... " << std::flush;
+	std::cout << "| 3. Reorganising bonds into similar groups... " << std::flush;
 	
 	std::vector<int> orderedResults;
 	
@@ -422,7 +508,7 @@ void FlexLocal::createClustering()
 	double sumCC = 0;
 	double count = 0;
 
-	std::cout << "2. Calculating bond-bond correlation pairs... " << std::flush;
+	std::cout << "| 2. Calculating bond-bond correlation pairs... " << std::flush;
 	/* Once all the clusters are made, give them pair-wise correlations */
 	for (int i = 0; i < _bonds.size(); i++)
 	{
@@ -487,7 +573,14 @@ double FlexLocal::directSimilarity()
 		double target = _atomTargets[_atoms[i]];
 		double original = _atomOriginal[_atoms[i]];
 		double current = _atoms[i]->getBFactor();
+		
 		double transformed = (target - _anchorB - original) / _increment;
+
+		if (_useTarget)
+		{
+//			transformed *= 2;
+		}
+		
 		xs.push_back(transformed);
 		ys.push_back(current - original);
 	}
@@ -505,9 +598,29 @@ double FlexLocal::getScore(void *object)
 	return score;
 }
 
+void FlexLocal::reflex()
+{
+	// this updates the atom B targets.
+	std::cout << "| 0. Determining atom-flexibility targets... " << std::flush;
+	Reflex reflex;
+	reflex.setPolymer(_polymer);
+	reflex.setPieceCount(1);
+	reflex.calculate();
+	std::cout << "   ... done." << std::endl;
+}
+
 void FlexLocal::scanBondParams()
 {
-	std::cout << "1. Determining atom-flexibility effects... " << std::flush;
+	std::cout << "---------------------------------------------------------"
+	<< std::endl;
+	std::cout << "|  Refining flexibility for chain " 
+	<< _polymer->getChainID() << " (cycle " << _run << ")";
+	std::cout << std::endl;
+	std::cout << "---------------------------------------------------------"
+	<< std::endl;
+	reflex();
+
+	std::cout << "| 1. Determining atom-flexibility effects... " << std::flush;
 	createAtomTargets();
 	
 	CSVPtr atomtarg = CSVPtr(new CSV(2, "atom", "target"));
