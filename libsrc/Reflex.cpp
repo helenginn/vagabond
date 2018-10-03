@@ -187,6 +187,7 @@ void Reflex::refineFlex()
 	nm->setJobName("segment_" + i_to_str(_round));
 	nm->setEvaluationFunction(bFactorScore, this);
 	nm->setCycles(20);
+	nm->setSilent();
 	nm->addParameter(this, getBFactor, setBFactor, 5, 0.1, "b");
 	nm->refine();
 	nm->clearParameters();
