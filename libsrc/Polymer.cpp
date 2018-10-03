@@ -971,7 +971,7 @@ void Polymer::refineAnchorMovements()
 	attachTargetToRefinement(nelderMead, target);
 
 	nelderMead->setCycles(24);
-	nelderMead->setVerbose(true);
+//	nelderMead->setVerbose(true);
 	nelderMead->clearParameters();
 	
 	anchor->addTranslationParameters(nelderMead);
@@ -980,6 +980,11 @@ void Polymer::refineAnchorMovements()
 
 	anchor->addLibrationParameters(nelderMead);
 	nelderMead->refine();
+	FlexLocal local;
+	local.setPolymer(shared_from_this(), _kickShift);
+	local.refineAnchor();
+
+	return;
 }
 
 AtomGroupPtr Polymer::getAllBackbone()
