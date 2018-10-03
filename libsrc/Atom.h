@@ -286,14 +286,21 @@ public:
 		_hBondage = status;
 	}
 	
+	void clearTargetB()
+	{
+		_targetB = 0;
+		_targetBCount = 0;
+	}
+	
 	double getTargetB()
 	{
-		return _targetB;
+		return _targetB / _targetBCount;
 	}
 	
 	void setTargetB(double b)
 	{
-		_targetB = b;
+		_targetB = +b;
+		_targetBCount++;
 	}
 	
 	Atom *pluckAnother();
@@ -323,6 +330,7 @@ private:
 	vec3 _initialPosition;
 	double _initialB;
 	double _targetB;
+	int _targetBCount;
 	vec3 _pdbPosition;
 	int _atomNum;
 	int _asu;

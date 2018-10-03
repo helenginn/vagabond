@@ -32,6 +32,14 @@ Reflex::Reflex()
 
 void Reflex::segmentPolymer()
 {
+	/* Clear atom target B factors */
+	
+	for (int i = 0; i < _polymer->atomCount(); i++)
+	{
+		AtomPtr atom = _polymer->atom(i);
+		atom->clearTargetB();
+	}
+	
 	/* Divide the polymer into sections */
 	
 	for (size_t i = _polymer->monomerBegin(); 
