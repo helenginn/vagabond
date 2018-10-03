@@ -159,16 +159,6 @@ void Reflex::prepareSegments(AtomGroupPtr segment, bool preprocess)
 
 	if (preprocess)
 	{
-		/*
-		obsSegment->normalise();
-		calcSegment->normalise();
-		
-		std::cout << "Obs: " << std::endl;
-		obsSegment->printSlice();
-		std::cout << "Calc: " << std::endl;
-		calcSegment->printSlice();
-		*/
-
 		obsSegment->fft(1);
 		calcSegment->fft(1);
 		
@@ -179,8 +169,6 @@ void Reflex::prepareSegments(AtomGroupPtr segment, bool preprocess)
 		}
 
 		_calcSize = obsSegment->averageAll();
-		std::cout << "Obs ave: " << obsSegment->averageAll() << std::endl;
-		std::cout << "Calc ave: " << calcSegment->averageAll() << std::endl;
 	}
 	
 	_obs = obsSegment;
@@ -212,9 +200,6 @@ void Reflex::findCalcScale()
 
 	std::vector<double> xs, ys;
 
-	std::cout << "Calc ave: " << _calc->averageAll() << std::endl;
-	std::cout << "Obs ave: " << _obs->averageAll() << std::endl;
-	
 	double calc_ave = _calc->averageAll();
 	double obs_ave = _obs->averageAll();
 
@@ -230,7 +215,6 @@ void Reflex::findCalcScale()
 	_gradient = scale_factor(xs, ys);
 	_intercept = 0;
 	_gradient = obs_ave / calc_ave;
-	std::cout << "Gradient: " << _gradient << std::endl;
 }
 
 void Reflex::calculate()
@@ -240,12 +224,9 @@ void Reflex::calculate()
 		shout_at_helen("Only support residue flex estimation");
 	}
 	
-	std::cout << "Scanning polymer for new flexibility info." << std::endl;
-	
 	segmentPolymer();
 	findCalcScale();
 	
-	std::cout << "Segment count: " << _segments.size() << std::endl;
 	CSVPtr csv = CSVPtr(new CSV(2, "seg", "calc_ave"));
 	
 	std::vector<double> refineBs;
