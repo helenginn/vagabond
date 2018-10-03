@@ -118,13 +118,19 @@ void VagWindow::makeButtons()
 			[=]{ pushSendInstruction(InstructionTypeRefinePositions); });
 	buttons.push_back(bRefinePos);
 
-	bFitWholeT = new QPushButton("Fit molecule translation", this);
+	bFitWholeT = new QPushButton("Intermolecule movements", this);
 	bFitWholeT->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 100, BUTTON_WIDTH , 50);
 	bFitWholeT->setEnabled(false);
 	connect(bFitWholeT, &QPushButton::clicked,
 			[=]{ pushSendInstruction(InstructionTypeFitTranslation); });
 
 	buttons.push_back(bFitWholeT);
+
+	bWaterNetwork = new QPushButton("Intramolecule movements", this);
+	bWaterNetwork->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 150, BUTTON_WIDTH , 50);
+	bWaterNetwork->setEnabled(false);
+	connect(bWaterNetwork, SIGNAL(clicked()), this, SLOT(refineWaterNetwork()));
+	buttons.push_back(bWaterNetwork);
 
 	bRefineDensity = new QPushButton("Refine sidechains to density", this);
 	bRefineDensity->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 200, BUTTON_WIDTH , 50);
@@ -139,12 +145,6 @@ void VagWindow::makeButtons()
 	connect(bRecalculate, &QPushButton::clicked,
 			[=]{ pushSendInstruction(InstructionTypeRecalculateFFT); });
 	buttons.push_back(bRecalculate);
-
-	bWaterNetwork = new QPushButton("Scan bond params", this);
-	bWaterNetwork->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 350, BUTTON_WIDTH , 50);
-	bWaterNetwork->setEnabled(false);
-	connect(bWaterNetwork, SIGNAL(clicked()), this, SLOT(refineWaterNetwork()));
-	buttons.push_back(bWaterNetwork);
 
 	bExploreMolecule = new QPushButton("Explore molecule", this);
 	bExploreMolecule->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 450, BUTTON_WIDTH , 50);
