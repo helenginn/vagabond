@@ -81,8 +81,8 @@ public:
 		return _states.size();	
 	}
 	
-	static void saveState();
-	static void restoreState(int num);
+	void saveState();
+	void restoreState(int num);
 
 	static int classCount(std::string name)
 	{
@@ -194,7 +194,7 @@ friend class Thing;
 	static ParserPtr resolveReference(std::string reference);
 	
 	void privateRestoreState(int num);
-	virtual void postRestoreState() {};
+	virtual void postRestoreState();
 private:
 	std::string _className;
 	std::string _identifier;
@@ -221,8 +221,9 @@ private:
 	void makePath();
 	void setup(bool isNew = false);
 	bool _setup;
+	bool _restored;
 	
-	void privateSaveState();
+	void privateSaveState(int aim);
 	void setupKnownClasses();
 	void sanitise(std::string *str, std::string from, std::string to);
 	

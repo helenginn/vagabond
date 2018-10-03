@@ -791,8 +791,8 @@ void Options::recalculateFFT(bool saveState)
 	Crystal::vsConcludeRefinement(&*(getActiveCrystal()));
 	agreementSummary();
 	
-	std::cout << "Total states: " << getActiveCrystal()->stateCount() <<
-	std::endl;
+//	std::cout << "Total states: " << getActiveCrystal()->stateCount() <<
+//	std::endl;
 }
 
 void Options::openInCoot()
@@ -805,15 +805,8 @@ void Options::previousState()
 {
 	int state = -1;
 	
-	if (crystals[0]->stateCount() == 1)
-	{
-		state = 0;	
-	}
-	
-	statusMessage("Restoring previous state...");
+	statusMessage("Undo: restoring previous state...");
 	crystals[0]->restoreState(state);
-	
-	recalculateFFT(false);
 }
 
 void Options::statusMessage(std::string message)

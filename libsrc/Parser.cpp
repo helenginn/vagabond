@@ -25,6 +25,7 @@ ClassMap Parser::_allClasses;
 
 Parser::Parser()
 {
+	_restored = false;
 	_setup = false;
 	_parent = NULL;
 	setupKnownClasses();
@@ -437,18 +438,18 @@ void Parser::restoreState(int num)
 	
 	if (count == 0) return;
 	
-	int totalStates = _allParsers.begin()->second.lock()->stateCount();
+	int totalStates = stateCount();
 	
 	/* If we specify state -1, we want the last-but-one state */
 	if (num < 0)
 	{
 		num = totalStates + num - 1;
-		std::cout << "Restoring state: " << num << std::endl;
 	}
-	
+
 	if (num < 0 || num >= totalStates)
 	{
 		std::cout << "Cannot restore state: " << num << std::endl;
+		std::cout << "Total states: " << totalStates << std::endl;
 		return;
 	}
 
@@ -461,12 +462,24 @@ void Parser::restoreState(int num)
 	for (ParserMap::iterator it = _allParsers.begin();
 	     it != _allParsers.end(); it++) 
 	{
-		it->second.lock()->postRestoreState();	
+		it->second.lock()->_restored = false;
 	}
+
+	postRestoreState();	
+}
+
+void Parser::postRestoreState()
+{
+
 }
 
 void Parser::privateRestoreState(int num)
 {
+	if (stateCount() < num || _restored)
+	{
+		return;
+	}
+	
 	StateValueList *list = &_states[num];
 	
 	for (int i = 0; i < list->size(); i++)
@@ -474,7 +487,7 @@ void Parser::privateRestoreState(int num)
 		list->at(i).applyToParser(this);
 	}
 	
-	if (_states.size() <= 1) return;
+	_restored = true;
 	
 	/* Remove all the states after the one just restored */
 	for (int i = num; i < _states.size(); i++)
@@ -485,8 +498,9 @@ void Parser::privateRestoreState(int num)
 
 void Parser::saveState()
 {
-	int count = 0;
-
+	int count = stateCount();
+	int aim = count + 1;
+	
 	for (ParserMap::iterator it = _allParsers.begin();
 	     it != _allParsers.end(); it++) 
 	{
@@ -495,7 +509,7 @@ void Parser::saveState()
 			continue;
 		}
 
-		it->second.lock()->privateSaveState();	
+		it->second.lock()->privateSaveState(aim);	
 		count = it->second.lock()->stateCount();
 	}
 
@@ -516,15 +530,20 @@ void Parser::saveState()
 	}
 }
 
-void Parser::privateSaveState()
+void Parser::privateSaveState(int aim)
 {
+	if (stateCount() >= aim)
+	{
+		return;
+	}
+
 	StateValueList list;
 
 	for (int i = 0; i < _stringProperties.size(); i++)
 	{
 		StateValue value;
 		value.addStringValue(_stringProperties[i].ptrName,
-		                         *_stringProperties[i].stringPtr);	
+		                     *_stringProperties[i].stringPtr);	
 		list.push_back(value);
 	}
 
@@ -532,7 +551,7 @@ void Parser::privateSaveState()
 	{
 		StateValue value;
 		value.addDoubleValue(_doubleProperties[i].ptrName,
-		                         *_doubleProperties[i].doublePtr);	
+		                     *_doubleProperties[i].doublePtr);	
 		list.push_back(value);
 	}
 
@@ -540,7 +559,7 @@ void Parser::privateSaveState()
 	{
 		StateValue value;
 		value.addMat3x3Value(_mat3x3Properties[i].ptrName,
-		                         *_mat3x3Properties[i].mat3x3Ptr);	
+		                     *_mat3x3Properties[i].mat3x3Ptr);	
 		list.push_back(value);
 	}
 
@@ -556,7 +575,7 @@ void Parser::privateSaveState()
 	{
 		StateValue value;
 		value.addVec3ArrayValue(_vec3ArrayProperties[i].ptrName,
-		                            *_vec3ArrayProperties[i].vec3ArrayPtr);	
+		                        *_vec3ArrayProperties[i].vec3ArrayPtr);	
 		list.push_back(value);
 	}
 
@@ -564,7 +583,7 @@ void Parser::privateSaveState()
 	{
 		StateValue value;
 		value.addMat3x3ArrayValue(_mat3x3ArrayProperties[i].ptrName,
-		                              *_mat3x3ArrayProperties[i].mat3x3ArrayPtr);	
+		                          *_mat3x3ArrayProperties[i].mat3x3ArrayPtr);
 		list.push_back(value);
 	}
 

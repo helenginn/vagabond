@@ -1482,13 +1482,12 @@ double Crystal::vsConcludeRefinement(void *object)
 
 void Crystal::postRestoreState()
 {
+	Parser::postRestoreState();
 	OptionsPtr options = Options::getRuntimeOptions();
 	DiffractionPtr data = options->getActiveData();
-	CrystalPtr crystal = options->getActiveCrystal();
-	
+
 	_cycleNum++;
 	concludeRefinement(_cycleNum, data);
-	crystal->saveState();
 }
 
 void Crystal::openInCoot()
