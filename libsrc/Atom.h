@@ -286,6 +286,16 @@ public:
 		_hBondage = status;
 	}
 	
+	double getTargetB()
+	{
+		return _targetB;
+	}
+	
+	void setTargetB(double b)
+	{
+		_targetB = b;
+	}
+	
 	Atom *pluckAnother();
 protected:
 	virtual std::string getClassName()
@@ -312,6 +322,7 @@ private:
 	MonomerWkr _monomer;
 	vec3 _initialPosition;
 	double _initialB;
+	double _targetB;
 	vec3 _pdbPosition;
 	int _atomNum;
 	int _asu;
