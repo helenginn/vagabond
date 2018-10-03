@@ -15,6 +15,7 @@
 #include "Backbone.h"
 #include "Options.h"
 #include "AtomGroup.h"
+#include "Atom.h"
 #include "RefinementNelderMead.h"
 
 Reflex::Reflex()
@@ -236,6 +237,12 @@ void Reflex::calculate()
 		_round = i + _pieceCount / 2;
 		prepareSegments(_segments[i]);
 		refineFlex();
+		
+		for (int j = 0; j < _segments[i]->atomCount(); j++)
+		{
+			_segments[i]->atom(j)->setTargetB(_bFactor);
+		}
+		
 		refineBs.push_back(_bFactor);
 		csv->addEntry(2, (double)_round, _bFactor);
 	}
