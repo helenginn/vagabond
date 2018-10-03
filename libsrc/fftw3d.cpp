@@ -1255,8 +1255,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	
 	if (mapScoreType == MapScoreTypeCopyToSmaller)
 	{
-		std::cout << "After copying across, now "
-		"sum of " << fftAtom->averageAll() * fftAtom->nn << std::endl;
 		fftAtom->shiftToCentre();
 	}
 
