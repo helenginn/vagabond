@@ -132,6 +132,7 @@ public:
 
 	virtual void clearParameters()
 	{
+		_changed = false;
 		_params.clear();
 	}
 
