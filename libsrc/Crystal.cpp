@@ -548,7 +548,7 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 				real *= scale * bFacMod;
 				imag *= scale * bFacMod;
 				
-				if (!std::isfinite(real * real + imag * imag))
+				if (!isfinite(real * real + imag * imag))
 				{
 					std::cout << "Warning for " << i << " " << j
 					<< " " << k << std::endl;
