@@ -256,7 +256,7 @@ void Options::displayHelp()
 	std::cout << "--output-dir=<directory>\tOptional name of a directory to dump processing.\n" << std::endl;
 	std::cout << "--kick=<num>\t\t\tOptional override for kick fraction for initial bond\n" << std::endl;
 	std::cout << "--dampen=<num>\t\t\tOptional override for dampen fraction for all bonds\n" << std::endl;
-//	std::cout << "--bfactor=<num>\t\t\tOptional override for the assigned B factor for anchor residues\n" << std::endl;
+	std::cout << "--bfactor=<num>\t\t\tOptional override for the assigned B factor for anchor residues\n" << std::endl;
 	std::cout << "--min-res=<value>\t\tOptional override for the minimum resolution in Ångströms.\n" << std::endl;
 	std::cout << "--max-res=<value>\t\tOptional override for the maximum resolution in Ångströms.\n" << std::endl;
 	std::cout << "--global-b=<value>\t\tAdd a real space B factor when adding explicit atoms to the map.\n"\
@@ -403,7 +403,6 @@ void Options::parse()
 
 		understood |= parseParameter(arg, "--with-vscript=", &_scriptName);
 		understood |= parseParameter(arg, "--with-script=", &_scriptName);
-		understood |= parseParameter(arg, "--solvent-file=", &_solventFile);
 
 		understood |= parseParameter(arg, "--with-model=", &_modelFile);
 		understood |= parseParameter(arg, "--with-mtz=", &_mtzFile);
@@ -417,13 +416,13 @@ void Options::parse()
 			understood = true;
 		}
 
+		understood |= parseParameter(arg, "--max-res=", &_maxRes);
 		understood |= parseParameter(arg, "--min-res=", &_minRes);
 		understood |= parseParameter(arg, "--bfactor=", &_bStart);
 		understood |= parseParameter(arg, "--nsamples=", &_nSamples);
 		understood |= parseParameter(arg, "--global-b=", &_bReal);
 		understood |= parseParameter(arg, "--kick=", &_kick);
 		understood |= parseParameter(arg, "--dampen=", &_dampen);
-		understood |= parseParameter(arg, "--max-res=", &_maxRes);
 		understood |= parseParameter(arg, "--output-dir=", &_outputDir);
 		understood |= parseParameter(arg, "--anchor=", &_anchor);
 
