@@ -229,6 +229,7 @@ private:
 	Notifiable *_notify;
 	void notifyGUI(bool enable);
 
+	void writeCommandLine();
 	void parse();
 	void displayHelp();
 	void outputCrystalInfo();
