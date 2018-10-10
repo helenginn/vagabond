@@ -980,7 +980,6 @@ void Polymer::refineAnchorMovements()
 
 	anchor->addLibrationParameters(nelderMead);
 	nelderMead->refine();
-	return;
 
 	FlexLocal local;
 	local.setPolymer(shared_from_this(), _kickShift);
