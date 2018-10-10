@@ -27,8 +27,6 @@ public:
 	static void setupElements();
 
 	~Element() {}
-	Element(std::string symbol, std::string name, double electrons,
-	        const float *scatter);
 	static ElementPtr getElement(std::string symbol);
 	virtual FFTPtr getDistribution(bool = false, int new_n = -1);
 	FFTPtr getMask();
@@ -59,6 +57,8 @@ protected:
 	static double getSolventMaskValue(void *obj, double x, double y, double z);
 
 private:
+	Element(std::string symbol, std::string name, double electrons,
+	        const float *scatter);
 	std::string _symbol;
 	std::string _name;
 	double _electrons;
