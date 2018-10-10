@@ -92,4 +92,5 @@ ltmain.sh
 missing
 
 # Documentation
-doc/
+doc/html
+doc/latex
