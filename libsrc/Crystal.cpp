@@ -1349,7 +1349,7 @@ AtomPtr Crystal::getClosestAtom(vec3 pos)
 	for (size_t i = 0; i < moleculeCount(); i++)
 	{
 		AtomPtr tmp = molecule(i)->getClosestAtom(me, pos);
-		vec3 tmp_pos = tmp->getAsymUnitPosition(me);
+		vec3 tmp_pos = tmp->getPositionInAsu();
 
 		vec3 diff = vec3_subtract_vec3(pos, tmp_pos);
 		double dist = vec3_length(diff);

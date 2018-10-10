@@ -410,34 +410,6 @@ ExplicitModelPtr Atom::getExplicitModel()
 	return ToExplicitModelPtr(getModel());
 }
 
-/* Need to add symops. */
-vec3 Atom::getAsymUnitPosition(CrystalPtr crystal, int nSample)
-{
-	vec3 pos = getAbsolutePosition();
-	if (nSample >= 0 && 
-	    nSample < getExplicitModel()->getFinalPositions().size())
-	{
-		pos = getExplicitModel()->getFinalPositions()[nSample].start;
-	}
-	
-	mat3x3 real2frac = crystal->getReal2Frac();
-	mat3x3 frac2real = crystal->getHKL2Real();
-
-	mat3x3_mult_vec(real2frac, &pos);
-	
-	if (pos.x != pos.x || !isfinite(pos.x))
-	{
-		return pos;
-	}
-	
-	FFT::collapseFrac(&pos.x, &pos.y, &pos.z);
-	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
-	pos = FFT::collapseToRealASU(pos, spg);
-	mat3x3_mult_vec(frac2real, &pos);
-	
-	return pos;
-}
-
 bool Atom::isBackbone()
 {
 	if (_atomName == "C") return true;
@@ -810,8 +782,8 @@ double Atom::getDistanceFrom(Atom *other, int nSample, bool quick)
 	
 	if (!quick)
 	{
-		me = getAsymUnitPosition(crystal, nSample);
-		you = other->getAsymUnitPosition(crystal, nSample);
+		me = getPositionInAsu();
+		you = other->getPositionInAsu();
 	}
 	
 	vec3 apart = vec3_subtract_vec3(me, you);

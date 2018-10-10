@@ -431,7 +431,7 @@ AtomPtr AtomGroup::getClosestAtom(CrystalPtr crystal, vec3 pos)
 
 	for (int i = 0; i < atomCount(); i++)
 	{
-		vec3 tmp = atom(i)->getAsymUnitPosition(crystal);
+		vec3 tmp = atom(i)->getPositionInAsu();
 		bool closeish = vec3_near_vec3_box(tmp, pos, small_dist);
 
 		if (!closeish)

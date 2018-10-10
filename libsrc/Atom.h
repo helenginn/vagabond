@@ -304,6 +304,7 @@ public:
 	}
 	
 	Atom *pluckAnother();
+	vec3 getPositionInAsu();
 protected:
 	virtual std::string getClassName()
 	{
@@ -319,7 +320,6 @@ protected:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();
 private:
-	vec3 getPositionInAsu();
 	vec3 getSymRelatedPosition(int i);
 	size_t symOpCount();
 	ModelPtr _model;
