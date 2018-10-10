@@ -35,9 +35,6 @@
 #include <mutex>
 #include "charmanip.h"
 
-#define INITIAL_KICK 0.01
-#define INITIAL_DAMPENING 0.08
-
 class Anisotropicator;
 
 class Bond : public ExplicitModel
