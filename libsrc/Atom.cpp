@@ -376,82 +376,55 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
                     bool sameScale, bool noWrap)
 {
 	FFTPtr atomDist, modified;
-	
-	if (getModel()->getEffectiveOccupancy() <= 0) return;
-	
-	if (!mask)
-	{
-		modified = getBlur();
-		atomDist = _element->getDistribution(false, modified->nx);
 
-		for (int i = 0; i < modified->nn; i++)
+	if (getModel()->getEffectiveOccupancy() <= 0) 
+	{
+		return;
+	}
+
+	modified = getBlur();
+	atomDist = _element->getDistribution(false, modified->nx);
+
+	for (int i = 0; i < modified->nn; i++)
+	{
+		if (modified->data[i][0] != modified->data[i][0])
 		{
-			if (modified->data[i][0] != modified->data[i][0])
-			{
-				shout_at_helen("Atom " + shortDesc() + " distribution "
-				               "contains NaN.");
+			shout_at_helen("Atom " + shortDesc() + " distribution "
+			               "contains NaN.");
 
-			}
 		}
+	}
 
-		FFT::multiply(modified, atomDist);
-		modified->fft(1);
-		modified->invertScale();
-		modified->setTotal(_element->electronCount() * 10e4);
-		double occ = _model->getEffectiveOccupancy();
-		modified->multiplyAll(occ);
-	}
-	else
-	{
-		modified = _element->getMask();		
-		double occ = _model->getEffectiveOccupancy();
-		modified->multiplyAll(occ);
-	}
+	FFT::multiply(modified, atomDist);
+	modified->fft(1);
+	modified->invertScale();
+	modified->setTotal(_element->electronCount() * 10e4);
+	double occ = _model->getEffectiveOccupancy();
+	modified->multiplyAll(occ);
 
 	MapScoreType type = (noWrap ? MapScoreAddNoWrap : MapScoreTypeNone);
 	
 	int solvent = Options::getAddSolvent();
 
-	if (!mask || (mask && solvent < 2) || !_model->hasExplicitPositions())
+	vec3 pos = _model->getAbsolutePosition();
+
+	if (_distModelOnly)
 	{
-		vec3 pos = _model->getAbsolutePosition();
-
-		if (_distModelOnly)
-		{
-			pos = _distModelOnly->getAbsolutePosition();
-		}
-
-		pos = vec3_subtract_vec3(pos, offset);
-		mat3x3_mult_vec(unit_cell, &pos);
-
-		if (pos.x != pos.x)
-		{
-			shout_at_helen("Atom " + shortDesc() + " position corrupt,"
-			               " attempted\nto add to map and failed.\n" +
-			               description());
-			return;
-		}
-		
-		FFT::operation(fft, modified, pos, type, NULL, sameScale);
+		pos = _distModelOnly->getAbsolutePosition();
 	}
-	else
+
+	pos = vec3_subtract_vec3(pos, offset);
+	mat3x3_mult_vec(unit_cell, &pos);
+
+	if (pos.x != pos.x)
 	{
-		std::vector<BondSample> samples = getExplicitModel()->getFinalPositions();
-
-		/* Each addition should only contribute the right occupancy */
-		modified->multiplyAll(1 / (double)samples.size());
-		
-		/* Loop through each position and add separately */
-		
-		for (int i = 0; i < samples.size(); i++)
-		{
-			vec3 pos = samples[i].start;
-			pos = vec3_subtract_vec3(pos, offset);
-			mat3x3_mult_vec(unit_cell, &pos);
-
-			FFT::operation(fft, modified, pos, type, NULL, sameScale);
-		}
+		shout_at_helen("Atom " + shortDesc() + " position corrupt,"
+		               " attempted\nto add to map and failed.\n" +
+		               description());
+		return;
 	}
+
+	FFT::operation(fft, modified, pos, type, NULL, sameScale);
 }
 
 vec3 Atom::getAbsolutePosition()

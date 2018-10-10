@@ -42,7 +42,6 @@ public:
 	/** Get the FFT distribution for this atom, using the scattering
 	 * 	factors from International Tables F */
 	virtual FFTPtr getDistribution(bool = false, int new_n = -1);
-	FFTPtr getMask();
 
 	/** Returns one- or two-letter abbreviation of element as on the periodic
 	  * table, fully capitalised */
@@ -80,7 +79,6 @@ protected:
 	 * @param z z position in inverse Angstroms
 	 */
 	static double getVoxelValue(void *obj, double x, double y, double z);
-	static double getSolventMaskValue(void *obj, double x, double y, double z);
 
 private:
 	Element(std::string symbol, std::string name, double electrons,

@@ -64,40 +64,6 @@ ElementPtr Element::getElement(std::string symbol)
 	return ElementPtr();
 }
 
-double Element::getSolventMaskValue(void *object, double x, double y, double z)
-{
-	Element *me = static_cast<Element *>(object);
-	
-	if (me->electronCount() <= 1)
-	{
-		return 0;
-	}
-
-	double distSq = (x * x + y * y + z * z);
-	double dist = sqrt(distSq);
-	
-	/** Point at which solvent should be completely disallowed */
-	double min = 1.6;
-	/** Point at which solvent is completely free to exist */
-	double max = 2.2;
-	
-	if (dist <= min)
-	{
-		return 1;
-	}
-	else if (dist > max)
-	{
-		return 0;	
-	}
-	else
-	{
-		double extra = dist - min;
-		extra /= (max - min);
-		
-		return 1 - extra;
-	}
-}
-
 double Element::getVoxelValue(void *object, double x, double y, double z)
 {
 	Element *me = static_cast<Element *>(object);
@@ -122,35 +88,6 @@ double Element::getVoxelValue(void *object, double x, double y, double z)
 	}
 
 	return val;
-}
-
-FFTPtr Element::getMask()
-{
-	double ang = 5.5;
-	double scale = Options::getProteinSampling();
-
-	FFTPtr fft = FFTPtr(new FFT());
-	fft->create(ang / scale);
-	fft->setScales(scale);
-
-	for (int x = -fft->nx / 2; x <= fft->nx / 2; x++)
-	{
-		for (int y = -fft->ny / 2; y <= fft->ny / 2; y++)
-		{
-			for (int z = -fft->nz / 2; z <= fft->nz / 2; z++)
-			{
-				double xAng = x * scale;
-				double yAng = y * scale;
-				double zAng = z * scale;
-
-				double val = getSolventMaskValue(this, xAng, yAng, zAng);
-				long element = fft->element(x, y, z);
-				fft->setElement(element, val, 0);
-			}
-		}
-	}
-
-	return fft;
 }
 
 FFTPtr Element::getDistribution(bool, int new_n)
