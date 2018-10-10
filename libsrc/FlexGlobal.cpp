@@ -52,7 +52,6 @@ double FlexGlobal::matchOriginalBeeScore()
 		double diff = mat3x3_abs_sum_all(diffMat); 
 
 		if (diff != diff) continue;
-		if (!isfinite(diff)) continue;
 
 		score += diff;
 		count++;

@@ -531,15 +531,6 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 				real *= scale * bFacMod;
 				imag *= scale * bFacMod;
 				
-				if (!isfinite(real * real + imag * imag))
-				{
-					std::cout << "Warning for " << i << " " << j
-					<< " " << k << std::endl;
-					std::cout << "Scale: " << scale << std::endl;
-					std::cout << "bFactor: " << bFacMod << std::endl;
-					std::cout << "d: " << d << std::endl;
-				}
-
 				_fft->setElement(element, real, imag);
 			}
 		}
