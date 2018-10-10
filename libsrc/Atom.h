@@ -41,28 +41,37 @@ public:
 
 	virtual ~Atom() {}	
 
+	/** Change the atom's model to a new one, which will now be called when
+	 * the atom distribution is required. Can be changed at any time */
 	void setModel(ModelPtr model);
+	
+	/** Get the atom position probability distribution (flexibility effects
+	 * 	caused by the model in reciprocal space with any weighting terms
+	 * 	applied */
 	FFTPtr getBlur();
 
+	/** Atom is *only* part of the backbone (so *not* including C-alpha atoms)
+	 */
 	bool isBackbone();
 	
 	/** If atom is considered both part of backbone and sidechain, such as
 	* C-alphas for protein chains. */
 	bool isBackboneAndSidechain();
 
+	/** Get the average absolute position from the atom's Model */
 	vec3 getAbsolutePosition();
-	vec3 getAsymUnitPosition(CrystalPtr crystal, int nSample = -1);
 	
 	/** Positional displacement between average ensemble position and
 	* reference position (usually from PDB). */
 	double posDisplacement();
 
+	/** Change the periodic table element of the atom */
 	void setElement(ElementPtr element)
 	{
 		_element = element;
 	}
 	
-	/** Set the monomer for this atom with no frilly bits. Do not use if
+	/** Set the monomer for this atom with no other connections. Do not use if
 	* you've made a new atom to assign to a monomer. Use Monomer::addAtom()
 	* instead. */
 	void setMonomer(MonomerPtr monomer)
@@ -70,30 +79,39 @@ public:
 		_monomer = monomer;
 	}
 
+	/** Change atom name such as CA, CB etc. */
 	void setAtomName(std::string name)
 	{
 		_atomName = name;
 	}
 
+	/** Get the atom name, such as CA, CB etc. */
 	std::string getAtomName()
 	{
 		return _atomName;
 	}
 
+	/** Get the model associated with the position/flexibility of this atom */
 	ModelPtr getModel()
 	{
 		return _model;
 	}
 	
+	/** Get the model associated with the position/flexibility of this atom
+	 * 	and cast as an explicit model (only if you're certan it is! */
 	ExplicitModelPtr getExplicitModel();
 	
+	/** Call the appropriate element's Element::electronCount() - convenience
+	 * function */
 	int getElectronCount();
 
+	/** Get the associated periodic table element for this Atom */
 	ElementPtr getElement()
 	{
 		return _element;
 	}
 
+	/** Get the radius of the atom used for solvent calculations */
 	double getSolventRadius();
 	void addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double radius,
 	                      std::vector<Atom *> *ptrs);
