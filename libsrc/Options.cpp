@@ -579,6 +579,13 @@ void Options::applyBMultiplier()
 	notifyGUI(false);
 
 	CrystalPtr crystal = getActiveCrystal();
+	
+	if (!crystal)
+	{
+		return;
+	}
+
+	std::cout << "Applied HETATM B multiplier " << _bMult << "." << std::endl;
 
 	for (size_t i = 0; i < crystal->moleculeCount(); i++)
 	{
@@ -586,12 +593,10 @@ void Options::applyBMultiplier()
 
 		if (!molecule->isPolymer())
 		{
-			std::cout << "Changing B multiplier for HETATMs to: " << _bMult << std::endl;
-			molecule->setAbsoluteBFacMult(_bMult);
+			molecule->forceModelRecalculation();
 		}
 	}
-
-	recalculateFFT();
+	
 
 	notifyGUI(true);
 }

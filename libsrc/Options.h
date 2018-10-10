@@ -140,6 +140,7 @@ public:
 	static void setBMult(double bMult)
 	{
 		_bMult = bMult;
+		Options::getRuntimeOptions()->applyBMultiplier();
 	}
 
 	static int getAddSolvent()
