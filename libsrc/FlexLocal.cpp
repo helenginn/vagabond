@@ -122,9 +122,10 @@ void FlexLocal::refine()
 
 			for (int i = 0; i < _paramBands.size() && i < limit; i++)
 			{
+				int dir = rand() % 2 ? -1 : 1;
 				nelder->addParameter(&*_paramBands[i], ParamBand::getGlobalParam,
-				                     ParamBand::setGlobalParam, _shift * 2, 
-				                     _shift, "k" + i_to_str(i));
+				                     ParamBand::setGlobalParam, _shift * dir, 
+				                     _shift / 20, "k" + i_to_str(i));
 			}
 
 			nelder->refine();
@@ -140,13 +141,18 @@ void FlexLocal::refine()
 			{
 				std::cout << std::setw(5) << val << 
 				"% improved. ... done." << std::endl;
-				break;
+				
+				if (val > 0.5)
+				{
+					break;
+				}
 			}
 			else
 			{
 				std::cout << " not improved.   ... done." << std::endl;
-				std::random_shuffle(_paramBands.begin(), _paramBands.end());
 			}
+
+			std::random_shuffle(_paramBands.begin(), _paramBands.end());
 		}
 
 		std::cout << "---------------------------------------------------------"
