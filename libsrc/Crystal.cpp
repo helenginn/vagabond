@@ -26,7 +26,6 @@
 #include "Atom.h"
 #include "RefinementGridSearch.h"
 #include "BucketBulkSolvent.h"
-#include "BucketMonteCarlo.h"
 #include "Options.h"
 
 #include "../libccp4/cmtzlib.h"
