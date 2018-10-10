@@ -183,6 +183,8 @@ public:
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0,
 	                      double bFactor = 0);
 	double getAdjustBFactor();
+	
+	void undoIfWorse();
 
 	void setupSymmetry();
 	void summary();

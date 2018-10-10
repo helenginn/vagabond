@@ -536,6 +536,21 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 	}
 }
 
+void Crystal::undoIfWorse()
+{
+	if (_sinceBestNum > 0)
+	{
+		std::cout << "Decided to undo last results due to rise in Rwork" 
+		<< std::endl;
+		restoreState(0 - _sinceBestNum);
+		_sinceBestNum = 0;
+	}
+	else
+	{
+		std::cout << "Not undoing result due to improved Rwork" << std::endl;
+	}
+}
+
 void Crystal::scaleSolvent(DiffractionPtr data)
 {
 	if (!Options::getAddSolvent() || !_bucket)
