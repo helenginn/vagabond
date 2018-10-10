@@ -292,7 +292,8 @@ public:
 	/** Fit whole molecules to electron density as a refinement protocol.
 	* 	\param translation if true, will refine translation parameters
 	* 	\param rotation if true, will refine rotation parameters. */
-	void fitWholeMolecules(bool translation = false, bool rotation = true);
+	void fitWholeMolecules();
+	static double vsFitWholeMolecules(void *object);
 	
 	int getCycleNum()
 	{

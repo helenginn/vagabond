@@ -1174,7 +1174,17 @@ void Crystal::hydrogenateContents()
 	}
 }
 
-void Crystal::fitWholeMolecules(bool translation, bool rotation)
+double Crystal::vsFitWholeMolecules(void *object)
+{
+	Parser *parser = static_cast<Parser *>(object);
+	Crystal *crystal = dynamic_cast<Crystal *>(parser);
+	crystal->fitWholeMolecules();
+	Crystal::vsConcludeRefinement(parser);
+	crystal->undoIfWorse();
+	return 0;
+}
+
+void Crystal::fitWholeMolecules()
 {
 	for (int i = 0; i < moleculeCount(); i++)
 	{
@@ -1185,6 +1195,7 @@ void Crystal::fitWholeMolecules(bool translation, bool rotation)
 
 		ToPolymerPtr(molecule(i))->refineAnchorMovements();
 	}
+	
 }
 
 void Crystal::addProperties()
@@ -1223,6 +1234,7 @@ void Crystal::addProperties()
 	}
 	
 	exposeFunction("recalculate_map", Crystal::vsConcludeRefinement);
+	exposeFunction("refine_global_flexibility", Crystal::vsFitWholeMolecules);
 	exposeFunction("change_sample_size", Crystal::vsChangeSampleSize);
 	exposeFunction("set_shell_scale", Crystal::vsSetShellScale);
 	exposeFunction("restore_state", Crystal::vsRestoreState);
