@@ -27,6 +27,7 @@
  * \class Crystal
  * \brief The concept of a crystal arranged in a certain lattice containing
  * various molecules and solvent.
+ *
  * Crystal looks after the calculation of Fcs and also compares against a
  * separate DiffractionData object, but it endeavours to be separate from the
  * DiffractionData conceptually.
