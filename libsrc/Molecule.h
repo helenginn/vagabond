@@ -78,10 +78,8 @@ public:
 		molecule->setAbsoluteBFacSubtract(value);	
 	}
 
-	double getAbsoluteBFacMult()
-	{
-		return _absoluteBFacMult;
-	}
+	double getAbsoluteBFacMult();
+	void forceModelRecalculation();
 
 	void refreshBModels();
 	void setAbsoluteBFacMult(double mult);

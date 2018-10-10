@@ -99,6 +99,21 @@ void Molecule::makePowderList()
 	csvAngles->writeToFile(getChainID() + "_angles.csv");
 }
 
+void Molecule::forceModelRecalculation()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		ModelPtr model = atom(i)->getModel();
+		model->recalculate();
+	}
+}
+
+double Molecule::getAbsoluteBFacMult()
+{
+	_absoluteBFacMult = Options::getBMult();
+	return _absoluteBFacMult;
+}
+
 void Molecule::tieAtomsUp()
 {
 	if (getClassName() != "Polymer")
