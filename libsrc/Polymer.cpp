@@ -829,13 +829,6 @@ double Polymer::vsRefineLocalFlexibility(void *object)
 	polymer->refineLocalFlexibility();
 }
 
-double Polymer::vsRefineGlobalFlexibility(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	polymer->refineAnchorMovements();
-}
-
 void Polymer::vsOmitResidues(void *object, double start, double end)
 {
 	Parser *parser = static_cast<Parser *>(object);
@@ -1057,7 +1050,6 @@ void Polymer::addProperties()
 	
 	exposeFunction("refine_positions_to_pdb", vsRefinePositionsToPDB);
 	exposeFunction("refine_sidechains_to_density", vsRefineSidechainsToDensity);
-	exposeFunction("refine_global_flexibility", vsRefineGlobalFlexibility);
 	exposeFunction("refine_local_flexibility", vsRefineLocalFlexibility);
 	exposeFunction("refine_backbone_to_density", vsRefineBackbone);
 	exposeFunction("refine_backbone_to_density_from", vsRefineBackboneFrom);
