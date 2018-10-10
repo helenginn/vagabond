@@ -79,7 +79,8 @@ private:
 	CrystalExplorer *_xtalExplorer;
 	QFileDialog *_fileDialogue;   
 
-	void dialogueModify(void (*func)(double), std::string title);
+	void dialogueModify(void (*func)(double), std::string title, 
+	                    double _default = 100);
 	void splitBond();
 	void squeezeToEnd();
 	void updateExplorerButton();

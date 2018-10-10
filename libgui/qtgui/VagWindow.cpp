@@ -92,15 +92,24 @@ void VagWindow::makeMenu()
 			                    "No. samples in ensemble:"); });
 	actions.push_back(samples);
 	
+	QAction *bmult = model->addAction(tr("B factor HETATM multiplier..."));
+	connect(bmult, &QAction::triggered,
+			[=]{ dialogueModify(Options::setBMult, 
+			                    "Multiply original B factor of HETATMs by..."); });
+	actions.push_back(bmult);
+	
 	menuItem(model, "Omit scan", InstructionTypeOmitScan);
 	menuItem(model, "Find flexibility", InstructionTypeReflex);
 
 }
 
-void VagWindow::dialogueModify(SimpleSet set, std::string title)
+void VagWindow::dialogueModify(SimpleSet set, std::string title,
+                               double _default)
 {
 	delete _myDialogue;
-	_myDialogue = new Dialogue(this, "New value", title, "100", "Set value");
+	_myDialogue = new Dialogue(this, "New value", title, 
+	                           f_to_str(_default, 0),
+	                           "Set value");
 	_myDialogue->setFunction(set);
 	_myDialogue->setWindow(this);
 	_myDialogue->show();
@@ -146,6 +155,14 @@ void VagWindow::makeButtons()
 			[=]{ pushSendInstruction(InstructionTypeRecalculateFFT); });
 	buttons.push_back(bRecalculate);
 
+	bPrevious = new QPushButton("Restore previous state", this);
+	bPrevious->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 400, BUTTON_WIDTH , 50);
+	bPrevious->setEnabled(false);
+	connect(bPrevious, &QPushButton::clicked,
+			[=]{ pushSendInstruction(InstructionTypePreviousState); });
+	buttons.push_back(bPrevious);
+
+
 	bExploreMolecule = new QPushButton("Explore molecule", this);
 	bExploreMolecule->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 450, BUTTON_WIDTH , 50);
 	bExploreMolecule->setEnabled(false);
@@ -159,14 +176,6 @@ void VagWindow::makeButtons()
 	connect(bExploreCrystal, SIGNAL(clicked()), this, 
 	        SLOT(pushExploreCrystal()));
 	buttons.push_back(bExploreCrystal);
-
-	/*
-	bPrevious = new QPushButton("Restore previous state", this);
-	bPrevious->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 450, BUTTON_WIDTH , 50);
-	bPrevious->setEnabled(false);
-	connect(bPrevious, SIGNAL(clicked()), this, SLOT(restorePreviousState()));
-	buttons.push_back(bPrevious);
-	*/
 
 	bCoot = new QPushButton("Open in Coot", this);
 	bCoot->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 550, BUTTON_WIDTH , 50);
