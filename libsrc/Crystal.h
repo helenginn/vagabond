@@ -165,7 +165,6 @@ public:
 	 * of a grid search. Starts with a global scale factor, then scales
 	 * the solvent, then a full scale by resolution bin. */
 	void scaleComponents(DiffractionPtr data);
-	double scaleAndAddSolventScore(DiffractionPtr data = DiffractionPtr());
 	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
 	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 	                            bool verbose = false, double lowRes = 0,
@@ -188,7 +187,6 @@ public:
 	void setupSymmetry();
 	void summary();
 
-	void makePowders();
 	void tieAtomsUp();
 	
 	void hydrogenateContents();
@@ -268,14 +266,6 @@ public:
 	void setMaxResolution(double maxRes)
 	{
 		_maxResolution = maxRes;
-	}
-
-	void addAnchorResidue(int anchor)
-	{
-		_anchorResidues.push_back(anchor);
-		std::cout << "Adding anchor residue " << anchor << " to "
-		<< getFilename() << "." << std::endl;
-
 	}
 
 	int totalAnchors()

@@ -194,13 +194,6 @@ void Options::run()
 			_notify->setInstruction(InstructionTypeResetExplorer);
 		}
 
-		if (shouldPowder())
-		{
-			crystal->makePowders();
-			recalculateFFT();
-			goto finished;
-		}
-
 		executeScript();
 
 		if (_notify)

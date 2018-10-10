@@ -99,16 +99,6 @@ void Crystal::realSpaceClutter(double maxRes)
 		if (sampling < 0)
 		{
 			sampling = maxRes / 4.;
-			/*
-			if (maxRes >= 2.5)
-			{
-				sampling = maxRes / 5.;
-			}
-			if (maxRes <= 1.2)
-			{
-				sampling = maxRes / 3.;
-			}
-			*/
 
 			Options::setProteinSampling(sampling);
 		}
@@ -129,13 +119,6 @@ void Crystal::realSpaceClutter(double maxRes)
 		largest = std::max(largest, uc_dims.z);
 
 		fft_dims = uc_dims;
-		
-		if (false)
-		{
-			fft_dims.x = largest;
-			fft_dims.y = largest;
-			fft_dims.z = largest;
-		}
 		
 		for (int i = 0; i < 3; i++)
 		{
@@ -725,30 +708,6 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 {
 	realSpaceClutter(data->getMaxResolution());
 	
-	std::vector<double> real_calcs;
-	int skip = 10;
-	for (int i = 0; i < _fft->nn; i += skip)
-	{
-		real_calcs.push_back(_fft->data[i][0]);
-	}
-	
-	int bad = 0;
-	for (int i = 0; i < _fft->nn; i++)
-	{
-		double val = _fft->data[i][0];
-		
-		if (val != val)
-		{
-			bad++;
-		}
-	}
-	
-	if (bad > 0)
-	{
-		std::cout << "There were " << bad << " bad voxels";
-		std::cout << " out of " << _fft->nn << "!" << std::endl;
-	}
-	
 	fourierTransform(1, data->getMaxResolution());
 	scaleComponents(data);
 	
@@ -905,32 +864,6 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	_difft->fft(-1);
 
 	_calcCopy->scaleToFFT(_fft);
-
-	CSVPtr csv = CSVPtr(new CSV(3, "real_obs", "real_calc", "solvent"));
-	std::vector<double> real_mixed, chosen_calc;
-	int count = 0;
-	
-	for (int i = 0; i < _fft->nn; i += skip)
-	{
-		double obs = _fft->data[i][0];
-		double calc = real_calcs[count];
-		count++;
-		if (calc <= 0) continue;
-
-		double solvent = 0;
-		if (_bucket)
-		{
-			solvent = _bucket->isSolvent(i);
-		}
-
-		real_mixed.push_back(obs);
-		chosen_calc.push_back(calc);
-		csv->addEntry(3, obs, calc, solvent);
-	}
-	
-	double correl = correlation(chosen_calc, real_mixed);
-	csv->writeToFile("real_space_cc.csv");
-	printf("Real space correlation coefficient: %.3f\n", correl);
 	
 	if (_bucket)
 	{
@@ -954,17 +887,6 @@ void Crystal::tiedUpScattering()
 	std::cout << std::fixed << std::setprecision(0);
 	std::cout << "Tied up " << 100. * sqrt(tied / total) << "% of"\
 	" the scattering electrons." << std::endl;
-}
-
-// N.B. I say powder, because it reminds me of indexing.
-void Crystal::makePowders()
-{
-	std::cout << "Analysing solvent density." << std::endl;
-
-	if (_bucket)
-	{
-		_bucket->analyseSolvent(2.0);
-	}
 }
 
 void Crystal::setAnchors()
