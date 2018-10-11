@@ -178,6 +178,11 @@ public:
 		_scaleType = shell;
 	}
 	
+	static bool makeDiagnostics()
+	{
+		return _diagnostics;
+	}
+	
 	static double getGlobalBFactor()
 	{
 		return _bReal;
@@ -187,7 +192,6 @@ public:
 	{
 		_bReal = val;
 	}
-	
 	
 	static void resetGlobalBFactor()
 	{
@@ -253,6 +257,7 @@ private:
 	std::string _modelFile;
 	std::string _mtzFile;
 
+	static bool _diagnostics;
 	static bool _useRFree;
 	static ScalingType _scaleType;
 	static bool _powder;

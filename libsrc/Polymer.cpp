@@ -548,6 +548,8 @@ void Polymer::graph(std::string graphName)
 		csvDamp->addEntry(4, value, caDampen, cDampen, nDampen);
 		csvBlur->addEntry(4, value, caBlur, cBlur, nBlur);
 	}
+	
+	bool extra = Options::makeDiagnostics();
 
 	std::map<std::string, std::string> plotMap;
 	plotMap["filename"] = "mainchain_" + graphName;
@@ -574,6 +576,7 @@ void Polymer::graph(std::string graphName)
 	csv->plotPNG(plotMap);
 	csv->writeToFile("mainchain_" + graphName + ".csv");
 
+	if (extra)
 	{
 		std::map<std::string, std::string> plotMap;
 		plotMap["filename"] = "sidechain_" + graphName;
@@ -601,6 +604,7 @@ void Polymer::graph(std::string graphName)
 		sidechainCsv->writeToFile("sidechain_" + graphName + ".csv");
 	}
 
+	if (extra)
 	{
 		std::map<std::string, std::string> plotMap;
 		plotMap["filename"] = "mainchain_" + graphName;

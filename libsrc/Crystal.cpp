@@ -363,20 +363,24 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 		ys.push_back(logratio);
 	}
 	
-	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = "bfactor_fit_" + i_to_str(_cycleNum);
-	plotMap["height"] = "700";
-	plotMap["width"] = "1200";
-	plotMap["xHeader0"] = "data";
-	plotMap["yHeader0"] = "model";
+	if (Options::makeDiagnostics())
+	{
+		std::map<std::string, std::string> plotMap;
+		plotMap["filename"] = "bfactor_fit_" + i_to_str(_cycleNum);
+		plotMap["height"] = "700";
+		plotMap["width"] = "1200";
+		plotMap["xHeader0"] = "data";
+		plotMap["yHeader0"] = "model";
 
-	plotMap["colour0"] = "black";
-	plotMap["xTitle0"] = "1 / (4dd)";
-	plotMap["yTitle0"] = "ratio";
-	plotMap["style0"] = "line";
+		plotMap["colour0"] = "black";
+		plotMap["xTitle0"] = "1 / (4dd)";
+		plotMap["yTitle0"] = "ratio";
+		plotMap["style0"] = "line";
 
-	csv->setSubDirectory("correlation_plots");
-	csv->plotPNG(plotMap);
+		csv->setSubDirectory("correlation_plots");
+		csv->plotPNG(plotMap);
+	}
+
 	double intercept, gradient;
 	regression_line(xs, ys, &intercept, &gradient);
 

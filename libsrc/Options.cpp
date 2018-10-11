@@ -31,6 +31,7 @@ double Options::_maxRes = -1.0;
 bool Options::_useRFree = true;
 int Options::_enableTests = 3;
 bool Options::_powder = false;
+bool Options::_diagnostics = false;
 std::string Options::_anchor = "";
 ScalingType Options::_scaleType = ScalingTypeShell;
 double Options::_sampling = -1;
@@ -449,6 +450,7 @@ void Options::parse()
 
 		understood |= parseParameter(arg, "tie", &_tie);
 		understood |= parseParameter(arg, "rfree", &_useRFree);
+		understood |= parseParameter(arg, "diagnostics", &_diagnostics);
 		
 		int shellNum = 0;
 		understood |= parseParameter(arg, "shell-scale", &shellNum);
