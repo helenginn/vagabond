@@ -246,7 +246,7 @@ void Options::displayHelp()
 	std::cout << "--help\t\t\t\tDisplays command list.\n" << std::endl;
 	std::cout << "--with-model=<filename>\t\tName of the input PDB or Vagabond model file to refine.\n" << std::endl;
 	std::cout << "--with-mtz=<filename>\t\tName of the MTZ file to refine against.\n" << std::endl;
-	std::cout << "--with-vscript=<filename>\tName of Vagabond script to run after loading data/model.\n" << std::endl;
+//	std::cout << "--with-vscript=<filename>\tName of Vagabond script to run after loading data/model.\n" << std::endl;
 	std::cout << "--output-dir=<directory>\tOptional name of a directory to dump processing.\n" << std::endl;
 	std::cout << "--kick=<num>\t\t\tOptional override for kick fraction for initial bond\n" << std::endl;
 	std::cout << "--dampen=<num>\t\t\tOptional override for dampen fraction for all bonds\n" << std::endl;
