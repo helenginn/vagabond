@@ -225,6 +225,7 @@ public:
 		return _anchor;
 	}
 	
+	void focusOnPosition(vec3 pos);
 	void omitScan();
 	void reflex();
 	void scanBondParams();

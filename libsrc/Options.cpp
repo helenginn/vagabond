@@ -206,6 +206,7 @@ void Options::run()
 
 	if (!_manual)
 	{
+		
 		std::cout << std::endl << "**** Finished. ****" << std::endl;
 		std::cout << std::endl;
 	}
@@ -915,6 +916,14 @@ void Options::adjustBFactor()
 	
 	statusMessage("Adjusted real B factor by " + f_to_str(adjusted, 2)
 	              + " to " + f_to_str(newB, 2) + ".");
+}
+
+void Options::focusOnPosition(vec3 pos)
+{
+	if (_notify)
+	{
+		_notify->focusOnPosition(pos);
+	}
 }
 
 void Options::omitScan()
