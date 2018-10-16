@@ -39,7 +39,7 @@ void Bond::initialize()
 	_kick = initialKick;
 	_torsion = 0;
 	_phi = 3.14/2;
-	_phi = 0;
+	_psi = 0;
 	_geomRatio = 0;
 	_circlePortion = -10;
 	_expectedAngle = 0;
