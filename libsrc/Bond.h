@@ -348,11 +348,13 @@ public:
 	* 	 Splits all downstream atoms and creates new copies of atoms and
 	* 	 bonds. Sets initial torsion angle difference to 180 degrees of first
 	* 	 bond, and divides the occupancies by 2 by default.
-	* 	 \param start if set, downstream atoms will only be duplicated from
-	* 	 this position in the array.
-	*	\return Always returns true, at the moment.
+	* 	 \param onlyExisting only split the bond if an unused alternative
+	* 	 	 conformer atom is available.
+	*	\return duplicate bond
 	*/
-	bool splitBond();
+	BondPtr splitBond(bool onlyExisting = false);
+
+	void checkForSplits(AtomGroupPtr polymer);
 
 	void setFixed(bool fixed)
 	{
@@ -504,7 +506,8 @@ private:
 	                         double ratio, vec3 start);
 
 	void copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum);
-	BondPtr duplicateDownstream(BondPtr newBranch, int groupNum);
+	BondPtr duplicateDownstream(BondPtr newBranch, int groupNum,
+	                            bool onlyExisting = false);
 	mat3x3 getMagicMat(vec3 direction);
 
 };
