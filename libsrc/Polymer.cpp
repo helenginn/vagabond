@@ -992,7 +992,7 @@ void Polymer::refineAnchorMovements()
 	attachTargetToRefinement(nelderMead, target);
 
 	nelderMead->setCycles(24);
-//	nelderMead->setVerbose(true);
+
 	nelderMead->clearParameters();
 	
 	anchor->addTranslationParameters(nelderMead);
