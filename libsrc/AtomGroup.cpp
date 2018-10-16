@@ -393,12 +393,15 @@ void AtomGroup::privateRefine()
 
 void AtomGroup::addAtom(AtomPtr atom)
 {
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+
 	std::vector<AtomPtr>::iterator it;
 	it = std::find(_atoms.begin(), _atoms.end(), atom);
 
 	if (it == _atoms.end())
 	{
 		_atoms.push_back(atom);
+		crystal->updateLargestNum(atom);
 	}
 }
 
