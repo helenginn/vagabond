@@ -935,7 +935,44 @@ void Bond::sanityCheck()
 	ExplicitModel::sanityCheck();
 }
 
-bool Bond::splitBond()
+void Bond::checkForSplits(AtomGroupPtr polymer)
+{
+	AtomPtr minor = getMinor();
+	AtomList list = polymer->findAtoms(minor->getAtomName(), 
+	                                   minor->getResidueNum());
+	
+
+	if (list.size() > 1)
+	{
+		BondPtr success = splitBond(true);
+
+		if (success)
+		{
+			for (int i = 0; i < list.size(); i++)
+			{
+				AtomPtr atom = list[i];
+				if (atom->getModel()->isBond())
+				{
+					BondPtr bond = ToBondPtr(atom->getModel());
+					double origOcc = atom->getOriginalOccupancy();
+					Bond::setOccupancy(&*bond, origOcc);
+				}
+			}
+		}
+
+	}
+	
+	for (size_t j = 0; j < downstreamBondGroupCount(); j++)
+	{
+		for (size_t i = 0; i < downstreamBondCount(j); i++)
+		{
+			BondPtr bond = downstreamBond(j, i);
+			bond->checkForSplits(polymer);	
+		}
+	}
+}
+
+BondPtr Bond::splitBond(bool onlyExisting)
 {
 	BondPtr me = ToBondPtr(shared_from_this());
 	BondPtr parent = ToBondPtr(getParentModel());
@@ -943,7 +980,20 @@ bool Bond::splitBond()
 	
 	int num = parent->downstreamBondNum(this, NULL);
 	
-	BondPtr dupl = me->duplicateDownstream(parent, last);
+	BondPtr dupl = me->duplicateDownstream(parent, last, onlyExisting);
+	
+	if (dupl)
+	{
+		if (getMinor()->getAlternativeConformer().length() == 0)
+		{
+			getMinor()->setAlternativeConformer("a");
+		}
+	}
+	
+	if (!dupl && onlyExisting)
+	{
+		return BondPtr();
+	}
 
 	double torsion = getBaseTorsion();
 	
@@ -962,7 +1012,7 @@ bool Bond::splitBond()
 
 	propagateChange();
 
-	return true;
+	return dupl;
 }
 
 void Bond::copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum)
@@ -973,11 +1023,9 @@ void Bond::copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum)
 	_kick = copyFrom->_kick;
 }
 
-BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
+BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum,
+                                  bool onlyExisting)
 {
-	/* duplBond will be a child of newParent */
-	BondPtr duplBond = BondPtr(new Bond(*this));
-
 	/* Dealing with atom business */
 	AtomPtr duplAtom = AtomPtr();
 	
@@ -989,8 +1037,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 	* if not, we will create a new one. */
 	for (size_t i = 0; i < list.size(); i++)
 	{
-		if (list[i].expired()) continue;
-		AtomPtr atom = list[i].lock();
+		AtomPtr atom = list[i];
 		ModelPtr model = atom->getModel();
 
 		if (model->isAbsolute())
@@ -1003,10 +1050,21 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 	/* In the case where we have not found an existing atom...*/
 	if (!duplAtom)
 	{
+		if (onlyExisting)
+		{
+			return BondPtr();
+		}
+
+		CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 		duplAtom = AtomPtr(new Atom(*getMinor()));
 		/* Lower case */
 		char conformer[] = "a";
 
+		if (getMinor()->getAlternativeConformer().length() == 0)
+		{
+			getMinor()->setAlternativeConformer(conformer);
+		}
+		
 		for (size_t i = 0; i < list.size(); i++)
 		{
 			conformer[0]++;
@@ -1014,9 +1072,15 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 
 		duplAtom->setAlternativeConformer(conformer);
 		duplAtom->setFromPDB(false);
+		int num = crystal->issueAtomNumber();
+		duplAtom->setAtomNum(num);
 		getMinor()->getMolecule()->addAtom(duplAtom);
 	}
+
 	/* Dealt with appropriate atom business */
+
+	/* duplBond will be a child of newParent */
+	BondPtr duplBond = BondPtr(new Bond(*this));
 
 	/* Connect this duplicated minor atom to the polymer and monomer.
 	 * The molecule should already have happened in both cases above */
@@ -1034,6 +1098,11 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 	/* If this is the end of the chain, stop now */
 	if (!downstreamBondGroupCount())
 	{
+		if (onlyExisting)
+		{
+			duplBond->deriveTorsionAngle();
+		}
+
 		return duplBond;
 	}
 	
@@ -1059,10 +1128,23 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 		}
 
 		BondPtr nextBond = ToBondPtr(nextAtom->getModel());
-		nextBond->duplicateDownstream(duplBond, 0);
+		BondPtr result = nextBond->duplicateDownstream(duplBond, 
+		                                               0, onlyExisting);
+		
+		if (onlyExisting && !result)
+		{
+			nextBond->_resetOccupancy = true;
+			std::cout << "Resetting occupancy // for " <<
+			shortDesc() << std::endl;
+		}
 	}
 
 	_splitBlock = false;
+	
+	if (onlyExisting)
+	{
+		duplBond->deriveTorsionAngle();
+	}
 
 	return duplBond;
 }
