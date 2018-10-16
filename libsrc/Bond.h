@@ -35,6 +35,18 @@
 #include <mutex>
 #include "charmanip.h"
 
+/**
+ * \cond SHOW_BOND_INT
+ */
+
+typedef struct
+{
+       BondPtr bond;
+       int num;
+} BondInt;
+
+/** \endcond */
+
 class Anisotropicator;
 
 class Bond : public ExplicitModel
@@ -385,6 +397,10 @@ public:
 	* 	Would be useful in cases where the chain needs to be reversed */
 	void recalculateTorsion(AtomPtr heavy, double value);
 
+	/** Create an atom group containing every downstream bond in every
+	 * group from a bond onwards */
+	AtomGroupPtr makeAtomGroup(BondPtr endBond = BondPtr());
+
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 
 	std::vector<BondSample> *getManyPositions(void *object = NULL);
@@ -414,6 +430,11 @@ public:
 	void setSplitBlock(int block = 1)
 	{
 		_splitBlock = block;
+	}
+	
+	BondPtr downstreamBond(int group, int i)
+	{
+		return nakedDownstreamBond(group, i)->shared_from_this();
 	}
 protected:
 	virtual std::string getParserIdentifier()
@@ -483,11 +504,6 @@ private:
 	Bond *nakedDownstreamBond(int group, int i)
 	{
 		return _bondGroups[group]->bond(i);
-	}
-	
-	BondPtr downstreamBond(int group, int i)
-	{
-		return nakedDownstreamBond(group, i)->shared_from_this();
 	}
 
 	/* Grab bond length from the atom types of major/minor */

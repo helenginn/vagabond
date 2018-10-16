@@ -803,15 +803,12 @@ bool Bond::isNotJustForHydrogens()
 	return false;
 }
 
-void Bond::propagateChange(int depth, bool refresh)
+AtomGroupPtr Bond::makeAtomGroup(BondPtr endBond)
 {
-	/* Will force recalculation of final positions */
-	Model::propagateChange(depth, refresh);
+	AtomGroupPtr group = AtomGroupPtr(new AtomGroup());
 
-	/* Iterative now */
 	std::vector<BondPtr> propagateBonds;
-	propagateBonds.push_back(ToBondPtr(shared_from_this()));
-	int count = 0;
+	propagateBonds.push_back(shared_from_this());
 
 	for (size_t k = 0; k < propagateBonds.size(); k++)
 	{
@@ -824,22 +821,83 @@ void Bond::propagateChange(int depth, bool refresh)
 				AtomPtr atom = bond->downstreamAtom(j, i);
 				ModelPtr model = atom->getModel();
 				BondPtr bond = ToBondPtr(model);
+				
+				if (bond != endBond)
+				{
+					propagateBonds.push_back(bond);
+				}
 
-				propagateBonds.push_back(bond);
+			}
+		}
+		
+		AtomPtr minor = bond->getMinor();
+		group->addAtom(minor);
+	}
+	
+	return group;
+}
+
+void Bond::propagateChange(int depth, bool refresh)
+{
+	/* Will force recalculation of final positions */
+	Model::propagateChange(depth, refresh);
+
+	/* Iterative now */
+	std::vector<BondInt> propagateBonds;
+	BondInt pair;
+	pair.bond = shared_from_this();
+	pair.num = depth;
+	propagateBonds.push_back(pair);
+	
+	/* Propagate down sisters */
+	ModelPtr pModel = getParentModel();
+	
+	if (pModel && pModel->isBond())
+	{
+		BondPtr parent = ToBondPtr(pModel);
+
+		int group = -1;
+		int num = parent->downstreamBondNum(this, &group);
+		
+		if (group >= 0 && num == 0)
+		{
+			for (int j = 1; j < parent->downstreamBondCount(group); j++)
+			{
+				BondPtr downBond = parent->downstreamBond(group, j);
+				BondInt pair;
+				pair.bond = downBond;
+				pair.num = depth;
+				propagateBonds.push_back(pair);
+			}
+		}
+	}
+
+	for (size_t k = 0; k < propagateBonds.size(); k++)
+	{
+		BondPtr bond = propagateBonds[k].bond;
+		int curr_depth = propagateBonds[k].num;
+
+		if ((curr_depth > 0 && depth >= 0) || depth < 0)
+		{
+			for (size_t j = 0; j < bond->downstreamBondGroupCount(); j++)
+			{
+				for (size_t i = 0; i < bond->downstreamBondCount(j); i++)
+				{
+					BondPtr newBond = bond->downstreamBond(j, i);
+					BondInt pair;
+					pair.bond = newBond;
+					pair.num = curr_depth - 1;
+
+					propagateBonds.push_back(pair);
+				}
 			}
 		}
 
 		bond->_changedPos = true;
 		bond->_changedSamples = true;
 		bond->_recalcDist = true;
+		/* not recursive call - this fixes other problems */
 		bond->Model::propagateChange(depth, refresh);
-
-		if (depth >= 0 && count > depth)
-		{
-			break;
-		}
-
-		count++;
 	}
 
 	if (!refresh)
@@ -849,7 +907,7 @@ void Bond::propagateChange(int depth, bool refresh)
 
 	for (size_t k = 0; k < propagateBonds.size(); k++)
 	{
-		BondPtr bond = propagateBonds[k];
+		BondPtr bond = propagateBonds[k].bond;
 		{
 			bond->getFinalPositions();
 		}
