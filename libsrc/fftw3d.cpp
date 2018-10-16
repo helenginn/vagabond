@@ -779,6 +779,9 @@ void FFT::findLimitingValues(double xMin, double xMax, double yMin,
                              vec3 *minVals, vec3 *maxVals)
 {
 	mat3x3 toCrystBasis = getBasisInverse();
+	*minVals = make_vec3(FLT_MAX, FLT_MAX, FLT_MAX);;
+	*maxVals = make_vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);;
+
 	for (double k = zMin; k <= zMax + 0.1; k += (zMax - zMin))
 	{
 		for (double j = yMin; j <= yMax + 0.1; j += (zMax - zMin))
