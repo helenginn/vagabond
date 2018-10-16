@@ -236,7 +236,7 @@ AtomGroupPtr BucketMonteCarlo::makeNewWaters(Plucker *plucker, int total)
 		occ *= 0.01;
 
 		AbsolutePtr abs = AbsolutePtr(new Absolute(finalPos, 20, "O", occ));
-		int num = additions->issueAtomNumber();
+		int num = crystal->issueAtomNumber();
 		abs->setIdentity(1, "Z", "HOH", "O", num);
 		abs->setHeteroAtom(true);
 		AtomPtr three = abs->makeAtom();
