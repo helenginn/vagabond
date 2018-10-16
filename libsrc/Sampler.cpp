@@ -20,16 +20,6 @@
 #include "Monomer.h"
 #include "Backbone.h"
 
-/**
- * \cond SHOW_BOND_INT
- */
-
-typedef struct
-{
-	BondPtr bond;
-	int num;
-} BondInt;
-
 /** \endcond */
 
 Sampler::Sampler()
