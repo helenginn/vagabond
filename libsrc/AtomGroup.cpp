@@ -38,20 +38,31 @@ AtomPtr AtomGroup::findAtom(std::string atomType)
 	return AtomPtr();
 }
 
+AtomList AtomGroup::findAtoms(std::string atomType, int resNum)
+{
+	AtomList atoms = findAtoms(atomType);
+
+	for (size_t i = 0; i < atoms.size(); i++)
+	{
+		if (atoms[i]->getResidueNum() != resNum)
+		{
+			atoms.erase(atoms.begin() + i);
+			i--;
+		}
+	}
+
+	return atoms;
+}
+
 AtomPtr AtomGroup::findAtom(std::string atomType, std::string confID)
 {
 	AtomList atoms = findAtoms(atomType);
 
 	for (size_t i = 0; i < atoms.size(); i++)
 	{
-		if (atoms[i].expired())
+		if (atoms[i]->getAlternativeConformer() == confID)
 		{
-			continue;
-		}
-
-		if (atoms[i].lock()->getAlternativeConformer() == confID)
-		{
-			return atoms[i].lock();
+			return atoms[i];
 		}
 	}
 
