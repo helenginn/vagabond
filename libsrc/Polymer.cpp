@@ -636,6 +636,26 @@ void Polymer::graph(std::string graphName)
 	}
 }
 
+std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal, 
+                             int conformer)
+{
+	std::ostringstream stream;
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		MonomerPtr monomer = getMonomer(i);
+		
+		if (!monomer)
+		{
+			continue;
+		}
+
+		stream << monomer->getPDBContribution(pdbType, crystal, conformer);
+	}
+
+	return stream.str();
+	
+}
+
 void Polymer::findAnchorNearestCentroid()
 {
 	vec3 sum = make_vec3(0, 0, 0);

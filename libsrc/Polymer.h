@@ -63,6 +63,9 @@ public:
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,
 	                              FlexGlobal &target, bool isotropy = false);
 
+	virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal,
+	                            int conformer = -1);
+
 	virtual void reportParameters();
 	void downWeightResidues(int start, int end, double value);
 
