@@ -591,6 +591,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	vec3 aveNext = mat3x3_axis(aveBasis, 0);
 	
 	vec3 crossDir = mat3x3_axis(aveBasis, 1);
+	
 	mat3x3 magicMat = getMagicMat(crossDir);
 	_magicAxis = mat3x3_axis(magicMat, 2); 
 	
@@ -759,7 +760,7 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 		nextSample.occupancy = (_occupancy * prevSamples->at(i).occupancy);
 		
 		occTotal += nextSample.occupancy;
-
+		
 		_storedSamples.push_back(nextSample);
 	}
 
