@@ -54,6 +54,7 @@ void Sampler::addAtomsForBond(BondPtr bond)
 		for (int j = 1; j < parent->downstreamBondCount(group); j++)
 		{
 			AtomPtr downAtom = parent->downstreamAtom(group, j);
+			
 			addSampled(downAtom);
 			count++;
 		}
@@ -156,7 +157,7 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 	entry.num = bondNum;
 	remaining.push_back(entry);
 	addSampled(bond->getMajor());
-
+	
 	while (remaining.size())
 	{
 		BondInt first = remaining[0];
@@ -172,7 +173,7 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 		
 		bondCount++;
 		addAtomsForBond(bond);
-
+		
 		if (!bond->isRefinable())
 		{
 			/* No hope! Give up! */
