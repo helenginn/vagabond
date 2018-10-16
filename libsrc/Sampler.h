@@ -129,7 +129,7 @@ public:
 	{
 		_strategy->setVerbose(verbose);
 	}
-
+	
 	int sampleSize()
 	{
 		return _sampled.size();
@@ -187,8 +187,18 @@ protected:
 	virtual double getScore();
 	void setupCloseAtoms();
 	void setupScoreWithMap();
-private:
 	void addAtomsForBond(BondPtr bond);
+	
+	double getParameter(ParamOptionType type)
+	{
+		return _params[type];
+	}
+	
+	RefinementStrategyPtr getStrategy()
+	{
+		return _strategy;
+	}
+private:
 	void addParamsForBond(BondPtr bond, bool even = true);
 	CrystalPtr _crystal;
 
