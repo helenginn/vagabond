@@ -157,7 +157,11 @@ void Polymer::tieAtomsUp()
 	n2ca->setHeavyAlign(prev_ca);
 	n2c->setHeavyAlign(c);
 	c2ca->setHeavyAlign(ca);
+	
+	n2ca->checkForSplits(shared_from_this());
+	n2c->checkForSplits(shared_from_this());
 
+	/*
 	double kick = Options::getKick();
 	setInitialKick(this, kick);
 
