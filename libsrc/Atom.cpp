@@ -46,6 +46,7 @@ Atom::Atom()
 
 Atom::Atom(Atom &other)
 {
+	_tensor = other._tensor;
 	_initialPosition = other._initialPosition;
 	_initialB = other._initialB;
 	_geomType = other._geomType;
@@ -54,7 +55,7 @@ Atom::Atom(Atom &other)
 	_model = other._model;
 	_distModelOnly = other._distModelOnly;
 	_monomer = other._monomer;
-	_weighting = other._weighting;
+	_weighting = 1;
 	_atomNum = other._atomNum;
 	_fromPDB = other._fromPDB;
 	_pdbPosition = other._pdbPosition;
