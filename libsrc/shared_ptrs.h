@@ -160,7 +160,7 @@ typedef boost::shared_ptr<CSV> CSVPtr;
 class Sampler;
 typedef boost::shared_ptr<Sampler> SamplerPtr;
 
-typedef std::vector<AtomWkr> AtomList;
+typedef std::vector<AtomPtr> AtomList;
 
 class Parser;
 typedef boost::shared_ptr<Parser> ParserPtr;

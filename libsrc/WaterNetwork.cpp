@@ -105,7 +105,7 @@ void WaterNetwork::reportOnClusters()
 			if (water < 4)
 			{
 				std::cout << "This water is no. " <<
-				_clusters[i]->findAtoms("O")[0].lock()->getAtomNum() << std::endl;
+				_clusters[i]->findAtoms("O")[0]->getAtomNum() << std::endl;
 			}
 			
 			std::cout << std::endl;

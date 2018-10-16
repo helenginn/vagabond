@@ -212,9 +212,7 @@ void Sidechain::splitConformers(int count)
 			break;
 		}
 		
-		if (atoms[i].expired()) continue;
-
-		AtomPtr atom = atoms[i].lock();
+		AtomPtr atom = atoms[i];
 		if (atom->getModel()->isBond())
 		{
 			BondPtr bond = ToBondPtr(atom->getModel());
@@ -270,12 +268,7 @@ void Sidechain::parameteriseAsRotamers()
 				std::cout << "Ooooo no" << std::endl;
 			}
 
-			if (atoms[i].expired())
-			{
-				continue;
-			}
-
-			AtomPtr atom = atoms[i].lock();
+			AtomPtr atom = atoms[i];
 			if (!atom->getModel()->isBond())
 			{
 				continue;
@@ -314,9 +307,7 @@ void Sidechain::parameteriseAsRotamers()
 
 	for (int i = 0; i < cbs.size(); i++)
 	{
-		if (cbs[i].expired()) continue;
-
-		AtomPtr cb = cbs[i].lock();
+		AtomPtr cb = cbs[i];
 		if (!cb->getModel()->isBond()) continue;
 
 		BondPtr bond = ToBondPtr(cb->getModel());

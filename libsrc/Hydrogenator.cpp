@@ -59,7 +59,7 @@ void Hydrogenator::setSpin(AtomList group)
 {
 	for (int i = 0; i < group.size(); i++)
 	{
-		AtomPtr atom = group[i].lock();
+		AtomPtr atom = group[i];
 		
 		BondPtr bond = ToBondPtr(atom->getModel());
 		BondPtr parent = ToBondPtr(bond->getParentModel());
@@ -74,7 +74,7 @@ void Hydrogenator::setNewGeometry(AtomList group, double bondAngle,
 {
 	for (int i = 0; i < group.size(); i++)
 	{
-		AtomPtr atom = group[i].lock();
+		AtomPtr atom = group[i];
 		BondPtr bond = ToBondPtr(atom->getModel());
 		
 		Bond::setBendAngle(&*bond, deg2rad(bondAngle));	
@@ -111,7 +111,7 @@ void Hydrogenator::addHydrogens(AtomList group, int hNum, ...)
 	
 	for (int i = 0; i < group.size(); i++)
 	{
-		addHydrogens(group[i].lock(), hNames);
+		addHydrogens(group[i], hNames);
 	}
 }
 
@@ -219,7 +219,7 @@ void setHBonds(AtomList list)
 {
 	for (int i = 0; i < list.size(); i++)
 	{
-		list[i].lock()->setHBonding(true);
+		list[i]->setHBonding(true);
 	}
 }
 

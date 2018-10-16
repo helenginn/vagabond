@@ -275,7 +275,7 @@ void AtomGroup::refreshPositions(bool quick)
 
 	for (size_t i = 0; i < list.size(); i++)
 	{
-		AtomPtr atom = list[i].lock();
+		AtomPtr atom = list[i];
 		atom->getModel()->propagateChange(-1, true);
 	}
 }
@@ -511,12 +511,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 
 			for (int i = 0; i < topAtoms.size(); i++)
 			{
-				if (topAtoms[i].expired())
-				{
-					continue;
-				}
-				
-				AtomPtr topAtom = topAtoms[i].lock();
+				AtomPtr topAtom = topAtoms[i];
 				
 				if (!topAtom->getModel()->isBond())
 				{
@@ -570,12 +565,13 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		}
 
 		AtomPtr topAtom = topBond->getMinor();
-		topAtoms = findAtoms(topAtom->getAtomName());
 		
-		if (!hasAtom(topAtom))
+		if (!topAtom)
 		{
 			break;
 		}
+		
+		topAtoms = findAtoms(topAtom->getAtomName(), topAtom->getResidueNum());
 	}
 
 	_includeForRefine.clear();

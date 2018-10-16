@@ -30,10 +30,7 @@ void SSRigger::findCysteineSulphurs()
 
 		for (size_t j = 0; j < sulphurs.size(); j++)
 		{
-			if (!sulphurs[j].expired())
-			{
-				_cysSGs.push_back(sulphurs[j].lock());		
-			}
+			_cysSGs.push_back(sulphurs[j]);		
 		}
 	}
 }
