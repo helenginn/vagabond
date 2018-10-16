@@ -173,6 +173,7 @@ void Polymer::tieAtomsUp()
 			getMonomer(i)->getSidechain()->setInitialKick();
 		}
 	}
+	*/
 }
 
 void Polymer::splitConformers()
