@@ -503,7 +503,7 @@ double Atom::posDisplacement()
 
 std::string Atom::anisouPDBLine(CrystalPtr)
 {
-	if (!getMonomer() || getAlternativeConformer().length())
+	if (!getMonomer())
 	{
 		return "";
 	}
