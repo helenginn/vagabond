@@ -40,6 +40,7 @@ public:
 	AtomPtr findAtom(std::string atomType);
 	AtomPtr findAtom(std::string atomType, std::string confID);
 	AtomList findAtoms(std::string atomType);
+	AtomList findAtoms(std::string atomType, int resNum);
 
 	double scoreWithMap(ScoreType scoreType, CrystalPtr crystal, 
 	                    bool plot = false, unsigned int flags = 0);
