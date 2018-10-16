@@ -618,13 +618,8 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 		
 		if (thisDeviation.z < 0) angle *= -1;
 		
-		double dampValue = sin(angle);
-		if (dampValue != dampValue)
-		{
-			dampValue = 0;
-		}
-		
 		double kickValue = cos(angle);
+		/* Just the notZ */
 		if (kickValue != kickValue)
 		{
 			kickValue = 0;
