@@ -324,6 +324,18 @@ public:
 	 * target is required; resolution will be determined from this if not
 	 * already determined, or input as command line option. */
 	double getMaxResolution(DiffractionPtr data);
+	
+	void updateLargestNum(AtomPtr atom);
+
+	int issueAtomNumber()
+	{
+		if (_largestNum == -INT_MAX)
+		{
+			return 0;
+		}
+		return _largestNum + 1;
+	}
+	
 protected:
 	virtual void postRestoreState();
 	virtual void addObject(ParserPtr object, std::string category);
@@ -384,6 +396,7 @@ private:
 	FFTPtr _calcCopy;
 
 	BucketPtr _bucket;
+	int _largestNum;
 	
 	void scaleSolvent(DiffractionPtr data);
 	void scaleToDiffraction(DiffractionPtr data, bool full = true);

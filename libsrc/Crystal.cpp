@@ -958,6 +958,7 @@ void Crystal::setAnchors()
 
 Crystal::Crystal()
 {
+	_largestNum = -INT_MAX;
 	_realBFactor = -1;
 	_sampleNum = -1;
 	_cycleNum = 0;
@@ -1606,4 +1607,13 @@ double Crystal::getRealBFactor()
 	
 	return _realBFactor;
 }
+
+void Crystal::updateLargestNum(AtomPtr atom)
+{
+	if (atom->getAtomNum() > _largestNum)
+	{
+		_largestNum = atom->getAtomNum();
+	}
+}
+
 
