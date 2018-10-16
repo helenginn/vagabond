@@ -608,7 +608,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 		vec3 thisDeviation = vec3_subtract_vec3(thisPos, aveStart);
 		vec3_set_length(&thisDeviation, 1.);
 		
-		/* Find out what this deviation is if beam axis is set to z */
+		/* Find out what this deviation is if sensitive axis is set to z */
 		mat3x3_mult_vec(magicMat, &thisDeviation);
 
 		double notZ = sqrt(thisDeviation.y * thisDeviation.y +
