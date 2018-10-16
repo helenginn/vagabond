@@ -131,15 +131,6 @@ public:
 	AtomPtr getClosestAtom(CrystalPtr crystal, vec3 pos);
 	std::vector<AtomPtr> getHydrogenBonders();
 
-	int issueAtomNumber()
-	{
-		if (_largestNum == -INT_MAX)
-		{
-			return 0;
-		}
-		return _largestNum + 1;
-	}
-	
 	std::vector<AtomPtr> getAtoms()
 	{
 		return _atoms;
@@ -187,8 +178,6 @@ private:
 	                               bool ignoreCutoff = false);
 
 	MonomerWkr _monomer;
-	int _largestNum;
-
 
 	bool _beenTied;
 	CrystalPtr _target;

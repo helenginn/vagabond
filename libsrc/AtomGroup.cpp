@@ -249,7 +249,6 @@ AtomGroup::AtomGroup()
 {
 	_beenTied = false;
 	_timesRefined = 0;
-	_largestNum = -INT_MAX;
 }
 
 void AtomGroup::propagateChange()
@@ -400,10 +399,6 @@ void AtomGroup::addAtom(AtomPtr atom)
 	if (it == _atoms.end())
 	{
 		_atoms.push_back(atom);
-		if (atom->getAtomNum() > _largestNum)
-		{
-			_largestNum = atom->getAtomNum();
-		}
 	}
 }
 
