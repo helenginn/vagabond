@@ -25,6 +25,7 @@ int Options::_solvent = 1;
 double Options::_dampen = 0.0;
 double Options::_bStart = 10.;
 double Options::_bMult = 1;
+double Options::_bSubt = -1;
 double Options::_bReal = -1;
 double Options::_minRes = 0.0;
 double Options::_maxRes = -1.0;
@@ -608,7 +609,8 @@ void Options::applyBMultiplier()
 		return;
 	}
 
-	std::cout << "Applied HETATM B multiplier " << _bMult << "." << std::endl;
+	std::cout << "Applied HETATM B multiplier " << _bMult <<
+	" and subtraction " << _bSubt << "." << std::endl;
 
 	for (size_t i = 0; i < crystal->moleculeCount(); i++)
 	{

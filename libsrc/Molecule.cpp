@@ -114,6 +114,16 @@ double Molecule::getAbsoluteBFacMult()
 	return _absoluteBFacMult;
 }
 
+double Molecule::getAbsoluteBFacSubt()
+{
+	if (Options::getBSubt() > 0)
+	{
+		_absoluteBFacSubtract = Options::getBSubt();
+	}
+
+	return _absoluteBFacSubtract;
+}
+
 void Molecule::tieAtomsUp()
 {
 	if (getClassName() != "Polymer")

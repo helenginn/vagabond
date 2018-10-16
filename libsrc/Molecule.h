@@ -79,6 +79,7 @@ public:
 	}
 
 	double getAbsoluteBFacMult();
+	double getAbsoluteBFacSubt();
 	void forceModelRecalculation();
 
 	void refreshBModels();

@@ -137,6 +137,17 @@ public:
 		return _bMult;
 	}
 
+	static double getBSubt()
+	{
+		return _bSubt;
+	}
+	
+	static void setBSubt(double bSubt)
+	{
+		_bSubt = bSubt;
+		Options::getRuntimeOptions()->applyBMultiplier();
+	}
+
 	static void setBMult(double bMult)
 	{
 		_bMult = bMult;
@@ -266,6 +277,7 @@ private:
 	static int _solvent;
 	static double _dampen;
 	static double _bMult;
+	static double _bSubt;
 	static double _bReal;
 	static int _enableTests;
 	static double _bStart;
