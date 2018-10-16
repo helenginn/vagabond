@@ -189,6 +189,7 @@ void RefinementStrategy::finish()
 	else
 	{
 		double reduction = (startingScore - endScore) / startingScore;
+		_improvement = -reduction * 100;
 
 		if (!_silent)
 		{std::cout << "Reduction ";

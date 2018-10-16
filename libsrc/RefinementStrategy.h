@@ -63,6 +63,7 @@ public:
 		_changed = -1;
 		finishFunction = NULL;
 		_mock = false;
+		_improvement = 0;
 		_toDegrees = false;
 	};
 
@@ -156,7 +157,16 @@ public:
 		return _params[i].changed;
 	}
 
+	double improvement()
+	{
+		return fabs(_improvement);
+	}
 protected:
+	double degMult()
+	{
+		return (_toDegrees ? 180 / M_PI : 1);
+	}
+	
 	Getter evaluationFunction;
 	Getter finishFunction;
 	int maxCycles;
@@ -167,6 +177,7 @@ protected:
 	bool _mock;
 	bool _toDegrees;
 	bool _silent;
+	double _improvement;
 
 	std::vector<Parameter> _params;
 	double startingScore;
