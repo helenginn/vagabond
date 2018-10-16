@@ -16,6 +16,7 @@
 #include "RefinementGridSearch.h"
 #include "RefinementNelderMead.h"
 #include "ParamBand.h"
+#include "FlexGlobal.h"
 #include "Reflex.h"
 #include <map>
 #include <iomanip>
@@ -25,12 +26,34 @@ FlexLocal::FlexLocal()
 	_shift = 0.05;
 	_run = 0;
 	_window = 10;
-	_direct = 1;
+	_direct = 0;
 	_anchorB = 0;
 	_afterBond = -1;
 	_threshold = 0.80;
-	_increment = 6;
+	_increment = 7;
 	_useTarget = true;
+	_getter = Bond::getKick;
+	_flexGlobal = NULL;
+	_setter = Bond::setKick;
+}
+
+FlexLocal::~FlexLocal()
+{
+	if (_flexGlobal)
+	{
+		delete _flexGlobal;
+	}
+}
+
+void FlexLocal::toElectronDensity()
+{
+	_flexGlobal = new FlexGlobal();
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	AtomGroupPtr allBackbone = _polymer->getAllBackbone();
+	_flexGlobal->setAtomGroup(allBackbone);
+	_flexGlobal->setCrystal(crystal);
+	_flexGlobal->matchElectronDensity();
+	_direct = 1;
 }
 
 void FlexLocal::setPolymer(PolymerPtr pol, double shift)
@@ -52,13 +75,14 @@ void FlexLocal::refineAnchor()
 	reflex();
 	createAtomTargets();
 	
-	std::cout << "| 1. Refining libration..." << std::flush;
+	std::cout << "| 1. Refining libration...   " << std::flush;
 
 	AnchorPtr anchor = ToAnchorPtr(_polymer->getAnchorModel());
 
 	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
 	nelder->setCycles(24);
-	nelder->setSilent();
+	nelder->setSilent();	
+	
 	nelder->setEvaluationFunction(getScore, this);
 //	anchor->addTranslationParameters(nelder, 0.2);
 	anchor->addLibrationParameters(nelder, 0.2);
@@ -68,7 +92,7 @@ void FlexLocal::refineAnchor()
 
 	if (nelder->didChange())
 	{
-		std::cout << val << "% improved. ... done." << std::endl;
+		std::cout << std::setw(8) << val << "% improved. ... done." << std::endl;
 	}
 	else
 	{
@@ -117,7 +141,8 @@ void FlexLocal::refine()
 
 			NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
 			nelder->setCycles(24);
-			nelder->setSilent();
+			nelder->setSilent();	
+
 			nelder->setEvaluationFunction(getScore, this);
 
 			for (int i = 0; i < _paramBands.size() && i < limit; i++)
@@ -131,8 +156,9 @@ void FlexLocal::refine()
 			nelder->refine();
 
 			double val = (1 - getScore(this)) * 100.;
+			val = nelder->improvement();
 
-			if (val < 0.5)
+			if (val < 0.5 && !_direct)
 			{
 				reduceShift = true;
 			}
@@ -142,7 +168,7 @@ void FlexLocal::refine()
 				std::cout << std::setw(5) << val << 
 				"% improved. ... done." << std::endl;
 				
-				if (val > 0.5)
+				if (val > 0.5 || _direct)
 				{
 					break;
 				}
@@ -271,8 +297,8 @@ void FlexLocal::chooseBestDifferenceThreshold()
 			}
 
 			band = ParamBandPtr(new ParamBand());
-			band->setPrivateGetter(Bond::getKick);
-			band->setPrivateSetter(Bond::setKick);
+			band->setPrivateGetter(_getter);
+			band->setPrivateSetter(_setter);
 
 			_paramBands.push_back(band);
 			current++;
@@ -600,8 +626,15 @@ double FlexLocal::getScore(void *object)
 	FlexLocal *local = static_cast<FlexLocal *>(object);
 	local->_polymer->propagateChange();
 	
+	if (local->_direct)
+	{
+		double score = local->_flexGlobal->score(local->_flexGlobal);
+		return score;
+	}
+
 	double score = local->directSimilarity();
 	return score;
+	
 }
 
 void FlexLocal::reflex()
@@ -644,14 +677,14 @@ void FlexLocal::scanBondParams()
 	for (int i = 0; i < _bonds.size(); i++)
 	{
 		BondPtr b = _bonds[i];
-		double k = Bond::getKick(&*b);
+		double k = (*_getter)(&*b);
 
 		for (int r = 0; r < 1; r++)
 		{
 			double add = (r == 0) ? _shift : -_shift;
 			double num = (r == 0) ? i : i + 0.5;
 
-			Bond::setKick(&*b, k + add);
+			(*_setter)(&*b, k + add);
 			b->propagateChange();
 
 			for (int j = 0; j < _atoms.size(); j++)
@@ -679,7 +712,7 @@ void FlexLocal::scanBondParams()
 
 			}
 
-			Bond::setKick(&*b, k);
+			(*_setter)(&*b, k);
 			b->propagateChange();
 		}
 

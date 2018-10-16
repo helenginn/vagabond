@@ -9,6 +9,7 @@
 #ifndef FlexLocal_h
 #define FlexLocal_h
 
+#include "RefinementStrategy.h"
 #include "shared_ptrs.h"
 #include <map>
 
@@ -16,6 +17,8 @@ typedef std::map<AtomPtr, double> AtomTarget;
 typedef std::map<BondPtr, AtomTarget> BondEffects;
 typedef std::map<BondPtr, double> BondCorrel;
 typedef std::map<BondPtr, BondCorrel> BondBondCC;
+
+class FlexGlobal;
 
 typedef struct
 {
@@ -32,6 +35,7 @@ class FlexLocal
 {
 public:
 	FlexLocal();
+	~FlexLocal();
 	
 	/** Sets polymer for which this FlexLocal object is responsible for,
 	 * and the applicable magnitude of trial kick to worry about (not too
@@ -52,6 +56,14 @@ public:
 	{
 		return _shift;
 	}
+	
+	void setGetterSetter(Getter getter, Setter setter)
+	{
+		_getter = getter;
+		_setter = setter;
+	}
+	
+	void toElectronDensity();
 private:
 	void createAtomTargets(bool subtract = true);
 	AtomTarget currentAtomValues();
@@ -82,6 +94,7 @@ private:
 	std::vector<ParamBandPtr> _paramBands;
 	BondBondCC _bbCCs;
 	
+	FlexGlobal *_flexGlobal;
 	bool _useTarget;
 	int _afterBond;
 	double _threshold;
@@ -91,6 +104,8 @@ private:
 	int _window;
 	int _run;
 	double _shift;
+	Getter _getter;
+	Setter _setter;
 
 };
 
