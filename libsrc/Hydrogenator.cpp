@@ -13,6 +13,8 @@
 #include "Backbone.h"
 #include "Sidechain.h"
 #include "Polymer.h"
+#include "Options.h"
+#include "Crystal.h"
 
 Hydrogenator::Hydrogenator()
 {
@@ -21,6 +23,7 @@ Hydrogenator::Hydrogenator()
 
 AtomPtr Hydrogenator::prepareNewHydrogen(AtomPtr parent)
 {
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	ElementPtr hydrogenElement = Element::getElement("H");
 
 	AtomPtr hydrogen = AtomPtr(new Atom());
@@ -31,7 +34,7 @@ AtomPtr Hydrogenator::prepareNewHydrogen(AtomPtr parent)
 	hydrogen->setInitialBFactor(parent->getInitialBFactor());
 	hydrogen->setElement(hydrogenElement);
 	hydrogen->setOriginalOccupancy(1.);
-	hydrogen->setAtomNum(poly->issueAtomNumber());
+	hydrogen->setAtomNum(crystal->issueAtomNumber());
 	_monomer->addAtom(hydrogen);
 	
 	return hydrogen;
