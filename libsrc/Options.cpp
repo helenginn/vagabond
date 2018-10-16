@@ -23,7 +23,7 @@ OptionsPtr Options::options;
 double Options::_kick = 0.000;
 int Options::_solvent = 1;
 double Options::_dampen = 0.0;
-double Options::_bStart = 10.;
+double Options::_bStart = 20.;
 double Options::_bMult = 1;
 double Options::_bSubt = -1;
 double Options::_bReal = -1;
