@@ -1282,6 +1282,7 @@ ParserPtr Parser::objectOfType(char *className)
 	if (strcmp(className, "Crystal") == 0) 
 	{
 		object = ParserPtr(static_cast<Crystal *>(new Crystal()));
+		Options::getRuntimeOptions()->addCrystal(object);
 	}
 	else if (strcmp(className, "Polymer") == 0)
 	{

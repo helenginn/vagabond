@@ -63,6 +63,12 @@ public:
 	{
 		return crystals[i];
 	}
+	
+	void addCrystal(ParserPtr cryst)
+	{
+		CrystalPtr crystal = ToCrystalPtr(cryst);
+		crystals.push_back(crystal);
+	}
 
 	CrystalPtr getActiveCrystal()
 	{

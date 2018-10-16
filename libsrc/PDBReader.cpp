@@ -343,6 +343,7 @@ CrystalPtr PDBReader::getCrystal()
 
 	_myCrystal = CrystalPtr(new Crystal());
 	_myCrystal->setFilename(getBaseFilename(filename));
+	Options::getRuntimeOptions()->addCrystal(_myCrystal);
 
 	_residueNum = 0;
 	_myChain = "";

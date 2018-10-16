@@ -136,7 +136,6 @@ void Options::run()
 		else
 		{
 			objects.push_back(crystal);
-			crystals.push_back(crystal);
 		}
 	}
 	else
@@ -148,7 +147,6 @@ void Options::run()
 
 
 		objects.push_back(crystal);
-		crystals.push_back(crystal);
 		_tie = false;
 	}
 	
