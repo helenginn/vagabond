@@ -102,7 +102,8 @@ Bond::Bond(Bond &other)
 	_usingTorsion = other._usingTorsion;
 	_major = other._major;
 	_minor = other._minor;
-	_resetOccupancy = other._resetOccupancy;
+	_resetOccupancy = false;
+	_magicAxis = other._magicAxis;
 
 	for (size_t i = 0; i < other.downstreamBondGroupCount(); i++)
 	{
@@ -114,6 +115,7 @@ Bond::Bond(Bond &other)
 	_disabled = other._disabled;
 	_absolute = other._absolute;
 	_molecule = other._molecule;
+	_splitBlock = false;
 
 	_refineBondAngle = other._refineBondAngle;
 	_refineFlexibility = other._refineFlexibility;
