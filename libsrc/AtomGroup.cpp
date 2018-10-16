@@ -361,19 +361,17 @@ AtomList AtomGroup::topLevelAtoms()
 
 bool AtomGroup::hasAtom(AtomPtr anAtom)
 {
-	bool found = false;
-
 	if (!anAtom) return false;
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (atom(i) == anAtom)
 		{
-			found = true;
+			return true;
 		}
 	}
 
-	return found;
+	return false;
 }
 
 void AtomGroup::setTargetRefinement(CrystalPtr target, RefinementType rType)
