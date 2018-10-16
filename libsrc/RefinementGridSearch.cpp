@@ -25,15 +25,23 @@
 
 int RefinementGridSearch::_refine_counter = 0;
 
+double RefinementGridSearch::getGridLength(size_t which)
+{	
+	Parameter *param = &_params[which];
+	double grid_length = param->step_size / param->other_value;
+	return grid_length;
+}
+
 void RefinementGridSearch::recursiveEvaluation(ParamList referenceList, ParamList workingList, ResultMap *results)
 {
 	size_t paramCount = parameterCount();
 	size_t workingCount = workingList.size();
-	Parameter *param = &_params[workingCount];
-	double grid_length = param->step_size / param->other_value;
 
 	if (workingCount < paramCount)
 	{
+		Parameter *param = &_params[workingCount];
+		double grid_length = getGridLength(workingCount);
+
 		for (int i = -grid_length / 2; i <= (int)(grid_length / 2 + 0.5); i++)
 		{
 			double mean = referenceList[workingCount];
@@ -60,6 +68,11 @@ void RefinementGridSearch::recursiveEvaluation(ParamList referenceList, ParamLis
 
 	orderedParams.push_back(workingList);
 	orderedResults.push_back(result);
+	
+	if (parameterCount() == 2)
+	{
+		_array2D.push_back(result);
+	}
 
 	reportProgress(result);
 }
@@ -79,6 +92,14 @@ void RefinementGridSearch::refine()
 	}
 
 	csv->addHeader("result");
+	
+	if (parameterCount() == 2)
+	{
+		double grid_area = getGridLength(0);
+		grid_area *= getGridLength(1);
+
+		_array2D.reserve(grid_area);
+	}
 
 	recursiveEvaluation(currentValues, ParamList(), &results);
 
@@ -96,6 +117,12 @@ void RefinementGridSearch::refine()
 		}
 
 		std::vector<double> result = it->first;
+		
+		for (int i = 0; i < result.size(); i++)
+		{
+			result[i] *= degMult();
+		}
+		
 		result.push_back(it->second);
 
 		csv->addEntry(result);
