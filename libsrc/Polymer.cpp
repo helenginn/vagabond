@@ -487,12 +487,13 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 void Polymer::graph(std::string graphName)
 {
+	ramachandranPlot();
+
 	CSVPtr csv = CSVPtr(new CSV(5, "resnum", "newB", "oldB",
 	                            "pos", "sidepos"));
 	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB"));
-	
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -629,6 +630,47 @@ void Polymer::graph(std::string graphName)
 		csv->plotPNG(plotMap);
 		csv->writeToFile("mainchain_" + graphName + ".csv");
 	}
+}
+
+void Polymer::ramachandranPlot()
+{
+	CSVPtr csv = CSVPtr(new CSV(3, "res", "phi", "psi"));
+
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (!getMonomer(i))
+		{
+			continue;
+		}
+		
+		bool forwards = (i > getAnchor());
+
+		AtomList phiAtoms = getMonomer(i)->findAtoms("N");
+		AtomList psiAtoms = getMonomer(i)->findAtoms("C");
+		
+		if (phiAtoms.size() != psiAtoms.size())
+		{
+			continue;
+		}
+
+		for (int j = 0; j < phiAtoms.size(); j++)
+		{
+			ModelPtr mPhi = phiAtoms[j]->getModel();
+			ModelPtr mPsi = psiAtoms[j]->getModel();
+			
+			if (!mPhi->isBond() || !mPsi->isBond())
+			{
+				continue;
+			}
+			
+			double tPhi = Bond::getTorsion(&*ToBondPtr(mPhi));
+			double tPsi = Bond::getTorsion(&*ToBondPtr(mPsi));
+			
+			csv->addEntry(3, i, rad2deg(tPhi), rad2deg(tPsi));
+		}
+	}
+
+	csv->writeToFile("ramachandran.csv");
 }
 
 std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal, 
