@@ -20,8 +20,13 @@ class RefineMat3x3;
 class Anchor : public ExplicitModel
 {
 public:
+	/* Substantiate an Anchor using a pre-existing Absolute atom. Absolute
+	 * atom ought to be a backbone nitrogen atom. */
 	Anchor(AbsolutePtr absolute);
+	
+	/* Substantiate a default Anchor, to be used by Parser */
 	Anchor();
+
 	virtual ~Anchor() {};
 
 	std::vector<BondSample> *getManyPositions(void *object = NULL);
@@ -35,9 +40,20 @@ public:
 		return _sphereAngles;
 	}
 
+	/** To be called with the appropriate neighbouring atoms along
+	 * the backbone.
+	 * \param nPre two atoms prior to nitrogen (previous Calpha atom)
+	 * \param nAtom one atom prior to nitrogen (previous carbon atom)
+	 * \param cAtom one atom further on than nitrogen (following Calpha atom)
+	 * \param cPost two atoms further than nitrogen (following carbon atom)
+	 */
 	void setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom, 
 	                          AtomPtr cAtom, AtomPtr cPost);
 
+	/** Returns the opposing atom on the other side of the bond.
+	 * \param calling Either the following C-alpha or preceding carbon atom.
+	 * \return empty AtomPtr() if calling atom is not one of the options, or
+	 * the opposite option if valid. */
 	AtomPtr getOtherAtom(AtomPtr calling);
 
 	void setOccupancies(std::vector<double> occ)

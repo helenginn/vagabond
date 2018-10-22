@@ -95,12 +95,37 @@ void VagWindow::makeMenu()
 	QAction *bmult = model->addAction(tr("B factor HETATM multiplier..."));
 	connect(bmult, &QAction::triggered,
 			[=]{ dialogueModify(Options::setBMult, 
-			                    "Multiply original B factor of HETATMs by..."); });
+			                    "Multiply original B factor of HETATMs by...",
+		                     1.0); });
 	actions.push_back(bmult);
 	
+	QAction *bsubt = model->addAction(tr("B factor HETATM subtract..."));
+	connect(bsubt, &QAction::triggered,
+			[=]{ dialogueModify(Options::setBSubt, 
+			                    "Subtract from B factor of HETATMs by...",
+		                     0.0); });
+	actions.push_back(bsubt);
+
 	menuItem(model, "Omit scan", InstructionTypeOmitScan);
 	menuItem(model, "Find flexibility", InstructionTypeReflex);
+	
+	QAction *refit = model->addAction(tr("Refit backbone region..."));
+	connect(refit, SIGNAL(triggered()), this, 
+	        SLOT(refitBackbone()));
+	actions.push_back(refit);
 
+}
+
+void VagWindow::refitBackbone()
+{
+	delete _myDialogue;
+	_myDialogue = new Dialogue(this, "Specify backbone region", 
+	                           "Two limiting residues", 
+	                           "795 805",
+	                           "Refit");
+	_myDialogue->setWindow(this);
+	_myDialogue->setTag(DialogueRefit);
+	_myDialogue->show();
 }
 
 void VagWindow::dialogueModify(SimpleSet set, std::string title,
@@ -389,6 +414,10 @@ int VagWindow::waitForInstructions()
 				case InstructionTypeAdjustBFactor:
 				options->adjustBFactor();
 				break;
+				
+				case InstructionTypeRefitBackbone:
+				options->refitBackbone(_rangeStart, _rangeEnd);
+				break;
 
 				default:
 				break;
@@ -546,6 +575,11 @@ void VagWindow::pushExploreMcule()
 	}
 }
 
+void VagWindow::pause(bool on)
+{
+	display->getKeeper()->pause(on);
+}
+
 void VagWindow::splitBond()
 {
 	double num = getValue();
@@ -601,11 +635,11 @@ void VagWindow::receiveDialogue(DialogueType type, std::string diagString)
 		return;
 	}
 
-	if (type == DialogueBMultiplier)
+	if (type == DialogueRefit)
 	{
-		OptionsPtr options = Options::getRuntimeOptions();
-		options->setBMult(trial[0]);
-		_instructionType = InstructionTypeChangeBMult;
+		_rangeStart = trial[0];
+		_rangeEnd = trial[1];
+		_instructionType = InstructionTypeRefitBackbone;
 		wait.wakeAll();        
 	}
 
@@ -644,6 +678,11 @@ void VagWindow::setRenderDensity()
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	display->renderDensity(crystal);
+}
+
+void VagWindow::focusOnPosition(vec3 pos)
+{
+	display->getKeeper()->focusOnPosition(pos);
 }
 
 void VagWindow::adjustBFactor()

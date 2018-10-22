@@ -49,6 +49,8 @@ typedef struct
  * \class WaterCluster
  * \brief A group of atoms which includes water molecules and its
  * neighbouring atoms. Will perform hydrogen bonding duties.
+ * 
+ * At the moment this is mostly defunct.
  */
 
 class WaterCluster : public Molecule, public Chromosomal

@@ -926,6 +926,14 @@ void Options::focusOnPosition(vec3 pos)
 	}
 }
 
+void Options::pauseGUIFishing(bool on)
+{
+	if (getRuntimeOptions()->_notify)
+	{
+		getRuntimeOptions()->_notify->pause(on);
+	}
+}
+
 void Options::omitScan()
 {
 	getActiveCrystal()->omitScan();
@@ -935,4 +943,17 @@ void Options::omitScan()
 void Options::reflex()
 {
 	getActiveCrystal()->reflex();
+}
+
+void Options::refitBackbone(int start, int end)
+{
+	MoleculePtr molecule = getActiveCrystal()->molecule(2);
+	
+	if (!molecule || !molecule->isPolymer())
+	{
+		molecule = getActiveCrystal()->molecule(0);
+	}
+	
+	PolymerPtr poly = ToPolymerPtr(molecule);
+	poly->refitBackbone(start, end);
 }

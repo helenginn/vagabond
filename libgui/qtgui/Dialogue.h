@@ -25,6 +25,7 @@ typedef enum
 {
 	DialogueUndefined,
 	DialogueBMultiplier,
+	DialogueRefit,
 } DialogueType;
 
 typedef void (*SimpleSet)(double);

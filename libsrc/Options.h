@@ -225,7 +225,9 @@ public:
 		return _anchor;
 	}
 	
+	static void pauseGUIFishing(bool on);
 	void focusOnPosition(vec3 pos);
+	void refitBackbone(int start, int end);
 	void omitScan();
 	void reflex();
 	void scanBondParams();

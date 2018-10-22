@@ -15,7 +15,7 @@
 #include <map>
 #include "../libsrc/Bond.h"
 
-typedef std::map<AtomPtr, std::pair<int, int> > AtomMap;
+typedef std::map<AtomWkr, std::pair<int, int> > AtomMap;
 typedef std::map<MoleculePtr, int> GLMoleculeMap;
 
 class Vagabond2GL : public GLObject
@@ -29,6 +29,7 @@ public:
 		_shouldGetBonds = true;
 		setupAverage();
 		
+		_pause = false;
 		_enabled = true;
 	}
 
@@ -44,6 +45,12 @@ public:
 	void setEnabled(bool enabled)
 	{
 		_enabled = enabled;
+	}
+	
+	virtual void pause(bool on)
+	{
+		_pause = on;
+		_shouldGetBonds = true;
 	}
 protected:
 	virtual void bindTextures();
@@ -62,6 +69,7 @@ private:
 	int _renders;
 	int _average;
 	bool _enabled;
+	bool _pause;
 	int _lastEnsembleCount;
 	bool _shouldGetBonds;
 

@@ -111,11 +111,15 @@ class BondGroup;
 
 typedef boost::shared_ptr<Absolute> AbsolutePtr;
 typedef boost::shared_ptr<Anchor> AnchorPtr;
+typedef boost::weak_ptr<Anchor> AnchorWkr;
 typedef boost::shared_ptr<Model> ModelPtr;
 typedef boost::shared_ptr<ExplicitModel> ExplicitModelPtr;
 typedef boost::shared_ptr<Bond> BondPtr;
 typedef boost::weak_ptr<Bond> BondWkr;
 typedef boost::shared_ptr<BondGroup> BondGroupPtr;
+
+class Whack;
+typedef boost::shared_ptr<Whack> WhackPtr;
 
 class Bucket;
 class BucketBulkSolvent;
@@ -199,6 +203,7 @@ typedef enum
 	ParamOptionKick,
 	ParamOptionMagicAngles,
 	ParamOptionNumBonds,
+	ParamOptionMaxTries,
 } ParamOptionType;
 
 typedef enum

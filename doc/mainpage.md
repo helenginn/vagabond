@@ -15,7 +15,7 @@ It accepts input as MTZ (reflection) and PDB (atomic model) files, and produces
 outputs (Vagabond .vbond model files, MTZ files to generate real space maps,
 and averaged PDB files) along with various diagnostic results.
 
-##  Constraints
+##  Limitations
 
 Vagabond is in its infancy and will frequently encounter situations it does
 not handle well. Please see the list of \link limits limitations. \endlink

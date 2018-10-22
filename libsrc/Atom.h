@@ -39,7 +39,7 @@ public:
 	Atom();
 	Atom(Atom &other);
 
-	virtual ~Atom() {}	
+	virtual ~Atom();
 
 	/** Change the atom's model to a new one, which will now be called when
 	 * the atom distribution is required. Can be changed at any time */

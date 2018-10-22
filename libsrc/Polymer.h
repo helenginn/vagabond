@@ -42,6 +42,7 @@ public:
 	static double vsRefinePositionsToPDB(void *object);
 	static double vsRefineLocalFlexibility(void *object);
 	static double vsRefineGlobalFlexibility(void *object);
+	void refitBackbone(int start, int end);
 	
 	virtual void graph(std::string graphName);
 

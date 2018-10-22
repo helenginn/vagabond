@@ -36,6 +36,7 @@ typedef enum
 	InstructionTypeRefineWaterNetwork,
 	InstructionTypeSplitBond,
 	InstructionTypeAdjustBFactor,
+	InstructionTypeRefitBackbone,
 } InstructionType;
 
 /**
@@ -144,6 +145,8 @@ public:
 	{
 
 	}
+	
+	virtual void pause(bool on) = 0;
 
 	virtual void setRenderDensity() = 0;
 protected:

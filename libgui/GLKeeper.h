@@ -26,7 +26,6 @@ private:
 	float zNear, zFar;
 	static bool everMovedMouse;
 	GLfloat width, height;
-	bool _rendered;
 
 	vec3 _centre;
 	vec3 _translation;
@@ -47,6 +46,7 @@ private:
 	void initialisePrograms();
 
 	Density2GLPtr _density2GL;
+	std::mutex _setup;
 
 public:
 	GLKeeper(int width, int height);
@@ -56,6 +56,7 @@ public:
 	virtual void render(void);
 	void cleanup(void);
 	void focusOnPosition(vec3 pos);    
+	void pause(bool on);
 
 	void rotateAngles(float alpha, float beta, float gamma);
 
@@ -70,16 +71,6 @@ public:
 	Density2GLPtr getDensity2GL()
 	{
 		return _density2GL;
-	}
-
-	bool shouldRender()
-	{
-		return !_rendered;
-	}
-
-	void setShouldRender()
-	{
-		_rendered = false;
 	}
 	
 	vec3 getCentre()

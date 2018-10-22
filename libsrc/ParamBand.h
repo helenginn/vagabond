@@ -28,6 +28,22 @@ typedef struct
 	double baseValue;
 } ObjectWeight;
 
+/**
+ * \class ParamBand
+ * \brief An object which looks after a related set of parameters for
+ * refinement.
+ *
+ * A band of parameters all of the same type can be stored and changed as one
+ * using this parameter band.
+ * Initialise, and set the private getter/setter for the parameter type.
+ * Add each object for which the getter/setter pertains.
+ * Do not forget to "prepare" the object, which will take local copies
+ * of the original values.
+ * You can also use this to store parameters of a given type and then
+ * reapply them by using setGlobalParam(this, 0), instead of using them
+ * for refinement.
+ */
+
 class ParamBand
 {
 public:
@@ -46,6 +62,7 @@ public:
 	
 	void addObject(void *object, double weight);
 	
+	/** Adds 'value' to each parameter in the object list. */
 	static void setGlobalParam(void *object, double value);
 	static double getGlobalParam(void *object);
 	
@@ -57,6 +74,16 @@ public:
 	size_t objectCount()
 	{
 		return _objects.size();
+	}
+	
+	void *object(int i)
+	{
+		return _objects[i].object;
+	}
+	
+	double baseValueForObject(int i)
+	{
+		return _objects[i].baseValue;
 	}
 	
 	void prepare();

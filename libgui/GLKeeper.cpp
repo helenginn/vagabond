@@ -94,9 +94,11 @@ void GLKeeper::focusOnPosition(vec3 pos)
 
 GLKeeper::GLKeeper(int newWidth, int newHeight)
 {
+	_setup.lock();
+
 	width = newWidth;
 	height = newHeight;
-	_rendered = false;
+	_centre = empty_vec3();
 
 	#ifdef SETUP_BUFFERS
 	setupBuffers();
@@ -125,10 +127,25 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	setupCamera();
 
 	initialisePrograms();
+	
+	_setup.unlock();
+}
+
+void GLKeeper::pause(bool on)
+{
+	for (int i = 0; i < _objects.size(); i++)
+	{
+		_objects[i]->pause(on);
+	}
 }
 
 void GLKeeper::render(void)
 {
+	if (!_setup.try_lock())
+	{
+		return;
+	}
+
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -138,14 +155,14 @@ void GLKeeper::render(void)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	updateCamera();
 
-
-
 	for (int i = 0; i < _objects.size(); i++)
 	{
 		_objects[i]->setProjMat(projMat);
 		_objects[i]->setModelMat(modelMat);
 		_objects[i]->render();
 	}
+	
+	_setup.unlock();
 }
 
 void GLKeeper::toggleBondView()
@@ -202,8 +219,6 @@ void GLKeeper::draggedLeftMouse(float x, float y)
 
 void GLKeeper::draggedRightMouse(float x, float y)
 {
-	setShouldRender();
-
 	zoom(0, 0, -y / MOUSE_SENSITIVITY * 10);
 }
 
@@ -213,7 +228,6 @@ void GLKeeper::changeSize(int newWidth, int newHeight)
 	height = newHeight;
 
 	updateProjection();
-	setShouldRender();
 }
 
 void GLKeeper::initialisePrograms()

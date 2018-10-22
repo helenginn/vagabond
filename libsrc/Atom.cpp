@@ -65,6 +65,11 @@ Atom::Atom(Atom &other)
 	_hetatm = other._hetatm;
 }
 
+Atom::~Atom()
+{
+
+}
+
 int Atom::getResidueNum()
 {
 	if (getMonomer())
@@ -319,7 +324,7 @@ void Atom::addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell, vec3 pos,
 void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
 							std::vector<Atom *> *ptrs)
 {
-	if (getElectronCount() <= 1)
+	if (getElectronCount() <= 1 || _weighting <= 0)
 	{
 		return;
 	}

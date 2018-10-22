@@ -18,7 +18,7 @@
 #include "Anchor.h"
 #include "maths.h"
 #include "Monomer.h"
-#include "Molecule.h"
+#include "Polymer.h"
 #include "Options.h"
 
 Bond::~Bond()
@@ -999,16 +999,52 @@ void Bond::sanityCheck()
 	ExplicitModel::sanityCheck();
 }
 
+void Bond::destroy(bool start)
+{
+	for (int i = 0; i < downstreamBondGroupCount(); i++)
+	{
+		for (int j = 0; j < downstreamBondCount(i); j++)
+		{
+			downstreamBond(i, j)->destroy(false);
+		}
+	}
+	
+	if (start)
+	{
+		BondPtr parent = ToBondPtr(getParentModel());
+		int group = -1;
+		int num = parent->downstreamBondNum(this, &group);
+
+		parent->_bondGroups[group]->removeBond(num);
+	}
+	
+	PolymerPtr polymer = getMinor()->getMonomer()->getPolymer();
+	polymer->removeAtom(getMinor());
+	
+	if (getParentModel()->isAnchor())
+	{
+		warn_user("Pruning too far... reached anchor point.");
+	}
+}
+
 void Bond::checkForSplits(AtomGroupPtr polymer)
 {
 	AtomPtr minor = getMinor();
 	AtomList list = polymer->findAtoms(minor->getAtomName(), 
 	                                   minor->getResidueNum());
 	
-
 	if (list.size() > 1)
 	{
-		BondPtr success = splitBond(true);
+		BondPtr success = BondPtr();
+		for (int i = 0; i < list.size() - 1; i++)
+		{
+			BondPtr result = splitBond(true);
+			
+			if (result)
+			{
+				success = result;
+			}
+		}
 
 		if (success)
 		{
@@ -1198,8 +1234,6 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum,
 		if (onlyExisting && !result)
 		{
 			nextBond->_resetOccupancy = true;
-			std::cout << "Resetting occupancy // for " <<
-			shortDesc() << std::endl;
 		}
 	}
 
@@ -1460,4 +1494,20 @@ void Bond::linkReference(ParserPtr object, std::string category)
 void Bond::postParseTidy()
 {	
 
+}
+
+void Bond::equaliseOccupancies()
+{
+	double occ = 1 / (double)downstreamBondGroupCount();
+
+	for (int i = 0; i < downstreamBondGroupCount(); i++)
+	{
+		for (int j = 0; j < downstreamBondCount(i); j++)
+		{
+			BondPtr bond = downstreamBond(i, j);
+			setOccupancy(&*bond, occ);
+		}
+	}
+	
+	propagateChange();
 }

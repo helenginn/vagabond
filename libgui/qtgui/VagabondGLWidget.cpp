@@ -123,7 +123,10 @@ void VagabondGLWidget::paintGL()
 
 void VagabondGLWidget::renderDensity(CrystalPtr crystal)
 {
-	keeper->getDensity2GL()->makeNewDensity(crystal);
+	if (keeper)
+	{
+		keeper->getDensity2GL()->makeNewDensity(crystal);
+	}
 }
 
 VagabondGLWidget::~VagabondGLWidget()

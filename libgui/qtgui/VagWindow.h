@@ -50,6 +50,8 @@ public:
 	virtual void setMessage(std::string message);
 	virtual void wakeup();
 	virtual void setRenderDensity();
+	virtual void focusOnPosition(vec3 pos);
+	virtual void pause(bool on);
 	
 	InstructionThread *getInstructionThread()
 	{
@@ -68,6 +70,7 @@ private slots:
 
 	void toggleScaling(ScalingType type);
 	void adjustBFactor();
+	void refitBackbone();
 
 private:
 	VagabondGLWidget *display;
@@ -113,6 +116,9 @@ private:
 	std::vector<QAction *> actions;
 
 	void displayScaling();
+	
+	int _rangeStart;
+	int _rangeEnd;
 
 	int _argc;
 	char **_argv;

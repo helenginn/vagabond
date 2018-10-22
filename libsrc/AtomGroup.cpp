@@ -521,6 +521,11 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		break;
 	}
 	
+	if (hasParameter(ParamOptionMaxTries))
+	{
+		maxTries = getParameter(ParamOptionMaxTries);
+	}
+	
 	while (topAtoms.size() > 0)
 	{
 		BondPtr topBond;

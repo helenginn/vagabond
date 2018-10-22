@@ -219,6 +219,8 @@ void Sampler::setupGrid()
 {
 	_strategy = RefinementStrategyPtr(new RefinementGridSearch());
 	_strategy->setEvaluationFunction(Sampler::score, this);
+	ToGridPtr(_strategy)->setWritePNG();
+	ToGridPtr(_strategy)->setWriteCSV();
 }
 
 void Sampler::setupNelderMead()

@@ -83,6 +83,11 @@ public:
 	bool test();
 	double getEffectiveOccupancy();
 	
+	void setResetOccupancy(bool val)
+	{
+		_resetOccupancy = val;
+	}
+	
 	/** Resets bond angles to the default from geometry (n.b. used for fixing
 	* disulphides. */
 	void resetBondAngles();
@@ -365,6 +370,9 @@ public:
 	*	\return duplicate bond
 	*/
 	BondPtr splitBond(bool onlyExisting = false);
+	
+	void equaliseOccupancies();
+	void destroy(bool start = true);
 
 	void checkForSplits(AtomGroupPtr polymer);
 

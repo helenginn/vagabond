@@ -32,7 +32,15 @@ void Vagabond2GL::updateAtoms()
 {
 	for (AtomMap::iterator it = _atomMap.begin(); it != _atomMap.end(); it++)
 	{
-		AtomPtr atom = it->first;
+		AtomWkr wkAtom = it->first;
+		
+		if (wkAtom.expired())
+		{
+			continue;
+		}
+
+		AtomPtr atom = wkAtom.lock();
+
 		std::pair<int, int> pair = it->second;
 		int total = pair.first;
 		int v = pair.second;
@@ -240,7 +248,6 @@ int Vagabond2GL::processMolecule(MoleculePtr molecule)
 
 	ExplicitModel::useMutex();
 
-
 	for (int i = 0; i < molecule->atomCount(); i++)
 	{
 		AtomPtr atom = molecule->atom(i);
@@ -438,11 +445,11 @@ void Vagabond2GL::render()
 		return;
 	}
 
-	if (shouldGetBonds())
+	if (shouldGetBonds() && !_pause)
 	{
 		findAtoms();
 	}
-	else
+	else if (!_pause)
 	{
 		updateAtoms();
 	}

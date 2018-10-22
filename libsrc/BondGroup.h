@@ -57,6 +57,11 @@ public:
 	{
 		return _bonds[i];
 	}
+	
+	void removeBond(int i)
+	{
+		_bonds.erase(_bonds.begin() + i);
+	}
 
 	void clearBonds()
 	{

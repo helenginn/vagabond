@@ -1033,21 +1033,22 @@ void Density2GL::render()
 	
 	bool locked = _renderLock.try_lock();
 	
+	if (!locked)
+	{
+		return;
+	}
+	
 	mat4x4 inv = mat4x4_inverse(modelMat);
 	vec3 light = make_vec3(0, 0, 0);
 	vec3 lightPos = mat4x4_mult_vec(inv, light);
 	_lightPos[0] = lightPos.x;
 	_lightPos[1] = lightPos.y;
 	_lightPos[2] = lightPos.z;
-
-	if (locked)
-	{
-		rebindProgram();
-		reorderIndices();
-		GLObject::render();
-		_renderLock.unlock();
-	}
 	
+	rebindProgram();
+	reorderIndices();
+	GLObject::render();
+
 	vec3 centre = _keeper->getCentre();
 	vec3 pan = _keeper->getTranslation();
 	pan.z = 0;
@@ -1058,6 +1059,7 @@ void Density2GL::render()
 	vec3 newPos = mat4x4_mult_vec(inv, centre);
 
 	vec3 movement = vec3_subtract_vec3(newPos, _offset);
+	_renderLock.unlock();
 	
 	if (vec3_length(movement) > 1)
 	{
@@ -1081,6 +1083,7 @@ void Density2GL::makeNewDensity(CrystalPtr crystal)
 	_crystal = crystal;
 	
 	_renderLock.lock();
+
 	clearVertices();
 	
 	makeUniformGrid();
@@ -1089,8 +1092,10 @@ void Density2GL::makeNewDensity(CrystalPtr crystal)
 	{
 		setupIndexTable();
 	}
+
 	calculateContouring(crystal);
 	reorderIndices();
 	recalculate();
+
 	_renderLock.unlock();
 }

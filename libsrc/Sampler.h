@@ -178,7 +178,7 @@ public:
                                  std::string name);
 protected:
 	/** Create a torsion set which adds the primary chain (the backbone)
-	 * 	but optionally may not add the sidechain branches. Adds the 
+
 	 * 	appropriate bond parameters and the sensitive atoms. */	
 	BondPtr setupThoroughSet(BondPtr bond, bool addBranches = true);
 	FFTPtr _fft;

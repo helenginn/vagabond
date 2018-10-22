@@ -76,6 +76,8 @@ public:
 		calculateCentroid();
 		return _centroid;
 	}
+	
+	virtual void pause(bool on) {};
 
 	vec3 fixCentroid(vec3 newCentroid);
 

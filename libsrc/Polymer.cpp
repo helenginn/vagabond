@@ -29,6 +29,7 @@
 #include "FlexGlobal.h"
 #include "FlexLocal.h"
 #include "Reflex.h"
+#include "Refitter.h"
 #include "RefinementNelderMead.h"
 #include "RefinementGridSearch.h"
 #include "Hydrogenator.h"
@@ -36,7 +37,7 @@
 Polymer::Polymer()
 {
 	_kick = Options::getKick();
-	_kickShift = 0.1;
+	_kickShift = 0.10;
 	_anchorNum = -1;
 	_totalMonomers = 0;
 	_startB = Options::getBStart();
@@ -693,6 +694,71 @@ std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal,
 	
 }
 
+void Polymer::refitBackbone(int start_, int end_)
+{
+	std::cout << "Refit backbone function" << std::endl;
+	
+	/* We can't straddle the anchor */
+	if (start_ < _anchorNum && end_ > _anchorNum ||
+	    end_ > _anchorNum && start_ < _anchorNum)
+	{
+		warn_user("We cannot straddle the anchor.");
+		return;
+	}
+
+	downWeightResidues(start_, end_, 0);
+	
+	AtomPtr endAtom = getMonomer(end_)->findAtom("C");
+	AtomPtr stAtom = getMonomer(start_)->findAtom("N");
+
+	vec3 pos = stAtom->getAbsolutePosition();
+	Options::getRuntimeOptions()->focusOnPosition(pos);
+	
+	/* Get new map for this */
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	Crystal::vsConcludeRefinement(&*ToParserPtr(crystal));
+	
+	/* Lower the number of samples */
+	int samples = getAnchorModel()->getFinalPositions().size();
+	Options::setNSamples(0);
+	refreshPositions();
+	
+	int start = start_;
+	int end = end_;
+	
+	/* Swap if in wrong order */
+	if ((start > _anchorNum && end < start)	||
+	    (start < _anchorNum && end > start))
+	{
+		int tmp = start;
+		start = end;
+		end = tmp;
+	}
+	
+	/* Split the bond */
+	if (start < _anchorNum)
+	{
+		endAtom = getMonomer(end)->findAtom("N");
+		stAtom = getMonomer(start)->findAtom("C");
+	}
+	
+	BondPtr endBond = ToBondPtr(endAtom->getModel());
+	BondPtr stBond = ToBondPtr(stAtom->getModel());
+	
+	endBond->setSplitBlock();
+	BondPtr dupl = stBond->splitBond();
+
+	Refitter fit(dupl, endBond, start > _anchorNum);
+	fit.refit();
+
+	downWeightResidues(start_, end_, 1);
+
+	std::cout << "Return number of samples" << std::endl;
+	/* Repair the number of samples */
+	Options::setNSamples(samples);
+	refreshPositions();
+}
+
 void Polymer::findAnchorNearestCentroid()
 {
 	vec3 sum = make_vec3(0, 0, 0);
@@ -706,7 +772,7 @@ void Polymer::findAnchorNearestCentroid()
 		}
 
 		AtomPtr n = getMonomer(i)->findAtom("N");
-
+		
 		if (!n)
 		{
 			continue;

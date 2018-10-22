@@ -21,6 +21,7 @@ GLObject::GLObject()
 	_vertShader = &Shader_vsh;
 	_extra = false;
 	_backToFront = true;
+	_usesLighting = false;
 }
 
 void GLObject::rebindProgram()
