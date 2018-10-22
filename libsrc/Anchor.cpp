@@ -21,8 +21,6 @@ Anchor::Anchor(AbsolutePtr absolute)
 	_position = absolute->getAbsolutePosition();
 	_molecule = absolute->getMolecule();
 	_atom = absolute->getAtom();
-	_rotVec = make_vec3(0, 0, 0);
-	_rotCentre = make_vec3(0, 0, 0);
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration->setZero();
@@ -52,8 +50,6 @@ Anchor::Anchor()
 	_position = empty_vec3();
 	_nDir = empty_vec3();
 	_cDir = empty_vec3();
-	_rotVec = make_vec3(0, 0, 0);
-	_rotCentre = make_vec3(0, 0, 0);
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration->setZero();
@@ -72,6 +68,7 @@ AtomPtr Anchor::getOtherAtom(AtomPtr calling)
 	else
 	{
 		std::cout << "WATCHOUT" << std::endl;
+		return AtomPtr();
 	}
 }
 
@@ -294,8 +291,6 @@ void Anchor::addProperties()
 	addVec3Property("c_dir", &_cDir);
 	addVec3Property("pre_n", &_nDir2);
 	addVec3Property("post_c", &_cDir2);
-	addVec3Property("rot_vec", &_rotVec);
-	addVec3Property("rot_centre", &_rotCentre);
 	addMat3x3Property("translation", _trans->getMat3x3Ptr());
 	addMat3x3Property("libration", _libration->getMat3x3Ptr());
 	addReference("c_atom", _cAtom.lock());
