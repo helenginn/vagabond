@@ -35,6 +35,8 @@ typedef enum
 	ScoreTypeAddDensity = 7, /** Sum of map voxels if model positive */
 	ScoreTypeAddVoxels = 8, /** Number of map voxels if model positive */
 	ScoreTypeHappiness = 9, /** Like CC but a reward function */
+	ScoreTypeZero = 10, /** Will always return 0 */
+	ScoreTypeCentroid = 11, /** Difference of centroid against PDB */
 } ScoreType;
 
 /* Don't forget - power of 2... */
