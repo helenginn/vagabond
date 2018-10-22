@@ -877,7 +877,7 @@ void Bond::propagateChange(int depth, bool refresh)
 		BondPtr bond = propagateBonds[k].bond;
 		int curr_depth = propagateBonds[k].num;
 
-		if ((curr_depth > 0 && depth >= 0) || depth < 0)
+		if ((curr_depth >= 0 && depth >= 0) || depth < 0)
 		{
 			for (size_t j = 0; j < bond->downstreamBondGroupCount(); j++)
 			{
