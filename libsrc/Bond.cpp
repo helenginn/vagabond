@@ -642,6 +642,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 
 		double totalBlur = addBlur;
 		prevs->at(i).torsion = totalBlur;	
+		prevs->at(i).kickValue = kickValue;
 		
 		averageModulation += totalBlur;
 	}
@@ -762,6 +763,7 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 		nextSample.start = myCurrentPos;
 		nextSample.old_start = prevMinorPos;
 		nextSample.torsion = 0;
+		nextSample.kickValue = prevSamples->at(i).kickValue;
 		nextSample.occupancy = (_occupancy * prevSamples->at(i).occupancy);
 		
 		occTotal += nextSample.occupancy;

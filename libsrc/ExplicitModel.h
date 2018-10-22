@@ -29,6 +29,7 @@ typedef struct
 	vec3 start;       /**< position of last minor */
 	vec3 old_start;   /**< position of torsion-defining atom */
 	double torsion;   /**< To be filled in by next bond temporarily */
+	double kickValue; /**< Contains number between 0 and 1, kick multiplier */
 	double occupancy; /**< Relative occupancy (usually 1) */
 } BondSample;
 
