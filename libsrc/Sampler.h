@@ -32,7 +32,8 @@ typedef enum
 	RefinementModelRMSDZero = 3, /** Squeeze protein chain to PDB positions */
 	RefinementModelPos = 4, /** Positions to PDB positions */
 	RefinementRMSDZero = 5, /** Squeeze protein chain to minimise flexibility */
-	RefinementWaterNetwork = 6,
+	RefinementCentroid = 6, /** Refine centroid to PDB centroid */
+	RefinementWaterNetwork = 7,
 } RefinementType; 
 
 

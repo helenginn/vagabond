@@ -506,9 +506,39 @@ bool Sampler::sample(bool clear)
 
 double Sampler::getScore()
 {
-	if (!_sampled.size())
+	if (!_sampled.size() || _scoreType == ScoreTypeZero)
 	{
 		return 0;
+	}
+	
+	if (_scoreType == ScoreTypeCentroid)
+	{
+		vec3 orig_cent = empty_vec3();
+		vec3 new_cent = empty_vec3();
+		double count = 0;
+		
+		for (int i = 0; i < _bonds.size() && i < 1; i++)
+		{
+			_bonds[i]->propagateChange(-1, true);
+		}
+
+		for (int i = 0; i < sampleSize(); i++)
+		{
+			vec3 init = _sampled[i]->getPDBPosition();
+			_sampled[i]->getModel()->refreshPositions();
+			vec3 pos = _sampled[i]->getAbsolutePosition();
+			
+			vec3_add_to_vec3(&orig_cent, init);
+			vec3_add_to_vec3(&new_cent, pos);
+			count++;
+		}
+
+		vec3_mult(&orig_cent, 1 / count);
+		vec3_mult(&new_cent, 1 / count);
+		
+		vec3 diff = vec3_subtract_vec3(orig_cent, new_cent);
+
+		return vec3_sqlength(diff);
 	}
 	
 	if (_scoreType != ScoreTypeCorrel 

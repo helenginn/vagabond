@@ -496,6 +496,11 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		maxTries = 60;
 		break;
 
+		case RefinementCentroid:
+		scoreType = ScoreTypeCentroid;
+		maxTries = 60;
+		break;
+
 		case RefinementFine:
 		scoreType = ScoreTypeCorrel;
 		maxTries = 2;
