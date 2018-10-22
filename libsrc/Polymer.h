@@ -78,6 +78,7 @@ public:
 	void findAnchorNearestCentroid();
 	void hydrogenateContents();
 	void checkChainContinuity();
+	virtual void removeAtom(AtomPtr atom);
 	void setAnchor(int num)
 	{
 		_anchorNum = num;

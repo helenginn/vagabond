@@ -32,6 +32,7 @@ public:
 	void tieAtomsUp();
 
 	bool isAfterAnchor();
+	virtual void removeAtom(AtomPtr atom);
 
 	MonomerPtr shared_from_this()
 	{

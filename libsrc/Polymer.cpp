@@ -160,20 +160,14 @@ void Polymer::tieAtomsUp()
 	
 	n2ca->checkForSplits(shared_from_this());
 	n2c->checkForSplits(shared_from_this());
+}
 
-	/*
-	double kick = Options::getKick();
-	setInitialKick(this, kick);
-
-	for (int i = 0; i < monomerCount(); i++)
-	{
-		if (getMonomer(i))
-		{
-			getMonomer(i)->getSidechain()->splitConformers();
-			getMonomer(i)->getSidechain()->setInitialKick();
-		}
-	}
-	*/
+void Polymer::removeAtom(AtomPtr atom)
+{
+	MonomerPtr mon = atom->getMonomer();
+	mon->removeAtom(atom);
+	
+	AtomGroup::removeAtom(atom);
 }
 
 void Polymer::splitConformers()

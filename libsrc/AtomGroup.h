@@ -62,6 +62,8 @@ public:
 	}
 
 	virtual void addAtom(AtomPtr atom);
+	
+	virtual void removeAtom(AtomPtr atom);
 
 	void addAtomsFrom(AtomGroupPtr group);
 

@@ -30,7 +30,14 @@ void Monomer::setup()
 	_backbone->setResNum(_residueNum);
 	_sidechain->setMonomer(shared_from_this());
 	_sidechain->setResNum(_residueNum);
+}
 
+void Monomer::removeAtom(AtomPtr atom)
+{
+	_sidechain->removeAtom(atom);
+	_backbone->removeAtom(atom);
+	
+	AtomGroup::removeAtom(atom);
 }
 
 void Monomer::addAtom(AtomPtr atom)

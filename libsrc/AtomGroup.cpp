@@ -389,8 +389,29 @@ void AtomGroup::privateRefine()
 	shout_timer(wall_start, "refinement");
 }
 
+void AtomGroup::removeAtom(AtomPtr atom)
+{
+	if (!atom)
+	{
+		return;
+	}
+
+	std::vector<AtomPtr>::iterator it;
+	it = std::find(_atoms.begin(), _atoms.end(), atom);
+
+	if (it != _atoms.end())
+	{
+		_atoms.erase(it);
+	}
+}
+
 void AtomGroup::addAtom(AtomPtr atom)
 {
+	if (!atom)
+	{
+		return;
+	}
+
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 
 	std::vector<AtomPtr>::iterator it;
