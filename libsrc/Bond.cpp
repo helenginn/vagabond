@@ -21,6 +21,11 @@
 #include "Molecule.h"
 #include "Options.h"
 
+Bond::~Bond()
+{
+
+}
+
 void Bond::initialize()
 {
 	_usingTorsion = false;

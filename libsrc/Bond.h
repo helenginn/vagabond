@@ -55,7 +55,7 @@ public:
 	Bond(AtomPtr major, AtomPtr minor, int group = 0);
 	Bond(Bond &other);
 	Bond();
-	virtual ~Bond() {};
+	virtual ~Bond();
 
 	/**
 	* After a bond has been initialised with a major and minor (pre-existing)
