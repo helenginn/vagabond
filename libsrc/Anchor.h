@@ -76,6 +76,11 @@ public:
 		return _atom.lock();
 	}
 	
+	void addWhack(WhackPtr whack)
+	{
+		_whacks.push_back(whack);
+	}
+	
 	void addTranslationParameters(RefinementStrategyPtr strategy,
 	                              double mult = 1);
 	void addLibrationParameters(RefinementStrategyPtr strategy,
@@ -111,13 +116,13 @@ protected:
 private:
 	void translateStartPositions();
 	void rotateBases();
-
 	
 	vec3 _nDir, _nDir2;
 	vec3 _cDir, _cDir2;
 
 	std::vector<vec3> _sphereAngles;
 	std::vector<double> _occupancies;
+	std::vector<WhackPtr> _whacks;
 };
 
 #endif

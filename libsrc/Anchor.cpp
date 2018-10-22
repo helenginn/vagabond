@@ -12,6 +12,7 @@
 #include "Anisotropicator.h"
 #include "Options.h"
 #include "Crystal.h"
+#include "Whack.h"
 #include "mat4x4.h"
 #include <sstream>
 
@@ -276,6 +277,15 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 	createStartPositions(callAtom);
 	rotateBases();
 	translateStartPositions();
+	
+	/* Apply whacks */
+	
+	for (int i = 0; i < _whacks.size(); i++)
+	{
+		WhackPtr whack = _whacks[i];
+		whack->applyToAnchorSamples(_storedSamples);
+	}
+	
 	sanityCheck();
 	
 	return &_storedSamples;
