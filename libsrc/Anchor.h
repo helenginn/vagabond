@@ -17,6 +17,12 @@
 
 class RefineMat3x3;
 
+typedef struct
+{
+	std::vector<BondSample> samples;
+	bool changed;
+} SamplePair;
+
 class Anchor : public ExplicitModel
 {
 public:
@@ -109,6 +115,10 @@ protected:
 	double _bFactor;
 	RefineMat3x3Ptr _trans;
 	RefineMat3x3Ptr _libration;
+	
+	bool _changedN;
+	bool _changedC;
+	
 	mat3x3 _rotation;
 	vec3 _position;
 	AtomWkr _atom;
@@ -116,10 +126,12 @@ protected:
 private:
 	void translateStartPositions();
 	void rotateBases();
+	void fixCentroid();
 	
 	vec3 _nDir, _nDir2;
 	vec3 _cDir, _cDir2;
 
+	std::map<Atom *, SamplePair> _samples;
 	std::vector<vec3> _sphereAngles;
 	std::vector<double> _occupancies;
 	std::vector<WhackPtr> _whacks;

@@ -934,6 +934,11 @@ void Options::pauseGUIFishing(bool on)
 	}
 }
 
+void Options::whack()
+{
+	getActiveCrystal()->whack();
+}
+
 void Options::omitScan()
 {
 	getActiveCrystal()->omitScan();

@@ -30,7 +30,6 @@ void Bond::initialize()
 {
 	_usingTorsion = false;
 	_bondLength = 0;
-	_changedPos = true;
 	_changedSamples = true;
 	_refineBondAngle = false;
 	_refineFlexibility = true;
@@ -125,7 +124,6 @@ Bond::Bond(Bond &other)
 	_refineBondAngle = other._refineBondAngle;
 	_refineFlexibility = other._refineFlexibility;
 	_bondLength = other._bondLength;
-	_changedPos = true;
 	_changedSamples = true;
 	_heavyAlign = other._heavyAlign;
 	
@@ -622,9 +620,12 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 		double tanX = thisDeviation.z / notZ;
 		double angle = atan(tanX);
 		
-		if (thisDeviation.z < 0) angle *= -1;
+		if (thisDeviation.z < 0) angle -= M_PI / 2;
 		
 		double kickValue = cos(angle);
+		
+//		std::cout << rad2deg(angle) << " " << kickValue << std::endl;
+		
 		/* Just the notZ */
 		if (kickValue != kickValue)
 		{
@@ -632,8 +633,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 		}
 
 		/* Baseline kick multiplied by kickValue */
-		double addBlur = _kick;
-		addBlur *= kickValue;
+		double addBlur = _kick * kickValue;
 
 		if (isFixed())
 		{
@@ -900,7 +900,6 @@ void Bond::propagateChange(int depth, bool refresh)
 			}
 		}
 
-		bond->_changedPos = true;
 		bond->_changedSamples = true;
 		bond->_recalcDist = true;
 		/* not recursive call - this fixes other problems */

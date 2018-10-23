@@ -1616,4 +1616,17 @@ void Crystal::updateLargestNum(AtomPtr atom)
 	}
 }
 
-
+void Crystal::whack()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		MoleculePtr mol = molecule(i);
+		
+		if (!mol->isPolymer())
+		{
+			continue;
+		}
+		
+		ToPolymerPtr(mol)->whack();
+	}
+}

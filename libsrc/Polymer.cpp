@@ -8,6 +8,7 @@
 
 #include "Polymer.h"
 #include "Timer.h"
+#include "Whack.h"
 #include "Crystal.h"
 #include "Sidechain.h"
 #include "Monomer.h"
@@ -100,6 +101,32 @@ void Polymer::refineLocalFlexibility()
 	local.setPolymer(shared_from_this(), _kickShift);
 	local.refine();
 	_kickShift = local.getShift();
+}
+
+void Polymer::whack()
+{
+	int res = 10;
+	AtomPtr atom = getMonomer(res)->findAtom("CA");
+
+	while (atom)
+	{
+		WhackPtr whack = WhackPtr(new Whack());
+		whack->setBond(ToBondPtr(atom->getModel()));
+		Whack::setWhack(&*whack, 0.005);
+		whack->addToAnchor(ToAnchorPtr(getAnchorModel()));
+
+		res += 5;
+		getAnchorModel()->propagateChange(-1, true);
+		
+		if (getMonomer(res))
+		{
+			atom = getMonomer(res)->findAtom("CA");
+		}
+		else
+		{
+			break;
+		}
+	}
 }
 
 void Polymer::tieAtomsUp()

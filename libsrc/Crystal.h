@@ -326,6 +326,7 @@ public:
 	double getMaxResolution(DiffractionPtr data);
 	
 	void updateLargestNum(AtomPtr atom);
+	void whack();
 
 	int issueAtomNumber()
 	{

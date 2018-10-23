@@ -230,6 +230,7 @@ public:
 	void refitBackbone(int start, int end);
 	void omitScan();
 	void reflex();
+	void whack();
 	void scanBondParams();
 	void renderDensity();
 	void statusMessage(std::string message);

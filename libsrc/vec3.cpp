@@ -40,6 +40,13 @@ double vec3_sqlength(vec3 &vec)
 	return (vec.x * vec.x + vec.y * vec.y + vec.z * vec.z);
 }
 
+void vec3_subtract_from_vec3(vec3 *to, vec3 &from)
+{
+	to->x -= from.x;
+	to->y -= from.y;
+	to->z -= from.z;
+}
+
 struct vec3 vec3_subtract_vec3(vec3 &to, vec3 &from)
 {
 	struct vec3 vec;

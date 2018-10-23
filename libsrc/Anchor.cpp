@@ -271,9 +271,41 @@ std::string Anchor::shortDesc()
 	return ss.str();
 }
 
+void Anchor::fixCentroid()
+{
+	vec3 sum = empty_vec3();
+
+	for (int i = 0; i < _storedSamples.size(); i++)
+	{
+		vec3 start = _storedSamples[i].start;
+		vec3_add_to_vec3(&sum, start);
+	}
+	
+	vec3_mult(&sum, 1 / (double)_storedSamples.size());
+	vec3 diff = vec3_subtract_vec3(_position, sum);
+	
+	for (int i = 0; i < _storedSamples.size(); i++)
+	{
+		vec3_subtract_from_vec3(&_storedSamples[i].start, diff);
+	}
+}
+
 std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 {
 	Atom *callAtom = static_cast<Atom *>(caller);
+	
+	if (!_samples.count(callAtom))
+	{
+		SamplePair pair;
+		pair.changed = true;
+		_samples[callAtom] = pair;
+	}
+	
+	if (!_samples[callAtom].changed)
+	{
+		return &_samples[callAtom].samples;
+	}
+	
 	createStartPositions(callAtom);
 	rotateBases();
 	translateStartPositions();
@@ -285,10 +317,22 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 		WhackPtr whack = _whacks[i];
 		whack->applyToAnchorSamples(_storedSamples);
 	}
-	
+
+	fixCentroid();
 	sanityCheck();
 	
-	return &_storedSamples;
+	_samples[callAtom].samples = _storedSamples;
+	_samples[callAtom].changed = false;
+	
+	/* Now that this anchor won't recalculate the positions, it's safe
+	 * to let the Whacks take a new copy of the best state of the protein */
+	for (int i = 0; i < _whacks.size() && false; i++)
+	{
+		WhackPtr whack = _whacks[i];
+		whack->applyKick();
+	}
+	
+	return &_samples[callAtom].samples;
 }
 
 void Anchor::addProperties()
@@ -332,6 +376,12 @@ void Anchor::linkReference(ParserPtr object, std::string category)
 
 void Anchor::propagateChange(int depth, bool refresh)
 {
+	for (std::map<Atom *, SamplePair>::iterator it = _samples.begin();
+	     it != _samples.end(); it++)
+	{
+		it->second.changed = true;
+	}
+
 	_cAtom.lock()->getModel()->propagateChange(depth, refresh);
 	_nAtom.lock()->getModel()->propagateChange(depth, refresh);
 

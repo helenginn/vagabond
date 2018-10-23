@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Whack.h"
+#include <iomanip>
 #include "Bond.h"
 #include "Anchor.h"
 #include "Shouter.h"
@@ -25,7 +26,7 @@
 
 Whack::Whack()
 {
-	_prop = 1;
+	_kick = 0;
 	_whack = 0;
 }
 
@@ -42,8 +43,14 @@ void Whack::applyKick()
 		shout_at_helen("Whack doesn't have bond set.");
 	}
 	
-	Bond::setKick(&*_bond, _whack * _prop);
 	_samples = *_bond->getManyPositions();
+	
+	if (_bond->downstreamBondGroupCount() && _bond->downstreamBondCount(0))
+	{
+		BondPtr child = _bond->downstreamBond(0, 0);
+		Bond::setKick(&*child, _kick + _whack);
+	}
+	
 }
 
 void Whack::setWhack(void *object, double whack)
@@ -59,29 +66,70 @@ void Whack::addToAnchor(AnchorPtr anchor)
 	anchor->addWhack(shared_from_this());
 }
 
+vec3 rotate_round_bond(vec3 start, vec3 centre, mat3x3 rot)
+{
+	vec3_subtract_from_vec3(&start, centre);
+	mat3x3_mult_vec(rot, &start);
+	vec3_add_to_vec3(&start, centre);
+
+	return start;
+}
+
 void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 {
+	AnchorPtr anchor = _anchor.lock();
+	
+	AtomPtr anchAtom = anchor->getAtom();
+	AtomPtr bondAtom = _bond->getAtom();
+	
+	bool forwards = true;
+	
+	if (bondAtom->getResidueNum() < anchAtom->getResidueNum())
+	{
+		forwards = false;
+	}
+
+	double check = 0;
+
 	for (int i = 0; i < anchSamp.size(); i++)
 	{
-		double kick = _samples[i].kickValue;
-		double mag = kick * (1 - _prop) * _whack;
+		double kickvalue = _samples[i].kickValue;
+		double mag = kickvalue * _whack;
+		check += mag;
+	}
+
+	check /= (double)anchSamp.size();
+	
+	for (int i = 0; i < anchSamp.size(); i++)
+	{
 		mat3x3 bond_basis = _samples[i].basis;
 		vec3 bond_axis = mat3x3_axis(bond_basis, 2);
-		mat3x3 rot = mat3x3_unit_vec_rotation(bond_axis, -mag);
+
+		double kickvalue = _samples[i].kickValue;
+		double mag = kickvalue * _whack;
+		mat3x3 rot = mat3x3_unit_vec_rotation(bond_axis, -mag + check);
 
 		vec3 start = anchSamp[i].start;
-		anchSamp[i].start = mat3x3_mult_vec(rot, start);
+		vec3 old_start = anchSamp[i].old_start;
+		vec3 centre = _samples[i].start;
+		
+		anchSamp[i].start = rotate_round_bond(start, centre, rot);
+		anchSamp[i].old_start = rotate_round_bond(old_start, centre, rot);
 		
 		mat3x3 basis = anchSamp[i].basis;
-		mat3x3 transpose = mat3x3_transpose(rot);
-
-		anchSamp[i].basis = mat3x3_mult_mat3x3(transpose, basis);
+		
+		if (forwards)
+		{
+			rot = mat3x3_transpose(rot);
+		}
+		
+		anchSamp[i].basis = mat3x3_mult_mat3x3(rot, basis);
 	}
 }
 
-void Whack::setProportion(void *object, double prop)
+void Whack::setKick(void *object, double kick)
 {
 	Whack *me = static_cast<Whack *>(object);
-	me->_prop = prop;
+	me->_kick = kick;
 	me->applyKick();
 }

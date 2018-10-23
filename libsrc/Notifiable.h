@@ -37,6 +37,7 @@ typedef enum
 	InstructionTypeSplitBond,
 	InstructionTypeAdjustBFactor,
 	InstructionTypeRefitBackbone,
+	InstructionTypeWhack,
 } InstructionType;
 
 /**

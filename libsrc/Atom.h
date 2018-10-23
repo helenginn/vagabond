@@ -203,7 +203,7 @@ public:
 	void findAtomType(std::string resName);
 	void inheritParents();
 	std::string pdbLineBeginning(std::string start = "ATOM  ");
-	void writePositionsToFile();
+	void writePositionsToFile(std::string suffix = "");
 
 	AtomType getGeomType();
 	void convertToDisulphide();

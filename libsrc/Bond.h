@@ -483,7 +483,6 @@ private:
 	bool _usingTorsion;
 
 	/* Flag to say whether recalculation should occur */
-	bool _changedPos, _changedSamples;
 	bool _refineBondAngle;
 	bool _refineFlexibility;
 

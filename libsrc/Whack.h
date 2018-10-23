@@ -47,7 +47,7 @@ public:
 	/** Set the proportion of the kick which should be passed into the
 	 * downstream bonds. 1 = like a normal kick. 0 = backwards, towards
 	 * the anchor point, only. */
-	static void setProportion(void *object, double prop);
+	static void setKick(void *object, double kick);
 
 	/** Set the magnitude of the kick which is to be shared between
 	 * the forwards and backwards directions */
@@ -55,12 +55,13 @@ public:
 	
 	/** To be called by an Anchor object to modify its sample positions. */
 	void applyToAnchorSamples(std::vector<BondSample> &anchSamp);
+
+	/** Refresh information used to calculate the Whack. */
+	void applyKick();
 private:
 	std::vector<BondSample> _samples;
-	double _prop;
+	double _kick;
 	double _whack;
-
-	void applyKick();
 	
 	AnchorWkr _anchor;
 	BondPtr _bond;
