@@ -23,10 +23,6 @@ inline std::string indent(int num)
 
 inline char *strchrwhite(char *block)
 {
-	char *space = strchr(block, ' ');
-	char *newline = strchr(block, '\n');
-	char *tab = strchr(block, '\t');
-	
 	while (true)
 	{
 		if (*block == ' ' || *block == '\n' 
