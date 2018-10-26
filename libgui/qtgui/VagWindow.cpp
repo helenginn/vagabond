@@ -152,6 +152,14 @@ void VagWindow::makeButtons()
 			[=]{ pushSendInstruction(InstructionTypeRefinePositions); });
 	buttons.push_back(bRefinePos);
 
+	bWhack = new QPushButton("Whack", this);
+	bWhack->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 50, BUTTON_WIDTH , 50);
+	bWhack->setEnabled(false);
+	connect(bWhack, &QPushButton::clicked,
+			[=]{ pushSendInstruction(InstructionTypeWhack); });
+
+	buttons.push_back(bWhack);
+
 	bFitWholeT = new QPushButton("Intermolecule movements", this);
 	bFitWholeT->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 100, BUTTON_WIDTH , 50);
 	bFitWholeT->setEnabled(false);
@@ -339,6 +347,10 @@ int VagWindow::waitForInstructions()
 			{
 				case InstructionTypeRefinePositions:
 				options->refineAll(RefinementModelPos, 1);
+				break;
+
+				case InstructionTypeWhack: 
+				options->whack();
 				break;
 
 				case InstructionTypeFitTranslation: 
