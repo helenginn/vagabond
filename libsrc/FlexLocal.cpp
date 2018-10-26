@@ -694,7 +694,7 @@ void FlexLocal::reflex()
 	std::cout << "| 0. Determining atom-flexibility targets... " << std::flush;
 	Reflex reflex;
 	reflex.setPolymer(_polymer);
-	reflex.setPieceCount(2);
+	reflex.setPieceCount(3);
 	reflex.calculate();
 	std::cout << "   ... done." << std::endl;
 }
