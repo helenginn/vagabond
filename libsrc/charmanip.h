@@ -26,11 +26,19 @@ inline char *strchrwhite(char *block)
 	char *space = strchr(block, ' ');
 	char *newline = strchr(block, '\n');
 	char *tab = strchr(block, '\t');
-
-	if (tab != NULL && tab < newline) newline = tab;
-	if (space != NULL && space < newline) newline = space;
-
-	return newline;
+	
+	while (true)
+	{
+		if (*block == ' ' || *block == '\n' 
+		    || *block == '\t' || *block == NULL)
+		{
+			return block;
+		}
+		
+		block++;
+	}
+	
+	return NULL;
 }
 
 inline void incrementIndent(char **block)
