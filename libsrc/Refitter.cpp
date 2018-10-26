@@ -148,7 +148,7 @@ void Refitter::strictPrune(double angle)
 
 }
 
-bool trial_lt_trial(BondTrial &a, BondTrial &b)
+bool trial_lt_trial(const BondTrial a, const BondTrial b)
 {
 	return (a.score < b.score);
 }
