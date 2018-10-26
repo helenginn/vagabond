@@ -38,10 +38,11 @@
 Polymer::Polymer()
 {
 	_kick = Options::getKick();
-	_kickShift = 0.10;
+	_kickShift = 0.05;
 	_anchorNum = -1;
 	_totalMonomers = 0;
 	_startB = Options::getBStart();
+	_whacked = -1;
 }
 
 void Polymer::addMonomer(MonomerPtr monomer)
@@ -91,7 +92,7 @@ void Polymer::reflex()
 {
 	Reflex reflex;
 	reflex.setPolymer(shared_from_this());
-	reflex.setPieceCount(1);
+	reflex.setPieceCount(3);
 	reflex.calculate();
 }
 
@@ -99,34 +100,110 @@ void Polymer::refineLocalFlexibility()
 {
 	FlexLocal local;
 	local.setPolymer(shared_from_this(), _kickShift);
+	
+	if (ToAnchorPtr(getAnchorModel())->whackCount() > 0)
+	{
+		local.setWhacking(true);
+	}
+	
 	local.refine();
 	_kickShift = local.getShift();
 }
 
+bool Polymer::isWhacking()
+{
+	return (ToAnchorPtr(getAnchorModel())->whackCount() > 0);
+}
+
 void Polymer::whack()
 {
-	int res = 10;
-	AtomPtr atom = getMonomer(res)->findAtom("CA");
-
-	while (atom)
+	if (isWhacking())
 	{
-		WhackPtr whack = WhackPtr(new Whack());
-		whack->setBond(ToBondPtr(atom->getModel()));
-		Whack::setWhack(&*whack, 0.005);
-		whack->addToAnchor(ToAnchorPtr(getAnchorModel()));
+		std::cout << "Already whacked " << getChainID() <<
+		", not changing anything." << std::endl;
+		return;
+	}
+	
+	AnchorPtr anchor = ToAnchorPtr(getAnchorModel());
+	
+	int total = monomerEnd() - monomerBegin();
 
-		res += 5;
-		getAnchorModel()->propagateChange(-1, true);
-		
-		if (getMonomer(res))
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (!getMonomer(i))
 		{
-			atom = getMonomer(res)->findAtom("CA");
+			continue;
 		}
-		else
+
+		AtomList atoms = getMonomer(i)->getBackbone()->topLevelAtoms();
+		
+		if (atoms.size() == 0)
 		{
-			break;
+			continue;
+		}
+		
+		AtomPtr atom = atoms[0];
+		
+		if (!atom->getModel()->isBond())
+		{
+			continue;
+		}
+		
+		BondPtr bond = ToBondPtr(atom->getModel());
+		
+		if (bond->getMajor()->getModel()->isAnchor())
+		{
+			continue;
+		}
+		
+		WhackPtr whack = WhackPtr(new Whack());
+		whack->setBond(bond);
+		
+		if (!whack->isValid())
+		{
+			continue;
+		}
+		
+		double prop = (double)i / (double)total;
+		
+		if (i < getAnchor())
+		{
+			prop = 1 - prop;
+		}
+		
+		whack->setProportion(0.5);
+
+		whack->addToAnchor(ToAnchorPtr(getAnchorModel()));
+		
+		BondPtr next;
+		
+		while (true)
+		{
+			if (bond->downstreamBondGroupCount() && 
+			    bond->downstreamBondCount(0))
+			{
+				next = bond->downstreamBond(0, 0);
+			}
+			else
+			{
+				break;
+			}
+			
+			if (next->getAtom()->getResidueNum() != i)
+			{
+				break;
+			}
+
+			whack = WhackPtr(new Whack());
+			whack->setBond(ToBondPtr(next));
+			whack->addToAnchor(anchor);
+			whack->setProportion(0.5);
+			
+			bond = ToBondPtr(next);
 		}
 	}
+
+	getAnchorModel()->propagateChange(-1, true);
 }
 
 void Polymer::tieAtomsUp()

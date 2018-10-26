@@ -25,6 +25,7 @@ Anchor::Anchor(AbsolutePtr absolute)
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration->setZero();
+	_disableWhacks = false;
 }
 
 void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom, 
@@ -290,6 +291,35 @@ void Anchor::fixCentroid()
 	}
 }
 
+void Anchor::recalculateWhacks()
+{
+	/* Disable all the whacks, then reinstate each whack with a new
+	 * base set, then re-enable all whacks. */
+	
+	_disableWhacks = true;
+
+	for (int i = 0; i < whackCount(); i++)
+	{
+		_whacks[i]->disable();
+	}
+	
+	propagateChange(-1, true);
+
+	for (int i = 0; i < whackCount(); i++)
+	{
+		_whacks[i]->saveSamples();
+	}
+
+	_disableWhacks = false;
+
+	for (int i = 0; i < whackCount(); i++)
+	{
+		_whacks[i]->enable();
+	}
+
+	propagateChange(-1, true);
+}
+
 std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 {
 	Atom *callAtom = static_cast<Atom *>(caller);
@@ -309,28 +339,30 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 	createStartPositions(callAtom);
 	rotateBases();
 	translateStartPositions();
+	fixCentroid();
 	
 	/* Apply whacks */
+
+	for (int i = 0; i < _whacks.size() && !_disableWhacks; i++)
+	{
+		bool refresh = _whacks[i]->needsRefresh(_storedSamples);	
+		if (refresh)
+		{
+			recalculateWhacks();
+			break;
+		}
+	}
 	
-	for (int i = 0; i < _whacks.size(); i++)
+	for (int i = 0; i < _whacks.size() && !_disableWhacks; i++)
 	{
 		WhackPtr whack = _whacks[i];
 		whack->applyToAnchorSamples(_storedSamples);
 	}
 
-	fixCentroid();
 	sanityCheck();
 	
 	_samples[callAtom].samples = _storedSamples;
 	_samples[callAtom].changed = false;
-	
-	/* Now that this anchor won't recalculate the positions, it's safe
-	 * to let the Whacks take a new copy of the best state of the protein */
-	for (int i = 0; i < _whacks.size() && false; i++)
-	{
-		WhackPtr whack = _whacks[i];
-		whack->applyKick();
-	}
 	
 	return &_samples[callAtom].samples;
 }
@@ -348,12 +380,27 @@ void Anchor::addProperties()
 	addMat3x3Property("translation", _trans->getMat3x3Ptr());
 	addMat3x3Property("libration", _libration->getMat3x3Ptr());
 	addReference("c_atom", _cAtom.lock());
+	
+	for (int i = 0; i < whackCount(); i++)
+	{
+		addChild("whack", _whacks[i]);
+	}
+	
 	Model::addProperties();
 }
 
 std::string Anchor::getParserIdentifier()
 {
 	return "anchor_" + i_to_str(getAtom()->getAtomNum());
+}
+
+void Anchor::addObject(ParserPtr object, std::string category)
+{
+	if (category == "whack")
+	{
+		WhackPtr whack = ToWhackPtr(object);
+		addWhack(whack);
+	}
 }
 
 void Anchor::linkReference(ParserPtr object, std::string category)

@@ -8,6 +8,7 @@
 #include <iomanip>
 #include "Crystal.h"
 #include "Polymer.h"
+#include "Whack.h"
 #include "WaterNetwork.h"
 #include "Atom.h"
 #include "Bond.h"
@@ -1303,6 +1304,10 @@ ParserPtr Parser::objectOfType(char *className)
 	else if (strcmp(className, "Bond") == 0)
 	{
 		object = ParserPtr(static_cast<Bond *>(new Bond()));        
+	}
+	else if (strcmp(className, "Whack") == 0)
+	{
+		object = ParserPtr(static_cast<Whack *>(new Whack()));        
 	}
 	else if (strcmp(className, "BondGroup") == 0)
 	{

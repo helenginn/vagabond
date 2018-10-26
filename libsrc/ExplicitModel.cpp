@@ -229,14 +229,15 @@ void ExplicitModel::writePositionsToFile(std::string filename)
 		return;
 	}
 
-	CSVPtr csv = CSVPtr(new CSV(3, "x", "y", "z"));
+	CSVPtr csv = CSVPtr(new CSV(4, "x", "y", "z", "k"));
 	std::vector<BondSample> positions = getFinalPositions();
 	
 	for (int i = 0; i < positions.size(); i++)
 	{
 		csv->addEntry(3, positions[i].start.x, 
 		              positions[i].start.y,
-		              positions[i].start.z);
+		              positions[i].start.z,
+		              positions[i].kickValue);
 	}
 
 	csv->writeToFile(filename);	

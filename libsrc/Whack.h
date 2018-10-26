@@ -21,6 +21,7 @@
 
 #include "shared_ptrs.h"
 #include "ExplicitModel.h"
+#include "Parser.h"
 
 /**
  * \class Whack
@@ -32,10 +33,15 @@
  * a kick - so it's called a Whack.
  */
 
-class Whack : public boost::enable_shared_from_this<Whack>
+class Whack : public Parser
 {
 public:
 	Whack();
+	
+	WhackPtr shared_from_this()
+	{
+		return ToWhackPtr(Parser::shared_from_this());
+	}
 	
 	/** Add the Whack to an anchor point to make it valid, otherwise
 	 * will shout at Helen. */
@@ -53,15 +59,79 @@ public:
 	 * the forwards and backwards directions */
 	static void setWhack(void *object, double whack);
 	
+	/** Get the magnitude of the whack */
+	static double getWhack(void *object)
+	{
+		return static_cast<Whack *>(object)->_whack;
+	}
+
+	/** Get the magnitude of the kick */
+	static double getKick(void *object)
+	{
+		return static_cast<Whack *>(object)->_kick;
+	}
+	
 	/** To be called by an Anchor object to modify its sample positions. */
 	void applyToAnchorSamples(std::vector<BondSample> &anchSamp);
 
 	/** Refresh information used to calculate the Whack. */
 	void applyKick();
+	
+	/** Save samples from _bond. */
+	void saveSamples();
+	
+	AnchorPtr getAnchor()
+	{
+		return _anchor.lock();
+	}
+	
+	/* Whack is invalid if it is attached to a bond for which the child is
+	 * incapable of refining flexibility. */
+	bool isValid()
+	{
+		return _valid;
+	}
+	
+	/* The proportion specifies the ratio in which the outwards/inwards kick
+	 * is divided.
+	 * \param prop from 0 (entirely inwards through anchor) vs 1 (entirely
+	 * towards polymer terminus */
+	void setProportion(double prop)
+	{
+		_prop = prop;
+	}
+	
+	void disable()
+	{
+		_enabled = false;
+		applyKick();
+	}
+	
+	void enable()
+	{
+		_enabled = true;
+		applyKick();
+	}
+	
+	virtual std::string getClassName()
+	{
+		return "Whack";
+	}
+
+	bool needsRefresh(std::vector<BondSample> &anchSamp);
+protected:
+	virtual std::string getParserIdentifier();
+	
+	virtual void addProperties();
+	virtual void linkReference(ParserPtr object, std::string category);
+	
 private:
 	std::vector<BondSample> _samples;
 	double _kick;
 	double _whack;
+	double _prop;
+	bool _valid;
+	bool _enabled;
 	
 	AnchorWkr _anchor;
 	BondPtr _bond;

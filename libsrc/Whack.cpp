@@ -28,12 +28,45 @@ Whack::Whack()
 {
 	_kick = 0;
 	_whack = 0;
+	_prop = 0.5;
+	_valid = true;
+	_enabled = true;
 }
 
 void Whack::setBond(BondPtr bond)
 {
 	_bond = bond;
+	
+	/* Check that the following bond is allowed to refine flexibility */
+	if (_bond->downstreamBondGroupCount() && _bond->downstreamBondCount(0))
+	{
+		BondPtr child = _bond->downstreamBond(0, 0);
+		
+		if (!child->getRefineFlexibility())
+		{
+			_valid = false;
+			return;
+		}
+	}
+	else
+	{
+		_valid = false;
+		return;
+	}
+	
+	_bond->setWhack(shared_from_this());
 	applyKick();
+	saveSamples();
+}
+
+bool Whack::needsRefresh(std::vector<BondSample> &anchSamp)
+{
+	return (anchSamp.size() != _samples.size());
+}
+
+void Whack::saveSamples()
+{
+	_samples = *_bond->getManyPositions();
 }
 
 void Whack::applyKick()
@@ -43,14 +76,27 @@ void Whack::applyKick()
 		shout_at_helen("Whack doesn't have bond set.");
 	}
 	
-	_samples = *_bond->getManyPositions();
+	if (!_valid)
+	{
+		return;
+	}
 	
 	if (_bond->downstreamBondGroupCount() && _bond->downstreamBondCount(0))
 	{
+		double backwards = _whack * (1 - _prop) / (2 - _prop);
+		double forwards = _whack - backwards;
+		forwards = 2 * _whack;
+		double value = forwards + _kick;
+		
+		if (!_enabled)
+		{
+			value = 0;
+		}
+
 		BondPtr child = _bond->downstreamBond(0, 0);
-		Bond::setKick(&*child, _kick + _whack);
+		Bond::setKick(&*child, value);
+		child->propagateChange(-1);
 	}
-	
 }
 
 void Whack::setWhack(void *object, double whack)
@@ -62,8 +108,11 @@ void Whack::setWhack(void *object, double whack)
 
 void Whack::addToAnchor(AnchorPtr anchor)
 {
-	_anchor = anchor;
-	anchor->addWhack(shared_from_this());
+	if (_valid)
+	{
+		_anchor = anchor;
+		anchor->addWhack(shared_from_this());
+	}
 }
 
 vec3 rotate_round_bond(vec3 start, vec3 centre, mat3x3 rot)
@@ -77,6 +126,11 @@ vec3 rotate_round_bond(vec3 start, vec3 centre, mat3x3 rot)
 
 void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 {
+	if (fabs(_whack) < 1e-6 || !_enabled)
+	{
+		return;
+	}
+
 	AnchorPtr anchor = _anchor.lock();
 	
 	AtomPtr anchAtom = anchor->getAtom();
@@ -94,7 +148,9 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 	for (int i = 0; i < anchSamp.size(); i++)
 	{
 		double kickvalue = _samples[i].kickValue;
-		double mag = kickvalue * _whack;
+		double backwards = _whack * (1 - _prop) / (2 * _prop);
+		double mag = kickvalue * 1 * _whack;
+		anchSamp[i].kickValue = mag;
 		check += mag;
 	}
 
@@ -105,8 +161,7 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 		mat3x3 bond_basis = _samples[i].basis;
 		vec3 bond_axis = mat3x3_axis(bond_basis, 2);
 
-		double kickvalue = _samples[i].kickValue;
-		double mag = kickvalue * _whack;
+		double mag = anchSamp[i].kickValue;
 		mat3x3 rot = mat3x3_unit_vec_rotation(bond_axis, -mag + check);
 
 		vec3 start = anchSamp[i].start;
@@ -118,11 +173,6 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 		
 		mat3x3 basis = anchSamp[i].basis;
 		
-		if (forwards)
-		{
-			rot = mat3x3_transpose(rot);
-		}
-		
 		anchSamp[i].basis = mat3x3_mult_mat3x3(rot, basis);
 	}
 }
@@ -132,4 +182,29 @@ void Whack::setKick(void *object, double kick)
 	Whack *me = static_cast<Whack *>(object);
 	me->_kick = kick;
 	me->applyKick();
+}
+
+std::string Whack::getParserIdentifier()
+{
+	return "whack_" + _bond->shortDesc();
+}
+
+void Whack::addProperties()
+{
+	addDoubleProperty("whack", &_whack);
+	addDoubleProperty("kick", &_kick);
+	addReference("anchor", _anchor.lock());
+	addReference("bond", _bond);
+}
+
+void Whack::linkReference(ParserPtr object, std::string category)
+{
+	if (category == "anchor")
+	{
+		_anchor = ToAnchorPtr(object);
+	}
+	else if (category == "bond")
+	{
+		_bond = ToBondPtr(object);
+	}
 }

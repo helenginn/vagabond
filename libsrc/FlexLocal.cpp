@@ -13,6 +13,7 @@
 #include <svdcmp.h>
 #include "Monomer.h"
 #include "Anchor.h"
+#include "Whack.h"
 #include "RefinementGridSearch.h"
 #include "RefinementNelderMead.h"
 #include "ParamBand.h"
@@ -30,8 +31,9 @@ FlexLocal::FlexLocal()
 	_anchorB = 0;
 	_afterBond = -1;
 	_threshold = 0.80;
-	_increment = 7;
+	_increment = 6;
 	_useTarget = true;
+	_usingWhack = false;
 	_getter = Bond::getKick;
 	_flexGlobal = NULL;
 	_setter = Bond::setKick;
@@ -130,6 +132,7 @@ void FlexLocal::refine()
 		createClustering();
 		reorganiseBondOrder();
 		chooseBestDifferenceThreshold();
+		std::vector<ParamBandPtr> extras;
 
 		bool reduceShift = false;
 
@@ -137,7 +140,7 @@ void FlexLocal::refine()
 		{
 			std::cout << "| " << j + 5 << ". Refining bond clusters... " 
 			<< std::flush;
-			int limit = 5;
+			int limit = 4;
 
 			NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
 			nelder->setCycles(24);
@@ -150,7 +153,23 @@ void FlexLocal::refine()
 				int dir = rand() % 2 ? -1 : 1;
 				nelder->addParameter(&*_paramBands[i], ParamBand::getGlobalParam,
 				                     ParamBand::setGlobalParam, _shift * dir, 
-				                     _shift / 20, "k" + i_to_str(i));
+				                     _shift / 20, "w" + i_to_str(i));
+				
+				if (_usingWhack)
+				{
+					ParamBandPtr second;
+					second = ParamBandPtr(new ParamBand(*_paramBands[i]));
+
+					second->setPrivateGetter(Whack::getKick);
+					second->setPrivateSetter(Whack::setKick);
+					second->prepare();
+					extras.push_back(second);
+
+					nelder->addParameter(&*second, ParamBand::getGlobalParam,
+					                     ParamBand::setGlobalParam,
+					                     _shift * dir, 
+					                     _shift / 20, "k" + i_to_str(i));
+				}
 			}
 
 			nelder->refine();
@@ -190,6 +209,15 @@ void FlexLocal::refine()
 		}
 
 		clear();
+		
+		/* Change to altering the Whack::getKick. */
+		
+		if (i == 1 && _usingWhack && false)
+		{
+			_getter = Whack::getKick;
+			_setter = Whack::setKick;
+		}
+		
 		_run++;
 	}
 }
@@ -305,7 +333,21 @@ void FlexLocal::chooseBestDifferenceThreshold()
 		}
 
 		BondPtr bond = _bonds[_reorderedBonds[i]];
-		band->addObject(&*bond, 1);
+		
+		if (_usingWhack)
+		{
+			WhackPtr whack = bond->getWhack();
+			
+			if (whack)
+			{
+				band->addObject(&*whack, 1);
+			}
+			
+		}
+		else
+		{
+			band->addObject(&*bond, 1);
+		}
 		
 		_bondClusterIds[bond] = current;
 		csv->addEntry(2, (double)(_reorderedBonds[i]), (double)current);
@@ -373,9 +415,12 @@ void FlexLocal::createAtomTargets(bool subtract)
 			continue;
 		}
 		
-		_atoms.push_back(a);
-		_atomTargets[a] = ibf;
-		_atomOriginal[a] = bf;
+		if (a->getAtomName() == "CA")
+		{
+			_atoms.push_back(a);
+			_atomTargets[a] = ibf;
+			_atomOriginal[a] = bf;
+		}
 		
 		ModelPtr m = a->getModel();
 		
@@ -385,9 +430,15 @@ void FlexLocal::createAtomTargets(bool subtract)
 		}
 		
 		BondPtr b = ToBondPtr(a->getModel());
+
+		if (_usingWhack && !b->getWhack())
+		{
+			continue;
+		}
 		
-		if (!b->getRefineFlexibility() || !b->isNotJustForHydrogens()
-			|| !b->isUsingTorsion())
+		if (!_usingWhack && 
+		   ((!b->getRefineFlexibility() || !b->isNotJustForHydrogens()
+			|| !b->isUsingTorsion())))
 		{
 			continue;
 		}
@@ -396,7 +447,7 @@ void FlexLocal::createAtomTargets(bool subtract)
 		{
 			_afterBond = _bonds.size();
 		}
-
+		
 		_bonds.push_back(b);
 	}
 }	
@@ -643,7 +694,7 @@ void FlexLocal::reflex()
 	std::cout << "| 0. Determining atom-flexibility targets... " << std::flush;
 	Reflex reflex;
 	reflex.setPolymer(_polymer);
-	reflex.setPieceCount(3);
+	reflex.setPieceCount(2);
 	reflex.calculate();
 	std::cout << "   ... done." << std::endl;
 }
@@ -666,31 +717,48 @@ void FlexLocal::scanBondParams()
 	
 	for (int i = 0; i < _atoms.size(); i++)
 	{
-		double num = i / 4 + _polymer->beginMonomer()->first;
-		atomtarg->addEntry(2, num, _atomTargets[_atoms[i]]);
+		double target = _atomTargets[_atoms[i]];
+		double original = _atomOriginal[_atoms[i]];
+		double current = _atoms[i]->getBFactor();
+		
+		double transformed = (target - _anchorB - original) / _increment;
+
+		double num = i + _polymer->beginMonomer()->first;
+		atomtarg->addEntry(2, num, transformed);
 	}
 
 	atomtarg->writeToFile("atom_targets_" + _polymer->getChainID() + ".csv");
 	
 	CSVPtr csv = CSVPtr(new CSV(3, "atom", "kick", "response"));
+	int count = 0;
+	
+	
+	AtomPtr check = _polymer->findAtoms("CA", 70)[0];
 
 	for (int i = 0; i < _bonds.size(); i++)
 	{
 		BondPtr b = _bonds[i];
-		double k = (*_getter)(&*b);
+		WhackPtr w = _bonds[i]->getWhack();
+		
+		if (!w && _usingWhack)
+		{
+			continue;
+		}
+		
+		double k = getBondParam(b);
 
 		for (int r = 0; r < 1; r++)
 		{
 			double add = (r == 0) ? _shift : -_shift;
 			double num = (r == 0) ? i : i + 0.5;
 
-			(*_setter)(&*b, k + add);
-			b->propagateChange();
-
+//			std::cout << "Scanning " << b->shortDesc() << std::endl;
+			setBondParam(b, k + add);
+			double after = check->getBFactor();
+			
 			for (int j = 0; j < _atoms.size(); j++)
 			{
-				double nAtom = (double)j / 4. +
-				(double) _polymer->beginMonomer()->first;
+				double nAtom = _atoms[j]->getResidueNum();
 				double bnow = _atoms[j]->getBFactor();
 				double bthen = _atomOriginal[_atoms[j]];
 
@@ -708,14 +776,17 @@ void FlexLocal::scanBondParams()
 				
 				double grad = diff;
 
-				csv->addEntry(3, (double)nAtom, (double)num, grad);
+				csv->addEntry(3, (double)nAtom, (double)count, grad);
 
 			}
 
-			(*_setter)(&*b, k);
-			b->propagateChange();
+			setBondParam(b, k);
+
+			double before = check->getBFactor();
+
 		}
 
+		count++;
 	}
 	
 	std::map<std::string, std::string> plotMap;
@@ -726,7 +797,7 @@ void FlexLocal::scanBondParams()
 	plotMap["yHeader0"] = "atom";
 	plotMap["zHeader0"] = "response";
 
-	plotMap["xTitle0"] = "kick";
+	plotMap["xTitle0"] = "bond number";
 	plotMap["yTitle0"] = "atom";
 
 	plotMap["style0"] = "heatmap";
@@ -738,4 +809,51 @@ void FlexLocal::scanBondParams()
 	std::cout << "   ... done." << std::endl;
 }
 
+void FlexLocal::propagateWhack()
+{
+	ExplicitModelPtr anchor = _polymer->getAnchorModel();
+	anchor->propagateChange(-1, true);
+}
 
+void FlexLocal::setWhacking(bool whack)
+{
+	_usingWhack = true;
+	_getter = Whack::getWhack;
+	_setter = Whack::setWhack;
+}
+
+double FlexLocal::getBondParam(BondPtr b)
+{
+	double k = 0;
+
+	if (_usingWhack)
+	{
+		WhackPtr w = b->getWhack();
+		k = (*_getter)(&*w);
+	}
+	else
+	{
+		k = (*_getter)(&*b);
+	}
+	
+	return k;
+}
+
+void FlexLocal::setBondParam(BondPtr b, double k)
+{
+	if (_usingWhack)
+	{
+		WhackPtr w = b->getWhack();
+		(*_setter)(&*w, k);
+		
+		if (*_setter == Whack::setWhack)
+		{
+			propagateWhack();
+		}
+	}
+	else
+	{
+		(*_setter)(&*b, k);
+		b->propagateChange();
+	}
+}

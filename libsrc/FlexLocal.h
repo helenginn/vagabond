@@ -63,6 +63,8 @@ public:
 		_setter = setter;
 	}
 	
+	void setWhacking(bool whack);
+	
 	void toElectronDensity();
 private:
 	void createAtomTargets(bool subtract = true);
@@ -73,6 +75,9 @@ private:
 	void scanBondParams();
 	void reflex();
 	void clear();
+	void propagateWhack();
+	void setBondParam(BondPtr b, double k);
+	double getBondParam(BondPtr b);
 	
 	double directSimilarity();
 
@@ -96,6 +101,7 @@ private:
 	
 	FlexGlobal *_flexGlobal;
 	bool _useTarget;
+	bool _usingWhack;
 	int _afterBond;
 	double _threshold;
 	double _increment;

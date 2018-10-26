@@ -157,6 +157,12 @@ public:
 	static void setKick(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
+		
+		if (!bond->_refineFlexibility)
+		{
+			return;
+		}
+		
 		bond->_kick = value;
 		static_cast<Bond *>(object)->propagateChange(16);
 	}
@@ -444,6 +450,26 @@ public:
 	{
 		return nakedDownstreamBond(group, i)->shared_from_this();
 	}
+	
+	void setWhack(WhackPtr whack)
+	{
+		_whack = whack;
+	}
+	
+	bool hasWhack()
+	{
+		return (!_whack.expired());
+	}
+	
+	WhackPtr getWhack()
+	{
+		if (_whack.expired())
+		{
+			return WhackPtr();
+		}
+		
+		return _whack.lock();
+	}
 protected:
 	virtual std::string getParserIdentifier()
 	{
@@ -465,6 +491,7 @@ private:
 
 
 	AtomWkr _heavyAlign;
+	WhackWkr _whack;
 
 	double _bondLength;
 

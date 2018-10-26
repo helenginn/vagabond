@@ -38,6 +38,7 @@
 #define ToBackbonePtr(a) (boost::static_pointer_cast<Backbone>((a)))
 #define ToCrystalPtr(a) (boost::static_pointer_cast<Crystal>((a)))
 #define ToAtomPtr(a) (boost::static_pointer_cast<Atom>((a)))
+#define ToWhackPtr(a) (boost::static_pointer_cast<Whack>((a)))
 #define ToAtomGroupPtr(a) (boost::static_pointer_cast<AtomGroup>((a)))
 #define ToMonomerPtr(a) (boost::static_pointer_cast<Monomer>((a)))
 #define ToParserPtr(a) (boost::static_pointer_cast<Parser>((a)))
@@ -120,6 +121,7 @@ typedef boost::shared_ptr<BondGroup> BondGroupPtr;
 
 class Whack;
 typedef boost::shared_ptr<Whack> WhackPtr;
+typedef boost::weak_ptr<Whack> WhackWkr;
 
 class Bucket;
 class BucketBulkSolvent;

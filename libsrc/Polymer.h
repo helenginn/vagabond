@@ -80,6 +80,8 @@ public:
 	void hydrogenateContents();
 	void checkChainContinuity();
 
+	bool isWhacking();
+	int _whacked;
 	void whack();
 	void ramachandranPlot();
 	virtual void removeAtom(AtomPtr atom);

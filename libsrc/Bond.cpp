@@ -15,6 +15,7 @@
 #include "fftw3d.h"
 #include "Shouter.h"
 #include "AtomGroup.h"
+#include "Whack.h"
 #include "Anchor.h"
 #include "maths.h"
 #include "Monomer.h"
@@ -550,6 +551,7 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 
 mat3x3 Bond::getMagicMat(vec3 direction)
 {
+	return make_mat3x3();
 	vec3_set_length(&direction, 1.);
 	mat3x3 rot = make_mat3x3();
 
@@ -620,7 +622,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 		double tanX = thisDeviation.z / notZ;
 		double angle = atan(tanX);
 		
-		if (thisDeviation.z < 0) angle -= M_PI / 2;
+		if (thisDeviation.z < 0) angle *= -1;
 		
 		double kickValue = cos(angle);
 		
@@ -1438,7 +1440,16 @@ void Bond::addProperties()
 	addDoubleProperty("exp_angle", &_expectedAngle);    
 	addDoubleProperty("circle", &_circlePortion);    
 	addDoubleProperty("ratio", &_geomRatio);    
-	addDoubleProperty("kick", &_kick);    
+	
+	if (!hasWhack())
+	{
+		addDoubleProperty("kick", &_kick);    
+	}
+	else
+	{
+		addReference("whack", getWhack());
+	}
+
 	addDoubleProperty("phi", &_phi);    
 	addDoubleProperty("psi", &_psi);    
 	addDoubleProperty("occupancy", &_occupancy);
@@ -1476,18 +1487,25 @@ void Bond::addObject(ParserPtr object, std::string category)
 
 void Bond::linkReference(ParserPtr object, std::string category)
 {
-	AtomPtr atom = ToAtomPtr(object);
 
 	if (category == "minor")
 	{
+		AtomPtr atom = ToAtomPtr(object);
 		_minor = atom;
 	}
 	else if (category == "major")
 	{
+		AtomPtr atom = ToAtomPtr(object);
 		_major = atom;
+	}
+	else if (category == "whack")
+	{
+		WhackPtr whack = ToWhackPtr(object);
+		_whack = whack;
 	}
 	else if (category == "extra_sample")
 	{
+		AtomPtr atom = ToAtomPtr(object);
 		addExtraTorsionSample(atom);
 	} 
 }

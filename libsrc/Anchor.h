@@ -87,6 +87,11 @@ public:
 		_whacks.push_back(whack);
 	}
 	
+	size_t whackCount()
+	{
+		return _whacks.size();
+	}
+	
 	void addTranslationParameters(RefinementStrategyPtr strategy,
 	                              double mult = 1);
 	void addLibrationParameters(RefinementStrategyPtr strategy,
@@ -97,6 +102,7 @@ public:
 		static_cast<Anchor *>(object)->propagateChange(-1, true);
 	}
 
+	void recalculateWhacks();
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 	virtual std::string shortDesc();
 protected:
@@ -111,6 +117,7 @@ protected:
 	virtual void sanityCheck();
 	virtual void addProperties();
 	virtual void linkReference(ParserPtr object, std::string category); 
+	virtual void addObject(ParserPtr object, std::string category);
 
 	double _bFactor;
 	RefineMat3x3Ptr _trans;
@@ -135,6 +142,8 @@ private:
 	std::vector<vec3> _sphereAngles;
 	std::vector<double> _occupancies;
 	std::vector<WhackPtr> _whacks;
+	
+	bool _disableWhacks;
 };
 
 #endif
