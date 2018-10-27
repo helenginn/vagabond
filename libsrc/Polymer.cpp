@@ -174,8 +174,6 @@ void Polymer::whack()
 			prop = 1 - prop;
 		}
 		
-		whack->setProportion(0.5);
-
 		whack->addToAnchor(ToAnchorPtr(getAnchorModel()));
 		
 		BondPtr next;
@@ -200,7 +198,6 @@ void Polymer::whack()
 			whack = WhackPtr(new Whack());
 			whack->setBond(ToBondPtr(next));
 			whack->addToAnchor(anchor);
-			whack->setProportion(0.5);
 			
 			bond = ToBondPtr(next);
 		}
