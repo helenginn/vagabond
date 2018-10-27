@@ -55,6 +55,7 @@ Anchor::Anchor()
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration->setZero();
+	_disableWhacks = false;
 }
 
 AtomPtr Anchor::getOtherAtom(AtomPtr calling)
@@ -337,8 +338,13 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 	}
 	
 	createStartPositions(callAtom);
-	rotateBases();
-	translateStartPositions();
+	
+	if (!_disableWhacks)
+	{
+		rotateBases();
+		translateStartPositions();
+	}
+
 	fixCentroid();
 	
 	/* Apply whacks */
