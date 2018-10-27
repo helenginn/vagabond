@@ -970,9 +970,25 @@ void Polymer::vsMultiplyBackboneKick(void *object, double value)
 			}
 
 			BondPtr bond = ToBondPtr(model);
-			double kick = Bond::getKick(&*bond);
-			kick *= value;
-			Bond::setKick(&*bond, kick);
+			
+			if (bond->hasWhack())
+			{
+				WhackPtr whack = bond->getWhack();
+				double k = Whack::getKick(&*whack);
+				double w = Whack::getWhack(&*whack);
+				k*= value;
+				w *= value;
+				Whack::setKick(&*whack, k);
+				Whack::setWhack(&*whack, w);
+
+			}
+			else
+			{
+				double kick = Bond::getKick(&*bond);
+				kick *= value;
+				Bond::setKick(&*bond, kick);
+			}
+			
 		}
 	}
 	
@@ -1150,13 +1166,20 @@ void Polymer::reportParameters()
 			
 			if (bond->isTorsionRefinable() && bond->getRefineFlexibility())
 			{
+				int add = 1;
+				
+				if (bond->hasWhack())
+				{
+					add = 2;
+				}
+
 				if (back)
 				{
-					flexCountBackbone++;
+					flexCountBackbone += add;
 				}
 				else
 				{
-					flexCountSidechain++;
+					flexCountSidechain += add;
 				}
 			}
 
