@@ -21,11 +21,14 @@
 class Timer
 {
 public:
+	Timer();	
 	Timer(std::string name, bool start = false);	
 	
 	void start();
-	void stop();
+	void stop(bool quick = false);
+
 	
+	void quickReport();
 	void report();
 private:
 	time_t wall;
