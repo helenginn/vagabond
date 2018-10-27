@@ -1128,9 +1128,11 @@ void Polymer::reportParameters()
 {
 	int torsionCountBackbone = 0;
 	int angleCountBackbone = 0;
+	int flexCountBackbone = 0;
 	
 	int torsionCountSidechain = 0;
 	int angleCountSidechain = 0;
+	int flexCountSidechain = 0;
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
@@ -1144,7 +1146,21 @@ void Polymer::reportParameters()
 
 		if (a->getModel()->isBond())
 		{
-			if (ToBondPtr(a->getModel())->isTorsionRefinable())
+			BondPtr bond = ToBondPtr(a->getModel());
+			
+			if (bond->isTorsionRefinable() && bond->getRefineFlexibility())
+			{
+				if (back)
+				{
+					flexCountBackbone++;
+				}
+				else
+				{
+					flexCountSidechain++;
+				}
+			}
+
+			if (bond->isTorsionRefinable())
 			{
 				if (back)
 				{
@@ -1156,7 +1172,7 @@ void Polymer::reportParameters()
 				}
 			}
 
-			if (ToBondPtr(a->getModel())->getRefineBondAngle())
+			if (bond->getRefineBondAngle())
 			{
 				if (back)
 				{
@@ -1177,10 +1193,16 @@ void Polymer::reportParameters()
 	std::cout << "|          |   Backbone |  Sidechain |" << std::endl;
 	std::cout << "| Torsion  |  " << std::setw(9) << torsionCountBackbone;
 	std::cout << " |  " << std::setw(9) << torsionCountSidechain;
-	std::cout << " |" << std::endl;
+	std::cout << " | (positional)" << std::endl;
 	std::cout << "| Angle    |  " << std::setw(9) << angleCountBackbone;
 	std::cout << " |  " << std::setw(9) << angleCountSidechain;
-	std::cout << " |" << std::endl;
+	std::cout << " | (positional)" << std::endl;
+	std::cout << "| Kicks    |  " << std::setw(9) << flexCountBackbone;
+	std::cout << " |  " << std::setw(9) << flexCountSidechain;
+	std::cout << " | (flexibility)" << std::endl;
+	std::cout << "| Chain    |  " << std::setw(9) << 6 * 2;
+	std::cout << " |  " << std::setw(9) << " ";
+	std::cout << " | (whole molecule flex)" << std::endl;
 	std::cout << "|----------------" << std::endl;
 	std::cout << std::endl;
 }
