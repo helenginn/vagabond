@@ -1202,7 +1202,7 @@ void Crystal::fitWholeMolecules()
 			continue;
 		}
 
-		ToPolymerPtr(molecule(i))->refineAnchorMovements();
+		ToPolymerPtr(molecule(i))->refineGlobalFlexibility();
 	}
 	
 }

@@ -135,7 +135,7 @@ public:
 		return ToPolymerPtr(Molecule::shared_from_this());
 	}
 
-	void refineAnchorMovements();
+	void refineGlobalFlexibility();
 	void refineLocalFlexibility();
 	void reflex();
 	virtual void addProperties();

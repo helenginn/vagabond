@@ -1230,7 +1230,7 @@ void Polymer::reportParameters()
 	std::cout << std::endl;
 }
 
-void Polymer::refineAnchorMovements()
+void Polymer::refineGlobalFlexibility()
 {
 	std::cout << "Optimising anchor shifts to match the electron density." << std::endl;
 
