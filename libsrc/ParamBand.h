@@ -86,11 +86,22 @@ public:
 		return _objects[i].baseValue;
 	}
 	
+	double getTag()
+	{
+		return _tag;
+	}
+	
+	void setTag(double tag)
+	{
+		_tag = tag;
+	}
+	
 	void prepare();
 private:
 	Getter _getter;
 	Setter _setter;
 	double _paramValue;
+	double _tag;
 
 	std::vector<ObjectWeight> _objects;
 };
