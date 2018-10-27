@@ -231,7 +231,6 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
 	double sum_x_y_minus_mean_x_y = 0;
 	double sum_x_minus_mean_x_sq = 0;
 	double sum_y_minus_mean_y_sq = 0;
-	int count = 0;
 
 	for (int i = 0; i < vec1.size(); i++)
 	{
