@@ -624,7 +624,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 		
 		if (thisDeviation.z < 0) angle *= -1;
 		
-		double kickValue = cos(angle);
+		double kickValue = sin(angle);
 		
 //		std::cout << rad2deg(angle) << " " << kickValue << std::endl;
 		
