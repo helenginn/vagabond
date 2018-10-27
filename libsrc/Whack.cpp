@@ -28,7 +28,6 @@ Whack::Whack()
 {
 	_kick = 0;
 	_whack = 0;
-	_prop = 0.5;
 	_valid = true;
 	_enabled = true;
 }
@@ -83,10 +82,7 @@ void Whack::applyKick()
 	
 	if (_bond->downstreamBondGroupCount() && _bond->downstreamBondCount(0))
 	{
-		double backwards = _whack * (1 - _prop) / (2 - _prop);
-		double forwards = _whack - backwards;
-		forwards = 2 * _whack;
-		double value = forwards + _kick;
+		double value = 2 * _whack + _kick;
 		
 		if (!_enabled)
 		{
@@ -148,7 +144,6 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 	for (int i = 0; i < anchSamp.size(); i++)
 	{
 		double kickvalue = _samples[i].kickValue;
-		double backwards = _whack * (1 - _prop) / (2 * _prop);
 		double mag = kickvalue * 1 * _whack;
 		anchSamp[i].kickValue = mag;
 		check += mag;
@@ -207,4 +202,9 @@ void Whack::linkReference(ParserPtr object, std::string category)
 	{
 		_bond = ToBondPtr(object);
 	}
+}
+
+void Whack::postParseTidy()
+{
+
 }

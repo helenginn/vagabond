@@ -92,15 +92,6 @@ public:
 		return _valid;
 	}
 	
-	/* The proportion specifies the ratio in which the outwards/inwards kick
-	 * is divided.
-	 * \param prop from 0 (entirely inwards through anchor) vs 1 (entirely
-	 * towards polymer terminus */
-	void setProportion(double prop)
-	{
-		_prop = prop;
-	}
-	
 	void disable()
 	{
 		_enabled = false;
@@ -124,12 +115,12 @@ protected:
 	
 	virtual void addProperties();
 	virtual void linkReference(ParserPtr object, std::string category);
+	virtual void postParseTidy();
 	
 private:
 	std::vector<BondSample> _samples;
 	double _kick;
 	double _whack;
-	double _prop;
 	bool _valid;
 	bool _enabled;
 	
