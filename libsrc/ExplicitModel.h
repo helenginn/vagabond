@@ -135,6 +135,11 @@ public:
 	{
 		return 0;
 	}
+	
+	bool changedSamples()
+	{
+		return _changedSamples;
+	}
 protected:
 	FFTPtr makeRealSpaceDistribution();
 	void addRealSpacePositions(FFTPtr real, vec3 offset);

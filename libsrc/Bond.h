@@ -534,6 +534,8 @@ private:
 	/* Returns upstream bond group pertaining to this bond. */
 	BondGroupPtr bondGroupForBond();
 
+	/* Private call allowing to break recursion */
+	std::vector<BondSample> *getManyPositionsPrivate();
 
 	Bond *nakedDownstreamBond(int group, int i)
 	{

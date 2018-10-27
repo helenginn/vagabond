@@ -679,9 +679,6 @@ double Bond::getBaseTorsion()
 
 std::vector<BondSample> *Bond::getManyPositions(void *)
 {
-	std::vector<BondSample> *newSamples;
-	newSamples = &_storedSamples;
-
 	if (!_changedSamples)
 	{
 		return &_storedSamples;
@@ -689,8 +686,61 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 
 	ExplicitModelPtr model = getParentModel();
 
-	newSamples->clear();
+	std::vector<ExplicitModelPtr> parents;
 
+	/* Go back through the parental models until we find one
+	 * which does not have _changedSamples == true */
+	while (true)
+	{
+		if (model->changedSamples())
+		{
+			parents.push_back(model);
+		}
+		else
+		{
+			break;
+		}
+		
+		if (model->isAnchor())
+		{
+			break;
+		}
+		else if (model->isBond())
+		{
+			model = ToBondPtr(model)->getParentModel();
+		}
+	}
+
+	/* Now we have a list of parents in reverse order; call each
+	 * individually to get refreshed positions. */
+
+	for (int i = parents.size() - 1; i >= 0; i--)
+	{
+		/* If the parent is actually an anchor, we skip it; it will
+		 * get appropriately called by an actual bond */
+		if (parents[i]->isBond())
+		{
+			ToBondPtr(parents[i])->getManyPositionsPrivate();
+		}
+	}
+	
+	/* Now we can call it on ourselves */
+	
+	std::vector<BondSample> *samples = getManyPositionsPrivate();
+	
+	/* And return it */
+	
+	return samples;
+}
+	
+std::vector<BondSample> *Bond::getManyPositionsPrivate()
+{
+	if (!_changedSamples)
+	{
+		return &_storedSamples;
+	}
+
+	ExplicitModelPtr model = getParentModel();
 	BondPtr prevBond = boost::static_pointer_cast<Bond>(model);
 	int myGroup = -1;
 	double torsionNumber = prevBond->downstreamBondNum(this,
