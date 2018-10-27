@@ -98,7 +98,9 @@ void Polymer::reflex()
 
 void Polymer::refineLocalFlexibility()
 {
+	Timer timer("flexibility refinement", true);
 	FlexLocal local;
+	whack();
 	local.setPolymer(shared_from_this(), _kickShift);
 	
 	if (ToAnchorPtr(getAnchorModel())->whackCount() > 0)
@@ -108,6 +110,7 @@ void Polymer::refineLocalFlexibility()
 	
 	local.refine();
 	_kickShift = local.getShift();
+	timer.report();
 }
 
 bool Polymer::isWhacking()
