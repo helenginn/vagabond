@@ -19,6 +19,7 @@
 #include "ParamBand.h"
 #include "FlexGlobal.h"
 #include "Reflex.h"
+#include "Timer.h"
 #include <map>
 #include <iomanip>
 
@@ -28,10 +29,11 @@ FlexLocal::FlexLocal()
 	_run = 0;
 	_window = 10;
 	_direct = 0;
+	_negMult = 1;
 	_anchorB = 0;
 	_afterBond = -1;
 	_threshold = 0.80;
-	_increment = 6;
+	_increment = 8;
 	_useTarget = true;
 	_usingWhack = false;
 	_getter = Bond::getKick;
@@ -79,6 +81,7 @@ void FlexLocal::refineAnchor()
 	
 	std::cout << "| 1. Refining libration...   " << std::flush;
 
+	Timer timer;
 	AnchorPtr anchor = ToAnchorPtr(_polymer->getAnchorModel());
 
 	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
@@ -94,39 +97,23 @@ void FlexLocal::refineAnchor()
 
 	if (nelder->didChange())
 	{
-		std::cout << std::setw(8) << val << "% improved. ... done." << std::endl;
+		std::cout << std::setw(8) << val << "% improved. ... done. ";
 	}
 	else
 	{
-		std::cout << " not improved." << std::endl;
+		std::cout << " not improved.";
 	}
+
+	timer.quickReport();
+	std::cout << std::endl;
 	
-	/*
-	std::cout << "| 2. Refining libration...  " << std::flush;
-	
-	nelder->clearParameters();
-	nelder->refine();
-
-	double val2 = (1. - getScore(this)) * 100.;
-	val = val - val2;
-
-	if (nelder->didChange())
-	{
-		std::cout << val << "% improved. ... done." << std::endl;
-	}
-	else
-	{
-		std::cout << " not improved." << std::endl;
-	}
-	*/
-
 	std::cout << "---------------------------------------------------------"
 	<< std::endl;
 }
 
 void FlexLocal::refine()
 {
-	for (int i = 0; i < 3; i++)
+	for (int i = 0; i < 2; i++)
 	{
 		scanBondParams();
 		createClustering();
@@ -140,25 +127,27 @@ void FlexLocal::refine()
 		{
 			std::cout << "| " << j + 5 << ". Refining bond clusters... " 
 			<< std::flush;
-			int limit = 4;
+			Timer timer;
+			int limit = 5;
 
 			NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
-			nelder->setCycles(24);
+			nelder->setCycles(30);
 			nelder->setSilent();	
 
 			nelder->setEvaluationFunction(getScore, this);
 
 			for (int i = 0; i < _paramBands.size() && i < limit; i++)
 			{
-				int dir = rand() % 2 ? -1 : 1;
-				nelder->addParameter(&*_paramBands[i], ParamBand::getGlobalParam,
+				double dir = _negMult;
+				ParamBandPtr band = _paramBands[i];
+				nelder->addParameter(&*band, ParamBand::getGlobalParam,
 				                     ParamBand::setGlobalParam, _shift * dir, 
 				                     _shift / 20, "w" + i_to_str(i));
 				
 				if (_usingWhack)
 				{
 					ParamBandPtr second;
-					second = ParamBandPtr(new ParamBand(*_paramBands[i]));
+					second = ParamBandPtr(new ParamBand(*band));
 
 					second->setPrivateGetter(Whack::getKick);
 					second->setPrivateSetter(Whack::setKick);
@@ -174,7 +163,7 @@ void FlexLocal::refine()
 
 			nelder->refine();
 
-			double val = (1 - getScore(this)) * 100.;
+			double val = (1 + getScore(this)) * 100.;
 			val = nelder->improvement();
 
 			if (val < 0.5 && !_direct)
@@ -185,18 +174,22 @@ void FlexLocal::refine()
 			if (nelder->didChange())
 			{
 				std::cout << std::setw(5) << val << 
-				"% improved. ... done." << std::endl;
+				"% improved. ... done. ";
 				
 				if (val > 0.5 || _direct)
 				{
+					timer.quickReport();
+					std::cout << std::endl;
 					break;
 				}
 			}
 			else
 			{
-				std::cout << " not improved.   ... done." << std::endl;
+				std::cout << " not improved.   ... done. ";
 			}
 
+			timer.quickReport();
+			std::cout << std::endl;
 			std::random_shuffle(_paramBands.begin(), _paramBands.end());
 		}
 
@@ -209,15 +202,9 @@ void FlexLocal::refine()
 		}
 
 		clear();
-		
-		/* Change to altering the Whack::getKick. */
-		
-		if (i == 1 && _usingWhack && false)
-		{
-			_getter = Whack::getKick;
-			_setter = Whack::setKick;
-		}
-		
+
+		/* Flip the sign of the kicks next time */
+		_negMult *= -1;		
 		_run++;
 	}
 }
@@ -286,6 +273,7 @@ std::map<int, int> FlexLocal::getClusterMembership(double threshold)
 
 void FlexLocal::chooseBestDifferenceThreshold()
 {
+	Timer timer;
 	std::cout << "| 4. Subdividing into clusters..." << std::flush;
 	/* t threshold for a difference between two consecutive re-ordered
 	 * bonds to cause a change of cluster */
@@ -308,12 +296,18 @@ void FlexLocal::chooseBestDifferenceThreshold()
 		}
 	}
 	
-	std::cout << " " << total << " clusters.  ... done." << std::endl;
+	std::cout << " " << total << " clusters.  ... done. ";
 	
+	timer.quickReport();
+	std::cout << std::endl;
+
 	CSVPtr csv = CSVPtr(new CSV(2, "id_bondnum", "id_cluster"));
 	int current = 0;
 
 	ParamBandPtr band;
+
+//	std::cout << "bond_num, correlation" << std::endl;
+	double sum = 0;
 
 	for (int i = 0; i < _b2bDiffs.size(); i++)
 	{
@@ -322,6 +316,9 @@ void FlexLocal::chooseBestDifferenceThreshold()
 			if (band)
 			{
 				band->prepare();
+				sum /= band->objectCount();
+				band->setTag(sum);
+				sum = 0;
 			}
 
 			band = ParamBandPtr(new ParamBand());
@@ -333,6 +330,7 @@ void FlexLocal::chooseBestDifferenceThreshold()
 		}
 
 		BondPtr bond = _bonds[_reorderedBonds[i]];
+		sum += bondAtomCorrel(bond);
 		
 		if (_usingWhack)
 		{
@@ -378,18 +376,16 @@ AtomTarget FlexLocal::currentAtomValues()
 
 void FlexLocal::createAtomTargets(bool subtract)
 {
-	ExplicitModelPtr model = _polymer->getAnchorModel();
-	_anchorB = model->getAtom()->getInitialBFactor() - model->getBFactor();
-	
-	if (_useTarget)
-	{
-		_anchorB = model->getAtom()->getTargetB();
-	}
+	int res = _polymer->getAnchor();
+	AtomPtr ca = _polymer->getMonomer(res)->findAtom("CA");
+	_anchorB = ca->getTargetB();
 	
 	if (!subtract)
 	{
 		_anchorB = 0;
 	}
+	
+	std::vector<double> all;
 	
 	/* First, choose which atoms to worry about, and find their
 	 * starting B factors. */
@@ -400,7 +396,7 @@ void FlexLocal::createAtomTargets(bool subtract)
 		
 		if (_useTarget)
 		{
-			ibf = a->getTargetB() + a->getBFactor();
+			ibf = a->getTargetB();
 		}
 
 		double bf = a->getBFactor();
@@ -420,6 +416,7 @@ void FlexLocal::createAtomTargets(bool subtract)
 			_atoms.push_back(a);
 			_atomTargets[a] = ibf;
 			_atomOriginal[a] = bf;
+			all.push_back(ibf);	
 		}
 		
 		ModelPtr m = a->getModel();
@@ -450,7 +447,47 @@ void FlexLocal::createAtomTargets(bool subtract)
 		
 		_bonds.push_back(b);
 	}
+	
+	if (subtract)
+	{
+		std::sort(all.begin(), all.end(), std::less<double>());
+		int aim = all.size() / 8;
+		
+		if (aim == 0)
+		{
+			aim = 1;
+		}
+
+		double sum = 0;
+		
+		for (int i = 0; i < aim && i < all.size(); i++)
+		{
+			sum += all[i];
+		}
+		
+		sum /= (double)aim;
+		_anchorB = sum;
+	}
 }	
+
+double FlexLocal::bondAtomCorrel(BondPtr b)
+{
+	std::vector<double> xs, ys;
+
+	for (int i = 0; i < _atoms.size(); i++)
+	{
+		AtomPtr a = _atoms[i];
+		
+		double flex = _bondEffects[b][a];
+		double target = targetForAtom(a);
+		xs.push_back(flex);
+		ys.push_back(target);
+	}
+
+	double correl = correlation(xs, ys);
+	
+	return correl;
+}
 
 double FlexLocal::bondRelationship(BondPtr bi, BondPtr bj)
 {
@@ -488,6 +525,7 @@ bool less_than(const BondDegree b1, const BondDegree b2)
 
 void FlexLocal::reorganiseBondOrder()
 {
+	Timer timer;
 	std::cout << "| 3. Reorganising bonds into similar groups... " << std::flush;
 	
 	std::vector<int> orderedResults;
@@ -532,7 +570,9 @@ void FlexLocal::reorganiseBondOrder()
 		}
 	}
 	
-	std::cout << " ... done." << std::endl;
+	std::cout << " ... done. ";
+	timer.quickReport();
+	std::cout << std::endl;
 	
 	CSVPtr csv = CSVPtr(new CSV(3, "pbond_i", "pbond_j", "pbondcc"));
 
@@ -585,12 +625,11 @@ void FlexLocal::createClustering()
 {
 	CSVPtr csv = CSVPtr(new CSV(3, "bond_i", "bond_j", "bondcc"));
 
-	/* Degree of each row in a sparse matrix */
-	
 	int anchor = _polymer->getAnchor();
 	double sumCC = 0;
 	double count = 0;
 
+	Timer timer;
 	std::cout << "| 2. Calculating bond-bond correlation pairs... " << std::flush;
 	/* Once all the clusters are made, give them pair-wise correlations */
 	for (int i = 0; i < _bonds.size(); i++)
@@ -604,12 +643,7 @@ void FlexLocal::createClustering()
 			BondPtr bj = _bonds[j]; // giggle
 
 			double cc = 0;
-			if (bi->getAtom()->getResidueNum() < anchor &&
-			    bj->getAtom()->getResidueNum() > anchor)
-			{
-				cc = 0;
-			}
-			else if (bi < bj)
+			if (bi < bj)
 			{
 				cc = bondRelationship(bi, bj);
 			}
@@ -640,7 +674,9 @@ void FlexLocal::createClustering()
 		_degrees.push_back(bd);
 	}
 	
-	std::cout << "... done." << std::endl;
+	std::cout << "... done. ";
+	timer.quickReport();
+	std::cout << std::endl;
 
 	csv->writeToFile(_polymer->getChainID() + "bond_matrix.csv");
 	
@@ -648,28 +684,39 @@ void FlexLocal::createClustering()
 
 }
 
+double FlexLocal::targetForAtom(AtomPtr a)
+{
+	double target = _atomTargets[a];
+
+	double transformed = (target - _anchorB) / _increment;
+	
+	return transformed;
+}
+
+double FlexLocal::actualAtomChange(AtomPtr a)
+{
+	double original = _atomOriginal[a];
+	double current = a->getBFactor();
+
+	return current - original;
+}
+
 double FlexLocal::directSimilarity()
 {
 	std::vector<double> xs, ys;
+
 	for (int i = 0; i < _atoms.size(); i++)
 	{
-		double target = _atomTargets[_atoms[i]];
-		double original = _atomOriginal[_atoms[i]];
-		double current = _atoms[i]->getBFactor();
+		double target = targetForAtom(_atoms[i]);
+		double actual = actualAtomChange(_atoms[i]);
 		
-		double transformed = (target - _anchorB - original) / _increment;
-
-		if (_useTarget)
-		{
-//			transformed *= 2;
-		}
-		
-		xs.push_back(transformed);
-		ys.push_back(current - original);
+		xs.push_back(target);
+		ys.push_back(actual);
 	}
 	
-	double correl = r_factor(xs, ys);
-	return correl;
+	double rfactor = r_factor(xs, ys);
+	
+	return rfactor;
 }
 
 double FlexLocal::getScore(void *object)
@@ -691,12 +738,15 @@ double FlexLocal::getScore(void *object)
 void FlexLocal::reflex()
 {
 	// this updates the atom B targets.
+	Timer timer;
 	std::cout << "| 0. Determining atom-flexibility targets... " << std::flush;
 	Reflex reflex;
 	reflex.setPolymer(_polymer);
 	reflex.setPieceCount(3);
 	reflex.calculate();
-	std::cout << "   ... done." << std::endl;
+	std::cout << "   ... done. ";
+	timer.quickReport();
+	std::cout << std::endl;
 }
 
 void FlexLocal::scanBondParams()
@@ -708,8 +758,14 @@ void FlexLocal::scanBondParams()
 	std::cout << std::endl;
 	std::cout << "---------------------------------------------------------"
 	<< std::endl;
+	
+	ExplicitModelPtr model = _polymer->getAnchorModel();
+	int samples = model->getFinalPositions().size();
+
+	Options::setNSamples(40);
 	reflex();
 
+	Timer timer;
 	std::cout << "| 1. Determining atom-flexibility effects... " << std::flush;
 	createAtomTargets();
 	
@@ -717,14 +773,10 @@ void FlexLocal::scanBondParams()
 	
 	for (int i = 0; i < _atoms.size(); i++)
 	{
-		double target = _atomTargets[_atoms[i]];
-		double original = _atomOriginal[_atoms[i]];
-		double current = _atoms[i]->getBFactor();
-		
-		double transformed = (target - _anchorB - original) / _increment;
+		double target = targetForAtom(_atoms[i]);
 
-		double num = i + _polymer->beginMonomer()->first;
-		atomtarg->addEntry(2, num, transformed);
+		double num = _atoms[i]->getResidueNum();
+		atomtarg->addEntry(2, num, target);
 	}
 
 	atomtarg->writeToFile("atom_targets_" + _polymer->getChainID() + ".csv");
@@ -749,7 +801,7 @@ void FlexLocal::scanBondParams()
 
 		for (int r = 0; r < 1; r++)
 		{
-			double add = (r == 0) ? _shift : -_shift;
+			double add = _shift * _negMult;
 			double num = (r == 0) ? i : i + 0.5;
 
 //			std::cout << "Scanning " << b->shortDesc() << std::endl;
@@ -806,7 +858,11 @@ void FlexLocal::scanBondParams()
 	csv->writeToFile(plotMap["filename"] + ".csv");
 	csv->plotPNG(plotMap);
 	
-	std::cout << "   ... done." << std::endl;
+	std::cout << "   ... done. ";
+	timer.quickReport();
+	std::cout << std::endl;
+
+	Options::setNSamples(samples);
 }
 
 void FlexLocal::propagateWhack()

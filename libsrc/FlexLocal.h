@@ -78,6 +78,9 @@ private:
 	void propagateWhack();
 	void setBondParam(BondPtr b, double k);
 	double getBondParam(BondPtr b);
+	double bondAtomCorrel(BondPtr b);
+	double actualAtomChange(AtomPtr a);
+	double targetForAtom(AtomPtr a);
 	
 	double directSimilarity();
 
@@ -106,6 +109,7 @@ private:
 	double _threshold;
 	double _increment;
 	double _anchorB;
+	double _negMult;
 	int _direct;
 	int _window;
 	int _run;
