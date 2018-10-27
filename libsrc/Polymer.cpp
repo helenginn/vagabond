@@ -122,10 +122,10 @@ void Polymer::whack()
 {
 	if (isWhacking())
 	{
-		std::cout << "Already whacked " << getChainID() <<
-		", not changing anything." << std::endl;
 		return;
 	}
+
+	std::cout << "Whacking chain " << getChainID() << std::endl;
 	
 	AnchorPtr anchor = ToAnchorPtr(getAnchorModel());
 	
