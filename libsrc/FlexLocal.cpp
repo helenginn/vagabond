@@ -780,10 +780,25 @@ void FlexLocal::scanBondParams()
 	}
 
 	atomtarg->writeToFile("atom_targets_" + _polymer->getChainID() + ".csv");
+
+	{
+		std::map<std::string, std::string> plotMap;
+		plotMap["filename"] = "atom_targets_" + _polymer->getChainID();
+		plotMap["height"] = "700";
+		plotMap["width"] = "1200";
+		plotMap["xHeader0"] = "atom";
+		plotMap["yHeader0"] = "target";
+		plotMap["colour0"] = "black";
+		plotMap["xTitle0"] = "Residue number";
+		plotMap["yTitle0"] = "B factor target";
+		plotMap["style0"] = "line";
+
+		atomtarg->setSubDirectory("local_flex");
+		atomtarg->plotPNG(plotMap);
+	}
 	
 	CSVPtr csv = CSVPtr(new CSV(3, "atom", "kick", "response"));
 	int count = 0;
-	
 	
 	AtomPtr check = _polymer->findAtoms("CA", 70)[0];
 
