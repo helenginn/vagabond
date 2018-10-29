@@ -451,7 +451,7 @@ void FlexLocal::createAtomTargets(bool subtract)
 	if (subtract)
 	{
 		std::sort(all.begin(), all.end(), std::less<double>());
-		int aim = all.size() / 8;
+		int aim = all.size() / 20;
 		
 		if (aim == 0)
 		{
