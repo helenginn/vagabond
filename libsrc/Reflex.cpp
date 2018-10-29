@@ -256,26 +256,5 @@ void Reflex::calculate()
 		csv->addEntry(2, (double)_round, _bFactor);
 	}
 		
-	for (int i = _pieceCount / 2; false && i < _segments.size() - _pieceCount / 2; i++)
-	{
-		double ave = 0;
-		int count = 0;
-
-		for (int j = 0; j < _pieceCount; j++)
-		{
-			if (i + j >= _segments.size())
-			{
-				continue;
-			}
-			
-			ave += refineBs[i + j];
-			count++;
-		}
-		
-		ave /= (double)count;
-		
-		csv->addEntry(2, (double)i + _pieceCount / 2, ave);
-	}
-	
 	csv->writeToFile(_polymer->getChainID() + "_bfactor_targets.csv");
 }
