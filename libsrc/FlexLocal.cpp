@@ -769,21 +769,23 @@ void FlexLocal::scanBondParams()
 	std::cout << "| 1. Determining atom-flexibility effects... " << std::flush;
 	createAtomTargets();
 	
-	CSVPtr atomtarg = CSVPtr(new CSV(2, "atom", "target"));
+	CSVPtr atomtarg = CSVPtr(new CSV(3, "atom", "target", "increment"));
 	
 	for (int i = 0; i < _atoms.size(); i++)
 	{
-		double target = targetForAtom(_atoms[i]);
+		double increment = targetForAtom(_atoms[i]);
 
+		double target = _atoms[i]->getTargetB();
 		double num = _atoms[i]->getResidueNum();
-		atomtarg->addEntry(2, num, target);
+		atomtarg->addEntry(3, num, target, increment);
 	}
 
-	atomtarg->writeToFile("atom_targets_" + _polymer->getChainID() + ".csv");
+	atomtarg->setSubDirectory("local_flex");
+	atomtarg->writeToFile("atom_targets_" + _polymer->getGraphName() + ".csv");
 
 	{
 		std::map<std::string, std::string> plotMap;
-		plotMap["filename"] = "atom_targets_" + _polymer->getChainID();
+		plotMap["filename"] = "atom_targets_" + _polymer->getGraphName();
 		plotMap["height"] = "700";
 		plotMap["width"] = "1200";
 		plotMap["xHeader0"] = "atom";
@@ -793,7 +795,10 @@ void FlexLocal::scanBondParams()
 		plotMap["yTitle0"] = "B factor target";
 		plotMap["style0"] = "line";
 
-		atomtarg->setSubDirectory("local_flex");
+		atomtarg->plotPNG(plotMap);
+
+		plotMap["filename"] = "atom_increments_" + _polymer->getGraphName();
+		plotMap["yHeader0"] = "increment";
 		atomtarg->plotPNG(plotMap);
 	}
 	
@@ -928,3 +933,4 @@ void FlexLocal::setBondParam(BondPtr b, double k)
 		b->propagateChange();
 	}
 }
+

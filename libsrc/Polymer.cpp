@@ -592,6 +592,7 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 void Polymer::graph(std::string graphName)
 {
+	_graphName = graphName;
 	ramachandranPlot();
 
 	CSVPtr csv = CSVPtr(new CSV(5, "resnum", "newB", "oldB",

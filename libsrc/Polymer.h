@@ -158,6 +158,11 @@ public:
 	{
 		_kickShift = shift;
 	}
+	
+	std::string getGraphName()
+	{
+		return _graphName;
+	}
 protected:
 	virtual double getScore()
 	{
@@ -176,6 +181,7 @@ private:
 	double _kick;
 	double _kickShift;
 	int _totalMonomers;
+	std::string _graphName;
 
 	AtomGroupPtr _allBackbones;
 
