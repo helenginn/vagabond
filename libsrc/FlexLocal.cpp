@@ -758,9 +758,9 @@ void FlexLocal::scanBondParams()
 	ExplicitModelPtr model = _polymer->getAnchorModel();
 	int samples = model->getFinalPositions().size();
 
-	Options::setNSamples(40);
 	reflex();
 
+	Options::setNSamples(40);
 	Timer timer;
 	std::cout << "| 1. Determining atom-flexibility effects... " << std::flush;
 	createAtomTargets();
