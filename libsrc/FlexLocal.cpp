@@ -392,33 +392,26 @@ void FlexLocal::createAtomTargets(bool subtract)
 	for (int i = 0; i < _polymer->atomCount(); i++)
 	{
 		AtomPtr a = _polymer->atom(i);
-		double ibf = a->getInitialBFactor();
 		
+		if (a->getAtomName() != "CA")
+		{
+			continue;
+		}
+
+		double ibf = a->getInitialBFactor();
+
 		if (_useTarget)
 		{
 			ibf = a->getTargetB();
 		}
 
 		double bf = a->getBFactor();
-		
-		if (!(a->isBackbone() || a->isBackboneAndSidechain()))
-		{
-			continue;
-		}
-		
-		if (a->getElectronCount() == 1)
-		{
-			continue;
-		}
-		
-		if (a->getAtomName() == "CA")
-		{
-			_atoms.push_back(a);
-			_atomTargets[a] = ibf;
-			_atomOriginal[a] = bf;
-			all.push_back(ibf);	
-		}
-		
+
+		_atoms.push_back(a);
+		_atomTargets[a] = ibf;
+		_atomOriginal[a] = bf;
+		all.push_back(ibf);	
+
 		ModelPtr m = a->getModel();
 		
 		if (!m->isBond())
