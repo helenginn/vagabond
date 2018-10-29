@@ -769,10 +769,10 @@ void FlexLocal::scanBondParams()
 	
 	for (int i = 0; i < _atoms.size(); i++)
 	{
-		double increment = targetForAtom(_atoms[i]);
-
-		double target = _atoms[i]->getTargetB();
 		double num = _atoms[i]->getResidueNum();
+		double increment = targetForAtom(_atoms[i]);
+		double target = _atoms[i]->getTargetB();
+
 		atomtarg->addEntry(3, num, target, increment);
 	}
 
@@ -858,7 +858,7 @@ void FlexLocal::scanBondParams()
 	}
 	
 	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = "chain_" + _polymer->getChainID() + "_bondscan";
+	plotMap["filename"] = "bond_scan_" + _polymer->getGraphName();
 	plotMap["height"] = "1000";
 	plotMap["width"] = "1000";
 	plotMap["xHeader0"] = "kick";
@@ -871,6 +871,7 @@ void FlexLocal::scanBondParams()
 	plotMap["style0"] = "heatmap";
 	plotMap["stride"] = i_to_str(_bonds.size());
 	
+	csv->setSubDirectory("local_flex");
 	csv->writeToFile(plotMap["filename"] + ".csv");
 	csv->plotPNG(plotMap);
 	
