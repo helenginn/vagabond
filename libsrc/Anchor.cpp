@@ -192,7 +192,6 @@ void Anchor::rotateBases()
 		vec3 start = _storedSamples[i].start;
 		vec3 neg_start = vec3_mult(start, -1);
 		vec3 diff = vec3_subtract_vec3(start, _position);
-//		mat3x3_mult_vec(lib, &diff);
 		for (int j = 0; j < 3; j++)
 		{
 			vec3 rot_vec = mat3x3_axis(lib, j);
