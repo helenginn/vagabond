@@ -355,6 +355,7 @@ void FlexLocal::chooseBestDifferenceThreshold()
 	
 	std::random_shuffle(_paramBands.begin(), _paramBands.end());
 	
+	csv->setSubDirectory("local_flex");
 	csv->writeToFile(_polymer->getChainID() + "bond_cluster_ids.csv");
 
 }
@@ -584,6 +585,7 @@ void FlexLocal::reorganiseBondOrder()
 		}
 	}
 
+	csv->setSubDirectory("local_flex");
 	csv->writeToFile(_polymer->getChainID() + "_after_bond_matrix.csv");
 	
 	for (int i = 0; i < orderedResults.size() - 1; i++)
@@ -671,6 +673,7 @@ void FlexLocal::createClustering()
 	timer.quickReport();
 	std::cout << std::endl;
 
+	csv->setSubDirectory("local_flex");
 	csv->writeToFile(_polymer->getChainID() + "bond_matrix.csv");
 	
 	std::sort(_degrees.begin(), _degrees.end(), less_than);
