@@ -61,6 +61,11 @@ typedef struct
 
 /** \endcond */
 
+/**
+ * \class FFT
+ * \brief Deals with three-dimensional grids with voxel data (real-space maps,
+ * diffraction data etc.) */
+
 class FFT {
 
 public:
@@ -79,6 +84,7 @@ public:
 	
 	double sumImag();
 
+	/** Get the average of all real values (ignore imaginary component) */
 	double averageAll()
 	{
 		double reals = 0;
@@ -113,6 +119,8 @@ public:
 		_writeToMaskZero = !set;
 	}
 
+	/** If parameters x, y, z fall outside of the unit cell (0 < n <= 1)
+	 * wrap them round until they do */
 	void collapse(long *x, long *y, long *z)
 	{
 		while (*x < 0) *x += nx;
@@ -125,11 +133,15 @@ public:
 		while (*z >= nz) *z -= nz;
 	}
 
+	/** Element corresponding to the vec3 xyz
+	 * \param xyz vec3 containing number of voxels along each axis */
 	long element(vec3 xyz)
 	{
 		return element(xyz.x, xyz.y, xyz.z);
 	}
 
+	/** Element corresponding to the parameters x, y, z = number of
+	 * voxels along each axis */
 	long element(long x, long y, long z)
 	{
 		collapse(&x, &y, &z);
@@ -137,17 +149,34 @@ public:
 		return x + nx*y + (nx*ny)*z;
 	}
 
+	/** Element corresponding to the parameters x, y, z = number of
+	 * voxels along each axis, assuming that all parameters stay within
+	 * the default unit cell dimensions as supplied */
 	long quickElement(long x, long y, long z)
 	{
 		return x + nx*y + (nx*ny)*z;
 	}
 
+	/** Element according to the parameters xfrac, yfrac, zfrac where
+	 * these describe a fraction of each unit cell dimension. Will collapse
+	 * to default unit cell. */
 	long elementFromUncorrectedFrac(double xfrac, double yfrac, double zfrac);
 
+	/** Transfer plans from one FFT object to another if already known
+	 * that they are compatible (same nx, ny, nz).*/
 	void takePlansFrom(FFTPtr other);
+	
+	/** Creates an FFTW plan and stores it for future use as a static
+	 * storage for the class */
 	void createFFTWplan(int nthreads, unsigned fftw_flags = FFTW_MEASURE);
+	
+	/** Fast fourier transform of associated data
+	 * \param direction real -> reciprocal = 1; reciprocal -> real = -1 */
 	void fft(int direction);
 
+	/** Move (0, 0, 0) to (nx/2, ny/2, nz/2) and apply same transformation
+	 * to entire array, wrapping around if necessary. Useful for seeing
+	 * an atom without breaking it up at the densest point, for example */
 	void shiftToCentre();
 
 	double getReal(long index)
@@ -169,10 +198,23 @@ public:
 		return data[index][1];
 	}
 
+	/** Returns the square of the length of the vector described by the real
+	 * and imaginary components of a data index. Takes voxel numbers on
+	 * each axis. */
 	double getIntensity(long x, long y, long z);
+
+	/** Returns the square of the length of the vector described by the real
+	 * and imaginary components of a data index. For a given index directly. */
 	double getIntensity(long element);
+	
+	/** Returns the angle with respect to the real axis for a given
+	 * real/imaginary data index. Takes voxel numbers on each axis */
 	double getPhase(long x, long y, long z);
+	
+	/** Set the real coordinate of an index derived from fractional values
+	 * to a number. No interpolation. */
 	void setReal(double xfrac, double yfrac, double zfrac, double real);
+	
 	void addBlurredToReal(double xfrac, double yfrac, double zfrac, 
 	                      double real);
 	void blurRealToImaginary(int i, int j, int k, mat3x3 tensor);

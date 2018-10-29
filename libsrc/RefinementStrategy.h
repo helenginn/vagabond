@@ -49,6 +49,12 @@ typedef struct
 	int changed;
 } Parameter;
 
+/** \class RefinementStrategy
+ *  \brief Abstract class upon which target function optimisers can be built. 
+ **/
+
+
+
 class RefinementStrategy
 {
 public:
