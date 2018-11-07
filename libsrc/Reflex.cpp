@@ -77,6 +77,7 @@ double Reflex::bFactorScore(void *object)
 	DiffractionPtr data = Options::getRuntimeOptions()->getActiveData();
 	double res = 0;
 	res = me->_workspace.crystal->getMaxResolution(data);
+	res /= 2;
 	std::vector<double> bins, obsAves, calcAves;
 
 	const int binnum = 20;
