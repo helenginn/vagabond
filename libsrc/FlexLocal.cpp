@@ -306,7 +306,6 @@ void FlexLocal::chooseBestDifferenceThreshold()
 
 	ParamBandPtr band;
 
-//	std::cout << "bond_num, correlation" << std::endl;
 	double sum = 0;
 
 	for (int i = 0; i < _b2bDiffs.size(); i++)
