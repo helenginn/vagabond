@@ -33,8 +33,8 @@ FlexLocal::FlexLocal()
 	_anchorB = 0;
 	_afterBond = -1;
 	_threshold = 0.80;
-	_increment = 8;
-	_useTarget = true;
+	_increment = 6;
+	_useTarget = false;
 	_usingWhack = false;
 	_getter = Bond::getKick;
 	_flexGlobal = NULL;
