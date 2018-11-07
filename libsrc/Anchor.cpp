@@ -337,18 +337,7 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 	}
 	
 	createStartPositions(callAtom);
-	
-	/* If we're in the middle of a re-caching of Whacks associated
-	 * with each bond, we don't want to rotate or translate or apply whacks. 
-	 **/
-	if (!_disableWhacks)
-	{
-		rotateBases();
-		translateStartPositions();
-	}
 
-	fixCentroid();
-	
 	/* Check if number of samples has changed for any reason - if so,
 	 * initiate re-caching of initial atom positions for each Whack. */
 
@@ -362,6 +351,18 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 			break;
 		}
 	}
+	
+	
+	/* If we're in the middle of a re-caching of Whacks associated
+	 * with each bond, we don't want to rotate or translate or apply whacks. 
+	 **/
+	if (true || !_disableWhacks)
+	{
+		rotateBases();
+		translateStartPositions();
+	}
+
+	fixCentroid();
 	
 	/* Apply whacks as normal, if we are not re-caching Whacks. */
 
