@@ -551,6 +551,7 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 
 mat3x3 Bond::getMagicMat(vec3 direction)
 {
+	return make_mat3x3();
 	vec3_set_length(&direction, 1.);
 	mat3x3 rot = make_mat3x3();
 
@@ -593,10 +594,10 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	vec3_mult(&aveStart, 1 / samples);
 
 	vec3 aveNext = mat3x3_axis(aveBasis, 0);
-	vec3 crossDir = mat3x3_axis(aveBasis, 1);
-	vec3 bondDir = mat3x3_axis(aveBasis, 2);
 	
-	mat3x3 magicMat = getMagicMat(bondDir);
+	vec3 crossDir = mat3x3_axis(aveBasis, 1);
+	
+	mat3x3 magicMat = getMagicMat(crossDir);
 	_magicAxis = mat3x3_axis(magicMat, 2); 
 	
 	/* Track overall change in order to readjust torsion
