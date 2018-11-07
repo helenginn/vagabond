@@ -1600,7 +1600,7 @@ double Crystal::getRealBFactor()
 		Options::resetGlobalBFactor();
 	}
 	
-	if (_realBFactor <= 0)
+	if (_realBFactor < 0)
 	{
 		_realBFactor = 20;
 	}
