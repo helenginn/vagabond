@@ -551,7 +551,7 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 
 mat3x3 Bond::getMagicMat(vec3 direction)
 {
-	return make_mat3x3();
+//	return make_mat3x3();
 	vec3_set_length(&direction, 1.);
 	mat3x3 rot = make_mat3x3();
 
