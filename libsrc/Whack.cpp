@@ -144,7 +144,7 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 	for (int i = 0; i < anchSamp.size(); i++)
 	{
 		double kickvalue = _samples[i].kickValue;
-		double mag = kickvalue * 1 * _whack;
+		double mag = kickvalue * _whack;
 		anchSamp[i].kickValue = mag;
 		check += mag;
 	}
