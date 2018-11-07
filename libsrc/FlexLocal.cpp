@@ -380,7 +380,7 @@ void FlexLocal::createAtomTargets()
 	AtomPtr ca = _polymer->getMonomer(res)->findAtom("CA");
 	_anchorB = ca->getTargetB();
 	
-	if (_anchorB != _anchorB)
+	if (_anchorB != _anchorB || !_useTarget)
 	{
 		_anchorB = 0;
 	}
@@ -399,6 +399,7 @@ void FlexLocal::createAtomTargets()
 		}
 
 		double ibf = a->getInitialBFactor() - ca->getInitialBFactor();
+		ibf -= (a->getBFactor() - ca->getBFactor());
 
 		if (_useTarget)
 		{
@@ -683,7 +684,7 @@ double FlexLocal::targetForAtom(AtomPtr a)
 {
 	double target = _atomTargets[a];
 
-	double transformed = (target - _anchorB) / _increment;
+	double transformed = target / _increment;
 	
 	return transformed;
 }
