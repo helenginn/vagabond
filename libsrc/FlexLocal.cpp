@@ -375,13 +375,13 @@ AtomTarget FlexLocal::currentAtomValues()
 	return targ;
 }
 
-void FlexLocal::createAtomTargets(bool subtract)
+void FlexLocal::createAtomTargets()
 {
 	int res = _polymer->getAnchor();
 	AtomPtr ca = _polymer->getMonomer(res)->findAtom("CA");
 	_anchorB = ca->getTargetB();
 	
-	if (!subtract)
+	if (_anchorB != _anchorB)
 	{
 		_anchorB = 0;
 	}
@@ -399,7 +399,7 @@ void FlexLocal::createAtomTargets(bool subtract)
 			continue;
 		}
 
-		double ibf = a->getInitialBFactor();
+		double ibf = a->getInitialBFactor() - ca->getInitialBFactor();
 
 		if (_useTarget)
 		{
@@ -442,7 +442,7 @@ void FlexLocal::createAtomTargets(bool subtract)
 		_bonds.push_back(b);
 	}
 	
-	if (subtract)
+	if (_useTarget)
 	{
 		std::sort(all.begin(), all.end(), std::less<double>());
 		int aim = all.size() / 20;
@@ -733,6 +733,11 @@ double FlexLocal::getScore(void *object)
 
 void FlexLocal::reflex()
 {
+	if (!_useTarget)
+	{
+		return;
+	}
+	
 	// this updates the atom B targets.
 	Timer timer;
 	std::cout << "| 0. Determining atom-flexibility targets... " << std::flush;
@@ -771,7 +776,13 @@ void FlexLocal::scanBondParams()
 	{
 		double num = _atoms[i]->getResidueNum();
 		double increment = targetForAtom(_atoms[i]);
-		double target = _atoms[i]->getTargetB();
+		
+		double target = _atoms[i]->getInitialBFactor();
+		
+		if (_useTarget)
+		{
+			target = _atoms[i]->getTargetB();
+		}
 
 		atomtarg->addEntry(3, num, target, increment);
 	}

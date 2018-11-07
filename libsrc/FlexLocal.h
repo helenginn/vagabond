@@ -67,7 +67,7 @@ public:
 	
 	void toElectronDensity();
 private:
-	void createAtomTargets(bool subtract = true);
+	void createAtomTargets();
 	AtomTarget currentAtomValues();
 	void createClustering();
 	void reorganiseBondOrder();
