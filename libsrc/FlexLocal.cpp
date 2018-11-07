@@ -764,11 +764,13 @@ void FlexLocal::scanBondParams()
 	int samples = model->getFinalPositions().size();
 
 	reflex();
+	createAtomTargets();
 
 	Options::setNSamples(40);
+	_polymer->refreshPositions();
+
 	Timer timer;
 	std::cout << "| 1. Determining atom-flexibility effects... " << std::flush;
-	createAtomTargets();
 	
 	CSVPtr atomtarg = CSVPtr(new CSV(3, "atom", "target", "increment"));
 	
