@@ -12,6 +12,7 @@
 #include "../../libsrc/FileReader.h"
 #include "SetterEdit.h"
 #include "../../libsrc/Polymer.h"
+#include "../../libsrc/Anchor.h"
 
 #define TEXT_HEIGHT 28
 
@@ -67,20 +68,39 @@ void CrystalExplorer::clickedMoleListItem()
 	label->show();
 	_widgets.push_back(label);
 	
-	height += TEXT_HEIGHT;
-	label = new QLabel("Multiply backbone kick:", this);
-	label->setGeometry(160, height, 200, TEXT_HEIGHT);
-	label->show();
-	_widgets.push_back(label);
-	
 	if (molecule->isPolymer())
 	{
+		PolymerPtr polymer = ToPolymerPtr(molecule);
+		height += TEXT_HEIGHT;
+		label = new QLabel("Multiply backbone kick:", this);
+		label->setGeometry(160, height, 200, TEXT_HEIGHT);
+		label->show();
+		_widgets.push_back(label);
+
 		SetterEdit *edit = new SetterEdit(this);
 		edit->setGeometry(340, height, 100, TEXT_HEIGHT);
 		edit->setText("1");
 
 		void *parser = &*(ToParserPtr(molecule));
 		edit->setSetterAndObject(parser, Polymer::vsMultiplyBackboneKick);
+		edit->show();
+		_widgets.push_back(edit);
+
+		AnchorPtr anchor = ToAnchorPtr(polymer->getAnchorModel());
+		double bAnch = anchor->getBFactor();
+		std::string sAnch = f_to_str(bAnch, 1);
+
+		height += TEXT_HEIGHT;
+		label = new QLabel("Anchor B factor:", this);
+		label->setGeometry(160, height, 200, TEXT_HEIGHT);
+		label->show();
+		_widgets.push_back(label);
+
+		edit = new SetterEdit(this);
+		edit->setGeometry(340, height, 100, TEXT_HEIGHT);
+		edit->setText(QString::fromStdString(sAnch));
+
+		edit->setSetterAndObject(&*anchor, Anchor::ssetBFactor);
 		edit->show();
 		_widgets.push_back(edit);
 	}
