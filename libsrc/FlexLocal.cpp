@@ -815,6 +815,7 @@ void FlexLocal::scanBondParams()
 	int count = 0;
 	
 	AtomPtr check = _polymer->findAtoms("CA", 70)[0];
+	std::map<int, double> sumsPerAtom;
 
 	for (int i = 0; i < _bonds.size(); i++)
 	{
@@ -835,7 +836,6 @@ void FlexLocal::scanBondParams()
 
 //			std::cout << "Scanning " << b->shortDesc() << std::endl;
 			setBondParam(b, k + add);
-			double after = check->getBFactor();
 			
 			for (int j = 0; j < _atoms.size(); j++)
 			{
@@ -855,21 +855,40 @@ void FlexLocal::scanBondParams()
 					_bondEffects[b][_atoms[j]] = diff;
 				}
 				
-				double grad = diff;
+				int intAtom = _atoms[j]->getResidueNum();
 
-				csv->addEntry(3, (double)nAtom, (double)count, grad);
+				if (sumsPerAtom.count(intAtom) == 0)
+				{
+					sumsPerAtom[intAtom] = 0;
+				}
+				
+				sumsPerAtom[intAtom] += diff;
+
+				csv->addEntry(3, (double)nAtom, (double)count, diff);
 
 			}
 
 			setBondParam(b, k);
-
-			double before = check->getBFactor();
-
 		}
 
 		count++;
 	}
 	
+	/* Output all sums per atom */
+
+	CSVPtr sums = CSVPtr(new CSV(2, "resnum", "sum"));
+
+	for (std::map<int, double>::iterator it = sumsPerAtom.begin();
+	     it != sumsPerAtom.end(); it++)
+	{
+		sums->addEntry(2, (double)it->first, (double)it->second);
+	}
+
+	sums->setSubDirectory("local_flex");
+	sums->writeToFile("sum_scan_" + _polymer->getGraphName() + ".csv");
+	
+	/* Output bond scan matrix */
+
 	std::map<std::string, std::string> plotMap;
 	plotMap["filename"] = "bond_scan_" + _polymer->getGraphName();
 	plotMap["height"] = "1000";
