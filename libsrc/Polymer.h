@@ -163,6 +163,12 @@ public:
 	{
 		return _graphName;
 	}
+	
+	virtual void addParamCounts(int *pos, int *flex)
+	{
+		*pos += _positionalParams;
+		*flex += _flexibilityParams;
+	}
 protected:
 	virtual double getScore()
 	{
@@ -181,6 +187,8 @@ private:
 	double _kick;
 	double _kickShift;
 	int _totalMonomers;
+	int _flexibilityParams;
+	int _positionalParams;
 	std::string _graphName;
 
 	AtomGroupPtr _allBackbones;

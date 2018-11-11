@@ -129,6 +129,10 @@ public:
 		_closeishAtoms.clear();
 	}
 	
+	virtual void addParamCounts(int *pos, int *flex)
+	{
+		
+	}
 protected:
 	virtual std::string getParserIdentifier()
 	{

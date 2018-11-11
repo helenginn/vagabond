@@ -890,16 +890,24 @@ void Crystal::tiedUpScattering()
 {
 	double tied = 0;
 	double total = 0;
+	int flex = 0;
+	int pos = 0;
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		molecule(i)->tiedUpScattering(&tied, &total);
 		molecule(i)->reportParameters();
+		molecule(i)->addParamCounts(&pos, &flex);
 	}
+	
+	std::cout << "Total positional params: " << pos << std::endl;
+	std::cout << "Total flexibility params: " << flex << std::endl;
+	std::cout << "Total params: " << pos + flex << std::endl;
 
 	std::cout << std::fixed << std::setprecision(0);
 	std::cout << "Tied up " << 100. * sqrt(tied / total) << "% of"\
 	" the scattering electrons." << std::endl;
+	std::cout << std::endl;
 }
 
 void Crystal::setAnchors()

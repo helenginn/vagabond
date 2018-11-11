@@ -42,6 +42,8 @@ Polymer::Polymer()
 	_anchorNum = -1;
 	_totalMonomers = 0;
 	_startB = Options::getBStart();
+	_flexibilityParams = 0;
+	_positionalParams = 0;
 	_whacked = -1;
 }
 
@@ -1210,6 +1212,13 @@ void Polymer::reportParameters()
 		}
 	}
 	
+	int flexChain = 6 * 2;
+	
+	_positionalParams = torsionCountBackbone + torsionCountSidechain 
+	+ angleCountBackbone + angleCountSidechain;
+	
+	_flexibilityParams = flexCountBackbone + flexCountSidechain + flexChain;
+	
 	std::cout << std::endl;
 	std::cout << "|----------------" << std::endl;
 	std::cout << "| Bond-based parameter groups (" << getChainID() << "):" << std::endl;
@@ -1224,7 +1233,7 @@ void Polymer::reportParameters()
 	std::cout << "| Kicks    |  " << std::setw(9) << flexCountBackbone;
 	std::cout << " |  " << std::setw(9) << flexCountSidechain;
 	std::cout << " | (flexibility)" << std::endl;
-	std::cout << "| Chain    |  " << std::setw(9) << 6 * 2;
+	std::cout << "| Chain    |  " << std::setw(9) << flexChain;
 	std::cout << " |  " << std::setw(9) << " ";
 	std::cout << " | (whole molecule flex)" << std::endl;
 	std::cout << "|----------------" << std::endl;
