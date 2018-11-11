@@ -50,6 +50,7 @@ void Bucket::scaleSolvent()
 	fine = NelderMeadPtr(new RefinementNelderMead());
 	fine->setJobName("solvent_scale_fine");
 	fine->setEvaluationFunction(scaleSolventScore, this);
+	fine->setCycles(40);
 	fine->addParameter(this, getSolvScale, setSolvScale, 0.4, 0.01, "scale");
 	fine->addParameter(this, getSolvBFac, setSolvBFac, 40, 1.0, "bfac");
 	fine->refine();
