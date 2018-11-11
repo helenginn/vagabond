@@ -72,6 +72,13 @@ public:
 		return _bFactor;
 	}
 	
+	static void ssetBFactor(void *object, double b)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		anch->_bFactor = b;
+		anch->propagateChange(-1, true);
+	}
+	
 	void setBFactor(double b)
 	{
 		_bFactor = b;
