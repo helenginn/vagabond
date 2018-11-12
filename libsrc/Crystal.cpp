@@ -1610,7 +1610,7 @@ double Crystal::getRealBFactor()
 	
 	if (_realBFactor < 0)
 	{
-		_realBFactor = 20;
+		_realBFactor = 10;
 	}
 	
 	return _realBFactor;
