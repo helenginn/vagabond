@@ -83,9 +83,8 @@ public:
 	void setupMask();
 	
 	double sumImag();
-
-	/** Get the average of all real values (ignore imaginary component) */
-	double averageAll()
+	
+	double sumAll()
 	{
 		double reals = 0;
 		for (int i = 0; i < nn; i++)
@@ -93,7 +92,13 @@ public:
 			reals += fabs(data[i][0]);
 		}
 
-		return reals / (double)nn;
+		return reals;
+	}
+
+	/** Get the average of all real values (ignore imaginary component) */
+	double averageAll()
+	{
+		return sumAll() / (double)nn;
 	}
 
 	void setMask(long i, int value)
