@@ -256,7 +256,7 @@ void Options::displayHelp()
 	std::cout << "--global-b=<value>\t\tAdd a real space B factor when adding explicit atoms to the map.\n"\
 	"\t\t\t\t (default 0.).\n" << std::endl;
 	std::cout << "--shell-scale\t\t\tWhen calculating R factors, scale each resolution bin of Fcalc"\
-	"to Fobs\n\t\t\t\t (default on).\n" << std::endl;
+	"to Fobs\n\t\t\t\t (default 0).\n" << std::endl;
 	std::cout << std::endl;
 	std::cout << "--no-rfree\t\t\tDo not use this function.\n" << std::endl;
 	std::cout << "Baseline command to start running vagabond:\n" << std::endl;
@@ -453,7 +453,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "diagnostics", &_diagnostics);
 		
 		int shellNum = 0;
-		understood |= parseParameter(arg, "shell-scale", &shellNum);
+		understood |= parseParameter(arg, "--shell-scale", &shellNum);
 		
 		_scaleType = ScalingType(shellNum);
 
