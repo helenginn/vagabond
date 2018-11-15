@@ -158,6 +158,23 @@ mat3x3 mat3x3_from_unit_cell(double *unitCell)
 	unitCell[4], unitCell[5]);
 }
 
+double mat3x3_volume(mat3x3 mat)
+{
+	double vals[6];
+	unit_cell_from_mat3x3(mat, &vals[0]);
+
+	double cosA = cos(deg2rad(vals[3]));
+	double cosB = cos(deg2rad(vals[4]));
+	double cosC = cos(deg2rad(vals[5]));
+	double sinC = sin(deg2rad(vals[5]));
+	
+	double vol_bit = 1 - cosA * cosA - cosB * cosB - cosC * cosC;
+	vol_bit += 2 * cosA * cosB * cosC;
+	double volume = vals[0] * vals[1] * vals[2] * sqrt(vol_bit);
+
+	return volume;
+}
+
 void unit_cell_from_mat3x3(mat3x3 mat, double *vals)
 {
 	vec3 a = mat3x3_axis(mat, 0);
@@ -190,7 +207,6 @@ mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double 
 	}
 
 	double sinC = sin(deg2rad(gamma));
-
 
 	double vol_bit = 1 - cosA * cosA - cosB * cosB - cosC * cosC;
 	vol_bit += 2 * cosA * cosB * cosC;

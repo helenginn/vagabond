@@ -1036,6 +1036,10 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	vec3_mult(&atomOffset, -1);
 
 	fftAtom->shiftToCentre();
+	
+	mat3x3 crystBasis = fftCrystal->getBasis();
+	mat3x3 atomBasis = fftAtom->getBasis();
+	double vol_corr = mat3x3_volume(crystBasis) / mat3x3_volume(atomBasis);
 
 	/* There will be an additional shift having moved the atom by
 	 * half the dimension length which needs to be taken into account, 
@@ -1248,7 +1252,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 					if (fftCrystal->_writeToMaskZero ||
 					    fftCrystal->getMask(cIndex) != 0)
 					{
-						fftCrystal->data[cIndex][0] += atomReal * volume;
+						fftCrystal->data[cIndex][0] += atomReal * vol_corr;
 					}
 				}
 			}
