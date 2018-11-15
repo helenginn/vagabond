@@ -633,8 +633,6 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
  */
 void FFT::fft(int direction)
 {
-	int tries = 0;
-
 	if (direction == 1)
 	{
 		fftwf_execute_dft(_myDims->plan, data, data);
