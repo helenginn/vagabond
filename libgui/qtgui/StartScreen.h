@@ -50,7 +50,7 @@ private:
 	int _argc;
 	char **_argv;
 
-	void getFile(std::string title, std::string types, QLineEdit *edit);
+	void getFile(std::string title, QString types, QLineEdit *edit);
 	std::string findNewFolder();
 private slots:
 	void pushRun();

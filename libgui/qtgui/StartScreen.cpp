@@ -195,7 +195,7 @@ void StartScreen::pushRun()
 	// memory leak of this... 
 }
 
-void StartScreen::getFile(std::string title, std::string types,
+void StartScreen::getFile(std::string title, QString types,
                           QLineEdit *edit)
 {
 	if (_fileDialogue != NULL)
@@ -204,7 +204,9 @@ void StartScreen::getFile(std::string title, std::string types,
 	}
 
 	_fileDialogue = new QFileDialog(this, QString::fromStdString(title),
-	                                QString::fromStdString(types));
+	                                types);
+	
+	_fileDialogue->setNameFilter(types);
 
 	if (types.length())
 	{
@@ -231,7 +233,7 @@ void StartScreen::getFile(std::string title, std::string types,
 
 void StartScreen::chooseModel()
 {
-	getFile("Open model", "Model files (*.pdb, *.vbond)", _tModel);
+	getFile("Open model", tr("Model files (*.vbond *.pdb)"), _tModel);
 }
 
 void StartScreen::chooseMtz()
