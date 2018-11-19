@@ -424,7 +424,7 @@ void FlexLocal::createAtomTargets()
 		{
 			_bonds.push_back(b);
 		}
-		else if (_negMult < 0 && b->getMajor()->getAtomName() == "CA")
+		else if (_negMult < 0 && b->getMinor()->getAtomName() != "CA")
 		{
 			_bonds.push_back(b);
 		}
