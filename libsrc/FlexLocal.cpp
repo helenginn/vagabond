@@ -138,7 +138,7 @@ void FlexLocal::refine()
 
 			for (int i = 0; i < _paramBands.size() && i < limit; i++)
 			{
-				double dir = _negMult;
+				double dir = 1;
 				ParamBandPtr band = _paramBands[i];
 				nelder->addParameter(&*band, ParamBand::getGlobalParam,
 				                     ParamBand::setGlobalParam, _shift * dir, 
@@ -419,8 +419,18 @@ void FlexLocal::createAtomTargets()
 			_afterBond = _bonds.size();
 		}
 		
-		_bonds.push_back(b);
+		/* Do one side or the other of the Ramachandran angle */
+		if (_negMult > 0 && b->getMinor()->getAtomName() == "CA")
+		{
+			_bonds.push_back(b);
+		}
+		else if (_negMult < 0 && b->getMajor()->getAtomName() == "CA")
+		{
+			_bonds.push_back(b);
+		}
 
+		/* We don't want to include this as a target atom unless it's a
+		 *  C-alpha atom */
 		if (a->getAtomName() != "CA")
 		{
 			continue;
@@ -831,7 +841,7 @@ void FlexLocal::scanBondParams()
 
 		for (int r = 0; r < 1; r++)
 		{
-			double add = _shift * _negMult;
+			double add = _shift;
 			double num = (r == 0) ? i : i + 0.5;
 
 //			std::cout << "Scanning " << b->shortDesc() << std::endl;
