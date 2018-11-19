@@ -86,16 +86,29 @@ void PDBReader::validateMolecule(AbsolutePtr atom)
 {
 	if (atom->getChainID() != _myChain || _breakMe)
 	{
+		_breakMe = false;
 		/* We have switched proteins. Have we gone back to an old one? */
 
 		/* Get a new molecule ready */
 		if (atom->isHeteroAtom())
 		{
 			_myPolymer = PolymerPtr();
+			_chainFrag = 0;
+			std::string chain_id = atom->getChainID() + "0";
 
-			_myMolecule = MoleculePtr(new Molecule());
-
-			_myMolecule->setAbsoluteBFacSubtract(0);
+			/* Are we returning to a previous chain? */
+			
+			MoleculePtr testMol = _myCrystal->molecule(chain_id);
+			
+			if (testMol)
+			{
+				_myMolecule = testMol;
+			}
+			else
+			{
+				_myMolecule = MoleculePtr(new Molecule());
+				_myMolecule->setAbsoluteBFacSubtract(0);
+			}
 		}
 		else
 		{
@@ -113,8 +126,10 @@ void PDBReader::validateMolecule(AbsolutePtr atom)
 			_chainFrag = 0;
 		}
 
+		std::string chain_id = atom->getChainID() + i_to_str(_chainFrag);
+
 		_myChain = atom->getChainID();
-		_myMolecule->setChainID(_myChain + i_to_str(_chainFrag));
+		_myMolecule->setChainID(chain_id);
 		_myCrystal->addMolecule(_myMolecule);
 	}
 }
