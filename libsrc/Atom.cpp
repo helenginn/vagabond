@@ -479,7 +479,16 @@ std::string Atom::pdbLineBeginning(std::string start)
 
 	line << start;
 	line << std::setfill(' ') << std::setw(5) << std::fixed << _atomNum;
-	line << "  " << std::left << std::setfill(' ') << std::setw(3) << _atomName;
+	
+	if (_atomName.length() <= 3)
+	{
+		line << "  " << std::left << std::setfill(' ') << std::setw(3) << _atomName;
+	}
+	else
+	{
+		line << " " << std::left << std::setfill(' ') << std::setw(4) << _atomName;
+	}
+
 	line << std::right << conformer;
 	line << std::setw(3) << residueName;
 	line << " " << chainID;
@@ -543,7 +552,7 @@ std::string Atom::averagePDBContribution(bool samePos, bool sameB)
 	ElementPtr element = getElement();
 	if (element->getSymbol() == "H")
 	{
-		return "";
+//		return "";
 	}
 	
 	if (!getModel()->hasExplicitPositions())
