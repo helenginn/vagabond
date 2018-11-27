@@ -169,23 +169,32 @@ void Hydrogenator::addHydrogens(AtomPtr minor, std::vector<std::string> hNames)
 		}
 		
 		double circlePortion = 0;
-		bool hasBonds = bond->downstreamBondCount(i) > 0;
+		std::string alt = "";
 		
+		/* We want to add onto the existing circle portion */
 		if (currentTotal > 0)
 		{
-			circlePortion = bond->getCirclePortion(i, currentTotal - 1);
+			/* Returned in radians */
+			double portion = 0;
+			BondPtr last = bond->downstreamBond(i, currentTotal - 1);
+			circlePortion = Bond::getCirclePortion(&*last);
+			alt = last->getMinor()->getAlternativeConformer();
 		}
+		
+		std::cout << "Working off portion: " << circlePortion << std::endl;
 
-		if (circlePortion < 0) circlePortion += 1;
+		if (circlePortion < 0) circlePortion += deg2rad(360);
 
 		/* Divide the remainder into an appropriate addition per hydrogen. */
-		double remaining = 1 - circlePortion;
+		double remaining = deg2rad(360) - circlePortion;
 		
-		if (circlePortion > 0.5)
+		if (circlePortion > 0.5 * deg2rad(360))
 		{
-			remaining = -circlePortion;	
+//			remaining = -circlePortion;	
 		}
 		
+		/* We don't need to add to the first hydrogen if we don't
+		 * have any original non-hydrogen downstream bonds */
 		int add = currentTotal > 0 ? 1 : 0;
 		remaining /= (double)(hNames.size() + add);
 		
@@ -197,11 +206,14 @@ void Hydrogenator::addHydrogens(AtomPtr minor, std::vector<std::string> hNames)
 		}
 		
 		double nextPortion = circlePortion + remaining;
+		
+		std::cout << "New portion: " << nextPortion << std::endl;
 
 		for (int j = 0; j < hNames.size(); j++)
 		{
 			AtomPtr hydrogen = prepareNewHydrogen(minor);
 			hydrogen->setAtomName(hNames[j]);
+			hydrogen->setAlternativeConformer(alt);
 
 			/* Set the bond length for the new hydrogen */
 			BondPtr newBond = BondPtr(new Bond(minor, hydrogen, i));
@@ -212,7 +224,7 @@ void Hydrogenator::addHydrogens(AtomPtr minor, std::vector<std::string> hNames)
 			Bond::setBendAngle(&*newBond, bondAngle);
 			
 			/* Set circle portion and increment for the next hydrogen */
-			Bond::setCirclePortion(&*newBond, nextPortion * 2 * M_PI);
+			Bond::setCirclePortion(&*newBond, nextPortion);
 			nextPortion += remaining;
 		}
 	}
