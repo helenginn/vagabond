@@ -622,6 +622,12 @@ void Polymer::graph(std::string graphName)
 		}
 
 		AtomPtr c = backbone->findAtom("C");
+
+		if (!c)
+		{
+			continue;
+		}
+
 		ModelPtr cModel = c->getModel();
 
 		double value = i;
