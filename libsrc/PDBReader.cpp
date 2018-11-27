@@ -86,7 +86,6 @@ void PDBReader::validateMolecule(AbsolutePtr atom)
 {
 	if (atom->getChainID() != _myChain || _breakMe)
 	{
-		_breakMe = false;
 		/* We have switched proteins. Have we gone back to an old one? */
 
 		/* Get a new molecule ready */
