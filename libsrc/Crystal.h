@@ -278,6 +278,8 @@ public:
 	/** Returns a string describing the R factors and CCs.
 	* 	\return summary string in human-readable format. */
 	std::string agreementSummary();
+	
+	void overfitTest();
 
 	virtual std::string getClassName()
 	{

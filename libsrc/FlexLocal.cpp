@@ -34,7 +34,7 @@ FlexLocal::FlexLocal()
 	_afterBond = -1;
 	_threshold = 0.80;
 	_increment = 8;
-	_useTarget = false;
+	_useTarget = true;
 	_usingWhack = false;
 	_getter = Bond::getKick;
 	_flexGlobal = NULL;

@@ -42,6 +42,7 @@ Atom::Atom()
 	_tensor = make_mat3x3();
 	_hetatm = 0;
 	_hBondage = false;
+	_weightOnly = 1;
 }
 
 Atom::Atom(Atom &other)
@@ -56,6 +57,7 @@ Atom::Atom(Atom &other)
 	_distModelOnly = other._distModelOnly;
 	_monomer = other._monomer;
 	_weighting = 1;
+	_weightOnly = 1;
 	_atomNum = other._atomNum;
 	_fromPDB = other._fromPDB;
 	_pdbPosition = other._pdbPosition;
@@ -211,8 +213,6 @@ FFTPtr Atom::getBlur()
 	{
 		modelDist = _distModelOnly->getDistribution();
 	}
-
-	modelDist->multiplyAll(_weighting);
 
 	return modelDist;
 }
@@ -380,6 +380,7 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,
 	modified->setTotal(_element->electronCount() * 10e4);
 	double occ = _model->getEffectiveOccupancy();
 	modified->multiplyAll(occ);
+	modified->multiplyAll(_weighting * _weightOnly);
 
 	MapScoreType type = (noWrap ? MapScoreAddNoWrap : MapScoreTypeNone);
 	

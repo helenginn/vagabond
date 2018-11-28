@@ -746,7 +746,7 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	}
 
 	_calcCopy = FFTPtr(new FFT(*_fft));
-
+	
 	/* symmetry issues */
 	for (int i = -nLimit; i < nLimit; i++)
 	{
@@ -884,6 +884,50 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	}
 
 	return rFac;
+}
+
+void Crystal::overfitTest()
+{
+	std::vector<double> results;
+	
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+
+		PolymerPtr polymer = ToPolymerPtr(molecule(i));
+
+		for (int j = 0; j < 10; j++)
+		{
+			double result = polymer->overfitTest(j);
+			
+			if (result == result)
+			{
+				results.push_back(result);
+			}
+		}
+	}
+	
+	double ave = mean(results) * -100;
+	double stdev = standard_deviation(results) * 100;
+	
+	std::cout << "******************************" << std::endl;
+	std::cout << "**   OVERFITTING RESULTS   ***" << std::endl;
+	std::cout << "******************************" << std::endl;
+	std::cout << std::endl;
+	
+	for (int i = 0; i < results.size(); i++)
+	{
+		std::cout << "Trial " << i << " - " << results[i] << std::endl;
+	}
+	
+	std::cout << std::endl;
+	std::cout << "Difference map sensitivity: " << ave
+	<< " ± " << stdev << "%" << std::endl;
+	std::cout << std::endl;
+	std::cout << "******************************" << std::endl;
 }
 
 void Crystal::tiedUpScattering()

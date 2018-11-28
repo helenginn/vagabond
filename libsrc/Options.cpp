@@ -32,6 +32,7 @@ double Options::_maxRes = -1.0;
 bool Options::_useRFree = true;
 int Options::_enableTests = 3;
 bool Options::_powder = false;
+bool Options::_overfit = false;
 bool Options::_diagnostics = false;
 std::string Options::_anchor = "";
 ScalingType Options::_scaleType = ScalingTypeShell;
@@ -177,7 +178,6 @@ void Options::run()
 	{
 		CrystalPtr crystal = getActiveCrystal();
 
-		/* sandbox */
 		if (_tie)
 		{
 			crystal->setAnchors();
@@ -192,6 +192,11 @@ void Options::run()
 		if (_notify)
 		{
 			_notify->setInstruction(InstructionTypeResetExplorer);
+		}
+		
+		if (_overfit)
+		{
+			crystal->overfitTest();
 		}
 
 		executeScript();
@@ -431,11 +436,11 @@ void Options::parse()
 			understood = true;
 		}
 
-		prefix = "--solvent-analysis";
+		prefix = "--overfit-test";
 
 		if (!arg.compare(0, prefix.size(), prefix))
 		{
-			_powder = true;
+			_overfit = true;
 			understood = true;
 		}
 

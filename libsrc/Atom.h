@@ -321,6 +321,11 @@ public:
 		_targetBCount++;
 	}
 	
+	void setWeightOnly(double mult)
+	{
+		_weightOnly = mult;
+	}
+	
 	Atom *pluckAnother();
 	vec3 getPositionInAsu();
 protected:
@@ -355,6 +360,7 @@ private:
 	double _origOccupancy;
 	vec3 _ellipsoidLongestAxis;
 	double _weighting;
+	double _weightOnly;
 	std::string _conformer;
 	std::string _elementSymbol;
 	bool _fromPDB;

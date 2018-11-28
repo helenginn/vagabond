@@ -940,6 +940,64 @@ void Polymer::findAnchorNearestCentroid()
 	setAnchor(anchorRes);
 }
 
+double Polymer::overfitTest(int round)
+{
+	int increment = (monomerCount() - beginMonomer()->first) / 10;
+	int test = increment / 2 + beginMonomer()->first + round * increment;
+
+	MonomerPtr monomer = getMonomer(test);
+	std::cout << "Overfit test " << round << " on polymer "
+	<< getChainID() << ", residue " << monomer->getResidueNum() << std::endl;
+	
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	
+	if (!monomer)
+	{
+		return std::nan(" ");
+	}
+	
+	BackbonePtr bone = monomer->getBackbone();
+	
+	double st_obs = 0;
+	double st_diff = 0;
+	double weight = 1;
+	st_obs = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
+	                            0, MapScoreFlagNone);
+	st_diff = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
+	                             0, MapScoreFlagDifference);
+	
+	weight = 2;
+	for (int i = 0; i < bone->atomCount(); i++)
+	{
+		AtomPtr atom = bone->atom(i);
+		atom->setWeightOnly(weight);
+	}
+
+	Crystal::vsConcludeRefinement(&*(ToParserPtr(crystal)));
+
+	double obs = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
+	                            0, MapScoreFlagNone);
+	double diff = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
+	                             0, MapScoreFlagDifference);
+	
+	for (int i = 0; i < bone->atomCount(); i++)
+	{
+		AtomPtr atom = bone->atom(i);
+		atom->setWeightOnly(1);
+	}
+
+	Crystal::vsConcludeRefinement(&*(ToParserPtr(crystal)));
+	
+	double delta_obs = obs - st_obs;
+	double delta_diff = diff - st_diff;
+	double ratio = delta_diff / delta_obs;
+	
+	std::cout << st_obs << " " << st_diff << " to " <<
+	obs << " " << diff << " = " << ratio << std::endl;
+
+	return ratio;
+}
+
 void Polymer::hydrogenateContents()
 {
 	Hydrogenator hydrogenator;

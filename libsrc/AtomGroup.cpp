@@ -877,7 +877,7 @@ double AtomGroup::scoreFinalValues(std::vector<double> xs,
 	}
 	else if (scoreType == ScoreTypeAddDensity)
 	{
-		double sum = add_if_y_gt_zero(xs, ys);
+		double sum = add_if_y_gt_zero(ys, xs);
 		return sum;
 	}
 	else if (scoreType == ScoreTypeAddVoxels)
@@ -950,11 +950,6 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	}
 	
 	MapScoreType mapType = MapScoreTypeCorrel;
-
-	if (scoreType == ScoreTypeAddDensity)
-	{
-		mapType = MapScoreTypeCopyToSmaller;
-	}
 
 	FFT::operation(map, segment, ave, mapType, &vals, true);
 
