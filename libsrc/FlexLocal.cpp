@@ -34,7 +34,7 @@ FlexLocal::FlexLocal()
 	_afterBond = -1;
 	_threshold = 0.80;
 	_increment = 8;
-	_useTarget = true;
+	_useTarget = false;
 	_usingWhack = false;
 	_getter = Bond::getKick;
 	_flexGlobal = NULL;
@@ -803,6 +803,8 @@ void FlexLocal::scanBondParams()
 		plotMap["xTitle0"] = "Residue number";
 		plotMap["yTitle0"] = "B factor target";
 		plotMap["style0"] = "line";
+		plotMap["yMin0"] = "-2";
+		plotMap["yMax0"] = "5";
 
 		atomtarg->plotPNG(plotMap);
 
