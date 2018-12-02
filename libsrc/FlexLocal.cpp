@@ -190,9 +190,15 @@ void FlexLocal::refine()
 
 			timer.quickReport();
 			std::cout << std::endl;
+			
+			if (_paramBands.size() < limit)
+			{
+				break;
+			}
+			
 			std::random_shuffle(_paramBands.begin(), _paramBands.end());
 		}
-
+		
 		std::cout << "---------------------------------------------------------"
 		<< std::endl;
 
