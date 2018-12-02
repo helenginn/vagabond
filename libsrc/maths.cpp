@@ -390,8 +390,10 @@ double add_if_y_gt_zero(std::vector<double> &vec1, std::vector<double> &vec2)
 			continue;
 		}
 		
-		sum += fabs(vec1[i]);
+		sum += vec1[i];
 	}
+	
+	sum /= vec1.size();
 	
 	return sum;
 }
