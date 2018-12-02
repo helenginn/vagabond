@@ -196,8 +196,6 @@ void Options::run()
 
 		crystal->tiedUpScattering();
 
-		recalculateFFT();
-
 		if (_notify)
 		{
 			_notify->setInstruction(InstructionTypeResetExplorer);
@@ -207,6 +205,8 @@ void Options::run()
 		{
 			crystal->overfitTest();
 		}
+
+		executeProtocol();
 
 		executeScript();
 
@@ -226,6 +226,51 @@ void Options::run()
 	}
 	
 	FFT::cleanupPlans();
+}
+
+void Options::executeProtocol()
+{
+	if (!_refine)
+	{
+		recalculateFFT();
+		std::cout << "No refinement protocol selected." << std::endl;
+		return;
+	}
+	
+	for (int i = 0; i < 5 && _rPosition; i++)
+	{
+		std::cout << "Refining positions to PDB (" << 
+		i + 1 << " / 5)" << std::endl;
+		getActiveCrystal()->refinePositions();
+	}
+	
+	recalculateFFT();
+	
+	for (int i = 0; i < 10; i++)
+	{
+		std::cout << "Flex macrocycle (" << 
+		i + 1 << " / 10)" << std::endl;
+		if (_rInter)
+		{
+			getActiveCrystal()->fitWholeMolecules();
+			recalculateFFT();
+		}
+		
+		for (int i = 0; i < 3 && _rIntra; i++)
+		{
+			std::cout << "Intramolecular flex microcycle (" << 
+			i + 1 << " / 3)" << std::endl;
+			getActiveCrystal()->refineIntraMovements();
+			recalculateFFT();
+		}
+	}
+	
+	for (int i = 0; i < 5 && _rPosition; i++)
+	{
+		std::cout << "Refining sidechains to density (" << 
+		i + 1 << " / 1)" << std::endl;
+		getActiveCrystal()->refineSidechains();
+	}
 }
 
 void Options::executeScript()
