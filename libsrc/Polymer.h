@@ -75,7 +75,7 @@ public:
 	double refineRange(int start, int end, 
 	                 CrystalPtr target, RefinementType rType);
 	bool test();
-	ExplicitModelPtr getAnchorModel();
+	AnchorPtr getAnchorModel();
 	void findAnchorNearestCentroid();
 	void hydrogenateContents();
 	void checkChainContinuity();

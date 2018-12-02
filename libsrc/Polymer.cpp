@@ -105,7 +105,7 @@ void Polymer::refineLocalFlexibility()
 	whack();
 	local.setPolymer(shared_from_this(), _kickShift);
 	
-	if (ToAnchorPtr(getAnchorModel())->whackCount() > 0)
+	if (getAnchorModel()->whackCount() > 0)
 	{
 		local.setWhacking(true);
 	}
@@ -117,7 +117,7 @@ void Polymer::refineLocalFlexibility()
 
 bool Polymer::isWhacking()
 {
-	return (ToAnchorPtr(getAnchorModel())->whackCount() > 0);
+	return (getAnchorModel()->whackCount() > 0);
 }
 
 void Polymer::whack()
@@ -129,7 +129,7 @@ void Polymer::whack()
 
 	std::cout << "Whacking chain " << getChainID() << std::endl;
 	
-	AnchorPtr anchor = ToAnchorPtr(getAnchorModel());
+	AnchorPtr anchor = getAnchorModel();
 	
 	int total = monomerEnd() - monomerBegin();
 
@@ -176,7 +176,7 @@ void Polymer::whack()
 			prop = 1 - prop;
 		}
 		
-		whack->addToAnchor(ToAnchorPtr(getAnchorModel()));
+		whack->addToAnchor(getAnchorModel());
 		
 		BondPtr next;
 		
@@ -1099,17 +1099,17 @@ double Polymer::getInitialKick(void *object)
 	return polymer->getMonomer(monomerNum)->getKick();
 }
 
-ExplicitModelPtr Polymer::getAnchorModel()
+AnchorPtr Polymer::getAnchorModel()
 {
 	MonomerPtr anchoredRes = getMonomer(getAnchor());
 	if (!anchoredRes)
 	{
-		return ExplicitModelPtr();
+		return AnchorPtr();
 	}
 
 	ModelPtr model = anchoredRes->findAtom("N")->getModel();
 
-	return ToExplicitModelPtr(model);
+	return ToAnchorPtr(model);
 }
 
 void Polymer::closenessSummary()
@@ -1312,7 +1312,7 @@ void Polymer::refineGlobalFlexibility()
 
 	Timer timer("anchor fit", true);
 	
-	AnchorPtr anchor = ToAnchorPtr(getAnchorModel());
+	AnchorPtr anchor = getAnchorModel();
 	
 	FlexGlobal target;
 	NelderMeadPtr nelderMead = NelderMeadPtr(new RefinementNelderMead());

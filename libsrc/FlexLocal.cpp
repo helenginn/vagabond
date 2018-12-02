@@ -82,7 +82,7 @@ void FlexLocal::refineAnchor()
 	std::cout << "| 1. Refining libration...   " << std::flush;
 
 	Timer timer;
-	AnchorPtr anchor = ToAnchorPtr(_polymer->getAnchorModel());
+	AnchorPtr anchor = _polymer->getAnchorModel();
 
 	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
 	nelder->setCycles(24);
@@ -390,6 +390,8 @@ void FlexLocal::createAtomTargets()
 	{
 		_anchorB = 0;
 	}
+	AnchorPtr anchor = _polymer->getAnchorModel();
+	_anchorB = anchor->getBFactor();
 	
 	std::vector<double> all;
 	
