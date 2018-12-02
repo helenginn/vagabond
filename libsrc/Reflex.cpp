@@ -175,7 +175,7 @@ void Reflex::refineFlex()
 	nm->setCycles(20);
 	nm->setSilent();
 	nm->addParameter(this, getBFactor, setBFactor, 5, 0.1, "b");
-	nm->addParameter(this, getAbsoluteScale, setAbsoluteScale, 5, 0.1, "k");
+	nm->addParameter(this, getAbsoluteScale, setAbsoluteScale, 0.5, 0.01, "k");
 	nm->refine();
 	nm->clearParameters();
 }
