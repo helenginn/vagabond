@@ -302,6 +302,9 @@ public:
 	* 	\param rotation if true, will refine rotation parameters. */
 	void fitWholeMolecules();
 	static double vsFitWholeMolecules(void *object);
+	void refinePositions();
+	void refineIntraMovements();
+	void refineSidechains();
 	
 	int getCycleNum()
 	{
