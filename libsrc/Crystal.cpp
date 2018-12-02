@@ -765,9 +765,6 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	fourierTransform(1);
 	scaleComponents(data);
 	
-	FFTPtr calcCopy = FFTPtr(new FFT(*_fft));
-	calcCopy->fft(-1);
-	
 	writeMillersToFile(data, prefix);
 
 	double rFac = rFactorWithDiffraction(data, true);
@@ -880,20 +877,6 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 
 	std::vector<double> xs, ys;
 
-	for (int i = 0; i < _difft->nn; i++)
-	{
-		float calc_dens = calcCopy->data[i][0];
-		float weight_dens = _fft->data[i][0];
-		float diff = weight_dens - calc_dens;
-
-		float fdiff = _difft->data[i][0];
-		xs.push_back(diff);
-		ys.push_back(fdiff);
-	}
-
-	double correl = correlation(xs, ys);
-	std::cout << "Correlation between Fourier-derived difference"
-	" and real: " << correl << std::endl;
 
 	if (_bucket)
 	{
