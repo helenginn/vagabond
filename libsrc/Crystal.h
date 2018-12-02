@@ -206,7 +206,8 @@ public:
 	void hydrogenateContents();
 	
 	/**
-	* Find all close atoms within this crystal to a chosen atom.
+	* Find all close atoms within this crystal to a chosen atom. Including
+	* the chosen atom.
 	* \param one chosen atom.
 	* \param tol tolerance in Angstroms - furthest point from a given atom.
 	* \param cache if true, instead of returning atoms, cache given atoms for
