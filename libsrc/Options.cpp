@@ -31,9 +31,18 @@ double Options::_minRes = 0.0;
 double Options::_maxRes = -1.0;
 bool Options::_useRFree = true;
 int Options::_enableTests = 3;
+int Options::_bondAngles = 1;
+bool Options::_peptideMovement = 1;
 bool Options::_powder = false;
 bool Options::_overfit = false;
 bool Options::_diagnostics = false;
+
+bool Options::_refine = false;
+bool Options::_rPosition = true;
+bool Options::_rSidechains = true;
+bool Options::_rInter = true;
+bool Options::_rIntra = true;
+
 std::string Options::_anchor = "";
 ScalingType Options::_scaleType = ScalingTypeShell;
 double Options::_sampling = -1;
@@ -418,6 +427,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "--max-res=", &_maxRes);
 		understood |= parseParameter(arg, "--min-res=", &_minRes);
 		understood |= parseParameter(arg, "--bfactor=", &_bStart);
+		understood |= parseParameter(arg, "--bond-angles=", &_bondAngles);
 		understood |= parseParameter(arg, "--nsamples=", &_nSamples);
 		understood |= parseParameter(arg, "--global-b=", &_bReal);
 		understood |= parseParameter(arg, "--kick=", &_kick);
@@ -454,6 +464,12 @@ void Options::parse()
 		}
 
 		understood |= parseParameter(arg, "tie", &_tie);
+		understood |= parseParameter(arg, "refine", &_refine);
+		understood |= parseParameter(arg, "position", &_rPosition);
+		understood |= parseParameter(arg, "inter-mol", &_rInter);
+		understood |= parseParameter(arg, "intra-mol", &_rIntra);
+		understood |= parseParameter(arg, "peptide-movement",
+		                             &_peptideMovement);
 		understood |= parseParameter(arg, "rfree", &_useRFree);
 		understood |= parseParameter(arg, "diagnostics", &_diagnostics);
 		

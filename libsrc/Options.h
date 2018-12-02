@@ -165,6 +165,38 @@ public:
 		return _solvent;
 	}
 	
+	/** Return which bond angles should be subject to refinement.
+	 * Return values: 0 - no bond angle refinement
+	 * 	              1 - Cb carbons 
+	 * 	              2 - Cg angles for aromatics
+	 * 	              3 - + glycine bond angles
+	 * 	              4 - + various side chain bond angles
+	 */
+	static int getBondAngles()
+	{
+		return _bondAngles;
+	}
+	
+	static bool getPeptideMovement()
+	{
+		return _peptideMovement;
+	}
+	
+	static bool isRefiningPositions()
+	{
+		return _rPosition;
+	}
+
+	static bool isRefiningInterflex()
+	{
+		return _rInter;
+	}
+	
+	static bool isRefiningIntraflex()
+	{
+		return _rIntra;
+	}
+	
 	static void setProteinSampling(double sampling)
 	{
 		_sampling = sampling;	
@@ -286,6 +318,8 @@ private:
 	static std::string _solventFile;
 	static double _kick;
 	static int _solvent;
+	static int _bondAngles;
+	static bool _peptideMovement;
 	static double _dampen;
 	static double _bMult;
 	static double _bSubt;
@@ -299,6 +333,12 @@ private:
 	static double _minRes;
 	static double _maxRes;
 	static std::string _anchor;
+	
+	static bool _rPosition;
+	static bool _rSidechains;
+	static bool _refine;
+	static bool _rInter;
+	static bool _rIntra;
 };
 
 #endif /* defined(__vagabond__Options__) */
