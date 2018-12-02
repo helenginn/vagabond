@@ -317,7 +317,7 @@ public:
 	
 	void setTargetB(double b)
 	{
-		_targetB = +b;
+		_targetB += b;
 		_targetBCount++;
 	}
 	
