@@ -267,6 +267,8 @@ void Polymer::tieAtomsUp()
 	
 	n2ca->checkForSplits(shared_from_this());
 	n2c->checkForSplits(shared_from_this());
+	
+	whack();
 }
 
 void Polymer::removeAtom(AtomPtr atom)
