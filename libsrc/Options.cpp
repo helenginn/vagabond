@@ -112,54 +112,8 @@ void Options::run()
 		diffractions.push_back(diffraction);
 	}
 	
-	int pdbFile = -1;
+	openModel(_modelFile);
 
-	if (_modelFile.length())
-	{
-		if (_modelFile.substr(_modelFile.length() - 3, 3) == "pdb")
-		{
-			std::cout << "Guessing PDB file" << std::endl;
-			pdbFile = 1;
-		}	
-		else
-		{
-			std::cout << "Guessing vbond file" << std::endl;
-			pdbFile = 0;
-		}
-	}
-	else
-	{
-		shout_at_user("Model file has not been specified.");
-	}
-
-	if (pdbFile == 1)
-	{
-		PDBReader pdb = PDBReader();
-		pdb.setFilename(_modelFile);
-		CrystalPtr crystal = pdb.getCrystal();
-		crystal->summary();
-
-		if (!crystal)
-		{
-			std::cout << "Read of " << _modelFile << " failed." << std::endl;
-		}
-		else
-		{
-			objects.push_back(crystal);
-		}
-	}
-	else
-	{
-		VBondReader vReader = VBondReader();
-		vReader.setFilename(_modelFile);
-		CrystalPtr crystal = vReader.getCrystal();
-		crystal->summary();
-
-
-		objects.push_back(crystal);
-		_tie = false;
-	}
-	
 	if (_outputDir.length())
 	{
 		FileReader::setOutputDirectory(_outputDir);
@@ -183,7 +137,7 @@ void Options::run()
 
 	std::cout << std::setprecision(3);
 
-	if (crystals.size() == 1)
+	if (crystals.size() > 1)
 	{
 		CrystalPtr crystal = getActiveCrystal();
 
@@ -680,39 +634,6 @@ void Options::openModel(std::string pdbName)
 	objects.push_back(crystal);
 	crystals.push_back(crystal);
 
-	if (modelType == ModelFilePDB && _tie)
-	{
-		statusMessage("Tying up atoms...");
-		getActiveCrystal()->setAnchors();
-		getActiveCrystal()->tieAtomsUp();
-		getActiveCrystal()->hydrogenateContents();
-	}
-
-	for (size_t i = 0; i < crystal->moleculeCount(); i++)
-	{
-		MoleculePtr molecule = crystal->molecule(i);
-		if (molecule->isPolymer())
-		{
-			PolymerPtr polymer = ToPolymerPtr(molecule);
-			polymer->refreshPositions(true);
-		}
-	}
-
-	crystals[0]->tiedUpScattering();
-
-	if (diffractions.size())
-	{
-		recalculateFFT();
-	}
-	else if (modelType == ModelFilePDB)
-	{
-		statusMessage("Loaded PDB file " + pdbName + ".");
-	}
-	else if (modelType == ModelFileVagabond)
-	{
-		statusMessage("Loaded Vagabond file " + pdbName + ".");
-	}
-
 	notifyGUI(true);
 }
 
@@ -782,26 +703,6 @@ void Options::refinementCycle(MoleculePtr molecule, RefinementType type)
 
 	statusMessage("Refining structure, chain " + molecule->getChainID() + "...");
 	molecule->refine(crystals[0], type);
-}
-
-void Options::fitWholeMolecule(bool translation, bool rotation)
-{
-	if (!diffractions.size())
-	{
-		std::cout << "Cannot refine whole molecule movements to \n"\
-		"density without specifying a reflection file!" << std::endl;
-		return;
-	}
-
-	notifyGUI(false);
-
-	statusMessage("Applying whole-molecule fits...");
-	
-	CrystalPtr crystal = getActiveCrystal();
-	crystal->fitWholeMolecules();
-
-	recalculateFFT();
-	notifyGUI(true);
 }
 
 void Options::recalculateFFT(bool saveState)
@@ -876,27 +777,6 @@ void Options::renderDensity()
 	}
 	
 	_notify->setRenderDensity();
-}
-
-void Options::scanBondParams()
-{
-	CrystalPtr crystal = getActiveCrystal();
-
-	for (int i = 0; i < crystal->moleculeCount(); i++)
-	{
-		MoleculePtr mol = crystal->molecule(i);
-		
-		if (!mol->isPolymer())
-		{
-			continue;
-		}
-		
-		PolymerPtr pol = ToPolymerPtr(mol);
-		
-		pol->refineLocalFlexibility();
-	}
-	
-	recalculateFFT();
 }
 
 void Options::adjustBFactor()

@@ -263,7 +263,6 @@ public:
 	void omitScan();
 	void reflex();
 	void whack();
-	void scanBondParams();
 	void renderDensity();
 	void statusMessage(std::string message);
 	void agreementSummary();
@@ -273,7 +272,6 @@ public:
 	void openMTZ(std::string mtzName);
 	void recalculateFFT(bool saveState = true);
 	void openInCoot();
-	void fitWholeMolecule(bool translation, bool rotation);
 	void findDisulphides();
 	void adjustBFactor();
 
