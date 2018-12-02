@@ -311,6 +311,7 @@ int VagWindow::waitForInstructions()
 {
 	OptionsPtr options = Options::getRuntimeOptions();
 	options->setNotify((Notifiable *)this);
+	CrystalPtr crystal = options->getActiveCrystal();
 	InstructionThread *thread = NULL;
 	thread =  static_cast<InstructionThread *>(QThread::currentThread());
 
@@ -348,7 +349,7 @@ int VagWindow::waitForInstructions()
 			switch (_instructionType)
 			{
 				case InstructionTypeRefinePositions:
-				options->refineAll(RefinementModelPos, 1);
+				crystal->refinePositions();
 				break;
 
 				case InstructionTypeWhack: 
@@ -376,7 +377,7 @@ int VagWindow::waitForInstructions()
 				break;
 
 				case InstructionTypeRefineDensity: 
-				options->refineAll(RefinementSidechain, 1);
+				crystal->refineSidechains();
 				break;
 
 				case InstructionTypeChangeBMult:
