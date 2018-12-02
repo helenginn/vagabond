@@ -128,11 +128,6 @@ public:
 		return _spaceGroup->nsymop;
 	}
 	
-	FFTPtr getCalculatedMap()
-	{
-		return _calcCopy;
-	}
-
 	void omitScan();
 	
 	void differenceAttribution();
@@ -396,7 +391,6 @@ private:
 
 	FFTPtr _fft;
 	FFTPtr _difft;
-	FFTPtr _calcCopy;
 
 	BucketPtr _bucket;
 	int _largestNum;

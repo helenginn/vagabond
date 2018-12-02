@@ -724,6 +724,9 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	fourierTransform(1);
 	scaleComponents(data);
 	
+	FFTPtr calcCopy = FFTPtr(new FFT(*_fft));
+	calcCopy->fft(-1);
+	
 	writeMillersToFile(data, prefix);
 
 	double rFac = rFactorWithDiffraction(data, true);
@@ -745,8 +748,6 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 		          "structure determination.");
 	}
 
-	_calcCopy = FFTPtr(new FFT(*_fft));
-	
 	/* symmetry issues */
 	for (int i = -nLimit; i < nLimit; i++)
 	{
@@ -757,7 +758,7 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 				int _h, _k, _l;
 				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_h, &_k, &_l);
 
-				double amp = sqrt(fftData->getIntensity(_h, _k, _l));
+				double obs_amp = sqrt(fftData->getIntensity(_h, _k, _l));
 				long index = _fft->element(i, j, k);
 
 				int isAbs = CSym::ccp4spg_is_sysabs(_spaceGroup, i, j, k);
@@ -781,7 +782,7 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 					continue;
 				}
 
-				if (amp != amp || isRfree)
+				if (obs_amp != obs_amp || isRfree)
 				{
 					continue;
 				}
@@ -790,84 +791,44 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 				vec2 complex;
 				complex.x = _fft->getReal(index);
 				complex.y = _fft->getImaginary(index);
-				double old_amp = sqrt(complex.x * complex.x +
+				double calc_amp = sqrt(complex.x * complex.x +
 				                      complex.y * complex.y);
 
-				double new_amp = old_amp;
-				new_amp = partsFo * amp - partsFc * old_amp;
-				new_amp /= old_amp;
+				double new_amp = calc_amp;
+				new_amp = partsFo * obs_amp - partsFc * calc_amp;
+				double rescale = new_amp / calc_amp;
 
-				double diff_scale = amp - old_amp;
-				diff_scale /= old_amp;
+				double diff_scale = obs_amp - calc_amp;
+				diff_scale /= calc_amp;
 
 				vec2 diff_complex = complex;
+				complex.x *= rescale;
+				complex.y *= rescale;
 
-				complex.x *= new_amp;
-				complex.y *= new_amp;
-
-				if (amp == amp)
-				{
-					diff_complex.x *= diff_scale;
-					diff_complex.y *= diff_scale;
-				}
-				
 				if (complex.x != complex.x || complex.y != complex.y)
 				{
 					continue;
 				}
 
 				_fft->setElement(index, complex.x, complex.y);
-				_difft->setElement(index, diff_complex.x, diff_complex.y);
-			}
-		}
-	}
-	
-	for (int i = -nLimit; i < nLimit; i++)
-	{
-		for (int j = -nLimit; j < nLimit; j++)
-		{
-			for (int k = -nLimit; k < nLimit; k++)
-			{
+				
 				bool f000 = (i == 0 && j == 0 && k == 0);
-				int _h, _k, _l;
-				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_h, &_k, &_l);
+				
+				if (f000)
+				{
+					continue;
+				}
+				
+				diff_complex.x *= diff_scale;
+				diff_complex.y *= diff_scale;
 
-				double obs_amp = sqrt(fftData->getIntensity(_h, _k, _l));
-
-				vec2 complex;
-				int index = _calcCopy->element(i, j, k);
-
-				int isAbs = CSym::ccp4spg_is_sysabs(_spaceGroup, i, j, k);
-				vec3 ijk = make_vec3(i, j, k);    
-				mat3x3_mult_vec(_real2frac, &ijk);
-				double length = vec3_length(ijk);
-
-				bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
-
-				if (length < minRes || length > maxRes
-				    || (isRfree) || isAbs || f000)    
-				{	
+				if (diff_complex.x != diff_complex.x || 
+				    diff_complex.y != diff_complex.y)
+				{
 					continue;
 				}
 
-				complex.x = _calcCopy->data[index][0];
-				complex.y = _calcCopy->data[index][1];
-
-				double calc_amp = sqrt(_calcCopy->data[index][0] *
-				                       _calcCopy->data[index][0] +
-				                       _calcCopy->data[index][1] *
-				                       _calcCopy->data[index][1]);
-
-				double diff_scale = obs_amp - calc_amp;
-				diff_scale /= calc_amp;
-
-				if (diff_scale != diff_scale) continue;
-
-				complex.x *= diff_scale;
-				complex.y *= diff_scale;
-				
-				_difft->data[index][0] = complex.x;
-				_difft->data[index][1] = complex.y;
+				_difft->setElement(index, diff_complex.x, diff_complex.y);
 			}
 		}
 	}
@@ -876,8 +837,23 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	fourierTransform(-1);
 	_difft->fft(-1);
 
-	_calcCopy->scaleToFFT(_fft);
-	
+	std::vector<double> xs, ys;
+
+	for (int i = 0; i < _difft->nn; i++)
+	{
+		float calc_dens = calcCopy->data[i][0];
+		float weight_dens = _fft->data[i][0];
+		float diff = weight_dens - calc_dens;
+
+		float fdiff = _difft->data[i][0];
+		xs.push_back(diff);
+		ys.push_back(fdiff);
+	}
+
+	double correl = correlation(xs, ys);
+	std::cout << "Correlation between Fourier-derived difference"
+	" and real: " << correl << std::endl;
+
 	if (_bucket)
 	{
 		_bucket->abandonCalculations();
