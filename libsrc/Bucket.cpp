@@ -53,6 +53,12 @@ void Bucket::scaleSolvent()
 	fine->setCycles(40);
 	fine->addParameter(this, getSolvScale, setSolvScale, 0.4, 0.01, "scale");
 	fine->addParameter(this, getSolvBFac, setSolvBFac, 40, 1.0, "bfac");
+	
+	if (getCrystal()->isSilent())
+	{
+		fine->setSilent(true);
+	}
+	
 	fine->refine();
 	
 	/** If we are doing powder analysis we don't actually want
@@ -170,17 +176,17 @@ double Bucket::scaleAndAddSolventScore()
 }
 
 
-void Bucket::applySymOps(CSym::CCP4SPG *spaceGroup, double res)
+void Bucket::applySymOps(CSym::CCP4SPG *spaceGroup)
 {
 	if (spaceGroup->spg_num == 1)
 	{
 		return;
 	}
 
-	_solvent->applySymmetry(spaceGroup, res);
+	_solvent->applySymmetry(spaceGroup, getCrystal()->isSilent());
 }
 
-void Bucket::fourierTransform(int dir, double res)
+void Bucket::fourierTransform(int dir)
 {
 	/* Only care about reciprocal space */
 	if (dir == 1)
@@ -188,7 +194,7 @@ void Bucket::fourierTransform(int dir, double res)
 		CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
 
 		_solvent->fft(dir);
-		applySymOps(spg, res);
+		applySymOps(spg);
 		_solvent->normalise();
 		_solvent->data[0][0] = 0;
 		_solvent->data[0][1] = 0;

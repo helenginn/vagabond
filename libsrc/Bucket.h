@@ -55,8 +55,8 @@ public:
 	void scaleSolvent();
 	static double scaleSolventScore(void *object);
 	double scaleAndAddSolventScore();
-	void applySymOps(CSym::CCP4SPG *spaceGroup, double res);
-	void fourierTransform(int dir, double res);
+	void applySymOps(CSym::CCP4SPG *spaceGroup);
+	void fourierTransform(int dir);
 	void writeMillersToFile(std::string prefix, double maxRes);
 	void abandonCalculations();
 	

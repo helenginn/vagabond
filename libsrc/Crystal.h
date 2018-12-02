@@ -368,7 +368,7 @@ private:
 
 	void makePDBs(std::string suffix);
 	void writeVagabondFile(int cycleNum);
-	void applySymOps(double res = FLT_MAX);
+	void applySymOps();
 	
 	std::string _lastEnsemblePDB;
 	std::string _lastAveragePDB;

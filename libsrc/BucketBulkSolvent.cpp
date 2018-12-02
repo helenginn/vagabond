@@ -43,7 +43,11 @@ void BucketBulkSolvent::addSolvent()
 
 	double frac = (double)num0 / (double)_solvent->nn * 100;
 	frac = 100. - frac;
-	std::cout << "Fraction of solvent: " << frac << std::endl;
+	
+	if (!crystal->isSilent())
+	{
+		std::cout << "Fraction of solvent: " << frac << std::endl;
+	}
 }
 
 void BucketBulkSolvent::removeSlivers()

@@ -721,7 +721,7 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 {
 	realSpaceClutter(data->getMaxResolution());
 	
-	fourierTransform(1, data->getMaxResolution());
+	fourierTransform(1);
 	scaleComponents(data);
 	
 	writeMillersToFile(data, prefix);
@@ -1029,14 +1029,14 @@ Crystal::Crystal()
 	_comments = "";
 }
 
-void Crystal::applySymOps(double res)
+void Crystal::applySymOps()
 {
 	if (_spaceGroup->spg_num == 1)
 	{
 		return;
 	}
 
-	_fft->applySymmetry(_spaceGroup, res);
+	_fft->applySymmetry(_spaceGroup, true);
 }
 
 void Crystal::fourierTransform(int dir, double res)
@@ -1045,14 +1045,14 @@ void Crystal::fourierTransform(int dir, double res)
 
 	if (dir == 1)
 	{
-		applySymOps(res);
+		applySymOps();
 	}
 
-	_fft->normalise();
+//	_fft->normalise();
 	
 	if (_bucket)
 	{
-		_bucket->fourierTransform(dir, res);
+		_bucket->fourierTransform(dir);
 	}
 }
 
