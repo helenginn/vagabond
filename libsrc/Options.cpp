@@ -413,9 +413,7 @@ int Options::parseParameter(std::string arg, std::string prefix,
 
 void Options::writeCommandLine()
 {
-	std::cout << "Full command line to relaunch with chosen options"
-	" and defaults:" << std::endl;
-	std::cout << std::endl;
+	std::cout << "Used command line: " << std::endl << std::endl;
 	std::cout << "vagabond";
 	
 	if (_notify)
@@ -423,21 +421,12 @@ void Options::writeCommandLine()
 		std::cout << "-gui";
 	}
 
-	
-	std::cout << " --with-mtz=" << _mtzFile;
-	std::cout << " --with-model=" << _modelFile;
-	std::cout << " --with-vscript=" << _scriptName;
+	for (int i = 0; i < arguments.size(); i++)
+	{
+		std::cout << arguments[i] << " ";
+	}
 
-	std::cout << " --min-res=" << _minRes;
-	std::cout << " --max-res=" << _maxRes;
-	
-	std::cout << " --bfactor=" << _bStart;
-	std::cout << " --nsamples=" << _nSamples;
-	std::cout << " --global-b=" << _bReal;
-	std::cout << " --output-dir=" << _outputDir;
-	std::cout << " --anchor=" << _anchor;
-	
-	std::cout << std::endl;
+	std::cout << std::endl;	
 }
 
 void Options::parse()
