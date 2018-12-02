@@ -516,7 +516,7 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 
 	_rWork = (*op)(set1, set2);
 
-	if (verbose)
+	if (verbose && !_silent)
 	{
 		_ccWork = correlation(set1, set2);
 		_ccFree = correlation(free1, free2);
@@ -741,7 +741,7 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 	double highRes = _maxResolution;
 	double lowRes = Options::minRes();
 
-	if (verbose)
+	if (verbose && !_silent)
 	{
 		std::cout << "*******************************" << std::endl;
 	}
@@ -749,7 +749,7 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 	double rFactor = valueWithDiffraction(data, &r_factor, verbose, 
 	                                      lowRes, highRes);
 
-	if (verbose)
+	if (verbose && !_silent)
 	{
 		std::cout << "*******************************" << std::endl;
 	}
@@ -1027,6 +1027,7 @@ void Crystal::setAnchors()
 
 Crystal::Crystal()
 {
+	_silent = false;
 	_largestNum = -INT_MAX;
 	_realBFactor = -1;
 	_sampleNum = -1;
@@ -1164,8 +1165,12 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	}
 
 	_cycleNum = cycleNum;
-	std::cout << "*******************************" << std::endl;
-	std::cout << "\tCycle " << cycleNum << std::endl;
+	
+	if (!_silent)
+	{
+		std::cout << "*******************************" << std::endl;
+		std::cout << "\tCycle " << cycleNum << std::endl;
+	}
 
 	std::string refineCount = "cycle_" + i_to_str(cycleNum);
 	double rFac = 0;
@@ -1185,6 +1190,11 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	{
 		rFac = getDataInformation(data, 2, 1, refineCount);
 		Options::flagDensityChanged();
+	}
+	
+	if (_silent)
+	{
+		return 0;
 	}
 
 	makePDBs(i_to_str(cycleNum));
@@ -1476,6 +1486,17 @@ void Crystal::clearCloseCache()
 	{
 		molecule(i)->clearCloseCache();
 	}	
+}
+
+void Crystal::silentConcludeRefinement()
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	DiffractionPtr data = options->getActiveData();
+
+	int num = _cycleNum;
+	_silent = true;
+	concludeRefinement(num, data);
+	_silent = false;
 }
 
 double Crystal::vsConcludeRefinement(void *object)

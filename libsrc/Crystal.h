@@ -66,11 +66,17 @@ public:
 	*/
 	double concludeRefinement(int cycleNum, DiffractionPtr data);
 	static double vsConcludeRefinement(void *object);
+	void silentConcludeRefinement();
 	static void vsRestoreState(void *object, double val);
 
 	static void vsChangeSampleSize(void *object, double n);
 	static void vsSetShellScale(void *object, double val);
 
+	bool isSilent()
+	{
+		return _silent;
+	}
+	
 	/**
 	* How many molecules are included in a Crystal.
 	*/
@@ -396,6 +402,7 @@ private:
 	int _sinceBestNum;
 	int _cycleNum;
 	int _sampleNum;
+	bool _silent;
 	
 	double _solvScale;
 	double _solvBFac;
