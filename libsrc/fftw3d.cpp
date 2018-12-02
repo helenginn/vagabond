@@ -1378,7 +1378,7 @@ vec3 FFT::collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup,
 	return frac;
 }
 
-void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
+void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool silent)
 {
 	fftwf_complex *tempData;
 	tempData = (fftwf_complex *)fftwf_malloc(nn * sizeof(FFTW_DATA_TYPE));
@@ -1387,8 +1387,12 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 	int count = 0;
 
 	//	spaceGroup = CSym::ccp4spg_load_by_ccp4_num(155);
-	std::cout << "Applying symmetry operations for space group " << spaceGroup->symbol_xHM;
-	std::cout << " (" << spaceGroup->spg_num << ")"  << ": " << std::flush;
+	
+	if (!silent)
+	{
+		std::cout << "Applying symmetry operations for space group " << spaceGroup->symbol_xHM;
+		std::cout << " (" << spaceGroup->spg_num << ")"  << ": " << std::flush;
+	}
 
 	/* Loop through and convert data into amplitude and phase */
 	for (int n = 0; n < nn; n++)
@@ -1410,8 +1414,11 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 		float *rot = &spaceGroup->invsymop[l].rot[0][0];
 		count = 0;
 
-		std::cout << l + 1;
-		if (l < spaceGroup->nsymop - 1)
+		if (!silent)
+		{
+			std::cout << l + 1;
+		}
+		if (l < spaceGroup->nsymop - 1 && !silent)
 		{
 			std::cout << ", ";
 		}
@@ -1464,7 +1471,10 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes)
 		}
 	}
 
-	std::cout << "... done." << std::endl;
+	if (!silent)
+	{
+		std::cout << "... done." << std::endl;
+	}
 
 	memcpy(data, tempData, sizeof(FFTW_DATA_TYPE) * nn);
 	free(tempData);
