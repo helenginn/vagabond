@@ -78,8 +78,6 @@ int Model::fftGridLength()
 		n += 1;
 	}
 	
-//	std::cout << "Size " << dim << ", scale " << scale << ", n = " << n << std::endl;
-
 	return n;
 }
 
