@@ -86,6 +86,9 @@ mat3x3 mat3x3_transpose(mat3x3 &mat);
 /** Calculate the determinant of the matrix */
 double mat3x3_determinant(mat3x3 &mat);
 
+/** Calculate the trace of the matrix */
+double mat3x3_trace(mat3x3 &mat);
+
 /** Volume of unit cell described by matrix mat */
 double mat3x3_volume(mat3x3 mat);
 

@@ -104,6 +104,12 @@ mat3x3 mat3x3_mult_mat3x3(struct mat3x3 m1, struct mat3x3 m2)
 	return m;
 }
 
+double mat3x3_trace(mat3x3 &mat)
+{
+	double sum = mat.vals[0] + mat.vals[4] + mat.vals[8];
+	return sum;
+}
+
 double mat3x3_determinant(mat3x3 &mat)
 {
 	double a = mat.vals[0];
