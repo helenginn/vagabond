@@ -43,7 +43,7 @@ mat3x3 Absolute::getRealSpaceTensor()
 	if (!_usingTensor)
 	{
 		mat3x3 realSpaceTensor = make_mat3x3();
-		double scale = _bFactor / (8 * M_PI * M_PI);
+		double scale = b2var(_bFactor);
 		mat3x3_mult_scalar(&realSpaceTensor, scale);
 		return realSpaceTensor;
 	}
@@ -114,7 +114,7 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 		subtract = molecule->getAbsoluteBFacSubt();
 	}
 
-	double sub = subtract / (8 * M_PI * M_PI);
+	double sub = b2var(subtract);
 
 	if (me->_usingTensor)
 	{
@@ -239,7 +239,7 @@ vec3 Absolute::getRandomPosition()
 {
 	/** Assuming isotropic */
 	vec3 randvec = make_vec3(0, 0, 0);	
-	double stdev = sqrt(_bFactor / (8 * M_PI * M_PI));
+	double stdev = sqrt(b2var(_bFactor));
 
 	for (int i = 0; i < 3; i++)
 	{

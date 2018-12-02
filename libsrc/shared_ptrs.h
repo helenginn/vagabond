@@ -26,6 +26,9 @@
 #define deg2rad(a) ((a) * M_PI / 180)
 #define rad2deg(a) ((a) / M_PI * 180)
 
+#define b2var(a) ((a) / (8 * M_PI * M_PI))
+#define var2b(a) ((a) * (8 * M_PI * M_PI))
+
 #define ToBondPtr(a) (boost::static_pointer_cast<Bond>((a)))
 #define ToBondGroupPtr(a) (boost::static_pointer_cast<BondGroup>((a)))
 #define ToAbsolutePtr(a) (boost::static_pointer_cast<Absolute>((a)))
