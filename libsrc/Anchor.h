@@ -72,6 +72,12 @@ public:
 		return _bFactor;
 	}
 	
+	static double sgetBFactor(void *object)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		return anch->_bFactor;
+	}
+	
 	static void ssetBFactor(void *object, double b)
 	{
 		Anchor *anch = static_cast<Anchor *>(object);
