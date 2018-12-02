@@ -75,16 +75,9 @@ double Reflex::bFactorScore(void *object)
 	mat3x3_scale(&inv, obs->nx, obs->ny, obs->nz);
 	mat3x3 basis = mat3x3_inverse(inv);
 	DiffractionPtr data = Options::getRuntimeOptions()->getActiveData();
-	double res = 0;
+	double res = 0; // in Angstroms
 	res = me->_workspace.crystal->getMaxResolution(data);
 	res /= 2;
-	std::vector<double> bins, obsAves, calcAves;
-
-	const int binnum = 20;
-	generateResolutionBins(0, res, binnum, &bins);
-	obsAves = std::vector<double>(binnum, 0);
-	calcAves = std::vector<double>(binnum, 0);
-	std::vector<int> counts = std::vector<int>(binnum, 0);
 
 	std::vector<double> xs, ys;
 	mat3x3 aniso = me->_aniso->getMat3x3();
@@ -97,48 +90,29 @@ double Reflex::bFactorScore(void *object)
 			{
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(basis, &ijk);
-				double length = vec3_length(ijk);
+				double length = vec3_length(ijk); // recip
 				
-				double d = 1 / length;
-				double four_d_sq = (4 * d * d);
+				double d = 1 / length; // real
 				if (d < res)
 				{
 					continue;
 				}
-				
+
+				double four_d_sq = (4 * d * d);
 				double isoBMod = exp(-b / four_d_sq);
 
 				long ele = obs->element(i, j, k);
 
-				float fCalc = sqrt(calc->getIntensity(ele)) * isoBMod;
+				float fCalc = sqrt(calc->getIntensity(ele)) * isoBMod * 
+				me->_kAbs;
 				float fObs = sqrt(obs->getIntensity(ele));
-				
-				for (int l = 0; l < binnum - 1; l++)
-				{
-					if (d < bins[l] && d < bins[l + 1])
-					{
-						obsAves[l] += fObs;
-						calcAves[l] += fCalc;
-						counts[l]++;
-						break;
-					}
-				}
 
-//				xs.push_back(fCalc);
-//				ys.push_back(fObs);
+				xs.push_back(fCalc);
+				ys.push_back(fObs);
 			}
 		}
 	}
 	
-	for (int i = 0; i < binnum - 1; i++)
-	{
-		obsAves[i] /= counts[i];
-		calcAves[i] /= counts[i];
-		
-		xs.push_back(obsAves[i]);
-		ys.push_back(calcAves[i]);
-	}
-
 	double rFac = r_factor(xs, ys);
 
 	return rFac;
@@ -162,7 +136,7 @@ void Reflex::prepareSegments(AtomGroupPtr segment, bool preprocess)
 
 	calcSegment->shiftToCentre();
 	
-	_workspace.flag = MapScoreFlagReplaceWithObs;
+	_workspace.scoreType = ScoreTypeCopyToSmaller;
 	AtomGroup::scoreWithMapGeneral(&_workspace);
 	FFTPtr obsSegment = _workspace.segment;
 	_calcSize = calcSegment->averageAll();
@@ -176,8 +150,11 @@ void Reflex::prepareSegments(AtomGroupPtr segment, bool preprocess)
 		{
 			calcSegment->data[i][0] *= _gradient;
 			calcSegment->data[i][1] *= _gradient;
-		}
 
+			obsSegment->data[i][0] *= _gradient;
+			obsSegment->data[i][1] *= _gradient;
+		}
+		
 		_calcSize = obsSegment->averageAll();
 	}
 	
@@ -198,6 +175,7 @@ void Reflex::refineFlex()
 	nm->setCycles(20);
 	nm->setSilent();
 	nm->addParameter(this, getBFactor, setBFactor, 5, 0.1, "b");
+	nm->addParameter(this, getAbsoluteScale, setAbsoluteScale, 5, 0.1, "k");
 	nm->refine();
 	nm->clearParameters();
 }
@@ -211,21 +189,10 @@ void Reflex::findCalcScale()
 
 	std::vector<double> xs, ys;
 
-	double calc_ave = _calc->averageAll();
 	double obs_ave = _obs->averageAll();
-
-	for (int i = 0; i < _obs->nn; i++)
-	{
-		double fo = _obs->data[i][0];
-		double fc = _calc->data[i][0];
-		
-		xs.push_back(fc);
-		ys.push_back(fo);
-	}
 	
-	_gradient = scale_factor(xs, ys);
 	_intercept = 0;
-	_gradient = obs_ave / calc_ave;
+	_gradient = 1 / obs_ave;
 }
 
 void Reflex::calculate()
