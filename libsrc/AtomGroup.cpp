@@ -187,10 +187,7 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal,
 		bool sameB = (pdbType == PDBTypeSameBFactor);
 		stream << atom(i)->averagePDBContribution(samePos, sameB);
 
-		if (crystal)
-		{
-			stream << atom(i)->anisouPDBLine(crystal);
-		}
+		stream << atom(i)->anisouPDBLine(crystal);
 	}
 
 	return stream.str();
