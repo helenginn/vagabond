@@ -21,6 +21,11 @@
 #define DEFAULT_PEPTIDE_BLUR 0
 #define DEFAULT_RAMACHANDRAN_BLUR 0
 
+Knotter::Knotter()
+{
+	_bondAngles = Options::getBondAngles();
+}
+
 BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
 {
 	AtomPtr cAlpha = _sidechain->findAtom("CA");
@@ -65,7 +70,10 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
 		ca2ha->activate();
 	}
 
-	ca2cb->setRefineBondAngle();
+	if (_bondAngles > 0)
+	{
+		ca2cb->setRefineBondAngle();
+	}
 
 	return ca2cb;
 }
@@ -141,6 +149,12 @@ void Knotter::tieTowardsNTerminus()
 
 	BondPtr carbonyl2CAlpha = BondPtr(new Bond(carbonylCarbon, cAlpha));
 	carbonyl2CAlpha->activate();
+	
+	if (!Options::getPeptideMovement())
+	{
+		carbonyl2CAlpha->setFixed(true);
+		Bond::setTorsion(&*carbonyl2CAlpha, deg2rad(-180));
+	}
 
 	BondPtr carbonyl2oxy = BondPtr(new Bond(carbonylCarbon, carbonylOxygen));
 	carbonyl2oxy->activate();
@@ -149,7 +163,7 @@ void Knotter::tieTowardsNTerminus()
 
 	cAlpha2NSpine->activate();
 	
-	if (isGlycine)
+	if (isGlycine && _bondAngles > 2)
 	{
 		carbonyl2CAlpha->setRefineBondAngle();
 		cAlpha2NSpine->setRefineBondAngle();
@@ -228,6 +242,12 @@ void Knotter::tieTowardsCTerminus()
 	BondPtr nSpine2cAlpha = BondPtr(new Bond(nSpine, cAlpha));
 	nSpine2cAlpha->activate();
 	nSpine2cAlpha->addExtraTorsionSample(carbonylOxygen);
+
+	if (!Options::getPeptideMovement())
+	{
+		nSpine2cAlpha->setFixed(true);
+		Bond::setTorsion(&*nSpine2cAlpha, deg2rad(-180));
+	}
 
 	BondPtr cAlpha2Carbonyl = BondPtr(new Bond(cAlpha, carbonylCarbon));
 	cAlpha2Carbonyl->activate();
@@ -433,7 +453,7 @@ void Knotter::makeMethionine()
 	BondPtr cg2sd = BondPtr(new Bond(cGamma, sDelta));
 	cg2sd->activate();
 
-	if (Options::enableTests() >= 2)
+	if (_bondAngles >= 3)
 	{
 		cb2cg->setRefineBondAngle();
 		cg2sd->setRefineBondAngle();
@@ -529,7 +549,10 @@ void Knotter::makeProline()
 	AtomPtr cDelta = _sidechain->findAtom("CD");
 
 	BondPtr ca2cb = tieBetaCarbon(cGamma);
-	ca2cb->setRefineBondAngle(false);
+	if (_bondAngles >= 0)
+	{
+		ca2cb->setRefineBondAngle(false);
+	}
 	ca2cb->setRefineFlexibility(false);
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
@@ -582,7 +605,10 @@ void Knotter::makeCysteine()
 
 	BondPtr cb2sg = BondPtr(new Bond(cBeta, sGamma));
 	cb2sg->activate();
-	cb2sg->setRefineBondAngle();
+	if (_bondAngles >= 3)
+	{
+		cb2sg->setRefineBondAngle();
+	}
 
 	BondPtr sg2hg = BondPtr(new Bond(sGamma, hGamma));
 	sg2hg->activate();
@@ -646,7 +672,7 @@ void Knotter::makeHistidine()
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->activate();
 
-	if (Options::enableTests() >= 2)
+	if (_bondAngles > 1)
 	{
 		cb2cg->setRefineBondAngle();
 	}
@@ -693,7 +719,7 @@ void Knotter::makeTyrosine()
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->activate();
 
-	if (Options::enableTests() >= 2)
+	if (_bondAngles > 1)
 	{
 		ca2cb->setRefineBondAngle();
 		cb2cg->setRefineBondAngle();
@@ -751,7 +777,7 @@ void Knotter::makePhenylalanine()
 	cb2cg->activate();
 
 
-	if (Options::enableTests() >= 2)
+	if (_bondAngles > 1)
 	{
 		ca2cb->setRefineBondAngle();
 		cb2cg->setRefineBondAngle();
@@ -810,7 +836,7 @@ void Knotter::makeTryptophan()
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->activate();
 
-	if (Options::enableTests() >= 2)
+	if (_bondAngles > 1)
 	{
 		ca2cb->setRefineBondAngle();
 		cb2cg->setRefineBondAngle();
@@ -920,7 +946,6 @@ void Knotter::makeAspartate()
 
 	BondPtr cb2cg1 = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg1->activate();
-	cb2cg1->setRefineBondAngle();
 
 	BondPtr cg1cd1 = BondPtr(new Bond(cGamma, oDelta1));
 	cg1cd1->activate();
