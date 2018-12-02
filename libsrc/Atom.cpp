@@ -457,7 +457,7 @@ std::string Atom::pdbLineBeginning(std::string start)
 		resNum = getMonomer()->getResidueNum();
 	}
 
-	if (isHeteroAtom())
+	if (isHeteroAtom() && start == "ATOM  ")
 	{
 		start = "HETATM";
 		resNum = _atomNum;
@@ -518,11 +518,6 @@ double Atom::posDisplacement()
 
 std::string Atom::anisouPDBLine(CrystalPtr)
 {
-	if (!getMonomer())
-	{
-		return "";
-	}
-
 	ElementPtr element = getElement();
 	if (element->getSymbol() == "H")
 	{
@@ -550,17 +545,6 @@ std::string Atom::anisouPDBLine(CrystalPtr)
 
 std::string Atom::averagePDBContribution(bool samePos, bool sameB)
 {
-	ElementPtr element = getElement();
-	if (element->getSymbol() == "H")
-	{
-//		return "";
-	}
-	
-	if (!getModel()->hasExplicitPositions())
-	{
-		return "";
-	}
-	
 	getModel()->refreshPositions();
 	std::string atomName = getAtomName();
 
