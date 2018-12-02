@@ -60,7 +60,7 @@ public:
 
 	virtual bool shouldRefineAngles()
 	{
-		return (_timesRefined > 1);
+		return (_timesRefined > 2);
 	}
 	
 	bool isRotamerised()
