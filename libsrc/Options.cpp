@@ -202,8 +202,11 @@ void Options::executeProtocol()
 	
 	for (int i = 0; i < 10; i++)
 	{
-		std::cout << "Flex macrocycle (" << 
-		i + 1 << " / 10)" << std::endl;
+		if (_rInter || _rIntra)
+		{
+			std::cout << "Flex macrocycle (" << 
+			i + 1 << " / 10)" << std::endl;
+		}
 		if (_rInter)
 		{
 			getActiveCrystal()->fitWholeMolecules();
@@ -219,10 +222,10 @@ void Options::executeProtocol()
 		}
 	}
 	
-	for (int i = 0; i < 5 && _rPosition; i++)
+	if (_rSidechains)
 	{
 		std::cout << "Refining sidechains to density (" << 
-		i + 1 << " / 1)" << std::endl;
+		1 << " / 1)" << std::endl;
 		getActiveCrystal()->refineSidechains();
 	}
 }
@@ -803,6 +806,11 @@ void Options::pauseGUIFishing(bool on)
 	{
 		getRuntimeOptions()->_notify->pause(on);
 	}
+}
+
+void Options::chelate()
+{
+	getActiveCrystal()->chelate();
 }
 
 void Options::whack()

@@ -74,7 +74,6 @@ public:
 private:
 	void prepareSegments(AtomGroupPtr segment, bool preprocess = true);
 	void segmentPolymer();
-	void findCalcScale();
 	void refineFlex();
 	static double bFactorScore(void *object);
 	

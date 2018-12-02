@@ -81,6 +81,7 @@ public:
 	double getAbsoluteBFacMult();
 	double getAbsoluteBFacSubt();
 	void forceModelRecalculation();
+	void chelate(std::string element, double bufferB = 0);
 
 	void refreshBModels();
 	void setAbsoluteBFacMult(double mult);

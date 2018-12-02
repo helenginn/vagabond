@@ -10,6 +10,7 @@
 #define DEFAULT_HEIGHT (450)
 #define TEXTBOX_X (175)
 #define LABEL_WIDTH (150)
+#define CHECKBOX_WIDTH (250)
 #define TEXTBOX_WIDTH (275)
 
 #include "StartScreen.h"
@@ -43,13 +44,15 @@ void StartScreen::makeButtons()
 	
 	int height = 25;
 	
-	_lInputs = new QLabel("Input files and output folders:", this);
-	_lInputs->setGeometry(25, height, 300, 20);
+	QLabel *q = new QLabel("Input files and output folders:", this);
+	q->setGeometry(25, height, 300, 20);
+	_widgets.push_back(q);
 	 
 	height += 40;
 
-	_lMtz = new QLabel("Reflection file:", this);
-	_lMtz->setGeometry(25, height, LABEL_WIDTH, 20);
+	q = new QLabel("Reflection file:", this);
+	q->setGeometry(25, height, LABEL_WIDTH, 20);
+	_widgets.push_back(q);
 
 	std::string mtzFile = _options->_mtzFile;
 	_tMtz = new QLineEdit(QString::fromStdString(mtzFile), this);
@@ -61,8 +64,9 @@ void StartScreen::makeButtons()
 
 	height += 40;
 
-	_lModel = new QLabel("Model file:", this);
-	_lModel->setGeometry(25, height, LABEL_WIDTH, 20);
+	q = new QLabel("Model file:", this);
+	q->setGeometry(25, height, LABEL_WIDTH, 20);
+	_widgets.push_back(q);
 
 	std::string modelFile = _options->_modelFile;
 	_tModel = new QLineEdit(QString::fromStdString(modelFile), this);
@@ -74,8 +78,9 @@ void StartScreen::makeButtons()
 
 	height += 40;
 
-	_lDir = new QLabel("Output folder:", this);
-	_lDir->setGeometry(25, height, LABEL_WIDTH, 20);
+	q = new QLabel("Output folder:", this);
+	q->setGeometry(25, height, LABEL_WIDTH, 20);
+	_widgets.push_back(q);
 
 	std::string outputDir = _options->_outputDir;
 	
@@ -92,37 +97,29 @@ void StartScreen::makeButtons()
 	connect(_bDir, SIGNAL(clicked()), this, SLOT(chooseDir()));
 
 	height += 50;
+	int indent = 300;
 	
-	_lTweakables = new QLabel("Optional parameters (blank is default):", this);
-	_lTweakables->setGeometry(25, height, 250, 20);
+	q = new QLabel("Optional parameters (blank is default):", this);
+	q->setGeometry(indent, height, 250, 20);
+	_widgets.push_back(q);
 	
 	height += 40;
 
-	/*
-	_lKick = new QLabel("Initial kick:", this);
-	_lKick->setGeometry(25, height, LABEL_WIDTH, 20);
-
-	_tKick = new QLineEdit("0.005", this);
-	_tKick->setGeometry(TEXTBOX_X, height, 120, 25);
-	
-	double kick = Options::getKick();
-	std::string text = f_to_str(kick, 4);
-	_tKick->setText(QString::fromStdString(text));
-
-	_lKickTip = new QLabel("Tip: reduce this to 0.002 if structure is too"\
-	                       " flexible, increase to 0.01 if too rigid.", this);
-	_lKickTip->setWordWrap(true);
-	_lKickTip->setGeometry(310, height - 2, 270, 40);
+	q = new QLabel("Min resolution (Å):", this);
+	q->setGeometry(indent, height, LABEL_WIDTH, 20);
+	_widgets.push_back(q);
 
 	height += 40;
-	*/
 
-
-	_lMinRes = new QLabel("Min resolution (Å):", this);
-	_lMinRes->setGeometry(25, height, LABEL_WIDTH, 20);
+	q = new QLabel("Max resolution (Å):", this);
+	q->setGeometry(indent, height, LABEL_WIDTH, 20);
+	_widgets.push_back(q);
+	
+	indent += 150;
+	height -= 40;
 
 	_tMinRes = new QLineEdit("", this);
-	_tMinRes->setGeometry(TEXTBOX_X, height, 120, 25);
+	_tMinRes->setGeometry(indent, height, 120, 25);
 	
 	if (Options::minRes() > 0)
 	{
@@ -132,18 +129,124 @@ void StartScreen::makeButtons()
 	}
 
 	height += 40;
-
-	_lMaxRes = new QLabel("Max resolution (Å):", this);
-	_lMaxRes->setGeometry(25, height, LABEL_WIDTH, 20);
-
 	_tMaxRes = new QLineEdit("", this);
-	_tMaxRes->setGeometry(TEXTBOX_X, height, 120, 25);
+	_tMaxRes->setGeometry(indent, height, 120, 25);
 
 	if (Options::maxRes() > 0)
 	{
 		double res = Options::maxRes();
 		std::string text = f_to_str(res, 3);
 		_tMaxRes->setText(QString::fromStdString(text));
+	}
+
+	/** Refinement options **/
+	
+	height -= 80;
+	indent = 25;
+
+	q = new QLabel("Refinement options", this);
+	q->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
+	_widgets.push_back(q);
+	
+	height += 20;
+	_cRefine = new QCheckBox("Perform refinement, including", this);
+	_cRefine->setChecked(true);
+	_cRefine->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
+	connect(_cRefine, SIGNAL(stateChanged(int)), 
+	        this, SLOT(toggleDisableOptions(int)));
+
+	indent += 10;
+	height += 20;
+	_cPosition = new QCheckBox("positions to match PDB", this);
+	_cPosition->setChecked(true);
+	_cPosition->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
+	_allToggle.push_back(_cPosition);
+
+	height += 20;
+	_cInter = new QCheckBox("whole molecule flex", this);
+	_cInter->setChecked(true);
+	_cInter->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
+	_allToggle.push_back(_cInter);
+
+	height += 20;
+	_cIntra = new QCheckBox("intramolecular flex", this);
+	_cIntra->setChecked(true);
+	_cIntra->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
+	_allToggle.push_back(_cIntra);
+
+	height += 20;
+	_cCbAngles = new QCheckBox("using variable Cb angles", this);
+	_cCbAngles->setChecked(true);
+	_cCbAngles->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
+	_allToggle.push_back(_cCbAngles);
+	connect(_cCbAngles, SIGNAL(stateChanged(int)), 
+	        this, SLOT(toggleDisableOptions(int)));
+
+	indent += 10;
+	height += 20;
+	_cCgAngles = new QCheckBox("... and Cg angles for aromatics", this);
+	_cCgAngles->setChecked(true);
+	_cCgAngles->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
+	_allToggle.push_back(_cCgAngles);
+	_angleToggle.push_back(_cCgAngles);
+	connect(_cCgAngles, SIGNAL(stateChanged(int)), 
+	        this, SLOT(toggleDisableOptions(int)));
+
+	indent += 10;
+	height += 20;
+	_cGlyAngles = new QCheckBox("... and glycine backbone angles", this);
+	_cGlyAngles->setChecked(false);
+	_cGlyAngles->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
+	_allToggle.push_back(_cGlyAngles);
+	_angleToggle.push_back(_cGlyAngles);
+	_angle2Toggle.push_back(_cGlyAngles);
+
+	indent -= 20;
+	height += 20;
+	_cSidechains = new QCheckBox("refine sidechains to density", this);
+	_cSidechains->setChecked(true);
+	_cSidechains->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
+	_allToggle.push_back(_cSidechains);
+	
+	indent -= 20;
+	height += 20;
+	_cPeptide = new QCheckBox("allow peptide flex from 180°", this);
+	_cPeptide->setChecked(true);
+	_cPeptide->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
+	_cPeptide->hide();
+	_allToggle.push_back(_cPeptide);
+
+}
+
+void StartScreen::toggleDisableOptions(int)
+{
+	bool state = _cRefine->isChecked();
+	
+	for (int i = 0; i < _allToggle.size(); i++)
+	{
+		_allToggle[i]->setEnabled(state);
+	}
+	
+	if (!state)
+	{
+		return;
+	}
+	
+	state = _cCbAngles->isChecked();
+	
+	for (int i = 0; i < _angleToggle.size(); i++)
+	{
+		_angleToggle[i]->setEnabled(state);
+	}
+	
+	if (state)	
+	{
+		state = _cCgAngles->isChecked();
+
+		for (int i = 0; i < _angle2Toggle.size(); i++)
+		{
+			_angle2Toggle[i]->setEnabled(state);
+		}
 	}
 
 }
@@ -172,11 +275,31 @@ void StartScreen::pushRun()
 	_options->_modelFile = _tModel->text().toStdString();
 	_options->_mtzFile = _tMtz->text().toStdString();
 	_options->_outputDir = _tDir->text().toStdString();
+	_options->_peptideMovement = _cPeptide->isChecked();
+	_options->_rSidechains = _cSidechains->isChecked();
 	
-	if (false && _tKick->text().length())
+	int angles = 0;
+	if (_cCbAngles->isChecked())
 	{
-		Options::_kick = _tKick->text().toDouble();
+		angles = 1;
 	}
+	
+	if (_cCgAngles->isChecked())
+	{
+		angles = 2;
+	}
+	
+	if (_cGlyAngles->isChecked())
+	{
+		angles = 3;
+	}
+	
+	_options->_bondAngles = angles;
+	
+	_options->_rPosition = _cPosition->isChecked();
+	_options->_rInter = _cInter->isChecked();
+	_options->_rIntra = _cIntra->isChecked();
+	_options->_refine = _cRefine->isChecked();
 	
 	if (_tMaxRes->text().length())
 	{

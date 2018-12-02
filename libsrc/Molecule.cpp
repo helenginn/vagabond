@@ -1,9 +1,9 @@
-//
-//  Molecule.cpp
+//  Crystal.h
 //  vagabond
 //
-//  Created by Helen Ginn on 11/07/2017.
+//  Created by Helen Ginn on 13/07/2017.
 //  Copyright (c) 2017 Strubi. All rights reserved.
+//
 //
 
 #include "shared_ptrs.h"
@@ -20,6 +20,7 @@
 #include "mat3x3.h"
 #include "Options.h"
 #include "CSV.h"
+#include "Chelate.h"
 #include "Sidechain.h"
 #include "Monomer.h"
 #include "Element.h"
@@ -371,4 +372,43 @@ void Molecule::setAbsoluteBFacSubtract(void *object, double subtract)
 	+ f_to_str(subtract, 2) + " for " + obj->getChainID());
 }
 
+void Molecule::chelate(std::string element, double bufferB)
+{
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 
+	for (int i = 0; i < atomCount(); i++)
+	{
+		AtomPtr a = atom(i);
+		
+		if (a->getElement()->getSymbol() != element)
+		{
+			continue;
+		}
+		
+		std::vector<AtomPtr> atoms;
+		atoms = crystal->getCloseAtoms(a, 2.6);
+		ChelatePtr chelate = ChelatePtr(new Chelate());
+		chelate->setChelatedAtom(a);
+		
+		if (atoms.size() == 0)
+		{
+			continue;
+		}
+		
+		for (size_t j = 0; j < atoms.size(); j++)
+		{
+			AtomPtr b = atoms[j];
+			
+			if (b == a)
+			{
+				continue;
+			}
+			
+			chelate->addChelatingAtom(b);
+		}
+		
+		chelate->setBufferB(bufferB);
+		
+		std::cout << "Chelated " << chelate->shortDesc() << std::endl;
+	}
+}

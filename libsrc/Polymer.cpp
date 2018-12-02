@@ -141,6 +141,7 @@ void Polymer::whack()
 		}
 
 		AtomList atoms = getMonomer(i)->getBackbone()->topLevelAtoms();
+		atoms = getMonomer(i)->findAtoms("CA");
 		
 		if (atoms.size() == 0)
 		{
@@ -960,44 +961,49 @@ double Polymer::overfitTest(int round)
 	
 	BackbonePtr bone = monomer->getBackbone();
 	
-	double st_obs = 0;
-	double st_diff = 0;
-	double weight = 1;
-	st_obs = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
-	                            0, MapScoreFlagNone);
-	st_diff = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
-	                             0, MapScoreFlagDifference);
+	double st_obs = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
+	                                 false, MapScoreFlagNone);
+	double st_diff = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
+	                                 false, MapScoreFlagDifference);
 	
-	weight = 2;
-	for (int i = 0; i < bone->atomCount(); i++)
+	double weight = 0;
+
+	while (true)
 	{
-		AtomPtr atom = bone->atom(i);
-		atom->setWeightOnly(weight);
+		for (int i = 0; i < bone->atomCount(); i++)
+		{
+			AtomPtr atom = bone->atom(i);
+			atom->setWeightOnly(weight);
+		}
+
+		crystal->silentConcludeRefinement();
+
+		double obs = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
+		                                false, MapScoreFlagNone);
+
+		double diff = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
+		                                 false, MapScoreFlagDifference);
+
+		double ratio = obs / st_obs;
+		double diffratio = (diff - st_diff) / (st_obs - st_diff);
+		std::cout << weight << ", " << ratio << ", " << diffratio
+		<< ", " << ratio + diffratio << std::endl;
+		
+		if (ratio > 2)
+		{
+			break;
+		}
+		
+		weight += 0.4;
 	}
 
-	Crystal::vsConcludeRefinement(&*(ToParserPtr(crystal)));
-
-	double obs = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
-	                            0, MapScoreFlagNone);
-	double diff = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
-	                             0, MapScoreFlagDifference);
-	
 	for (int i = 0; i < bone->atomCount(); i++)
 	{
 		AtomPtr atom = bone->atom(i);
 		atom->setWeightOnly(1);
 	}
 
-	Crystal::vsConcludeRefinement(&*(ToParserPtr(crystal)));
-	
-	double delta_obs = obs - st_obs;
-	double delta_diff = diff - st_diff;
-	double ratio = delta_diff / delta_obs;
-	
-	std::cout << st_obs << " " << st_diff << " to " <<
-	obs << " " << diff << " = " << ratio << std::endl;
-
-	return ratio;
+	return weight;
 }
 
 void Polymer::hydrogenateContents()

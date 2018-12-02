@@ -110,6 +110,7 @@ class Anchor;
 class Model;
 class ExplicitModel;
 class Absolute;
+class Chelate;
 class Bond;
 class BondGroup;
 
@@ -117,6 +118,7 @@ typedef boost::shared_ptr<Absolute> AbsolutePtr;
 typedef boost::shared_ptr<Anchor> AnchorPtr;
 typedef boost::weak_ptr<Anchor> AnchorWkr;
 typedef boost::shared_ptr<Model> ModelPtr;
+typedef boost::shared_ptr<Chelate> ChelatePtr;
 typedef boost::shared_ptr<ExplicitModel> ExplicitModelPtr;
 typedef boost::shared_ptr<Bond> BondPtr;
 typedef boost::weak_ptr<Bond> BondWkr;

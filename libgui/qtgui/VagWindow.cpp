@@ -53,13 +53,6 @@ void VagWindow::makeMenu()
 	connect(_qaShell, &QAction::triggered,
 			[=]{ toggleScaling(ScalingTypeShell); });
 	
-	/*
-	_qaKB = scaling->addAction(tr("Absolute scale + B factor"));
-	_qaKB->setCheckable(true);
-	connect(_qaKB, &QAction::triggered,
-			[=]{ toggleScaling(ScalingTypeAbsBFactor); });
-			*/
-	
 	_qaK = scaling->addAction(tr("Absolute scale only"));
 	_qaK->setCheckable(true);
 	connect(_qaK, &QAction::triggered,
@@ -105,7 +98,7 @@ void VagWindow::makeMenu()
 			                    "Subtract from B factor of HETATMs by...",
 		                     0.0); });
 	actions.push_back(bsubt);
-
+	
 	menuItem(model, "Omit scan", InstructionTypeOmitScan);
 	menuItem(model, "Find flexibility", InstructionTypeReflex);
 	
@@ -114,6 +107,29 @@ void VagWindow::makeMenu()
 	        SLOT(refitBackbone()));
 	actions.push_back(refit);
 
+	sep = model->addSeparator();
+	actions.push_back(sep);
+
+	QAction *expMol = model->addAction(tr("Explore crystal..."));
+	connect(expMol, SIGNAL(triggered()), this, 
+	        SLOT(pushExploreCrystal()));
+	actions.push_back(bsubt);
+
+	menuItem(model, "Open in Coot", InstructionTypeOpenInCoot);
+
+	QMenu *mRefine = menuBar()->addMenu(tr("&Refine"));
+	menus.push_back(mRefine);
+
+	menuItem(mRefine, "Positions to PDB", 
+	         InstructionTypeRefinePositions);
+	menuItem(mRefine, "Intermolecule movements",
+	         InstructionTypeFitTranslation);
+	menuItem(mRefine, "Intramolecule movements",
+	         InstructionTypeRefineIntramolecule);
+	menuItem(mRefine, "Sidechains to density",
+	         InstructionTypeRefineDensity);
+	menuItem(mRefine, "Recalculate FFT",
+	         InstructionTypeRecalculateFFT);
 }
 
 void VagWindow::refitBackbone()
@@ -145,79 +161,20 @@ void VagWindow::makeButtons()
 {
 	buttons.clear();
 
-	bRefinePos = new QPushButton("Refine positions to PDB", this);
-	bRefinePos->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 0, BUTTON_WIDTH , 50);
-	bRefinePos->setEnabled(false);
-	connect(bRefinePos, &QPushButton::clicked,
-			[=]{ pushSendInstruction(InstructionTypeRefinePositions); });
-	buttons.push_back(bRefinePos);
-
 	/*
-	bWhack = new QPushButton("Whack", this);
-	bWhack->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 50, BUTTON_WIDTH , 50);
-	bWhack->setEnabled(false);
-	connect(bWhack, &QPushButton::clicked,
-			[=]{ pushSendInstruction(InstructionTypeWhack); });
-
-	buttons.push_back(bWhack);
+	bChelate = new QPushButton("Chelate metals", this);
+	bChelate->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 400, BUTTON_WIDTH , 50);
+	bChelate->setEnabled(false);
+	connect(bChelate, &QPushButton::clicked,
+			[=]{ pushSendInstruction(InstructionTypeChelate); });
+	buttons.push_back(bChelate);
 	*/
-
-	bFitWholeT = new QPushButton("Intermolecule movements", this);
-	bFitWholeT->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 100, BUTTON_WIDTH , 50);
-	bFitWholeT->setEnabled(false);
-	connect(bFitWholeT, &QPushButton::clicked,
-			[=]{ pushSendInstruction(InstructionTypeFitTranslation); });
-
-	buttons.push_back(bFitWholeT);
-
-	bWaterNetwork = new QPushButton("Intramolecule movements", this);
-	bWaterNetwork->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 150, BUTTON_WIDTH , 50);
-	bWaterNetwork->setEnabled(false);
-	connect(bWaterNetwork, SIGNAL(clicked()), this, SLOT(refineWaterNetwork()));
-	buttons.push_back(bWaterNetwork);
-
-	bRefineDensity = new QPushButton("Refine sidechains to density", this);
-	bRefineDensity->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 200, BUTTON_WIDTH , 50);
-	bRefineDensity->setEnabled(false);
-	connect(bRefineDensity, &QPushButton::clicked,
-			[=]{ pushSendInstruction(InstructionTypeRefineDensity); });
-	buttons.push_back(bRefineDensity);
-
-	bRecalculate = new QPushButton("Recalculate FFT", this);
-	bRecalculate->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 300, BUTTON_WIDTH , 50);
-	bRecalculate->setEnabled(false);
-	connect(bRecalculate, &QPushButton::clicked,
-			[=]{ pushSendInstruction(InstructionTypeRecalculateFFT); });
-	buttons.push_back(bRecalculate);
-
-	bPrevious = new QPushButton("Restore previous state", this);
-	bPrevious->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 400, BUTTON_WIDTH , 50);
-	bPrevious->setEnabled(false);
-	connect(bPrevious, &QPushButton::clicked,
-			[=]{ pushSendInstruction(InstructionTypePreviousState); });
-	buttons.push_back(bPrevious);
-
 
 	bExploreMolecule = new QPushButton("Explore molecule", this);
 	bExploreMolecule->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 450, BUTTON_WIDTH , 50);
 	bExploreMolecule->setEnabled(false);
 	bExploreMolecule->setMenu(new QMenu(this));
 	buttons.push_back(bExploreMolecule);
-
-	bExploreCrystal = new QPushButton("Explore crystal", this);
-	bExploreCrystal->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 500, 
-	                             BUTTON_WIDTH , 50);
-	bExploreCrystal->setEnabled(false);
-	connect(bExploreCrystal, SIGNAL(clicked()), this, 
-	        SLOT(pushExploreCrystal()));
-	buttons.push_back(bExploreCrystal);
-
-	bCoot = new QPushButton("Open in Coot", this);
-	bCoot->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 550, BUTTON_WIDTH , 50);
-	bCoot->setEnabled(false);
-	connect(bCoot, &QPushButton::clicked,
-			[=]{ pushSendInstruction(InstructionTypeOpenInCoot); });
-	buttons.push_back(bCoot);
 
 	_myDialogue = NULL;
 	_moleExplorer = NULL;
@@ -311,7 +268,6 @@ int VagWindow::waitForInstructions()
 {
 	OptionsPtr options = Options::getRuntimeOptions();
 	options->setNotify((Notifiable *)this);
-	CrystalPtr crystal = options->getActiveCrystal();
 	InstructionThread *thread = NULL;
 	thread =  static_cast<InstructionThread *>(QThread::currentThread());
 
@@ -326,6 +282,8 @@ int VagWindow::waitForInstructions()
 			return 1;
 		}
 	}
+
+	CrystalPtr crystal = options->getActiveCrystal();
 
 	while (true)
 	{
@@ -350,6 +308,7 @@ int VagWindow::waitForInstructions()
 			{
 				case InstructionTypeRefinePositions:
 				crystal->refinePositions();
+				options->recalculateFFT();
 				break;
 
 				case InstructionTypeWhack: 
@@ -357,7 +316,8 @@ int VagWindow::waitForInstructions()
 				break;
 
 				case InstructionTypeFitTranslation: 
-				options->fitWholeMolecule(true, false);
+				crystal->fitWholeMolecules();
+				options->recalculateFFT();
 				break;
 
 				case InstructionTypeSqueezeToEnd: 
@@ -378,6 +338,7 @@ int VagWindow::waitForInstructions()
 
 				case InstructionTypeRefineDensity: 
 				crystal->refineSidechains();
+				options->recalculateFFT();
 				break;
 
 				case InstructionTypeChangeBMult:
@@ -388,13 +349,17 @@ int VagWindow::waitForInstructions()
 				options->findDisulphides();
 				break;
 
-				case InstructionTypeRefineWaterNetwork:
-				options->scanBondParams();
-//				options->refineAll(RefinementWaterNetwork, 1);
+				case InstructionTypeRefineIntramolecule:
+				crystal->refineIntraMovements();
+				options->recalculateFFT();
 				break;
 
 				case InstructionTypeRecalculateFFT:
 				options->recalculateFFT();
+				break;
+
+				case InstructionTypeChelate:
+				options->chelate();
 				break;
 
 				case InstructionTypeOpenInCoot:
@@ -542,12 +507,6 @@ void VagWindow::pushSendInstruction(InstructionType inst)
 	wait.wakeAll();
 }
 
-void VagWindow::refineWaterNetwork()
-{
-	_instructionType = InstructionTypeRefineWaterNetwork;
-	wait.wakeAll();
-}
-
 void VagWindow::restorePreviousState()
 {
 	_instructionType = InstructionTypePreviousState;
@@ -565,6 +524,7 @@ void VagWindow::pushExploreCrystal()
 	if (crystal)
 	{
 		_xtalExplorer = new CrystalExplorer(this, crystal);
+		_xtalExplorer->setKeeper(display->getKeeper());
 		_xtalExplorer->show();
 	}
 }

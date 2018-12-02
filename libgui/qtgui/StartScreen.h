@@ -7,6 +7,7 @@
 #include "../../libsrc/shared_ptrs.h"
 #include <QtWidgets/qlineedit.h>
 #include <QtWidgets/qfiledialog.h>
+#include <QtWidgets/qcheckbox.h>
 
 class StartScreen: public QMainWindow
 {
@@ -20,31 +21,32 @@ private:
 
 	QPushButton *_bMtz;
 	QLineEdit *_tMtz;
-	QLabel *_lMtz;
 
 	QPushButton *_bModel;
 	QLineEdit *_tModel;
-	QLabel *_lModel;
 
 	QPushButton *_bDir;
 	QLineEdit *_tDir;
-	QLabel *_lDir;
-
-	QLabel *_lTweakables;
-	QLabel *_lInputs;
-
 	QLineEdit *_tKick;
-	QLabel *_lKick;
-	QLabel *_lKickTip;
-	
 	QLineEdit *_tMinRes;
-	QLabel *_lMinRes;
-	
 	QLineEdit *_tMaxRes;
-	QLabel *_lMaxRes;
+	
+	QCheckBox *_cRefine;
+	QCheckBox *_cPosition;
+	QCheckBox *_cInter;
+	QCheckBox *_cIntra;
+	QCheckBox *_cCbAngles;
+	QCheckBox *_cCgAngles;
+	QCheckBox *_cGlyAngles;
+	QCheckBox *_cPeptide;
+	QCheckBox *_cSidechains;
 	
 	OptionsPtr _options;
 	QFileDialog *_fileDialogue;   
+	
+	std::vector<QWidget *> _widgets;
+	std::vector<QCheckBox *> _allToggle;
+	std::vector<QCheckBox *> _angleToggle, _angle2Toggle;
 	
 	void makeButtons();
 	int _argc;
@@ -57,6 +59,8 @@ private slots:
 	void chooseMtz();
 	void chooseModel();
 	void chooseDir();
+	
+	void toggleDisableOptions(int);
 };
 
 #endif

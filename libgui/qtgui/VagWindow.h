@@ -58,6 +58,10 @@ public:
 		return &_instructionThread;	
 	}
 	
+	VagabondGLWidget *getDisplay()
+	{
+		return display;
+	}
 protected:
 	virtual void resizeEvent(QResizeEvent *);
 private slots:
@@ -65,7 +69,6 @@ private slots:
 	void pushExploreMcule();
 	void pushExploreCrystal();
 	void restorePreviousState();
-	void refineWaterNetwork();
 	void pushSendInstruction(InstructionType inst);
 
 	void toggleScaling(ScalingType type);
@@ -97,6 +100,7 @@ private:
 
 	/* Buttons down the side */
 	QPushButton *bRefinePos;
+	QPushButton *bChelate;
 	QPushButton *bWhack;
 	QPushButton *bChangeBMult;
 	QPushButton *bExploreMolecule;
@@ -105,7 +109,6 @@ private:
 	QPushButton *bRefineDensity;
 	QPushButton *bFitWholeR;
 	QPushButton *bFitWholeT;
-	QPushButton *bWaterNetwork;
 	QPushButton *bPrevious;
 	QPushButton *bCoot;
 	std::vector<QPushButton *> buttons;

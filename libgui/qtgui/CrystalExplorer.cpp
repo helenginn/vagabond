@@ -9,6 +9,7 @@
 #include "../../libsrc/Crystal.h"
 #include "../../libsrc/Shouter.h"
 #include "MoleListItem.h"
+#include "MoleculeExplorer.h"
 #include "../../libsrc/FileReader.h"
 #include "SetterEdit.h"
 #include "../../libsrc/Polymer.h"
@@ -48,6 +49,7 @@ void CrystalExplorer::clickedMoleListItem()
 
 	MoleListItem *item = static_cast<MoleListItem *>(_moleList->currentItem());
 	MoleculePtr molecule = item->getMole();
+	_currMole = molecule;
 	std::string sIntro = molecule->getClassName() + " " + molecule->getChainID();
 	sIntro += " (" + i_to_str(molecule->atomCount()) + " atoms)";
 	
@@ -103,6 +105,15 @@ void CrystalExplorer::clickedMoleListItem()
 		edit->setSetterAndObject(&*anchor, Anchor::ssetBFactor);
 		edit->show();
 		_widgets.push_back(edit);
+		
+		height += TEXT_HEIGHT;
+		
+		QPushButton *b = new QPushButton("Sequence", this);
+		b->setGeometry(160, height, 60, TEXT_HEIGHT);
+		b->setEnabled(false);
+		connect(b, &QPushButton::clicked,
+		        [=]{ pushSequence(); });
+		_widgets.push_back(b);
 	}
 
 }
@@ -118,6 +129,17 @@ CrystalExplorer::CrystalExplorer(QWidget *parent, CrystalPtr crystal)
 	this->setWindowTitle(title);
 	
 	populateList();
+}
+
+void CrystalExplorer::pushSequence()
+{
+	delete _moleExplorer;
+	_moleExplorer = NULL;
+
+	_moleExplorer = new MoleculeExplorer(this, _currMole);
+	_moleExplorer->setGLKeeper(_keeper);
+	_moleExplorer->show();
+
 }
 
 void CrystalExplorer::clearWidgets()

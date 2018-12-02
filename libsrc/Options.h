@@ -263,6 +263,7 @@ public:
 	void omitScan();
 	void reflex();
 	void whack();
+	void chelate();
 	void renderDensity();
 	void statusMessage(std::string message);
 	void agreementSummary();

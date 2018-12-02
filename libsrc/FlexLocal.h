@@ -47,9 +47,6 @@ public:
 	
 	/** Performs preliminary work and refinement simultaneously */
 	void refine();
-
-	/** Refines anchor point against target Bs */
-	void refineAnchor();
 	
 	/** Get current value of the magnitude of trial kick set */
 	double getShift()
@@ -64,8 +61,6 @@ public:
 	}
 	
 	void setWhacking(bool whack);
-	
-	void toElectronDensity();
 private:
 	void createAtomTargets();
 	AtomTarget currentAtomValues();

@@ -50,66 +50,10 @@ FlexLocal::~FlexLocal()
 	}
 }
 
-void FlexLocal::toElectronDensity()
-{
-	_flexGlobal = new FlexGlobal();
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	AtomGroupPtr allBackbone = _polymer->getAllBackbone();
-	_flexGlobal->setAtomGroup(allBackbone);
-	_flexGlobal->setCrystal(crystal);
-	_flexGlobal->matchElectronDensity();
-	_direct = 1;
-}
-
 void FlexLocal::setPolymer(PolymerPtr pol, double shift)
 {
 	_polymer = pol;
 	_shift = shift;
-}
-
-void FlexLocal::refineAnchor()
-{
-	std::cout << "---------------------------------------------------------"
-	<< std::endl;
-	std::cout << "|  Refining whole molecule for chain " 
-	<< _polymer->getChainID();
-	std::cout << std::endl;
-	std::cout << "---------------------------------------------------------"
-	<< std::endl;
-
-	reflex();
-	createAtomTargets();
-	
-	std::cout << "| 1. Refining libration...   " << std::flush;
-
-	Timer timer;
-	AnchorPtr anchor = _polymer->getAnchorModel();
-
-	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
-	nelder->setCycles(24);
-	nelder->setSilent();	
-	
-	nelder->setEvaluationFunction(getScore, this);
-//	anchor->addTranslationParameters(nelder, 0.2);
-	anchor->addLibrationParameters(nelder, 0.2);
-	nelder->refine();
-
-	double val = (1 - getScore(this)) * 100.;
-
-	if (nelder->didChange())
-	{
-		std::cout << std::setw(8) << val << "% improved. ... done. ";
-	}
-	else
-	{
-		std::cout << " not improved.";
-	}
-
-	timer.quickReport();
-	std::cout << std::endl;
-	
-	std::cout << "---------------------------------------------------------"
-	<< std::endl;
 }
 
 void FlexLocal::refine()

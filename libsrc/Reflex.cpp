@@ -175,24 +175,9 @@ void Reflex::refineFlex()
 	nm->setCycles(20);
 	nm->setSilent();
 	nm->addParameter(this, getBFactor, setBFactor, 5, 0.1, "b");
-	nm->addParameter(this, getAbsoluteScale, setAbsoluteScale, 0.5, 0.01, "k");
+	nm->addParameter(this, getAbsoluteScale, setAbsoluteScale, 5, 0.01, "k");
 	nm->refine();
 	nm->clearParameters();
-}
-
-void Reflex::findCalcScale()
-{
-	prepareSegments(_polymer, false);
-	
-	_calc->fft(1);
-	_obs->fft(1);
-
-	std::vector<double> xs, ys;
-
-	double obs_ave = _obs->averageAll();
-	
-	_intercept = 0;
-	_gradient = 1 / obs_ave;
 }
 
 void Reflex::calculate()
@@ -203,7 +188,6 @@ void Reflex::calculate()
 	}
 	
 	segmentPolymer();
-	findCalcScale();
 	
 	CSVPtr csv = CSVPtr(new CSV(2, "seg", "calc_ave"));
 	

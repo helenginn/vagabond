@@ -345,6 +345,7 @@ public:
 	
 	void updateLargestNum(AtomPtr atom);
 	void whack();
+	void chelate();
 
 	int issueAtomNumber()
 	{

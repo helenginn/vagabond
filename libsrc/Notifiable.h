@@ -33,10 +33,11 @@ typedef enum
 	InstructionTypePreviousState,
 	InstructionTypeFitTranslation,
 	InstructionTypeFindDisulphides,
-	InstructionTypeRefineWaterNetwork,
+	InstructionTypeRefineIntramolecule,
 	InstructionTypeSplitBond,
 	InstructionTypeAdjustBFactor,
 	InstructionTypeRefitBackbone,
+	InstructionTypeChelate,
 	InstructionTypeWhack,
 } InstructionType;
 

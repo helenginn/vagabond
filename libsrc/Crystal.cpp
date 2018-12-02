@@ -899,7 +899,7 @@ void Crystal::overfitTest()
 
 		PolymerPtr polymer = ToPolymerPtr(molecule(i));
 
-		for (int j = 0; j < 10; j++)
+		for (int j = 2; j < 10; j++)
 		{
 			double result = polymer->overfitTest(j);
 			
@@ -1701,5 +1701,26 @@ void Crystal::whack()
 		}
 		
 		ToPolymerPtr(mol)->whack();
+	}
+}
+
+void Crystal::chelate()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		MoleculePtr mole = molecule(i);
+
+		if (mole->isPolymer())
+		{
+			continue;
+		}
+		
+		mole->chelate("ZN", 15.);
+		mole->chelate("CA", 15.);
+		
+		if (!mole->isWaterNetwork())
+		{
+			continue;
+		}
 	}
 }

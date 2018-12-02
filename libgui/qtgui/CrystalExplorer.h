@@ -18,8 +18,10 @@
 #include <QtWidgets/qtextedit.h>
 #include <QtWidgets/qmainwindow.h>
 #include <QtWidgets/qlistwidget.h>
-
 #include "../../libsrc/shared_ptrs.h"
+
+class MoleculeExplorer;
+class GLKeeper;
 
 class CrystalExplorer : public QMainWindow
 {
@@ -31,10 +33,20 @@ public:
 	
 	~CrystalExplorer();
 	
+	void setKeeper(GLKeeper *keeper)
+	{
+		_keeper = keeper;
+	}
 private slots:
 	void clickedMoleListItem();
+	void pushSequence();
 	
 private:
+	MoleculePtr _currMole;
+	MoleculeExplorer *_moleExplorer;
+	
+	GLKeeper *_keeper;
+
 	CrystalPtr _crystal;
 	QListWidget *_moleList;
 	std::vector<QWidget *> _widgets;
