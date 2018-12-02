@@ -25,6 +25,7 @@
 
 FlexLocal::FlexLocal()
 {
+	_startB = 0;
 	_shift = 0.05;
 	_run = 0;
 	_window = 10;
@@ -33,8 +34,8 @@ FlexLocal::FlexLocal()
 	_anchorB = 0;
 	_afterBond = -1;
 	_threshold = 0.80;
-	_increment = 8;
-	_useTarget = false;
+	_increment = 5;
+	_useTarget = true;
 	_usingWhack = false;
 	_getter = Bond::getKick;
 	_flexGlobal = NULL;
@@ -122,6 +123,7 @@ void FlexLocal::refine()
 		std::vector<ParamBandPtr> extras;
 
 		bool reduceShift = false;
+		bool success = false;
 
 		for (int j = 0; j < 5; j++)
 		{
@@ -133,6 +135,10 @@ void FlexLocal::refine()
 			NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
 			nelder->setCycles(30);
 			nelder->setSilent();	
+
+			AnchorPtr anchor = _polymer->getAnchorModel();
+//			nelder->addParameter(&*anchor, Anchor::sgetBFactor, 
+//			                     Anchor::ssetBFactor, 0.05, 0.005, "b");
 
 			nelder->setEvaluationFunction(getScore, this);
 
@@ -180,6 +186,7 @@ void FlexLocal::refine()
 				{
 					timer.quickReport();
 					std::cout << std::endl;
+					success = true;
 					break;
 				}
 			}
@@ -384,16 +391,13 @@ void FlexLocal::createAtomTargets()
 {
 	int res = _polymer->getAnchor();
 	AtomPtr ca = _polymer->getMonomer(res)->findAtom("CA");
-	_anchorB = ca->getTargetB();
 	
-	if (_anchorB != _anchorB || !_useTarget)
-	{
-		_anchorB = 0;
-	}
 	AnchorPtr anchor = _polymer->getAnchorModel();
 	_anchorB = anchor->getBFactor();
 	
 	std::vector<double> all;
+	double count = 0;
+	_startB = 0;
 	
 	/* First, choose which atoms to worry about, and find their
 	 * starting B factors. */
@@ -426,12 +430,12 @@ void FlexLocal::createAtomTargets()
 		{
 			_afterBond = _bonds.size();
 		}
-
+		
 		if (a->getAtomName() != "CA")
 		{
 			continue;
 		}
-		
+
 		_bonds.push_back(b);
 
 		double ibf = a->getInitialBFactor() - ca->getInitialBFactor();
@@ -447,28 +451,26 @@ void FlexLocal::createAtomTargets()
 		_atoms.push_back(a);
 		_atomTargets[a] = ibf;
 		_atomOriginal[a] = bf;
+		
+		_startB += bf;
+		count++;
+
 		all.push_back(ibf);	
 	}
 	
+	_startB /= count;
+	
 	if (_useTarget)
 	{
-		std::sort(all.begin(), all.end(), std::less<double>());
-		int aim = all.size() / 20;
-		
-		if (aim == 0)
-		{
-			aim = 1;
-		}
+		double mean_b = mean(all);
+		double stdev_b = standard_deviation(all);
 
-		double sum = 0;
-		
-		for (int i = 0; i < aim && i < all.size(); i++)
+		for (int i = 0; i < _atoms.size(); i++)
 		{
-			sum += all[i];
+			AtomPtr a = _atoms[i];
+			_atomTargets[a] -= mean_b;
+			_atomTargets[a] += stdev_b / 2;
 		}
-		
-		sum /= (double)aim;
-		_anchorB = sum;
 	}
 }	
 
@@ -723,6 +725,39 @@ double FlexLocal::directSimilarity()
 	return rfactor;
 }
 
+double FlexLocal::sgetTotalBChange(void *object)
+{
+	FlexLocal *local = static_cast<FlexLocal *>(object);
+	return local->getTotalBChange();
+}
+
+double FlexLocal::getTotalB()
+{
+	double sum = 0;
+	double count = 0;
+
+	for (int i = 0; i < _atoms.size(); i++)
+	{
+		AtomPtr a = _atoms[i];
+		double bf = a->getBFactor();
+
+		sum += bf;
+		count++;
+	}
+
+	sum /= count;
+
+	return sum;
+}
+
+double FlexLocal::getTotalBChange()
+{
+	double sum = getTotalB();
+	double diff = _startB - sum;
+	
+	return fabs(diff);
+}
+
 double FlexLocal::getScore(void *object)
 {
 	FlexLocal *local = static_cast<FlexLocal *>(object);
@@ -751,7 +786,7 @@ void FlexLocal::reflex()
 	std::cout << "| 0. Determining atom-flexibility targets... " << std::flush;
 	Reflex reflex;
 	reflex.setPolymer(_polymer);
-	reflex.setPieceCount(3);
+	reflex.setPieceCount(1);
 	reflex.calculate();
 	std::cout << "   ... done. ";
 	timer.quickReport();
@@ -811,11 +846,11 @@ void FlexLocal::scanBondParams()
 		plotMap["xTitle0"] = "Residue number";
 		plotMap["yTitle0"] = "B factor target";
 		plotMap["style0"] = "line";
-		plotMap["yMin0"] = "-2";
-		plotMap["yMax0"] = "5";
 
 		atomtarg->plotPNG(plotMap);
 
+		plotMap["yMin0"] = "-1";
+		plotMap["yMax0"] = "2";
 		plotMap["filename"] = "atom_increments_" + _polymer->getGraphName();
 		plotMap["yHeader0"] = "increment";
 		atomtarg->plotPNG(plotMap);
@@ -900,7 +935,8 @@ void FlexLocal::scanBondParams()
 	/* Output bond scan matrix */
 
 	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = "bond_scan_" + _polymer->getGraphName();
+	plotMap["filename"] = "bond_scan_" + _polymer->getGraphName()
+	+ (_negMult > 0 ? "a" : "b");
 	plotMap["height"] = "1000";
 	plotMap["width"] = "1000";
 	plotMap["xHeader0"] = "kick";

@@ -81,10 +81,14 @@ private:
 	double bondAtomCorrel(BondPtr b);
 	double actualAtomChange(AtomPtr a);
 	double targetForAtom(AtomPtr a);
+	double getTotalBChange();
 	
 	double directSimilarity();
+	static double sgetTotalBChange(void *object);
+	double getTotalB();
 
 	void chooseBestDifferenceThreshold();
+
 	std::map<int, int> getClusterMembership(double threshold);
 
 	PolymerPtr _polymer;
@@ -106,6 +110,7 @@ private:
 	bool _useTarget;
 	bool _usingWhack;
 	int _afterBond;
+	double _startB;
 	double _threshold;
 	double _increment;
 	double _anchorB;
