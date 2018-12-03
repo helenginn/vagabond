@@ -351,8 +351,8 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 				mat3x3_mult_vec(_real2frac, &ijk);
 				double length = vec3_length(ijk);
 
-				double data = fftData->getIntensity(_i, _j, _k);
-				double calc = model->getIntensity(i, j, k);
+				double data = sqrt(fftData->getIntensity(_i, _j, _k));
+				double calc = sqrt(model->getIntensity(i, j, k));
 
 				if (data != data || calc != calc) continue;
 				
@@ -371,8 +371,8 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 		}
 	}
 				
-	CSVPtr csv = CSVPtr(new CSV(2, "data", "model"));
-	std::vector<double> xs, ys;
+	CSVPtr csv = CSVPtr(new CSV(3, "res", "data", "model"));
+	std::vector<double> xs, ys, zs;
 
 	for (size_t i = 0; i < bins.size() - 1; i++)
 	{
@@ -389,34 +389,40 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 			den += binRatios[i][j].intc;
 		}
 		
-		double ratio = nom / den;
+		nom /= (double)binRatios[i].size();
+		den /= (double)binRatios[i].size();
+		
 		double length = (1/bins[i] + 1/bins[i + 1]) / 2;
 
 		double res = 1 / length;
 		double four_dsq = 4 * res * res;
 		double right_exp = 1 / four_dsq;
-		double logratio = log(ratio);
+		double logcalc = log(den);
+		double logobs = log(nom);
 
-//		std::cout << "Pair: " << right_exp << " " << logratio << std::endl;
-		csv->addEntry(2, right_exp, logratio);
-
+		csv->addEntry(3, right_exp, logobs, logcalc);
 		xs.push_back(right_exp);
-		ys.push_back(logratio);
+		ys.push_back(logobs);
+		zs.push_back(logcalc);
 	}
 	
-	if (Options::makeDiagnostics())
+	if (true || Options::makeDiagnostics())
 	{
 		std::map<std::string, std::string> plotMap;
 		plotMap["filename"] = "bfactor_fit_" + i_to_str(_cycleNum);
 		plotMap["height"] = "700";
 		plotMap["width"] = "1200";
-		plotMap["xHeader0"] = "data";
-		plotMap["yHeader0"] = "model";
+		plotMap["xHeader0"] = "res";
+		plotMap["xHeader1"] = "res";
+		plotMap["yHeader0"] = "data";
+		plotMap["yHeader1"] = "model";
 
-		plotMap["colour0"] = "black";
+		plotMap["colour0"] = "blue";
+		plotMap["colour1"] = "black";
 		plotMap["xTitle0"] = "1 / (4dd)";
-		plotMap["yTitle0"] = "ratio";
+		plotMap["yTitle0"] = "log(val)";
 		plotMap["style0"] = "line";
+		plotMap["style1"] = "line";
 
 		csv->setSubDirectory("correlation_plots");
 		csv->plotPNG(plotMap);
@@ -424,6 +430,9 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 
 	double intercept, gradient;
 	regression_line(xs, ys, &intercept, &gradient);
+	std::cout << "Wilson plot  (data): " << -gradient << std::endl;
+	regression_line(xs, zs, &intercept, &gradient);
+	std::cout << "Wilson plot (model): " << -gradient << std::endl;
 
 	double k = exp(intercept);
 	double b = -gradient;
