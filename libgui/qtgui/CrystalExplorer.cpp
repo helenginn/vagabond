@@ -101,16 +101,15 @@ void CrystalExplorer::clickedMoleListItem()
 		edit = new SetterEdit(this);
 		edit->setGeometry(340, height, 100, TEXT_HEIGHT);
 		edit->setText(QString::fromStdString(sAnch));
-
+		edit->setMonomer(molecule);
 		edit->setSetterAndObject(&*anchor, Anchor::ssetBFactor);
 		edit->show();
+
 		_widgets.push_back(edit);
 		
-		height += TEXT_HEIGHT;
-		
 		QPushButton *b = new QPushButton("Sequence", this);
-		b->setGeometry(160, height, 60, TEXT_HEIGHT);
-		b->setEnabled(false);
+		b->setGeometry(460, height, 80, TEXT_HEIGHT);
+		b->show();
 		connect(b, &QPushButton::clicked,
 		        [=]{ pushSequence(); });
 		_widgets.push_back(b);

@@ -89,7 +89,6 @@ private:
 	                    double _default = 100);
 	void splitBond();
 	void squeezeToEnd();
-	void updateExplorerButton();
 	void refineToEnd();
 	void modelPosToEnd();
 	void sidechainsToEnd();
@@ -103,7 +102,6 @@ private:
 	QPushButton *bChelate;
 	QPushButton *bWhack;
 	QPushButton *bChangeBMult;
-	QPushButton *bExploreMolecule;
 	QPushButton *bExploreCrystal;
 	QPushButton *bRecalculate;
 	QPushButton *bRefineDensity;

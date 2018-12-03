@@ -161,54 +161,9 @@ void VagWindow::makeButtons()
 {
 	buttons.clear();
 
-	/*
-	bChelate = new QPushButton("Chelate metals", this);
-	bChelate->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 400, BUTTON_WIDTH , 50);
-	bChelate->setEnabled(false);
-	connect(bChelate, &QPushButton::clicked,
-			[=]{ pushSendInstruction(InstructionTypeChelate); });
-	buttons.push_back(bChelate);
-	*/
-
-	bExploreMolecule = new QPushButton("Explore molecule", this);
-	bExploreMolecule->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 450, BUTTON_WIDTH , 50);
-	bExploreMolecule->setEnabled(false);
-	bExploreMolecule->setMenu(new QMenu(this));
-	buttons.push_back(bExploreMolecule);
-
 	_myDialogue = NULL;
 	_moleExplorer = NULL;
 	_xtalExplorer = NULL;
-}
-
-void VagWindow::updateExplorerButton()
-{
-	OptionsPtr options = Options::getRuntimeOptions();
-
-	if (!options->crystalCount())
-	{
-		return;
-	}
-
-	CrystalPtr crystal = options->getActiveCrystal();
-
-	QMenu *moleculeMenu = new QMenu(bExploreMolecule);
-
-	for (int i = 0; i < crystal->moleculeCount(); i++)
-	{
-		MoleculePtr molecule = crystal->molecule(i);
-
-		if (!molecule->isPolymer())
-		{
-			continue;
-		}
-
-		ChainMenuAction *action = new ChainMenuAction(moleculeMenu, molecule);
-		connect(action, &QAction::triggered, this, &VagWindow::pushExploreMcule);
-	}
-
-	bExploreMolecule->setMenu(moleculeMenu);
-	connect(bExploreMolecule, SIGNAL(clicked()), bExploreMolecule, SLOT(showMenu())); 
 }
 
 void VagWindow::resizeEvent(QResizeEvent *)
@@ -293,7 +248,6 @@ int VagWindow::waitForInstructions()
 			switch (_instructionType)
 			{
 				case InstructionTypeResetExplorer:
-				updateExplorerButton();
 				break;
 
 				default:
@@ -669,7 +623,6 @@ void VagWindow::adjustBFactor()
 VagWindow::~VagWindow()
 {
 	delete bRefinePos;
-	delete bExploreMolecule;
 	delete bChangeBMult;
 	delete bRecalculate;
 	delete display;
