@@ -19,7 +19,7 @@ void SetterEdit::setObjectValue()
 
     notify->setObject(_object);
     notify->setSetter(_setter, value);
-    notify->setRefreshGroup(_monomer);
+    notify->setRefreshGroup(_group);
     notify->setInstruction(InstructionTypeSetObjectValue);
 }
 
