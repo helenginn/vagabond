@@ -137,7 +137,7 @@ void Options::run()
 
 	std::cout << std::setprecision(3);
 
-	if (crystals.size() > 1)
+	if (crystals.size() >= 1)
 	{
 		CrystalPtr crystal = getActiveCrystal();
 
@@ -635,7 +635,6 @@ void Options::openModel(std::string pdbName)
 	crystal->summary();
 
 	objects.push_back(crystal);
-	crystals.push_back(crystal);
 
 	notifyGUI(true);
 }
