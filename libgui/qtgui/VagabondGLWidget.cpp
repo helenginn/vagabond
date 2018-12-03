@@ -24,22 +24,24 @@ VagabondGLWidget::VagabondGLWidget(QWidget *obj) : QOpenGLWidget(obj)
 
 void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 {
+	Density2GLPtr active = keeper->activeDensity();
+	
 	if (event->key() == Qt::Key_Alt)
 	{
 		_controlPressed = true;
 	}
 	else if (event->key() == Qt::Key_D)
 	{
-		keeper->getDensity2GL()->toggleVisible();
+		keeper->toggleVisibleDensity();
 	}
-	else if (event->key() == Qt::Key_Plus ||
-	         event->key() == Qt::Key_Equal)
+	else if (active && (event->key() == Qt::Key_Plus ||
+	                    event->key() == Qt::Key_Equal))
 	{
-		keeper->getDensity2GL()->nudgeDensity(1);
+		active->nudgeDensity(1);
 	}
-	else if (event->key() == Qt::Key_Minus)
+	else if (event->key() == Qt::Key_Minus && active)
 	{
-		keeper->getDensity2GL()->nudgeDensity(-1);
+		active->nudgeDensity(-1);
 	}
 	else if (event->key() == Qt::Key_B)
 	{
@@ -126,6 +128,7 @@ void VagabondGLWidget::renderDensity(CrystalPtr crystal)
 	if (keeper)
 	{
 		keeper->getDensity2GL()->makeNewDensity(crystal);
+		keeper->getDiffDens2GL()->makeNewDensity(crystal);
 	}
 }
 

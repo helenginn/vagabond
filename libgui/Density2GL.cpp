@@ -19,13 +19,14 @@
 
 Density2GL::Density2GL()
 {
+	_diff = false;
 	_recalculate = 0;
 	_renderType = GL_TRIANGLES;
 	_resolution = 0.5;
 	_cubeIndices = std::vector<std::vector<GLuint> >();
 	_offset = make_vec3(-12, 3, -20);
 	_visible = true;
-	_threshold = 2.3;
+	_threshold = 1;
 	_backToFront = true;
 	_usesLighting = true;
 	_extra = true;
@@ -60,10 +61,10 @@ void initVertex(Vertex *vert)
 	
 	int random = rand() % 3;
 	
-	vert->color[0] = 0.5;
-	vert->color[1] = 0.5;
-	vert->color[2] = 0.5;
-	vert->color[3] = 0.8;
+	vert->color[0] = 1.0;
+	vert->color[1] = 1.0;
+	vert->color[2] = 1.0;
+	vert->color[3] = 1.0;
 	
 	vert->extra[0] = 0;
 	vert->extra[1] = 0;
@@ -797,6 +798,7 @@ void Density2GL::makeUniformGrid()
 	_vertices.resize(total);
 	long c = 0;
 	vec3 central = getCentreOffset();
+	FFTPtr fft = getFFT();
 	
 	for (int z = 0; z < _dims.z; z++)
 	{
@@ -821,8 +823,27 @@ void Density2GL::makeUniformGrid()
 					_vertices[c].normal[0] = 0;
 					_vertices[c].normal[1] = 0;
 					_vertices[c].normal[2] = 0;
-					_vertices[c].color[0] = (double)x / (double)_dims.x;
-					_vertices[c].color[1] = (double)y / (double)_dims.y;
+
+					/* Determine the colour for difference FFTs */
+					if (_diff)
+					{
+						double value = fft->getReal(xyz.x, xyz.y, xyz.z);
+
+						if (value < 0)
+						{
+							_vertices[c].color[0] = 1.0;
+							_vertices[c].color[1] = 0.7;
+							_vertices[c].color[2] = 0.7;
+						}
+						else
+						{
+							_vertices[c].color[0] = 0.7;
+							_vertices[c].color[1] = 1.0;
+							_vertices[c].color[2] = 0.7;
+						}
+					}
+
+
 					c++;
 				}
 			}
@@ -847,7 +868,7 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 	vec3 shifts[] = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1},
 	                 {1, 1, 0}, {1, 0, 1}, {0, 1, 1}, {1, 1, 1}};
 
-	FFTPtr fft = crystal->getFFT();
+	FFTPtr fft = getFFT();
 	mat3x3 real2frac = crystal->getReal2Frac();
 	
 	long count = -3;
@@ -871,6 +892,8 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 					continue;
 				}
 
+				vec3 xyz = make_vec3(x, y, z);
+
 				for (int i = 0; i < shiftCount; i++)
 				{
 					vec3 xyz = make_vec3(x, y, z);
@@ -881,7 +904,8 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 					mat3x3_mult_vec(real2frac, &xyz);
 
 					double value = fft->getRealFromFrac(xyz);
-					int crosses = (value > _threshold);
+					double absv = fabs(value);
+					int crosses = (absv - _mean > _threshold * _sigma);
 
 					bit |= (crosses << i);
 				}
@@ -892,9 +916,10 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 				{
 					continue;
 				}
-				
+
+
 				std::vector<GLuint> someIndices = _cubeIndices[bit];
-				
+
 				if (someIndices.size() == 0) 
 				{
 					unhandled++;
@@ -1009,6 +1034,18 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 //	std::cout << std::endl;
 }
 
+FFTPtr Density2GL::getFFT()
+{
+	if (!_diff)
+	{
+		return _crystal->getFFT();
+	}
+	else
+	{
+		return _crystal->getDiFFT();
+	}
+}
+
 void Density2GL::nudgeDensity(int dir)
 {
 	if (dir > 0)
@@ -1069,6 +1106,19 @@ void Density2GL::render()
 	}
 }
 
+void Density2GL::getSigma(FFTPtr fft)
+{
+	/* so many cpu ticks wasted -shrug- */
+	std::vector<double> vals;
+	for (int i = 0; i < fft->nn; i++)
+	{
+		vals.push_back(fft->data[i][0]);
+	}
+
+	_mean = mean(vals);
+	_sigma = standard_deviation(vals);
+}
+
 void Density2GL::makeNewDensity(CrystalPtr crystal)
 {
 	if (!crystal && !_crystal)
@@ -1092,6 +1142,9 @@ void Density2GL::makeNewDensity(CrystalPtr crystal)
 	{
 		setupIndexTable();
 	}
+	
+	FFTPtr fft = getFFT();
+	getSigma(fft);
 
 	calculateContouring(crystal);
 	reorderIndices();

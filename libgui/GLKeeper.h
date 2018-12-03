@@ -46,12 +46,17 @@ private:
 	void initialisePrograms();
 
 	Density2GLPtr _density2GL;
+	Density2GLPtr _diffDens2GL;
 	std::mutex _setup;
 
+	int _densityState;
+	
 public:
 	GLKeeper(int width, int height);
 	void changeSize(int newWidth, int newHeight);
 	void toggleBondView();
+	void toggleVisibleDensity();
+	Density2GLPtr activeDensity();
 
 	virtual void render(void);
 	void cleanup(void);
@@ -67,6 +72,11 @@ public:
 	
 	Vagabond2GLPtr _allBond2GL;
 	Vagabond2GLPtr _aveBond2GL;
+	
+	Density2GLPtr getDiffDens2GL()
+	{
+		return _diffDens2GL;
+	}
 	
 	Density2GLPtr getDensity2GL()
 	{

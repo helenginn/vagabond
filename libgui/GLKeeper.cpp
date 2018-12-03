@@ -120,15 +120,58 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	_density2GL->recalculate();
 	GLObjectPtr objDen2GL = ToDensity2GLPtr(_density2GL);
 
+	_diffDens2GL = Density2GLPtr(new Density2GL());
+	_diffDens2GL->setKeeper(this);
+	_diffDens2GL->setDiffDensity(true);
+	_diffDens2GL->recalculate();
+	GLObjectPtr objDiff2GL = ToDensity2GLPtr(_diffDens2GL);
+
 	_objects.push_back(allBonds);
 	_objects.push_back(aveBonds);
 	_objects.push_back(objDen2GL);
+	_objects.push_back(objDiff2GL);
 
 	setupCamera();
 
 	initialisePrograms();
 	
 	_setup.unlock();
+}
+
+Density2GLPtr GLKeeper::activeDensity()
+{
+	if (_densityState == 0)
+	{
+		return Density2GLPtr();
+	}
+	else if (_densityState == 1)
+	{
+		return getDensity2GL();
+	}
+	
+	return getDiffDens2GL();
+}
+
+void GLKeeper::toggleVisibleDensity()
+{
+	if (_densityState == 0)
+	{
+		_densityState++;
+		getDensity2GL()->setVisible(true);
+		getDiffDens2GL()->setVisible(false);
+	}
+	else if (_densityState == 1)
+	{
+		_densityState++;
+		getDensity2GL()->setVisible(false);
+		getDiffDens2GL()->setVisible(true);
+	}
+	else
+	{
+		_densityState = 0;	
+		getDensity2GL()->setVisible(false);
+		getDiffDens2GL()->setVisible(false);
+	}
 }
 
 void GLKeeper::pause(bool on)
