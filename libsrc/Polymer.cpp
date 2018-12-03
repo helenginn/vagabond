@@ -181,7 +181,7 @@ void Polymer::whack()
 		
 		BondPtr next;
 		
-		while (true)
+		while (false)
 		{
 			if (bond->downstreamBondGroupCount() && 
 			    bond->downstreamBondCount(0))
