@@ -1086,6 +1086,12 @@ void Density2GL::render()
 	
 	rebindProgram();
 	reorderIndices();
+	
+	if (_diff)
+	{
+		glClear(GL_DEPTH_BUFFER_BIT);
+	}
+	
 	GLObject::render();
 
 	vec3 centre = _keeper->getCentre();
