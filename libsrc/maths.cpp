@@ -379,21 +379,33 @@ double add_if_gt_zero(std::vector<double> &vec2)
 	return sum;
 }
 
-double add_if_y_gt_zero(std::vector<double> &vec1, std::vector<double> &vec2)
+double add_x_if_y(std::vector<double> &vec1, std::vector<double> &vec2,
+                  int val)
 {
 	double sum = 0;
 	
 	for (int i = 0; i < vec1.size(); i++)
 	{
-		if (vec2[i] < 10e-2)
+		if (vec2[i] < 1e-2)
+		{
+			continue;
+		}
+
+		if (val == 1 && vec1[i] < 0)
+		{
+			continue;
+		}
+		else if (val == -1 && vec1[i] > 0)
 		{
 			continue;
 		}
 		
 		sum += vec1[i];
+		
 	}
 	
 	sum /= vec1.size();
 	
 	return sum;
 }
+
