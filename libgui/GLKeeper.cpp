@@ -17,6 +17,7 @@
 #include "GLKeeper.h"
 #include "Density2GL.h"
 #include "Bonds2GL.h"
+#include "Atoms2GL.h"
 #include "../libsrc/vec3.h"
 
 bool GLKeeper::everMovedMouse = false;
@@ -115,6 +116,10 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	_aveBond2GL = Bonds2GLPtr(new Bonds2GL(true));
 	GLObjectPtr aveBonds = boost::static_pointer_cast<GLObject>(_aveBond2GL);
 	_aveBond2GL->setEnabled(false);
+	
+	/* Atom pos render */
+//	_atoms2GL = Atoms2GLPtr(new Atoms2GL());
+//	GLObjectPtr atomObj = boost::static_pointer_cast<GLObject>(_aveBond2GL);
 
 	/* Density render */
 	_density2GL = Density2GLPtr(new Density2GL());
@@ -125,11 +130,13 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	_diffDens2GL = Density2GLPtr(new Density2GL());
 	_diffDens2GL->setKeeper(this);
 	_diffDens2GL->setDiffDensity(true);
+	_diffDens2GL->setVisible(false);
 	_diffDens2GL->recalculate();
 	GLObjectPtr objDiff2GL = ToDensity2GLPtr(_diffDens2GL);
 
 	_objects.push_back(allBonds);
 	_objects.push_back(aveBonds);
+//	_objects.push_back(atomObj);
 	_objects.push_back(objDen2GL);
 	_objects.push_back(objDiff2GL);
 

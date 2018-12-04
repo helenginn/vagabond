@@ -72,6 +72,7 @@ public:
 	
 	Vagabond2GLPtr _allBond2GL;
 	Vagabond2GLPtr _aveBond2GL;
+	Vagabond2GLPtr _atoms2GL;
 	
 	Density2GLPtr getDiffDens2GL()
 	{
