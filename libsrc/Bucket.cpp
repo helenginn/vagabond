@@ -56,7 +56,11 @@ void Bucket::scaleSolvent()
 	fine->setSilent(true);
 	fine->refine();
 
-	std::cout << "   Solvent B factor: " << getSolvBFac(this) << std::endl;
+	if (!getCrystal()->isSilent())
+	{
+		std::cout << "   Solvent B factor: " 
+		<< getSolvBFac(this) << std::endl;
+	}
 	
 	/** If we are doing powder analysis we don't actually want
 	* 	to add the solvent */
