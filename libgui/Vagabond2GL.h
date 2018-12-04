@@ -21,13 +21,11 @@ typedef std::map<MoleculePtr, int> GLMoleculeMap;
 class Vagabond2GL : public GLObject
 {
 public:
-	Vagabond2GL(int average = false)
+	Vagabond2GL()
 	{
 		_renders = 0;
-		_average = average;
 		_lastEnsembleCount = 0;
 		_shouldGetBonds = true;
-		setupAverage();
 		
 		_pause = false;
 		_enabled = true;
@@ -53,25 +51,27 @@ public:
 		_shouldGetBonds = true;
 	}
 protected:
-	virtual void bindTextures();
-private:
-	int processMolecule(MoleculePtr molecule);
-	vec3 _centroid;
-	void updateAtoms();
-	bool shouldGetBonds();
-	void setVertexColour(AtomPtr atom, Vertex *vertex);
+	virtual void bindTextures() = 0;
+	virtual void updateAtoms() = 0;
+	virtual void getPositions(AtomPtr atom, 
+	                          std::vector<vec3> *min,
+	                          std::vector<vec3> *maj) = 0;
+	virtual int processMolecule(MoleculePtr molecule) = 0;
 
-	void getPositions(AtomPtr atom, std::vector<vec3> *min,
-					  std::vector<vec3> *maj);
-	AtomMap _atomMap;
-	GLMoleculeMap _moleculeMap;
-	void setupAverage();
-	int _renders;
-	int _average;
-	bool _enabled;
-	bool _pause;
+	void setVertexColour(AtomPtr atom, Vertex *vertex);
 	int _lastEnsembleCount;
 	bool _shouldGetBonds;
+
+	AtomMap _atomMap;
+	GLMoleculeMap _moleculeMap;
+private:
+	vec3 _centroid;
+	bool shouldGetBonds();
+
+
+	int _renders;
+	bool _enabled;
+	bool _pause;
 
 };
 

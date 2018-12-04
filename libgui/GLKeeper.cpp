@@ -16,6 +16,7 @@
 
 #include "GLKeeper.h"
 #include "Density2GL.h"
+#include "Bonds2GL.h"
 #include "../libsrc/vec3.h"
 
 bool GLKeeper::everMovedMouse = false;
@@ -105,12 +106,12 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	#endif // SETUP_BUFFERS
 
 	/* Bond model render */
-	_allBond2GL = Vagabond2GLPtr(new Vagabond2GL(false));
+	_allBond2GL = Bonds2GLPtr(new Bonds2GL(false));
 	GLObjectPtr allBonds = boost::static_pointer_cast<GLObject>(_allBond2GL);
 	_totalCentroid = allBonds->getCentroid();
 	
 	/* Average pos render */
-	_aveBond2GL = Vagabond2GLPtr(new Vagabond2GL(true));
+	_aveBond2GL = Bonds2GLPtr(new Bonds2GL(true));
 	GLObjectPtr aveBonds = boost::static_pointer_cast<GLObject>(_aveBond2GL);
 	_aveBond2GL->setEnabled(false);
 
