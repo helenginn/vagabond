@@ -100,6 +100,7 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	width = newWidth;
 	height = newHeight;
 	_centre = empty_vec3();
+	_densityState = 1;
 
 	#ifdef SETUP_BUFFERS
 	setupBuffers();
@@ -164,7 +165,7 @@ void GLKeeper::toggleVisibleDensity()
 	else if (_densityState == 1)
 	{
 		_densityState++;
-		getDensity2GL()->setVisible(false);
+		getDensity2GL()->setVisible(true);
 		getDiffDens2GL()->setVisible(true);
 	}
 	else

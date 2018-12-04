@@ -799,6 +799,7 @@ void Density2GL::makeUniformGrid()
 	long c = 0;
 	vec3 central = getCentreOffset();
 	FFTPtr fft = getFFT();
+	mat3x3 real2frac = _crystal->getReal2Frac();
 	
 	for (int z = 0; z < _dims.z; z++)
 	{
@@ -827,7 +828,8 @@ void Density2GL::makeUniformGrid()
 					/* Determine the colour for difference FFTs */
 					if (_diff)
 					{
-						double value = fft->getReal(xyz.x, xyz.y, xyz.z);
+						mat3x3_mult_vec(real2frac, &xyz);
+						double value = fft->getRealFromFrac(xyz);
 
 						if (value < 0)
 						{
