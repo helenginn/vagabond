@@ -172,12 +172,12 @@ private:
 
 	static double scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	                            bool plot, ScoreType scoreType,
-	                            vec3 ave, bool difference = false);
+	                            vec3 ave, unsigned int flags = 0);
 
 	static double scoreFinalValues(std::vector<double> xs,
 	                               std::vector<double> ys,
 	                               ScoreType scoreType,
-	                               bool ignoreCutoff = false);
+                                   unsigned int flags);
 
 	MonomerWkr _monomer;
 

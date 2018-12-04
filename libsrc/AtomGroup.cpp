@@ -833,7 +833,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	ScoreType type = workspace->scoreType;
 	
 	score = scoreFinalMap(crystal, workspace->segment, plot,
-	                      type, workspace->ave, difference);
+	                      type, workspace->ave, workspace->flag);
 
 	return score;
 }
@@ -841,11 +841,12 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 double AtomGroup::scoreFinalValues(std::vector<double> xs,
                                    std::vector<double> ys,
                                    ScoreType scoreType,
-                                   bool ignoreCutoff)
+                                   unsigned int flags)
 {
+	bool difference = (flags & MapScoreFlagDifference);
 	double cutoff = MAP_VALUE_CUTOFF;
 	
-	if (ignoreCutoff) cutoff = -FLT_MAX;
+	if (difference) cutoff = -FLT_MAX;
 	
 	if (scoreType == ScoreTypeCorrel)
 	{
@@ -869,7 +870,18 @@ double AtomGroup::scoreFinalValues(std::vector<double> xs,
 	}
 	else if (scoreType == ScoreTypeAddDensity)
 	{
-		double sum = add_if_y_gt_zero(xs, ys);
+		int option = 0;
+		
+		if (flags & MapScoreFlagPosOnly)
+		{
+			option = 1;
+		}
+		else if (flags & MapScoreFlagNegOnly)
+		{
+			option = -1;
+		}
+		
+		double sum = add_x_if_y(xs, ys, option);
 		return sum;
 	}
 	else if (scoreType == ScoreTypeAddVoxels)
@@ -922,8 +934,9 @@ void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals,
 
 double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
                                 bool plot, ScoreType scoreType,
-                                vec3 ave, bool difference)
+                                vec3 ave, unsigned int flags)
 {
+	
 	double cutoff = MAP_VALUE_CUTOFF;
 	mat3x3 real2Frac = crystal->getReal2Frac();
 
@@ -935,6 +948,7 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	std::vector<CoordVal> vals;
 
 	FFTPtr map = crystal->getFFT();
+	bool difference = (flags & MapScoreFlagDifference);
 	
 	if (difference)
 	{
@@ -982,7 +996,7 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	vals.clear();
 	std::vector<CoordVal>().swap(vals);
 
-	double score = scoreFinalValues(xs, ys, scoreType, difference);
+	double score = scoreFinalValues(xs, ys, scoreType, flags);
 
 	return score;
 }
