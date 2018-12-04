@@ -48,6 +48,8 @@ typedef enum
 	MapScoreFlagReplaceWithObs = 2,
 	MapScoreFlagNoSurround = 4,
 	MapScoreFlagSkipScore = 8,
+	MapScoreFlagPosOnly = 16,
+	MapScoreFlagNegOnly = 32,
 } MapScoreFlag;
 
 typedef struct 
