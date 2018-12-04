@@ -144,7 +144,7 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 
 	double distSq = (x * x + y * y + z * z);
 
-	double bf = getMeanSquareDeviation();
+	double bf = me->getMeanSquareDeviation();
 
 	if (me->hasMolecule())
 	{
