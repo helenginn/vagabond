@@ -200,12 +200,12 @@ void Options::executeProtocol()
 	
 	recalculateFFT();
 	
-	for (int i = 0; i < 10; i++)
+	for (int i = 0; i < 5; i++)
 	{
 		if (_rInter || _rIntra)
 		{
 			std::cout << "Flex macrocycle (" << 
-			i + 1 << " / 10)" << std::endl;
+			i + 1 << " / 5)" << std::endl;
 		}
 		if (_rInter)
 		{
@@ -227,6 +227,7 @@ void Options::executeProtocol()
 		std::cout << "Refining sidechains to density (" << 
 		1 << " / 1)" << std::endl;
 		getActiveCrystal()->refineSidechains();
+		recalculateFFT();
 	}
 }
 
