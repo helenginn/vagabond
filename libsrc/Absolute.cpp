@@ -43,12 +43,21 @@ mat3x3 Absolute::getRealSpaceTensor()
 	if (!_usingTensor)
 	{
 		mat3x3 realSpaceTensor = make_mat3x3();
-		double scale = b2var(_bFactor);
+		double scale = b2var(getMeanSquareDeviation());
 		mat3x3_mult_scalar(&realSpaceTensor, scale);
 		return realSpaceTensor;
 	}
 
-	return _realSpaceTensor;
+	double subtract = getMolecule()->getAbsoluteBFacSubt();
+	double mult = getMolecule()->getAbsoluteBFacMult();
+	subtract = b2var(subtract);
+	mat3x3 copy = _realSpaceTensor;
+	mat3x3_mult_scalar(&copy, mult);
+	copy.vals[0] -= subtract;
+	copy.vals[4] -= subtract;
+	copy.vals[8] -= subtract;
+
+	return copy;
 }
 
 Absolute::Absolute(vec3 pos, double bFac, 
@@ -119,10 +128,6 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 	if (me->_usingTensor)
 	{
 		mat3x3 scaledTensor = me->getRealSpaceTensor();
-		mat3x3_mult_scalar(&scaledTensor, mult);
-		scaledTensor.vals[0] -= sub;
-		scaledTensor.vals[4] -= sub;
-		scaledTensor.vals[8] -= sub;
 		vec3 recipVec = make_vec3(x, y, z);
 		mat3x3_mult_vec(scaledTensor, &recipVec);
 
@@ -139,14 +144,11 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 
 	double distSq = (x * x + y * y + z * z);
 
-	double bf = me->_bFactor;
+	double bf = getMeanSquareDeviation();
 
 	if (me->hasMolecule())
 	{
 		double subtract = molecule->getAbsoluteBFacSubt();
-
-		bf -= subtract;
-		bf *= mult;
 	}
 
 	double exponent = (-0.25) * bf * distSq;
@@ -187,7 +189,17 @@ void Absolute::addToMonomer(MonomerPtr monomer)
 
 double Absolute::getMeanSquareDeviation()
 {
-	return _bFactor;
+	double b = _bFactor;
+
+	if (hasMolecule())
+	{
+		double subtract = getMolecule()->getAbsoluteBFacSubt();
+		double mult = getMolecule()->getAbsoluteBFacMult();
+		
+		b = mult * (b - subtract);
+	}
+
+	return b;
 }
 
 void Absolute::setTensor(mat3x3 tensor)
