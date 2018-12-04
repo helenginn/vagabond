@@ -528,16 +528,15 @@ std::string Atom::anisouPDBLine(CrystalPtr)
 	stream << pdbLineBeginning("ANISOU");
 
 	mat3x3 realTensor = getModel()->getRealSpaceTensor();
-	mat3x3 recipTensor = realTensor;
 
 	double scale = 10e4;
 	stream << std::setprecision(0) << std::fixed;
-	stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[0];
-	stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[4];
-	stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[8];
-	stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[1];
-	stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[2];
-	stream << std::setfill(' ') << std::setw(7) << scale * recipTensor.vals[5];
+	stream << std::setfill(' ') << std::setw(7) << scale * realTensor.vals[0];
+	stream << std::setfill(' ') << std::setw(7) << scale * realTensor.vals[4];
+	stream << std::setfill(' ') << std::setw(7) << scale * realTensor.vals[8];
+	stream << std::setfill(' ') << std::setw(7) << scale * realTensor.vals[1];
+	stream << std::setfill(' ') << std::setw(7) << scale * realTensor.vals[2];
+	stream << std::setfill(' ') << std::setw(7) << scale * realTensor.vals[5];
 	stream << std::endl;
 
 	return stream.str();
