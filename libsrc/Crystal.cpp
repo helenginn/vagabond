@@ -273,6 +273,11 @@ void Crystal::reflex()
 
 void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 {
+	if (_silent)
+	{
+		return;
+	}
+	
 	std::vector<double> bins, ampAves;
 	generateResolutionBins(0, _maxResolution, 20, &bins);
 	ampAves.resize(bins.size());
@@ -430,9 +435,15 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 
 	double intercept, gradient;
 	regression_line(xs, ys, &intercept, &gradient);
-	std::cout << "Wilson plot  (data): " << -gradient << std::endl;
+	if (!_silent)
+	{
+		std::cout << "Wilson plot  (data): " << -gradient << std::endl;
+	}
 	regression_line(xs, zs, &intercept, &gradient);
-	std::cout << "Wilson plot (model): " << -gradient << std::endl;
+	if (!_silent)
+	{
+		std::cout << "Wilson plot (model): " << -gradient << std::endl;
+	}
 
 	double k = exp(intercept);
 	double b = -gradient;
