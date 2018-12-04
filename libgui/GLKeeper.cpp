@@ -28,7 +28,6 @@ void GLKeeper::updateProjection()
 	zFar = 100;
 
 	float correctedNear = zNear;
-	if (zNear <= 0.1) correctedNear = 0.1;
 	double side = 0.5;
 	float aspect = height / width;
 	projMat = mat4x4_frustum(side, -side, side * aspect, -side * aspect,
