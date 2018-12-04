@@ -59,7 +59,6 @@ void VagWindow::makeMenu()
 			[=]{ toggleScaling(ScalingTypeAbs); });
 	
 	actions.push_back(_qaShell);
-	actions.push_back(_qaKB);
 	actions.push_back(_qaK);
 	
 	displayScaling();
@@ -69,12 +68,13 @@ void VagWindow::makeMenu()
 	
 	QAction *adjust = scaling->addAction(tr("Adjust real-space B factor"));
 	connect(adjust, &QAction::triggered, this, &VagWindow::adjustBFactor);
+	actions.push_back(adjust);
 
 	QAction *chooseB = scaling->addAction(tr("Change real-space B factor..."));
 	connect(chooseB, &QAction::triggered,
 			[=]{ dialogueModify(Options::setGlobalBFactor, 
 			                    "B factor applied in real space"); });
-	actions.push_back(adjust);
+	actions.push_back(chooseB);
 
 	QMenu *model = menuBar()->addMenu(tr("&Model"));
 	menus.push_back(model);
@@ -99,6 +99,7 @@ void VagWindow::makeMenu()
 		                     0.0); });
 	actions.push_back(bsubt);
 	
+	/*
 	menuItem(model, "Omit scan", InstructionTypeOmitScan);
 	menuItem(model, "Find flexibility", InstructionTypeReflex);
 	
@@ -106,6 +107,12 @@ void VagWindow::makeMenu()
 	connect(refit, SIGNAL(triggered()), this, 
 	        SLOT(refitBackbone()));
 	actions.push_back(refit);
+	
+	refit = model->addAction(tr("Fix erroneous zones..."));
+	connect(refit, SIGNAL(triggered()), this, 
+	        SLOT(fixErroneousZones()));
+	actions.push_back(refit);
+	*/
 
 	sep = model->addSeparator();
 	actions.push_back(sep);
@@ -429,17 +436,17 @@ void VagWindow::refineToEnd()
 
 void VagWindow::enable()
 {
-	for (int i = 0; i < buttons.size(); i++)
+	for (int i = 0; i < actions.size(); i++)
 	{
-		buttons[i]->setEnabled(true);
+		actions[i]->setEnabled(true);
 	}
 }
 
 void VagWindow::disable()
 {
-	for (int i = 0; i < buttons.size(); i++)
+	for (int i = 0; i < actions.size(); i++)
 	{
-		buttons[i]->setEnabled(false);
+		actions[i]->setEnabled(false);
 	}
 }
 
