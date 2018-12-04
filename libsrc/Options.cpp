@@ -113,6 +113,8 @@ void Options::run()
 	}
 	
 	openModel(_modelFile);
+	
+	notifyGUI(false);
 
 	if (_outputDir.length())
 	{
