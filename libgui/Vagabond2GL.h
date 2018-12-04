@@ -31,8 +31,6 @@ public:
 		_enabled = true;
 	}
 
-	void findAtoms();
-
 	virtual void render();
 	
 	bool isEnabled()
@@ -51,6 +49,8 @@ public:
 		_shouldGetBonds = true;
 	}
 protected:
+	void findAtoms();
+
 	virtual void bindTextures() = 0;
 	virtual void updateAtoms() = 0;
 	virtual void getPositions(AtomPtr atom, 
@@ -61,6 +61,7 @@ protected:
 	void setVertexColour(AtomPtr atom, Vertex *vertex);
 	int _lastEnsembleCount;
 	bool _shouldGetBonds;
+	bool _enabled;
 
 	AtomMap _atomMap;
 	GLMoleculeMap _moleculeMap;
@@ -68,9 +69,7 @@ private:
 	vec3 _centroid;
 	bool shouldGetBonds();
 
-
 	int _renders;
-	bool _enabled;
 	bool _pause;
 
 };

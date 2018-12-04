@@ -315,17 +315,18 @@ int Bonds2GL::processMolecule(MoleculePtr molecule)
 		_vertices[start+7].tex[1] = 1.0;
 	}
 	
-	std::cout << "Average: " << _average << std::endl;
-	std::cout << "Vertex count: " << _vertices.size() << std::endl;
-	std::cout << "Indices count: " << _indices.size() << std::endl;
-	std::cout << std::endl;
-
 	_shouldGetBonds = false;
+
 	return bonds;
 }
 
 void Bonds2GL::bindTextures()
 {
+	if (!_average)
+	{
+		return;
+	}
+
 	int num = 1;
 	_textures.resize(num);
 
@@ -337,6 +338,11 @@ void Bonds2GL::bindTextures()
 
 void Bonds2GL::render()
 {
+	if (!_enabled)
+	{
+		return;
+	}
+
 	Vagabond2GL::render();
 
 	if (_average)

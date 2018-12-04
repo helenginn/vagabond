@@ -109,17 +109,50 @@ executable('vagabond', 'libsrc/main.cpp', dependencies: [dep_vag, boost_dep], in
 # Pre-processing by Qt5
 
 if qt5_dep.found() and dep_gl.found()
-	moc_files = qt5.preprocess(moc_headers : ['libgui/qtgui/CrystalExplorer.h', 'libgui/qtgui/Dialogue.h', 'libgui/qtgui/MoleculeExplorer.h', 'libgui/qtgui/MonomerExplorer.h', 'libgui/qtgui/ResButton.h', 'libgui/qtgui/SequenceView.h', 'libgui/qtgui/SetterEdit.h', 'libgui/qtgui/StartScreen.h', 'libgui/qtgui/VagWindow.h'],
+	moc_files = qt5.preprocess(moc_headers : ['libgui/qtgui/CrystalExplorer.h',
+'libgui/qtgui/Dialogue.h',
+'libgui/qtgui/ErroneousZone.h',
+'libgui/qtgui/MoleculeExplorer.h',
+'libgui/qtgui/MonomerExplorer.h',
+'libgui/qtgui/ResButton.h',
+'libgui/qtgui/SequenceView.h',
+'libgui/qtgui/SetterEdit.h',
+'libgui/qtgui/StartScreen.h',
+'libgui/qtgui/VagWindow.h'],
 			moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'])
 
 # Non-Qt5 GUI elements (mostly OpenGL stuff)
 # Uses Qt5-supplied OpenGL
 
-	lib_vgui = library('vgui', 'libgui/Density2GL.cpp', 'libgui/GLKeeper.cpp', 'libgui/GLObject.cpp', 'libgui/shader.cpp', 'libgui/Vagabond2GL.cpp', cpp_args: ['-w'], dependencies : [ qt5_dep, dep_vag ])
+	lib_vgui = library('vgui',
+'libgui/Atoms2GL.cpp', 
+'libgui/Bonds2GL.cpp', 
+'libgui/Density2GL.cpp',
+'libgui/GLKeeper.cpp',
+'libgui/GLObject.cpp',
+'libgui/shader.cpp',
+'libgui/Vagabond2GL.cpp', 
+cpp_args: ['-w'], dependencies : [ qt5_dep, dep_vag ])
 	inc_vgui = include_directories('libgui')
 dep_vgui = declare_dependency(link_with: lib_vgui, include_directories: inc_vgui)
 
-	executable('vagabond-gui', 'libgui/qtgui/gui_main.cpp', 'libgui/qtgui/CrystalExplorer.cpp', 'libgui/qtgui/Dialogue.cpp', 'libgui/qtgui/gui_main.cpp', 'libgui/qtgui/InstructionThread.cpp', 'libgui/qtgui/MoleculeExplorer.cpp', 'libgui/qtgui/MonomerExplorer.cpp', 'libgui/qtgui/ResButton.cpp', 'libgui/qtgui/SequenceView.cpp', 'libgui/qtgui/SetterEdit.cpp', 'libgui/qtgui/StartScreen.cpp', 'libgui/qtgui/VagabondGLWidget.cpp', 'libgui/qtgui/VagWindow.cpp', moc_files, dependencies: [qt5_dep, dep_vag, dep_vgeom, dep_vgui], install: true, cpp_args: ['-w', '-std=c++11'])
+	executable('vagabond-gui',
+'libgui/qtgui/gui_main.cpp',
+'libgui/qtgui/CrystalExplorer.cpp',
+'libgui/qtgui/Dialogue.cpp',
+'libgui/qtgui/ErroneousZone.cpp',
+'libgui/qtgui/gui_main.cpp',
+'libgui/qtgui/InstructionThread.cpp',
+'libgui/qtgui/MoleculeExplorer.cpp',
+'libgui/qtgui/MonomerExplorer.cpp',
+'libgui/qtgui/ResButton.cpp',
+'libgui/qtgui/SequenceView.cpp',
+'libgui/qtgui/SetterEdit.cpp',
+'libgui/qtgui/StartScreen.cpp',
+'libgui/qtgui/VagabondGLWidget.cpp',
+'libgui/qtgui/VagWindow.cpp', 
+moc_files, dependencies: [qt5_dep, dep_vag, dep_vgeom, dep_vgui], install: true, cpp_args: ['-w',
+'-std=c++11'])
 else
 	message('QT5 not found, so not building the GUI.')
 endif

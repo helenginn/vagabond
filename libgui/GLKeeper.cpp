@@ -109,36 +109,32 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 
 	/* Bond model render */
 	_allBond2GL = Bonds2GLPtr(new Bonds2GL(false));
-	GLObjectPtr allBonds = boost::static_pointer_cast<GLObject>(_allBond2GL);
-	_totalCentroid = allBonds->getCentroid();
+	_totalCentroid = _allBond2GL->getCentroid();
 	
 	/* Average pos render */
 	_aveBond2GL = Bonds2GLPtr(new Bonds2GL(true));
-	GLObjectPtr aveBonds = boost::static_pointer_cast<GLObject>(_aveBond2GL);
 	_aveBond2GL->setEnabled(false);
 	
 	/* Atom pos render */
-//	_atoms2GL = Atoms2GLPtr(new Atoms2GL());
-//	GLObjectPtr atomObj = boost::static_pointer_cast<GLObject>(_aveBond2GL);
+	_atoms2GL = Atoms2GLPtr(new Atoms2GL());
 
 	/* Density render */
 	_density2GL = Density2GLPtr(new Density2GL());
 	_density2GL->setKeeper(this);
 	_density2GL->recalculate();
-	GLObjectPtr objDen2GL = ToDensity2GLPtr(_density2GL);
 
+	/* Difference density render */
 	_diffDens2GL = Density2GLPtr(new Density2GL());
 	_diffDens2GL->setKeeper(this);
 	_diffDens2GL->setDiffDensity(true);
 	_diffDens2GL->setVisible(false);
 	_diffDens2GL->recalculate();
-	GLObjectPtr objDiff2GL = ToDensity2GLPtr(_diffDens2GL);
 
-	_objects.push_back(allBonds);
-	_objects.push_back(aveBonds);
-//	_objects.push_back(atomObj);
-	_objects.push_back(objDen2GL);
-	_objects.push_back(objDiff2GL);
+	_objects.push_back(_allBond2GL);
+	_objects.push_back(_aveBond2GL);
+	_objects.push_back(_atoms2GL);
+	_objects.push_back(_density2GL);
+	_objects.push_back(_diffDens2GL);
 
 	setupCamera();
 

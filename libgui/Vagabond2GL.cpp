@@ -134,11 +134,6 @@ void Vagabond2GL::findAtoms()
 
 void Vagabond2GL::render()
 {
-	if (!_enabled)
-	{
-		return;
-	}
-
 	if (shouldGetBonds() && !_pause)
 	{
 		findAtoms();

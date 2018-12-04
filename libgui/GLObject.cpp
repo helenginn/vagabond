@@ -89,6 +89,12 @@ void GLObject::render()
 	{
 		glBindTexture(GL_TEXTURE_2D, _textures[0]);
 	}
+	
+	if (_renderType == GL_POINTS)
+	{
+		glEnable(GL_PROGRAM_POINT_SIZE);
+		glEnable(GL_POINT_SPRITE);
+	}
 
     glDrawElements(_renderType, indexCount(), GL_UNSIGNED_INT, 0);
 
