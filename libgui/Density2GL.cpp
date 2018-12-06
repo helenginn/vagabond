@@ -895,6 +895,15 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 				}
 
 				vec3 xyz = make_vec3(x, y, z);
+				
+				vec3 check = make_vec3(x - _dims.x / 2, 
+				                       y - _dims.y / 2, 
+				                       z - _dims.z / 2);
+
+				if (vec3_length(check) > _dims.x / 2)
+				{
+					continue;
+				}
 
 				for (int i = 0; i < shiftCount; i++)
 				{
