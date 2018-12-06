@@ -82,10 +82,9 @@ void Bonds2GL::updateAtoms()
 		std::pair<int, int> pair = it->second;
 		int total = pair.first;
 		int v = pair.second;
-		//		std::cout << "c/v: " << conformer << " " << v << std::endl;
 
 		if (!atom->getModel()->isBond()) continue;
-
+		
 		std::vector<vec3> majBonds, minBonds;
 		getPositions(atom, &minBonds, &majBonds);
 
@@ -137,24 +136,6 @@ void Bonds2GL::updateAtoms()
 				memcpy(_vertices[v+3].normal, _vertices[v].pos,
 				       sizeof(GLfloat) * 3);
 				
-				for (int i = 0; false && i < 4; i++)
-				{
-					for (int j = 0; j < 3; j++)
-					{
-						std::cout << _vertices[v + i].pos[j] << " ";
-					}
-
-					std::cout << " - ";
-
-					for (int j = 0; j < 3; j++)
-					{
-						std::cout << _vertices[v + i].normal[j] << " ";
-					}
-
-					std::cout << "(" << _vertices[v + i].extra[0] << ")";
-
-					std::cout << std::endl;
-				}
 			}
 			
 			v += 4;
