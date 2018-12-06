@@ -19,6 +19,54 @@
 
 class GLKeeper : public GLObject
 {
+public:
+	GLKeeper(int width, int height);
+	void changeSize(int newWidth, int newHeight);
+	void toggleBondView();
+	void toggleVisibleDensity();
+	Density2GLPtr activeDensity();
+
+	void manualRefine();
+	virtual void render(void);
+	void cleanup(void);
+	void focusOnPosition(vec3 pos);    
+	void pause(bool on);
+
+	void rotateAngles(float alpha, float beta, float gamma);
+	AtomPtr findAtomAtXY(double x, double y);
+
+	void keyPressed(char key);
+	void draggedLeftMouse(float x, float y);
+	void draggedRightMouse(float x, float y);
+	void panned(float x, float y);
+	
+	Density2GLPtr getDiffDens2GL()
+	{
+		return _diffDens2GL;
+	}
+	
+	Density2GLPtr getDensity2GL()
+	{
+		return _density2GL;
+	}
+	
+	vec3 getCentre()
+	{
+		return _centre;
+	}
+	
+	vec3 getTranslation()
+	{
+		return _transOnly;
+	}
+	
+	bool isRefiningManually();
+	void cancelRefine();
+	void setMouseRefine(bool val);
+	
+	void splitSelected();
+	void focusOnSelected();
+	vec3 setModelRay(double x, double y);
 private:
 	std::vector<GLObjectPtr> _objects;
 
@@ -44,6 +92,7 @@ private:
 
 	GLubyte *newIndices;
 	void initialisePrograms();
+	GLObjectPtr activeObject();
 
 	Density2GLPtr _density2GL;
 	Density2GLPtr _diffDens2GL;
@@ -51,48 +100,10 @@ private:
 
 	int _densityState;
 	
-public:
-	GLKeeper(int width, int height);
-	void changeSize(int newWidth, int newHeight);
-	void toggleBondView();
-	void toggleVisibleDensity();
-	Density2GLPtr activeDensity();
-
-	virtual void render(void);
-	void cleanup(void);
-	void focusOnPosition(vec3 pos);    
-	void pause(bool on);
-
-	void rotateAngles(float alpha, float beta, float gamma);
-
-	void keyPressed(char key);
-	void draggedLeftMouse(float x, float y);
-	void draggedRightMouse(float x, float y);
-	void panned(float x, float y);
-	
 	Vagabond2GLPtr _allBond2GL;
 	Vagabond2GLPtr _aveBond2GL;
 	Vagabond2GLPtr _atoms2GL;
-	
-	Density2GLPtr getDiffDens2GL()
-	{
-		return _diffDens2GL;
-	}
-	
-	Density2GLPtr getDensity2GL()
-	{
-		return _density2GL;
-	}
-	
-	vec3 getCentre()
-	{
-		return _centre;
-	}
-	
-	vec3 getTranslation()
-	{
-		return _transOnly;
-	}
+	Selected2GLPtr _selected2GL;
 };
 
 #endif /* defined(__RaddoseViewer__GLKeeper__) */

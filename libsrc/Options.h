@@ -70,10 +70,10 @@ public:
 		crystals.push_back(crystal);
 	}
 
-	CrystalPtr getActiveCrystal()
+	static CrystalPtr getActiveCrystal()
 	{
-		if (!crystals.size()) return CrystalPtr();
-		return crystals[0];
+		if (!getRuntimeOptions()->crystals.size()) return CrystalPtr();
+		return getRuntimeOptions()->crystals[0];
 	}
 
 	DiffractionPtr getActiveData()
@@ -261,11 +261,9 @@ public:
 	void focusOnPosition(vec3 pos);
 	void refitBackbone(int start, int end);
 	void omitScan();
-	void reflex();
-	void whack();
 	void chelate();
 	void renderDensity();
-	void statusMessage(std::string message);
+	static void statusMessage(std::string message);
 	void agreementSummary();
 	void previousState();
 	void applyBMultiplier();

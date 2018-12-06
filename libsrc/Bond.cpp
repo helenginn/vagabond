@@ -1154,6 +1154,7 @@ BondPtr Bond::splitBond(bool onlyExisting)
 	{
 		torsion += getCirclePortion(&*me);
 		setCirclePortion(&*dupl, 0.);
+		dupl->setFixed(true);
 	}
 	
 	setTorsion(&*dupl, torsion);

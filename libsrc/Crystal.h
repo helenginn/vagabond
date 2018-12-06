@@ -196,7 +196,7 @@ public:
 	                      double bFactor = 0);
 	double getAdjustBFactor();
 	
-	void undoIfWorse();
+	bool undoIfWorse();
 
 	void setupSymmetry();
 	void summary();

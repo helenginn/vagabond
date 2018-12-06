@@ -120,6 +120,7 @@ void CrystalExplorer::clickedMoleListItem()
 CrystalExplorer::CrystalExplorer(QWidget *parent, CrystalPtr crystal)
 {
 	_crystal = crystal;
+	_moleExplorer = NULL;
 	
 	this->resize(600, 400);
 	QString title = "Explore crystal ";
@@ -141,6 +142,14 @@ void CrystalExplorer::pushSequence()
 
 }
 
+void CrystalExplorer::updateCorrelation()
+{
+	if (_moleExplorer)
+	{
+		_moleExplorer->updateCorrelation();
+	}
+}
+
 void CrystalExplorer::clearWidgets()
 {
 	for (int i = 0; i < _widgets.size(); i++)
@@ -158,4 +167,7 @@ CrystalExplorer::~CrystalExplorer()
 
 	delete _moleList;
 	_moleList = NULL;
+	
+	delete _moleExplorer;
+	_moleExplorer = NULL;
 }

@@ -34,6 +34,7 @@ typedef enum
 	RefinementRMSDZero = 5, /** Squeeze protein chain to minimise flexibility */
 	RefinementCentroid = 6, /** Refine centroid to PDB centroid */
 	RefinementWaterNetwork = 7,
+	RefinementMouse = 8, /** Refinement to mouse coordinates */
 } RefinementType; 
 
 

@@ -169,8 +169,8 @@ void VagWindow::makeButtons()
 	buttons.clear();
 
 	_myDialogue = NULL;
-	_moleExplorer = NULL;
 	_xtalExplorer = NULL;
+	_errorExplorer = NULL;
 }
 
 void VagWindow::resizeEvent(QResizeEvent *)
@@ -204,6 +204,7 @@ VagWindow::VagWindow(QWidget *parent,
 	this->setWindowTitle("Vagabond");
 	
 	display = new VagabondGLWidget(this);
+	display->setVagWindow(this);
 	display->setGeometry(0, 0, DEFAULT_WIDTH - BUTTON_WIDTH, 
 	                     DEFAULT_HEIGHT - STATUS_HEIGHT);
 
@@ -272,10 +273,6 @@ int VagWindow::waitForInstructions()
 				options->recalculateFFT();
 				break;
 
-				case InstructionTypeWhack: 
-				options->whack();
-				break;
-
 				case InstructionTypeFitTranslation: 
 				crystal->fitWholeMolecules();
 				options->recalculateFFT();
@@ -302,10 +299,6 @@ int VagWindow::waitForInstructions()
 				options->recalculateFFT();
 				break;
 
-				case InstructionTypeChangeBMult:
-				options->applyBMultiplier();
-				break;
-
 				case InstructionTypeFindDisulphides:
 				options->findDisulphides();
 				break;
@@ -327,10 +320,6 @@ int VagWindow::waitForInstructions()
 				options->openInCoot();
 				break;
 
-				case InstructionTypeReflex:
-				options->reflex();
-				break;
-
 				case InstructionTypeOmitScan:
 				options->omitScan();
 				break;
@@ -341,7 +330,7 @@ int VagWindow::waitForInstructions()
 
 				case InstructionTypeGetObjectValue:
 				Notifiable::performObjectGet();
-				_moleExplorer->updateCorrelation();
+				_xtalExplorer->updateCorrelation();
 				break;
 
 				case InstructionTypePreviousState:
@@ -359,6 +348,11 @@ int VagWindow::waitForInstructions()
 				case InstructionTypeRefitBackbone:
 				options->refitBackbone(_rangeStart, _rangeEnd);
 				break;
+
+				case InstructionTypeManualRefine:
+				display->manualRefine();
+				break;
+
 
 				default:
 				break;
@@ -490,27 +484,6 @@ void VagWindow::pushExploreCrystal()
 	}
 }
 
-void VagWindow::pushExploreMcule()
-{
-	QObject *sent = sender();
-	ChainMenuAction *action = static_cast<ChainMenuAction *>(sent);
-
-	OptionsPtr options = Options::getRuntimeOptions();
-	int crystalCount = options->crystalCount();
-
-	MoleculePtr molecule = action->getMolecule();
-
-	if (molecule)
-	{
-		delete _moleExplorer;
-		_moleExplorer = NULL;
-
-		_moleExplorer = new MoleculeExplorer(this, molecule);
-		_moleExplorer->setGLKeeper(display->getKeeper());
-		_moleExplorer->show();
-	}
-}
-
 void VagWindow::pause(bool on)
 {
 	display->getKeeper()->pause(on);
@@ -627,15 +600,28 @@ void VagWindow::adjustBFactor()
 	wait.wakeAll();
 }
 
+void VagWindow::fixErroneousZones()
+{
+	delete _errorExplorer;
+	_errorExplorer = NULL;
+	
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr crystal = options->getActiveCrystal();
+	
+	if (crystal)
+	{
+		_errorExplorer = new ErroneousZone(this, crystal);
+		_errorExplorer->show();
+	}
+}
+
 VagWindow::~VagWindow()
 {
 	delete bRefinePos;
-	delete bChangeBMult;
 	delete bRecalculate;
 	delete display;
 	delete _myDialogue;
 	delete _fileDialogue;
-	delete _moleExplorer;
 }
 
 

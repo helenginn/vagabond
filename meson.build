@@ -131,6 +131,7 @@ if qt5_dep.found() and dep_gl.found()
 'libgui/GLKeeper.cpp',
 'libgui/GLObject.cpp',
 'libgui/shader.cpp',
+'libgui/Selected2GL.cpp',
 'libgui/Vagabond2GL.cpp', 
 cpp_args: ['-w'], dependencies : [ qt5_dep, dep_vag ])
 	inc_vgui = include_directories('libgui')

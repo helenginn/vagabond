@@ -48,6 +48,7 @@ void MoleculeExplorer::updateCorrelation()
 
 MoleculeExplorer::~MoleculeExplorer()
 {
+	std::cout << "Deleting me!" << std::endl;
 	/*
 	delete _sequenceView;
 	_sequenceView = NULL;

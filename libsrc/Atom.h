@@ -288,6 +288,19 @@ public:
 	{
 		_isWater = set;
 	}
+
+	double posToMouse();
+	
+	void setTargetPosition(vec3 pos, double weight)
+	{
+		_targetPos = pos;
+		_targetWeight = weight;
+	}
+	
+	double getTargetWeight()
+	{
+		return _targetWeight;
+	}
 	
 	bool isWater()
 	{
@@ -368,6 +381,9 @@ private:
 	int _hetatm;
 	mat3x3 _tensor;
 	bool _hBondage;
+
+	vec3 _targetPos;
+	double _targetWeight;
 
 	AtomType _geomType;
 	

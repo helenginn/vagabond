@@ -213,6 +213,12 @@ void Options::executeProtocol()
 		{
 			getActiveCrystal()->fitWholeMolecules();
 			recalculateFFT();
+			bool undone = getActiveCrystal()->undoIfWorse();
+			
+			if (undone && !_rIntra)
+			{
+				break;
+			}
 		}
 		
 		for (int i = 0; i < 3 && _rIntra; i++)
@@ -737,9 +743,10 @@ void Options::previousState()
 
 void Options::statusMessage(std::string message)
 {
-	if (_notify)
+	OptionsPtr opt = getRuntimeOptions();
+	if (opt->_notify)
 	{
-		_notify->setMessage(message);
+		opt->_notify->setMessage(message);
 	}
 
 	std::cout << message << std::endl;
@@ -815,20 +822,9 @@ void Options::chelate()
 	getActiveCrystal()->chelate();
 }
 
-void Options::whack()
-{
-	getActiveCrystal()->whack();
-}
-
 void Options::omitScan()
 {
 	getActiveCrystal()->omitScan();
-}
-
-/* Calculate new flexibility? */
-void Options::reflex()
-{
-	getActiveCrystal()->reflex();
 }
 
 void Options::refitBackbone(int start, int end)

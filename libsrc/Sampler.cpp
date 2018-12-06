@@ -560,6 +560,10 @@ double Sampler::getScore()
 				oneScore = _sampled[i]->posDisplacement();
 				break;
 				
+				case ScoreTypeMouse:
+				oneScore = _sampled[i]->posToMouse();
+				break;
+				
 				case ScoreTypeModelRMSDZero:
 				oneScore = _sampled[i]->getBFactor();
 				break;

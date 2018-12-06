@@ -37,7 +37,8 @@ typedef enum
 	ScoreTypeHappiness = 9, /** Like CC but a reward function */
 	ScoreTypeZero = 10, /** Will always return 0 */
 	ScoreTypeCentroid = 11, /** Difference of centroid against PDB */
-	ScoreTypeCopyToSmaller = 11, /** Difference of centroid against PDB */
+	ScoreTypeCopyToSmaller = 12, /** Difference of centroid against PDB */
+	ScoreTypeMouse = 13, /** Difference to Mouse position */
 } ScoreType;
 
 /* Don't forget - power of 2... */

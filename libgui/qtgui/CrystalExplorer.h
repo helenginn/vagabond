@@ -37,6 +37,8 @@ public:
 	{
 		_keeper = keeper;
 	}
+	
+	void updateCorrelation();
 private slots:
 	void clickedMoleListItem();
 	void pushSequence();

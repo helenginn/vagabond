@@ -14,9 +14,9 @@ std::string Shader_vsh =
 "                        model[1][0], model[1][1], model[2][2],\n"\
 "                        model[2][0], model[2][1], model[2][2]);\n"\
 "    vec4 pos = vec4(position[0], position[1], position[2], 1.0);\n"\
+"    vec4 modelPos = model * pos;\n"\
 "    vec3 norm3 = normalize(normMat * normal);\n"\
 "    vec4 norm = vec4(norm3[0], norm3[1], norm3[2], 1.0);\n"\
-"    vec4 modelPos = model * pos;\n"\
 "    gl_Position = projection * modelPos;\n"\
 "    vec4 lightColor = vec4(1.0, 1.0, 1.0, 1.0);\n"\
 "    vec4 lightPos = vec4(0.0, 0.0, 0.0, 0.0);\n"\

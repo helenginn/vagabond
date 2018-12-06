@@ -181,7 +181,7 @@ void Polymer::whack()
 		
 		BondPtr next;
 		
-		while (false)
+		while (true)
 		{
 			if (bond->downstreamBondGroupCount() && 
 			    bond->downstreamBondCount(0))
@@ -197,10 +197,14 @@ void Polymer::whack()
 			{
 				break;
 			}
+			
+			next->setRefineFlexibility(false);
 
+			/*
 			whack = WhackPtr(new Whack());
 			whack->setBond(ToBondPtr(next));
 			whack->addToAnchor(anchor);
+			*/
 			
 			bond = ToBondPtr(next);
 		}

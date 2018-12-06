@@ -36,6 +36,8 @@ Atom::Atom()
 	_initialB = 0;
 	_geomType = AtomUnassigned;
 	_weighting = 1;
+	_targetWeight = 0;
+	_targetPos = empty_vec3();
 	_origOccupancy = 1.0;
 	_fromPDB = true;
 	_isWater = 0;
@@ -497,6 +499,19 @@ std::string Atom::pdbLineBeginning(std::string start)
 	line << "  ";
 
 	return line.str();
+}
+
+double Atom::posToMouse()
+{
+	getModel()->refreshPositions();
+	vec3 bestPos = getModel()->getAbsolutePosition();
+	vec3 target = _targetPos;
+
+	vec3 diff = vec3_subtract_vec3(bestPos, target);
+	double score = vec3_length(diff) * _targetWeight;
+
+	return score;
+
 }
 
 double Atom::posDisplacement()

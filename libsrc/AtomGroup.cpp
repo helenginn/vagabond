@@ -54,6 +54,23 @@ AtomList AtomGroup::findAtoms(std::string atomType, int resNum)
 	return atoms;
 }
 
+AtomGroupPtr AtomGroup::subGroupForConf(int conf)
+{
+	AtomGroupPtr group = AtomGroupPtr(new AtomGroup());
+	std::string confID = conformer(conf);
+	
+	for (size_t i = 0; i < atomCount(); i++)
+	{
+		if (_atoms[i]->getAlternativeConformer() == confID)
+		{
+			group->addAtom(_atoms[i]);
+		}
+	}
+
+	return group;
+
+}
+
 AtomPtr AtomGroup::findAtom(std::string atomType, std::string confID)
 {
 	AtomList atoms = findAtoms(atomType);
@@ -100,12 +117,12 @@ int AtomGroup::conformerCount()
 {
 	std::map<std::string, size_t> conformerList = conformerMap();
 
-	return conformerList.size();
+	return conformerMap().size();
 }
 
 std::string AtomGroup::conformer(size_t i)
 {
-	if (i > conformerMap().size()) return "";
+	if (i > conformerCount()) return "";
 
 	std::map<std::string, size_t> conformerList = conformerMap();
 	std::map<std::string, size_t>::iterator it = conformerList.begin();
@@ -503,6 +520,11 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		maxTries = 2;
 		break;
 
+		case RefinementMouse:
+		scoreType = ScoreTypeMouse;
+		maxTries = 1;
+		break;
+
 		case RefinementModelRMSDZero:
 		scoreType = ScoreTypeModelRMSDZero;
 		maxTries = 10;
@@ -529,7 +551,6 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		int count = 0;
 
 		bool changed = true;
-		bool addFlex = (rType == RefinementFine);
 
 		while (changed && count < maxTries)
 		{
@@ -558,7 +579,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					setJobName("torsion_" +  bond->shortDesc());
 				}
 
-				if (rType != RefinementFine)
+				if (rType != RefinementFine && rType != RefinementMouse)
 				{
 					topBond = setupThoroughSet(bond, false);
 				}
@@ -578,7 +599,8 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 			if (rType == RefinementModelPos 
 			    || rType == RefinementFine 
 			    || rType == RefinementModelRMSDZero
-			    || rType == RefinementRMSDZero)
+			    || rType == RefinementRMSDZero
+			    || rType == RefinementMouse)
 			{
 				setSilent();
 			}

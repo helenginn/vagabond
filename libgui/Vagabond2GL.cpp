@@ -145,3 +145,65 @@ void Vagabond2GL::render()
 
 	rebindProgram();
 }
+
+AtomPtr Vagabond2GL::findAtomAtXY(double x, double y, double *z)
+{
+	vec3 target = make_vec3(x, y, 0);
+	AtomPtr chosen = AtomPtr();
+
+	for (AtomMap::iterator it = _atomMap.begin();
+	     it != _atomMap.end(); it++)
+	{
+		if (it->first.expired())
+		{
+			continue;
+		}
+
+		AtomPtr atom = it->first.lock();
+		vec3 pos = atom->getAbsolutePosition();
+		
+		double last = 1;
+		vec3 model = mat4x4_mult_vec3(modelMat, pos, &last);
+		vec3 proj = mat4x4_mult_vec3(projMat, model, &last);
+		
+		vec3_mult(&proj, 1 / last);
+
+		if (proj.x < -1 || proj.x > 1)
+		{
+			continue;
+		}
+
+		if (proj.y < -1 || proj.y > 1)
+		{
+			continue;
+		}
+		
+		if (model.z > 0)
+		{
+			continue;
+		}
+
+		vec3 diff = vec3_subtract_vec3(proj, target);
+		
+		if (fabs(diff.x) < 0.05 && fabs(diff.y) < 0.05)
+		{
+			if (model.z > *z)
+			{
+				*z = model.z;
+				chosen = atom;
+			}
+		}
+	}
+	
+	return chosen;
+}
+
+void Vagabond2GL::bindTextures()
+{
+	int num = 1;
+	_textures.resize(num);
+
+	glGenTextures(num, &_textures[0]);
+	glBindTexture(GL_TEXTURE_2D, _textures[0]);
+	checkErrors();
+}

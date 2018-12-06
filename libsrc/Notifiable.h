@@ -23,10 +23,8 @@ typedef enum
 	InstructionTypeSqueezeToEnd,
 	InstructionTypeRefineToEnd,
 	InstructionTypeModelPosToEnd,
-	InstructionTypeChangeBMult,
 	InstructionTypeRecalculateFFT,
 	InstructionTypeOmitScan,
-	InstructionTypeReflex,
 	InstructionTypeOpenInCoot,
 	InstructionTypeSetObjectValue,
 	InstructionTypeGetObjectValue,
@@ -38,7 +36,7 @@ typedef enum
 	InstructionTypeAdjustBFactor,
 	InstructionTypeRefitBackbone,
 	InstructionTypeChelate,
-	InstructionTypeWhack,
+	InstructionTypeManualRefine,
 } InstructionType;
 
 /**

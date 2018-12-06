@@ -19,12 +19,14 @@ std::string InkBond_vsh =
 "{\n"\
 "    vec4 pos = vec4(position[0], position[1], position[2], 1.0);\n"\
 "    vec4 norm = vec4(normal[0], normal[1], normal[2], 1.0);\n"\
-
-"	 vec4 norm4 = projection * model * norm;\n"\
+"    vec4 norm4 = projection * model * norm;\n"\
 "    vec4 model4 = projection * model * pos;\n"\
-"    vec2 axis2 = vec2(norm4[0] - model4[0], norm4[1] - model4[1]);\n"\
+"	 vec4 norm_p = norm4 / norm4[3];\n"\
+"	 vec4 model_p = model4 / model4[3];\n"\
+"    vec4 diff = norm_p - model_p;\n"\
+"    vec2 axis2 = vec2(diff[0], diff[1]);\n"\
 "    vec2 axis = normalize(axis2);\n"\
-"    vec2 clean_shift = vec2(-0.2, -0.3);\n"\
+"    vec2 clean_shift = vec2(-0.01, -0.01);\n"\
 "    vColor = vec4(color[0], color[1], color[2], 1.0);\n"\
 "    if (extra[0] < 0.5) {\n"\
 "        clean_shift[1] *= -1.;\n"\
@@ -35,6 +37,9 @@ std::string InkBond_vsh =
 "    mat2 bondMat = mat2(axis[0], axis[1],\n"\
 "	     	 			axis[1], -axis[0]);\n"\
 "    vec2 shifted = bondMat * clean_shift;\n"\
+"    vec4 sum = model4 + norm4;\n"\
+"    shifted[0] *= sum[3] * 8. / model4[2];\n"\
+"    shifted[1] *= sum[3] * 8. / model4[2];\n"\
 "    model4[0] += shifted[0];\n"\
 "    model4[1] += shifted[1];\n"\
 "    gl_Position = model4;\n"\

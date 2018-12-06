@@ -47,6 +47,28 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	{
 		keeper->toggleBondView();
 	}
+	else if (event->key() == Qt::Key_R)
+	{
+		if (!keeper->isRefiningManually())
+		{
+			/* start it */
+			_vag->setInstructionType(InstructionTypeManualRefine);
+			_vag->wakeup();
+		}
+		else
+		{
+			/* send instruction to stop asap */
+			keeper->cancelRefine();
+		}
+	}
+	else if (event->key() == Qt::Key_Space)
+	{
+		keeper->focusOnSelected();
+	}
+	else if (event->key() == Qt::Key_S)
+	{
+		keeper->splitSelected();
+	}
 }
 
 void VagabondGLWidget::keyReleaseEvent(QKeyEvent *event)
@@ -59,10 +81,47 @@ void VagabondGLWidget::mousePressEvent(QMouseEvent *e)
 	_lastX = e->x();
 	_lastY = e->y();
 	_mouseButton = e->button();
+	_moving = false;
+	
+	if (keeper->isRefiningManually())
+	{
+		double x = e->x(); double y = e->y();
+		convertCoords(&x, &y);
+		keeper->setModelRay(x, y);
+		keeper->setMouseRefine(true);
+	}
+}
+
+void VagabondGLWidget::convertCoords(double *x, double *y)
+{
+	double w = width();
+	double h = height();
+
+	*x = 2 * *x / w - 1.0;
+	*y =  - (2 * *y / h - 1.0);
 }
 
 void VagabondGLWidget::mouseReleaseEvent(QMouseEvent *e)
 {
+	if (keeper->isRefiningManually())
+	{
+		keeper->setMouseRefine(false);
+		return;
+	}
+	
+	if (!_moving)
+	{
+		// this was just a click
+		double prop_x = _lastX;
+		double prop_y = _lastY;
+		convertCoords(&prop_x, &prop_y);
+		
+		if (keeper)
+		{
+			keeper->findAtomAtXY(prop_x, prop_y);
+		}
+	}
+	
 	_mouseButton = Qt::NoButton;
 }
 
@@ -73,6 +132,18 @@ void VagabondGLWidget::mouseMoveEvent(QMouseEvent *e)
 		return;
 	}
 
+	_moving = true;
+	
+	if (keeper->isRefiningManually())
+	{
+		double prop_x = e->x();
+		double prop_y = e->y();
+
+		convertCoords(&prop_x, &prop_y);
+		keeper->setModelRay(prop_x, prop_y);
+		return;
+	}
+	
 	double newX = e->x();
 	double xDiff = _lastX - newX;
 	double newY = e->y();
@@ -137,4 +208,9 @@ VagabondGLWidget::~VagabondGLWidget()
 	keeper->cleanup();
 	delete keeper;
 	delete timer;
+}
+
+void VagabondGLWidget::manualRefine()
+{
+	keeper->manualRefine();
 }

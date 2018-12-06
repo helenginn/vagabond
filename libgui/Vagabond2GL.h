@@ -48,10 +48,17 @@ public:
 		_pause = on;
 		_shouldGetBonds = true;
 	}
+	
+	AtomPtr findAtomAtXY(double x, double y, double *z);
+	
+	virtual bool isVagabond2GL()
+	{
+		return true;
+	}
 protected:
-	void findAtoms();
+	virtual void findAtoms();
 
-	virtual void bindTextures() = 0;
+	virtual void bindTextures();
 	virtual void updateAtoms() = 0;
 	virtual void getPositions(AtomPtr atom, 
 	                          std::vector<vec3> *min,
@@ -63,6 +70,8 @@ protected:
 	bool _shouldGetBonds;
 	bool _enabled;
 
+	/* First pair: number of bonds assoc. with atom,
+	 * Second pair: vertex num */
 	AtomMap _atomMap;
 	GLMoleculeMap _moleculeMap;
 private:

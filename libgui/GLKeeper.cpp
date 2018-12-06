@@ -17,21 +17,21 @@
 #include "GLKeeper.h"
 #include "Density2GL.h"
 #include "Bonds2GL.h"
-#include "Atoms2GL.h"
+#include "Selected2GL.h"
+#include <float.h>
 #include "../libsrc/vec3.h"
 
 bool GLKeeper::everMovedMouse = false;
 
 void GLKeeper::updateProjection()
 {
-	zNear = 10;
+	zNear = 4;
 	zFar = 100;
 
-	float correctedNear = zNear;
 	double side = 0.5;
 	float aspect = height / width;
 	projMat = mat4x4_frustum(side, -side, side * aspect, -side * aspect,
-	                         correctedNear, zFar);
+	                         zNear, zFar);
 }
 
 void GLKeeper::setupCamera(void)
@@ -51,10 +51,15 @@ void GLKeeper::setupCamera(void)
 	updateCamera();
 }
 
+GLObjectPtr GLKeeper::activeObject()
+{
+	return _allBond2GL;
+}
+
 void GLKeeper::updateCamera(void)
 {
-	vec3 alteration = _objects[0]->fixCentroid(_totalCentroid);
-	_totalCentroid = _objects[0]->getCentroid();
+	vec3 alteration = activeObject()->fixCentroid(_totalCentroid);
+	_totalCentroid = activeObject()->getCentroid();
 
 	vec3 centre = _centre;
 	centre.x = 0;
@@ -117,6 +122,9 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	/* Atom pos render */
 	_atoms2GL = Atoms2GLPtr(new Atoms2GL());
 
+	/* Selected atoms render */
+	_selected2GL = Selected2GLPtr(new Selected2GL());
+
 	/* Density render */
 	_density2GL = Density2GLPtr(new Density2GL());
 	_density2GL->setKeeper(this);
@@ -131,6 +139,7 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 
 	_objects.push_back(_allBond2GL);
 	_objects.push_back(_aveBond2GL);
+	_objects.push_back(_selected2GL);
 	_objects.push_back(_atoms2GL);
 	_objects.push_back(_density2GL);
 	_objects.push_back(_diffDens2GL);
@@ -219,6 +228,34 @@ void GLKeeper::toggleBondView()
 	_allBond2GL->setEnabled(!enabled);
 }
 
+AtomPtr GLKeeper::findAtomAtXY(double x, double y)
+{
+	double z = -FLT_MAX;
+	AtomPtr chosen = AtomPtr();
+
+	for (int i = 0; i < _objects.size(); i++)
+	{
+		GLObjectPtr obj = _objects[i];
+
+		if (!obj->isVagabond2GL())
+		{
+			continue;
+		}
+		
+		Vagabond2GLPtr ptr = ToVagabond2GLPtr(obj);
+		AtomPtr atom = ptr->findAtomAtXY(x, y, &z);
+		
+		if (atom)
+		{
+			chosen = atom;
+		}
+	}
+	
+	_selected2GL->setPicked(chosen);
+
+	return chosen;
+}
+
 void GLKeeper::cleanup(void)
 {
 
@@ -285,3 +322,46 @@ void GLKeeper::initialisePrograms()
 	}
 }
 
+void GLKeeper::manualRefine()
+{
+	if (!_selected2GL->isRefinable())
+	{
+		return;
+	}
+	
+	_selected2GL->manualRefine();
+}
+
+void GLKeeper::cancelRefine()
+{
+	_selected2GL->cancelRefine();
+}
+
+bool GLKeeper::isRefiningManually()
+{
+	return _selected2GL->isRefining();
+}
+
+vec3 GLKeeper::setModelRay(double x, double y)
+{
+	/* assume a z position of -1 */
+	float aspect = height / width;
+	y *= aspect;
+	vec3 ray = make_vec3(-x, y, -1);
+	_selected2GL->setMouseRay(ray);
+}
+
+void GLKeeper::setMouseRefine(bool val)
+{
+	_selected2GL->setMouseRefinement(val);
+}
+
+void GLKeeper::focusOnSelected()
+{
+	_selected2GL->focusOnGroup();
+}
+
+void GLKeeper::splitSelected()
+{
+	_selected2GL->splitSelected();
+}

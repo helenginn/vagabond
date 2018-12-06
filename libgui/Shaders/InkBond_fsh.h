@@ -26,6 +26,9 @@ std::string InkBond_fsh =
 "		float frac = 1. - min(dist / -cutoff, 1.0);\n"\
 "		gl_FragColor[3] *= frac;\n"\
 "	}\n"\
+"	if (vPos[2] > -2.) {\n"\
+"		discard;\n"\
+"	}\n"\
 "\n"\
 "\n"\
 "\n"\

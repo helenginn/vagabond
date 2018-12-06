@@ -81,11 +81,16 @@ public:
 
 	vec3 fixCentroid(vec3 newCentroid);
 
-        vec3 transformPosByModel(vec3 pos)
-        {
-            vec3 newPos = mat4x4_mult_vec(modelMat, pos);
-            return newPos;
-        }
+	vec3 transformPosByModel(vec3 pos)
+	{
+		vec3 newPos = mat4x4_mult_vec(modelMat, pos);
+		return newPos;
+	}
+
+	virtual bool isVagabond2GL()
+	{
+		return false;
+	}
 protected:
 	mat4x4 projMat;
 	mat4x4 modelMat;

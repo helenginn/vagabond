@@ -605,7 +605,7 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 	}
 }
 
-void Crystal::undoIfWorse()
+bool Crystal::undoIfWorse()
 {
 	if (_sinceBestNum > 0)
 	{
@@ -613,10 +613,12 @@ void Crystal::undoIfWorse()
 		<< std::endl;
 		restoreState(0 - _sinceBestNum);
 		_sinceBestNum = 0;
+		return true;
 	}
 	else
 	{
 		std::cout << "Not undoing result due to improved Rwork" << std::endl;
+		return false;
 	}
 }
 
@@ -1286,7 +1288,6 @@ void Crystal::fitWholeMolecules()
 
 		ToPolymerPtr(molecule(i))->refineGlobalFlexibility();
 	}
-	
 }
 
 void Crystal::addProperties()

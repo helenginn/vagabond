@@ -13,12 +13,14 @@ std::string Pencil_fsh =
 "\n"\
 "void main()\n"\
 "{\n"\
-"	if (tPos[2] > -8.) {\n"\
+"	if (tPos[2] > -4.) {\n"\
 "		discard;\n"\
 "	}\n"\
+/*
 "	if (tPos[2] < -20.) {\n"\
 "		discard;\n"\
 "	}\n"\
+*/
 "	vec3 pos = vec3(vPos[0], vPos[1], vPos[2]);\n"\
 "	vec3 lightDir = normalize(pos - light_pos);\n"\
 "	float diff = abs(dot(vNormal, lightDir));\n"\

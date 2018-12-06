@@ -27,11 +27,12 @@
 
 #include "InstructionThread.h"
 #include "Dialogue.h"
-#include "MoleculeExplorer.h"
 #include "CrystalExplorer.h"
-#include "VagabondGLWidget.h"
+#include "ErroneousZone.h"
 #include "../../libsrc/Notifiable.h"
 
+class VagabondGLWidget;
+#include "VagabondGLWidget.h"
 
 class VagWindow : public QMainWindow, public Notifiable
 {
@@ -58,6 +59,11 @@ public:
 		return &_instructionThread;	
 	}
 	
+	void setInstructionType(InstructionType type)
+	{
+		_instructionType = type;
+	}
+	
 	VagabondGLWidget *getDisplay()
 	{
 		return display;
@@ -66,7 +72,6 @@ protected:
 	virtual void resizeEvent(QResizeEvent *);
 private slots:
 	void pushBMultiplier();
-	void pushExploreMcule();
 	void pushExploreCrystal();
 	void restorePreviousState();
 	void pushSendInstruction(InstructionType inst);
@@ -74,6 +79,7 @@ private slots:
 	void toggleScaling(ScalingType type);
 	void adjustBFactor();
 	void refitBackbone();
+	void fixErroneousZones();
 
 private:
 	VagabondGLWidget *display;
@@ -81,8 +87,8 @@ private:
 	QMutex mutex;
 	InstructionThread _instructionThread;
 	Dialogue *_myDialogue;
-	MoleculeExplorer *_moleExplorer;
 	CrystalExplorer *_xtalExplorer;
+	ErroneousZone *_errorExplorer;
 	QFileDialog *_fileDialogue;   
 
 	void dialogueModify(void (*func)(double), std::string title, 
@@ -100,7 +106,6 @@ private:
 	/* Buttons down the side */
 	QPushButton *bRefinePos;
 	QPushButton *bChelate;
-	QPushButton *bWhack;
 	QPushButton *bChangeBMult;
 	QPushButton *bExploreCrystal;
 	QPushButton *bRecalculate;
