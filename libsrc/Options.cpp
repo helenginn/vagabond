@@ -188,8 +188,8 @@ void Options::executeProtocol()
 {
 	if (!_refine)
 	{
-		recalculateFFT();
 		std::cout << "No refinement protocol selected." << std::endl;
+		recalculateFFT();
 		return;
 	}
 	

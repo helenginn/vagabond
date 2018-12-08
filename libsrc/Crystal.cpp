@@ -1519,7 +1519,6 @@ void Crystal::postRestoreState()
 	OptionsPtr options = Options::getRuntimeOptions();
 	DiffractionPtr data = options->getActiveData();
 
-	_cycleNum++;
 	vsConcludeRefinement(NULL);
 }
 
