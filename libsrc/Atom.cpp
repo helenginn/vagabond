@@ -656,7 +656,7 @@ std::string Atom::shortDesc()
 {
 	if (!getMonomer())
 	{
-		return getAtomName() + "_" + _conformer;
+		return getAtomName() + "_" + i_to_str(getAtomNum()) + _conformer;
 	}
 
 	std::string start = getMonomer()->getIdentifier()
