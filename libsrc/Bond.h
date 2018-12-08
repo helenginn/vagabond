@@ -153,6 +153,11 @@ public:
 	{
 		return "Bond";
 	}
+	
+	bool isSplit()
+	{
+		return _split;
+	}
 
 	static void setKick(void *object, double value)
 	{
@@ -527,6 +532,8 @@ private:
 
 	/* Had a non-NULL atom input as major or minor */
 	bool _disabled;
+	
+	bool _split;
 
 	void initialize();
 	double getBaseTorsion();
@@ -540,6 +547,11 @@ private:
 	Bond *nakedDownstreamBond(int group, int i)
 	{
 		return _bondGroups[group]->bond(i);
+	}
+	
+	bool setSplit(bool val)
+	{
+		_split = true;
 	}
 
 	/* Grab bond length from the atom types of major/minor */

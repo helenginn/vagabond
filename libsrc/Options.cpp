@@ -209,6 +209,7 @@ void Options::executeProtocol()
 			std::cout << "Flex macrocycle (" << 
 			i + 1 << " / 5)" << std::endl;
 		}
+
 		if (_rInter)
 		{
 			getActiveCrystal()->fitWholeMolecules();
@@ -220,6 +221,10 @@ void Options::executeProtocol()
 				break;
 			}
 		}
+
+		/* In case we need to do remedial work */
+		double oldWork = getActiveCrystal()->getRWork();
+		double oldB = getActiveCrystal()->averageBFactor();
 		
 		for (int i = 0; i < 3 && _rIntra; i++)
 		{
@@ -227,6 +232,14 @@ void Options::executeProtocol()
 			i + 1 << " / 3)" << std::endl;
 			getActiveCrystal()->refineIntraMovements();
 			recalculateFFT();
+		}
+		
+		double newWork = getActiveCrystal()->getRWork();
+		
+		if (newWork > oldWork)
+		{
+			/* Remedial action required. */
+
 		}
 	}
 	

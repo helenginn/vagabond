@@ -19,6 +19,8 @@
 #include "Polymer.h"
 #include "Monomer.h"
 #include "Backbone.h"
+#include "Whack.h"
+#include "Balance.h"
 
 /** \endcond */
 
@@ -129,12 +131,12 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 	}
 }
 
-BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
+BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 {
 	reportInDegrees();
 	setScoreType(ScoreTypeCorrel);
 
-	setJobName("torsion_set_" + bond->shortDesc());
+	setJobName("torsion_set_" + fbond->shortDesc());
 
 	int bondCount = 0;
 	BondPtr topBond = BondPtr();
@@ -153,10 +155,10 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 
 	std::vector<BondInt> remaining;
 	BondInt entry;
-	entry.bond = bond;
+	entry.bond = fbond;
 	entry.num = bondNum;
 	remaining.push_back(entry);
-	addSampled(bond->getMajor());
+	addSampled(fbond->getMajor());
 	
 	while (remaining.size())
 	{
@@ -173,14 +175,18 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 		
 		bondCount++;
 		addAtomsForBond(bond);
+		checkOccupancyAndAdd(bond);
 		
-		if (!bond->isRefinable())
+		if (!bond->isRefinable() && bond != fbond)
 		{
-			/* No hope! Give up! */
+			/* No hope! Give up! Unless first bond */
 			continue;
 		}
 
-		addParamsForBond(bond, (num % 2));
+		if (bond->isRefinable())
+		{
+			addParamsForBond(bond, (num % 2));
+		}
 
 		for (int j = 0; j < bond->downstreamBondGroupCount(); j++)
 		{
@@ -204,6 +210,7 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 					remaining.push_back(entry);
 				}
 			}
+			
 		}
 	}
 	
@@ -235,6 +242,41 @@ void Sampler::setupStepSearch()
 	_strategy = RefinementStrategyPtr(new RefinementStepSearch());
 	_strategy->setEvaluationFunction(Sampler::score, this);
 	_strategy->setCycles(20);
+}
+
+void Sampler::checkOccupancyAndAdd(BondPtr bond)
+{
+	BondPtr parent = bond;
+	int count = 0;
+
+	while (parent->getParentModel()->isBond()
+	    && hasParameter(ParamOptionOccupancy) && count < 5)
+	{
+		parent = ToBondPtr(parent->getParentModel());
+
+		if (parent->downstreamBondGroupCount() > 1)
+		{
+			bool clear = true;
+			for (int i = 0; i < _balances.size(); i++)
+			{
+				if (_balances[i]->isFromBond(parent))
+				{
+					clear = false;
+					break;
+				}
+			}
+
+			if (clear)
+			{
+				BalancePtr balance = BalancePtr(new Balance(parent));
+				balance->addParamsToStrategy(_strategy);
+				_balances.push_back(balance);
+				break;
+			}
+		}
+		
+		count++;
+	}
 }
 
 void Sampler::addOccupancy(BondPtr bond, double range, double interval)
@@ -272,9 +314,19 @@ void Sampler::addKick(BondPtr bond, double range, double interval)
 	if (!bond) return;
 	
 	if (!bond->getRefineFlexibility()) return;
+	
+	if (bond->hasWhack())
+	{
+		WhackPtr whack = bond->getWhack();
+		_strategy->addParameter(&*whack, Whack::getKick, Whack::setKick,
+		                        range, interval, "k" + bond->shortDesc());
+	}
+	else
+	{
+		_strategy->addParameter(&*bond, Bond::getKick, Bond::setKick,
+		                        range, interval, "k" + bond->shortDesc());
+	}
 
-	_strategy->addParameter(&*bond, Bond::getKick, Bond::setKick,
-	                        range, interval, "b" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }
@@ -495,6 +547,7 @@ bool Sampler::sample(bool clear)
 
 	if (clear)
 	{
+		_balances.clear();
 		_strategy = RefinementStrategyPtr();
 	}
 
@@ -511,6 +564,11 @@ double Sampler::getScore()
 	if (!_sampled.size() || _scoreType == ScoreTypeZero)
 	{
 		return 0;
+	}
+	
+	for (int i = 0; i < _balances.size(); i++)
+	{
+		_balances[i]->adjustment();
 	}
 	
 	if (_scoreType == ScoreTypeCentroid)

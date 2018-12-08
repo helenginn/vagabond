@@ -279,7 +279,11 @@ void Polymer::tieAtomsUp()
 void Polymer::removeAtom(AtomPtr atom)
 {
 	MonomerPtr mon = atom->getMonomer();
-	mon->removeAtom(atom);
+	
+	if (mon)
+	{
+		mon->removeAtom(atom);
+	}
 	
 	AtomGroup::removeAtom(atom);
 }

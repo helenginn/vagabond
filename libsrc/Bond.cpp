@@ -32,6 +32,7 @@ void Bond::initialize()
 	_usingTorsion = false;
 	_bondLength = 0;
 	_changedSamples = true;
+	_split = false;
 	_refineBondAngle = false;
 	_refineFlexibility = true;
 	_fixed = false;
@@ -127,6 +128,7 @@ Bond::Bond(Bond &other)
 	_bondLength = other._bondLength;
 	_changedSamples = true;
 	_heavyAlign = other._heavyAlign;
+	_split = other._split;
 	
 	_torsion = other._torsion;
 	_kick = other._kick;
@@ -1163,6 +1165,8 @@ BondPtr Bond::splitBond(bool onlyExisting)
 	_occupancy /= 2;
 	dupl->_occupancy /= 2;
 
+	dupl->setSplit(true);
+	setSplit(true);
 
 	propagateChange();
 
@@ -1477,7 +1481,7 @@ double Bond::getEffectiveOccupancy()
 	{
 		total += samples->at(i).occupancy;
 	}
-
+	
 	return total;
 }
 
@@ -1505,6 +1509,7 @@ void Bond::addProperties()
 	addDoubleProperty("psi", &_psi);    
 	addDoubleProperty("occupancy", &_occupancy);
 	addBoolProperty("occ_reset", &_resetOccupancy);
+	addBoolProperty("split", &_split);
 
 	addBoolProperty("fixed", &_fixed);
 	addBoolProperty("using_torsion", &_usingTorsion);

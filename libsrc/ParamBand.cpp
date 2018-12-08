@@ -18,10 +18,15 @@
 
 #include "ParamBand.h"
 #include "Shouter.h"
+#include <iostream>
 
 ParamBand::ParamBand()
 {
 	_paramValue = 0;
+	_allWeight = 1;
+	_equalDiv = false;
+	_min = -FLT_MAX;
+	_max = +FLT_MAX;
 }
 
 ParamBand::ParamBand(ParamBand &other)
@@ -30,6 +35,10 @@ ParamBand::ParamBand(ParamBand &other)
 	_setter = other._setter;
 	_paramValue = other._paramValue;
 	_objects = other._objects;
+	_equalDiv = false;
+	_allWeight = other._allWeight;
+	_min = other._min;
+	_max = other._max;
 }
 
 void ParamBand::addObject(void *object, double weight)
@@ -60,11 +69,27 @@ void ParamBand::setGlobalParam(void *object, double value)
 {
 	ParamBand *me = static_cast<ParamBand *>(object);
 	double divValue = value / (double)me->objectCount();
-
+	
+	if (me->_equalDiv)
+	{
+		divValue = value;
+	}
+	
 	for (int i = 0; i < me->objectCount(); i++)
 	{
 		double base = me->_objects[i].baseValue;
-		double newVal = base + divValue;
+		double newVal = (base + divValue) * me->_allWeight;
+		
+		if (newVal > me->_max)
+		{
+			newVal = me->_max;
+		}
+		
+		if (newVal < me->_min)
+		{
+			newVal = me->_min;
+		}
+
 		(*me->_setter)(me->_objects[i].object, newVal);
 	}
 	

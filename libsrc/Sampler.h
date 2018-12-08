@@ -173,6 +173,7 @@ public:
 	}
 
 	int hasParameter(ParamOptionType type);
+	void checkOccupancyAndAdd(BondPtr bond);
 
 	void addCustomParameter(void *object, Getter getter, Setter setter,
                                  double range, double interval,
@@ -203,6 +204,7 @@ protected:
 private:
 	void addParamsForBond(BondPtr bond, bool even = true);
 	CrystalPtr _crystal;
+	std::vector<BalancePtr> _balances;
 
 	std::vector<AtomPtr> _sampled;
 	std::vector<AtomPtr> _unsampled;

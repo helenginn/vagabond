@@ -149,10 +149,7 @@ public:
 	
 	void differenceAttribution();
 	
-	/* Calculate new flexibility */
-	void reflex();
-	
-	void multiplyMap(double scale);
+	void removeAtom(AtomPtr atom);
 	vec3 snapToGrid(vec3 pos);
 
 	/** Calculates the anchor residue for each Polymer and assigns to each. */
@@ -160,6 +157,8 @@ public:
 	
 	/** Prints scattering proportion in this crystal determined by bonds. */
 	void tiedUpScattering();
+	
+	double averageBFactor();
 	
 	/** Loops through all molecules and places them in the map.
 	* 	\param maxRes max resolution used to determine voxel spacing if it has
@@ -312,6 +311,11 @@ public:
 	void refinePositions();
 	void refineIntraMovements();
 	void refineSidechains();
+	
+	double getRWork()
+	{
+		return _rWork;
+	}
 	
 	int getCycleNum()
 	{

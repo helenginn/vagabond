@@ -29,6 +29,11 @@ vec3 meanOfManyPositions(std::vector<BondSample> *positions)
 		sum = vec3_add_vec3(sum, tmp);
 		weights += (*positions)[i].occupancy;
 	}
+	
+	if (weights <= 0)
+	{
+		weights = 1;
+	}
 
 	vec3_mult(&sum, 1 / weights);
 

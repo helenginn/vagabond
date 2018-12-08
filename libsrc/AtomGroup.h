@@ -68,6 +68,8 @@ public:
 
 	void addAtomsFrom(AtomGroupPtr group);
 
+	AtomList beyondGroupAtoms();
+	
 	size_t atomCount()
 	{
 		return _atoms.size();
@@ -115,6 +117,7 @@ public:
 	void setWeighting(double value);
 	int conformerCount();
 	std::string conformer(size_t i);
+	int conformer(std::string conf);
 	
 	/** Instructs the models of all the atoms inside to propagate a change of
 	* parameters. See also: Model::propagateChange(). */

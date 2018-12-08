@@ -20,6 +20,7 @@
 #define __vagabond__ParamBand_h__
 
 #include "RefinementStrategy.h"
+#include <float.h>
 
 typedef struct
 {
@@ -65,10 +66,32 @@ public:
 	/** Adds 'value' to each parameter in the object list. */
 	static void setGlobalParam(void *object, double value);
 	static double getGlobalParam(void *object);
+
+	/* Get the working value (for a given object) */
+	double getParamValue()
+	{
+		return _paramValue;
+	}
 	
 	static bool has_more_objects(ParamBandPtr &one, ParamBandPtr &two)
 	{
 		return (one->objectCount() > two->objectCount());
+	}
+	
+	void setEqualDivision(bool val)
+	{
+		_equalDiv = val;
+	}
+	
+	void setWeightForAll(double val)
+	{
+		_allWeight = val;
+	}
+	
+	void setMinMax(double min, double max)
+	{
+		_min = min;
+		_max = max;
 	}
 	
 	size_t objectCount()
@@ -102,6 +125,10 @@ private:
 	Setter _setter;
 	double _paramValue;
 	double _tag;
+	double _allWeight;
+	bool _equalDiv;
+	double _min;
+	double _max;
 
 	std::vector<ObjectWeight> _objects;
 };

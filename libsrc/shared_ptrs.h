@@ -61,6 +61,9 @@ typedef boost::shared_ptr<Notifiable> NotifiablePtr;
 class Options;
 typedef boost::shared_ptr<Options> OptionsPtr;
 
+class Balance;
+typedef boost::shared_ptr<Balance> BalancePtr;
+
 class FFT;
 typedef boost::shared_ptr<FFT> FFTPtr;
 
@@ -208,6 +211,7 @@ typedef enum
 	ParamOptionTorsion,
 	ParamOptionBondAngle,
 	ParamOptionKick,
+	ParamOptionOccupancy,
 	ParamOptionMagicAngles,
 	ParamOptionNumBonds,
 	ParamOptionMaxTries,

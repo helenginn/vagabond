@@ -120,6 +120,20 @@ int AtomGroup::conformerCount()
 	return conformerMap().size();
 }
 
+int AtomGroup::conformer(std::string conf)
+{
+	std::map<std::string, size_t> conformerList = conformerMap();
+	
+	if (!conformerList.count(conf))
+	{
+		return 0;
+	}
+	else
+	{
+		return conformerList[conf];
+	}
+}
+
 std::string AtomGroup::conformer(size_t i)
 {
 	if (i > conformerCount()) return "";
@@ -319,6 +333,43 @@ void AtomGroup::setWeighting(double value)
 	{
 		atom(i)->setWeighting(value);
 	}
+}
+
+AtomList AtomGroup::beyondGroupAtoms()
+{
+	AtomList list = topLevelAtoms();
+	AtomList bottom;
+	
+	for (int i = 0; i < list.size(); i++)
+	{
+		AtomPtr a = list[i];
+		
+		if (!a->getModel()->isBond())
+		{
+			continue;
+		}
+		
+		while (hasAtom(a))
+		{
+			BondPtr b = ToBondPtr(a->getModel());
+
+			if (!(b->downstreamBondGroupCount() && b->downstreamBondCount(0)))
+			{
+				a = AtomPtr();
+				break;
+			}
+			
+			b = ToBondPtr(b->downstreamBond(0, 0));
+			a = b->getMinor();
+		}
+		
+		if (a)
+		{
+			bottom.push_back(a);
+		}
+	}
+	
+	return bottom;
 }
 
 AtomList AtomGroup::topLevelAtoms()
@@ -571,7 +622,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 
 				if (!bond->isRefinable())
 				{
-					continue;
+//					continue;
 				}
 
 				if (i == 0)

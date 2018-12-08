@@ -257,20 +257,6 @@ void Crystal::omitScan()
 	}
 }
 
-void Crystal::reflex()
-{
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isPolymer())
-		{
-			continue;
-		}
-
-		PolymerPtr pol = ToPolymerPtr(molecule(i));
-		pol->reflex();
-	}
-}
-
 void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 {
 	if (_silent)
@@ -454,6 +440,14 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 	*bFactor = b;
 }
 
+void Crystal::removeAtom(AtomPtr atom)
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		molecule(i)->removeAtom(atom);
+	}
+}
+
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
                                      bool verbose, double lowRes, double highRes)
 {
@@ -631,16 +625,6 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 	
 	_bucket->setData(data);
 	_bucket->scaleSolvent();
-}
-
-void Crystal::multiplyMap(double scale)
-{
-	double current = _fft->averageAll();
-	std::cout << "Current average: " << current << std::endl;
-	_fft->multiplyAll(scale);
-	_difft->multiplyAll(scale);
-	current = _fft->averageAll();
-	std::cout << "New average: " << current << std::endl;
 }
 
 double Crystal::getMaxResolution(DiffractionPtr data)
@@ -1505,6 +1489,11 @@ void Crystal::silentConcludeRefinement()
 
 double Crystal::vsConcludeRefinement(void *object)
 {
+	if (object == NULL)
+	{
+		object = &*ToParserPtr(Options::getActiveCrystal());
+	}
+
 	OptionsPtr options = Options::getRuntimeOptions();
 	DiffractionPtr data = options->getActiveData();
 	
@@ -1529,7 +1518,7 @@ void Crystal::postRestoreState()
 	DiffractionPtr data = options->getActiveData();
 
 	_cycleNum++;
-	concludeRefinement(_cycleNum, data);
+	vsConcludeRefinement(NULL);
 }
 
 void Crystal::openInCoot()
@@ -1744,4 +1733,25 @@ void Crystal::chelate()
 			continue;
 		}
 	}
+}
+
+double Crystal::averageBFactor()
+{
+	double ave = 0;
+	double count = 0;
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		MoleculePtr mole = molecule(i);
+
+		if (mole->isPolymer())
+		{
+			continue;
+		}
+		
+		ave += ToPolymerPtr(mole)->getAverageBFactor();
+		count++;
+	}
+	
+	return ave/count;
 }
