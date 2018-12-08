@@ -331,9 +331,8 @@ void Hydrogenator::hydrogenate()
 	if (_monomer->getIdentifier() == "cys")
 	{
 		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
-		addHydrogens(side->findAtoms("SG"), 1, "HG");
+//		addHydrogens(side->findAtoms("SG"), 1, "HG");
 
-		setNewGeometry(_monomer->findAtoms("HG"), 120., 180.);
 		setSpin(_monomer->findAtoms("HG"));
 	}
 	

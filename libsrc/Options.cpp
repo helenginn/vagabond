@@ -10,6 +10,7 @@
 #include "VScript.h"
 #include <iostream>
 #include "PDBReader.h"
+#include "SSRigger.h"
 #include "DiffractionMTZ.h"
 #include "Shouter.h"
 #include <iomanip>
@@ -17,7 +18,6 @@
 #include "WaterNetwork.h"
 #include "FileReader.h"
 #include "VBondReader.h"
-#include "SSRigger.h"
 
 OptionsPtr Options::options;
 double Options::_kick = 0.000;
@@ -200,7 +200,15 @@ void Options::executeProtocol()
 		std::cout << "Refining positions to PDB (" << 
 		i + 1 << " / 5)" << std::endl;
 		crystal->refinePositions();
+		
+		if (i == 1)
+		{
+			SSRigger rigger;
+			rigger.setCrystal(crystal);
+			rigger.findDisulphides();
+		}
 	}
+	
 	
 	recalculateFFT();
 	
@@ -640,9 +648,6 @@ void Options::findDisulphides()
 
 	statusMessage("Finding disulphide bonds.");
 
-	SSRigger rigger;
-	rigger.setCrystal(crystal);
-	rigger.findDisulphides();
 	
 	recalculateFFT();
 
