@@ -453,6 +453,13 @@ public:
 	
 	BondPtr downstreamBond(int group, int i)
 	{
+		Bond *bond = nakedDownstreamBond(group, i);
+		
+		if (!bond)
+		{
+			return BondPtr();
+		}
+		
 		return nakedDownstreamBond(group, i)->shared_from_this();
 	}
 	
