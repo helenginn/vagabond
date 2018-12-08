@@ -667,7 +667,7 @@ std::string Atom::shortDesc()
 	{
 		start += "_" + _conformer;
 	}
-
+	
 	return start;
 }
 

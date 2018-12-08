@@ -925,6 +925,7 @@ void Bond::propagateChange(int depth, bool refresh)
 			for (int j = 1; j < parent->downstreamBondCount(group); j++)
 			{
 				BondPtr downBond = parent->downstreamBond(group, j);
+				
 				BondInt pair;
 				pair.bond = downBond;
 				pair.num = depth;
