@@ -64,6 +64,7 @@ protected:
 
 	Qt::MouseButton _mouseButton;
 	bool _controlPressed;
+	bool _shiftPressed;
 	double _lastX; double _lastY;
 	bool _moving;
 	

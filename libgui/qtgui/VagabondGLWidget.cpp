@@ -19,6 +19,7 @@ VagabondGLWidget::VagabondGLWidget(QWidget *obj) : QOpenGLWidget(obj)
 	_mouseButton = Qt::NoButton;
 	_lastX = 0; _lastY = 0;
 	_controlPressed = false;
+	_shiftPressed = false;
 	setFocus();
 }
 
@@ -29,6 +30,11 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	if (event->key() == Qt::Key_Alt)
 	{
 		_controlPressed = true;
+	}
+	else if (event->key() == Qt::Key_Shift)
+	{
+		_shiftPressed = true;
+		keeper->setAdding(true);
 	}
 	else if (event->key() == Qt::Key_D)
 	{
@@ -69,11 +75,29 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	{
 		keeper->splitSelected();
 	}
+	else if (event->key() == Qt::Key_X)
+	{
+		keeper->deleteSelected();
+	}
+	else if (event->key() == Qt::Key_K)
+	{
+		keeper->toggleKicks();
+	}
+	else if (event->key() == Qt::Key_Comma)
+	{
+		keeper->advanceMonomer(-1);
+	}
+	else if (event->key() == Qt::Key_Period)
+	{
+		keeper->advanceMonomer(1);
+	}
 }
 
 void VagabondGLWidget::keyReleaseEvent(QKeyEvent *event)
 {
 	_controlPressed = false;
+	_shiftPressed = false;
+	keeper->setAdding(false);
 }
 
 void VagabondGLWidget::mousePressEvent(QMouseEvent *e)
@@ -83,7 +107,7 @@ void VagabondGLWidget::mousePressEvent(QMouseEvent *e)
 	_mouseButton = e->button();
 	_moving = false;
 	
-	if (keeper->isRefiningManually())
+	if (keeper->isRefiningManually() && e->button() == Qt::RightButton)
 	{
 		double x = e->x(); double y = e->y();
 		convertCoords(&x, &y);
@@ -103,7 +127,7 @@ void VagabondGLWidget::convertCoords(double *x, double *y)
 
 void VagabondGLWidget::mouseReleaseEvent(QMouseEvent *e)
 {
-	if (keeper->isRefiningManually())
+	if (keeper->isRefiningManually() && e->button() == Qt::RightButton)
 	{
 		keeper->setMouseRefine(false);
 		return;
@@ -134,7 +158,7 @@ void VagabondGLWidget::mouseMoveEvent(QMouseEvent *e)
 
 	_moving = true;
 	
-	if (keeper->isRefiningManually())
+	if (keeper->isRefiningManually() && e->button() == Qt::RightButton)
 	{
 		double prop_x = e->x();
 		double prop_y = e->y();
@@ -162,7 +186,8 @@ void VagabondGLWidget::mouseMoveEvent(QMouseEvent *e)
 			keeper->draggedLeftMouse(xDiff * 4, yDiff * 4);
 		}
 	}
-	else if (_mouseButton == Qt::RightButton)
+	else if (_mouseButton == Qt::RightButton &&
+	         !keeper->isRefiningManually())
 	{
 		keeper->draggedRightMouse(xDiff * PAN_SENSITIVITY,
 		                          yDiff * PAN_SENSITIVITY);

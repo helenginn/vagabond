@@ -64,8 +64,12 @@ public:
 	void cancelRefine();
 	void setMouseRefine(bool val);
 	
+	void toggleKicks();
+	void deleteSelected();
 	void splitSelected();
 	void focusOnSelected();
+	void advanceMonomer(int dir);
+	void setAdding(bool val);
 	vec3 setModelRay(double x, double y);
 private:
 	std::vector<GLObjectPtr> _objects;

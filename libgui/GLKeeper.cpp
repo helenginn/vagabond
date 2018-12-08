@@ -365,3 +365,23 @@ void GLKeeper::splitSelected()
 {
 	_selected2GL->splitSelected();
 }
+
+void GLKeeper::deleteSelected()
+{
+	_selected2GL->deleteSelected();
+}
+
+void GLKeeper::toggleKicks()
+{
+	_selected2GL->toggleKicks();
+}
+
+void GLKeeper::advanceMonomer(int dir)
+{
+	_selected2GL->advanceMonomer(dir);
+}
+
+void GLKeeper::setAdding(bool val)
+{
+	_selected2GL->setAdding(val);
+}

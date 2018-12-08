@@ -21,8 +21,10 @@
 typedef enum
 {
 	SelectAtom,
-	SelectResidue,
+	SelectSidechain,
 	SelectConformer,
+	SelectMonomer,
+	SelectMonConf,
 } SelectionType;
 
 class Selected2GL : public Atoms2GL
@@ -30,12 +32,21 @@ class Selected2GL : public Atoms2GL
 public:
 	Selected2GL();
 	
-	void setPicked(AtomPtr atom);
+	void setPicked(AtomPtr atom, bool preserveType = false);
 	bool isRefinable();
 	AtomGroupPtr refinableSelection();
 	void manualRefine();
 	void focusOnGroup();
 	void splitSelected();
+	void deleteSelected();
+	void toggleKicks();
+	void advanceMonomer(int dir);
+	void addPicked(AtomPtr atom, bool preserveType);
+
+	void setAdding(bool val)
+	{
+		_adding = val;
+	}
 	
 	bool isRefining()
 	{
@@ -44,9 +55,16 @@ public:
 	
 	void setMouseRefinement(bool val);
 	
-	void cancelRefine()
+	void cancelRefine();
+	
+	AtomPtr getPicked()
 	{
-		_refining = false;
+		if (_picked.size())
+		{
+			return _picked.back();
+		}
+
+		return AtomPtr();
 	}
 	
 	AtomGroupPtr getSelected();
@@ -59,12 +77,14 @@ protected:
 
 private:
 	vec3 averageModelPos();
-	AtomPtr _picked;
+	std::vector<AtomPtr> _picked;
 	SelectionType _sType;
 	int _conf;
 	vec3 _ray;
 
+	bool _adding;
 	bool _refining;
+	bool _kicking;
 	bool _mousey;
 	std::mutex _switch;
 };

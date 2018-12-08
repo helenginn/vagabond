@@ -9,7 +9,7 @@
 #define DEFAULT_WIDTH 900
 #define DEFAULT_HEIGHT 660
 #define STATUS_HEIGHT 60
-#define BUTTON_WIDTH 200
+#define BUTTON_WIDTH 0
 
 #include "../../libsrc/shared_ptrs.h"
 #include "VagWindow.h"
