@@ -193,11 +193,13 @@ void Options::executeProtocol()
 		return;
 	}
 	
+	CrystalPtr crystal = getActiveCrystal();
+	
 	for (int i = 0; i < 5 && _rPosition; i++)
 	{
 		std::cout << "Refining positions to PDB (" << 
 		i + 1 << " / 5)" << std::endl;
-		getActiveCrystal()->refinePositions();
+		crystal->refinePositions();
 	}
 	
 	recalculateFFT();
@@ -212,9 +214,9 @@ void Options::executeProtocol()
 
 		if (_rInter)
 		{
-			getActiveCrystal()->fitWholeMolecules();
+			crystal->fitWholeMolecules();
 			recalculateFFT();
-			bool undone = getActiveCrystal()->undoIfWorse();
+			bool undone = crystal->undoIfWorse();
 			
 			if (undone && !_rIntra)
 			{
@@ -223,22 +225,42 @@ void Options::executeProtocol()
 		}
 
 		/* In case we need to do remedial work */
-		double oldWork = getActiveCrystal()->getRWork();
-		double oldB = getActiveCrystal()->averageBFactor();
+		double oldWork = crystal->getRWork();
+		double oldB = crystal->averageBFactor();
 		
 		for (int i = 0; i < 3 && _rIntra; i++)
 		{
 			std::cout << "Intramolecular flex microcycle (" << 
 			i + 1 << " / 3)" << std::endl;
-			getActiveCrystal()->refineIntraMovements();
+			crystal->refineIntraMovements();
 			recalculateFFT();
 		}
 		
-		double newWork = getActiveCrystal()->getRWork();
+		double newWork = crystal->getRWork();
 		
 		if (newWork > oldWork)
 		{
+			std::cout << "Remedial work to reduce overall flexibility." 
+			<< std::endl;
 			/* Remedial action required. */
+			double newB = crystal->averageBFactor();
+			double ratio = oldB / newB;
+			/* Only do a smaller increment at a time */
+			double increment = (ratio - 1) / 2 + 1;
+
+			bool undone = false;
+
+			while (!undone)
+			{
+				crystal->scaleAnchorBs(ratio);
+				recalculateFFT();
+				undone = crystal->undoIfWorse();
+			}
+		}
+		else
+		{
+			std::cout << "Rwork has reduced due to intramolecular flex." 
+			<< std::endl;
 
 		}
 	}

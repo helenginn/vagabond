@@ -159,6 +159,7 @@ public:
 	void tiedUpScattering();
 	
 	double averageBFactor();
+	void scaleAnchorBs(double ratio);
 	
 	/** Loops through all molecules and places them in the map.
 	* 	\param maxRes max resolution used to determine voxel spacing if it has

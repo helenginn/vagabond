@@ -1737,6 +1737,27 @@ void Crystal::chelate()
 	}
 }
 
+void Crystal::scaleAnchorBs(double ratio)
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		MoleculePtr mole = molecule(i);
+
+		if (!mole->isPolymer())
+		{
+			continue;
+		}
+		
+		PolymerPtr pol = ToPolymerPtr(mole);
+		AnchorPtr anch = pol->getAnchorModel();
+		double b = anch->getBFactor();
+		b *= ratio;
+		anch->setBFactor(b);
+		
+		pol->propagateChange();
+	}
+}
+
 double Crystal::averageBFactor()
 {
 	double ave = 0;
@@ -1746,7 +1767,7 @@ double Crystal::averageBFactor()
 	{
 		MoleculePtr mole = molecule(i);
 
-		if (mole->isPolymer())
+		if (!mole->isPolymer())
 		{
 			continue;
 		}
