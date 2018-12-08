@@ -214,12 +214,15 @@ void Options::executeProtocol()
 
 		if (_rInter)
 		{
+			double oldWork = crystal->getRWork();
 			crystal->fitWholeMolecules();
 			recalculateFFT();
-			bool undone = crystal->undoIfWorse();
 			
-			if (undone && !_rIntra)
+			double newWork = crystal->getRWork();
+
+			if (newWork > oldWork && !_rIntra)
 			{
+				crystal->restoreState(-1);
 				break;
 			}
 		}
