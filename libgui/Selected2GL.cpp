@@ -306,9 +306,14 @@ void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 	AtomGroupPtr selected = getSelected();
 	bool inGroup = false;
 
-	if (getPicked() && getPicked()->getMonomer())
+	if (getPicked() && !getPicked()->isHeteroAtom())
 	{
-		inGroup = getPicked()->getMonomer()->hasAtom(atom);
+		MonomerPtr mon = getPicked()->getMonomer();
+		
+		if (mon)
+		{
+			inGroup = getPicked()->getMonomer()->hasAtom(atom);
+		}
 	}
 	
 	if (atom == getPicked() && _sType == SelectAtom)
