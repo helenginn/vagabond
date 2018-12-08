@@ -254,7 +254,19 @@ void Options::executeProtocol()
 			{
 				crystal->scaleAnchorBs(ratio);
 				recalculateFFT();
-				undone = crystal->undoIfWorse();
+				double latest = crystal->getRWork();
+				
+				if (latest > newWork)
+				{
+					std::cout << "Undoing last change and resuming next cycle." 
+					<< std::endl;
+					crystal->restoreState(-1);
+					break;
+				}
+				else
+				{
+					newWork = latest;
+				}
 			}
 		}
 		else
