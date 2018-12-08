@@ -6,10 +6,6 @@
 //  Copyright (c) 2017-8 Helen Ginn. All rights reserved.
 //
 
-#include "Crystal.h"
-#include "Bond.h"
-#include "fftw3d.h"
-#include "vec3.h"
 #include <sstream>
 #include <iostream>
 #include <iomanip>
@@ -17,6 +13,11 @@
 #include <fstream>
 #include <cstdlib>
 #include <time.h>
+
+#include "Crystal.h"
+#include "Bond.h"
+#include "fftw3d.h"
+#include "vec3.h"
 #include "Shouter.h"
 #include "Diffraction.h"
 #include "Polymer.h"
@@ -24,6 +25,7 @@
 #include "FileReader.h"
 #include "PDBReader.h"
 #include "Atom.h"
+#include "Anchor.h"
 #include "RefinementGridSearch.h"
 #include "BucketBulkSolvent.h"
 #include "Options.h"
