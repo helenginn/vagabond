@@ -111,6 +111,8 @@ void SSRigger::hydrogenateRemaining()
 
 void SSRigger::findDisulphides()
 {
+	return;
+
 	if (!_crystal)
 	{
 		shout_at_helen("No crystal before finding disulphides");
