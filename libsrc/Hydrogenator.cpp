@@ -76,6 +76,12 @@ void Hydrogenator::setNewGeometry(AtomList group, double bondAngle,
 	for (int i = 0; i < group.size(); i++)
 	{
 		AtomPtr atom = group[i];
+		
+		if (!atom->getModel()->isBond())
+		{
+			continue;
+		}
+		
 		BondPtr bond = ToBondPtr(atom->getModel());
 		
 		Bond::setBendAngle(&*bond, deg2rad(bondAngle));	
