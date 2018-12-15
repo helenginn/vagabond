@@ -219,9 +219,9 @@ typedef enum
 
 typedef enum
 {
-	ScalingTypeShell,
-	ScalingTypeAbsBFactor,
-	ScalingTypeAbs
+	ScalingTypeShell = 0,
+	ScalingTypeAbsBFactor = 1,
+	ScalingTypeAbs = 2,
 } ScalingType;
 
 
