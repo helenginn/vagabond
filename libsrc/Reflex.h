@@ -46,12 +46,6 @@ public:
 		_pieceCount = count;
 	}
 	
-	/** Set the piece type - e.g. atom or residue. */
-	void setPieceType(PieceType type)
-	{
-		_pieceType = type;
-	}
-	
 	static double getBFactor(void *object)
 	{
 		return static_cast<Reflex *>(object)->_bFactor;
