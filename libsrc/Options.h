@@ -315,6 +315,7 @@ private:
 	static double _kick;
 	static int _solvent;
 	static int _bondAngles;
+	static int _nCycles;
 	static bool _peptideMovement;
 	static double _dampen;
 	static double _bMult;

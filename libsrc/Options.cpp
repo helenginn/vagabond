@@ -22,6 +22,7 @@
 OptionsPtr Options::options;
 double Options::_kick = 0.000;
 int Options::_solvent = 1;
+int Options::_nCycles = 5;
 double Options::_dampen = 0.0;
 double Options::_bStart = 20.;
 double Options::_bMult = 1;
@@ -32,7 +33,6 @@ double Options::_maxRes = -1.0;
 bool Options::_useRFree = true;
 int Options::_enableTests = 3;
 int Options::_bondAngles = 1;
-bool Options::_peptideMovement = 1;
 bool Options::_powder = false;
 bool Options::_overfit = false;
 bool Options::_diagnostics = false;
@@ -42,6 +42,7 @@ bool Options::_rPosition = true;
 bool Options::_rSidechains = true;
 bool Options::_rInter = true;
 bool Options::_rIntra = true;
+bool Options::_peptideMovement = true;
 
 std::string Options::_anchor = "";
 ScalingType Options::_scaleType = ScalingTypeShell;
@@ -212,12 +213,12 @@ void Options::executeProtocol()
 	
 	recalculateFFT();
 	
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < _nCycles; i++)
 	{
 		if (_rInter || _rIntra)
 		{
 			std::cout << "Flex macrocycle (" << 
-			i + 1 << " / 5)" << std::endl;
+			i + 1 << " / " << _nCycles<< ")" << std::endl;
 		}
 
 		if (_rInter)
@@ -487,6 +488,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "--bfactor=", &_bStart);
 		understood |= parseParameter(arg, "--bond-angles=", &_bondAngles);
 		understood |= parseParameter(arg, "--nsamples=", &_nSamples);
+		understood |= parseParameter(arg, "--ncycles=", &_nCycles);
 		understood |= parseParameter(arg, "--global-b=", &_bReal);
 		understood |= parseParameter(arg, "--kick=", &_kick);
 		understood |= parseParameter(arg, "--dampen=", &_dampen);
@@ -526,16 +528,20 @@ void Options::parse()
 		understood |= parseParameter(arg, "position", &_rPosition);
 		understood |= parseParameter(arg, "inter-mol", &_rInter);
 		understood |= parseParameter(arg, "intra-mol", &_rIntra);
-		understood |= parseParameter(arg, "peptide-movement",
-		                             &_peptideMovement);
+		understood |= parseParameter(arg, "sidechain", &_rSidechains);
 		understood |= parseParameter(arg, "rfree", &_useRFree);
 		understood |= parseParameter(arg, "diagnostics", &_diagnostics);
 		
 		int shellNum = 0;
-		understood |= parseParameter(arg, "--shell-scale", &shellNum);
+		bool shellstood = parseParameter(arg, "--shell-scale=", &shellNum);
 		
-		_scaleType = ScalingType(shellNum);
-
+		understood |= shellstood;
+		
+		if (shellstood)
+		{
+			_scaleType = ScalingType(shellNum);
+		}
+		
 		if (!understood)
 		{
 			bool madeJoke = parseJoke(arg);
