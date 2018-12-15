@@ -45,7 +45,7 @@ public:
 	/** Evaluates target function of bond kicking parameters against data */
 	static double getScore(void *object);
 	
-	/** Performs preliminary work and refinement simultaneously */
+	/** Go button. Performs preliminary work and refinement */
 	void refine();
 	
 	/** Get current value of the magnitude of trial kick set */
@@ -54,12 +54,15 @@ public:
 		return _shift;
 	}
 	
+	/** Sets what the flexibility parameter is focusing on for refinement -
+	 * default is to use kicks, but usually updated to using Whacks */
 	void setGetterSetter(Getter getter, Setter setter)
 	{
 		_getter = getter;
 		_setter = setter;
 	}
 	
+	/** Should be using the Whacks of bonds, not the kicks (usually true) */
 	void setWhacking(bool whack);
 private:
 	void createAtomTargets();
