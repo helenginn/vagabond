@@ -579,6 +579,7 @@ void Selected2GL::manualRefine()
 		}
 		else
 		{
+			group->addParamType(ParamOptionBondAngle, 0.5);
 			group->refine(crystal, RefinementFine);
 
 			group->addParamType(ParamOptionMaxTries, 1.0);
