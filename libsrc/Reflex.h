@@ -33,6 +33,7 @@ public:
 	/** Perform the calculations to assign B factor estimations */
 	void calculate();
 
+	/** Set the polymer for B factor estimations */
 	void setPolymer(PolymerPtr pol)
 	{
 		_polymer = pol;

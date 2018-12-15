@@ -70,20 +70,33 @@ public:
 	}
 
 	/**
-	* 	Implementation of getClassName should return the name of the class
-	* 	itself.
+	* 	Implementation of getClassName in downstream classes should 
+	*   return the name of the class itself.
 	*/
 	virtual std::string getClassName() = 0;
+	
+	/**
+	 * Outside of the class this should only be called on the top level of
+	 * the contents of a Vagabond file, and will return a ParserPtr of subclass
+	 * Crystal. */
 	static ParserPtr processBlock(char *block);
 
+	/** \return returns number of saved 'undo' states available */
 	size_t stateCount()
 	{
 		return _states.size();	
 	}
 	
+	/** Save a state which can then be subject to 'undo' */
 	void saveState();
+	
+	/** Restore a previous state.
+	 * \param num if positive, will take the Nth saved state; if negative,
+	 * will take the -Nth from the end. */
 	void restoreState(int num);
 
+	/** Number of classes in the current structure, to be called on a top
+	 * level Crystal ParserPtr. */
 	static int classCount(std::string name)
 	{
 		if (_allClasses.count(name) == 0)
@@ -105,7 +118,7 @@ protected:
 	* 	All basic properties should be added in this implementation by calling
 	* 	the various property functions such as addStringProperty(),
 	* 	addDoubleProperty(), addIntProperty(), addVec3Property(),
-	* 	addMat3x3Property() and addCustomProperty(). Also use addChild() here
+	* 	and addMat3x3Property(). Also use addChild() here
 	* 	to add other Parser objects. */
 	virtual void addProperties() = 0;
 	
@@ -130,10 +143,28 @@ protected:
 	
 	/** \name Adding property functions */
 	/**@{*/
+	
+	/**
+	 * Add a reference to the pointer to a std::string. Should not be one
+	 * which supplies line breaks as this will mess up the file format - no
+	 * escaping done at the moment. */
 	void addStringProperty(std::string className, std::string *ptr);
+	
+	/**
+	 * Adds a reference to a pointer to a double. Will be reproduced to
+	 * 10 decimal places. */
 	void addDoubleProperty(std::string className, double *ptr);
+
+	/**
+	 * Adds a reference to a pointer to an integer. */
 	void addIntProperty(std::string className, int *ptr);
+	
+	/**
+	 * Adds a reference to a vec3 pointer */
 	void addVec3Property(std::string className, vec3 *ptr);
+
+	/**
+	 * Adds a reference to a mat3x3 pointer */
 	void addMat3x3Property(std::string className, mat3x3 *ptr);
 	void addBoolProperty(std::string className, bool *ptr);
 	void addChild(std::string category, ParserPtr child);

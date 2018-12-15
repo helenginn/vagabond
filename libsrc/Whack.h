@@ -109,6 +109,7 @@ public:
 		return "Whack";
 	}
 
+	/** If the number of samples in the ensemble has changed, returns true */
 	bool needsRefresh(std::vector<BondSample> &anchSamp);
 protected:
 	virtual std::string getParserIdentifier();
