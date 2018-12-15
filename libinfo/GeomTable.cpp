@@ -10,15 +10,15 @@
 // (1) Acta Crystallographica Section D: Biological Crystallography, 63(5), 611-620.
 //
 
-#define C_CH1E_LENGTH    (1.523) // // 1.525 - Engh&Huber, 1.523 - ref1.
-#define CH1E_NH1_LENGTH  (1.455) // 1.458 - Engh&Huber, 1.455 - ref1.
-#define C_NH1_LENGTH     (1.336) // 1.329 - E&H91, 1.332 - ref1.
-#define C_O_LENGTH       (1.229) // 1.229 - E&H91, 1.231 - ref1.
+#define C_CH1E_LENGTH    (1.525) // // 1.525 - Engh&Huber, 1.523 - ref1.
+#define CH1E_NH1_LENGTH  (1.458) // 1.458 - Engh&Huber, 1.455 - ref1.
+#define C_NH1_LENGTH     (1.332) // 1.329 - E&H91, 1.332 - ref1.
+#define C_O_LENGTH       (1.231) // 1.229 - E&H91, 1.231 - ref1.
 
-#define CH1E_C_NH1_ANGLE     117.2 
-#define CH1E_C_O_ANGLE       120.1 // 120.1 - Engh&Huber, 120.7 - CCP4
-#define C_NH1_CH1E_ANGLE     121.7
-#define NH1_C_O_ANGLE        122.7
+#define CH1E_C_NH1_ANGLE     117.15 
+#define CH1E_C_O_ANGLE       120.4 // 120.1 - Engh&Huber, 120.7 - CCP4
+#define C_NH1_CH1E_ANGLE     121.5
+#define NH1_C_O_ANGLE        122.5
 #define C_CH1E_NH1_ANGLE     111.2 // matches Engh & Huber and CCP4
 
 #define deg2rad(a) ((a) * M_PI / 180)
@@ -148,7 +148,7 @@ GeomTable::GeomTable()
     addBondLength(AtomC, AtomO, 1.229);
     addBondLength(AtomC, AtomOXT, 1.229);
     addBondLength(AtomProC, AtomO, 1.228);
-    addBondAngle(AtomNH1, AtomC, AtomO, 122.7);
+    addBondAngle(AtomNH1, AtomC, AtomO, 122.4);
     addBondAngle(AtomProNH1, AtomC, AtomO, 121.1);
     addBondAngle(AtomProNH1, AtomProC, AtomO, 121.1);
 
@@ -683,7 +683,7 @@ GeomTable::GeomTable()
     addBondAngle(AtomNH1, AtomLeuCA, AtomLeuCB, 110.4);
     addBondAngle(AtomProNH1, AtomLeuCA, AtomLeuCB, 110.4);
     addBondAngle(AtomLeuCB, AtomLeuCA, AtomC, 110.2);
-    addBondAngle(AtomLeuCA, AtomLeuCB, AtomLeuCG, 115.3);
+    addBondAngle(AtomLeuCA, AtomLeuCB, AtomLeuCG, 116.3);
     addBondAngle(AtomLeuCB, AtomLeuCG, AtomLeuCD1, 111.0);
     addBondAngle(AtomLeuCB, AtomLeuCG, AtomLeuCD2, 111.0);
     addBondAngle(AtomLeuCD1, AtomLeuCG, AtomLeuCD2, 110.5);
