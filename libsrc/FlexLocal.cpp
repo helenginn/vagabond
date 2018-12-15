@@ -58,12 +58,29 @@ void FlexLocal::setPolymer(PolymerPtr pol, double shift)
 
 void FlexLocal::refine()
 {
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 4; i++)
 	{
-		scanBondParams();
-		createClustering();
-		reorganiseBondOrder();
-		chooseBestDifferenceThreshold();
+		std::cout << "---------------------------------------------------------"
+		<< std::endl;
+		std::cout << "|  Refining flexibility for chain " 
+		<< _polymer->getChainID() << " (cycle " << _run << ")";
+		std::cout << std::endl;
+		std::cout << "---------------------------------------------------------"
+		<< std::endl;
+
+		reflex();
+		createAtomTargets();
+
+		bool add = 5;
+		if (i == 0)
+		{
+			scanBondParams();
+			createClustering();
+			reorganiseBondOrder();
+			chooseBestDifferenceThreshold();
+			add = 1;
+		}
+
 		std::vector<ParamBandPtr> extras;
 
 		bool reduceShift = false;
@@ -71,7 +88,9 @@ void FlexLocal::refine()
 
 		for (int j = 0; j < 5; j++)
 		{
-			std::cout << "| " << j + 5 << ". Refining bond clusters... " 
+			std::random_shuffle(_paramBands.begin(), _paramBands.end());
+
+			std::cout << "| " << j + add << ". Refining bond clusters... " 
 			<< std::flush;
 			Timer timer;
 			int limit = 5;
@@ -147,7 +166,6 @@ void FlexLocal::refine()
 				break;
 			}
 			
-			std::random_shuffle(_paramBands.begin(), _paramBands.end());
 		}
 		
 		std::cout << "---------------------------------------------------------"
@@ -177,7 +195,7 @@ void FlexLocal::clear()
 	_b2bDiffs.clear();
 	_degrees.clear();
 	_bondClusterIds.clear();
-	_paramBands.clear();
+//	_paramBands.clear();
 	_bbCCs.clear();
 }
 
@@ -739,21 +757,10 @@ void FlexLocal::reflex()
 
 void FlexLocal::scanBondParams()
 {
-	std::cout << "---------------------------------------------------------"
-	<< std::endl;
-	std::cout << "|  Refining flexibility for chain " 
-	<< _polymer->getChainID() << " (cycle " << _run << ")";
-	std::cout << std::endl;
-	std::cout << "---------------------------------------------------------"
-	<< std::endl;
-	
 	ExplicitModelPtr model = _polymer->getAnchorModel();
 	int samples = model->getFinalPositions().size();
 
-	reflex();
-	createAtomTargets();
-
-	Options::setNSamples(40);
+	Options::setNSamples(32);
 	_polymer->refreshPositions();
 
 	Timer timer;
