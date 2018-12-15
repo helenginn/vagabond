@@ -280,7 +280,7 @@ void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 		return;
 	}
 	
-	if (_picked.size() > 1)
+	if (_picked.size() > 1 && atom)
 	{
 		AtomPtr first = getPicked();
 		_picked.clear();
@@ -316,7 +316,8 @@ void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 		}
 	}
 	
-	if (atom == getPicked() && _sType == SelectAtom)
+	if (atom == getPicked() && _sType == SelectAtom
+	    && !getPicked()->isHeteroAtom())
 	{
 		_sType = SelectSidechain;
 		Options::statusMessage("Selected residue " 
