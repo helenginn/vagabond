@@ -352,20 +352,12 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 		}
 	}
 	
-	
-	/* If we're in the middle of a re-caching of Whacks associated
-	 * with each bond, we don't want to rotate or translate or apply whacks. 
-	 **/
-	if (true || !_disableWhacks)
-	{
-		rotateBases();
-		translateStartPositions();
-	}
+	rotateBases();
+	translateStartPositions();
 
 	fixCentroid();
 	
 	/* Apply whacks as normal, if we are not re-caching Whacks. */
-
 	for (int i = 0; i < _whacks.size() && !_disableWhacks; i++)
 	{
 		WhackPtr whack = _whacks[i];
