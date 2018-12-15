@@ -60,12 +60,6 @@ public:
 		_int = value;
 	}
 
-	void addCustomValue(std::string ptrName, std::string value)
-	{
-		_ptrName = ptrName;
-		_custom = value;
-	}
-
 	void applyToParser(Parser *parser);
 
 private:

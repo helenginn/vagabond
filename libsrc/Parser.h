@@ -135,9 +135,6 @@ protected:
 	void addIntProperty(std::string className, int *ptr);
 	void addVec3Property(std::string className, vec3 *ptr);
 	void addMat3x3Property(std::string className, mat3x3 *ptr);
-	void addCustomProperty(std::string className, void *ptr,
-	                       void *delegate, Encoder encoder,
-	Decoder decoder); 
 	void addBoolProperty(std::string className, bool *ptr);
 	void addChild(std::string category, ParserPtr child);
 	void addReference(std::string category, ParserPtr cousin);
@@ -208,7 +205,6 @@ private:
 	std::vector<Vec3Property> _vec3Properties;
 	std::vector<Mat3x3Property> _mat3x3Properties;
 	std::vector<BoolProperty> _boolProperties;
-	std::vector<CustomProperty> _customProperties;
 	std::vector<Vec3ArrayProperty> _vec3ArrayProperties;
 	std::vector<Mat3x3ArrayProperty> _mat3x3ArrayProperties;
 	ResolveList _resolveList;

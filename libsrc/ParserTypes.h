@@ -12,9 +12,6 @@
 
 /** \cond SHOW_PARSER_PROPERTY_STRUCTS */
 
-typedef void (*Encoder)(void *, void *, std::ostream &, int);
-typedef char *(*Decoder)(void *, void *, char *block);
-
 typedef struct
 {
 	std::string *stringPtr;
@@ -62,15 +59,6 @@ typedef struct
 	int *intPtr;
 	std::string ptrName;
 } IntProperty;
-
-typedef struct
-{
-	void *objPtr; /** Object is passed to delegate for encoding/decoding */
-	std::string ptrName;
-	void *delegate; /** Decoder/Encoder of the delegate is called */
-	Encoder encoder;
-	Decoder decoder;
-} CustomProperty;
 
 /** \endcond */
 
