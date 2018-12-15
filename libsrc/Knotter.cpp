@@ -453,7 +453,7 @@ void Knotter::makeMethionine()
 	BondPtr cg2sd = BondPtr(new Bond(cGamma, sDelta));
 	cg2sd->activate();
 
-	if (_bondAngles >= 3)
+	if (_bondAngles >= 2)
 	{
 		cb2cg->setRefineBondAngle();
 		cg2sd->setRefineBondAngle();
@@ -605,7 +605,7 @@ void Knotter::makeCysteine()
 
 	BondPtr cb2sg = BondPtr(new Bond(cBeta, sGamma));
 	cb2sg->activate();
-	if (_bondAngles >= 3)
+	if (_bondAngles >= 2)
 	{
 		cb2sg->setRefineBondAngle();
 	}
