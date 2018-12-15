@@ -102,7 +102,6 @@ void Density2GL::setupIndexTable()
 	int z1 = z + 1;
 	int xz1 = z + 4;
 
-	std::cout << y << ", ";
 	_cubeIndices.resize(256);
 	
 	// type 1 checked
