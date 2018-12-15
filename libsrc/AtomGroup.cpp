@@ -384,17 +384,24 @@ AtomList AtomGroup::topLevelAtoms()
 		size_t j = 0;
 		AtomPtr topAtom = atom(0);
 
-		while (topAtom->getAlternativeConformer() != conf)
+		while (true)
 		{
+			if (topAtom->getModel()->isBond() &&
+			    topAtom->getAlternativeConformer() == conf)
+			{
+				break;
+			}
+			
+			j++;
+
 			if (j >= atomCount())
 			{
 				goto giveup;
 			}
 
-			j++;
 			topAtom = atom(j);
 		}
-
+		
 		while (true)
 		{
 			if (!topAtom->getModel()->isBond())
@@ -406,6 +413,12 @@ AtomList AtomGroup::topLevelAtoms()
 
 			if (!hasAtom(bond->getMajor()))
 			{
+				break;
+			}
+			
+			if (bond->getMajor()->getModel()->isAnchor())
+			{
+				list.push_back(topAtom);
 				break;
 			}
 
