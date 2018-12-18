@@ -853,19 +853,6 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 	}
 
 	_changedSamples = false;
-
-	if (_useMutex)
-	{
-		guiLock.lock();
-	}
-	
-	_absolute = mean;
-
-	if (_useMutex)
-	{
-		guiLock.unlock();
-	}
-	
 	
 	sanityCheck();
 
