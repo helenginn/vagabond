@@ -810,15 +810,19 @@ void Options::previousState()
 	crystals[0]->restoreState(state);
 }
 
-void Options::statusMessage(std::string message)
+void Options::statusMessage(std::string message, bool std_out)
 {
 	OptionsPtr opt = getRuntimeOptions();
+
 	if (opt->_notify)
 	{
 		opt->_notify->setMessage(message);
 	}
 
-	std::cout << message << std::endl;
+	if (std_out)
+	{
+		std::cout << message << std::endl;
+	}
 }
 
 void Options::agreementSummary()

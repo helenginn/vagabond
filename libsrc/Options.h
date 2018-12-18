@@ -263,7 +263,7 @@ public:
 	void omitScan();
 	void chelate();
 	void renderDensity();
-	static void statusMessage(std::string message);
+	static void statusMessage(std::string message, bool std_out = true);
 	void agreementSummary();
 	void previousState();
 	void applyBMultiplier();
