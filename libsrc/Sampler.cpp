@@ -16,11 +16,14 @@
 #include "Element.h"
 #include "FileReader.h"
 #include "Absolute.h"
+#include "Anchor.h"
 #include "Polymer.h"
 #include "Monomer.h"
 #include "Backbone.h"
-#include "Whack.h"
+#include "Twist.h"
 #include "Balance.h"
+
+#include <iomanip>
 
 /** \endcond */
 
@@ -38,7 +41,7 @@ void Sampler::addAtomsForBond(BondPtr bond)
 	addSampled(bond->getMajor());
 
 	int count = 0;
-
+	
 	/* Stop if the bond has no parent */
 	if (!bond->getParentModel()->isBond())
 	{
@@ -46,9 +49,15 @@ void Sampler::addAtomsForBond(BondPtr bond)
 	}
 
 	BondPtr parent = ToBondPtr(bond->getParentModel());
+
+	if (isBackwards(bond))
+	{
+		addSampled(parent->getMajor());
+	}
+
 	int group = -1;
 	int num = parent->downstreamBondNum(&*bond, &group);
-
+	
 	/* if it's the oldest sibling, we need to add all the
 	 * siblings as this torsion controls the others */
 	if (num == 0)
@@ -61,18 +70,26 @@ void Sampler::addAtomsForBond(BondPtr bond)
 			count++;
 		}
 	}
-
+	
 	for (int j = 0; j < bond->extraTorsionSampleCount(); j++)
 	{
 		addSampled(bond->extraTorsionSample(j));
 		count++;
 	}
 	
+	int start = 0;
+	
+	if (isBackwards(bond))
+	{
+		start = 1;
+	}
+	
+	/* Downstream bonds important if not backwards */
 	if (bond->downstreamBondGroupCount())
 	{
 		for (size_t j = 0; j < bond->downstreamBondGroupCount(); j++)
 		{
-			for (size_t i = 0; i < bond->downstreamBondCount(j); i++)
+			for (size_t i = start; i < bond->downstreamBondCount(j); i++)
 			{
 				AtomPtr downAtom = bond->downstreamAtom(j, i);
 				addSampled(downAtom);
@@ -113,6 +130,18 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 			addTorsion(bond, deg2rad(range) * mult, deg2rad(0.005));
 			break;
 
+			case ParamOptionTwist:
+			addTwist(bond, deg2rad(range) * mult, deg2rad(0.005));
+			break;
+
+			case ParamOptionTTN:
+			addTT(bond, deg2rad(range) * mult, deg2rad(0.005));
+			break;
+
+			case ParamOptionTTC:
+			addTT(bond, deg2rad(range) * mult, deg2rad(0.005));
+			break;
+
 			case ParamOptionBondAngle:
 			addBendAngle(bond, deg2rad(range) * mult, deg2rad(0.005));
 			break;
@@ -134,7 +163,6 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 {
 	reportInDegrees();
-	setScoreType(ScoreTypeCorrel);
 
 	setJobName("torsion_set_" + fbond->shortDesc());
 
@@ -159,13 +187,13 @@ BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 	entry.num = bondNum;
 	remaining.push_back(entry);
 	addSampled(fbond->getMajor());
-	
+
 	while (remaining.size())
 	{
 		BondInt first = remaining[0];
 		BondPtr bond = first.bond;
 		int num = first.num;
-		
+
 		remaining.erase(remaining.begin());
 
 		if (num <= 0)
@@ -174,6 +202,7 @@ BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 		}
 		
 		bondCount++;
+		
 		addAtomsForBond(bond);
 		checkOccupancyAndAdd(bond);
 		
@@ -187,11 +216,56 @@ BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 		{
 			addParamsForBond(bond, (num % 2));
 		}
+		
+		bool bw = isBackwards(bond);
+		
+		/* Go up the chain of parents if we should be going backwards */
+		if (bw)
+		{
+			ExplicitModelPtr parent = bond->getParentModel();
+			
+			if (false && parent->isAnchor() && _scoreType == ScoreTypeSavedPos)
+			{
+				AnchorPtr anch = ToAnchorPtr(parent);
+				addAnchorPosition(anch, 0.02, 0.002);
+
+				AtomPtr atom;
+				if (hasParameter(ParamOptionTTN))
+				{
+					atom = anch->getNAtom();
+				}
+				else if (hasParameter(ParamOptionTTC))
+				{
+					atom = anch->getCAtom();
+				}
+				
+				if (atom)
+				{
+					parent = ToBondPtr(atom->getModel());
+				}
+			}
+			
+			if (parent->isBond())
+			{
+				if (!topBond)
+				{
+					topBond = ToBondPtr(parent);
+				}
+
+				BondInt entry;
+				entry.bond = ToBondPtr(parent);
+				entry.num = num - 1;
+				
+				remaining.push_back(entry);
+			}
+		}
+
+		int start = bw ? 1 : 0;
 
 		for (int j = 0; j < bond->downstreamBondGroupCount(); j++)
 		{
 			/* Take the chosen group and check for futures */
-			for (int i = 0; i < bond->downstreamBondCount(j); i++)
+			for (int i = start; i < bond->downstreamBondCount(j); i++)
 			{
 				AtomPtr downstreamAtom = bond->downstreamAtom(j, i);
 				BondPtr nextBond = ToBondPtr(downstreamAtom->getModel());
@@ -289,6 +363,65 @@ void Sampler::addOccupancy(BondPtr bond, double range, double interval)
 	_bonds.push_back(bond);
 }
 
+bool Sampler::isBackwards(BondPtr bond)
+{
+	if (!hasParameter(ParamOptionTTN) && !hasParameter(ParamOptionTTC))
+	{
+		return false;
+	}
+
+	AtomPtr atom = bond->getMinor();
+
+	if (!atom->getMolecule()->isPolymer())
+	{
+		return false;
+	}
+	
+	int anchor = ToPolymerPtr(atom->getMolecule())->getAnchor();
+	
+	int backwards = true;
+	if (bond->getMinor()->getResidueNum() < anchor)
+	{
+		backwards = false;
+	}
+	
+	if (!hasParameter(ParamOptionTTN))
+	{
+		backwards = !backwards;
+	}
+
+	return backwards;
+}
+
+void Sampler::addTT(BondPtr bond, double range, double interval)
+{
+	bool twist = isBackwards(bond);
+
+	if (twist)
+	{
+		addTwist(bond, range, interval);
+	}
+	else
+	{
+		addTorsion(bond, range, interval);
+	}
+}
+
+void Sampler::addTwist(BondPtr bond, double range, double interval)
+{
+	if (bond->hasTwist())
+	{
+		TwistPtr twist = bond->getTwist();
+		_strategy->addParameter(&*twist, Twist::getTwist,
+		                        Twist::setTwist, range, interval,
+		                        "tw" + bond->shortDesc());
+	}
+	else
+	{
+		addTorsion(bond, range, interval);
+	}
+}
+
 void Sampler::addTorsion(BondPtr bond, double range, double interval)
 {
 	if (!bond || !bond->isBond())
@@ -296,16 +429,16 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 		return;
 	}
 
-	if (!bond->isRefinable())
+	if (!bond->isRefinable() | !bond->isUsingTorsion())
 	{
 		return;
 	}
-
+	
 	_strategy->addParameter(&*bond, Bond::getTorsion, 
 	                        Bond::setTorsion,
 	                        range, interval,
 	"t" + bond->shortDesc());
-
+	
 	_bonds.push_back(bond);
 }
 
@@ -389,18 +522,14 @@ void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 	_bonds.push_back(bond);
 }
 
-void Sampler::addAbsolutePosition(AbsolutePtr abs, double range, double interval)
+void Sampler::addAnchorPosition(AnchorPtr anch, double range, double interval)
 {
-	if (abs->getClassName() != "Absolute")
-	{
-		return;
-	}
-
-	_strategy->addParameter(&*abs, Absolute::getPosX, Absolute::setPosX,
+	return;
+	_strategy->addParameter(&*anch, Anchor::getPosX, Anchor::setPosX,
 	                        range, interval, "pos_x");
-	_strategy->addParameter(&*abs, Absolute::getPosY, Absolute::setPosY,
+	_strategy->addParameter(&*anch, Anchor::getPosY, Anchor::setPosY,
 	                        range, interval, "pos_y");
-	_strategy->addParameter(&*abs, Absolute::getPosZ, Absolute::setPosZ,
+	_strategy->addParameter(&*anch, Anchor::getPosZ, Anchor::setPosZ,
 	                        range, interval, "pos_z");
 }
 
@@ -445,6 +574,11 @@ void Sampler::addSampledAtoms(AtomGroupPtr group, std::string conformer)
 void Sampler::addSampled(AtomPtr atom)
 {
 	if (!atom)
+	{
+		return;
+	}
+	
+	if (atom->getElectronCount() == 1 && _scoreType == RefinementSavedPos)
 	{
 		return;
 	}
@@ -508,7 +642,7 @@ bool Sampler::sample(bool clear)
 	}
 
 	int paramCount = _strategy->parameterCount();
-
+	
 	if (!_silent)
 	{
 		std::cout << "Refining " << paramCount << " parameters." << std::endl;
@@ -539,7 +673,7 @@ bool Sampler::sample(bool clear)
 		_strategy->setJobName(_jobName);
 		_strategy->refine();
 	}
-
+	
 	_silent = false;
 	_scoreType = ScoreTypeCorrel;
 
@@ -612,10 +746,20 @@ double Sampler::getScore()
 		{
 			double oneScore = 0;
 			
+			if (_scoreType == ScoreTypeSavedPos && 
+			    _sampled[i]->getElectronCount() == 1)
+			{
+				continue;
+			}
+			
 			switch (_scoreType)
 			{
 				case ScoreTypeModelPos:
 				oneScore = _sampled[i]->posDisplacement();
+				break;
+				
+				case ScoreTypeSavedPos:
+				oneScore = _sampled[i]->posDisplacement(true);
 				break;
 				
 				case ScoreTypeMouse:
@@ -646,8 +790,12 @@ double Sampler::getScore()
 		return score / count;
 	}
 
-	double score = AtomGroup::scoreWithMapGeneral(&_workspace);
-	
+	double score = 0;
+	if (sampleSize())
+	{
+		score = AtomGroup::scoreWithMapGeneral(&_workspace);
+	}
+
 	return score;
 }
 

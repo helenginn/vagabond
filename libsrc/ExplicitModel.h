@@ -149,6 +149,7 @@ protected:
 	virtual void getAnisotropy(bool withKabsch = false);
 	virtual double anisotropyExtent(bool withKabsch = false);
 	std::vector<BondSample> _storedSamples;
+	vec3 meanOfManyPositions(std::vector<BondSample> *positions);
 
 	/** Will define torsion basis as:
 	* x: along line of 0º torsion angle.
@@ -157,8 +158,8 @@ protected:
 	*/
 	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
 	                        vec3 miPos, vec3 lPos, double *newAngle = NULL);
-private:
 	std::mutex guiLock;
+private:
 	std::vector<BondSample> _finalSamples;
 	int _modifySample;
 };

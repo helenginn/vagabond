@@ -61,6 +61,16 @@ public:
 	 * \return empty AtomPtr() if calling atom is not one of the options, or
 	 * the opposite option if valid. */
 	AtomPtr getOtherAtom(AtomPtr calling);
+	
+	AtomPtr getNAtom()
+	{
+		return _nAtom.lock();
+	}
+	
+	AtomPtr getCAtom()
+	{
+		return _cAtom.lock();
+	}
 
 	void setOccupancies(std::vector<double> occ)
 	{
@@ -94,6 +104,16 @@ public:
 	{
 		return _atom.lock();
 	}
+
+	void addTwist(TwistPtr twist)
+	{
+		_twists.push_back(twist);
+	}
+	
+	size_t twistCount()
+	{
+		return _twists.size();
+	}
 	
 	void addWhack(WhackPtr whack)
 	{
@@ -118,11 +138,52 @@ public:
 	void recalculateWhacks();
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 	virtual std::string shortDesc();
-protected:
+
+
+	static double getPosX(void *object)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		return anch->_position.x;
+	}
+
+	static double getPosY(void *object)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		return anch->_position.y;
+	}
+
+	static double getPosZ(void *object)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		return anch->_position.z;
+	}
+
+	static void setPosX(void *object, double x)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		anch->_position.x = x;
+		anch->propagateChange(-1);
+	}
+
+	static void setPosY(void *object, double y)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		anch->_position.y = y;
+		anch->propagateChange(-1);
+	}
+
+	static void setPosZ(void *object, double z)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		anch->_position.z = z;
+		anch->propagateChange(-1);
+	}
+
 	virtual std::string getClassName()
 	{
 		return "Anchor";
 	}
+protected:
 	
 	virtual std::string getParserIdentifier();
 	virtual void createStartPositions(Atom *callAtom);
@@ -155,6 +216,7 @@ private:
 	std::vector<vec3> _sphereAngles;
 	std::vector<double> _occupancies;
 	std::vector<WhackPtr> _whacks;
+	std::vector<TwistPtr> _twists;
 	
 	bool _disableWhacks;
 };

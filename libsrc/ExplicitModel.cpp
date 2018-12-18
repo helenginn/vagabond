@@ -17,7 +17,7 @@ ExplicitModel::ExplicitModel()
 	_modifySample = -1;
 }
 
-vec3 meanOfManyPositions(std::vector<BondSample> *positions)
+vec3 ExplicitModel::meanOfManyPositions(std::vector<BondSample> *positions)
 {
 	vec3 sum = make_vec3(0, 0, 0);
 	double weights = 0;

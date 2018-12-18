@@ -39,6 +39,7 @@ typedef enum
 	ScoreTypeCentroid = 11, /** Difference of centroid against PDB */
 	ScoreTypeCopyToSmaller = 12, /** Difference of centroid against PDB */
 	ScoreTypeMouse = 13, /** Difference to Mouse position */
+	ScoreTypeSavedPos = 14, /** To previously saved atom position */
 } ScoreType;
 
 /* Don't forget - power of 2... */

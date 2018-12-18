@@ -13,6 +13,7 @@
 #include "Options.h"
 #include "Crystal.h"
 #include "Whack.h"
+#include "Twist.h"
 #include "mat4x4.h"
 #include <sstream>
 
@@ -303,6 +304,11 @@ void Anchor::recalculateWhacks()
 		_whacks[i]->disable();
 	}
 	
+	for (int i = 0; i < twistCount(); i++)
+	{
+		_twists[i]->disable();
+	}
+	
 	propagateChange(-1, true);
 
 	for (int i = 0; i < whackCount(); i++)
@@ -310,11 +316,21 @@ void Anchor::recalculateWhacks()
 		_whacks[i]->saveSamples();
 	}
 
+	for (int i = 0; i < twistCount(); i++)
+	{
+		_twists[i]->saveSamples();
+	}
+
 	_disableWhacks = false;
 
 	for (int i = 0; i < whackCount(); i++)
 	{
 		_whacks[i]->enable();
+	}
+
+	for (int i = 0; i < twistCount(); i++)
+	{
+		_twists[i]->enable();
 	}
 
 	propagateChange(-1, true);
@@ -356,6 +372,14 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 	translateStartPositions();
 
 	fixCentroid();
+
+	/* Apply twists to each bond. */
+	for (int i = 0; i < twistCount() && !_disableWhacks; i++)
+	{
+		TwistPtr twist = _twists[i];
+		twist->applyToAnchorSamples(_storedSamples);
+	}
+
 	
 	/* Apply whacks as normal, if we are not re-caching Whacks. */
 	for (int i = 0; i < _whacks.size() && !_disableWhacks; i++)
@@ -363,6 +387,20 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 		WhackPtr whack = _whacks[i];
 		whack->applyToAnchorSamples(_storedSamples);
 	}
+
+	/*
+	if (_useMutex)
+	{
+		guiLock.lock();
+	}
+	
+	_absolute = meanOfManyPositions(&_storedSamples);
+
+	if (_useMutex)
+	{
+		guiLock.unlock();
+	}
+	*/
 
 	sanityCheck();
 	
@@ -391,6 +429,11 @@ void Anchor::addProperties()
 		addChild("whack", _whacks[i]);
 	}
 	
+	for (int i = 0; i < twistCount(); i++)
+	{
+		addChild("twist", _twists[i]);
+	}
+	
 	Model::addProperties();
 }
 
@@ -405,6 +448,11 @@ void Anchor::addObject(ParserPtr object, std::string category)
 	{
 		WhackPtr whack = ToWhackPtr(object);
 		addWhack(whack);
+	}
+	else if (category == "twist")
+	{
+		TwistPtr twist = ToTwistPtr(object);
+		addTwist(twist);
 	}
 }
 
@@ -451,5 +499,5 @@ void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
 void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
                                       double mult)
 {
-	_libration->addToStrategy(strategy, 0.2 * mult, 0.005, "li");
+	_libration->addToStrategy(strategy, 0.1 * mult, 0.005, "li");
 }

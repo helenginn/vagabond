@@ -201,7 +201,7 @@ void Molecule::refine(CrystalPtr crystal, RefinementType type)
 		setCrystal(crystal);
 		setCycles(20);
 		addSampled(anAtom);	
-		addAbsolutePosition(abs, 0.005, 0.0001);
+//		addAbsolutePosition(abs, 0.005, 0.0001);
 		setJobName("xyz_" + anAtom->shortDesc());
 		sample();
 	}

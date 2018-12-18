@@ -16,6 +16,7 @@
 #include "Shouter.h"
 #include "AtomGroup.h"
 #include "Whack.h"
+#include "Twist.h"
 #include "Anchor.h"
 #include "maths.h"
 #include "Monomer.h"
@@ -100,6 +101,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	deriveBondAngle();
 	deriveCirclePortion();
 	deriveTorsionAngle();
+	
 }
 
 Bond::Bond(Bond &other)
@@ -676,6 +678,18 @@ double Bond::getBaseTorsion()
 	}
 
 	double baseTorsion = sisBond->_torsion;
+	
+	if (torsionNumber == 0 && model->isBond())
+	{
+		BondPtr parent = ToBondPtr(getParentModel());
+		
+		if (parent->hasTwist())
+		{
+			double angle = parent->getTwist()->getTorsionCorrection();
+			baseTorsion += angle;
+		}
+	}
+	
 	return baseTorsion;
 }
 
@@ -791,6 +805,7 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 	double occTotal = 0;
 	_storedSamples.clear();
 	_storedSamples.reserve(prevSamples->size());
+	vec3 mean = empty_vec3();
 	
 	for (size_t i = 0; i < prevSamples->size(); i++)
 	{
@@ -812,6 +827,8 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 		mat3x3 newBasis = makeTorsionBasis(prevHeavyPos, prevMinorPos,
 		                                   myCurrentPos, none);
 
+		vec3_add_to_vec3(&mean, myCurrentPos);
+
 		BondSample nextSample;
 		nextSample.basis = newBasis;
 		nextSample.start = myCurrentPos;
@@ -824,6 +841,8 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 		
 		_storedSamples.push_back(nextSample);
 	}
+	
+	vec3_mult(&mean, 1 / (double)(prevSamples->size()));
 
 	if (_resetOccupancy)
 	{
@@ -834,6 +853,19 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 	}
 
 	_changedSamples = false;
+
+	if (_useMutex)
+	{
+		guiLock.lock();
+	}
+	
+	_absolute = mean;
+
+	if (_useMutex)
+	{
+		guiLock.unlock();
+	}
+	
 	
 	sanityCheck();
 
@@ -1505,6 +1537,11 @@ void Bond::addProperties()
 	{
 		addReference("whack", getWhack());
 	}
+	
+	if (hasTwist())
+	{
+		addReference("twist", getTwist());
+	}
 
 	addDoubleProperty("phi", &_phi);    
 	addDoubleProperty("psi", &_psi);    
@@ -1559,6 +1596,11 @@ void Bond::linkReference(ParserPtr object, std::string category)
 	{
 		WhackPtr whack = ToWhackPtr(object);
 		_whack = whack;
+	}
+	else if (category == "twist")
+	{
+		TwistPtr twist = ToTwistPtr(object);
+		_twist = twist;
 	}
 	else if (category == "extra_sample")
 	{

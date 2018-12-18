@@ -42,6 +42,7 @@
 #define ToCrystalPtr(a) (boost::static_pointer_cast<Crystal>((a)))
 #define ToAtomPtr(a) (boost::static_pointer_cast<Atom>((a)))
 #define ToWhackPtr(a) (boost::static_pointer_cast<Whack>((a)))
+#define ToTwistPtr(a) (boost::static_pointer_cast<Twist>((a)))
 #define ToAtomGroupPtr(a) (boost::static_pointer_cast<AtomGroup>((a)))
 #define ToMonomerPtr(a) (boost::static_pointer_cast<Monomer>((a)))
 #define ToParserPtr(a) (boost::static_pointer_cast<Parser>((a)))
@@ -128,8 +129,11 @@ typedef boost::weak_ptr<Bond> BondWkr;
 typedef boost::shared_ptr<BondGroup> BondGroupPtr;
 
 class Whack;
+class Twist;
 typedef boost::shared_ptr<Whack> WhackPtr;
 typedef boost::weak_ptr<Whack> WhackWkr;
+typedef boost::shared_ptr<Twist> TwistPtr;
+typedef boost::weak_ptr<Twist> TwistWkr;
 
 class Bucket;
 class BucketBulkSolvent;
@@ -209,6 +213,9 @@ typedef enum
 typedef enum
 {
 	ParamOptionTorsion,
+	ParamOptionTwist,
+	ParamOptionTTN, /** Torsion or Twist to N-terminus */
+	ParamOptionTTC,	/** Torsion or Twist to C-terminus */
 	ParamOptionBondAngle,
 	ParamOptionKick,
 	ParamOptionOccupancy,

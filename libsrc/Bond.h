@@ -419,7 +419,7 @@ public:
 	/** Create an atom group containing every downstream bond in every
 	 * group from a bond onwards */
 	AtomGroupPtr makeAtomGroup(BondPtr endBond = BondPtr());
-
+	
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 
 	std::vector<BondSample> *getManyPositions(void *object = NULL);
@@ -461,6 +461,26 @@ public:
 		}
 		
 		return nakedDownstreamBond(group, i)->shared_from_this();
+	}
+
+	void setTwist(TwistPtr twist)
+	{
+		_twist = twist;
+	}
+	
+	bool hasTwist()
+	{
+		return (!_twist.expired());
+	}
+	
+	TwistPtr getTwist()
+	{
+		if (_twist.expired())
+		{
+			return TwistPtr();
+		}
+		
+		return _twist.lock();
 	}
 	
 	void setWhack(WhackPtr whack)
@@ -504,6 +524,7 @@ private:
 
 	AtomWkr _heavyAlign;
 	WhackWkr _whack;
+	TwistWkr _twist;
 
 	double _bondLength;
 
@@ -541,7 +562,7 @@ private:
 	bool _disabled;
 	
 	bool _split;
-
+	
 	void initialize();
 	double getBaseTorsion();
 

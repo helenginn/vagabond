@@ -27,6 +27,7 @@
 /** Flags to set refinement strategies for a protein chain. */
 typedef enum
 {
+	RefinementCrude = 0, /** Refinement from far soln against ED */
 	RefinementFine = 1, /** Refinement against electron density */
 	RefinementSidechain = 2, /** Sidechains against electron density */
 	RefinementModelRMSDZero = 3, /** Squeeze protein chain to PDB positions */
@@ -35,6 +36,7 @@ typedef enum
 	RefinementCentroid = 6, /** Refine centroid to PDB centroid */
 	RefinementWaterNetwork = 7,
 	RefinementMouse = 8, /** Refinement to mouse coordinates */
+	RefinementSavedPos = 9, /** Refinement to previously saved positions */
 } RefinementType; 
 
 
@@ -68,6 +70,9 @@ public:
 	*/
 	void addTorsion(BondPtr bond, double range, double interval);
 
+	void addTwist(BondPtr bond, double range, double interval);
+	void addTT(BondPtr bond, double range, double interval);
+
 	/**
 	* Add torsion blur (kick function) to sampled parameters
 	* \param bond bond to vary kick for
@@ -83,8 +88,8 @@ public:
 	/** Add sampled atoms from a given atom group and conformer name */
 	void addSampledAtoms(AtomGroupPtr group, std::string conformer = "");
 	
-	/** Add absolute position for an atom controlled by Absolute class */
-	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
+	/** Add anchor position for an atom controlled by Anchor class */
+	void addAnchorPosition(AnchorPtr anch, double range, double interval);
 
 	/** Add absolute B factor for an atom controlled by Absolute class */
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
@@ -191,6 +196,7 @@ protected:
 	void setupCloseAtoms();
 	void setupScoreWithMap();
 	void addAtomsForBond(BondPtr bond);
+	bool isBackwards(BondPtr bond);
 	
 	double getParameter(ParamOptionType type)
 	{

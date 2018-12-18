@@ -71,7 +71,7 @@ void FlexLocal::refine()
 		reflex();
 		createAtomTargets();
 
-		bool add = 5;
+		int add = 5;
 		if (i == 0)
 		{
 			scanBondParams();

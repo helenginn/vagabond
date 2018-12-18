@@ -111,15 +111,6 @@ void Whack::addToAnchor(AnchorPtr anchor)
 	}
 }
 
-vec3 rotate_round_bond(vec3 start, vec3 centre, mat3x3 rot)
-{
-	vec3_subtract_from_vec3(&start, centre);
-	mat3x3_mult_vec(rot, &start);
-	vec3_add_to_vec3(&start, centre);
-
-	return start;
-}
-
 void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 {
 	if (fabs(_whack) < 1e-6 || !_enabled)
@@ -167,7 +158,6 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 		anchSamp[i].old_start = rotate_round_bond(old_start, centre, rot);
 		
 		mat3x3 basis = anchSamp[i].basis;
-		
 		anchSamp[i].basis = mat3x3_mult_mat3x3(rot, basis);
 	}
 }
