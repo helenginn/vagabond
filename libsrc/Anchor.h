@@ -179,6 +179,45 @@ public:
 		anch->propagateChange(-1);
 	}
 
+	static double getAlpha(void *object)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		return anch->_alpha;
+	}
+
+	static double getBeta(void *object)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		return anch->_beta;
+	}
+
+	static double getGamma(void *object)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		return anch->_gamma;
+	}
+
+	static void setAlpha(void *object, double val)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		anch->_alpha = val;
+		anch->propagateChange(-1);
+	}
+
+	static void setBeta(void *object, double val)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		anch->_beta = val;
+		anch->propagateChange(-1);
+	}
+
+	static void setGamma(void *object, double val)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		anch->_gamma = val;
+		anch->propagateChange(-1);
+	}
+
 	virtual std::string getClassName()
 	{
 		return "Anchor";
@@ -194,6 +233,9 @@ protected:
 	virtual void addObject(ParserPtr object, std::string category);
 
 	double _bFactor;
+	
+	/* Euler angles for modifying _nAtom and _cAtom */
+	double _alpha, _beta, _gamma;
 	RefineMat3x3Ptr _trans;
 	RefineMat3x3Ptr _libration;
 	

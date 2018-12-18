@@ -50,6 +50,9 @@ void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom,
 Anchor::Anchor()
 {
 	_bFactor = 0;
+	_alpha = 0;
+	_beta = 0;
+	_gamma = 0;
 	_position = empty_vec3();
 	_nDir = empty_vec3();
 	_cDir = empty_vec3();
