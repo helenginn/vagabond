@@ -129,6 +129,8 @@ void VagWindow::makeMenu()
 
 	menuItem(mRefine, "Positions to PDB", 
 	         InstructionTypeRefinePositions);
+	menuItem(mRefine, "Backbone to density", 
+	         InstructionTypeRefinePosToDensity);
 	menuItem(mRefine, "Intermolecule movements",
 	         InstructionTypeFitTranslation);
 	menuItem(mRefine, "Intramolecule movements",
@@ -270,6 +272,11 @@ int VagWindow::waitForInstructions()
 			{
 				case InstructionTypeRefinePositions:
 				crystal->refinePositions();
+				options->recalculateFFT();
+				break;
+				
+				case InstructionTypeRefinePosToDensity:
+				crystal->refineCrude();
 				options->recalculateFFT();
 				break;
 
