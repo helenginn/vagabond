@@ -241,7 +241,7 @@ void Selected2GL::addPicked(AtomPtr atom, bool preserveType)
 		
 		_sType = SelectMonConf;
 		Options::statusMessage("Selected conformer "
-		                       + selected->conformer(_conf));
+		                       + selected->conformer(_conf), false);
 
 		return;
 	}
@@ -258,7 +258,7 @@ void Selected2GL::addPicked(AtomPtr atom, bool preserveType)
 		
 		
 		Options::statusMessage("Selected conformer "
-		                       + selected->conformer(_conf));
+		                       + selected->conformer(_conf), false);
 	}
 	else
 	{
@@ -324,7 +324,7 @@ void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 		                       + atom->getMonomer()->getIdentifier() 
 		                       + i_to_str(atom->getMonomer()->getResidueNum())
 		                       + " from chain " + 
-		                       atom->getMolecule()->getChainID());
+		                       atom->getMolecule()->getChainID(), false);
 	}
 	else if (inGroup && _sType == SelectSidechain && !preserveType)
 	{
@@ -347,7 +347,7 @@ void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 			+ i_to_str(atom->getMonomer()->getResidueNum()) + "_"
 			+ atom->getMonomer()->conformer(_conf);
 			
-			Options::statusMessage(status);
+			Options::statusMessage(status, false);
 		}
 	}
 	else if (inGroup && _sType == SelectConformer && !preserveType)
@@ -370,7 +370,7 @@ void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 	
 	if (getPicked() != atom)
 	{
-		Options::statusMessage("Selected atom " + atom->shortDesc());
+		Options::statusMessage("Selected atom " + atom->shortDesc(), false);
 		
 		if (!preserveType)
 		{
@@ -433,11 +433,11 @@ void Selected2GL::toggleKicks()
 	
 	if (_kicking)
 	{
-		Options::statusMessage("Add kicking to refinement.");
+		Options::statusMessage("Add kicking to refinement.", false);
 	}
 	else
 	{
-		Options::statusMessage("Remove kicking in refinement.");
+		Options::statusMessage("Remove kicking in refinement.", false);
 	}
 
 	_switch.unlock();
@@ -483,7 +483,7 @@ void Selected2GL::advanceMonomer(int dir)
 
 void Selected2GL::cancelRefine()
 {
-	Options::statusMessage("Cancelling refinement...");
+	Options::statusMessage("Cancelling refinement...", false);
 	_switch.lock();
 	_kicking = false;
 	_refining = false;
@@ -496,7 +496,7 @@ void Selected2GL::manualRefine()
 	_refining = true;
 	_switch.unlock();
 
-	Options::statusMessage("Starting manual refinement.");
+	Options::statusMessage("Starting manual refinement.", false);
 	CrystalPtr crystal = Options::getActiveCrystal();
 	AtomGroupPtr group = refinableSelection();
 
@@ -530,17 +530,17 @@ void Selected2GL::manualRefine()
 		
 		if (!refining)
 		{
-			Options::statusMessage("Ending manual refinement.");
+			Options::statusMessage("Ending manual refinement.", false);
 			break;
 		}
 		
 		if (mousey && !was_mousey)
 		{
-			Options::statusMessage("Mouse-driven refinement.");
+			Options::statusMessage("Mouse-driven refinement.", false);
 		}
 		else if (!mousey && was_mousey)
 		{
-			Options::statusMessage("Refining to electron density.");
+			Options::statusMessage("Refining to electron density.", false);
 		}
 		
 		if (mousey)
@@ -582,6 +582,7 @@ void Selected2GL::manualRefine()
 		else
 		{
 			group->addParamType(ParamOptionBondAngle, 0.5);
+//			group->addParamType(ParamOptionTwist, 0.5);
 			group->refine(crystal, RefinementFine);
 
 			group->addParamType(ParamOptionMaxTries, 1.0);
@@ -611,11 +612,11 @@ void Selected2GL::setMouseRefinement(bool val)
 
 	if (val)
 	{
-		Options::statusMessage("Preparing mouse refinement...");
+		Options::statusMessage("Preparing mouse refinement...", false);
 	}
 	else
 	{
-		Options::statusMessage("Refining to electron density.");
+		Options::statusMessage("Refining to electron density.", false);
 	}
 }
 
@@ -623,12 +624,12 @@ void Selected2GL::splitSelected()
 {
 	if (!getPicked())
 	{
-		Options::statusMessage("Split failed (no selection)");
+		Options::statusMessage("Split failed (no selection)", false);
 		return;
 	}
 	if (_sType == SelectAtom)
 	{
-		Options::statusMessage("Split failed (only one atom selected).");
+		Options::statusMessage("Split failed (only one atom selected).", false);
 		return;
 	}
 
@@ -644,7 +645,7 @@ void Selected2GL::splitSelected()
 
 			if (!cb)
 			{
-				Options::statusMessage("Split failed (no Cb atom).");
+				Options::statusMessage("Split failed (no Cb atom).", false);
 				return;
 			}
 
@@ -652,17 +653,17 @@ void Selected2GL::splitSelected()
 
 			if (!model->isBond())
 			{
-				Options::statusMessage("Split failed (Cb is not bonded).");
+				Options::statusMessage("Split failed (Cb is not bonded).", false);
 				return;
 			}
 
 			ToBondPtr(model)->splitBond();
-			Options::statusMessage("Split success (" + cb->shortDesc() + ").");
+			Options::statusMessage("Split success (" + cb->shortDesc() + ").", false);
 		}
 		else
 		{
 			Options::statusMessage("Split failed (too many conformers "
-			                       "selected.)");
+			                       "selected.)", false);
 		}
 		
 		return;
@@ -670,7 +671,7 @@ void Selected2GL::splitSelected()
 	
 	if (_sType != SelectMonomer)
 	{
-		Options::statusMessage("Split failed (unknown selection option.)");
+		Options::statusMessage("Split failed (unknown selection option.)", false);
 		return;
 	}
 	
@@ -692,7 +693,7 @@ void Selected2GL::splitSelected()
 		}
 	}
 
-	Options::statusMessage("Split success (" + tops[0]->shortDesc() + ").");
+	Options::statusMessage("Split success (" + tops[0]->shortDesc() + ").", false);
 }
 
 void Selected2GL::deleteSelected()
@@ -704,7 +705,7 @@ void Selected2GL::deleteSelected()
 	
 	if (getPicked()->isHeteroAtom())
 	{
-		Options::statusMessage("Deleted " + getPicked()->shortDesc());
+		Options::statusMessage("Deleted " + getPicked()->shortDesc(), false);
 		Options::getActiveCrystal()->removeAtom(getPicked());
 
 		_picked.clear();
