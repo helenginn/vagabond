@@ -322,7 +322,9 @@ void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 		_sType = SelectSidechain;
 		Options::statusMessage("Selected residue " 
 		                       + atom->getMonomer()->getIdentifier() 
-		                       + i_to_str(atom->getMonomer()->getResidueNum()));
+		                       + i_to_str(atom->getMonomer()->getResidueNum())
+		                       + " from chain " + 
+		                       atom->getMolecule()->getChainID());
 	}
 	else if (inGroup && _sType == SelectSidechain && !preserveType)
 	{
