@@ -150,7 +150,7 @@ void StartScreen::makeButtons()
 	
 	height += 20;
 	_cRefine = new QCheckBox("Perform refinement, including", this);
-	_cRefine->setChecked(true);
+	_cRefine->setChecked(Options::_refine);
 	_cRefine->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
 	connect(_cRefine, SIGNAL(stateChanged(int)), 
 	        this, SLOT(toggleDisableOptions(int)));
@@ -158,25 +158,25 @@ void StartScreen::makeButtons()
 	indent += 10;
 	height += 20;
 	_cPosition = new QCheckBox("positions to match PDB", this);
-	_cPosition->setChecked(true);
+	_cPosition->setChecked(Options::_rPosition);
 	_cPosition->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
 	_allToggle.push_back(_cPosition);
 
 	height += 20;
 	_cInter = new QCheckBox("whole molecule flex", this);
-	_cInter->setChecked(true);
+	_cInter->setChecked(Options::_rInter);
 	_cInter->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
 	_allToggle.push_back(_cInter);
 
 	height += 20;
 	_cIntra = new QCheckBox("intramolecular flex", this);
-	_cIntra->setChecked(true);
+	_cIntra->setChecked(Options::_rIntra);
 	_cIntra->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
 	_allToggle.push_back(_cIntra);
 
 	height += 20;
 	_cCbAngles = new QCheckBox("using variable Cb angles", this);
-	_cCbAngles->setChecked(true);
+	_cCbAngles->setChecked(Options::_bondAngles > 0);
 	_cCbAngles->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
 	_allToggle.push_back(_cCbAngles);
 	connect(_cCbAngles, SIGNAL(stateChanged(int)), 
@@ -185,7 +185,7 @@ void StartScreen::makeButtons()
 	indent += 10;
 	height += 20;
 	_cCgAngles = new QCheckBox("... and Cg angles for aromatics", this);
-	_cCgAngles->setChecked(true);
+	_cCgAngles->setChecked(Options::_bondAngles > 1);
 	_cCgAngles->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
 	_allToggle.push_back(_cCgAngles);
 	_angleToggle.push_back(_cCgAngles);
@@ -195,7 +195,7 @@ void StartScreen::makeButtons()
 	indent += 10;
 	height += 20;
 	_cGlyAngles = new QCheckBox("... and glycine backbone angles", this);
-	_cGlyAngles->setChecked(false);
+	_cGlyAngles->setChecked(Options::_bondAngles > 2);
 	_cGlyAngles->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
 	_allToggle.push_back(_cGlyAngles);
 	_angleToggle.push_back(_cGlyAngles);
@@ -204,7 +204,7 @@ void StartScreen::makeButtons()
 	indent -= 20;
 	height += 20;
 	_cSidechains = new QCheckBox("refine sidechains to density", this);
-	_cSidechains->setChecked(true);
+	_cSidechains->setChecked(Options::_rSidechains);
 	_cSidechains->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
 	_allToggle.push_back(_cSidechains);
 	
@@ -216,6 +216,7 @@ void StartScreen::makeButtons()
 	_cPeptide->hide();
 	_allToggle.push_back(_cPeptide);
 
+	toggleDisableOptions(0);
 }
 
 void StartScreen::toggleDisableOptions(int)
