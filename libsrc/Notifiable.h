@@ -17,6 +17,7 @@ typedef enum
 	InstructionTypeNone,
 	InstructionTypeResetExplorer,
 	InstructionTypeRefinePositions,
+	InstructionTypeRefinePosToDensity,
 	InstructionTypeRefineFlexibility,
 	InstructionTypeRefineDensity,
 	InstructionTypeSidechainsToEnd,
