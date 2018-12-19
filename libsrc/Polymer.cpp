@@ -403,6 +403,7 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	coreRegion->refine(target, RefinementCrude);
 
 	std::cout << "Refining sidechains: ";
+
 	for (int i = coreStart; i <= coreEnd; i++)
 	{
 		if (!getMonomer(i))

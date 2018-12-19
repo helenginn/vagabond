@@ -27,6 +27,9 @@ Anchor::Anchor(AbsolutePtr absolute)
 	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration->setZero();
 	_disableWhacks = false;
+	_alpha = 0;
+	_beta = 0;
+	_gamma = 0;
 }
 
 void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom, 
@@ -118,6 +121,8 @@ void Anchor::createStartPositions(Atom *callAtom)
 	double increment = M_PI * (3.0 - sqrt(5));
 
 	_sphereAngles.clear();
+	vec3 sum = empty_vec3();
+	double count = 0;
 
 	for (int j = 0; j < layers; j++)
 	{
@@ -137,24 +142,40 @@ void Anchor::createStartPositions(Atom *callAtom)
 			double z = sin(phi) * r;
 
 			vec3 point = make_vec3(x * m, y * m, z * m);
+			vec3_add_to_vec3(&sum, point);
 
 			points.push_back(point);
 			_sphereAngles.push_back(point);
+			count++;
 		}
 	}
 	
+	vec3_mult(&sum, 1 / count);
+	
+	for (int i = 0; i < _sphereAngles.size(); i++)
+	{
+		vec3_subtract_from_vec3(&_sphereAngles[i], sum);
+	}
+	
 	bool isN = (callAtom == &*(_nAtom.lock()));
+	
+	/* Get the rotation matrix for alpha, beta, gamma modifications */
+	mat3x3 rot = getAnchorRotation();
 
 	/* Want the direction to be the opposite of the calling bond */
-	vec3 *direction = isN ? &_cDir : &_nDir;
-	vec3 *other = isN ? &_cDir2 : &_nDir2;
+	vec3 direction = isN ? _cDir : _nDir;
+	vec3 other = isN ? _cDir2 : _nDir2;
+	
+	mat3x3_mult_vec(rot, &direction);
+	mat3x3_mult_vec(rot, &other);
+	
 	vec3 empty = empty_vec3();
 
 	for (size_t i = 0; i < points.size(); i++)
 	{
 		vec3 full = vec3_add_vec3(points[i], _position);
-		vec3 next = vec3_add_vec3(full, *direction);
-		vec3 prev = vec3_add_vec3(full, *other);
+		vec3 next = vec3_add_vec3(full, direction);
+		vec3 prev = vec3_add_vec3(full, other);
 	
 		double occ = 1;
 		occTotal += occ;
@@ -206,6 +227,14 @@ void Anchor::rotateBases()
 			_storedSamples[i].basis = basis;
 		}
 	}
+}
+
+mat3x3 Anchor::getAnchorRotation()
+{
+	mat3x3 mat = make_mat3x3();
+	mat3x3 rot = mat3x3_rotate(_alpha, _beta, _gamma);
+	
+	return rot;
 }
 
 void Anchor::translateStartPositions()

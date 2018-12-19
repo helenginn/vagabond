@@ -81,7 +81,7 @@ std::vector<BondSample> ExplicitModel::getFinalPositions()
 	}
 	
 	/* Recalculate final positions */
-
+	
 	std::vector<BondSample> *positions = getManyPositions();
 	_finalSamples = *positions;
 	

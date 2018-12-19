@@ -252,6 +252,7 @@ private:
 	void translateStartPositions();
 	void rotateBases();
 	void fixCentroid();
+	mat3x3 getAnchorRotation();
 	
 	vec3 _nDir, _nDir2;
 	vec3 _cDir, _cDir2;
