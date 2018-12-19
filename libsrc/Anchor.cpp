@@ -144,17 +144,26 @@ void Anchor::createStartPositions(Atom *callAtom)
 	}
 	
 	bool isN = (callAtom == &*(_nAtom.lock()));
+	
+	/* Dir-mat are directions of immediately preceding/subsequent atoms,
+	 * Dir2-mat are the directions of the second preceding/subsequent atoms */
+	mat3x3 dirMat = getAnchorMatrix(1);
+	mat3x3 dir2Mat = getAnchorMatrix(0);
 
 	/* Want the direction to be the opposite of the calling bond */
-	vec3 *direction = isN ? &_cDir : &_nDir;
-	vec3 *other = isN ? &_cDir2 : &_nDir2;
+	vec3 direction = isN ? mat3x3_axis(dirMat, 1) : mat3x3_axis(dirMat, 0);
+	vec3 other = isN ? mat3x3_axis(dir2Mat, 1) : mat3x3_axis(dir2Mat, 0);
+	
+	vec3_set_length(&direction, isN ? vec3_length(_cDir) : vec3_length(_nDir));
+	vec3_set_length(&other, isN ? vec3_length(_cDir2) : vec3_length(_nDir2));
+	
 	vec3 empty = empty_vec3();
 
 	for (size_t i = 0; i < points.size(); i++)
 	{
 		vec3 full = vec3_add_vec3(points[i], _position);
-		vec3 next = vec3_add_vec3(full, *direction);
-		vec3 prev = vec3_add_vec3(full, *other);
+		vec3 next = vec3_add_vec3(full, direction);
+		vec3 prev = vec3_add_vec3(full, other);
 	
 		double occ = 1;
 		occTotal += occ;
@@ -206,6 +215,25 @@ void Anchor::rotateBases()
 			_storedSamples[i].basis = basis;
 		}
 	}
+}
+
+mat3x3 Anchor::getAnchorMatrix(bool dir1)
+{
+	mat3x3 mat = make_mat3x3();
+	mat3x3 rot = mat3x3_rotate(_alpha, _beta, _gamma);
+
+	if (dir1)
+	{
+		mat = mat3x3_rhbasis(_nDir, _cDir);
+	}
+	else
+	{
+		mat = mat3x3_rhbasis(_nDir2, _cDir2);
+	}
+	
+	mat3x3 final_mat = mat3x3_mult_mat3x3(mat, rot);
+	
+	return final_mat;
 }
 
 void Anchor::translateStartPositions()

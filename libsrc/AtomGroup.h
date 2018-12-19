@@ -143,7 +143,7 @@ public:
 	}
 	
 	void refreshBondAngles();
-	virtual AtomList topLevelAtoms();
+	virtual AtomList topLevelAtoms(bool inclAnchor = false);
 	
 	void saveAtomPositions();
 	
