@@ -89,7 +89,7 @@ public:
 	void addSampledAtoms(AtomGroupPtr group, std::string conformer = "");
 	
 	/** Add anchor position for an atom controlled by Anchor class */
-	void addAnchorPosition(AnchorPtr anch, double range, double interval);
+	void addAnchorParams(AnchorPtr anch);
 
 	/** Add absolute B factor for an atom controlled by Absolute class */
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);

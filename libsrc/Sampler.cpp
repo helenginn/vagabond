@@ -490,15 +490,31 @@ void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 	_bonds.push_back(bond);
 }
 
-void Sampler::addAnchorPosition(AnchorPtr anch, double range, double interval)
+void Sampler::addAnchorParams(AnchorPtr anch)
 {
-	return;
+	double range = 0.02;
+	double interval = 0.002;
 	_strategy->addParameter(&*anch, Anchor::getPosX, Anchor::setPosX,
 	                        range, interval, "pos_x");
 	_strategy->addParameter(&*anch, Anchor::getPosY, Anchor::setPosY,
 	                        range, interval, "pos_y");
 	_strategy->addParameter(&*anch, Anchor::getPosZ, Anchor::setPosZ,
 	                        range, interval, "pos_z");
+	
+	range = deg2rad(1.0);
+	interval = deg2rad(0.005);
+	_strategy->addParameter(&*anch, Anchor::getAlpha, Anchor::setAlpha,
+	                        range, interval, "alpha");
+	_strategy->addParameter(&*anch, Anchor::getBeta, Anchor::setBeta,
+	                        range, interval, "beta");
+	_strategy->addParameter(&*anch, Anchor::getGamma, Anchor::setGamma,
+	                        range, interval, "gamma");
+
+	BondPtr nBond = ToBondPtr(anch->getNAtom()->getModel());
+	BondPtr cBond = ToBondPtr(anch->getCAtom()->getModel());
+	
+	addAtomsForBond(nBond);
+	addAtomsForBond(cBond);
 }
 
 void Sampler::addAbsoluteBFactor(AbsolutePtr abs, double range, double interval)
