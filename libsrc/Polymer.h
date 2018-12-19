@@ -84,6 +84,7 @@ public:
 	bool isWhacking();
 	int _whacked;
 	void whack();
+	void clearTwists();
 	AtomGroupPtr monomerRange(int start, int end);
 	void ramachandranPlot();
 	virtual void removeAtom(AtomPtr atom);
