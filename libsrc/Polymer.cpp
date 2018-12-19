@@ -399,7 +399,7 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	coreRegion->addParamType(ParamOptionTorsion, heavy);
 	coreRegion->addParamType(ParamOptionTwist, heavy);
 	coreRegion->addParamType(ParamOptionBondAngle, heavy);
-	coreRegion->addParamType(ParamOptionMaxTries, 3);
+	coreRegion->addParamType(ParamOptionMaxTries, 1);
 	coreRegion->refine(target, RefinementCrude);
 
 	std::cout << "Refining sidechains: ";
