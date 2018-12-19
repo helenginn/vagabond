@@ -424,7 +424,7 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	clearTwists();
 	
 	AtomGroupPtr leftRegion = monomerRange(-1, anchor - 1);
-	AtomGroupPtr rightRegion = monomerRange(anchor, -1);
+	AtomGroupPtr rightRegion = monomerRange(anchor + 1, -1);
 
 	refineLeftRegion(leftRegion, target, light);
 	refineLeftRegion(rightRegion, target, light);
