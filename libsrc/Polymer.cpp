@@ -392,8 +392,8 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	double heavy = 2.0;
 	double light = 2.0;
 
-	std::cout << "Refining core region, " << coreStart
-	<< " to " << coreEnd << std::endl;
+	std::cout << "Refining core region, " << getChainID() << " " << coreStart
+	<< " to " << coreEnd << "." << std::flush;
 
 	coreRegion->addParamType(ParamOptionNumBonds, (2 * pad + 1) * 3);
 	coreRegion->addParamType(ParamOptionTorsion, heavy);
@@ -402,7 +402,7 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	coreRegion->addParamType(ParamOptionMaxTries, 1);
 	coreRegion->refine(target, RefinementCrude);
 
-	std::cout << "Refining sidechains: ";
+	std::cout << " Refining sidechains: ";
 
 	for (int i = coreStart; i <= coreEnd; i++)
 	{
@@ -418,10 +418,17 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 		side->refine(target, RefinementSidechain);
 	}
 	
-	std::cout << std::endl;
+	std::cout << "." << std::flush;
 
 	coreRegion->saveAtomPositions();
 	clearTwists();
+	
+	bool coversAnchor = (anchor >= coreStart && anchor <= coreEnd);
+	
+	if (coversAnchor)
+	{
+		refineAnchorPosition(target);
+	}
 	
 	AtomGroupPtr leftRegion = monomerRange(-1, anchor - 1);
 	AtomGroupPtr rightRegion = monomerRange(anchor + 1, -1);
@@ -430,7 +437,9 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	refineLeftRegion(rightRegion, target, light);
 
 	getAnchorModel()->propagateChange(-1, true);
-	closenessSummary();
+
+	std::cout << " Displacement now " << getAverageDisplacement()
+	<< " Å." << std::endl;
 }
 
 void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
@@ -634,6 +643,23 @@ double Polymer::vsRefineSidechainsToDensity(void *object)
 void Polymer::clearTwists()
 {
 	getAnchorModel()->clearTwists();
+}
+
+void Polymer::refineAnchorPosition(CrystalPtr target)
+{
+	bool changed = true;
+	
+	while (changed)
+	{
+		setupNelderMead();
+		setCrystal(target);
+		setCycles(16);
+		setScoreType(ScoreTypeSavedPos);
+		setSilent(true);
+		addAnchorParams(getAnchorModel());
+
+		changed = sample();
+	}
 }
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
