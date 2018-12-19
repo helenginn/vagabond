@@ -389,16 +389,15 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	
 	int anchor = getAnchor();
 	
-	double heavy = 2.0;
-	double light = 2.0;
+	double step = 1.5;
 
 	std::cout << "Refining core region, " << getChainID() << " " << coreStart
 	<< " to " << coreEnd << "." << std::flush;
 
 	coreRegion->addParamType(ParamOptionNumBonds, (2 * pad + 1) * 3);
-	coreRegion->addParamType(ParamOptionTorsion, heavy);
-	coreRegion->addParamType(ParamOptionTwist, heavy);
-	coreRegion->addParamType(ParamOptionBondAngle, heavy);
+	coreRegion->addParamType(ParamOptionTorsion, step);
+	coreRegion->addParamType(ParamOptionTwist, step);
+	coreRegion->addParamType(ParamOptionBondAngle, step);
 	coreRegion->addParamType(ParamOptionMaxTries, 1);
 	coreRegion->refine(target, RefinementCrude);
 
@@ -412,8 +411,8 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 		}
 		
 		SidechainPtr side = getMonomer(i)->getSidechain();
-		side->addParamType(ParamOptionTorsion, 2 * heavy);
-		side->addParamType(ParamOptionBondAngle, 2 * heavy);
+		side->addParamType(ParamOptionTorsion, step);
+		side->addParamType(ParamOptionBondAngle, step);
 		side->addParamType(ParamOptionNumBonds, 4);
 		side->refine(target, RefinementSidechain);
 	}
@@ -433,8 +432,8 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	AtomGroupPtr leftRegion = monomerRange(-1, anchor - 1);
 	AtomGroupPtr rightRegion = monomerRange(anchor + 1, -1);
 
-	refineLeftRegion(leftRegion, target, light);
-	refineLeftRegion(rightRegion, target, light);
+	refineLeftRegion(leftRegion, target, step);
+	refineLeftRegion(rightRegion, target, step);
 
 	getAnchorModel()->propagateChange(-1, true);
 
