@@ -651,8 +651,8 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 		if (getChainID() == "C0" || getChainID() == "D0")
 		{
 			saveAtomPositions();
-			int start = getAnchor() + 30;
-			int end = start + 15;
+			int start = getAnchor() + 60;
+			int end = monomerEnd() - 5;
 			
 			for (int i = start; i < end; i += 3)
 			{
