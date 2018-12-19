@@ -584,29 +584,6 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 	
 	AtomList topAtoms = topLevelAtoms();
 	
-	/* Determine if we need to go backwards towards anchor */
-	bool backwards = false;
-
-	if (hasParameter(ParamOptionTTN) || hasParameter(ParamOptionTTC))
-	{
-		if (topAtoms.size())
-		{
-			ModelPtr model = topAtoms[0]->getModel();
-			if (model->isBond())
-			{
-				backwards = isBackwards(ToBondPtr(model));
-				
-				if (backwards)
-				{
-					topAtoms = beyondGroupAtoms(true);
-					AtomPtr one = topAtoms[0];
-					topAtoms.clear();
-					topAtoms.push_back(one);
-				}
-			}
-		}
-	}
-	
 	_timesRefined++;
 
 	ScoreType scoreType = ScoreTypeModelPos;
