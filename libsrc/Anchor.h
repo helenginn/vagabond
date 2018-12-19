@@ -114,6 +114,8 @@ public:
 	{
 		return _twists.size();
 	}
+
+	void clearTwists();
 	
 	void addWhack(WhackPtr whack)
 	{

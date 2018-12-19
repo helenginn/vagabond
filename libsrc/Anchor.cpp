@@ -239,6 +239,11 @@ void Anchor::translateStartPositions()
 	}
 }
 
+void Anchor::clearTwists()
+{
+
+}
+
 void Anchor::sanityCheck()
 {
 	if (vec3_length(_nDir) < 1e-6)

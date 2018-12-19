@@ -630,6 +630,11 @@ double Polymer::vsRefineSidechainsToDensity(void *object)
 	return 0;	
 }
 
+void Polymer::clearTwists()
+{
+	getAnchorModel()->clearTwists();
+}
+
 void Polymer::refine(CrystalPtr target, RefinementType rType)
 {
 	target->addComment("Refining against " + Options::rTypeString(rType));
