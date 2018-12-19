@@ -454,6 +454,9 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 void Anchor::addProperties()
 {
 	addDoubleProperty("bfactor", &_bFactor);
+	addDoubleProperty("alpha", &_alpha);
+	addDoubleProperty("beta", &_beta);
+	addDoubleProperty("gamma", &_gamma);
 	addVec3Property("position", &_position);
 	addReference("atom", _atom.lock());
 	addReference("n_atom", _nAtom.lock());
