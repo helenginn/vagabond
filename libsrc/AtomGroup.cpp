@@ -660,33 +660,10 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 
 				if (!topAtom->getModel()->isBond())
 				{
-					if (rType == RefinementSavedPos &&
-					    topAtom->getModel()->isAnchor() && false)
-					{
-						AnchorPtr anch = ToAnchorPtr(topAtom->getModel());
-						addAnchorPosition(anch, 0.02, 0.002);
-						
-						if (hasParameter(ParamOptionTTN))
-						{
-							topAtom = anch->getNAtom();
-						}
-						else if (hasParameter(ParamOptionTTC))
-						{
-							topAtom = anch->getCAtom();
-						}
-						else
-						{
-							continue;
-						}
-					}
-					else
-					{
-						continue;
-					}
+					continue;
 				}
 				
 				BondPtr bond = ToBondPtr(topAtom->getModel());
-				backwards = isBackwards(bond);
 
 				if (i == 0)
 				{
@@ -731,24 +708,6 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		}
 
 		AtomPtr topAtom = topBond->getMinor();
-		
-		if (backwards)
-		{
-//			std::cout << "I am backwards!" << std::endl;
-			
-			ModelPtr model = topBond->getParentModel();
-			if (!model->isBond() && !model->isAnchor())
-			{
-				break;
-			}
-
-			topAtom = ToBondPtr(model)->getMajor();
-		}
-		
-		if (rType == RefinementSavedPos && !backwards)
-		{
-//			std::cout << "I am not backwards" << std::endl;
-		}
 		
 		if (!topAtom)
 		{
