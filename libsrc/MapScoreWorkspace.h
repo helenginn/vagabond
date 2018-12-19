@@ -29,7 +29,6 @@ typedef enum
 	ScoreTypeMultiply = 1, /** Weighted (by model) average of map voxels */
 	ScoreTypeRFactor = 2, /** R factor in real space for electron density */
 	ScoreTypeModelRMSDZero = 3, /** All ensemble positions against PDB */
-	ScoreTypeBFactorAgreement = 4, /** All ensemble B factors against PDB */
 	ScoreTypeModelPos = 5, /** Average ensemble position against PDB */
 	ScoreTypeRMSDZero = 6, /** Sum of squares of anisotropic tensor */
 	ScoreTypeAddDensity = 7, /** Sum of map voxels if model positive */

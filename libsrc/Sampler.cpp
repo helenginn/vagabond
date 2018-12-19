@@ -778,11 +778,6 @@ double Sampler::getScore()
 				oneScore = _sampled[i]->getBFactor();
 				break;
 				
-				case ScoreTypeBFactorAgreement:
-				oneScore = pow(_sampled[i]->getBFactor() -
-				            _sampled[i]->getInitialBFactor() + 6.3, 2.0);
-				break;
-				
 				case ScoreTypeRMSDZero:
 				oneScore = _sampled[i]->getModel()->smallness();
 				break;
