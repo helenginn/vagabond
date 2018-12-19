@@ -642,11 +642,13 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 	}
 	else if (rType == RefinementCrude)
 	{
-		if (getChainID() == "D0" || getChainID() == "C0")
+		if (getChainID() == "C0" || getChainID() == "D0")
 		{
 			saveAtomPositions();
+			int start = getAnchor() + 30;
+			int end = start + 15;
 			
-			for (int i = getAnchor() + 10; i < monomerEnd(); i += 3)
+			for (int i = start; i < end; i += 3)
 			{
 				refineAroundMonomer(i, target);
 			}
