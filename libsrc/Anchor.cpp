@@ -241,7 +241,12 @@ void Anchor::translateStartPositions()
 
 void Anchor::clearTwists()
 {
-
+	for (int i = 0; i < twistCount(); i++)
+	{
+		Twist::setTwist(&*_twists[i], 0.);
+	}
+	
+	propagateChange(-1, true);
 }
 
 void Anchor::sanityCheck()

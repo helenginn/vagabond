@@ -420,7 +420,7 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	std::cout << std::endl;
 
 	coreRegion->saveAtomPositions();
-	getAnchorModel()->propagateChange(-1, true);
+	clearTwists();
 	
 	AtomGroupPtr leftRegion = monomerRange(-1, anchor - 1);
 	AtomGroupPtr rightRegion = monomerRange(anchor, -1);
