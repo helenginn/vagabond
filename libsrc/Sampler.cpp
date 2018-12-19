@@ -42,6 +42,20 @@ void Sampler::addAtomsForBond(BondPtr bond)
 
 	int count = 0;
 	
+	/* Downstream bonds important if not backwards */
+	if (bond->downstreamBondGroupCount())
+	{
+		for (size_t j = 0; j < bond->downstreamBondGroupCount(); j++)
+		{
+			for (size_t i = 0; i < bond->downstreamBondCount(j); i++)
+			{
+				AtomPtr downAtom = bond->downstreamAtom(j, i);
+				addSampled(downAtom);
+				count++;
+			}
+		}
+	}
+
 	/* Stop if the bond has no parent */
 	if (!bond->getParentModel()->isBond())
 	{
@@ -77,26 +91,6 @@ void Sampler::addAtomsForBond(BondPtr bond)
 		count++;
 	}
 	
-	int start = 0;
-	
-	if (isBackwards(bond))
-	{
-		start = 1;
-	}
-	
-	/* Downstream bonds important if not backwards */
-	if (bond->downstreamBondGroupCount())
-	{
-		for (size_t j = 0; j < bond->downstreamBondGroupCount(); j++)
-		{
-			for (size_t i = start; i < bond->downstreamBondCount(j); i++)
-			{
-				AtomPtr downAtom = bond->downstreamAtom(j, i);
-				addSampled(downAtom);
-				count++;
-			}
-		}
-	}
 }
 
 void Sampler::addCustomParameter(void *object, Getter getter, Setter setter,
@@ -575,6 +569,7 @@ void Sampler::addSampled(AtomPtr atom)
 			return;
 		}
 	}
+
 	_sampled.push_back(atom);
 }
 
