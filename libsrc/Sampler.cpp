@@ -228,46 +228,6 @@ BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 		bool bw = isBackwards(bond);
 		
 		/* Go up the chain of parents if we should be going backwards */
-		if (bw)
-		{
-			ExplicitModelPtr parent = bond->getParentModel();
-			
-			if (false && parent->isAnchor() && _scoreType == ScoreTypeSavedPos)
-			{
-				AnchorPtr anch = ToAnchorPtr(parent);
-				addAnchorPosition(anch, 0.02, 0.002);
-
-				AtomPtr atom;
-				if (hasParameter(ParamOptionTTN))
-				{
-					atom = anch->getNAtom();
-				}
-				else if (hasParameter(ParamOptionTTC))
-				{
-					atom = anch->getCAtom();
-				}
-				
-				if (atom)
-				{
-					parent = ToBondPtr(atom->getModel());
-				}
-			}
-			
-			if (parent->isBond())
-			{
-				if (!topBond)
-				{
-					topBond = ToBondPtr(parent);
-				}
-
-				BondInt entry;
-				entry.bond = ToBondPtr(parent);
-				entry.num = num - 1;
-				
-				remaining.push_back(entry);
-			}
-		}
-
 		int start = bw ? 1 : 0;
 
 		for (int j = 0; j < bond->downstreamBondGroupCount(); j++)
