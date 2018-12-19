@@ -175,7 +175,7 @@ void StartScreen::makeButtons()
 	_allToggle.push_back(_cIntra);
 
 	height += 20;
-	_cCbAngles = new QCheckBox("using variable Cb angles", this);
+	_cCbAngles = new QCheckBox("using variable Cb angles (from PDB)", this);
 	_cCbAngles->setChecked(Options::_bondAngles > 0);
 	_cCbAngles->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
 	_allToggle.push_back(_cCbAngles);
