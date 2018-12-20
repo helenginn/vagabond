@@ -94,7 +94,6 @@ private:
 	void dialogueModify(void (*func)(double), std::string title, 
 	                    double _default = 100);
 	void splitBond();
-	void squeezeToEnd();
 	void refineToEnd();
 	void modelPosToEnd();
 	void sidechainsToEnd();

@@ -17,7 +17,6 @@ void MonomerExplorer::initialise(MonomerPtr monomer)
 	_bRefineDensity = NULL;
 	_bSidechainsToEnd = NULL;
 	_bRefineToEnd = NULL;
-	_bSqueezeToEnd = NULL;
 	_bModelPosToEnd = NULL;
 	_bSplitBond = NULL;
 	_lCorrel = NULL;
@@ -147,12 +146,6 @@ void MonomerExplorer::makeRefinementButtons()
 	_bRefineToEnd->setGeometry(250, 275, 150, 25);
 	_bRefineToEnd->show(); 
 	connect(_bRefineToEnd, SIGNAL(clicked()), this, SLOT(pushRefineToEnd()));
-
-	delete _bSqueezeToEnd;
-	_bSqueezeToEnd= new QPushButton("Squeeze to end", this);
-	_bSqueezeToEnd->setGeometry(250, 300, 150, 25);
-	_bSqueezeToEnd->show(); 
-	connect(_bSqueezeToEnd, SIGNAL(clicked()), this, SLOT(pushSqueezeToEnd()));
 
 	delete _bModelPosToEnd;
 	_bModelPosToEnd = new QPushButton("Model pos to end", this);
@@ -373,12 +366,6 @@ void MonomerExplorer::pushModelPosToEnd()
 {
 	Notifiable *notify = preparePolymer();
 	notify->setInstruction(InstructionTypeModelPosToEnd);
-}
-
-void MonomerExplorer::pushSqueezeToEnd()
-{
-	Notifiable *notify = preparePolymer();
-	notify->setInstruction(InstructionTypeSqueezeToEnd);
 }
 
 void MonomerExplorer::pushRefineToEnd()

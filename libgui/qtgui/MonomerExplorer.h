@@ -52,7 +52,6 @@ private slots:
 	void clickedAtomListItem();
 	void pushRefineDensity();
 	void pushSidechainsToEnd();
-	void pushSqueezeToEnd();
 	void pushModelPosToEnd();
 	void pushRefineToEnd();
 	void pushSplitBond();
