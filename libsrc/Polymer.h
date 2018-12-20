@@ -85,6 +85,7 @@ public:
 	int _whacked;
 	void whack();
 	void clearTwists();
+	void whackMonomer(MonomerPtr mon);
 	void refineAnchorPosition(CrystalPtr target);
 	AtomGroupPtr monomerRange(int start, int end);
 	void ramachandranPlot();
