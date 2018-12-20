@@ -26,7 +26,7 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 		return;
 	}
 	
-	if (rType == RefinementSidechain)
+	if (rType == RefinementSidechain || rType == RefinementCrude)
 	{
 		return;
 	}

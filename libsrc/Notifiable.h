@@ -29,6 +29,7 @@ typedef enum
 	InstructionTypeSetObjectValue,
 	InstructionTypeGetObjectValue,
 	InstructionTypePreviousState,
+	InstructionTypeRefineSidePos,
 	InstructionTypeFitTranslation,
 	InstructionTypeFindDisulphides,
 	InstructionTypeRefineIntramolecule,

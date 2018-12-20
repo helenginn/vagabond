@@ -35,6 +35,7 @@ typedef enum
 	RefinementWaterNetwork = 7,
 	RefinementMouse = 8, /** Refinement to mouse coordinates */
 	RefinementSavedPos = 9, /** Refinement to previously saved positions */
+	RefinementSidePos = 10, /** Only position params to sidechain density */
 } RefinementType; 
 
 
