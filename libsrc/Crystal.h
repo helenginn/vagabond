@@ -312,6 +312,7 @@ public:
 	void refinePolymers(RefinementType type);
 	void refinePositions();
 	void refineIntraMovements();
+	void refineSidechainPositions();
 	void refineSidechains();
 	void refineCrude();
 	

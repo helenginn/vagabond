@@ -22,12 +22,6 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
 	if (!canRefine()) return;
 	
-	if (rType == RefinementSidechain)
-	{
-		std::cout << getMonomer()->getResCode() << std::flush;
-		rType = RefinementFine;
-	}
-
 	if (!paramCount())
 	{
 		double range = 2.;
@@ -44,13 +38,15 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 			addParamType(ParamOptionNumBonds, 3);
 			break;
 
-			case RefinementFine:
-			addParamType(ParamOptionTorsion, 0.1);
-			addParamType(ParamOptionKick, 0.5);
-//			addParamType(ParamOptionMagicAngles, 20);
+			case RefinementSidePos:
+			addParamType(ParamOptionTorsion, 2.0);
 			addParamType(ParamOptionNumBonds, 3);
 			break;
 
+			case RefinementSidechain:
+			addParamType(ParamOptionTorsion, 0.1);
+			addParamType(ParamOptionKick, 0.5);
+			addParamType(ParamOptionNumBonds, 3);
 			break;
 
 			default:
@@ -65,7 +61,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 				addParamType(ParamOptionBondAngle, range / 1);
 				break;
 
-				case RefinementFine:
+				case RefinementSidechain:
 				addParamType(ParamOptionBondAngle, 0.1);
 
 				default:
@@ -74,6 +70,13 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		}
 	}
 
+	if (rType == RefinementSidechain || rType == RefinementSidePos)
+	{
+		std::cout << getMonomer()->getResCode() << std::flush;
+		rType = RefinementFine;
+	}
+
+	
 	MonomerPtr monomer = getMonomer();
 	BackbonePtr backbone = monomer->getBackbone();
 
