@@ -397,25 +397,8 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	coreRegion->addParamType(ParamOptionTwist, step);
 	coreRegion->addParamType(ParamOptionBondAngle, step);
 	coreRegion->addParamType(ParamOptionMaxTries, 1);
+	coreRegion->addIncludeForRefinement(coreRegion);
 	coreRegion->refine(target, RefinementCrude);
-
-	std::cout << " Refining sidechains: ";
-
-	for (int i = coreStart; i <= coreEnd; i++)
-	{
-		if (!getMonomer(i))
-		{
-			continue;
-		}
-		
-		SidechainPtr side = getMonomer(i)->getSidechain();
-		side->addParamType(ParamOptionTorsion, step);
-		side->addParamType(ParamOptionBondAngle, step);
-		side->addParamType(ParamOptionNumBonds, 4);
-		side->refine(target, RefinementSidechain);
-	}
-	
-	std::cout << "." << std::flush;
 
 	coreRegion->saveAtomPositions();
 	clearTwists();
@@ -671,20 +654,21 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 	}
 	else if (rType == RefinementCrude)
 	{
-		if (getChainID() == "C0")
+		Timer timer("positions to density", true);
+		saveAtomPositions();
+		double before = -scoreWithMap(ScoreTypeCorrel, target);
+		int start = monomerBegin() + 5;
+		int end = monomerEnd() - 5;
+
+		for (int i = start; i < end; i += 3)
 		{
-			Timer timer("positions to density", true);
-			saveAtomPositions();
-			int start = monomerBegin() + 5;
-			int end = monomerEnd() - 5;
-			
-			for (int i = start; i < end; i += 3)
-			{
-				refineAroundMonomer(i, target);
-			}
-			
-			timer.report();
+			refineAroundMonomer(i, target);
 		}
+		double after = -scoreWithMap(ScoreTypeCorrel, target);
+
+		std::cout << "Overall CC " << before * 100 << " to "
+		<< after * 100 << "%." << std::endl;
+		timer.report();
 
 		return;
 	}
