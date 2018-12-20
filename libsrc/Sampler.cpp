@@ -64,11 +64,6 @@ void Sampler::addAtomsForBond(BondPtr bond)
 
 	BondPtr parent = ToBondPtr(bond->getParentModel());
 
-	if (isBackwards(bond))
-	{
-		addSampled(parent->getMajor());
-	}
-
 	int group = -1;
 	int num = parent->downstreamBondNum(&*bond, &group);
 	
@@ -134,14 +129,6 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 
 			case ParamOptionTwist:
 			addTwist(bond, range * mult, tol);
-			break;
-
-			case ParamOptionTTN:
-			addTT(bond, range * mult, tol);
-			break;
-
-			case ParamOptionTTC:
-			addTT(bond, range * mult, tol);
 			break;
 
 			case ParamOptionBondAngle:
@@ -218,16 +205,11 @@ BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 		{
 			addParamsForBond(bond, (num % 2));
 		}
-		
-		bool bw = isBackwards(bond);
-		
-		/* Go up the chain of parents if we should be going backwards */
-		int start = bw ? 1 : 0;
 
 		for (int j = 0; j < bond->downstreamBondGroupCount(); j++)
 		{
 			/* Take the chosen group and check for futures */
-			for (int i = start; i < bond->downstreamBondCount(j); i++)
+			for (int i = 0; i < bond->downstreamBondCount(j); i++)
 			{
 				AtomPtr downstreamAtom = bond->downstreamAtom(j, i);
 				BondPtr nextBond = ToBondPtr(downstreamAtom->getModel());
@@ -323,50 +305,6 @@ void Sampler::addOccupancy(BondPtr bond, double range, double interval)
 	"occupancy");
 
 	_bonds.push_back(bond);
-}
-
-bool Sampler::isBackwards(BondPtr bond)
-{
-	if (!hasParameter(ParamOptionTTN) && !hasParameter(ParamOptionTTC))
-	{
-		return false;
-	}
-
-	AtomPtr atom = bond->getMinor();
-
-	if (!atom->getMolecule()->isPolymer())
-	{
-		return false;
-	}
-	
-	int anchor = ToPolymerPtr(atom->getMolecule())->getAnchor();
-	
-	int backwards = true;
-	if (bond->getMinor()->getResidueNum() < anchor)
-	{
-		backwards = false;
-	}
-	
-	if (!hasParameter(ParamOptionTTN))
-	{
-		backwards = !backwards;
-	}
-
-	return backwards;
-}
-
-void Sampler::addTT(BondPtr bond, double range, double interval)
-{
-	bool twist = isBackwards(bond);
-
-	if (twist)
-	{
-		addTwist(bond, range, interval);
-	}
-	else
-	{
-		addTorsion(bond, range, interval);
-	}
 }
 
 void Sampler::addTwist(BondPtr bond, double range, double interval)
