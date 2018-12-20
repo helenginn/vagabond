@@ -498,6 +498,8 @@ void Knotter::makeArginine()
 	ne2cz->activate();
 
 	BondPtr ce2nh1= BondPtr(new Bond(cOmega, nOmega1));
+	ce2nh1->setFixed(true);
+	Bond::setTorsion(&*ce2nh1, deg2rad(180));
 	BondPtr ce2nh2 = BondPtr(new Bond(cOmega, nOmega2));
 	ce2nh1->activate();
 	ce2nh2->activate();
