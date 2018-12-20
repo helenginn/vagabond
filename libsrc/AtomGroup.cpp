@@ -620,16 +620,6 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		maxTries = 1;
 		break;
 
-		case RefinementModelRMSDZero:
-		scoreType = ScoreTypeModelRMSDZero;
-		maxTries = 10;
-		break;
-
-		case RefinementRMSDZero:
-		scoreType = ScoreTypeRMSDZero;
-		maxTries = 10;
-		break;
-
 		default:
 		shout_at_helen("Unimplemented refinement option?");
 		break;
@@ -691,8 +681,6 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 			    || rType == RefinementSavedPos 
 			    || rType == RefinementFine 
 			    || rType == RefinementCrude 
-			    || rType == RefinementModelRMSDZero
-			    || rType == RefinementRMSDZero
 			    || rType == RefinementMouse)
 			{
 				setSilent();

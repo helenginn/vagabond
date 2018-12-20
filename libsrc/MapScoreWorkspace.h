@@ -28,9 +28,7 @@ typedef enum
 	ScoreTypeCorrel = 0, /** Correlation between map and model density */
 	ScoreTypeMultiply = 1, /** Weighted (by model) average of map voxels */
 	ScoreTypeRFactor = 2, /** R factor in real space for electron density */
-	ScoreTypeModelRMSDZero = 3, /** All ensemble positions against PDB */
 	ScoreTypeModelPos = 5, /** Average ensemble position against PDB */
-	ScoreTypeRMSDZero = 6, /** Sum of squares of anisotropic tensor */
 	ScoreTypeAddDensity = 7, /** Sum of map voxels if model positive */
 	ScoreTypeAddVoxels = 8, /** Number of map voxels if model positive */
 	ScoreTypeHappiness = 9, /** Like CC but a reward function */

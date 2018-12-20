@@ -22,11 +22,6 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
 	if (!canRefine()) return;
 	
-	if (rType == RefinementRMSDZero)
-	{
-		return;
-	}
-	
 	if (rType == RefinementSidechain)
 	{
 		std::cout << getMonomer()->getResCode() << std::flush;
@@ -56,9 +51,6 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 			addParamType(ParamOptionNumBonds, 3);
 			break;
 
-			case RefinementRMSDZero:
-			addParamType(ParamOptionMagicAngles, 3);
-			addParamType(ParamOptionNumBonds, 4);
 			break;
 
 			default:

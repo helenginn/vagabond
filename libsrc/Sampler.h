@@ -30,9 +30,7 @@ typedef enum
 	RefinementCrude = 0, /** Refinement from far soln against ED */
 	RefinementFine = 1, /** Refinement against electron density */
 	RefinementSidechain = 2, /** Sidechains against electron density */
-	RefinementModelRMSDZero = 3, /** Squeeze protein chain to PDB positions */
 	RefinementModelPos = 4, /** Positions to PDB positions */
-	RefinementRMSDZero = 5, /** Squeeze protein chain to minimise flexibility */
 	RefinementCentroid = 6, /** Refine centroid to PDB centroid */
 	RefinementWaterNetwork = 7,
 	RefinementMouse = 8, /** Refinement to mouse coordinates */

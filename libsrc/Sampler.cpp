@@ -745,14 +745,6 @@ double Sampler::getScore()
 				oneScore = _sampled[i]->posToMouse();
 				break;
 				
-				case ScoreTypeModelRMSDZero:
-				oneScore = _sampled[i]->getBFactor();
-				break;
-				
-				case ScoreTypeRMSDZero:
-				oneScore = _sampled[i]->getModel()->smallness();
-				break;
-				
 				default:
 				break;
 			}
