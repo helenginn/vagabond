@@ -69,7 +69,6 @@ public:
 	void addTorsion(BondPtr bond, double range, double interval);
 
 	void addTwist(BondPtr bond, double range, double interval);
-	void addTT(BondPtr bond, double range, double interval);
 
 	/**
 	* Add torsion blur (kick function) to sampled parameters
@@ -194,8 +193,7 @@ protected:
 	void setupCloseAtoms();
 	void setupScoreWithMap();
 	void addAtomsForBond(BondPtr bond);
-	bool isBackwards(BondPtr bond);
-	
+
 	double getParameter(ParamOptionType type)
 	{
 		return _params[type];
