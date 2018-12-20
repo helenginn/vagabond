@@ -135,6 +135,8 @@ void VagWindow::makeMenu()
 	         InstructionTypeFitTranslation);
 	menuItem(mRefine, "Intramolecule movements",
 	         InstructionTypeRefineIntramolecule);
+	menuItem(mRefine, "Sidechain positions to density", 
+	         InstructionTypeRefineSidePos);
 	menuItem(mRefine, "Sidechains to density",
 	         InstructionTypeRefineDensity);
 	menuItem(mRefine, "Recalculate FFT",
@@ -304,6 +306,11 @@ int VagWindow::waitForInstructions()
 
 				case InstructionTypeFindDisulphides:
 				options->findDisulphides();
+				break;
+				
+				case InstructionTypeRefineSidePos:
+				crystal->refineSidechainPositions();
+				options->recalculateFFT();
 				break;
 
 				case InstructionTypeRefineIntramolecule:
