@@ -452,6 +452,8 @@ void Options::writeCommandLine()
 	{
 		std::cout << "-gui";
 	}
+	
+	std::cout << " ";
 
 	for (int i = 0; i < arguments.size(); i++)
 	{
