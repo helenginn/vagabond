@@ -213,17 +213,6 @@ void Polymer::whack()
 		whackMonomer(getMonomer(i));
 	}
 
-
-	for (int i = 0; i < monomerCount(); i++)
-	{
-		if (!getMonomer(i))
-		{
-			continue;
-		}
-
-		whackMonomer(getMonomer(i));
-	}
-
 	getAnchorModel()->propagateChange(-1, true);
 }
 
