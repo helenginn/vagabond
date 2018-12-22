@@ -122,6 +122,11 @@ bool Polymer::isWhacking()
 
 void Polymer::whackMonomer(MonomerPtr mon)
 {
+	if (!mon)
+	{
+		return;
+	}
+	
 	AtomList atoms = mon->getBackbone()->topLevelAtoms();
 	atoms = mon->findAtoms("CA");
 	AnchorPtr anchor = getAnchorModel();
@@ -197,6 +202,17 @@ void Polymer::whack()
 	}
 
 	std::cout << "Whacking chain " << getChainID() << std::endl;
+	
+	for (int i = getAnchor(); i < monomerEnd(); i++)
+	{
+		whackMonomer(getMonomer(i));
+	}
+
+	for (int i = getAnchor() - 1; i >= monomerBegin(); i--)
+	{
+		whackMonomer(getMonomer(i));
+	}
+
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
