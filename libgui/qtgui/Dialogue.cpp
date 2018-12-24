@@ -49,8 +49,11 @@ void Dialogue::returnClicked()
 	if (_func != NULL)
 	{
 		double val = atof(text.c_str());
-		(*_func)(val);
+		_window->setSetter(_func, val);
+		_window->setInstruction(InstructionTypeSetObjectValue);
+		_window->wakeup();
 		this->hide();
+		_func = NULL;
 		
 		return;
 	}

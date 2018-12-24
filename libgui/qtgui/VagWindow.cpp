@@ -81,7 +81,7 @@ void VagWindow::makeMenu()
 	
 	QAction *samples = model->addAction(tr("Change model sampling..."));
 	connect(samples, &QAction::triggered,
-			[=]{ dialogueModify(Options::setNSamples, 
+			[=]{ dialogueModify(Options::changeSamplesAndFit, 
 			                    "No. samples in ensemble:"); });
 	actions.push_back(samples);
 	
@@ -155,7 +155,7 @@ void VagWindow::refitBackbone()
 	_myDialogue->show();
 }
 
-void VagWindow::dialogueModify(SimpleSet set, std::string title,
+void VagWindow::dialogueModify(Setter set, std::string title,
                                double _default)
 {
 	delete _myDialogue;
