@@ -7,7 +7,6 @@
 //
 
 #include "WaterNetwork.h"
-#include "WaterCluster.h"
 #include "Crystal.h"
 #include "Atom.h"
 
