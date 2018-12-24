@@ -1024,6 +1024,7 @@ void Crystal::setAnchors()
 
 Crystal::Crystal()
 {
+	_probeRadius = 0.;
 	_silent = false;
 	_largestNum = -INT_MAX;
 	_realBFactor = -1;
@@ -1297,6 +1298,7 @@ void Crystal::addProperties()
 	addDoubleProperty("cc_work", &_ccWork);
 	addDoubleProperty("cc_free", &_ccFree);
 	addDoubleProperty("real_b_factor", &_realBFactor);
+	addDoubleProperty("probe_radius", &_probeRadius);
 //	addStringProperty("comments", &_comments);
 	addIntProperty("cycles_since_best", &_sinceBestNum);
 	addIntProperty("sample_num", &_sampleNum);
@@ -1682,6 +1684,23 @@ void Crystal::differenceAttribution()
 	std::cout << "---------------------------------------------------" 
 	<< std::endl;
 	std::cout << std::endl;
+}
+
+double Crystal::getProbeRadius()
+{
+	if (Options::getProbeRadius() >= 0)
+	{
+		_probeRadius = Options::getProbeRadius();
+		Options::setProbeRadius(NULL, -1);
+	}
+	
+	if (_probeRadius < 0)
+	{
+		_probeRadius = 0.0;
+	}
+	
+	return _probeRadius;
+
 }
 
 double Crystal::getRealBFactor()

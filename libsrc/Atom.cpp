@@ -343,6 +343,8 @@ void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
 		return;
 	}
 	
+	radius += Options::getActiveCrystal()->getProbeRadius();
+
 	vec3 pos = getAbsolutePosition();
 	mat3x3_mult_vec(unit_cell, &pos);
 

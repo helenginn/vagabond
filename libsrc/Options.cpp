@@ -30,6 +30,7 @@ double Options::_bSubt = -1;
 double Options::_bReal = -1;
 double Options::_minRes = 0.0;
 double Options::_maxRes = -1.0;
+double Options::_probeRadius = -0.1;
 bool Options::_useRFree = true;
 int Options::_enableTests = 3;
 int Options::_bondAngles = 1;
@@ -497,6 +498,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "--bfactor=", &_bStart);
 		understood |= parseParameter(arg, "--bond-angles=", &_bondAngles);
 		understood |= parseParameter(arg, "--nsamples=", &_nSamples);
+		understood |= parseParameter(arg, "--probe-radius=", &_probeRadius);
 		understood |= parseParameter(arg, "--ncycles=", &_nCycles);
 		understood |= parseParameter(arg, "--global-b=", &_bReal);
 		understood |= parseParameter(arg, "--kick=", &_kick);

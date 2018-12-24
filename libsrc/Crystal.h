@@ -344,6 +344,8 @@ public:
 	 * atoms. */
 	double getRealBFactor();
 	
+	double getProbeRadius();
+
 	std::vector<AtomPtr> getHydrogenBonders();
 	
 	/** Returns the maximum resolution. Diffraction data as the input
@@ -408,6 +410,7 @@ private:
 	double _bestRWork;
 	
 	double _realBFactor;
+	double _probeRadius;
 
 	int _sinceBestNum;
 	int _cycleNum;

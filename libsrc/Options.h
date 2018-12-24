@@ -325,6 +325,7 @@ private:
 	static double _bStart;
 	static double _sampling;
 	static int _nSamples;
+	static double _probeRadius;
 	std::string _diffMatrix;
 	std::string _outputDir;
 	static double _minRes;
