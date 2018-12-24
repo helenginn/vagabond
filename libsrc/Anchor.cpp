@@ -92,6 +92,12 @@ void Anchor::createStartPositions(Atom *callAtom)
 
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	int totalPoints = crystal->getSampleNum();
+	totalPoints -= 1;
+	
+	if (totalPoints < 0)
+	{
+		totalPoints = 0;
+	}
 
 	double totalSurfaces = 0;
 	int layers = 10;
