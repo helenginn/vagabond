@@ -8,7 +8,6 @@
 
 #include "shared_ptrs.h"
 #include "Bucket.h"
-#include "Plucker.h"
 #include "Molecule.h"
 #include "Atom.h"
 #include "Absolute.h"

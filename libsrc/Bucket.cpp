@@ -19,7 +19,6 @@
 #include "Diffraction.h"
 #include "CSV.h"
 #include "Options.h"
-#include "Plucker.h"
 
 #define CHECK_DISTANCE_STEP 0.30
 
