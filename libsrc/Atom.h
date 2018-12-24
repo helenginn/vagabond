@@ -26,8 +26,6 @@
  * single ATOM or HETATM line from a PDB.
  */
 
-class Plucker;
-
 class Atom : public Parser
 {
 public:
@@ -284,8 +282,6 @@ public:
 	double getDistanceFrom(Atom *other, int nSample = -1, bool quick = false);
 	static double getAngle(AtomPtr atom1, AtomPtr atom2, AtomPtr atom3);
 	
-	size_t pluckCount();
-	
 	void setWater(int set = 1)
 	{
 		_isWater = set;
@@ -341,7 +337,6 @@ public:
 		_weightOnly = mult;
 	}
 	
-	Atom *pluckAnother();
 	vec3 getPositionInAsu();
 protected:
 	virtual std::string getClassName()
@@ -388,8 +383,6 @@ private:
 	double _targetWeight;
 
 	AtomType _geomType;
-	
-	Plucker *_waterPlucker;
 };
 
 #endif /* defined(__vagabond__Atom__) */

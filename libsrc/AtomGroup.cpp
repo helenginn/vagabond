@@ -518,33 +518,6 @@ void AtomGroup::addAtom(AtomPtr atom)
 	}
 }
 
-Plucker *AtomGroup::makePluckableWaters()
-{
-	Plucker *plucker = new Plucker();
-	plucker->setGranularity(0.2);
-
-	for (int i = 0; i < atomCount(); i++)
-	{
-		AtomPtr atm = atom(i);
-
-		if (!atm->isHeteroAtom() || !(atm->getAtomName() == "O"))
-		{
-			continue;
-		}
-
-		// we have a water
-		atm->cacheCloseWaters(4.);
-
-		if (atm->pluckCount())
-		{
-			double occupancy = atm->getModel()->getEffectiveOccupancy();
-			plucker->addPluckable(&*atm, occupancy);
-		}
-	}
-
-	return plucker;
-}
-
 
 AtomPtr AtomGroup::getClosestAtom(CrystalPtr crystal, vec3 pos)
 {

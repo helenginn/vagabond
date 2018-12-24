@@ -19,8 +19,6 @@
 #include <map>
 #include <climits>
 
-class Plucker;
-
 /**
  * \class AtomGroup
  * \brief AtomGroup looks after the concept of any sensible group of Atoms,
@@ -50,7 +48,6 @@ public:
 	static double scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	                                  bool plot = false);
 
-	Plucker *makePluckableWaters();
 
 	void setMonomer(MonomerPtr monomer)
 	{
