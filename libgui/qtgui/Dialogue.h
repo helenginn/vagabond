@@ -18,6 +18,7 @@
 #include <QtWidgets/qlabel.h>
 #include <QtWidgets/qlineedit.h>
 #include <QtWidgets/qmainwindow.h>
+#include "../../libsrc/shared_ptrs.h"
 
 class VagWindow;
 
@@ -27,8 +28,6 @@ typedef enum
 	DialogueBMultiplier,
 	DialogueRefit,
 } DialogueType;
-
-typedef void (*SimpleSet)(double);
 
 class Dialogue : public QMainWindow
 {
@@ -54,22 +53,18 @@ public:
 		_type = type;
 	}
 
-	void setFunction(void (*func)(double))
+	void setFunction(Setter func)
 	{
 		_func = func;
 	}
 	
-	SimpleSet getFunction()
-	{
-		return _func;
-	}
 private slots:
 	void returnClicked();
 
 private:
 	VagWindow *_window;
 	DialogueType _type;
-	SimpleSet _func;
+	Setter _func;
 };
 
 #endif /* defined(__CaroCode__QTinker__) */

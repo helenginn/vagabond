@@ -91,7 +91,7 @@ private:
 	ErroneousZone *_errorExplorer;
 	QFileDialog *_fileDialogue;   
 
-	void dialogueModify(void (*func)(double), std::string title, 
+	void dialogueModify(Setter set, std::string title, 
 	                    double _default = 100);
 	void splitBond();
 	void refineToEnd();
