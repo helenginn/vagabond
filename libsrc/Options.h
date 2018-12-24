@@ -311,7 +311,6 @@ private:
 	int _globalCount;
 	bool _tie;
 	bool _manual;
-	std::string _scriptName;
 	
 	std::string _modelFile;
 	std::string _mtzFile;
