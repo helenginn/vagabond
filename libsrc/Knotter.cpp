@@ -498,8 +498,6 @@ void Knotter::makeArginine()
 	ne2cz->activate();
 
 	BondPtr ce2nh1= BondPtr(new Bond(cOmega, nOmega1));
-	ce2nh1->setFixed(true);
-	Bond::setTorsion(&*ce2nh1, deg2rad(180));
 	BondPtr ce2nh2 = BondPtr(new Bond(cOmega, nOmega2));
 	ce2nh1->activate();
 	ce2nh2->activate();
@@ -556,13 +554,11 @@ void Knotter::makeProline()
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->setRefineFlexibility(false);
-	cb2cg->setFixed(true);
 	ca2cb->addExtraTorsionSample(cGamma);
 	cb2cg->activate();
 
 	BondPtr cg2cd = BondPtr(new Bond(cGamma, cDelta));
 	cg2cd->setRefineFlexibility(false);
-	cg2cd->setFixed(true);
 	ca2cb->addExtraTorsionSample(cDelta);
 	cg2cd->activate();
 }
