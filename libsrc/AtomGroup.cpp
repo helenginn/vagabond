@@ -19,7 +19,6 @@
 #include <iomanip>
 #include "CSV.h"
 #include "maths.h"
-#include "Plucker.h"
 #include "Shouter.h"
 #include "../libccp4/ccp4_spg.h"
 #include "Options.h"
