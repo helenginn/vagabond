@@ -60,7 +60,7 @@ void GLKeeper::updateCamera(void)
 {
 	vec3 alteration = activeObject()->fixCentroid(_totalCentroid);
 	_totalCentroid = activeObject()->getCentroid();
-
+	
 	vec3 centre = _centre;
 	centre.x = 0;
 	centre.y = 0;
