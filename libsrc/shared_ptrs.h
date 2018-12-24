@@ -229,6 +229,8 @@ typedef enum
 	ScalingTypeAbs = 2,
 } ScalingType;
 
+typedef double (*Getter)(void *);
+typedef void (*Setter)(void *, double newValue);
 
 
 #endif
