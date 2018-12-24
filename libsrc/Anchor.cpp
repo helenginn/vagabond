@@ -124,6 +124,8 @@ void Anchor::createStartPositions(Atom *callAtom)
 	double increment = M_PI * (3.0 - sqrt(5));
 
 	_sphereAngles.clear();
+	vec3 sum = empty_vec3();
+	double count = 0;
 
 	for (int j = 0; j < layers; j++)
 	{
@@ -143,25 +145,32 @@ void Anchor::createStartPositions(Atom *callAtom)
 			double z = sin(phi) * r;
 
 			vec3 point = make_vec3(x * m, y * m, z * m);
+			vec3_add_to_vec3(&sum, point);
 
 			points.push_back(point);
 			_sphereAngles.push_back(point);
+			count++;
 		}
+	}
+	
+	vec3_mult(&sum, 1 / count);
+	
+	for (int i = 0; i < _sphereAngles.size(); i++)
+	{
+		vec3_subtract_from_vec3(&_sphereAngles[i], sum);
 	}
 	
 	bool isN = (callAtom == &*(_nAtom.lock()));
 	
-	/* Dir-mat are directions of immediately preceding/subsequent atoms,
-	 * Dir2-mat are the directions of the second preceding/subsequent atoms */
-	mat3x3 dirMat = getAnchorMatrix(1);
-	mat3x3 dir2Mat = getAnchorMatrix(0);
+	/* Get the rotation matrix for alpha, beta, gamma modifications */
+	mat3x3 rot = getAnchorRotation();
 
 	/* Want the direction to be the opposite of the calling bond */
-	vec3 direction = isN ? mat3x3_axis(dirMat, 1) : mat3x3_axis(dirMat, 0);
-	vec3 other = isN ? mat3x3_axis(dir2Mat, 1) : mat3x3_axis(dir2Mat, 0);
+	vec3 direction = isN ? _cDir : _nDir;
+	vec3 other = isN ? _cDir2 : _nDir2;
 	
-	vec3_set_length(&direction, isN ? vec3_length(_cDir) : vec3_length(_nDir));
-	vec3_set_length(&other, isN ? vec3_length(_cDir2) : vec3_length(_nDir2));
+	mat3x3_mult_vec(rot, &direction);
+	mat3x3_mult_vec(rot, &other);
 	
 	vec3 empty = empty_vec3();
 
@@ -223,23 +232,12 @@ void Anchor::rotateBases()
 	}
 }
 
-mat3x3 Anchor::getAnchorMatrix(bool dir1)
+mat3x3 Anchor::getAnchorRotation()
 {
 	mat3x3 mat = make_mat3x3();
 	mat3x3 rot = mat3x3_rotate(_alpha, _beta, _gamma);
-
-	if (dir1)
-	{
-		mat = mat3x3_rhbasis(_nDir, _cDir);
-	}
-	else
-	{
-		mat = mat3x3_rhbasis(_nDir2, _cDir2);
-	}
 	
-	mat3x3 final_mat = mat3x3_mult_mat3x3(mat, rot);
-	
-	return final_mat;
+	return rot;
 }
 
 void Anchor::translateStartPositions()
