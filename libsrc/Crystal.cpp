@@ -1077,7 +1077,7 @@ void Crystal::vsChangeSampleSize(void *object, double n)
 	Parser *parser = static_cast<Parser *>(object);
 	Crystal *crystal = dynamic_cast<Crystal *>(parser);
 
-	Options::getRuntimeOptions()->setNSamples(n);
+	Options::getRuntimeOptions()->setNSamples(NULL, n);
 }
 
 void Crystal::makePDBs(std::string suffix)
@@ -1564,7 +1564,7 @@ int Crystal::getSampleNum()
 	if (Options::getNSamples() >= 0)
 	{
 		_sampleNum = Options::getNSamples();
-		Options::setNSamples(-1);
+		Options::setNSamples(NULL, -1);
 	}
 
 	if (_sampleNum < 0) 
@@ -1803,4 +1803,30 @@ double Crystal::averageBFactor()
 	}
 	
 	return ave/count;
+}
+
+void Crystal::savePositions()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		molecule(i)->saveAtomPositions();
+	}
+}
+
+void Crystal::rigidBodyFit()
+{
+	std::cout << "Refitting positions." << std::endl;
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (molecule(i)->isPolymer())
+		{
+			PolymerPtr pol = ToPolymerPtr(molecule(i));
+			for (int j = 0; j < 2; j++)
+			{
+				pol->getAnchorModel()->propagateChange(-1, true);
+				pol->refineAnchorPosition(shared_from_this());
+				pol->refine(shared_from_this(), RefinementSavedPos);
+			}
+		}
+	}
 }

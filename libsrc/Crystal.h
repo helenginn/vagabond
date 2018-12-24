@@ -315,6 +315,8 @@ public:
 	void refineSidechainPositions();
 	void refineSidechains();
 	void refineCrude();
+	void savePositions();
+	void rigidBodyFit();
 	
 	double getRWork()
 	{

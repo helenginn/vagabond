@@ -906,7 +906,7 @@ void FlexLocal::scanBondParams()
 	timer.quickReport();
 	std::cout << std::endl;
 
-	Options::setNSamples(samples);
+	Options::setNSamples(NULL, samples);
 }
 
 void FlexLocal::propagateWhack()
