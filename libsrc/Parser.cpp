@@ -439,6 +439,11 @@ void Parser::restoreState(int num)
 	for (ParserMap::iterator it = _allParsers.begin();
 	     it != _allParsers.end(); it++) 
 	{
+		if (it->second.expired())
+		{
+			continue;
+		}
+
 		it->second.lock()->_restored = false;
 	}
 
