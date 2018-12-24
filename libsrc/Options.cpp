@@ -212,11 +212,11 @@ void Options::executeProtocol()
 		}
 	}
 	
-	for (int i = 0; i < 3 && _far; i++)
+	for (int i = 0; i < 5 && _far; i++)
 	{
 		recalculateFFT();
 		std::cout << "Refining positions to density (" << 
-		i + 1 << " / 3)" << std::endl;
+		i + 1 << " / 5)" << std::endl;
 		crystal->refineCrude();
 	}
 	
