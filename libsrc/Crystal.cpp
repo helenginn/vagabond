@@ -151,8 +151,6 @@ void Crystal::realSpaceClutter(double maxRes)
 			Options::setProteinSampling(sampling);
 		}
 		
-		if (sampling >= 1) sampling = 1;
-
 		/* Now create the FFT */
 		_fft = FFTPtr(new FFT());
 		_difft = FFTPtr(new FFT());
