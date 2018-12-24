@@ -26,7 +26,8 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 		return;
 	}
 	
-	if (rType == RefinementSidechain || rType == RefinementCrude)
+	if (rType == RefinementSidechain || rType == RefinementCrude ||
+	    rType == RefinementSidePos)
 	{
 		return;
 	}
@@ -50,6 +51,12 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 		switch (rType)
 		{
 			case RefinementModelPos:
+			addParamType(ParamOptionTorsion, range);
+			addParamType(ParamOptionBondAngle, range / 1);
+			addParamType(ParamOptionNumBonds, 3);
+			break;
+			
+			case RefinementSavedPos:
 			addParamType(ParamOptionTorsion, range);
 			addParamType(ParamOptionBondAngle, range / 1);
 			addParamType(ParamOptionNumBonds, 3);

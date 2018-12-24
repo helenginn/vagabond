@@ -112,12 +112,12 @@ void Crystal::refinePositions()
 
 void Crystal::refineSidechains()
 {
-	refinePolymers(RefinementSidePos);
+	refinePolymers(RefinementSidechain);
 }
 
 void Crystal::refineSidechainPositions()
 {
-	refinePolymers(RefinementSidechain);
+	refinePolymers(RefinementSidePos);
 }
 
 void Crystal::refineIntraMovements()
