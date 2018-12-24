@@ -17,7 +17,6 @@
 #include "Element.h"
 #include "Monomer.h"
 #include "Polymer.h"
-#include "Plucker.h"
 #include <iomanip>
 #include "FileReader.h"
 #include <sstream>
@@ -29,7 +28,6 @@
 Atom::Atom()
 {
 	_asu = -1;
-	_waterPlucker = NULL;
 	_initialPosition = make_vec3(0, 0, 0);
 	_pdbPosition = make_vec3(0, 0, 0);
 	_ellipsoidLongestAxis = make_vec3(0, 0, 0);
@@ -640,36 +638,6 @@ std::string Atom::getPDBContribution(int ensembleNum)
 	return stream.str();
 }
 
-void Atom::cacheCloseWaters(double tolerance)
-{
-	if (_waterPlucker != NULL)
-	{
-		delete _waterPlucker;
-		_waterPlucker = NULL;
-	}
-	
-	_waterPlucker = new Plucker();
-	_waterPlucker->setGranularity(0.2);
-	
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	
-	std::vector<AtomPtr> atoms = crystal->getCloseAtoms(shared_from_this(),
-	                                                    tolerance);
-	
-	for (int i = 0; i < atoms.size(); i++)
-	{
-		AtomPtr atm = atoms[i];
-		
-		if (atm->getAtomName() != "O")
-		{
-			continue;
-		}
-		
-		double occ = atm->getModel()->getEffectiveOccupancy();
-		_waterPlucker->addPluckable(&*atm, occ);
-	}
-}
-
 std::string Atom::shortDesc()
 {
 	if (!getMonomer())
@@ -823,26 +791,6 @@ double Atom::getDistanceFrom(Atom *other, int nSample, bool quick)
 	double dist = vec3_length(apart);
 	
 	return dist;
-}
-
-Atom *Atom::pluckAnother()
-{
-	if (_waterPlucker == NULL)
-	{
-		return NULL;
-	}
-	
-	return static_cast<Atom *>(_waterPlucker->pluck());
-}
-
-size_t Atom::pluckCount()
-{
-	if (_waterPlucker == NULL)
-	{
-		return 0;
-	}
-
-	return _waterPlucker->pluckCount();
 }
 
 void Atom::writePositionsToFile(std::string suffix)
