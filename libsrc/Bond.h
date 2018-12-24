@@ -187,8 +187,12 @@ public:
 	static void setTorsion(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		bond->_torsion = value;
-		static_cast<Bond *>(object)->propagateChange(16);
+		
+		if (!bond->_disabled)
+		{
+			bond->_torsion = value;
+			static_cast<Bond *>(object)->propagateChange(16);
+		}
 	}
 
 	static double getMagicPsi(void *object)
