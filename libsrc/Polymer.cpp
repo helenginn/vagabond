@@ -668,8 +668,8 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 		Timer timer("positions to density", true);
 		saveAtomPositions();
 		double before = -scoreWithMap(ScoreTypeCorrel, target);
-		int start = monomerBegin() + 5;
-		int end = monomerEnd() - 5;
+		int start = monomerBegin() + 0;
+		int end = monomerEnd() - 0;
 
 		for (int i = start; i < end; i += 3)
 		{
