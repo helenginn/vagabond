@@ -916,3 +916,21 @@ void Options::refitBackbone(int start, int end)
 	PolymerPtr poly = ToPolymerPtr(molecule);
 	poly->refitBackbone(start, end);
 }
+
+
+void Options::changeSamplesAndFit(void *, double n)
+{
+	int old = getNSamples();
+
+	std::cout << "Called setting N samples" << std::endl;
+
+	getActiveCrystal()->savePositions();
+	setNSamples(NULL, n);
+	
+	if (old < 80 || n < 80)
+	{
+		getActiveCrystal()->rigidBodyFit();
+	}
+
+	std::cout << "Done" << std::endl;
+}

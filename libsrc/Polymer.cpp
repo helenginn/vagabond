@@ -965,7 +965,7 @@ void Polymer::refitBackbone(int start_, int end_)
 	
 	/* Lower the number of samples */
 	int samples = getAnchorModel()->getFinalPositions().size();
-	Options::setNSamples(0);
+	Options::setNSamples(NULL, 0);
 	refreshPositions();
 	
 	int start = start_;
@@ -1000,7 +1000,7 @@ void Polymer::refitBackbone(int start_, int end_)
 
 	std::cout << "Return number of samples" << std::endl;
 	/* Repair the number of samples */
-	Options::setNSamples(samples);
+	Options::setNSamples(NULL, samples);
 	refreshPositions();
 }
 

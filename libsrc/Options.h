@@ -132,8 +132,19 @@ public:
 		return _nSamples;
 	}
 	
-	template <class T>
-	static void setNSamples(T n)
+	static void setProbeRadius(void *, double r)
+	{
+		_probeRadius = r;
+	}
+	
+	static double getProbeRadius()
+	{
+		return _probeRadius;
+	}
+	
+	static void changeSamplesAndFit(void *object, double n);
+
+	static void setNSamples(void *, int n)
 	{
 		_nSamples = n;
 	}

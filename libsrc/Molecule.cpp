@@ -412,3 +412,8 @@ void Molecule::chelate(std::string element, double bufferB)
 		std::cout << "Chelated " << chelate->shortDesc() << std::endl;
 	}
 }
+
+void Molecule::rigidBodyFit()
+{
+	std::cout << "Dud." << std::endl;
+}

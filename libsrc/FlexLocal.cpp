@@ -760,7 +760,10 @@ void FlexLocal::scanBondParams()
 	ExplicitModelPtr model = _polymer->getAnchorModel();
 	int samples = model->getFinalPositions().size();
 
-	Options::setNSamples(32);
+	if (samples > 32)
+	{
+		Options::setNSamples(NULL, 32);
+	}
 	_polymer->refreshPositions();
 
 	Timer timer;
@@ -908,7 +911,7 @@ void FlexLocal::scanBondParams()
 	timer.quickReport();
 	std::cout << std::endl;
 
-	Options::setNSamples(samples);
+	Options::setNSamples(NULL, samples);
 }
 
 void FlexLocal::propagateWhack()
