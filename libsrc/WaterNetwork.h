@@ -39,13 +39,8 @@ public:
 	
 	virtual void addProperties();
 	
-	void partitionNetworks(CrystalPtr crystal);
-	
 	void setMonomer(MonomerPtr _monomer);
-	static double vsRefineWaterNetwork(void *object);
 private:	
-	std::vector<WaterClusterPtr> _clusters;
-	void reportOnClusters();
 };
 
 #endif
