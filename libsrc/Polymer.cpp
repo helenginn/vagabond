@@ -635,9 +635,11 @@ void Polymer::clearTwists()
 void Polymer::refineAnchorPosition(CrystalPtr target)
 {
 	bool changed = true;
+	int count = 0;
 	
-	while (changed)
+	while (changed && count < 50)
 	{
+		count++;
 		setupNelderMead();
 		setCrystal(target);
 		setCycles(16);
@@ -647,6 +649,8 @@ void Polymer::refineAnchorPosition(CrystalPtr target)
 
 		changed = sample();
 	}
+
+	getAnchorModel()->propagateChange(-1, true);
 }
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
