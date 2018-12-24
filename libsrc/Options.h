@@ -287,7 +287,6 @@ public:
 
 	static std::string rTypeString(RefinementType type);
 private:
-	void executeScript();
 	void executeProtocol();
 	static OptionsPtr options;
 	Notifiable *_notify;

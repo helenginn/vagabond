@@ -7,7 +7,6 @@
 //
 
 #include "Options.h"
-#include "VScript.h"
 #include <iostream>
 #include "PDBReader.h"
 #include "SSRigger.h"
@@ -167,8 +166,6 @@ void Options::run()
 
 		executeProtocol();
 
-		executeScript();
-
 		if (_notify)
 		{
 			_notify->enable();
@@ -304,30 +301,6 @@ void Options::executeProtocol()
 		getActiveCrystal()->refineSidechains();
 		recalculateFFT();
 	}
-}
-
-void Options::executeScript()
-{
-	if (!_scriptName.length())
-	{
-		return;
-	}
-
-	VScript script = VScript();
-	std::string contents;
-	
-	try
-	{
-		contents = get_file_contents(_scriptName);
-	}
-	catch (int e)
-	{
-		warn_user("Could not load vscript file: " + _scriptName);
-		return;
-	}
-	
-	script.loadScript(contents);
-	script.execute();
 }
 
 void Options::displayHelp()
