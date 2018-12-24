@@ -159,13 +159,13 @@ public:
 		return _bSubt;
 	}
 	
-	static void setBSubt(double bSubt)
+	static void setBSubt(void *, double bSubt)
 	{
 		_bSubt = bSubt;
 		Options::getRuntimeOptions()->applyBMultiplier();
 	}
 
-	static void setBMult(double bMult)
+	static void setBMult(void *, double bMult)
 	{
 		_bMult = bMult;
 		Options::getRuntimeOptions()->applyBMultiplier();
@@ -248,7 +248,7 @@ public:
 		return _bReal;
 	}
 	
-	static void setGlobalBFactor(double val)
+	static void setGlobalBFactor(void *, double val)
 	{
 		_bReal = val;
 	}
