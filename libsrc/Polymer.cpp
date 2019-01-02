@@ -30,6 +30,7 @@
 #include "Anchor.h"
 #include "Absolute.h"
 #include "Bond.h"
+#include "Anisotropicator.h"
 #include "CSV.h"
 #include <sstream>
 #include <iomanip>
@@ -1412,9 +1413,12 @@ void Polymer::reportParameters()
 
 void Polymer::refineGlobalFlexibility()
 {
-	std::cout << "Optimising anchor shifts to match the electron density." << std::endl;
+	std::cout << "Optimising whole molecule movements, chain " << 
+	getChainID() << "." << std::endl;
 
 	Timer timer("anchor fit", true);
+	
+	fitEllipsoid();
 	
 	AnchorPtr anchor = getAnchorModel();
 	
@@ -1434,6 +1438,7 @@ void Polymer::refineGlobalFlexibility()
 	anchor->addLibrationParameters(nelderMead);
 	nelderMead->refine();
 
+	timer.report();
 }
 
 AtomGroupPtr Polymer::getAllBackbone()
@@ -1515,3 +1520,26 @@ void Polymer::postParseTidy()
 	
 }
 
+mat3x3 Polymer::fitEllipsoid()
+{
+	std::vector<vec3> points;
+
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (!getMonomer(i))
+		{
+			continue;
+		}
+		
+		AtomPtr ca = getMonomer(i)->findAtom("CA");
+		points.push_back(ca->getAbsolutePosition());
+	}
+
+	Anisotropicator trop;
+	trop.setPoints(points);
+	
+	mat3x3 basis = trop.getTensor();
+	getAnchorModel()->setPolymerBasis(basis);
+
+	return basis;
+}
