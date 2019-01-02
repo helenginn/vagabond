@@ -185,7 +185,7 @@ AtomPtr Vagabond2GL::findAtomAtXY(double x, double y, double *z)
 
 		vec3 diff = vec3_subtract_vec3(proj, target);
 		
-		if (fabs(diff.x) < 0.05 && fabs(diff.y) < 0.05)
+		if (fabs(diff.x) < 0.02 && fabs(diff.y) < 0.02)
 		{
 			if (model.z > *z)
 			{
