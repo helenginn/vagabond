@@ -14,7 +14,6 @@
 #include "Shouter.h"
 #include <iomanip>
 #include "Polymer.h"
-#include "vagcout.h"
 #include "WaterNetwork.h"
 #include "FileReader.h"
 #include "VBondReader.h"
@@ -96,9 +95,9 @@ void Options::run()
 	}
 
 	/* Setup stream redirect */
-	vagcout<char> filter(std::cout.rdbuf());
-	filter.setNotify(_notify);
-	std::cout.rdbuf(&filter);
+	_filter = new vagcout<char>(std::cout.rdbuf());
+	_filter->setNotify(_notify);
+	std::cout.rdbuf(_filter);
 
 	/* ASCII art */
 	std::cout << "   _______                                _______\n";

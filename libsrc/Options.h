@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include "shared_ptrs.h"
+#include "vagcout.h"
 #include "Crystal.h"
 #include "Notifiable.h"
 
@@ -346,6 +347,8 @@ private:
 	static bool _far;
 	static bool _rInter;
 	static bool _rIntra;
+	
+	vagcout<char> *_filter;
 };
 
 #endif /* defined(__vagabond__Options__) */
