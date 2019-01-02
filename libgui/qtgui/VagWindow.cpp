@@ -8,6 +8,7 @@
 
 #define DEFAULT_WIDTH 900
 #define DEFAULT_HEIGHT 660
+#define LOG_WIDTH 400
 #define STATUS_HEIGHT 60
 #define BUTTON_WIDTH 0
 
@@ -189,10 +190,25 @@ void VagWindow::resizeEvent(QResizeEvent *)
 		menuHeight += 30;
 	}
 	
-	display->setGeometry(0, menuHeight, w - BUTTON_WIDTH, 
+	double displWidth = (!_showingLog ? w : w - LOG_WIDTH);
+
+	display->setGeometry(0, menuHeight, displWidth, 
 	                     h - STATUS_HEIGHT - menuHeight);
 	display->resizeGL();
-	_lStatus->setGeometry(10, h - STATUS_HEIGHT, w - BUTTON_WIDTH, STATUS_HEIGHT);
+
+	_lStatus->setGeometry(10, h - STATUS_HEIGHT, w - BUTTON_WIDTH, 
+	                      STATUS_HEIGHT);
+	
+	if (_showingLog)
+	{
+		_logView->setGeometry(w - LOG_WIDTH, menuHeight - 1, LOG_WIDTH, 
+		                      h - STATUS_HEIGHT - menuHeight);
+		_logView->show();
+	}
+	else
+	{
+		_logView->hide();
+	}
 
 	for (int i = 0; i < buttons.size(); i++)
 	{
@@ -220,9 +236,20 @@ VagWindow::VagWindow(QWidget *parent,
 	_lStatus->setFont(bigFont);
 	_lStatus->setGeometry(10, DEFAULT_HEIGHT - STATUS_HEIGHT, 680, STATUS_HEIGHT);
 	_lStatus->show();
+	
+	QFont monoFont("Monospace");
+	monoFont.setPointSize(8);
+	monoFont.setStyleHint(QFont::TypeWriter);
+	_logView = new QTextEdit(this);
+	_logView->setAcceptRichText(false);
+	_logView->setFont(monoFont);
+	_logView->setReadOnly(true);
+	_logView->setGeometry(DEFAULT_WIDTH - LOG_WIDTH, 0, LOG_WIDTH, 
+	                      DEFAULT_WIDTH - STATUS_HEIGHT);
 
 	_argc = argc;
 	_argv = argv;
+	_showingLog = false;
 	display->setFocus();
 	display->setFocusPolicy(Qt::StrongFocus);
 
@@ -615,6 +642,22 @@ void VagWindow::fixErroneousZones()
 	{
 		_errorExplorer = new ErroneousZone(this, crystal);
 		_errorExplorer->show();
+	}
+}
+
+void VagWindow::toggleLog()
+{
+	_showingLog = !_showingLog;
+	resizeEvent(NULL);
+}
+
+void VagWindow::appendToLog(char *msg)
+{
+	if (*msg != NULL)
+	{
+		_logView->moveCursor(QTextCursor::End);
+		_logView->insertPlainText(msg);
+		_logView->moveCursor(QTextCursor::End);
 	}
 }
 

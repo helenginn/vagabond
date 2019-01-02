@@ -86,6 +86,7 @@ lib_vag= library('vag', 'libsrc/Absolute.cpp',
 'libsrc/Twist.cpp', 
 'libsrc/VBondReader.cpp', 
 'libsrc/vec3.cpp', 
+'libsrc/vagcout.cpp', 
 'libsrc/WaterNetwork.cpp', 
 'libsrc/Whack.cpp', 
 dependencies: [png_dep, fftw_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep], cpp_args: ['-w', '-std=c++11'])

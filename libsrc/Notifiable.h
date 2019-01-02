@@ -147,6 +147,7 @@ public:
 
 	}
 	
+	virtual void appendToLog(char *msg) = 0;
 	virtual void pause(bool on) = 0;
 
 	virtual void setRenderDensity() = 0;
