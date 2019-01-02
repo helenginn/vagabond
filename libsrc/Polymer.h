@@ -1,10 +1,20 @@
-//
-//  Polymer.h
-//  vagabond
-//
-//  Created by Helen Ginn on 23/07/2017.
-//  Copyright (c) 2017 Strubi. All rights reserved.
-//
+// Vagabond
+// Copyright (C) 2017-2018 Helen Ginn
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// Please email: vagabond @ hginn.co.uk for more details.
 
 #ifndef __vagabond__Polymer__
 #define __vagabond__Polymer__
@@ -38,10 +48,6 @@ public:
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	
 	static void refineVScript(void *object, RefinementType rType);
-	static double vsRefineSidechainsToDensity(void *object);
-	static double vsRefinePositionsToPDB(void *object);
-	static double vsRefineLocalFlexibility(void *object);
-	static double vsRefineGlobalFlexibility(void *object);
 	void refitBackbone(int start, int end);
 	
 	virtual void graph(std::string graphName);
@@ -49,17 +55,9 @@ public:
 	static void setInitialKick(void *object, double value);
 	static double getInitialKick(void *object);
 
-	static double vsSandbox(void *object);
-	
 	void scaleSidechainsToBFactor();
 	void refineBackbone();
 	void refineBackboneFrom(int position);
-	static double vsRefineBackbone(void *object);
-	static void vsRefineBackboneFrom(void *object, double position);
-	static void vsMultiplyBackboneKick(void *object, double value);
-
-	static void vsOmitResidues(void *object, double start, double end);
-	static void vsUnomitResidues(void *object, double start, double end);
 	
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,
 	                              FlexGlobal &target, bool isotropy = false);
@@ -84,7 +82,6 @@ public:
 	bool isWhacking();
 	int _whacked;
 	void whack();
-	void clearTwists();
 	void whackMonomer(MonomerPtr mon);
 	void refineAnchorPosition(CrystalPtr target);
 	AtomGroupPtr monomerRange(int start, int end);

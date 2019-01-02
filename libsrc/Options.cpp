@@ -34,7 +34,6 @@ bool Options::_useRFree = true;
 int Options::_enableTests = 3;
 int Options::_bondAngles = 1;
 bool Options::_powder = false;
-bool Options::_overfit = false;
 bool Options::_diagnostics = false;
 
 bool Options::_refine = false;
@@ -159,11 +158,6 @@ void Options::run()
 			_notify->setInstruction(InstructionTypeResetExplorer);
 		}
 		
-		if (_overfit)
-		{
-			crystal->overfitTest();
-		}
-
 		executeProtocol();
 
 		if (_notify)
@@ -212,6 +206,14 @@ void Options::executeProtocol()
 	for (int i = 0; i < 5 && _far; i++)
 	{
 		recalculateFFT();
+
+		if (i == 0 && _rInter)
+		{
+			std::cout << "Flex prior to position refinement" << std::endl;
+			crystal->fitWholeMolecules();
+		}
+
+		recalculateFFT();
 		std::cout << "Refining positions to density (" << 
 		i + 1 << " / 5)" << std::endl;
 		crystal->refineCrude();
@@ -235,7 +237,7 @@ void Options::executeProtocol()
 			
 			double newWork = crystal->getRWork();
 
-			if (newWork > oldWork && !_rIntra)
+			if (newWork > oldWork && _rIntra)
 			{
 				crystal->restoreState(-1);
 			}
@@ -490,7 +492,6 @@ void Options::parse()
 
 		if (!arg.compare(0, prefix.size(), prefix))
 		{
-			_overfit = true;
 			understood = true;
 		}
 
@@ -903,3 +904,4 @@ void Options::changeSamplesAndFit(void *, double n)
 
 	std::cout << "Done" << std::endl;
 }
+

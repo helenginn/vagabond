@@ -319,7 +319,6 @@ private:
 	static bool _useRFree;
 	static ScalingType _scaleType;
 	static bool _powder;
-	static bool _overfit;
 	static std::string _solventFile;
 	static double _kick;
 	static int _solvent;

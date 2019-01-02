@@ -61,7 +61,7 @@ public:
 	
 	/** Positional displacement between average ensemble position and
 	* reference position (usually from PDB). */
-	double posDisplacement(bool fromSaved = false);
+	double posDisplacement(bool fromSaved = false, bool refresh = true);
 	
 	void saveInitialPosition();
 

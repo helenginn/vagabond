@@ -140,11 +140,24 @@ public:
 	{
 		return _changedSamples;
 	}
+	
+	void clearTwists();
+
+	void addTwist(TwistPtr twist)
+	{
+		_twists.push_back(twist);
+	}
+	
+	size_t twistCount()
+	{
+		return _twists.size();
+	}
 protected:
 	FFTPtr makeRealSpaceDistribution();
 	void addRealSpacePositions(FFTPtr real, vec3 offset);
 	bool _changedSamples;
 	virtual void sanityCheck();
+	std::vector<TwistPtr> _twists;
 
 	virtual void getAnisotropy(bool withKabsch = false);
 	virtual double anisotropyExtent(bool withKabsch = false);

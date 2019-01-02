@@ -9,6 +9,8 @@
 #define MAP_VALUE_CUTOFF 20.
 
 #include "Timer.h"
+#include "Twist.h"
+#include "ExplicitModel.h"
 #include "AtomGroup.h"
 #include <climits>
 #include "Atom.h"
@@ -236,7 +238,7 @@ double AtomGroup::getAverageDisplacement()
 			continue;
 		}
 
-		double val = atom(i)->posDisplacement();
+		double val = atom(i)->posDisplacement(false, false);
 
 		sum += val;
 		count++;
@@ -1153,3 +1155,33 @@ vec3 AtomGroup::centroid()
 	
 	return sum;
 }
+
+void AtomGroup::makeBackboneTwists(ExplicitModelPtr applied)
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		AtomPtr a = atom(i);
+		
+		if (!a->isBackbone() && !a->isBackboneAndSidechain())
+		{
+			continue;
+		}
+		
+		if (!a->getModel()->isBond())
+		{
+			continue;
+		}
+		
+		BondPtr b = ToBondPtr(a->getModel());
+		
+		if (b->isFixed())
+		{
+			continue;
+		}
+
+		TwistPtr twist = TwistPtr(new Twist());
+		twist->setBond(b);
+		twist->addToAppliedModel(applied);
+	}
+}
+

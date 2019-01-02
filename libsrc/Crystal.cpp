@@ -1,10 +1,20 @@
-//
-//  Crystal.cpp
-//  vagabond
-//
-//  Created by Helen Ginn on 13/07/2017.
-//  Copyright (c) 2017-8 Helen Ginn. All rights reserved.
-//
+// Vagabond
+// Copyright (C) 2017-2018 Helen Ginn
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// Please email: vagabond @ hginn.co.uk for more details.
 
 #include <sstream>
 #include <iostream>
@@ -370,6 +380,7 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 				
 	CSVPtr csv = CSVPtr(new CSV(3, "res", "data", "model"));
 	std::vector<double> xs, ys, zs;
+	_resBinAves = std::map<double, double>();
 
 	for (size_t i = 0; i < bins.size() - 1; i++)
 	{
@@ -388,6 +399,9 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 		
 		nom /= (double)binRatios[i].size();
 		den /= (double)binRatios[i].size();
+		
+		/* Get average F-obs per resolution shell */
+		_resBinAves[bins[i]] = sqrt(nom);
 		
 		double length = (1/bins[i] + 1/bins[i + 1]) / 2;
 
@@ -444,14 +458,6 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 	
 	*scale = k;
 	*bFactor = b;
-}
-
-void Crystal::removeAtom(AtomPtr atom)
-{
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		molecule(i)->removeAtom(atom);
-	}
 }
 
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
@@ -695,6 +701,8 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 	/* If full scaling requested, take global default. */
 	ScalingType scaleType = Options::getScalingType();
 	double scale, bFactor;
+
+	/* We want to know the Wilson plot results */
 	scaleAndBFactor(data, &scale, &bFactor);
 	_bFacFit = bFactor;
 
@@ -743,8 +751,10 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 
 void Crystal::scaleComponents(DiffractionPtr data)
 {
+	/* Just scale using an absolute value only */
 	scaleToDiffraction(data, false);
 	scaleSolvent(data);
+	/* Scale using the favoured mechanism (e.g. per-shell) */
 	scaleToDiffraction(data);
 }
 
@@ -818,6 +828,10 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 
 				bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
 				
+				/* If the naughty flag is set on the command line,
+				 * we DO include R free in refinement - this is to show
+				 * that it genuinely makes a difference */
+
 				if (ignoreRfree)
 				{
 					isRfree = 0;
@@ -834,6 +848,9 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 
 				if (obs_amp != obs_amp || isRfree)
 				{
+					_fft->setElement(index, 0, 0);
+					_difft->setElement(index, 0, 0);
+
 					continue;
 				}
 
@@ -896,50 +913,6 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	}
 
 	return rFac;
-}
-
-void Crystal::overfitTest()
-{
-	std::vector<double> results;
-	
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isPolymer())
-		{
-			continue;
-		}
-
-		PolymerPtr polymer = ToPolymerPtr(molecule(i));
-
-		for (int j = 2; j < 10; j++)
-		{
-			double result = polymer->overfitTest(j);
-			
-			if (result == result)
-			{
-				results.push_back(result);
-			}
-		}
-	}
-	
-	double ave = mean(results) * -100;
-	double stdev = standard_deviation(results) * 100;
-	
-	std::cout << "******************************" << std::endl;
-	std::cout << "**   OVERFITTING RESULTS   ***" << std::endl;
-	std::cout << "******************************" << std::endl;
-	std::cout << std::endl;
-	
-	for (int i = 0; i < results.size(); i++)
-	{
-		std::cout << "Trial " << i << " - " << results[i] << std::endl;
-	}
-	
-	std::cout << std::endl;
-	std::cout << "Difference map sensitivity: " << ave
-	<< " ± " << stdev << "%" << std::endl;
-	std::cout << std::endl;
-	std::cout << "******************************" << std::endl;
 }
 
 void Crystal::tiedUpScattering()
@@ -1068,14 +1041,6 @@ void Crystal::fourierTransform(int dir, double res)
 	{
 		_bucket->fourierTransform(dir);
 	}
-}
-
-void Crystal::vsChangeSampleSize(void *object, double n)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Crystal *crystal = dynamic_cast<Crystal *>(parser);
-
-	Options::getRuntimeOptions()->setNSamples(NULL, n);
 }
 
 void Crystal::makePDBs(std::string suffix)
@@ -1258,16 +1223,6 @@ void Crystal::hydrogenateContents()
 	}
 }
 
-double Crystal::vsFitWholeMolecules(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Crystal *crystal = dynamic_cast<Crystal *>(parser);
-	crystal->fitWholeMolecules();
-	Crystal::vsConcludeRefinement(parser);
-	crystal->undoIfWorse();
-	return 0;
-}
-
 void Crystal::fitWholeMolecules()
 {
 	for (int i = 0; i < moleculeCount(); i++)
@@ -1318,17 +1273,7 @@ void Crystal::addProperties()
 	}
 	
 	exposeFunction("recalculate_map", Crystal::vsConcludeRefinement);
-	exposeFunction("refine_global_flexibility", Crystal::vsFitWholeMolecules);
-	exposeFunction("change_sample_size", Crystal::vsChangeSampleSize);
-	exposeFunction("set_shell_scale", Crystal::vsSetShellScale);
 	exposeFunction("restore_state", Crystal::vsRestoreState);
-}
-
-/* Positive number for ON, negative number for OFF */
-void Crystal::vsSetShellScale(void *object, double val)
-{
-	bool shell = (val > 0);
-	Options::getRuntimeOptions()->setScalingType(ScalingTypeShell);
 }
 
 void Crystal::vsRestoreState(void *object, double val)
@@ -1499,9 +1444,7 @@ double Crystal::vsConcludeRefinement(void *object)
 {
 	if (object == NULL)
 	{
-		std::cout << "Finding crystal object..." <<  std::endl;
 		object = &*ToParserPtr(Options::getActiveCrystal());
-		std::cout << "Found it." <<  std::endl;
 	}
 
 	OptionsPtr options = Options::getRuntimeOptions();
@@ -1828,3 +1771,12 @@ void Crystal::rigidBodyFit()
 		}
 	}
 }
+
+void Crystal::removeAtom(AtomPtr atom)
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		molecule(i)->removeAtom(atom);
+	}
+}
+

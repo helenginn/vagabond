@@ -1525,11 +1525,6 @@ void Bond::addProperties()
 		addReference("whack", getWhack());
 	}
 	
-	if (hasTwist())
-	{
-		addReference("twist", getTwist());
-	}
-
 	addDoubleProperty("phi", &_phi);    
 	addDoubleProperty("psi", &_psi);    
 	addDoubleProperty("occupancy", &_occupancy);
@@ -1583,11 +1578,6 @@ void Bond::linkReference(ParserPtr object, std::string category)
 	{
 		WhackPtr whack = ToWhackPtr(object);
 		_whack = whack;
-	}
-	else if (category == "twist")
-	{
-		TwistPtr twist = ToTwistPtr(object);
-		_twist = twist;
 	}
 	else if (category == "extra_sample")
 	{

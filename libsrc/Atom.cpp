@@ -520,7 +520,7 @@ void Atom::saveInitialPosition()
 	_initialPosition = pos;
 }
 
-double Atom::posDisplacement(bool fromSaved)
+double Atom::posDisplacement(bool fromSaved, bool refresh)
 {
 	if (!isFromPDB() && !fromSaved)
 	{
@@ -532,7 +532,11 @@ double Atom::posDisplacement(bool fromSaved)
 		return 0;
 	}
 
-	getModel()->refreshPositions();
+	if (refresh)
+	{
+		getModel()->refreshPositions();
+	}
+
 	vec3 bestPos = getModel()->getAbsolutePosition();
 	vec3 initialPos = getPDBPosition();
 	

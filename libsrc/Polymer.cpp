@@ -1,10 +1,20 @@
-//
-//  Polymer.cpp
-//  vagabond
-//
-//  Created by Helen Ginn on 23/07/2017.
-//  Copyright (c) 2017 Strubi. All rights reserved.
-//
+// Vagabond
+// Copyright (C) 2017-2018 Helen Ginn
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Polymer.h"
 #include "Timer.h"
@@ -163,10 +173,6 @@ void Polymer::whackMonomer(MonomerPtr mon)
 
 	BondPtr next;
 
-	TwistPtr twist = TwistPtr(new Twist());
-	twist->setBond(bond);
-	twist->addToAnchor(anchor);
-
 	while (true)
 	{
 		if (bond->downstreamBondGroupCount() && 
@@ -178,10 +184,6 @@ void Polymer::whackMonomer(MonomerPtr mon)
 		{
 			break;
 		}
-
-		TwistPtr twist = TwistPtr(new Twist());
-		twist->setBond(next);
-		twist->addToAnchor(anchor);
 
 		if (next->getAtom()->getResidueNum() != num)
 		{
@@ -310,23 +312,6 @@ void Polymer::summary()
 	<< std::endl;
 }
 
-double Polymer::vsRefineBackbone(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	
-	polymer->refineBackbone();
-	return 0;
-}
-
-void Polymer::vsRefineBackboneFrom(void *object, double position)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	
-	polymer->refineBackboneFrom(position);
-}
-
 void Polymer::refineBackboneFrom(int position)
 {
 	OptionsPtr options = Options::getRuntimeOptions();
@@ -362,7 +347,7 @@ void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
 	monomer->refine(target, rType);
 }
 
-void refineLeftRegion(AtomGroupPtr region, CrystalPtr target, double light)
+void refineRegion(AtomGroupPtr region, CrystalPtr target, double light)
 {
 	region->addParamType(ParamOptionTorsion, light);
 	region->addParamType(ParamOptionBondAngle, light);
@@ -392,10 +377,35 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	
 	int anchor = getAnchor();
 	
-	double step = 1.5;
+	double step = 0.5;
 
 	std::cout << "Refining core region, " << getChainID() << " " << coreStart
 	<< " to " << coreEnd << std::flush;
+	
+	AtomList top = coreRegion->topLevelAtoms();
+	
+	if (!top.size())
+	{
+		return;
+	}
+	
+	ModelPtr model = top[0]->getModel();
+	
+	ExplicitModelPtr eModel;
+	if (model->isBond())
+	{
+		eModel = ToBondPtr(model)->getParentModel();
+	}
+	else if (model->isAnchor())
+	{
+		eModel = ToAnchorPtr(model);
+	}
+	else
+	{
+		return;
+	}
+
+	coreRegion->makeBackboneTwists(eModel);
 
 	coreRegion->addParamType(ParamOptionNumBonds, (2 * pad + 1) * 3);
 	coreRegion->addParamType(ParamOptionTorsion, step);
@@ -406,7 +416,7 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	coreRegion->refine(target, RefinementCrude);
 
 	coreRegion->saveAtomPositions();
-	clearTwists();
+	eModel->clearTwists();
 	
 	bool coversAnchor = (anchor >= coreStart && anchor <= coreEnd);
 	
@@ -417,16 +427,49 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	
 	std::cout << "." << std::flush;
 	
-	AtomGroupPtr leftRegion = monomerRange(-1, anchor - 1);
-	AtomGroupPtr rightRegion = monomerRange(anchor + 1, -1);
+	int nTerm = -1;
+	int nStart = anchor - 1;
+	int cStart = anchor + 1;
+	int cTerm = -1;
+	
+	if (coreStart < anchor && !coversAnchor)
+	{
+		nStart = coreEnd + 3;
+		if (nStart >= anchor)
+		{
+			nStart = anchor - 1;
+		}
+		
+		nTerm = coreStart - 10;
+	}	
+	
+	if (coreEnd > anchor && !coversAnchor)
+	{
+		cStart = coreStart - 3;
+		if (cStart > anchor)
+		{
+			cStart = coreEnd;
+		}
+		
+		cTerm = coreEnd + 10;
+	}
+	
+	AtomGroupPtr leftRegion = monomerRange(nTerm, nStart);
+	AtomGroupPtr rightRegion = monomerRange(cStart, cTerm);
 
-	refineLeftRegion(leftRegion, target, step);
-	refineLeftRegion(rightRegion, target, step);
+	if (coreEnd < anchor || coversAnchor)
+	{
+		refineRegion(leftRegion, target, step);
+	}
 
-	getAnchorModel()->propagateChange(-1, true);
+	if (coreStart >= anchor || coversAnchor)
+	{
+		refineRegion(rightRegion, target, step);
+	}
 
-	std::cout << " Displacement now " << getAverageDisplacement()
+	std::cout << " Displacement by " << coreRegion->getAverageDisplacement()
 	<< " Å." << std::endl;
+
 }
 
 void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
@@ -615,23 +658,6 @@ void Polymer::refineVScript(void *object, RefinementType rType)
 	polymer->refine(crystal, rType);
 }
 
-double Polymer::vsRefinePositionsToPDB(void *object)
-{
-	refineVScript(object, RefinementModelPos);
-	return 0;
-}
-
-double Polymer::vsRefineSidechainsToDensity(void *object)
-{
-	refineVScript(object, RefinementSidechain);
-	return 0;	
-}
-
-void Polymer::clearTwists()
-{
-	getAnchorModel()->clearTwists();
-}
-
 void Polymer::refineAnchorPosition(CrystalPtr target)
 {
 	bool changed = true;
@@ -650,7 +676,7 @@ void Polymer::refineAnchorPosition(CrystalPtr target)
 		changed = sample();
 	}
 
-	getAnchorModel()->propagateChange(-1, true);
+	getAnchorModel()->propagateChange(20, true);
 }
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
@@ -671,10 +697,18 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 		int start = monomerBegin() + 0;
 		int end = monomerEnd() - 0;
 
-		for (int i = start; i < end; i += 3)
+		for (int i = getAnchor() - 1; i >= start; i -= 3)
 		{
 			refineAroundMonomer(i, target);
 		}
+		
+		for (int i = getAnchor(); i <= end; i += 3)
+		{
+			refineAroundMonomer(i, target);
+		}
+
+		getAnchorModel()->propagateChange(-1, true);
+
 		double after = -scoreWithMap(ScoreTypeCorrel, target);
 
 		std::cout << "Overall CC " << before * 100 << " to "
@@ -1157,55 +1191,6 @@ void Polymer::hydrogenateContents()
 	}
 }
 
-void Polymer::vsMultiplyBackboneKick(void *object, double value)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *poly = dynamic_cast<Polymer *>(parser);
-
-	for (int i = 0; i < poly->monomerCount(); i++)
-	{
-		MonomerPtr mono = poly->getMonomer(i);
-		
-		if (!mono) continue;
-
-		BackbonePtr back = mono->getBackbone();
-		
-		for (int i = 0; i < back->atomCount(); i++)
-		{
-			AtomPtr atom = back->atom(i);
-			ModelPtr model = atom->getModel();
-			if (!model || !model->isBond())
-			{
-				continue;
-			}
-
-			BondPtr bond = ToBondPtr(model);
-			
-			if (bond->hasWhack())
-			{
-				WhackPtr whack = bond->getWhack();
-				double k = Whack::getKick(&*whack);
-				double w = Whack::getWhack(&*whack);
-				k*= value;
-				w *= value;
-				Whack::setKick(&*whack, k);
-				Whack::setWhack(&*whack, w);
-
-			}
-			else
-			{
-				double kick = Bond::getKick(&*bond);
-				kick *= value;
-				Bond::setKick(&*bond, kick);
-			}
-			
-		}
-	}
-	
-	poly->propagateChange();
-	poly->refreshPositions();
-}
-
 void Polymer::setInitialKick(void *object, double value)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
@@ -1282,29 +1267,6 @@ void Polymer::closenessSummary()
 	std::cout << "\tB factor (Å^2): " << std::setprecision(4) <<
 	bSum << std::endl;
 	std::cout << "\tPositional displacement from PDB (Å): " << posSum << std::endl;
-}
-
-double Polymer::vsRefineLocalFlexibility(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	polymer->refineLocalFlexibility();
-}
-
-void Polymer::vsOmitResidues(void *object, double start, double end)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-
-	polymer->downWeightResidues(start, end, 0);
-}
-
-void Polymer::vsUnomitResidues(void *object, double start, double end)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-
-	polymer->downWeightResidues(start, end, 1);
 }
 
 void Polymer::downWeightResidues(int start, int end, double value) // inclusive
@@ -1521,14 +1483,6 @@ void Polymer::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	FlexGlobal::score(&target);
 }
 
-double Polymer::vsSandbox(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	
-	int anchorNum = polymer->getAnchor();
-}
-
 void Polymer::addProperties()
 {
 	Molecule::addProperties();
@@ -1541,16 +1495,6 @@ void Polymer::addProperties()
 
 		addChild("monomer", getMonomer(i));
 	}
-	
-	exposeFunction("refine_positions_to_pdb", vsRefinePositionsToPDB);
-	exposeFunction("refine_sidechains_to_density", vsRefineSidechainsToDensity);
-	exposeFunction("refine_local_flexibility", vsRefineLocalFlexibility);
-	exposeFunction("refine_backbone_to_density", vsRefineBackbone);
-	exposeFunction("refine_backbone_to_density_from", vsRefineBackboneFrom);
-	exposeFunction("sandbox", vsSandbox);
-
-	exposeFunction("omit_residues", vsOmitResidues);
-	exposeFunction("unomit_residues", vsUnomitResidues);
 }
 
 void Polymer::addObject(ParserPtr object, std::string category)

@@ -30,18 +30,13 @@
  * the ability to change the torsion angle backwards.
  */
 
-class Twist : public Parser
+class Twist : public boost::enable_shared_from_this<Twist>
 {
 public:
 	Twist();
 
-	TwistPtr shared_from_this()
-	{
-		return ToTwistPtr(Parser::shared_from_this());
-	}
-
 	/** Add the Whack to an anchor point */
-	void addToAnchor(AnchorPtr anchor);
+	void addToAppliedModel(ExplicitModelPtr applied);
 
 	/** Bond to which twist is applied upstream/downstream */
 	void setBond(BondPtr bond);
@@ -61,15 +56,15 @@ public:
 	/** To be called by an Anchor object to modify its sample positions. */
 	void applyToAnchorSamples(std::vector<BondSample> &anchSamp);
 
-	virtual std::string getClassName()
+	std::string getClassName()
 	{
 		return "Twist";
 	}
 
 	/* Returns a pointer to the anchor */
-	AnchorPtr getAnchor()
+	ExplicitModelPtr getAppliedModel()
 	{
-		return _anchor.lock();
+		return _applied.lock();
 	}
 	
 	/* Returns twist angle in radians */
@@ -87,20 +82,13 @@ public:
 	static void setTwist(void *object, double val);
 
 	void saveSamples();
-protected:
-	virtual std::string getParserIdentifier();
-	
-	virtual void addProperties();
-	virtual void linkReference(ParserPtr object, std::string category);
-	virtual void postParseTidy();
-
 private:
 	bool _enabled;
 	bool _valid;
 	double _twist;
 	
 	std::vector<BondSample> _samples;
-	AnchorWkr _anchor;
+	ExplicitModelWkr _applied;
 	BondPtr _bond;
 };
 

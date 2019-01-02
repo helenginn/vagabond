@@ -100,9 +100,6 @@ void FlexLocal::refine()
 			nelder->setSilent();	
 
 			AnchorPtr anchor = _polymer->getAnchorModel();
-//			nelder->addParameter(&*anchor, Anchor::sgetBFactor, 
-//			                     Anchor::ssetBFactor, 0.05, 0.005, "b");
-
 			nelder->setEvaluationFunction(getScore, this);
 
 			for (int i = 0; i < _paramBands.size() && i < limit; i++)

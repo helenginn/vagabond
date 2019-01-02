@@ -54,12 +54,12 @@ void Twist::setBond(BondPtr bond)
 	bond->setTwist(shared_from_this());
 }
 
-void Twist::addToAnchor(AnchorPtr anchor)
+void Twist::addToAppliedModel(ExplicitModelPtr applied)
 {
 	if (_valid)
 	{
-		_anchor = anchor;
-		anchor->addTwist(shared_from_this());
+		_applied = applied;
+		applied->addTwist(shared_from_this());
 	}
 }
 
@@ -100,35 +100,6 @@ void Twist::setTwist(void *object, double val)
 {
 	Twist *twist = static_cast<Twist *>(object);
 	twist->_twist = val;
-	twist->getAnchor()->propagateChange(-1);
-}
-
-std::string Twist::getParserIdentifier()
-{
-	return "twist" + _bond->shortDesc();
-}
-
-void Twist::addProperties()
-{
-	addDoubleProperty("twist", &_twist);
-	addReference("anchor", _anchor.lock());
-	addReference("bond", _bond);
-}
-
-void Twist::linkReference(ParserPtr object, std::string category)
-{
-	if (category == "anchor")
-	{
-		_anchor = ToAnchorPtr(object);
-	}
-	else if (category == "bond")
-	{
-		_bond = ToBondPtr(object);
-	}
-}
-
-void Twist::postParseTidy()
-{
-
+	twist->getAppliedModel()->propagateChange(20);
 }
 
