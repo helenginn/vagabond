@@ -27,6 +27,9 @@ Anchor::Anchor(AbsolutePtr absolute)
 	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration->setZero();
 	_disableWhacks = false;
+	_alpha = 0;
+	_beta = 0;
+	_gamma = 0;
 }
 
 void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom, 
