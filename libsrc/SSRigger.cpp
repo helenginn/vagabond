@@ -95,6 +95,7 @@ void SSRigger::findCloseCysteines()
 
 void SSRigger::hydrogenateRemaining()
 {
+	return;
 	Hydrogenator hydrogenator;
 
 	for (size_t i = 0; i < _cysSGs.size(); i++)
@@ -103,8 +104,8 @@ void SSRigger::hydrogenateRemaining()
 		MonomerPtr mon = sulphur->getMonomer();
 		
 		hydrogenator.setMonomer(mon);
-//		hydrogenator.addHydrogens(mon->findAtoms("SG"), 1, "HG");
-//		hydrogenator.setNewGeometry(mon->findAtoms("HG"), 120., 180.);
+		hydrogenator.addHydrogens(mon->findAtoms("SG"), 1, "HG");
+		hydrogenator.setNewGeometry(mon->findAtoms("HG"), 120., 180.);
 	}
 
 }
