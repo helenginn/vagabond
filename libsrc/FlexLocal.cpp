@@ -71,14 +71,14 @@ void FlexLocal::refine()
 		reflex();
 		createAtomTargets();
 
-		int add = 5;
+		int add = 1;
 		if (i == 0)
 		{
 			scanBondParams();
 			createClustering();
 			reorganiseBondOrder();
 			chooseBestDifferenceThreshold();
-			add = 1;
+			add = 5;
 		}
 
 		std::vector<ParamBandPtr> extras;
