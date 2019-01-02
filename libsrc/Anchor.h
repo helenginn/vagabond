@@ -207,6 +207,10 @@ public:
 		anch->_gamma = val;
 		anch->propagateChange(-1);
 	}
+	
+	/* Set matrix describing principle axes of polymer. This should
+	 * help choose sensible starting parameters for libration */
+	void setPolymerBasis(mat3x3 basis);
 
 	virtual std::string getClassName()
 	{
@@ -241,6 +245,7 @@ private:
 	void rotateBases();
 	void fixCentroid();
 	mat3x3 getAnchorRotation();
+	mat3x3 _libMotion;
 	
 	vec3 _nDir, _nDir2;
 	vec3 _cDir, _cDir2;

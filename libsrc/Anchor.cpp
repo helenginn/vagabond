@@ -223,6 +223,8 @@ void Anchor::rotateBases()
 		vec3 start = _storedSamples[i].start;
 		vec3 neg_start = vec3_mult(start, -1);
 		vec3 diff = vec3_subtract_vec3(start, _position);
+		mat3x3 rot_only = make_mat3x3();
+
 		for (int j = 0; j < 3; j++)
 		{
 			vec3 rot_vec = mat3x3_axis(lib, j);
@@ -230,8 +232,16 @@ void Anchor::rotateBases()
 			mat3x3 rot_mat = mat3x3_unit_vec_rotation(rot_vec, dot);
 			mat3x3 basis = mat3x3_mult_mat3x3(rot_mat, 
 			                                  _storedSamples[i].basis); 
+			
+			rot_only = mat3x3_mult_mat3x3(rot_mat, rot_only);
 			_storedSamples[i].basis = basis;
 		}
+		
+		vec3 diff_to_old = vec3_subtract_vec3(_storedSamples[i].old_start,
+		                                      start);
+		mat3x3_mult_vec(rot_only, &diff_to_old);
+		vec3 new_old = vec3_add_vec3(start, diff_to_old);
+		_storedSamples[i].old_start = new_old;
 	}
 }
 
@@ -514,6 +524,26 @@ void Anchor::propagateChange(int depth, bool refresh)
 
 }
 
+void Anchor::setPolymerBasis(mat3x3 basis)
+{
+	_libMotion = mat3x3_inverse(basis);
+
+	double sum = 0;
+	for (int i = 0; i < 9; i++)
+	{
+		sum += _libMotion.vals[i];
+	}
+	
+	sum /= 9;
+	mat3x3_mult_scalar(&_libMotion, 0.10 / sum);
+	
+	for (int i = 0; i < 9; i++)
+	{
+		_libMotion.vals[i] = std::min(0.5, _libMotion.vals[i]);
+	}
+	
+}
+
 void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
                                       double mult)
 {
@@ -523,5 +553,6 @@ void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
 void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
                                       double mult)
 {
-	_libration->addToStrategy(strategy, 0.1 * mult, 0.005, "li");
+//	_libration->addToStrategy(strategy, 0.1 * mult, 0.005, "li");
+	_libration->addToStrategy(strategy, _libMotion, 0.005, "li");
 }

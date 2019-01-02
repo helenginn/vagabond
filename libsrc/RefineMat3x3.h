@@ -187,6 +187,25 @@ public:
 		strategy->addParameter(this, getTensor33, setTensor33, step,
 		                       tol, prefix + "_t33");
 	}
+	
+	void addToStrategy(RefinementStrategyPtr strategy, mat3x3 steps,
+	                   double tol, std::string prefix)
+	{
+		strategy->addParameter(this, getTensor11, setTensor11, steps.vals[0],
+		                       tol, prefix + "_t11");
+		strategy->addParameter(this, getTensor12, setTensor12, steps.vals[1],
+		                       tol, prefix + "_t12");
+		strategy->addParameter(this, getTensor13, setTensor13, steps.vals[2],
+		                       tol, prefix + "_t13");
+		strategy->addParameter(this, getTensor22, setTensor22, steps.vals[4],
+		                       tol, prefix + "_t22");
+		strategy->addParameter(this, getTensor23, setTensor23, steps.vals[5],
+		                       tol, prefix + "_t23");
+		strategy->addParameter(this, getTensor33, setTensor33, steps.vals[8],
+		                       tol, prefix + "_t33");
+
+	}
+	
 private:
 	mat3x3 _mat;
 	void *_parent;

@@ -59,6 +59,10 @@ public:
 	void refineBackbone();
 	void refineBackboneFrom(int position);
 	
+	/* Find a matrix describing the three principle axes of the
+	 * polymer C-alpha positions */
+	mat3x3 fitEllipsoid();
+	
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,
 	                              FlexGlobal &target, bool isotropy = false);
 
