@@ -237,7 +237,6 @@ void Anchor::rotateBases()
 
 mat3x3 Anchor::getAnchorRotation()
 {
-	mat3x3 mat = make_mat3x3();
 	mat3x3 rot = mat3x3_rotate(_alpha, _beta, _gamma);
 	
 	return rot;
