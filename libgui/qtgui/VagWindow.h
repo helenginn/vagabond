@@ -53,6 +53,9 @@ public:
 	virtual void setRenderDensity();
 	virtual void focusOnPosition(vec3 pos);
 	virtual void pause(bool on);
+	virtual void appendToLog(char *msg);
+	
+	void toggleLog();
 	
 	InstructionThread *getInstructionThread()
 	{
@@ -90,6 +93,7 @@ private:
 	CrystalExplorer *_xtalExplorer;
 	ErroneousZone *_errorExplorer;
 	QFileDialog *_fileDialogue;   
+	QTextEdit *_logView;
 
 	void dialogueModify(Setter set, std::string title, 
 	                    double _default = 100);
@@ -126,6 +130,7 @@ private:
 	int _rangeStart;
 	int _rangeEnd;
 
+	bool _showingLog;
 	int _argc;
 	char **_argv;
 

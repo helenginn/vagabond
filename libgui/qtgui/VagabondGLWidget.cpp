@@ -53,6 +53,10 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	{
 		keeper->toggleBondView();
 	}
+	else if (event->key() == Qt::Key_L)
+	{
+		_vag->toggleLog();
+	}
 	else if (event->key() == Qt::Key_R)
 	{
 		if (!keeper->isRefiningManually())

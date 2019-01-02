@@ -14,6 +14,7 @@
 #include "Shouter.h"
 #include <iomanip>
 #include "Polymer.h"
+#include "vagcout.h"
 #include "WaterNetwork.h"
 #include "FileReader.h"
 #include "VBondReader.h"
@@ -57,17 +58,6 @@ Options::Options(int argc, const char **argv)
 	_notify = NULL;
 	_globalCount = 0;
 
-	std::cout << "   _______                                _______\n";
-	std::cout << " |        ---__________________________---       |\n";
-	std::cout << "  \\ o          o   o   o    o   o   o         o /\n";
-	std::cout << "    \\ o                                     o /\n";
-	std::cout << "      \\ o    \\______           ______/    o /\n";
-	std::cout << "        \\ o   \\_____/         \\_____/   o /\n";
-	std::cout << "          \\ o           ___           o /\n";
-	std::cout << "            \\ o        /   \\        o /\n";
-	std::cout << "              -_______-     -_______-\n\n";
-	std::cout << "             Vagabond at your service.\n" << std::endl;
-
 	_tie = true;
 
 	/* Note that argv includes our program name */
@@ -99,6 +89,30 @@ void Options::run()
 	
 	writeCommandLine();
 	
+
+	if (_outputDir.length())
+	{
+		FileReader::setOutputDirectory(_outputDir);
+	}
+
+	/* Setup stream redirect */
+	vagcout<char> filter(std::cout.rdbuf());
+	filter.setNotify(_notify);
+	std::cout.rdbuf(&filter);
+
+	/* ASCII art */
+	std::cout << "   _______                                _______\n";
+	std::cout << " |        ---__________________________---       |\n";
+	std::cout << "  \\ o          o   o   o    o   o   o         o /\n";
+	std::cout << "    \\ o                                     o /\n";
+	std::cout << "      \\ o    \\______           ______/    o /\n";
+	std::cout << "        \\ o   \\_____/         \\_____/   o /\n";
+	std::cout << "          \\ o           ___           o /\n";
+	std::cout << "            \\ o        /   \\        o /\n";
+	std::cout << "              -_______-     -_______-\n\n";
+	std::cout << "             Vagabond at your service.\n" << std::endl;
+
+	/* Load reflection file */
 	if (_mtzFile.length())
 	{
 		DiffractionMtzPtr mtz;
@@ -113,15 +127,11 @@ void Options::run()
 		diffractions.push_back(diffraction);
 	}
 	
+	/* Load model file */
 	openModel(_modelFile);
 	
 	notifyGUI(false);
-
-	if (_outputDir.length())
-	{
-		FileReader::setOutputDirectory(_outputDir);
-	}
-
+	
 	if (!_manual && !crystals.size())
 	{
 		shout_at_user("I need a model.\n"\
