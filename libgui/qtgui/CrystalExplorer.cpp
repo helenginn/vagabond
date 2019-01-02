@@ -79,15 +79,6 @@ void CrystalExplorer::clickedMoleListItem()
 		label->show();
 		_widgets.push_back(label);
 
-		SetterEdit *edit = new SetterEdit(this);
-		edit->setGeometry(340, height, 100, TEXT_HEIGHT);
-		edit->setText("1");
-
-		void *parser = &*(ToParserPtr(molecule));
-		edit->setSetterAndObject(parser, Polymer::vsMultiplyBackboneKick);
-		edit->show();
-		_widgets.push_back(edit);
-
 		AnchorPtr anchor = ToAnchorPtr(polymer->getAnchorModel());
 		double bAnch = anchor->getBFactor();
 		std::string sAnch = f_to_str(bAnch, 1);
@@ -98,7 +89,7 @@ void CrystalExplorer::clickedMoleListItem()
 		label->show();
 		_widgets.push_back(label);
 
-		edit = new SetterEdit(this);
+		SetterEdit *edit = new SetterEdit(this);
 		edit->setGeometry(340, height, 100, TEXT_HEIGHT);
 		edit->setText(QString::fromStdString(sAnch));
 		edit->setMonomer(molecule);
