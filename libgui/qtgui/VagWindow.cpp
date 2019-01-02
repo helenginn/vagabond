@@ -8,7 +8,7 @@
 
 #define DEFAULT_WIDTH 900
 #define DEFAULT_HEIGHT 660
-#define LOG_WIDTH 400
+#define LOG_WIDTH 330
 #define STATUS_HEIGHT 60
 #define BUTTON_WIDTH 0
 
@@ -190,7 +190,12 @@ void VagWindow::resizeEvent(QResizeEvent *)
 		menuHeight += 30;
 	}
 	
-	double displWidth = (!_showingLog ? w : w - LOG_WIDTH);
+	double logWidth = LOG_WIDTH;
+	if (w * 0.3 > logWidth)
+	{
+		logWidth = w * 0.3;
+	}
+	double displWidth = (!_showingLog ? w : w - logWidth);
 
 	display->setGeometry(0, menuHeight, displWidth, 
 	                     h - STATUS_HEIGHT - menuHeight);
@@ -201,7 +206,7 @@ void VagWindow::resizeEvent(QResizeEvent *)
 	
 	if (_showingLog)
 	{
-		_logView->setGeometry(w - LOG_WIDTH, menuHeight - 1, LOG_WIDTH, 
+		_logView->setGeometry(w - logWidth, menuHeight - 1, logWidth, 
 		                      h - STATUS_HEIGHT - menuHeight);
 		_logView->show();
 	}
