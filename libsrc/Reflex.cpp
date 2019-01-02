@@ -174,7 +174,7 @@ void Reflex::refineFlex()
 	nm->setEvaluationFunction(bFactorScore, this);
 	nm->setCycles(20);
 	nm->setSilent();
-	nm->addParameter(this, getBFactor, setBFactor, 5, 0.1, "b");
+	nm->addParameter(this, getBFactor, setBFactor, 5, 0.01, "b");
 	nm->addParameter(this, getAbsoluteScale, setAbsoluteScale, 5, 0.01, "k");
 	nm->refine();
 	nm->clearParameters();
