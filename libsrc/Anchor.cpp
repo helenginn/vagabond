@@ -553,6 +553,6 @@ void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
 void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
                                       double mult)
 {
-//	_libration->addToStrategy(strategy, 0.1 * mult, 0.005, "li");
-	_libration->addToStrategy(strategy, _libMotion, 0.005, "li");
+	_libration->addToStrategy(strategy, 0.15 * mult, 0.005, "li");
+//	_libration->addToStrategy(strategy, _libMotion, 0.005, "li");
 }
