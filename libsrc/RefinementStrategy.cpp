@@ -164,6 +164,8 @@ void RefinementStrategy::finish()
 	{
 		return;
 	}
+	
+	std::cout << std::setprecision(4);
 
 	if (endScore >= startingScore || endScore != endScore)
 	{
@@ -197,7 +199,7 @@ void RefinementStrategy::finish()
 
 			if (reduction == reduction)
 			{
-				std::cout << "by " << std::fixed << std::setprecision(4) <<
+				std::cout << "by " << std::fixed << 
 				-reduction * 100 << "% ";
 			}
 

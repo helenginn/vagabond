@@ -674,7 +674,6 @@ double Crystal::getMaximumDStar(DiffractionPtr data)
 
 double Crystal::getAdjustBFactor()
 {
-	std::cout << "Adjusting B factor..." << std::endl;
 	double change = _bFacFit;
 	_bFacFit = 0;
 	_realBFactor += change;
@@ -1646,6 +1645,8 @@ double Crystal::getRealBFactor()
 	if (Options::getGlobalBFactor() >= 0)
 	{
 		_realBFactor = Options::getGlobalBFactor();
+		std::cout << "Picked up new B factor of " << _realBFactor <<
+		"." <<  std::endl;
 		Options::resetGlobalBFactor();
 	}
 	
