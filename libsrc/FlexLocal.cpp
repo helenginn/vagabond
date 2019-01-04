@@ -85,6 +85,11 @@ void FlexLocal::refine()
 
 		bool reduceShift = false;
 		bool success = false;
+		
+		if (_paramBands.size() == 0)
+		{
+			return;
+		}
 
 		for (int j = 0; j < 5; j++)
 		{
@@ -322,7 +327,10 @@ void FlexLocal::chooseBestDifferenceThreshold()
 		csv->addEntry(2, (double)(_reorderedBonds[i]), (double)current);
 	}
 	
-	band->prepare();
+	if (band)
+	{
+		band->prepare();
+	}
 	
 	std::random_shuffle(_paramBands.begin(), _paramBands.end());
 	
