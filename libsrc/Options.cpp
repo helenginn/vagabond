@@ -305,6 +305,8 @@ void Options::executeProtocol()
 		}
 	}
 	
+	crystal->undoIfWorse();
+	
 	if (_rSidechains)
 	{
 		std::cout << "Refining sidechains to density (" << 
@@ -312,6 +314,8 @@ void Options::executeProtocol()
 		getActiveCrystal()->refineSidechains();
 		recalculateFFT();
 	}
+
+	crystal->undoIfWorse();
 }
 
 void Options::displayHelp()

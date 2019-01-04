@@ -615,7 +615,8 @@ bool Crystal::undoIfWorse()
 {
 	if (_sinceBestNum > 0)
 	{
-		std::cout << "Decided to undo last results due to rise in Rwork" 
+		std::cout << "Decided to undo last " << _sinceBestNum << 
+		" results due to rise in Rwork" 
 		<< std::endl;
 		restoreState(0 - _sinceBestNum);
 		_sinceBestNum = 0;

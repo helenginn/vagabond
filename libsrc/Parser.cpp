@@ -495,7 +495,7 @@ void Parser::saveState()
 		count = it->second.lock()->stateCount();
 	}
 
-	if (count > 10)
+	if (count > 100)
 	{
 		for (ParserMap::iterator it = _allParsers.begin();
 		     it != _allParsers.end(); it++) 
