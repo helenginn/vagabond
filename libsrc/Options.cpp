@@ -449,6 +449,12 @@ void Options::writeCommandLine()
 
 void Options::parse()
 {
+	/* Default should be to check the 'refine' if launching
+	 * from GUI. */
+	if (_manual)
+	{
+		_refine = true;
+	}
 	for (size_t i = 0; i < arguments.size(); i++)
 	{
 		int understood = false;

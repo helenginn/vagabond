@@ -263,6 +263,7 @@ StartScreen::StartScreen(QWidget *parent,
 	_argv = argv;
 
 	_options = OptionsPtr(new Options(_argc, (const char **)_argv));
+	_options->setManual(true);
     Options::setRuntimeOptions(_options);
 	_options->parse();
 
