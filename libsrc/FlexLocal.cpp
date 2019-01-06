@@ -616,16 +616,9 @@ void FlexLocal::createClustering()
 		for (int j = 0; j < _bonds.size(); j++)
 		{
 			BondPtr bj = _bonds[j]; // giggle
-
 			double cc = 0;
-			if (bi < bj)
-			{
-				cc = bondRelationship(bi, bj);
-			}
-			else
-			{
-				cc = _bbCCs[bi][bj];
-			}
+
+			cc = bondRelationship(bi, bj);
 			
 			if (cc != cc)
 			{
