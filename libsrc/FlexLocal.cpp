@@ -597,13 +597,16 @@ void FlexLocal::createClustering()
 {
 	CSVPtr csv = CSVPtr(new CSV(3, "bond_i", "bond_j", "bondcc"));
 
-	int anchor = _polymer->getAnchor();
 	double sumCC = 0;
 	double count = 0;
 
 	Timer timer;
-	std::cout << "| 2. Calculating bond-bond correlation pairs... " << std::flush;
-	/* Once all the clusters are made, give them pair-wise correlations */
+	std::cout << "| 2. Calculating bond-bond correlation pairs... " 
+	<< std::flush;
+
+	/* Once all the bond effects are calculated, 
+	 * 	give them pair-wise correlations */
+
 	for (int i = 0; i < _bonds.size(); i++)
 	{
 		BondPtr bi = _bonds[i];
