@@ -58,7 +58,7 @@ void FlexLocal::setPolymer(PolymerPtr pol, double shift)
 
 void FlexLocal::refine()
 {
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 2; i++)
 	{
 		std::cout << "---------------------------------------------------------"
 		<< std::endl;
@@ -71,15 +71,10 @@ void FlexLocal::refine()
 		reflex();
 		createAtomTargets();
 
-		int add = 1;
-		if (i == 0)
-		{
-			scanBondParams();
-			createClustering();
-			reorganiseBondOrder();
-			chooseBestDifferenceThreshold();
-			add = 5;
-		}
+		scanBondParams();
+		createClustering();
+		reorganiseBondOrder();
+		chooseBestDifferenceThreshold();
 
 		std::vector<ParamBandPtr> extras;
 
@@ -91,11 +86,11 @@ void FlexLocal::refine()
 			return;
 		}
 
-		for (int j = 0; j < 5; j++)
+		for (int j = 0; j < 1; j++)
 		{
 			std::random_shuffle(_paramBands.begin(), _paramBands.end());
 
-			std::cout << "| " << j + add << ". Refining bond clusters... " 
+			std::cout << "| " << j + 5 << ". Refining bond clusters... " 
 			<< std::flush;
 			Timer timer;
 			int limit = 5;
@@ -761,9 +756,9 @@ void FlexLocal::scanBondParams()
 	ExplicitModelPtr model = _polymer->getAnchorModel();
 	int samples = model->getFinalPositions().size();
 
-	if (samples > 32)
+	if (samples > 40)
 	{
-		Options::setNSamples(NULL, 32);
+		Options::setNSamples(NULL, 40);
 	}
 	_polymer->refreshPositions();
 
