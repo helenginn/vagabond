@@ -191,7 +191,6 @@ void Polymer::whackMonomer(MonomerPtr mon)
 			break;
 		}
 
-		next->setRefineFlexibility(false);
 		bond = ToBondPtr(next);
 	}
 
