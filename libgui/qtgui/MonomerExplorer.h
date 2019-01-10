@@ -73,6 +73,7 @@ private:
 	QLabel *_lModel;
 	QLabel *_lTorsion;
 	QLabel *_lKick;
+	QLabel *_lWhack;
 	QLabel *_lDampen;
 	QLabel *_lPhi;
 	QLabel *_lPsi;
@@ -80,6 +81,7 @@ private:
 
 	SetterEdit *_tTorsion;
 	SetterEdit *_tKick;
+	SetterEdit *_tWhack;
 	SetterEdit *_tDampen;
 	SetterEdit *_tPhi;
 	SetterEdit *_tPsi;

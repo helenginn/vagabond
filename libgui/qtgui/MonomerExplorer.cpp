@@ -5,6 +5,7 @@
 #include "../../libsrc/Polymer.h"
 #include "../../libsrc/Atom.h"
 #include "../../libsrc/Bond.h"
+#include "../../libsrc/Whack.h"
 #include "../../libsrc/FileReader.h"
 #include "../../libsrc/Notifiable.h"
 #include "../../libsrc/Options.h"
@@ -25,6 +26,8 @@ void MonomerExplorer::initialise(MonomerPtr monomer)
 	_tTorsion = NULL;
 	_lKick = NULL;
 	_tKick = NULL;
+	_lWhack = NULL;
+	_tWhack = NULL;
 	_lPhi = NULL;
 	_tPhi = NULL;
 	_lPsi = NULL;
@@ -238,36 +241,71 @@ void MonomerExplorer::clickedAtomListItem()
 	
 	delete _bSplitBond;
 	_bSplitBond = NULL;
+	
+	delete _tKick; delete _lKick; delete _lWhack; delete _tWhack;
+	_tKick = NULL; _lKick = NULL; _lWhack = NULL; _tWhack = NULL;
 
 	if (atom->getModel()->isBond())
 	{
 		BondPtr bond = ToBondPtr(atom->getModel());
 		modelType += ", " + QString::fromStdString(bond->shortDesc());        
 
+		int labelNum = 1;
 		bool enabledBond = bond->isUsingTorsion();
+		bool enabledFlex = bond->getRefineFlexibility();
 		double torsion = rad2deg(Bond::getTorsion(&*bond));
 		QString torsionText = QString::number(torsion);
 
-		makeLabelAndEdit(this, &_lTorsion, &_tTorsion, 1, "Torsion (º):",
-		                 torsionText, enabledBond);        
+		makeLabelAndEdit(this, &_lTorsion, &_tTorsion, labelNum,
+		                 "Torsion (º):", torsionText, enabledBond);        
+		labelNum++;
 		_tTorsion->setSetterAndObject(&*bond, Bond::setTorsion, true);
 
-		double kick = Bond::getKick(&*bond);
-		QString kickText = QString::fromStdString(f_to_str(kick, 3));
+		if (!bond->getWhack())
+		{
+			double kick = Bond::getKick(&*bond);
+			QString kickText = QString::fromStdString(f_to_str(kick, 3));
 
-		makeLabelAndEdit(this, &_lKick, &_tKick, 2, "Kick:", kickText, enabledBond);
-		_tKick->setSetterAndObject(&*bond, Bond::setKick);
+			makeLabelAndEdit(this, &_lKick, &_tKick, labelNum, "Kick:", 
+			                 kickText, enabledBond & enabledFlex);
+			labelNum++;
+			_tKick->setSetterAndObject(&*bond, Bond::setKick);
+		}
+		else if (bond->getWhack())
+		{
+			WhackPtr whack = bond->getWhack();
+			double kick = Whack::getKick(&*whack);
+			QString kickText = QString::fromStdString(f_to_str(kick, 3));
+
+			makeLabelAndEdit(this, &_lKick, &_tKick, labelNum, "Kick:", 
+			                 kickText, enabledBond);
+			labelNum++;
+			_tKick->setSetterAndObject(&*whack, Whack::setKick);
+			_tKick->setRefreshGroup(_monomer->getPolymer());
+
+			double value = Whack::getWhack(&*whack);
+			QString whackTest = QString::fromStdString(f_to_str(value, 3));
+
+			makeLabelAndEdit(this, &_lWhack, &_tWhack, labelNum, "Whack:", 
+			                 whackTest, enabledBond);
+			labelNum++;
+			_tWhack->setSetterAndObject(&*whack, Whack::setWhack);
+			_tWhack->setRefreshGroup(_monomer->getPolymer());
+		}
 
 		double phi = rad2deg(Bond::getMagicPhi(&*bond));
 		QString phiText = QString::fromStdString(f_to_str(phi, 3));
-
-		makeLabelAndEdit(this, &_lPhi, &_tPhi, 3, "Phi (º)", phiText, enabledBond);
+		makeLabelAndEdit(this, &_lPhi, &_tPhi, labelNum, "Phi (º)", 
+		                 phiText, enabledBond & enabledFlex);
+		labelNum++;
 		_tPhi->setSetterAndObject(&*bond, Bond::setMagicPhi, true);
 
 		double psi = rad2deg(Bond::getMagicPsi(&*bond));
 		QString psiText = QString::fromStdString(f_to_str(psi, 3));
 
-		makeLabelAndEdit(this, &_lPsi, &_tPsi, 4, "Psi (º)", psiText, enabledBond);
+		makeLabelAndEdit(this, &_lPsi, &_tPsi, labelNum, "Psi (º)", 
+		                 psiText, enabledBond & enabledFlex);
+		labelNum++;
 
 		_tPsi->setSetterAndObject(&*bond, Bond::setMagicPsi, true);
 
