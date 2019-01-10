@@ -300,6 +300,7 @@ void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 	{
 		_sType = SelectAtom;
 		_shouldGetBonds = true;
+		_picked[0] = atom;
 		return;
 	}
 
