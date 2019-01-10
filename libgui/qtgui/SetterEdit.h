@@ -16,7 +16,7 @@ public:
         
     }
 
-    void setMonomer(AtomGroupPtr monomer)
+    void setRefreshGroup(AtomGroupPtr monomer)
     {
         _group = monomer;
     }

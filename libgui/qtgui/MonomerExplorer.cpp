@@ -226,7 +226,7 @@ void makeLabelAndEdit(QWidget *me, QLabel **qlabel, SetterEdit **qtext, int row,
 	}
 
 	MonomerExplorer *expl = static_cast<MonomerExplorer *>(me);
-	(*qtext)->setMonomer(expl->getMonomer());
+	(*qtext)->setRefreshGroup(expl->getMonomer());
 	(*qtext)->show();
 }
 

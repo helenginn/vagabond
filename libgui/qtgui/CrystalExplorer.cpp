@@ -92,7 +92,7 @@ void CrystalExplorer::clickedMoleListItem()
 		SetterEdit *edit = new SetterEdit(this);
 		edit->setGeometry(340, height, 100, TEXT_HEIGHT);
 		edit->setText(QString::fromStdString(sAnch));
-		edit->setMonomer(molecule);
+		edit->setRefreshGroup(molecule);
 		edit->setSetterAndObject(&*anchor, Anchor::ssetBFactor);
 		edit->show();
 
