@@ -754,7 +754,11 @@ void FlexLocal::scanBondParams()
 	ExplicitModelPtr model = _polymer->getAnchorModel();
 	int samples = model->getFinalPositions().size();
 
-	Options::setNSamples(40);
+	if (samples > 40)
+	{
+		Options::setNSamples(NULL, 40);
+	}
+
 	_polymer->refreshPositions();
 
 	Timer timer;
