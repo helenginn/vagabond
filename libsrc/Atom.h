@@ -63,7 +63,9 @@ public:
 	
 	/** Positional displacement between average ensemble position and
 	* reference position (usually from PDB). */
-	double posDisplacement();
+	double posDisplacement(bool fromSaved = false);
+	
+	void saveInitialPosition();
 
 	/** Change the periodic table element of the atom */
 	void setElement(ElementPtr element)

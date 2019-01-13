@@ -514,9 +514,20 @@ double Atom::posToMouse()
 
 }
 
-double Atom::posDisplacement()
+void Atom::saveInitialPosition()
 {
-	if (!isFromPDB())
+	vec3 pos = getModel()->getAbsolutePosition();
+	_initialPosition = pos;
+}
+
+double Atom::posDisplacement(bool fromSaved)
+{
+	if (!isFromPDB() && !fromSaved)
+	{
+		return 0;
+	}
+	
+	if (fromSaved && getElectronCount() == 1)
 	{
 		return 0;
 	}
@@ -524,6 +535,11 @@ double Atom::posDisplacement()
 	getModel()->refreshPositions();
 	vec3 bestPos = getModel()->getAbsolutePosition();
 	vec3 initialPos = getPDBPosition();
+	
+	if (fromSaved)
+	{
+		initialPos = getInitialPosition();
+	}
 
 	vec3 diff = vec3_subtract_vec3(bestPos, initialPos);
 	double score = vec3_length(diff);
