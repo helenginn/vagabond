@@ -136,7 +136,7 @@ void Options::run()
 	
 	notifyGUI(false);
 
-	if (arguments.size() <= 0)
+	if (!_manual && arguments.size() <= 0)
 	{
 		std::cout << "Please specify a macromolecular model." << std::endl;
 		std::cout << "\te.g., vagabond --with-model=xxxx.pdb" << std::endl;
