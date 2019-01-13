@@ -138,11 +138,52 @@ public:
 	void recalculateWhacks();
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 	virtual std::string shortDesc();
-protected:
+
+
+	static double getPosX(void *object)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		return anch->_position.x;
+	}
+
+	static double getPosY(void *object)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		return anch->_position.y;
+	}
+
+	static double getPosZ(void *object)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		return anch->_position.z;
+	}
+
+	static void setPosX(void *object, double x)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		anch->_position.x = x;
+		anch->propagateChange(-1);
+	}
+
+	static void setPosY(void *object, double y)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		anch->_position.y = y;
+		anch->propagateChange(-1);
+	}
+
+	static void setPosZ(void *object, double z)
+	{
+		Anchor *anch = static_cast<Anchor *>(object);
+		anch->_position.z = z;
+		anch->propagateChange(-1);
+	}
+
 	virtual std::string getClassName()
 	{
 		return "Anchor";
 	}
+protected:
 	
 	virtual std::string getParserIdentifier();
 	virtual void createStartPositions(Atom *callAtom);
