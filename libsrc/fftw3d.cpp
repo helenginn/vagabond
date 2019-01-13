@@ -552,7 +552,7 @@ void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real
 
 void FFT::multiplyAll(float value)
 {
-	for(long i=0; i<nn; i++)
+	for(long i = 0; i < nn; i++)
 	{
 		data[i][0] *= value;
 		data[i][1] *= value;
