@@ -711,7 +711,7 @@ double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plo
 {
 	OptionsPtr options = Options::getRuntimeOptions();
 	DiffractionPtr data = options->getActiveData();
-	if (!data)
+	if (!data || !atomCount())
 	{
 		return 0;
 	}
@@ -832,6 +832,10 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
                                       bool plot)
 {
+	if (!workspace->selectAtoms.size())
+	{
+		return 0;
+	}
 	CrystalPtr crystal = workspace->crystal;
 	std::vector<AtomPtr> selected = workspace->selectAtoms;
 
