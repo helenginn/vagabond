@@ -392,6 +392,11 @@ void Anchor::addProperties()
 		addChild("whack", _whacks[i]);
 	}
 	
+	for (int i = 0; i < twistCount(); i++)
+	{
+		addChild("twist", _twists[i]);
+	}
+	
 	Model::addProperties();
 }
 
@@ -406,6 +411,11 @@ void Anchor::addObject(ParserPtr object, std::string category)
 	{
 		WhackPtr whack = ToWhackPtr(object);
 		addWhack(whack);
+	}
+	else if (category == "twist")
+	{
+		TwistPtr twist = ToTwistPtr(object);
+		addTwist(twist);
 	}
 }
 
