@@ -41,6 +41,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 		{
 			range = 0.2;
 		}
+		
+		if (rType == RefinementCrude)
+		{
+			range /= 2;
+		}
 
 		switch (rType)
 		{
@@ -49,7 +54,13 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			addParamType(ParamOptionBondAngle, range / 1);
 			addParamType(ParamOptionNumBonds, 3);
 			break;
-
+			
+			case RefinementCrude:
+			addParamType(ParamOptionTorsion, range);
+			addParamType(ParamOptionTwist, range);
+			addParamType(ParamOptionNumBonds, 5);
+			break;
+			
 			case RefinementFine:
 			addParamType(ParamOptionTorsion, range);
 			addParamType(ParamOptionNumBonds, 4);
@@ -82,6 +93,8 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 	}
 
 	MonomerPtr monomer = getMonomer();
+	_includeForRefine = monomer->includingInRefinement();
+	
 	SidechainPtr sidechain = monomer->getSidechain();
 	if (sidechain && rType == RefinementFine)
 	{
