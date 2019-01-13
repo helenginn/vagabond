@@ -213,6 +213,9 @@ typedef enum
 typedef enum
 {
 	ParamOptionTorsion,
+	ParamOptionTwist,
+	ParamOptionTTN, /** Torsion or Twist to N-terminus */
+	ParamOptionTTC,	/** Torsion or Twist to C-terminus */
 	ParamOptionBondAngle,
 	ParamOptionKick,
 	ParamOptionOccupancy,
