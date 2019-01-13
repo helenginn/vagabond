@@ -808,7 +808,8 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 		          "structure determination.");
 	}
 
-	/* symmetry issues */
+	/** Currently the _fft grid contains Fcalc structure factors.
+	 * We now want to mix in the data for Rwork reflections. */
 	for (int i = -nLimit; i < nLimit; i++)
 	{
 		for (int j = -nLimit; j < nLimit; j++)
