@@ -335,7 +335,7 @@ void AtomGroup::setWeighting(double value)
 	}
 }
 
-AtomList AtomGroup::beyondGroupAtoms()
+AtomList AtomGroup::beyondGroupAtoms(bool just_bottom)
 {
 	AtomList list = topLevelAtoms();
 	AtomList bottom;
@@ -349,6 +349,8 @@ AtomList AtomGroup::beyondGroupAtoms()
 			continue;
 		}
 		
+		AtomPtr last = a;
+
 		while (hasAtom(a))
 		{
 			BondPtr b = ToBondPtr(a->getModel());
@@ -360,12 +362,17 @@ AtomList AtomGroup::beyondGroupAtoms()
 			}
 			
 			b = ToBondPtr(b->downstreamBond(0, 0));
+			last = a;
 			a = b->getMinor();
 		}
 		
-		if (a)
+		if (a && !just_bottom)
 		{
 			bottom.push_back(a);
+		}
+		else if (last && just_bottom)
+		{
+			bottom.push_back(last);
 		}
 	}
 	

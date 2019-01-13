@@ -68,7 +68,7 @@ public:
 
 	void addAtomsFrom(AtomGroupPtr group);
 
-	AtomList beyondGroupAtoms();
+	AtomList beyondGroupAtoms(bool just_bottom = false);
 	
 	size_t atomCount()
 	{
