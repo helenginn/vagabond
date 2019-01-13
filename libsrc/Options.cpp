@@ -206,6 +206,14 @@ void Options::executeProtocol()
 	for (int i = 0; i < 5 && _far; i++)
 	{
 		recalculateFFT();
+
+		if (i == 0 && _rInter)
+		{
+			std::cout << "Flex prior to position refinement" << std::endl;
+			crystal->fitWholeMolecules();
+		}
+
+		recalculateFFT();
 		std::cout << "Refining positions to density (" << 
 		i + 1 << " / 5)" << std::endl;
 		crystal->refineCrude();
