@@ -1494,7 +1494,9 @@ double Crystal::vsConcludeRefinement(void *object)
 {
 	if (object == NULL)
 	{
+		std::cout << "Finding crystal object..." <<  std::endl;
 		object = &*ToParserPtr(Options::getActiveCrystal());
+		std::cout << "Found it." <<  std::endl;
 	}
 
 	OptionsPtr options = Options::getRuntimeOptions();
