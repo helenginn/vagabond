@@ -60,10 +60,14 @@ void FlexLocal::refine()
 {
 	for (int i = 0; i < 2; i++)
 	{
+		reflex();
+		createAtomTargets();
+
 		scanBondParams();
 		createClustering();
 		reorganiseBondOrder();
 		chooseBestDifferenceThreshold();
+
 		std::vector<ParamBandPtr> extras;
 
 		bool reduceShift = false;
@@ -749,9 +753,6 @@ void FlexLocal::scanBondParams()
 	
 	ExplicitModelPtr model = _polymer->getAnchorModel();
 	int samples = model->getFinalPositions().size();
-
-	reflex();
-	createAtomTargets();
 
 	Options::setNSamples(40);
 	_polymer->refreshPositions();
