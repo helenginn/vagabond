@@ -12,6 +12,7 @@
 #include "AtomGroup.h"
 #include <climits>
 #include "Atom.h"
+#include "Anchor.h"
 #include "Bond.h"
 #include <sstream>
 #include "Crystal.h"
@@ -576,8 +577,36 @@ AtomPtr AtomGroup::getClosestAtom(CrystalPtr crystal, vec3 pos)
 
 void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 {
+	if (!atomCount())
+	{
+		return;
+	}
+	
 	AtomList topAtoms = topLevelAtoms();
-	bool refineAngles = shouldRefineAngles();
+	
+	/* Determine if we need to go backwards towards anchor */
+	bool backwards = false;
+
+	if (hasParameter(ParamOptionTTN) || hasParameter(ParamOptionTTC))
+	{
+		if (topAtoms.size())
+		{
+			ModelPtr model = topAtoms[0]->getModel();
+			if (model->isBond())
+			{
+				backwards = isBackwards(ToBondPtr(model));
+				
+				if (backwards)
+				{
+					topAtoms = beyondGroupAtoms(true);
+					AtomPtr one = topAtoms[0];
+					topAtoms.clear();
+					topAtoms.push_back(one);
+				}
+			}
+		}
+	}
+	
 	_timesRefined++;
 
 	ScoreType scoreType = ScoreTypeModelPos;
@@ -589,9 +618,19 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		maxTries = 60;
 		break;
 
+		case RefinementSavedPos:
+		scoreType = ScoreTypeSavedPos;
+		maxTries = 200;
+		break;
+
 		case RefinementCentroid:
 		scoreType = ScoreTypeCentroid;
 		maxTries = 60;
+		break;
+
+		case RefinementCrude:
+		scoreType = ScoreTypeCorrel;
+		maxTries = 1;
 		break;
 
 		case RefinementFine:
@@ -636,29 +675,50 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 			setupNelderMead();
 			setCrystal(target);
 			setCycles(16);
+			setScoreType(scoreType);
 
 			for (int i = 0; i < topAtoms.size(); i++)
 			{
 				AtomPtr topAtom = topAtoms[i];
-				
+
 				if (!topAtom->getModel()->isBond())
 				{
-					continue;
+					if (rType == RefinementSavedPos &&
+					    topAtom->getModel()->isAnchor() && false)
+					{
+						AnchorPtr anch = ToAnchorPtr(topAtom->getModel());
+						addAnchorPosition(anch, 0.02, 0.002);
+						
+						if (hasParameter(ParamOptionTTN))
+						{
+							topAtom = anch->getNAtom();
+						}
+						else if (hasParameter(ParamOptionTTC))
+						{
+							topAtom = anch->getCAtom();
+						}
+						else
+						{
+							continue;
+						}
+					}
+					else
+					{
+						continue;
+					}
 				}
 				
 				BondPtr bond = ToBondPtr(topAtom->getModel());
-
-				if (!bond->isRefinable())
-				{
-//					continue;
-				}
+				backwards = isBackwards(bond);
 
 				if (i == 0)
 				{
 					setJobName("torsion_" +  bond->shortDesc());
 				}
 
-				if (rType != RefinementFine && rType != RefinementMouse)
+				if (rType != RefinementFine && 
+				    rType != RefinementMouse &&
+				    rType != RefinementCrude)
 				{
 					topBond = setupThoroughSet(bond, false);
 				}
@@ -668,22 +728,22 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 				}
 			}
 
-			setScoreType(scoreType);
-
 			for (size_t l = 0; l < _includeForRefine.size(); l++)
 			{
 				addSampledAtoms(_includeForRefine[l]);
 			}
 
 			if (rType == RefinementModelPos 
+			    || rType == RefinementSavedPos 
 			    || rType == RefinementFine 
+			    || rType == RefinementCrude 
 			    || rType == RefinementModelRMSDZero
 			    || rType == RefinementRMSDZero
 			    || rType == RefinementMouse)
 			{
 				setSilent();
 			}
-
+			
 			changed = sample();
 			count++;
 		}
@@ -695,12 +755,35 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 
 		AtomPtr topAtom = topBond->getMinor();
 		
+		if (backwards)
+		{
+//			std::cout << "I am backwards!" << std::endl;
+			
+			ModelPtr model = topBond->getParentModel();
+			if (!model->isBond() && !model->isAnchor())
+			{
+				break;
+			}
+
+			topAtom = ToBondPtr(model)->getMajor();
+		}
+		
+		if (rType == RefinementSavedPos && !backwards)
+		{
+//			std::cout << "I am not backwards" << std::endl;
+		}
+		
 		if (!topAtom)
 		{
 			break;
 		}
 		
 		topAtoms = findAtoms(topAtom->getAtomName(), topAtom->getResidueNum());
+		
+		if (rType == RefinementCrude)
+		{
+			return;
+		}
 	}
 
 	_includeForRefine.clear();
