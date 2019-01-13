@@ -238,7 +238,7 @@ double AtomGroup::getAverageDisplacement()
 			continue;
 		}
 
-		double val = atom(i)->posDisplacement();
+		double val = atom(i)->posDisplacement(false, false);
 
 		sum += val;
 		count++;
