@@ -21,7 +21,7 @@
 OptionsPtr Options::options;
 double Options::_kick = 0.000;
 int Options::_solvent = 1;
-int Options::_nCycles = 5;
+int Options::_nCycles = -1;
 double Options::_dampen = 0.0;
 double Options::_bStart = 20.;
 double Options::_bMult = 1;
@@ -230,12 +230,24 @@ void Options::executeProtocol()
 	
 	recalculateFFT();
 	
+	/* If we should have a flexible number of cycles which continues
+	 * until convergence beyond 5. */
+	bool flexCycle = (_nCycles < 0);
+	
+	if (flexCycle)
+	{
+		_nCycles = 5;
+	}
+	
 	for (int i = 0; i < _nCycles; i++)
 	{
+		double startWork = crystal->getRWork();
+
 		if (_rInter || _rIntra)
 		{
 			std::cout << "Flex macrocycle (" << 
-			i + 1 << " / " << _nCycles<< ")" << std::endl;
+			i + 1 << " / " << _nCycles << (flexCycle ? "+" : "") 
+			<< ")" << std::endl;
 		}
 
 		if (_rInter)
@@ -301,7 +313,13 @@ void Options::executeProtocol()
 		{
 			std::cout << "Rwork has reduced due to intramolecular flex." 
 			<< std::endl;
+		}
 
+		double endWork = crystal->getRWork();
+
+		if (i == _nCycles - 1 && flexCycle && (endWork < startWork))
+		{
+			_nCycles++;
 		}
 	}
 	
