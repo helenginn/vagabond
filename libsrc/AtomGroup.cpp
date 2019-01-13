@@ -474,6 +474,14 @@ void AtomGroup::privateRefine()
 	shout_timer(wall_start, "refinement");
 }
 
+void AtomGroup::saveAtomPositions()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		atom(i)->saveInitialPosition();
+	}
+}
+
 void AtomGroup::removeAtom(AtomPtr atom)
 {
 	if (!atom)
