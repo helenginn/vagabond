@@ -513,25 +513,6 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 	std::cout << (skip > 0 ? "C" : "N");
 	std::cout <<  "-terminus (residue " << end << ") ..." << std::endl;
 
-	if (rType == RefinementModelRMSDZero)
-	{
-		for (int i = start; i != end; i += skip)
-		{
-			MonomerPtr monomer = getMonomer(i);
-			if (!monomer)
-			{
-				continue;
-			}
-
-			for (int j = 0; j < monomer->atomCount(); j++)
-			{
-				AtomPtr atom = monomer->atom(j);
-				atom->getModel()->refreshPositions();	
-				vec3 pos = atom->getAbsolutePosition();
-				atom->setInitialPosition(pos);
-			}
-		}
-	}
 
 	for (int i = start; i != end; i += skip)
 	{
