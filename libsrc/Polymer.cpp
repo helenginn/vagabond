@@ -676,7 +676,7 @@ void Polymer::refineAnchorPosition(CrystalPtr target)
 		changed = sample();
 	}
 
-	getAnchorModel()->propagateChange(-1, true);
+	getAnchorModel()->propagateChange(20, true);
 }
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
@@ -697,10 +697,18 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 		int start = monomerBegin() + 0;
 		int end = monomerEnd() - 0;
 
-		for (int i = start; i < end; i += 3)
+		for (int i = getAnchor() - 1; i >= start; i -= 3)
 		{
 			refineAroundMonomer(i, target);
 		}
+		
+		for (int i = getAnchor(); i <= end; i += 3)
+		{
+			refineAroundMonomer(i, target);
+		}
+
+		getAnchorModel()->propagateChange(-1, true);
+
 		double after = -scoreWithMap(ScoreTypeCorrel, target);
 
 		std::cout << "Overall CC " << before * 100 << " to "
