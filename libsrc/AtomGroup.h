@@ -49,6 +49,8 @@ public:
 	                                  bool plot = false);
 
 
+	void makeBackboneTwists(ExplicitModelPtr applied);
+
 	void setMonomer(MonomerPtr monomer)
 	{
 		_monomer = monomer;

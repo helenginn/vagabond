@@ -273,15 +273,6 @@ void Anchor::translateStartPositions()
 	}
 }
 
-void Anchor::clearTwists()
-{
-	for (int i = 0; i < twistCount(); i++)
-	{
-		Twist::setTwist(&*_twists[i], 0.);
-	}
-	
-	propagateChange(-1, true);
-}
 
 void Anchor::sanityCheck()
 {
@@ -420,13 +411,6 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 
 	fixCentroid();
 
-	/* Apply twists to each bond. */
-	for (int i = 0; i < twistCount() && !_disableWhacks; i++)
-	{
-		TwistPtr twist = _twists[i];
-		twist->applyToAnchorSamples(_storedSamples);
-	}
-
 	
 	/* Apply whacks as normal, if we are not re-caching Whacks. */
 	for (int i = 0; i < _whacks.size() && !_disableWhacks; i++)
@@ -465,11 +449,6 @@ void Anchor::addProperties()
 		addChild("whack", _whacks[i]);
 	}
 	
-	for (int i = 0; i < twistCount(); i++)
-	{
-		addChild("twist", _twists[i]);
-	}
-	
 	Model::addProperties();
 }
 
@@ -484,11 +463,6 @@ void Anchor::addObject(ParserPtr object, std::string category)
 	{
 		WhackPtr whack = ToWhackPtr(object);
 		addWhack(whack);
-	}
-	else if (category == "twist")
-	{
-		TwistPtr twist = ToTwistPtr(object);
-		addTwist(twist);
 	}
 }
 

@@ -1,12 +1,23 @@
-//
-//  ExplicitModel.cpp
-//  vagabond
-//
-//  Created by Helen Ginn 2018.
-//  Copyright (c) 2018 Helen Ginn. All rights reserved.
-//
+// Vagabond
+// Copyright (C) 2017-2018 Helen Ginn
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// Please email: vagabond @ hginn.co.uk for more details.
 
 #include "ExplicitModel.h"
+#include "Twist.h"
 #include "Options.h"
 #include "fftw3d.h"
 #include "CSV.h"
@@ -85,6 +96,13 @@ std::vector<BondSample> ExplicitModel::getFinalPositions()
 	std::vector<BondSample> *positions = getManyPositions();
 	_finalSamples = *positions;
 	
+	/* Apply twists to each bond. */
+	for (int i = 0; i < twistCount(); i++)
+	{
+		TwistPtr twist = _twists[i];
+		twist->applyToAnchorSamples(_finalSamples);
+	}
+
 	std::vector<vec3> posOnly;
 	posOnly.reserve(_finalSamples.size());
 
@@ -349,3 +367,16 @@ double ExplicitModel::anisotropyExtent(bool withKabsch)
 	getAnisotropy();
 	return _anisotropyExtent;
 }
+
+void ExplicitModel::clearTwists()
+{
+	_twists.clear();
+
+	for (int i = 0; i < twistCount(); i++)
+	{
+		Twist::setTwist(&*_twists[i], 0.);
+	}
+	
+	propagateChange(30, true);
+}
+

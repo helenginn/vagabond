@@ -163,10 +163,6 @@ void Polymer::whackMonomer(MonomerPtr mon)
 
 	BondPtr next;
 
-	TwistPtr twist = TwistPtr(new Twist());
-	twist->setBond(bond);
-	twist->addToAnchor(anchor);
-
 	while (true)
 	{
 		if (bond->downstreamBondGroupCount() && 
@@ -178,10 +174,6 @@ void Polymer::whackMonomer(MonomerPtr mon)
 		{
 			break;
 		}
-
-		TwistPtr twist = TwistPtr(new Twist());
-		twist->setBond(next);
-		twist->addToAnchor(anchor);
 
 		if (next->getAtom()->getResidueNum() != num)
 		{
@@ -406,7 +398,7 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	coreRegion->refine(target, RefinementCrude);
 
 	coreRegion->saveAtomPositions();
-	clearTwists();
+	eModel->clearTwists();
 	
 	bool coversAnchor = (anchor >= coreStart && anchor <= coreEnd);
 	
@@ -625,11 +617,6 @@ double Polymer::vsRefineSidechainsToDensity(void *object)
 {
 	refineVScript(object, RefinementSidechain);
 	return 0;	
-}
-
-void Polymer::clearTwists()
-{
-	getAnchorModel()->clearTwists();
 }
 
 void Polymer::refineAnchorPosition(CrystalPtr target)
