@@ -72,6 +72,7 @@ public:
 
 	void applyPolymerChanges();
 	void refineToEnd(int monNum, CrystalPtr target, RefinementType rType);
+	void refineAroundMonomer(int central, CrystalPtr target);
 	double refineRange(int start, int end, 
 	                 CrystalPtr target, RefinementType rType);
 	bool test();
@@ -83,6 +84,7 @@ public:
 	bool isWhacking();
 	int _whacked;
 	void whack();
+	AtomGroupPtr monomerRange(int start, int end);
 	void ramachandranPlot();
 	virtual void removeAtom(AtomPtr atom);
 
