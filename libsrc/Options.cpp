@@ -904,3 +904,4 @@ void Options::changeSamplesAndFit(void *, double n)
 
 	std::cout << "Done" << std::endl;
 }
+
