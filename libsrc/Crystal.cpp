@@ -1040,14 +1040,6 @@ void Crystal::fourierTransform(int dir, double res)
 	}
 }
 
-void Crystal::vsChangeSampleSize(void *object, double n)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Crystal *crystal = dynamic_cast<Crystal *>(parser);
-
-	Options::getRuntimeOptions()->setNSamples(NULL, n);
-}
-
 void Crystal::makePDBs(std::string suffix)
 {
 	std::vector<std::string> prefices; std::vector<PDBType> pdbTypes;
@@ -1228,16 +1220,6 @@ void Crystal::hydrogenateContents()
 	}
 }
 
-double Crystal::vsFitWholeMolecules(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Crystal *crystal = dynamic_cast<Crystal *>(parser);
-	crystal->fitWholeMolecules();
-	Crystal::vsConcludeRefinement(parser);
-	crystal->undoIfWorse();
-	return 0;
-}
-
 void Crystal::fitWholeMolecules()
 {
 	for (int i = 0; i < moleculeCount(); i++)
@@ -1288,17 +1270,7 @@ void Crystal::addProperties()
 	}
 	
 	exposeFunction("recalculate_map", Crystal::vsConcludeRefinement);
-	exposeFunction("refine_global_flexibility", Crystal::vsFitWholeMolecules);
-	exposeFunction("change_sample_size", Crystal::vsChangeSampleSize);
-	exposeFunction("set_shell_scale", Crystal::vsSetShellScale);
 	exposeFunction("restore_state", Crystal::vsRestoreState);
-}
-
-/* Positive number for ON, negative number for OFF */
-void Crystal::vsSetShellScale(void *object, double val)
-{
-	bool shell = (val > 0);
-	Options::getRuntimeOptions()->setScalingType(ScalingTypeShell);
 }
 
 void Crystal::vsRestoreState(void *object, double val)

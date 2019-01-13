@@ -76,9 +76,6 @@ public:
 	/** Move back to an earlier saved version of the model */
 	static void vsRestoreState(void *object, double val);
 
-	static void vsChangeSampleSize(void *object, double n);
-	static void vsSetShellScale(void *object, double val);
-
 	bool isSilent()
 	{
 		return _silent;
@@ -318,7 +315,6 @@ public:
 	* 	\param translation if true, will refine translation parameters
 	* 	\param rotation if true, will refine rotation parameters. */
 	void fitWholeMolecules();
-	static double vsFitWholeMolecules(void *object);
 	void refinePolymers(RefinementType type);
 	void refinePositions();
 	void refineIntraMovements();

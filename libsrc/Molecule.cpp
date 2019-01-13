@@ -264,9 +264,6 @@ void Molecule::addProperties()
 	addDoubleProperty("absolute_bfac_mult", &_absoluteBFacMult);
 	addDoubleProperty("absolute_bfac_subtract", &_absoluteBFacSubtract);
 	
-	exposeFunction("set_absolute_bfac_mult", vsSetAbsoluteBFacMult);
-	exposeFunction("set_absolute_bfac_subtract", vsSetAbsoluteBFacSubtract);
-
 	for (int i = 0; i < atomCount(); i++)
 	{
 		addChild("atom", atom(i));

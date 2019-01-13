@@ -48,10 +48,6 @@ public:
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	
 	static void refineVScript(void *object, RefinementType rType);
-	static double vsRefineSidechainsToDensity(void *object);
-	static double vsRefinePositionsToPDB(void *object);
-	static double vsRefineLocalFlexibility(void *object);
-	static double vsRefineGlobalFlexibility(void *object);
 	void refitBackbone(int start, int end);
 	
 	virtual void graph(std::string graphName);
@@ -59,17 +55,9 @@ public:
 	static void setInitialKick(void *object, double value);
 	static double getInitialKick(void *object);
 
-	static double vsSandbox(void *object);
-	
 	void scaleSidechainsToBFactor();
 	void refineBackbone();
 	void refineBackboneFrom(int position);
-	static double vsRefineBackbone(void *object);
-	static void vsRefineBackboneFrom(void *object, double position);
-	static void vsMultiplyBackboneKick(void *object, double value);
-
-	static void vsOmitResidues(void *object, double start, double end);
-	static void vsUnomitResidues(void *object, double start, double end);
 	
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,
 	                              FlexGlobal &target, bool isotropy = false);

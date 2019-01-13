@@ -312,23 +312,6 @@ void Polymer::summary()
 	<< std::endl;
 }
 
-double Polymer::vsRefineBackbone(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	
-	polymer->refineBackbone();
-	return 0;
-}
-
-void Polymer::vsRefineBackboneFrom(void *object, double position)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	
-	polymer->refineBackboneFrom(position);
-}
-
 void Polymer::refineBackboneFrom(int position)
 {
 	OptionsPtr options = Options::getRuntimeOptions();
@@ -615,18 +598,6 @@ void Polymer::refineVScript(void *object, RefinementType rType)
 	Parser *parser = static_cast<Parser *>(object);
 	Polymer *polymer = dynamic_cast<Polymer *>(parser);
 	polymer->refine(crystal, rType);
-}
-
-double Polymer::vsRefinePositionsToPDB(void *object)
-{
-	refineVScript(object, RefinementModelPos);
-	return 0;
-}
-
-double Polymer::vsRefineSidechainsToDensity(void *object)
-{
-	refineVScript(object, RefinementSidechain);
-	return 0;	
 }
 
 void Polymer::refineAnchorPosition(CrystalPtr target)
@@ -1154,55 +1125,6 @@ void Polymer::hydrogenateContents()
 	}
 }
 
-void Polymer::vsMultiplyBackboneKick(void *object, double value)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *poly = dynamic_cast<Polymer *>(parser);
-
-	for (int i = 0; i < poly->monomerCount(); i++)
-	{
-		MonomerPtr mono = poly->getMonomer(i);
-		
-		if (!mono) continue;
-
-		BackbonePtr back = mono->getBackbone();
-		
-		for (int i = 0; i < back->atomCount(); i++)
-		{
-			AtomPtr atom = back->atom(i);
-			ModelPtr model = atom->getModel();
-			if (!model || !model->isBond())
-			{
-				continue;
-			}
-
-			BondPtr bond = ToBondPtr(model);
-			
-			if (bond->hasWhack())
-			{
-				WhackPtr whack = bond->getWhack();
-				double k = Whack::getKick(&*whack);
-				double w = Whack::getWhack(&*whack);
-				k*= value;
-				w *= value;
-				Whack::setKick(&*whack, k);
-				Whack::setWhack(&*whack, w);
-
-			}
-			else
-			{
-				double kick = Bond::getKick(&*bond);
-				kick *= value;
-				Bond::setKick(&*bond, kick);
-			}
-			
-		}
-	}
-	
-	poly->propagateChange();
-	poly->refreshPositions();
-}
-
 void Polymer::setInitialKick(void *object, double value)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
@@ -1279,29 +1201,6 @@ void Polymer::closenessSummary()
 	std::cout << "\tB factor (Å^2): " << std::setprecision(4) <<
 	bSum << std::endl;
 	std::cout << "\tPositional displacement from PDB (Å): " << posSum << std::endl;
-}
-
-double Polymer::vsRefineLocalFlexibility(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	polymer->refineLocalFlexibility();
-}
-
-void Polymer::vsOmitResidues(void *object, double start, double end)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-
-	polymer->downWeightResidues(start, end, 0);
-}
-
-void Polymer::vsUnomitResidues(void *object, double start, double end)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-
-	polymer->downWeightResidues(start, end, 1);
 }
 
 void Polymer::downWeightResidues(int start, int end, double value) // inclusive
@@ -1518,14 +1417,6 @@ void Polymer::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	FlexGlobal::score(&target);
 }
 
-double Polymer::vsSandbox(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	
-	int anchorNum = polymer->getAnchor();
-}
-
 void Polymer::addProperties()
 {
 	Molecule::addProperties();
@@ -1538,16 +1429,6 @@ void Polymer::addProperties()
 
 		addChild("monomer", getMonomer(i));
 	}
-	
-	exposeFunction("refine_positions_to_pdb", vsRefinePositionsToPDB);
-	exposeFunction("refine_sidechains_to_density", vsRefineSidechainsToDensity);
-	exposeFunction("refine_local_flexibility", vsRefineLocalFlexibility);
-	exposeFunction("refine_backbone_to_density", vsRefineBackbone);
-	exposeFunction("refine_backbone_to_density_from", vsRefineBackboneFrom);
-	exposeFunction("sandbox", vsSandbox);
-
-	exposeFunction("omit_residues", vsOmitResidues);
-	exposeFunction("unomit_residues", vsUnomitResidues);
 }
 
 void Polymer::addObject(ParserPtr object, std::string category)
