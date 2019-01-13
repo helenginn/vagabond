@@ -1273,7 +1273,8 @@ void Polymer::closenessSummary()
 	bSum /= count;
 
 	std::cout << "Across all Chain " << getChainID() << " atoms:\n";
-	std::cout << "\tB factor (Å^2): " << bSum << std::endl;
+	std::cout << "\tB factor (Å^2): " << std::setprecision(4) <<
+	bSum << std::endl;
 	std::cout << "\tPositional displacement from PDB (Å): " << posSum << std::endl;
 }
 
@@ -1563,5 +1564,4 @@ void Polymer::postParseTidy()
 	//applyTranslationTensor();
 	
 }
-
 
