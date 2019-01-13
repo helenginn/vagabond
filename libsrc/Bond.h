@@ -419,7 +419,7 @@ public:
 	/** Create an atom group containing every downstream bond in every
 	 * group from a bond onwards */
 	AtomGroupPtr makeAtomGroup(BondPtr endBond = BondPtr());
-
+	
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 
 	std::vector<BondSample> *getManyPositions(void *object = NULL);

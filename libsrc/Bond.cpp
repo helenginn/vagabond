@@ -805,6 +805,7 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 	double occTotal = 0;
 	_storedSamples.clear();
 	_storedSamples.reserve(prevSamples->size());
+	vec3 mean = empty_vec3();
 	
 	for (size_t i = 0; i < prevSamples->size(); i++)
 	{
@@ -826,6 +827,8 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 		mat3x3 newBasis = makeTorsionBasis(prevHeavyPos, prevMinorPos,
 		                                   myCurrentPos, none);
 
+		vec3_add_to_vec3(&mean, myCurrentPos);
+
 		BondSample nextSample;
 		nextSample.basis = newBasis;
 		nextSample.start = myCurrentPos;
@@ -838,6 +841,8 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 		
 		_storedSamples.push_back(nextSample);
 	}
+	
+	vec3_mult(&mean, 1 / (double)(prevSamples->size()));
 
 	if (_resetOccupancy)
 	{
@@ -848,6 +853,19 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 	}
 
 	_changedSamples = false;
+
+	if (_useMutex)
+	{
+		guiLock.lock();
+	}
+	
+	_absolute = mean;
+
+	if (_useMutex)
+	{
+		guiLock.unlock();
+	}
+	
 	
 	sanityCheck();
 
