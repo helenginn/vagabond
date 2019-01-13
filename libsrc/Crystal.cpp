@@ -380,6 +380,7 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 				
 	CSVPtr csv = CSVPtr(new CSV(3, "res", "data", "model"));
 	std::vector<double> xs, ys, zs;
+	_resBinAves = std::map<double, double>();
 
 	for (size_t i = 0; i < bins.size() - 1; i++)
 	{
@@ -398,6 +399,9 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 		
 		nom /= (double)binRatios[i].size();
 		den /= (double)binRatios[i].size();
+		
+		/* Get average F-obs per resolution shell */
+		_resBinAves[bins[i]] = sqrt(nom);
 		
 		double length = (1/bins[i] + 1/bins[i + 1]) / 2;
 

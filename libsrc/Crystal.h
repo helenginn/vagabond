@@ -415,6 +415,8 @@ private:
 	std::string _lastAveragePDB;
 	std::string _lastMtz;
 	std::string _comments;
+	
+	std::map<double, double> _resBinAves;
 
 	double _rWork;
 	double _rFree;
