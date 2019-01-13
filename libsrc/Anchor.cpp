@@ -304,6 +304,11 @@ void Anchor::recalculateWhacks()
 		_whacks[i]->disable();
 	}
 	
+	for (int i = 0; i < twistCount(); i++)
+	{
+		_twists[i]->disable();
+	}
+	
 	propagateChange(-1, true);
 
 	for (int i = 0; i < whackCount(); i++)
@@ -311,11 +316,21 @@ void Anchor::recalculateWhacks()
 		_whacks[i]->saveSamples();
 	}
 
+	for (int i = 0; i < twistCount(); i++)
+	{
+		_twists[i]->saveSamples();
+	}
+
 	_disableWhacks = false;
 
 	for (int i = 0; i < whackCount(); i++)
 	{
 		_whacks[i]->enable();
+	}
+
+	for (int i = 0; i < twistCount(); i++)
+	{
+		_twists[i]->enable();
 	}
 
 	propagateChange(-1, true);
@@ -357,6 +372,14 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 	translateStartPositions();
 
 	fixCentroid();
+
+	/* Apply twists to each bond. */
+	for (int i = 0; i < twistCount() && !_disableWhacks; i++)
+	{
+		TwistPtr twist = _twists[i];
+		twist->applyToAnchorSamples(_storedSamples);
+	}
+
 	
 	/* Apply whacks as normal, if we are not re-caching Whacks. */
 	for (int i = 0; i < _whacks.size() && !_disableWhacks; i++)
