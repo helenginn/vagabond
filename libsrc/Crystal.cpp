@@ -86,7 +86,7 @@ void Crystal::setHKL2Real(mat3x3 mat)
 	_hkl2real = mat;
 }
 
-void Crystal::refineSidechains()
+void Crystal::refinePolymers(RefinementType type)
 {
 	for (int i = 0; i < moleculeCount(); i++)
 	{
@@ -95,9 +95,24 @@ void Crystal::refineSidechains()
 			continue;
 		}
 
-		ToPolymerPtr(molecule(i))->refine(shared_from_this(),
-		                                  RefinementSidechain);
+		ToPolymerPtr(molecule(i))->refine(shared_from_this(), type);
 	}
+
+}
+
+void Crystal::refineCrude()
+{
+	refinePolymers(RefinementCrude);
+}
+
+void Crystal::refinePositions()
+{
+	refinePolymers(RefinementModelPos);
+}
+
+void Crystal::refineSidechains()
+{
+	refinePolymers(RefinementSidechain);
 }
 
 void Crystal::refineIntraMovements()
@@ -110,20 +125,6 @@ void Crystal::refineIntraMovements()
 		}
 
 		ToPolymerPtr(molecule(i))->refineLocalFlexibility();
-	}
-}
-
-void Crystal::refinePositions()
-{
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isPolymer())
-		{
-			continue;
-		}
-
-		ToPolymerPtr(molecule(i))->refine(shared_from_this(),
-		                                  RefinementModelPos);
 	}
 }
 
