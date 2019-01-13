@@ -61,6 +61,16 @@ public:
 	 * \return empty AtomPtr() if calling atom is not one of the options, or
 	 * the opposite option if valid. */
 	AtomPtr getOtherAtom(AtomPtr calling);
+	
+	AtomPtr getNAtom()
+	{
+		return _nAtom.lock();
+	}
+	
+	AtomPtr getCAtom()
+	{
+		return _cAtom.lock();
+	}
 
 	void setOccupancies(std::vector<double> occ)
 	{
