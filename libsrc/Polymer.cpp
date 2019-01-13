@@ -8,7 +8,7 @@
 
 #include "Polymer.h"
 #include "Timer.h"
-#include "Whack.h"
+#include "Twist.h"
 #include "Crystal.h"
 #include "Sidechain.h"
 #include "Monomer.h"
@@ -129,9 +129,8 @@ void Polymer::whack()
 
 	std::cout << "Whacking chain " << getChainID() << std::endl;
 	
-	AnchorPtr anchor = getAnchorModel();
-	
 	int total = monomerEnd() - monomerBegin();
+	AnchorPtr anchor = getAnchorModel();
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -177,9 +176,13 @@ void Polymer::whack()
 			prop = 1 - prop;
 		}
 		
-		whack->addToAnchor(getAnchorModel());
+		whack->addToAnchor(anchor);
 		
 		BondPtr next;
+
+		TwistPtr twist = TwistPtr(new Twist());
+		twist->setBond(bond);
+		twist->addToAnchor(anchor);
 		
 		while (true)
 		{
@@ -193,24 +196,21 @@ void Polymer::whack()
 				break;
 			}
 			
+			TwistPtr twist = TwistPtr(new Twist());
+			twist->setBond(next);
+			twist->addToAnchor(anchor);
+			
 			if (next->getAtom()->getResidueNum() != i)
 			{
 				break;
 			}
-			
-			next->setRefineFlexibility(false);
 
-			/*
-			whack = WhackPtr(new Whack());
-			whack->setBond(ToBondPtr(next));
-			whack->addToAnchor(anchor);
-			*/
-			
+			next->setRefineFlexibility(false);
 			bond = ToBondPtr(next);
 		}
 	}
 
-	getAnchorModel()->propagateChange(-1, true);
+	anchor->propagateChange(-1, true);
 }
 
 void Polymer::tieAtomsUp()
