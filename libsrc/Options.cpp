@@ -27,7 +27,7 @@
 #include "WaterNetwork.h"
 #include "FileReader.h"
 #include "VBondReader.h"
-#include "commit.h"
+#include "../commit.h"
 
 OptionsPtr Options::options;
 double Options::_kick = 0.000;

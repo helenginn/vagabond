@@ -36,12 +36,10 @@ hash_script = find_program('get_hash.sh')
 # This will produce the dependency file.
 run_command('get_hash.sh')
 
-get_hash = generator(hash_script,
-		depfile : 'get_hash.dep',
-		output : '@BASENAME@',
-		arguments : ['@INPUT@', '@OUTPUT@'])
-
-gen_src = get_hash.process('libsrc/commit.h.pre')
+gen_src = custom_target('commit-output',
+                        input : ['libsrc/commit.h.pre'],
+                        output : ['commit.h'],
+                        command : [hash_script, '@INPUT@', '@OUTPUT@'])
 
 
 # Meat of the vagabond library, minus command line-specific or GUI-specific source files.
