@@ -237,7 +237,7 @@ void Options::executeProtocol()
 			
 			double newWork = crystal->getRWork();
 
-			if (newWork > oldWork && !_rIntra)
+			if (newWork > oldWork && _rIntra)
 			{
 				crystal->restoreState(-1);
 			}
