@@ -347,7 +347,7 @@ void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
 	monomer->refine(target, rType);
 }
 
-void refineLeftRegion(AtomGroupPtr region, CrystalPtr target, double light)
+void refineRegion(AtomGroupPtr region, CrystalPtr target, double light)
 {
 	region->addParamType(ParamOptionTorsion, light);
 	region->addParamType(ParamOptionBondAngle, light);
@@ -377,10 +377,35 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	
 	int anchor = getAnchor();
 	
-	double step = 1.5;
+	double step = 0.5;
 
 	std::cout << "Refining core region, " << getChainID() << " " << coreStart
 	<< " to " << coreEnd << std::flush;
+	
+	AtomList top = coreRegion->topLevelAtoms();
+	
+	if (!top.size())
+	{
+		return;
+	}
+	
+	ModelPtr model = top[0]->getModel();
+	
+	ExplicitModelPtr eModel;
+	if (model->isBond())
+	{
+		eModel = ToBondPtr(model)->getParentModel();
+	}
+	else if (model->isAnchor())
+	{
+		eModel = ToAnchorPtr(model);
+	}
+	else
+	{
+		return;
+	}
+
+	coreRegion->makeBackboneTwists(eModel);
 
 	coreRegion->addParamType(ParamOptionNumBonds, (2 * pad + 1) * 3);
 	coreRegion->addParamType(ParamOptionTorsion, step);
@@ -402,16 +427,49 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 	
 	std::cout << "." << std::flush;
 	
-	AtomGroupPtr leftRegion = monomerRange(-1, anchor - 1);
-	AtomGroupPtr rightRegion = monomerRange(anchor + 1, -1);
+	int nTerm = -1;
+	int nStart = anchor - 1;
+	int cStart = anchor + 1;
+	int cTerm = -1;
+	
+	if (coreStart < anchor && !coversAnchor)
+	{
+		nStart = coreEnd + 3;
+		if (nStart >= anchor)
+		{
+			nStart = anchor - 1;
+		}
+		
+		nTerm = coreStart - 10;
+	}	
+	
+	if (coreEnd > anchor && !coversAnchor)
+	{
+		cStart = coreStart - 3;
+		if (cStart > anchor)
+		{
+			cStart = coreEnd;
+		}
+		
+		cTerm = coreEnd + 10;
+	}
+	
+	AtomGroupPtr leftRegion = monomerRange(nTerm, nStart);
+	AtomGroupPtr rightRegion = monomerRange(cStart, cTerm);
 
-	refineLeftRegion(leftRegion, target, step);
-	refineLeftRegion(rightRegion, target, step);
+	if (coreEnd < anchor || coversAnchor)
+	{
+		refineRegion(leftRegion, target, step);
+	}
 
-	getAnchorModel()->propagateChange(-1, true);
+	if (coreStart >= anchor || coversAnchor)
+	{
+		refineRegion(rightRegion, target, step);
+	}
 
-	std::cout << " Displacement now " << getAverageDisplacement()
+	std::cout << " Displacement by " << coreRegion->getAverageDisplacement()
 	<< " Å." << std::endl;
+
 }
 
 void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
