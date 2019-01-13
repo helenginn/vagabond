@@ -101,6 +101,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	deriveBondAngle();
 	deriveCirclePortion();
 	deriveTorsionAngle();
+	
 }
 
 Bond::Bond(Bond &other)
@@ -677,6 +678,18 @@ double Bond::getBaseTorsion()
 	}
 
 	double baseTorsion = sisBond->_torsion;
+	
+	if (torsionNumber == 0 && model->isBond())
+	{
+		BondPtr parent = ToBondPtr(getParentModel());
+		
+		if (parent->hasTwist())
+		{
+			double angle = parent->getTwist()->getTorsionCorrection();
+			baseTorsion += angle;
+		}
+	}
+	
 	return baseTorsion;
 }
 
