@@ -38,6 +38,7 @@ bool Options::_overfit = false;
 bool Options::_diagnostics = false;
 
 bool Options::_refine = false;
+bool Options::_far = false;
 bool Options::_rPosition = true;
 bool Options::_rSidechains = true;
 bool Options::_rInter = true;
@@ -210,6 +211,13 @@ void Options::executeProtocol()
 		}
 	}
 	
+	for (int i = 0; i < 3 && _far; i++)
+	{
+		recalculateFFT();
+		std::cout << "Refining positions to density (" << 
+		i + 1 << " / 3)" << std::endl;
+		crystal->refineCrude();
+	}
 	
 	recalculateFFT();
 	
@@ -232,7 +240,6 @@ void Options::executeProtocol()
 			if (newWork > oldWork && !_rIntra)
 			{
 				crystal->restoreState(-1);
-				break;
 			}
 		}
 
@@ -525,6 +532,7 @@ void Options::parse()
 
 		understood |= parseParameter(arg, "tie", &_tie);
 		understood |= parseParameter(arg, "refine", &_refine);
+		understood |= parseParameter(arg, "far", &_far);
 		understood |= parseParameter(arg, "position", &_rPosition);
 		understood |= parseParameter(arg, "inter-mol", &_rInter);
 		understood |= parseParameter(arg, "intra-mol", &_rIntra);

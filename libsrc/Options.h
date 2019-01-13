@@ -334,6 +334,7 @@ private:
 	static bool _rPosition;
 	static bool _rSidechains;
 	static bool _refine;
+	static bool _far;
 	static bool _rInter;
 	static bool _rIntra;
 };
