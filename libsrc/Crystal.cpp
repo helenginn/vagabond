@@ -446,14 +446,6 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 	*bFactor = b;
 }
 
-void Crystal::removeAtom(AtomPtr atom)
-{
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		molecule(i)->removeAtom(atom);
-	}
-}
-
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
                                      bool verbose, double lowRes, double highRes)
 {
@@ -1828,3 +1820,12 @@ void Crystal::rigidBodyFit()
 		}
 	}
 }
+
+void Crystal::removeAtom(AtomPtr atom)
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		molecule(i)->removeAtom(atom);
+	}
+}
+
