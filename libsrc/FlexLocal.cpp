@@ -760,6 +760,7 @@ void FlexLocal::scanBondParams()
 	{
 		Options::setNSamples(NULL, 40);
 	}
+
 	_polymer->refreshPositions();
 
 	Timer timer;
