@@ -158,7 +158,6 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 		anchSamp[i].old_start = rotate_round_bond(old_start, centre, rot);
 		
 		mat3x3 basis = anchSamp[i].basis;
-		
 		anchSamp[i].basis = mat3x3_mult_mat3x3(rot, basis);
 	}
 }
