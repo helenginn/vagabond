@@ -562,7 +562,7 @@ private:
 	bool _disabled;
 	
 	bool _split;
-
+	
 	void initialize();
 	double getBaseTorsion();
 
