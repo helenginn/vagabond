@@ -37,6 +37,7 @@ hash_script = find_program('get_hash.sh')
 run_command('get_hash.sh')
 
 get_hash = generator(hash_script,
+		depfile : 'get_hash.dep',
 		output : '@BASENAME@',
 		arguments : ['@INPUT@', '@OUTPUT@'])
 
