@@ -94,6 +94,16 @@ public:
 	{
 		return _atom.lock();
 	}
+
+	void addTwist(TwistPtr twist)
+	{
+		_twists.push_back(twist);
+	}
+	
+	size_t twistCount()
+	{
+		return _twists.size();
+	}
 	
 	void addWhack(WhackPtr whack)
 	{
@@ -155,6 +165,7 @@ private:
 	std::vector<vec3> _sphereAngles;
 	std::vector<double> _occupancies;
 	std::vector<WhackPtr> _whacks;
+	std::vector<TwistPtr> _twists;
 	
 	bool _disableWhacks;
 };

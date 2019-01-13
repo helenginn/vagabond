@@ -462,6 +462,26 @@ public:
 		
 		return nakedDownstreamBond(group, i)->shared_from_this();
 	}
+
+	void setTwist(TwistPtr twist)
+	{
+		_twist = twist;
+	}
+	
+	bool hasTwist()
+	{
+		return (!_twist.expired());
+	}
+	
+	TwistPtr getTwist()
+	{
+		if (_twist.expired())
+		{
+			return TwistPtr();
+		}
+		
+		return _twist.lock();
+	}
 	
 	void setWhack(WhackPtr whack)
 	{
@@ -504,6 +524,7 @@ private:
 
 	AtomWkr _heavyAlign;
 	WhackWkr _whack;
+	TwistWkr _twist;
 
 	double _bondLength;
 

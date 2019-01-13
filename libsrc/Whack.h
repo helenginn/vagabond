@@ -33,6 +33,16 @@
  * a kick - so it's called a Whack.
  */
 
+inline vec3 rotate_round_bond(vec3 start, vec3 centre, mat3x3 rot)
+{
+	vec3_subtract_from_vec3(&start, centre);
+	mat3x3_mult_vec(rot, &start);
+	vec3_add_to_vec3(&start, centre);
+
+	return start;
+}
+
+
 class Whack : public Parser
 {
 public:

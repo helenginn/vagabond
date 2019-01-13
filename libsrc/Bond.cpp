@@ -16,6 +16,7 @@
 #include "Shouter.h"
 #include "AtomGroup.h"
 #include "Whack.h"
+#include "Twist.h"
 #include "Anchor.h"
 #include "maths.h"
 #include "Monomer.h"
