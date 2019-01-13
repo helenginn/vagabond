@@ -70,6 +70,9 @@ public:
 	*/
 	void addTorsion(BondPtr bond, double range, double interval);
 
+	void addTwist(BondPtr bond, double range, double interval);
+	void addTT(BondPtr bond, double range, double interval);
+
 	/**
 	* Add torsion blur (kick function) to sampled parameters
 	* \param bond bond to vary kick for
@@ -85,8 +88,8 @@ public:
 	/** Add sampled atoms from a given atom group and conformer name */
 	void addSampledAtoms(AtomGroupPtr group, std::string conformer = "");
 	
-	/** Add absolute position for an atom controlled by Absolute class */
-	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
+	/** Add anchor position for an atom controlled by Anchor class */
+	void addAnchorPosition(AnchorPtr anch, double range, double interval);
 
 	/** Add absolute B factor for an atom controlled by Absolute class */
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
@@ -193,6 +196,7 @@ protected:
 	void setupCloseAtoms();
 	void setupScoreWithMap();
 	void addAtomsForBond(BondPtr bond);
+	bool isBackwards(BondPtr bond);
 	
 	double getParameter(ParamOptionType type)
 	{
