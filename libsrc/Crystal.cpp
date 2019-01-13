@@ -697,6 +697,8 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 	/* If full scaling requested, take global default. */
 	ScalingType scaleType = Options::getScalingType();
 	double scale, bFactor;
+
+	/* We want to know the Wilson plot results */
 	scaleAndBFactor(data, &scale, &bFactor);
 	_bFacFit = bFactor;
 
@@ -745,8 +747,10 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 
 void Crystal::scaleComponents(DiffractionPtr data)
 {
+	/* Just scale using an absolute value only */
 	scaleToDiffraction(data, false);
 	scaleSolvent(data);
+	/* Scale using the favoured mechanism (e.g. per-shell) */
 	scaleToDiffraction(data);
 }
 
@@ -820,6 +824,10 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 
 				bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
 				
+				/* If the naughty flag is set on the command line,
+				 * we DO include R free in refinement - this is to show
+				 * that it genuinely makes a difference */
+
 				if (ignoreRfree)
 				{
 					isRfree = 0;

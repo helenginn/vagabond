@@ -65,8 +65,15 @@ public:
 	* 	\param data diffraction data against which statistics should be generated.
 	*/
 	double concludeRefinement(int cycleNum, DiffractionPtr data);
+	
+	/** Should be folded into previous concludeRefinement(...) soon */
 	static double vsConcludeRefinement(void *object);
+	
+	/** Calculate new observed/calculated density but don't write out
+	 * 	R factors to the screen */
 	void silentConcludeRefinement();
+	
+	/** Move back to an earlier saved version of the model */
 	static void vsRestoreState(void *object, double val);
 
 	static void vsChangeSampleSize(void *object, double n);
@@ -147,9 +154,14 @@ public:
 	
 	void omitScan();
 	
+	/** Write out the % contribution of elements in the crystal to the
+	 *  total difference density */
 	void differenceAttribution();
 	
 	void removeAtom(AtomPtr atom);
+	
+	/** Takes an input crystal position and moves it to the nearest
+	 *  position which falls on an integer value of the FFT grid */
 	vec3 snapToGrid(vec3 pos);
 
 	/** Calculates the anchor residue for each Polymer and assigns to each. */
