@@ -18,6 +18,10 @@ moc_*.h
 # Prerequisites
 *.d
 
+# To be regenerated locally
+libsrc/commit.h
+get_hash.dep
+
 # Compiled Object files
 *.slo
 *.lo
