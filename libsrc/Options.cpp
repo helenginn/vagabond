@@ -74,16 +74,6 @@ Options::Options(int argc, const char **argv)
 
 	std::cout << std::endl;
 
-	if (argc <= 1)
-	{
-		std::cout << "Please specify a macromolecular model." << std::endl;
-		std::cout << "\te.g., vagabond --with-model=xxxx.pdb" << std::endl;
-		std::cout << std::endl;
-		std::cout << "Alternatively, see all options:" << std::endl;
-		std::cout << "\tvagabond --help\n" << std::endl;
-		return;
-	}
-
 	for (int i = 1; i < argc; i++)
 	{
 		arguments.push_back(argv[i]);
@@ -96,9 +86,6 @@ void Options::run()
 	{
 		parse();
 	}
-	
-	writeCommandLine();
-	
 
 	if (_outputDir.length())
 	{
@@ -120,10 +107,12 @@ void Options::run()
 	std::cout << "          \\ o           ___           o /\n";
 	std::cout << "            \\ o        /   \\        o /\n";
 	std::cout << "              -_______-     -_______-\n\n";
-	std::cout << "             Vagabond at your service.\n" << std::endl;
+	std::cout << "            Vagabond at your service.\n" << std::endl;
 	std::cout << std::endl;
-	std::cout << "Vagabond " << VAGABOND_VERSION_COMMIT_ID <<  std::endl;
-
+	std::cout << "Vagabond v" << VAGABOND_VERSION_COMMIT_ID <<  std::endl;
+	
+	writeCommandLine();
+	
 	/* Load reflection file */
 	if (_mtzFile.length())
 	{
@@ -140,9 +129,22 @@ void Options::run()
 	}
 	
 	/* Load model file */
-	openModel(_modelFile);
+	if (_modelFile.length())
+	{
+		openModel(_modelFile);
+	}
 	
 	notifyGUI(false);
+
+	if (arguments.size() <= 0)
+	{
+		std::cout << "Please specify a macromolecular model." << std::endl;
+		std::cout << "\te.g., vagabond --with-model=xxxx.pdb" << std::endl;
+		std::cout << std::endl;
+		std::cout << "Alternatively, see all options:" << std::endl;
+		std::cout << "\tvagabond --help\n" << std::endl;
+		return;
+	}
 	
 	if (!_manual && !crystals.size())
 	{
