@@ -1,10 +1,20 @@
-//
-//  Options.cpp
-//  vagabond
-//
-//  Created by Helen Ginn on 22/07/2017.
-//  Copyright (c) 2017 Strubi. All rights reserved.
-//
+// Vagabond
+// Copyright (C) 2017-2018 Helen Ginn
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Options.h"
 #include <iostream>
@@ -17,6 +27,7 @@
 #include "WaterNetwork.h"
 #include "FileReader.h"
 #include "VBondReader.h"
+#include "commit.h"
 
 OptionsPtr Options::options;
 double Options::_kick = 0.000;
@@ -110,6 +121,8 @@ void Options::run()
 	std::cout << "            \\ o        /   \\        o /\n";
 	std::cout << "              -_______-     -_______-\n\n";
 	std::cout << "             Vagabond at your service.\n" << std::endl;
+	std::cout << std::endl;
+	std::cout << "Vagabond " << VAGABOND_VERSION_COMMIT_ID <<  std::endl;
 
 	/* Load reflection file */
 	if (_mtzFile.length())

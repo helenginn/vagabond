@@ -30,9 +30,22 @@ lib_ccp4 = library('ccp4', 'libccp4/ccp4_array.c', 'libccp4/ccp4_general.c', 'li
 inc_ccp4 = include_directories('libccp4')
 dep_ccp4 = declare_dependency(link_with: lib_ccp4, include_directories: inc_ccp4)
 
+# Run the version and hash generator
+hash_script = find_program('get_hash.sh')
+
+# This will produce the dependency file.
+run_command('get_hash.sh')
+
+get_hash = generator(hash_script,
+		output : '@BASENAME@',
+		arguments : ['@INPUT@', '@OUTPUT@'])
+
+gen_src = get_hash.process('libsrc/commit.h.pre')
+
+
 # Meat of the vagabond library, minus command line-specific or GUI-specific source files.
 
-lib_vag= library('vag', 'libsrc/Absolute.cpp', 
+lib_vag= library('vag', gen_src, 'libsrc/Absolute.cpp', 
 'libsrc/Anchor.cpp', 
 'libsrc/Anisotropicator.cpp', 
 'libsrc/Atom.cpp', 
@@ -91,6 +104,7 @@ lib_vag= library('vag', 'libsrc/Absolute.cpp',
 dependencies: [png_dep, fftw_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep], cpp_args: ['-w', '-std=c++11'])
 inc_vag = include_directories('libsrc')
 dep_vag = declare_dependency(link_with: lib_vag, include_directories: inc_vag)
+
 
 # Command line interface
 
