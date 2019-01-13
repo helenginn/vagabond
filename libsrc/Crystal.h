@@ -304,8 +304,6 @@ public:
 	* 	\return summary string in human-readable format. */
 	std::string agreementSummary();
 	
-	void overfitTest();
-
 	virtual std::string getClassName()
 	{
 		return "Crystal";

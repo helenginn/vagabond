@@ -34,7 +34,6 @@ bool Options::_useRFree = true;
 int Options::_enableTests = 3;
 int Options::_bondAngles = 1;
 bool Options::_powder = false;
-bool Options::_overfit = false;
 bool Options::_diagnostics = false;
 
 bool Options::_refine = false;
@@ -159,11 +158,6 @@ void Options::run()
 			_notify->setInstruction(InstructionTypeResetExplorer);
 		}
 		
-		if (_overfit)
-		{
-			crystal->overfitTest();
-		}
-
 		executeProtocol();
 
 		if (_notify)
@@ -490,7 +484,6 @@ void Options::parse()
 
 		if (!arg.compare(0, prefix.size(), prefix))
 		{
-			_overfit = true;
 			understood = true;
 		}
 
