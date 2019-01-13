@@ -39,7 +39,9 @@ run_command('get_hash.sh')
 gen_src = custom_target('commit-output',
                         input : ['libsrc/commit.h.pre'],
                         output : ['commit.h'],
-                        command : [hash_script, '@INPUT@', '@OUTPUT@'])
+                        command : [hash_script, '@INPUT@', '@OUTPUT@'],
+                        build_by_default: true,
+                        build_always_stale: true)
 
 
 # Meat of the vagabond library, minus command line-specific or GUI-specific source files.
