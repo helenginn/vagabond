@@ -147,6 +147,10 @@ public:
 	
 	void saveAtomPositions();
 	
+	std::vector<AtomGroupPtr> includingInRefinement()
+	{
+		return _includeForRefine;
+	}
 protected:
 	virtual bool shouldRefineAtom(AtomPtr atom) { return true; };
 	int _timesRefined;
@@ -170,6 +174,7 @@ protected:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void linkReference(ParserPtr object, std::string category);
 	std::vector<AtomPtr> _atoms;
+	std::vector<AtomGroupPtr> _includeForRefine;
 private:
 	static void plotCoordVals(std::vector<CoordVal> &vals, bool difference,
 	                          double cutoff, std::string filename);
@@ -191,7 +196,6 @@ private:
 	bool _beenTied;
 	CrystalPtr _target;
 	RefinementType _rType;
-	std::vector<AtomGroupPtr> _includeForRefine;
 
 	void privateRefine(); 
 	std::map<std::string, size_t> conformerMap();
