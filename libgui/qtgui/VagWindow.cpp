@@ -336,10 +336,10 @@ int VagWindow::waitForInstructions()
 				break;
 
 				case InstructionTypeRefineDensity: 
-				enable();
+				disable();
 				crystal->refineSidechains();
 				options->recalculateFFT();
-				disable();
+				enable();
 				break;
 
 				case InstructionTypeFindDisulphides:
@@ -347,17 +347,17 @@ int VagWindow::waitForInstructions()
 				break;
 				
 				case InstructionTypeRefineSidePos:
-				enable();
+				disable();
 				crystal->refineSidechainPositions();
 				options->recalculateFFT();
-				disable();
+				enable();
 				break;
 
 				case InstructionTypeRefineIntramolecule:
-				enable();
+				disable();
 				crystal->refineIntraMovements();
 				options->recalculateFFT();
-				disable();
+				enable();
 				break;
 
 				case InstructionTypeRecalculateFFT:
