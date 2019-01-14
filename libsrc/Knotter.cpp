@@ -163,7 +163,7 @@ void Knotter::tieTowardsNTerminus()
 
 	cAlpha2NSpine->activate();
 	
-	if (isGlycine && _bondAngles > 2)
+	if (isGlycine && _bondAngles >= 3)
 	{
 		carbonyl2CAlpha->setRefineBondAngle();
 		cAlpha2NSpine->setRefineBondAngle();
@@ -671,7 +671,7 @@ void Knotter::makeHistidine()
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->activate();
 
-	if (_bondAngles > 1)
+	if (_bondAngles >= 1)
 	{
 		cb2cg->setRefineBondAngle();
 	}
@@ -718,7 +718,7 @@ void Knotter::makeTyrosine()
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->activate();
 
-	if (_bondAngles > 1)
+	if (_bondAngles >= 1)
 	{
 		ca2cb->setRefineBondAngle();
 		cb2cg->setRefineBondAngle();
@@ -776,7 +776,7 @@ void Knotter::makePhenylalanine()
 	cb2cg->activate();
 
 
-	if (_bondAngles > 1)
+	if (_bondAngles >= 1)
 	{
 		ca2cb->setRefineBondAngle();
 		cb2cg->setRefineBondAngle();
@@ -835,7 +835,7 @@ void Knotter::makeTryptophan()
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
 	cb2cg->activate();
 
-	if (_bondAngles > 1)
+	if (_bondAngles >= 1)
 	{
 		ca2cb->setRefineBondAngle();
 		cb2cg->setRefineBondAngle();
