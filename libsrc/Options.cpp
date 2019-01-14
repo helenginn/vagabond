@@ -42,7 +42,6 @@ double Options::_minRes = 0.0;
 double Options::_maxRes = -1.0;
 double Options::_probeRadius = -0.1;
 bool Options::_useRFree = true;
-int Options::_enableTests = 3;
 int Options::_bondAngles = 2;
 bool Options::_powder = false;
 bool Options::_diagnostics = false;
@@ -528,17 +527,6 @@ void Options::parse()
 		understood |= parseParameter(arg, "--dampen=", &_dampen);
 		understood |= parseParameter(arg, "--output-dir=", &_outputDir);
 		understood |= parseParameter(arg, "--anchor=", &_anchor);
-
-		prefix = "--enable-tests=";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			std::string testString = arg.substr(prefix.size());
-			_enableTests = atoi(testString.c_str());
-			std::cout << "Enabling Helen's test/sandbox no. " <<
-			enableTests() << "." << std::endl;
-			understood = true;
-		}
 
 		prefix = "--overfit-test";
 

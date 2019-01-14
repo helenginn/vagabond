@@ -113,11 +113,6 @@ public:
 		return _maxRes;
 	}
 
-	static int enableTests()
-	{
-		return _enableTests;
-	}
-
 	static double getBStart()
 	{
 		return _bStart;
@@ -330,7 +325,6 @@ private:
 	static double _bMult;
 	static double _bSubt;
 	static double _bReal;
-	static int _enableTests;
 	static double _bStart;
 	static double _sampling;
 	static int _nSamples;
