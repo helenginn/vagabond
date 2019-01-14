@@ -356,22 +356,33 @@ void Options::displayHelp()
 	std::cout << "Takes an atomistic PDB file and refines it against" << std::endl;
 	std::cout << "a reflection list in torsion space.\n\n" << std::endl;
 	std::cout << "--help\t\t\t\tDisplays command list.\n" << std::endl;
-	std::cout << "--with-model=<filename>\t\tName of the input PDB or Vagabond model file to refine.\n" << std::endl;
-	std::cout << "--with-mtz=<filename>\t\tName of the MTZ file to refine against.\n" << std::endl;
-	std::cout << "--output-dir=<directory>\tOptional name of a directory to dump processing.\n" << std::endl;
-	std::cout << "--kick=<num>\t\t\tOptional override for kick fraction for initial bond\n" << std::endl;
-	std::cout << "--dampen=<num>\t\t\tOptional override for dampen fraction for all bonds\n" << std::endl;
-	std::cout << "--bfactor=<num>\t\t\tOptional override for the assigned B factor for anchor residues\n" << std::endl;
-	std::cout << "--min-res=<value>\t\tOptional override for the minimum resolution in Ångströms.\n" << std::endl;
-	std::cout << "--max-res=<value>\t\tOptional override for the maximum resolution in Ångströms.\n" << std::endl;
-	std::cout << "--global-b=<value>\t\tAdd a real space B factor when adding explicit atoms to the map.\n"\
-	"\t\t\t\t (default 0.).\n" << std::endl;
-	std::cout << "--shell-scale\t\t\tWhen calculating R factors, scale each resolution bin of Fcalc"\
-	"to Fobs\n\t\t\t\t (default 0).\n" << std::endl;
 	std::cout << std::endl;
+	std::cout << "Inputs and outputs:\n" << std::endl;
+	std::cout << "--with-mtz=<filename>\t\tName of the MTZ file to refine against." << std::endl;
+	std::cout << "--with-model=<filename>\t\tName of the input PDB or Vagabond model file to refine." << std::endl;
+	std::cout << "--output-dir=<directory>\tOptional name of a directory to dump processing.\n" << std::endl;
+	std::cout << "Model/data options:\n" << std::endl;
+	std::cout << "--bfactor=<num>\t\t\tOptional override for the assigned B factor for anchor residues" << std::endl;
+	std::cout << "--nsamples=<num>\t\tChange number of samples of model from default or saved value\n\t\t\t\t(default 120)." << std::endl;
+	std::cout << "--min-res=<value>\t\tOptional override for the minimum resolution in Ångströms." << std::endl;
+	std::cout << "--max-res=<value>\t\tOptional override for the maximum resolution in Ångströms." << std::endl;
+	std::cout << "--global-b=<value>\t\tAdd a real space B factor when adding explicit atoms to the map\n"\
+	"\t\t\t\t(default 0)." << std::endl;
+	std::cout << "--shell-scale\t\t\tWhen calculating R factors, scale each resolution bin of Fcalc "\
+	"to Fobs\n\t\t\t\t(default 0)." << std::endl;
+	std::cout << "--(no-)tie\t\t\tChoose whether to tie PDB atoms up into Vagabond model definition." << std::endl;
 	std::cout << "--no-rfree\t\t\tDo not use this function.\n" << std::endl;
+	std::cout << "Refinement functionality:\n" << std::endl;
+	std::cout << "--(no-)refine\t\t\tChoose whether to perform refinement." << std::endl;
+	std::cout << "--(no-)position\t\t\tChoose whether to refine positions to original PDB coordinates." << std::endl;
+	std::cout << "--(no-)inter-mol\t\tChoose whether to refine whole molecule movements to electron density." << std::endl;
+	std::cout << "--(no-)intra-mol\t\tChoose whether to refine internal backbone motion to electron density." << std::endl;
+	std::cout << "--(no-)sidechain\t\tChoose whether to refine sidechains to electron density." << std::endl;
+	std::cout << "--(no-)far\t\t\t[BETA] Choose whether to refine positions to electron density from far solution." << std::endl;
+	std::cout << "--ncycles=<num>\t\t\tNumber of refinement macrocycles (default is 5+ to convergence)\n" << std::endl;
 	std::cout << "Baseline command to start running vagabond:\n" << std::endl;
-	std::cout << "\tvagabond --with-pdb=start.pdb --with-mtz=start.mtz\n" << std::endl;
+	std::cout << "\tvagabond --with-mtz=start.mtz --with-model=start.pdb"
+	" --output-dir=refine\n" << std::endl;
 
 	exit(0);
 }
