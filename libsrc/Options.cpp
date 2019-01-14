@@ -43,7 +43,7 @@ double Options::_maxRes = -1.0;
 double Options::_probeRadius = -0.1;
 bool Options::_useRFree = true;
 int Options::_enableTests = 3;
-int Options::_bondAngles = 1;
+int Options::_bondAngles = 2;
 bool Options::_powder = false;
 bool Options::_diagnostics = false;
 
