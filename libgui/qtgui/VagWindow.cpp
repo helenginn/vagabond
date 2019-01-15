@@ -67,9 +67,11 @@ void VagWindow::makeMenu()
 	QAction *sep = scaling->addSeparator();
 	actions.push_back(sep);
 	
+	/*
 	QAction *adjust = scaling->addAction(tr("Adjust real-space B factor"));
 	connect(adjust, &QAction::triggered, this, &VagWindow::adjustBFactor);
 	actions.push_back(adjust);
+	*/
 
 	QAction *chooseB = scaling->addAction(tr("Change real-space B factor..."));
 	connect(chooseB, &QAction::triggered,
