@@ -182,12 +182,9 @@ void Options::run()
 		}
 		
 		executeProtocol();
-
-		if (_notify)
-		{
-			_notify->enable();
-		}
 	}
+	
+	notifyGUI(true);
 
 	finished:
 
