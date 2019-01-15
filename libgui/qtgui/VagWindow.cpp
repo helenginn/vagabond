@@ -8,7 +8,7 @@
 
 #define DEFAULT_WIDTH 900
 #define DEFAULT_HEIGHT 660
-#define LOG_WIDTH 330
+#define LOG_WIDTH 350
 #define STATUS_HEIGHT 60
 #define BUTTON_WIDTH 0
 
