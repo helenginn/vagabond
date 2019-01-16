@@ -1112,69 +1112,6 @@ void Polymer::findAnchorNearestCentroid()
 	setAnchor(anchorRes);
 }
 
-double Polymer::overfitTest(int round)
-{
-	int increment = (monomerCount() - beginMonomer()->first) / 10;
-	int test = increment / 2 + beginMonomer()->first + round * increment;
-
-	MonomerPtr monomer = getMonomer(test);
-	std::cout << "Overfit test " << round << " on polymer "
-	<< getChainID() << ", residue " << monomer->getResidueNum() << std::endl;
-	
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	
-	if (!monomer)
-	{
-		return std::nan(" ");
-	}
-	
-	BackbonePtr bone = monomer->getBackbone();
-	
-	double st_obs = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
-	                                 false, MapScoreFlagNone);
-	double st_diff = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
-	                                 false, MapScoreFlagDifference);
-	
-	double weight = 0;
-
-	while (true)
-	{
-		for (int i = 0; i < bone->atomCount(); i++)
-		{
-			AtomPtr atom = bone->atom(i);
-			atom->setWeightOnly(weight);
-		}
-
-		crystal->silentConcludeRefinement();
-
-		double obs = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
-		                                false, MapScoreFlagNone);
-
-		double diff = bone->scoreWithMap(ScoreTypeAddDensity, crystal,
-		                                 false, MapScoreFlagDifference);
-
-		double ratio = obs / st_obs;
-		double diffratio = (diff - st_diff) / (st_obs - st_diff);
-		std::cout << weight << ", " << ratio << ", " << diffratio
-		<< ", " << ratio + diffratio << std::endl;
-		
-		if (ratio > 2)
-		{
-			break;
-		}
-		
-		weight += 0.4;
-	}
-
-	for (int i = 0; i < bone->atomCount(); i++)
-	{
-		AtomPtr atom = bone->atom(i);
-		atom->setWeightOnly(1);
-	}
-
-	return weight;
-}
-
 void Polymer::hydrogenateContents()
 {
 	Hydrogenator hydrogenator;

@@ -150,8 +150,6 @@ public:
 	
 	AtomGroupPtr getAllBackbone();
 	
-	double overfitTest(int round);
-	
 	std::map<long, MonomerPtr>::iterator beginMonomer()
 	{
 		return _monomers.begin();
