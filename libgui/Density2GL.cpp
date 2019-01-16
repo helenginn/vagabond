@@ -26,7 +26,7 @@ Density2GL::Density2GL()
 	_cubeIndices = std::vector<std::vector<GLuint> >();
 	_offset = make_vec3(-12, 3, -20);
 	_visible = true;
-	_threshold = 1;
+	_threshold = 1.4;
 	_backToFront = true;
 	_usesLighting = true;
 	_extra = true;
