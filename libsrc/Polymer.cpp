@@ -226,6 +226,12 @@ void Polymer::tieAtomsUp()
 		              "Please specify an existing residue as an anchor point\n"\
 		"with option --anchor-res=");
 	}
+	
+	if (monomerCount() == 1)
+	{
+		warn_user("Not tying up " + getChainID() + " - only one monomer");
+		return;
+	}
 
 	checkChainContinuity();
 
