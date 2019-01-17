@@ -136,6 +136,11 @@ public:
 	}
 
 	virtual void wakeup() = 0;
+	
+	bool isEnabled()
+	{
+		return _enabled;
+	}
 
 	void setRefreshGroup(AtomGroupPtr group)
 	{

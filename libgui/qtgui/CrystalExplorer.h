@@ -22,6 +22,7 @@
 
 class MoleculeExplorer;
 class GLKeeper;
+class VagWindow;
 
 class CrystalExplorer : public QMainWindow
 {
@@ -38,6 +39,11 @@ public:
 		_keeper = keeper;
 	}
 	
+	void setVagWindow(VagWindow *window)
+	{
+		_vagWindow = window;
+	}
+	
 	void updateCorrelation();
 private slots:
 	void clickedMoleListItem();
@@ -51,6 +57,8 @@ private:
 
 	CrystalPtr _crystal;
 	QListWidget *_moleList;
+	VagWindow *_vagWindow;
+
 	std::vector<QWidget *> _widgets;
 	void populateList();
 	void clearWidgets();

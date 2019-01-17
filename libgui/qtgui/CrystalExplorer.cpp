@@ -12,6 +12,7 @@
 #include "MoleculeExplorer.h"
 #include "../../libsrc/FileReader.h"
 #include "SetterEdit.h"
+#include "VagWindow.h"
 #include "../../libsrc/Polymer.h"
 #include "../../libsrc/Anchor.h"
 
@@ -61,8 +62,14 @@ void CrystalExplorer::clickedMoleListItem()
 	label->show();
 	_widgets.push_back(label);
 	
-	std::string bfac = "Average B factor: " +
-	f_to_str(molecule->getAverageBFactor(), 1);
+	std::string bf = "Unavailable";
+	
+	if (!_vagWindow->isRunningSomething())
+	{
+		bf = f_to_str(molecule->getAverageBFactor(), 1);
+	}
+	
+	std::string bfac = "Average B factor: " + bf;
 
 	height += TEXT_HEIGHT;
 	label = new QLabel(QString::fromStdString(bfac), this);
@@ -73,12 +80,6 @@ void CrystalExplorer::clickedMoleListItem()
 	if (molecule->isPolymer())
 	{
 		PolymerPtr polymer = ToPolymerPtr(molecule);
-		height += TEXT_HEIGHT;
-		label = new QLabel("Multiply backbone kick:", this);
-		label->setGeometry(160, height, 200, TEXT_HEIGHT);
-		label->show();
-		_widgets.push_back(label);
-
 		AnchorPtr anchor = ToAnchorPtr(polymer->getAnchorModel());
 		double bAnch = anchor->getBFactor();
 		std::string sAnch = f_to_str(bAnch, 1);

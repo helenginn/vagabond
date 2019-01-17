@@ -432,6 +432,11 @@ int VagWindow::waitForInstructions()
 
 bool VagWindow::isRunningSomething()
 {
+	if (!Notifiable::isEnabled())
+	{
+		return true;
+	}
+
 	bool locked = mutex.try_lock();
 
 	if (locked)
@@ -526,6 +531,7 @@ void VagWindow::pushExploreCrystal()
 	if (crystal)
 	{
 		_xtalExplorer = new CrystalExplorer(this, crystal);
+		_xtalExplorer->setVagWindow(this);
 		_xtalExplorer->setKeeper(display->getKeeper());
 		_xtalExplorer->show();
 	}
