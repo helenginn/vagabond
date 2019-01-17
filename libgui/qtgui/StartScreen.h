@@ -43,12 +43,15 @@ private:
 	
 	OptionsPtr _options;
 	QFileDialog *_fileDialogue;   
+	QPushButton *_bOptionals;
 	
 	std::vector<QWidget *> _widgets;
+	std::vector<QWidget *> _optWidgets;
 	std::vector<QCheckBox *> _allToggle;
 	std::vector<QCheckBox *> _angleToggle, _angle2Toggle;
 	
 	void makeButtons();
+	bool _showOpts;
 	int _argc;
 	char **_argv;
 
@@ -59,6 +62,7 @@ private slots:
 	void chooseMtz();
 	void chooseModel();
 	void chooseDir();
+	void toggleOptionals();
 	
 	void toggleDisableOptions(int);
 };

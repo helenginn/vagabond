@@ -99,27 +99,35 @@ void StartScreen::makeButtons()
 	height += 50;
 	int indent = 300;
 	
-	q = new QLabel("Optional parameters (blank is default):", this);
-	q->setGeometry(indent, height, 250, 20);
-	_widgets.push_back(q);
+	_showOpts = false;
+	_bOptionals = new QPushButton("Show optional parameters", this);
+	_bOptionals->setGeometry(indent, height, 250, 30);
+	connect(_bOptionals, SIGNAL(clicked()), this, SLOT(toggleOptionals()));
+	_widgets.push_back(_bOptionals);
 	
 	height += 40;
 
 	q = new QLabel("Min resolution (Å):", this);
 	q->setGeometry(indent, height, LABEL_WIDTH, 20);
+	q->hide();
 	_widgets.push_back(q);
+	_optWidgets.push_back(q);
 
 	height += 40;
 
 	q = new QLabel("Max resolution (Å):", this);
 	q->setGeometry(indent, height, LABEL_WIDTH, 20);
+	q->hide();
 	_widgets.push_back(q);
+	_optWidgets.push_back(q);
 	
 	indent += 150;
 	height -= 40;
 
 	_tMinRes = new QLineEdit("", this);
 	_tMinRes->setGeometry(indent, height, 120, 25);
+	_tMinRes->hide();
+	_optWidgets.push_back(_tMinRes);
 	
 	if (Options::minRes() > 0)
 	{
@@ -131,6 +139,8 @@ void StartScreen::makeButtons()
 	height += 40;
 	_tMaxRes = new QLineEdit("", this);
 	_tMaxRes->setGeometry(indent, height, 120, 25);
+	_tMaxRes->hide();
+	_optWidgets.push_back(_tMaxRes);
 
 	if (Options::maxRes() > 0)
 	{
@@ -175,7 +185,7 @@ void StartScreen::makeButtons()
 	_allToggle.push_back(_cIntra);
 
 	height += 20;
-	_cCbAngles = new QCheckBox("using variable Cb angles (from PDB)", this);
+	_cCbAngles = new QCheckBox("variable Cb angles (from PDB)", this);
 	_cCbAngles->setChecked(Options::_bondAngles > 0);
 	_cCbAngles->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
 	_allToggle.push_back(_cCbAngles);
@@ -375,3 +385,30 @@ StartScreen::~StartScreen()
 {
 	delete _bRun;
 }
+
+void StartScreen::toggleOptionals()
+{
+	_showOpts = !_showOpts;
+
+	for (int i = 0; i < _optWidgets.size(); i++)
+	{
+		if (_showOpts)
+		{
+			_optWidgets[i]->show();
+		}
+		else
+		{
+			_optWidgets[i]->hide();
+		}
+	}
+	
+	if (_showOpts)
+	{
+		_bOptionals->setText("Hide optional parameters");
+	}
+	else
+	{
+		_bOptionals->setText("Show optional parameters");
+	}
+}
+
