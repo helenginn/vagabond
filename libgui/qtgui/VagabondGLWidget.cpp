@@ -187,7 +187,7 @@ void VagabondGLWidget::mouseMoveEvent(QMouseEvent *e)
 		}
 		else
 		{
-			keeper->draggedLeftMouse(xDiff * 4, yDiff * 4);
+			keeper->draggedLeftMouse(-xDiff * 4, -yDiff * 4);
 		}
 	}
 	else if (_mouseButton == Qt::RightButton &&
