@@ -98,17 +98,6 @@ void Bonds2GL::updateModel(int *v, int total, std::vector<vec3> &maj,
 
 		if (_average)
 		{
-			for (int i = 0; i < 4; i++)
-			{
-				_vertices[*v+i].extra[0] = k;
-				_vertices[*v+i].extra[1] = 0;
-
-				if (i == 1 || i == 2)
-				{
-					_vertices[*v + i].extra[1] = 1;
-				}
-			}
-
 			memcpy(_vertices[*v].normal, _vertices[*v+3].pos,
 			       sizeof(GLfloat) * 3);
 			memcpy(_vertices[*v+1].normal, _vertices[*v+3].pos,
@@ -147,7 +136,7 @@ void Bonds2GL::updateAtoms()
 		
 		std::vector<vec3> majBonds, minBonds;
 		getPositions(maj, min, &minBonds, &majBonds);
-
+		
 		updateModel(&v, total, minBonds, majBonds);
 	}
 }
@@ -156,7 +145,7 @@ bool Bonds2GL::addToModel(AtomPtr minor, AtomPtr major, GLuint *count)
 {
 	std::vector<vec3> minBonds;
 	std::vector<vec3> majBonds;
-	int start = *count;
+	GLuint start = *count;
 
 	getPositions(minor, major, &minBonds, &majBonds);
 
@@ -232,6 +221,29 @@ bool Bonds2GL::addToModel(AtomPtr minor, AtomPtr major, GLuint *count)
 			_indices.push_back(*count + 6);
 			_indices.push_back(*count + 7);
 		}
+		
+		if (_average)
+		{
+			for (int i = 0; i < 4; i++)
+			{
+				_vertices[*count+i].extra[0] = j;
+				_vertices[*count+i].extra[1] = 0;
+
+				if (i == 1 || i == 2)
+				{
+					_vertices[*count + i].extra[1] = 1;
+				}
+			}
+
+			memcpy(_vertices[*count].normal, _vertices[*count+3].pos,
+			       sizeof(GLfloat) * 3);
+			memcpy(_vertices[*count+1].normal, _vertices[*count+3].pos,
+			       sizeof(GLfloat) * 3);
+			memcpy(_vertices[*count+2].normal, _vertices[*count].pos,
+			       sizeof(GLfloat) * 3);
+			memcpy(_vertices[*count+3].normal, _vertices[*count].pos,
+			       sizeof(GLfloat) * 3);
+		}
 
 		if (j == 0)
 		{
@@ -248,34 +260,32 @@ bool Bonds2GL::addToModel(AtomPtr minor, AtomPtr major, GLuint *count)
 
 	/* Set up texture, only if using _averages */
 
-	if (!_average)
+	if (_average)
 	{
-		return true;
+		_vertices[start].tex[0] = 0;
+		_vertices[start].tex[1] = 0;
+
+		_vertices[start+1].tex[0] = 0.5;
+		_vertices[start+1].tex[1] = 0.0;
+
+		_vertices[start+2].tex[0] = 0.5;
+		_vertices[start+2].tex[1] = 0.0;
+
+		_vertices[start+3].tex[0] = 1.0;
+		_vertices[start+3].tex[1] = 0.0;
+
+		_vertices[start+4].tex[0] = 0;
+		_vertices[start+4].tex[1] = 1.0;
+
+		_vertices[start+5].tex[0] = 0.5;
+		_vertices[start+5].tex[1] = 1.0;
+
+		_vertices[start+6].tex[0] = 0.5;
+		_vertices[start+6].tex[1] = 1.0;
+
+		_vertices[start+7].tex[0] = 1.0;
+		_vertices[start+7].tex[1] = 1.0;
 	}
-
-	_vertices[start].tex[0] = 0;
-	_vertices[start].tex[1] = 0;
-
-	_vertices[start+1].tex[0] = 0.5;
-	_vertices[start+1].tex[1] = 0.0;
-
-	_vertices[start+2].tex[0] = 0.5;
-	_vertices[start+2].tex[1] = 0.0;
-
-	_vertices[start+3].tex[0] = 1.0;
-	_vertices[start+3].tex[1] = 0.0;
-
-	_vertices[start+4].tex[0] = 0;
-	_vertices[start+4].tex[1] = 1.0;
-
-	_vertices[start+5].tex[0] = 0.5;
-	_vertices[start+5].tex[1] = 1.0;
-
-	_vertices[start+6].tex[0] = 0.5;
-	_vertices[start+6].tex[1] = 1.0;
-
-	_vertices[start+7].tex[0] = 1.0;
-	_vertices[start+7].tex[1] = 1.0;
 
 	return true;
 }
@@ -327,7 +337,7 @@ int Bonds2GL::processMolecule(MoleculePtr molecule)
 		
 		major = ghost->getMajor();
 
-		if (addToModel(minor, major, &count))
+		if (major && addToModel(minor, major, &count))
 		{
 			bonds++;
 		}
