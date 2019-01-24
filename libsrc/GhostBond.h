@@ -44,6 +44,11 @@ public:
 		return _minor.lock();
 	}
 	
+	std::string getClassName()
+	{
+		return "Ghost";
+	}
+	
 protected:
 	virtual std::string getParserIdentifier();
 	virtual void addProperties();

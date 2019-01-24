@@ -1256,6 +1256,10 @@ ParserPtr Parser::objectOfType(char *className)
 	{
 		object = ParserPtr(static_cast<Bond *>(new Bond()));        
 	}
+	else if (strcmp(className, "Ghost") == 0)
+	{
+		object = ParserPtr(static_cast<GhostBond *>(new GhostBond()));        
+	}
 	else if (strcmp(className, "Whack") == 0)
 	{
 		object = ParserPtr(static_cast<Whack *>(new Whack()));        
