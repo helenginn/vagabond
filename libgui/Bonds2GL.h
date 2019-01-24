@@ -27,14 +27,18 @@ public:
 
 protected:
 	virtual void updateAtoms();
-	virtual void getPositions(AtomPtr atom, 
+	virtual void getPositions(AtomPtr minAtom, AtomPtr majAtom, 
 	                          std::vector<vec3> *min,
 	                          std::vector<vec3> *maj);
+
+	bool addToModel(AtomPtr minor, AtomPtr major, GLuint *count);
 
 	virtual int processMolecule(MoleculePtr molecule);
 	virtual void bindTextures();
 private:
 	void setupAverage();
+	void updateModel(int *v, int total, std::vector<vec3> &maj, 
+	                 std::vector<vec3> &min);
 
 	int _average;
 };

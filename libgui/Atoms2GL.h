@@ -28,7 +28,7 @@ protected:
 	virtual int processMolecule(MoleculePtr molecule);
 	virtual void updateAtoms();
 	virtual void bindTextures();
-	virtual void getPositions(AtomPtr atom, 
+	virtual void getPositions(AtomPtr major, AtomPtr minor,
 	                          std::vector<vec3> *min,
 	                          std::vector<vec3> *maj);
 

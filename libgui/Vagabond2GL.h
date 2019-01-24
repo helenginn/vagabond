@@ -15,7 +15,14 @@
 #include <map>
 #include "../libsrc/Bond.h"
 
-typedef std::map<AtomWkr, std::pair<int, int> > AtomMap;
+typedef struct
+{
+	AtomWkr maj;
+	AtomWkr min;
+	int vNum;
+	int size;
+} Atom3D;
+
 typedef std::map<MoleculePtr, int> GLMoleculeMap;
 
 class Vagabond2GL : public GLObject
@@ -60,7 +67,7 @@ protected:
 
 	virtual void bindTextures();
 	virtual void updateAtoms() = 0;
-	virtual void getPositions(AtomPtr atom, 
+	virtual void getPositions(AtomPtr minAtom, AtomPtr majAtom, 
 	                          std::vector<vec3> *min,
 	                          std::vector<vec3> *maj) = 0;
 	virtual int processMolecule(MoleculePtr molecule) = 0;
@@ -72,7 +79,7 @@ protected:
 
 	/* First pair: number of bonds assoc. with atom,
 	 * Second pair: vertex num */
-	AtomMap _atomMap;
+	std::vector<Atom3D> _pairList;
 	GLMoleculeMap _moleculeMap;
 private:
 	vec3 _centroid;

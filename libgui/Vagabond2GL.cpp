@@ -111,7 +111,6 @@ void Vagabond2GL::findAtoms()
 	OptionsPtr globalOptions = Options::getRuntimeOptions();
 
 	clearVertices();
-	_atomMap.clear();
 	_moleculeMap.clear();
 
 	if (globalOptions)
@@ -151,15 +150,14 @@ AtomPtr Vagabond2GL::findAtomAtXY(double x, double y, double *z)
 	vec3 target = make_vec3(x, y, 0);
 	AtomPtr chosen = AtomPtr();
 
-	for (AtomMap::iterator it = _atomMap.begin();
-	     it != _atomMap.end(); it++)
+	for (int i = 0; i < _pairList.size(); i++)
 	{
-		if (it->first.expired())
+		if (_pairList[i].min.expired())
 		{
 			continue;
 		}
 
-		AtomPtr atom = it->first.lock();
+		AtomPtr atom = _pairList[i].min.lock();
 		vec3 pos = atom->getAbsolutePosition();
 		
 		double last = 1;

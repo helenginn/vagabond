@@ -32,7 +32,7 @@ Atoms2GL::Atoms2GL()
 void Atoms2GL::addAtom(AtomPtr atom)
 {
 	std::vector<vec3> atomPos;
-	getPositions(atom, &atomPos, NULL);
+	getPositions(atom, AtomPtr(), &atomPos, NULL);
 	vec3 pos = atomPos[0];
 
 	Vertex vertex;
@@ -43,7 +43,11 @@ void Atoms2GL::addAtom(AtomPtr atom)
 	GLuint count = (int)_vertices.size();
 	_vertices.push_back(vertex);
 	_indices.push_back(count);
-	_atomMap[atom] = std::make_pair<int, int>(0, 0);
+	Atom3D pair;
+	pair.min = atom;
+	pair.size = 0;
+	pair.vNum = 0;
+	_pairList.push_back(pair);
 }
 
 int Atoms2GL::processMolecule(MoleculePtr molecule)
@@ -84,11 +88,11 @@ int Atoms2GL::processMolecule(MoleculePtr molecule)
 	_shouldGetBonds = false;
 }
 
-void Atoms2GL::getPositions(AtomPtr atom, 
+void Atoms2GL::getPositions(AtomPtr minor, AtomPtr major, 
                             std::vector<vec3> *min,
                             std::vector<vec3> *maj)
 {
-	vec3 ave = atom->getAbsolutePosition();
+	vec3 ave = minor->getAbsolutePosition();
 	*min = std::vector<vec3>(1, ave);
 }
 
