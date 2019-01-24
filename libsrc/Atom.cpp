@@ -24,6 +24,7 @@
 #include "Crystal.h"
 #include "PDBReader.h"
 #include "Anisotropicator.h"
+#include "GhostBond.h"
 
 Atom::Atom()
 {
@@ -709,6 +710,7 @@ void Atom::addProperties()
 	// add tensor, matrix stuff
 
 	addChild("model", _model);
+	addChild("ghost", _ghost);
 	addChild("dist_model", _distModelOnly);
 }
 
@@ -718,6 +720,11 @@ void Atom::addObject(ParserPtr object, std::string category)
 	{
 		ModelPtr model = ToModelPtr(object);
 		setModel(model);
+	}
+	else if (category == "ghost")
+	{
+		GhostBondPtr ghost = ToGhostBondPtr(object);
+		setGhostBond(ghost);
 	}
 	else if (category == "dist_model")
 	{
