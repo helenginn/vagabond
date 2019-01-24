@@ -31,6 +31,7 @@
 
 #define ToBondPtr(a) (boost::static_pointer_cast<Bond>((a)))
 #define ToBondGroupPtr(a) (boost::static_pointer_cast<BondGroup>((a)))
+#define ToGhostBondPtr(a) (boost::static_pointer_cast<GhostBond>((a)))
 #define ToAbsolutePtr(a) (boost::static_pointer_cast<Absolute>((a)))
 #define ToAnchorPtr(a) (boost::static_pointer_cast<Anchor>((a)))
 #define ToModelPtr(a) (boost::static_pointer_cast<Model>((a)))
@@ -117,6 +118,7 @@ class Absolute;
 class Chelate;
 class Bond;
 class BondGroup;
+class GhostBond;
 
 typedef boost::shared_ptr<Absolute> AbsolutePtr;
 typedef boost::shared_ptr<Anchor> AnchorPtr;
@@ -129,6 +131,7 @@ typedef boost::weak_ptr<ExplicitModel> ExplicitModelWkr;
 typedef boost::shared_ptr<Bond> BondPtr;
 typedef boost::weak_ptr<Bond> BondWkr;
 typedef boost::shared_ptr<BondGroup> BondGroupPtr;
+typedef boost::shared_ptr<GhostBond> GhostBondPtr;
 
 class Whack;
 class Twist;
