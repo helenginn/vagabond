@@ -434,6 +434,7 @@ void Knotter::makeMethionine()
 	_sidechain->setCanRefine(true);
 
 	AtomPtr spineAtom = backbone->betaCarbonTorsionAtom();
+	AtomPtr nAtom = backbone->findAtom("N");
 	AtomPtr cAlpha = _sidechain->findAtom("CA");
 	AtomPtr hBackbone = _sidechain->findAtom("HA");
 	AtomPtr cBeta = _sidechain->findAtom("CB");
@@ -472,7 +473,7 @@ void Knotter::makeArginine()
 	std::string residue = monomer->getIdentifier();
 	_sidechain->setCanRefine(true);
 
-	AtomPtr spineAtom = backbone->betaCarbonTorsionAtom();
+	AtomPtr nAtom = backbone->betaCarbonTorsionAtom();
 	AtomPtr cAlpha = _sidechain->findAtom("CA");
 	AtomPtr hBackbone = _sidechain->findAtom("HA");
 	AtomPtr cBeta = _sidechain->findAtom("CB");
@@ -543,6 +544,7 @@ void Knotter::makeProline()
 	_sidechain->setCanRefine(true);
 
 	AtomPtr spineAtom = backbone->betaCarbonTorsionAtom();
+	AtomPtr nAtom = backbone->findAtom("N");
 	AtomPtr cAlpha = _sidechain->findAtom("CA");
 	AtomPtr hBackbone = _sidechain->findAtom("HA");
 	AtomPtr cBeta = _sidechain->findAtom("CB");
@@ -562,6 +564,9 @@ void Knotter::makeProline()
 	cg2cd->setRefineFlexibility(false);
 	ca2cb->addExtraTorsionSample(cDelta);
 	cg2cd->activate();
+	
+	GhostBondPtr ghost = GhostBondPtr(new GhostBond());
+	ghost->setAtoms(cDelta, nAtom);
 }
 
 
@@ -694,6 +699,9 @@ void Knotter::makeHistidine()
 	BondPtr cd22ne2 = BondPtr(new Bond(cDelta2, nEpsilon2));
 	cd22ne2->setFixed(true);
 	cd22ne2->activate();
+
+	GhostBondPtr ghost = GhostBondPtr(new GhostBond());
+	ghost->setAtoms(nEpsilon2, cEpsilon1);
 }
 
 void Knotter::makeTyrosine()
@@ -750,6 +758,9 @@ void Knotter::makeTyrosine()
 
 	BondPtr cz2oh = BondPtr(new Bond(cOmega, oxygen));
 	cz2oh->activate();
+
+	GhostBondPtr ghost = GhostBondPtr(new GhostBond());
+	ghost->setAtoms(cEpsilon1, cOmega);
 }
 
 void Knotter::makePhenylalanine()
@@ -809,6 +820,8 @@ void Knotter::makePhenylalanine()
 	BondPtr cz2hz = BondPtr(new Bond(cOmega, hOmega));
 	cz2hz->activate();
 
+	GhostBondPtr ghost = GhostBondPtr(new GhostBond());
+	ghost->setAtoms(cEpsilon1, cOmega);
 }
 
 void Knotter::makeTryptophan()
@@ -876,6 +889,12 @@ void Knotter::makeTryptophan()
 
 	BondPtr ce32ce3 = BondPtr(new Bond(cOmega3, ch2));
 	ce32ce3->activate();
+
+	GhostBondPtr ghost = GhostBondPtr(new GhostBond());
+	ghost->setAtoms(cOmega2, ch2);
+
+	ghost = GhostBondPtr(new GhostBond());
+	ghost->setAtoms(cDelta2, cEpsilon2);
 }
 
 void Knotter::makeIsoleucine()
