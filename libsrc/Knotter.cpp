@@ -15,6 +15,7 @@
 #include <iostream>
 #include "Atom.h"
 #include "Bond.h"
+#include "GhostBond.h"
 #include "Polymer.h"
 #include "Options.h"
 

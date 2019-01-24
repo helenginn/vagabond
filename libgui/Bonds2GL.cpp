@@ -18,6 +18,7 @@
 
 #include "../libsrc/Atom.h"
 #include "../libsrc/Molecule.h"
+#include "../libsrc/GhostBond.h"
 #include "Bonds2GL.h"
 #include "Shaders/InkBond_vsh.h"
 #include "Shaders/InkBond_fsh.h"
@@ -317,6 +318,19 @@ int Bonds2GL::processMolecule(MoleculePtr molecule)
 			bonds++;
 		}
 
+		GhostBondPtr ghost = minor->getGhostBond();
+		
+		if (!ghost)
+		{
+			continue;
+		}
+		
+		major = ghost->getMajor();
+
+		if (addToModel(minor, major, &count))
+		{
+			bonds++;
+		}
 	}
 
 	_shouldGetBonds = false;
