@@ -338,6 +338,16 @@ public:
 	}
 	
 	vec3 getPositionInAsu();
+	
+	void setGhostBond(GhostBondPtr ghost)
+	{
+		_ghost = ghost;
+	}
+	
+	GhostBondPtr getGhostBond()
+	{
+		return _ghost;
+	}
 protected:
 	virtual std::string getClassName()
 	{
@@ -382,6 +392,7 @@ private:
 	vec3 _targetPos;
 	double _targetWeight;
 
+	GhostBondPtr _ghost;
 	AtomType _geomType;
 };
 

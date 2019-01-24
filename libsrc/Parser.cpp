@@ -15,6 +15,7 @@
 #include "BondGroup.h"
 #include "Monomer.h"
 #include "Absolute.h"
+#include "GhostBond.h"
 #include "Anchor.h"
 #include "Sidechain.h"
 #include "Backbone.h"
