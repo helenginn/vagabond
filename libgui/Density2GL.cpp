@@ -969,7 +969,6 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 					/* Normals */					
 					for (int j = 0; j < 3; j++)
 					{
-//						std::cout << "(" << _vertices[someIndices[i + j]].tex[0] << " " << _vertices[someIndices[i + j]].tex[1] << ")" << std::endl;
 						_vertices[someIndices[i + j]].normal[0] += cross.x;
 						_vertices[someIndices[i + j]].normal[1] += cross.y;
 						_vertices[someIndices[i + j]].normal[2] += cross.z;
