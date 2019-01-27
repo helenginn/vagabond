@@ -15,7 +15,9 @@
 
 #include "StartScreen.h"
 #include "../../libsrc/Options.h"
+#include "../../libsrc/Shouter.h"
 #include "VagWindow.h"
+#include <QtWidgets/qmessagebox.h>
 #include "../../libsrc/FileReader.h"
 
 std::string StartScreen::findNewFolder()
@@ -324,10 +326,16 @@ void StartScreen::pushRun()
 	}
 	
 	VagWindow *window = new VagWindow(NULL, _argc, _argv);
+	window->setStartScreen(this);
 	window->show();
 
+	// memory leak of this...
+}
+
+void StartScreen::finishUp()
+{
 	this->hide();
-	// memory leak of this... 
+//	this->deleteLater();
 }
 
 void StartScreen::getFile(std::string title, QString types,

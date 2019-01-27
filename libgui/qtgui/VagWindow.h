@@ -25,8 +25,10 @@
 #include <QtCore/qwaitcondition.h>
 #include <QtCore/qmutex.h>
 
+#include "../../libsrc/Shouter.h"
 #include "InstructionThread.h"
 #include "Dialogue.h"
+#include "StartScreen.h"
 #include "CrystalExplorer.h"
 #include "ErroneousZone.h"
 #include "../../libsrc/Notifiable.h"
@@ -57,6 +59,11 @@ public:
 	
 	void toggleLog();
 	
+	void setStartScreen(StartScreen *screen)
+	{
+		_startScreen = screen;
+	}
+	
 	InstructionThread *getInstructionThread()
 	{
 		return &_instructionThread;	
@@ -71,6 +78,9 @@ public:
 	{
 		return display;
 	}
+	
+signals:
+	void errorReceived(Shouter *shout);
 protected:
 	virtual void resizeEvent(QResizeEvent *);
 private slots:
@@ -84,6 +94,7 @@ private slots:
 	void refitBackbone();
 	void fixErroneousZones();
 
+	void displayMessage(Shouter *shout);
 private:
 	VagabondGLWidget *display;
 	QWaitCondition wait;
@@ -101,10 +112,13 @@ private:
 	void refineToEnd();
 	void modelPosToEnd();
 	void sidechainsToEnd();
-	void getPolymerMonomerCrystal(PolymerPtr *poly, CrystalPtr *cryst, MonomerPtr *monomer);
+	void getPolymerMonomerCrystal(PolymerPtr *poly, CrystalPtr *cryst, 
+	                              MonomerPtr *monomer);
 	void menuItem(QMenu *menu, std::string title,
                          InstructionType instr);
+
 	QLabel *_lStatus;
+	StartScreen *_startScreen;
 
 	/* Buttons down the side */
 	QPushButton *bRefinePos;

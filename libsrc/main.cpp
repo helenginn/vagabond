@@ -9,6 +9,7 @@
 #include "Options.h"
 #include <execinfo.h>
 #include <signal.h>
+#include "Shouter.h"
 
 
 void handler(int sig) {
@@ -33,9 +34,17 @@ int main(int argc, const char * argv[])
 	signal(SIGSEGV, handler);
 	signal(SIGABRT, handler);
 
-    OptionsPtr options = OptionsPtr(new Options(argc, (const char **)argv));
-    Options::setRuntimeOptions(options);
-    options->run();
+	OptionsPtr options = OptionsPtr(new Options(argc, (const char **)argv));
+	Options::setRuntimeOptions(options);
+
+	try
+	{
+		options->run();
+	}
+	catch (Shouter *shout)
+	{
+		shout->shoutToStdOut();
+	}
 
 	return 0;
 }

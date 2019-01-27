@@ -17,4 +17,20 @@ void shout_at_helen(std::string fix_me_message);
 void warn_user(std::string cautionary_tale);
 void shout_timer(time_t wall_start, std::string job);
 
+class Shouter
+{
+public:
+	Shouter(std::string message);
+
+	std::string getMessage()
+	{
+		return _message;
+	}
+	
+	void shoutToStdOut();
+private:
+	
+	std::string _message;
+};
+
 #endif /* defined(__vagabond__Shouter__) */

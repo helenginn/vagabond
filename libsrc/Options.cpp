@@ -506,6 +506,7 @@ void Options::parse()
 	{
 		_refine = true;
 	}
+
 	for (size_t i = 0; i < arguments.size(); i++)
 	{
 		int understood = false;

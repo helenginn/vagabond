@@ -260,8 +260,13 @@ VagWindow::VagWindow(QWidget *parent,
 	display->setFocus();
 	display->setFocusPolicy(Qt::StrongFocus);
 
+
 	_instructionType = InstructionTypeNone;
 	_instructionThread.setVagWindow(this);
+
+	connect(this, SIGNAL(errorReceived(Shouter *)), 
+	        this, SLOT(displayMessage(Shouter *)), Qt::QueuedConnection);
+
 	_instructionThread.start(); 
 }
 
@@ -283,6 +288,13 @@ int VagWindow::waitForInstructions()
 			return 1;
 		}
 	}
+	catch (Shouter *shout)
+	{
+		emit errorReceived(shout);
+		return 1;
+	}
+	
+	_startScreen->finishUp();
 
 	CrystalPtr crystal = options->getActiveCrystal();
 
@@ -613,6 +625,14 @@ void VagWindow::receiveDialogue(DialogueType type, std::string diagString)
 void VagWindow::wakeup()
 {
 	wait.wakeAll();
+}
+
+void VagWindow::displayMessage(Shouter *shout)
+{
+	QString message = QString::fromStdString(shout->getMessage());
+	QMessageBox::critical(this, "Problem", message, QMessageBox::Ok);
+	this->hide();
+	delete shout;
 }
 
 void VagWindow::displayScaling()

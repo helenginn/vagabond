@@ -16,6 +16,8 @@ class StartScreen: public QMainWindow
 public:
 	StartScreen(QWidget *parent = 0, int argc = 0, char *argv[] = NULL);
 	~StartScreen();
+
+	void finishUp();
 private:
 	QPushButton *_bRun;
 

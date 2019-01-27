@@ -25,6 +25,16 @@ void shout_at_user(std::string fix_me_message)
 	exit(1);
 }
 
+Shouter::Shouter(std::string message)
+{
+	_message = message;
+}
+
+void Shouter::shoutToStdOut()
+{
+	shout_at_user(_message);
+}
+
 void shout_at_helen(std::string fix_me_message)
 {
 	std::cout << "****************************************" << std::endl;
