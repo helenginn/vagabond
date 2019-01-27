@@ -346,6 +346,8 @@ void Options::executeProtocol()
 
 	crystal->undoIfWorse();
 	
+	statusMessage("Finished.");
+
 	std::cout << std::endl;
 	std::cout << "******************************" << std::endl;
 	std::cout << "**        FINISHED          **" << std::endl;
