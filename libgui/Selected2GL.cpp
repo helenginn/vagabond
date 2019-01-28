@@ -510,6 +510,13 @@ void Selected2GL::cancelRefine()
 
 void Selected2GL::manualRefine()
 {
+	MoleculePtr mol = getPicked()->getMolecule();
+	if (!mol->isPolymer())
+	{
+		std::cout << "Need to refine atoms from polymer" << std::endl;
+		return;
+	}
+
 	_switch.lock();
 	_refining = true;
 	_switch.unlock();
@@ -517,7 +524,16 @@ void Selected2GL::manualRefine()
 	Options::statusMessage("Starting manual refinement.", false);
 	CrystalPtr crystal = Options::getActiveCrystal();
 	AtomGroupPtr group = refinableSelection();
+	
+	bool terminal = (group->beyondGroupAtoms().size() == 0);
+	int begin = 0; int end = 0;
+	
+	if (!terminal)
+	{
+		group->boundingMonomers(&begin, &end);
+	}
 
+	/* These will take on old values for comparison */
 	bool refining = false;
 	bool mousey = false;
 	bool kicking = false;
@@ -597,10 +613,9 @@ void Selected2GL::manualRefine()
 
 			group->refine(crystal, RefinementMouse);
 		}
-		else
+		else if (terminal)
 		{
 			group->addParamType(ParamOptionBondAngle, 0.5);
-//			group->addParamType(ParamOptionTwist, 0.5);
 			group->refine(crystal, RefinementFine);
 
 			group->addParamType(ParamOptionMaxTries, 1.0);
@@ -608,6 +623,11 @@ void Selected2GL::manualRefine()
 			group->addParamType(ParamOptionOccupancy, 1.0);
 
 			group->refine(crystal, RefinementFine);
+		}
+		else if (!terminal)
+		{
+			PolymerPtr pol = ToPolymerPtr(mol);
+			pol->refineFromFarRegion(begin, end, crystal);
 		}
 	}
 
