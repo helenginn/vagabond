@@ -32,6 +32,7 @@ class Selected2GL : public Atoms2GL
 public:
 	Selected2GL();
 	
+	/* Set the atoms from which the selection will be calculated */
 	void setPicked(AtomPtr atom, bool preserveType = false);
 	AtomGroupPtr refinableSelection();
 	void manualRefine();
@@ -75,6 +76,11 @@ protected:
 	virtual void findAtoms();
 
 private:
+	bool hasMultiAtomSelection()
+	{
+		return (_picked.size() > 1);
+	}
+	
 	vec3 averageModelPos();
 	std::vector<AtomPtr> _picked;
 	SelectionType _sType;

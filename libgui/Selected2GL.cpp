@@ -111,6 +111,11 @@ AtomGroupPtr Selected2GL::getSelected()
 	{
 		AtomPtr pick = _picked[i];
 		
+		if (!pick)
+		{
+			continue;
+		}
+		
 		if (_sType == SelectAtom)
 		{
 			group->addAtom(pick);
@@ -191,10 +196,20 @@ AtomGroupPtr Selected2GL::getSelected()
 
 void Selected2GL::addPicked(AtomPtr atom, bool preserveType)
 {
+	/* If we didn't select an atom, but we still had shift pressed,
+	 * probably a mistake, so ignore entirely */
+	if (!atom)
+	{
+		return;
+	}
+
 	bool inGroup = false;
+	_shouldGetBonds = true;
 	AtomGroupPtr selected = getSelected();
 
-	if (selected && atom)
+	/* If we already have a selection and want to know if it's in the
+	 * current group or not */
+	if (selected)
 	{
 		inGroup = selected->hasAtom(atom);
 	}
@@ -209,17 +224,17 @@ void Selected2GL::addPicked(AtomPtr atom, bool preserveType)
 			_conf++;
 		}
 		
-		if (selected->conformer(_conf) == "a" ||
-		    selected->conformer(_conf) == "A")
-		{
-			_conf++;
-		}
-		
 		if (_conf >= selected->conformerCount())
 		{
 			_sType = SelectMonomer;
 			_conf = 0;
 			return;
+		}
+		
+		if (selected->conformer(_conf) == "a" ||
+		    selected->conformer(_conf) == "A")
+		{
+			_conf++;
 		}
 		
 		_sType = SelectMonConf;
@@ -256,6 +271,13 @@ void Selected2GL::addPicked(AtomPtr atom, bool preserveType)
 
 void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 {
+	/* Don't change selections when refining */
+	if (_refining)
+	{
+		return;
+	}
+
+	/* If we have pressed shift we deal with multi-atom selections */
 	if (_adding)
 	{
 		addPicked(atom, preserveType);
@@ -263,26 +285,31 @@ void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 		return;
 	}
 	
-	if (_picked.size() > 1 && atom)
+	_shouldGetBonds = true;
+
+	/* If we have picked empty, we are not pressing shift anymore
+	 * but still have a multi-atom selection */
+	if (hasMultiAtomSelection() && !atom)
+	{
+		_picked.clear();
+		_picked.push_back(AtomPtr());
+		return;
+	}
+	/* If we have picked a real atom, we are not pressing shift anymore
+	 * but still have a multi-atom selection */
+	else if (hasMultiAtomSelection() && atom)
 	{
 		AtomPtr first = getPicked();
 		_picked.clear();
 		_picked.push_back(first);
 	}
-	else if (_picked.size() == 0)
-	{
-		_picked.push_back(AtomPtr());
-	}
 	
-	if (_refining)
-	{
-		return;
-	}
+	/* Now we don't have a multi-atom selection */
 
+	/* We picked empty */
 	if (!atom)
 	{
 		_sType = SelectAtom;
-		_shouldGetBonds = true;
 		_picked[0] = atom;
 		return;
 	}
@@ -364,8 +391,15 @@ void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 		_conf = 0;
 	}
 	
-	_picked[0] = atom;
-	_shouldGetBonds = true;
+	/* Change the only atom if one exists already */
+	if (_picked.size())
+	{
+		_picked[0] = atom;
+	}
+	else
+	{
+		_picked.push_back(atom);
+	}
 }
 
 vec3 Selected2GL::averageModelPos()
