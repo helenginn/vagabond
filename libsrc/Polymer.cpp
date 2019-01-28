@@ -361,18 +361,26 @@ void refineRegion(AtomGroupPtr region, CrystalPtr target, double light)
 	region->refine(target, RefinementSavedPos);
 }
 
-void Polymer::refineAroundMonomer(int central, CrystalPtr target)
+void Polymer::refineFromFarAroundMonomer(int central, CrystalPtr target)
 {
-	int pad = 2;
 	MonomerPtr monomer = getMonomer(central);
-	
 	if (!monomer)
 	{
 		return;
 	}
 	
+	int pad = 2;
 	int coreStart = central - pad;
 	int coreEnd = central + pad;
+	
+	refineFromFarRegion(coreStart, coreEnd, target);
+}
+	
+	
+void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
+                                  CrystalPtr target)
+{
+	size_t diff = coreEnd - coreStart;
 	
 	AtomGroupPtr coreRegion = monomerRange(coreStart, coreEnd);
 	
@@ -413,7 +421,7 @@ void Polymer::refineAroundMonomer(int central, CrystalPtr target)
 
 	coreRegion->makeBackboneTwists(eModel);
 
-	coreRegion->addParamType(ParamOptionNumBonds, (2 * pad + 1) * 3);
+	coreRegion->addParamType(ParamOptionNumBonds, (diff + 1) * 3);
 	coreRegion->addParamType(ParamOptionTorsion, step);
 	coreRegion->addParamType(ParamOptionTwist, step);
 	coreRegion->addParamType(ParamOptionBondAngle, step);
@@ -705,12 +713,12 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 		for (int i = getAnchor() - 1; i >= start; i -= 3)
 		{
-			refineAroundMonomer(i, target);
+			refineFromFarAroundMonomer(i, target);
 		}
 		
 		for (int i = getAnchor(); i <= end; i += 3)
 		{
-			refineAroundMonomer(i, target);
+			refineFromFarAroundMonomer(i, target);
 		}
 
 		getAnchorModel()->propagateChange(-1, true);

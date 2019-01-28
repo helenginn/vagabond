@@ -74,9 +74,16 @@ public:
 
 	void applyPolymerChanges();
 	void refineToEnd(int monNum, CrystalPtr target, RefinementType rType);
-	void refineAroundMonomer(int central, CrystalPtr target);
 	double refineRange(int start, int end, 
 	                 CrystalPtr target, RefinementType rType);
+
+	/* Refine from far region centred on a given monomer */
+	void refineFromFarAroundMonomer(int central, CrystalPtr target);
+	
+	/** Refines positions from a far away solution with strategy to prevent
+	 * 	long-range chaos */
+	void refineFromFarRegion(int coreStart, int coreEnd, CrystalPtr target);
+
 	bool test();
 	AnchorPtr getAnchorModel();
 	void findAnchorNearestCentroid();
