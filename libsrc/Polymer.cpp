@@ -1368,8 +1368,6 @@ void Polymer::refineGlobalFlexibility()
 
 	Timer timer("anchor fit", true);
 	
-	fitEllipsoid();
-	
 	AnchorPtr anchor = getAnchorModel();
 	
 	FlexGlobal target;
@@ -1493,3 +1491,4 @@ mat3x3 Polymer::fitEllipsoid()
 
 	return basis;
 }
+
