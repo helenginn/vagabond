@@ -63,23 +63,6 @@ void Selected2GL::findAtoms()
 	_shouldGetBonds = false;
 }
 
-bool Selected2GL::isRefinable()
-{
-	AtomGroupPtr refinable = refinableSelection();
-	if (!refinable->atomCount())
-	{
-		return false;
-	}
-	
-	if (refinable->beyondGroupAtoms().size())
-	{
-		return false;
-	}
-
-	
-	return (getPicked() && _sType != SelectAtom);
-}
-
 AtomGroupPtr Selected2GL::refinableSelection()
 {
 	AtomGroupPtr raw = getSelected();

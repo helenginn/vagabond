@@ -33,7 +33,6 @@ public:
 	Selected2GL();
 	
 	void setPicked(AtomPtr atom, bool preserveType = false);
-	bool isRefinable();
 	AtomGroupPtr refinableSelection();
 	void manualRefine();
 	void focusOnGroup();

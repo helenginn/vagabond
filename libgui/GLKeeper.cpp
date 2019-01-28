@@ -324,11 +324,6 @@ void GLKeeper::initialisePrograms()
 
 void GLKeeper::manualRefine()
 {
-	if (!_selected2GL->isRefinable())
-	{
-		return;
-	}
-	
 	_selected2GL->manualRefine();
 }
 
