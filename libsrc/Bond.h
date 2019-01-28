@@ -604,7 +604,7 @@ private:
 	void copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum);
 	BondPtr duplicateDownstream(BondPtr newBranch, int groupNum,
 	                            bool onlyExisting = false);
-	mat3x3 getMagicMat(vec3 direction);
+	mat3x3 getMagicMat(mat3x3 basis);
 
 };
 

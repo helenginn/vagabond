@@ -553,9 +553,8 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 	return final;
 }
 
-mat3x3 Bond::getMagicMat(vec3 direction)
+mat3x3 Bond::getMagicMat(mat3x3 basis)
 {
-	vec3_set_length(&direction, 1.);
 	mat3x3 rot = make_mat3x3();
 
 	if (_phi != 0 || _psi != 0)
@@ -563,18 +562,9 @@ mat3x3 Bond::getMagicMat(vec3 direction)
 		rot = mat3x3_rot_from_angles(_phi, _psi);
 	}
 
-	vec3 xAxis = make_vec3(1, 0, 0);
-	vec3 zAxis = make_vec3(0, 0, 1);
-	
-	vec3 cross = vec3_cross_vec3(zAxis, direction);
-	vec3_set_length(&cross, 1.);
+	mat3x3 multed = mat3x3_mult_mat3x3(rot, basis);
 
-	/* Find the twizzle to put z axis onto the magic axis (around the x) */
-	mat3x3 firstTwizzle = mat3x3_closest_rot_mat(direction, zAxis, cross,
-	                                             NULL, true);
-	mat3x3 multed = mat3x3_mult_mat3x3(rot, firstTwizzle);
-
-	return multed;
+	return mat3x3_transpose(multed);
 }
 
 void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
@@ -599,9 +589,9 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	vec3 aveNext = mat3x3_axis(aveBasis, 0);
 	vec3 crossDir = mat3x3_axis(aveBasis, 1);
 	
-	mat3x3 magicMat = getMagicMat(crossDir);
+	mat3x3 magicMat = getMagicMat(aveBasis);
 	_magicAxis = mat3x3_axis(magicMat, 2); 
-	magicMat = mat3x3_transpose(magicMat);
+//	magicMat = make_mat3x3();
 	
 	/* Track overall change in order to readjust torsion
 	 * at the end */
