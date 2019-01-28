@@ -145,6 +145,8 @@ public:
 	virtual AtomList topLevelAtoms();
 	
 	void saveAtomPositions();
+
+	void boundingMonomers(int *begin, int *end);
 	
 	std::vector<AtomGroupPtr> includingInRefinement()
 	{

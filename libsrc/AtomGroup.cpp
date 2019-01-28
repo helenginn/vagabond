@@ -1185,3 +1185,25 @@ void AtomGroup::makeBackboneTwists(ExplicitModelPtr applied)
 	}
 }
 
+void AtomGroup::boundingMonomers(int *begin, int *end)
+{
+	*begin = INT_MAX;
+	*end = -INT_MAX;
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		AtomPtr a = atom(i);
+		int resi = a->getResidueNum();
+		
+		if (*begin > resi)
+		{
+			*begin = resi;
+		}
+		
+		if (*end < resi)
+		{
+			*end = resi;
+		}
+	}
+}
+
