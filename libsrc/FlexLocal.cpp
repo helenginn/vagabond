@@ -66,6 +66,7 @@ void FlexLocal::setPolymer(PolymerPtr pol, double shift)
 void FlexLocal::svd()
 {
 	std::cout << "| 3. Performing SVD... " << std::flush;
+	Timer timer;
 	
 	if (_svd)
 	{
@@ -76,9 +77,10 @@ void FlexLocal::svd()
 	_svd = new SVDBond(_bondEffects, _bonds, _atoms);
 	_svd->performSVD(&_bbCCs);
 	
-	std::cout << _svd->numClusters() << " clusters. ... done." << std::endl;
-	
-	std::cout << "... done." << std::endl;
+	std::cout << _svd->numClusters() << " clusters.";
+	std::cout << "             ... done.";
+	timer.quickReport();
+	std::cout << std::endl;
 }
 
 void FlexLocal::refine()
