@@ -12,7 +12,9 @@ CrystalPtr VBondReader::getCrystal()
 {
 	if (!file_exists(_filename))
 	{
-		shout_at_user("File " + _filename + " does not exist.");
+		Shouter *shout;
+		shout = new Shouter("PDB file " + _filename + " does not exist.");
+		throw shout;
 	}
 
 	std::string vbondStr = get_file_contents(_filename);
@@ -43,7 +45,7 @@ CrystalPtr VBondReader::getCrystal()
 
 		if (!parser)
 		{
-			std::cout << "Parser could not make top level object." << std::endl;
+			std::cout << "Could not properly parse file, no crystal created." << std::endl;
 			return CrystalPtr();
 		}
 
