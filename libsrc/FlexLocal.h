@@ -9,14 +9,16 @@
 #ifndef FlexLocal_h
 #define FlexLocal_h
 
-#include "RefinementStrategy.h"
 #include "shared_ptrs.h"
+#include "RefinementStrategy.h"
 #include <map>
 
 typedef std::map<AtomPtr, double> AtomTarget;
 typedef std::map<BondPtr, AtomTarget> BondEffects;
 typedef std::map<BondPtr, double> BondCorrel;
 typedef std::map<BondPtr, BondCorrel> BondBondCC;
+
+#include "SVDBond.h"
 
 class FlexGlobal;
 
@@ -30,6 +32,8 @@ typedef struct
  * \class FlexLocal
  * \brief Determines effect of each bond on all atom B factors, clusters them
  * and chooses some for refinement. */
+
+class SVDBond;
 
 class FlexLocal
 {
@@ -69,6 +73,7 @@ private:
 	AtomTarget currentAtomValues();
 	void createClustering();
 	void reorganiseBondOrder();
+	void svd();
 	double bondRelationship(BondPtr bi, BondPtr bj);
 	void scanBondParams();
 	void reflex();
@@ -103,6 +108,7 @@ private:
 	std::map<BondPtr, int> _bondClusterIds;
 	std::vector<ParamBandPtr> _paramBands;
 	BondBondCC _bbCCs;
+	SVDBond *_svd;
 	
 	FlexGlobal *_flexGlobal;
 	bool _useTarget;

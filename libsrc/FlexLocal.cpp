@@ -40,6 +40,7 @@ FlexLocal::FlexLocal()
 	_getter = Bond::getKick;
 	_flexGlobal = NULL;
 	_setter = Bond::setKick;
+	_svd = NULL;
 }
 
 FlexLocal::~FlexLocal()
@@ -48,12 +49,36 @@ FlexLocal::~FlexLocal()
 	{
 		delete _flexGlobal;
 	}
+	
+	if (_svd)
+	{
+		delete _svd;
+		_svd = NULL;
+	}
 }
 
 void FlexLocal::setPolymer(PolymerPtr pol, double shift)
 {
 	_polymer = pol;
 	_shift = shift;
+}
+
+void FlexLocal::svd()
+{
+	std::cout << "| 3. Performing SVD... " << std::flush;
+	
+	if (_svd)
+	{
+		delete _svd;
+		_svd = NULL;
+	}
+
+	_svd = new SVDBond(_bondEffects, _bonds, _atoms);
+	_svd->performSVD(&_bbCCs);
+	
+	std::cout << _svd->numClusters() << " clusters. ... done." << std::endl;
+	
+	std::cout << "... done." << std::endl;
 }
 
 void FlexLocal::refine()
@@ -70,22 +95,18 @@ void FlexLocal::refine()
 
 		reflex();
 		createAtomTargets();
-
 		scanBondParams();
+		
 		createClustering();
-		reorganiseBondOrder();
-		chooseBestDifferenceThreshold();
 
+		/* Testing the SVD stuff */
+		svd();
+		
 		std::vector<ParamBandPtr> extras;
 
 		bool reduceShift = false;
 		bool success = false;
 		
-		if (_paramBands.size() == 0)
-		{
-			return;
-		}
-
 		for (int j = 0; j < 1; j++)
 		{
 			std::random_shuffle(_paramBands.begin(), _paramBands.end());
@@ -127,6 +148,9 @@ void FlexLocal::refine()
 					                     _shift / 20, "k" + i_to_str(i));
 				}
 			}
+			*/
+			
+			_svd->addToStrategy(nelder);
 
 			nelder->refine();
 
@@ -720,6 +744,12 @@ double FlexLocal::getTotalBChange()
 double FlexLocal::getScore(void *object)
 {
 	FlexLocal *local = static_cast<FlexLocal *>(object);
+	
+	if (local->_svd)
+	{
+		local->_svd->applyParameters();
+	}
+
 	local->_polymer->propagateChange();
 	
 	if (local->_direct)
