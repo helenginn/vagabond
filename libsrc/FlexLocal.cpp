@@ -78,7 +78,7 @@ void FlexLocal::svd()
 	_svd->performSVD(&_bbCCs);
 	
 	std::cout << _svd->numClusters() << " clusters.";
-	std::cout << "              ... done.";
+	std::cout << "              ... done. ";
 	timer.quickReport();
 	std::cout << std::endl;
 }
