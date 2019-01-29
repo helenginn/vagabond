@@ -310,7 +310,15 @@ void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 	if (!atom)
 	{
 		_sType = SelectAtom;
-		_picked[0] = atom;
+
+		if (_picked.size())
+		{
+			_picked[0] = atom;
+		}
+		else
+		{
+			_picked.push_back(atom);
+		}
 		return;
 	}
 
