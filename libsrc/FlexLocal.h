@@ -72,7 +72,6 @@ private:
 	void createAtomTargets();
 	AtomTarget currentAtomValues();
 	void createClustering();
-	void reorganiseBondOrder();
 	void svd();
 	double bondRelationship(BondPtr bi, BondPtr bj);
 	void scanBondParams();
@@ -90,7 +89,6 @@ private:
 	static double sgetTotalBChange(void *object);
 	double getTotalB();
 
-	void chooseBestDifferenceThreshold();
 
 	std::map<int, int> getClusterMembership(double threshold);
 
