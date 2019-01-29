@@ -788,18 +788,13 @@ void FlexLocal::scanBondParams()
 
 	{
 		std::map<std::string, std::string> plotMap;
-		plotMap["filename"] = "atom_targets_" + _polymer->getGraphName();
 		plotMap["height"] = "700";
 		plotMap["width"] = "1200";
 		plotMap["xHeader0"] = "atom";
-		plotMap["yHeader0"] = "target";
 		plotMap["colour0"] = "black";
 		plotMap["xTitle0"] = "Residue number";
 		plotMap["yTitle0"] = "B factor target";
 		plotMap["style0"] = "line";
-
-		atomtarg->plotPNG(plotMap);
-
 		plotMap["yMin0"] = "-1";
 		plotMap["yMax0"] = "2";
 		plotMap["filename"] = "atom_increments_" + _polymer->getGraphName();
