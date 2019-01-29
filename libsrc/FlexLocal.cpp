@@ -96,12 +96,13 @@ void FlexLocal::refine()
 			int limit = 5;
 
 			NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
-			nelder->setCycles(30);
+			nelder->setCycles(100);
 			nelder->setSilent();	
 
 			AnchorPtr anchor = _polymer->getAnchorModel();
 			nelder->setEvaluationFunction(getScore, this);
 
+			/*
 			for (int i = 0; i < _paramBands.size() && i < limit; i++)
 			{
 				double dir = _negMult;
