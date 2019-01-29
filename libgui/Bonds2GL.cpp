@@ -339,7 +339,7 @@ int Bonds2GL::processMolecule(MoleculePtr molecule)
 
 		if (major && addToModel(minor, major, &count))
 		{
-//			bonds++;
+			bonds++;
 		}
 	}
 
