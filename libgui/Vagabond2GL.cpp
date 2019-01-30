@@ -63,8 +63,13 @@ bool Vagabond2GL::shouldGetBonds()
 				{
 					continue;
 				}
-
+				
 				existing++;
+				
+				if (thisAtom->getGhostBond())
+				{
+					existing++;
+				}
 			}
 
 			if (expected != existing)
