@@ -139,7 +139,7 @@ void FlexLocal::refine()
 
 			if (nelder->didChange())
 			{
-				std::cout << std::setw(5) << val << 
+				std::cout << std::setw(3) << val << 
 				"% improved. ... done. ";
 				
 				if (val > 0.5 || _direct)
