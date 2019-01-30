@@ -423,6 +423,7 @@ private:
 	double _probeRadius;
 
 	int _sinceBestNum;
+	int _bestState;
 	int _cycleNum;
 	int _sampleNum;
 	bool _silent;

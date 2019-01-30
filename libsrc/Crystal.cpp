@@ -618,7 +618,7 @@ bool Crystal::undoIfWorse()
 		std::cout << "Decided to undo last " << _sinceBestNum << 
 		" results due to rise in Rwork" 
 		<< std::endl;
-		restoreState(0 - _sinceBestNum);
+		restoreState(_bestState);
 		_sinceBestNum = 0;
 		return true;
 	}
@@ -996,6 +996,7 @@ void Crystal::setAnchors()
 
 Crystal::Crystal()
 {
+	_bestState = 0;
 	_probeRadius = 0.;
 	_silent = false;
 	_largestNum = -INT_MAX;
@@ -1179,6 +1180,7 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	{
 		_bestRWork = rFac;
 		_sinceBestNum = 0;
+		_bestState = stateCount() - 1;
 	}
 	else
 	{
