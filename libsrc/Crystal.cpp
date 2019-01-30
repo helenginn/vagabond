@@ -1180,7 +1180,7 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	{
 		_bestRWork = rFac;
 		_sinceBestNum = 0;
-		_bestState = stateCount() - 1;
+		_bestState = stateCount();
 	}
 	else
 	{
