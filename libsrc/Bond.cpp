@@ -610,16 +610,15 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 		/* Find out what this deviation is if sensitive axis is set to z */
 		mat3x3_mult_vec(magicMat, &thisDeviation);
 
-		double notZ = sqrt(thisDeviation.y * thisDeviation.y +
-		                   thisDeviation.x * thisDeviation.x);
-		double tanX = thisDeviation.z / notZ;
-		double angle = atan(tanX);
+		double notZ = (thisDeviation.y * thisDeviation.y +
+		               thisDeviation.x * thisDeviation.x);
+		double c = thisDeviation.z * thisDeviation.z / notZ;
+
+		double sinAlpha = sqrt(c / (c + 1));
 		
-		if (thisDeviation.z < 0) angle *= -1;
-		
-		double kickValue = sin(angle);
-		
-//		std::cout << rad2deg(angle) << " " << kickValue << std::endl;
+//		if (thisDeviation.z < 0) sinAlpha *= -1;
+
+		double kickValue = sinAlpha;
 		
 		/* Just the notZ */
 		if (kickValue != kickValue)
@@ -759,8 +758,7 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 
 	double totalAtoms = prevBond->downstreamBondCount(myGroup);
 
-	std::vector<BondSample> *prevSamples;
-	prevSamples = prevBond->getManyPositions(&*getMinor());
+	_storedSamples = *prevBond->getManyPositions(&*getMinor());
 	
 	double baseTorsion = getBaseTorsion();
 	
@@ -788,50 +786,37 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 
 	if (usingKick)
 	{
-		correctTorsionAngles(prevSamples);
+		correctTorsionAngles(&_storedSamples);
 	}
 
 	double occTotal = 0;
-	_storedSamples.clear();
-	_storedSamples.reserve(prevSamples->size());
-	vec3 mean = empty_vec3();
-	
-	for (size_t i = 0; i < prevSamples->size(); i++)
+	/* vec3 to be ignored */
+	const vec3 none = {0, 0, 1};
+
+	for (size_t i = 0; i < _storedSamples.size(); i++)
 	{
 		double currentTorsion = baseTorsion + circleAdd;
 		/* Deviation from correction */
-		currentTorsion += prevSamples->at(i).torsion;
-		
-		vec3 prevHeavyPos = (*prevSamples)[i].old_start;
-		vec3 prevMinorPos = (*prevSamples)[i].start;
-		mat3x3 oldBasis = (*prevSamples)[i].basis;
+		currentTorsion += _storedSamples[i].torsion;
+
+		vec3 prevHeavyPos = _storedSamples[i].old_start;
+		vec3 prevMinorPos = _storedSamples[i].start;
+		mat3x3 oldBasis = _storedSamples[i].basis;
 
 		vec3 myCurrentPos = positionFromTorsion(oldBasis, currentTorsion,
 		                                        ratio, prevMinorPos);
-
-		/* Prepping for bending */
-		const vec3 none = {0, 0, 1};
 
 		/* New basis for the next bond */
 		mat3x3 newBasis = makeTorsionBasis(prevHeavyPos, prevMinorPos,
 		                                   myCurrentPos, none);
 
-		vec3_add_to_vec3(&mean, myCurrentPos);
-
-		BondSample nextSample;
-		nextSample.basis = newBasis;
-		nextSample.start = myCurrentPos;
-		nextSample.old_start = prevMinorPos;
-		nextSample.torsion = 0;
-		nextSample.kickValue = prevSamples->at(i).kickValue;
-		nextSample.occupancy = (_occupancy * prevSamples->at(i).occupancy);
+		_storedSamples[i].basis = newBasis;
+		_storedSamples[i].start = myCurrentPos;
+		_storedSamples[i].old_start = prevMinorPos;
+		_storedSamples[i].occupancy *= _occupancy;
 		
-		occTotal += nextSample.occupancy;
-		
-		_storedSamples.push_back(nextSample);
+		occTotal += _storedSamples[i].occupancy;
 	}
-	
-	vec3_mult(&mean, 1 / (double)(prevSamples->size()));
 
 	if (_resetOccupancy)
 	{
