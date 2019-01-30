@@ -160,11 +160,11 @@ void SVDBond::report()
 	
 	if (_num < 5)
 	{
-		num = 5;
+		_num = 5;
 		
 		if (_bonds.size() < 5)
 		{
-			num = _bonds.size();
+			_num = _bonds.size();
 		}
 	}
 	
