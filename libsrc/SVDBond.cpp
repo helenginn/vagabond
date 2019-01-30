@@ -157,7 +157,17 @@ void SVDBond::report()
 			break;
 		}
 	}
-
+	
+	if (_num < 5)
+	{
+		num = 5;
+		
+		if (_bonds.size() < 5)
+		{
+			num = _bonds.size();
+		}
+	}
+	
 	/* Set up parameters for the top clusters from SVD */
 	for (int i = 0; i < _num; i++)
 	{
