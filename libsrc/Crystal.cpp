@@ -613,11 +613,11 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 
 bool Crystal::undoIfWorse()
 {
-	if (_sinceBestNum > 0)
+	if (_lastRWork > _bestRWork)
 	{
-		std::cout << "Decided to undo last " << _sinceBestNum << 
-		" results due to rise in Rwork" 
-		<< std::endl;
+		std::cout << "Decided to undo to state " << _bestState << 
+		" results due to rise in Rwork" << std::endl;
+
 		restoreState(_bestState);
 		_sinceBestNum = 0;
 		return true;
@@ -1179,12 +1179,7 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	if (rFac < _bestRWork)
 	{
 		_bestRWork = rFac;
-		_sinceBestNum = 0;
 		_bestState = stateCount();
-	}
-	else
-	{
-		_sinceBestNum++;
 	}
 	
 	differenceAttribution();
