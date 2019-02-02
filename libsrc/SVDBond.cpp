@@ -144,25 +144,27 @@ void SVDBond::report()
 	
 	_wTotal = cuml; 
 	
-	double pc99 = cuml * 0.50;
+	double pc50 = cuml * 0.50;
+
 	cuml = 0;
 	_num = 0;
 	for (int i = 0; i < _bonds.size(); i++)
 	{
 		cuml += _w[i];
 		
-		if (cuml > pc99)
+		if (cuml > pc50)
 		{
 			_num = i;
 			break;
 		}
 	}
 	
-	if (_num < 5)
+	const int min = 10;
+	if (_num < min)
 	{
-		_num = 5;
+		_num = min;
 		
-		if (_bonds.size() < 5)
+		if (_bonds.size() < min)
 		{
 			_num = _bonds.size();
 		}
