@@ -85,6 +85,7 @@ int Atoms2GL::processMolecule(MoleculePtr molecule)
 		count++;
 	}
 	
+	return molecule->atomCount();
 	_shouldGetBonds = false;
 }
 

@@ -43,34 +43,7 @@ bool Vagabond2GL::shouldGetBonds()
 
 			int existing = 0;
 
-			for (int k = 0; k < molecule->atomCount(); k++)
-			{
-				AtomPtr thisAtom = molecule->atom(k);
-				
-				if (!thisAtom)
-				{
-					continue;
-				}
-
-				if (!thisAtom->getModel() ||
-				    !thisAtom->getModel()->isBond())
-				{
-					continue;
-				}
-				
-				if (!thisAtom->getElement() || 
-				    thisAtom->getElement()->electronCount() <= 1)
-				{
-					continue;
-				}
-				
-				existing++;
-				
-				if (thisAtom->getGhostBond())
-				{
-					existing++;
-				}
-			}
+			existing = molecule->atomCount();
 
 			if (expected != existing)
 			{
