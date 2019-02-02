@@ -51,6 +51,13 @@ void shout_at_helen(std::string fix_me_message)
 	exit(1);
 }
 
+void throw_shout(std::string message)
+{
+	Shouter *shout;
+	shout = new Shouter(message);
+	throw shout;
+}
+
 void warn_user(std::string cautionary_tale)
 {
 	std::cout << "*** Warning: " << cautionary_tale << " ***\n" << std::endl;

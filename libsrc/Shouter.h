@@ -27,6 +27,7 @@ public:
 		return _message;
 	}
 	
+	static void throw_shout(std::string message);
 	void shoutToStdOut();
 private:
 	
