@@ -131,13 +131,10 @@ void FlexGlobal::prepareWorkspace()
 {
 	if (_prepared) return;
 
-	_workspace.scoreType = ScoreTypeCorrel;
+	setup_space(&_workspace);
+
 	_workspace.crystal = _crystal;
 	_workspace.selectAtoms = _atomGroup->getAtoms();
-	_workspace.segment = FFTPtr();
-	_workspace.ave = empty_vec3();
-	_workspace.basis = make_mat3x3();
-	_workspace.flag = MapScoreFlagNone;
 	
 	_prepared = true;
 	AtomGroup::scoreWithMapGeneral(&_workspace);

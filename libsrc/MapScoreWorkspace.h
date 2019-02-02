@@ -64,5 +64,15 @@ typedef struct
 	unsigned int flag;
 } MapScoreWorkspace;
 
+inline void setup_space(MapScoreWorkspace *w)
+{
+	w->scoreType = ScoreTypeCorrel;
+	w->segment = FFTPtr();
+	w->ave = empty_vec3();
+	w->basis = make_mat3x3();
+	w->flag = MapScoreFlagNone;
+	
+
+}
 
 #endif
