@@ -25,8 +25,9 @@
 
 FlexLocal::FlexLocal()
 {
+	_prepared = false;
 	_startB = 0;
-	_shift = 0.05;
+	_shift = 0.02;
 	_run = 0;
 	_window = 10;
 	_direct = 0;
@@ -85,7 +86,7 @@ void FlexLocal::svd()
 
 void FlexLocal::refine()
 {
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 1; i++)
 	{
 		std::cout << "---------------------------------------------------------"
 		<< std::endl;
@@ -119,8 +120,8 @@ void FlexLocal::refine()
 			int limit = 5;
 
 			NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
-			nelder->setCycles(100);
-			nelder->setSilent();	
+			nelder->setCycles(200);
+			nelder->setVerbose(true);	
 
 			AnchorPtr anchor = _polymer->getAnchorModel();
 			nelder->setEvaluationFunction(getScore, this);
@@ -194,6 +195,7 @@ void FlexLocal::clear()
 	_bondClusterIds.clear();
 //	_paramBands.clear();
 	_bbCCs.clear();
+	_prepared = false;
 }
 
 AtomTarget FlexLocal::currentAtomValues()
@@ -482,6 +484,16 @@ double FlexLocal::getTotalBChange()
 double FlexLocal::getScore(void *object)
 {
 	FlexLocal *local = static_cast<FlexLocal *>(object);
+
+	if (!local->_prepared)
+	{
+		AtomGroupPtr bb = local->_polymer->getAllBackbone();
+		setup_space(&local->_workspace);
+		local->_workspace.crystal = Options::getActiveCrystal();
+		local->_workspace.selectAtoms = bb->getAtoms();
+		local->_prepared = true;
+		AtomGroup::scoreWithMapGeneral(&local->_workspace);
+	}
 	
 	if (local->_svd)
 	{
@@ -496,7 +508,8 @@ double FlexLocal::getScore(void *object)
 		return score;
 	}
 
-	double score = local->directSimilarity();
+//	double score = local->directSimilarity();
+	double score = AtomGroup::scoreWithMapGeneral(&local->_workspace);
 	return score;
 	
 }

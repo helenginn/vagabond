@@ -11,6 +11,7 @@
 
 #include "shared_ptrs.h"
 #include "RefinementStrategy.h"
+#include "MapScoreWorkspace.h"
 #include <map>
 
 typedef std::map<AtomPtr, double> AtomTarget;
@@ -124,6 +125,8 @@ private:
 	Getter _getter;
 	Setter _setter;
 
+	bool _prepared;
+	MapScoreWorkspace _workspace;
 };
 
 #endif
