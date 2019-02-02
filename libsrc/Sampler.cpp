@@ -112,9 +112,11 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 		{
 			continue;
 		}
-		
-		range = deg2rad(range);
+
 		double tol = range / 10.;
+		
+		double degrange = deg2rad(range);
+		double degtol = degrange / 10.;
 		
 		if (tol < deg2rad(0.005))
 		{
@@ -124,15 +126,15 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 		switch (option)
 		{
 			case ParamOptionTorsion:
-			addTorsion(bond, range * mult, tol);
+			addTorsion(bond, degrange * mult, degtol);
 			break;
 
 			case ParamOptionTwist:
-			addTwist(bond, range * mult, tol);
+			addTwist(bond, degrange * mult, degtol);
 			break;
 
 			case ParamOptionBondAngle:
-			addBendAngle(bond, range * mult, tol);
+			addBendAngle(bond, degrange * mult, degtol);
 			break;
 
 			case ParamOptionKick:
