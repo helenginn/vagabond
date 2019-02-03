@@ -79,7 +79,7 @@ private:
 	void reflex();
 	void clear();
 	void propagateWhack();
-	void setBondParam(BondPtr b, double k);
+	void setBondParam(BondPtr b, double w, double k);
 	double getBondParam(BondPtr b);
 	double bondAtomCorrel(BondPtr b);
 	double actualAtomChange(AtomPtr a);

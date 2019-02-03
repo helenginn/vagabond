@@ -599,7 +599,8 @@ void FlexLocal::scanBondParams()
 			continue;
 		}
 		
-		double k = getBondParam(b);
+		double ki = Whack::getKick(&*w);
+		double wh = Whack::getWhack(&*w);
 
 		for (int r = 0; r < 1; r++)
 		{
@@ -607,7 +608,7 @@ void FlexLocal::scanBondParams()
 			double num = (r == 0) ? i : i + 0.5;
 
 //			std::cout << "Scanning " << b->shortDesc() << std::endl;
-			setBondParam(b, k + add);
+			setBondParam(b, wh + add, ki + add);
 			
 			for (int j = 0; j < _atoms.size(); j++)
 			{
@@ -640,7 +641,7 @@ void FlexLocal::scanBondParams()
 
 			}
 
-			setBondParam(b, k);
+			setBondParam(b, wh, ki);
 		}
 
 		count++;
@@ -717,12 +718,13 @@ double FlexLocal::getBondParam(BondPtr b)
 	return k;
 }
 
-void FlexLocal::setBondParam(BondPtr b, double k)
+void FlexLocal::setBondParam(BondPtr b, double wh, double k)
 {
 	if (_usingWhack)
 	{
 		WhackPtr w = b->getWhack();
-		(*_setter)(&*w, k);
+		Whack::setWhack(&*w, wh);
+		Whack::setKick(&*w, k);
 		
 		if (*_setter == Whack::setWhack)
 		{
