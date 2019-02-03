@@ -91,7 +91,7 @@ void Whack::applyKick()
 	
 	if (_bond->downstreamBondGroupCount() && _bond->downstreamBondCount(0))
 	{
-		double value = 2 * _whack + _kick;
+		double value = 1 * _whack + _kick;
 		
 		if (!_enabled)
 		{
