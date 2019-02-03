@@ -133,6 +133,9 @@ mat3x3 mat3x3_covariance(std::vector<vec3> points);
  * be buggy */
 mat3x3 mat3x3_make_tensor(mat3x3 &tensify, vec3 &lengths);
 
+/* Set each axis down columns to length of 1 */
+void mat3x3_vectors_to_unity(mat3x3 *mat);
+
 mat3x3 mat3x3_subtract_mat3x3(mat3x3 &one, mat3x3 &two);
 double mat3x3_abs_sum_all(mat3x3 &mat);
 
