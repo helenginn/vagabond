@@ -49,6 +49,7 @@ void Bond::initialize()
 	_geomRatio = 0;
 	_circlePortion = -10;
 	_expectedAngle = 0;
+	_magicMat = make_mat3x3();
 }
 
 Bond::Bond()
@@ -129,6 +130,7 @@ Bond::Bond(Bond &other)
 	_changedSamples = true;
 	_heavyAlign = other._heavyAlign;
 	_split = other._split;
+	_magicMat = other._magicMat;
 	
 	_torsion = other._torsion;
 	_kick = other._kick;
@@ -562,7 +564,8 @@ mat3x3 Bond::getMagicMat(mat3x3 basis)
 
 	mat3x3 multed = mat3x3_mult_mat3x3(rot, basis);
 
-	return mat3x3_transpose(multed);
+	_magicMat = mat3x3_transpose(multed);
+	mat3x3_vectors_to_unity(&_magicMat);
 }
 
 void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
@@ -581,14 +584,14 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	}
 
 	double samples = prevs->size();
-	mat3x3_mult_scalar(&aveBasis, 1 / samples);
 	vec3_mult(&aveStart, 1 / samples);
+	mat3x3_vectors_to_unity(&aveBasis);
 
 	vec3 aveNext = mat3x3_axis(aveBasis, 0);
 	vec3 crossDir = mat3x3_axis(aveBasis, 1);
 	
-	mat3x3 magicMat = getMagicMat(aveBasis);
-//	magicMat = make_mat3x3();
+	getMagicMat(aveBasis);
+	mat3x3 magicMat = getSavedMagicMat();
 	
 	/* Track overall change in order to readjust torsion
 	 * at the end */
@@ -602,7 +605,6 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 
 		/* Difference between perfect and deviant position of major atom */
 		vec3 thisDeviation = vec3_subtract_vec3(thisPos, aveStart);
-		vec3_set_length(&thisDeviation, 1.);
 		
 		/* Find out what this deviation is if sensitive axis is set to z */
 		mat3x3_mult_vec(magicMat, &thisDeviation);

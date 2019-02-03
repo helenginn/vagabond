@@ -491,6 +491,8 @@ public:
 	{
 		_whack = whack;
 	}
+
+	mat3x3 getMagicMat(mat3x3 basis);
 	
 	bool hasWhack()
 	{
@@ -603,8 +605,8 @@ private:
 	void copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum);
 	BondPtr duplicateDownstream(BondPtr newBranch, int groupNum,
 	                            bool onlyExisting = false);
-	mat3x3 getMagicMat(mat3x3 basis);
 
+	mat3x3 _magicMat;
 };
 
 #endif /* defined(__vagabond__Bond__) */
