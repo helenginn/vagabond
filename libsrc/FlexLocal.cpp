@@ -123,7 +123,6 @@ void FlexLocal::refine()
 			nelder->setCycles(200);
 			nelder->setVerbose(true);	
 
-			AnchorPtr anchor = _polymer->getAnchorModel();
 			nelder->setEvaluationFunction(getScore, this);
 
 			_svd->addToStrategy(nelder);
