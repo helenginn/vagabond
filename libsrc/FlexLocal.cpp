@@ -27,7 +27,7 @@ FlexLocal::FlexLocal()
 {
 	_prepared = false;
 	_startB = 0;
-	_shift = 0.02;
+	_shift = 0.05;
 	_run = 0;
 	_window = 10;
 	_direct = 0;
