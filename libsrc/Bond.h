@@ -550,7 +550,6 @@ private:
 	bool _refineBondAngle;
 	bool _refineFlexibility;
 
-	vec3 _magicAxis;
 
 	std::vector<AtomWkr> _extraTorsionSamples;
 

@@ -41,7 +41,6 @@ void Bond::initialize()
 	_occupancy = 1.0;
 	_resetOccupancy = false;
 	_anisotropyExtent = 0.0;
-	_magicAxis = empty_vec3();
 	double initialKick = Options::getKick();
 	_kick = initialKick;
 	_torsion = 0;
@@ -111,7 +110,6 @@ Bond::Bond(Bond &other)
 	_major = other._major;
 	_minor = other._minor;
 	_resetOccupancy = false;
-	_magicAxis = other._magicAxis;
 
 	for (size_t i = 0; i < other.downstreamBondGroupCount(); i++)
 	{
@@ -590,7 +588,6 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	vec3 crossDir = mat3x3_axis(aveBasis, 1);
 	
 	mat3x3 magicMat = getMagicMat(aveBasis);
-	_magicAxis = mat3x3_axis(magicMat, 2); 
 //	magicMat = make_mat3x3();
 	
 	/* Track overall change in order to readjust torsion
@@ -1517,8 +1514,6 @@ void Bond::addProperties()
 	addBoolProperty("refine_flexibility", &_refineFlexibility);
 	addBoolProperty("disabled", &_disabled);
 
-	addVec3Property("magic_axis", &_magicAxis);
-	
 	for (int i = 0; i < downstreamBondGroupCount(); i++)
 	{
 		addChild("bond_group", _bondGroups[i]);
