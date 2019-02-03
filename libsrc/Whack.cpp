@@ -66,6 +66,15 @@ bool Whack::needsRefresh(std::vector<BondSample> &anchSamp)
 void Whack::saveSamples()
 {
 	_samples = *_bond->getManyPositions();
+	BondPtr child = _bond->downstreamBond(0, 0);
+
+	std::vector<BondSample> chSamples = *child->getManyPositions();
+	
+	for (size_t i = 0; i < chSamples.size(); i++)
+	{
+		_samples[i].kickValue = chSamples[i].kickValue;
+	}
+
 }
 
 void Whack::applyKick()
