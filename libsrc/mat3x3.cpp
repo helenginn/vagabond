@@ -624,3 +624,23 @@ vec3 mat3x3_rotation_axis(mat3x3 &mat)
 
 	return make_vec3(x, y, z);
 }
+
+void mat3x3_vectors_to_unity(mat3x3 *mat)
+{
+	for (int i = 0; i < 9; i+=3)
+	{
+		double total = 0;
+		for (int j = 0; j < 3; j++)
+		{
+			double add = mat->vals[i + j];
+			total += add * add;
+		}
+		
+		double scale = 1 / sqrt(total);
+		
+		for (int j = 0; j < 3; j++)
+		{
+			mat->vals[i + j] *= scale;
+		}
+	}
+}
