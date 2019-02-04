@@ -566,6 +566,8 @@ mat3x3 Bond::getMagicMat(mat3x3 basis)
 
 	_magicMat = mat3x3_transpose(multed);
 	mat3x3_vectors_to_unity(&_magicMat);
+	
+	return _magicMat;
 }
 
 void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
