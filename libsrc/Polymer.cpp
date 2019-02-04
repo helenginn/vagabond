@@ -237,6 +237,14 @@ void Polymer::tieAtomsUp()
 
 	AtomPtr n = getMonomer(_anchorNum)->findAtom("N");
 	AtomPtr to_c = getMonomer(_anchorNum)->findAtom("CA");
+	
+	if (!getMonomer(_anchorNum - 1))
+	{
+		warn_user("Not tying up " + getChainID() + " - cannot find atoms "\
+		"surrounding anchor point.");
+		return;
+	}
+	
 	AtomPtr to_n = getMonomer(_anchorNum - 1)->findAtom("C");
 
 	/* Specify heavy alignment atoms around the anchor point */
