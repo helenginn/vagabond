@@ -108,7 +108,11 @@ FFT::FFT(FFT &other)
 	if (other.mask)
 	{
 		mask = (int *)malloc(nn * sizeof(int));
-		memcpy(mask, other.mask, nn * sizeof(int));
+		
+		if (mask)
+		{
+			memcpy(mask, other.mask, nn * sizeof(int));
+		}
 	}
 
 	_myDims = other._myDims;
