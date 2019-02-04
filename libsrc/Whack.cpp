@@ -117,19 +117,12 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 	{
 		return;
 	}
-
+	
 	AnchorPtr anchor = _anchor.lock();
 	
 	AtomPtr anchAtom = anchor->getAtom();
 	AtomPtr bondAtom = _bond->getAtom();
 	
-	bool forwards = true;
-	
-	if (bondAtom->getResidueNum() < anchAtom->getResidueNum())
-	{
-		forwards = false;
-	}
-
 	double check = 0;
 
 	for (int i = 0; i < anchSamp.size(); i++)
