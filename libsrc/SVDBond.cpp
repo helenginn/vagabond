@@ -205,10 +205,12 @@ void SVDBond::report()
 	}
 }
 
-void SVDBond::addToStrategy(RefinementStrategyPtr strategy)
+void SVDBond::addToStrategy(RefinementStrategyPtr strategy, int dir)
 {
 	double inv = 0.5 / _wTotal;
 	double tol = inv / 100;
+	
+	inv *= (double)dir;
 	
 	for (int i = 0; i < _params.size(); i++)
 	{

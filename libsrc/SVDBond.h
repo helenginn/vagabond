@@ -50,7 +50,7 @@ public:
 		return _num;
 	}
 
-	void addToStrategy(RefinementStrategyPtr strategy);
+	void addToStrategy(RefinementStrategyPtr strategy, int dir);
 	void applyParameters();
 	void performSVD(BondBondCC *ccs = NULL);
 private:
