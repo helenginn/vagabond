@@ -125,7 +125,7 @@ void FlexLocal::refine()
 
 			nelder->setEvaluationFunction(getScore, this);
 
-			_svd->addToStrategy(nelder);
+			_svd->addToStrategy(nelder, _negMult);
 
 			nelder->refine();
 
