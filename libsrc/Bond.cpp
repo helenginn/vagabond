@@ -590,8 +590,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	vec3 aveNext = mat3x3_axis(aveBasis, 0);
 	vec3 crossDir = mat3x3_axis(aveBasis, 1);
 	
-	getMagicMat(aveBasis);
-	mat3x3 magicMat = getSavedMagicMat();
+	mat3x3 magicMat = getMagicMat(aveBasis);
 	
 	/* Track overall change in order to readjust torsion
 	 * at the end */
