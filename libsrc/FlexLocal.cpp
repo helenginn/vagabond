@@ -586,7 +586,6 @@ void FlexLocal::scanBondParams()
 	CSVPtr csv = CSVPtr(new CSV(3, "atom", "kick", "response"));
 	int count = 0;
 	
-	AtomPtr check = _polymer->findAtoms("CA", 70)[0];
 	std::map<int, double> sumsPerAtom;
 
 	for (int i = 0; i < _bonds.size(); i++)
@@ -598,51 +597,43 @@ void FlexLocal::scanBondParams()
 		{
 			continue;
 		}
-		
+
 		double ki = Whack::getKick(&*w);
 		double wh = Whack::getWhack(&*w);
 
-		for (int r = 0; r < 1; r++)
+		double add = _shift * _negMult;
+
+		setBondParam(b, wh + add, ki + add);
+
+		for (int j = 0; j < _atoms.size(); j++)
 		{
-			double add = _shift * _negMult;
-			double num = (r == 0) ? i : i + 0.5;
+			double nAtom = _atoms[j]->getResidueNum();
+			double bnow = _atoms[j]->getBFactor();
+			double bthen = _atomOriginal[_atoms[j]];
 
-//			std::cout << "Scanning " << b->shortDesc() << std::endl;
-			setBondParam(b, wh + add, ki + add);
-			
-			for (int j = 0; j < _atoms.size(); j++)
+			double diff = bnow - bthen;
+
+			if (_bondEffects.count(b) == 0)
 			{
-				double nAtom = _atoms[j]->getResidueNum();
-				double bnow = _atoms[j]->getBFactor();
-				double bthen = _atomOriginal[_atoms[j]];
-
-				double diff = bnow - bthen;
-				
-				if (r == 0)
-				{
-					if (_bondEffects.count(b) == 0)
-					{
-						_bondEffects[b] = AtomTarget();
-					}
-
-					_bondEffects[b][_atoms[j]] = diff;
-				}
-				
-				int intAtom = _atoms[j]->getResidueNum();
-
-				if (sumsPerAtom.count(intAtom) == 0)
-				{
-					sumsPerAtom[intAtom] = 0;
-				}
-				
-				sumsPerAtom[intAtom] += diff;
-
-				csv->addEntry(3, (double)nAtom, (double)count, diff);
-
+				_bondEffects[b] = AtomTarget();
 			}
 
-			setBondParam(b, wh, ki);
+			_bondEffects[b][_atoms[j]] = diff;
+
+			int intAtom = _atoms[j]->getResidueNum();
+
+			if (sumsPerAtom.count(intAtom) == 0)
+			{
+				sumsPerAtom[intAtom] = 0;
+			}
+
+			sumsPerAtom[intAtom] += diff;
+
+			csv->addEntry(3, (double)nAtom, (double)count, diff);
+
 		}
+
+		setBondParam(b, wh, ki);
 
 		count++;
 	}
@@ -720,21 +711,11 @@ double FlexLocal::getBondParam(BondPtr b)
 
 void FlexLocal::setBondParam(BondPtr b, double wh, double k)
 {
-	if (_usingWhack)
-	{
-		WhackPtr w = b->getWhack();
-		Whack::setWhack(&*w, wh);
-		Whack::setKick(&*w, k);
-		
-		if (*_setter == Whack::setWhack)
-		{
-			propagateWhack();
-		}
-	}
-	else
-	{
-		(*_setter)(&*b, k);
-		b->propagateChange();
-	}
+	WhackPtr w = b->getWhack();
+	if (!w) return;
+
+	Whack::setWhack(&*w, wh);
+	Whack::setKick(&*w, k);
+	propagateWhack();
 }
 
