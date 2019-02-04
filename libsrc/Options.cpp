@@ -522,14 +522,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "--with-model=", &_modelFile);
 		understood |= parseParameter(arg, "--with-mtz=", &_mtzFile);
 
-		prefix = "--solvent=";
-
-		if (!arg.compare(0, prefix.size(), prefix))
-		{
-			std::string solvent_string = arg.substr(prefix.size());
-			_solvent = atoi(solvent_string.c_str());
-			understood = true;
-		}
+		understood |= parseParameter(arg, "--solvent=", &_solvent);
 
 		understood |= parseParameter(arg, "--max-res=", &_maxRes);
 		understood |= parseParameter(arg, "--min-res=", &_minRes);
