@@ -151,9 +151,32 @@ void StartScreen::makeButtons()
 		_tMaxRes->setText(QString::fromStdString(text));
 	}
 
+	height += 40;
+	indent -= 150;
+
+	q = new QLabel("Solvent add radius (Å):", this);
+	q->setGeometry(indent, height, LABEL_WIDTH, 20);
+	q->hide();
+	_widgets.push_back(q);
+	_optWidgets.push_back(q);
+
+	indent += 150;
+	
+	_tRadius = new QLineEdit("", this);
+	_tRadius->setGeometry(indent, height, 120, 25);
+	_tRadius->hide();
+	_optWidgets.push_back(_tRadius);
+
+	if (Options::getProbeRadius() >= 0)
+	{
+		double radius = Options::getProbeRadius();
+		std::string text = f_to_str(radius, 2);
+		_tRadius->setText(QString::fromStdString(text));
+	}
+
 	/** Refinement options **/
 	
-	height -= 80;
+	height -= 120;
 	indent = 25;
 
 	q = new QLabel("Refinement options", this);
@@ -318,6 +341,11 @@ void StartScreen::pushRun()
 	if (_tMaxRes->text().length())
 	{
 		Options::_maxRes = _tMaxRes->text().toDouble();
+	}
+	
+	if (_tRadius->text().length())
+	{
+		Options::_probeRadius = _tRadius->text().toDouble();
 	}
 	
 	if (_tMinRes->text().length())
