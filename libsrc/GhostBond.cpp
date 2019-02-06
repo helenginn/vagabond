@@ -26,6 +26,11 @@ GhostBond::GhostBond()
 
 void GhostBond::setAtoms(AtomPtr major, AtomPtr minor)
 {
+	if (!major || !minor)
+	{
+		return;
+	}
+
 	_major = major;
 	_minor = minor;
 	
