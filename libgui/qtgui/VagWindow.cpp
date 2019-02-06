@@ -246,7 +246,7 @@ VagWindow::VagWindow(QWidget *parent,
 	
 	QFont monoFont("Monospace");
 	monoFont.setPointSize(8);
-	monoFont.setStyleHint(QFont::TypeWriter);
+	monoFont.setStyleHint(QFont::Monospace);
 	_logView = new QTextEdit(this);
 	_logView->setAcceptRichText(false);
 	_logView->setFont(monoFont);
