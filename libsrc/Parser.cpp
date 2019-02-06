@@ -927,7 +927,6 @@ void Parser::setProperty(std::string property, std::string value)
 				return; 
 			}
 
-			sanitise(&value, "\\n", "\n");
 			*_stringProperties[i].stringPtr = value;
 
 			return;
