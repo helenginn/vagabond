@@ -252,7 +252,6 @@ private:
 	
 	void privateSaveState(int aim);
 	void setupKnownClasses();
-	void sanitise(std::string *str, std::string from, std::string to);
 	
 	Parser *getParent()
 	{
