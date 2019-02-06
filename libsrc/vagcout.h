@@ -71,6 +71,8 @@ protected:
 
 		int_type ilen = iend - ibegin;
 
+		/* Temporarily divert std::cout to original stream
+		 * while we process the new characters */
 		std::cout.rdbuf(original_cout);
 		out_buf_[ilen] = '\0';
 		std::cout << out_buf_;
@@ -82,6 +84,7 @@ protected:
 			_notify->appendToLog(out_buf_);
 		}
 
+		/* Return std::cout to this stream. */
 		std::cout.rdbuf(this);
 
 		return traits_type::not_eof(c);
