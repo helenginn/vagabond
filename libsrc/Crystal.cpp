@@ -1256,6 +1256,7 @@ void Crystal::addProperties()
 
 	_spgNum = 0;
 	_spgString = "";
+
 	if (_spaceGroup)
 	{
 		_spgNum = _spaceGroup->spg_num;
