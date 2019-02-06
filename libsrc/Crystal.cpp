@@ -1475,7 +1475,7 @@ void Crystal::postRestoreState()
 void Crystal::openInCoot()
 {
 	std::string command = "coot " + _lastMtz + " " + _lastEnsemblePDB
-	+ " " + _lastAveragePDB + " &> /dev/null &\n";
+	+ " " + _lastAveragePDB + "\n";
 	
 	std::cout << "Terminal command: " << command << std::endl;
 
