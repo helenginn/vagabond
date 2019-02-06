@@ -81,6 +81,7 @@ public:
 	
 signals:
 	void errorReceived(Shouter *shout);
+	void appendSignal();
 protected:
 	virtual void resizeEvent(QResizeEvent *);
 private slots:
@@ -93,6 +94,7 @@ private slots:
 	void adjustBFactor();
 	void refitBackbone();
 	void fixErroneousZones();
+	void append();
 
 	void displayMessage(Shouter *shout);
 private:
@@ -147,6 +149,9 @@ private:
 	bool _showingLog;
 	int _argc;
 	char **_argv;
+	
+	std::mutex _guiOutMut;
+	std::string _guiOut;
 
 	void makeMenu();
 	void makeButtons();

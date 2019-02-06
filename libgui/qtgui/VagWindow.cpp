@@ -266,6 +266,9 @@ VagWindow::VagWindow(QWidget *parent,
 
 	connect(this, SIGNAL(errorReceived(Shouter *)), 
 	        this, SLOT(displayMessage(Shouter *)), Qt::QueuedConnection);
+	
+	connect(this, SIGNAL(appendSignal()),
+	        this, SLOT(append()), Qt::UniqueConnection);
 
 	_instructionThread.start(); 
 }
@@ -694,13 +697,27 @@ void VagWindow::toggleLog()
 	resizeEvent(NULL);
 }
 
+void VagWindow::append()
+{
+	_logView->moveCursor(QTextCursor::End);
+	_guiOutMut.lock();
+	QString qOut = QString::fromStdString(_guiOut);
+	_guiOut.clear();
+	_guiOutMut.unlock();
+	_logView->insertPlainText(qOut);
+	_logView->moveCursor(QTextCursor::End);
+}
+
 void VagWindow::appendToLog(char *msg)
 {
 	if (*msg != NULL)
 	{
-		_logView->moveCursor(QTextCursor::End);
-		_logView->insertPlainText(msg);
-		_logView->moveCursor(QTextCursor::End);
+		/* Will wait until main thread unlocks */
+		_guiOutMut.lock();
+		_guiOut += msg;
+		_guiOutMut.unlock();
+
+		emit appendSignal();
 	}
 }
 
