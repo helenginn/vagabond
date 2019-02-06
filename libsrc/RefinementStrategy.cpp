@@ -125,6 +125,7 @@ void RefinementStrategy::refine()
 	}
 
 	startingScore = (*evaluationFunction)(evaluateObject);
+	_prevScore = startingScore;
 
 	for (int i = 0; i < parameterCount(); i++)
 	{
@@ -142,16 +143,16 @@ void RefinementStrategy::reportProgress(double score)
 		return;
 	}
 
-	std::cout << "Cycle " << cycleNum << "\t";
-
-	for (int i = 0; i < parameterCount(); i++)
+	if (score < _prevScore)
 	{
-		double value = getValueForParam(i);
-		std::cout << std::setprecision(5) << value << "\t";
+		std::cout << "+" << std::flush;
 	}
-
-	std::cout << " - score:\t";
-	std::cout << score << std::endl;
+	else
+	{
+		std::cout << "=" << std::flush;
+	}
+	
+	_prevScore = score;
 
 	cycleNum++;
 }

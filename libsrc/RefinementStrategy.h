@@ -185,6 +185,7 @@ protected:
 
 	std::vector<Parameter> _params;
 	double startingScore;
+	double _prevScore;
 	bool _verbose;
 
 	double getGradientForParam(int i);
