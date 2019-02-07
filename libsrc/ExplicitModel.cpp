@@ -61,8 +61,8 @@ void ExplicitModel::sanityCheck()
 		
 		if (start.x != start.x) 
 		{
-			std::cout << "Start position is nan for " << shortDesc() <<
-			std::endl;
+//			std::cout << "Start position is nan for " << shortDesc() <<
+//			std::endl;
 			return;
 		}
 		if (old_start.x != old_start.x)
@@ -76,8 +76,8 @@ void ExplicitModel::sanityCheck()
 		{
 			if (basis.vals[j] != basis.vals[j])
 			{
-				std::cout << "Basis value " << j << " is nan for " <<
-				shortDesc() << std::endl;
+//				std::cout << "Basis value " << j << " is nan for " <<
+//				shortDesc() << std::endl;
 				return;
 			}
 		}
