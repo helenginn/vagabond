@@ -918,11 +918,77 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	bool difference = (workspace->flag & MapScoreFlagDifference);
 	ScoreType type = workspace->scoreType;
 	
-	score = scoreFinalMap(crystal, workspace->segment, plot,
-	                      type, workspace->ave, workspace->flag);
+	score = scoreFinalMap(workspace, plot);
 
 	return score;
 }
+
+double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
+{
+	/* Convert real2Frac to crystal coords to get correct segment
+	* of the big real space map. */
+	CrystalPtr crystal = ws->crystal;
+	mat3x3_mult_vec(crystal->getReal2Frac(), &ws->ave);
+	
+	double cutoff = MAP_VALUE_CUTOFF;
+
+	std::vector<double> xs, ys;
+	std::vector<CoordVal> vals;
+
+	FFTPtr map = ws->crystal->getFFT();
+	bool difference = (ws->flag & MapScoreFlagDifference);
+	
+	if (difference)
+	{
+		map = crystal->getDiFFT();
+	}
+	
+	MapScoreType mapType = MapScoreTypeCorrel;
+	
+	if (ws->scoreType == ScoreTypeCopyToSmaller)
+	{
+		mapType = MapScoreTypeCopyToSmaller;
+	}
+
+	FFT::operation(map, ws->segment, ws->ave, mapType, &vals, true);
+
+	/* For correlation calculations */
+	for (size_t i = 0; i < vals.size(); i++)
+	{
+		xs.push_back(vals[i].fo);
+		ys.push_back(vals[i].fc);
+	}
+
+	if (ws->scoreType == ScoreTypeRFactor)
+	{
+		double scale = scale_factor_cutoff(xs, ys, cutoff);
+
+		cutoff /= scale;	
+		for (size_t i = 0; i < ys.size(); i++)
+		{
+			ys[i] /= scale;
+			vals[i].fc /= scale;
+		}
+	}
+
+	/* Debugging ... writes cc_score.csv and cc_score.png, csv can be
+	* looked at with gnuplot quite nicely.*/
+
+	if (plot)
+	{
+		plotCoordVals(vals, difference, cutoff, "cc_score");
+	}
+
+
+	/* Clear out the massive vectors */
+	vals.clear();
+	std::vector<CoordVal>().swap(vals);
+
+	double score = scoreFinalValues(xs, ys, ws->scoreType, ws->flag);
+
+	return score;
+}
+
 
 double AtomGroup::scoreFinalValues(std::vector<double> xs,
                                    std::vector<double> ys,
@@ -1016,75 +1082,6 @@ void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals,
 	plotMap["yTitle0"] = "Obs density";
 	plotMap["style0"] = "scatter";
 	csv->plotPNG(plotMap);
-}
-
-double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
-                                bool plot, ScoreType scoreType,
-                                vec3 ave, unsigned int flags)
-{
-	
-	double cutoff = MAP_VALUE_CUTOFF;
-	mat3x3 real2Frac = crystal->getReal2Frac();
-
-	/* Convert real2Frac to crystal coords to get correct segment
-	* of the big real space map. */
-	mat3x3_mult_vec(real2Frac, &ave);
-
-	std::vector<double> xs, ys;
-	std::vector<CoordVal> vals;
-
-	FFTPtr map = crystal->getFFT();
-	bool difference = (flags & MapScoreFlagDifference);
-	
-	if (difference)
-	{
-		map = crystal->getDiFFT();
-	}
-	
-	MapScoreType mapType = MapScoreTypeCorrel;
-	
-	if (scoreType == ScoreTypeCopyToSmaller)
-	{
-		mapType = MapScoreTypeCopyToSmaller;
-	}
-
-	FFT::operation(map, segment, ave, mapType, &vals, true);
-
-	/* For correlation calculations */
-	for (size_t i = 0; i < vals.size(); i++)
-	{
-		xs.push_back(vals[i].fo);
-		ys.push_back(vals[i].fc);
-	}
-
-	if (scoreType == ScoreTypeRFactor)
-	{
-		double scale = scale_factor_cutoff(xs, ys, cutoff);
-
-		cutoff /= scale;	
-		for (size_t i = 0; i < ys.size(); i++)
-		{
-			ys[i] /= scale;
-			vals[i].fc /= scale;
-		}
-	}
-
-	/* Debugging ... writes cc_score.csv and cc_score.png, csv can be
-	* looked at with gnuplot quite nicely.*/
-
-	if (plot)
-	{
-		plotCoordVals(vals, difference, cutoff, "cc_score");
-	}
-
-
-	/* Clear out the massive vectors */
-	vals.clear();
-	std::vector<CoordVal>().swap(vals);
-
-	double score = scoreFinalValues(xs, ys, scoreType, flags);
-
-	return score;
 }
 
 void AtomGroup::addProperties()

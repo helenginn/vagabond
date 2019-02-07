@@ -183,9 +183,7 @@ private:
 	                                std::vector<AtomPtr> selected,
 	                                mat3x3 *basis, vec3 *ave);
 
-	static double scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
-	                            bool plot, ScoreType scoreType,
-	                            vec3 ave, unsigned int flags = 0);
+	static double scoreFinalMap(MapScoreWorkspace *workspace, bool plot);
 
 	static double scoreFinalValues(std::vector<double> xs,
 	                               std::vector<double> ys,
