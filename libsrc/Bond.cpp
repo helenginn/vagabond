@@ -1204,6 +1204,12 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum,
 	{
 		if (onlyExisting)
 		{
+			/* Last thing we have to do is allow the final bond (that's us)
+			 * to refine torsion angles */
+			
+			setUsingTorsion(true);
+			
+			/* Now we can end the chain */
 			return BondPtr();
 		}
 
