@@ -24,6 +24,7 @@
 #include "RefinementStrategy.h"
 #include "Bond.h"
 #include "Whack.h"
+#include "CSV.h"
 
 SVDBond::SVDBond(BondEffects &effects, std::vector<BondPtr> &bonds,
                  std::vector<AtomPtr> &atoms)
@@ -34,6 +35,92 @@ SVDBond::SVDBond(BondEffects &effects, std::vector<BondPtr> &bonds,
 	_svd = NULL;
 }
 
+vec3 bond_effect_on_pos(vec3 atom_pos, mat3x3 &bond_basis, vec3 &bond_pos)
+{
+	mat3x3 trans = mat3x3_transpose(bond_basis);
+	/* Remove translation component due to bond's location */
+	vec3_subtract_from_vec3(&atom_pos, bond_pos);
+	
+	/* Multiply position by transpose of bond basis to get location in
+	 * 'identity' coordinates */
+	mat3x3_mult_vec(trans, &atom_pos);
+	
+	/* Set the component in the direction of the bond to zero */
+	atom_pos.z = 0;
+	
+	/* Multiply this by bond basis to get the important vector into
+	 * crystal coordinates again */
+	mat3x3_mult_vec(bond_basis, &atom_pos);
+	
+	return atom_pos;
+}
+
+double SVDBond::compareBonds(BondPtr a, BondPtr b)
+{
+	/* Get all the bond directions and positions */
+	mat3x3 aBasis, bBasis;
+	vec3 aPos, bPos;
+
+	a->getAverageBasisPos(&aBasis, &aPos);
+	b->getAverageBasisPos(&bBasis, &bPos);
+	
+	double total = 0;
+	double count = 0;
+	
+	for (int i = 0; i < _atoms.size(); i++)
+	{
+		vec3 pos = _atoms[i]->getAbsolutePosition();
+		
+		/* The real important directions are rotated 90° but it doesn't
+		 * really matter because we're comparing them */
+		vec3 aDir = bond_effect_on_pos(pos, aBasis, aPos);
+		vec3 bDir = bond_effect_on_pos(pos, bBasis, bPos);
+		
+		double aLength = vec3_length(aDir);
+		double bLength = vec3_length(bDir);
+		
+		/* Get ratio of the lengths as one component of agreement */
+		double ratio = aLength / bLength;
+		if (ratio > 1)
+		{
+			ratio = 1 / ratio;
+		}
+		
+		/* Get cosine of angle as another component of agreement */
+		double cosine = vec3_cosine_with_vec3(aDir, bDir);
+		
+		double add = cosine * ratio;
+		total += add;
+		
+		count++;
+	}
+	
+	total /= count;
+	return total;
+}
+
+void SVDBond::compareBonds()
+{
+	for (int i = 1; i < _bonds.size(); i++)
+	{
+		BondPtr b1 = _bonds[i];
+		
+		for (int j = 0; j < i; j++)
+		{
+			BondPtr b2 = _bonds[j];
+
+			double agreement = compareBonds(b1, b2);
+			_svd[i][j] = agreement;
+			_svd[j][i] = agreement;
+		}
+	}
+	
+	for (int i = 0; i < _bonds.size(); i++)
+	{
+		_svd[i][i] = 0;
+	}
+}
+
 void SVDBond::performSVD(BondBondCC *ccs)
 {
 	prepareMatrix(&_svd);
@@ -41,6 +128,9 @@ void SVDBond::performSVD(BondBondCC *ccs)
 	prepareMatrix(&_v);
 	prepareVector(&_w);
 	
+	compareBonds();
+	
+	/*
 	if (ccs)
 	{
 		for (int i = 0; i < _bonds.size(); i++)
@@ -65,6 +155,9 @@ void SVDBond::performSVD(BondBondCC *ccs)
 	{
 		populateMatrix();
 	}
+	*/
+	
+	writeMatrix();
 	
 	copyMatrix(_svd, _original);
 	svdMagic();
@@ -310,4 +403,37 @@ SVDBond::~SVDBond()
 		delete _params[i].pWhack;
 		delete _params[i].pKick;
 	}
+}
+
+void SVDBond::writeMatrix()
+{
+	CSV csv(3, "bi", "bj", "cc");
+
+	for (int i = 0; i < _bonds.size(); i++)
+	{
+		for (int j = 0; j < _bonds.size(); j++)
+		{
+			csv.addEntry(3, (double)i, (double)j, _svd[i][j]);
+		}
+	}
+
+	csv.setSubDirectory("local_flex");
+	csv.writeToFile("new_bond_matrix.csv");
+
+	std::map<std::string, std::string> plotMap;
+	plotMap["filename"] = "new_bond_matrix";
+	plotMap["height"] = "1000";
+	plotMap["width"] = "1000";
+	plotMap["xHeader0"] = "bi";
+	plotMap["yHeader0"] = "bj";
+	plotMap["zHeader0"] = "cc";
+
+	plotMap["xTitle0"] = "bond number";
+	plotMap["yTitle0"] = "bond number";
+
+	plotMap["style0"] = "heatmap";
+	plotMap["stride"] = i_to_str(_bonds.size());
+	
+	csv.setSubDirectory("local_flex");
+	csv.plotPNG(plotMap);
 }
