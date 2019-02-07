@@ -116,11 +116,6 @@ void Polymer::refineLocalFlexibility()
 	whack();
 	local.setPolymer(shared_from_this(), _kickShift);
 	
-	if (getAnchorModel()->whackCount() > 0)
-	{
-		local.setWhacking(true);
-	}
-	
 	local.refine();
 	_kickShift = local.getShift();
 	timer.report();
