@@ -37,7 +37,6 @@ FlexLocal::FlexLocal()
 	_threshold = 0.80;
 	_increment = 5;
 	_useTarget = true;
-	_usingWhack = false;
 	_getter = Bond::getKick;
 	_flexGlobal = NULL;
 	_setter = Bond::setKick;
@@ -99,16 +98,10 @@ void FlexLocal::refine()
 		reflex();
 		createAtomTargets();
 		scanBondParams();
-		
 		createClustering();
 
 		/* Testing the SVD stuff */
 		svd();
-		
-		std::vector<ParamBandPtr> extras;
-
-		bool reduceShift = false;
-		bool success = false;
 		
 		for (int j = 0; j < 1; j++)
 		{
@@ -132,23 +125,10 @@ void FlexLocal::refine()
 			double val = (1 + getScore(this)) * 100.;
 			val = nelder->improvement();
 
-			if (val < 0.5 && !_direct)
-			{
-				reduceShift = true;
-			}
-
 			if (nelder->didChange())
 			{
 				std::cout << std::setw(3) << val << 
 				"% improved. ... done. ";
-				
-				if (val > 0.5 || _direct)
-				{
-					timer.quickReport();
-					std::cout << std::endl;
-					success = true;
-					break;
-				}
 			}
 			else
 			{
@@ -157,21 +137,10 @@ void FlexLocal::refine()
 
 			timer.quickReport();
 			std::cout << std::endl;
-			
-			if (_paramBands.size() < limit)
-			{
-				break;
-			}
-			
 		}
 		
 		std::cout << "---------------------------------------------------------"
 		<< std::endl;
-
-		if (reduceShift)
-		{
-			_shift *= 0.9;
-		}
 
 		clear();
 
@@ -192,24 +161,8 @@ void FlexLocal::clear()
 	_b2bDiffs.clear();
 	_degrees.clear();
 	_bondClusterIds.clear();
-//	_paramBands.clear();
 	_bbCCs.clear();
 	_prepared = false;
-}
-
-AtomTarget FlexLocal::currentAtomValues()
-{
-	AtomTarget targ;
-
-	for (int i = 0; i < _atoms.size(); i++)
-	{
-		AtomPtr a = _atoms[i];
-		double bf = a->getBFactor();
-
-		targ[a] = bf;
-	}
-
-	return targ;
 }
 
 void FlexLocal::createAtomTargets()
@@ -239,14 +192,7 @@ void FlexLocal::createAtomTargets()
 		
 		BondPtr b = ToBondPtr(a->getModel());
 
-		if (_usingWhack && !b->getWhack())
-		{
-			continue;
-		}
-		
-		if (!_usingWhack && 
-		   ((!b->getRefineFlexibility() || !b->isNotJustForHydrogens()
-			|| !b->isUsingTorsion())))
+		if (!b->getWhack())
 		{
 			continue;
 		}
@@ -298,25 +244,6 @@ void FlexLocal::createAtomTargets()
 		}
 	}
 }	
-
-double FlexLocal::bondAtomCorrel(BondPtr b)
-{
-	std::vector<double> xs, ys;
-
-	for (int i = 0; i < _atoms.size(); i++)
-	{
-		AtomPtr a = _atoms[i];
-		
-		double flex = _bondEffects[b][a];
-		double target = targetForAtom(a);
-		xs.push_back(flex);
-		ys.push_back(target);
-	}
-
-	double correl = correlation(xs, ys);
-	
-	return correl;
-}
 
 double FlexLocal::bondRelationship(BondPtr bi, BondPtr bj)
 {
@@ -429,57 +356,6 @@ double FlexLocal::actualAtomChange(AtomPtr a)
 	return current - original;
 }
 
-double FlexLocal::directSimilarity()
-{
-	std::vector<double> xs, ys;
-
-	for (int i = 0; i < _atoms.size(); i++)
-	{
-		double target = targetForAtom(_atoms[i]);
-		double actual = actualAtomChange(_atoms[i]);
-		
-		xs.push_back(target);
-		ys.push_back(actual);
-	}
-	
-	double rfactor = r_factor(xs, ys);
-	
-	return rfactor;
-}
-
-double FlexLocal::sgetTotalBChange(void *object)
-{
-	FlexLocal *local = static_cast<FlexLocal *>(object);
-	return local->getTotalBChange();
-}
-
-double FlexLocal::getTotalB()
-{
-	double sum = 0;
-	double count = 0;
-
-	for (int i = 0; i < _atoms.size(); i++)
-	{
-		AtomPtr a = _atoms[i];
-		double bf = a->getBFactor();
-
-		sum += bf;
-		count++;
-	}
-
-	sum /= count;
-
-	return sum;
-}
-
-double FlexLocal::getTotalBChange()
-{
-	double sum = getTotalB();
-	double diff = _startB - sum;
-	
-	return fabs(diff);
-}
-
 double FlexLocal::getScore(void *object)
 {
 	FlexLocal *local = static_cast<FlexLocal *>(object);
@@ -501,13 +377,6 @@ double FlexLocal::getScore(void *object)
 
 	local->_polymer->propagateChange();
 	
-	if (local->_direct)
-	{
-		double score = local->_flexGlobal->score(local->_flexGlobal);
-		return score;
-	}
-
-//	double score = local->directSimilarity();
 	double score = AtomGroup::scoreWithMapGeneral(&local->_workspace);
 	return score;
 	
@@ -593,7 +462,7 @@ void FlexLocal::scanBondParams()
 		BondPtr b = _bonds[i];
 		WhackPtr w = _bonds[i]->getWhack();
 		
-		if (!w && _usingWhack)
+		if (!w)
 		{
 			continue;
 		}
@@ -683,30 +552,6 @@ void FlexLocal::propagateWhack()
 {
 	ExplicitModelPtr anchor = _polymer->getAnchorModel();
 	anchor->propagateChange(-1, true);
-}
-
-void FlexLocal::setWhacking(bool whack)
-{
-	_usingWhack = true;
-	_getter = Whack::getWhack;
-	_setter = Whack::setWhack;
-}
-
-double FlexLocal::getBondParam(BondPtr b)
-{
-	double k = 0;
-
-	if (_usingWhack)
-	{
-		WhackPtr w = b->getWhack();
-		k = (*_getter)(&*w);
-	}
-	else
-	{
-		k = (*_getter)(&*b);
-	}
-	
-	return k;
 }
 
 void FlexLocal::setBondParam(BondPtr b, double wh, double k)

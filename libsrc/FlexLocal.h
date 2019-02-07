@@ -66,12 +66,8 @@ public:
 		_getter = getter;
 		_setter = setter;
 	}
-	
-	/** Should be using the Whacks of bonds, not the kicks (usually true) */
-	void setWhacking(bool whack);
 private:
 	void createAtomTargets();
-	AtomTarget currentAtomValues();
 	void createClustering();
 	void svd();
 	double bondRelationship(BondPtr bi, BondPtr bj);
@@ -80,17 +76,9 @@ private:
 	void clear();
 	void propagateWhack();
 	void setBondParam(BondPtr b, double w, double k);
-	double getBondParam(BondPtr b);
-	double bondAtomCorrel(BondPtr b);
 	double actualAtomChange(AtomPtr a);
 	double targetForAtom(AtomPtr a);
-	double getTotalBChange();
 	
-	double directSimilarity();
-	static double sgetTotalBChange(void *object);
-	double getTotalB();
-
-
 	std::map<int, int> getClusterMembership(double threshold);
 
 	PolymerPtr _polymer;
@@ -111,7 +99,6 @@ private:
 	
 	FlexGlobal *_flexGlobal;
 	bool _useTarget;
-	bool _usingWhack;
 	int _afterBond;
 	double _startB;
 	double _threshold;
