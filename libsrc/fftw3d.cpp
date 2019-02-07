@@ -1185,7 +1185,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
                                                 lrint(atomPos.z));
 				}
 
-				/* We add the atom offset so we don't end up with thousands
+				/* We add the crystal offset so we don't end up with thousands
 				 * of atoms at the very centre of our map */
 				vec3 cVox = vec3_add_vec3(crystalPos, cornerCrystal);
 
