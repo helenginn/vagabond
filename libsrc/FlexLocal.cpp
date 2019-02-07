@@ -63,7 +63,7 @@ void FlexLocal::setPolymer(PolymerPtr pol, double shift)
 
 void FlexLocal::svd()
 {
-	std::cout << "| 3. Performing SVD... " << std::flush;
+	std::cout << "| 0. Performing SVD... " << std::flush;
 	Timer timer;
 	
 	if (_svd)
@@ -73,7 +73,7 @@ void FlexLocal::svd()
 	}
 
 	_svd = new SVDBond(_bondEffects, _bonds, _atoms);
-	_svd->performSVD(&_bbCCs);
+	_svd->performSVD();
 	
 	std::cout << _svd->numClusters() << " clusters.";
 	std::cout << "              ... done. ";
@@ -93,10 +93,7 @@ void FlexLocal::refine()
 		std::cout << "---------------------------------------------------------"
 		<< std::endl;
 
-		reflex();
-		createAtomTargets();
-		scanBondParams();
-		createClustering();
+		findAtomsAndBonds();
 
 		/* Testing the SVD stuff */
 		svd();
@@ -105,7 +102,7 @@ void FlexLocal::refine()
 		{
 			std::random_shuffle(_paramBands.begin(), _paramBands.end());
 
-			std::cout << "| " << j + 4 << ". Refining bond clusters... " 
+			std::cout << "| " << j + 1 << ". Refining bond clusters... " 
 			<< std::flush;
 			Timer timer;
 			int limit = 5;
@@ -163,20 +160,8 @@ void FlexLocal::clear()
 	_prepared = false;
 }
 
-void FlexLocal::createAtomTargets()
+void FlexLocal::findAtomsAndBonds()
 {
-	int res = _polymer->getAnchor();
-	AtomPtr ca = _polymer->getMonomer(res)->findAtom("CA");
-	
-	AnchorPtr anchor = _polymer->getAnchorModel();
-	_anchorB = anchor->getBFactor();
-	
-	std::vector<double> all;
-	double count = 0;
-	_startB = 0;
-	
-	/* First, choose which atoms to worry about, and find their
-	 * starting B factors. */
 	for (int i = 0; i < _polymer->atomCount(); i++)
 	{
 		AtomPtr a = _polymer->atom(i);
@@ -201,40 +186,7 @@ void FlexLocal::createAtomTargets()
 		}
 
 		_bonds.push_back(b);
-
-		double ibf = a->getInitialBFactor() - ca->getInitialBFactor();
-		ibf -= (a->getBFactor() - ca->getBFactor());
-
-		if (_useTarget)
-		{
-			ibf = a->getTargetB();
-		}
-
-		double bf = a->getBFactor();
-
 		_atoms.push_back(a);
-		_atomTargets[a] = ibf;
-		_atomOriginal[a] = bf;
-		
-		_startB += bf;
-		count++;
-
-		all.push_back(ibf);	
-	}
-	
-	_startB /= count;
-	
-	if (_useTarget)
-	{
-		double mean_b = mean(all);
-		double stdev_b = standard_deviation(all);
-
-		for (int i = 0; i < _atoms.size(); i++)
-		{
-			AtomPtr a = _atoms[i];
-			_atomTargets[a] -= mean_b;
-			_atomTargets[a] += stdev_b / 2;
-		}
 	}
 }	
 

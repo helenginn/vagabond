@@ -67,7 +67,7 @@ public:
 		_setter = setter;
 	}
 private:
-	void createAtomTargets();
+	void findAtomsAndBonds();
 	void createClustering();
 	void svd();
 	double bondRelationship(BondPtr bi, BondPtr bj);
