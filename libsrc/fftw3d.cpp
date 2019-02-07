@@ -1235,13 +1235,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 						val.fo = realCryst;
 						val.fc = atomReal;
 						#ifdef COORDVAL_FULL
-						long atomEle = fftAtom->element(atomPos);
-						val.pos = atomPos;
-						val.mask = 0;
-						if (fftAtom->mask)
-						{
-							val.mask = fftAtom->getMask(atomEle);
-						}
+						vec3 frac = fftCrystal->fracFromElement(cIndex);
+						val.pos = frac;
 						#endif
 
 						vals->push_back(val);

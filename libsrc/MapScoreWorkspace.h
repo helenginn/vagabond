@@ -16,7 +16,6 @@ typedef struct
 {
 #ifdef COORDVAL_FULL
 	vec3 pos;
-	double mask;
 #endif
 	double fo;
 	double fc;

@@ -1051,23 +1051,21 @@ void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals,
                               bool difference, double cutoff,
                               std::string filename)
 {
-	CSVPtr csv = CSVPtr(new CSV(6, "x", "y", "z", "fo", "fc", "mask"));
+	CSVPtr csv = CSVPtr(new CSV(6, "x", "y", "z", "fo", "fc"));
 
 	for (size_t i = 0; i < vals.size(); i++)
 	{
 		double fo = vals[i].fo;
 		double fc = vals[i].fc;
-		double mask = 0;
 		vec3 pos = make_vec3(0, 0, 0);
 
 		#ifdef COORDVAL_FULL
-		mask = vals[i].mask;
 		pos = vals[i].pos;
 		#endif
 
 		if (!difference && fc < cutoff) continue;
 
-		csv->addEntry(6, pos.x, pos.y, pos.z, fo, fc, mask);
+		csv->addEntry(6, pos.x, pos.y, pos.z, fo, fc);
 	}
 
 	csv->writeToFile(filename + ".csv");
