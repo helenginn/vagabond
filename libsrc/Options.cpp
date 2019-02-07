@@ -261,20 +261,6 @@ void Options::executeProtocol()
 			<< ")" << std::endl;
 		}
 
-		if (_rInter)
-		{
-			double oldWork = crystal->getRWork();
-			crystal->fitWholeMolecules();
-			recalculateFFT();
-			
-			double newWork = crystal->getRWork();
-
-			if (newWork > oldWork && _rIntra)
-			{
-				crystal->restoreState(-1);
-			}
-		}
-
 		/* In case we need to do remedial work */
 		double oldWork = crystal->getRWork();
 		double oldB = crystal->averageBFactor();
@@ -325,6 +311,21 @@ void Options::executeProtocol()
 			std::cout << "Rwork has reduced due to intramolecular flex." 
 			<< std::endl;
 		}
+
+		if (_rInter)
+		{
+			double oldWork = crystal->getRWork();
+			crystal->fitWholeMolecules();
+			recalculateFFT();
+			
+			double newWork = crystal->getRWork();
+
+			if (newWork > oldWork && _rIntra)
+			{
+				crystal->restoreState(-1);
+			}
+		}
+
 
 		double endWork = crystal->getRWork();
 
