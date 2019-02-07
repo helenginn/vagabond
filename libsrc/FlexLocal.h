@@ -79,8 +79,6 @@ private:
 	double actualAtomChange(AtomPtr a);
 	double targetForAtom(AtomPtr a);
 	
-	std::map<int, int> getClusterMembership(double threshold);
-
 	PolymerPtr _polymer;
 
 	AtomTarget _atomTargets;
@@ -99,14 +97,11 @@ private:
 	
 	FlexGlobal *_flexGlobal;
 	bool _useTarget;
-	int _afterBond;
 	double _startB;
 	double _threshold;
 	double _increment;
 	double _anchorB;
 	double _negMult;
-	int _direct;
-	int _window;
 	int _run;
 	double _shift;
 	Getter _getter;
