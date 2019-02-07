@@ -110,6 +110,7 @@ void FlexLocal::refine()
 			NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
 			nelder->setCycles(200);
 			nelder->setVerbose(true);	
+			nelder->setSilent(true);
 
 			nelder->setEvaluationFunction(getScore, this);
 
