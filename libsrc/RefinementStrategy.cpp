@@ -138,7 +138,7 @@ void RefinementStrategy::refine()
 
 void RefinementStrategy::reportProgress(double score)
 {
-	if (!_verbose || _silent)
+	if (!_verbose)
 	{
 		return;
 	}
@@ -152,15 +152,13 @@ void RefinementStrategy::reportProgress(double score)
 		std::cout << "=" << std::flush;
 	}
 	
+	_prevScore = score;
+	
 	cycleNum++;
 }
 
 void RefinementStrategy::finish()
 {
-	if (_verbose)
-	{
-		std::cout << std::endl;
-	}
 	double endScore = (*evaluationFunction)(evaluateObject);
 	
 	if (!parameterCount())
