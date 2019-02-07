@@ -142,6 +142,11 @@ void RefinementStrategy::reportProgress(double score)
 	{
 		return;
 	}
+	
+	if (cycleNum % 30 == 0)
+	{
+		std::cout << std::endl;
+	}
 
 	if (score < _prevScore)
 	{
@@ -149,7 +154,7 @@ void RefinementStrategy::reportProgress(double score)
 	}
 	else
 	{
-		std::cout << "=" << std::flush;
+		std::cout << "." << std::flush;
 	}
 	
 	_prevScore = score;
