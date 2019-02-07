@@ -29,11 +29,8 @@ FlexLocal::FlexLocal()
 	_startB = 0;
 	_shift = 0.05;
 	_run = 0;
-	_window = 10;
-	_direct = 0;
 	_negMult = 1;
 	_anchorB = 0;
-	_afterBond = -1;
 	_threshold = 0.80;
 	_increment = 5;
 	_useTarget = true;
@@ -195,11 +192,6 @@ void FlexLocal::createAtomTargets()
 		if (!b->getWhack())
 		{
 			continue;
-		}
-		
-		if (a->getResidueNum() == _polymer->getAnchor() && _afterBond < 0)
-		{
-			_afterBond = _bonds.size();
 		}
 		
 		if (a->getAtomName() != "CA")
