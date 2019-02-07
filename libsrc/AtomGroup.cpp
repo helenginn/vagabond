@@ -928,7 +928,8 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 	/* Convert real2Frac to crystal coords to get correct segment
 	* of the big real space map. */
 	CrystalPtr crystal = ws->crystal;
-	mat3x3_mult_vec(crystal->getReal2Frac(), &ws->ave);
+	vec3 ave = ws->ave;
+	mat3x3_mult_vec(crystal->getReal2Frac(), &ave);
 	
 	double cutoff = MAP_VALUE_CUTOFF;
 
@@ -950,7 +951,7 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 		mapType = MapScoreTypeCopyToSmaller;
 	}
 
-	FFT::operation(map, ws->segment, ws->ave, mapType, &vals, true);
+	FFT::operation(map, ws->segment, ave, mapType, &vals, true);
 
 	/* For correlation calculations */
 	for (size_t i = 0; i < vals.size(); i++)
