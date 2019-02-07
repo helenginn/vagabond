@@ -45,6 +45,7 @@ FlexLocal::~FlexLocal()
 	if (_flexGlobal)
 	{
 		delete _flexGlobal;
+		_flexGlobal = NULL;
 	}
 	
 	if (_svd)
