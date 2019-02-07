@@ -68,31 +68,19 @@ public:
 	}
 private:
 	void findAtomsAndBonds();
-	void createClustering();
+	void refineClusters();
 	void svd();
-	double bondRelationship(BondPtr bi, BondPtr bj);
 	void scanBondParams();
-	void reflex();
 	void clear();
 	void propagateWhack();
 	void setBondParam(BondPtr b, double w, double k);
-	double actualAtomChange(AtomPtr a);
-	double targetForAtom(AtomPtr a);
 	
 	PolymerPtr _polymer;
 
-	AtomTarget _atomTargets;
-	AtomTarget _atomOriginal;
 	BondEffects _bondEffects;
 	
 	std::vector<AtomPtr> _atoms;
 	std::vector<BondPtr> _bonds;
-	std::vector<int> _reorderedBonds;
-	std::vector<double> _b2bDiffs;
-	std::vector<BondDegree> _degrees;
-	std::map<BondPtr, int> _bondClusterIds;
-	std::vector<ParamBandPtr> _paramBands;
-	BondBondCC _bbCCs;
 	SVDBond *_svd;
 	
 	FlexGlobal *_flexGlobal;
