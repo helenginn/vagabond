@@ -444,6 +444,9 @@ public:
 		_refineBondAngle = value;
 	}
 
+	void getAverageBasisPos(mat3x3 *aveBasis, vec3 *aveStart, 
+	                        std::vector<BondSample> *vals = NULL);
+
 	/* Returns true if the bond angle should be refined. */
 	bool getRefineBondAngle()
 	{
