@@ -69,6 +69,12 @@ double SVDBond::compareBonds(BondPtr a, BondPtr b)
 	
 	for (int i = 0; i < _atoms.size(); i++)
 	{
+		/* Exclude self, nan-potential */
+		if (a->getMinor() == _atoms[i] || b->getMinor() == _atoms[i])
+		{
+			continue;
+		}
+		
 		vec3 pos = _atoms[i]->getAbsolutePosition();
 		
 		/* The real important directions are rotated 90° but it doesn't
@@ -90,6 +96,12 @@ double SVDBond::compareBonds(BondPtr a, BondPtr b)
 		double cosine = vec3_cosine_with_vec3(aDir, bDir);
 		
 		double add = cosine * ratio;
+		
+		if (add != add)
+		{
+			continue;
+		}
+		
 		total += add;
 		
 		count++;
@@ -129,33 +141,6 @@ void SVDBond::performSVD(BondBondCC *ccs)
 	prepareVector(&_w);
 	
 	compareBonds();
-	
-	/*
-	if (ccs)
-	{
-		for (int i = 0; i < _bonds.size(); i++)
-		{
-			BondPtr bi = _bonds[i];
-
-			for (int j = 0; j < _bonds.size(); j++)
-			{
-				BondPtr bj = _bonds[j]; // giggle
-				double correl = (*ccs)[bi][bj];
-				
-				if (i == j)
-				{
-					correl = 0;
-				}
-				
-				_svd[i][j] = correl;
-			}
-		}
-	}
-	else
-	{
-		populateMatrix();
-	}
-	*/
 	
 	writeMatrix();
 	
@@ -342,6 +327,7 @@ void SVDBond::applyParameters()
 			 * with this cluster */
 			
 			double total = 0;
+
 			for (int k = 0; k < _bonds.size(); k++)
 			{
 				BondPtr bk = _bonds[k];
@@ -355,16 +341,29 @@ void SVDBond::applyParameters()
 
 			wVal *= total;
 			kVal *= total;
-			
+
 			w_more += wVal;
 			k_more += kVal;
+
+			if (k_more != k_more)
+			{
+				k_more = 0;
+			}
+			
+			if (w_more != w_more)
+			{
+				w_more = 0;
+			}
+		}
+
+		if (w != w)
+		{
+			w = 0;
 		}
 		
 		w += w_more;
 		k += k_more;
 
-//		std::cout << "now: " << w << ", " << k << std::endl;
-		
 		WhackPtr whack = bi->getWhack();
 		Whack::setWhack(&*whack, w);
 		Whack::setKick(&*whack, k);
