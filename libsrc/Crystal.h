@@ -46,6 +46,26 @@
 
 typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
+inline double getNLimit(FFTPtr fftData, FFTPtr fftModel, int axis = 0)
+{
+	double nLimit = std::min(*(&fftData->nx + axis), 
+	                         *(&fftModel->nx + axis));
+
+	nLimit = nLimit - ((int)nLimit % 2);
+	nLimit /= 2;
+
+	return nLimit;	
+}
+
+inline vec3 getNLimits(FFTPtr data, FFTPtr fftModel)
+{
+	vec3 lims;
+	lims.x = getNLimit(data, fftModel, 0);
+	lims.y = getNLimit(data, fftModel, 1);
+	lims.z = getNLimit(data, fftModel, 2);
+	return lims;
+}
+
 class Crystal : public Object, public Parser
 {
 public:
@@ -129,7 +149,7 @@ public:
 	/**
 	* 	Returns matrix turning Miller index coordinates to fractional
 	* 	coordinates of the reciprocal cell. */
-	mat3x3 getHKL2Real()
+	mat3x3 getHKL2Frac()
 	{
 		return _hkl2real;
 	}

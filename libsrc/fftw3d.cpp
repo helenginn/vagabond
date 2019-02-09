@@ -1398,7 +1398,7 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool silent)
 	
 	if (!silent)
 	{
-		std::cout << "Applying symmetry operations for space group " << spaceGroup->symbol_xHM;
+		std::cout << "applying symmetry, space group " << spaceGroup->symbol_xHM;
 		std::cout << " (" << spaceGroup->spg_num << ")"  << ": " << std::flush;
 	}
 
@@ -1416,39 +1416,27 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool silent)
 		data[n][1] = myPhase;
 	}
 
-
-	for (int l = 0; l < spaceGroup->nsymop; l++)
+	for (int k = -nz / 2; k < nz / 2; k++)
 	{
-		float *rot = &spaceGroup->invsymop[l].rot[0][0];
-		count = 0;
-
-		if (!silent)
+		for (int j = -ny / 2; j < ny / 2; j++)
 		{
-			std::cout << l + 1;
-		}
-		if (l < spaceGroup->nsymop - 1 && !silent)
-		{
-			std::cout << ", ";
-		}
-		std::cout << std::flush;
-
-		for (int k = -nz / 2; k < nz / 2; k++)
-		{
-			for (int j = -ny / 2; j < ny / 2; j++)
+			for (int i = -nx / 2; i < nx / 2; i++)
 			{
-				for (int i = -nx / 2; i < nx / 2; i++)
+				int abs = CSym::ccp4spg_is_sysabs(spaceGroup, i, j, k);
+
+				if (abs)
 				{
-					int abs = CSym::ccp4spg_is_sysabs(spaceGroup, i, j, k);
+					continue;	
+				}
 
-					if (abs)
-					{
-						continue;	
-					}
+				long index = element(i, j, k);
+				/* Not misnomers: dealt with in previous paragraph */
+				double myAmp = data[index][0];
+				double myPhase = data[index][1];
 
-					count++;
-					long index = element(i, j, k);
-					double myAmp = data[index][0];
-					double myPhase = data[index][1];
+				for (int l = 0; l < spaceGroup->nsymop; l++)
+				{
+					float *rot = &spaceGroup->invsymop[l].rot[0][0];
 
 					/* rotation */
 					int _h, _k, _l;
@@ -1467,7 +1455,7 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool silent)
 
 					double deg = myPhase + shift * 360.;
 					double newPhase = deg2rad(deg);
-
+					
 					/* add to temporary data array */
 					double x = myAmp * cos(newPhase);
 					double y = myAmp * sin(newPhase);
@@ -1613,7 +1601,7 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 				vec3 pos = make_vec3(i, j, k);
 				mat3x3_mult_vec(real2Frac, &pos);
 
-				if (vec3_length(pos) > dStar && !f000)
+				if (vec3_length(pos) > dStar)
 				{
 					continue;
 				}
@@ -1631,10 +1619,6 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 					foInt = data->getIntensity(i, j, k);
 					free = data->getMask(i, j, k);
 				}
-				else
-				{
-					std::cout << "";
-				}
 
 				double foAmp = sqrt(foInt);
 				double fofofc = 2 * foAmp - calcAmp;
@@ -1642,15 +1626,16 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 				
 				if (free == 0)
 				{
+					// Substitute Fcalc when free = 0 so as not
+					// to pollute with data.
 					fofofc = calcAmp;
 				}
 
 				if (foAmp != foAmp || (free == 0))
 				{
+					// i.e. diff of 0 when mask is free flag.
 					fofc = 0;
 				}
-
-				// i.e. 0 when mask is free flag.
 
 				/* MTZ file stuff */
 

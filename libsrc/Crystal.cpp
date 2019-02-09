@@ -304,26 +304,6 @@ void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 	}
 }
 
-double getNLimit(FFTPtr fftData, FFTPtr fftModel, int axis = 0)
-{
-	double nLimit = std::min(*(&fftData->nx + axis), 
-	                         *(&fftModel->nx + axis));
-
-	nLimit = nLimit - ((int)nLimit % 2);
-	nLimit /= 2;
-
-	return nLimit;	
-}
-
-vec3 getNLimits(FFTPtr data, FFTPtr fftModel)
-{
-	vec3 lims;
-	lims.x = getNLimit(data, fftModel, 0);
-	lims.y = getNLimit(data, fftModel, 1);
-	lims.z = getNLimit(data, fftModel, 2);
-	return lims;
-}
-
 typedef struct
 {
 	double into;
@@ -345,11 +325,11 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 	FFTPtr fftData = data->getFFT();	
 	vec3 nLimits = getNLimits(fftData, model);
 
-	for (int i = -nLimits.z; i < nLimits.z; i++)
+	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
 		for (int j = -nLimits.y; j < nLimits.y; j++)
 		{
-			for (int k = -nLimits.x; k < nLimits.z; k++)
+			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
 				int _i = 0; int _j = 0; int _k = 0;
 				vec3 ijk = make_vec3(i, j, k);
@@ -472,18 +452,19 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 
 	FFTPtr fftData = data->getFFT();	
 	vec3 nLimits = getNLimits(fftData, _fft);
+	mat3x3 tmp = mat3x3_transpose(_real2frac);
 
-	for (int i = -nLimits.z; i < nLimits.z; i++)
+	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
 		for (int j = -nLimits.y; j < nLimits.y; j++)
 		{
-			for (int k = -nLimits.x; k < nLimits.z; k++)
+			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
 				int _i = 0; int _j = 0; int _k = 0;
 				vec3 ijk = make_vec3(i, j, k);
 				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_i, &_j, &_k);
 
-				mat3x3_mult_vec(_real2frac, &ijk);
+				mat3x3_mult_vec(tmp, &ijk);
 				double length = vec3_length(ijk);
 
 				if (length < minRes || length > maxRes)
@@ -573,6 +554,8 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 	double minRes = (lowRes <= 0 ? 0 : 1 / lowRes);
 	double maxRes = (highRes <= 0 ? FLT_MAX : 1 / highRes);
 
+	mat3x3 tmp = mat3x3_transpose(_real2frac);
+
 	/* symmetry issues */
 	for (int i = -xLimit; i < xLimit; i++)
 	{
@@ -581,7 +564,7 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 			for (int k = -zLimit; k < zLimit; k++)
 			{
 				vec3 ijk = make_vec3(i, j, k);
-				mat3x3_mult_vec(_real2frac, &ijk);
+				mat3x3_mult_vec(tmp, &ijk);
 				double length = vec3_length(ijk);
 				long element = _fft->element(i, j, k);
 
@@ -589,6 +572,7 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 				{
 					continue;
 				}
+
 
 				double real = _fft->getReal(element);
 				double imag = _fft->getImaginary(element);
@@ -604,7 +588,7 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 				
 				real *= scale * bFacMod;
 				imag *= scale * bFacMod;
-				
+
 				_fft->setElement(element, real, imag);
 			}
 		}
@@ -751,6 +735,7 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 
 void Crystal::scaleComponents(DiffractionPtr data)
 {
+	std::cout << "Scaling model to data..." << std::endl;
 	/* Just scale using an absolute value only */
 	scaleToDiffraction(data, false);
 	scaleSolvent(data);
@@ -792,8 +777,6 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	double rFac = rFactorWithDiffraction(data, true);
 
 	FFTPtr fftData = data->getFFT();
-	double nLimit = getNLimit(fftData, _fft);
-	std::vector<double> set1, set2;
 
 	double lowRes = Options::minRes();
 	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
@@ -807,14 +790,16 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 		          "results derived from this are INVALID for\n"\
 		          "structure determination.");
 	}
+	
+	std::cout << "Mixing in data for weighed density map..." << std::endl;
 
-	/** Currently the _fft grid contains Fcalc structure factors.
-	 * We now want to mix in the data for Rwork reflections. */
-	for (int i = -nLimit; i < nLimit; i++)
+	vec3 nLimits = getNLimits(fftData, _fft);
+
+	for (int k = -nLimits.x; k < nLimits.z; k++)
 	{
-		for (int j = -nLimit; j < nLimit; j++)
+		for (int j = -nLimits.y; j < nLimits.y; j++)
 		{
-			for (int k = -nLimit; k < nLimit; k++)
+			for (int i = -nLimits.z; i < nLimits.z; i++)
 			{
 				int _h, _k, _l;
 				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_h, &_k, &_l);
@@ -1025,7 +1010,8 @@ void Crystal::applySymOps()
 		return;
 	}
 
-	_fft->applySymmetry(_spaceGroup, true);
+	std::cout << "Protein: ";
+	_fft->applySymmetry(_spaceGroup, false);
 }
 
 void Crystal::fourierTransform(int dir, double res)
@@ -1036,8 +1022,6 @@ void Crystal::fourierTransform(int dir, double res)
 	{
 		applySymOps();
 	}
-
-//	_fft->normalise();
 	
 	if (_bucket)
 	{
@@ -1191,7 +1175,7 @@ void Crystal::setupSymmetry()
 {
 	mat3x3 hkl2real = mat3x3_from_unit_cell(_unitCell[0], _unitCell[1],
 	                                        _unitCell[2], _unitCell[3],
-	_unitCell[4], _unitCell[5]);
+	                                        _unitCell[4], _unitCell[5]);
 	mat3x3 real2hkl = mat3x3_inverse(hkl2real);
 
 	setHKL2Real(hkl2real);

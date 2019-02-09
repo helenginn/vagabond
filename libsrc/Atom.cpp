@@ -239,7 +239,7 @@ vec3 Atom::getSymRelatedPosition(int i)
 	mod.y += trn[1];
 	mod.z += trn[2];
 	
-	mat3x3 frac2Real = crystal->getHKL2Real();
+	mat3x3 frac2Real = crystal->getHKL2Frac();
 	mat3x3_mult_vec(frac2Real, &mod);
 	
 	return mod;

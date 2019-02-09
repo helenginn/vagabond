@@ -73,17 +73,17 @@ void Bucket::scaleSolvent()
 	mat3x3 real2frac = getCrystal()->getReal2Frac();
 	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
 	FFTPtr fftData = _data->getFFT();
-	double nLimit = std::min(fftData->nx, fft->nx);
-	nLimit /= 2;
 
 	std::vector<double> fData, fModel;
 	CSVPtr csv = CSVPtr(new CSV(2, "fo", "fc"));
 
-	for (int i = -nLimit; i < nLimit; i++)
+	vec3 nLimits = getNLimits(fftData, _solvent);
+
+	for (int k = -nLimits.x; k < nLimits.z; k++)
 	{
-		for (int j = -nLimit; j < nLimit; j++)
+		for (int j = -nLimits.y; j < nLimits.y; j++)
 		{
-			for (int k = -nLimit; k < nLimit; k++)
+			for (int i = -nLimits.z; i < nLimits.z; i++)
 			{
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(real2frac, &ijk);
@@ -123,21 +123,24 @@ double Bucket::scaleAndAddSolventScore()
 	double nLimit = std::min(fftData->nx, fft->nx);
 	nLimit /= 2;
 	mat3x3 real2frac = getCrystal()->getReal2Frac();
+	mat3x3 tmp = mat3x3_transpose(real2frac);
+	
+	vec3 nLimits = getNLimits(fftData, _solvent);
 
 	std::vector<double> fData, fModel;
 
-	for (int i = -nLimit; i < nLimit; i++)
+	for (int k = -nLimits.x; k < nLimits.z; k++)
 	{
-		for (int j = -nLimit; j < nLimit; j++)
+		for (int j = -nLimits.y; j < nLimits.y; j++)
 		{
-			for (int k = -nLimit; k < nLimit; k++)
+			for (int i = -nLimits.z; i < nLimits.z; i++)
 			{
-				bool isRfree = (fftData->getMask(i, j, k) == 0);
-
-				if (isRfree) continue;
-
 				vec3 ijk = make_vec3(i, j, k);
-				mat3x3_mult_vec(real2frac, &ijk);
+				mat3x3_mult_vec(tmp, &ijk);
+
+				int m, n, o;
+				CSym::ccp4spg_put_in_asu(spg, i, j, k, &m, &n, &o);
+
 				double length = vec3_length(ijk);
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
@@ -146,6 +149,10 @@ double Bucket::scaleAndAddSolventScore()
 				int _i = 0; int _j = 0; int _k = 0;	
 				CSym::ccp4spg_put_in_asu(spg, i, j, k,
 				                         &_i, &_j, &_k);
+
+				bool isRfree = (fftData->getMask(_i, _j, _k) == 0);
+				if (isRfree) continue;
+
 				float ref = sqrt(fftData->getIntensity(_i, _j, _k));
 
 				if (ref != ref) continue;
@@ -181,8 +188,9 @@ void Bucket::applySymOps(CSym::CCP4SPG *spaceGroup)
 	{
 		return;
 	}
-
-	_solvent->applySymmetry(spaceGroup, getCrystal()->isSilent());
+	
+	std::cout << "Solvent: ";
+	_solvent->applySymmetry(spaceGroup, false);
 }
 
 void Bucket::fourierTransform(int dir)
