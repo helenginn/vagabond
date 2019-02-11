@@ -61,22 +61,24 @@ void Vagabond2GL::setVertexColour(AtomPtr atom, Vertex *vertex)
 	vertex->color[1] = 100. / 255.;
 	vertex->color[2] = 100. / 255.;
 	vertex->color[3] = 1.0;
+	
+	std::string symbol = atom->getElementSymbol();
 
-	if (atom->getElement()->getSymbol() == "O")
+	if (symbol == "O")
 	{
 		vertex->color[0] = 1.0;
 		vertex->color[1] = 0.0;
 		vertex->color[2] = 0.0;
 	}
 
-	if (atom->getElement()->getSymbol() == "N")
+	if (symbol == "N")
 	{
 		vertex->color[0] = 104. / 255.;
 		vertex->color[1] = 139. / 255.;
 		vertex->color[2] = 255. / 255.;
 	}
 
-	if (atom->getElement()->getSymbol() == "S")
+	if (symbol == "S")
 	{
 		vertex->color[0] = 255. / 255.;
 		vertex->color[1] = 255. / 255.;
