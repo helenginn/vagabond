@@ -634,7 +634,6 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 
 		double kickValue = sinAlpha;
 		
-		/* Just the notZ */
 		if (kickValue != kickValue)
 		{
 			kickValue = 0;
