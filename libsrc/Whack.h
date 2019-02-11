@@ -60,6 +60,12 @@ public:
 	/** Bond to which kick is applied upstream/downstream */
 	void setBond(BondPtr bond);
 	
+	/** Return bond to which Whack is attached */
+	BondPtr getBond()
+	{
+		return _bond;
+	}
+	
 	/** Set the proportion of the kick which should be passed into the
 	 * downstream bonds. 1 = like a normal kick. 0 = backwards, towards
 	 * the anchor point, only. */
