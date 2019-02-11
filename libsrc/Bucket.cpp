@@ -293,12 +293,7 @@ void Bucket::processMaskedRegions()
 	std::cout << " (" << percentages[0] * 100 << "%)";
 	std::cout << " average value: " << std::setprecision(4)
 	<< sums[0] << std::endl;
-/*
- * std::cout << "Interface voxels: " << additions[2];
-	std::cout << " (" << percentages[1] * 100 << "%)";
-	std::cout << " average value: " << std::setprecision(4)
-	<< sums[1] << std::endl;
-	*/
+
 	std::cout << "Solvent voxels: " << additions[1];
 	std::cout << " (" << percentages[1] * 100 << "%)";
 	std::cout << " average value: " << std::setprecision(4)
