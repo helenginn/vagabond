@@ -84,33 +84,8 @@ public:
 	}
 
 	static CSVPtr nodeToCSV(MDNode *node);
-	void setupHistogram(double start, double end, double interval, std::string catHeader, int count, ...)
-	{
-		va_list arguments;
-		va_start(arguments, count);
-
-		headers.push_back(catHeader);
-
-		for (int i = 0; i < count; i++)
-		{
-			std::string header = std::string(va_arg(arguments, char *));
-			headers.push_back(header);
-		}
-
-		va_end(arguments);
-
-		double value = start;
-		while (value <= end)
-		{
-			addPartialEntry(1, value);
-			histCategories.push_back(value);
-			value += interval;
-		}
-	}
 
 	void minMaxCol(int col, double *min, double *max, bool round = false);
-	void addOneToFrequency(double category, std::string whichHeader, double weight = 1, std::string categoryHeader = "");
-	void addOneToFrequency(double category, int column, double weight = 1, int categoryNum = 0);
 	int findHeader(std::string whichHeader);
 
 	~CSV();
@@ -121,9 +96,6 @@ public:
 	void addEntry(int dummy, ...);
 	void writeToFile(std::string filename);
 	double valueForEntry(std::string header, int entry);
-	double valueForHistogramEntry(std::string whichHeader, double value, std::string categoryHeader = "");
-	double valueForHistogramEntry(int whichHeader, double value, int categoryHeader = 0);
-	void histogram(std::map<double, int> histogram);
 	std::string plotColumns(int col1, int col2);
 	void resetColumn(std::string header, double value = 0);
 	void addToCSV(MDNode *node);

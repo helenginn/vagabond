@@ -86,6 +86,12 @@ mat3x3 mat3x3_transpose(mat3x3 &mat);
 /** Calculate the determinant of the matrix */
 double mat3x3_determinant(mat3x3 &mat);
 
+/** Calculate the trace of the matrix */
+double mat3x3_trace(mat3x3 &mat);
+
+/** Volume of unit cell described by matrix mat */
+double mat3x3_volume(mat3x3 mat);
+
 /** Multiply two matrices and return the result */
 mat3x3 mat3x3_mult_mat3x3(struct mat3x3 m1, struct mat3x3 m2);
 
@@ -126,6 +132,9 @@ mat3x3 mat3x3_covariance(std::vector<vec3> points);
  * length in vec3 &lengths, then multiplies by its transpose... might
  * be buggy */
 mat3x3 mat3x3_make_tensor(mat3x3 &tensify, vec3 &lengths);
+
+/* Set each axis down columns to length of 1 */
+void mat3x3_vectors_to_unity(mat3x3 *mat);
 
 mat3x3 mat3x3_subtract_mat3x3(mat3x3 &one, mat3x3 &two);
 double mat3x3_abs_sum_all(mat3x3 &mat);

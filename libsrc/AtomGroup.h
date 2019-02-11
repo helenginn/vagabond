@@ -19,8 +19,6 @@
 #include <map>
 #include <climits>
 
-class Plucker;
-
 /**
  * \class AtomGroup
  * \brief AtomGroup looks after the concept of any sensible group of Atoms,
@@ -40,6 +38,8 @@ public:
 	AtomPtr findAtom(std::string atomType);
 	AtomPtr findAtom(std::string atomType, std::string confID);
 	AtomList findAtoms(std::string atomType);
+	AtomGroupPtr subGroupForConf(int conf);
+	AtomList findAtoms(std::string atomType, int resNum);
 
 	double scoreWithMap(ScoreType scoreType, CrystalPtr crystal, 
 	                    bool plot = false, unsigned int flags = 0);
@@ -48,10 +48,8 @@ public:
 	static double scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	                                  bool plot = false);
 
-	Plucker *makePluckableWaters();
 
-	double scoreWithMapQuick(ScoreType scoreType, CrystalPtr crystal,
-	                         bool plot, std::vector<AtomPtr> selected);
+	void makeBackboneTwists(ExplicitModelPtr applied);
 
 	void setMonomer(MonomerPtr monomer)
 	{
@@ -64,9 +62,13 @@ public:
 	}
 
 	virtual void addAtom(AtomPtr atom);
+	
+	virtual void removeAtom(AtomPtr atom);
 
 	void addAtomsFrom(AtomGroupPtr group);
 
+	AtomList beyondGroupAtoms(bool just_bottom = false);
+	
 	size_t atomCount()
 	{
 		return _atoms.size();
@@ -78,9 +80,13 @@ public:
 	{
 		return _atoms[i];
 	}
+	
+	vec3 centroid();
 
 	double totalElectrons();
 	double getAverageBFactor(bool initial = false);
+	
+	/** Average offset from initial PDB position */
 	double getAverageDisplacement();
 
 	std::string getPDBContribution(PDBType pdbType,
@@ -110,6 +116,7 @@ public:
 	void setWeighting(double value);
 	int conformerCount();
 	std::string conformer(size_t i);
+	int conformer(std::string conf);
 	
 	/** Instructs the models of all the atoms inside to propagate a change of
 	* parameters. See also: Model::propagateChange(). */
@@ -129,24 +136,24 @@ public:
 	AtomPtr getClosestAtom(CrystalPtr crystal, vec3 pos);
 	std::vector<AtomPtr> getHydrogenBonders();
 
-	int issueAtomNumber()
-	{
-		if (_largestNum == -INT_MAX)
-		{
-			return 0;
-		}
-		return _largestNum + 1;
-	}
-	
 	std::vector<AtomPtr> getAtoms()
 	{
 		return _atoms;
 	}
 	
 	void refreshBondAngles();
+	virtual AtomList topLevelAtoms();
+	
+	void saveAtomPositions();
+
+	void boundingMonomers(int *begin, int *end);
+	
+	std::vector<AtomGroupPtr> includingInRefinement()
+	{
+		return _includeForRefine;
+	}
 protected:
 	virtual bool shouldRefineAtom(AtomPtr atom) { return true; };
-	virtual AtomList topLevelAtoms();
 	int _timesRefined;
 
 	bool isTied()
@@ -168,6 +175,7 @@ protected:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void linkReference(ParserPtr object, std::string category);
 	std::vector<AtomPtr> _atoms;
+	std::vector<AtomGroupPtr> _includeForRefine;
 private:
 	static void plotCoordVals(std::vector<CoordVal> &vals, bool difference,
 	                          double cutoff, std::string filename);
@@ -175,26 +183,18 @@ private:
 	                                std::vector<AtomPtr> selected,
 	                                mat3x3 *basis, vec3 *ave);
 
-	double addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected, 
-	                       mat3x3 basis, vec3 ave);
-
-	static double scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
-	                            bool plot, ScoreType scoreType,
-	                            vec3 ave, bool difference = false);
+	static double scoreFinalMap(MapScoreWorkspace *workspace, bool plot);
 
 	static double scoreFinalValues(std::vector<double> xs,
 	                               std::vector<double> ys,
 	                               ScoreType scoreType,
-	                               bool ignoreCutoff = false);
+                                   unsigned int flags);
 
 	MonomerWkr _monomer;
-	int _largestNum;
-
 
 	bool _beenTied;
 	CrystalPtr _target;
 	RefinementType _rType;
-	std::vector<AtomGroupPtr> _includeForRefine;
 
 	void privateRefine(); 
 	std::map<std::string, size_t> conformerMap();

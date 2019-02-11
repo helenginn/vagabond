@@ -20,6 +20,8 @@
 class Knotter
 {
 public:
+	Knotter();
+
 	void setSidechain(SidechainPtr sidechain)
 	{
 		_sidechain = sidechain;
@@ -38,6 +40,8 @@ private:
 	BackbonePtr _backbone;
 
 	BondPtr tieBetaCarbon(AtomPtr torsionAtom);
+	
+	int _bondAngles;
 
 	void makeAlanine();
 	void makeGlycine();

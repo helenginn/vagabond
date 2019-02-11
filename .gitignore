@@ -3,6 +3,12 @@ build/
 throwaway*/
 .fftw3f_wisdom
 libtool
+.DS_Store
+
+# Cloc
+
+cloc.txt
+cloc.sh
 
 # Qt5
 
@@ -11,6 +17,10 @@ moc_*.h
 
 # Prerequisites
 *.d
+
+# To be regenerated locally
+libsrc/commit.h
+get_hash.dep
 
 # Compiled Object files
 *.slo
@@ -86,4 +96,5 @@ ltmain.sh
 missing
 
 # Documentation
-doc/
+doc/html
+doc/latex

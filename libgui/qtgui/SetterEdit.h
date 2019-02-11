@@ -16,9 +16,9 @@ public:
         
     }
 
-    void setMonomer(MonomerPtr monomer)
+    void setRefreshGroup(AtomGroupPtr monomer)
     {
-        _monomer = monomer;
+        _group = monomer;
     }
 
     void setSetterAndObject(void *object, Setter setter, bool degrees = false)
@@ -37,7 +37,7 @@ private:
     Setter _setter;
     void *_object;
     bool _degrees;
-    MonomerPtr _monomer;
+    AtomGroupPtr _group;
 };
 
 

@@ -31,21 +31,27 @@ typedef enum
 	MinimizationMethodGridSearch = 2,
 } MinimizationMethod;
 
-typedef double (*Getter)(void *);
-typedef void (*Setter)(void *, double newValue);
 typedef void (*TwoDouble)(void *, double value1, double value2);
 
 typedef struct
 {
 	void *object;
 	Getter getter;
+	Getter gradient;
 	Setter setter;
 	double step_size;
 	double other_value;
 	double start_value;
 	std::string tag;
 	int coupled;
+	int changed;
 } Parameter;
+
+/** \class RefinementStrategy
+ *  \brief Abstract class upon which target function optimisers can be built. 
+ **/
+
+
 
 class RefinementStrategy
 {
@@ -61,6 +67,7 @@ public:
 		_changed = -1;
 		finishFunction = NULL;
 		_mock = false;
+		_improvement = 0;
 		_toDegrees = false;
 	};
 
@@ -77,7 +84,7 @@ public:
 
 	void addParameter(void *object, Getter getter, Setter setter, 
 	                  double stepSize, double otherValue, 
-	                  std::string tag = "");
+	                  std::string tag = "", Getter gradient = NULL);
 	void addCoupledParameter(void *object, Getter getter, Setter setter, 
 	                         double stepSize, double otherValue, 
 	                         std::string tag = "");
@@ -98,7 +105,7 @@ public:
 		_verbose = value;
 	}
 
-	void setSilent(bool silent)
+	void setSilent(bool silent = true)
 	{
 		_silent = silent;
 	}
@@ -130,6 +137,7 @@ public:
 
 	virtual void clearParameters()
 	{
+		_changed = false;
 		_params.clear();
 	}
 
@@ -137,8 +145,32 @@ public:
 	{
 		return _params.size();
 	}
+	
+	Parameter getParamObject(int i)
+	{
+		return _params[i];
+	}
+	
+	void addParameter(Parameter &param)
+	{
+		_params.push_back(param);
+	}
+	
+	bool didChange(int i)
+	{
+		return _params[i].changed;
+	}
 
+	double improvement()
+	{
+		return fabs(_improvement);
+	}
 protected:
+	double degMult()
+	{
+		return (_toDegrees ? 180 / M_PI : 1);
+	}
+	
 	Getter evaluationFunction;
 	Getter finishFunction;
 	int maxCycles;
@@ -149,11 +181,14 @@ protected:
 	bool _mock;
 	bool _toDegrees;
 	bool _silent;
+	double _improvement;
 
 	std::vector<Parameter> _params;
 	double startingScore;
+	double _prevScore;
 	bool _verbose;
 
+	double getGradientForParam(int i);
 	double getValueForParam(int i);
 	void setValueForParam(int i, double value);
 	void reportProgress(double score);

@@ -9,17 +9,18 @@
 #define MAP_VALUE_CUTOFF 20.
 
 #include "Timer.h"
+#include "Twist.h"
+#include "ExplicitModel.h"
 #include "AtomGroup.h"
 #include <climits>
 #include "Atom.h"
-#include "Element.h"
+#include "Anchor.h"
 #include "Bond.h"
 #include <sstream>
 #include "Crystal.h"
 #include <iomanip>
 #include "CSV.h"
 #include "maths.h"
-#include "Plucker.h"
 #include "Shouter.h"
 #include "../libccp4/ccp4_spg.h"
 #include "Options.h"
@@ -39,20 +40,48 @@ AtomPtr AtomGroup::findAtom(std::string atomType)
 	return AtomPtr();
 }
 
+AtomList AtomGroup::findAtoms(std::string atomType, int resNum)
+{
+	AtomList atoms = findAtoms(atomType);
+
+	for (size_t i = 0; i < atoms.size(); i++)
+	{
+		if (atoms[i]->getResidueNum() != resNum)
+		{
+			atoms.erase(atoms.begin() + i);
+			i--;
+		}
+	}
+
+	return atoms;
+}
+
+AtomGroupPtr AtomGroup::subGroupForConf(int conf)
+{
+	AtomGroupPtr group = AtomGroupPtr(new AtomGroup());
+	std::string confID = conformer(conf);
+	
+	for (size_t i = 0; i < atomCount(); i++)
+	{
+		if (_atoms[i]->getAlternativeConformer() == confID)
+		{
+			group->addAtom(_atoms[i]);
+		}
+	}
+
+	return group;
+
+}
+
 AtomPtr AtomGroup::findAtom(std::string atomType, std::string confID)
 {
 	AtomList atoms = findAtoms(atomType);
 
 	for (size_t i = 0; i < atoms.size(); i++)
 	{
-		if (atoms[i].expired())
+		if (atoms[i]->getAlternativeConformer() == confID)
 		{
-			continue;
-		}
-
-		if (atoms[i].lock()->getAlternativeConformer() == confID)
-		{
-			return atoms[i].lock();
+			return atoms[i];
 		}
 	}
 
@@ -90,12 +119,26 @@ int AtomGroup::conformerCount()
 {
 	std::map<std::string, size_t> conformerList = conformerMap();
 
-	return conformerList.size();
+	return conformerMap().size();
+}
+
+int AtomGroup::conformer(std::string conf)
+{
+	std::map<std::string, size_t> conformerList = conformerMap();
+	
+	if (!conformerList.count(conf))
+	{
+		return 0;
+	}
+	else
+	{
+		return conformerList[conf];
+	}
 }
 
 std::string AtomGroup::conformer(size_t i)
 {
-	if (i > conformerMap().size()) return "";
+	if (i > conformerCount()) return "";
 
 	std::map<std::string, size_t> conformerList = conformerMap();
 	std::map<std::string, size_t>::iterator it = conformerList.begin();
@@ -126,7 +169,7 @@ double AtomGroup::totalElectrons()
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		total += atom(i)->getElement()->electronCount();
+		total += atom(i)->getElectronCount();
 	}
 
 	return total;
@@ -145,8 +188,16 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal,
 
 	if (pdbType == PDBTypeEnsemble)
 	{
+		/* Give up if not explicit */
+		if (!atom(0)->getModel()->hasExplicitPositions())
+		{
+			stream << atom(0)->averagePDBContribution(false, false);
+			return stream.str();
+		}
+
 		/* Get the total number of conformers to worry about */
-		std::vector<BondSample> *samples = atom(0)->getModel()->getManyPositions();
+		std::vector<BondSample> *samples;
+		samples = atom(0)->getExplicitModel()->getManyPositions();
 
 		numConf = samples->size();
 
@@ -157,14 +208,7 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal,
 				continue;
 			}
 
-			if (atom(i)->getModel()->hasExplicitPositions())
-			{
-				stream << atom(i)->getPDBContribution(conformer);
-			}
-			else
-			{
-				stream << atom(i)->averagePDBContribution(false, false);
-			}
+			stream << atom(i)->getPDBContribution(conformer);
 		}
 
 		return stream.str();
@@ -176,10 +220,7 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal,
 		bool sameB = (pdbType == PDBTypeSameBFactor);
 		stream << atom(i)->averagePDBContribution(samePos, sameB);
 
-		if (crystal)
-		{
-			stream << atom(i)->anisouPDBLine(crystal);
-		}
+		stream << atom(i)->anisouPDBLine(crystal);
 	}
 
 	return stream.str();
@@ -192,12 +233,12 @@ double AtomGroup::getAverageDisplacement()
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		if (atom(i)->getElement()->electronCount() <= 1)
+		if (atom(i)->getElectronCount() <= 1)
 		{
 			continue;
 		}
 
-		double val = atom(i)->posDisplacement();
+		double val = atom(i)->posDisplacement(false, false);
 
 		sum += val;
 		count++;
@@ -213,7 +254,7 @@ double AtomGroup::getAverageBFactor(bool initial)
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		if (atom(i)->getElement()->electronCount() <= 1)
+		if (atom(i)->getElectronCount() <= 1)
 		{
 			continue;
 		}
@@ -238,7 +279,6 @@ AtomGroup::AtomGroup()
 {
 	_beenTied = false;
 	_timesRefined = 0;
-	_largestNum = -INT_MAX;
 }
 
 void AtomGroup::propagateChange()
@@ -256,7 +296,7 @@ void AtomGroup::refreshPositions(bool quick)
 		if (!atom(i)) continue;
 
 		atom(i)->getModel()->propagateChange(0);
-		atom(i)->getModel()->getFinalPositions();
+		atom(i)->getModel()->refreshPositions();
 	}
 
 	if (quick) return;
@@ -265,7 +305,7 @@ void AtomGroup::refreshPositions(bool quick)
 
 	for (size_t i = 0; i < list.size(); i++)
 	{
-		AtomPtr atom = list[i].lock();
+		AtomPtr atom = list[i];
 		atom->getModel()->propagateChange(-1, true);
 	}
 }
@@ -278,7 +318,7 @@ int AtomGroup::totalElectrons(int *fcWeighted)
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		double e = atom(i)->getElement()->electronCount();
+		double e = atom(i)->getElectronCount();
 		sum += e;
 		double weight = atom(i)->getWeighting();
 		weighted += e * weight;
@@ -297,6 +337,50 @@ void AtomGroup::setWeighting(double value)
 	}
 }
 
+AtomList AtomGroup::beyondGroupAtoms(bool just_bottom)
+{
+	AtomList list = topLevelAtoms();
+	AtomList bottom;
+	
+	for (int i = 0; i < list.size(); i++)
+	{
+		AtomPtr a = list[i];
+		
+		if (!a->getModel()->isBond())
+		{
+			continue;
+		}
+		
+		AtomPtr last = a;
+
+		while (hasAtom(a))
+		{
+			BondPtr b = ToBondPtr(a->getModel());
+
+			if (!(b->downstreamBondGroupCount() && b->downstreamBondCount(0)))
+			{
+				a = AtomPtr();
+				break;
+			}
+			
+			b = ToBondPtr(b->downstreamBond(0, 0));
+			last = a;
+			a = b->getMinor();
+		}
+		
+		if (a && !just_bottom)
+		{
+			bottom.push_back(a);
+		}
+		else if (last && just_bottom)
+		{
+			bottom.push_back(last);
+		}
+	}
+	
+	return bottom;
+}
+
 AtomList AtomGroup::topLevelAtoms()
 {
 	if (!atomCount()) return AtomList();
@@ -309,17 +393,24 @@ AtomList AtomGroup::topLevelAtoms()
 		size_t j = 0;
 		AtomPtr topAtom = atom(0);
 
-		while (topAtom->getAlternativeConformer() != conf)
+		while (true)
 		{
+			if (topAtom->getModel()->isBond() &&
+			    topAtom->getAlternativeConformer() == conf)
+			{
+				break;
+			}
+			
+			j++;
+
 			if (j >= atomCount())
 			{
 				goto giveup;
 			}
 
-			j++;
 			topAtom = atom(j);
 		}
-
+		
 		while (true)
 		{
 			if (!topAtom->getModel()->isBond())
@@ -331,6 +422,12 @@ AtomList AtomGroup::topLevelAtoms()
 
 			if (!hasAtom(bond->getMajor()))
 			{
+				break;
+			}
+			
+			if (bond->getMajor()->getModel()->isAnchor())
+			{
+				list.push_back(topAtom);
 				break;
 			}
 
@@ -351,19 +448,17 @@ AtomList AtomGroup::topLevelAtoms()
 
 bool AtomGroup::hasAtom(AtomPtr anAtom)
 {
-	bool found = false;
-
 	if (!anAtom) return false;
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if (atom(i) == anAtom)
 		{
-			found = true;
+			return true;
 		}
 	}
 
-	return found;
+	return false;
 }
 
 void AtomGroup::setTargetRefinement(CrystalPtr target, RefinementType rType)
@@ -381,46 +476,47 @@ void AtomGroup::privateRefine()
 	shout_timer(wall_start, "refinement");
 }
 
+void AtomGroup::saveAtomPositions()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		atom(i)->saveInitialPosition();
+	}
+}
+
+void AtomGroup::removeAtom(AtomPtr atom)
+{
+	if (!atom)
+	{
+		return;
+	}
+
+	std::vector<AtomPtr>::iterator it;
+	it = std::find(_atoms.begin(), _atoms.end(), atom);
+
+	if (it != _atoms.end())
+	{
+		_atoms.erase(it);
+	}
+}
+
 void AtomGroup::addAtom(AtomPtr atom)
 {
+	if (!atom)
+	{
+		return;
+	}
+
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+
 	std::vector<AtomPtr>::iterator it;
 	it = std::find(_atoms.begin(), _atoms.end(), atom);
 
 	if (it == _atoms.end())
 	{
 		_atoms.push_back(atom);
-		if (atom->getAtomNum() > _largestNum)
-		{
-			_largestNum = atom->getAtomNum();
-		}
+		crystal->updateLargestNum(atom);
 	}
-}
-
-Plucker *AtomGroup::makePluckableWaters()
-{
-	Plucker *plucker = new Plucker();
-	plucker->setGranularity(0.2);
-
-	for (int i = 0; i < atomCount(); i++)
-	{
-		AtomPtr atm = atom(i);
-
-		if (!atm->isHeteroAtom() || !(atm->getAtomName() == "O"))
-		{
-			continue;
-		}
-
-		// we have a water
-		atm->cacheCloseWaters(4.);
-
-		if (atm->pluckCount())
-		{
-			double occupancy = atm->getModel()->getEffectiveOccupancy();
-			plucker->addPluckable(&*atm, occupancy);
-		}
-	}
-
-	return plucker;
 }
 
 
@@ -431,7 +527,7 @@ AtomPtr AtomGroup::getClosestAtom(CrystalPtr crystal, vec3 pos)
 
 	for (int i = 0; i < atomCount(); i++)
 	{
-		vec3 tmp = atom(i)->getAsymUnitPosition(crystal);
+		vec3 tmp = atom(i)->getPositionInAsu();
 		bool closeish = vec3_near_vec3_box(tmp, pos, small_dist);
 
 		if (!closeish)
@@ -455,8 +551,13 @@ AtomPtr AtomGroup::getClosestAtom(CrystalPtr crystal, vec3 pos)
 
 void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 {
+	if (!atomCount())
+	{
+		return;
+	}
+	
 	AtomList topAtoms = topLevelAtoms();
-	bool refineAngles = shouldRefineAngles();
+	
 	_timesRefined++;
 
 	ScoreType scoreType = ScoreTypeModelPos;
@@ -468,24 +569,39 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		maxTries = 60;
 		break;
 
+		case RefinementSavedPos:
+		scoreType = ScoreTypeSavedPos;
+		maxTries = 200;
+		break;
+
+		case RefinementCentroid:
+		scoreType = ScoreTypeCentroid;
+		maxTries = 60;
+		break;
+
+		case RefinementCrude:
+		scoreType = ScoreTypeCorrel;
+		maxTries = 1;
+		break;
+
 		case RefinementFine:
 		scoreType = ScoreTypeCorrel;
 		maxTries = 2;
 		break;
 
-		case RefinementModelRMSDZero:
-		scoreType = ScoreTypeModelRMSDZero;
-		maxTries = 10;
-		break;
-
-		case RefinementRMSDZero:
-		scoreType = ScoreTypeRMSDZero;
-		maxTries = 10;
+		case RefinementMouse:
+		scoreType = ScoreTypeMouse;
+		maxTries = 1;
 		break;
 
 		default:
 		shout_at_helen("Unimplemented refinement option?");
 		break;
+	}
+	
+	if (hasParameter(ParamOptionMaxTries))
+	{
+		maxTries = getParameter(ParamOptionMaxTries);
 	}
 	
 	while (topAtoms.size() > 0)
@@ -494,23 +610,18 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		int count = 0;
 
 		bool changed = true;
-		bool addFlex = (rType == RefinementFine);
 
 		while (changed && count < maxTries)
 		{
 			setupNelderMead();
 			setCrystal(target);
 			setCycles(16);
+			setScoreType(scoreType);
 
 			for (int i = 0; i < topAtoms.size(); i++)
 			{
-				if (topAtoms[i].expired())
-				{
-					continue;
-				}
-				
-				AtomPtr topAtom = topAtoms[i].lock();
-				
+				AtomPtr topAtom = topAtoms[i];
+
 				if (!topAtom->getModel()->isBond())
 				{
 					continue;
@@ -518,17 +629,14 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 				
 				BondPtr bond = ToBondPtr(topAtom->getModel());
 
-				if (!bond->isRefinable())
-				{
-					continue;
-				}
-
 				if (i == 0)
 				{
 					setJobName("torsion_" +  bond->shortDesc());
 				}
 
-				if (rType != RefinementFine)
+				if (rType != RefinementFine && 
+				    rType != RefinementMouse &&
+				    rType != RefinementCrude)
 				{
 					topBond = setupThoroughSet(bond, false);
 				}
@@ -538,21 +646,20 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 				}
 			}
 
-			setScoreType(scoreType);
-
 			for (size_t l = 0; l < _includeForRefine.size(); l++)
 			{
 				addSampledAtoms(_includeForRefine[l]);
 			}
 
 			if (rType == RefinementModelPos 
+			    || rType == RefinementSavedPos 
 			    || rType == RefinementFine 
-			    || rType == RefinementModelRMSDZero
-			    || rType == RefinementRMSDZero)
+			    || rType == RefinementCrude 
+			    || rType == RefinementMouse)
 			{
 				setSilent();
 			}
-
+			
 			changed = sample();
 			count++;
 		}
@@ -563,11 +670,17 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		}
 
 		AtomPtr topAtom = topBond->getMinor();
-		topAtoms = findAtoms(topAtom->getAtomName());
 		
-		if (!hasAtom(topAtom))
+		if (!topAtom)
 		{
 			break;
+		}
+		
+		topAtoms = findAtoms(topAtom->getAtomName(), topAtom->getResidueNum());
+		
+		if (rType == RefinementCrude)
+		{
+			return;
 		}
 	}
 
@@ -579,7 +692,7 @@ double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plo
 {
 	OptionsPtr options = Options::getRuntimeOptions();
 	DiffractionPtr data = options->getActiveData();
-	if (!data)
+	if (!data || !atomCount())
 	{
 		return 0;
 	}
@@ -615,7 +728,7 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 	/* Find centroid of atom set */
 	for (size_t i = 0; i < selected.size(); i++)
 	{
-		selected[i]->getModel()->getFinalPositions();
+		selected[i]->getModel()->refreshPositions();
 		vec3 offset = selected[i]->getModel()->getAbsolutePosition();
 		sum = vec3_add_vec3(sum, offset);	
 	}
@@ -638,7 +751,7 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 	for (size_t i = 0; i < selected.size(); i++)
 	{
 		/* Refresh absolute position */
-		selected[i]->getModel()->getFinalPositions();
+		selected[i]->getModel()->refreshPositions();
 		vec3 offset = selected[i]->getModel()->getAbsolutePosition();
 
 		vec3 diff = vec3_subtract_vec3(offset, sum);
@@ -647,7 +760,7 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 		ns[1] = std::max(fabs(diff.y), ns[1]);
 		ns[2] = std::max(fabs(diff.z), ns[2]);
 	}
-
+	
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double scales = 1.0 / (2 * maxDStar);
 
@@ -657,9 +770,11 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 
 	for (int i = 0; i < 3; i++)
 	{
-		nl[i] = (2 * (ns[i] + buffer));
+		nl[i] = 2 * (ns[i] + buffer);
 	}
 	
+	/* Correction of non-orthogonal unit cells, I think */
+
 	mat3x3 crystal_basis = crystal->getFFT()->getBasisInverse();
 	mat3x3 angs = make_mat3x3();
 	mat3x3_scale(&angs, nl[0], nl[1], nl[2]);
@@ -680,7 +795,8 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 	*basis = crystal->getFFT()->getBasis();
 	segment->setBasis(*basis);
 
-	/* but the basis of the map workspace should be a mini-unit cell */
+	/* but the basis of the map workspace should be a mini-
+	 * reciprocal unit cell */
 	double toReal[3];
 
 	for (int i = 0; i < 3; i++)
@@ -690,121 +806,17 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 
 	mat3x3_scale(basis, nl[0], nl[1], nl[2]);
 	*basis = mat3x3_inverse(*basis);
-	
 
 	return segment;
-}
-
-double AtomGroup::addAtomsQuickly(FFTPtr segment, std::vector<AtomPtr> selected, 
-                                  mat3x3 basis, vec3 ave)
-{
-	std::vector<ElementPtr> elements = Element::elementList(selected);
-
-	std::vector<AtomPtr> traditional;
-	int allElementElectrons = 0;
-
-	Timer tReal("real space");
-	Timer tFFT("fft");
-
-	FFTPtr tmpSegment = FFTPtr(new FFT(*segment));
-	tmpSegment->setAll(0);
-	tmpSegment->setupMask();
-	tmpSegment->avoidWriteToMaskZero(false);
-
-	/* For each element, make a new map and add all real space atom
-	*  positions in one fell swoop, if possible */
-	for (size_t i = 0; i < elements.size(); i++)
-	{
-		int totalElectrons = 0;
-		FFTPtr elesegment = FFTPtr(new FFT(*segment));
-
-		tReal.start();
-		for (size_t j = 0; j < selected.size(); j++)
-		{
-			if (selected[j]->getElement() != elements[i])
-			{
-				continue;
-			}
-
-			ModelPtr model = selected[j]->getModel();
-			model->getFinalPositions();
-
-			/** This needs to be added in the old way at the end. */
-			if (!model->hasExplicitPositions())
-			{
-				traditional.push_back(selected[j]);
-				continue;
-			}
-
-			totalElectrons += elements[i]->electronCount();
-			vec3 pos = selected[j]->getAbsolutePosition();
-			pos = vec3_subtract_vec3(pos, ave);
-
-			model->addRealSpacePositions(elesegment, pos);
-		}
-		tReal.stop();
-
-		/* Must include models which are not explicit too */
-		allElementElectrons += elements[i]->electronCount() * selected.size();
-
-		elesegment->createFFTWplan(1);
-
-		tFFT.start();
-		elesegment->fft(1);
-		tFFT.stop();
-
-		FFTPtr elementDist = elements[i]->getDistribution(false,
-		                                                  elesegment->nx);
-		FFT::multiply(elesegment, elementDist);
-		tFFT.start();
-		elesegment->fft(-1);
-		tFFT.stop();
-
-		/* But this total electron count for a given element should not */
-		elesegment->setTotal(totalElectrons * 10e4);
-
-		FFT::addSimple(tmpSegment, elesegment);
-	}
-
-	//	tReal.report();
-	//	tFFT.report();
-
-	for (size_t i = 0; i < traditional.size(); i++)
-	{
-		traditional[i]->addToMap(tmpSegment, basis, ave);
-	}
-
-	tmpSegment->setTotal(allElementElectrons * 10e2);
-
-	FFT::addSimple(segment, tmpSegment);
-}
-
-double AtomGroup::scoreWithMapQuick(ScoreType scoreType, CrystalPtr crystal,
-                                    bool plot, std::vector<AtomPtr> selected)
-{
-	mat3x3 basis;
-	vec3 ave;
-	FFTPtr segment = prepareMapSegment(crystal, selected, &basis, &ave);
-
-	addAtomsQuickly(segment, selected, basis, ave);
-
-	double cutoff = MAP_VALUE_CUTOFF;
-	segment->aboveValueToMask(cutoff);
-	segment->avoidWriteToMaskZero();
-
-	std::vector<AtomPtr> extra; 
-
-	/* Neighbours */
-	extra = crystal->getCloseAtoms(selected, 1.5);
-	addAtomsQuickly(segment, extra, basis, ave);
-
-	double score = scoreFinalMap(crystal, segment, plot, scoreType, ave);
-	return score;
 }
 
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
                                       bool plot)
 {
+	if (!workspace->selectAtoms.size())
+	{
+		return 0;
+	}
 	CrystalPtr crystal = workspace->crystal;
 	std::vector<AtomPtr> selected = workspace->selectAtoms;
 
@@ -818,6 +830,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		
 		workspace->constant = FFTPtr(new FFT(*workspace->segment));
 		workspace->fcSegment = FFTPtr(new FFT(*workspace->segment));
+		workspace->segment->createFFTWplan(1);
 	}
 	else
 	{
@@ -829,11 +842,12 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	* established.*/
 	if (first)
 	{
+		/* Make half-box measures */
 		double xAng, yAng, zAng;
 		xAng = workspace->segment->nx * workspace->segment->scales[0] / 2;
 		yAng = workspace->segment->ny * workspace->segment->scales[1] / 2;
 		zAng = workspace->segment->nz * workspace->segment->scales[2] / 2;
-
+		
 		if (!(workspace->flag & MapScoreFlagNoSurround))
 		{
 			workspace->extra = crystal->getAtomsInBox(workspace->ave, 
@@ -842,6 +856,8 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 			
 			std::vector<AtomPtr> added;
 
+			/* We want to add anything which is static to the 
+			 * constant fraction. */
 			for (size_t i = 0; i < workspace->extra.size(); i++)
 			{
 				AtomPtr anAtom = workspace->extra[i];
@@ -866,10 +882,12 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 				added.push_back(workspace->extra[i]);
 				count++;
 			}
-
+			
+			/* Copy this constant fraction into the segment */
 			workspace->segment->copyFrom(workspace->constant);
 		}
 	}
+	
 
 	for (size_t i = 0; i < selected.size(); i++)
 	{
@@ -877,147 +895,63 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		                      workspace->ave, false, false, true);
 	}
 	
-	if (workspace->flag & MapScoreFlagSubtractFc)
+	if (false && workspace->flag & MapScoreFlagReplaceWithObs)
 	{
-		if (first)
-		{
-			FFTPtr fcSegment = workspace->fcSegment;
-			FFTPtr map = crystal->getCalculatedMap();
-			FFT::score(map, fcSegment, workspace->ave,
-			           NULL, MapScoreTypeCopyToSmaller);
-			fcSegment->scaleToFFT(workspace->segment);
-			
-			std::vector<CoordVal> vals;
-			FFT::score(workspace->segment, fcSegment, empty_vec3(),
-			           &vals, MapScoreTypeCorrel);
-			plotCoordVals(vals, 0, 0, "cc_fcs");
+		FFTPtr fcSegment = workspace->segment;
+		FFTPtr obsMap = crystal->getFFT();
 
-			
-			/* Get ready for subtraction! */
-			fcSegment->multiplyAll(-1);
-		}
-
-		/* Remove the last calculated map from the segment, which
-		 * is already negative. */
-		FFT::addSimple(workspace->segment, workspace->fcSegment);	
+		FFT::operation(obsMap, fcSegment, workspace->ave,
+		               MapScoreTypeCopyToSmaller, NULL);
+		
+		return 0;
 	}
 	
 	double score = 0;
 
-	/* In the middle of making calculation really quick?? */
-	bool difference = (workspace->flag & MapScoreFlagDifference);
+	if (workspace->flag & MapScoreFlagSkipScore)
+	{
+		return 0;
+	}
 	
-	score = scoreFinalMap(crystal, workspace->segment, plot,
-	                      workspace->scoreType, workspace->ave,
-	                      difference);
+	/* In the middle of making calculation really quick?? */
+	/* What the fuck did that comment mean? ^ */
+	bool difference = (workspace->flag & MapScoreFlagDifference);
+	ScoreType type = workspace->scoreType;
+	
+	score = scoreFinalMap(workspace, plot);
 
 	return score;
 }
 
-double AtomGroup::scoreFinalValues(std::vector<double> xs,
-                                   std::vector<double> ys,
-                                   ScoreType scoreType,
-                                   bool ignoreCutoff)
+double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 {
-	double cutoff = MAP_VALUE_CUTOFF;
-	
-	if (ignoreCutoff) cutoff = -FLT_MAX;
-	
-	if (scoreType == ScoreTypeCorrel)
-	{
-		double correl = correlation(xs, ys, cutoff);
-		return -correl;
-	}
-	else if (scoreType == ScoreTypeHappiness)
-	{
-		double happiness = happiness_coefficient(xs, ys);
-		return -happiness;
-	}
-	else if (scoreType == ScoreTypeRFactor)
-	{
-		double rFactor = scaled_r_factor(xs, ys, cutoff);
-		return rFactor;
-	}
-	else if (scoreType == ScoreTypeMultiply)
-	{
-		double mult = weightedMapScore(xs, ys);
-		return -mult;
-	}
-	else if (scoreType == ScoreTypeAddDensity)
-	{
-		double sum = add_if_y_gt_zero(xs, ys);
-		return sum;
-	}
-	else if (scoreType == ScoreTypeAddVoxels)
-	{
-		double sum = add_if_gt_zero(ys);
-		return sum;
-	}
-	
-	
-	
-	return 0;
-}
-
-void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals, 
-                              bool difference, double cutoff,
-                              std::string filename)
-{
-	CSVPtr csv = CSVPtr(new CSV(6, "x", "y", "z", "fo", "fc", "mask"));
-
-	for (size_t i = 0; i < vals.size(); i++)
-	{
-		double fo = vals[i].fo;
-		double fc = vals[i].fc;
-		double mask = 0;
-		vec3 pos = make_vec3(0, 0, 0);
-
-		#ifdef COORDVAL_FULL
-		mask = vals[i].mask;
-		pos = vals[i].pos;
-		#endif
-
-		if (!difference && fc < cutoff) continue;
-
-		csv->addEntry(6, pos.x, pos.y, pos.z, fo, fc, mask);
-	}
-
-	csv->writeToFile(filename + ".csv");
-
-	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = filename;
-	plotMap["xHeader0"] = "fc";
-	plotMap["yHeader0"] = "fo";
-	plotMap["colour0"] = "black";
-
-	plotMap["xTitle0"] = "Calc density";
-	plotMap["yTitle0"] = "Obs density";
-	plotMap["style0"] = "scatter";
-	csv->plotPNG(plotMap);
-}
-
-double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
-                                bool plot, ScoreType scoreType,
-                                vec3 ave, bool difference)
-{
-	double cutoff = MAP_VALUE_CUTOFF;
-	mat3x3 real2Frac = crystal->getReal2Frac();
-
 	/* Convert real2Frac to crystal coords to get correct segment
 	* of the big real space map. */
-	mat3x3_mult_vec(real2Frac, &ave);
+	CrystalPtr crystal = ws->crystal;
+	vec3 ave = ws->ave;
+	mat3x3_mult_vec(crystal->getReal2Frac(), &ave);
+	
+	double cutoff = MAP_VALUE_CUTOFF;
 
 	std::vector<double> xs, ys;
 	std::vector<CoordVal> vals;
 
-	FFTPtr map = crystal->getFFT();
+	FFTPtr map = ws->crystal->getFFT();
+	bool difference = (ws->flag & MapScoreFlagDifference);
 	
 	if (difference)
 	{
 		map = crystal->getDiFFT();
 	}
+	
+	MapScoreType mapType = MapScoreTypeCorrel;
+	
+	if (ws->scoreType == ScoreTypeCopyToSmaller)
+	{
+		mapType = MapScoreTypeCopyToSmaller;
+	}
 
-	FFT::operation(map, segment, ave, MapScoreTypeCorrel, &vals, true);
+	FFT::operation(map, ws->segment, ave, mapType, &vals, true);
 
 	/* For correlation calculations */
 	for (size_t i = 0; i < vals.size(); i++)
@@ -1026,7 +960,7 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 		ys.push_back(vals[i].fc);
 	}
 
-	if (scoreType == ScoreTypeRFactor)
+	if (ws->scoreType == ScoreTypeRFactor)
 	{
 		double scale = scale_factor_cutoff(xs, ys, cutoff);
 
@@ -1051,9 +985,102 @@ double AtomGroup::scoreFinalMap(CrystalPtr crystal, FFTPtr segment,
 	vals.clear();
 	std::vector<CoordVal>().swap(vals);
 
-	double score = scoreFinalValues(xs, ys, scoreType, difference);
+	double score = scoreFinalValues(xs, ys, ws->scoreType, ws->flag);
 
 	return score;
+}
+
+
+double AtomGroup::scoreFinalValues(std::vector<double> xs,
+                                   std::vector<double> ys,
+                                   ScoreType scoreType,
+                                   unsigned int flags)
+{
+	bool difference = (flags & MapScoreFlagDifference);
+	double cutoff = MAP_VALUE_CUTOFF;
+	
+	if (difference) cutoff = -FLT_MAX;
+	
+	if (scoreType == ScoreTypeCorrel)
+	{
+		double correl = correlation(xs, ys, cutoff);
+		return -correl;
+	}
+	else if (scoreType == ScoreTypeHappiness)
+	{
+		double happiness = happiness_coefficient(xs, ys);
+		return -happiness;
+	}
+	else if (scoreType == ScoreTypeRFactor)
+	{
+		double rFactor = scaled_r_factor(xs, ys, cutoff);
+		return rFactor;
+	}
+	else if (scoreType == ScoreTypeMultiply)
+	{
+		double mult = weightedMapScore(xs, ys);
+		return -mult;
+	}
+	else if (scoreType == ScoreTypeAddDensity)
+	{
+		int option = 0;
+		
+		if (flags & MapScoreFlagPosOnly)
+		{
+			option = 1;
+		}
+		else if (flags & MapScoreFlagNegOnly)
+		{
+			option = -1;
+		}
+		
+		double sum = add_x_if_y(xs, ys, option);
+		return sum;
+	}
+	else if (scoreType == ScoreTypeAddVoxels)
+	{
+		double sum = add_if_gt_zero(ys);
+		return sum;
+	}
+	
+	
+	
+	return 0;
+}
+
+void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals, 
+                              bool difference, double cutoff,
+                              std::string filename)
+{
+	CSVPtr csv = CSVPtr(new CSV(6, "x", "y", "z", "fo", "fc"));
+
+	for (size_t i = 0; i < vals.size(); i++)
+	{
+		double fo = vals[i].fo;
+		double fc = vals[i].fc;
+		vec3 pos = make_vec3(0, 0, 0);
+
+		#ifdef COORDVAL_FULL
+		pos = vals[i].pos;
+		#endif
+
+		if (!difference && fc < cutoff) continue;
+
+		csv->addEntry(6, pos.x, pos.y, pos.z, fo, fc);
+	}
+
+	csv->writeToFile(filename + ".csv");
+
+	std::map<std::string, std::string> plotMap;
+	plotMap["filename"] = filename;
+	plotMap["xHeader0"] = "fc";
+	plotMap["yHeader0"] = "fo";
+	plotMap["colour0"] = "black";
+
+	plotMap["xTitle0"] = "Calc density";
+	plotMap["yTitle0"] = "Obs density";
+	plotMap["style0"] = "scatter";
+	csv->plotPNG(plotMap);
 }
 
 void AtomGroup::addProperties()
@@ -1109,3 +1136,70 @@ void AtomGroup::refreshBondAngles()
 		atom(i)->refreshBondAngles();
 	}
 }
+
+vec3 AtomGroup::centroid()
+{
+	vec3 sum = empty_vec3();
+	
+	for (int i = 0; i < atomCount(); i++)
+	{
+		vec3 abs = atom(i)->getAbsolutePosition();
+		vec3_add_to_vec3(&sum, abs);
+	}
+	
+	vec3_mult(&sum, 1 / (double)atomCount());
+	
+	return sum;
+}
+
+void AtomGroup::makeBackboneTwists(ExplicitModelPtr applied)
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		AtomPtr a = atom(i);
+		
+		if (!a->isBackbone() && !a->isBackboneAndSidechain())
+		{
+			continue;
+		}
+		
+		if (!a->getModel()->isBond())
+		{
+			continue;
+		}
+		
+		BondPtr b = ToBondPtr(a->getModel());
+		
+		if (b->isFixed())
+		{
+			continue;
+		}
+
+		TwistPtr twist = TwistPtr(new Twist());
+		twist->setBond(b);
+		twist->addToAppliedModel(applied);
+	}
+}
+
+void AtomGroup::boundingMonomers(int *begin, int *end)
+{
+	*begin = INT_MAX;
+	*end = -INT_MAX;
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		AtomPtr a = atom(i);
+		int resi = a->getResidueNum();
+		
+		if (*begin > resi)
+		{
+			*begin = resi;
+		}
+		
+		if (*end < resi)
+		{
+			*end = resi;
+		}
+	}
+}
+

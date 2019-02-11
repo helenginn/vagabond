@@ -1,18 +1,16 @@
-//
-//  Molecule.cpp
+//  Crystal.h
 //  vagabond
 //
-//  Created by Helen Ginn on 11/07/2017.
+//  Created by Helen Ginn on 13/07/2017.
 //  Copyright (c) 2017 Strubi. All rights reserved.
+//
 //
 
 #include "shared_ptrs.h"
 #include "Bucket.h"
-#include "Plucker.h"
 #include "Molecule.h"
 #include "Atom.h"
 #include "Absolute.h"
-#include "Element.h"
 #include "Bond.h"
 #include <float.h>
 #include <iostream>
@@ -21,19 +19,15 @@
 #include "mat3x3.h"
 #include "Options.h"
 #include "CSV.h"
+#include "Chelate.h"
 #include "Sidechain.h"
 #include "Monomer.h"
+#include "Element.h"
 
 Molecule::Molecule()
 {
 	_absoluteBFacSubtract = 0.0;
 	_absoluteBFacMult = 1.0;
-	_magicRotAxis = make_vec3(1, 0, 0);
-	_rotationAxis = make_vec3(1, 0, 0);
-	_rotationCentre = make_vec3(nan(" "), nan(" "), nan(" "));
-	_sphereDiffOffset = empty_vec3();
-	_rotationAngle = 0;
-	_changedRotations = true;
 }
 
 void Molecule::makePowderList()
@@ -105,12 +99,48 @@ void Molecule::makePowderList()
 	csvAngles->writeToFile(getChainID() + "_angles.csv");
 }
 
+void Molecule::forceModelRecalculation()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		ModelPtr model = atom(i)->getModel();
+		model->recalculate();
+	}
+}
+
+double Molecule::getAbsoluteBFacMult()
+{
+	_absoluteBFacMult = Options::getBMult();
+	return _absoluteBFacMult;
+}
+
+double Molecule::getAbsoluteBFacSubt()
+{
+	if (Options::getBSubt() > 0)
+	{
+		_absoluteBFacSubtract = Options::getBSubt();
+	}
+
+	return _absoluteBFacSubtract;
+}
+
 void Molecule::tieAtomsUp()
 {
 	if (getClassName() != "Polymer")
 	{
 		double mult = Options::getBMult();
 		setAbsoluteBFacMult(mult);
+	}
+}
+
+void Molecule::addToSolventMask(FFTPtr fft, mat3x3 _real2frac, double rad,
+	                           std::vector<Atom *> *ptrs)
+{
+	vec3 offset = make_vec3(0, 0, 0);
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		atom(i)->addToSolventMask(fft, _real2frac, rad, ptrs);
 	}
 }
 
@@ -170,7 +200,7 @@ void Molecule::refine(CrystalPtr crystal, RefinementType type)
 		setCrystal(crystal);
 		setCycles(20);
 		addSampled(anAtom);	
-		addAbsolutePosition(abs, 0.005, 0.0001);
+//		addAbsolutePosition(abs, 0.005, 0.0001);
 		setJobName("xyz_" + anAtom->shortDesc());
 		sample();
 	}
@@ -211,11 +241,11 @@ void Molecule::tiedUpScattering(double *tied, double *all)
 
 		if (atom(i)->getModel()->isBond())
 		{
-			some += atom(i)->getElement()->electronCount();
+			some += atom(i)->getElectronCount();
 			someCount++;
 		}
 
-		total += atom(i)->getElement()->electronCount();
+		total += atom(i)->getElectronCount();
 		totalCount++;
 	}
 
@@ -228,58 +258,10 @@ void Molecule::addAtom(AtomPtr atom)
 	AtomGroup::addAtom(atom);
 }
 
-
-void Molecule::resetInitialPositions()
-{
-	for (int i = 0; i < atomCount(); i++)
-	{
-		vec3 pos = atom(i)->getAbsolutePosition();
-		atom(i)->setInitialPosition(pos);
-
-		ModelPtr model = atom(i)->getModel();
-
-		if (model->isBond())
-		{
-			ToBondPtr(model)->resetBondDirection();
-		}
-	}
-}
-
-std::vector<mat3x3> Molecule::getExtraRotations()
-{
-	if (!_changedRotations && _extraRotationMats.size())
-	{
-		return _extraRotationMats;
-	}
-
-	_extraRotationMats.clear();
-
-	calculateExtraRotations();
-
-	_changedRotations = false;
-
-	return _extraRotationMats;
-}
-
 void Molecule::addProperties()
 {
 	addStringProperty("chain_id", &_chainID);
-	addDoubleProperty("absolute_bfac_mult", &_absoluteBFacMult);
-	addDoubleProperty("absolute_bfac_subtract", &_absoluteBFacSubtract);
-	addVec3ArrayProperty("centroids", &_centroids);
-	addVec3ArrayProperty("centroid_offsets", &_centroidOffsets);
-	addVec3ArrayProperty("trans_tensor_offsets", &_transTensorOffsets);
-	addVec3Property("magic_rot_axis", &_magicRotAxis);
-	addVec3Property("rotation_axis", &_rotationAxis);
-	addVec3Property("rot_centre", &_rotationCentre);
-	addDoubleProperty("rotation_angle", &_rotationAngle);
-	addDoubleProperty("trans_exponent", &_transExponent);
-	addMat3x3ArrayProperty("extra_rotations", &_extraRotationMats);
-	addMat3x3ArrayProperty("rotations", &_rotations);
 	
-	exposeFunction("set_absolute_bfac_mult", vsSetAbsoluteBFacMult);
-	exposeFunction("set_absolute_bfac_subtract", vsSetAbsoluteBFacSubtract);
-
 	for (int i = 0; i < atomCount(); i++)
 	{
 		addChild("atom", atom(i));
@@ -289,8 +271,6 @@ void Molecule::addProperties()
 void Molecule::setAbsoluteBFacMult(double mult)
 {
 	_absoluteBFacMult = mult;
-	std::cout << "Setting absolute B factor multiplier to " << mult
-	<< " for chain " << getChainID() << std::endl;
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	crystal->addComment("Absolute B factor multiplier changed to "
 	+ f_to_str(mult, 2) + " for " + getChainID());
@@ -386,4 +366,48 @@ void Molecule::setAbsoluteBFacSubtract(void *object, double subtract)
 	+ f_to_str(subtract, 2) + " for " + obj->getChainID());
 }
 
+void Molecule::chelate(std::string element, double bufferB)
+{
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 
+	for (int i = 0; i < atomCount(); i++)
+	{
+		AtomPtr a = atom(i);
+		
+		if (a->getElement()->getSymbol() != element)
+		{
+			continue;
+		}
+		
+		std::vector<AtomPtr> atoms;
+		atoms = crystal->getCloseAtoms(a, 2.6);
+		ChelatePtr chelate = ChelatePtr(new Chelate());
+		chelate->setChelatedAtom(a);
+		
+		if (atoms.size() == 0)
+		{
+			continue;
+		}
+		
+		for (size_t j = 0; j < atoms.size(); j++)
+		{
+			AtomPtr b = atoms[j];
+			
+			if (b == a)
+			{
+				continue;
+			}
+			
+			chelate->addChelatingAtom(b);
+		}
+		
+		chelate->setBufferB(bufferB);
+		
+		std::cout << "Chelated " << chelate->shortDesc() << std::endl;
+	}
+}
+
+void Molecule::rigidBodyFit()
+{
+	std::cout << "Dud." << std::endl;
+}

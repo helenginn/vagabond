@@ -34,6 +34,8 @@ public:
 	virtual ~Molecule() {};
 
 	void addToMap(FFTPtr fft, mat3x3 _real2frac, bool mask = false);
+	void addToSolventMask(FFTPtr fft, mat3x3 _real2frac, double radius,
+	                      std::vector<Atom *> *ptrs);
 
 	virtual void addAtom(AtomPtr atom);
 	
@@ -45,10 +47,10 @@ public:
 	                            int conformer = -1);
 	virtual void graph(std::string) {};
 	virtual void differenceGraphs(std::string, CrystalPtr) {};
-	void resetInitialPositions();
 	void setAnchors();
 	void makePowderList();
 	void expandWaters();
+	virtual void rigidBodyFit();
 
 	virtual void reportParameters();
 
@@ -65,32 +67,18 @@ public:
 	void setAbsoluteBFacSubtract(double subtract)
 	{
 		_absoluteBFacSubtract = subtract;
-		std::cout << "Setting absolute B factor subtractor to " << subtract << std::endl;
 		refreshBModels();
 	}
 	
 	static void setAbsoluteBFacSubtract(void *object, double subtract);
 
-	static void vsSetAbsoluteBFacSubtract(void *object, double value)
-	{
-		Parser *parser = static_cast<Parser *>(object);
-		Molecule *molecule = dynamic_cast<Molecule *>(parser);
-		molecule->setAbsoluteBFacSubtract(value);	
-	}
-
-	double getAbsoluteBFacMult()
-	{
-		return _absoluteBFacMult;
-	}
+	double getAbsoluteBFacMult();
+	double getAbsoluteBFacSubt();
+	void forceModelRecalculation();
+	void chelate(std::string element, double bufferB = 0);
 
 	void refreshBModels();
 	void setAbsoluteBFacMult(double mult);
-	static void vsSetAbsoluteBFacMult(void *object, double mult)
-	{
-		Parser *parser = static_cast<Parser *>(object);
-		Molecule *molecule = dynamic_cast<Molecule *>(parser);
-		molecule->setAbsoluteBFacMult(mult);	
-	}
 
 	void setChainID(std::string chain)
 	{
@@ -100,33 +88,6 @@ public:
 	std::string getChainID()
 	{
 		return _chainID;
-	}
-
-	std::vector<vec3> getCentroidOffsets()
-	{
-		return _centroidOffsets;
-	}
-
-	std::vector<mat3x3> getRotationCorrections()
-	{
-		return _rotations;
-	}
-
-	std::vector<vec3> getRotationCentres()
-	{
-		return _centroids;
-	}
-
-	std::vector<vec3> getTransTensorOffsets()
-	{
-		return _transTensorOffsets;
-	}
-
-	std::vector<mat3x3> getExtraRotations();
-
-	vec3 getExtraRotationCentre()
-	{
-		return _rotationCentre;
 	}
 
 	virtual std::string getClassName()
@@ -150,36 +111,6 @@ public:
 		return ToMoleculePtr(groupPtr);
 	}
 
-	static void setRotCentreZ(void *object, double value)
-	{
-		static_cast<Molecule *>(object)->_rotationCentre.z = value;
-	}
-
-	static double getRotCentreZ(void *object)
-	{
-		return static_cast<Molecule *>(object)->_rotationCentre.z;
-	}
-
-	static void setRotCentreY(void *object, double value)
-	{
-		static_cast<Molecule *>(object)->_rotationCentre.y = value;
-	}
-
-	static double getRotCentreY(void *object)
-	{
-		return static_cast<Molecule *>(object)->_rotationCentre.y;
-	}
-
-	static void setRotCentreX(void *object, double value)
-	{
-		static_cast<Molecule *>(object)->_rotationCentre.x = value;
-	}
-
-	static double getRotCentreX(void *object)
-	{
-		return static_cast<Molecule *>(object)->_rotationCentre.x;
-	}
-
 	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol, bool cache = false);
 	
 	void clearCloseCache()
@@ -187,6 +118,10 @@ public:
 		_closeishAtoms.clear();
 	}
 	
+	virtual void addParamCounts(int *pos, int *flex)
+	{
+		
+	}
 protected:
 	virtual std::string getParserIdentifier()
 	{
@@ -195,27 +130,6 @@ protected:
 
 	virtual void addProperties();
 	virtual void postParseTidy();    
-
-	std::vector<vec3> _centroidOffsets;
-	std::vector<vec3> _centroids; // after offset correction
-	std::vector<mat3x3> _rotations;
-
-	std::vector<vec3> _transTensorOffsets;
-	std::vector<mat3x3> _extraRotationMats;
-
-	virtual void calculateExtraRotations() {};
-
-	// this axis calculates the angular response to the reaction sphere
-	vec3 _magicRotAxis;
-
-	// this axis is that of the rotation matrices applied to the structure
-	vec3 _rotationAxis;
-	vec3 _rotationCentre;
-	vec3 _sphereDiffOffset;
-	double _transExponent;
-	double _rotExponent;
-
-	double _rotationAngle;
 
 	void setChangedRotation()
 	{

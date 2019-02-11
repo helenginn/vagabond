@@ -16,19 +16,14 @@
 #include "Element.h"
 #include "FileReader.h"
 #include "Absolute.h"
+#include "Anchor.h"
 #include "Polymer.h"
 #include "Monomer.h"
 #include "Backbone.h"
+#include "Twist.h"
+#include "Balance.h"
 
-/**
- * \cond SHOW_BOND_INT
- */
-
-typedef struct
-{
-	BondPtr bond;
-	int num;
-} BondInt;
+#include <iomanip>
 
 /** \endcond */
 
@@ -46,35 +41,8 @@ void Sampler::addAtomsForBond(BondPtr bond)
 	addSampled(bond->getMajor());
 
 	int count = 0;
-
-	/* Stop if the bond has no parent */
-	if (!bond->getParentModel()->isBond())
-	{
-		return;
-	}
-
-	BondPtr parent = ToBondPtr(bond->getParentModel());
-	int group = -1;
-	int num = parent->downstreamBondNum(&*bond, &group);
-
-	/* if it's the oldest sibling, we need to add all the
-	 * siblings as this torsion controls the others */
-	if (num == 0)
-	{
-		for (int j = 1; j < parent->downstreamBondCount(group); j++)
-		{
-			AtomPtr downAtom = parent->downstreamAtom(group, j);
-			addSampled(downAtom);
-			count++;
-		}
-	}
-
-	for (int j = 0; j < bond->extraTorsionSampleCount(); j++)
-	{
-		addSampled(bond->extraTorsionSample(j));
-		count++;
-	}
 	
+	/* Downstream bonds important if not backwards */
 	if (bond->downstreamBondGroupCount())
 	{
 		for (size_t j = 0; j < bond->downstreamBondGroupCount(); j++)
@@ -87,6 +55,37 @@ void Sampler::addAtomsForBond(BondPtr bond)
 			}
 		}
 	}
+
+	/* Stop if the bond has no parent */
+	if (!bond->getParentModel()->isBond())
+	{
+		return;
+	}
+
+	BondPtr parent = ToBondPtr(bond->getParentModel());
+
+	int group = -1;
+	int num = parent->downstreamBondNum(&*bond, &group);
+	
+	/* if it's the oldest sibling, we need to add all the
+	 * siblings as this torsion controls the others */
+	if (num == 0)
+	{
+		for (int j = 1; j < parent->downstreamBondCount(group); j++)
+		{
+			AtomPtr downAtom = parent->downstreamAtom(group, j);
+			
+			addSampled(downAtom);
+			count++;
+		}
+	}
+	
+	for (int j = 0; j < bond->extraTorsionSampleCount(); j++)
+	{
+		addSampled(bond->extraTorsionSample(j));
+		count++;
+	}
+	
 }
 
 void Sampler::addCustomParameter(void *object, Getter getter, Setter setter,
@@ -114,26 +113,36 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 			continue;
 		}
 
+		double tol = range / 10.;
+		
+		double degrange = deg2rad(range);
+		double degtol = degrange / 10.;
+		
+		if (tol < deg2rad(0.005))
+		{
+			tol = deg2rad(0.005);
+		}
+
 		switch (option)
 		{
 			case ParamOptionTorsion:
-			addTorsion(bond, deg2rad(range) * mult, deg2rad(0.005));
+			addTorsion(bond, degrange * mult, degtol);
+			break;
+
+			case ParamOptionTwist:
+			addTwist(bond, degrange * mult, degtol);
 			break;
 
 			case ParamOptionBondAngle:
-			addBendAngle(bond, deg2rad(range) * mult, deg2rad(0.005));
+			addBendAngle(bond, degrange * mult, degtol);
 			break;
 
 			case ParamOptionKick:
 			addKick(bond, range * mult, 0.001);
 			break;
 
-			case ParamOptionDampen:
-			addDampening(bond, range, 0.0001);
-			break;
-
 			case ParamOptionMagicAngles:
-			addMagicAngle(bond, deg2rad(range) * mult, deg2rad(1.0));
+			addMagicAngle(bond, range * mult, deg2rad(1.0));
 			break;
 
 			default:
@@ -142,12 +151,11 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 	}
 }
 
-BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
+BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 {
 	reportInDegrees();
-	setScoreType(ScoreTypeCorrel);
 
-	setJobName("torsion_set_" + bond->shortDesc());
+	setJobName("torsion_set_" + fbond->shortDesc());
 
 	int bondCount = 0;
 	BondPtr topBond = BondPtr();
@@ -166,17 +174,17 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 
 	std::vector<BondInt> remaining;
 	BondInt entry;
-	entry.bond = bond;
+	entry.bond = fbond;
 	entry.num = bondNum;
 	remaining.push_back(entry);
-	addSampled(bond->getMajor());
+	addSampled(fbond->getMajor());
 
 	while (remaining.size())
 	{
 		BondInt first = remaining[0];
 		BondPtr bond = first.bond;
 		int num = first.num;
-		
+
 		remaining.erase(remaining.begin());
 
 		if (num <= 0)
@@ -185,15 +193,20 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 		}
 		
 		bondCount++;
+		
 		addAtomsForBond(bond);
-
-		if (!bond->isRefinable())
+		checkOccupancyAndAdd(bond);
+		
+		if (!bond->isRefinable() && bond != fbond)
 		{
-			/* No hope! Give up! */
+			/* No hope! Give up! Unless first bond */
 			continue;
 		}
 
-		addParamsForBond(bond, (num % 2));
+		if (bond->isRefinable())
+		{
+			addParamsForBond(bond, (num % 2));
+		}
 
 		for (int j = 0; j < bond->downstreamBondGroupCount(); j++)
 		{
@@ -217,6 +230,7 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 					remaining.push_back(entry);
 				}
 			}
+			
 		}
 	}
 	
@@ -228,59 +242,12 @@ BondPtr Sampler::setupThoroughSet(BondPtr bond, bool addBranches)
 	return topBond;
 }
 
-double Sampler::preScanParams(BondPtr aBond, BondPtr bBond,
-                              Getter getter, Setter setter, double stepSize)
-{
-	return 0;
-	std::cout << "Bonds: " << aBond->shortDesc() << ", " << bBond->shortDesc();
-	std::cout << std::endl;
-	SamplerPtr test = SamplerPtr(new Sampler());
-	test->setupGrid();
-	test->setCrystal(this->_crystal);
-	test->reportInDegrees();
-	test->setJobName("surface");
-	test->addAtomsForBond(aBond);
-	test->addAtomsForBond(bBond);
-//	test->setMock();
-	test->setScoreType(_scoreType);
-	test->_strategy->addParameter(&*aBond, getter, setter, deg2rad(60.),
-	                              deg2rad(2));
-	test->_strategy->addParameter(&*bBond, getter, setter, deg2rad(60.),
-	                              deg2rad(2));
-	RefinementGridSearchPtr grid = ToGridPtr(test->_strategy);
-	test->setScoreType(ScoreTypeHappiness);
-	grid->setWritePNG();
-	grid->setWriteCSV();
-	test->sample();
-	AtomGroup::scoreWithMapGeneral(&test->_workspace, true);
-	exit(0);
-
-}
-
-double Sampler::preScanParameter(BondPtr bond, Getter getter, Setter setter,
-                               double stepSize)
-{
-	return 0;
-	SamplerPtr test = SamplerPtr(new Sampler());
-	test->setupGrid();
-	test->setCrystal(this->_crystal);
-	test->reportInDegrees();
-	test->setJobName("scan");
-	test->addAtomsForBond(bond);
-	test->setMock();
-	test->setScoreType(_scoreType);
-	test->_strategy->addParameter(&*bond, getter, setter, deg2rad(120.),
-	                              deg2rad(0.01));
-	RefinementGridSearchPtr grid = ToGridPtr(test->_strategy);
-	grid->setWriteCSV();
-	test->sample();
-	exit(0);
-}
-
 void Sampler::setupGrid()
 {
 	_strategy = RefinementStrategyPtr(new RefinementGridSearch());
 	_strategy->setEvaluationFunction(Sampler::score, this);
+	ToGridPtr(_strategy)->setWritePNG();
+	ToGridPtr(_strategy)->setWriteCSV();
 }
 
 void Sampler::setupNelderMead()
@@ -297,6 +264,41 @@ void Sampler::setupStepSearch()
 	_strategy->setCycles(20);
 }
 
+void Sampler::checkOccupancyAndAdd(BondPtr bond)
+{
+	BondPtr parent = bond;
+	int count = 0;
+
+	while (parent->getParentModel()->isBond()
+	    && hasParameter(ParamOptionOccupancy) && count < 5)
+	{
+		parent = ToBondPtr(parent->getParentModel());
+
+		if (parent->downstreamBondGroupCount() > 1)
+		{
+			bool clear = true;
+			for (int i = 0; i < _balances.size(); i++)
+			{
+				if (_balances[i]->isFromBond(parent))
+				{
+					clear = false;
+					break;
+				}
+			}
+
+			if (clear)
+			{
+				BalancePtr balance = BalancePtr(new Balance(parent));
+				balance->addParamsToStrategy(_strategy);
+				_balances.push_back(balance);
+				break;
+			}
+		}
+		
+		count++;
+	}
+}
+
 void Sampler::addOccupancy(BondPtr bond, double range, double interval)
 {
 	//    double number = fabs(range / interval);
@@ -307,6 +309,21 @@ void Sampler::addOccupancy(BondPtr bond, double range, double interval)
 	_bonds.push_back(bond);
 }
 
+void Sampler::addTwist(BondPtr bond, double range, double interval)
+{
+	if (bond->hasTwist())
+	{
+		TwistPtr twist = bond->getTwist();
+		_strategy->addParameter(&*twist, Twist::getTwist,
+		                        Twist::setTwist, range, interval,
+		                        "tw" + bond->shortDesc());
+	}
+	else
+	{
+		addTorsion(bond, range, interval);
+	}
+}
+
 void Sampler::addTorsion(BondPtr bond, double range, double interval)
 {
 	if (!bond || !bond->isBond())
@@ -314,19 +331,16 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 		return;
 	}
 
-	if (!bond->isRefinable())
+	if (!bond->isRefinable() | !bond->isUsingTorsion())
 	{
 		return;
 	}
-
-	preScanParameter(bond, Bond::getTorsion, 
-	                 Bond::setTorsion, interval / 5);
-
+	
 	_strategy->addParameter(&*bond, Bond::getTorsion, 
 	                        Bond::setTorsion,
 	                        range, interval,
 	"t" + bond->shortDesc());
-
+	
 	_bonds.push_back(bond);
 }
 
@@ -335,9 +349,19 @@ void Sampler::addKick(BondPtr bond, double range, double interval)
 	if (!bond) return;
 	
 	if (!bond->getRefineFlexibility()) return;
+	
+	if (bond->hasWhack())
+	{
+		WhackPtr whack = bond->getWhack();
+		_strategy->addParameter(&*whack, Whack::getKick, Whack::setKick,
+		                        range, interval, "k" + bond->shortDesc());
+	}
+	else
+	{
+		_strategy->addParameter(&*bond, Bond::getKick, Bond::setKick,
+		                        range, interval, "k" + bond->shortDesc());
+	}
 
-	_strategy->addParameter(&*bond, Bond::getKick, Bond::setKick,
-	                        range, interval, "b" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }
@@ -348,18 +372,6 @@ void Sampler::addBondLength(BondPtr bond, double range, double interval)
 	_strategy->addParameter(&*bond, Bond::getBondLength,
 	                        Bond::setBondLength, range,
 	interval, "bond_length");
-
-	_bonds.push_back(bond);
-}
-
-void Sampler::addDampening(BondPtr bond, double range, double interval)
-{
-	if (!bond) return;
-	if (!bond->getRefineFlexibility()) return;
-
-	_strategy->addParameter(&*bond, Bond::getDampening,
-	                        Bond::setDampening, range,
-	interval, "d" + bond->shortDesc());
 
 	_bonds.push_back(bond);
 }
@@ -412,29 +424,32 @@ void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 	_bonds.push_back(bond);
 }
 
-void Sampler::addAbsolutePosition(AbsolutePtr abs, double range, double interval)
+void Sampler::addAnchorParams(AnchorPtr anch)
 {
-	if (abs->getClassName() != "Absolute")
-	{
-		return;
-	}
-
-	_strategy->addParameter(&*abs, Absolute::getPosX, Absolute::setPosX,
+	double range = 0.02;
+	double interval = 0.002;
+	_strategy->addParameter(&*anch, Anchor::getPosX, Anchor::setPosX,
 	                        range, interval, "pos_x");
-	_strategy->addParameter(&*abs, Absolute::getPosY, Absolute::setPosY,
+	_strategy->addParameter(&*anch, Anchor::getPosY, Anchor::setPosY,
 	                        range, interval, "pos_y");
-	_strategy->addParameter(&*abs, Absolute::getPosZ, Absolute::setPosZ,
+	_strategy->addParameter(&*anch, Anchor::getPosZ, Anchor::setPosZ,
 	                        range, interval, "pos_z");
-}
+	
+	range = deg2rad(1.0);
+	interval = deg2rad(0.005);
+	_strategy->addParameter(&*anch, Anchor::getAlpha, Anchor::setAlpha,
+	                        range, interval, "alpha");
+	_strategy->addParameter(&*anch, Anchor::getBeta, Anchor::setBeta,
+	                        range, interval, "beta");
+	_strategy->addParameter(&*anch, Anchor::getGamma, Anchor::setGamma,
+	                        range, interval, "gamma");
 
-void Sampler::addRotamer(Sidechain *side, double range, double interval)
-{
-	//    double number = fabs(range / interval);
-	_strategy->addParameter(side, Sidechain::getRotamerExponent,
-	                        Sidechain::setRotamerExponent,
-	range, interval, "rot_exp");
+	BondPtr nBond = ToBondPtr(anch->getNAtom()->getModel());
+	BondPtr cBond = ToBondPtr(anch->getCAtom()->getModel());
+	
+	addAtomsForBond(nBond);
+	addAtomsForBond(cBond);
 }
-
 
 void Sampler::addAbsoluteBFactor(AbsolutePtr abs, double range, double interval)
 {
@@ -480,6 +495,11 @@ void Sampler::addSampled(AtomPtr atom)
 	{
 		return;
 	}
+	
+	if (atom->getElectronCount() == 1 && _scoreType == RefinementSavedPos)
+	{
+		return;
+	}
 
 	/* No repeats! */
 	for (int i = 0; i < sampleSize(); i++)
@@ -489,6 +509,7 @@ void Sampler::addSampled(AtomPtr atom)
 			return;
 		}
 	}
+
 	_sampled.push_back(atom);
 }
 
@@ -540,7 +561,7 @@ bool Sampler::sample(bool clear)
 	}
 
 	int paramCount = _strategy->parameterCount();
-
+	
 	if (!_silent)
 	{
 		std::cout << "Refining " << paramCount << " parameters." << std::endl;
@@ -571,7 +592,7 @@ bool Sampler::sample(bool clear)
 		_strategy->setJobName(_jobName);
 		_strategy->refine();
 	}
-
+	
 	_silent = false;
 	_scoreType = ScoreTypeCorrel;
 
@@ -579,6 +600,7 @@ bool Sampler::sample(bool clear)
 
 	if (clear)
 	{
+		_balances.clear();
 		_strategy = RefinementStrategyPtr();
 	}
 
@@ -592,9 +614,44 @@ bool Sampler::sample(bool clear)
 
 double Sampler::getScore()
 {
-	if (!_sampled.size())
+	if (!_sampled.size() || _scoreType == ScoreTypeZero)
 	{
 		return 0;
+	}
+	
+	for (int i = 0; i < _balances.size(); i++)
+	{
+		_balances[i]->adjustment();
+	}
+	
+	if (_scoreType == ScoreTypeCentroid)
+	{
+		vec3 orig_cent = empty_vec3();
+		vec3 new_cent = empty_vec3();
+		double count = 0;
+		
+		for (int i = 0; i < _bonds.size() && i < 1; i++)
+		{
+			_bonds[i]->propagateChange(-1, true);
+		}
+
+		for (int i = 0; i < sampleSize(); i++)
+		{
+			vec3 init = _sampled[i]->getPDBPosition();
+			_sampled[i]->getModel()->refreshPositions();
+			vec3 pos = _sampled[i]->getAbsolutePosition();
+			
+			vec3_add_to_vec3(&orig_cent, init);
+			vec3_add_to_vec3(&new_cent, pos);
+			count++;
+		}
+
+		vec3_mult(&orig_cent, 1 / count);
+		vec3_mult(&new_cent, 1 / count);
+		
+		vec3 diff = vec3_subtract_vec3(orig_cent, new_cent);
+
+		return vec3_sqlength(diff);
 	}
 	
 	if (_scoreType != ScoreTypeCorrel 
@@ -608,23 +665,24 @@ double Sampler::getScore()
 		{
 			double oneScore = 0;
 			
+			if (_scoreType == ScoreTypeSavedPos && 
+			    _sampled[i]->getElectronCount() == 1)
+			{
+				continue;
+			}
+			
 			switch (_scoreType)
 			{
 				case ScoreTypeModelPos:
 				oneScore = _sampled[i]->posDisplacement();
 				break;
 				
-				case ScoreTypeModelRMSDZero:
-				oneScore = _sampled[i]->getBFactor();
+				case ScoreTypeSavedPos:
+				oneScore = _sampled[i]->posDisplacement(true);
 				break;
 				
-				case ScoreTypeBFactorAgreement:
-				oneScore = pow(_sampled[i]->getBFactor() -
-				            _sampled[i]->getInitialBFactor() + 6.3, 2.0);
-				break;
-				
-				case ScoreTypeRMSDZero:
-				oneScore = _sampled[i]->getModel()->smallness();
+				case ScoreTypeMouse:
+				oneScore = _sampled[i]->posToMouse();
 				break;
 				
 				default:
@@ -634,12 +692,16 @@ double Sampler::getScore()
 			score += oneScore;
 			count += 1;
 		}
-
+		
 		return score / count;
 	}
 
-	double score = AtomGroup::scoreWithMapGeneral(&_workspace);
-	
+	double score = 0;
+	if (sampleSize())
+	{
+		score = AtomGroup::scoreWithMapGeneral(&_workspace);
+	}
+
 	return score;
 }
 

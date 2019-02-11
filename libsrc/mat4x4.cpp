@@ -36,6 +36,20 @@ vec3 mat4x4_mult_vec(struct mat4x4 mat, struct vec3 vec)
 	return v;
 }
 
+vec3 mat4x4_mult_vec3(struct mat4x4 mat, struct vec3 vec, double *last)
+{
+	struct vec3 v;
+
+	v.x = mat.vals[0] * vec.x + mat.vals[4] * vec.y + mat.vals[8] * vec.z + mat.vals[12] * *last;
+	v.y = mat.vals[1] * vec.x + mat.vals[5] * vec.y + mat.vals[9] * vec.z + mat.vals[13] * *last;
+	v.z = mat.vals[2] * vec.x + mat.vals[6] * vec.y + mat.vals[10] * vec.z + mat.vals[14] * *last;
+	
+	*last = mat.vals[3] * vec.x + mat.vals[7] * vec.y
+	+ mat.vals[11] * vec.z + mat.vals[15] * *last;
+	
+	return v;
+}
+
 std::string mat4x4_desc(mat4x4 mat)
 {
 	std::ostringstream str;
@@ -61,12 +75,21 @@ mat4x4 mat4x4_frustum(float left, float right, float top,
 	float A = (right + left) * r_width;
 	float B = (top + bottom) * r_height;
 	float C = (far + near) * r_depth;
-	mat.vals[0] = x;
-	mat.vals[3] = -A;
-	mat.vals[5] = y;
-	mat.vals[7] = -B;
-	mat.vals[10] = -z;
-	mat.vals[11] = -C;
+//	mat.vals[0] = x;
+//	mat.vals[3] = -A;
+//	mat.vals[5] = y;
+//	mat.vals[7] = -B;
+//	mat.vals[10] = -z;
+//	mat.vals[11] = -C;
+	
+	mat.vals[0] = 2 * near / (right - left);
+	mat.vals[2] = (right + left) / (right - left);
+	mat.vals[5] = 2 * near / (top - bottom);
+	mat.vals[6] = (top + bottom) / (top - bottom);
+	mat.vals[10] = - (far + near) / (far - near);
+	mat.vals[11] = - 2 * far * near / (far - near);
+	mat.vals[14] = -1;
+	
 	return mat;
 }
 

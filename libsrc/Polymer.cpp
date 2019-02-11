@@ -1,14 +1,24 @@
-//
-//  Polymer.cpp
-//  vagabond
-//
-//  Created by Helen Ginn on 23/07/2017.
-//  Copyright (c) 2017 Strubi. All rights reserved.
-//
+// Vagabond
+// Copyright (C) 2017-2018 Helen Ginn
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Polymer.h"
-#include "BoneDensity.h"
 #include "Timer.h"
+#include "Twist.h"
 #include "Crystal.h"
 #include "Sidechain.h"
 #include "Monomer.h"
@@ -17,36 +27,35 @@
 #include "Backbone.h"
 #include "Shouter.h"
 #include "Atom.h"
+#include "Anchor.h"
 #include "Absolute.h"
+#include "Bond.h"
+#include "Anisotropicator.h"
 #include "CSV.h"
 #include <sstream>
+#include <iomanip>
 #include "maths.h"
 #include <float.h>
 #include "FileReader.h"
-#include "Kabsch.h"
 #include "Options.h"
 #include "FlexGlobal.h"
+#include "FlexLocal.h"
+#include "Reflex.h"
+#include "Refitter.h"
 #include "RefinementNelderMead.h"
 #include "RefinementGridSearch.h"
 #include "Hydrogenator.h"
 
 Polymer::Polymer()
 {
-	_dampening = Options::getDampen();
 	_kick = Options::getKick();
-	_sideDampening = 0.05;
-	_sideKick = 0;
-	_anchorNum = 0;
+	_kickShift = 0.05;
+	_anchorNum = -1;
 	_totalMonomers = 0;
-	_transTensor = make_mat3x3();
-	_transExponent = 0;
-	_rotExponent = 0;
-	mat3x3_scale(&_transTensor, 1.0, 1.0, 1.0);
-	_overallScale = 0;
 	_startB = Options::getBStart();
-	_extraRotParams = {1, 0, 0};
-	_tmpPhi = 0;
-	_tmpPsi = 0;
+	_flexibilityParams = 0;
+	_positionalParams = 0;
+	_whacked = -1;
 }
 
 void Polymer::addMonomer(MonomerPtr monomer)
@@ -92,143 +101,116 @@ void Polymer::checkChainContinuity()
 	}
 }
 
-void Polymer::scanBondParams()
+void Polymer::reflex()
 {
-	MonomerPtr anchoredRes = getMonomer(getAnchor());
-	AtomPtr close = anchoredRes->findAtom("CA");
-	double base_b = close->getInitialBFactor();
-	base_b -= close->getBFactor();
+	Reflex reflex;
+	reflex.setPolymer(shared_from_this());
+	reflex.setPieceCount(3);
+	reflex.calculate();
+}
 
+void Polymer::refineLocalFlexibility()
+{
+	Timer timer("flexibility refinement", true);
+	FlexLocal local;
+	whack();
+	local.setPolymer(shared_from_this(), _kickShift);
 	
-	std::map<AtomPtr, double> bFacs;
-	std::map<AtomPtr, double> targets;
-	std::vector<BondPtr> bonds;
-	std::vector<AtomPtr> atoms;
+	local.refine();
+	_kickShift = local.getShift();
+	timer.report();
+}
 
-	for (int i = 0; i < atomCount(); i++)
+bool Polymer::isWhacking()
+{
+	return (getAnchorModel()->whackCount() > 0);
+}
+
+void Polymer::whackMonomer(MonomerPtr mon)
+{
+	if (!mon)
 	{
-		AtomPtr a = atom(i);
-		double bf = a->getBFactor();
-		
-		if (!(a->isBackbone() || a->isBackboneAndSidechain()))
-		{
-			continue;
-		}
-		
-		if (a->getElectronCount() == 1)
-		{
-			continue;
-		}
-		
-		atoms.push_back(a);
-		bFacs[a] = bf;
-
-		double init_b = a->getInitialBFactor();		
-
-		targets[a] = init_b - bf - base_b;
-		
-		ModelPtr m = a->getModel();
-		
-		if (!m->isBond())
-		{
-			continue;
-		}
-		
-		BondPtr b = ToBondPtr(a->getModel());
-		
-		if (!b->getRefineFlexibility() || !b->isNotJustForHydrogens()
-			|| !b->isUsingTorsion())
-		{
-			continue;
-		}
-
-		bonds.push_back(b);
+		return;
 	}
 	
-	CSVPtr atomtarg = CSVPtr(new CSV(2, "atom", "target"));
-	
-	for (int i = 0; i < atoms.size(); i++)
+	AtomList atoms = mon->getBackbone()->topLevelAtoms();
+	atoms = mon->findAtoms("CA");
+	AnchorPtr anchor = getAnchorModel();
+	long num = mon->getResidueNum();
+
+	if (atoms.size() == 0)
 	{
-		atomtarg->addEntry(2, (double)i, targets[atoms[i]]);
+		return;
 	}
 
-	atomtarg->writeToFile("atom_targets_" + getChainID() + ".csv");
-	
-	double shift = 0.10;
-	CSVPtr csv = CSVPtr(new CSV(3, "atom", "kick", "response"));
-	CSVPtr bondcc = CSVPtr(new CSV(2, "bond", "cc"));
+	AtomPtr atom = atoms[0];
 
-	for (int i = 0; i < bonds.size(); i++)
+	if (!atom->getModel()->isBond())
 	{
-		BondPtr b = bonds[i];
-		double k = Bond::getKick(&*b);
+		return;
+	}
 
-		for (int r = 0; r < 2; r++)
+	BondPtr bond = ToBondPtr(atom->getModel());
+
+	if (bond->getMajor()->getModel()->isAnchor())
+	{
+		return;
+	}
+
+	WhackPtr whack = WhackPtr(new Whack());
+	whack->setBond(bond);
+
+	if (!whack->isValid())
+	{
+		return;
+	}
+
+	whack->addToAnchor(anchor);
+
+	BondPtr next;
+
+	while (true)
+	{
+		if (bond->downstreamBondGroupCount() && 
+		    bond->downstreamBondCount(0))
 		{
-			std::vector<double> tx, ty;	
-			double add = (r == 0) ? shift : -shift;
-			double num = (r == 0) ? i : i + 0.5;
-
-			Bond::setKick(&*b, k + add);
-			b->propagateChange();
-
-			for (int j = 0; j < atoms.size(); j++)
-			{
-				double bnow = atoms[j]->getBFactor();
-				double bthen = bFacs[atoms[j]];
-
-				double diff = bnow - bthen;
-				
-				if (fabs(Bond::getKick(&*b)) < 1e-6)
-				{
-					diff = 0;
-				}
-				
-				double grad = diff;
-
-				csv->addEntry(3, (double)j, (double)num, grad);
-
-				if (grad > 1e-6)
-				{
-					tx.push_back(targets[atoms[j]]);
-					ty.push_back(grad);
-				}
-
-			}
-
-			Bond::setKick(&*b, k);
-			double correl = correlation(tx, ty);
-
-			if (correl != correl)
-			{
-				correl = 0;
-			}
-
-			std::cout << "Done bond " << i << ", " << b->shortDesc();
-			std::cout << " correl " << correl << std::endl;
-
-			bondcc->addEntry(2, (double)i, correl);
+			next = bond->downstreamBond(0, 0);
+		}
+		else
+		{
+			break;
 		}
 
+		if (next->getAtom()->getResidueNum() != num)
+		{
+			break;
+		}
+
+		bond = ToBondPtr(next);
 	}
-	
-	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = "chain_" + getChainID() + "_bondscan";
-	plotMap["height"] = "1000";
-	plotMap["width"] = "1000";
-	plotMap["xHeader0"] = "kick";
-	plotMap["yHeader0"] = "atom";
-	plotMap["zHeader0"] = "response";
 
-	plotMap["xTitle0"] = "kick";
-	plotMap["yTitle0"] = "atom";
+}
 
-	plotMap["style0"] = "heatmap";
-	plotMap["stride"] = i_to_str(bonds.size());
+void Polymer::whack()
+{
+	if (isWhacking())
+	{
+		return;
+	}
+
+	std::cout << "Whacking chain " << getChainID() << std::endl;
 	
-	csv->writeToFile(plotMap["filename"] + ".csv");
-	bondcc->writeToFile(plotMap["filename"] + "_cc_bond.csv");
-	csv->plotPNG(plotMap);
+	for (int i = getAnchor(); i < monomerEnd(); i++)
+	{
+		whackMonomer(getMonomer(i));
+	}
+
+	for (int i = getAnchor() - 1; i >= monomerBegin(); i--)
+	{
+		whackMonomer(getMonomer(i));
+	}
+
+	getAnchorModel()->propagateChange(-1, true);
 }
 
 void Polymer::tieAtomsUp()
@@ -239,15 +221,41 @@ void Polymer::tieAtomsUp()
 		              "Please specify an existing residue as an anchor point\n"\
 		"with option --anchor-res=");
 	}
+	
+	if (monomerCount() == 1)
+	{
+		warn_user("Not tying up " + getChainID() + " - only one monomer");
+		return;
+	}
 
 	checkChainContinuity();
 
 	AtomPtr n = getMonomer(_anchorNum)->findAtom("N");
+	AtomPtr to_c = getMonomer(_anchorNum)->findAtom("CA");
+	
+	if (!getMonomer(_anchorNum - 1))
+	{
+		warn_user("Not tying up " + getChainID() + " - cannot find atoms "\
+		"surrounding anchor point.");
+		return;
+	}
+	
+	AtomPtr to_n = getMonomer(_anchorNum - 1)->findAtom("C");
+
+	/* Specify heavy alignment atoms around the anchor point */
+	AtomPtr ca = getMonomer(_anchorNum)->findAtom("CA");
+	AtomPtr c = getMonomer(_anchorNum)->findAtom("C");
+	AtomPtr prev_c = getMonomer(_anchorNum - 1)->findAtom("C");
+	AtomPtr prev_ca = getMonomer(_anchorNum - 1)->findAtom("CA");
+
 	ModelPtr nModel = n->getModel();
+
 	if (nModel->isAbsolute())
 	{
-		ToAbsolutePtr(nModel)->setBFactor(_startB);
-		ToAbsolutePtr(nModel)->setAnchorPoint();
+		AnchorPtr newAnchor = AnchorPtr(new Anchor(ToAbsolutePtr(nModel)));
+		newAnchor->setBFactor(_startB);
+		newAnchor->setNeighbouringAtoms(prev_ca, to_n, to_c, c);
+		n->setModel(newAnchor);
 	}
 
 	for (int i = _anchorNum; i < monomerCount(); i++)
@@ -266,49 +274,32 @@ void Polymer::tieAtomsUp()
 		}
 	}
 	
-	/* Specify heavy alignment atoms around the anchor point */
-	AtomPtr ca = getMonomer(_anchorNum)->findAtom("CA");
-	AtomPtr c = getMonomer(_anchorNum)->findAtom("C");
-	AtomPtr prev_c = getMonomer(_anchorNum - 1)->findAtom("C");
-	AtomPtr prev_ca = getMonomer(_anchorNum - 1)->findAtom("CA");
-	
 	BondPtr n2ca = ToBondPtr(ca->getModel());
 	BondPtr ca2c = ToBondPtr(c->getModel());
 	BondPtr n2c = ToBondPtr(prev_c->getModel());
 	BondPtr c2ca = ToBondPtr(prev_ca->getModel());
 	
-	n2ca->setHeavyAlign(prev_c);
 	ca2c->setHeavyAlign(prev_c);
-	n2c->setHeavyAlign(ca);
+	n2ca->setHeavyAlign(prev_ca);
+	n2c->setHeavyAlign(c);
 	c2ca->setHeavyAlign(ca);
+	
+	n2ca->checkForSplits(shared_from_this());
+	n2c->checkForSplits(shared_from_this());
+	
+	whack();
+}
 
-	double kick = Options::getKick();
-	setInitialKick(this, kick);
-
-	for (int i = 0; i < monomerCount(); i++)
+void Polymer::removeAtom(AtomPtr atom)
+{
+	MonomerPtr mon = atom->getMonomer();
+	
+	if (mon)
 	{
-		if (getMonomer(i))
-		{
-			getMonomer(i)->getSidechain()->splitConformers();
-
-			if ((Options::enableTests() == 1 || Options::enableTests() == 2)
-			    && (i == 62 || i == 30 || i == 78 ||
-			        i >= 123 || i == 103))
-			{
-				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
-			}
-			/*
-			if ((Options::enableTests() == 3)
-			    && (i == 857 || i == 962 || i == 1011 || i == 1012 ||
-			        i == 1015 || i == 1028 || i == 1053 || i == 1068))
-			{
-				getMonomer(i)->getSidechain()->parameteriseAsRotamers();
-			}
-			*/
-
-			getMonomer(i)->getSidechain()->setInitialDampening();
-		}
+		mon->removeAtom(atom);
 	}
+	
+	AtomGroup::removeAtom(atom);
 }
 
 void Polymer::splitConformers()
@@ -325,25 +316,9 @@ void Polymer::splitConformers()
 void Polymer::summary()
 {
 	Molecule::summary();
-	std::cout << "| I am a polymer with " << _monomers.size() << " monomers." << std::endl;
 
-}
-
-double Polymer::vsRefineBackbone(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	
-	polymer->refineBackbone();
-	return 0;
-}
-
-void Polymer::vsRefineBackboneFrom(void *object, double position)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	
-	polymer->refineBackboneFrom(position);
+	std::cout << "| I am a polymer with " << _monomers.size() << " monomers."
+	<< std::endl;
 }
 
 void Polymer::refineBackboneFrom(int position)
@@ -377,8 +352,141 @@ void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
 	{
 		return;
 	}
-
+	
 	monomer->refine(target, rType);
+}
+
+void refineRegion(AtomGroupPtr region, CrystalPtr target, double light)
+{
+	region->addParamType(ParamOptionTorsion, light);
+	region->addParamType(ParamOptionBondAngle, light);
+	region->addParamType(ParamOptionNumBonds, 4);
+	region->refine(target, RefinementSavedPos);
+}
+
+void Polymer::refineFromFarAroundMonomer(int central, CrystalPtr target)
+{
+	MonomerPtr monomer = getMonomer(central);
+	if (!monomer)
+	{
+		return;
+	}
+	
+	int pad = 2;
+	int coreStart = central - pad;
+	int coreEnd = central + pad;
+	
+	refineFromFarRegion(coreStart, coreEnd, target);
+}
+	
+	
+void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
+                                  CrystalPtr target)
+{
+	size_t diff = coreEnd - coreStart;
+	
+	AtomGroupPtr coreRegion = monomerRange(coreStart, coreEnd);
+	
+	if (!coreRegion || coreRegion->atomCount() == 0)
+	{
+		return;
+	}
+	
+	int anchor = getAnchor();
+	
+	double step = 0.5;
+
+	std::cout << "Refining core region, " << getChainID() << " " << coreStart
+	<< " to " << coreEnd << std::flush;
+	
+	AtomList top = coreRegion->topLevelAtoms();
+	
+	if (!top.size())
+	{
+		return;
+	}
+	
+	ModelPtr model = top[0]->getModel();
+	
+	ExplicitModelPtr eModel;
+	if (model->isBond())
+	{
+		eModel = ToBondPtr(model)->getParentModel();
+	}
+	else if (model->isAnchor())
+	{
+		eModel = ToAnchorPtr(model);
+	}
+	else
+	{
+		return;
+	}
+
+	coreRegion->makeBackboneTwists(eModel);
+
+	coreRegion->addParamType(ParamOptionNumBonds, (diff + 1) * 3);
+	coreRegion->addParamType(ParamOptionTorsion, step);
+	coreRegion->addParamType(ParamOptionTwist, step);
+	coreRegion->addParamType(ParamOptionBondAngle, step);
+	coreRegion->addParamType(ParamOptionMaxTries, 1);
+	coreRegion->addIncludeForRefinement(coreRegion);
+	coreRegion->refine(target, RefinementCrude);
+
+	coreRegion->saveAtomPositions();
+	eModel->clearTwists();
+	
+	bool coversAnchor = (anchor >= coreStart && anchor <= coreEnd);
+	
+	if (coversAnchor)
+	{
+		refineAnchorPosition(target);
+	}
+	
+	std::cout << "." << std::flush;
+	
+	int nTerm = -1;
+	int nStart = anchor - 1;
+	int cStart = anchor + 1;
+	int cTerm = -1;
+	
+	if (coreStart < anchor && !coversAnchor)
+	{
+		nStart = coreEnd + 3;
+		if (nStart >= anchor)
+		{
+			nStart = anchor - 1;
+		}
+		
+		nTerm = coreStart - 10;
+	}	
+	
+	if (coreEnd > anchor && !coversAnchor)
+	{
+		cStart = coreStart - 3;
+		if (cStart > anchor)
+		{
+			cStart = coreEnd;
+		}
+		
+		cTerm = coreEnd + 10;
+	}
+	
+	AtomGroupPtr leftRegion = monomerRange(nTerm, nStart);
+	AtomGroupPtr rightRegion = monomerRange(cStart, cTerm);
+
+	if (coreEnd < anchor || coversAnchor)
+	{
+		refineRegion(leftRegion, target, step);
+	}
+
+	if (coreStart >= anchor || coversAnchor)
+	{
+		refineRegion(rightRegion, target, step);
+	}
+
+	std::cout << " Displacement by " << coreRegion->getAverageDisplacement()
+	<< " Å." << std::endl;
+
 }
 
 void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
@@ -389,7 +497,37 @@ void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 	refineRange(start, end, target, rType);
 }
 
-double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementType rType)
+AtomGroupPtr Polymer::monomerRange(int start, int end)
+{
+	AtomGroupPtr all = AtomGroupPtr(new AtomGroup());
+	
+	if (start == -1)
+	{
+		start = monomerBegin();
+	}
+
+	if (end == -1)
+	{
+		end = monomerEnd();
+	}
+	
+	for (int i = start; i <= end; i++)
+	{
+		MonomerPtr monomer = getMonomer(i);
+
+		if (!monomer)
+		{
+			continue;
+		}
+		
+		all->addAtomsFrom(monomer);
+	}
+	
+	return all;
+}
+
+double Polymer::refineRange(int start, int end, CrystalPtr target, 
+                            RefinementType rType)
 {
 	int skip = (start < _anchorNum) ? -1 : 1;
 	if ((_anchorNum > start && _anchorNum < end) ||
@@ -409,25 +547,6 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 	std::cout << (skip > 0 ? "C" : "N");
 	std::cout <<  "-terminus (residue " << end << ") ..." << std::endl;
 
-	if (rType == RefinementModelRMSDZero)
-	{
-		for (int i = start; i != end; i += skip)
-		{
-			MonomerPtr monomer = getMonomer(i);
-			if (!monomer)
-			{
-				continue;
-			}
-
-			for (int j = 0; j < monomer->atomCount(); j++)
-			{
-				AtomPtr atom = monomer->atom(j);
-				atom->getModel()->getFinalPositions();	
-				vec3 pos = atom->getAbsolutePosition();
-				atom->setInitialPosition(pos);
-			}
-		}
-	}
 
 	for (int i = start; i != end; i += skip)
 	{
@@ -474,9 +593,10 @@ double Polymer::refineRange(int start, int end, CrystalPtr target, RefinementTyp
 		BackbonePtr bone = monomer->getBackbone();
 		SidechainPtr side = monomer->getSidechain();
 
-		if (!monomer)
+		if (rType == RefinementCrude)
 		{
-			continue;
+			vec3 centre = monomer->centroid();
+			Options::getRuntimeOptions()->focusOnPosition(centre);
 		}
 
 		changed = true;
@@ -555,16 +675,25 @@ void Polymer::refineVScript(void *object, RefinementType rType)
 	polymer->refine(crystal, rType);
 }
 
-double Polymer::vsRefinePositionsToPDB(void *object)
+void Polymer::refineAnchorPosition(CrystalPtr target)
 {
-	refineVScript(object, RefinementModelPos);
-	return 0;
-}
+	bool changed = true;
+	int count = 0;
+	
+	while (changed && count < 50)
+	{
+		count++;
+		setupNelderMead();
+		setCrystal(target);
+		setCycles(16);
+		setScoreType(ScoreTypeSavedPos);
+		setSilent(true);
+		addAnchorParams(getAnchorModel());
 
-double Polymer::vsRefineSidechainsToDensity(void *object)
-{
-	refineVScript(object, RefinementSidechain);
-	return 0;	
+		changed = sample();
+	}
+
+	getAnchorModel()->propagateChange(20, true);
 }
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
@@ -575,8 +704,35 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 	{
 		refineToEnd(getAnchor() - 1, target, rType);
 		refineToEnd(getAnchor(), target, rType);
+		return;
+	}
+	else if (rType == RefinementCrude)
+	{
+		Timer timer("positions to density", true);
+		saveAtomPositions();
+		double before = -scoreWithMap(ScoreTypeCorrel, target);
+		int start = monomerBegin() + 0;
+		int end = monomerEnd() - 0;
+
+		for (int i = getAnchor() - 1; i >= start; i -= 3)
+		{
+			refineFromFarAroundMonomer(i, target);
+		}
 		
-		return;	
+		for (int i = getAnchor(); i <= end; i += 3)
+		{
+			refineFromFarAroundMonomer(i, target);
+		}
+
+		getAnchorModel()->propagateChange(-1, true);
+
+		double after = -scoreWithMap(ScoreTypeCorrel, target);
+
+		std::cout << "Overall CC " << before * 100 << " to "
+		<< after * 100 << "%." << std::endl;
+		timer.report();
+
+		return;
 	}
 	
 	Timer timer = Timer("refinement", true);
@@ -625,159 +781,16 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 	timer.report();
 }
 
-void Polymer::differenceGraphs(std::string graphName, CrystalPtr diffCrystal)
-{
-	return;
-	CSVPtr perCA = CSVPtr(new CSV(4, "resnum", "cc", "diffbackbone", "diffsidechain"));
-
-	std::vector<double> tempCCs, tempDiffCCs, tempNs;
-	double sumCC = 0;
-	FFTPtr fft = diffCrystal->getFFT();
-	FFTPtr difft = diffCrystal->getDiFFT();
-	
-	double sum = difft->averageAll() * (double)difft->nn;
-	sum /= (double)diffCrystal->symOpCount() / 2;
-
-	for (int n = 0; n < monomerCount(); n++)
-	{
-		if (!getMonomer(n) || !getMonomer(n)->getBackbone())
-		{
-			continue;
-		}
-
-		MonomerPtr monomer = getMonomer(n);
-
-		BackbonePtr backbone = monomer->getBackbone();
-		SidechainPtr sidechain = monomer->getSidechain();
-		double cc = -monomer->scoreWithMap(ScoreTypeCorrel, diffCrystal);
-		sumCC += cc;
-
-		double backboneCC = monomer->scoreWithMap(ScoreTypeAddDensity,
-		                                          diffCrystal, false,
-		                                          MapScoreFlagDifference |
-		                                          MapScoreFlagNoSurround);
-		
-		backboneCC /= sum;
-		backboneCC *= 100;
-
-		double sidechainCC = sidechain->scoreWithMap(ScoreTypeMultiply,
-		                                             diffCrystal, false,
-		                                             MapScoreFlagDifference |
-		                                             MapScoreFlagNoSurround);
-
-		sidechainCC /= sum;
-		sidechainCC *= 100;
-
-		perCA->addEntry(4, (double)n, cc, backboneCC, sidechainCC);
-	}
-
-	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = "diffmap_" + graphName;
-	plotMap["height"] = "700";
-	plotMap["width"] = "1200";
-	plotMap["xHeader0"] = "resnum";
-	plotMap["yHeader0"] = "cc";
-	plotMap["yMin0"] = "0";
-	plotMap["yMax0"] = "1";
-
-	plotMap["colour0"] = "black";
-	plotMap["xTitle0"] = "Residue number";
-	plotMap["yTitle0"] = "Correlation coefficient";
-	plotMap["style0"] = "line";
-
-	perCA->setSubDirectory("density_ccs");
-	perCA->writeToFile("stats_" + graphName + ".csv");
-	perCA->plotPNG(plotMap);
-}
-
-void Polymer::weightStrands()
-{
-	CSVPtr strandsCSV = CSVPtr(new CSV(1, "resnum"));
-	CSVPtr sumstrandsCSV = CSVPtr(new CSV(2, "resnum", "sum"));
-	
-	std::vector<BondSample> positions = getAnchorModel()->getFinalPositions();
-
-	for (int i = 0; i < positions.size(); i++)
-	{
-		strandsCSV->addHeader("strand_" + i_to_str(i));		
-	}
-
-	for (int j = 0; j < monomerCount(); j++)
-	{
-		if (!getMonomer(j))
-		{
-			continue;
-		}
-
-		AtomPtr ca = getMonomer(j)->findAtom("CA");
-		std::vector<BondSample> positions = ca->getModel()->getFinalPositions();
-		double bfac = ca->getBFactor();
-		vec3 average = ca->getAbsolutePosition();
-		std::vector<double> values;
-		values.push_back(j);
-
-		for (int i = 0; i < positions.size(); i++)
-		{
-			vec3 one = positions[i].start;
-			vec3 diff = vec3_subtract_vec3(one, average);
-			double length = vec3_length(diff);
-			values.push_back(length);
-		}
-		
-		strandsCSV->addEntry(values);
-	}
-	
-	double total = 0;
-	double mult = 1.5;
-
-	for (int i = 1; i < strandsCSV->headerCount(); i++)
-	{
-		double sum = 0;
-
-		for (int j = 0; j < strandsCSV->entryCount(); j++)
-		{
-			double value = strandsCSV->valueForEntry(i, j);
-			value *= value;
-			sum += value;
-		}
-		
-		sum /= strandsCSV->entryCount();
-		sum = sqrt(sum);
-		
-		sumstrandsCSV->addEntry(2, (double)i, sum);
-		
-		total += exp(-mult * sum * sum);
-	}
-	
-	strandsCSV->writeToFile("strands.csv");
-	sumstrandsCSV->writeToFile("sumstrands.csv");
-	
-	std::vector<double> occupancies;
-
-	for (int i = 0; i < sumstrandsCSV->entryCount(); i++)
-	{
-		double sum = sumstrandsCSV->valueForEntry("sum", i);
-		sum = exp(-mult * sum * sum);
-		double occupancy = sum / total;
-		
-		printf("Occupancy %.5f\n", occupancy);
-
-		occupancies.push_back(occupancy);
-	}
-	
-	AbsolutePtr abs = ToAbsolutePtr(getAnchorModel());
-	abs->setOccupancies(occupancies);
-	propagateChange();
-}
-
 void Polymer::graph(std::string graphName)
 {
+	_graphName = graphName;
+	ramachandranPlot();
+
 	CSVPtr csv = CSVPtr(new CSV(5, "resnum", "newB", "oldB",
 	                            "pos", "sidepos"));
 	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB"));
-	
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
@@ -798,6 +811,12 @@ void Polymer::graph(std::string graphName)
 		}
 
 		AtomPtr c = backbone->findAtom("C");
+
+		if (!c)
+		{
+			continue;
+		}
+
 		ModelPtr cModel = c->getModel();
 
 		double value = i;
@@ -814,10 +833,7 @@ void Polymer::graph(std::string graphName)
 
 			csv->addEntry(5, value, meanSq, ca->getInitialBFactor(),
 			              posDisp, sideDisp);
-			caDampen = Bond::getDampening(&*caBond);
 			caBlur = Bond::getKick(&*caBond);
-
-			if (caDampen > 0) caBlur = 0;
 		}
 		else
 		{
@@ -835,6 +851,8 @@ void Polymer::graph(std::string graphName)
 		csvDamp->addEntry(4, value, caDampen, cDampen, nDampen);
 		csvBlur->addEntry(4, value, caBlur, cBlur, nBlur);
 	}
+	
+	bool extra = Options::makeDiagnostics();
 
 	std::map<std::string, std::string> plotMap;
 	plotMap["filename"] = "mainchain_" + graphName;
@@ -861,6 +879,7 @@ void Polymer::graph(std::string graphName)
 	csv->plotPNG(plotMap);
 	csv->writeToFile("mainchain_" + graphName + ".csv");
 
+	if (extra)
 	{
 		std::map<std::string, std::string> plotMap;
 		plotMap["filename"] = "sidechain_" + graphName;
@@ -888,6 +907,7 @@ void Polymer::graph(std::string graphName)
 		sidechainCsv->writeToFile("sidechain_" + graphName + ".csv");
 	}
 
+	if (extra)
 	{
 		std::map<std::string, std::string> plotMap;
 		plotMap["filename"] = "mainchain_" + graphName;
@@ -915,43 +935,130 @@ void Polymer::graph(std::string graphName)
 	}
 }
 
-
-double Polymer::getSidechainDampening(void *object)
+void Polymer::ramachandranPlot()
 {
-	return static_cast<Polymer *>(object)->_sideDampening;
-}
+	CSVPtr csv = CSVPtr(new CSV(3, "res", "phi", "psi"));
 
-void Polymer::setSidechainDampening(void *object, double value)
-{
-	Polymer *polymer = static_cast<Polymer *>(object);
-	polymer->_sideDampening = value;
-
-	for (int i = 0; i < polymer->monomerCount(); i++)
+	for (int i = 0; i < monomerCount(); i++)
 	{
-		if (polymer->getMonomer(i))
+		if (!getMonomer(i))
 		{
-			polymer->getMonomer(i)->setSidechainDampening(value);
+			continue;
+		}
+		
+		bool forwards = (i > getAnchor());
+
+		AtomList phiAtoms = getMonomer(i)->findAtoms("N");
+		AtomList psiAtoms = getMonomer(i)->findAtoms("C");
+		
+		if (phiAtoms.size() != psiAtoms.size())
+		{
+			continue;
+		}
+
+		for (int j = 0; j < phiAtoms.size(); j++)
+		{
+			ModelPtr mPhi = phiAtoms[j]->getModel();
+			ModelPtr mPsi = psiAtoms[j]->getModel();
+			
+			if (!mPhi->isBond() || !mPsi->isBond())
+			{
+				continue;
+			}
+			
+			double tPhi = Bond::getTorsion(&*ToBondPtr(mPhi));
+			double tPsi = Bond::getTorsion(&*ToBondPtr(mPsi));
+			
+			csv->addEntry(3, i, rad2deg(tPhi), rad2deg(tPsi));
 		}
 	}
+
+	csv->writeToFile("ramachandran.csv");
 }
 
-double Polymer::getBackboneDampening(void *object)
+std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal, 
+                             int conformer)
 {
-	return static_cast<Polymer *>(object)->_dampening;
-}
-
-void Polymer::setBackboneDampening(void *object, double value)
-{
-	Polymer *polymer = static_cast<Polymer *>(object);
-	polymer->_dampening = value;
-
-	for (int i = 0; i < polymer->monomerCount(); i++)
+	std::ostringstream stream;
+	for (int i = 0; i < monomerCount(); i++)
 	{
-		if (polymer->getMonomer(i))
+		MonomerPtr monomer = getMonomer(i);
+		
+		if (!monomer)
 		{
-			polymer->getMonomer(i)->setBackboneDampening(value);
+			continue;
 		}
+
+		stream << monomer->getPDBContribution(pdbType, crystal, conformer);
 	}
+
+	return stream.str();
+	
+}
+
+void Polymer::refitBackbone(int start_, int end_)
+{
+	std::cout << "Refit backbone function" << std::endl;
+	
+	/* We can't straddle the anchor */
+	if (start_ < _anchorNum && end_ > _anchorNum ||
+	    end_ > _anchorNum && start_ < _anchorNum)
+	{
+		warn_user("We cannot straddle the anchor.");
+		return;
+	}
+
+	downWeightResidues(start_, end_, 0);
+	
+	AtomPtr endAtom = getMonomer(end_)->findAtom("C");
+	AtomPtr stAtom = getMonomer(start_)->findAtom("N");
+
+	vec3 pos = stAtom->getAbsolutePosition();
+	Options::getRuntimeOptions()->focusOnPosition(pos);
+	
+	/* Get new map for this */
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	Crystal::vsConcludeRefinement(&*ToParserPtr(crystal));
+	
+	/* Lower the number of samples */
+	int samples = getAnchorModel()->getFinalPositions().size();
+	Options::setNSamples(NULL, 0);
+	refreshPositions();
+	
+	int start = start_;
+	int end = end_;
+	
+	/* Swap if in wrong order */
+	if ((start > _anchorNum && end < start)	||
+	    (start < _anchorNum && end > start))
+	{
+		int tmp = start;
+		start = end;
+		end = tmp;
+	}
+	
+	/* Split the bond */
+	if (start < _anchorNum)
+	{
+		endAtom = getMonomer(end)->findAtom("N");
+		stAtom = getMonomer(start)->findAtom("C");
+	}
+	
+	BondPtr endBond = ToBondPtr(endAtom->getModel());
+	BondPtr stBond = ToBondPtr(stAtom->getModel());
+	
+	endBond->setSplitBlock();
+	BondPtr dupl = stBond->splitBond();
+
+	Refitter fit(dupl, endBond, start > _anchorNum);
+	fit.refit();
+
+	downWeightResidues(start_, end_, 1);
+
+	std::cout << "Return number of samples" << std::endl;
+	/* Repair the number of samples */
+	Options::setNSamples(NULL, samples);
+	refreshPositions();
 }
 
 void Polymer::findAnchorNearestCentroid()
@@ -967,13 +1074,13 @@ void Polymer::findAnchorNearestCentroid()
 		}
 
 		AtomPtr n = getMonomer(i)->findAtom("N");
-
+		
 		if (!n)
 		{
 			continue;
 		}
 
-		n->getModel()->getFinalPositions();
+		n->getModel()->refreshPositions();
 		vec3 absN = n->getModel()->getAbsolutePosition();
 
 		if (!n) continue;
@@ -1038,76 +1145,6 @@ void Polymer::hydrogenateContents()
 	}
 }
 
-
-double Polymer::getBackboneKick(void *object)
-{
-	return static_cast<Polymer *>(object)->_kick;
-}
-
-void Polymer::vsMultiplyBackboneKick(void *object, double value)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *poly = dynamic_cast<Polymer *>(parser);
-
-	for (int i = 0; i < poly->monomerCount(); i++)
-	{
-		MonomerPtr mono = poly->getMonomer(i);
-		
-		if (!mono) continue;
-
-		BackbonePtr back = mono->getBackbone();
-		
-		for (int i = 0; i < back->atomCount(); i++)
-		{
-			AtomPtr atom = back->atom(i);
-			ModelPtr model = atom->getModel();
-			if (!model || !model->isBond())
-			{
-				continue;
-			}
-
-			BondPtr bond = ToBondPtr(model);
-			double kick = Bond::getKick(&*bond);
-			kick *= value;
-			Bond::setKick(&*bond, kick);
-		}
-	}
-	
-	poly->propagateChange();
-	poly->refreshPositions();
-}
-
-void Polymer::setBackboneKick(void *object, double value)
-{
-	Polymer *poly = static_cast<Polymer *>(object);
-	int anchor = poly->getAnchor();
-	poly->_kick = value;
-
-	for (int i = 0; i < poly->atomCount(); i++)
-	{
-		ModelPtr model = poly->atom(i)->getModel();
-		if (!model || !model->isBond())
-		{
-			continue;
-		}
-		
-		BondPtr bond = ToBondPtr(model);
-		
-		if (!bond->connectsAtom("CA"))
-		{
-			continue;	
-		}
-		
-		double mult = 1;
-		if (poly->atom(i)->getResidueNum() < anchor)
-		{
-			mult = -1;
-		}
-		
-		Bond::setKick(&*bond, value * mult);
-	}
-}
-
 void Polymer::setInitialKick(void *object, double value)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
@@ -1135,28 +1172,6 @@ void Polymer::setInitialKick(void *object, double value)
 	}
 }
 
-/* For side chains, obviously */
-double Polymer::getSideKick(void *object)
-{
-	return static_cast<Polymer *>(object)->_sideKick;
-}
-
-void Polymer::setSideKick(void *object, double value)
-{
-	Polymer *polymer = static_cast<Polymer *>(object);
-	polymer->_sideKick = value;
-
-	for (int i = 0; i < polymer->monomerCount(); i++)
-	{
-		if (!polymer->getMonomer(i))
-		{
-			continue;
-		}
-
-		polymer->getMonomer(i)->setSideKick(value);
-	}
-}
-
 double Polymer::getInitialKick(void *object)
 {
 	Polymer *polymer = static_cast<Polymer *>(object);
@@ -1164,413 +1179,17 @@ double Polymer::getInitialKick(void *object)
 	return polymer->getMonomer(monomerNum)->getKick();
 }
 
-ModelPtr Polymer::getAnchorModel()
+AnchorPtr Polymer::getAnchorModel()
 {
 	MonomerPtr anchoredRes = getMonomer(getAnchor());
 	if (!anchoredRes)
 	{
-		return ModelPtr();
+		return AnchorPtr();
 	}
 
 	ModelPtr model = anchoredRes->findAtom("N")->getModel();
 
-	return model;
-}
-
-std::vector<vec3> Polymer::getAnchorSphereDiffs()
-{
-	std::vector<vec3> results;
-	ModelPtr anchor = getAnchorModel();
-
-	if (!anchor)
-	{
-		return std::vector<vec3>();
-	}
-
-	std::vector<BondSample> *finals = getAnchorModel()->getManyPositions();
-	vec3 sum = make_vec3(0, 0, 0);
-
-	for (size_t i = 0; i < finals->size(); i++)
-	{
-		sum = vec3_add_vec3(sum, finals->at(i).start);
-	}
-
-	vec3_mult(&sum, 1/(double)finals->size());
-	vec3 total = empty_vec3();
-
-	for (size_t i = 0; i < finals->size(); i++)
-	{
-		vec3 onePos = finals->at(i).start;
-		
-		if (_centroidOffsets.size() > i)
-		{
-			vec3 offset = _centroidOffsets[i];
-			vec3_mult(&offset, -1);
-			vec3_add_to_vec3(&onePos, offset);
-		}
-		
-		vec3_add_to_vec3(&total, onePos);
-		
-		results.push_back(onePos);
-	}
-	
-	vec3_mult(&total, 1 / (double)finals->size());
-	
-	for (size_t i = 0; i < results.size(); i++)
-	{
-		results[i] = vec3_subtract_vec3(results[i], total);
-	}
-
-	return results;
-}
-
-void Polymer::applyPolymerChanges()
-{
-	for (size_t i = 0; i < atomCount(); i++)
-	{
-		if (!atom(i)) continue;
-
-		ModelPtr model = atom(i)->getModel();
-		model->setPolymerChanged();	
-	}
-}
-
-void Polymer::applyTranslationTensor()
-{
-	_transTensorOffsets.clear();
-	_extraRotationMats.clear();
-
-	std::vector<vec3> sphereDiffs = getAnchorSphereDiffs();
-
-	vec3 sum = empty_vec3();
-	double nonExpLength = 0;
-	double expLength = 0;
-
-	for (size_t i = 0; i < sphereDiffs.size(); i++)
-	{
-		vec3 diff = sphereDiffs[i];
-		vec3_add_to_vec3(&diff, _sphereDiffOffset);
-		vec3 diffTensored = diff;
-		mat3x3_mult_vec(_transTensor, &diffTensored);
-		vec3 movement = vec3_subtract_vec3(diffTensored, diff);
-		
-		double length = vec3_length(movement);
-
-		double mult = exp(length * _transExponent);
-		vec3_mult(&movement, _overallScale);
-
-		nonExpLength += vec3_length(movement);
-
-		vec3_mult(&movement, mult);
-		expLength += vec3_length(movement);
-
-		_transTensorOffsets.push_back(movement);
-		vec3_add_to_vec3(&sum, movement);
-	}
-	
-	double normalise = nonExpLength / expLength;
-	
-	if (normalise != normalise)
-	{
-		normalise = 1;
-	}
-	
-	vec3_mult(&sum, -1 / (double)_transTensorOffsets.size());
-
-	for (size_t i = 0; i < _transTensorOffsets.size(); i++)
-	{
-		vec3_mult(&_transTensorOffsets[i], normalise);
-//		vec3_add_to_vec3(&_transTensorOffsets[i], sum);
-	}
-
-	applyPolymerChanges();
-}
-
-void Polymer::calculateExtraRotations()
-{
-	// We have our sphereDiffs.
-	std::vector<vec3> sphereDiffs = getAnchorSphereDiffs();
-
-	// We have a magic axis, _magicRotAxis. We want to know
-	// how close each difference is to one of the poles, mit sign.
-
-	if (!sphereDiffs.size())
-	{
-		return;
-	}
-
-	for (size_t i = 0; i < sphereDiffs.size(); i++)
-	{
-		vec3 diff = sphereDiffs[i];
-		double cosine = vec3_cosine_with_vec3(diff, _magicRotAxis);
-		vec3 cross = vec3_cross_vec3(diff, _magicRotAxis);
-
-		// Need to make sure the poles are opposite. 
-		// Choice of doing so is relatively arbitrary.
-		double angleMult = cosine;
-		if (cross.x < 0)
-		{
-			angleMult *= -1;
-		}
-
-		// Now we make a matrix around our other vector,
-		// _rotationAxis, with the modulated _rotationAngle         
-
-		double angle = _rotationAngle * angleMult;
-		mat3x3 rot = mat3x3_unit_vec_rotation(_rotationAxis, angle);
-		_extraRotationMats.push_back(rot);
-	}    
-	
-	applyPolymerChanges();
-}
-
-void Polymer::superimpose()
-{
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	crystal->addComment("Superimposing ensemble for chain " + getChainID());
-	
-	_centroids.clear();
-	_centroidOffsets.clear();
-	_rotations.clear();
-	_transTensorOffsets.clear();
-	_extraRotationMats.clear();
-	propagateChange();
-
-	minimiseRotations();
-	minimiseCentroids();
-
-	ModelPtr model = getAnchorModel();
-	AtomPtr ca = getMonomer(monomerCount() - 1)->findAtom("CA");
-	ModelPtr one = ca->getModel();
-
-	if (ca)
-	{
-		AtomPtr nz = getMonomer(monomerCount() - 1)->findAtom("NZ");
-
-		if (nz) one = nz->getModel();
-
-		CSVPtr csv = CSVPtr(new CSV(3, "x", "y", "z"));
-		std::vector<vec3> poss;
-		poss = one->polymerCorrectedPositions();
-
-		for (size_t i = 0; i < poss.size(); i++)
-		{
-			vec3 pos = poss[i];
-			csv->addEntry(3, pos.x, pos.y, pos.z);
-		}
-
-//		csv->writeToFile("ca_pos.csv");
-	}
-
-	if (model->isAbsolute())
-	{
-		std::vector<vec3> sphereAngles = ToAbsolutePtr(model)->getSphereAngles();
-		CSVPtr csv = CSVPtr(new CSV(10, "psi", "phi", "theta", "corr_x",
-		                            "corr_y", "corr_z", "rot_angle",
-		                            "rot_axis_x", "rot_axis_y", "rot_axis_z"));
-		CSVPtr one = CSVPtr(new CSV(3, "x", "y", "z"));
-
-		for (size_t i = 0; i < sphereAngles.size(); i++)
-		{
-			mat3x3 rotMat = getRotationCorrections()[i];
-			double angle = mat3x3_rotation_angle(rotMat);
-			vec3 axis = mat3x3_rotation_axis(rotMat);
-
-			double xMove = getCentroidOffsets()[i].x;
-			double yMove = getCentroidOffsets()[i].y;
-			double zMove = getCentroidOffsets()[i].z;
-			csv->addEntry(10, sphereAngles[i].x, sphereAngles[i].y,
-			              sphereAngles[i].z, xMove, yMove, zMove, angle,
-			axis.x, axis.y, axis.z); 
-		}
-
-//		csv->writeToFile("kabsch.csv");
-	}
-
-	applyTranslationTensor();
-}
-
-void Polymer::minimiseCentroids()
-{
-	std::vector<vec3> addedVecs;
-	int count = 0;
-
-	ModelPtr anchor = getAnchorModel();
-
-	if (!anchor)
-	{
-		return;
-	}
-
-	double totalWeights = 0;
-	getAnchorModel()->getFinalPositions();
-	vec3 oldPos = getAnchorModel()->getAbsolutePosition();
-
-	/* For every cAlpha atom in the structure, get the mean centroid
-	 * position of each conformer... */
-	for (size_t i = 0; i < monomerCount(); i++)
-	{
-		if (!getMonomer(i))
-		{
-			continue;
-		}
-
-		AtomPtr ca = getMonomer(i)->findAtom("CA");
-
-		if (!ca) continue;
-
-		count++;
-
-		std::vector<BondSample> *samples;
-		std::vector<BondSample> someSamples;
-		someSamples = ca->getModel()->getFinalPositions();
-		samples = &someSamples;
-
-		/* Prepare the vectors for the first time if necessary */
-		if (!addedVecs.size())
-		{
-			addedVecs = std::vector<vec3>(samples->size(), make_vec3(0, 0, 0));;
-		}
-
-		double weight = 1;//ca->getBFactor();
-		totalWeights += weight;
-
-		/* Sum over the uncorrected start positions */
-		for (size_t j = 0; j < samples->size(); j++)
-		{
-			vec3 added = samples->at(j).start;
-
-			vec3_mult(&added, weight);
-
-			addedVecs[j] = vec3_add_vec3(addedVecs[j], added);
-		}
-	}
-
-	/* Divide each by total weights */
-	double inverse = 1 / totalWeights;
-
-	for (size_t j = 0; j < addedVecs.size(); j++)
-	{
-		vec3_mult(&addedVecs[j], inverse);
-	}
-
-	/* Mean of all the centroids in the structure */
-	vec3 meanPos = make_vec3(0, 0, 0);
-
-	for (size_t i = 0; i < addedVecs.size(); i++)
-	{
-		vec3 addition = addedVecs[i];
-		meanPos = vec3_add_vec3(meanPos, addition);
-	}
-
-	vec3_mult(&meanPos, 1 / (double)addedVecs.size());
-
-	// starting point for rotation centre of whole molecule movements
-	// Used by Model to correct for translation stuff
-	_rotationCentre = meanPos;
-
-	// Remove the old centroid positions if not already
-	_centroidOffsets.clear();
-
-	// Find the offsets to bring all centroids to the mean value
-	for (size_t i = 0; i < addedVecs.size(); i++)
-	{
-		vec3 offset = vec3_subtract_vec3(addedVecs[i], meanPos);
-		_centroidOffsets.push_back(offset);
-	}
-
-	propagateChange();
-
-	// This time, it should apply the offset to the anchor.
-	// But we want the anchor to remain in the same place as before.
-	anchor->getFinalPositions();
-	vec3 newPos = anchor->getAbsolutePosition();
-
-	// Find the difference.
-	vec3 backToOld = vec3_subtract_vec3(oldPos, newPos);
-
-	for (size_t i = 0; i < _centroidOffsets.size(); i++)
-	{
-		vec3 offset = vec3_add_vec3(_centroidOffsets[i], backToOld);
-		_centroidOffsets[i] = offset;
-	}
-
-	std::cout << "Calculated corrections for " << _centroidOffsets.size() << " structures." << std::endl;
-}
-
-void Polymer::minimiseRotations()
-{
-	size_t num = 0;
-
-	std::vector<vec3> tmpCentroids;
-
-	AtomGroupPtr backbone = getAllBackbone();
-
-	/* Find the number of samples */
-	for (size_t i = 0; i < backbone->atomCount(); i++)
-	{
-		AtomPtr atom = backbone->atom(i);
-
-		std::vector<BondSample> *samples;
-		samples = atom->getModel()->getManyPositions();
-
-		num = samples->size();
-		break;
-	}
-	
-	std::vector<mat3x3> tmpMats;
-
-	for (size_t i = 0; i < num; i++)
-	{
-		std::vector<double> weights;
-		std::vector<vec3> fixedVecs, variantVecs;
-
-		for (size_t k = 0; k < backbone->atomCount(); k++)
-		{
-			AtomPtr anAtom = backbone->atom(k);
-			if (!anAtom) continue;
-
-			std::vector<BondSample> *samples;
-			ModelPtr model = anAtom->getModel();
-
-			if (!model)
-			{
-				shout_at_helen("Missing model for backbone atom!");
-			}
-
-			double weight = 1;//anAtom->getBFactor();
-			weights.push_back(weight);
-
-			samples = model->getManyPositions();
-			vec3 fixed = model->getAbsolutePosition();
-
-			vec3 variant = samples->at(i).start;
-			fixedVecs.push_back(fixed);
-			variantVecs.push_back(variant);
-		}
-
-		Kabsch kabsch;
-
-		kabsch.setAtoms(fixedVecs, variantVecs);
-		kabsch.setWeights(weights);
-		tmpCentroids.push_back(kabsch.fixCentroids());
-		mat3x3 mat = kabsch.run();
-
-		if (kabsch.didFail())
-		{
-			_centroidOffsets.clear();
-			return;
-		}
-
-		tmpMats.push_back(mat);
-	}
-
-	_centroids = tmpCentroids;
-	_rotations = tmpMats;
-
-	std::cout << "Kabsch'd them all!" << std::endl;
-
-	propagateChange();
+	return ToAnchorPtr(model);
 }
 
 void Polymer::closenessSummary()
@@ -1599,24 +1218,9 @@ void Polymer::closenessSummary()
 	bSum /= count;
 
 	std::cout << "Across all Chain " << getChainID() << " atoms:\n";
-	std::cout << "\tB factor (Å^2): " << bSum << std::endl;
+	std::cout << "\tB factor (Å^2): " << std::setprecision(4) <<
+	bSum << std::endl;
 	std::cout << "\tPositional displacement from PDB (Å): " << posSum << std::endl;
-}
-
-void Polymer::vsOmitResidues(void *object, double start, double end)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-
-	polymer->downWeightResidues(start, end, 0);
-}
-
-void Polymer::vsUnomitResidues(void *object, double start, double end)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-
-	polymer->downWeightResidues(start, end, 1);
 }
 
 void Polymer::downWeightResidues(int start, int end, double value) // inclusive
@@ -1665,131 +1269,125 @@ bool Polymer::test()
 
 void Polymer::reportParameters()
 {
-	int torsionCount = 0;
-	int angleCount = 0;
+	int torsionCountBackbone = 0;
+	int angleCountBackbone = 0;
+	int flexCountBackbone = 0;
+	
+	int torsionCountSidechain = 0;
+	int angleCountSidechain = 0;
+	int flexCountSidechain = 0;
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		if (atom(i)->getModel()->isBond())
+		AtomPtr a = atom(i);
+		bool back = false;
+
+		if (a->isBackbone() || a->isBackboneAndSidechain())
 		{
-			if (ToBondPtr(atom(i)->getModel())->isTorsionRefinable())
+			back = true;
+		}
+
+		if (a->getModel()->isBond())
+		{
+			BondPtr bond = ToBondPtr(a->getModel());
+			
+			if (bond->isTorsionRefinable() && bond->getRefineFlexibility())
 			{
-				torsionCount++;
+				int add = 1;
+				
+				if (bond->hasWhack())
+				{
+					add = 2;
+				}
+
+				if (back)
+				{
+					flexCountBackbone += add;
+				}
+				else
+				{
+					flexCountSidechain += add;
+				}
 			}
 
-			if (ToBondPtr(atom(i)->getModel())->getRefineBondAngle())
+			if (bond->isTorsionRefinable())
 			{
-				angleCount++;
+				if (back)
+				{
+					torsionCountBackbone++;
+				}
+				else
+				{
+					torsionCountSidechain++;
+				}
+			}
+
+			if (bond->getRefineBondAngle())
+			{
+				if (back)
+				{
+					angleCountBackbone++;
+				}
+				else
+				{
+					angleCountSidechain++;
+				}
 			}
 		}
 	}
-
-	std::cout << "Chain " << getChainID() << " has " << torsionCount
-	<< " refinable torsion angles and " << angleCount;
-	std::cout << " refinable bond angles." << std::endl;
+	
+	int flexChain = 6 * 2;
+	
+	_positionalParams = torsionCountBackbone + torsionCountSidechain 
+	+ angleCountBackbone + angleCountSidechain;
+	
+	_flexibilityParams = flexCountBackbone + flexCountSidechain + flexChain;
+	
+	std::cout << std::endl;
+	std::cout << "|----------------" << std::endl;
+	std::cout << "| Bond-based parameter groups (" << getChainID() << "):" << std::endl;
+	std::cout << "|----------------" << std::endl;
+	std::cout << "|          |   Backbone |  Sidechain |" << std::endl;
+	std::cout << "| Torsion  |  " << std::setw(9) << torsionCountBackbone;
+	std::cout << " |  " << std::setw(9) << torsionCountSidechain;
+	std::cout << " | (positional)" << std::endl;
+	std::cout << "| Angle    |  " << std::setw(9) << angleCountBackbone;
+	std::cout << " |  " << std::setw(9) << angleCountSidechain;
+	std::cout << " | (positional)" << std::endl;
+	std::cout << "| Kicks    |  " << std::setw(9) << flexCountBackbone;
+	std::cout << " |  " << std::setw(9) << flexCountSidechain;
+	std::cout << " | (flexibility)" << std::endl;
+	std::cout << "| Chain    |  " << std::setw(9) << flexChain;
+	std::cout << " |  " << std::setw(9) << " ";
+	std::cout << " | (whole molecule flex)" << std::endl;
+	std::cout << "|----------------" << std::endl;
+	std::cout << std::endl;
 }
 
-void Polymer::vsTransTensorOverall(void *object, double value)
+void Polymer::refineGlobalFlexibility()
 {
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
+	std::cout << "Optimising whole molecule movements, chain " << 
+	getChainID() << "." << std::endl;
 
-	polymer->_transTensor = make_mat3x3();
-	mat3x3_mult_scalar(&polymer->_transTensor, value);
-	polymer->applyTranslationTensor();
-
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	crystal->addComment("Changing overall translation scale to "
-	                    + f_to_str(value, 2) + " for chain " + 
-	                    polymer->getChainID());
-}
-
-double Polymer::vsFitTranslation(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-
-	polymer->optimiseWholeMolecule(true, false);
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	crystal->addComment("Refining overall translation matrix for chain "
-	                    + polymer->getChainID());
-}
-
-double Polymer::vsFitRotation(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-
-	polymer->optimiseWholeMolecule(false, true);
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	crystal->addComment("Refining overall rotation parameters for chain "
-	                    + polymer->getChainID());
-}
-
-void Polymer::optimiseWholeMolecule(bool translation, bool rotation)
-{
-	std::cout << "Optimising whole molecule shifts to match the electron density." << std::endl;
-
-	Timer timer("whole molecule fit", true);
+	Timer timer("anchor fit", true);
+	
+	AnchorPtr anchor = getAnchorModel();
 	
 	FlexGlobal target;
 	NelderMeadPtr nelderMead = NelderMeadPtr(new RefinementNelderMead());
-	_overallScale = 1;
-	applyTranslationTensor();
 
-	if (false && translation)
-	{
-		attachTargetToRefinement(nelderMead, target);
-		nelderMead->addParameter(this, getOverallScale, setOverallScale,
-		                         0.5, 0.01, "overall_scale");
-		
-//		nelderMead->addParameter(this, getTransExponent, setTransExponent, 0.5, 0.01);
-		nelderMead->setCycles(25);
-		nelderMead->setVerbose(true);
-		nelderMead->refine();
-		nelderMead->clearParameters();
-	}
-	
 	attachTargetToRefinement(nelderMead, target);
 
-	if (translation)
-	{
-		nelderMead->addParameter(this, getTransTensor11, setTransTensor11,
-		                         0.5, 0.01, "t11");
-		nelderMead->addParameter(this, getTransTensor12, setTransTensor12,
-		                         0.1, 0.01, "t12");
-		nelderMead->addParameter(this, getTransTensor21, setTransTensor21,
-		                         0.1, 0.01, "t21");
-		nelderMead->addParameter(this, getTransTensor13, setTransTensor13,
-		                         0.1, 0.01, "t13");
-		nelderMead->addParameter(this, getTransTensor22, setTransTensor22,
-		                         0.5, 0.01, "t22");
-		nelderMead->addParameter(this, getTransTensor31, setTransTensor31,
-		                         0.1, 0.01, "t31");
-		nelderMead->addParameter(this, getTransTensor23, setTransTensor23,
-		                         0.1, 0.01, "t23");
-		nelderMead->addParameter(this, getTransTensor32, setTransTensor32,
-		                         0.1, 0.01, "t32");
-		nelderMead->addParameter(this, getTransTensor33, setTransTensor33,
-		                         0.5, 0.01, "t33");
-	}
+	nelderMead->setCycles(24);
 
-	if (rotation)
-	{
-		nelderMead->addParameter(this, getRotPhi, setRotPhi, 0.2, 0.0001);
-		nelderMead->addParameter(this, getRotPsi, setRotPsi, 0.2, 0.0001);
-		nelderMead->addParameter(this, getRotAngle, setRotAngle, 0.002, 0.0001);
-		nelderMead->addParameter(this, getRotExponent, setRotExponent, 0.5, 0.01);
-		nelderMead->addParameter(this, getRotCentreX, setRotCentreX, 2.0, 0.01);
-		nelderMead->addParameter(this, getRotCentreY, setRotCentreY, 2.0, 0.01);
-		nelderMead->addParameter(this, getRotCentreZ, setRotCentreZ, 2.0, 0.01);
-	}
-
-	nelderMead->setCycles(25);
-	nelderMead->setVerbose(true);
-
+	nelderMead->clearParameters();
+	
+	anchor->addTranslationParameters(nelderMead);
 	nelderMead->refine();
 	nelderMead->clearParameters();
+
+	anchor->addLibrationParameters(nelderMead);
+	nelderMead->refine();
 
 	timer.report();
 }
@@ -1841,51 +1439,11 @@ void Polymer::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	FlexGlobal::score(&target);
 }
 
-double Polymer::vsFindKickAndDampen(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	
-	return findOverallKickAndDampen(polymer);
-}
-
-double Polymer::findOverallKickAndDampen(void *object)
-{
-	Polymer *poly = static_cast<Polymer *>(object);
-	NelderMeadPtr nelderMead = NelderMeadPtr(new NelderMead());
-
-	nelderMead->addParameter(poly, getBackboneKick, setBackboneKick,
-	                         0.001, 0.0001);
-	nelderMead->addParameter(poly, getBackboneDampening, setBackboneDampening,
-	                         0.005, 0.0005);
-	nelderMead->setVerbose(true);
-	
-	Timer timer("overall kick and dampen", true);
-
-	FlexGlobal target;
-	poly->attachTargetToRefinement(nelderMead, target);
-	nelderMead->refine();
-
-	timer.report();
-
-	return 0;
-}
-
-double Polymer::vsSandbox(void *object)
-{
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	
-	int anchorNum = polymer->getAnchor();
-}
-
 void Polymer::addProperties()
 {
 	Molecule::addProperties();
 
 	addIntProperty("anchor_res", &_anchorNum);
-	addMat3x3Property("trans_tensor", &_transTensor);
-	addDoubleProperty("overall_scale", &_overallScale);
 
 	for (size_t i = 0; i < monomerCount(); i++)
 	{
@@ -1893,20 +1451,6 @@ void Polymer::addProperties()
 
 		addChild("monomer", getMonomer(i));
 	}
-	
-	exposeFunction("set_rot_angle", vsSetRotAngle);
-	exposeFunction("refine_positions_to_pdb", vsRefinePositionsToPDB);
-	exposeFunction("refine_sidechains_to_density", vsRefineSidechainsToDensity);
-	exposeFunction("refine_backbone_to_density", vsRefineBackbone);
-	exposeFunction("refine_backbone_to_density_from", vsRefineBackboneFrom);
-	exposeFunction("superimpose", vsSuperimpose);
-	exposeFunction("set_overall_translation", vsTransTensorOverall);
-	exposeFunction("fit_translation", vsFitTranslation);
-	exposeFunction("fit_rotation", vsFitRotation);
-	exposeFunction("sandbox", vsSandbox);
-
-	exposeFunction("omit_residues", vsOmitResidues);
-	exposeFunction("unomit_residues", vsUnomitResidues);
 }
 
 void Polymer::addObject(ParserPtr object, std::string category)
@@ -1923,6 +1467,31 @@ void Polymer::addObject(ParserPtr object, std::string category)
 void Polymer::postParseTidy()
 {
 	Molecule::postParseTidy();
-	applyTranslationTensor();
+	//applyTranslationTensor();
 	
 }
+
+mat3x3 Polymer::fitEllipsoid()
+{
+	std::vector<vec3> points;
+
+	for (int i = 0; i < monomerCount(); i++)
+	{
+		if (!getMonomer(i))
+		{
+			continue;
+		}
+		
+		AtomPtr ca = getMonomer(i)->findAtom("CA");
+		points.push_back(ca->getAbsolutePosition());
+	}
+
+	Anisotropicator trop;
+	trop.setPoints(points);
+	
+	mat3x3 basis = trop.getTensor();
+	getAnchorModel()->setPolymerBasis(basis);
+
+	return basis;
+}
+

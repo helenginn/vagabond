@@ -26,7 +26,8 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 		return;
 	}
 	
-	if (rType == RefinementSidechain)
+	if (rType == RefinementSidechain || rType == RefinementCrude ||
+	    rType == RefinementSidePos)
 	{
 		return;
 	}
@@ -42,6 +43,10 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			range = 0.2;
 		}
 		
+		if (rType == RefinementCrude)
+		{
+			range /= 2;
+		}
 
 		switch (rType)
 		{
@@ -50,23 +55,48 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			addParamType(ParamOptionBondAngle, range / 1);
 			addParamType(ParamOptionNumBonds, 3);
 			break;
-
+			
+			case RefinementSavedPos:
+			addParamType(ParamOptionTorsion, range);
+			addParamType(ParamOptionBondAngle, range / 1);
+			addParamType(ParamOptionNumBonds, 3);
+			break;
+			
+			case RefinementCrude:
+			addParamType(ParamOptionTorsion, range);
+			addParamType(ParamOptionTwist, range);
+			addParamType(ParamOptionNumBonds, 5);
+			break;
+			
 			case RefinementFine:
 			addParamType(ParamOptionTorsion, range);
-			addParamType(ParamOptionNumBonds, 4);
-			break;
-
-			case RefinementRMSDZero:
-			addParamType(ParamOptionMagicAngles, 3);
 			addParamType(ParamOptionNumBonds, 4);
 			break;
 
 			default:
 			break;
 		}
+		
+		if (_timesRefined >= 3)
+		{
+			switch (rType)
+			{
+				case RefinementModelPos:
+				addParamType(ParamOptionBondAngle, range / 1);
+				break;
+
+				case RefinementFine:
+				addParamType(ParamOptionBondAngle, 0.1);
+
+				default:
+				break;
+			}
+		}
 	}
 
 	MonomerPtr monomer = getMonomer();
+	_includeForRefine = monomer->includingInRefinement();
+	
 	SidechainPtr sidechain = monomer->getSidechain();
 	if (sidechain && rType == RefinementFine)
 	{

@@ -41,7 +41,9 @@ void DiffractionMtz::load()
 	
 	if (!file_exists(_filename))
 	{
-		shout_at_user("MTZ file " + _filename + " does not exist!");
+		Shouter *shout = new Shouter("MTZ file " + _filename 
+		                             + " does not exist!");
+		throw shout;
 	}
 
 	if (mtz == NULL)
@@ -71,8 +73,10 @@ void DiffractionMtz::load()
 	getCol(ampNames, mtz, &col_f);
 	if (!col_f)
 	{
-		shout_at_user("I could not find your amplitude column in\n"
+		Shouter *shout;
+		shout = new Shouter("I could not find your amplitude column in\n"
 		              + _filename + " - please label as F or FP.");
+		throw shout;
 	}
 
 	std::vector<std::string> errNames;
@@ -109,9 +113,11 @@ void DiffractionMtz::load()
 
 	if (!col_h || !col_k || !col_l)
 	{
-		shout_at_user("I could not find some or all of your\n"\
-		              "HKL indices columns " + _filename + " - please\n"\
-		"label as H, K and L.");
+		Shouter *shout;
+		shout = new Shouter("I could not find some or all of your\n"\
+		                    "HKL indices columns " + _filename + 
+		                    " - please\nlabel as H, K and L.");
+		throw shout;
 	}
 
 	MtzResLimits(mtz, &_minRes, &_maxRes);
@@ -132,7 +138,8 @@ void DiffractionMtz::load()
 
 	if (largest == 0)
 	{
-		shout_at_user("Problem determining resolution limits.\n"\
+		Shouter *shout;
+		shout = new Shouter("Problem determining resolution limits.\n"\
 		              "Do you have a unit cell and some reflections?");
 	}
 

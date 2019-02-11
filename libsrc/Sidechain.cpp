@@ -22,22 +22,11 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
 	if (!canRefine()) return;
 	
-	if (rType == RefinementRMSDZero)
-	{
-		return;
-	}
-	
-	if (rType == RefinementSidechain)
-	{
-		std::cout << getMonomer()->getResCode() << std::flush;
-		rType = RefinementFine;
-	}
-
 	if (!paramCount())
 	{
 		double range = 2.;
 
-		if (_timesRefined >= 3)
+		if (_timesRefined >= 2)
 		{
 			range = 0.2;
 		}
@@ -46,28 +35,57 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		{
 			case RefinementModelPos:
 			addParamType(ParamOptionTorsion, range);
-			addParamType(ParamOptionBondAngle, range / 1);
 			addParamType(ParamOptionNumBonds, 3);
 			break;
 
-			case RefinementFine:
+			case RefinementSavedPos:
+			addParamType(ParamOptionTorsion, range);
+			addParamType(ParamOptionNumBonds, 3);
+			break;
+
+			case RefinementSidePos:
+			addParamType(ParamOptionTorsion, 0.5);
+			addParamType(ParamOptionNumBonds, 3);
+			break;
+
+			case RefinementSidechain:
 			addParamType(ParamOptionTorsion, 0.1);
-			addParamType(ParamOptionBondAngle, 0.1);
 			addParamType(ParamOptionKick, 0.5);
-			addParamType(ParamOptionMagicAngles, 20);
 			addParamType(ParamOptionNumBonds, 3);
-			break;
-
-			case RefinementRMSDZero:
-			addParamType(ParamOptionMagicAngles, 3);
-			addParamType(ParamOptionNumBonds, 4);
 			break;
 
 			default:
 			break;
 		}
+		
+		if (_timesRefined >= 1)
+		{
+			switch (rType)
+			{
+				case RefinementModelPos:
+				addParamType(ParamOptionBondAngle, range / 1);
+				break;
+
+				case RefinementSavedPos:
+				addParamType(ParamOptionBondAngle, range / 1);
+				break;
+
+				case RefinementSidechain:
+				addParamType(ParamOptionBondAngle, 0.1);
+
+				default:
+				break;
+			}
+		}
 	}
 
+	if (rType == RefinementSidechain || rType == RefinementSidePos)
+	{
+		std::cout << getMonomer()->getResCode() << std::flush;
+		rType = RefinementFine;
+	}
+
+	
 	MonomerPtr monomer = getMonomer();
 	BackbonePtr backbone = monomer->getBackbone();
 
@@ -81,7 +99,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 	clearIncludeForRefinements();
 }
 
-void Sidechain::setInitialDampening()
+void Sidechain::setInitialKick()
 {
 	for (int i = 0; i < atomCount(); i++)
 	{
@@ -100,8 +118,6 @@ void Sidechain::setInitialDampening()
 		{
 			continue;
 		}
-
-		Bond::setDampening(&*bond, -0.0);
 
 		double kick = 0.2;
 		std::string id = getMonomer()->getIdentifier();
@@ -183,7 +199,11 @@ void Sidechain::splitConformers(int count)
 
 	for (int i = 1; i < count; i++)
 	{
-		blockBond->setSplitBlock();
+		if (blockBond)
+		{
+			blockBond->setSplitBlock();
+		}
+
 		bond->splitBond();
 	}
 
@@ -196,9 +216,7 @@ void Sidechain::splitConformers(int count)
 			break;
 		}
 		
-		if (atoms[i].expired()) continue;
-
-		AtomPtr atom = atoms[i].lock();
+		AtomPtr atom = atoms[i];
 		if (atom->getModel()->isBond())
 		{
 			BondPtr bond = ToBondPtr(atom->getModel());
@@ -254,12 +272,7 @@ void Sidechain::parameteriseAsRotamers()
 				std::cout << "Ooooo no" << std::endl;
 			}
 
-			if (atoms[i].expired())
-			{
-				continue;
-			}
-
-			AtomPtr atom = atoms[i].lock();
+			AtomPtr atom = atoms[i];
 			if (!atom->getModel()->isBond())
 			{
 				continue;
@@ -298,9 +311,7 @@ void Sidechain::parameteriseAsRotamers()
 
 	for (int i = 0; i < cbs.size(); i++)
 	{
-		if (cbs[i].expired()) continue;
-
-		AtomPtr cb = cbs[i].lock();
+		AtomPtr cb = cbs[i];
 		if (!cb->getModel()->isBond()) continue;
 
 		BondPtr bond = ToBondPtr(cb->getModel());
@@ -309,57 +320,6 @@ void Sidechain::parameteriseAsRotamers()
 
 		double occ = rotamers[i].allOccupancy;
 		Bond::setOccupancy(&*bond, occ);
-	}
-
-	refreshRotamers();
-}
-
-void Sidechain::refreshRotamers()
-{
-	if (!_rotamerised)
-	{
-		warn_user("Trying to refresh rotamers without having rotamerised");
-	}
-
-	AtomList atoms = findAtoms("CB");
-	double occTotal = 0;
-	double occWeight = 0;
-	double expTotal = 0;
-
-	for (int i = 0; i < atoms.size(); i++)
-	{
-		AtomPtr atom = atoms[i].lock();
-		if (atom->getModel()->isBond())
-		{
-			BondPtr bond = ToBondPtr(atom->getModel());
-			double occ = Bond::getOccupancy(&*bond);
-			double myExp = exp(-_exponent * occTotal * occTotal);
-
-			expTotal += myExp;
-			occTotal += occ;
-			occWeight += occ * myExp;
-		}
-	}
-
-	occWeight /= expTotal;
-
-	occTotal = 0;
-	double test = 0;
-	for (int i = 0; i < atoms.size(); i++)
-	{
-		AtomPtr atom = atoms[i].lock();
-		if (atom->getModel()->isBond())
-		{
-			BondPtr bond = ToBondPtr(atom->getModel());
-			double myExp = exp(-_exponent * occTotal * occTotal);
-			double mult = myExp / (occWeight * expTotal);
-			occTotal += Bond::getOccupancy(&*bond);
-			bond->setOccupancyMult(mult);
-
-			double newOcc = bond->getMultOccupancy();
-			//    std::cout << "New occupancy state " << i << ", " << newOcc << std::endl;
-			test += newOcc;
-		}
 	}
 }
 

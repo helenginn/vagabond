@@ -30,18 +30,6 @@
 * the GUI to fish out the positions for display.
  */
 
-/** \struct BondSample
- *  \brief Transfers information between Bonds for calculation of positional
- *  information.
- */
-typedef struct
-{
-	mat3x3 basis;     /**< Defines bond axis of previous bond */
-	vec3 start;       /**< position of last minor */
-	vec3 old_start;   /**< position of torsion-defining atom */
-	double torsion;   /**< To be filled in by next bond */
-	double occupancy; /**< Relative occupancy (usually 1) */
-} BondSample;
 
 class Model : public Distributor, public Parser
 {
@@ -54,13 +42,17 @@ public:
 	Model();
 	virtual ~Model() {};
 
+	/** Return an atom probability distribution from this model. Needs
+	 * 	to be reimplemented by non-abstract models. */
 	virtual FFTPtr makeDistribution() = 0;
 	FFTPtr getDistribution();
 
-	virtual void addToMonomer(MonomerPtr monomer);
-	virtual void addToMolecule(MoleculePtr) {};
-
 	virtual std::string getClassName() = 0;
+
+	/** To return the mean square deviation as a B factor (i.e.,
+	 * variance * 8 * M_PI^2. Needs to be reimplemented by non-abstract 
+	 * models. */
+	virtual double getMeanSquareDeviation() = 0;
 
 	/** Actual mean position of blurred positions including whole-molecule
 	* 	deviations. */
@@ -69,22 +61,9 @@ public:
 		return _absolute;
 	}
 
-	/** Mean position of blurred positions without including whole-molecule
-	* 	deviations. Should not be used for final atom position calculations. */
-	virtual std::vector<BondSample> *getManyPositions() = 0;
-
-	/** Individual positions including whole-molecule deviations. */
-	std::vector<vec3> polymerCorrectedPositions();
-
-	/** Positions and associated data including whole-molecule deviations.
-	* 	Will return from cache if not flagged to recalculate. */
-	virtual std::vector<BondSample> getFinalPositions();
-
 	/** Occupancy for a given atom after all modifiers applied.
 	* 	\return value between 0 and 1. */
 	virtual double getEffectiveOccupancy() { return 1; }
-
-	virtual double getMeanSquareDeviation() = 0;
 	
 	/**
 	* Get the tensor as described by Vagabond model. May be different to
@@ -106,13 +85,18 @@ public:
 	*/
 	int fftGridLength();
 	
+	/** Return the directly controlled atom of this model. Needs
+	 * reimplementing by non-abstract model classes. */
 	virtual AtomPtr getAtom() = 0;
 
+	/** Returns true if this model is associated with a molecule. */
 	bool hasMolecule()
 	{
 		return !_molecule.expired();
 	}
 
+	/** Returns the molecule associated with this model. Will fail if
+	 * molecule is not assigned. Check with hasMolecule() first. */
 	MoleculePtr getMolecule()
 	{
 		return _molecule.lock();
@@ -123,6 +107,9 @@ public:
 		_molecule = mole;
 	}
 
+	virtual void addToMonomer(MonomerPtr monomer);
+	virtual void addToMolecule(MoleculePtr) {};
+
 	/**
 	* For recursive models (e.g. Bonds) downstream models are flagged
 	* to indicate that they need to be recalculated before using stored
@@ -131,6 +118,8 @@ public:
 	* \param refresh immediately recalculate atom positions if true.
 	*/
 	virtual void propagateChange(int depth = -1, bool refresh = false);
+	
+	virtual void refreshPositions() = 0;
 
 	bool isBond()
 	{
@@ -158,20 +147,17 @@ public:
 		_recalcDist = true;
 	}
 	
-	vec3 getSpecificPosition(int i)
-	{
-		if (i > _finalPositions.size()) return empty_vec3();
-		return getFinalPositions()[i].start;
-	}
-	
-	void addRealSpacePositions(FFTPtr real, vec3 offset);
-
-	vec3 longestAxis();
+	virtual vec3 longestAxis();
 	double smallness();
-	std::vector<vec3> fishPositions(vec3 *average = NULL);
 	
 	virtual bool hasExplicitPositions() = 0;
-	void writePositionsToFile(std::string filename);
+	
+	double getBFactor()
+	{
+		return getMeanSquareDeviation();
+	}
+	
+	virtual std::string shortDesc() = 0;
 protected:
 	mat3x3 _realSpaceTensor;
 
@@ -194,15 +180,12 @@ protected:
 	double _smallness;
 	FFTPtr _lastDistribution;
 
-	virtual void getAnisotropy(bool withKabsch);
-	double anisotropyExtent(bool withKabsch = false);
+	virtual void getAnisotropy(bool) {};
+	virtual double anisotropyExtent(bool withKabsch = false);
 	double _isotropicAverage;
 	bool _recalcFinal;
 	bool _recalcDist;
-	std::vector<BondSample> _finalSamples;
 	
-	FFTPtr makeRealSpaceDistribution();
-
 	virtual std::string getParserIdentifier()
 	{
 		return "model"; 
@@ -211,7 +194,6 @@ protected:
 	virtual void addProperties();
 	virtual void addObject(ParserPtr, std::string) {};
 private:
-	std::mutex guiLock;
 };
 
 #endif /* defined(__vagabond__Model__) */

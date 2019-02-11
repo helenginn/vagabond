@@ -16,7 +16,6 @@ typedef struct
 {
 #ifdef COORDVAL_FULL
 	vec3 pos;
-	double mask;
 #endif
 	double fo;
 	double fc;
@@ -28,21 +27,27 @@ typedef enum
 	ScoreTypeCorrel = 0, /** Correlation between map and model density */
 	ScoreTypeMultiply = 1, /** Weighted (by model) average of map voxels */
 	ScoreTypeRFactor = 2, /** R factor in real space for electron density */
-	ScoreTypeModelRMSDZero = 3, /** All ensemble positions against PDB */
-	ScoreTypeBFactorAgreement = 4, /** All ensemble B factors against PDB */
 	ScoreTypeModelPos = 5, /** Average ensemble position against PDB */
-	ScoreTypeRMSDZero = 6, /** Sum of squares of anisotropic tensor */
 	ScoreTypeAddDensity = 7, /** Sum of map voxels if model positive */
 	ScoreTypeAddVoxels = 8, /** Number of map voxels if model positive */
 	ScoreTypeHappiness = 9, /** Like CC but a reward function */
+	ScoreTypeZero = 10, /** Will always return 0 */
+	ScoreTypeCentroid = 11, /** Difference of centroid against PDB */
+	ScoreTypeCopyToSmaller = 12, /** Difference of centroid against PDB */
+	ScoreTypeMouse = 13, /** Difference to Mouse position */
+	ScoreTypeSavedPos = 14, /** To previously saved atom position */
 } ScoreType;
 
+/* Don't forget - power of 2... */
 typedef enum
 {
 	MapScoreFlagNone = 0,
 	MapScoreFlagDifference = 1,
-	MapScoreFlagSubtractFc = 2,
+	MapScoreFlagReplaceWithObs = 2,
 	MapScoreFlagNoSurround = 4,
+	MapScoreFlagSkipScore = 8,
+	MapScoreFlagPosOnly = 16,
+	MapScoreFlagNegOnly = 32,
 } MapScoreFlag;
 
 typedef struct 
@@ -59,5 +64,15 @@ typedef struct
 	unsigned int flag;
 } MapScoreWorkspace;
 
+inline void setup_space(MapScoreWorkspace *w)
+{
+	w->scoreType = ScoreTypeCorrel;
+	w->segment = FFTPtr();
+	w->ave = empty_vec3();
+	w->basis = make_mat3x3();
+	w->flag = MapScoreFlagNone;
+	
+
+}
 
 #endif

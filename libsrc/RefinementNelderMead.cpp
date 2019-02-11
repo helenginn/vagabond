@@ -191,7 +191,7 @@ void RefinementNelderMead::setTestPointParameters(TestPoint *testPoint)
 void RefinementNelderMead::clearParameters()
 {
 	RefinementStrategy::clearParameters();
-
+	_stepMap.clear();
 	testPoints.clear();
 }
 

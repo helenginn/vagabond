@@ -31,11 +31,8 @@ public:
 	void setup();
 	void tieAtomsUp();
 
-	/* For global modification of entire structure */
-	void setBackboneDampening(double value);
-	void setSidechainDampening(double value);
-
 	bool isAfterAnchor();
+	virtual void removeAtom(AtomPtr atom);
 
 	MonomerPtr shared_from_this()
 	{

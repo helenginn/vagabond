@@ -8,8 +8,9 @@
 
 #define DEFAULT_WIDTH 900
 #define DEFAULT_HEIGHT 660
+#define LOG_WIDTH 350
 #define STATUS_HEIGHT 60
-#define BUTTON_WIDTH 200
+#define BUTTON_WIDTH 0
 
 #include "../../libsrc/shared_ptrs.h"
 #include "VagWindow.h"
@@ -28,127 +29,155 @@
 #include "ChainMenuAction.h"
 #include "../../libsrc/FileReader.h"
 
+#ifdef __APPLE__
+#define MENU_HAS_HEIGHT 0
+#else
+#define MENU_HAS_HEIGHT 1
+#endif
+
+void VagWindow::menuItem(QMenu *menu, std::string title,
+                         InstructionType instr)
+{
+	QAction *action = menu->addAction(QString::fromStdString(title));
+	connect(action, &QAction::triggered,
+			[=]{ pushSendInstruction(instr); });
+	actions.push_back(action);
+}
+
+void VagWindow::makeMenu()
+{
+	QMenu *scaling = menuBar()->addMenu(tr("&Scaling"));
+	menus.push_back(scaling);
+	
+	_qaShell = scaling->addAction(tr("Shell-by-shell scaling"));
+	_qaShell->setCheckable(true);
+	connect(_qaShell, &QAction::triggered,
+			[=]{ toggleScaling(ScalingTypeShell); });
+	
+	_qaK = scaling->addAction(tr("Absolute scale only"));
+	_qaK->setCheckable(true);
+	connect(_qaK, &QAction::triggered,
+			[=]{ toggleScaling(ScalingTypeAbs); });
+	
+	actions.push_back(_qaShell);
+	actions.push_back(_qaK);
+	
+	displayScaling();
+	
+	QAction *sep = scaling->addSeparator();
+	actions.push_back(sep);
+	
+	/*
+	QAction *adjust = scaling->addAction(tr("Adjust real-space B factor"));
+	connect(adjust, &QAction::triggered, this, &VagWindow::adjustBFactor);
+	actions.push_back(adjust);
+	*/
+
+	QAction *chooseB = scaling->addAction(tr("Change real-space B factor..."));
+	connect(chooseB, &QAction::triggered,
+			[=]{ dialogueModify(Options::setGlobalBFactor, 
+			                    "B factor applied in real space"); });
+	actions.push_back(chooseB);
+
+	QMenu *model = menuBar()->addMenu(tr("&Model"));
+	menus.push_back(model);
+	
+	QAction *samples = model->addAction(tr("Change model sampling..."));
+	connect(samples, &QAction::triggered,
+			[=]{ dialogueModify(Options::changeSamplesAndFit, 
+			                    "No. samples in ensemble:"); });
+	actions.push_back(samples);
+	
+	QAction *bmult = model->addAction(tr("B factor HETATM multiplier..."));
+	connect(bmult, &QAction::triggered,
+			[=]{ dialogueModify(Options::setBMult, 
+			                    "Multiply original B factor of HETATMs by...",
+		                     1.0); });
+	actions.push_back(bmult);
+	
+	QAction *bsubt = model->addAction(tr("B factor HETATM subtract..."));
+	connect(bsubt, &QAction::triggered,
+			[=]{ dialogueModify(Options::setBSubt, 
+			                    "Subtract from B factor of HETATMs by...",
+		                     0.0); });
+	actions.push_back(bsubt);
+	
+	/*
+	menuItem(model, "Omit scan", InstructionTypeOmitScan);
+	menuItem(model, "Find flexibility", InstructionTypeReflex);
+	
+	QAction *refit = model->addAction(tr("Refit backbone region..."));
+	connect(refit, SIGNAL(triggered()), this, 
+	        SLOT(refitBackbone()));
+	actions.push_back(refit);
+	
+	refit = model->addAction(tr("Fix erroneous zones..."));
+	connect(refit, SIGNAL(triggered()), this, 
+	        SLOT(fixErroneousZones()));
+	actions.push_back(refit);
+	*/
+
+	sep = model->addSeparator();
+	actions.push_back(sep);
+
+	QAction *expMol = model->addAction(tr("Explore crystal..."));
+	connect(expMol, SIGNAL(triggered()), this, 
+	        SLOT(pushExploreCrystal()));
+	actions.push_back(bsubt);
+
+	menuItem(model, "Open in Coot", InstructionTypeOpenInCoot);
+
+	QMenu *mRefine = menuBar()->addMenu(tr("&Refine"));
+	menus.push_back(mRefine);
+
+	menuItem(mRefine, "Positions to PDB", 
+	         InstructionTypeRefinePositions);
+	menuItem(mRefine, "Backbone to density", 
+	         InstructionTypeRefinePosToDensity);
+	menuItem(mRefine, "Intermolecule movements",
+	         InstructionTypeFitTranslation);
+	menuItem(mRefine, "Intramolecule movements",
+	         InstructionTypeRefineIntramolecule);
+	menuItem(mRefine, "Sidechain positions to density", 
+	         InstructionTypeRefineSidePos);
+	menuItem(mRefine, "Sidechains to density",
+	         InstructionTypeRefineDensity);
+	menuItem(mRefine, "Recalculate FFT",
+	         InstructionTypeRecalculateFFT);
+}
+
+void VagWindow::refitBackbone()
+{
+	delete _myDialogue;
+	_myDialogue = new Dialogue(this, "Specify backbone region", 
+	                           "Two limiting residues", 
+	                           "795 805",
+	                           "Refit");
+	_myDialogue->setWindow(this);
+	_myDialogue->setTag(DialogueRefit);
+	_myDialogue->show();
+}
+
+void VagWindow::dialogueModify(Setter set, std::string title,
+                               double _default)
+{
+	delete _myDialogue;
+	_myDialogue = new Dialogue(this, "New value", title, 
+	                           f_to_str(_default, 0),
+	                           "Set value");
+	_myDialogue->setFunction(set);
+	_myDialogue->setWindow(this);
+	_myDialogue->show();
+
+}
+
 void VagWindow::makeButtons()
 {
 	buttons.clear();
 
-	bRefinePos = new QPushButton("Refine positions to PDB", this);
-	bRefinePos->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 0, BUTTON_WIDTH , 50);
-	bRefinePos->setEnabled(false);
-	connect(bRefinePos, SIGNAL(clicked()), this, SLOT(pushRefinePositions()));
-	buttons.push_back(bRefinePos);
-
-	bSuperimpose = new QPushButton("Superimpose", this);
-	bSuperimpose->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 50, BUTTON_WIDTH , 50);
-	bSuperimpose->setEnabled(false);
-	connect(bSuperimpose, SIGNAL(clicked()), this, SLOT(pushSuperimpose()));
-	buttons.push_back(bSuperimpose);
-
-	bFitWholeT = new QPushButton("Fit molecule translation", this);
-	bFitWholeT->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 100, BUTTON_WIDTH , 50);
-	bFitWholeT->setEnabled(false);
-	connect(bFitWholeT, SIGNAL(clicked()), this, SLOT(pushFitWholeT()));
-	buttons.push_back(bFitWholeT);
-
-	bFitWholeR = new QPushButton("Fit molecule rotation", this);
-	bFitWholeR->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 150, BUTTON_WIDTH , 50);
-	bFitWholeR->setEnabled(false);
-	connect(bFitWholeR, SIGNAL(clicked()), this, SLOT(pushFitWholeR()));
-	buttons.push_back(bFitWholeR);
-
-	/*
-	bBackbone = new QPushButton("Refine backbone", this);
-	bBackbone->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 150, BUTTON_WIDTH , 50);
-	bBackbone->setEnabled(false);
-	connect(bBackbone, SIGNAL(clicked()), this, SLOT(pushBackboneAnalysis()));
-	buttons.push_back(bBackbone);
-	*/
-
-	bRefineDensity = new QPushButton("Refine sidechains to density", this);
-	bRefineDensity->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 200, BUTTON_WIDTH , 50);
-	bRefineDensity->setEnabled(false);
-	connect(bRefineDensity, SIGNAL(clicked()), this, SLOT(pushRefineDensity()));
-	buttons.push_back(bRefineDensity);
-
-	bChangeBMult = new QPushButton("Set hetatm B multiplier", this);
-	bChangeBMult->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 250, BUTTON_WIDTH , 50);
-	bChangeBMult->setEnabled(false);
-	connect(bChangeBMult, SIGNAL(clicked()), this, SLOT(pushBMultiplier()));
-	buttons.push_back(bChangeBMult);
-
-	bRecalculate = new QPushButton("Recalculate FFT", this);
-	bRecalculate->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 300, BUTTON_WIDTH , 50);
-	bRecalculate->setEnabled(false);
-	connect(bRecalculate, SIGNAL(clicked()), this, SLOT(recalculateFFT()));    
-	buttons.push_back(bRecalculate);
-
-	bWaterNetwork = new QPushButton("Refine water network", this);
-	bWaterNetwork->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 350, BUTTON_WIDTH , 50);
-	bWaterNetwork->setEnabled(false);
-	connect(bWaterNetwork, SIGNAL(clicked()), this, SLOT(refineWaterNetwork()));
-	buttons.push_back(bWaterNetwork);
-
-	bExploreMolecule = new QPushButton("Explore molecule", this);
-	bExploreMolecule->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 450, BUTTON_WIDTH , 50);
-	bExploreMolecule->setEnabled(false);
-	bExploreMolecule->setMenu(new QMenu(this));
-	buttons.push_back(bExploreMolecule);
-
-	bExploreCrystal = new QPushButton("Explore crystal", this);
-	bExploreCrystal->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 500, 
-	                             BUTTON_WIDTH , 50);
-	bExploreCrystal->setEnabled(false);
-	connect(bExploreCrystal, SIGNAL(clicked()), this, 
-	        SLOT(pushExploreCrystal()));
-	buttons.push_back(bExploreCrystal);
-
-	/*
-	bPrevious = new QPushButton("Restore previous state", this);
-	bPrevious->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 450, BUTTON_WIDTH , 50);
-	bPrevious->setEnabled(false);
-	connect(bPrevious, SIGNAL(clicked()), this, SLOT(restorePreviousState()));
-	buttons.push_back(bPrevious);
-	*/
-
-	bCoot = new QPushButton("Open in Coot", this);
-	bCoot->setGeometry(DEFAULT_WIDTH - BUTTON_WIDTH, 550, BUTTON_WIDTH , 50);
-	bCoot->setEnabled(false);
-	connect(bCoot, SIGNAL(clicked()), this, SLOT(openInCoot()));
-	buttons.push_back(bCoot);
-
 	_myDialogue = NULL;
-	_moleExplorer = NULL;
 	_xtalExplorer = NULL;
-}
-
-void VagWindow::updateExplorerButton()
-{
-	OptionsPtr options = Options::getRuntimeOptions();
-
-	if (!options->crystalCount())
-	{
-		return;
-	}
-
-	CrystalPtr crystal = options->getActiveCrystal();
-
-	QMenu *moleculeMenu = new QMenu(bExploreMolecule);
-
-	for (int i = 0; i < crystal->moleculeCount(); i++)
-	{
-		MoleculePtr molecule = crystal->molecule(i);
-
-		if (!molecule->isPolymer())
-		{
-			continue;
-		}
-
-		ChainMenuAction *action = new ChainMenuAction(moleculeMenu, molecule);
-		connect(action, &QAction::triggered, this, &VagWindow::pushExploreMcule);
-	}
-
-	bExploreMolecule->setMenu(moleculeMenu);
-	connect(bExploreMolecule, SIGNAL(clicked()), bExploreMolecule, SLOT(showMenu())); 
+	_errorExplorer = NULL;
 }
 
 void VagWindow::resizeEvent(QResizeEvent *)
@@ -156,9 +185,37 @@ void VagWindow::resizeEvent(QResizeEvent *)
 	int w = width();
 	int h = height();
 
-	display->setGeometry(0, 0, w - BUTTON_WIDTH, h - STATUS_HEIGHT);
+	double menuHeight = 0;
+	
+	if (MENU_HAS_HEIGHT)
+	{
+		menuHeight += 30;
+	}
+	
+	double logWidth = LOG_WIDTH;
+	if (w * 0.3 > logWidth)
+	{
+		logWidth = w * 0.3;
+	}
+	double displWidth = (!_showingLog ? w : w - logWidth);
+
+	display->setGeometry(0, menuHeight, displWidth, 
+	                     h - STATUS_HEIGHT - menuHeight);
 	display->resizeGL();
-	_lStatus->setGeometry(10, h - STATUS_HEIGHT, w - BUTTON_WIDTH, STATUS_HEIGHT);
+
+	_lStatus->setGeometry(10, h - STATUS_HEIGHT, w - BUTTON_WIDTH, 
+	                      STATUS_HEIGHT);
+	
+	if (_showingLog)
+	{
+		_logView->setGeometry(w - logWidth, menuHeight - 1, logWidth, 
+		                      h - STATUS_HEIGHT - menuHeight);
+		_logView->show();
+	}
+	else
+	{
+		_logView->hide();
+	}
 
 	for (int i = 0; i < buttons.size(); i++)
 	{
@@ -172,11 +229,13 @@ VagWindow::VagWindow(QWidget *parent,
 	this->resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
 	this->setWindowTitle("Vagabond");
-
+	
 	display = new VagabondGLWidget(this);
-	display->setGeometry(0, 0, DEFAULT_WIDTH - BUTTON_WIDTH, DEFAULT_HEIGHT -
-	                     STATUS_HEIGHT);
+	display->setVagWindow(this);
+	display->setGeometry(0, 0, DEFAULT_WIDTH - BUTTON_WIDTH, 
+	                     DEFAULT_HEIGHT - STATUS_HEIGHT);
 
+	makeMenu();
 	makeButtons();
 
 	QFont bigFont = QFont("Helvetica", 16);
@@ -184,14 +243,33 @@ VagWindow::VagWindow(QWidget *parent,
 	_lStatus->setFont(bigFont);
 	_lStatus->setGeometry(10, DEFAULT_HEIGHT - STATUS_HEIGHT, 680, STATUS_HEIGHT);
 	_lStatus->show();
+	
+	QFont monoFont("Monospace");
+	monoFont.setPointSize(8);
+	monoFont.setStyleHint(QFont::Monospace);
+	_logView = new QTextEdit(this);
+	_logView->setAcceptRichText(false);
+	_logView->setFont(monoFont);
+	_logView->setReadOnly(true);
+	_logView->setGeometry(DEFAULT_WIDTH - LOG_WIDTH, 0, LOG_WIDTH, 
+	                      DEFAULT_WIDTH - STATUS_HEIGHT);
 
 	_argc = argc;
 	_argv = argv;
+	_showingLog = false;
 	display->setFocus();
 	display->setFocusPolicy(Qt::StrongFocus);
 
+
 	_instructionType = InstructionTypeNone;
 	_instructionThread.setVagWindow(this);
+
+	connect(this, SIGNAL(errorReceived(Shouter *)), 
+	        this, SLOT(displayMessage(Shouter *)), Qt::QueuedConnection);
+	
+	connect(this, SIGNAL(appendSignal()),
+	        this, SLOT(append()), Qt::UniqueConnection);
+
 	_instructionThread.start(); 
 }
 
@@ -213,6 +291,15 @@ int VagWindow::waitForInstructions()
 			return 1;
 		}
 	}
+	catch (Shouter *shout)
+	{
+		emit errorReceived(shout);
+		return 1;
+	}
+	
+	_startScreen->finishUp();
+
+	CrystalPtr crystal = options->getActiveCrystal();
 
 	while (true)
 	{
@@ -222,7 +309,6 @@ int VagWindow::waitForInstructions()
 			switch (_instructionType)
 			{
 				case InstructionTypeResetExplorer:
-				updateExplorerButton();
 				break;
 
 				default:
@@ -235,28 +321,23 @@ int VagWindow::waitForInstructions()
 			/* GUI instructions to Vagabond */
 			switch (_instructionType)
 			{
-				case InstructionTypeSuperimpose:
-				options->superimposeAll();
-				break;
-
 				case InstructionTypeRefinePositions:
-				options->refineAll(RefinementModelPos, 1);
+				disable();
+				crystal->refinePositions();
+				options->recalculateFFT();
+				enable();
+				break;
+				
+				case InstructionTypeRefinePosToDensity:
+				disable();
+				crystal->refineCrude();
+				options->recalculateFFT();
+				enable();
 				break;
 
-				case InstructionTypeBackboneAnalysis:
-				options->backboneAnalysis();
-				break;
-
-				case InstructionTypeFitWholeMoleculeTranslation: 
-				options->fitWholeMolecule(true, false);
-				break;
-
-				case InstructionTypeFitWholeMoleculeRotation: 
-				options->fitWholeMolecule(false, true);
-				break;
-
-				case InstructionTypeSqueezeToEnd: 
-				squeezeToEnd();
+				case InstructionTypeFitTranslation: 
+				crystal->fitWholeMolecules();
+				options->recalculateFFT();
 				break;
 
 				case InstructionTypeSidechainsToEnd: 
@@ -272,28 +353,44 @@ int VagWindow::waitForInstructions()
 				break;
 
 				case InstructionTypeRefineDensity: 
-				options->refineAll(RefinementSidechain, 1);
-				break;
-
-				case InstructionTypeChangeBMult:
-				options->applyBMultiplier();
+				disable();
+				crystal->refineSidechains();
+				options->recalculateFFT();
+				enable();
 				break;
 
 				case InstructionTypeFindDisulphides:
 				options->findDisulphides();
 				break;
+				
+				case InstructionTypeRefineSidePos:
+				disable();
+				crystal->refineSidechainPositions();
+				options->recalculateFFT();
+				enable();
+				break;
 
-				case InstructionTypeRefineWaterNetwork:
-				options->scanBondParams();
-//				options->refineAll(RefinementWaterNetwork, 1);
+				case InstructionTypeRefineIntramolecule:
+				disable();
+				crystal->refineIntraMovements();
+				options->recalculateFFT();
+				enable();
 				break;
 
 				case InstructionTypeRecalculateFFT:
 				options->recalculateFFT();
 				break;
 
+				case InstructionTypeChelate:
+				options->chelate();
+				break;
+
 				case InstructionTypeOpenInCoot:
 				options->openInCoot();
+				break;
+
+				case InstructionTypeOmitScan:
+				options->omitScan();
 				break;
 
 				case InstructionTypeSetObjectValue:
@@ -302,7 +399,7 @@ int VagWindow::waitForInstructions()
 
 				case InstructionTypeGetObjectValue:
 				Notifiable::performObjectGet();
-				_moleExplorer->updateCorrelation();
+				_xtalExplorer->updateCorrelation();
 				break;
 
 				case InstructionTypePreviousState:
@@ -312,6 +409,19 @@ int VagWindow::waitForInstructions()
 				case InstructionTypeSplitBond:
 				splitBond();
 				break;
+				
+				case InstructionTypeAdjustBFactor:
+				options->adjustBFactor();
+				break;
+				
+				case InstructionTypeRefitBackbone:
+				options->refitBackbone(_rangeStart, _rangeEnd);
+				break;
+
+				case InstructionTypeManualRefine:
+				display->manualRefine();
+				break;
+
 
 				default:
 				break;
@@ -337,6 +447,11 @@ int VagWindow::waitForInstructions()
 
 bool VagWindow::isRunningSomething()
 {
+	if (!Notifiable::isEnabled())
+	{
+		return true;
+	}
+
 	bool locked = mutex.try_lock();
 
 	if (locked)
@@ -366,13 +481,6 @@ void VagWindow::sidechainsToEnd()
 	polymer->refineToEnd(monomer->getResidueNum(), crystal, RefinementSidechain); 
 }
 
-void VagWindow::squeezeToEnd()
-{
-	PolymerPtr polymer;	CrystalPtr crystal; MonomerPtr monomer;
-	getPolymerMonomerCrystal(&polymer, &crystal, &monomer);
-	polymer->refineToEnd(monomer->getResidueNum(), crystal, RefinementModelRMSDZero); 
-}
-
 void VagWindow::modelPosToEnd()
 {
 	PolymerPtr polymer;	CrystalPtr crystal; MonomerPtr monomer;
@@ -389,30 +497,18 @@ void VagWindow::refineToEnd()
 
 void VagWindow::enable()
 {
-	for (int i = 0; i < buttons.size(); i++)
+	for (int i = 0; i < actions.size(); i++)
 	{
-		buttons[i]->setEnabled(true);
+		actions[i]->setEnabled(true);
 	}
 }
 
 void VagWindow::disable()
 {
-	for (int i = 0; i < buttons.size(); i++)
+	for (int i = 0; i < actions.size(); i++)
 	{
-		buttons[i]->setEnabled(false);
+		actions[i]->setEnabled(false);
 	}
-}
-
-void VagWindow::pushSuperimpose()
-{
-	_instructionType = InstructionTypeSuperimpose;
-	wait.wakeAll();
-}
-
-void VagWindow::pushRefinePositions()
-{
-	_instructionType = InstructionTypeRefinePositions;
-	wait.wakeAll();
 }
 
 void VagWindow::pushBMultiplier()
@@ -427,57 +523,9 @@ void VagWindow::pushBMultiplier()
 	_myDialogue->show();
 }
 
-void VagWindow::pushFitWholeT()
+void VagWindow::pushSendInstruction(InstructionType inst)
 {
-	_instructionType = InstructionTypeFitWholeMoleculeTranslation;
-	wait.wakeAll();
-}
-
-void VagWindow::pushFitWholeR()
-{
-	_instructionType = InstructionTypeFitWholeMoleculeRotation;
-	wait.wakeAll();
-}
-
-void VagWindow::pushRefineFlexibility()
-{
-	_instructionType = InstructionTypeRefineFlexibility;
-	wait.wakeAll();
-}
-
-void VagWindow::pushRefineDensity()
-{
-	_instructionType = InstructionTypeRefineDensity;
-	wait.wakeAll();
-}
-
-void VagWindow::recalculateFFT()
-{
-	_instructionType = InstructionTypeRecalculateFFT;
-	wait.wakeAll();
-}
-
-void VagWindow::openInCoot()
-{
-	_instructionType = InstructionTypeOpenInCoot;
-	wait.wakeAll();
-}
-
-void VagWindow::pushBackboneAnalysis()
-{
-	_instructionType = InstructionTypeBackboneAnalysis;
-	wait.wakeAll();
-}
-
-void VagWindow::refineWaterNetwork()
-{
-	_instructionType = InstructionTypeRefineWaterNetwork;
-	wait.wakeAll();
-}
-
-void VagWindow::findDisulphides()
-{
-	_instructionType = InstructionTypeFindDisulphides;
+	_instructionType = inst;
 	wait.wakeAll();
 }
 
@@ -498,29 +546,15 @@ void VagWindow::pushExploreCrystal()
 	if (crystal)
 	{
 		_xtalExplorer = new CrystalExplorer(this, crystal);
+		_xtalExplorer->setVagWindow(this);
+		_xtalExplorer->setKeeper(display->getKeeper());
 		_xtalExplorer->show();
 	}
 }
 
-void VagWindow::pushExploreMcule()
+void VagWindow::pause(bool on)
 {
-	QObject *sent = sender();
-	ChainMenuAction *action = static_cast<ChainMenuAction *>(sent);
-
-	OptionsPtr options = Options::getRuntimeOptions();
-	int crystalCount = options->crystalCount();
-
-	MoleculePtr molecule = action->getMolecule();
-
-	if (molecule)
-	{
-		delete _moleExplorer;
-		_moleExplorer = NULL;
-
-		_moleExplorer = new MoleculeExplorer(this, molecule);
-		_moleExplorer->setGLKeeper(display->getKeeper());
-		_moleExplorer->show();
-	}
+	display->getKeeper()->pause(on);
 }
 
 void VagWindow::splitBond()
@@ -578,11 +612,11 @@ void VagWindow::receiveDialogue(DialogueType type, std::string diagString)
 		return;
 	}
 
-	if (type == DialogueBMultiplier)
+	if (type == DialogueRefit)
 	{
-		OptionsPtr options = Options::getRuntimeOptions();
-		options->setBMult(trial[0]);
-		_instructionType = InstructionTypeChangeBMult;
+		_rangeStart = trial[0];
+		_rangeEnd = trial[1];
+		_instructionType = InstructionTypeRefitBackbone;
 		wait.wakeAll();        
 	}
 
@@ -594,6 +628,29 @@ void VagWindow::receiveDialogue(DialogueType type, std::string diagString)
 void VagWindow::wakeup()
 {
 	wait.wakeAll();
+}
+
+void VagWindow::displayMessage(Shouter *shout)
+{
+	QString message = QString::fromStdString(shout->getMessage());
+	QMessageBox::critical(this, "Problem", message, QMessageBox::Ok);
+	this->hide();
+	delete shout;
+}
+
+void VagWindow::displayScaling()
+{
+	ScalingType type = Options::getScalingType();
+
+	_qaShell->setChecked(type == ScalingTypeShell);
+//	_qaKB->setChecked(type == ScalingTypeAbsBFactor);
+	_qaK->setChecked(type == ScalingTypeAbs);
+}
+
+void VagWindow::toggleScaling(ScalingType type)
+{
+	Options::setScalingType(type);
+	displayScaling();
 }
 
 void VagWindow::setMessage(std::string message)
@@ -608,15 +665,69 @@ void VagWindow::setRenderDensity()
 	display->renderDensity(crystal);
 }
 
+void VagWindow::focusOnPosition(vec3 pos)
+{
+	display->getKeeper()->focusOnPosition(pos);
+}
+
+void VagWindow::adjustBFactor()
+{
+	_instructionType = InstructionTypeAdjustBFactor;
+	wait.wakeAll();
+}
+
+void VagWindow::fixErroneousZones()
+{
+	delete _errorExplorer;
+	_errorExplorer = NULL;
+	
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr crystal = options->getActiveCrystal();
+	
+	if (crystal)
+	{
+		_errorExplorer = new ErroneousZone(this, crystal);
+		_errorExplorer->show();
+	}
+}
+
+void VagWindow::toggleLog()
+{
+	_showingLog = !_showingLog;
+	resizeEvent(NULL);
+}
+
+void VagWindow::append()
+{
+	_logView->moveCursor(QTextCursor::End);
+	_guiOutMut.lock();
+	QString qOut = QString::fromStdString(_guiOut);
+	_guiOut.clear();
+	_guiOutMut.unlock();
+	_logView->insertPlainText(qOut);
+	_logView->moveCursor(QTextCursor::End);
+}
+
+void VagWindow::appendToLog(char *msg)
+{
+	if (*msg != NULL)
+	{
+		/* Will wait until main thread unlocks */
+		_guiOutMut.lock();
+		_guiOut += msg;
+		_guiOutMut.unlock();
+
+		emit appendSignal();
+	}
+}
+
 VagWindow::~VagWindow()
 {
-	delete bSuperimpose;
 	delete bRefinePos;
-	delete bExploreMolecule;
-	delete bChangeBMult;
 	delete bRecalculate;
 	delete display;
 	delete _myDialogue;
 	delete _fileDialogue;
-	delete _moleExplorer;
 }
+
+

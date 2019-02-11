@@ -104,6 +104,12 @@ mat3x3 mat3x3_mult_mat3x3(struct mat3x3 m1, struct mat3x3 m2)
 	return m;
 }
 
+double mat3x3_trace(mat3x3 &mat)
+{
+	double sum = mat.vals[0] + mat.vals[4] + mat.vals[8];
+	return sum;
+}
+
 double mat3x3_determinant(mat3x3 &mat)
 {
 	double a = mat.vals[0];
@@ -158,6 +164,23 @@ mat3x3 mat3x3_from_unit_cell(double *unitCell)
 	unitCell[4], unitCell[5]);
 }
 
+double mat3x3_volume(mat3x3 mat)
+{
+	double vals[6];
+	unit_cell_from_mat3x3(mat, &vals[0]);
+
+	double cosA = cos(deg2rad(vals[3]));
+	double cosB = cos(deg2rad(vals[4]));
+	double cosC = cos(deg2rad(vals[5]));
+	double sinC = sin(deg2rad(vals[5]));
+	
+	double vol_bit = 1 - cosA * cosA - cosB * cosB - cosC * cosC;
+	vol_bit += 2 * cosA * cosB * cosC;
+	double volume = vals[0] * vals[1] * vals[2] * sqrt(vol_bit);
+
+	return volume;
+}
+
 void unit_cell_from_mat3x3(mat3x3 mat, double *vals)
 {
 	vec3 a = mat3x3_axis(mat, 0);
@@ -190,7 +213,6 @@ mat3x3 mat3x3_from_unit_cell(double a, double b, double c, double alpha, double 
 	}
 
 	double sinC = sin(deg2rad(gamma));
-
 
 	double vol_bit = 1 - cosA * cosA - cosB * cosB - cosC * cosC;
 	vol_bit += 2 * cosA * cosB * cosC;
@@ -601,4 +623,24 @@ vec3 mat3x3_rotation_axis(mat3x3 &mat)
 	double z = sqrt((mat.vals[8] - cosangle) / (1 - cosangle));
 
 	return make_vec3(x, y, z);
+}
+
+void mat3x3_vectors_to_unity(mat3x3 *mat)
+{
+	for (int i = 0; i < 9; i+=3)
+	{
+		double total = 0;
+		for (int j = 0; j < 3; j++)
+		{
+			double add = mat->vals[i + j];
+			total += add * add;
+		}
+		
+		double scale = 1 / sqrt(total);
+		
+		for (int j = 0; j < 3; j++)
+		{
+			mat->vals[i + j] *= scale;
+		}
+	}
 }

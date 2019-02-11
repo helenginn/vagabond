@@ -16,26 +16,28 @@ typedef enum
 {
 	InstructionTypeNone,
 	InstructionTypeResetExplorer,
-	InstructionTypeSuperimpose,
 	InstructionTypeRefinePositions,
+	InstructionTypeRefinePosToDensity,
 	InstructionTypeRefineFlexibility,
 	InstructionTypeRefineDensity,
 	InstructionTypeSidechainsToEnd,
-	InstructionTypeSqueezeToEnd,
 	InstructionTypeRefineToEnd,
 	InstructionTypeModelPosToEnd,
-	InstructionTypeChangeBMult,
 	InstructionTypeRecalculateFFT,
+	InstructionTypeOmitScan,
 	InstructionTypeOpenInCoot,
 	InstructionTypeSetObjectValue,
 	InstructionTypeGetObjectValue,
 	InstructionTypePreviousState,
-	InstructionTypeBackboneAnalysis,
-	InstructionTypeFitWholeMoleculeTranslation,
-	InstructionTypeFitWholeMoleculeRotation,
+	InstructionTypeRefineSidePos,
+	InstructionTypeFitTranslation,
 	InstructionTypeFindDisulphides,
-	InstructionTypeRefineWaterNetwork,
+	InstructionTypeRefineIntramolecule,
 	InstructionTypeSplitBond,
+	InstructionTypeAdjustBFactor,
+	InstructionTypeRefitBackbone,
+	InstructionTypeChelate,
+	InstructionTypeManualRefine,
 } InstructionType;
 
 /**
@@ -134,11 +136,24 @@ public:
 	}
 
 	virtual void wakeup() = 0;
+	
+	bool isEnabled()
+	{
+		return _enabled;
+	}
 
 	void setRefreshGroup(AtomGroupPtr group)
 	{
 		_atomGroup = group;
 	}
+	
+	virtual void focusOnPosition(vec3 pos)
+	{
+
+	}
+	
+	virtual void appendToLog(char *msg) = 0;
+	virtual void pause(bool on) = 0;
 
 	virtual void setRenderDensity() = 0;
 protected:

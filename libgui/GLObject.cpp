@@ -21,6 +21,7 @@ GLObject::GLObject()
 	_vertShader = &Shader_vsh;
 	_extra = false;
 	_backToFront = true;
+	_usesLighting = false;
 }
 
 void GLObject::rebindProgram()
@@ -31,9 +32,16 @@ void GLObject::rebindProgram()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, iSize(), iPointer(), GL_STATIC_DRAW);
     checkErrors();
 
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(0 * sizeof(float)));
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(3 * sizeof(float)));
-    glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void *)(6 * sizeof(float)));
+	/* Vertices */
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
+	                      (void *)(0 * sizeof(float)));
+	/* Normals */
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex),
+	                      (void *)(3 * sizeof(float)));
+
+	/* Colours */
+	glVertexAttribPointer(2, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 
+	                      (void *)(6 * sizeof(float)));
 
 	if (_extra)
 	{
@@ -87,6 +95,12 @@ void GLObject::render()
 	if (_textures.size())
 	{
 		glBindTexture(GL_TEXTURE_2D, _textures[0]);
+	}
+	
+	if (_renderType == GL_POINTS)
+	{
+		glEnable(GL_PROGRAM_POINT_SIZE);
+		glEnable(GL_POINT_SPRITE);
 	}
 
     glDrawElements(_renderType, indexCount(), GL_UNSIGNED_INT, 0);

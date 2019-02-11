@@ -31,22 +31,31 @@
 #include "Atom.h"
 #include "BondGroup.h"
 #include "Sampler.h"
-#include "Model.h"
+#include "ExplicitModel.h"
 #include <mutex>
 #include "charmanip.h"
 
-#define INITIAL_KICK 0.01
-#define INITIAL_DAMPENING 0.08
+/**
+ * \cond SHOW_BOND_INT
+ */
+
+typedef struct
+{
+       BondPtr bond;
+       int num;
+} BondInt;
+
+/** \endcond */
 
 class Anisotropicator;
 
-class Bond : public Model
+class Bond : public ExplicitModel
 {
 public:
 	Bond(AtomPtr major, AtomPtr minor, int group = 0);
 	Bond(Bond &other);
 	Bond();
-	virtual ~Bond() {};
+	virtual ~Bond();
 
 	/**
 	* After a bond has been initialised with a major and minor (pre-existing)
@@ -54,9 +63,6 @@ public:
 	* have been activated. It then sets up the references to the other atoms.
 	* */
 	void activate();
-	ModelPtr reverse(BondPtr upstreamBond);
-	void reverseDownstreamAtoms(int group);
-	void resetBondDirection();
 	void setTorsionAngleFrom(AtomPtr one, AtomPtr two, AtomPtr three,
 	                         AtomPtr four);
 	
@@ -76,6 +82,11 @@ public:
 	* */
 	bool test();
 	double getEffectiveOccupancy();
+	
+	void setResetOccupancy(bool val)
+	{
+		_resetOccupancy = val;
+	}
 	
 	/** Resets bond angles to the default from geometry (n.b. used for fixing
 	* disulphides. */
@@ -117,17 +128,6 @@ public:
 	}
 	
 	void setHeavyAlign(AtomPtr atom, bool from_sister = false);
-
-	/**
-	*  This is the second atom on which the torsion angle is
-	*  calculated. Perfect alignment of heavy atom and light atom will
-	*  be a torsion angle of 0.
-	*  \return light alignment atom.	
-	*/
-	AtomPtr getLightAlign()
-	{
-		return _lightAlign.lock();
-	}
 	
 	/**
 	* 	If an atom of a given name is part of this bond.
@@ -144,8 +144,6 @@ public:
 		static_cast<Bond *>(object)->_bondLength = length;
 	}
 
-	virtual FFTPtr makeDistribution();
-	
 	virtual AtomPtr getAtom()
 	{
 		return getMinor();
@@ -155,10 +153,21 @@ public:
 	{
 		return "Bond";
 	}
+	
+	bool isSplit()
+	{
+		return _split;
+	}
 
 	static void setKick(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
+		
+		if (!bond->_refineFlexibility)
+		{
+			return;
+		}
+		
 		bond->_kick = value;
 		static_cast<Bond *>(object)->propagateChange(16);
 	}
@@ -178,8 +187,12 @@ public:
 	static void setTorsion(void *object, double value)
 	{
 		Bond *bond = static_cast<Bond *>(object);
-		bond->_torsion = value;
-		static_cast<Bond *>(object)->propagateChange(16);
+		
+		if (!bond->_disabled)
+		{
+			bond->_torsion = value;
+			static_cast<Bond *>(object)->propagateChange(16);
+		}
 	}
 
 	static double getMagicPsi(void *object)
@@ -215,18 +228,6 @@ public:
 	}
 
 	static void setOccupancy(void *object, double value);
-
-	static double getDampening(void *object)
-	{
-		return static_cast<Bond *>(object)->_dampening;
-	}
-
-	static void setDampening(void *object, double value)
-	{
-		Bond *bond = static_cast<Bond *>(object);
-		bond->_dampening = value;
-		bond->propagateChange(16);
-	}
 
 	/**
 	* 	Returns the bond angle for a bond, between upstream->major->minor.
@@ -275,7 +276,7 @@ public:
 	*   \param group which group to query.
 	* 	\return Number of downstream atoms in a given group (conformer).
 	*/
-	size_t downstreamBondCount(int group)
+	virtual size_t downstreamBondCount(int group)
 	{
 		return _bondGroups[group]->bondCount();
 	}
@@ -289,7 +290,7 @@ public:
 	*	\return -1 if bond isn't found, and the bond number if found.
 	*		
 	*/
-	int downstreamBondNum(Bond *down, int *group)
+	virtual int downstreamBondNum(Bond *down, int *group)
 	{
 		for (int j = 0; j < downstreamBondGroupCount(); j++)
 		{
@@ -323,12 +324,6 @@ public:
 	bool isUsingTorsion()
 	{
 		return _usingTorsion;
-	}
-
-
-	virtual bool hasExplicitPositions()
-	{
-		return true;
 	}
 
 	/** 
@@ -375,26 +370,26 @@ public:
 		return _bondGroups[i];
 	}
 
-	void setOccupancyMult(double mult)
-	{
-		_occMult = mult;
-		propagateChange();
-	}
-
 	std::string description();
-	std::string shortDesc();
+	virtual std::string shortDesc();
 	std::string getPDBContribution();
-	ModelPtr getParentModel();
+	ExplicitModelPtr getParentModel();
+
 
 	/**
 	* 	 Splits all downstream atoms and creates new copies of atoms and
 	* 	 bonds. Sets initial torsion angle difference to 180 degrees of first
 	* 	 bond, and divides the occupancies by 2 by default.
-	* 	 \param start if set, downstream atoms will only be duplicated from
-	* 	 this position in the array.
-	*	\return Always returns true, at the moment.
+	* 	 \param onlyExisting only split the bond if an unused alternative
+	* 	 	 conformer atom is available.
+	*	\return duplicate bond
 	*/
-	bool splitBond();
+	BondPtr splitBond(bool onlyExisting = false);
+	
+	void equaliseOccupancies();
+	void destroy(bool start = true);
+
+	void checkForSplits(AtomGroupPtr polymer);
 
 	void setFixed(bool fixed)
 	{
@@ -416,40 +411,22 @@ public:
 		return _extraTorsionSamples.size();
 	}
 
-	/** Returns the B factor (function is a misnomer). */
-	virtual double getMeanSquareDeviation();
-
 	AtomPtr extraTorsionSample(int i)
 	{
 		return _extraTorsionSamples[i].lock();
 	}
 
-
-	/** Will define torsion basis as:
-	* x: along line of 0º torsion angle.
-	* y: completes the right-handed coordinate system
-	* z: along bond direction, from heavy-to-light alignment atoms.
-	*/
-	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
-	                        vec3 miPos, vec3 lPos, double *newAngle = NULL);
-
 	/** Can determine a new torsion angle with a different heavy atom.
 	* 	Would be useful in cases where the chain needs to be reversed */
 	void recalculateTorsion(AtomPtr heavy, double value);
 
+	/** Create an atom group containing every downstream bond in every
+	 * group from a bond onwards */
+	AtomGroupPtr makeAtomGroup(BondPtr endBond = BondPtr());
+	
 	virtual void propagateChange(int depth = -1, bool refresh = false);
-	std::vector<BondSample> *getManyPositions();
 
-	static void useMutex()
-	{
-		_useMutex = true;
-	}
-
-	double getMultOccupancy()
-	{
-		if (_resetOccupancy) return 1;
-		return _occupancy * _occMult;
-	}
+	std::vector<BondSample> *getManyPositions(void *object = NULL);
 	
 	void setRefineFlexibility(bool value = true)
 	{
@@ -467,6 +444,9 @@ public:
 		_refineBondAngle = value;
 	}
 
+	void getAverageBasisPos(mat3x3 *aveBasis, vec3 *aveStart, 
+	                        std::vector<BondSample> *vals = NULL);
+
 	/* Returns true if the bond angle should be refined. */
 	bool getRefineBondAngle()
 	{
@@ -477,10 +457,61 @@ public:
 	{
 		_splitBlock = block;
 	}
+	
+	BondPtr downstreamBond(int group, int i)
+	{
+		Bond *bond = nakedDownstreamBond(group, i);
+		
+		if (!bond)
+		{
+			return BondPtr();
+		}
+		
+		return nakedDownstreamBond(group, i)->shared_from_this();
+	}
+
+	void setTwist(TwistPtr twist)
+	{
+		_twist = twist;
+	}
+	
+	bool hasTwist()
+	{
+		return (!_twist.expired());
+	}
+	
+	TwistPtr getTwist()
+	{
+		if (_twist.expired())
+		{
+			return TwistPtr();
+		}
+		
+		return _twist.lock();
+	}
+	
+	void setWhack(WhackPtr whack)
+	{
+		_whack = whack;
+	}
+
+	mat3x3 getMagicMat(mat3x3 basis);
+	
+	bool hasWhack()
+	{
+		return (!_whack.expired());
+	}
+	
+	WhackPtr getWhack()
+	{
+		if (_whack.expired())
+		{
+			return WhackPtr();
+		}
+		
+		return _whack.lock();
+	}
 protected:
-
-	AtomWkr _minor;
-
 	virtual std::string getParserIdentifier()
 	{
 		return "bond_" + shortDesc();
@@ -491,45 +522,25 @@ protected:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();    
 	friend class StateValue;
+	virtual void sanityCheck();
 
 private:
-	void initialize();
-	double getBaseTorsion();
-
 	std::string _shortDesc;
 
 	AtomWkr _major;
+	AtomWkr _minor;
+
 
 	AtomWkr _heavyAlign;
-	AtomWkr _lightAlign;
+	WhackWkr _whack;
+	TwistWkr _twist;
 
 	double _bondLength;
 
 	/* Downstream groups of bonds */
 	std::vector<BondGroupPtr> _bondGroups;
-	
-	
-	Bond *nakedDownstreamBond(int group, int i)
-	{
-		return _bondGroups[group]->bond(i);
-	}
-	
-	BondPtr downstreamBond(int group, int i)
-	{
-		return nakedDownstreamBond(group, i)->shared_from_this();
-	}
 
-	/* Returns upstream bond group pertaining to this bond. */
-	BondGroupPtr bondGroupForBond();
-
-	std::vector<AtomWkr> _extraTorsionSamples;
-	std::vector<BondSample> _storedSamples;
-
-	/* Dampening should be associated with a bond group - woops */
-	double _dampening;
-	bool _activated;
 	double _occupancy;
-	double _occMult;
 	double _torsion;
 	double _kick;
 	double _phi;
@@ -538,6 +549,15 @@ private:
 	double _geomRatio;
 	double _expectedAngle;
 	
+	bool _usingTorsion;
+
+	/* Flag to say whether recalculation should occur */
+	bool _refineBondAngle;
+	bool _refineFlexibility;
+
+
+	std::vector<AtomWkr> _extraTorsionSamples;
+
 	bool _resetOccupancy;
 	
 	/* If blocked, do not duplicate downstream */
@@ -548,9 +568,27 @@ private:
 
 	/* Had a non-NULL atom input as major or minor */
 	bool _disabled;
+	
+	bool _split;
+	
+	void initialize();
+	double getBaseTorsion();
 
-	/* Has been set as an anchor, will not respond to 'propagate change'*/
-	bool _anchored;
+	/* Returns upstream bond group pertaining to this bond. */
+	BondGroupPtr bondGroupForBond();
+
+	/* Private call allowing to break recursion */
+	std::vector<BondSample> *getManyPositionsPrivate();
+
+	Bond *nakedDownstreamBond(int group, int i)
+	{
+		return _bondGroups[group]->bond(i);
+	}
+	
+	bool setSplit(bool val)
+	{
+		_split = true;
+	}
 
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();
@@ -561,13 +599,6 @@ private:
 
 	void addDownstreamBond(Bond *bond, int group);
 
-	/* Bond direction only used when a torsion angle can't be
-	* calculated because it's connected to an Absolute PDB.
-	* Otherwise use as a reference for torsion matrix updates. */
-	vec3 _bondDirection;
-	
-	vec3 _magicAxis;
-
 	/** Supply deviations of correct torsion angles into prevs->torsion */
 	void correctTorsionAngles(std::vector<BondSample> *prevs);
 
@@ -575,17 +606,10 @@ private:
 	                         double ratio, vec3 start);
 
 	void copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum);
-	BondPtr duplicateDownstream(BondPtr newBranch, int groupNum);
-	bool _usingTorsion;
+	BondPtr duplicateDownstream(BondPtr newBranch, int groupNum,
+	                            bool onlyExisting = false);
 
-	/* Flag to say whether recalculation should occur */
-	bool _changedPos, _changedSamples;
-	bool _refineBondAngle;
-	bool _refineFlexibility;
-
-	mat3x3 getMagicMat(vec3 direction);
-
-
+	mat3x3 _magicMat;
 };
 
 #endif /* defined(__vagabond__Bond__) */

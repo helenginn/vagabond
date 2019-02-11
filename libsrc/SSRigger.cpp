@@ -11,6 +11,7 @@
 #include "Crystal.h"
 #include "Molecule.h"
 #include "Monomer.h"
+#include "Hydrogenator.h"
 #include "Atom.h"
 
 SSRigger::SSRigger()
@@ -30,10 +31,7 @@ void SSRigger::findCysteineSulphurs()
 
 		for (size_t j = 0; j < sulphurs.size(); j++)
 		{
-			if (!sulphurs[j].expired())
-			{
-				_cysSGs.push_back(sulphurs[j].lock());		
-			}
+			_cysSGs.push_back(sulphurs[j]);		
 		}
 	}
 }
@@ -70,13 +68,14 @@ void SSRigger::findCloseCysteines()
 			}
 			
 			/* Otherwise, if 2.6 Ang or less, consider disulphide. */
-			bool close = aSulphur->closeToAtom(bSulphur, 2.6);
+			double dist = aSulphur->getDistanceFrom(&*bSulphur);
 			
-			if (close)
+			if (dist < 2.6)
 			{
 				std::cout << "\tDetected disulphide between ";
 				std::cout << aSulphur->shortDesc() << " and ";
-				std::cout << bSulphur->shortDesc() << "." << std::endl;
+				std::cout << bSulphur->shortDesc() << "(" <<
+				dist << " Å)." << std::endl;
 				
 				convertCysteine(aSulphur);
 				convertCysteine(bSulphur);
@@ -87,14 +86,34 @@ void SSRigger::findCloseCysteines()
 			{
 				std::cout << "\tNo disulphide between ";
 				std::cout << aSulphur->shortDesc() << " and ";
-				std::cout << bSulphur->shortDesc() << "." << std::endl;
+				std::cout << bSulphur->shortDesc() << "(" <<
+				dist << " Å)." << std::endl;
 			}
 		}	
 	}	
 }
 
+void SSRigger::hydrogenateRemaining()
+{
+	return;
+	Hydrogenator hydrogenator;
+
+	for (size_t i = 0; i < _cysSGs.size(); i++)
+	{
+		AtomPtr sulphur = _cysSGs[i];
+		MonomerPtr mon = sulphur->getMonomer();
+		
+		hydrogenator.setMonomer(mon);
+		hydrogenator.addHydrogens(mon->findAtoms("SG"), 1, "HG");
+		hydrogenator.setNewGeometry(mon->findAtoms("HG"), 120., 180.);
+	}
+
+}
+
 void SSRigger::findDisulphides()
 {
+	return;
+
 	if (!_crystal)
 	{
 		shout_at_helen("No crystal before finding disulphides");
@@ -105,4 +124,7 @@ void SSRigger::findDisulphides()
 	std::cout << "\tCysteine sulphurs: " << _cysSGs.size() << std::endl;
 
 	findCloseCysteines();
+	
+	hydrogenateRemaining();
 }
+

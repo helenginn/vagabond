@@ -37,8 +37,6 @@
  * file.
  */
 
-class Anisotropicator;
-
 class Absolute : public Model
 {
 public:
@@ -57,7 +55,6 @@ public:
 	Absolute();
 	virtual ~Absolute() {};
 
-	virtual std::vector<BondSample> *getManyPositions();
 	virtual FFTPtr makeDistribution();
 	virtual vec3 getAbsolutePosition()
 	{
@@ -66,10 +63,14 @@ public:
 
 	/** Makes the corresponding atom when added to the molecule. */
 	virtual void addToMonomer(MonomerPtr monomer);
+	
+
+	/** Creates an atom from the Absolute model and adds it to the molecule
+	 * of interest. Do not use if the Atom already exists. In this case,
+	 * add the Atom directly to Molecule using Molecule::addAtom */
 	virtual void addToMolecule(MoleculePtr molecule);
 	virtual mat3x3 getRealSpaceTensor();
-	virtual void getAnisotropy(bool withKabsch);
-
+	
 	/** Sets a number of fields which would be present in the PDB file. */
 	void setIdentity(int resNumValue, std::string chainID,
 	                 std::string resName, std::string atomName, int atomNum)
@@ -96,11 +97,13 @@ public:
 		_conformer = conformer;
 	}
 
+	/** Returns the number of the (amino acid) residue */
 	int getResNum()
 	{
 		return _resNum;
 	}
-
+ 
+	/** Returns the name of the residue, e.g. ser, gly */
 	std::string getResName()
 	{
 		return _resName;
@@ -120,6 +123,8 @@ public:
 		_tensor.vals[8] = bfac;
 	}
 
+	/** Set a tensor to describe an anisotropic B factor. If called, will
+	 * return true for isUsingTensor(). */
 	void setTensor(mat3x3 tensor);
 
 	double getBFactor()
@@ -137,48 +142,12 @@ public:
 		return _hetatm;
 	}
 	
+	/** Returns if the Absolute model uses an anisotropic B factor for whatever
+	 * reason. Certainly the case if loaded from a PDB file with an ANISO
+	 * record. */
 	bool isUsingTensor()
 	{
 		return _usingTensor;	
-	}
-
-	void setPosN(int choice, double value);
-	double getPosN(int choice);
-
-	static void setPosX(void *object, double x)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		abs->setPosN(0, x);
-	}
-
-	static void setPosY(void *object, double y)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		abs->setPosN(1, y);
-	}
-
-	static void setPosZ(void *object, double z)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		abs->setPosN(2, z);
-	}
-
-	static double getPosZ(void *object)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		return abs->getPosN(2);
-	}
-
-	static double getPosX(void *object)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		return abs->getPosN(0);
-	}
-
-	static double getPosY(void *object)
-	{
-		Absolute *abs = static_cast<Absolute *>(object);
-		return abs->getPosN(1);
 	}
 
 	virtual double getMeanSquareDeviation();
@@ -201,52 +170,18 @@ public:
 		return "Absolute";
 	}
 
+	/** Returns the atom which this model directly controls. */
 	virtual AtomPtr getAtom()
 	{
 		return _atom.lock();
 	}
-
-	void addNextAtom(AtomPtr atom)
-	{
-		_nextAtoms.push_back(atom);
-	}
-
-	AtomPtr getNextAtom(int i)
-	{
-		return _nextAtoms[i].lock();
-	}
-
-	long nextAtomCount()
-	{
-		return _nextAtoms.size();
-	}
-
-	/** Returns the offsets for an anchor residue on which a molecule may
-	* calculate translations and offsets.
-	* \return x, y, z values centred around the origin.
-	* */
-	std::vector<vec3> getSphereAngles()
-	{
-		return _sphereAngles;
-	}
 	
-	void setImplicitPositions()
-	{
-		_isOfManyPositions = false;
-		_recalcFinal = true;
-		_recalcDist = true;
-	}
-
-	void setAnchorPoint()
-	{
-		_isOfManyPositions = true;
-		_recalcFinal = true;
-		_recalcDist = true;
-	}
+	/** Nothing to be done in this class. */
+	void refreshPositions() {};
 	
 	virtual bool hasExplicitPositions()
 	{
-		return _isOfManyPositions;
+		return false;
 	}
 
 	void resetSamples();
@@ -257,23 +192,46 @@ public:
 	}
 	
 	vec3 getRandomPosition();
-	
-	void setOccupancies(std::vector<double> occ)
+
+	static void setPosX(void *object, double x)
 	{
-		_occupancies = occ;
+		Absolute *abs = static_cast<Absolute *>(object);
+		abs->_position.x = x;
 	}
 
+	static void setPosY(void *object, double y)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		abs->_position.y = y;
+	}
+
+	static void setPosZ(void *object, double z)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		abs->_position.z = z;
+	}
+
+	static double getPosX(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->_position.x;
+	}
+
+	static double getPosY(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->_position.y;
+	}
+
+	static double getPosZ(void *object)
+	{
+		Absolute *abs = static_cast<Absolute *>(object);
+		return abs->_position.z;
+	}
+	
 	AtomPtr makeAtom();
 	
-	void setModifiedSample(int i)
-	{
-		_modifySample = i;
-	}
-	
-	void clearModifiedSample()
-	{
-		_modifySample = -1;
-	}
+	virtual std::string shortDesc();
 protected:
 	static double getExpValue(void *object, double x, double y, double z);
 
@@ -298,13 +256,9 @@ private:
 	mat3x3 _tensor;
 	std::string _conformer;
 	std::vector<BondSample> _bondSamples;
-	std::vector<vec3> _sphereAngles;
 
-	std::vector<double> _occupancies;
 	vec3 _position;
 	double _bFactor;
-	bool _isOfManyPositions;
-	int _modifySample;
 };
 
 #endif /* defined(__vagabond__Absolute__) */

@@ -61,6 +61,11 @@ typedef struct
 
 /** \endcond */
 
+/**
+ * \class FFT
+ * \brief Deals with three-dimensional grids with voxel data (real-space maps,
+ * diffraction data etc.) */
+
 class FFT {
 
 public:
@@ -76,8 +81,10 @@ public:
 	void scaleToFFT(FFTPtr other);
 
 	void setupMask();
-
-	double averageAll()
+	
+	double sumImag();
+	
+	double sumAll()
 	{
 		double reals = 0;
 		for (int i = 0; i < nn; i++)
@@ -85,7 +92,13 @@ public:
 			reals += fabs(data[i][0]);
 		}
 
-		return reals / (double)nn;
+		return reals;
+	}
+
+	/** Get the average of all real values (ignore imaginary component) */
+	double averageAll()
+	{
+		return sumAll() / (double)nn;
 	}
 
 	void setMask(long i, int value)
@@ -104,10 +117,6 @@ public:
 		return mask[i];
 	}
 
-	/* Will set those w real component above the value to 1 in the mask,
-	* and all those below the value to 0. */
-	void aboveValueToMask(double value);
-
 	/* If not writing to mask = 0, then mask will not apply to the
 	* "add" command in FFT::operation. */
 	void avoidWriteToMaskZero(bool set = true)
@@ -115,6 +124,8 @@ public:
 		_writeToMaskZero = !set;
 	}
 
+	/** If parameters x, y, z fall outside of the unit cell (0 < n <= 1)
+	 * wrap them round until they do */
 	void collapse(long *x, long *y, long *z)
 	{
 		while (*x < 0) *x += nx;
@@ -127,11 +138,15 @@ public:
 		while (*z >= nz) *z -= nz;
 	}
 
+	/** Element corresponding to the vec3 xyz
+	 * \param xyz vec3 containing number of voxels along each axis */
 	long element(vec3 xyz)
 	{
 		return element(xyz.x, xyz.y, xyz.z);
 	}
 
+	/** Element corresponding to the parameters x, y, z = number of
+	 * voxels along each axis */
 	long element(long x, long y, long z)
 	{
 		collapse(&x, &y, &z);
@@ -139,17 +154,34 @@ public:
 		return x + nx*y + (nx*ny)*z;
 	}
 
+	/** Element corresponding to the parameters x, y, z = number of
+	 * voxels along each axis, assuming that all parameters stay within
+	 * the default unit cell dimensions as supplied */
 	long quickElement(long x, long y, long z)
 	{
 		return x + nx*y + (nx*ny)*z;
 	}
 
+	/** Element according to the parameters xfrac, yfrac, zfrac where
+	 * these describe a fraction of each unit cell dimension. Will collapse
+	 * to default unit cell. */
 	long elementFromUncorrectedFrac(double xfrac, double yfrac, double zfrac);
 
+	/** Transfer plans from one FFT object to another if already known
+	 * that they are compatible (same nx, ny, nz).*/
+	void takePlansFrom(FFTPtr other);
+	
+	/** Creates an FFTW plan and stores it for future use as a static
+	 * storage for the class */
 	void createFFTWplan(int nthreads, unsigned fftw_flags = FFTW_MEASURE);
+	
+	/** Fast fourier transform of associated data
+	 * \param direction real -> reciprocal = 1; reciprocal -> real = -1 */
 	void fft(int direction);
 
-	void shift(long, long, long);
+	/** Move (0, 0, 0) to (nx/2, ny/2, nz/2) and apply same transformation
+	 * to entire array, wrapping around if necessary. Useful for seeing
+	 * an atom without breaking it up at the densest point, for example */
 	void shiftToCentre();
 
 	double getReal(long index)
@@ -171,10 +203,26 @@ public:
 		return data[index][1];
 	}
 
+	/** Returns the square of the length of the vector described by the real
+	 * and imaginary components of a data index. Takes voxel numbers on
+	 * each axis. */
 	double getIntensity(long x, long y, long z);
+
+	/** Returns the square of the length of the vector described by the real
+	 * and imaginary components of a data index. For a given index directly. */
+	double getIntensity(long element);
+	
+	/** Returns the angle with respect to the real axis for a given
+	 * real/imaginary data index. Takes voxel numbers on each axis */
 	double getPhase(long x, long y, long z);
+	
+	/** Set the real coordinate of an index derived from fractional values
+	 * to a number. No interpolation. */
 	void setReal(double xfrac, double yfrac, double zfrac, double real);
-	void addBlurredToReal(double xfrac, double yfrac, double zfrac, double real);
+	
+	void addBlurredToReal(double xfrac, double yfrac, double zfrac, 
+	                      double real);
+	void blurRealToImaginary(int i, int j, int k, mat3x3 tensor);
 	void addInterpolatedToReal(double sx, double sy, double sz, double val);
 	void addInterpolatedToFrac(double fx, double fy, double fz, double val);
 	void addToReal(double xfrac, double yfrac, double zfrac, double real);
@@ -186,7 +234,6 @@ public:
 	int setTotal(float value);
 	void valueMinus(float value);
 
-	double interpolate(vec3 unfractionalVoxel, size_t imaginary = false);
 	double cubic_interpolate(vec3 vox000, size_t im = false);
 
 	static void add(FFTPtr fftEdit, FFTPtr fftConst,
@@ -218,11 +265,12 @@ public:
 		frac.x *= nx;
 		frac.y *= ny;
 		frac.z *= nz;
-		return interpolate(frac, 0);
+		return cubic_interpolate(frac, 0);
 	}
 
 	long int elementFromFrac(double xFrac, double yFrac, double zFrac);
 	vec3 fracFromElement(long int element);
+	void nxyzFromElement(long int element, long *x, long *y, long *z);
 
 	inline void setElement(long int index, float real, float imag)
 	{
@@ -258,8 +306,16 @@ public:
 		return _inverse;
 	}
 
-	void printSlice(double zVal = 0);
-	void applySymmetry(CSym::CCP4SPG *spaceGroup, double maxRes);
+	void shrink(double radius);
+	void findLimitingValues(double xMin, double xMax, double yMin,
+	                        double yMax, double zMin, double zMax,
+	                        vec3 *minVals, vec3 *maxVals);
+
+	void addToValueAroundPoint(vec3 pos, double radius, double value);
+	
+	void printCinema();
+	void printSlice(int zVal = 0);
+	void applySymmetry(CSym::CCP4SPG *spaceGroup, bool silent = false);
 	static vec3 collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup,
 	                              int *flipped = NULL);
 

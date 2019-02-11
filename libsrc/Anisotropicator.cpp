@@ -109,4 +109,6 @@ void Anisotropicator::findPrincipleAxes()
 	vec3 lengths = {w[0], w[1], w[2]};
 
 	_tensor = mat3x3_make_tensor(_axisMatrix, lengths);
+	
+	mat3x3_scale(&_axisMatrix, w[0], w[1], w[2]);
 }

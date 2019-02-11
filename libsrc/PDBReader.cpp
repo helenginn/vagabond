@@ -35,8 +35,8 @@ AbsolutePtr PDBReader::makeAbsolute(std::string line)
 	{
 		shout_at_user("This ATOM line in the PDB\n"\
 		              "is less than 78 characters and might be\n"\
-		"non-standard. Please check the formatting\n"\
-		"of this line.\n\n" + line);
+		              "non-standard. Please check the formatting\n"\
+		              "of this line.\n\n" + line);
 	}
 
 	std::string xData, yData, zData, element, bFactor, occupancy;
@@ -92,10 +92,22 @@ void PDBReader::validateMolecule(AbsolutePtr atom)
 		if (atom->isHeteroAtom())
 		{
 			_myPolymer = PolymerPtr();
+			_chainFrag = 0;
+			std::string chain_id = atom->getChainID() + "0";
 
-			_myMolecule = MoleculePtr(new Molecule());
-
-			_myMolecule->setAbsoluteBFacSubtract(0);
+			/* Are we returning to a previous chain? */
+			
+			MoleculePtr testMol = _myCrystal->molecule(chain_id);
+			
+			if (testMol)
+			{
+				_myMolecule = testMol;
+			}
+			else
+			{
+				_myMolecule = MoleculePtr(new Molecule());
+				_myMolecule->setAbsoluteBFacSubtract(0);
+			}
 		}
 		else
 		{
@@ -113,8 +125,10 @@ void PDBReader::validateMolecule(AbsolutePtr atom)
 			_chainFrag = 0;
 		}
 
+		std::string chain_id = atom->getChainID() + i_to_str(_chainFrag);
+
 		_myChain = atom->getChainID();
-		_myMolecule->setChainID(_myChain + i_to_str(_chainFrag));
+		_myMolecule->setChainID(chain_id);
 		_myCrystal->addMolecule(_myMolecule);
 	}
 }
@@ -127,8 +141,8 @@ void PDBReader::validateResidue(AbsolutePtr atom)
 	{
 		shout_at_helen("Something has gone wrong. The program\n"\
 		               "is trying to ensure the residue is\n"\
-		"correct, but there is no protein to\n"\
-		"check!");
+		               "correct, but there is no protein to\n"\
+		               "check!");
 	}
 
 	int difference = atom->getResNum() - _residueNum;
@@ -174,8 +188,8 @@ void PDBReader::addAnisotropicBFactors(std::string line)
 	{
 		shout_at_user("This ANISOU line in the PDB\n"\
 		              "is less than 70 characters and might be\n"\
-		"non-standard. Please check the formatting\n"\
-		"of this line.\n\n" + line);
+		              "non-standard. Please check the formatting\n"\
+		              "of this line.\n\n" + line);
 	}
 
 	std::string u11, u12, u13, u22, u23, u33;
@@ -255,8 +269,8 @@ void PDBReader::getSymmetry(std::string line)
 	{
 		shout_at_user("The symmetry line (CRYST1) in the PDB\n"\
 		              "is less than 65 characters and must be\n"\
-		"non-standard. Please check the formatting\n"\
-		"of this line.");
+		              "non-standard. Please check the formatting\n"\
+		              "of this line.");
 	}
 
 	aData = line.substr(6, 9);
@@ -304,7 +318,9 @@ void PDBReader::parse()
 {
 	if (!file_exists(filename))
 	{
-		shout_at_user("File " + filename + " does not exist.");
+		Shouter *shout;
+		shout = new Shouter("PDB file " + filename + " does not exist.");
+		throw shout;
 	}
 	
 	/* Prepare water network for HOH atoms */
@@ -343,6 +359,7 @@ CrystalPtr PDBReader::getCrystal()
 
 	_myCrystal = CrystalPtr(new Crystal());
 	_myCrystal->setFilename(getBaseFilename(filename));
+	Options::getRuntimeOptions()->addCrystal(_myCrystal);
 
 	_residueNum = 0;
 	_myChain = "";

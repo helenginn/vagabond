@@ -4,5 +4,5 @@
 void InstructionThread::run()
 {
     int exitCode = _window->waitForInstructions();
-	QApplication::exit(exitCode);
+//	QApplication::exit(exitCode);
 }

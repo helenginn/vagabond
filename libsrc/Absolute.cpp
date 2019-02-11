@@ -36,38 +36,32 @@ void Absolute::initialise()
 	_hetatm = false;
 	_usingTensor = false;
 	_tensor = make_mat3x3();
-	_isOfManyPositions = false;
-	_modifySample = -1;
 }
 
 mat3x3 Absolute::getRealSpaceTensor()
 {
-	if (_isOfManyPositions)
-	{
-		getAnisotropy(true);
-		return Model::getRealSpaceTensor();
-	}
-
 	if (!_usingTensor)
 	{
 		mat3x3 realSpaceTensor = make_mat3x3();
-		double scale = _bFactor / (8 * M_PI * M_PI);
+		double scale = b2var(getMeanSquareDeviation());
 		mat3x3_mult_scalar(&realSpaceTensor, scale);
 		return realSpaceTensor;
 	}
 
-	return _realSpaceTensor;
+	double subtract = getMolecule()->getAbsoluteBFacSubt();
+	double mult = getMolecule()->getAbsoluteBFacMult();
+	subtract = b2var(subtract);
+	mat3x3 copy = _realSpaceTensor;
+	mat3x3_mult_scalar(&copy, mult);
+	copy.vals[0] -= subtract;
+	copy.vals[4] -= subtract;
+	copy.vals[8] -= subtract;
+
+	return copy;
 }
 
-void Absolute::getAnisotropy(bool)
-{
-	if (_isOfManyPositions)
-	{
-		Model::getAnisotropy(true);
-	}
-}
-
-Absolute::Absolute(vec3 pos, double bFac, std::string element, double occValue)
+Absolute::Absolute(vec3 pos, double bFac, 
+                   std::string element, double occValue)
 {
 	initialise();
 	_position = pos;
@@ -78,7 +72,13 @@ Absolute::Absolute(vec3 pos, double bFac, std::string element, double occValue)
 	_hetatm = false;
 	_usingTensor = false;
 	_tensor = make_mat3x3();
-	_isOfManyPositions = false;
+}
+
+std::string Absolute::shortDesc()
+{
+	std::ostringstream ss;
+	ss << "Abs_" + getAtom()->shortDesc();
+	return ss.str();
 }
 
 AtomPtr Absolute::makeAtom()
@@ -114,17 +114,20 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 	Absolute *me = static_cast<Absolute *>(object);
 	double aniso = 0;
 	double mult = 1;
+	MoleculePtr molecule = me->getMolecule();
+	double subtract = 0;
 
 	if (me->hasMolecule())
 	{
-		MoleculePtr molecule = me->getMolecule();
 		mult = molecule->getAbsoluteBFacMult();
+		subtract = molecule->getAbsoluteBFacSubt();
 	}
+
+	double sub = b2var(subtract);
 
 	if (me->_usingTensor)
 	{
 		mat3x3 scaledTensor = me->getRealSpaceTensor();
-		mat3x3_mult_scalar(&scaledTensor, mult);
 		vec3 recipVec = make_vec3(x, y, z);
 		mat3x3_mult_vec(scaledTensor, &recipVec);
 
@@ -141,15 +144,11 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 
 	double distSq = (x * x + y * y + z * z);
 
-	double bf = me->_bFactor;
+	double bf = me->getMeanSquareDeviation();
 
 	if (me->hasMolecule())
 	{
-		MoleculePtr molecule = me->getMolecule();
-		double subtract = molecule->getAbsoluteBFacSubtract();
-
-		bf -= subtract;
-		bf *= mult;
+		double subtract = molecule->getAbsoluteBFacSubt();
 	}
 
 	double exponent = (-0.25) * bf * distSq;
@@ -163,11 +162,6 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 
 FFTPtr Absolute::makeDistribution()
 {
-	if (hasExplicitPositions())
-	{
-		return makeRealSpaceDistribution();
-	}
-	
 	double n = fftGridLength();
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double scale = 2 * maxDStar;
@@ -183,113 +177,6 @@ void Absolute::resetSamples()
 	_recalcFinal = true;
 }
 
-std::vector<BondSample> *Absolute::getManyPositions()
-{
-	std::vector<BondSample> *bondSamples = &_bondSamples;
-	int kickGroups = 1;
-	
-	/*
-	if (_bondSamples.size())
-	{
-		return &_bondSamples;
-	}
-	*/
-	
-	bondSamples->clear();
-
-	/* B factor isotropic only atm, get mean square displacement in
-	 * each dimension. */
-	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
-	meanSqDisp = sqrt(meanSqDisp);
-
-	double occTotal = 0;
-
-	int totalPoints = Options::getNSamples();
-	totalPoints /= kickGroups;
-	double totalSurfaces = 0;
-	int layers = 10;
-	
-	if (totalPoints < 20)
-	{
-		layers = 1;
-	}
-	
-	std::vector<double> layerSurfaces;
-
-	/* Work out relative ratios of the surfaces on which points
-	 * will be generated. */
-	for (int i = 1; i <= layers; i++)
-	{
-		layerSurfaces.push_back(i * i);
-		totalSurfaces += i * i;
-	}
-
-	double scale = totalPoints / (double)totalSurfaces;
-
-	int rnd = 1;
-	std::vector<vec3> points;
-	double increment = M_PI * (3.0 - sqrt(5));
-
-	_sphereAngles.clear();
-
-	for (int j = 0; j < layers; j++)
-	{
-		double m = meanSqDisp * (double)(j + 1) / (double)layers;
-
-		int samples = layerSurfaces[j] * scale + 1;
-		double offset = 2. / (double)samples;
-
-		for (int i = 0; i < samples; i++)
-		{
-			double y = (((double)i * offset) - 1) + (offset / 2);
-			double r = sqrt(1 - y * y);
-
-			double phi = (double)((i + rnd) % samples) * increment;
-
-			double x = cos(phi) * r;
-			double z = sin(phi) * r;
-
-			vec3 point = make_vec3(x * m, y * m, z * m);
-
-			points.push_back(point);
-			_sphereAngles.push_back(point);
-		}
-	}
-
-	for (int j = 0; j < kickGroups; j++)
-	{
-		for (size_t i = 0; i < points.size(); i++)
-		{
-			vec3 full = vec3_add_vec3(points[i], _position);
-			double occ = 1;
-			occTotal += occ;
-
-			BondSample sample;
-			sample.basis = make_mat3x3();
-			sample.occupancy = occ;
-			sample.torsion = 0;
-			sample.old_start = make_vec3(0, 0, 0);
-			sample.start = full;
-
-			bondSamples->push_back(sample);
-		}
-	}
-
-	for (size_t i = 0; i < bondSamples->size(); i++)
-	{
-		if (_occupancies.size() == bondSamples->size())
-		{
-			(*bondSamples)[i].occupancy = _occupancies[i];
-		}
-		else
-		{
-			(*bondSamples)[i].occupancy /= occTotal;
-		}
-	}
-
-	return bondSamples;
-}
-
 void Absolute::addToMonomer(MonomerPtr monomer)
 {
 	AtomPtr newAtom = makeAtom();
@@ -302,8 +189,17 @@ void Absolute::addToMonomer(MonomerPtr monomer)
 
 double Absolute::getMeanSquareDeviation()
 {
-	getAnisotropy(true);
-	return _bFactor;
+	double b = _bFactor;
+
+	if (hasMolecule())
+	{
+		double subtract = getMolecule()->getAbsoluteBFacSubt();
+		double mult = getMolecule()->getAbsoluteBFacMult();
+		
+		b = mult * (b - subtract);
+	}
+
+	return b;
 }
 
 void Absolute::setTensor(mat3x3 tensor)
@@ -336,7 +232,6 @@ void Absolute::addProperties()
 	addVec3Property("position", &_position);
 	addMat3x3Property("tensor", &_tensor);
 	addDoubleProperty("bfactor", &_bFactor);
-	addBoolProperty("many_positions", &_isOfManyPositions);
 
 	addReference("atom", _atom.lock());
 
@@ -356,7 +251,7 @@ vec3 Absolute::getRandomPosition()
 {
 	/** Assuming isotropic */
 	vec3 randvec = make_vec3(0, 0, 0);	
-	double stdev = sqrt(_bFactor / (8 * M_PI * M_PI));
+	double stdev = sqrt(b2var(_bFactor));
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -370,36 +265,3 @@ vec3 Absolute::getRandomPosition()
 	return total;
 }
 
-void Absolute::setPosN(int choice, double value)
-{
-	double *vec = &_position.x;
-
-	if (_modifySample >= 0 && _isOfManyPositions)
-	{
-		if (_modifySample >= _finalSamples.size())
-		{
-			return;
-		}
-
-		vec = &_bondSamples[_modifySample].start.x;
-		_recalcFinal = true;
-	}
-	
-	*(vec + choice) = value;
-}
-
-double Absolute::getPosN(int choice)
-{
-	double *vec = &_position.x;
-	if (_modifySample >= 0 && _isOfManyPositions)
-	{
-		if (_modifySample >= _finalSamples.size())
-		{
-			return *(&_position.x + choice);
-		}
-
-		vec = &_bondSamples[_modifySample].start.x;
-	}
-	
-	return *(vec + choice);
-}

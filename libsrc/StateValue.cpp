@@ -92,25 +92,6 @@ void StateValue::applyToParser(Parser *parser)
 		}
 	}
 
-	for (int i = 0; i < parser->_customProperties.size(); i++)
-	{
-		if (parser->_customProperties[i].ptrName == _ptrName)
-		{
-			CustomProperty property = parser->_customProperties[i];
-			Decoder decoder = property.decoder;
-			void *delegate = property.delegate;
-			void *ptr = property.objPtr;
-			char *custom = (char *)_custom.c_str();
-			incrementIndent(&custom);
-			(*decoder)(delegate, ptr, custom);
-			repairCustom();
-			
-			static_cast<Bond *>(delegate)->postParseTidy();
-
-			found = true;
-		}
-	}
-
 	if (!found)
 	{
 		shout_at_helen("Missing property of type " + _ptrName

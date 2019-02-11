@@ -15,24 +15,28 @@
 #include <map>
 #include "../libsrc/Bond.h"
 
-typedef std::map<AtomPtr, std::pair<int, int> > AtomMap;
+typedef struct
+{
+	AtomWkr maj;
+	AtomWkr min;
+	int vNum;
+	int size;
+} Atom3D;
+
 typedef std::map<MoleculePtr, int> GLMoleculeMap;
 
 class Vagabond2GL : public GLObject
 {
 public:
-	Vagabond2GL(int average = false)
+	Vagabond2GL()
 	{
 		_renders = 0;
-		_average = average;
 		_lastEnsembleCount = 0;
 		_shouldGetBonds = true;
-		setupAverage();
 		
+		_pause = false;
 		_enabled = true;
 	}
-
-	void findAtoms();
 
 	virtual void render();
 	
@@ -45,25 +49,44 @@ public:
 	{
 		_enabled = enabled;
 	}
+	
+	virtual void pause(bool on)
+	{
+		_pause = on;
+		_shouldGetBonds = true;
+	}
+	
+	AtomPtr findAtomAtXY(double x, double y, double *z);
+	
+	virtual bool isVagabond2GL()
+	{
+		return true;
+	}
 protected:
-	virtual void bindTextures();
-private:
-	int processMolecule(MoleculePtr molecule);
-	vec3 _centroid;
-	void updateAtoms();
-	bool shouldGetBonds();
-	void setVertexColour(AtomPtr atom, Vertex *vertex);
+	virtual void findAtoms();
 
-	void getPositions(AtomPtr atom, std::vector<vec3> *min,
-					  std::vector<vec3> *maj);
-	AtomMap _atomMap;
-	GLMoleculeMap _moleculeMap;
-	void setupAverage();
-	int _renders;
-	int _average;
-	bool _enabled;
+	virtual void bindTextures();
+	virtual void updateAtoms() = 0;
+	virtual void getPositions(AtomPtr minAtom, AtomPtr majAtom, 
+	                          std::vector<vec3> *min,
+	                          std::vector<vec3> *maj) = 0;
+	virtual int processMolecule(MoleculePtr molecule) = 0;
+
+	void setVertexColour(AtomPtr atom, Vertex *vertex);
 	int _lastEnsembleCount;
 	bool _shouldGetBonds;
+	bool _enabled;
+
+	/* First pair: number of bonds assoc. with atom,
+	 * Second pair: vertex num */
+	std::vector<Atom3D> _pairList;
+	GLMoleculeMap _moleculeMap;
+private:
+	vec3 _centroid;
+	bool shouldGetBonds();
+
+	int _renders;
+	bool _pause;
 
 };
 

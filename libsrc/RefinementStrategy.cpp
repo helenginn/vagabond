@@ -50,11 +50,12 @@ RefinementStrategyPtr RefinementStrategy::userChosenStrategy()
 	return strategy;
 }
 
-void RefinementStrategy::addParameter(void *object, Getter getter, Setter setter, double stepSize, double otherValue, std::string tag)
+void RefinementStrategy::addParameter(void *object, Getter getter, Setter setter, double stepSize, double otherValue, std::string tag, Getter gradient)
 {
 	Parameter param;
 	param.object = object;
 	param.getter = getter;
+	param.gradient = gradient;
 	param.setter = setter;
 	param.step_size = stepSize;
 	param.other_value = otherValue;
@@ -76,6 +77,15 @@ void RefinementStrategy::addCoupledParameter(void *object, Getter getter, Setter
 	_params[last].coupled++;
 	addParameter(object, getter, setter, stepSize, stepConvergence, tag);
 	_params[last + 1].coupled++;
+}
+
+double RefinementStrategy::getGradientForParam(int i)
+{		
+	Getter gradient = _params[i].gradient;
+	void *object = _params[i].object;
+	double grad = (*gradient)(object);
+	
+	return grad;
 }
 
 double RefinementStrategy::getValueForParam(int i)
@@ -108,8 +118,14 @@ void RefinementStrategy::refine()
 		return;
 	}
 
+	if (evaluationFunction == NULL || evaluateObject == NULL)
+	{
+		std::cout << "Please set evaluation function and object." << std::endl;
+		return;
+	}
 
 	startingScore = (*evaluationFunction)(evaluateObject);
+	_prevScore = startingScore;
 
 	for (int i = 0; i < parameterCount(); i++)
 	{
@@ -122,28 +138,40 @@ void RefinementStrategy::refine()
 
 void RefinementStrategy::reportProgress(double score)
 {
-	if (!_verbose || _silent)
+	if (!_verbose)
 	{
 		return;
 	}
-
-	std::cout << "Cycle " << cycleNum << "\t";
-
-	for (int i = 0; i < parameterCount(); i++)
+	
+	if (cycleNum % 30 == 0)
 	{
-		double value = getValueForParam(i);
-		std::cout << std::setprecision(5) << value << "\t";
+		std::cout << std::endl;
 	}
 
-	std::cout << " - score:\t";
-	std::cout << score << std::endl;
-
+	if (score < _prevScore)
+	{
+		std::cout << "+" << std::flush;
+	}
+	else
+	{
+		std::cout << "." << std::flush;
+	}
+	
+	_prevScore = score;
+	
 	cycleNum++;
 }
 
 void RefinementStrategy::finish()
 {
 	double endScore = (*evaluationFunction)(evaluateObject);
+	
+	if (!parameterCount())
+	{
+		return;
+	}
+	
+	std::cout << std::setprecision(4);
 
 	if (endScore >= startingScore || endScore != endScore)
 	{
@@ -158,6 +186,7 @@ void RefinementStrategy::finish()
 			for (int i = 0; i < parameterCount(); i++)
 			{
 				double value = getValueForParam(i);
+				_params[i].changed = 0;
 				std::cout << _params[i].tag << "=" << value * rad2degscale <<
 				(_toDegrees ? "º" : "") << ", ";
 			}
@@ -168,6 +197,7 @@ void RefinementStrategy::finish()
 	else
 	{
 		double reduction = (startingScore - endScore) / startingScore;
+		_improvement = -reduction * 100;
 
 		if (!_silent)
 		{std::cout << "Reduction ";
@@ -175,7 +205,7 @@ void RefinementStrategy::finish()
 
 			if (reduction == reduction)
 			{
-				std::cout << "by " << std::fixed << std::setprecision(4) <<
+				std::cout << "by " << std::fixed << 
 				-reduction * 100 << "% ";
 			}
 
@@ -184,6 +214,10 @@ void RefinementStrategy::finish()
 			for (int i = 0; i < parameterCount(); i++)
 			{
 				double value = getValueForParam(i);
+				double start = _params[i].start_value;
+				
+				_params[i].changed = (fabs(start - value) > 1e-4);
+				
 				std::cout << _params[i].tag << "=" << value * rad2degscale <<
 				(_toDegrees ? "°" : "") << ", ";
 			}

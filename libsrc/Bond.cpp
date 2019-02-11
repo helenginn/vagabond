@@ -15,42 +15,41 @@
 #include "fftw3d.h"
 #include "Shouter.h"
 #include "AtomGroup.h"
-#include "Element.h"
-#include "Absolute.h"
+#include "Whack.h"
+#include "Twist.h"
+#include "Anchor.h"
 #include "maths.h"
 #include "Monomer.h"
-#include "Molecule.h"
-#include "Anisotropicator.h"
-#include "RefinementNelderMead.h"
+#include "Polymer.h"
 #include "Options.h"
+
+Bond::~Bond()
+{
+
+}
 
 void Bond::initialize()
 {
-	_anchored = false;
 	_usingTorsion = false;
-	_activated = false;
-	_dampening = Options::getDampen();
 	_bondLength = 0;
-	_changedPos = true;
 	_changedSamples = true;
+	_split = false;
 	_refineBondAngle = false;
 	_refineFlexibility = true;
 	_fixed = false;
 	_splitBlock = false;
 	_occupancy = 1.0;
-	_occMult = 1.0;
 	_resetOccupancy = false;
 	_anisotropyExtent = 0.0;
-	_bondDirection = empty_vec3();
-	_magicAxis = empty_vec3();
 	double initialKick = Options::getKick();
 	_kick = initialKick;
 	_torsion = 0;
-	_phi = 0;
-	_phi = 0;
+	_phi = 3.14/2;
+	_psi = 0;
 	_geomRatio = 0;
 	_circlePortion = -10;
 	_expectedAngle = 0;
+	_magicMat = make_mat3x3();
 }
 
 Bond::Bond()
@@ -98,27 +97,20 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	deriveBondLength();
 	vec3_set_length(&difference, _bondLength);
 
-	_bondDirection = difference;
 	deriveBondLength();
 	deriveBondAngle();
 	deriveCirclePortion();
 	deriveTorsionAngle();
-
-	if (upModel->getClassName() == "Absolute")
-	{
-		ToAbsolutePtr(upModel)->addNextAtom(minor);
-	}
+	
 }
 
 Bond::Bond(Bond &other)
 {
 	_occupancy = other._occupancy;
-	_occMult = other._occMult;
 	_usingTorsion = other._usingTorsion;
-	_activated = other._activated;
 	_major = other._major;
 	_minor = other._minor;
-	_resetOccupancy = other._resetOccupancy;
+	_resetOccupancy = false;
 
 	for (size_t i = 0; i < other.downstreamBondGroupCount(); i++)
 	{
@@ -128,19 +120,17 @@ Bond::Bond(Bond &other)
 
 	_fixed = other._fixed;
 	_disabled = other._disabled;
-	_anchored = other._anchored;
 	_absolute = other._absolute;
 	_molecule = other._molecule;
+	_splitBlock = false;
 
 	_refineBondAngle = other._refineBondAngle;
 	_refineFlexibility = other._refineFlexibility;
-	_dampening = other._dampening;
 	_bondLength = other._bondLength;
-	_changedPos = true;
 	_changedSamples = true;
-	_bondDirection = other._bondDirection;
 	_heavyAlign = other._heavyAlign;
-	_lightAlign = other._lightAlign;
+	_split = other._split;
+	_magicMat = other._magicMat;
 	
 	_torsion = other._torsion;
 	_kick = other._kick;
@@ -163,7 +153,7 @@ void Bond::deriveBondLength()
 	{
 		_bondLength = length;
 	}
-	else if (getMinor()->getElement()->electronCount() <= 1)
+	else if (getMinor()->getElectronCount() <= 1)
 	{
 		_bondLength = 0.967;
 	}
@@ -177,12 +167,17 @@ void Bond::deriveBondLength()
 void Bond::setTorsionAngleFrom(AtomPtr one, AtomPtr two, AtomPtr three,
                                AtomPtr four)
 {
-	vec3 hPos = one->getInitialPosition();
+	vec3 hPos = empty_vec3();
+	if (one)
+	{
+		hPos = one->getInitialPosition();
+	}
+
 	vec3 maPos = two->getInitialPosition();
 	vec3 miPos = three->getInitialPosition();
 	vec3 lPos = four->getInitialPosition();
 
-	makeTorsionBasis(hPos, maPos, miPos, lPos,
+	mat3x3 basis = makeTorsionBasis(hPos, maPos, miPos, lPos,
 	                 &_torsion);
 }
 
@@ -190,11 +185,9 @@ void Bond::setHeavyAlign(AtomPtr atom, bool from_sister)
 {
 	_heavyAlign = atom;
 
-	/* if the parent is not available, this is not meant to be
-	 * able to generate a torsion angle. Set as heavy alignment atom
-	 * for getManyPositions(). */
 	if (!getParentModel()->isBond())
 	{
+		deriveTorsionAngle();
 		return;
 	}
 	
@@ -242,9 +235,17 @@ void Bond::setHeavyAlign(AtomPtr atom, bool from_sister)
 
 void Bond::deriveTorsionAngle()
 {
-	if (!getParentModel()->isBond())
+	if (getParentModel()->isAnchor())
 	{
-		/* It's an absolute - ignore */
+		AnchorPtr anchor = ToAnchorPtr(getParentModel());
+		/* It's an absolute - make relative to origin, to have
+		 * something which can be reproduced */
+		AtomPtr one = getHeavyAlign();
+		AtomPtr two = anchor->getOtherAtom(getMinor());
+		AtomPtr three = getMajor();
+		AtomPtr four = getMinor();
+
+		setTorsionAngleFrom(one, two, three, four);
 		return;
 	}
 	
@@ -252,7 +253,8 @@ void Bond::deriveTorsionAngle()
 	
 	if (!parent->getParentModel()->isBond())
 	{	
-		/* Grandparent is absolute - needs dealing with specially */
+		/* Grandparent is absolute - needs dealing with specially,
+		 * but can be relative. */
 		return;
 	}
 	
@@ -268,13 +270,23 @@ void Bond::deriveTorsionAngle()
 
 void Bond::deriveBondAngle()
 {
-	if (!getParentModel() || !getParentModel()->isBond())
+	if (!getParentModel())
 	{
 		return;
 	}
-
-	BondPtr parent = ToBondPtr(getParentModel());
-	AtomPtr pMajor = parent->getMajor();
+	
+	AtomPtr pMajor;
+	
+	if (getParentModel()->isAnchor())
+	{
+		AnchorPtr parent = ToAnchorPtr(getParentModel());
+		pMajor = parent->getOtherAtom(getMinor());
+	}
+	else
+	{
+		BondPtr parent = ToBondPtr(getParentModel());
+		pMajor = parent->getMajor();
+	}
 	
 	_expectedAngle = -1;
 	double angle = Atom::getAngle(getMinor(), getMajor(), pMajor);
@@ -336,6 +348,12 @@ void Bond::deriveCirclePortion()
 {
 	if (!getParentModel() || !getParentModel()->isBond())
 	{
+		if (getParentModel()->isAnchor())
+		{
+			setUsingTorsion(true);
+			_circlePortion = 0;
+		}
+
 		return;
 	}
 	
@@ -348,7 +366,7 @@ void Bond::deriveCirclePortion()
 	 * 	we have not yet been added to the parent */
 	int count = parent->downstreamBondCount(groups - 1);
 	
-	if (getMinor()->getElement()->electronCount() == 1)
+	if (getMinor()->getElectronCount() == 1)
 	{
 		return;
 	}
@@ -356,7 +374,7 @@ void Bond::deriveCirclePortion()
 	if (count == 1)
 	{
 		/* We are the first bond. */
-		_usingTorsion = true;
+		setUsingTorsion(true);
 		_circlePortion = 0;
 		return;
 	}
@@ -499,7 +517,6 @@ void Bond::setMinor(AtomPtr newMinor)
 	vec3 difference = vec3_subtract_vec3(majorPos, minorPos);
 	vec3_set_length(&difference, _bondLength);
 
-	_bondDirection = difference;
 }
 
 void Bond::activate()
@@ -508,63 +525,6 @@ void Bond::activate()
 	return;
 
 	getMinor()->setModel(shared_from_this());
-
-	_activated = true;
-
-}
-
-mat3x3 Bond::makeTorsionBasis(vec3 hPos, vec3 maPos,
-                              vec3 miPos, vec3 lPos, double *newAngle)
-{
-	vec3 a2p = vec3_subtract_vec3(hPos, maPos);
-	vec3 a2l = vec3_subtract_vec3(lPos, maPos);
-	vec3 a2b = vec3_subtract_vec3(miPos, maPos);
-
-	double sql = vec3_sqlength(a2b);
-	double dotp = vec3_dot_vec3(a2p, a2b);
-	double dotl = vec3_dot_vec3(a2l, a2b);
-	double distp = dotp / sql;
-	double distl = dotl / sql;
-
-	vec3 a2bp = a2b;
-	vec3 a2bl = a2b;
-	vec3_mult(&a2bp, distp);
-	vec3_mult(&a2bl, distl);
-	vec3 heavy_join = vec3_add_vec3(maPos, a2bp);
-	vec3 light_join = vec3_add_vec3(maPos, a2bl);
-
-	vec3 reverse_bond = vec3_subtract_vec3(miPos, maPos);
-	vec3 xNew = vec3_subtract_vec3(hPos, heavy_join);
-	vec3 light = vec3_subtract_vec3(lPos, light_join);
-	mat3x3 basis = mat3x3_rhbasis(xNew, reverse_bond);
-
-	if (newAngle)
-	{
-		double angle = vec3_angle_with_vec3(light, xNew);
-
-		vec3 recross = vec3_cross_vec3(light, xNew);
-		double cosine = vec3_cosine_with_vec3(recross, reverse_bond);
-
-		if (cosine > 0)
-		{
-			angle *= -1;
-		}
-
-		if (angle != angle)
-		{
-			shout_at_helen("Torsion angle is nan for " + shortDesc() + "!");
-		}
-
-
-		*newAngle = angle;
-	}
-
-	return basis;
-}
-
-FFTPtr Bond::makeDistribution()
-{
-	return makeRealSpaceDistribution();
 }
 
 vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
@@ -593,9 +553,8 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 	return final;
 }
 
-mat3x3 Bond::getMagicMat(vec3 direction)
+mat3x3 Bond::getMagicMat(mat3x3 basis)
 {
-	vec3_set_length(&direction, 1.);
 	mat3x3 rot = make_mat3x3();
 
 	if (_phi != 0 || _psi != 0)
@@ -603,44 +562,51 @@ mat3x3 Bond::getMagicMat(vec3 direction)
 		rot = mat3x3_rot_from_angles(_phi, _psi);
 	}
 
-	vec3 xAxis = make_vec3(1, 0, 0);
-	vec3 zAxis = make_vec3(0, 0, 1);
+	mat3x3 multed = mat3x3_mult_mat3x3(rot, basis);
+
+	_magicMat = mat3x3_transpose(multed);
+	mat3x3_vectors_to_unity(&_magicMat);
 	
-	vec3 cross = vec3_cross_vec3(zAxis, direction);
-	vec3_set_length(&cross, 1.);
+	return _magicMat;
+}
 
-	/* Find the twizzle to put z axis onto the magic axis (around the x) */
-	mat3x3 firstTwizzle = mat3x3_closest_rot_mat(direction, zAxis, cross,
-	                                             NULL, true);
-	mat3x3 multed = mat3x3_mult_mat3x3(rot, firstTwizzle);
+void Bond::getAverageBasisPos(mat3x3 *aveBasis, vec3 *aveStart, 
+                              std::vector<BondSample> *vals)
+{
+	if (vals == NULL)
+	{
+		vals = &_storedSamples;
+	}
 
-	return multed;
+	*aveBasis = make_mat3x3();
+	*aveStart = make_vec3(0, 0, 0);
+
+	/* This loop gets average positions for the basis of the bond
+	 * and the average start position */
+	for (size_t i = 0; i < vals->size(); i++)
+	{
+		mat3x3_add_mat3x3(aveBasis, vals->at(i).basis);
+		*aveStart = vec3_add_vec3(*aveStart, vals->at(i).start);
+	}
+
+	double samples = vals->size();
+	vec3_mult(aveStart, 1 / samples);
+	mat3x3_vectors_to_unity(aveBasis);
 }
 
 void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 {
 	const vec3 none = make_vec3(0, 0, 0);
-
-	mat3x3 aveBasis = make_mat3x3();
-	vec3 aveStart = make_vec3(0, 0, 0);
-
-	/* This loop gets average positions for the basis of the bond
-	 * and the average start position */
-	for (size_t i = 0; i < prevs->size(); i++)
-	{
-		mat3x3_add_mat3x3(&aveBasis, prevs->at(i).basis);
-		aveStart = vec3_add_vec3(aveStart, prevs->at(i).start);
-	}
-
 	double samples = prevs->size();
-	mat3x3_mult_scalar(&aveBasis, 1 / samples);
-	vec3_mult(&aveStart, 1 / samples);
+
+	vec3 aveStart;
+	mat3x3 aveBasis;
+	getAverageBasisPos(&aveBasis, &aveStart, prevs);
 
 	vec3 aveNext = mat3x3_axis(aveBasis, 0);
-	
 	vec3 crossDir = mat3x3_axis(aveBasis, 1);
-	mat3x3 magicMat = getMagicMat(crossDir);
-	_magicAxis = mat3x3_axis(magicMat, 2); 
+	
+	mat3x3 magicMat = getMagicMat(aveBasis);
 	
 	/* Track overall change in order to readjust torsion
 	 * at the end */
@@ -650,69 +616,40 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	for (size_t i = 0; i < prevs->size(); i++)
 	{
 		mat3x3 thisBasis = (*prevs)[i].basis;
-		vec3 prevHeavyPos = (*prevs)[i].old_start;
 		vec3 thisPos = prevs->at(i).start;
 
 		/* Difference between perfect and deviant position of major atom */
 		vec3 thisDeviation = vec3_subtract_vec3(thisPos, aveStart);
-		vec3_set_length(&thisDeviation, 1.);
 		
-		/* Find out what this deviation is if beam axis is set to z */
+		/* Find out what this deviation is if sensitive axis is set to z */
 		mat3x3_mult_vec(magicMat, &thisDeviation);
 
-		double notZ = sqrt(thisDeviation.y * thisDeviation.y +
-		                   thisDeviation.x * thisDeviation.x);
-		double tanX = thisDeviation.z / notZ;
-		double angle = atan(tanX);
+		double notZ = (thisDeviation.y * thisDeviation.y +
+		               thisDeviation.x * thisDeviation.x);
+		double c = thisDeviation.z * thisDeviation.z / notZ;
+
+		double sinAlpha = sqrt(c / (c + 1));
 		
-		if (thisDeviation.z < 0) angle *= -1;
+		if (thisDeviation.z < 0) sinAlpha *= -1;
+
+		double kickValue = sinAlpha;
 		
-		double dampValue = sin(angle);
-		if (dampValue != dampValue)
-		{
-			dampValue = 0;
-		}
-		
-		double kickValue = cos(angle);
 		if (kickValue != kickValue)
 		{
 			kickValue = 0;
 		}
 
-		/* (dampening) We want to correct if the deviation is close to 
-		 * the magic angle */
-		double rotAngle = 0;
-		
-		/** Average direction of THIS bond (torsion-ignorant) */
-		vec3 thisDir = mat3x3_axis(thisBasis, 2);
-		
-		/** Actual direction of THIS bond (torsion-ignorant) */
-		vec3 thisNext = mat3x3_axis(thisBasis, 0);
-
-		/* Find the best angle for dampening */
-		mat3x3_closest_rot_mat(thisNext, aveNext, thisDir, &rotAngle, true);
-
-		if (rotAngle != rotAngle)
-		{
-			rotAngle = 0;
-		}
-
-		double undoBlur = 0;
-		undoBlur = rotAngle;
-		undoBlur *= fabs(dampValue);
-		undoBlur *= fabs(_dampening);
-
-		/* This will only apply for a kicked bond */
-		double addBlur = _kick;
-		addBlur *= kickValue;
+		/* Baseline kick multiplied by kickValue */
+		double addBlur = _kick * kickValue;
 
 		if (isFixed())
 		{
-			undoBlur = 0; addBlur = 0;
+			addBlur = 0;
 		}
 
-		double totalBlur = undoBlur + addBlur;
+		double totalBlur = addBlur;
 		prevs->at(i).torsion = totalBlur;	
+		prevs->at(i).kickValue = kickValue;
 		
 		averageModulation += totalBlur;
 	}
@@ -728,80 +665,99 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 
 double Bond::getBaseTorsion()
 {
-	ModelPtr model = getParentModel();
-	BondPtr prevBond = boost::static_pointer_cast<Bond>(model);
+	ExplicitModelPtr model = getParentModel();
 	int myGroup = -1;
-	double torsionNumber = prevBond->downstreamBondNum(this,
-	                                                   &myGroup);
+	double torsionNumber = model->downstreamBondNum(this, &myGroup);
 
-	BondPtr parent = ToBondPtr(getParentModel());
-	BondPtr sisBond = parent->downstreamBond(myGroup, 0);
 	/* May be myself */
+	BondPtr sisBond = shared_from_this();
+
+	if (torsionNumber > 0)
+	{
+		BondPtr parent = ToBondPtr(getParentModel());
+		sisBond = parent->downstreamBond(myGroup, 0);
+	}
+
 	double baseTorsion = sisBond->_torsion;
+	
+	if (torsionNumber == 0 && model->isBond())
+	{
+		BondPtr parent = ToBondPtr(getParentModel());
+		
+		if (parent->hasTwist())
+		{
+			double angle = parent->getTwist()->getTorsionCorrection();
+			baseTorsion += angle;
+		}
+	}
+	
 	return baseTorsion;
 }
 
-std::vector<BondSample> *Bond::getManyPositions()
+std::vector<BondSample> *Bond::getManyPositions(void *)
 {
-	std::vector<BondSample> *newSamples;
-
-	newSamples = &_storedSamples;
-
 	if (!_changedSamples)
 	{
 		return &_storedSamples;
 	}
 
-	ModelPtr model = getParentModel();
+	ExplicitModelPtr model = getParentModel();
 
-	newSamples->clear();
+	std::vector<ExplicitModelPtr> parents;
 
-	if (model->getClassName() == "Absolute")
+	/* Go back through the parental models until we find one
+	 * which does not have _changedSamples == true */
+	while (true)
 	{
-		std::vector<BondSample> *absPos = model->getManyPositions();
-		mat3x3 magicMat = getMagicMat(_bondDirection);
-		
-		_magicAxis = mat3x3_axis(magicMat, 2); 
-
-		/* We must be connected to something else, oh well */
-		/* Torsion basis must be the same. */
-
-		for (size_t i = 0; i < absPos->size(); i++)
+		if (model->changedSamples())
 		{
-			vec3 majorPos = (*absPos)[i].start;
-			vec3 heavyPos = getHeavyAlign()->getInitialPosition();
-			vec3 none = {0, 0, 1};
-			vec3 actualMajor = getMajor()->getAbsolutePosition();
-			vec3 start = vec3_subtract_vec3(majorPos, _bondDirection);
-			vec3 perfectStart = vec3_subtract_vec3(actualMajor, _bondDirection);
-
-			mat3x3 newBasis = makeTorsionBasis(heavyPos, actualMajor, perfectStart, none);
-
-			vec3 majorDev = vec3_subtract_vec3(majorPos, actualMajor);
-			mat3x3_mult_vec(magicMat, &majorDev);
-			double notY = sqrt(majorDev.x * majorDev.x +
-			                   majorDev.z * majorDev.z);
-			double tanY = majorDev.y / notY;
-			double diffValue = sin(atan(tanY));
-
-			if (diffValue != diffValue)
-			{
-				diffValue = 0;
-			}
-
-			BondSample newSample;
-			newSample.basis = newBasis;
-			newSample.torsion = 0;
-			newSample.start = start;
-			newSample.old_start = majorPos;
-			newSample.occupancy = (*absPos)[i].occupancy;
-			newSamples->push_back(newSample);
-
+			parents.push_back(model);
 		}
-
-		return newSamples;
+		else
+		{
+			break;
+		}
+		
+		if (model->isAnchor())
+		{
+			break;
+		}
+		else if (model->isBond())
+		{
+			model = ToBondPtr(model)->getParentModel();
+		}
 	}
 
+	/* Now we have a list of parents in reverse order; call each
+	 * individually to get refreshed positions. */
+
+	for (int i = parents.size() - 1; i >= 0; i--)
+	{
+		/* If the parent is actually an anchor, we skip it; it will
+		 * get appropriately called by an actual bond */
+		if (parents[i]->isBond())
+		{
+			ToBondPtr(parents[i])->getManyPositionsPrivate();
+		}
+	}
+	
+	/* Now we can call it on ourselves */
+	
+	std::vector<BondSample> *samples = getManyPositionsPrivate();
+	
+	/* And return it */
+	
+	return samples;
+}
+	
+std::vector<BondSample> *Bond::getManyPositionsPrivate()
+{
+	if (!_changedSamples)
+	{
+		return &_storedSamples;
+	}
+
+	ExplicitModelPtr model = getParentModel();
 	BondPtr prevBond = boost::static_pointer_cast<Bond>(model);
 	int myGroup = -1;
 	double torsionNumber = prevBond->downstreamBondNum(this,
@@ -815,10 +771,10 @@ std::vector<BondSample> *Bond::getManyPositions()
 
 	double totalAtoms = prevBond->downstreamBondCount(myGroup);
 
-	std::vector<BondSample> *prevSamples = prevBond->getManyPositions();
+	_storedSamples = *prevBond->getManyPositions(&*getMinor());
 	
 	double baseTorsion = getBaseTorsion();
-
+	
 	/* This is just to get a set of angles, no bases */
 	double circlePortion = 0;
 	double circleAdd = 0;
@@ -839,64 +795,60 @@ std::vector<BondSample> *Bond::getManyPositions()
 	std::vector<BondSample> myTorsions;
 
 	bool usingKick = (isUsingTorsion()
-	                          && nextBondExists && !isFixed());
+	                          && !isFixed());
 
 	if (usingKick)
 	{
-		correctTorsionAngles(prevSamples);
+		correctTorsionAngles(&_storedSamples);
 	}
 
 	double occTotal = 0;
-	newSamples->reserve(prevSamples->size());
+	/* vec3 to be ignored */
+	const vec3 none = {0, 0, 1};
 
-	for (size_t i = 0; i < prevSamples->size(); i++)
+	for (size_t i = 0; i < _storedSamples.size(); i++)
 	{
 		double currentTorsion = baseTorsion + circleAdd;
 		/* Deviation from correction */
-		currentTorsion += prevSamples->at(i).torsion;
+		currentTorsion += _storedSamples[i].torsion;
 
-		vec3 prevHeavyPos = (*prevSamples)[i].old_start;
-		vec3 prevMinorPos = (*prevSamples)[i].start;
-		mat3x3 oldBasis = (*prevSamples)[i].basis;
+		vec3 prevHeavyPos = _storedSamples[i].old_start;
+		vec3 prevMinorPos = _storedSamples[i].start;
+		mat3x3 oldBasis = _storedSamples[i].basis;
 
 		vec3 myCurrentPos = positionFromTorsion(oldBasis, currentTorsion,
 		                                        ratio, prevMinorPos);
-
-		/* Prepping for bending */
-		const vec3 none = {0, 0, 1};
 
 		/* New basis for the next bond */
 		mat3x3 newBasis = makeTorsionBasis(prevHeavyPos, prevMinorPos,
 		                                   myCurrentPos, none);
 
-		BondSample nextSample;
-		nextSample.basis = newBasis;
-		nextSample.start = myCurrentPos;
-		nextSample.old_start = prevMinorPos;
-		nextSample.torsion = 0;
-		nextSample.occupancy = (_occupancy * prevSamples->at(i).occupancy);
+		_storedSamples[i].basis = newBasis;
+		_storedSamples[i].start = myCurrentPos;
+		_storedSamples[i].old_start = prevMinorPos;
+		_storedSamples[i].occupancy *= _occupancy;
 		
-		occTotal += nextSample.occupancy;
-
-		newSamples->push_back(nextSample);
+		occTotal += _storedSamples[i].occupancy;
 	}
 
 	if (_resetOccupancy)
 	{
-		for (size_t i = 0; i < newSamples->size(); i++)
+		for (size_t i = 0; i < _storedSamples.size(); i++)
 		{
-			newSamples->at(i).occupancy /= occTotal;
+			_storedSamples[i].occupancy /= occTotal;
 		}
 	}
 
 	_changedSamples = false;
+	
+	sanityCheck();
 
-	return newSamples;
+	return &_storedSamples;
 }
 
 bool Bond::isNotJustForHydrogens()
 {
-	if (getMinor()->getElement()->electronCount() > 1)
+	if (getMinor()->getElectronCount() > 1)
 	{
 		return true;
 	}
@@ -909,7 +861,7 @@ bool Bond::isNotJustForHydrogens()
 	for (size_t i = 0; i < downstreamBondCount(0); i++)
 	{
 		AtomPtr atom = downstreamAtom(i, 0);
-		if (atom->getElement()->electronCount() > 1)
+		if (atom->getElectronCount() > 1)
 		{
 			return true;
 		}
@@ -918,20 +870,12 @@ bool Bond::isNotJustForHydrogens()
 	return false;
 }
 
-void Bond::propagateChange(int depth, bool refresh)
+AtomGroupPtr Bond::makeAtomGroup(BondPtr endBond)
 {
-	if (_anchored)
-	{
-		return;
-	}
+	AtomGroupPtr group = AtomGroupPtr(new AtomGroup());
 
-	/* Will force recalculation of final positions */
-	Model::propagateChange(depth, refresh);
-
-	/* Iterative now */
 	std::vector<BondPtr> propagateBonds;
-	propagateBonds.push_back(ToBondPtr(shared_from_this()));
-	int count = 0;
+	propagateBonds.push_back(shared_from_this());
 
 	for (size_t k = 0; k < propagateBonds.size(); k++)
 	{
@@ -944,22 +888,83 @@ void Bond::propagateChange(int depth, bool refresh)
 				AtomPtr atom = bond->downstreamAtom(j, i);
 				ModelPtr model = atom->getModel();
 				BondPtr bond = ToBondPtr(model);
+				
+				if (bond != endBond)
+				{
+					propagateBonds.push_back(bond);
+				}
 
-				propagateBonds.push_back(bond);
+			}
+		}
+		
+		AtomPtr minor = bond->getMinor();
+		group->addAtom(minor);
+	}
+	
+	return group;
+}
+
+void Bond::propagateChange(int depth, bool refresh)
+{
+	/* Will force recalculation of final positions */
+	Model::propagateChange(depth, refresh);
+
+	/* Iterative now */
+	std::vector<BondInt> propagateBonds;
+	BondInt pair;
+	pair.bond = shared_from_this();
+	pair.num = depth;
+	propagateBonds.push_back(pair);
+	
+	/* Propagate down sisters */
+	ModelPtr pModel = getParentModel();
+	
+	if (pModel && pModel->isBond())
+	{
+		BondPtr parent = ToBondPtr(pModel);
+
+		int group = -1;
+		int num = parent->downstreamBondNum(this, &group);
+		
+		if (group >= 0 && num == 0)
+		{
+			for (int j = 1; j < parent->downstreamBondCount(group); j++)
+			{
+				BondPtr downBond = parent->downstreamBond(group, j);
+				
+				BondInt pair;
+				pair.bond = downBond;
+				pair.num = depth;
+				propagateBonds.push_back(pair);
+			}
+		}
+	}
+
+	for (size_t k = 0; k < propagateBonds.size(); k++)
+	{
+		BondPtr bond = propagateBonds[k].bond;
+		int curr_depth = propagateBonds[k].num;
+
+		if ((curr_depth >= 0 && depth >= 0) || depth < 0)
+		{
+			for (size_t j = 0; j < bond->downstreamBondGroupCount(); j++)
+			{
+				for (size_t i = 0; i < bond->downstreamBondCount(j); i++)
+				{
+					BondPtr newBond = bond->downstreamBond(j, i);
+					BondInt pair;
+					pair.bond = newBond;
+					pair.num = curr_depth - 1;
+
+					propagateBonds.push_back(pair);
+				}
 			}
 		}
 
-		bond->_changedPos = true;
 		bond->_changedSamples = true;
 		bond->_recalcDist = true;
+		/* not recursive call - this fixes other problems */
 		bond->Model::propagateChange(depth, refresh);
-
-		if (depth >= 0 && count > depth)
-		{
-			break;
-		}
-
-		count++;
 	}
 
 	if (!refresh)
@@ -969,17 +974,17 @@ void Bond::propagateChange(int depth, bool refresh)
 
 	for (size_t k = 0; k < propagateBonds.size(); k++)
 	{
-		BondPtr bond = propagateBonds[k];
+		BondPtr bond = propagateBonds[k].bond;
 		{
 			bond->getFinalPositions();
 		}
 	}
 }
 
-ModelPtr Bond::getParentModel()
+ExplicitModelPtr Bond::getParentModel()
 {
 	AtomPtr atom = getMajor();
-	ModelPtr model = atom->getModel();
+	ExplicitModelPtr model = atom->getExplicitModel();
 
 	return model;
 }
@@ -1030,7 +1035,7 @@ BondGroupPtr Bond::bondGroupForBond()
 	
 	if (!model->isBond())
 	{
-		return NULL;
+		return BondGroupPtr();
 	}
 
 	BondPtr parent = ToBondPtr(model);
@@ -1045,7 +1050,91 @@ BondGroupPtr Bond::bondGroupForBond()
 	return parent->_bondGroups[group];
 }
 
-bool Bond::splitBond()
+void Bond::sanityCheck()
+{
+	if (_torsion != _torsion)
+	{
+		std::cout << "Torsion angle is nan" << std::endl;
+		std::cout << description() << std::endl;
+	}
+	
+	ExplicitModel::sanityCheck();
+}
+
+void Bond::destroy(bool start)
+{
+	for (int i = 0; i < downstreamBondGroupCount(); i++)
+	{
+		for (int j = 0; j < downstreamBondCount(i); j++)
+		{
+			downstreamBond(i, j)->destroy(false);
+		}
+	}
+	
+	if (start)
+	{
+		BondPtr parent = ToBondPtr(getParentModel());
+		int group = -1;
+		int num = parent->downstreamBondNum(this, &group);
+
+		parent->_bondGroups[group]->removeBond(num);
+	}
+	
+	PolymerPtr polymer = getMinor()->getMonomer()->getPolymer();
+	polymer->removeAtom(getMinor());
+	
+	if (getParentModel()->isAnchor())
+	{
+		warn_user("Pruning too far... reached anchor point.");
+	}
+}
+
+void Bond::checkForSplits(AtomGroupPtr polymer)
+{
+	AtomPtr minor = getMinor();
+	AtomList list = polymer->findAtoms(minor->getAtomName(), 
+	                                   minor->getResidueNum());
+	
+	if (list.size() > 1)
+	{
+		BondPtr success = BondPtr();
+		for (int i = 0; i < list.size() - 1; i++)
+		{
+			BondPtr result = splitBond(true);
+			
+			if (result)
+			{
+				success = result;
+			}
+		}
+
+		if (success)
+		{
+			for (int i = 0; i < list.size(); i++)
+			{
+				AtomPtr atom = list[i];
+				if (atom->getModel()->isBond())
+				{
+					BondPtr bond = ToBondPtr(atom->getModel());
+					double origOcc = atom->getOriginalOccupancy();
+					Bond::setOccupancy(&*bond, origOcc);
+				}
+			}
+		}
+
+	}
+	
+	for (size_t j = 0; j < downstreamBondGroupCount(); j++)
+	{
+		for (size_t i = 0; i < downstreamBondCount(j); i++)
+		{
+			BondPtr bond = downstreamBond(j, i);
+			bond->checkForSplits(polymer);	
+		}
+	}
+}
+
+BondPtr Bond::splitBond(bool onlyExisting)
 {
 	BondPtr me = ToBondPtr(shared_from_this());
 	BondPtr parent = ToBondPtr(getParentModel());
@@ -1053,7 +1142,20 @@ bool Bond::splitBond()
 	
 	int num = parent->downstreamBondNum(this, NULL);
 	
-	BondPtr dupl = me->duplicateDownstream(parent, last);
+	BondPtr dupl = me->duplicateDownstream(parent, last, onlyExisting);
+	
+	if (dupl)
+	{
+		if (getMinor()->getAlternativeConformer().length() == 0)
+		{
+			getMinor()->setAlternativeConformer("a");
+		}
+	}
+	
+	if (!dupl && onlyExisting)
+	{
+		return BondPtr();
+	}
 
 	double torsion = getBaseTorsion();
 	
@@ -1061,6 +1163,7 @@ bool Bond::splitBond()
 	{
 		torsion += getCirclePortion(&*me);
 		setCirclePortion(&*dupl, 0.);
+		dupl->setFixed(true);
 	}
 	
 	setTorsion(&*dupl, torsion);
@@ -1069,10 +1172,12 @@ bool Bond::splitBond()
 	_occupancy /= 2;
 	dupl->_occupancy /= 2;
 
+	dupl->setSplit(true);
+	setSplit(true);
 
 	propagateChange();
 
-	return true;
+	return dupl;
 }
 
 void Bond::copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum)
@@ -1083,11 +1188,9 @@ void Bond::copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum)
 	_kick = copyFrom->_kick;
 }
 
-BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
+BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum,
+                                  bool onlyExisting)
 {
-	/* duplBond will be a child of newParent */
-	BondPtr duplBond = BondPtr(new Bond(*this));
-
 	/* Dealing with atom business */
 	AtomPtr duplAtom = AtomPtr();
 	
@@ -1099,8 +1202,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 	* if not, we will create a new one. */
 	for (size_t i = 0; i < list.size(); i++)
 	{
-		if (list[i].expired()) continue;
-		AtomPtr atom = list[i].lock();
+		AtomPtr atom = list[i];
 		ModelPtr model = atom->getModel();
 
 		if (model->isAbsolute())
@@ -1113,10 +1215,27 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 	/* In the case where we have not found an existing atom...*/
 	if (!duplAtom)
 	{
+		if (onlyExisting)
+		{
+			/* Last thing we have to do is allow the final bond (that's us)
+			 * to refine torsion angles */
+			
+			setUsingTorsion(true);
+			
+			/* Now we can end the chain */
+			return BondPtr();
+		}
+
+		CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 		duplAtom = AtomPtr(new Atom(*getMinor()));
 		/* Lower case */
 		char conformer[] = "a";
 
+		if (getMinor()->getAlternativeConformer().length() == 0)
+		{
+			getMinor()->setAlternativeConformer(conformer);
+		}
+		
 		for (size_t i = 0; i < list.size(); i++)
 		{
 			conformer[0]++;
@@ -1124,9 +1243,15 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 
 		duplAtom->setAlternativeConformer(conformer);
 		duplAtom->setFromPDB(false);
+		int num = crystal->issueAtomNumber();
+		duplAtom->setAtomNum(num);
 		getMinor()->getMolecule()->addAtom(duplAtom);
 	}
+
 	/* Dealt with appropriate atom business */
+
+	/* duplBond will be a child of newParent */
+	BondPtr duplBond = BondPtr(new Bond(*this));
 
 	/* Connect this duplicated minor atom to the polymer and monomer.
 	 * The molecule should already have happened in both cases above */
@@ -1144,6 +1269,11 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 	/* If this is the end of the chain, stop now */
 	if (!downstreamBondGroupCount())
 	{
+		if (onlyExisting)
+		{
+			duplBond->deriveTorsionAngle();
+		}
+
 		return duplBond;
 	}
 	
@@ -1153,7 +1283,6 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 	{
 		if (_splitBlock)
 		{
-			_splitBlock = false;
 			/* Need to return occupancy to full here on out */
 			ModelPtr model = downstreamAtom(0, i)->getModel();
 			ToBondPtr(model)->_resetOccupancy = true;
@@ -1170,7 +1299,20 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum)
 		}
 
 		BondPtr nextBond = ToBondPtr(nextAtom->getModel());
-		nextBond->duplicateDownstream(duplBond, 0);
+		BondPtr result = nextBond->duplicateDownstream(duplBond, 
+		                                               0, onlyExisting);
+		
+		if (onlyExisting && !result)
+		{
+			nextBond->_resetOccupancy = true;
+		}
+	}
+
+	_splitBlock = false;
+	
+	if (onlyExisting)
+	{
+		duplBond->deriveTorsionAngle();
 	}
 
 	return duplBond;
@@ -1207,15 +1349,19 @@ std::string Bond::description()
 	<< _torsion << std::endl;
 	stream << "Bond downstream groups: ("
 	<< downstreamBondGroupCount() << "):" << std::endl;
-	stream << "Bond downstream atoms (first) ("
-	<< downstreamBondCount(0) << "):" << std::endl;
-
-	for (size_t i = 0; i < downstreamBondGroupCount(); i++)
+	
+	if (downstreamBondGroupCount())
 	{
-		for (size_t j = 0; j < downstreamBondCount(i); j++)
+		stream << "Bond downstream atoms (first) ("
+		<< downstreamBondCount(0) << "):" << std::endl;
+
+		for (size_t i = 0; i < downstreamBondGroupCount(); i++)
 		{
-			stream << "\t" << downstreamAtom(i, j)->shortDesc()
-			<< "(" << &*downstreamAtom(i, j) << ")" << std::endl;
+			for (size_t j = 0; j < downstreamBondCount(i); j++)
+			{
+				stream << "\t" << downstreamAtom(i, j)->shortDesc()
+				<< "(" << &*downstreamAtom(i, j) << ")" << std::endl;
+			}
 		}
 	}
 
@@ -1227,29 +1373,6 @@ std::string Bond::description()
 
 
 	return stream.str();
-}
-
-double Bond::getMeanSquareDeviation()
-{
-	getAnisotropy(true);
-	return _isotropicAverage * 8 * M_PI * M_PI;
-}
-
-void Bond::resetBondDirection()
-{
-	vec3 majorPos = getMajor()->getAbsolutePosition();
-	vec3 minorPos = getMinor()->getAbsolutePosition();
-
-	if (getParentModel()->isBond())
-	{
-		ToBondPtr(getParentModel())->getDistribution();
-		majorPos = ToBondPtr(getParentModel())->getAbsolutePosition();
-		getDistribution();
-		minorPos = getAbsolutePosition();
-	}
-
-	_bondDirection = vec3_subtract_vec3(majorPos, minorPos);
-	vec3_set_length(&_bondDirection, _bondLength);
 }
 
 bool Bond::isRefinable()
@@ -1305,9 +1428,9 @@ bool Bond::test()
 					continue;
 				}
 				//
-				vec3 pos1 = atom1->getModel()->getManyPositions()->at(0).start;
-				vec3 pos2 = getMinor()->getModel()->getManyPositions()->at(0).start;
-				vec3 pos3 = atom3->getModel()->getManyPositions()->at(0).start;
+				vec3 pos1 = atom1->getExplicitModel()->getManyPositions()->at(0).start;
+				vec3 pos2 = getMinor()->getExplicitModel()->getManyPositions()->at(0).start;
+				vec3 pos3 = atom3->getExplicitModel()->getManyPositions()->at(0).start;
 
 				double realAngle = vec3_angle_from_three_points(pos1, pos2, pos3);
 
@@ -1343,12 +1466,12 @@ void Bond::recalculateTorsion(AtomPtr heavy, double value)
 {
 	if (!_heavyAlign.expired() && _heavyAlign.lock() != heavy)
 	{
-		heavy->getModel()->getFinalPositions();
-		_heavyAlign.lock()->getModel()->getFinalPositions();
+		heavy->getModel()->refreshPositions();
+		_heavyAlign.lock()->getModel()->refreshPositions();
 		vec3 newHPos = heavy->getModel()->getAbsolutePosition();
 		vec3 origHPos = _heavyAlign.lock()->getModel()->getAbsolutePosition();
-		getMinor()->getModel()->getFinalPositions();
-		getMajor()->getModel()->getFinalPositions();
+		getMinor()->getModel()->refreshPositions();
+		getMajor()->getModel()->refreshPositions();
 		vec3 miPos = getMinor()->getAbsolutePosition();
 		vec3 maPos = getMajor()->getAbsolutePosition();
 
@@ -1371,7 +1494,7 @@ double Bond::getEffectiveOccupancy()
 	{
 		total += samples->at(i).occupancy;
 	}
-
+	
 	return total;
 }
 
@@ -1379,33 +1502,34 @@ void Bond::addProperties()
 {
 	addReference("minor", getMinor());
 	addReference("major", getMajor());
-	addReference("heavy", getHeavyAlign());
-	addReference("light", getLightAlign());
 
 	addDoubleProperty("length", &_bondLength);    
 	addDoubleProperty("torsion", &_torsion);    
 	addDoubleProperty("exp_angle", &_expectedAngle);    
 	addDoubleProperty("circle", &_circlePortion);    
 	addDoubleProperty("ratio", &_geomRatio);    
-	addDoubleProperty("kick", &_kick);    
+	
+	if (!hasWhack())
+	{
+		addDoubleProperty("kick", &_kick);    
+	}
+	else
+	{
+		addReference("whack", getWhack());
+	}
+	
 	addDoubleProperty("phi", &_phi);    
 	addDoubleProperty("psi", &_psi);    
-	addDoubleProperty("dampening", &_dampening);
 	addDoubleProperty("occupancy", &_occupancy);
-	addDoubleProperty("occ_mult", &_occMult);
 	addBoolProperty("occ_reset", &_resetOccupancy);
+	addBoolProperty("split", &_split);
 
 	addBoolProperty("fixed", &_fixed);
-	addBoolProperty("anchored", &_anchored);
 	addBoolProperty("using_torsion", &_usingTorsion);
 	addBoolProperty("refine_bond_angle", &_refineBondAngle);
 	addBoolProperty("refine_flexibility", &_refineFlexibility);
-	addBoolProperty("activated", &_activated);
 	addBoolProperty("disabled", &_disabled);
 
-	addVec3Property("bond_direction", &_bondDirection);
-	addVec3Property("magic_axis", &_magicAxis);
-	
 	for (int i = 0; i < downstreamBondGroupCount(); i++)
 	{
 		addChild("bond_group", _bondGroups[i]);
@@ -1430,26 +1554,25 @@ void Bond::addObject(ParserPtr object, std::string category)
 
 void Bond::linkReference(ParserPtr object, std::string category)
 {
-	AtomPtr atom = ToAtomPtr(object);
 
 	if (category == "minor")
 	{
+		AtomPtr atom = ToAtomPtr(object);
 		_minor = atom;
 	}
 	else if (category == "major")
 	{
+		AtomPtr atom = ToAtomPtr(object);
 		_major = atom;
 	}
-	else if (category == "heavy")
+	else if (category == "whack")
 	{
-		_heavyAlign = atom;
-	}
-	else if (category == "light")
-	{
-		_lightAlign = atom;
+		WhackPtr whack = ToWhackPtr(object);
+		_whack = whack;
 	}
 	else if (category == "extra_sample")
 	{
+		AtomPtr atom = ToAtomPtr(object);
 		addExtraTorsionSample(atom);
 	} 
 }
@@ -1457,4 +1580,20 @@ void Bond::linkReference(ParserPtr object, std::string category)
 void Bond::postParseTidy()
 {	
 
+}
+
+void Bond::equaliseOccupancies()
+{
+	double occ = 1 / (double)downstreamBondGroupCount();
+
+	for (int i = 0; i < downstreamBondGroupCount(); i++)
+	{
+		for (int j = 0; j < downstreamBondCount(i); j++)
+		{
+			BondPtr bond = downstreamBond(i, j);
+			setOccupancy(&*bond, occ);
+		}
+	}
+	
+	propagateChange();
 }

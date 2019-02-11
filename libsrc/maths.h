@@ -33,7 +33,8 @@ inline double two_dataset_mean(std::vector<double> &vec1, std::vector<double> &v
 {
 	return mean(vec1);
 }
-double add_if_y_gt_zero(std::vector<double> &vec1, std::vector<double> &vec2);
+double add_x_if_y(std::vector<double> &vec1, std::vector<double> &vec2,
+                  int val);
 double add_if_gt_zero(std::vector<double> &vec2);
 double standard_deviation(std::vector<double> &values);
 void regression_line(std::vector<double> xs, std::vector<double> ys,

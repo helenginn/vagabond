@@ -28,6 +28,7 @@ public:
 private:
 	void findCysteineSulphurs();
 	void findCloseCysteines();
+	void hydrogenateRemaining();
 	void convertCysteine(AtomPtr oneAtom);
 	
 	CrystalPtr _crystal;	

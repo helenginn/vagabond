@@ -7,6 +7,7 @@
 #include "../../libsrc/shared_ptrs.h"
 #include <QtWidgets/qlineedit.h>
 #include <QtWidgets/qfiledialog.h>
+#include <QtWidgets/qcheckbox.h>
 
 class StartScreen: public QMainWindow
 {
@@ -15,48 +16,58 @@ class StartScreen: public QMainWindow
 public:
 	StartScreen(QWidget *parent = 0, int argc = 0, char *argv[] = NULL);
 	~StartScreen();
+
+	void finishUp();
 private:
 	QPushButton *_bRun;
 
 	QPushButton *_bMtz;
 	QLineEdit *_tMtz;
-	QLabel *_lMtz;
 
 	QPushButton *_bModel;
 	QLineEdit *_tModel;
-	QLabel *_lModel;
 
 	QPushButton *_bDir;
 	QLineEdit *_tDir;
-	QLabel *_lDir;
-
-	QLabel *_lTweakables;
-	QLabel *_lInputs;
-
 	QLineEdit *_tKick;
-	QLabel *_lKick;
-	QLabel *_lKickTip;
-	
 	QLineEdit *_tMinRes;
-	QLabel *_lMinRes;
-	
 	QLineEdit *_tMaxRes;
-	QLabel *_lMaxRes;
+	QLineEdit *_tRadius;
+	
+	QCheckBox *_cRefine;
+	QCheckBox *_cPosition;
+	QCheckBox *_cInter;
+	QCheckBox *_cIntra;
+	QCheckBox *_cCbAngles;
+	QCheckBox *_cCgAngles;
+	QCheckBox *_cGlyAngles;
+	QCheckBox *_cPeptide;
+	QCheckBox *_cSidechains;
 	
 	OptionsPtr _options;
 	QFileDialog *_fileDialogue;   
+	QPushButton *_bOptionals;
+	
+	std::vector<QWidget *> _widgets;
+	std::vector<QWidget *> _optWidgets;
+	std::vector<QCheckBox *> _allToggle;
+	std::vector<QCheckBox *> _angleToggle, _angle2Toggle;
 	
 	void makeButtons();
+	bool _showOpts;
 	int _argc;
 	char **_argv;
 
-	void getFile(std::string title, std::string types, QLineEdit *edit);
+	void getFile(std::string title, QString types, QLineEdit *edit);
 	std::string findNewFolder();
 private slots:
 	void pushRun();
 	void chooseMtz();
 	void chooseModel();
 	void chooseDir();
+	void toggleOptionals();
+	
+	void toggleDisableOptions(int);
 };
 
 #endif

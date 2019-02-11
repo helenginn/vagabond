@@ -32,9 +32,15 @@ public:
 	void makeNewDensity(CrystalPtr crystal = CrystalPtr());
 	void nudgeDensity(int dir);
 	
-	void toggleVisible()
+	void setDiffDensity(bool val)
 	{
-		_visible = !_visible;
+		_diff = val;
+		_threshold = 3;
+	}
+	
+	void setVisible(bool vis)
+	{
+		_visible = vis;
 	}
 	
 	void recalculate()
@@ -49,11 +55,14 @@ public:
 protected:
 	virtual void bindTextures();
 private:
+	
+	FFTPtr getFFT();
 	CrystalPtr _crystal;
 	GLKeeper *_keeper;
 	void calculateContouring(CrystalPtr crystal);
 	void makeUniformGrid();
 	void setupIndexTable();
+	void getSigma(FFTPtr fft);
 	int _recalculate;
 	std::mutex _renderLock;
 	IntMap _flips;
@@ -63,6 +72,9 @@ private:
 	vec3 getCentreOffset();
 	double _resolution;
 	double _threshold;
+	double _sigma;
+	double _mean;
+	bool _diff;
 	ivec _dims;
 	bool _visible;
 	std::vector<std::vector<GLuint> > _cubeIndices;

@@ -20,34 +20,39 @@ void BucketBulkSolvent::addSolvent()
 
 	_solvent = FFTPtr(new FFT(*crystal->getFFT()));
 	mat3x3 real2frac = crystal->getReal2Frac();
-	_solvent->setAll(0);
+	_solvent->setAll(1);
+	_atomPtrs = std::vector<Atom *>(_solvent->nn, NULL);
+	double shrink = 0.4;
 
 	for (size_t i = 0; i < crystal->moleculeCount(); i++)
 	{
-		crystal->molecule(i)->addToMap(_solvent, real2frac, true);
+		crystal->molecule(i)->addToSolventMask(_solvent, real2frac, -1,
+		                                       &_atomPtrs);
 	}
-
-	_solvent->cap(1);
-	_solvent->valueMinus(1);
 	
+	_solvent->shrink(shrink);
 	removeSlivers();
 	
 	int num0 = 0;
 	for (size_t i = 0; i < _solvent->nn; i++)
 	{
-		num0 += (_solvent->data[i][0] <= 0);
+		num0 += (_solvent->data[i][0] <= 0.5);
 	}
 	
 	num0 *= crystal->symOpCount();
 
 	double frac = (double)num0 / (double)_solvent->nn * 100;
 	frac = 100. - frac;
-	std::cout << "Fraction of solvent: " << frac << std::endl;
+	
+	if (!crystal->isSilent())
+	{
+		std::cout << "Fraction of solvent: " << frac << std::endl;
+	}
 }
 
 void BucketBulkSolvent::removeSlivers()
 {
-	/** Maximum distance before sliver is allowed to stay */
+	/** Maximum distance before sliver is allowed to stay in Ang */
 	double maxDist = 2.0;
 
 	mat3x3 basis = _solvent->getBasis();

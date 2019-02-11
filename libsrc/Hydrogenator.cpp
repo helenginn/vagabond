@@ -7,12 +7,14 @@
 //
 
 #include "Hydrogenator.h"
-#include "Element.h"
 #include "Bond.h"
+#include "Element.h"
 #include "Monomer.h"
 #include "Backbone.h"
 #include "Sidechain.h"
 #include "Polymer.h"
+#include "Options.h"
+#include "Crystal.h"
 
 Hydrogenator::Hydrogenator()
 {
@@ -21,6 +23,7 @@ Hydrogenator::Hydrogenator()
 
 AtomPtr Hydrogenator::prepareNewHydrogen(AtomPtr parent)
 {
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	ElementPtr hydrogenElement = Element::getElement("H");
 
 	AtomPtr hydrogen = AtomPtr(new Atom());
@@ -31,7 +34,7 @@ AtomPtr Hydrogenator::prepareNewHydrogen(AtomPtr parent)
 	hydrogen->setInitialBFactor(parent->getInitialBFactor());
 	hydrogen->setElement(hydrogenElement);
 	hydrogen->setOriginalOccupancy(1.);
-	hydrogen->setAtomNum(poly->issueAtomNumber());
+	hydrogen->setAtomNum(crystal->issueAtomNumber());
 	_monomer->addAtom(hydrogen);
 	
 	return hydrogen;
@@ -45,7 +48,7 @@ bool Hydrogenator::hasHydrogens(BondPtr bond)
 		{
 			AtomPtr atom = bond->downstreamAtom(i, j);
 			
-			if (atom->getElement()->electronCount() == 1)
+			if (atom->getElectronCount() == 1)
 			{
 				return true;
 			}
@@ -59,13 +62,11 @@ void Hydrogenator::setSpin(AtomList group)
 {
 	for (int i = 0; i < group.size(); i++)
 	{
-		AtomPtr atom = group[i].lock();
+		AtomPtr atom = group[i];
 		
 		BondPtr bond = ToBondPtr(atom->getModel());
-		BondPtr parent = ToBondPtr(bond->getParentModel());
-
 		bond->setUsingTorsion(true);
-		Bond::setKick(&*parent, 2.);
+//		Bond::setKick(&*bond, 2.);
 	}
 }
 
@@ -74,11 +75,16 @@ void Hydrogenator::setNewGeometry(AtomList group, double bondAngle,
 {
 	for (int i = 0; i < group.size(); i++)
 	{
-		AtomPtr atom = group[i].lock();
+		AtomPtr atom = group[i];
+		
+		if (!atom->getModel()->isBond())
+		{
+			continue;
+		}
+		
 		BondPtr bond = ToBondPtr(atom->getModel());
 		
 		Bond::setBendAngle(&*bond, deg2rad(bondAngle));	
-		BondPtr parent = ToBondPtr(bond->getParentModel());
 
 		if (portion > 0)
 		{
@@ -87,12 +93,12 @@ void Hydrogenator::setNewGeometry(AtomList group, double bondAngle,
 		}
 		
 		/* Don't set a torsion angle except for the first atom */
-		if (parent->downstreamBondNum(&*bond, NULL) > 0)
+		if (bond->downstreamBondNum(&*bond, NULL) > 0)
 		{
 			continue;
 		}
 		
-		Bond::setTorsion(&*parent, deg2rad(torsion));
+		Bond::setTorsion(&*bond, deg2rad(torsion));
 
 	}
 }
@@ -111,7 +117,7 @@ void Hydrogenator::addHydrogens(AtomList group, int hNum, ...)
 	
 	for (int i = 0; i < group.size(); i++)
 	{
-		addHydrogens(group[i].lock(), hNames);
+		addHydrogens(group[i], hNames);
 	}
 }
 
@@ -121,97 +127,100 @@ void Hydrogenator::addHydrogens(AtomPtr minor, std::vector<std::string> hNames)
 	{
 		return;
 	}
-	
+
 	ModelPtr model = minor->getModel();
-	
+
 	if (!model) return;
 	if (!model->isBond()) return;
-	
+
 	BondPtr bond = ToBondPtr(model);
-	
+
 	if (hasHydrogens(bond))
 	{
 		return;
 	}
+
+	/* Find the fraction of the complete "torsion circle" made by the
+	 * final atom in the downstream atoms. */
+	int currentTotal = 0;
 	
-	for (int i = 0; i < bond->downstreamBondGroupCount(); i++)
+	if (bond->downstreamBondGroupCount() > 0)
 	{
-		/* Find the fraction of the complete "torsion circle" made by the
-		* final atom in the downstream atoms. */
-		int currentTotal = bond->downstreamBondCount(i);
-		
-		int finalTotal = (currentTotal + hNames.size());
-		
-		double bondAngle = 0;
-		
-		switch (finalTotal)
-		{
-			/* Linear */
-			case 1:
-			bondAngle = deg2rad(180.);
-			break;
-			
-			/* Trigonal */
-			case 2:
-			bondAngle = deg2rad(120.);
-			break;
-			
-			/* Tetrahedral */
-			case 3:
-			bondAngle = deg2rad(109.5);
-			break;
-			
-			default:
-			break;	
-		}
-		
-		double circlePortion = 0;
-		bool hasBonds = bond->downstreamBondCount(i) > 0;
-		
-		if (currentTotal > 0)
-		{
-			circlePortion = bond->getCirclePortion(i, currentTotal - 1);
-		}
+		currentTotal = bond->downstreamBondCount(0);
+	}
 
-		if (circlePortion < 0) circlePortion += 1;
+	int finalTotal = (currentTotal + hNames.size());
 
-		/* Divide the remainder into an appropriate addition per hydrogen. */
-		double remaining = 1 - circlePortion;
-		
-		if (circlePortion > 0.5)
-		{
-			remaining = -circlePortion;	
-		}
-		
-		int add = currentTotal > 0 ? 1 : 0;
-		remaining /= (double)(hNames.size() + add);
-		
-		if (circlePortion > 0 && false)
-		{
-			std::cout << bond->description() << std::endl;
-			std::cout << "Last circle portion: " << circlePortion << std::endl;
-			std::cout << "Adding each time: " << remaining << std::endl;
-		}
-		
-		double nextPortion = circlePortion + remaining;
+	double bondAngle = 0;
 
-		for (int j = 0; j < hNames.size(); j++)
-		{
-			AtomPtr hydrogen = prepareNewHydrogen(minor);
-			hydrogen->setAtomName(hNames[j]);
+	switch (finalTotal)
+	{
+		/* Linear */
+		case 1:
+		bondAngle = deg2rad(180.);
+		break;
 
-			/* Set the bond length for the new hydrogen */
-			BondPtr newBond = BondPtr(new Bond(minor, hydrogen, i));
-			newBond->activate();
-			Bond::setBondLength(&*newBond, 0.968);
+		/* Trigonal */
+		case 2:
+		bondAngle = deg2rad(120.);
+		break;
 
-			/* Bond angle... no idea so just going for a tetrahedral thingy */
-			Bond::setBendAngle(&*newBond, bondAngle);
-			
-			/* Set circle portion and increment for the next hydrogen */
-			Bond::setCirclePortion(&*newBond, nextPortion * 2 * M_PI);
-			nextPortion += remaining;
-		}
+		/* Tetrahedral */
+		case 3:
+		bondAngle = deg2rad(109.5);
+		break;
+
+		default:
+		break;	
+	}
+
+	double circlePortion = 0;
+	std::string alt = "";
+	alt = bond->getMinor()->getAlternativeConformer();
+
+	/* We want to add onto the existing circle portion */
+	if (currentTotal > 0)
+	{
+		/* Returned in radians */
+		double portion = 0;
+		BondPtr last = bond->downstreamBond(0, currentTotal - 1);
+		circlePortion = Bond::getCirclePortion(&*last);
+	}
+
+	if (circlePortion < 0) circlePortion += deg2rad(360);
+
+	/* Divide the remainder into an appropriate addition per hydrogen. */
+	double remaining = deg2rad(360) - circlePortion;
+
+	if (circlePortion > 0.5 * deg2rad(360))
+	{
+		remaining = -circlePortion;	
+	}
+
+	/* We don't need to add to the first hydrogen if we don't
+	 * have any original non-hydrogen downstream bonds */
+	int add = currentTotal > 0 ? 1 : 0;
+	remaining /= (double)(hNames.size() + add);
+
+	double nextPortion = circlePortion + remaining * add;
+
+	for (int j = 0; j < hNames.size(); j++)
+	{
+		AtomPtr hydrogen = prepareNewHydrogen(minor);
+		hydrogen->setAtomName(hNames[j]);
+		hydrogen->setAlternativeConformer(alt);
+
+		/* Set the bond length for the new hydrogen */
+		BondPtr newBond = BondPtr(new Bond(minor, hydrogen, 0));
+		newBond->activate();
+		Bond::setBondLength(&*newBond, 0.968);
+
+		/* Bond angle... no idea so just going for a tetrahedral thingy */
+		Bond::setBendAngle(&*newBond, bondAngle);
+
+		/* Set circle portion and increment for the next hydrogen */
+		Bond::setCirclePortion(&*newBond, nextPortion);
+		nextPortion += remaining;
 	}
 }
 
@@ -219,7 +228,7 @@ void setHBonds(AtomList list)
 {
 	for (int i = 0; i < list.size(); i++)
 	{
-		list[i].lock()->setHBonding(true);
+		list[i]->setHBonding(true);
 	}
 }
 
@@ -328,9 +337,8 @@ void Hydrogenator::hydrogenate()
 	if (_monomer->getIdentifier() == "cys")
 	{
 		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
-		addHydrogens(side->findAtoms("SG"), 1, "HG");
+//		addHydrogens(side->findAtoms("SG"), 1, "HG");
 
-		setNewGeometry(_monomer->findAtoms("HG"), 120., 180.);
 		setSpin(_monomer->findAtoms("HG"));
 	}
 	

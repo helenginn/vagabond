@@ -26,16 +26,24 @@
 #define deg2rad(a) ((a) * M_PI / 180)
 #define rad2deg(a) ((a) / M_PI * 180)
 
+#define b2var(a) ((a) / (8 * M_PI * M_PI))
+#define var2b(a) ((a) * (8 * M_PI * M_PI))
+
 #define ToBondPtr(a) (boost::static_pointer_cast<Bond>((a)))
 #define ToBondGroupPtr(a) (boost::static_pointer_cast<BondGroup>((a)))
+#define ToGhostBondPtr(a) (boost::static_pointer_cast<GhostBond>((a)))
 #define ToAbsolutePtr(a) (boost::static_pointer_cast<Absolute>((a)))
+#define ToAnchorPtr(a) (boost::static_pointer_cast<Anchor>((a)))
 #define ToModelPtr(a) (boost::static_pointer_cast<Model>((a)))
+#define ToExplicitModelPtr(a) (boost::static_pointer_cast<ExplicitModel>((a)))
 #define ToPolymerPtr(a) (boost::static_pointer_cast<Polymer>((a)))
 #define ToMoleculePtr(a) (boost::static_pointer_cast<Molecule>((a)))
 #define ToSidechainPtr(a) (boost::static_pointer_cast<Sidechain>((a)))
 #define ToBackbonePtr(a) (boost::static_pointer_cast<Backbone>((a)))
 #define ToCrystalPtr(a) (boost::static_pointer_cast<Crystal>((a)))
 #define ToAtomPtr(a) (boost::static_pointer_cast<Atom>((a)))
+#define ToWhackPtr(a) (boost::static_pointer_cast<Whack>((a)))
+#define ToTwistPtr(a) (boost::static_pointer_cast<Twist>((a)))
 #define ToAtomGroupPtr(a) (boost::static_pointer_cast<AtomGroup>((a)))
 #define ToMonomerPtr(a) (boost::static_pointer_cast<Monomer>((a)))
 #define ToParserPtr(a) (boost::static_pointer_cast<Parser>((a)))
@@ -43,11 +51,20 @@
 
 #define ToThingPtr(a) (boost::static_pointer_cast<Thing>((a)))
 
+class Clusterable;
+class RefinableDouble;
+typedef boost::shared_ptr<Clusterable> ClusterablePtr;
+typedef boost::weak_ptr<Clusterable> ClusterableWkr;
+typedef boost::shared_ptr<RefinableDouble> RefinableDoublePtr;
+
 class Notifiable;
 typedef boost::shared_ptr<Notifiable> NotifiablePtr;
 
 class Options;
 typedef boost::shared_ptr<Options> OptionsPtr;
+
+class Balance;
+typedef boost::shared_ptr<Balance> BalancePtr;
 
 class FFT;
 typedef boost::shared_ptr<FFT> FFTPtr;
@@ -94,16 +111,34 @@ typedef boost::weak_ptr<Atom> AtomWkr;
 class Element;
 typedef boost::shared_ptr<Element> ElementPtr;
 
+class Anchor;
 class Model;
+class ExplicitModel;
 class Absolute;
+class Chelate;
 class Bond;
 class BondGroup;
+class GhostBond;
 
 typedef boost::shared_ptr<Absolute> AbsolutePtr;
+typedef boost::shared_ptr<Anchor> AnchorPtr;
+typedef boost::weak_ptr<Anchor> AnchorWkr;
 typedef boost::shared_ptr<Model> ModelPtr;
+typedef boost::weak_ptr<Model> ModelWkr;
+typedef boost::shared_ptr<Chelate> ChelatePtr;
+typedef boost::shared_ptr<ExplicitModel> ExplicitModelPtr;
+typedef boost::weak_ptr<ExplicitModel> ExplicitModelWkr;
 typedef boost::shared_ptr<Bond> BondPtr;
 typedef boost::weak_ptr<Bond> BondWkr;
 typedef boost::shared_ptr<BondGroup> BondGroupPtr;
+typedef boost::shared_ptr<GhostBond> GhostBondPtr;
+
+class Whack;
+class Twist;
+typedef boost::shared_ptr<Whack> WhackPtr;
+typedef boost::weak_ptr<Whack> WhackWkr;
+typedef boost::shared_ptr<Twist> TwistPtr;
+typedef boost::weak_ptr<Twist> TwistWkr;
 
 class Bucket;
 class BucketBulkSolvent;
@@ -121,15 +156,21 @@ typedef boost::shared_ptr<DiffractionMtz> DiffractionMtzPtr;
 class Object;
 typedef boost::shared_ptr<Object> ObjectPtr;
 
+class ParamBand;
+typedef boost::shared_ptr<ParamBand> ParamBandPtr;
+
+class RefineMat3x3;
+typedef boost::shared_ptr<RefineMat3x3> RefineMat3x3Ptr;
+
 class RefinementGridSearch;
 class RefinementStepSearch;
 class RefinementStrategy;
-class RefinementSnake;
+class RefinementLBFGS;
 class RefinementNelderMead;
 typedef boost::shared_ptr<RefinementStepSearch> RefinementStepSearchPtr;
 typedef boost::shared_ptr<RefinementGridSearch> RefinementGridSearchPtr;
 typedef boost::shared_ptr<RefinementStrategy> RefinementStrategyPtr;
-typedef boost::shared_ptr<RefinementSnake> RefinementSnakePtr;
+typedef boost::shared_ptr<RefinementLBFGS> RefinementLBFGSPtr;
 typedef boost::shared_ptr<RefinementNelderMead> NelderMeadPtr;
 
 class CSV;
@@ -142,7 +183,7 @@ typedef boost::shared_ptr<CSV> CSVPtr;
 class Sampler;
 typedef boost::shared_ptr<Sampler> SamplerPtr;
 
-typedef std::vector<AtomWkr> AtomList;
+typedef std::vector<AtomPtr> AtomList;
 
 class Parser;
 typedef boost::shared_ptr<Parser> ParserPtr;
@@ -177,13 +218,24 @@ typedef enum
 typedef enum
 {
 	ParamOptionTorsion,
+	ParamOptionTwist,
 	ParamOptionBondAngle,
 	ParamOptionKick,
-	ParamOptionDampen,
+	ParamOptionOccupancy,
 	ParamOptionMagicAngles,
 	ParamOptionNumBonds,
+	ParamOptionMaxTries,
 } ParamOptionType;
 
+typedef enum
+{
+	ScalingTypeShell = 0,
+	ScalingTypeAbsBFactor = 1,
+	ScalingTypeAbs = 2,
+} ScalingType;
+
+typedef double (*Getter)(void *);
+typedef void (*Setter)(void *, double newValue);
 
 
 #endif

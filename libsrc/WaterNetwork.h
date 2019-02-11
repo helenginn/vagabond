@@ -20,6 +20,8 @@
  * \class WaterNetwork
  * \brief A subclass of Molecule which looks after all HOH heteroatoms,
  * and any other water molecules generated.
+ * 
+ * At the moment this is mostly defunct.
  */
 
 class WaterNetwork : public Molecule
@@ -37,13 +39,8 @@ public:
 	
 	virtual void addProperties();
 	
-	void partitionNetworks(CrystalPtr crystal);
-	
 	void setMonomer(MonomerPtr _monomer);
-	static double vsRefineWaterNetwork(void *object);
 private:	
-	std::vector<WaterClusterPtr> _clusters;
-	void reportOnClusters();
 };
 
 #endif

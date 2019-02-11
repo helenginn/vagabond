@@ -14,6 +14,7 @@
 #include <vector>
 #include "vec3.h"
 #include "mat3x3.h"
+#include "Element.h"
 #include <string>
 #include "../libinfo/GeomTable.h"
 #include "fftw3d.h"
@@ -26,8 +27,6 @@
  * single ATOM or HETATM line from a PDB.
  */
 
-class Plucker;
-
 class Atom : public Parser
 {
 public:
@@ -39,34 +38,42 @@ public:
 	Atom();
 	Atom(Atom &other);
 
-	virtual ~Atom() {}	
+	virtual ~Atom();
 
+	/** Change the atom's model to a new one, which will now be called when
+	 * the atom distribution is required. Can be changed at any time */
 	void setModel(ModelPtr model);
+	
+	/** Get the atom position probability distribution (flexibility effects
+	 * 	caused by the model in reciprocal space with any weighting terms
+	 * 	applied */
 	FFTPtr getBlur();
 
+	/** Atom is *only* part of the backbone (so *not* including C-alpha atoms)
+	 */
 	bool isBackbone();
 	
 	/** If atom is considered both part of backbone and sidechain, such as
 	* C-alphas for protein chains. */
 	bool isBackboneAndSidechain();
 
+	/** Get the average absolute position from the atom's Model */
 	vec3 getAbsolutePosition();
-	vec3 getAsymUnitPosition(CrystalPtr crystal, int nSample = -1);
 	
 	/** Positional displacement between average ensemble position and
 	* reference position (usually from PDB). */
-	double posDisplacement();
+	double posDisplacement(bool fromSaved = false, bool refresh = true);
 	
-	/** Sum of squares of positional displacements between every ensemble
-	* position and reference position (usually from PDB). */
-	double fullPositionDisplacement();
+	void saveInitialPosition();
 
+	/** Change the periodic table element of the atom */
 	void setElement(ElementPtr element)
 	{
 		_element = element;
+		_elementSymbol = element->getSymbol();
 	}
 	
-	/** Set the monomer for this atom with no frilly bits. Do not use if
+	/** Set the monomer for this atom with no other connections. Do not use if
 	* you've made a new atom to assign to a monomer. Use Monomer::addAtom()
 	* instead. */
 	void setMonomer(MonomerPtr monomer)
@@ -74,27 +81,45 @@ public:
 		_monomer = monomer;
 	}
 
+	/** Change atom name such as CA, CB etc. */
 	void setAtomName(std::string name)
 	{
 		_atomName = name;
 	}
 
+	/** Get the atom name, such as CA, CB etc. */
 	std::string getAtomName()
 	{
 		return _atomName;
 	}
 
+	/** Get the model associated with the position/flexibility of this atom */
 	ModelPtr getModel()
 	{
 		return _model;
 	}
 	
+	/** Get the model associated with the position/flexibility of this atom
+	 * 	and cast as an explicit model (only if you're certan it is! */
+	ExplicitModelPtr getExplicitModel();
+	
+	/** Call the appropriate element's Element::electronCount() - convenience
+	 * function */
 	int getElectronCount();
 
+	/** Get the associated periodic table element for this Atom */
 	ElementPtr getElement()
 	{
 		return _element;
 	}
+
+	/** Get the radius of the atom used for solvent calculations */
+	double getSolventRadius();
+	void addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double radius,
+	                      std::vector<Atom *> *ptrs);
+	void addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell, vec3 pos,
+	                           std::vector<Atom *> *ptrs,
+	                           double rad = 0);
 
 	/* Returns a FFT for the model dist, for reuse */
 	void addToMap(FFTPtr fft, mat3x3 unit_cell,
@@ -180,7 +205,7 @@ public:
 	void findAtomType(std::string resName);
 	void inheritParents();
 	std::string pdbLineBeginning(std::string start = "ATOM  ");
-	void writePositionsToFile();
+	void writePositionsToFile(std::string suffix = "");
 
 	AtomType getGeomType();
 	void convertToDisulphide();
@@ -243,6 +268,7 @@ public:
 	
 	int getResidueNum();
 
+	std::string description();
 	std::string shortDesc();
 
 	MoleculePtr getMolecule();
@@ -258,11 +284,22 @@ public:
 	double getDistanceFrom(Atom *other, int nSample = -1, bool quick = false);
 	static double getAngle(AtomPtr atom1, AtomPtr atom2, AtomPtr atom3);
 	
-	size_t pluckCount();
-	
 	void setWater(int set = 1)
 	{
 		_isWater = set;
+	}
+
+	double posToMouse();
+	
+	void setTargetPosition(vec3 pos, double weight)
+	{
+		_targetPos = pos;
+		_targetWeight = weight;
+	}
+	
+	double getTargetWeight()
+	{
+		return _targetWeight;
 	}
 	
 	bool isWater()
@@ -280,7 +317,44 @@ public:
 		_hBondage = status;
 	}
 	
-	Atom *pluckAnother();
+	void clearTargetB()
+	{
+		_targetB = 0;
+		_targetBCount = 0;
+	}
+	
+	double getTargetB()
+	{
+		return _targetB / _targetBCount;
+	}
+	
+	void setTargetB(double b)
+	{
+		_targetB += b;
+		_targetBCount++;
+	}
+	
+	void setWeightOnly(double mult)
+	{
+		_weightOnly = mult;
+	}
+	
+	vec3 getPositionInAsu();
+	
+	void setGhostBond(GhostBondPtr ghost)
+	{
+		_ghost = ghost;
+	}
+	
+	GhostBondPtr getGhostBond()
+	{
+		return _ghost;
+	}
+	
+	std::string getElementSymbol()
+	{
+		return _elementSymbol;
+	}
 protected:
 	virtual std::string getClassName()
 	{
@@ -296,6 +370,8 @@ protected:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();
 private:
+	vec3 getSymRelatedPosition(int i);
+	size_t symOpCount();
 	ModelPtr _model;
 	ModelPtr _distModelOnly;
 	ElementPtr _element;
@@ -303,12 +379,15 @@ private:
 	MonomerWkr _monomer;
 	vec3 _initialPosition;
 	double _initialB;
+	double _targetB;
+	int _targetBCount;
 	vec3 _pdbPosition;
 	int _atomNum;
 	int _asu;
 	double _origOccupancy;
 	vec3 _ellipsoidLongestAxis;
 	double _weighting;
+	double _weightOnly;
 	std::string _conformer;
 	std::string _elementSymbol;
 	bool _fromPDB;
@@ -317,9 +396,11 @@ private:
 	mat3x3 _tensor;
 	bool _hBondage;
 
+	vec3 _targetPos;
+	double _targetWeight;
+
+	GhostBondPtr _ghost;
 	AtomType _geomType;
-	
-	Plucker *_waterPlucker;
 };
 
 #endif /* defined(__vagabond__Atom__) */

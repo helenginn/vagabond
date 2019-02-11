@@ -13,12 +13,14 @@ std::string Pencil_fsh =
 "\n"\
 "void main()\n"\
 "{\n"\
-"	if (tPos[2] > -8.) {\n"\
+"	if (tPos[2] > -4.) {\n"\
 "		discard;\n"\
 "	}\n"\
+/*
 "	if (tPos[2] < -20.) {\n"\
 "		discard;\n"\
 "	}\n"\
+*/
 "	vec3 pos = vec3(vPos[0], vPos[1], vPos[2]);\n"\
 "	vec3 lightDir = normalize(pos - light_pos);\n"\
 "	float diff = abs(dot(vNormal, lightDir));\n"\
@@ -32,6 +34,9 @@ std::string Pencil_fsh =
 "	vec2 tex = vec2(tPos[0], tPos[1]);\n"\
 "	vec4 temp = texture2D(pencilTexture, tex);\n"\
 "	gl_FragColor = temp;\n"\
+"	gl_FragColor[0] *= vColor[0];\n"\
+"	gl_FragColor[1] *= vColor[1];\n"\
+"	gl_FragColor[2] *= vColor[2];\n"\
 "	gl_FragColor[3] = 0.9 * diff;\n"\
 "\n"\
 "\n"\

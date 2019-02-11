@@ -20,10 +20,14 @@ std::string InkBond_fsh =
 "	if (gl_FragColor[3] < 0.5) {\n"\
 "		discard;\n"\
 "	}\n"\
-"	if (vPos[2] < -15.) {\n"\
-"		float dist = -vPos[2] - 15.;\n"\
-"		float frac = 1. - min(dist / 6., 1.0);\n"\
+"	float cutoff = -40.;\n"\
+"	if (vPos[2] < cutoff) {\n"\
+"		float dist = -vPos[2] + cutoff;\n"\
+"		float frac = 1. - min(dist / -cutoff, 1.0);\n"\
 "		gl_FragColor[3] *= frac;\n"\
+"	}\n"\
+"	if (vPos[2] > -2.) {\n"\
+"		discard;\n"\
 "	}\n"\
 "\n"\
 "\n"\

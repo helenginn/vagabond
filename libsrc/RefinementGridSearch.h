@@ -38,6 +38,9 @@ private:
 	std::vector<double> orderedResults;
 	std::vector<ParamList> orderedParams;
 	static int _refine_counter; /* thread care! */
+	std::vector<double> _array2D;
+
+	double getGridLength(size_t which);
 
 public:
 	RefinementGridSearch() : RefinementStrategy()
@@ -67,6 +70,11 @@ public:
 	void setWritePNG(bool write = true)
 	{
 		_writePNG = write;
+	}
+	
+	std::vector<double> array2D()
+	{
+		return _array2D;
 	}
 
 	ResultMap results;

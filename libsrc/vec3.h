@@ -85,6 +85,8 @@ struct vec3 vec3_add_vec3(vec3 &aVec, vec3 &bVec);
 /** Returns a subtraction vector of the form "to minus from" */
 struct vec3 vec3_subtract_vec3(vec3 &to, vec3 &from);
 
+void vec3_subtract_from_vec3(vec3 *to, vec3 &from);
+
 /** Calculates the dot product of two vectors */
 double vec3_dot_vec3(vec3 &aVec, vec3 &bVec);
 
@@ -129,6 +131,16 @@ inline void vec3_mult(vec3 *aVec, double mult)
 	aVec->x *= mult;
 	aVec->y *= mult;
 	aVec->z *= mult;
+}
+
+inline vec3 vec3_mult(vec3 &vec, double mult)
+{
+	vec3 aVec;
+	aVec.x = mult * aVec.x;
+	aVec.y = mult * aVec.y;
+	aVec.z = mult * aVec.z;
+	
+	return aVec;
 }
 
 

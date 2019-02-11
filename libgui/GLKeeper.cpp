@@ -16,21 +16,22 @@
 
 #include "GLKeeper.h"
 #include "Density2GL.h"
+#include "Bonds2GL.h"
+#include "Selected2GL.h"
+#include <float.h>
 #include "../libsrc/vec3.h"
 
 bool GLKeeper::everMovedMouse = false;
 
 void GLKeeper::updateProjection()
 {
-	zNear = 10;
+	zNear = 4;
 	zFar = 100;
 
-	float correctedNear = zNear;
-	if (zNear <= 0.1) correctedNear = 0.1;
 	double side = 0.5;
 	float aspect = height / width;
 	projMat = mat4x4_frustum(side, -side, side * aspect, -side * aspect,
-	                         correctedNear, zFar);
+	                         zNear, zFar);
 }
 
 void GLKeeper::setupCamera(void)
@@ -50,11 +51,16 @@ void GLKeeper::setupCamera(void)
 	updateCamera();
 }
 
+GLObjectPtr GLKeeper::activeObject()
+{
+	return _allBond2GL;
+}
+
 void GLKeeper::updateCamera(void)
 {
-	vec3 alteration = _objects[0]->fixCentroid(_totalCentroid);
-	_totalCentroid = _objects[0]->getCentroid();
-
+	vec3 alteration = activeObject()->fixCentroid(_totalCentroid);
+	_totalCentroid = activeObject()->getCentroid();
+	
 	vec3 centre = _centre;
 	centre.x = 0;
 	centre.y = 0;
@@ -94,41 +100,108 @@ void GLKeeper::focusOnPosition(vec3 pos)
 
 GLKeeper::GLKeeper(int newWidth, int newHeight)
 {
+	_setup.lock();
+
 	width = newWidth;
 	height = newHeight;
-	_rendered = false;
+	_centre = empty_vec3();
+	_densityState = 1;
 
 	#ifdef SETUP_BUFFERS
 	setupBuffers();
 	#endif // SETUP_BUFFERS
 
 	/* Bond model render */
-	_allBond2GL = Vagabond2GLPtr(new Vagabond2GL(false));
-	GLObjectPtr allBonds = boost::static_pointer_cast<GLObject>(_allBond2GL);
-	_totalCentroid = allBonds->getCentroid();
+	_allBond2GL = Bonds2GLPtr(new Bonds2GL(false));
+	_totalCentroid = _allBond2GL->getCentroid();
 	
 	/* Average pos render */
-	_aveBond2GL = Vagabond2GLPtr(new Vagabond2GL(true));
-	GLObjectPtr aveBonds = boost::static_pointer_cast<GLObject>(_aveBond2GL);
+	_aveBond2GL = Bonds2GLPtr(new Bonds2GL(true));
 	_aveBond2GL->setEnabled(false);
+	
+	/* Atom pos render */
+	_atoms2GL = Atoms2GLPtr(new Atoms2GL());
+
+	/* Selected atoms render */
+	_selected2GL = Selected2GLPtr(new Selected2GL());
 
 	/* Density render */
 	_density2GL = Density2GLPtr(new Density2GL());
 	_density2GL->setKeeper(this);
 	_density2GL->recalculate();
-	GLObjectPtr objDen2GL = ToDensity2GLPtr(_density2GL);
 
-	_objects.push_back(allBonds);
-	_objects.push_back(aveBonds);
-	_objects.push_back(objDen2GL);
+	/* Difference density render */
+	_diffDens2GL = Density2GLPtr(new Density2GL());
+	_diffDens2GL->setKeeper(this);
+	_diffDens2GL->setDiffDensity(true);
+	_diffDens2GL->setVisible(false);
+	_diffDens2GL->recalculate();
+
+	_objects.push_back(_allBond2GL);
+	_objects.push_back(_aveBond2GL);
+	_objects.push_back(_selected2GL);
+	_objects.push_back(_atoms2GL);
+	_objects.push_back(_density2GL);
+	_objects.push_back(_diffDens2GL);
 
 	setupCamera();
 
 	initialisePrograms();
+	
+	_setup.unlock();
+}
+
+Density2GLPtr GLKeeper::activeDensity()
+{
+	if (_densityState == 0)
+	{
+		return Density2GLPtr();
+	}
+	else if (_densityState == 1)
+	{
+		return getDensity2GL();
+	}
+	
+	return getDiffDens2GL();
+}
+
+void GLKeeper::toggleVisibleDensity()
+{
+	if (_densityState == 0)
+	{
+		_densityState++;
+		getDensity2GL()->setVisible(true);
+		getDiffDens2GL()->setVisible(false);
+	}
+	else if (_densityState == 1)
+	{
+		_densityState++;
+		getDensity2GL()->setVisible(true);
+		getDiffDens2GL()->setVisible(true);
+	}
+	else
+	{
+		_densityState = 0;	
+		getDensity2GL()->setVisible(false);
+		getDiffDens2GL()->setVisible(false);
+	}
+}
+
+void GLKeeper::pause(bool on)
+{
+	for (int i = 0; i < _objects.size(); i++)
+	{
+		_objects[i]->pause(on);
+	}
 }
 
 void GLKeeper::render(void)
 {
+	if (!_setup.try_lock())
+	{
+		return;
+	}
+
 	glClearColor(1.0, 1.0, 1.0, 1.0);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -138,14 +211,14 @@ void GLKeeper::render(void)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	updateCamera();
 
-
-
 	for (int i = 0; i < _objects.size(); i++)
 	{
 		_objects[i]->setProjMat(projMat);
 		_objects[i]->setModelMat(modelMat);
 		_objects[i]->render();
 	}
+	
+	_setup.unlock();
 }
 
 void GLKeeper::toggleBondView()
@@ -153,6 +226,34 @@ void GLKeeper::toggleBondView()
 	bool enabled = _allBond2GL->isEnabled();
 	_aveBond2GL->setEnabled(enabled);
 	_allBond2GL->setEnabled(!enabled);
+}
+
+AtomPtr GLKeeper::findAtomAtXY(double x, double y)
+{
+	double z = -FLT_MAX;
+	AtomPtr chosen = AtomPtr();
+
+	for (int i = 0; i < _objects.size(); i++)
+	{
+		GLObjectPtr obj = _objects[i];
+
+		if (!obj->isVagabond2GL())
+		{
+			continue;
+		}
+		
+		Vagabond2GLPtr ptr = ToVagabond2GLPtr(obj);
+		AtomPtr atom = ptr->findAtomAtXY(x, y, &z);
+		
+		if (atom)
+		{
+			chosen = atom;
+		}
+	}
+	
+	_selected2GL->setPicked(chosen);
+
+	return chosen;
 }
 
 void GLKeeper::cleanup(void)
@@ -202,8 +303,6 @@ void GLKeeper::draggedLeftMouse(float x, float y)
 
 void GLKeeper::draggedRightMouse(float x, float y)
 {
-	setShouldRender();
-
 	zoom(0, 0, -y / MOUSE_SENSITIVITY * 10);
 }
 
@@ -213,7 +312,6 @@ void GLKeeper::changeSize(int newWidth, int newHeight)
 	height = newHeight;
 
 	updateProjection();
-	setShouldRender();
 }
 
 void GLKeeper::initialisePrograms()
@@ -224,3 +322,61 @@ void GLKeeper::initialisePrograms()
 	}
 }
 
+void GLKeeper::manualRefine()
+{
+	_selected2GL->manualRefine();
+}
+
+void GLKeeper::cancelRefine()
+{
+	_selected2GL->cancelRefine();
+}
+
+bool GLKeeper::isRefiningManually()
+{
+	return _selected2GL->isRefining();
+}
+
+vec3 GLKeeper::setModelRay(double x, double y)
+{
+	/* assume a z position of -1 */
+	float aspect = height / width;
+	y *= aspect;
+	vec3 ray = make_vec3(-x, y, -1);
+	_selected2GL->setMouseRay(ray);
+}
+
+void GLKeeper::setMouseRefine(bool val)
+{
+	_selected2GL->setMouseRefinement(val);
+}
+
+void GLKeeper::focusOnSelected()
+{
+	_selected2GL->focusOnGroup();
+}
+
+void GLKeeper::splitSelected()
+{
+	_selected2GL->splitSelected();
+}
+
+void GLKeeper::deleteSelected()
+{
+	_selected2GL->deleteSelected();
+}
+
+void GLKeeper::toggleKicks()
+{
+	_selected2GL->toggleKicks();
+}
+
+void GLKeeper::advanceMonomer(int dir)
+{
+	_selected2GL->advanceMonomer(dir);
+}
+
+void GLKeeper::setAdding(bool val)
+{
+	_selected2GL->setAdding(val);
+}

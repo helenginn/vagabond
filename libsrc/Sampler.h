@@ -27,12 +27,15 @@
 /** Flags to set refinement strategies for a protein chain. */
 typedef enum
 {
+	RefinementCrude = 0, /** Refinement from far soln against ED */
 	RefinementFine = 1, /** Refinement against electron density */
 	RefinementSidechain = 2, /** Sidechains against electron density */
-	RefinementModelRMSDZero = 3, /** Squeeze protein chain to PDB positions */
 	RefinementModelPos = 4, /** Positions to PDB positions */
-	RefinementRMSDZero = 5, /** Squeeze protein chain to minimise flexibility */
-	RefinementWaterNetwork = 6,
+	RefinementCentroid = 6, /** Refine centroid to PDB centroid */
+	RefinementWaterNetwork = 7,
+	RefinementMouse = 8, /** Refinement to mouse coordinates */
+	RefinementSavedPos = 9, /** Refinement to previously saved positions */
+	RefinementSidePos = 10, /** Only position params to sidechain density */
 } RefinementType; 
 
 
@@ -66,6 +69,8 @@ public:
 	*/
 	void addTorsion(BondPtr bond, double range, double interval);
 
+	void addTwist(BondPtr bond, double range, double interval);
+
 	/**
 	* Add torsion blur (kick function) to sampled parameters
 	* \param bond bond to vary kick for
@@ -81,12 +86,11 @@ public:
 	/** Add sampled atoms from a given atom group and conformer name */
 	void addSampledAtoms(AtomGroupPtr group, std::string conformer = "");
 	
-	/** Add absolute position for an atom controlled by Absolute class */
-	void addAbsolutePosition(AbsolutePtr abs, double range, double interval);
+	/** Add anchor position for an atom controlled by Anchor class */
+	void addAnchorParams(AnchorPtr anch);
 
 	/** Add absolute B factor for an atom controlled by Absolute class */
 	void addAbsoluteBFactor(AbsolutePtr abs, double range, double interval);
-	void addRotamer(Sidechain *side, double range, double interval);
 	void addMagicAngle(BondPtr bond, double range, double interval);
 	void setCrystal(CrystalPtr crystal);
 	bool sample(bool clear = true);
@@ -130,7 +134,7 @@ public:
 	{
 		_strategy->setVerbose(verbose);
 	}
-
+	
 	int sampleSize()
 	{
 		return _sampled.size();
@@ -172,13 +176,14 @@ public:
 	}
 
 	int hasParameter(ParamOptionType type);
+	void checkOccupancyAndAdd(BondPtr bond);
 
 	void addCustomParameter(void *object, Getter getter, Setter setter,
                                  double range, double interval,
                                  std::string name);
 protected:
 	/** Create a torsion set which adds the primary chain (the backbone)
-	 * 	but optionally may not add the sidechain branches. Adds the 
+
 	 * 	appropriate bond parameters and the sensitive atoms. */	
 	BondPtr setupThoroughSet(BondPtr bond, bool addBranches = true);
 	FFTPtr _fft;
@@ -188,15 +193,21 @@ protected:
 	virtual double getScore();
 	void setupCloseAtoms();
 	void setupScoreWithMap();
-private:
-	double preScanParameter(BondPtr bond, Getter getter, Setter setter,
-	                      double stepSize);
-
-	double preScanParams(BondPtr aBond, BondPtr bBond,
-	                     Getter getter, Setter setter, double stepSize);
 	void addAtomsForBond(BondPtr bond);
+
+	double getParameter(ParamOptionType type)
+	{
+		return _params[type];
+	}
+	
+	RefinementStrategyPtr getStrategy()
+	{
+		return _strategy;
+	}
+private:
 	void addParamsForBond(BondPtr bond, bool even = true);
 	CrystalPtr _crystal;
+	std::vector<BalancePtr> _balances;
 
 	std::vector<AtomPtr> _sampled;
 	std::vector<AtomPtr> _unsampled;

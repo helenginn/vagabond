@@ -8,12 +8,15 @@
 #include <iomanip>
 #include "Crystal.h"
 #include "Polymer.h"
+#include "Twist.h"
 #include "WaterNetwork.h"
 #include "Atom.h"
 #include "Bond.h"
 #include "BondGroup.h"
 #include "Monomer.h"
 #include "Absolute.h"
+#include "GhostBond.h"
+#include "Anchor.h"
 #include "Sidechain.h"
 #include "Backbone.h"
 #include "Shouter.h"
@@ -24,6 +27,7 @@ ClassMap Parser::_allClasses;
 
 Parser::Parser()
 {
+	_restored = false;
 	_setup = false;
 	_parent = NULL;
 	setupKnownClasses();
@@ -184,19 +188,6 @@ void Parser::addBoolProperty(std::string className, bool *ptr)
 	_boolProperties.push_back(property);
 }
 
-void Parser::addCustomProperty(std::string className, void *ptr,
-                               void *delegate, Encoder encoder,
-Decoder decoder) 
-{
-	CustomProperty property;
-	property.ptrName = className;
-	property.objPtr = ptr;
-	property.delegate = delegate;
-	property.encoder = encoder;
-	property.decoder = decoder;
-	_customProperties.push_back(property);
-}
-
 void Parser::addChild(std::string category, ParserPtr child)
 {
 	if (!child) return;
@@ -241,18 +232,6 @@ int Parser::getChildCount(std::string className)
 	return _parserList[className].size();
 }
 
-void Parser::sanitise(std::string *str, std::string from, std::string to)
-{
-	size_t pos = str->find(from, pos);
-
-	while (pos != std::string::npos)
-	{
-		str->replace(pos, from.length(), to);
-		pos += to.length();
-		pos = str->find(from, pos);
-	}
-}
-
 void Parser::outputContents(std::ofstream &stream, int in)
 {
 	stream << std::setprecision(5);
@@ -266,10 +245,9 @@ void Parser::outputContents(std::ofstream &stream, int in)
 		std::string name = _stringProperties[i].ptrName;
 		std::string *ptr = _stringProperties[i].stringPtr;
 		
-		sanitise(ptr, "\n", "\\n");
-		
 		if (!ptr) continue;
-		if (ptr->length())        
+
+		if (ptr->length())     
 		{
 			stream << indent(in) << name << " = " << *ptr << "" << std::endl;
 		}
@@ -310,22 +288,6 @@ void Parser::outputContents(std::ofstream &stream, int in)
 		if (!ptr) continue;
 		stream << indent(in) << name << " = " << ptr->x
 		<< "," << ptr->y << "," << ptr->z << std::endl;
-	}
-
-	for (int i = 0; i < _customProperties.size(); i++)
-	{
-		std::string name = _customProperties[i].ptrName;
-		void *ptr = _customProperties[i].objPtr;
-		void *delegate = _customProperties[i].delegate;
-		if (!ptr) continue;
-
-		stream << indent(in) << "special " << name << std::endl;  
-		stream << indent(in) << "{" << std::endl;
-		in++;
-		Encoder encoder = _customProperties[i].encoder;
-		(*encoder)(delegate, ptr, stream, in);
-		in--;
-		stream << indent(in) << "}" << std::endl;
 	}
 
 	for (int i = 0; i < _boolProperties.size(); i++)
@@ -436,36 +398,58 @@ void Parser::restoreState(int num)
 	
 	if (count == 0) return;
 	
-	int totalStates = _allParsers.begin()->second.lock()->stateCount();
+	int totalStates = stateCount();
 	
 	/* If we specify state -1, we want the last-but-one state */
 	if (num < 0)
 	{
 		num = totalStates + num - 1;
-		std::cout << "Restoring state: " << num << std::endl;
 	}
-	
+
 	if (num < 0 || num >= totalStates)
 	{
 		std::cout << "Cannot restore state: " << num << std::endl;
+		std::cout << "Total states: " << totalStates << std::endl;
 		return;
 	}
 
 	for (ParserMap::iterator it = _allParsers.begin();
 	     it != _allParsers.end(); it++) 
 	{
+		if (it->second.expired())
+		{
+			continue;
+		}
+
 		it->second.lock()->privateRestoreState(num);	
 	}
 	
 	for (ParserMap::iterator it = _allParsers.begin();
 	     it != _allParsers.end(); it++) 
 	{
-		it->second.lock()->postRestoreState();	
+		if (it->second.expired())
+		{
+			continue;
+		}
+
+		it->second.lock()->_restored = false;
 	}
+
+	postRestoreState();	
+}
+
+void Parser::postRestoreState()
+{
+
 }
 
 void Parser::privateRestoreState(int num)
 {
+	if (stateCount() < num || _restored)
+	{
+		return;
+	}
+	
 	StateValueList *list = &_states[num];
 	
 	for (int i = 0; i < list->size(); i++)
@@ -473,7 +457,7 @@ void Parser::privateRestoreState(int num)
 		list->at(i).applyToParser(this);
 	}
 	
-	if (_states.size() <= 1) return;
+	_restored = true;
 	
 	/* Remove all the states after the one just restored */
 	for (int i = num; i < _states.size(); i++)
@@ -484,8 +468,9 @@ void Parser::privateRestoreState(int num)
 
 void Parser::saveState()
 {
-	int count = 0;
-
+	int count = stateCount();
+	int aim = count + 1;
+	
 	for (ParserMap::iterator it = _allParsers.begin();
 	     it != _allParsers.end(); it++) 
 	{
@@ -494,11 +479,11 @@ void Parser::saveState()
 			continue;
 		}
 
-		it->second.lock()->privateSaveState();	
+		it->second.lock()->privateSaveState(aim);	
 		count = it->second.lock()->stateCount();
 	}
 
-	if (count > 10)
+	if (count > 100)
 	{
 		for (ParserMap::iterator it = _allParsers.begin();
 		     it != _allParsers.end(); it++) 
@@ -515,15 +500,20 @@ void Parser::saveState()
 	}
 }
 
-void Parser::privateSaveState()
+void Parser::privateSaveState(int aim)
 {
+	if (stateCount() >= aim)
+	{
+		return;
+	}
+
 	StateValueList list;
 
 	for (int i = 0; i < _stringProperties.size(); i++)
 	{
 		StateValue value;
 		value.addStringValue(_stringProperties[i].ptrName,
-		                         *_stringProperties[i].stringPtr);	
+		                     *_stringProperties[i].stringPtr);	
 		list.push_back(value);
 	}
 
@@ -531,7 +521,7 @@ void Parser::privateSaveState()
 	{
 		StateValue value;
 		value.addDoubleValue(_doubleProperties[i].ptrName,
-		                         *_doubleProperties[i].doublePtr);	
+		                     *_doubleProperties[i].doublePtr);	
 		list.push_back(value);
 	}
 
@@ -539,7 +529,7 @@ void Parser::privateSaveState()
 	{
 		StateValue value;
 		value.addMat3x3Value(_mat3x3Properties[i].ptrName,
-		                         *_mat3x3Properties[i].mat3x3Ptr);	
+		                     *_mat3x3Properties[i].mat3x3Ptr);	
 		list.push_back(value);
 	}
 
@@ -555,7 +545,7 @@ void Parser::privateSaveState()
 	{
 		StateValue value;
 		value.addVec3ArrayValue(_vec3ArrayProperties[i].ptrName,
-		                            *_vec3ArrayProperties[i].vec3ArrayPtr);	
+		                        *_vec3ArrayProperties[i].vec3ArrayPtr);	
 		list.push_back(value);
 	}
 
@@ -563,7 +553,7 @@ void Parser::privateSaveState()
 	{
 		StateValue value;
 		value.addMat3x3ArrayValue(_mat3x3ArrayProperties[i].ptrName,
-		                              *_mat3x3ArrayProperties[i].mat3x3ArrayPtr);	
+		                          *_mat3x3ArrayProperties[i].mat3x3ArrayPtr);
 		list.push_back(value);
 	}
 
@@ -582,23 +572,6 @@ void Parser::privateSaveState()
 		                      *_intProperties[i].intPtr);	
 		list.push_back(value);
 	}
-	
-	for (int i = 0; i < _customProperties.size(); i++)
-	{
-		StateValue value;
-		void *ptr = _customProperties[i].objPtr;
-		void *delegate = _customProperties[i].delegate;
-		if (!ptr) continue;
-
-		std::ostringstream stream;
-		Encoder encoder = _customProperties[i].encoder;
-		(*encoder)(delegate, ptr, stream, 1);
-		stream << "\n }\n END\n";
-
-		value.addCustomValue(_customProperties[i].ptrName,
-		                        stream.str());	
-		list.push_back(value);
-	}
 
 	_states.push_back(list);
 }
@@ -610,7 +583,6 @@ void Parser::clearContents()
 	_doubleProperties.clear();
 	_intProperties.clear();
 	_vec3Properties.clear();
-	_customProperties.clear();
 	_boolProperties.clear();
 	_referenceList.clear();
 	_vec3ArrayProperties.clear();
@@ -671,18 +643,6 @@ char *Parser::parseNextSpecial(char *block)
 
 	block++;
 	incrementIndent(&block);
-
-	for (int i = 0; i < _customProperties.size(); i++)
-	{
-		CustomProperty property = _customProperties[i];
-		if (property.ptrName == specialName)
-		{
-			Decoder decoder = property.decoder;
-			void *delegate = property.delegate;
-			void *ptr = property.objPtr;
-			block = (*decoder)(delegate, ptr, block);
-		}
-	}
 
 	if (block[0] != '}')
 	{
@@ -967,7 +927,6 @@ void Parser::setProperty(std::string property, std::string value)
 				return; 
 			}
 
-			sanitise(&value, "\\n", "\n");
 			*_stringProperties[i].stringPtr = value;
 
 			return;
@@ -1262,6 +1221,7 @@ ParserPtr Parser::objectOfType(char *className)
 	if (strcmp(className, "Crystal") == 0) 
 	{
 		object = ParserPtr(static_cast<Crystal *>(new Crystal()));
+		Options::getRuntimeOptions()->addCrystal(object);
 	}
 	else if (strcmp(className, "Polymer") == 0)
 	{
@@ -1275,9 +1235,21 @@ ParserPtr Parser::objectOfType(char *className)
 	{
 		object = ParserPtr(static_cast<Absolute *>(new Absolute()));        
 	}
+	else if (strcmp(className, "Anchor") == 0)
+	{
+		object = ParserPtr(static_cast<Anchor *>(new Anchor()));        
+	}
 	else if (strcmp(className, "Bond") == 0)
 	{
 		object = ParserPtr(static_cast<Bond *>(new Bond()));        
+	}
+	else if (strcmp(className, "Ghost") == 0)
+	{
+		object = ParserPtr(static_cast<GhostBond *>(new GhostBond()));        
+	}
+	else if (strcmp(className, "Whack") == 0)
+	{
+		object = ParserPtr(static_cast<Whack *>(new Whack()));        
 	}
 	else if (strcmp(className, "BondGroup") == 0)
 	{

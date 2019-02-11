@@ -1,9 +1,20 @@
-//
-//  Crystal.h
-//  vagabond
-//
-//  Created by Helen Ginn on 13/07/2017.
-//  Copyright (c) 2017 Strubi. All rights reserved.
+// Vagabond : bond-based macromolecular model refinement
+// Copyright (C) 2017-2018 Helen Ginn
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// Please email: vagabond @ hginn.co.uk for more details.
 //
 
 #ifndef __vagabond__Crystal__
@@ -27,12 +38,33 @@
  * \class Crystal
  * \brief The concept of a crystal arranged in a certain lattice containing
  * various molecules and solvent.
+ *
  * Crystal looks after the calculation of Fcs and also compares against a
  * separate DiffractionData object, but it endeavours to be separate from the
  * DiffractionData conceptually.
  */
 
 typedef std::map<std::string, MoleculePtr> MoleculeMap;
+
+inline double getNLimit(FFTPtr fftData, FFTPtr fftModel, int axis = 0)
+{
+	double nLimit = std::min(*(&fftData->nx + axis), 
+	                         *(&fftModel->nx + axis));
+
+	nLimit = nLimit - ((int)nLimit % 2);
+	nLimit /= 2;
+
+	return nLimit;	
+}
+
+inline vec3 getNLimits(FFTPtr data, FFTPtr fftModel)
+{
+	vec3 lims;
+	lims.x = getNLimit(data, fftModel, 0);
+	lims.y = getNLimit(data, fftModel, 1);
+	lims.z = getNLimit(data, fftModel, 2);
+	return lims;
+}
 
 class Crystal : public Object, public Parser
 {
@@ -53,12 +85,22 @@ public:
 	* 	\param data diffraction data against which statistics should be generated.
 	*/
 	double concludeRefinement(int cycleNum, DiffractionPtr data);
+	
+	/** Should be folded into previous concludeRefinement(...) soon */
 	static double vsConcludeRefinement(void *object);
+	
+	/** Calculate new observed/calculated density but don't write out
+	 * 	R factors to the screen */
+	void silentConcludeRefinement();
+	
+	/** Move back to an earlier saved version of the model */
 	static void vsRestoreState(void *object, double val);
 
-	static void vsChangeSampleSize(void *object, double n);
-	static void vsSetShellScale(void *object, double val);
-
+	bool isSilent()
+	{
+		return _silent;
+	}
+	
 	/**
 	* How many molecules are included in a Crystal.
 	*/
@@ -107,7 +149,7 @@ public:
 	/**
 	* 	Returns matrix turning Miller index coordinates to fractional
 	* 	coordinates of the reciprocal cell. */
-	mat3x3 getHKL2Real()
+	mat3x3 getHKL2Frac()
 	{
 		return _hkl2real;
 	}
@@ -127,12 +169,16 @@ public:
 		return _spaceGroup->nsymop;
 	}
 	
-	FFTPtr getCalculatedMap()
-	{
-		return _calcCopy;
-	}
+	void omitScan();
 	
-	void multiplyMap(double scale);
+	/** Write out the % contribution of elements in the crystal to the
+	 *  total difference density */
+	void differenceAttribution();
+	
+	void removeAtom(AtomPtr atom);
+	
+	/** Takes an input crystal position and moves it to the nearest
+	 *  position which falls on an integer value of the FFT grid */
 	vec3 snapToGrid(vec3 pos);
 
 	/** Calculates the anchor residue for each Polymer and assigns to each. */
@@ -140,6 +186,9 @@ public:
 	
 	/** Prints scattering proportion in this crystal determined by bonds. */
 	void tiedUpScattering();
+	
+	double averageBFactor();
+	void scaleAnchorBs(double ratio);
 	
 	/** Loops through all molecules and places them in the map.
 	* 	\param maxRes max resolution used to determine voxel spacing if it has
@@ -157,7 +206,6 @@ public:
 	 * of a grid search. Starts with a global scale factor, then scales
 	 * the solvent, then a full scale by resolution bin. */
 	void scaleComponents(DiffractionPtr data);
-	double scaleAndAddSolventScore(DiffractionPtr data = DiffractionPtr());
 	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
 	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 	                            bool verbose = false, double lowRes = 0,
@@ -166,7 +214,7 @@ public:
 	                          double partsFc = 1, std::string prefix = "");
 	
 	void scaleAndBFactor(DiffractionPtr data, double *scale, 
-                              double *bFactor);
+                              double *bFactor, FFTPtr model = FFTPtr());
 
 	/** Applies scale factor within the resolution ranges.
 	* 	\param scale factor (multiplies Fc with this)
@@ -175,18 +223,20 @@ public:
 	*/
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0,
 	                      double bFactor = 0);
+	double getAdjustBFactor();
+	
+	bool undoIfWorse();
 
-	void reconfigureUnitCell();
 	void setupSymmetry();
 	void summary();
 
-	void makePowders();
 	void tieAtomsUp();
 	
 	void hydrogenateContents();
 	
 	/**
-	* Find all close atoms within this crystal to a chosen atom.
+	* Find all close atoms within this crystal to a chosen atom. Including
+	* the chosen atom.
 	* \param one chosen atom.
 	* \param tol tolerance in Angstroms - furthest point from a given atom.
 	* \param cache if true, instead of returning atoms, cache given atoms for
@@ -262,14 +312,6 @@ public:
 		_maxResolution = maxRes;
 	}
 
-	void addAnchorResidue(int anchor)
-	{
-		_anchorResidues.push_back(anchor);
-		std::cout << "Adding anchor residue " << anchor << " to "
-		<< getFilename() << "." << std::endl;
-
-	}
-
 	int totalAnchors()
 	{
 		return _anchorResidues.size();
@@ -278,7 +320,7 @@ public:
 	/** Returns a string describing the R factors and CCs.
 	* 	\return summary string in human-readable format. */
 	std::string agreementSummary();
-
+	
 	virtual std::string getClassName()
 	{
 		return "Crystal";
@@ -292,7 +334,20 @@ public:
 	/** Fit whole molecules to electron density as a refinement protocol.
 	* 	\param translation if true, will refine translation parameters
 	* 	\param rotation if true, will refine rotation parameters. */
-	void fitWholeMolecules(bool translation = false, bool rotation = true);
+	void fitWholeMolecules();
+	void refinePolymers(RefinementType type);
+	void refinePositions();
+	void refineIntraMovements();
+	void refineSidechainPositions();
+	void refineSidechains();
+	void refineCrude();
+	void savePositions();
+	void rigidBodyFit();
+	
+	double getRWork()
+	{
+		return _rWork;
+	}
 	
 	int getCycleNum()
 	{
@@ -306,13 +361,39 @@ public:
 		_comments += "\n";
 	}
 	
-	/** Analysis of backbone density and generation of heuristics */
-	void backboneDensityAnalysis();
-	static double vsRefineBackboneToDensity(void *object);
 	double getMaximumDStar(DiffractionPtr data);
 	void openInCoot();
 	
+	/** Obtain the current number of samples, i.e. number of conformers
+	 * in the ensemble. */
+	int getSampleNum();
+	
+	/** Obtain the current B factor applied to any many-positioned models of
+	 * atoms. */
+	double getRealBFactor();
+	
+	double getProbeRadius();
+
 	std::vector<AtomPtr> getHydrogenBonders();
+	
+	/** Returns the maximum resolution. Diffraction data as the input
+	 * target is required; resolution will be determined from this if not
+	 * already determined, or input as command line option. */
+	double getMaxResolution(DiffractionPtr data);
+	
+	void updateLargestNum(AtomPtr atom);
+	void whack();
+	void chelate();
+
+	int issueAtomNumber()
+	{
+		if (_largestNum == -INT_MAX)
+		{
+			return 0;
+		}
+		return _largestNum + 1;
+	}
+	
 protected:
 	virtual void postRestoreState();
 	virtual void addObject(ParserPtr object, std::string category);
@@ -320,7 +401,7 @@ protected:
 	{
 		return "Crystal_" + _filename;
 	}
-
+	
 	virtual void addProperties();
 	virtual void postParseTidy();
 private:
@@ -333,21 +414,23 @@ private:
 	mat3x3 _real2frac;
 	CSym::CCP4SPG *_spaceGroup;
 	int _spgNum;
+	std::string _spgString;
 	bool _tied;
 
 	double _maxResolution;
 	std::vector<int> _anchorResidues;
 	double totalToScale();
 
-	double getMaxResolution(DiffractionPtr data);
 	void makePDBs(std::string suffix);
 	void writeVagabondFile(int cycleNum);
-	void applySymOps(double res = FLT_MAX);
+	void applySymOps();
 	
 	std::string _lastEnsemblePDB;
 	std::string _lastAveragePDB;
 	std::string _lastMtz;
 	std::string _comments;
+	
+	std::map<double, double> _resBinAves;
 
 	double _rWork;
 	double _rFree;
@@ -355,23 +438,30 @@ private:
 	double _ccFree;
 	double _lastRWork;
 	double _bestRWork;
+	
+	double _realBFactor;
+	double _probeRadius;
+
 	int _sinceBestNum;
+	int _bestState;
 	int _cycleNum;
+	int _sampleNum;
+	bool _silent;
 	
 	double _solvScale;
 	double _solvBFac;
+	double _bFacFit;
 	int _correlPlotNum;
 	DiffractionPtr _data;
 
 	FFTPtr _fft;
 	FFTPtr _difft;
-	FFTPtr _calcCopy;
 
 	BucketPtr _bucket;
+	int _largestNum;
 	
 	void scaleSolvent(DiffractionPtr data);
-	void scaleToDiffraction(DiffractionPtr data, bool full = false,
-	                        int shellScale = -1);
+	void scaleToDiffraction(DiffractionPtr data, bool full = true);
 };
 
 #endif /* defined(__vagabond__Crystal__) */
