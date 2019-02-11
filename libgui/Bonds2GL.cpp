@@ -345,7 +345,7 @@ int Bonds2GL::processMolecule(MoleculePtr molecule)
 
 	_shouldGetBonds = false;
 
-	return bonds;
+	return molecule->atomCount();
 }
 
 void Bonds2GL::bindTextures()
