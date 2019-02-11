@@ -302,6 +302,7 @@ void Bucket::processMaskedRegions()
 
 void Bucket::abandonCalculations()
 {
+	return;
 	_solvent = FFTPtr();
 }
 
