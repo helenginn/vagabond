@@ -14,6 +14,7 @@
 #include <vector>
 #include "vec3.h"
 #include "mat3x3.h"
+#include "Element.h"
 #include <string>
 #include "../libinfo/GeomTable.h"
 #include "fftw3d.h"
@@ -69,6 +70,7 @@ public:
 	void setElement(ElementPtr element)
 	{
 		_element = element;
+		_elementSymbol = element->getSymbol();
 	}
 	
 	/** Set the monomer for this atom with no other connections. Do not use if
@@ -347,6 +349,11 @@ public:
 	GhostBondPtr getGhostBond()
 	{
 		return _ghost;
+	}
+	
+	std::string getElementSymbol()
+	{
+		return _elementSymbol;
 	}
 protected:
 	virtual std::string getClassName()
