@@ -115,6 +115,11 @@ public:
 		return _whacks.size();
 	}
 	
+	WhackPtr getWhack(int i)
+	{
+		return _whacks[i];
+	}
+	
 	void addTranslationParameters(RefinementStrategyPtr strategy,
 	                              double mult = 1);
 	void addLibrationParameters(RefinementStrategyPtr strategy,
