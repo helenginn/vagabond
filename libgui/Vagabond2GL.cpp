@@ -13,6 +13,31 @@
 #include "../libsrc/Atom.h"
 #include "../libsrc/Element.h"
 
+bool Vagabond2GL::isAcceptableAtom(Atom *atom)
+{
+	if (!atom)
+	{
+		return false;
+	}
+
+	if (!atom->getElement())
+	{
+		return false;
+	}
+
+	if (atom->getElectronCount() <= 1)
+	{
+		return false;
+	}
+
+	if (atom->getModel() && !atom->getModel()->isBond())
+	{
+		return false;
+	}
+
+	return true;
+}
+
 bool Vagabond2GL::shouldGetBonds()
 {
 	if (!_moleculeMap.size() || _shouldGetBonds)
@@ -40,10 +65,19 @@ bool Vagabond2GL::shouldGetBonds()
 			}
 
 			int expected = _moleculeMap[molecule];
-
 			int existing = 0;
 
-			existing = molecule->atomCount();
+			for (int i = 0; i < molecule->atomCount(); i++)
+			{
+				AtomPtr minor = molecule->atom(i);
+
+				if (!isAcceptableAtom(&*minor))
+				{
+					continue;
+				}
+
+				existing++;
+			}
 
 			if (expected != existing)
 			{

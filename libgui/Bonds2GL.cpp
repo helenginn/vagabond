@@ -301,22 +301,7 @@ int Bonds2GL::processMolecule(MoleculePtr molecule)
 	{
 		AtomPtr minor = molecule->atom(i);
 
-		if (!minor)
-		{
-			continue;
-		}
-
-		if (!minor->getElement())
-		{
-			continue;
-		}
-
-		if (minor->getElectronCount() <= 1)
-		{
-			continue;
-		}
-
-		if (minor->getModel() && !minor->getModel()->isBond())
+		if (!isAcceptableAtom(&*minor))
 		{
 			continue;
 		}

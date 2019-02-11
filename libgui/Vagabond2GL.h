@@ -64,6 +64,7 @@ public:
 	}
 protected:
 	virtual void findAtoms();
+	bool isAcceptableAtom(Atom *atom);
 
 	virtual void bindTextures();
 	virtual void updateAtoms() = 0;
