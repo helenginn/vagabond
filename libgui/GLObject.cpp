@@ -233,12 +233,12 @@ void GLObject::bindOneTexture(Picture &pic)
 	checkErrors();
 }
 
-bool GLObject::index_behind_index(IndexTrio &one, IndexTrio &two)
+bool GLObject::index_behind_index(IndexTrio one, IndexTrio two)
 {
 	return (one.z > two.z);
 }
 
-bool GLObject::index_in_front_of_index(IndexTrio &one, IndexTrio &two)
+bool GLObject::index_in_front_of_index(IndexTrio one, IndexTrio two)
 {
 	return (one.z < two.z);
 }

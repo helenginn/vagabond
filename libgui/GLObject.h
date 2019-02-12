@@ -128,8 +128,8 @@ private:
 	void calculateCentroid();
 
 	std::vector<IndexTrio> _temp; // stores with model mat
-	static bool index_behind_index(IndexTrio &one, IndexTrio &two);
-	static bool index_in_front_of_index(IndexTrio &one, IndexTrio &two);
+	static bool index_behind_index(IndexTrio one, IndexTrio two);
+	static bool index_in_front_of_index(IndexTrio one, IndexTrio two);
 
 	GLint _projectionUniform;
 	GLint _modelUniform;
