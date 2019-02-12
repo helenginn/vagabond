@@ -81,6 +81,8 @@ public:
 
 	vec3 fixCentroid(vec3 newCentroid);
 
+	void setFocalPoint(vec3 vec);
+
 	vec3 transformPosByModel(vec3 pos)
 	{
 		vec3 newPos = mat4x4_mult_vec(modelMat, pos);
@@ -111,7 +113,9 @@ protected:
 	
 	bool _extra;
 	bool _usesLighting;
+	bool _usesFocalDepth;
 	GLfloat _lightPos[3];
+	GLfloat _focalPos[3];
 
 	bool _backToFront;
 	GLenum _renderType;
@@ -130,6 +134,7 @@ private:
 	GLint _projectionUniform;
 	GLint _modelUniform;
 	GLint _lightUniform;
+	GLint _focalUniform;
 	GLuint _colorRenderBuffer;
 	GLuint _depthRenderBuffer;
 	GLuint _vbo;

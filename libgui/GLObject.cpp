@@ -22,6 +22,7 @@ GLObject::GLObject()
 	_extra = false;
 	_backToFront = true;
 	_usesLighting = false;
+	_usesFocalDepth = false;
 }
 
 void GLObject::rebindProgram()
@@ -71,6 +72,18 @@ void GLObject::rebindProgram()
 	}
 }
 
+void GLObject::setFocalPoint(vec3 vec)
+{
+	if (!_usesFocalDepth)
+	{
+		return;
+	}
+	
+	_focalPos[0] = vec.x;
+	_focalPos[1] = vec.y;
+	_focalPos[2] = vec.z;
+}
+
 void GLObject::render()
 {
 	glUseProgram(_program);
@@ -90,6 +103,13 @@ void GLObject::render()
 		const char *light_name = "light_pos";
 		_lightUniform = glGetUniformLocation(_program, light_name);
 		glUniform3fv(_lightUniform, 1, &_lightPos[0]);
+	}
+
+	if (_usesFocalDepth)
+	{
+		const char *focal_name = "focal_pos";
+		_focalUniform = glGetUniformLocation(_program, focal_name);
+		glUniform3fv(_focalUniform, 1, &_focalPos[0]);
 	}
 
 	if (_textures.size())

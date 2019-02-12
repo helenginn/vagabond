@@ -93,6 +93,11 @@ void GLKeeper::focusOnPosition(vec3 pos)
 	_centre = vec3_add_vec3(_translation, newPos);
 	vec3_mult(&newPos, -1);
 	newPos.z -= 13;
+	
+	for (int i = 0; i < _objects.size(); i++)
+	{
+		_objects[i]->setFocalPoint(newPos);
+	}
 
 	vec3 diff = vec3_subtract_vec3(newPos, _translation);
 	_translation = vec3_add_vec3(_translation, newPos);

@@ -26,6 +26,7 @@
 Bonds2GL::Bonds2GL(int average)
 {
 	_average = average;
+	_usesFocalDepth = true;
 	setupAverage();
 }
 
