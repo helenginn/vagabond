@@ -325,13 +325,13 @@ int Bonds2GL::processMolecule(MoleculePtr molecule)
 
 		if (major && addToModel(minor, major, &count))
 		{
-			bonds++;
+
 		}
 	}
 
 	_shouldGetBonds = false;
 
-	return molecule->atomCount();
+	return bonds;
 }
 
 void Bonds2GL::bindTextures()

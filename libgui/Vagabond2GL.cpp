@@ -78,7 +78,7 @@ bool Vagabond2GL::shouldGetBonds()
 
 				existing++;
 			}
-
+			
 			if (expected != existing)
 			{
 				return true;
