@@ -7,6 +7,7 @@ std::string InkBond_fsh =
 "varying vec4 vPos;\n"\
 "\n"\
 "uniform sampler2D bondTexture;\n"\
+"uniform vec3 focus;\n"\
 "\n"\
 "void main()\n"\
 "{\n"\
@@ -20,15 +21,20 @@ std::string InkBond_fsh =
 "	if (gl_FragColor[3] < 0.5) {\n"\
 "		discard;\n"\
 "	}\n"\
-"	float cutoff = -40.;\n"\
-"	if (vPos[2] < cutoff) {\n"\
-"		float dist = -vPos[2] + cutoff;\n"\
-"		float frac = 1. - min(dist / -cutoff, 1.0);\n"\
-"		gl_FragColor[3] *= frac;\n"\
+"	float min_distance = -20.;\n"\
+"	float max_distance = -100.;\n"\
+"	if (focus[2] > -15.)\n"\
+"	{\n"\
+"		min_distance = focus[2] + 0.;\n"\
+"		max_distance = focus[2] - 8.;\n"\
+"		if (vPos[2] > -2.) {\n"\
+"			discard;\n"\
+"		}\n"\
 "	}\n"\
-"	if (vPos[2] > -2.) {\n"\
-"		discard;\n"\
-"	}\n"\
+"   float transparency = (vPos[2] - min_distance) / (max_distance - min_distance);\n"\
+"	transparency = max(transparency, 0.0);\n"\
+"	transparency = min(transparency, 1.0);\n"\
+"   gl_FragColor[3] = 1. - transparency;\n"\
 "\n"\
 "\n"\
 "\n"\

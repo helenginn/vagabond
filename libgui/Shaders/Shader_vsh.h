@@ -4,6 +4,7 @@ std::string Shader_vsh =
 "attribute vec4 color;\n"\
 "\n"\
 "varying vec4 vColor;\n"\
+"varying vec4 vPos;\n"\
 "\n"\
 "uniform mat4 projection;\n"\
 "uniform mat4 model;\n"\
@@ -30,23 +31,8 @@ std::string Shader_vsh =
 "   float complete = lambert * luminosity;\n"\
 "   complete *= complete;\n"\
 "   complete *= 0.3;\n"\
-"	float min_distance = -20.;\n"\
-"	float max_distance = -100.;\n"\
-"	if (focus[2] > -15.)\n"\
-"	{\n"\
-"		min_distance = focus[2] + 0.;\n"\
-"		max_distance = focus[2] - 8.;\n"\
-"	}\n"\
-"   float transparency = (modelPos[2] - min_distance) / (max_distance - min_distance);\n"\
-"	transparency = max(transparency, 0.0);\n"\
-"	transparency = min(transparency, 1.0);\n"\
-"   vColor = color + complete * lightColor;\n"\
-""\
-"   for (int i = 0; i < 3; i++)\n"\
-"   {\n"\
-"       vColor[i] = vColor[i] + (1. - vColor[i]) * transparency;\n"\
-"   }\n"\
-"   vColor[3] = 0.85;\n"\
+"	vColor = color + complete * lightColor;\n"\
+"	vPos = modelPos;\n"\
 "}";
 
 

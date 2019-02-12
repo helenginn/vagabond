@@ -40,7 +40,7 @@ std::string Pencil_fsh =
 "	{\n"\
 "		min_distance = focus[2] + 0.;\n"\
 "		max_distance = focus[2] - 4.;\n"\
-"		if (tPos[2] > -8.) {\n"\
+"		if (tPos[2] > -2.) {\n"\
 "			discard;\n"\
 "		}\n"\
 "	}\n"\
