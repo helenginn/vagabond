@@ -64,8 +64,6 @@ void GLKeeper::updateCamera(void)
 	vec3 centre = _centre;
 	centre.x = 0;
 	centre.y = 0;
-//	mat4x4 inv = mat4x4_inverse(modelMat);
-//	centre = mat4x4_mult_vec(inv, centre);
 	
 	vec3 negCentre = centre;
 	vec3_mult(&centre, -1);
@@ -85,6 +83,16 @@ void GLKeeper::updateCamera(void)
 
 	camAlpha = 0; camBeta = 0; camGamma = 0;
 	_translation = make_vec3(0, 0, 0);
+	
+	setFocalPoint(negCentre);
+}
+
+void GLKeeper::setFocalPoint(vec3 pos)
+{
+	for (int i = 0; i < _objects.size(); i++)
+	{
+		_objects[i]->setFocalPoint(pos);
+	}
 }
 
 void GLKeeper::focusOnPosition(vec3 pos)
@@ -93,14 +101,10 @@ void GLKeeper::focusOnPosition(vec3 pos)
 	_centre = vec3_add_vec3(_translation, newPos);
 	vec3_mult(&newPos, -1);
 	newPos.z -= 13;
-	
-	for (int i = 0; i < _objects.size(); i++)
-	{
-		_objects[i]->setFocalPoint(newPos);
-	}
 
 	vec3 diff = vec3_subtract_vec3(newPos, _translation);
 	_translation = vec3_add_vec3(_translation, newPos);
+
 }
 
 GLKeeper::GLKeeper(int newWidth, int newHeight)

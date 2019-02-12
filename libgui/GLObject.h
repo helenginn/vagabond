@@ -143,6 +143,7 @@ private:
 	GLuint _colorSlot;
 	GLuint _program;
 	vec3 _centroid;
+	vec3 _focus;
 };
 
 #endif /* GLObject_hpp */

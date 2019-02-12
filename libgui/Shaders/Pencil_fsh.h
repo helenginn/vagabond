@@ -10,17 +10,13 @@ std::string Pencil_fsh =
 "\n"\
 "uniform sampler2D pencilTexture;\n"\
 "uniform vec3 light_pos;\n"\
+"uniform vec3 focus;\n"\
 "\n"\
 "void main()\n"\
 "{\n"\
 "	if (tPos[2] > -4.) {\n"\
 "		discard;\n"\
 "	}\n"\
-/*
-"	if (tPos[2] < -20.) {\n"\
-"		discard;\n"\
-"	}\n"\
-*/
 "	vec3 pos = vec3(vPos[0], vPos[1], vPos[2]);\n"\
 "	vec3 lightDir = normalize(pos - light_pos);\n"\
 "	float diff = abs(dot(vNormal, lightDir));\n"\
@@ -38,6 +34,20 @@ std::string Pencil_fsh =
 "	gl_FragColor[1] *= vColor[1];\n"\
 "	gl_FragColor[2] *= vColor[2];\n"\
 "	gl_FragColor[3] = 0.9 * diff;\n"\
+"	float min_distance = -20.;\n"\
+"	float max_distance = -100.;\n"\
+"	if (focus[2] > -15.)\n"\
+"	{\n"\
+"		min_distance = focus[2] + 0.;\n"\
+"		max_distance = focus[2] - 4.;\n"\
+"		if (tPos[2] > -8.) {\n"\
+"			discard;\n"\
+"		}\n"\
+"	}\n"\
+"   float transparency = (tPos[2] - min_distance) / (max_distance - min_distance);\n"\
+"	transparency = max(transparency, 0.0);\n"\
+"	transparency = min(transparency, 1.0);\n"\
+"	gl_FragColor[3] *= 1. - transparency;\n"\
 "\n"\
 "\n"\
 "\n"\

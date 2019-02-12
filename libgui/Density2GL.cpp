@@ -29,6 +29,7 @@ Density2GL::Density2GL()
 	_threshold = 1.4;
 	_backToFront = true;
 	_usesLighting = true;
+	_usesFocalDepth = true;
 	_extra = true;
 	
 	_vertShader = &Pencil_vsh;

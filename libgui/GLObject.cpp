@@ -23,6 +23,7 @@ GLObject::GLObject()
 	_backToFront = true;
 	_usesLighting = false;
 	_usesFocalDepth = false;
+	_focus = empty_vec3();
 }
 
 void GLObject::rebindProgram()
@@ -79,9 +80,7 @@ void GLObject::setFocalPoint(vec3 vec)
 		return;
 	}
 	
-	_focalPos[0] = vec.x;
-	_focalPos[1] = vec.y;
-	_focalPos[2] = vec.z;
+	_focus = vec;
 }
 
 void GLObject::render()
@@ -107,7 +106,13 @@ void GLObject::render()
 
 	if (_usesFocalDepth)
 	{
-		const char *focal_name = "focal_pos";
+		vec3 focus = _focus;//mat4x4_mult_vec(modelMat, _focus);
+
+		_focalPos[0] = focus.x;
+		_focalPos[1] = focus.y;
+		_focalPos[2] = focus.z;
+		
+		const char *focal_name = "focus";
 		_focalUniform = glGetUniformLocation(_program, focal_name);
 		glUniform3fv(_focalUniform, 1, &_focalPos[0]);
 	}

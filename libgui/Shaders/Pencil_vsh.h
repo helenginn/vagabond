@@ -17,6 +17,7 @@ std::string Pencil_vsh =
 "uniform mat4 projection;\n"\
 "uniform mat4 model;\n"\
 "uniform vec3 light_pos;\n"\
+"uniform vec3 focus;\n"\
 "\n"\
 "void main()\n"\
 "{\n"\
