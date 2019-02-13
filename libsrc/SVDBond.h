@@ -31,8 +31,8 @@ typedef struct
 
 typedef struct
 {
-	double kick;
-	double whack;
+	double kick; /* Baseline kick, minus adjustments */
+	double whack; /* Baseline whack, minus adjustments */
 } BondParamPair;
 
 typedef std::map<BondPtr, BondParamPair> BondBase;
