@@ -279,21 +279,10 @@ void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 	{
 		return;
 	}
-	
-	std::vector<double> bins, ampAves;
-	generateResolutionBins(0, _maxResolution, 20, &bins);
-	ampAves.resize(bins.size());
-	
-	for (int i = 0; i < bins.size() - 1; i++)
-	{
-		ampAves[i] = valueWithDiffraction(data, two_dataset_mean,
-		                                 false, bins[i], bins[i + 1]);
-	}
 
 	std::string outputFileOnly = prefix + "_" + _filename + "_vbond.mtz";
 	getFFT()->writeReciprocalToFile(outputFileOnly, _maxResolution, _spaceGroup,
-	                                _unitCell, _real2frac, data->getFFT(),
-	                                bins, ampAves);
+	                                _unitCell, _real2frac, data->getFFT());
 	std::string outputFile = FileReader::addOutputDirectory(outputFileOnly);
 	
 	_lastMtz = outputFile;
@@ -440,13 +429,60 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 	*bFactor = b;
 }
 
+double Crystal::applyShellFactors(DiffractionPtr data)
+{
+	FFTPtr fftData = data->getFFT();	
+	vec3 nLimits = getNLimits(fftData, _fft);
+	mat3x3 tmp = mat3x3_transpose(_real2frac);
+
+	for (int k = -nLimits.z; k < nLimits.z; k++)
+	{
+		for (int j = -nLimits.y; j < nLimits.y; j++)
+		{
+			for (int i = -nLimits.x; i < nLimits.x; i++)
+			{
+				int _i = 0; int _j = 0; int _k = 0;
+				vec3 ijk = make_vec3(i, j, k);
+				long element = _fft->element(i, j, k);
+
+				mat3x3_mult_vec(tmp, &ijk);
+				double length = vec3_length(ijk);
+				double real_space = 1 / length;
+
+				int index = -1;
+				
+				for (int l = 0; l < _shells.size(); l++)
+				{
+					if (real_space < _shells[l].minRes &&
+					    real_space > _shells[l].maxRes)
+					{
+						index = l;
+						break;
+					}
+				}
+
+				if (index < 0)
+				{
+					continue;
+				}
+
+				double real = _fft->getReal(element);
+				double imag = _fft->getImaginary(element);
+
+				real /= _shells[index].scale;
+				imag /= _shells[index].scale;
+
+				_fft->setElement(element, real, imag);
+			}
+		}
+	}
+
+}
+
 double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
-                                     bool verbose, double lowRes, double highRes)
+                                     bool allShells, bool verbose)
 {
 	std::vector<double> set1, set2, free1, free2;
-
-	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
-	double maxRes = (highRes == 0 ? 1 / _maxResolution : 1 / highRes);
 
 	CSVPtr csv = CSVPtr(new CSV(2, "fo" , "fc"));
 
@@ -466,8 +502,21 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 
 				mat3x3_mult_vec(tmp, &ijk);
 				double length = vec3_length(ijk);
+				double real = 1 / length;
 
-				if (length < minRes || length > maxRes)
+				int index = -1;
+				
+				for (int l = 0; l < _shells.size() && !allShells; l++)
+				{
+					if (real < _shells[l].minRes &&
+					    real > _shells[l].maxRes)
+					{
+						index = l;
+						break;
+					}
+				}
+
+				if (index < 0 && !allShells)
 				{
 					continue;
 				}
@@ -482,23 +531,39 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 					continue;
 				}
 
-				csv->addEntry(2, amp1, amp2);
-
-				if (!isFree)
+				if (!allShells)
 				{
-					set1.push_back(amp1);
-					set2.push_back(amp2);
+					if (!isFree)
+					{
+						_shells[index].work1.push_back(amp1);
+						_shells[index].work2.push_back(amp2);
+					}
+					else
+					{
+						_shells[index].free1.push_back(amp1);
+						_shells[index].free2.push_back(amp2);
+					}
 				}
 				else
 				{
-					free1.push_back(amp1);
-					free2.push_back(amp2);
+					csv->addEntry(2, amp1, amp2);
+
+					if (!isFree)
+					{
+						set1.push_back(amp1);
+						set2.push_back(amp2);
+					}
+					else
+					{
+						free1.push_back(amp1);
+						free2.push_back(amp2);
+					}
 				}
 			}
 		}
 	}
 
-	if (op == r_factor)
+	if (op == r_factor && allShells)
 	{
 		_correlPlotNum++;
 		std::string correlName = "correlplot_" + i_to_str(_correlPlotNum);
@@ -521,22 +586,33 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 		csv->plotPNG(plotMap);
 	}
 
-	_rWork = (*op)(set1, set2);
-
-	if (verbose && !_silent)
+	if (allShells && !_silent)
 	{
+		_rWork = (*op)(set1, set2);
 		_ccWork = correlation(set1, set2);
 		_ccFree = correlation(free1, free2);
 		_rFree = (*op)(free1, free2);
 		double diff = _rFree - _rWork; 
 
-		std::cout << "CCwork/CCfree: " << _ccWork * 100 << ", " << _ccFree * 100
-		<< " %." << std::endl;
+		if (verbose)
+		{
+			std::cout << "CCwork/CCfree: " << _ccWork * 100 << ", " << _ccFree * 100
+			<< " %." << std::endl;
 
-		std::cout << "Rwork/Rfree: " << std::setprecision(4)
-		<< _rWork * 100;
-		std::cout << ", " << _rFree * 100 <<
-		" % (diff: " << diff * 100 << " %)"<<  std::endl;
+			std::cout << "Rwork/Rfree: " << std::setprecision(4)
+			<< _rWork * 100;
+			std::cout << ", " << _rFree * 100 <<
+			" % (diff: " << diff * 100 << " %)"<<  std::endl;
+		}
+	}
+	
+	if (!allShells)
+	{
+		for (int i = 0; i < _shells.size(); i++)
+		{
+			_shells[i].scale = scale_factor_by_sum(_shells[i].work1,
+			                                       _shells[i].work2);
+		}
 	}
 
 	return _rWork;
@@ -572,7 +648,6 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 				{
 					continue;
 				}
-
 
 				double real = _fft->getReal(element);
 				double imag = _fft->getImaginary(element);
@@ -671,8 +746,9 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 	
 	/* First, apply a scale factor to the entire range */
 	double totalFc = totalToScale();
-	double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
-	                                    0, _maxResolution);
+	double ratio = valueWithDiffraction(data, &scale_factor_by_sum, 
+	                                    true, false);
+
 	applyScaleFactor(totalFc / ratio, 0, 0);
 
 	if (!full)
@@ -713,19 +789,17 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 		 * stragglers. */
 		bins[bins.size() - 1] *= 0.95;
 
+		/* Make the series of shells */
+		_shells.clear();
 		for (int i = 0; i < bins.size() - 1; i++)
 		{
-			double ratio = valueWithDiffraction(data, &scale_factor_by_sum, false,
-			                                    bins[i], bins[i + 1]);
-			double scale = totalFc / ratio;
-
-			if (scale != scale)
-			{
-				scale = 0;
-			}
-
-			applyScaleFactor(scale, bins[i], bins[i + 1]);
+			ShellInfo shell = makeShellInfo(bins[i], bins[i + 1]);
+			_shells.push_back(shell);
 		}
+
+		valueWithDiffraction(data, &scale_factor_by_sum, false, false);
+
+		applyShellFactors(data);
 	}
 	else
 	{
@@ -753,8 +827,8 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 		std::cout << "*******************************" << std::endl;
 	}
 
-	double rFactor = valueWithDiffraction(data, &r_factor, verbose, 
-	                                      lowRes, highRes);
+	double rFactor = valueWithDiffraction(data, &r_factor, true, true);
+
 
 	if (verbose && !_silent)
 	{

@@ -46,6 +46,29 @@
 
 typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
+typedef struct
+{
+	double minRes;
+	double maxRes;
+	double rFactor;
+	double scale;
+	std::vector<double> work1;
+	std::vector<double> work2;
+	std::vector<double> free1;
+	std::vector<double> free2;
+} ShellInfo;
+
+inline ShellInfo makeShellInfo(double min, double max)
+{
+	ShellInfo shell;
+	shell.minRes = min;
+	shell.maxRes = max;
+	shell.rFactor = 0;
+	shell.scale = 1;
+	
+	return shell;
+}
+
 inline double getNLimit(FFTPtr fftData, FFTPtr fftModel, int axis = 0)
 {
 	double nLimit = std::min(*(&fftData->nx + axis), 
@@ -208,8 +231,7 @@ public:
 	void scaleComponents(DiffractionPtr data);
 	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
 	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
-	                            bool verbose = false, double lowRes = 0,
-	double highRes = 0);
+	                            bool allShells = false, bool verbose = false);
 	double getDataInformation(DiffractionPtr data, double partsFo = 2,
 	                          double partsFc = 1, std::string prefix = "");
 	
@@ -223,6 +245,8 @@ public:
 	*/
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0,
 	                      double bFactor = 0);
+
+	double applyShellFactors(DiffractionPtr data);
 	double getAdjustBFactor();
 	
 	bool undoIfWorse();
@@ -431,6 +455,7 @@ private:
 	std::string _comments;
 	
 	std::map<double, double> _resBinAves;
+	std::vector<ShellInfo> _shells;
 
 	double _rWork;
 	double _rFree;
