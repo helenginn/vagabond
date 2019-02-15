@@ -73,6 +73,7 @@ void FlexLocal::svd()
 	}
 
 	_svd = new SVDBond(_bondEffects, _bonds, _atoms);
+	_svd->setPolymer(_polymer);
 	_svd->performSVD();
 	
 	std::cout << _svd->numClusters() << " clusters.";

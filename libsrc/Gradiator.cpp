@@ -166,6 +166,11 @@ void Gradiator::prepareList()
 	}
 	
 	std::cout << "Whacks: " << _ws.size() << std::endl;
+	
+	double correl = correlationCoefficient();
+
+	std::cout << "Current CC: " << correl << std::endl;
+	
 }
 
 double Gradiator::dDistanceTodDensity(AtomPtr a, double curr, double delta)
@@ -291,3 +296,90 @@ double Gradiator::gradForWhack(WhackPtr whack)
 	return cuml;
 }
 
+double Gradiator::sum_x()
+{
+	double mean = 0;
+	
+	for (int i = 0; i < _voxels.size(); i++)
+	{
+		double calc = _voxels[i].calc;
+		mean += calc;
+	}
+	
+	mean /= (double)_voxels.size();
+	
+	return mean;
+}
+
+double Gradiator::sum_y()
+{
+	double mean = 0;
+	
+	for (int i = 0; i < _voxels.size(); i++)
+	{
+		double obs = _voxels[i].obs;
+		mean += obs;
+	}
+	
+	mean /= (double)_voxels.size();
+	
+	return mean;
+}
+
+double Gradiator::sxx()
+{
+	double sum = sum_x();
+	double total = 0;
+	
+	for (int i = 0; i < _voxels.size(); i++)
+	{
+		double calc = _voxels[i].calc;
+		double add = (calc - sum) * (calc - sum);
+		total += add;
+	}
+	
+	return total;
+}
+
+double Gradiator::syy()
+{
+	double sum = sum_y();
+	double total = 0;
+	
+	for (int i = 0; i < _voxels.size(); i++)
+	{
+		double obs = _voxels[i].obs;
+		double add = (obs - sum) * (obs - sum);
+		total += add;
+	}
+	
+	return total;
+}
+
+double Gradiator::sxy()
+{
+	double sy = sum_y();
+	double sx = sum_x();
+
+	double total = 0;
+	
+	for (int i = 0; i < _voxels.size(); i++)
+	{
+		double obs = _voxels[i].obs;
+		double calc = _voxels[i].calc;
+		double add = (obs - sy) * (calc - sx);
+		total += add;
+	}
+	
+	return total;
+}
+
+double Gradiator::correlationCoefficient()
+{
+	double cc = sxy();
+	double denom = sqrt(sxx() * syy());
+	
+	cc /= denom;
+	
+	return cc;
+}

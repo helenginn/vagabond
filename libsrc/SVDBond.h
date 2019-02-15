@@ -49,6 +49,11 @@ public:
 	{
 		return _num;
 	}
+	
+	void setPolymer(PolymerPtr pol)
+	{
+		_polymer = pol;
+	}
 
 	void addToStrategy(RefinementStrategyPtr strategy, int dir);
 	void applyParameters();
@@ -79,6 +84,7 @@ private:
 	
 	int _num;
 	double _wTotal;
+	PolymerPtr _polymer;
 };
 
 

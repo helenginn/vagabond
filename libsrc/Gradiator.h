@@ -75,6 +75,13 @@ private:
 	double deltaDistance(Voxel *vox, size_t n, WhackPtr whack);
 	vec3 whackPosition(Voxel *vox, size_t n, WhackPtr whack);
 
+	double syy();
+	double sxy();
+	double sxx();
+	double sum_y();
+	double sum_x();
+	double correlationCoefficient();
+
 	std::vector<Voxel> _voxels;
 	std::vector<WhackPtr> _ws;
 	std::map<WhackPtr, WhackVal> _whacks;

@@ -19,6 +19,7 @@
 #include <iostream>
 #include <string.h>
 #include "SVDBond.h"
+#include "Gradiator.h"
 #include "../libica/svdcmp.h"
 #include "Atom.h"
 #include "RefinementStrategy.h"
@@ -141,6 +142,9 @@ void SVDBond::performSVD(BondBondCC *ccs)
 	prepareVector(&_w);
 	
 	compareBonds();
+	
+	Gradiator grad(_polymer);
+	grad.prepareList();
 	
 	writeMatrix();
 	
