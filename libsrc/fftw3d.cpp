@@ -1667,3 +1667,52 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 
 	delete [] fdata;
 }
+
+vec3 getSymRelatedPosition(CrystalPtr crystal, vec3 pos, int i)
+{
+	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
+	mat3x3 real2Frac = crystal->getReal2Frac();
+	mat3x3_mult_vec(real2Frac, &pos);
+
+	float *rot = &spg->symop[i].rot[0][0];
+	float *trn = spg->symop[i].trn;
+
+	vec3 mod = empty_vec3();
+	mod.x = pos.x * rot[0] + pos.y * rot[1] + pos.z * rot[2];
+	mod.y = pos.x * rot[3] + pos.y * rot[4] + pos.z * rot[5];
+	mod.z = pos.x * rot[6] + pos.y * rot[7] + pos.z * rot[8];
+	mod.x += trn[0];
+	mod.y += trn[1];
+	mod.z += trn[2];
+	
+	mat3x3 frac2Real = crystal->getHKL2Frac();
+	mat3x3_mult_vec(frac2Real, &mod);
+	
+	return mod;
+}
+
+
+vec3 FFT::getPositionInAsu(vec3 vec)
+{
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
+	mat3x3 real2Frac = crystal->getReal2Frac();
+	
+	for (int i = 0; i < spg->nsymop; i++)
+	{
+		vec3 pos = getSymRelatedPosition(crystal, vec, i);
+		vec3 tmp = pos;
+		mat3x3_mult_vec(real2Frac, &tmp);
+		FFT::collapseFrac(&tmp.x, &tmp.y, &tmp.z);
+		
+		if (tmp.x < spg->mapasu_zero[0] &&
+		    tmp.y < spg->mapasu_zero[1] &&
+		    tmp.z < spg->mapasu_zero[2]) 
+		{
+			return pos;
+		}
+	}
+	
+	return empty_vec3();
+}
+

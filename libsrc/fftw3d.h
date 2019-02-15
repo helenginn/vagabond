@@ -334,6 +334,8 @@ public:
 	fftwf_complex *data;
 	int *mask; // not char due to cpu speed
 
+	static vec3 getPositionInAsu(vec3 vec);
+
 	double scales[3];
 private:
 	FourierDimension *_myDims;
