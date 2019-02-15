@@ -859,6 +859,7 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
                                    double partsFc, std::string prefix)
 {
 	realSpaceClutter(data->getMaxResolution());
+	FFTPtr tmpCalc = FFTPtr(new FFT(*_fft));
 	
 	fourierTransform(1);
 	scaleComponents(data);
@@ -980,6 +981,13 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	fourierTransform(-1);
 	_difft->fft(-1);
 
+	/* Copy the calculated density into the imaginary component as
+	 * it will no longer be used for anything else */
+	for (int i = 0; i < _fft->nn; i++)
+	{
+		_fft->data[i][1] = tmpCalc->data[i][0];
+	}
+	
 	std::vector<double> xs, ys;
 
 

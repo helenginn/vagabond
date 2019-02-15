@@ -56,7 +56,8 @@ typedef struct
 typedef struct
 {
 	vec3 pos; /** Position in crystal */
-	double obs; /** observed value */
+	double obs; /** observed density value */
+	double calc; /** calculated density value */
 	std::vector<SingleAtom> nearby_atoms; /* List of atoms to be consulted */
 } Voxel;
 

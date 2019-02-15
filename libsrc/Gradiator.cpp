@@ -94,6 +94,7 @@ void Gradiator::prepareList()
 		Voxel vox;
 		vox.pos = real;
 		vox.obs = fft->data[j][0];
+		vox.calc = fft->data[j][1];
 
 		std::vector<SingleAtom> nearby;
 		
