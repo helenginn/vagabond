@@ -261,6 +261,8 @@ void Molecule::addAtom(AtomPtr atom)
 void Molecule::addProperties()
 {
 	addStringProperty("chain_id", &_chainID);
+	addDoubleProperty("bfac_subt", &_absoluteBFacSubtract);
+	addDoubleProperty("bfac_mult", &_absoluteBFacMult);
 	
 	for (int i = 0; i < atomCount(); i++)
 	{
