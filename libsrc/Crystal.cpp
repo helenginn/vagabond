@@ -489,6 +489,13 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 	FFTPtr fftData = data->getFFT();	
 	vec3 nLimits = getNLimits(fftData, _fft);
 	mat3x3 tmp = mat3x3_transpose(_real2frac);
+	
+	double maxRes = 0;
+
+	if (_shells.size())
+	{
+		maxRes = _shells.back().maxRes;
+	}
 
 	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
@@ -503,12 +510,17 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 				mat3x3_mult_vec(tmp, &ijk);
 				double length = vec3_length(ijk);
 				double real = 1 / length;
+				
+				if (real < maxRes)
+				{
+					continue;
+				}
 
 				int index = -1;
 				
 				for (int l = 0; l < _shells.size() && !allShells; l++)
 				{
-					if (real < _shells[l].minRes &&
+					if (real <= _shells[l].minRes &&
 					    real > _shells[l].maxRes)
 					{
 						index = l;
