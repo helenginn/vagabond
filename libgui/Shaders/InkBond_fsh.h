@@ -27,9 +27,9 @@ std::string InkBond_fsh =
 "	{\n"\
 "		min_distance = focus[2] + 0.;\n"\
 "		max_distance = focus[2] - 8.;\n"\
-"		if (vPos[2] > -2.) {\n"\
-"			discard;\n"\
-"		}\n"\
+"	}\n"\
+"	if (vPos[2] > -2.) {\n"\
+"		discard;\n"\
 "	}\n"\
 "   float transparency = (vPos[2] - min_distance) / (max_distance - min_distance);\n"\
 "	transparency = max(transparency, 0.0);\n"\
