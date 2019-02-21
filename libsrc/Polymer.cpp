@@ -231,7 +231,6 @@ void Polymer::tieAtomsUp()
 	checkChainContinuity();
 
 	AtomPtr n = getMonomer(_anchorNum)->findAtom("N");
-	AtomPtr to_c = getMonomer(_anchorNum)->findAtom("CA");
 	
 	if (!getMonomer(_anchorNum - 1))
 	{
@@ -240,13 +239,11 @@ void Polymer::tieAtomsUp()
 		return;
 	}
 	
-	AtomPtr to_n = getMonomer(_anchorNum - 1)->findAtom("C");
-
 	/* Specify heavy alignment atoms around the anchor point */
-	AtomPtr ca = getMonomer(_anchorNum)->findAtom("CA");
-	AtomPtr c = getMonomer(_anchorNum)->findAtom("C");
 	AtomPtr prev_c = getMonomer(_anchorNum - 1)->findAtom("C");
 	AtomPtr prev_ca = getMonomer(_anchorNum - 1)->findAtom("CA");
+	AtomPtr ca = getMonomer(_anchorNum)->findAtom("CA");
+	AtomPtr c = getMonomer(_anchorNum)->findAtom("C");
 
 	ModelPtr nModel = n->getModel();
 
@@ -254,7 +251,7 @@ void Polymer::tieAtomsUp()
 	{
 		AnchorPtr newAnchor = AnchorPtr(new Anchor(ToAbsolutePtr(nModel)));
 		newAnchor->setBFactor(_startB);
-		newAnchor->setNeighbouringAtoms(prev_ca, to_n, to_c, c);
+		newAnchor->setNeighbouringAtoms(prev_ca, prev_c, ca, c);
 		n->setModel(newAnchor);
 	}
 
