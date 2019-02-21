@@ -24,6 +24,7 @@ GLObject::GLObject()
 	_usesLighting = false;
 	_usesFocalDepth = false;
 	_focus = empty_vec3();
+	_centroid = empty_vec3();
 }
 
 void GLObject::rebindProgram()

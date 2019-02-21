@@ -23,7 +23,7 @@
 #include "Shaders/InkBond_vsh.h"
 #include "Shaders/InkBond_fsh.h"
 
-Bonds2GL::Bonds2GL(int average)
+Bonds2GL::Bonds2GL(int average) : Vagabond2GL()
 {
 	_average = average;
 	_usesFocalDepth = true;

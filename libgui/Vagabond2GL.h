@@ -33,6 +33,7 @@ public:
 		_renders = 0;
 		_lastEnsembleCount = 0;
 		_shouldGetBonds = true;
+		_centroid = empty_vec3();
 		
 		_pause = false;
 		_enabled = true;
