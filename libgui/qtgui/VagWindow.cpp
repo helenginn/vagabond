@@ -452,7 +452,7 @@ bool VagWindow::isRunningSomething()
 		return true;
 	}
 
-	bool locked = mutex.try_lock();
+	bool locked = mutex.tryLock();
 
 	if (locked)
 	{
