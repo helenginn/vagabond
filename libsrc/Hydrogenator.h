@@ -30,7 +30,9 @@ public:
 	void hydrogenate();
 	void addHydrogens(AtomList group, int hNum, ...);
 
-	void setNewGeometry(AtomList group, double bondAngle, double torsion,
+	/** Pass negative torsion if you do not want it set */
+	void setNewGeometry(AtomList group, double bondAngle, 
+	                    double torsion = -1,
 	                    double portion = -1);
 private:
 	MonomerPtr _monomer;

@@ -92,8 +92,18 @@ void Hydrogenator::setNewGeometry(AtomList group, double bondAngle,
 			portion = Bond::getCirclePortion(&*bond);
 		}
 		
+		ModelPtr mod = bond->getParentModel();
+		
+		if (!mod->isBond())
+		{
+			continue;
+		}
+		
+		BondPtr parent = ToBondPtr(mod);
+		int num = parent->downstreamBondNum(&*bond, NULL);
+		
 		/* Don't set a torsion angle except for the first atom */
-		if (bond->downstreamBondNum(&*bond, NULL) > 0)
+		if (num > 0 || torsion < 0)
 		{
 			continue;
 		}
@@ -254,7 +264,7 @@ void Hydrogenator::hydrogenate()
 	
 	double angle = (prevMajor->getAtomName() == "C") ? 124.29 : 117.0;
 
-	setNewGeometry(_monomer->findAtoms("H"), angle, 0.);
+	setNewGeometry(_monomer->findAtoms("H"), angle);
 
 	AtomList cAlpha = bone->findAtoms("CA");
 	AtomList nitrogens = bone->findAtoms("N");
