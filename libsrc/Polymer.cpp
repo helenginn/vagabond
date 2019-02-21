@@ -1130,7 +1130,7 @@ void Polymer::hydrogenateContents()
 {
 	Hydrogenator hydrogenator;
 
-	for (int i = 0; i < monomerCount(); i++)
+	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
 		if (!getMonomer(i))
 		{
