@@ -104,7 +104,7 @@ lib_vag= library('vag', gen_src, 'libsrc/Absolute.cpp',
 'libsrc/vec3.cpp', 
 'libsrc/WaterNetwork.cpp', 
 'libsrc/Whack.cpp', 
-dependencies: [png_dep, fftw_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep], cpp_args: ['-w', '-std=c++11'])
+dependencies: [png_dep, fftw_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep], cpp_args: ['-w', '-std=c++11'], install: true)
 inc_vag = include_directories('libsrc')
 dep_vag = declare_dependency(link_with: lib_vag, include_directories: inc_vag)
 
@@ -143,7 +143,7 @@ if qt5_dep.found() and dep_gl.found()
 'libgui/shader.cpp',
 'libgui/Selected2GL.cpp',
 'libgui/Vagabond2GL.cpp', 
-cpp_args: ['-w'], dependencies : [ qt5_dep, dep_vag ])
+cpp_args: ['-w'], dependencies : [ qt5_dep, dep_vag ], install: true)
 	inc_vgui = include_directories('libgui')
 dep_vgui = declare_dependency(link_with: lib_vgui, include_directories: inc_vgui)
 
