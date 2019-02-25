@@ -287,12 +287,16 @@ double Gradiator::deltaVoxel4Whack(WhackPtr whack, Voxel *vox, int dir)
 	int whackRes = whack->getBond()->getAtom()->getResidueNum();
 	
 	double cuml = 0;
+	int anchor = _polymer->getAnchor();
+	bool left = whackRes < anchor;
+	
+	if (left) dir *= -1;
 	
 	for (size_t i = 0; i < nearby->size(); i++)
 	{
 		if (dir > 0)
 		{
-			if (whackRes > nearby->at(i).res)
+			if (whackRes >= nearby->at(i).res)
 			{
 				continue;
 			}
