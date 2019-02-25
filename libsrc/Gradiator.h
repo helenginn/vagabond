@@ -41,6 +41,7 @@
 typedef struct
 {
 //	AtomPtr atom;
+	int res;
 	vec3 pos;
 	double mag;
 	size_t index;
@@ -67,9 +68,8 @@ public:
 	Gradiator(PolymerPtr polymer);
 
 	void prepareList();
-	double gradForWhack(WhackPtr whack);
 private:
-	double deltaVoxel4Whack(WhackPtr whack, Voxel *vox);
+	double deltaVoxel4Whack(WhackPtr whack, Voxel *vox, int dir);
 	double deltaVoxelValue(Voxel *vox);
 	double dDistanceTodDensity(AtomPtr a, double curr, double delta);
 	double deltaDistance(Voxel *vox, size_t n, WhackPtr whack);
@@ -82,6 +82,10 @@ private:
 	double sum_x();
 	double correlationCoefficient();
 
+	void deltaSs4Whack(WhackPtr w, double *dsxx, double *dsxy, int dir);
+	double deltaSumX4Whack(WhackPtr w, int dir);
+	double deltaCC(WhackPtr w, int dir);
+	
 	std::vector<Voxel> _voxels;
 	std::vector<WhackPtr> _ws;
 	std::map<WhackPtr, WhackVal> _whacks;

@@ -133,6 +133,7 @@ void Gradiator::prepareList()
 				for (int k = 0; k < samples->size(); k++)
 				{
 					SingleAtom pair;
+					pair.res = a->getResidueNum();
 					pair.index = k;
 					vec3 start = m->getManyPositions()->at(k).start;
 					vec3 end = FFT::getPositionInAsu(start);
@@ -182,9 +183,16 @@ void Gradiator::prepareList()
 	std::cout << "Whacks: " << _ws.size() << std::endl;
 	
 	double correl = correlationCoefficient();
-
 	std::cout << "Current CC: " << correl << std::endl;
 	
+	for (int i = 0; i < _ws.size(); i++)
+	{
+		double nDelta = deltaCC(_ws[i], -1);
+		double pDelta = deltaCC(_ws[i], 1);
+		std::cout << i << ", " 
+		<< std::setprecision(8) << nDelta << ", "
+		<< std::setprecision(8) << pDelta << std::endl;
+	}
 }
 
 double Gradiator::dDistanceTodDensity(AtomPtr a, double curr, double delta)
@@ -273,39 +281,36 @@ double Gradiator::deltaVoxelValue(Voxel *vox)
 	return cuml;
 }
 
-double Gradiator::deltaVoxel4Whack(WhackPtr whack, Voxel *vox)
+double Gradiator::deltaVoxel4Whack(WhackPtr whack, Voxel *vox, int dir)
 {
 	std::vector<SingleAtom> *nearby = &vox->nearby_atoms;
+	int whackRes = whack->getBond()->getAtom()->getResidueNum();
 	
 	double cuml = 0;
 	
 	for (size_t i = 0; i < nearby->size(); i++)
 	{
+		if (dir > 0)
+		{
+			if (whackRes > nearby->at(i).res)
+			{
+				continue;
+			}
+		}
+		else
+		{
+			if (whackRes < nearby->at(i).res)
+			{
+				continue;
+			}
+		}
+		
 		double delta_dist = deltaDistance(vox, i, whack);
 		double curr = currentDistance(vox, i);
 		double delta_dens = dDistanceTodDensity(AtomPtr(), curr, delta_dist);
 		
 		cuml += delta_dens;
 	}
-	
-	return cuml;
-}
-
-double Gradiator::gradForWhack(WhackPtr whack)
-{
-	double cuml = 0;
-	double cumlabs = 0;
-
-	for (size_t i = 0; i < _voxels.size(); i++)
-	{
-		double add = deltaVoxel4Whack(whack, &_voxels[i]);
-		cuml += add;
-		cumlabs += fabs(add);
-	}
-	std::cout << "Cuml: " << cuml << std::endl;
-	std::cout << "Cumlabs: " << cumlabs << std::endl;
-	std::cout << "Net movement is " << cuml / cumlabs * 100
-	<< "% of total movements" << std::endl;
 	
 	return cuml;
 }
@@ -352,6 +357,7 @@ double Gradiator::sxx()
 		total += add;
 	}
 	
+	total /= (double)_voxels.size();
 	return total;
 }
 
@@ -367,6 +373,7 @@ double Gradiator::syy()
 		total += add;
 	}
 	
+	total /= (double)_voxels.size();
 	return total;
 }
 
@@ -385,6 +392,7 @@ double Gradiator::sxy()
 		total += add;
 	}
 	
+	total /= (double)_voxels.size();
 	return total;
 }
 
@@ -397,3 +405,63 @@ double Gradiator::correlationCoefficient()
 	
 	return cc;
 }
+
+double Gradiator::deltaSumX4Whack(WhackPtr w, int dir)
+{
+	double sum = 0;
+	
+	for (int i = 0; i < _voxels.size(); i++)
+	{
+		double grad = deltaVoxel4Whack(w, &_voxels[i], dir);
+		sum += grad;
+	}
+	
+	sum /= (double)_voxels.size();
+	return sum;
+}
+
+void Gradiator::deltaSs4Whack(WhackPtr w, double *dsxx, double *dsxy, int dir)
+{
+	double sx = sum_x();
+	double sy = sum_y();
+	double sum = deltaSumX4Whack(w, dir);
+
+	*dsxx = 0;
+	*dsxy = 0;
+
+	for (int i = 0; i < _voxels.size(); i++)
+	{
+		double grad = deltaVoxel4Whack(w, &_voxels[i], dir);
+
+		double add = 2 * (_voxels[i].calc - sx) * (grad - sum);
+		*dsxx += add;
+
+		add = (grad - sum) * (_voxels[i].obs - sy);
+		*dsxy += add;
+	}
+	
+	*dsxx /= (double)_voxels.size();
+	*dsxy /= (double)_voxels.size();
+}
+
+double Gradiator::deltaCC(WhackPtr w, int dir)
+{
+	double deltaCC = 0;
+	double xx = sxx();
+	double denom_sq = xx * syy();
+	
+	double dsxy = 0; double dsxx = 0;
+	deltaSs4Whack(w, &dsxx, &dsxy, dir);
+	
+	double left = dsxy * sqrt(xx);
+	double right = sxy() * 0.5 / sqrt(xx) * dsxx;
+	
+	deltaCC = left - right;
+
+	deltaCC *= sqrt(syy());
+	deltaCC /= denom_sq;
+	
+	
+	return deltaCC;
+}
+
