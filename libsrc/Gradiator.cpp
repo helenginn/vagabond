@@ -52,7 +52,8 @@ void Gradiator::prepareList()
 	FFTPtr fft = _crystal->getFFT();
 	BucketPtr solv = _crystal->getBucket();
 
-	double cutoff_dsq = 4.0;
+	double cutoff_d = 2.0;
+	double cutoff_dsq = cutoff_d * cutoff_d;
 	double all_atoms = 0;
 	double plausible_voxels = 0;
 	mat3x3 f2rt = _crystal->getReal2Frac();
@@ -73,8 +74,14 @@ void Gradiator::prepareList()
 		_atoms[a] = asu;
 	}
 	
+	double cutoff = MAP_VALUE_CUTOFF;
 	for (size_t j = 0; j < fft->nn; j++)
 	{
+		if (fft->data[j][1] < cutoff)
+		{
+			continue;
+		}
+
 		vec3 real = fft->fracFromElement(j);
 		
 		if (!in_asu(spg, real))
@@ -109,6 +116,13 @@ void Gradiator::prepareList()
 			
 			vec3 atom_real = _atoms[a];
 			vec3 diff = vec3_subtract_vec3(atom_real, real);
+			
+			if (fabs(diff.x) > cutoff_d 
+			    || fabs(diff.y) > cutoff_d 
+			    || fabs(diff.z) > cutoff_d)
+			{
+				continue;
+			}
 
 			if (vec3_sqlength(diff) < cutoff_dsq)
 			{
