@@ -57,6 +57,11 @@ public:
 		_polymer = pol;
 	}
 
+	Gradiator *getGradiator()
+	{
+		return _gradiator;
+	}
+
 	void addToStrategy(RefinementStrategyPtr strategy, int dir);
 	void applyParameters();
 	void performSVD(BondBondCC *ccs = NULL);
