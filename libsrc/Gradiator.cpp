@@ -56,7 +56,6 @@ void Gradiator::prepareList()
 	double cutoff_d = 2.0;
 	double cutoff_dsq = cutoff_d * cutoff_d;
 	double all_atoms = 0;
-	double plausible_voxels = 0;
 	mat3x3 f2rt = _crystal->getReal2Frac();
 	mat3x3 f2rt2 = mat3x3_inverse(f2rt);
 	mat3x3 f2r = mat3x3_transpose(f2rt2);
@@ -76,13 +75,11 @@ void Gradiator::prepareList()
 	}
 	
 	double cutoff = MAP_VALUE_CUTOFF;
+	double plausible_voxels = 0;
+	int calc_above = 0;
+	int not_solvent = 0;
 	for (size_t j = 0; j < fft->nn; j++)
 	{
-		if (fft->data[j][1] < cutoff)
-		{
-			continue;
-		}
-
 		vec3 real = fft->fracFromElement(j);
 		
 		if (!in_asu(spg, real))
@@ -92,10 +89,19 @@ void Gradiator::prepareList()
 		
 		plausible_voxels++;
 
+		if (fft->data[j][1] < cutoff)
+		{
+			continue;
+		}
+		
+		calc_above++;
+
 		if (solv && solv->isSolvent(j))
 		{
 			continue;
 		}
+
+		not_solvent++;
 
 		mat3x3_mult_vec(f2r, &real);
 		
@@ -154,7 +160,8 @@ void Gradiator::prepareList()
 	}
 	
 	std::cout << "Total: " << _voxels.size() << " out of " 
-	<< plausible_voxels << std::endl;
+	<< plausible_voxels << " of which " << calc_above << " have calc"
+	" density above 0 and " << not_solvent << " are not solvent" << std::endl;
 	
 	std::cout << "Atoms per voxel: " << all_atoms / (double)_voxels.size()
 	<< std::endl;
