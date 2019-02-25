@@ -19,6 +19,7 @@
 #include <iomanip>
 #include "Gradiator.h"
 #include "Anchor.h"
+#include "CSV.h"
 #include "Crystal.h"
 #include "Polymer.h"
 #include "Options.h"
@@ -402,6 +403,16 @@ double Gradiator::sxy()
 
 double Gradiator::correlationCoefficient()
 {
+	CSVPtr csv = CSVPtr(new CSV(2, "obs", "calc"));
+	
+	for (int i = 0; i < _voxels.size(); i++)
+	{
+		csv->addEntry(2, _voxels[i].obs, _voxels[i].calc);
+	}
+	
+	csv->setSubDirectory("local_flex");
+	csv->writeToFile("cc_attempt.csv");
+	
 	double cc = sxy();
 	double denom = sqrt(sxx() * syy());
 	
