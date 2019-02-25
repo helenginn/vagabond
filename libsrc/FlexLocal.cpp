@@ -12,6 +12,7 @@
 #include "Polymer.h"
 #include <svdcmp.h>
 #include "Monomer.h"
+#include "Gradiator.h"
 #include "Anchor.h"
 #include "Whack.h"
 #include "RefinementGridSearch.h"
@@ -130,6 +131,7 @@ void FlexLocal::refine()
 
 		findAtomsAndBonds();
 		svd();
+		bondTest();
 		refineClusters();
 		
 		std::cout << "---------------------------------------------------------"
@@ -204,3 +206,34 @@ double FlexLocal::getScore(void *object)
 	
 }
 
+void FlexLocal::bondTest()
+{
+	Gradiator *g = _svd->getGradiator();
+	SVDBond *svd = _svd;
+	_svd = NULL;
+	
+	if (!g) return;
+	
+	double baseCC = getScore(this);
+	std::cout << "BOND TEST" << std::endl;
+	
+	for (size_t i = 0; i < g->whackCount(); i++)
+	{
+		WhackPtr w = g->getWhack(i);
+		double val = Whack::getWhack(&*w);
+		Whack::setWhack(&*w, val + 0.0001);
+		double whackCC = getScore(this);
+		Whack::setWhack(&*w, val);
+		val = Whack::getKick(&*w);
+		Whack::setKick(&*w, val + 0.0001);
+		double kickCC = getScore(this);
+		Whack::setKick(&*w, val);
+		
+		double wDiff = whackCC - baseCC;
+		double kDiff = kickCC - baseCC;
+		std::cout << i << ", " << std::setprecision(8) << wDiff <<
+		", " << kDiff << std::endl;
+	}
+	
+	_svd = svd;
+}

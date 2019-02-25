@@ -73,6 +73,7 @@ private:
 	void scanBondParams();
 	void clear();
 	void propagateWhack();
+	void bondTest();
 	void setBondParam(BondPtr b, double w, double k);
 	
 	PolymerPtr _polymer;
