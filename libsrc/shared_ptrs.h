@@ -17,6 +17,7 @@
 #include <vector>
 
 #define ANGLE_SAMPLING deg2rad(4.0)
+#define MAP_VALUE_CUTOFF 20.
 
 #define ATOM_SAMPLING_COUNT (30)
 #define PROTEIN_SAMPLING (0.5)
