@@ -69,9 +69,14 @@ public:
 
 	void prepareList();
 	
-	Gradiator *getGradiator()
+	WhackPtr getWhack(int i)
 	{
-		return _gradiator;
+		return _ws[i];
+	}
+	
+	size_t whackCount()
+	{
+		return _ws.size();
 	}
 private:
 	double deltaVoxel4Whack(WhackPtr whack, Voxel *vox, int dir);
