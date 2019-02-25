@@ -33,6 +33,7 @@ SVDBond::SVDBond(BondEffects &effects, std::vector<BondPtr> &bonds,
 	_effects = effects;
 	_bonds = bonds;
 	_atoms = atoms;
+	_gradiator = NULL;
 	_svd = NULL;
 }
 
@@ -143,8 +144,8 @@ void SVDBond::performSVD(BondBondCC *ccs)
 	
 	compareBonds();
 	
-	Gradiator grad(_polymer);
-	grad.prepareList();
+	_gradiator = new Gradiator(_polymer);
+	_gradiator->prepareList();
 	
 	writeMatrix();
 	
@@ -406,6 +407,8 @@ SVDBond::~SVDBond()
 		delete _params[i].pWhack;
 		delete _params[i].pKick;
 	}
+	
+	delete _gradiator; _gradiator = NULL;
 }
 
 void SVDBond::writeMatrix()

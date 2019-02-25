@@ -68,6 +68,11 @@ public:
 	Gradiator(PolymerPtr polymer);
 
 	void prepareList();
+	
+	Gradiator *getGradiator()
+	{
+		return _gradiator;
+	}
 private:
 	double deltaVoxel4Whack(WhackPtr whack, Voxel *vox, int dir);
 	double deltaVoxelValue(Voxel *vox);

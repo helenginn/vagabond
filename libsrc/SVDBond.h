@@ -37,6 +37,8 @@ typedef struct
 
 typedef std::map<BondPtr, BondParamPair> BondBase;
 
+class Gradiator;
+
 class SVDBond
 {
 public:
@@ -85,6 +87,7 @@ private:
 	int _num;
 	double _wTotal;
 	PolymerPtr _polymer;
+	Gradiator *_gradiator;
 };
 
 
