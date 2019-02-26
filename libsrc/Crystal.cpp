@@ -859,10 +859,11 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
                                    double partsFc, std::string prefix)
 {
 	realSpaceClutter(data->getMaxResolution());
-	FFTPtr tmpCalc = FFTPtr(new FFT(*_fft));
 	
 	fourierTransform(1);
 	scaleComponents(data);
+	FFTPtr tmpCalc = FFTPtr(new FFT(*_fft));
+	tmpCalc->fft(-1);
 	
 	writeMillersToFile(data, prefix);
 
