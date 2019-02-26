@@ -55,7 +55,6 @@ Atom::Atom(Atom &other)
 	_element = other._element;
 	_atomName = other._atomName;
 	_model = other._model;
-	_distModelOnly = other._distModelOnly;
 	_monomer = other._monomer;
 	_weighting = 1;
 	_weightOnly = 1;
@@ -210,11 +209,6 @@ FFTPtr Atom::getBlur()
 	FFTPtr modelDist = _model->getDistribution();
 	/* YEAH, that line does something */
 
-	if (_distModelOnly)
-	{
-		modelDist = _distModelOnly->getDistribution();
-	}
-
 	return modelDist;
 }
 
@@ -249,20 +243,23 @@ vec3 Atom::getPositionInAsu()
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
-	mat3x3 real2Frac = crystal->getReal2Frac();
+	mat3x3 f2rt = crystal->getReal2Frac();
+	mat3x3 f2r = mat3x3_transpose(f2rt);
+	mat3x3 r2f = mat3x3_inverse(f2r);
 	
 	for (int i = 0; i < symOpCount(); i++)
 	{
 		vec3 pos = getSymRelatedPosition(i);
 		vec3 tmp = pos;
-		mat3x3_mult_vec(real2Frac, &tmp);
+		mat3x3_mult_vec(f2r, &tmp);
 		FFT::collapseFrac(&tmp.x, &tmp.y, &tmp.z);
 		
 		if (tmp.x < spg->mapasu_zero[0] &&
 		    tmp.y < spg->mapasu_zero[1] &&
 		    tmp.z < spg->mapasu_zero[2]) 
 		{
-			return pos;
+			mat3x3_mult_vec(r2f, &tmp);
+			return tmp;
 		}
 	}
 	
