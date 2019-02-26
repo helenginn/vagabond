@@ -488,11 +488,9 @@ double Gradiator::deltaCC(WhackPtr w, int dir)
 	double right = sxy() * 0.5 / sqrt(xx) * dsxx;
 	
 	deltaCC = left - right;
-	deltaCC /= (double)(_voxels.size() * _voxels.size());
 
-//	deltaCC *= sqrt(syy());
-//	deltaCC /= denom_sq;
-	
+	deltaCC *= sqrt(syy());
+	deltaCC /= denom_sq;
 	
 	return deltaCC;
 }
