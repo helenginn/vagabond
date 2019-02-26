@@ -53,12 +53,13 @@ void Gradiator::prepareList()
 	FFTPtr fft = _crystal->getFFT();
 	BucketPtr solv = _crystal->getBucket();
 
-	double cutoff_d = 2.0;
+	double cutoff_d = 1.5;
 	double cutoff_dsq = cutoff_d * cutoff_d;
 	double all_atoms = 0;
 	mat3x3 f2rt = _crystal->getReal2Frac();
-	mat3x3 f2rt2 = mat3x3_inverse(f2rt);
-	mat3x3 f2r = mat3x3_transpose(f2rt2);
+	mat3x3 f2rt2 = mat3x3_transpose(f2rt);
+	mat3x3 f2r = mat3x3_inverse(f2rt2);
+
 	CSym::CCP4SPG *spg = _crystal->getSpaceGroup();
 	
 	for (int i = 0; i < backbone->atomCount(); i++)
@@ -70,10 +71,16 @@ void Gradiator::prepareList()
 			continue;
 		}
 		
+		if (a->getElementSymbol() == "H")
+		{
+			continue;
+		}
+		
 		vec3 asu = a->getPositionInAsu();
 		_atoms[a] = asu;
 	}
 	
+	std::map<AtomPtr, int> collected;
 	double cutoff = MAP_VALUE_CUTOFF;
 	double plausible_voxels = 0;
 	int calc_above = 0;
@@ -81,18 +88,13 @@ void Gradiator::prepareList()
 	for (size_t j = 0; j < fft->nn; j++)
 	{
 		vec3 real = fft->fracFromElement(j);
-		
+
 		if (!in_asu(spg, real))
 		{
 			continue;
 		}
 		
 		plausible_voxels++;
-
-		if (fft->data[j][1] < cutoff)
-		{
-			continue;
-		}
 		
 		calc_above++;
 
@@ -104,7 +106,7 @@ void Gradiator::prepareList()
 		not_solvent++;
 
 		mat3x3_mult_vec(f2r, &real);
-		
+
 		Voxel vox;
 		vox.pos = real;
 		vox.obs = fft->data[j][0];
@@ -149,6 +151,13 @@ void Gradiator::prepareList()
 					nearby.push_back(pair);
 					all_atoms++;
 				}
+				
+				if (!collected.count(a))
+				{
+					collected[a] = 0;
+				}
+
+				collected[a]++;
 			}
 		}
 		
@@ -302,7 +311,7 @@ double Gradiator::deltaVoxel4Whack(WhackPtr whack, Voxel *vox, int dir)
 	
 	for (size_t i = 0; i < nearby->size(); i++)
 	{
-		if (dir > 0)
+		if (dir < 0)
 		{
 			if (whackRes >= nearby->at(i).res)
 			{
@@ -369,7 +378,7 @@ double Gradiator::sxx()
 		total += add;
 	}
 	
-	total /= (double)_voxels.size();
+//	total /= (double)_voxels.size();
 	return total;
 }
 
@@ -385,7 +394,7 @@ double Gradiator::syy()
 		total += add;
 	}
 	
-	total /= (double)_voxels.size();
+//	total /= (double)_voxels.size();
 	return total;
 }
 
@@ -404,7 +413,7 @@ double Gradiator::sxy()
 		total += add;
 	}
 	
-	total /= (double)_voxels.size();
+//	total /= (double)_voxels.size();
 	return total;
 }
 
@@ -438,7 +447,7 @@ double Gradiator::deltaSumX4Whack(WhackPtr w, int dir)
 		sum += grad;
 	}
 	
-	sum /= (double)_voxels.size();
+//	sum /= (double)_voxels.size();
 	return sum;
 }
 
@@ -462,8 +471,8 @@ void Gradiator::deltaSs4Whack(WhackPtr w, double *dsxx, double *dsxy, int dir)
 		*dsxy += add;
 	}
 	
-	*dsxx /= (double)_voxels.size();
-	*dsxy /= (double)_voxels.size();
+//	*dsxx /= (double)_voxels.size();
+//	*dsxy /= (double)_voxels.size();
 }
 
 double Gradiator::deltaCC(WhackPtr w, int dir)
@@ -479,9 +488,10 @@ double Gradiator::deltaCC(WhackPtr w, int dir)
 	double right = sxy() * 0.5 / sqrt(xx) * dsxx;
 	
 	deltaCC = left - right;
+	deltaCC /= (double)(_voxels.size() * _voxels.size());
 
-	deltaCC *= sqrt(syy());
-	deltaCC /= denom_sq;
+//	deltaCC *= sqrt(syy());
+//	deltaCC /= denom_sq;
 	
 	
 	return deltaCC;
