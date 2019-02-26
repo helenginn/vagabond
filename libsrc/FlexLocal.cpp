@@ -231,8 +231,9 @@ void FlexLocal::bondTest()
 		
 		double wDiff = whackCC - baseCC;
 		double kDiff = kickCC - baseCC;
-		std::cout << i << ", " << std::setprecision(8) << wDiff <<
-		", " << kDiff << std::endl;
+		/* score is negative */
+		std::cout << i << ", " << std::setprecision(8) << -wDiff <<
+		", " << -kDiff << std::endl;
 	}
 	
 	_svd = svd;
