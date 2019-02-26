@@ -53,7 +53,8 @@ public:
 		_enabled = true;
 	}
 
-	/** To be called by an Anchor object to modify its sample positions. */
+	/** To be called by an Anchor object (or actually any bond)
+	 * 	to modify its sample positions. */
 	void applyToAnchorSamples(std::vector<BondSample> &anchSamp);
 
 	std::string getClassName()
