@@ -298,6 +298,36 @@ double Gradiator::deltaVoxelValue(Voxel *vox)
 	return cuml;
 }
 
+double Gradiator::deltaAllVoxels(WhackPtr w, int dir)
+{
+	for (int i = 0; i < _voxels.size(); i++)
+	{
+		Voxel *vox = &_voxels[i];
+		if (dir > 0)
+		{
+			double positive = deltaVoxel4Whack(w, vox, 1);
+			vox->p_delta = positive;
+		}
+		else
+		{
+			double negative = deltaVoxel4Whack(w, vox, -1);
+			vox->n_delta = negative;
+		}
+	}
+}
+
+double Gradiator::cachedDelta4Voxel(Voxel *vox, int dir)
+{
+	if (dir > 0)
+	{
+		return vox->p_delta;
+	}
+	else
+	{
+		return vox->n_delta;
+	}
+}
+
 double Gradiator::deltaVoxel4Whack(WhackPtr whack, Voxel *vox, int dir)
 {
 	std::vector<SingleAtom> *nearby = &vox->nearby_atoms;
@@ -443,7 +473,7 @@ double Gradiator::deltaSumX4Whack(WhackPtr w, int dir)
 	
 	for (int i = 0; i < _voxels.size(); i++)
 	{
-		double grad = deltaVoxel4Whack(w, &_voxels[i], dir);
+		double grad = cachedDelta4Voxel(&_voxels[i], dir);
 		sum += grad;
 	}
 	
@@ -462,7 +492,7 @@ void Gradiator::deltaSs4Whack(WhackPtr w, double *dsxx, double *dsxy, int dir)
 
 	for (int i = 0; i < _voxels.size(); i++)
 	{
-		double grad = deltaVoxel4Whack(w, &_voxels[i], dir);
+		double grad = cachedDelta4Voxel(&_voxels[i], dir);
 
 		double add = 2 * (_voxels[i].calc - sx) * (grad - sum);
 		*dsxx += add;
@@ -477,6 +507,8 @@ void Gradiator::deltaSs4Whack(WhackPtr w, double *dsxx, double *dsxy, int dir)
 
 double Gradiator::deltaCC(WhackPtr w, int dir)
 {
+	deltaAllVoxels(w, dir);
+
 	double deltaCC = 0;
 	double xx = sxx();
 	double denom_sq = xx * syy();
@@ -494,4 +526,5 @@ double Gradiator::deltaCC(WhackPtr w, int dir)
 	
 	return deltaCC;
 }
+
 

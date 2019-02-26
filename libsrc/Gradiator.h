@@ -59,6 +59,8 @@ typedef struct
 	vec3 pos; /** Position in crystal */
 	double obs; /** observed density value */
 	double calc; /** calculated density value */
+	double p_delta; /** Delta density in positive direction */
+	double n_delta; /** Delta density in negative direction */
 	std::vector<SingleAtom> nearby_atoms; /* List of atoms to be consulted */
 } Voxel;
 
@@ -79,6 +81,8 @@ public:
 		return _ws.size();
 	}
 private:
+	double cachedDelta4Voxel(Voxel *vox, int dir);
+	double deltaAllVoxels(WhackPtr w, int dir);
 	double deltaVoxel4Whack(WhackPtr whack, Voxel *vox, int dir);
 	double deltaVoxelValue(Voxel *vox);
 	double dDistanceTodDensity(AtomPtr a, double curr, double delta);
