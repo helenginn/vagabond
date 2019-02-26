@@ -86,48 +86,48 @@ void ExplicitModel::sanityCheck()
 
 std::vector<BondSample> ExplicitModel::getFinalPositions()
 {
-	if (!_recalcFinal && _finalSamples.size())
+	if (!_recalcFinal && _storedSamples.size())
 	{
-		return _finalSamples;	
+		return _storedSamples;	
 	}
 	
 	/* Recalculate final positions */
 	
 	std::vector<BondSample> *positions = getManyPositions();
-	_finalSamples = *positions;
+	_storedSamples = *positions;
 	
 	/* Apply twists to each bond. */
 	for (int i = 0; i < twistCount(); i++)
 	{
 		TwistPtr twist = _twists[i];
-		twist->applyToAnchorSamples(_finalSamples);
+		twist->applyToAnchorSamples(_storedSamples);
 	}
 
 	std::vector<vec3> posOnly;
-	posOnly.reserve(_finalSamples.size());
+	posOnly.reserve(_storedSamples.size());
 
-	for (int i = 0; i < _finalSamples.size(); i++)
+	for (int i = 0; i < _storedSamples.size(); i++)
 	{
-		posOnly.push_back(_finalSamples[i].start);
+		posOnly.push_back(_storedSamples[i].start);
 	}
-	
-	/* Deset flag to allow caching */
-	
-	_recalcFinal = false;
 	
 	if (_useMutex)
 	{
 		std::lock_guard<std::mutex> lock(guiLock);
 		_finalPositions = posOnly;
-		_absolute = meanOfManyPositions(&_finalSamples);
+		_absolute = meanOfManyPositions(&_storedSamples);
 	}
 	else
 	{
 		_finalPositions = posOnly;
-		_absolute = meanOfManyPositions(&_finalSamples);
+		_absolute = meanOfManyPositions(&_storedSamples);
 	}
+	
+	/* Deset flag to allow caching */
+	
+	_recalcFinal = false;
 
-	return _finalSamples;
+	return _storedSamples;
 }
 
 mat3x3 ExplicitModel::makeTorsionBasis(vec3 hPos, vec3 maPos,
