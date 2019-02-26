@@ -66,45 +66,6 @@ public:
 
 	std::vector<vec3> fishPositions(vec3 *average = NULL);
 
-	void setPosN(int choice, double value);
-	double getPosN(int choice);
-
-	static void setPosX(void *object, double x)
-	{
-		ExplicitModel *expl = static_cast<ExplicitModel *>(object);
-		expl->setPosN(0, x);
-	}
-
-	static void setPosY(void *object, double y)
-	{
-		ExplicitModel *expl = static_cast<ExplicitModel *>(object);
-		expl->setPosN(1, y);
-	}
-
-	static void setPosZ(void *object, double z)
-	{
-		ExplicitModel *expl = static_cast<ExplicitModel *>(object);
-		expl->setPosN(2, z);
-	}
-
-	static double getPosZ(void *object)
-	{
-		ExplicitModel *expl = static_cast<ExplicitModel *>(object);
-		return expl->getPosN(2);
-	}
-
-	static double getPosX(void *object)
-	{
-		ExplicitModel *expl = static_cast<ExplicitModel *>(object);
-		return expl->getPosN(0);
-	}
-
-	static double getPosY(void *object)
-	{
-		ExplicitModel *expl = static_cast<ExplicitModel *>(object);
-		return expl->getPosN(1);
-	}
-
 	void setModifiedSample(int i)
 	{
 		_modifySample = i;

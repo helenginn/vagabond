@@ -266,50 +266,10 @@ void ExplicitModel::refreshPositions()
 	getFinalPositions();
 }
 
-void ExplicitModel::setPosN(int choice, double value)
-{
-	/*
-	double *vec = &_position.x;
-
-	if (_modifySample >= 0)
-	{
-		if (_modifySample >= _finalSamples.size())
-		{
-			return;
-		}
-
-		vec = &_bondSamples[_modifySample].start.x;
-		_recalcFinal = true;
-	}
-	
-	*(vec + choice) = value;
-	*/
-}
-
 double ExplicitModel::getMeanSquareDeviation()
 {
 	getAnisotropy(true);
 	return _isotropicAverage * 8 * M_PI * M_PI;
-}
-
-
-double ExplicitModel::getPosN(int choice)
-{
-	/*
-	double *vec = &_position.x;
-	if (_modifySample >= 0)
-	{
-		if (_modifySample >= _finalSamples.size())
-		{
-			return *(&_position.x + choice);
-		}
-
-		vec = &_bondSamples[_modifySample].start.x;
-	}
-	
-	return *(vec + choice);
-	*/
-	return 0;
 }
 
 /* For GUI */
