@@ -215,7 +215,7 @@ void FlexLocal::bondTest()
 	if (!g) return;
 	
 	double baseCC = getScore(this);
-	std::cout << "BOND TEST" << std::endl;
+	CSVPtr csv = CSVPtr(new CSV(3, "bond", "whack", "kick"));
 	
 	for (size_t i = 0; i < g->whackCount(); i++)
 	{
@@ -231,10 +231,11 @@ void FlexLocal::bondTest()
 		
 		double wDiff = whackCC - baseCC;
 		double kDiff = kickCC - baseCC;
-		/* score is negative */
-		std::cout << i << ", " << std::setprecision(8) << -wDiff <<
-		", " << -kDiff << std::endl;
+		csv->addEntry(3, (double)i, wDiff, kDiff);
 	}
+	
+	csv->setSubDirectory("local_flex");
+	csv->writeToFile("bond_test.csv");
 	
 	_svd = svd;
 }
