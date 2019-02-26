@@ -145,6 +145,8 @@ void Crystal::refineIntraMovements()
 
 void Crystal::realSpaceClutter(double maxRes)
 {
+	maxRes = getMaxResolution(_data);
+
 	if (_fft)
 	{
 		_fft->setAll(0);	
@@ -728,6 +730,7 @@ double Crystal::getMaxResolution(DiffractionPtr data)
 		{
 			_maxResolution = 1.8;
 		}
+
 		std::cout << std::setprecision(2);
 	}
 	
