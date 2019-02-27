@@ -43,6 +43,15 @@ void Bonds2GL::setupAverage()
 	_extra = true;
 }
 
+bool Bonds2GL::acceptablePositions(AtomPtr minAtom)
+{
+	AtomPtr majAtom = ToBondPtr(minAtom->getModel())->getMajor();
+	size_t minCount = minAtom->getExplicitModel()->positionCount();
+	size_t majCount = majAtom->getExplicitModel()->positionCount();
+	
+	return (minCount == _lastEnsembleCount && majCount == _lastEnsembleCount);
+}
+
 void Bonds2GL::getPositions(AtomPtr minAtom, AtomPtr majAtom, 
                             std::vector<vec3> *min,
                             std::vector<vec3> *maj)

@@ -36,6 +36,8 @@ protected:
 	virtual int processMolecule(MoleculePtr molecule);
 	virtual void bindTextures();
 private:
+
+	virtual bool acceptablePositions(AtomPtr minAtom);
 	void setupAverage();
 	void updateModel(int *v, int total, std::vector<vec3> &maj, 
 	                 std::vector<vec3> &min);

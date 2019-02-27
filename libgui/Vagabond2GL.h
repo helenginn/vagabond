@@ -69,6 +69,11 @@ protected:
 
 	virtual void bindTextures();
 	virtual void updateAtoms() = 0;
+	virtual bool acceptablePositions(AtomPtr minAtom)
+	{
+		return true;
+	};
+
 	virtual void getPositions(AtomPtr minAtom, AtomPtr majAtom, 
 	                          std::vector<vec3> *min,
 	                          std::vector<vec3> *maj) = 0;

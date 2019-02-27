@@ -75,6 +75,11 @@ bool Vagabond2GL::shouldGetBonds()
 				{
 					continue;
 				}
+				
+				if (!acceptablePositions(minor))
+				{
+					continue;
+				}
 
 				existing++;
 			}

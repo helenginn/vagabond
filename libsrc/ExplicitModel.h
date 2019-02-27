@@ -142,6 +142,11 @@ public:
 	}
 	
 	void clearTwists();
+	
+	size_t positionCount()
+	{
+		return _storedSamples.size();
+	}
 
 	void addTwist(TwistPtr twist)
 	{
