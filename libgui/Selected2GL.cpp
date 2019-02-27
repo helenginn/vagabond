@@ -67,7 +67,7 @@ AtomGroupPtr Selected2GL::refinableSelection()
 {
 	AtomGroupPtr raw = getSelected();
 	
-	if (!raw)
+	if (!raw || _sType == SelectAtom)
 	{
 		return AtomGroupPtr();
 	}
