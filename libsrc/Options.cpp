@@ -275,6 +275,8 @@ void Options::executeProtocol()
 			
 			if (!changed)
 			{
+				std::cout << "No change! Moving onto better things." 
+				<< std::endl;
 				break;
 			}
 		}
