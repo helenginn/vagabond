@@ -66,6 +66,11 @@ public:
 		_getter = getter;
 		_setter = setter;
 	}
+	
+	bool didChange()
+	{
+		return _changed;
+	}
 private:
 	void findAtomsAndBonds();
 	void refineClusters();
@@ -96,6 +101,7 @@ private:
 	Setter _setter;
 
 	bool _prepared;
+	bool _changed;
 	MapScoreWorkspace _workspace;
 };
 

@@ -361,7 +361,7 @@ public:
 	void fitWholeMolecules();
 	void refinePolymers(RefinementType type);
 	void refinePositions();
-	void refineIntraMovements();
+	bool refineIntraMovements();
 	void refineSidechainPositions();
 	void refineSidechains();
 	void refineCrude();

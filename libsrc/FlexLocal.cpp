@@ -38,6 +38,7 @@ FlexLocal::FlexLocal()
 	_flexGlobal = NULL;
 	_setter = Bond::setKick;
 	_svd = NULL;
+	_changed = false;
 }
 
 FlexLocal::~FlexLocal()
@@ -103,6 +104,7 @@ void FlexLocal::refineClusters()
 
 	if (nelder->didChange())
 	{
+		_changed = true;
 		std::cout << std::setw(3) << val << 
 		"% improved. ... done. ";
 	}

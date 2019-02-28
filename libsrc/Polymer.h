@@ -149,7 +149,7 @@ public:
 	}
 
 	void refineGlobalFlexibility();
-	void refineLocalFlexibility();
+	bool refineLocalFlexibility();
 	void reflex();
 	virtual void addProperties();
 	virtual void addObject(ParserPtr object, std::string category);

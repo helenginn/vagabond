@@ -109,16 +109,18 @@ void Polymer::reflex()
 	reflex.calculate();
 }
 
-void Polymer::refineLocalFlexibility()
+bool Polymer::refineLocalFlexibility()
 {
 	Timer timer("flexibility refinement", true);
 	FlexLocal local;
 	whack();
 	local.setPolymer(shared_from_this(), _kickShift);
-	
 	local.refine();
 	_kickShift = local.getShift();
 	timer.report();
+	
+	bool ch = local.didChange();
+	return ch;
 }
 
 bool Polymer::isWhacking()

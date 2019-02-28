@@ -270,8 +270,13 @@ void Options::executeProtocol()
 		{
 			std::cout << "Intramolecular flex microcycle (" << 
 			i + 1 << " / 3)" << std::endl;
-			crystal->refineIntraMovements();
+			bool changed = crystal->refineIntraMovements();
 			recalculateFFT();
+			
+			if (!changed)
+			{
+				break;
+			}
 		}
 		
 		double newWork = crystal->getRWork();

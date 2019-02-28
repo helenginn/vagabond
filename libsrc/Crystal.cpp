@@ -130,8 +130,10 @@ void Crystal::refineSidechainPositions()
 	refinePolymers(RefinementSidePos);
 }
 
-void Crystal::refineIntraMovements()
+bool Crystal::refineIntraMovements()
 {
+	bool changed = false;
+
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		if (!molecule(i)->isPolymer())
@@ -139,8 +141,10 @@ void Crystal::refineIntraMovements()
 			continue;
 		}
 
-		ToPolymerPtr(molecule(i))->refineLocalFlexibility();
+		changed |= ToPolymerPtr(molecule(i))->refineLocalFlexibility();
 	}
+	
+	return changed;
 }
 
 void Crystal::realSpaceClutter(double maxRes)
