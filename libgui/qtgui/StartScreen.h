@@ -33,6 +33,7 @@ private:
 	QLineEdit *_tMinRes;
 	QLineEdit *_tMaxRes;
 	QLineEdit *_tRadius;
+	QLineEdit *_tRelFlex;
 	
 	QCheckBox *_cRefine;
 	QCheckBox *_cPosition;

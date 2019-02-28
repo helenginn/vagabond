@@ -107,6 +107,7 @@ void StartScreen::makeButtons()
 	connect(_bOptionals, SIGNAL(clicked()), this, SLOT(toggleOptionals()));
 	_widgets.push_back(_bOptionals);
 	
+	int top = height;
 	height += 40;
 
 	q = new QLabel("Min resolution (Å):", this);
@@ -174,9 +175,32 @@ void StartScreen::makeButtons()
 		_tRadius->setText(QString::fromStdString(text));
 	}
 
+	height += 40;
+	indent -= 150;
+
+	q = new QLabel("Relative flex (AU):", this);
+	q->setGeometry(indent, height, LABEL_WIDTH, 20);
+	q->hide();
+	_widgets.push_back(q);
+	_optWidgets.push_back(q);
+
+	indent += 150;
+	
+	_tRelFlex = new QLineEdit("", this);
+	_tRelFlex->setGeometry(indent, height, 120, 25);
+	_tRelFlex->hide();
+	_optWidgets.push_back(_tRelFlex);
+
+	if (Options::getBStart() >= 0)
+	{
+		double flex = Options::getBStart();
+		std::string text = f_to_str(flex, 2);
+		_tRelFlex->setText(QString::fromStdString(text));
+	}
+
 	/** Refinement options **/
 	
-	height -= 120;
+	height = top;
 	indent = 25;
 
 	q = new QLabel("Refinement options", this);
@@ -346,6 +370,11 @@ void StartScreen::pushRun()
 	if (_tRadius->text().length())
 	{
 		Options::_probeRadius = _tRadius->text().toDouble();
+	}
+	
+	if (_tRelFlex->text().length())
+	{
+		Options::_bStart = _tRelFlex->text().toDouble();
 	}
 	
 	if (_tMinRes->text().length())
