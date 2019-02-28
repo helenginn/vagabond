@@ -95,6 +95,7 @@ private slots:
 	void refitBackbone();
 	void fixErroneousZones();
 	void append();
+	void openInCoot();
 
 	void displayMessage(Shouter *shout);
 private:

@@ -125,7 +125,10 @@ void VagWindow::makeMenu()
 	        SLOT(pushExploreCrystal()));
 	actions.push_back(bsubt);
 
-	menuItem(model, "Open in Coot", InstructionTypeOpenInCoot);
+	QAction *coot = model->addAction("Open in Coot");
+	connect(coot, SIGNAL(triggered()), this, 
+	        SLOT(openInCoot()));
+//	actions.push_back(coot);
 
 	QMenu *mRefine = menuBar()->addMenu(tr("&Refine"));
 	menus.push_back(mRefine);
@@ -383,10 +386,6 @@ int VagWindow::waitForInstructions()
 
 				case InstructionTypeChelate:
 				options->chelate();
-				break;
-
-				case InstructionTypeOpenInCoot:
-				options->openInCoot();
 				break;
 
 				case InstructionTypeOmitScan:
@@ -689,6 +688,11 @@ void VagWindow::fixErroneousZones()
 		_errorExplorer = new ErroneousZone(this, crystal);
 		_errorExplorer->show();
 	}
+}
+
+void VagWindow::openInCoot()
+{
+	Options::getActiveCrystal()->openInCoot();
 }
 
 void VagWindow::toggleLog()
