@@ -62,6 +62,7 @@ std::string Options::_solventFile;
 
 Options::Options(int argc, const char **argv)
 {
+	_processes = 0;
 	_parsed = false;
 	_manual = false;
 	_notify = NULL;
@@ -394,11 +395,19 @@ void Options::displayHelp()
 
 void Options::notifyGUI(bool enable)
 {
-	if (_notify && enable)
+	_processes += (enable ? -1 : 1);
+	
+	/* If we enable more often than we should */
+	if (_processes < 0)
+	{
+		_processes = 0;
+	}
+	
+	if (_notify && _processes == 0)
 	{
 		_notify->enable();
 	}
-	else if (_notify && !enable)
+	else if (_notify && _processes > 0)
 	{
 		_notify->disable();
 	}

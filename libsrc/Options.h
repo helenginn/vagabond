@@ -342,6 +342,9 @@ private:
 	static bool _rInter;
 	static bool _rIntra;
 	
+	/* how many processes are currently locking GUI controls */
+	int _processes;
+	
 	vagcout<char> *_filter;
 };
 
