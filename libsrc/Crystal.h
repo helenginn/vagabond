@@ -385,7 +385,7 @@ public:
 		_comments += "\n";
 	}
 	
-	double getMaximumDStar(DiffractionPtr data);
+	double getMaximumDStar(DiffractionPtr data = DiffractionPtr());
 	void openInCoot();
 	
 	/** Obtain the current number of samples, i.e. number of conformers

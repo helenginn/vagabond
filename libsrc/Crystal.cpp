@@ -715,6 +715,7 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 
 double Crystal::getMaxResolution(DiffractionPtr data)
 {
+	std::cout << std::setprecision(2);
 	if (_maxResolution <= 0)
 	{
 		_maxResolution = Options::maxRes();
@@ -725,13 +726,14 @@ double Crystal::getMaxResolution(DiffractionPtr data)
 		if (data)
 		{
 			_maxResolution = data->getMaxResolution();
+			std::cout << "Maximum resolution: " << _maxResolution <<
+			" Å." << std::endl;
 		}
 		else
 		{
 			_maxResolution = 1.8;
 		}
 
-		std::cout << std::setprecision(2);
 	}
 	
 	return _maxResolution;
@@ -912,8 +914,7 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 					isRfree = 0;
 				}
 				
-				if (length < minRes || length > maxRes
-				    || isAbs)
+				if (length < minRes || length > maxRes || isAbs)
 				{	
 					_fft->setElement(index, 0, 0);
 					_difft->setElement(index, 0, 0);
@@ -1191,6 +1192,8 @@ void Crystal::writeVagabondFile(int cycleNum)
 
 double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 {
+	_data = data;
+
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		if (molecule(i)->isPolymer())
