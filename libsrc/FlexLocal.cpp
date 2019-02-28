@@ -208,6 +208,7 @@ double FlexLocal::getScore(void *object)
 
 void FlexLocal::bondTest()
 {
+	return;
 	Gradiator *g = _svd->getGradiator();
 	SVDBond *svd = _svd;
 	_svd = NULL;

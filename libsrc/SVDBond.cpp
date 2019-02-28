@@ -145,7 +145,7 @@ void SVDBond::performSVD(BondBondCC *ccs)
 	compareBonds();
 	
 	_gradiator = new Gradiator(_polymer);
-	_gradiator->prepareList();
+//	_gradiator->prepareList();
 	
 	writeMatrix();
 	
