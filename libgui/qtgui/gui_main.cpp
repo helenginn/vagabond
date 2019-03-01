@@ -35,6 +35,7 @@ int main(int argc, char * argv[])
 	std::cout << "Qt version: " << qVersion() << std::endl;
 
 	QApplication app(argc, argv);
+	setlocale(LC_NUMERIC, "C");
 
 	StartScreen startScreen(NULL, argc, argv);
 	startScreen.show();
