@@ -413,6 +413,11 @@ void Selected2GL::setPicked(AtomPtr atom, bool preserveType)
 vec3 Selected2GL::averageModelPos()
 {
 	AtomGroupPtr selected = refinableSelection();
+	
+	if (!selected)
+	{
+		return empty_vec3();
+	}
 
 	vec3 sum = empty_vec3();
 	double count = 0;
@@ -533,6 +538,11 @@ void Selected2GL::manualRefine()
 	Options::statusMessage("Starting manual refinement.", false);
 	CrystalPtr crystal = Options::getActiveCrystal();
 	AtomGroupPtr group = refinableSelection();
+	
+	if (!group)
+	{
+		return;
+	}
 	
 	bool terminal = (group->beyondGroupAtoms().size() == 0);
 	int begin = 0; int end = 0;
