@@ -30,6 +30,11 @@ class RefinementLBFGS : public RefinementStrategy
 public:
 	RefinementLBFGS();
 
+	void setGradientRefresh(void *gradObj, Getter func)
+	{
+		_gradObj = gradObj;
+		_func = func;
+	}
 	virtual void refine();
 private:
 	bool hasAllGradients();
@@ -50,6 +55,8 @@ private:
 	void copyInStartValues();
 	void copyOutValues(const lbfgsfloatval_t *x);
 
+	void *_gradObj;
+	Getter _func;
 	lbfgsfloatval_t _fx;
 	LbfgsVector _xs;
 	LbfgsVector _gs;

@@ -189,6 +189,7 @@ protected:
 	bool _verbose;
 
 	double getGradientForParam(int i);
+	double estimateGradientForParam(int i);
 	double getValueForParam(int i);
 	void setValueForParam(int i, double value);
 	void reportProgress(double score);

@@ -19,10 +19,12 @@
 
 #include "RefinementLBFGS.h"
 #include <iostream>
+#include <iomanip>
 
 RefinementLBFGS::RefinementLBFGS()
 {
 	_fx = 0;
+	_func = NULL;
 }
 
 int RefinementLBFGS::progress( void *instance, const lbfgsfloatval_t *x,
@@ -48,11 +50,28 @@ double RefinementLBFGS::evaluate(void *instance,
 	// put the values of x into the setters.
 	me->copyOutValues(x);
 	
+	if (me->_func)
+	{
+		(*me->_func)(me->_gradObj);
+	}
+	
 	// compute new values of gradients
 	me->copyInGradientValues(g);
-	
+
 	// return a new fx evaluation.
 	double eval = me->evaluationFunction(me->evaluateObject);
+	std::cout << "Evaluation: " << std::setprecision(10) << eval << std::endl;
+	
+	/*
+	std::cout << "Evaluation list:" << std::endl;
+	
+	for (int i = 0; i < n; i++)
+	{
+		std::cout << std::setprecision(10) <<
+		x[i] << ", " << g[i] << std::endl;
+	}
+	*/
+	
 	
 	return eval;
 }
@@ -101,11 +120,15 @@ void RefinementLBFGS::refine()
 	
 	if (!hasAllGradients())
 	{
-		std::cout << "LBFGS needs gradients atm." << std::endl;
-		return;
+//		std::cout << "LBFGS needs gradients atm." << std::endl;
+//		return;
 	}
+	
+	std::cout << "Starting LBFGS" << std::endl;
 
 	lbfgs_parameter_init(&param);
+	param.epsilon = 1e-10;
+	param.max_iterations = 10;
 	
 	int count = parameterCount();
 	
@@ -113,7 +136,12 @@ void RefinementLBFGS::refine()
 	_gs.resize(count);
 	
 	copyInStartValues();
-	copyInGradientValues(&_gs[0]);
+//	copyInGradientValues(&_gs[0]);
+
+	if (_func == NULL)
+	{
+		std::cout << "Yelp" << std::endl;
+	}
 	
 	int result = lbfgs(count, &_xs[0], &_fx, 
 	                   evaluate, progress, this, &param);

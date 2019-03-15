@@ -79,9 +79,33 @@ void RefinementStrategy::addCoupledParameter(void *object, Getter getter, Setter
 	_params[last + 1].coupled++;
 }
 
+double RefinementStrategy::estimateGradientForParam(int i)
+{
+	double curr = getValueForParam(i);
+	double step = _params[i].other_value;
+	double right = curr + step / 2;
+	setValueForParam(i, right);
+	double right_val = (*evaluationFunction)(evaluateObject);
+
+	double left = curr - step / 2;
+	setValueForParam(i, left);
+	double left_val = (*evaluationFunction)(evaluateObject);
+	
+	double diff = right_val - left_val;
+	diff /= step;
+	setValueForParam(i, curr);
+	
+	return diff;
+}
+
 double RefinementStrategy::getGradientForParam(int i)
 {		
 	Getter gradient = _params[i].gradient;
+	
+	if (!gradient)
+	{
+		return estimateGradientForParam(i);
+	}
 	void *object = _params[i].object;
 	double grad = (*gradient)(object);
 	
