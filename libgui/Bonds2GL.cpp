@@ -49,7 +49,7 @@ bool Bonds2GL::acceptablePositions(AtomPtr minAtom)
 	size_t minCount = minAtom->getExplicitModel()->positionCount();
 	size_t majCount = majAtom->getExplicitModel()->positionCount();
 	
-	return (minCount == _lastEnsembleCount && majCount == _lastEnsembleCount);
+	return (minCount > 0 && majCount > 0);
 }
 
 void Bonds2GL::getPositions(AtomPtr minAtom, AtomPtr majAtom, 
@@ -70,7 +70,7 @@ void Bonds2GL::getPositions(AtomPtr minAtom, AtomPtr majAtom,
 		*maj = std::vector<vec3>(2, majAve);
 	}
 	
-	if (maj->size() != _lastEnsembleCount)
+	if (maj->size() != _lastEnsembleCount && maj->size() >= 0)
 	{
 		_lastEnsembleCount = maj->size();
 		_shouldGetBonds = true;
@@ -158,11 +158,6 @@ bool Bonds2GL::addToModel(AtomPtr minor, AtomPtr major, GLuint *count)
 	GLuint start = *count;
 
 	getPositions(minor, major, &minBonds, &majBonds);
-
-	if (!minBonds.size() || !majBonds.size())
-	{
-		return false;
-	}
 	
 	for (int j = 0; j < majBonds.size(); j++)
 	{
@@ -312,6 +307,11 @@ int Bonds2GL::processMolecule(MoleculePtr molecule)
 		AtomPtr minor = molecule->atom(i);
 
 		if (!isAcceptableAtom(&*minor))
+		{
+			continue;
+		}
+
+		if (!acceptablePositions(minor))
 		{
 			continue;
 		}
