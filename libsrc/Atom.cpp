@@ -212,12 +212,17 @@ FFTPtr Atom::getBlur()
 	return modelDist;
 }
 
-vec3 Atom::getSymRelatedPosition(int i)
+vec3 Atom::getSymRelatedPosition(int i, int conf)
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
 	
 	vec3 pos = getAbsolutePosition();
+	
+	if (conf >= 0 && getModel()->hasExplicitPositions())
+	{
+		pos = getExplicitModel()->getFinalPositions()[conf].start;
+	}
 	
 	mat3x3 real2Frac = crystal->getReal2Frac();
 	mat3x3_mult_vec(real2Frac, &pos);
@@ -239,7 +244,7 @@ vec3 Atom::getSymRelatedPosition(int i)
 	return mod;
 }
 
-vec3 Atom::getPositionInAsu()
+vec3 Atom::getPositionInAsu(int conf)
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
@@ -249,7 +254,7 @@ vec3 Atom::getPositionInAsu()
 	
 	for (int i = 0; i < symOpCount(); i++)
 	{
-		vec3 pos = getSymRelatedPosition(i);
+		vec3 pos = getSymRelatedPosition(i, conf);
 		vec3 tmp = pos;
 		mat3x3_mult_vec(f2r, &tmp);
 		FFT::collapseFrac(&tmp.x, &tmp.y, &tmp.z);
@@ -320,7 +325,7 @@ void Atom::addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell, vec3 pos,
 }
 
 void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
-							std::vector<Atom *> *ptrs)
+							std::vector<Atom *> *ptrs, int conf)
 {
 	if (getElectronCount() <= 1 || _weighting <= 0)
 	{
@@ -342,11 +347,17 @@ void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
 	radius += Options::getActiveCrystal()->getProbeRadius();
 
 	vec3 pos = getAbsolutePosition();
+	
+	if (conf >= 0 && getModel()->hasExplicitPositions())
+	{
+		pos = getExplicitModel()->getFinalPositions()[conf].start;
+	}
+	
 	mat3x3_mult_vec(unit_cell, &pos);
 
 	fft->addToValueAroundPoint(pos, radius, -1);
 	
-	vec3 asu = getPositionInAsu();
+	vec3 asu = getPositionInAsu(conf);
 	
 	addPointerToLocalArea(fft, unit_cell, asu, ptrs, radius);
 }

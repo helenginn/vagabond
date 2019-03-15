@@ -38,6 +38,7 @@
 #include "Anchor.h"
 #include "RefinementGridSearch.h"
 #include "BucketBulkSolvent.h"
+#include "BucketPerStrand.h"
 #include "Options.h"
 
 #include "../libccp4/cmtzlib.h"
@@ -224,7 +225,7 @@ void Crystal::realSpaceClutter(double maxRes)
 	{
 		if (!_bucket)
 		{
-			_bucket = BucketPtr(new BucketBulkSolvent());
+			_bucket = BucketPtr(new BucketPerStrand());
 		}
 		
 		_bucket->setCrystal(shared_from_this());

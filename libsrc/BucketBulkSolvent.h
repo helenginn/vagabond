@@ -28,6 +28,9 @@ public:
 	virtual void addSolvent();
 	
 	virtual ~BucketBulkSolvent() {}
+protected:
+	void addSolventForConformer(int conf);
+	void reportSolventContent();
 private:
 	void removeSlivers();
 	bool sliverRemovalIteration(vec3 limits);

@@ -116,7 +116,7 @@ public:
 	/** Get the radius of the atom used for solvent calculations */
 	double getSolventRadius();
 	void addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double radius,
-	                      std::vector<Atom *> *ptrs);
+	                      std::vector<Atom *> *ptrs, int conf);
 	void addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell, vec3 pos,
 	                           std::vector<Atom *> *ptrs,
 	                           double rad = 0);
@@ -339,7 +339,7 @@ public:
 		_weightOnly = mult;
 	}
 	
-	vec3 getPositionInAsu();
+	vec3 getPositionInAsu(int conf = -1);
 	
 	void setGhostBond(GhostBondPtr ghost)
 	{
@@ -370,7 +370,7 @@ protected:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();
 private:
-	vec3 getSymRelatedPosition(int i);
+	vec3 getSymRelatedPosition(int i, int conf = -1);
 	size_t symOpCount();
 	ModelPtr _model;
 	ModelPtr _distModelOnly;

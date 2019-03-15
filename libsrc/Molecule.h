@@ -35,7 +35,7 @@ public:
 
 	void addToMap(FFTPtr fft, mat3x3 _real2frac, bool mask = false);
 	void addToSolventMask(FFTPtr fft, mat3x3 _real2frac, double radius,
-	                      std::vector<Atom *> *ptrs);
+	                      std::vector<Atom *> *ptrs, int conf = -1);
 
 	virtual void addAtom(AtomPtr atom);
 	

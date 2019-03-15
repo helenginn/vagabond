@@ -13,8 +13,32 @@
 #include "Molecule.h"
 #include "Atom.h"
 #include "Model.h"
+#include <iomanip>
 
-void BucketBulkSolvent::addSolvent()
+void BucketBulkSolvent::reportSolventContent()
+{
+	CrystalPtr crystal = getCrystal();
+	if (crystal->isSilent())
+	{
+		return;
+	}
+
+	int num0 = 0;
+
+	for (size_t i = 0; i < _solvent->nn; i++)
+	{
+		num0 += (_solvent->data[i][0] <= 0.5) ? 1 : 0;
+	}
+	
+	num0 *= crystal->symOpCount();
+
+	double frac = (double)num0 / (double)_solvent->nn * 100;
+	frac = 100. - frac;
+	
+	std::cout << std::setprecision(4) <<  "Fraction of solvent: " << frac << std::endl;
+}
+
+void BucketBulkSolvent::addSolventForConformer(int conf)
 {
 	CrystalPtr crystal = getCrystal();
 
@@ -27,27 +51,17 @@ void BucketBulkSolvent::addSolvent()
 	for (size_t i = 0; i < crystal->moleculeCount(); i++)
 	{
 		crystal->molecule(i)->addToSolventMask(_solvent, real2frac, -1,
-		                                       &_atomPtrs);
+		                                       &_atomPtrs, conf);
 	}
 	
 	_solvent->shrink(shrink);
 	removeSlivers();
-	
-	int num0 = 0;
-	for (size_t i = 0; i < _solvent->nn; i++)
-	{
-		num0 += (_solvent->data[i][0] <= 0.5);
-	}
-	
-	num0 *= crystal->symOpCount();
+	reportSolventContent();
+}
 
-	double frac = (double)num0 / (double)_solvent->nn * 100;
-	frac = 100. - frac;
-	
-	if (!crystal->isSilent())
-	{
-		std::cout << "Fraction of solvent: " << frac << std::endl;
-	}
+void BucketBulkSolvent::addSolvent()
+{
+	addSolventForConformer(-1);
 }
 
 void BucketBulkSolvent::removeSlivers()
