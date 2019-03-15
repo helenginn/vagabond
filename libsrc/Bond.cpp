@@ -553,8 +553,11 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 	return final;
 }
 
-mat3x3 Bond::getMagicMat(mat3x3 basis)
+mat3x3 Bond::getMagicMat()
 {
+	vec3 aveStart;
+	mat3x3 basis;
+	getAverageBasisPos(&basis, &aveStart);
 	mat3x3 rot = make_mat3x3();
 
 	if (_phi != 0 || _psi != 0)
@@ -606,7 +609,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	vec3 aveNext = mat3x3_axis(aveBasis, 0);
 	vec3 crossDir = mat3x3_axis(aveBasis, 1);
 	
-	mat3x3 magicMat = getMagicMat(aveBasis);
+	mat3x3 magicMat = _magicMat;
 	
 	/* Track overall change in order to readjust torsion
 	 * at the end */
@@ -1529,6 +1532,8 @@ void Bond::addProperties()
 	addBoolProperty("refine_bond_angle", &_refineBondAngle);
 	addBoolProperty("refine_flexibility", &_refineFlexibility);
 	addBoolProperty("disabled", &_disabled);
+	
+	addMat3x3Property("magic_mat", &_magicMat);
 
 	for (int i = 0; i < downstreamBondGroupCount(); i++)
 	{

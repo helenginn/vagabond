@@ -124,6 +124,7 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 {
 	if (fabs(_whack) < 1e-6 || !_enabled)
 	{
+		_bond->getMagicMat();
 		return;
 	}
 	
@@ -162,6 +163,8 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 		mat3x3 basis = anchSamp[i].basis;
 		anchSamp[i].basis = mat3x3_mult_mat3x3(rot, basis);
 	}
+	
+	_bond->getMagicMat();
 }
 
 void Whack::setKick(void *object, double kick)
