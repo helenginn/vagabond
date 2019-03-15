@@ -503,8 +503,9 @@ void Selected2GL::advanceMonomer(int dir)
 	{
 		AtomPtr atom = mon->findAtom("CA");
 		setPicked(atom, true);
-		focusOnGroup();
 	}
+
+	focusOnGroup();
 }
 
 void Selected2GL::cancelRefine()
