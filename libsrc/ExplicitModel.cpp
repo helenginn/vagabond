@@ -23,7 +23,7 @@
 #include "CSV.h"
 #include "Anisotropicator.h"
 
-ExplicitModel::ExplicitModel()
+ExplicitModel::ExplicitModel() : Model()
 {
 	_modifySample = -1;
 }
