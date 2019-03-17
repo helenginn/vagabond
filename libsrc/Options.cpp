@@ -266,10 +266,24 @@ void Options::executeProtocol()
 		double oldWork = crystal->getRWork();
 		double oldB = crystal->averageBFactor();
 		
-		for (int i = 0; i < 3 && _rIntra; i++)
+		if (_rInter)
+		{
+			double oldWork = crystal->getRWork();
+			crystal->fitWholeMolecules();
+			recalculateFFT();
+			
+			double newWork = crystal->getRWork();
+
+			if (newWork > oldWork && _rIntra)
+			{
+				crystal->restoreState(-1);
+			}
+		}
+
+		for (int i = 0; i < 2 && _rIntra; i++)
 		{
 			std::cout << "Intramolecular flex microcycle (" << 
-			i + 1 << " / 3)" << std::endl;
+			i + 1 << " / 2)" << std::endl;
 			bool changed = crystal->refineIntraMovements();
 			recalculateFFT();
 			
@@ -319,21 +333,6 @@ void Options::executeProtocol()
 			std::cout << "Rwork has reduced due to intramolecular flex." 
 			<< std::endl;
 		}
-
-		if (_rInter)
-		{
-			double oldWork = crystal->getRWork();
-			crystal->fitWholeMolecules();
-			recalculateFFT();
-			
-			double newWork = crystal->getRWork();
-
-			if (newWork > oldWork && _rIntra)
-			{
-				crystal->restoreState(-1);
-			}
-		}
-
 
 		double endWork = crystal->getRWork();
 
