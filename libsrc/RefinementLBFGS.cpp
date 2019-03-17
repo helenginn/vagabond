@@ -120,16 +120,8 @@ void RefinementLBFGS::refine()
 	RefinementStrategy::refine();
 	lbfgs_parameter_t param;
 	
-	if (!hasAllGradients())
-	{
-//		std::cout << "LBFGS needs gradients atm." << std::endl;
-//		return;
-	}
-	
-	std::cout << "Starting LBFGS" << std::endl;
-
 	lbfgs_parameter_init(&param);
-	param.epsilon = 1e-10;
+	param.epsilon = 1e-14;
 	param.max_iterations = 10;
 	
 	int count = parameterCount();
@@ -138,11 +130,10 @@ void RefinementLBFGS::refine()
 	_gs.resize(count);
 	
 	copyInStartValues();
-//	copyInGradientValues(&_gs[0]);
 
-	if (_func == NULL)
+	if (_func == NULL && hasAllGradients())
 	{
-		std::cout << "Yelp" << std::endl;
+		std::cout << "Yelp!" << std::endl;
 	}
 	
 	int result = lbfgs(count, &_xs[0], &_fx, 

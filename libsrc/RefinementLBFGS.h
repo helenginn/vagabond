@@ -35,6 +35,7 @@ public:
 		_gradObj = gradObj;
 		_func = func;
 	}
+	
 	virtual void refine();
 private:
 	bool hasAllGradients();

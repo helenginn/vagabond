@@ -165,6 +165,7 @@ public:
 	{
 		return fabs(_improvement);
 	}
+	
 protected:
 	double degMult()
 	{
