@@ -32,10 +32,12 @@ int RefinementLBFGS::progress( void *instance, const lbfgsfloatval_t *x,
     const lbfgsfloatval_t xnorm, const lbfgsfloatval_t gnorm,
     const lbfgsfloatval_t step, int n, int k, int ls)
 {
+	/*
     printf("Iteration %d:\n", k);
     printf("  fx = %f, x[0] = %f, x[1] = %f\n", fx, x[0], x[1]);
     printf("  xnorm = %f, gnorm = %f, step = %f\n", xnorm, gnorm, step);
     printf("\n");
+*/
     return 0;
 }
 
@@ -60,9 +62,9 @@ double RefinementLBFGS::evaluate(void *instance,
 
 	// return a new fx evaluation.
 	double eval = me->evaluationFunction(me->evaluateObject);
+	/*
 	std::cout << "Evaluation: " << std::setprecision(10) << eval << std::endl;
 	
-	/*
 	std::cout << "Evaluation list:" << std::endl;
 	
 	for (int i = 0; i < n; i++)
@@ -70,8 +72,8 @@ double RefinementLBFGS::evaluate(void *instance,
 		std::cout << std::setprecision(10) <<
 		x[i] << ", " << g[i] << std::endl;
 	}
-	*/
 	
+	*/
 	
 	return eval;
 }
