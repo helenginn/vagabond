@@ -43,6 +43,7 @@
 #include "Reflex.h"
 #include "Refitter.h"
 #include "RefinementNelderMead.h"
+#include "RefinementLBFGS.h"
 #include "RefinementGridSearch.h"
 #include "Hydrogenator.h"
 
@@ -1372,21 +1373,27 @@ void Polymer::refineGlobalFlexibility()
 	
 	AnchorPtr anchor = getAnchorModel();
 	
-	FlexGlobal target;
-	NelderMeadPtr nelderMead = NelderMeadPtr(new RefinementNelderMead());
+	{
+		FlexGlobal target;
+		RefinementLBFGSPtr lbfgs = RefinementLBFGSPtr(new RefinementLBFGS());
+		attachTargetToRefinement(lbfgs, target);
+		lbfgs->setJobName("translation");
+		lbfgs->setCycles(24);
 
-	attachTargetToRefinement(nelderMead, target);
+		anchor->addTranslationParameters(lbfgs);
+		lbfgs->refine();
+	}
 
-	nelderMead->setCycles(24);
+	{
+		FlexGlobal target;
+		NelderMeadPtr lbfgs = NelderMeadPtr(new RefinementNelderMead());
+		lbfgs->setCycles(24);
+		lbfgs->setJobName("libration");
+		attachTargetToRefinement(lbfgs, target);
 
-	nelderMead->clearParameters();
-	
-	anchor->addTranslationParameters(nelderMead);
-	nelderMead->refine();
-	nelderMead->clearParameters();
-
-	anchor->addLibrationParameters(nelderMead);
-	nelderMead->refine();
+		anchor->addLibrationParameters(lbfgs);
+		lbfgs->refine();
+	}
 
 	timer.report();
 }
