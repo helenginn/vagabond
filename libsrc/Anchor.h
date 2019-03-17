@@ -127,7 +127,7 @@ public:
 
 	static void cleanup(void *object)
 	{
-		static_cast<Anchor *>(object)->propagateChange(-1, true);
+//		static_cast<Anchor *>(object)->propagateChange(-1, true);
 	}
 
 	void recalculateWhacks();

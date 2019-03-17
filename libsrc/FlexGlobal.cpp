@@ -28,6 +28,7 @@ double FlexGlobal::matchElectronDensityScore()
 		               "to missing crystal");	
 	}
 	
+	_atomGroup->propagateChange();
 	return AtomGroup::scoreWithMapGeneral(&_workspace);
 }
 
