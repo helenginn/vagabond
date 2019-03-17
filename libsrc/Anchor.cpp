@@ -17,7 +17,7 @@
 #include "mat4x4.h"
 #include <sstream>
 
-Anchor::Anchor(AbsolutePtr absolute)
+Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
 {
 	_bFactor = absolute->getBFactor();
 	_position = absolute->getAbsolutePosition();
@@ -50,7 +50,7 @@ void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom,
 	_cDir2 = vec3_subtract_vec3(cPostPos, myPos);
 }
 
-Anchor::Anchor()
+Anchor::Anchor() : ExplicitModel()
 {
 	_bFactor = 0;
 	_alpha = 0;
