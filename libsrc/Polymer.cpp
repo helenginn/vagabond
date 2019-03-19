@@ -1375,7 +1375,8 @@ void Polymer::refineGlobalFlexibility()
 	
 	{
 		FlexGlobal target;
-		RefinementLBFGSPtr lbfgs = RefinementLBFGSPtr(new RefinementLBFGS());
+//		RefinementLBFGSPtr lbfgs = RefinementLBFGSPtr(new RefinementLBFGS());
+		NelderMeadPtr lbfgs = NelderMeadPtr(new RefinementNelderMead());
 		attachTargetToRefinement(lbfgs, target);
 		lbfgs->setJobName("translation");
 		lbfgs->setCycles(24);
