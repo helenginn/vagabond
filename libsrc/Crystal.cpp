@@ -1658,20 +1658,28 @@ void Crystal::differenceAttribution()
 	
 	double num_atom = (num_all - num_solvent);
 	
-	double sum_protein = sum_all - sum_solvent;
-	double nearAtom = sum_protein / sum_all * 100;
+	double sum_atoms = sum_all - sum_solvent;
+	double nearAtom = sum_atoms / sum_all * 100;
 	double inSolvent = sum_solvent / sum_all * 100;
 	
 	double cNearAtom = (nearAtom / num_atom);
 	double cSolvent = (inSolvent / num_solvent);
 	double cAll = cNearAtom + cSolvent;
 	
-	double backbone = sum_back / sum_protein * 100;
-	double sidechain = sum_side / sum_protein * 100;
-	double hetatm = sum_hetatm / sum_protein * 100;
+	double backbone = sum_back / sum_atoms * 100;
+	double sidechain = sum_side / sum_atoms * 100;
+	double hetatm = sum_hetatm / sum_atoms * 100;
+
+	/* Adjusted for volume of regions */
 	double cBackbone = sum_back / num_back;
 	double cSidechain = sum_side / num_side;
 	double cHetatm = sum_hetatm / num_hetatm;
+	
+	if (cHetatm != cHetatm)
+	{
+		cHetatm = 0;
+	}
+	
 	double cProtein = cHetatm + cSidechain + cBackbone;
 	
 	cNearAtom *= 100 / cAll;
