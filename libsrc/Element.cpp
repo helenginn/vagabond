@@ -30,10 +30,15 @@ void Element::setupElements()
 	elements.push_back(ElementPtr(new Element("P", "phosphorus", 15,  ScatterFactors::pScatter)));
 	elements.push_back(ElementPtr(new Element("S", "sulphur", 16,  ScatterFactors::sScatter)));
 	elements.push_back(ElementPtr(new Element("CL", "chlorine", 17,  ScatterFactors::clScatter)));
+	elements.push_back(ElementPtr(new Element("K", "potassium", 19,  ScatterFactors::kScatter)));
 	elements.push_back(ElementPtr(new Element("CA", "calcium", 20,  ScatterFactors::caScatter)));
 	elements.push_back(ElementPtr(new Element("MN", "manganese", 25,  ScatterFactors::mnScatter)));
 	elements.push_back(ElementPtr(new Element("FE", "iron", 26,  ScatterFactors::feScatter)));
+	elements.push_back(ElementPtr(new Element("NI", "nickel", 28,  ScatterFactors::niScatter)));
+	elements.push_back(ElementPtr(new Element("CU", "copper", 29,  ScatterFactors::cuScatter)));
 	elements.push_back(ElementPtr(new Element("ZN", "zinc", 30,  ScatterFactors::znScatter)));
+	elements.push_back(ElementPtr(new Element("SE", "selenium", 34,  ScatterFactors::seScatter)));
+	elements.push_back(ElementPtr(new Element("BR", "bromine", 35,  ScatterFactors::brScatter)));
 }
 
 Element::Element(std::string symbol, std::string name, double electrons, const float *scatter)
