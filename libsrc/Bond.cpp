@@ -553,11 +553,16 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 	return final;
 }
 
-mat3x3 Bond::getMagicMat()
+mat3x3 Bond::getRotatedMagicMat()
 {
-	vec3 aveStart;
-	mat3x3 basis;
-	getAverageBasisPos(&basis, &aveStart);
+	/* if the bond has a whack already, then the whack is in charge
+	 * of recalculating the magic mat, as it has to be careful to
+	 * ensure these values are recalculatable on reloading a new file. */
+	if (!hasWhack())
+	{
+		calculateMagicMat();
+	}
+	
 	mat3x3 rot = make_mat3x3();
 
 	if (_phi != 0 || _psi != 0)
@@ -565,12 +570,17 @@ mat3x3 Bond::getMagicMat()
 		rot = mat3x3_rot_from_angles(_phi, _psi);
 	}
 
-	mat3x3 multed = mat3x3_mult_mat3x3(rot, basis);
+	mat3x3 multed = mat3x3_mult_mat3x3(rot, _magicMat);
+	return multed;
+}
 
-	_magicMat = mat3x3_transpose(multed);
+void Bond::calculateMagicMat()
+{
+	vec3 aveStart;
+	mat3x3 basis;
+	getAverageBasisPos(&basis, &aveStart);
+	_magicMat = mat3x3_transpose(basis);
 	mat3x3_vectors_to_unity(&_magicMat);
-	
-	return _magicMat;
 }
 
 void Bond::getAverageBasisPos(mat3x3 *aveBasis, vec3 *aveStart, 
@@ -609,7 +619,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	vec3 aveNext = mat3x3_axis(aveBasis, 0);
 	vec3 crossDir = mat3x3_axis(aveBasis, 1);
 	
-	mat3x3 magicMat = _magicMat;
+	mat3x3 magicMat = getRotatedMagicMat();
 	
 	/* Track overall change in order to readjust torsion
 	 * at the end */

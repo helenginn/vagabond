@@ -495,7 +495,8 @@ public:
 		_whack = whack;
 	}
 
-	mat3x3 getMagicMat();
+	mat3x3 getRotatedMagicMat();
+	void calculateMagicMat();
 	
 	bool hasWhack()
 	{
