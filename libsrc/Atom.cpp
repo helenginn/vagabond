@@ -324,6 +324,43 @@ void Atom::addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell, vec3 pos,
 	}
 }
 
+void Atom::addManyToMask(FFTPtr fft, mat3x3 unit_cell,
+                              int conf, int total)
+{
+
+	if (getElectronCount() <= 1 || _weighting <= 0)
+	{
+		return;
+	}
+
+	double radius = getSolventRadius();
+	
+	if (radius <= 0)
+	{
+		return;
+	}
+	
+	radius += Options::getActiveCrystal()->getProbeRadius();
+
+	for (int i = 0; i < total; i++)
+	{
+		vec3 pos = empty_vec3();
+		
+		if (!getModel()->hasExplicitPositions())
+		{
+			pos = getAbsolutePosition();
+		}
+		else
+		{
+			pos = getExplicitModel()->getFinalPositions()[i + conf].start;
+		}
+
+		mat3x3_mult_vec(unit_cell, &pos);
+
+		fft->addToValueAroundPoint(pos, radius, 1, i);
+	}
+}
+
 void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
 							std::vector<Atom *> *ptrs, int conf)
 {
@@ -333,11 +370,6 @@ void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
 	}
 
 	double radius = getSolventRadius();
-	
-	if (rad > 0)
-	{
-		radius += rad;
-	}
 	
 	if (radius <= 0)
 	{
@@ -357,9 +389,12 @@ void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
 
 	fft->addToValueAroundPoint(pos, radius, -1);
 	
-	vec3 asu = getPositionInAsu(conf);
+	if (conf < 0)
+	{
+		vec3 asu = getPositionInAsu(conf);
 	
-	addPointerToLocalArea(fft, unit_cell, asu, ptrs, radius);
+		addPointerToLocalArea(fft, unit_cell, asu, ptrs, radius);
+	}
 }
 
 void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset, bool mask,

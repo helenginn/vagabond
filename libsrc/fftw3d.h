@@ -44,6 +44,7 @@ inline void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, float *resul
 	result[1] = 2 * comp1[0] * comp2[1];
 }
 
+
 /** \cond SHOW_FOURIER_DIMENSION */
 
 typedef struct
@@ -101,7 +102,7 @@ public:
 		return sumAll() / (double)nn;
 	}
 
-	void setMask(long i, int value)
+	void setMask(long i, MaskType value)
 	{
 		mask[i] = value;
 	}
@@ -306,12 +307,14 @@ public:
 		return _inverse;
 	}
 
+	void bittyShrink(double radius, int num);
 	void shrink(double radius);
 	void findLimitingValues(double xMin, double xMax, double yMin,
 	                        double yMax, double zMin, double zMax,
 	                        vec3 *minVals, vec3 *maxVals);
 
-	void addToValueAroundPoint(vec3 pos, double radius, double value);
+	void addToValueAroundPoint(vec3 pos, double radius, double value,
+	                           int bitIndex = -1);
 	
 	void printCinema();
 	void printSlice(int zVal = 0);
@@ -332,9 +335,11 @@ public:
 
 	long nx,ny,nz,nn;
 	fftwf_complex *data;
-	int *mask; // not char due to cpu speed
+	MaskType *mask;
 
 	static vec3 getPositionInAsu(vec3 vec);
+	
+	void convertMaskToSolvent(int expTotal);
 
 	double scales[3];
 private:

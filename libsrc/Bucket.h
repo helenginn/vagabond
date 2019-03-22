@@ -17,6 +17,7 @@
 #include "../libccp4/csymlib.h"
 #include "../libccp4/ccp4_spg.h"
 
+
 #define MAX_CHECK_DISTANCE 6.0
 #define MIN_CHECK_DISTANCE 1.0
 
@@ -32,6 +33,8 @@ class Bucket
 public:
 	Bucket();
 	virtual void addSolvent() = 0;
+	
+	static BucketPtr chosenBucket();
 	
 	virtual ~Bucket()
 	{

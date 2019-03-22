@@ -37,8 +37,7 @@
 #include "Atom.h"
 #include "Anchor.h"
 #include "RefinementGridSearch.h"
-#include "BucketBulkSolvent.h"
-#include "BucketPerStrand.h"
+#include "Bucket.h"
 #include "Options.h"
 
 #include "../libccp4/cmtzlib.h"
@@ -221,13 +220,10 @@ void Crystal::realSpaceClutter(double maxRes)
 		molecule(i)->addToMap(_fft, _real2frac);
 	}
 
-	if (Options::getAddSolvent())
-	{
-		if (!_bucket)
-		{
-			_bucket = BucketPtr(new BucketPerStrand());
-		}
+	_bucket = Bucket::chosenBucket();
 		
+	if (_bucket)
+	{
 		_bucket->setCrystal(shared_from_this());
 		_bucket->addSolvent();
 	}

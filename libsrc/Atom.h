@@ -115,6 +115,11 @@ public:
 
 	/** Get the radius of the atom used for solvent calculations */
 	double getSolventRadius();
+
+	/** Solvent content added for multiple conformers of a mask at once,
+	 * with one flag per bit */
+	void addManyToMask(FFTPtr fft, mat3x3 unit_cell,
+                              int conf, int total);
 	void addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double radius,
 	                      std::vector<Atom *> *ptrs, int conf);
 	void addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell, vec3 pos,

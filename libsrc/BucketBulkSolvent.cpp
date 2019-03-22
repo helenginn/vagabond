@@ -38,37 +38,53 @@ void BucketBulkSolvent::reportSolventContent()
 	std::cout << std::setprecision(4) <<  "Fraction of solvent: " << frac << std::endl;
 }
 
-void BucketBulkSolvent::addSolventForConformer(int conf)
+void BucketBulkSolvent::addSolventForConformer(int conf, int num)
 {
 	CrystalPtr crystal = getCrystal();
 
 	_solvent = FFTPtr(new FFT(*crystal->getFFT()));
 	mat3x3 real2frac = crystal->getReal2Frac();
-	_solvent->setAll(1);
-	_atomPtrs = std::vector<Atom *>(_solvent->nn, NULL);
-	double shrink = 0.4;
 
-	for (size_t i = 0; i < crystal->moleculeCount(); i++)
+	if (conf < 0)
+	{
+		_solvent->setAll(1);
+		_atomPtrs = std::vector<Atom *>(_solvent->nn, NULL);
+	}
+
+	for (size_t i = 0; i < crystal->moleculeCount() && conf < 0; i++)
 	{
 		crystal->molecule(i)->addToSolventMask(_solvent, real2frac, -1,
 		                                       &_atomPtrs, conf);
 	}
+
+	if (conf >= 0)
+	{
+		_solvent->setupMask();
+	}
 	
-	_solvent->shrink(shrink);
-	removeSlivers();
-	reportSolventContent();
+	for (size_t i = 0; i < crystal->moleculeCount() && conf >= 0; i++)
+	{
+
+		for (size_t j = 0; j < crystal->molecule(i)->atomCount(); j++)
+		{
+			AtomPtr a = crystal->molecule(i)->atom(j);
+			a->addManyToMask(_solvent, real2frac, conf, num);
+		}
+	}
 }
 
 void BucketBulkSolvent::addSolvent()
 {
+	double shrink = 0.4;
 	addSolventForConformer(-1);
+	reportSolventContent();
+	removeSlivers();
+	_solvent->shrink(shrink);
 }
 
-void BucketBulkSolvent::removeSlivers()
+void BucketBulkSolvent::removeSlivers(double maxDist)
 {
 	/** Maximum distance before sliver is allowed to stay in Ang */
-	double maxDist = 2.0;
-
 	mat3x3 basis = _solvent->getBasis();
 	vec3 uc_dims = empty_vec3();
 
@@ -76,7 +92,7 @@ void BucketBulkSolvent::removeSlivers()
 	uc_dims.y = mat3x3_length(basis, 1);
 	uc_dims.z = mat3x3_length(basis, 2);
 	
-	vec3_mult(&uc_dims, 2.0);
+	vec3_mult(&uc_dims, 2);
 
 	uc_dims.x = (int)(maxDist / uc_dims.x + 0.5);
 	uc_dims.y = (int)(maxDist / uc_dims.y + 0.5);

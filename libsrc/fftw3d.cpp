@@ -107,11 +107,11 @@ FFT::FFT(FFT &other)
 
 	if (other.mask)
 	{
-		mask = (int *)malloc(nn * sizeof(int));
+		mask = (MaskType *)malloc(nn * sizeof(MaskType));
 		
 		if (mask)
 		{
-			memcpy(mask, other.mask, nn * sizeof(int));
+			memcpy(mask, other.mask, nn * sizeof(MaskType));
 		}
 	}
 
@@ -187,7 +187,7 @@ void FFT::setupMask()
 		mask = NULL;
 	}
 
-	mask = (int *) calloc(nn, sizeof(int));
+	mask = (MaskType *) calloc(nn, sizeof(MaskType));
 }
 
 /*
@@ -246,11 +246,11 @@ void FFT::shiftToCentre()
 	int copyLength = sx;
 	fftwf_complex *temp = (FFTW_DATA_TYPE *)fftwf_malloc(nn*sizeof(FFTW_DATA_TYPE));
 	memset(temp, 0, nn*sizeof(FFTW_DATA_TYPE));
-	int *tmpMask = NULL;
+	MaskType *tmpMask = NULL;
 
 	if (mask)
 	{
-		tmpMask = (int *)calloc(nn, sizeof(int));
+		tmpMask = (MaskType *)calloc(nn, sizeof(MaskType));
 	}
 
 	for (int z0 = 0; z0 < nz; z0++)
@@ -279,7 +279,7 @@ void FFT::shiftToCentre()
 				memcpy(&temp[e0], &data[e1], size);
 				if (mask)
 				{
-					int maskSize = sizeof(int) * copyLength;
+					int maskSize = sizeof(MaskType) * copyLength;
 					memcpy(&tmpMask[e0], &mask[e1], maskSize);
 				}
 			}
@@ -873,6 +873,126 @@ void FFT::blurRealToImaginary(int x, int y, int z, mat3x3 tensor)
 	}
 }
 
+void FFT::bittyShrink(double radius, int num)
+{
+	vec3 mins = make_vec3(0, 0, 0);
+	vec3 maxs = make_vec3(0, 0, 0);
+	mat3x3 basis = getBasis();
+	findLimitingValues(0, radius, 0, radius, 0, radius,
+					   &mins, &maxs);
+
+	for (int z = 0; z < nz; z++)
+	{
+		for (int y = 0; y < ny; y++)
+		{
+			for (int x = 0; x < nx; x++)
+			{
+				long raw = element(x, y, z);
+				bool change = false;
+				int total = 8 * sizeof(MaskType);
+
+				MaskType orig = mask[raw];
+				
+				/*
+				for (int j = total - 1; j >= 0; j--)
+				{
+					unsigned char byte = (orig >> j) & 1;
+					printf("%u", byte);
+					
+					if (j == SOLVENT_BITS)
+					{
+						printf(" ");
+					}
+				}
+				printf("\n");
+				*/
+				
+				for (int b = 0; b < num; b++)
+				{
+					unsigned char byte = (mask[raw] >> b) & 1;
+					unsigned char newbyte = 1; /* protein */
+
+					/* We only want to modify protein to become
+					 * more like solvent, so ignore solvent */
+					if (byte == 0)
+					{
+						/* set new bit to solvent and continue */
+						mask[raw] &= ~(1 << b + num); 
+						continue;
+					}
+
+					bool done = false;
+
+					/* Default is to be protein */
+					newbyte = 1;
+
+					/* now byte is protein, but will it remain protein? */
+					for (int k = 0; k < maxs.z && !done; k++)
+					{
+						for (int j = 0; j < maxs.y && !done; j++)
+						{
+							for (int i = 0; i < maxs.x && !done; i++)
+							{
+								vec3 ijk = make_vec3(i, j, k);
+								mat3x3_mult_vec(basis, &ijk);
+
+								/* Doesn't matter if it goes over radial
+								 * boundary */
+								if (vec3_sqlength(ijk) > radius * radius)
+								{
+									continue;
+								}
+
+								long index = element(i + x, j + y, k + z);
+
+								/* Switch to solvent if we found solvent */
+								unsigned char other = (mask[index] >> b) & 0;
+								std::cout << other << std::flush;
+								if (other)
+								{
+									std::cout << "Yeah!" << std::endl;
+									done = true;
+									change = true;
+									newbyte = 0;
+									break;
+								}
+							}
+						}
+					}
+					
+					mask[raw] |= (newbyte << b + num);
+				}
+				
+				for (int j = total - 1; j >= 0 && change; j--)
+				{
+					unsigned char byte = (mask[raw] >> j) & 1;
+					printf("%u", byte);
+					
+					if (j == SOLVENT_BITS)
+					{
+						printf(" ");
+					}
+				}
+				
+				MaskType newmask = mask[raw] >> num;
+				mask[raw] = newmask;
+
+				if (change)
+				{
+					printf("\n");
+				}
+			}
+		}
+	}
+	
+	for (int i = 0; i < nn; i++)
+	{
+		data[i][0] = data[i][1];
+		data[i][1] = 0;
+	}
+
+}
+
 void FFT::shrink(double radius)
 {
 	vec3 mins = make_vec3(0, 0, 0);
@@ -946,7 +1066,8 @@ void FFT::shrink(double radius)
 	}
 }
 
-void FFT::addToValueAroundPoint(vec3 pos, double radius, double value)
+void FFT::addToValueAroundPoint(vec3 pos, double radius, double value,
+                                int bitIndex)
 {
 	/* Determine square bounding box for radius in Ang. */
 	vec3 minRadius = make_vec3(0, 0, 0);
@@ -960,6 +1081,13 @@ void FFT::addToValueAroundPoint(vec3 pos, double radius, double value)
 	findLimitingValues(-radius, radius, -radius, radius, -radius, radius,
 	                   &minRadius, &maxRadius);
 	mat3x3 basis = getBasis();
+	
+	bool useBit = (bitIndex >= 0);
+	MaskType bitty = 0;
+	if (useBit)
+	{
+		bitty = (value >= 0.5 ? 1 : 0) << bitIndex;
+	}
 
 	for (double k = minRadius.z; k < maxRadius.z; k++)
 	{
@@ -982,11 +1110,22 @@ void FFT::addToValueAroundPoint(vec3 pos, double radius, double value)
 				double z = lrint(k + pos.z);
 				
 				long index = element(x, y, z);
-				data[index][0] += value;
-				
-				if (data[index][0] < 0)
+
+				if (!useBit)
 				{
-					data[index][0] = 0;
+					data[index][0] += value;
+
+					if (data[index][0] < 0)
+					{
+						data[index][0] = 0;
+					}
+				}
+				else if (mask != NULL)
+				{
+					if (value >= 0.5)
+					{
+						mask[index] |= bitty;
+					}
 				}
 			}
 		}
@@ -1714,5 +1853,38 @@ vec3 FFT::getPositionInAsu(vec3 vec)
 	}
 	
 	return empty_vec3();
+}
+
+void FFT::convertMaskToSolvent(int expTotal)
+{
+	if (!mask)
+	{
+		return;
+	}
+	
+	for (size_t i = 0; i < nn; i++)
+	{
+		int ayes = 0;
+		int noes = 0;
+
+		long val = mask[i];
+		
+		for (int j = 0; j < expTotal; j++)
+		{
+			unsigned char byte = (val >> j) & 1;
+			
+			if (byte)
+			{
+				ayes++;
+			}
+			else
+			{
+				noes++;
+			}
+		}
+
+		float frac = (float)ayes / (float)(noes + ayes);
+		data[i][0] = (1 - frac);
+	}
 }
 

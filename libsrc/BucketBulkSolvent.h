@@ -29,10 +29,10 @@ public:
 	
 	virtual ~BucketBulkSolvent() {}
 protected:
-	void addSolventForConformer(int conf);
+	void addSolventForConformer(int conf, int num = 1);
 	void reportSolventContent();
+	void removeSlivers(double maxDist = 2.0);
 private:
-	void removeSlivers();
 	bool sliverRemovalIteration(vec3 limits);
 	void clearSliver(long i, long j, long k,
 	                 long p, long q, long r);

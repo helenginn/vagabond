@@ -17,6 +17,7 @@
 #include <vector>
 
 #define ANGLE_SAMPLING deg2rad(4.0)
+#define SOLVENT_BITS (8 * sizeof(MaskType) / 2)
 
 #define ATOM_SAMPLING_COUNT (30)
 #define PROTEIN_SAMPLING (0.5)
@@ -198,17 +199,6 @@ typedef boost::shared_ptr<Thing> ThingPtr;
 
 typedef enum
 {
-	MaskUnchecked = 0,
-	MaskProtein = 1,
-	MaskEmpty = 2,
-
-	MaskFree = 8,
-	MaskWork = 9,
-} MaskType;
-
-
-typedef enum
-{
 	PDBTypeEnsemble,
 	PDBTypeAverage,
 	PDBTypeSamePosition,
@@ -237,5 +227,6 @@ typedef enum
 typedef double (*Getter)(void *);
 typedef void (*Setter)(void *, double newValue);
 
+typedef int MaskType;
 
 #endif

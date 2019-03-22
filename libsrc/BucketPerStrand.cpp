@@ -18,6 +18,7 @@
 
 #include "BucketPerStrand.h"
 #include "Crystal.h"
+#include "shared_ptrs.h"
 #include "fftw3d.h"
 
 void BucketPerStrand::addSolvent()
@@ -28,16 +29,36 @@ void BucketPerStrand::addSolvent()
 	FFTPtr total = FFTPtr(new FFT(*crystal->getFFT()));
 	total->setAll(0);
 
-	for (int i = 0; i < crystal->getSampleNum(); i++)
-	{
-		std::cout << "Adding solvent for conformer " << i << "." << std::endl;
-		addSolventForConformer(i);
-		FFT::addSimple(total, _solvent);
-		
-	}
+	int confs = crystal->getSampleNum();
+	int count = 0;
 
+	for (int i = 0; i < crystal->getSampleNum(); i += SOLVENT_BITS)
+	{
+		int num = SOLVENT_BITS;
+
+		if (i + num > confs)
+		{
+			num = confs - i;
+		}
+
+		std::cout << "Adding solvent for conformer " << i << "." << std::endl;
+		addSolventForConformer(i, num);
+		_solvent->bittyShrink(0.4, num);
+		_solvent->convertMaskToSolvent(num);
+		reportSolventContent();
+		FFT::addSimple(total, _solvent);
+		count++;
+	}
+	
+	/* We run without a conformer to get our atom pointers from
+	 * average values */
+	addSolventForConformer(-1);
+
+	/* But overwrite the solvent afterwards with the new one we 
+	 * have calculated */
 	_solvent = total;
-	_solvent->multiplyAll(1 / (double)crystal->getSampleNum());
+	_solvent->multiplyAll(1 / (double)count);
+	removeSlivers(2.0);
 	
 	reportSolventContent();
 }

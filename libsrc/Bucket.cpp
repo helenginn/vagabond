@@ -7,6 +7,8 @@
 //
 
 #include "Bucket.h"
+#include "BucketBulkSolvent.h"
+#include "BucketPerStrand.h"
 #include "FileReader.h"
 #include "Atom.h"
 #include <iostream>
@@ -21,6 +23,22 @@
 #include "Options.h"
 
 #define CHECK_DISTANCE_STEP 0.30
+
+BucketPtr Bucket::chosenBucket()
+{
+	BucketPtr bucket;
+
+	if (Options::getAddSolvent() == 1)
+	{
+		bucket = BucketPtr(new BucketBulkSolvent());
+	}
+	else if (Options::getAddSolvent() == 2)
+	{
+		bucket = BucketPtr(new BucketPerStrand());
+	}
+	
+	return bucket;
+}
 
 Bucket::Bucket()
 {
