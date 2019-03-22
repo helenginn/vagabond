@@ -51,6 +51,7 @@ private:
 	std::string longChainID(std::string base);
 
 	void getSymmetry(std::string line);
+	void checkNotModifiedHetatm(AbsolutePtr abs);
 	AbsolutePtr makeAbsolute(std::string line);
 	void parseLine(std::string line);
 	void parse();

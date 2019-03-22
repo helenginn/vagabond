@@ -76,9 +76,25 @@ AbsolutePtr PDBReader::makeAbsolute(std::string line)
 	if (line.substr(0, 6) == "HETATM")
 	{
 		abs->setHeteroAtom(true);
+		checkNotModifiedHetatm(abs);
 	}
 
 	return abs;
+}
+
+void PDBReader::checkNotModifiedHetatm(AbsolutePtr abs)
+{
+	if (abs->getResName() == "mly" || abs->getResName() == "sch" ||
+	    abs->getResName() == "mlz" || abs->getResName() == "mse")
+	{
+		Shouter *shout;
+		shout = new Shouter("PDB file contains modified (non-standard)\n"\
+		                    "amino acid residue as HETATM entry.\n"\
+		                    "Please relabel this residue (no. " +
+		                    i_to_str(abs->getResNum()) + ") as\n"\
+		                    "an ATOM record.");
+		throw shout;
+	}
 }
 
 /* We want to check we should be appending to the correct molecule */
