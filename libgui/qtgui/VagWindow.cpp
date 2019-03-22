@@ -297,6 +297,7 @@ int VagWindow::waitForInstructions()
 	catch (Shouter *shout)
 	{
 		emit errorReceived(shout);
+		options->clear();
 		return 1;
 	}
 	

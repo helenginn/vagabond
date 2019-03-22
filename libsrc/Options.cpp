@@ -970,3 +970,12 @@ void Options::changeSamplesAndFit(void *, double n)
 	std::cout << "Done" << std::endl;
 }
 
+void Options::clear()
+{
+	objects.clear();
+	crystals.clear();
+	datasets.clear();
+	diffractions.clear();
+	
+	std::cout << "Removed loaded objects." << std::endl;
+}

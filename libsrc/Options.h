@@ -31,6 +31,7 @@ class Options
 public:
 	Options(int argc, const char **argv);
 	void run();
+	void clear();
 
 	double getActiveCrystalDStar();
 	
