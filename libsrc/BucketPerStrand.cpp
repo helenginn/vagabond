@@ -61,4 +61,6 @@ void BucketPerStrand::addSolvent()
 	removeSlivers(2.0);
 	
 	reportSolventContent();
+	
+	setPartialStructure(_solvent);
 }

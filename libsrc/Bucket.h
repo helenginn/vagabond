@@ -11,6 +11,7 @@
 
 #include <stdio.h>
 #include "shared_ptrs.h"
+#include "PartialStructure.h"
 #include <vector>
 #include <map>
 #include "vec3.h"
@@ -28,7 +29,7 @@
  * applying symmetry operations and scaling.
  */
 
-class Bucket
+class Bucket : public PartialStructure
 {
 public:
 	Bucket();
