@@ -16,6 +16,9 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#ifndef __vagabond__partialstructure__
+#define __vagabond__partialstructure__
+
 #include "shared_ptrs.h"
 
 class PartialStructure
@@ -24,13 +27,53 @@ public:
 	PartialStructure() {};
 	
 	virtual void populateStructure();
+	void scalePartialStructure();
+
+	static double getSolvScale(void *object)
+	{
+		return static_cast<PartialStructure *>(object)->_solvScale;
+	}
+	
+	static void setSolvScale(void *object, double value)
+	{
+		static_cast<PartialStructure *>(object)->_solvScale = value;
+	}
+
+	static double getSolvBFac(void *object)
+	{
+		return static_cast<PartialStructure *>(object)->_solvBFac;
+	}
+	
+	static void setSolvBFac(void *object, double value)
+	{
+		static_cast<PartialStructure *>(object)->_solvBFac = value;
+	}
+
+	void setData(DiffractionPtr data)
+	{
+		_data = data;
+	}
+	
+	CrystalPtr getCrystal()
+	{
+		return _crystal.lock();
+	}
 
 protected:
+	CrystalWkr _crystal;
+	double _solvScale;
+	double _solvBFac;
+
 	void setPartialStructure(FFTPtr solvent)
 	{
 		_partial = solvent;
 	}
 private:
+	DiffractionPtr _data;
+	double scaleAndAddPartialScore();
+	static double scalePartialScore(void *object);
 	FFTPtr _partial;
 	
 };
+
+#endif

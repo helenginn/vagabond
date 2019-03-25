@@ -44,9 +44,6 @@ public:
 	int getRandomValues(double left, double *right, double *angle);
 	int getReallyRandomValues(double left, double *right, double *angle);
 
-	void scaleSolvent();
-	static double scaleSolventScore(void *object);
-	double scaleAndAddSolventScore();
 	void applySymOps(CSym::CCP4SPG *spaceGroup);
 	void fourierTransform(int dir);
 	void writeMillersToFile(std::string prefix, double maxRes);
@@ -57,31 +54,6 @@ public:
 		_crystal = crystal;
 	}
 	
-	void setData(DiffractionPtr data)
-	{
-		_data = data;
-	}
-	
-	static double getSolvScale(void *object)
-	{
-		return static_cast<Bucket *>(object)->_solvScale;
-	}
-	
-	static void setSolvScale(void *object, double value)
-	{
-		static_cast<Bucket *>(object)->_solvScale = value;
-	}
-
-	static double getSolvBFac(void *object)
-	{
-		return static_cast<Bucket *>(object)->_solvBFac;
-	}
-	
-	static void setSolvBFac(void *object, double value)
-	{
-		static_cast<Bucket *>(object)->_solvBFac = value;
-	}
-
 	bool isSolvent(vec3 pos);
 	void processMaskedRegions();
 	
@@ -93,21 +65,13 @@ public:
 		return _maskedRegions;
 	}	
 protected:
-	CrystalWkr _crystal;
 	FFTPtr _solvent;
 	FFTPtr _maskedRegions;
-	DiffractionPtr _data;
 	std::vector<Atom *> _atomPtrs;
 	
-	CrystalPtr getCrystal()
-	{
-		return _crystal.lock();
-	}
 private:
 	/* Mask regions with protein = 0, solvent = 1 and protein/solvent
 	* interface = 2 */
-	double _solvScale;
-	double _solvBFac;
 	int _wanted;
 	
 	double _averages[3];

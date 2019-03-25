@@ -711,7 +711,7 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 	}
 	
 	_bucket->setData(data);
-	_bucket->scaleSolvent();
+	_bucket->scalePartialStructure();
 }
 
 double Crystal::getMaxResolution(DiffractionPtr data)

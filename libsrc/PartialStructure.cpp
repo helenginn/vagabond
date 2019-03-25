@@ -17,8 +17,164 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "PartialStructure.h"
+#include "maths.h"
+#include "fftw3d.h"
+#include "Diffraction.h"
+#include "CSV.h"
+#include "RefinementNelderMead.h"
+#include "Options.h"
+#include "Crystal.h"
+#include "Shouter.h"
 
 void PartialStructure::populateStructure()
 {
 
+}
+
+
+void PartialStructure::scalePartialStructure()
+{
+	if (!_data)
+	{
+		shout_at_helen("Need diffraction data to scale solvent");
+	}
+	
+	setSolvScale(this, 0.0);
+	setSolvBFac(this, 40);
+	
+	NelderMeadPtr fine;
+	fine = NelderMeadPtr(new RefinementNelderMead());
+	fine->setJobName("solvent_scale_fine");
+	fine->setEvaluationFunction(scalePartialScore, this);
+	fine->setCycles(40);
+	fine->addParameter(this, getSolvScale, setSolvScale, 0.4, 0.01, "scale");
+	fine->addParameter(this, getSolvBFac, setSolvBFac, 40, 1.0, "bfac");
+	fine->setSilent(true);
+	fine->refine();
+
+	if (!getCrystal()->isSilent())
+	{
+		std::cout << "   Partial B factor: " 
+		<< getSolvBFac(this) << std::endl;
+	}
+	
+	/** If we are doing powder analysis we don't actually want
+	* 	to add the solvent */
+	if (Options::shouldPowder())
+	{
+		return;
+	}	
+	
+	/** Now add this into the FFT */
+	
+	FFTPtr fft = getCrystal()->getFFT();
+	mat3x3 real2frac = getCrystal()->getReal2Frac();
+	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
+	FFTPtr fftData = _data->getFFT();
+
+	std::vector<double> fData, fModel;
+	CSVPtr csv = CSVPtr(new CSV(2, "fo", "fc"));
+
+	vec3 nLimits = getNLimits(fftData, _partial);
+
+	for (int k = -nLimits.x; k < nLimits.z; k++)
+	{
+		for (int j = -nLimits.y; j < nLimits.y; j++)
+		{
+			for (int i = -nLimits.z; i < nLimits.z; i++)
+			{
+				vec3 ijk = make_vec3(i, j, k);
+				mat3x3_mult_vec(real2frac, &ijk);
+				double length = vec3_length(ijk);
+				double d = 1 / length;
+				double four_d_sq = (4 * d * d);
+				double bFacMod = exp(-_solvBFac / four_d_sq);
+
+				long nModel = fft->element(i, j, k);
+				float realProtein = fft->data[nModel][0];
+				float imagProtein = fft->data[nModel][1];
+				float realPartial = _partial->data[nModel][0];	
+				float imagPartial = _partial->data[nModel][1];	
+				realPartial *= _solvScale * bFacMod;
+				imagPartial *= _solvScale * bFacMod;
+
+				float real = realProtein + realPartial;
+				float imag = imagProtein + imagPartial;
+
+				fft->data[nModel][0] = real;
+				fft->data[nModel][1] = imag;
+			}
+		}
+	}
+}
+
+double PartialStructure::scalePartialScore(void *object)
+{
+	return static_cast<PartialStructure *>(object)->scaleAndAddPartialScore();
+}
+
+double PartialStructure::scaleAndAddPartialScore()
+{
+	FFTPtr fftData = _data->getFFT();
+	FFTPtr fft = getCrystal()->getFFT();
+	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
+	double nLimit = std::min(fftData->nx, fft->nx);
+	nLimit /= 2;
+	mat3x3 real2frac = getCrystal()->getReal2Frac();
+	mat3x3 tmp = mat3x3_transpose(real2frac);
+	
+	vec3 nLimits = getNLimits(fftData, _partial);
+
+	std::vector<double> fData, fModel;
+
+	for (int k = -nLimits.x; k < nLimits.z; k++)
+	{
+		for (int j = -nLimits.y; j < nLimits.y; j++)
+		{
+			for (int i = -nLimits.z; i < nLimits.z; i++)
+			{
+				vec3 ijk = make_vec3(i, j, k);
+				mat3x3_mult_vec(tmp, &ijk);
+
+				int m, n, o;
+				CSym::ccp4spg_put_in_asu(spg, i, j, k, &m, &n, &o);
+
+				double length = vec3_length(ijk);
+				double d = 1 / length;
+				double four_d_sq = (4 * d * d);
+				double bFacMod = exp(-_solvBFac / four_d_sq);
+
+				int _i = 0; int _j = 0; int _k = 0;	
+				CSym::ccp4spg_put_in_asu(spg, i, j, k,
+				                         &_i, &_j, &_k);
+
+				bool isRfree = (fftData->getMask(_i, _j, _k) == 0);
+				if (isRfree) continue;
+
+				float ref = sqrt(fftData->getIntensity(_i, _j, _k));
+
+				if (ref != ref) continue;
+
+				long nModel = fft->element(i, j, k);
+				float realProtein = fft->data[nModel][0];
+				float imagProtein = fft->data[nModel][1];
+
+				float realPartial = _partial->data[nModel][0];	
+				float imagPartial = _partial->data[nModel][1];	
+				realPartial *= _solvScale * bFacMod;
+				imagPartial *= _solvScale * bFacMod;
+
+				float real = realProtein + realPartial;
+				float imag = imagProtein + imagPartial;
+				float amp = sqrt(real * real + imag * imag);
+
+				fData.push_back(ref);
+				fModel.push_back(amp);
+			}
+		}
+	}
+
+	double correl = correlation(fData, fModel);
+	
+	return -correl;
 }
