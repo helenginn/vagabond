@@ -48,6 +48,16 @@ public:
 		return fft;
 	}
 
+	FFTPtr getPartial()
+	{
+		return _partial;
+	}
+	
+	bool hasPartial()
+	{
+		return (!_partial);
+	}
+
 	double getMaxResolution()
 	{
 		return _maxRes;

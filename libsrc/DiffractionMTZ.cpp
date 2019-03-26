@@ -65,10 +65,16 @@ void DiffractionMtz::load()
 	CMtz::MTZCOL *col_f = NULL;
 	CMtz::MTZCOL *col_sigf = NULL;
 	CMtz::MTZCOL *col_rfree = NULL;
+	CMtz::MTZCOL *col_fpart = NULL;
+	CMtz::MTZCOL *col_phipart = NULL;
 
 	std::vector<std::string> ampNames;
 	ampNames.push_back("F");
 	ampNames.push_back("FP");
+	
+	std::vector<std::string> fParts, phiParts;
+	fParts.push_back("Fpart");
+	fParts.push_back("FPART");
 
 	getCol(ampNames, mtz, &col_f);
 	if (!col_f)
@@ -151,6 +157,20 @@ void DiffractionMtz::load()
 	int count = 0;
 	int maskCount = 0;
 
+	phiParts.push_back("PHIpart");
+	phiParts.push_back("PHIPART");
+	getCol(fParts, mtz, &col_fpart);
+	getCol(phiParts, mtz, &col_phipart);
+	
+	bool addPartial = (col_fpart != NULL && col_phipart != NULL);
+	
+	if (addPartial)
+	{
+		_partial = FFTPtr(new FFT());
+		_partial->create(largest);
+		_partial->multiplyAll(nan(" "));
+	}
+
 	for (int i = 0; i < mtz->nref_filein * mtz->ncol_read; i += mtz->ncol_read)
 	{
 		memcpy(adata, &refldata[i], mtz->ncol_read * sizeof(float));
@@ -183,6 +203,19 @@ void DiffractionMtz::load()
 		if (mask == 0)
 		{
 			maskCount++;
+		}
+		
+		if (addPartial)
+		{
+			float fpart = adata[col_fpart->source - 1];
+			float phipart = adata[col_phipart->source - 1];
+			phipart = deg2rad(phipart);
+			
+			float x = fpart * sin(phipart);
+			float y = fpart * cos(phipart);
+			
+			_partial->data[element][0] = x;
+			_partial->data[element][1] = y;
 		}
 	}
 	
