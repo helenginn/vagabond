@@ -26,7 +26,7 @@ class PartialStructure
 public:
 	PartialStructure() {};
 	
-	virtual void populateStructure();
+	void setStructure(FFTPtr refPart);
 	void scalePartialStructure();
 
 	static double getSolvScale(void *object)
@@ -54,11 +54,17 @@ public:
 		_data = data;
 	}
 	
+	void setCrystal(CrystalPtr crystal)
+	{
+		_crystal = crystal;
+	}
+	
 	CrystalPtr getCrystal()
 	{
 		return _crystal.lock();
 	}
 
+	virtual void reportScale();
 protected:
 	CrystalWkr _crystal;
 	double _solvScale;

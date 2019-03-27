@@ -712,6 +712,7 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 	
 	_bucket->setData(data);
 	_bucket->scalePartialStructure();
+	_bucket->reportScale();
 }
 
 double Crystal::getMaxResolution(DiffractionPtr data)
@@ -825,12 +826,40 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 	}
 }
 
+void Crystal::scaleAnyPartialSet()
+{
+	if (!Options::usePartial())
+	{
+		return;
+	}
+
+	PartialStructurePtr structure;
+	structure = PartialStructurePtr(new PartialStructure());
+	
+	FFTPtr partial = _data->getPartial();
+	structure->setData(_data);
+	structure->setCrystal(shared_from_this());
+	
+	if (!partial)
+	{
+		std::string warn = "Asked to scale partial data set, but no\n"
+		"partial data set found in FPART/PHIPART columns.";
+		warn_user(warn);
+		return;
+	}
+	
+	structure->setStructure(partial);
+	structure->scalePartialStructure();
+	structure->reportScale();
+}
+
 void Crystal::scaleComponents(DiffractionPtr data)
 {
 	std::cout << "Scaling model to data..." << std::endl;
 	/* Just scale using an absolute value only */
 	scaleToDiffraction(data, false);
 	scaleSolvent(data);
+	scaleAnyPartialSet();
 	/* Scale using the favoured mechanism (e.g. per-shell) */
 	scaleToDiffraction(data);
 }

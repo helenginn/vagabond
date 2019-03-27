@@ -418,6 +418,9 @@ public:
 		return _largestNum + 1;
 	}
 	
+	/** Scale any data set that has been provided as FPART/PHIPART in
+	 *  the input file */
+	void scaleAnyPartialSet();
 protected:
 	virtual void postRestoreState();
 	virtual void addObject(ParserPtr object, std::string category);

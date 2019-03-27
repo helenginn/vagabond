@@ -34,6 +34,7 @@ class Bucket : public PartialStructure
 public:
 	Bucket();
 	virtual void addSolvent() = 0;
+	virtual void reportScale();
 	
 	static BucketPtr chosenBucket();
 	
@@ -48,11 +49,6 @@ public:
 	void fourierTransform(int dir);
 	void writeMillersToFile(std::string prefix, double maxRes);
 	void abandonCalculations();
-	
-	void setCrystal(CrystalPtr crystal)
-	{
-		_crystal = crystal;
-	}
 	
 	bool isSolvent(vec3 pos);
 	void processMaskedRegions();

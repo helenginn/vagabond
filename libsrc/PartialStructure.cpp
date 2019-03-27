@@ -26,11 +26,43 @@
 #include "Crystal.h"
 #include "Shouter.h"
 
-void PartialStructure::populateStructure()
+void PartialStructure::setStructure(FFTPtr refPart)
 {
+	FFTPtr fft = getCrystal()->getFFT();
+	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
 
+	_partial = FFTPtr(new FFT(*fft));
+	_partial->setAll(0);
+
+	vec3 nLimits = getNLimits(_data->getFFT(), _partial);
+
+	for (int k = -nLimits.x; k < nLimits.z; k++)
+	{
+		for (int j = -nLimits.y; j < nLimits.y; j++)
+		{
+			for (int i = -nLimits.z; i < nLimits.z; i++)
+			{
+				int _h, _k, _l;
+				CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
+
+				long index = fft->element(i, j, k);
+				long pIndex = refPart->element(_h, _k, _l);
+
+				_partial->data[index][0] = refPart->data[pIndex][0];
+				_partial->data[index][1] = refPart->data[pIndex][1];
+			}
+		}
+	}
 }
 
+void PartialStructure::reportScale()
+{
+	if (!getCrystal()->isSilent())
+	{
+		std::cout << "   Partial scale: " << getSolvScale(this) << ", "
+		"B factor: " << getSolvBFac(this) << std::endl;
+	}
+}
 
 void PartialStructure::scalePartialStructure()
 {
@@ -52,12 +84,6 @@ void PartialStructure::scalePartialStructure()
 	fine->setSilent(true);
 	fine->refine();
 
-	if (!getCrystal()->isSilent())
-	{
-		std::cout << "   Partial B factor: " 
-		<< getSolvBFac(this) << std::endl;
-	}
-	
 	/** If we are doing powder analysis we don't actually want
 	* 	to add the solvent */
 	if (Options::shouldPowder())

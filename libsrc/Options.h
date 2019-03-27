@@ -265,6 +265,11 @@ public:
 		return _anchor;
 	}
 	
+	static bool usePartial()
+	{
+		return _usePartial;
+	}
+	
 	static void pauseGUIFishing(bool on);
 	void focusOnPosition(vec3 pos);
 	void refitBackbone(int start, int end);
@@ -314,6 +319,7 @@ private:
 
 	static bool _diagnostics;
 	static bool _useRFree;
+	static bool _usePartial;
 	static ScalingType _scaleType;
 	static bool _powder;
 	static std::string _solventFile;

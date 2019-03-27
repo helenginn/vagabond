@@ -13,6 +13,7 @@
 #include "../libccp4/cmtzlib.h"
 #include <vector>
 #include "fftw3d.h"
+#include "Options.h"
 #include "FileReader.h"
 
 void getCol(std::vector<std::string> names, CMtz::MTZ *mtz,
@@ -164,8 +165,15 @@ void DiffractionMtz::load()
 	
 	bool addPartial = (col_fpart != NULL && col_phipart != NULL);
 	
+	if (!Options::usePartial())
+	{
+		addPartial = false;
+	}
+	
 	if (addPartial)
 	{
+		std::cout << std::endl << "Found partial F/PHI columns; loading"
+		" partial structure." << std::endl;
 		_partial = FFTPtr(new FFT());
 		_partial->create(largest);
 		_partial->multiplyAll(nan(" "));

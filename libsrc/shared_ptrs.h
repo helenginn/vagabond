@@ -142,9 +142,11 @@ typedef boost::shared_ptr<Twist> TwistPtr;
 typedef boost::weak_ptr<Twist> TwistWkr;
 
 class Bucket;
+class PartialStructure;
 class BucketBulkSolvent;
 
 typedef boost::shared_ptr<Bucket> BucketPtr;
+typedef boost::shared_ptr<PartialStructure> PartialStructurePtr;
 typedef boost::shared_ptr<BucketBulkSolvent> BucketBulkSolventPtr;
 
 class Dataset;

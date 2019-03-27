@@ -45,6 +45,7 @@ bool Options::_useRFree = true;
 int Options::_bondAngles = 2;
 bool Options::_powder = false;
 bool Options::_diagnostics = false;
+bool Options::_usePartial = false;
 
 bool Options::_refine = false;
 bool Options::_far = false;
@@ -578,6 +579,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "sidechain", &_rSidechains);
 		understood |= parseParameter(arg, "rfree", &_useRFree);
 		understood |= parseParameter(arg, "diagnostics", &_diagnostics);
+		understood |= parseParameter(arg, "partial", &_usePartial);
 		
 		int shellNum = 0;
 		bool shellstood = parseParameter(arg, "--shell-scale=", &shellNum);

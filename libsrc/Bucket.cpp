@@ -39,6 +39,16 @@ BucketPtr Bucket::chosenBucket()
 	return bucket;
 }
 
+void Bucket::reportScale()
+{
+	if (!getCrystal()->isSilent())
+	{
+		std::cout << "   Solvent scale: " << getSolvScale(this) << ", "
+		"B factor: " << getSolvBFac(this) << std::endl;
+	}
+}
+
+
 Bucket::Bucket()
 {
 	_solvBFac = 0;
