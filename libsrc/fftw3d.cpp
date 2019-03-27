@@ -894,19 +894,8 @@ void FFT::bittyShrink(double radius, int num)
 				MaskType orig = mask[raw];
 				
 				/*
-				for (int j = total - 1; j >= 0; j--)
-				{
-					unsigned char byte = (orig >> j) & 1;
-					printf("%u", byte);
-					
-					if (j == SOLVENT_BITS)
-					{
-						printf(" ");
-					}
-				}
-				printf("\n");
 				*/
-				
+
 				for (int b = 0; b < num; b++)
 				{
 					unsigned char byte = (mask[raw] >> b) & 1;
@@ -934,6 +923,7 @@ void FFT::bittyShrink(double radius, int num)
 							for (int i = 0; i < maxs.x && !done; i++)
 							{
 								vec3 ijk = make_vec3(i, j, k);
+
 								mat3x3_mult_vec(basis, &ijk);
 
 								/* Doesn't matter if it goes over radial
@@ -946,11 +936,10 @@ void FFT::bittyShrink(double radius, int num)
 								long index = element(i + x, j + y, k + z);
 
 								/* Switch to solvent if we found solvent */
-								unsigned char other = (mask[index] >> b) & 0;
-								std::cout << other << std::flush;
-								if (other)
+								unsigned char other = (mask[index] >> b) & 1;
+
+								if (other == 0)
 								{
-									std::cout << "Yeah!" << std::endl;
 									done = true;
 									change = true;
 									newbyte = 0;
@@ -963,6 +952,7 @@ void FFT::bittyShrink(double radius, int num)
 					mask[raw] |= (newbyte << b + num);
 				}
 				
+				/*
 				for (int j = total - 1; j >= 0 && change; j--)
 				{
 					unsigned char byte = (mask[raw] >> j) & 1;
@@ -973,13 +963,14 @@ void FFT::bittyShrink(double radius, int num)
 						printf(" ");
 					}
 				}
+				*/
 				
 				MaskType newmask = mask[raw] >> num;
 				mask[raw] = newmask;
 
 				if (change)
 				{
-					printf("\n");
+//					printf("\n");
 				}
 			}
 		}
