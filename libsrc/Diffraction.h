@@ -64,6 +64,7 @@ public:
 	}
 protected:
 	FFTPtr fft;
+	FFTPtr _partial;
 	std::string _filename;
 
 	float _minRes;
