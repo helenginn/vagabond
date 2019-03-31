@@ -34,22 +34,59 @@ void PartialStructure::setStructure(FFTPtr refPart)
 	_partial = FFTPtr(new FFT(*fft));
 	_partial->setAll(0);
 
-	vec3 nLimits = getNLimits(_data->getFFT(), _partial);
+	vec3 nLimits = getNLimits(_partial, refPart);
 
-	for (int k = -nLimits.x; k < nLimits.z; k++)
+	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
 		for (int j = -nLimits.y; j < nLimits.y; j++)
 		{
-			for (int i = -nLimits.z; i < nLimits.z; i++)
+			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
 				int _h, _k, _l;
-				CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
+				int sym = CSym::ccp4spg_put_in_asu(spg, i, j, k, 
+				                                   &_h, &_k, &_l);
 
-				long index = fft->element(i, j, k);
+				long index = _partial->element(i, j, k);
+				long asuIndex = _partial->element(_h, _k, _l);
 				long pIndex = refPart->element(_h, _k, _l);
+				
+				double x = refPart->data[pIndex][0];
+				double y = refPart->data[pIndex][1];
+				
+				/* establish amp & phase */
+				double amp = sqrt(x * x + y * y);
+				double myPhase = atan2(y, x);
 
-				_partial->data[index][0] = refPart->data[pIndex][0];
-				_partial->data[index][1] = refPart->data[pIndex][1];
+				if (sym % 2 == 0)
+				{
+					myPhase *= -1;
+				}
+				
+				int symop = (sym - 1) / 2;
+
+				/* calculate phase shift for symmetry operator */
+				float *trn = spg->symop[symop].trn;
+				
+				/* rotation */
+				double shift = (float)i * trn[0];
+				shift += (float)j * trn[1];
+				shift += (float)k * trn[2];
+				
+				shift = fmod(shift, 1.);
+
+				/*  apply shift when filling in other sym units */
+				double newPhase = myPhase + shift * 2 * M_PI;
+
+				/* debug */
+				float symx = fft->data[index][0];
+				float symy = fft->data[index][1];
+				double orig = atan2(symy, symx);
+				
+				x = amp * cos(newPhase);
+				y = amp * sin(newPhase);
+
+				_partial->data[index][0] = x;
+				_partial->data[index][1] = y;
 			}
 		}
 	}
@@ -163,21 +200,22 @@ double PartialStructure::scaleAndAddPartialScore()
 				mat3x3_mult_vec(tmp, &ijk);
 
 				int m, n, o;
-				CSym::ccp4spg_put_in_asu(spg, i, j, k, &m, &n, &o);
+				int asu = CSym::ccp4spg_put_in_asu(spg, i, j, k, &m, &n, &o);
+				
+				if (!(i == m && j == n && k == o))
+				{
+//					continue;
+				}
 
 				double length = vec3_length(ijk);
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
 				double bFacMod = exp(-_solvBFac / four_d_sq);
 
-				int _i = 0; int _j = 0; int _k = 0;	
-				CSym::ccp4spg_put_in_asu(spg, i, j, k,
-				                         &_i, &_j, &_k);
-
-				bool isRfree = (fftData->getMask(_i, _j, _k) == 0);
+				bool isRfree = (fftData->getMask(m, n, o) == 0);
 				if (isRfree) continue;
 
-				float ref = sqrt(fftData->getIntensity(_i, _j, _k));
+				float ref = sqrt(fftData->getIntensity(m, n, o));
 
 				if (ref != ref) continue;
 
@@ -189,16 +227,17 @@ double PartialStructure::scaleAndAddPartialScore()
 				float imagPartial = _partial->data[nModel][1];	
 				realPartial *= _solvScale * bFacMod;
 				imagPartial *= _solvScale * bFacMod;
-
+				
 				float real = realProtein + realPartial;
 				float imag = imagProtein + imagPartial;
 				float amp = sqrt(real * real + imag * imag);
-
+				
 				fData.push_back(ref);
 				fModel.push_back(amp);
 			}
 		}
 	}
+
 
 	double correl = correlation(fData, fModel);
 	
