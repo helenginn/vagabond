@@ -181,8 +181,6 @@ double PartialStructure::scaleAndAddPartialScore()
 	FFTPtr fftData = _data->getFFT();
 	FFTPtr fft = getCrystal()->getFFT();
 	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
-	double nLimit = std::min(fftData->nx, fft->nx);
-	nLimit /= 2;
 	mat3x3 real2frac = getCrystal()->getReal2Frac();
 	mat3x3 tmp = mat3x3_transpose(real2frac);
 	
