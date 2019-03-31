@@ -916,11 +916,11 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 
 	vec3 nLimits = getNLimits(fftData, _fft);
 
-	for (int k = -nLimits.x; k < nLimits.z; k++)
+	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
 		for (int j = -nLimits.y; j < nLimits.y; j++)
 		{
-			for (int i = -nLimits.z; i < nLimits.z; i++)
+			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
 				int _h, _k, _l;
 				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_h, &_k, &_l);

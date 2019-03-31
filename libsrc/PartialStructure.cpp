@@ -103,11 +103,11 @@ void PartialStructure::scalePartialStructure()
 
 	vec3 nLimits = getNLimits(fftData, _partial);
 
-	for (int k = -nLimits.x; k < nLimits.z; k++)
+	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
 		for (int j = -nLimits.y; j < nLimits.y; j++)
 		{
-			for (int i = -nLimits.z; i < nLimits.z; i++)
+			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(real2frac, &ijk);
@@ -152,12 +152,12 @@ double PartialStructure::scaleAndAddPartialScore()
 	vec3 nLimits = getNLimits(fftData, _partial);
 
 	std::vector<double> fData, fModel;
-
-	for (int k = -nLimits.x; k < nLimits.z; k++)
+	
+	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
 		for (int j = -nLimits.y; j < nLimits.y; j++)
 		{
-			for (int i = -nLimits.z; i < nLimits.z; i++)
+			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(tmp, &ijk);
