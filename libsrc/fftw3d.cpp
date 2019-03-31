@@ -1539,7 +1539,7 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool silent)
 		double yOrig = data[n][1];
 		double myAmp = sqrt(xOrig * xOrig + yOrig * yOrig);
 		double myPhase = atan2(yOrig, xOrig) * 180 / M_PI;
-		while (myPhase >= 360) myPhase-= 360;
+		while (myPhase >= 360) myPhase -= 360;
 		while (myPhase < 0) myPhase += 360;
 
 		data[n][0] = myAmp;
