@@ -163,6 +163,11 @@ void PartialStructure::scalePartialStructure()
 
 				float real = realProtein + realPartial;
 				float imag = imagProtein + imagPartial;
+				
+				if (real != real || imag != imag)
+				{
+					continue;
+				}
 
 				fft->data[nModel][0] = real;
 				fft->data[nModel][1] = imag;
