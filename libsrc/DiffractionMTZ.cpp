@@ -226,8 +226,8 @@ void DiffractionMtz::load()
 			float phipart = adata[col_phipart->source - 1];
 			phipart = deg2rad(phipart);
 			
-			float x = fpart * sin(phipart);
-			float y = fpart * cos(phipart);
+			float x = fpart * cos(phipart);
+			float y = fpart * sin(phipart);
 			
 			_partial->data[element][0] = x;
 			_partial->data[element][1] = y;
