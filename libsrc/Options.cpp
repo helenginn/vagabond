@@ -383,6 +383,9 @@ void Options::displayHelp()
 	"\t\t\t\t(default 0)." << std::endl;
 	std::cout << "--shell-scale\t\t\tWhen calculating R factors, scale each resolution bin of Fcalc "\
 	"to Fobs\n\t\t\t\t(default 0)." << std::endl;
+	std::cout << "--solvent=<num>\t\t\tUse solvent model 0 (none), 1 (simple) or 2 (average of unique"\
+	"\n\t\t\t\tsolvent mask per strand) (default 1)." << std::endl;;
+	std::cout << "--(no-)partial\t\t\tScale custom partial structure from Fpart/PHIpart columns in input MTZ file.\n";
 	std::cout << "--(no-)tie\t\t\tChoose whether to tie PDB atoms up into Vagabond model definition." << std::endl;
 	std::cout << "--no-rfree\t\t\tDo not use this function.\n" << std::endl;
 	std::cout << "Refinement functionality:\n" << std::endl;
