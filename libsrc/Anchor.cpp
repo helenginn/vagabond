@@ -25,7 +25,9 @@ Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
 	_atom = absolute->getAtom();
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
+	_screw = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration->setZero();
+	_screw->setZero();
 	_disableWhacks = false;
 	_alpha = 0;
 	_beta = 0;
@@ -62,6 +64,8 @@ Anchor::Anchor() : ExplicitModel()
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_libration->setZero();
+	_screw = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
+	_screw->setZero();
 	_disableWhacks = false;
 }
 
@@ -216,7 +220,11 @@ void Anchor::rotateBases()
 	mat3x3 libration = _libration->getMat3x3();
 	Anisotropicator tropicator;
 	tropicator.setTensor(libration);
+	/* Get the orthogonal basis vectors of this tensor */
 	mat3x3 lib = tropicator.basis();
+
+	/* Screw in units: Angstroms times degree */
+	mat3x3 screw = _screw->getMat3x3();
 	
 	for (int i = 0; i < _storedSamples.size(); i++)
 	{
@@ -466,6 +474,7 @@ void Anchor::addProperties()
 	addVec3Property("post_c", &_cDir2);
 	addMat3x3Property("translation", _trans->getMat3x3Ptr());
 	addMat3x3Property("libration", _libration->getMat3x3Ptr());
+	addMat3x3Property("screw", _screw->getMat3x3Ptr());
 	addReference("c_atom", _cAtom.lock());
 	
 	for (int i = 0; i < whackCount(); i++)
@@ -547,11 +556,18 @@ void Anchor::setPolymerBasis(mat3x3 basis)
 void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
                                       double mult)
 {
-	_trans->addToStrategy(strategy, 0.5 * mult, 0.001, "tr");
+	_trans->addTensorToStrategy(strategy, 0.5 * mult, 0.001, "tr");
 }
 
 void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
                                       double mult)
 {
-	_libration->addToStrategy(strategy, 0.2 * mult, 0.005, "li");
+	_libration->addTensorToStrategy(strategy, 0.2 * mult, 0.005, "li");
 }
+
+void Anchor::addScrewParameters(RefinementStrategyPtr strategy,
+                                double mult)
+{
+	_screw->addMatrixToStrategy(strategy, 0.2 * mult, 0.005, "sc");
+}
+

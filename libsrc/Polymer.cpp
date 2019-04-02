@@ -1389,10 +1389,11 @@ void Polymer::refineGlobalFlexibility()
 		FlexGlobal target;
 		NelderMeadPtr lbfgs = NelderMeadPtr(new RefinementNelderMead());
 		lbfgs->setCycles(24);
-		lbfgs->setJobName("libration");
+		lbfgs->setJobName("libscrew");
 		attachTargetToRefinement(lbfgs, target);
 
 		anchor->addLibrationParameters(lbfgs);
+		anchor->addScrewParameters(lbfgs);
 		lbfgs->refine();
 	}
 

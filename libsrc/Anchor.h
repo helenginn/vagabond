@@ -124,6 +124,8 @@ public:
 	                              double mult = 1);
 	void addLibrationParameters(RefinementStrategyPtr strategy,
 	                              double mult = 1);
+	void addScrewParameters(RefinementStrategyPtr strategy,
+	                              double mult = 1);
 
 	static void cleanup(void *object)
 	{
@@ -237,6 +239,7 @@ protected:
 	double _alpha, _beta, _gamma;
 	RefineMat3x3Ptr _trans;
 	RefineMat3x3Ptr _libration;
+	RefineMat3x3Ptr _screw;
 	
 	bool _changedN;
 	bool _changedC;

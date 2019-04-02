@@ -121,6 +121,87 @@ public:
 		}
 	}
 
+	static void setValue11(void *object, double value)
+	{
+		toMat(object)->_mat.vals[0] = value;
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
+	}
+
+	static void setValue12(void *object, double value)
+	{
+		toMat(object)->_mat.vals[1] = value;
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
+	}
+
+	static void setValue13(void *object, double value)
+	{
+		toMat(object)->_mat.vals[2] = value;
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
+	}
+
+	static void setValue21(void *object, double value)
+	{
+		toMat(object)->_mat.vals[3] = value;
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
+	}
+
+	static void setValue22(void *object, double value)
+	{
+		toMat(object)->_mat.vals[4] = value;
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
+	}
+
+	static void setValue23(void *object, double value)
+	{
+		toMat(object)->_mat.vals[5] = value;
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
+	}
+
+	static void setValue31(void *object, double value)
+	{
+		toMat(object)->_mat.vals[6] = value;
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
+	}
+
+	static void setValue32(void *object, double value)
+	{
+		toMat(object)->_mat.vals[7] = value;
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
+	}
+
+	static void setValue33(void *object, double value)
+	{
+		toMat(object)->_mat.vals[8] = value;
+		if (*toMat(object)->_clean)
+		{
+			(*toMat(object)->_clean)(toMat(object)->_parent);
+		}
+	}
+
 	static double getTensor11(void *object)
 	{
 		return toMat(object)->_mat.vals[0];
@@ -166,12 +247,57 @@ public:
 		return toMat(object)->_mat.vals[8];
 	}
 	
+	static double getValue11(void *object)
+	{
+		return toMat(object)->_mat.vals[0];
+	}
+
+	static double getValue12(void *object)
+	{
+		return toMat(object)->_mat.vals[1];
+	}
+
+	static double getValue13(void *object)
+	{
+		return toMat(object)->_mat.vals[2];
+	}
+
+	static double getValue21(void *object)
+	{
+		return toMat(object)->_mat.vals[3];
+	}
+
+	static double getValue22(void *object)
+	{
+		return toMat(object)->_mat.vals[4];
+	}
+
+	static double getValue23(void *object)
+	{
+		return toMat(object)->_mat.vals[5];
+	}
+
+	static double getValue31(void *object)
+	{
+		return toMat(object)->_mat.vals[6];
+	}
+
+	static double getValue32(void *object)
+	{
+		return toMat(object)->_mat.vals[7];
+	}
+
+	static double getValue33(void *object)
+	{
+		return toMat(object)->_mat.vals[8];
+	}
+	
 	void setZero()
 	{
 		mat3x3_mult_scalar(&_mat, 0);
 	}
 
-	void addToStrategy(RefinementStrategyPtr strategy, double step,
+	void addTensorToStrategy(RefinementStrategyPtr strategy, double step,
 	                   double tol, std::string prefix)
 	{
 		strategy->addParameter(this, getTensor11, setTensor11, step,
@@ -188,20 +314,26 @@ public:
 		                       tol, prefix + "_t33");
 	}
 	
-	void addToStrategy(RefinementStrategyPtr strategy, mat3x3 steps,
+	void addMatrixToStrategy(RefinementStrategyPtr strategy, double step,
 	                   double tol, std::string prefix)
 	{
-		strategy->addParameter(this, getTensor11, setTensor11, steps.vals[0],
+		strategy->addParameter(this, getValue11, setValue11, step,
 		                       tol, prefix + "_t11");
-		strategy->addParameter(this, getTensor12, setTensor12, steps.vals[1],
+		strategy->addParameter(this, getValue12, setValue12, step,
 		                       tol, prefix + "_t12");
-		strategy->addParameter(this, getTensor13, setTensor13, steps.vals[2],
+		strategy->addParameter(this, getValue13, setValue13, step,
 		                       tol, prefix + "_t13");
-		strategy->addParameter(this, getTensor22, setTensor22, steps.vals[4],
+		strategy->addParameter(this, getValue21, setValue21, step,
+		                       tol, prefix + "_t21");
+		strategy->addParameter(this, getValue22, setValue22, step,
 		                       tol, prefix + "_t22");
-		strategy->addParameter(this, getTensor23, setTensor23, steps.vals[5],
+		strategy->addParameter(this, getValue23, setValue23, step,
 		                       tol, prefix + "_t23");
-		strategy->addParameter(this, getTensor33, setTensor33, steps.vals[8],
+		strategy->addParameter(this, getValue31, setValue31, step,
+		                       tol, prefix + "_t31");
+		strategy->addParameter(this, getValue32, setValue32, step,
+		                       tol, prefix + "_t32");
+		strategy->addParameter(this, getValue33, setValue33, step,
 		                       tol, prefix + "_t33");
 
 	}
