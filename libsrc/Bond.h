@@ -574,6 +574,7 @@ private:
 	
 	void initialize();
 	double getBaseTorsion();
+	double getBaseKick();
 
 	/* Returns upstream bond group pertaining to this bond. */
 	BondGroupPtr bondGroupForBond();

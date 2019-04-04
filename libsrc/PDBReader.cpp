@@ -270,6 +270,12 @@ void PDBReader::addAtomToMolecule(std::string line)
 	}
 	else
 	{
+		/* Ignore if hydrogen */
+		if (abs->getElementSymbol() == "H")
+		{
+			return;
+		}
+
 		/* Makes sure we're ready to append to the correct residue */
 		validateResidue(abs);
 		abs->addToMonomer(_myMonomer);

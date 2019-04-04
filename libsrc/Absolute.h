@@ -229,6 +229,11 @@ public:
 		return abs->_position.z;
 	}
 	
+	std::string getElementSymbol()
+	{
+		return _element;
+	}
+	
 	AtomPtr makeAtom();
 	
 	virtual std::string shortDesc();

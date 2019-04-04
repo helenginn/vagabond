@@ -623,6 +623,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	/* Track overall change in order to readjust torsion
 	 * at the end */
 	double averageModulation = 0;
+	double baseKick = getBaseKick();
 	
 	/* Assume torsion of 0, as real torsion added later */
 	for (size_t i = 0; i < prevs->size(); i++)
@@ -652,7 +653,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 		}
 
 		/* Baseline kick multiplied by kickValue */
-		double addBlur = _kick * kickValue;
+		double addBlur = baseKick * kickValue;
 
 		if (isFixed())
 		{
@@ -673,6 +674,26 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 		prevs->at(i).torsion -= averageModulation;
 	}
 
+}
+
+double Bond::getBaseKick()
+{
+	ExplicitModelPtr model = getParentModel();
+	int myGroup = -1;
+	double torsionNumber = model->downstreamBondNum(this, &myGroup);
+
+	/* May be myself */
+	BondPtr sisBond = shared_from_this();
+
+	if (torsionNumber > 0)
+	{
+		BondPtr parent = ToBondPtr(getParentModel());
+		sisBond = parent->downstreamBond(myGroup, 0);
+	}
+
+	double baseKick = sisBond->_kick;
+
+	return baseKick;
 }
 
 double Bond::getBaseTorsion()
@@ -806,10 +827,7 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 
 	std::vector<BondSample> myTorsions;
 
-	bool usingKick = (isUsingTorsion()
-	                          && !isFixed());
-
-	if (usingKick)
+	if (!isFixed())
 	{
 		correctTorsionAngles(&_storedSamples);
 	}
