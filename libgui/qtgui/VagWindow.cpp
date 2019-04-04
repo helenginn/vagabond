@@ -501,6 +501,8 @@ void VagWindow::enable()
 	{
 		actions[i]->setEnabled(true);
 	}
+	
+	Notifiable::enable();
 }
 
 void VagWindow::disable()
