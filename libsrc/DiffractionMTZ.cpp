@@ -60,6 +60,30 @@ void DiffractionMtz::load()
 
 	float *adata = (float *) CCP4::ccp4_utils_malloc((mtz->ncol_read)
 	                                                 * sizeof(float));
+	
+	int xtalCount = CMtz::MtzNxtal(mtz);
+	std::cout << "Total crystals in " << _filename << ": " << 
+	xtalCount << std::endl;
+	
+	CMtz::MTZXTAL **xtals = CMtz::MtzXtals(mtz);
+
+	if (xtalCount == 0)
+	{
+		std::cout << "Warning! No crystals in MTZ file?" << std::endl;
+	}
+	else
+	{
+		for (int i = 0; i < xtalCount; i++)
+		{
+			std::cout << "Crystal " << i + 1 << " unit cell dims: ";
+			std::cout << "a = " << xtals[i]->cell[0] << " Å, ";
+			std::cout << "b = " << xtals[i]->cell[1] << " Å, ";
+			std::cout << "c = " << xtals[i]->cell[2] << " Å, ";
+			std::cout << "alpha = " << xtals[i]->cell[3] << "°, ";
+			std::cout << "beta = " << xtals[i]->cell[4] << "°, ";
+			std::cout << "gamma = " << xtals[i]->cell[5] << "°." << std::endl;
+		}
+	}
 
 	CMtz::MtzRrefl(mtz->filein, mtz->ncol_read * mtz->nref_filein, refldata);
 
