@@ -578,7 +578,7 @@ void Selected2GL::manualRefine()
 		
 		if (kicking && !mousey)
 		{
-			group->addParamType(ParamOptionKick, 0.1);
+			group->addParamType(ParamOptionKick, 0.5);
 		}
 		
 		if (!refining)
