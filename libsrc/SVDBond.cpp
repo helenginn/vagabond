@@ -285,7 +285,7 @@ void SVDBond::report()
 
 void SVDBond::addToStrategy(RefinementStrategyPtr strategy, int dir)
 {
-	double inv = 0.5 / _wTotal;
+	double inv = 0.8 / _wTotal;
 	double tol = inv / 100;
 	
 	inv *= (double)dir;
