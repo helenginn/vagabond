@@ -281,10 +281,11 @@ void Options::executeProtocol()
 			}
 		}
 
-		for (int i = 0; i < 2 && _rIntra; i++)
+		const int maxIntra = 3;
+		for (int i = 0; i < maxIntra && _rIntra; i++)
 		{
 			std::cout << "Intramolecular flex microcycle (" << 
-			i + 1 << " / 2)" << std::endl;
+			i + 1 << " / " << maxIntra << ")" << std::endl;
 			bool changed = crystal->refineIntraMovements();
 			recalculateFFT();
 			
