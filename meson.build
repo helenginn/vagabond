@@ -143,7 +143,7 @@ if qt5_dep.found() and dep_gl.found()
 'libgui/shader.cpp',
 'libgui/Selected2GL.cpp',
 'libgui/Vagabond2GL.cpp', 
-cpp_args: ['-w'], dependencies : [ qt5_dep, dep_vag ], install: true)
+cpp_args: ['-w', '-std=c++11'], dependencies : [ qt5_dep, dep_vag ], install: true)
 	inc_vgui = include_directories('libgui')
 dep_vgui = declare_dependency(link_with: lib_vgui, include_directories: inc_vgui)
 
