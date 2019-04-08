@@ -78,8 +78,9 @@ void BucketBulkSolvent::addSolvent()
 	double shrink = 0.4;
 	addSolventForConformer(-1);
 	reportSolventContent();
-	removeSlivers();
 	_solvent->shrink(shrink);
+	removeSlivers();
+	setPartialStructure(_solvent);
 }
 
 void BucketBulkSolvent::removeSlivers(double maxDist)
