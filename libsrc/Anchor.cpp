@@ -232,48 +232,24 @@ void Anchor::rotateBases()
 		vec3 neg_start = vec3_mult(start, -1);
 		vec3 diff = vec3_subtract_vec3(start, _position);
 		mat3x3 rot_only = make_mat3x3();
-		vec3 screw_change = empty_vec3();
 
 		for (int j = 0; j < 3; j++)
 		{
 			vec3 rot_vec = mat3x3_axis(lib, j);
-			vec3 screw_vec = mat3x3_axis(screw, j);
-			double radians = vec3_length(rot_vec);
-			
-			vec3_mult(&screw_vec, 1 / radians);
-			
-			if (screw_vec.x != screw_vec.x || radians <= 0)
-			{
-				screw_vec = empty_vec3();
-			}
-
 			double dot = vec3_dot_vec3(diff, rot_vec);
 			mat3x3 rot_mat = mat3x3_unit_vec_rotation(rot_vec, dot);
 			mat3x3 basis = mat3x3_mult_mat3x3(rot_mat, 
 			                                  _storedSamples[i].basis); 
 			
-			/* Move the offset, apply rotation and return to get
-			 * translation offset due to screw */
-			vec3 shifted = vec3_add_vec3(diff, screw_vec);
-			mat3x3_mult_vec(rot_mat, &shifted);
-			vec3_subtract_from_vec3(&shifted, screw_vec);
-			vec3_subtract_from_vec3(&shifted, diff);
-			vec3_add_to_vec3(&screw_change, shifted);			
-
 			rot_only = mat3x3_mult_mat3x3(rot_mat, rot_only);
 			_storedSamples[i].basis = basis;
 		}
 		
-		vec3 old_start = _storedSamples[i].old_start;
-		vec3 diff_to_old = vec3_subtract_vec3(old_start, start);
-
+		vec3 diff_to_old = vec3_subtract_vec3(_storedSamples[i].old_start,
+		                                      start);
 		mat3x3_mult_vec(rot_only, &diff_to_old);
-		vec3_add_to_vec3(&old_start, diff_to_old);
-		
-		vec3_add_to_vec3(&start, screw_change);
-		vec3_add_to_vec3(&old_start, screw_change);
-		_storedSamples[i].old_start = old_start;
-		_storedSamples[i].start = start;
+		vec3 new_old = vec3_add_vec3(start, diff_to_old);
+		_storedSamples[i].old_start = new_old;
 	}
 }
 
@@ -592,6 +568,6 @@ void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
 void Anchor::addScrewParameters(RefinementStrategyPtr strategy,
                                 double mult)
 {
-	_screw->addMatrixToStrategy(strategy, 2.0 * mult, 0.01, "sc");
+	_screw->addMatrixToStrategy(strategy, 0.2 * mult, 0.005, "sc");
 }
 
