@@ -63,6 +63,7 @@ private:
 	void copyMatrix(double **from, double **to);
 	void compareBonds();
 	double compareBonds(BondPtr a, BondPtr b);
+	double compareKicks(BondPtr a, BondPtr b);
 	void writeMatrix();
 	
 	std::vector<ParamSVDSet> _params;

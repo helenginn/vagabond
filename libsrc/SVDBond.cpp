@@ -55,6 +55,23 @@ vec3 bond_effect_on_pos(vec3 atom_pos, mat3x3 &bond_basis, vec3 &bond_pos)
 	return atom_pos;
 }
 
+double SVDBond::compareKicks(BondPtr a, BondPtr b)
+{
+	std::vector<BondSample> as = a->getFinalPositions();
+	std::vector<BondSample> bs = b->getFinalPositions();
+
+	double total = 0;
+
+	for (int i = 0; i < as.size(); i++)
+	{
+		double mult = as[i].kickValue * bs[i].kickValue;
+		total += mult;
+	}
+	
+	total /= (double)as.size();
+	return total;
+}
+
 double SVDBond::compareBonds(BondPtr a, BondPtr b)
 {
 	/* Get all the bond directions and positions */
@@ -122,8 +139,9 @@ void SVDBond::compareBonds()
 			BondPtr b2 = _bonds[j];
 
 			double agreement = compareBonds(b1, b2);
-			_svd[i][j] = agreement;
-			_svd[j][i] = agreement;
+			double kicks = compareKicks(b1, b2);
+			_svd[i][j] = agreement * kicks;
+			_svd[j][i] = agreement * kicks;
 		}
 	}
 	
