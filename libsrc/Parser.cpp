@@ -37,6 +37,8 @@ void Parser::setup(bool isNew)
 {
 	if (_setup) return;
 
+	_className = getClassName();
+
 	/* If these objects have been generated during this session,
 	 * not loaded from a file... */
 	if (!isNew)
@@ -49,8 +51,6 @@ void Parser::setup(bool isNew)
 		ParserPtr newPointer = shared_from_this();
 		addToAllParsers(path, newPointer);
 	}
-
-	_className = getClassName();
 
 	addProperties();
 }
