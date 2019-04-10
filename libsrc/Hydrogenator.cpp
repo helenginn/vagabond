@@ -35,7 +35,6 @@ AtomPtr Hydrogenator::prepareNewHydrogen(AtomPtr parent)
 	hydrogen->setElement(hydrogenElement);
 	hydrogen->setOriginalOccupancy(1.);
 	hydrogen->setAtomNum(crystal->issueAtomNumber());
-	_monomer->addAtom(hydrogen);
 	
 	return hydrogen;
 }
@@ -218,6 +217,7 @@ void Hydrogenator::addHydrogens(AtomPtr minor, std::vector<std::string> hNames)
 	{
 		AtomPtr hydrogen = prepareNewHydrogen(minor);
 		hydrogen->setAtomName(hNames[j]);
+		_monomer->addAtom(hydrogen);
 		hydrogen->setAlternativeConformer(alt);
 
 		/* Set the bond length for the new hydrogen */

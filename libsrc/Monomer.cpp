@@ -42,8 +42,6 @@ void Monomer::removeAtom(AtomPtr atom)
 
 void Monomer::addAtom(AtomPtr atom)
 {
-	std::string newAtomName = atom->getAtomName();
-
 	AtomGroup::addAtom(atom);
 
 	atom->setMonomer(shared_from_this());
@@ -59,7 +57,7 @@ void Monomer::addAtom(AtomPtr atom)
 	{
 		_backbone->addAtom(atom);
 		_sidechain->addAtom(atom);
-
+		
 		return;
 	}
 
@@ -69,7 +67,7 @@ void Monomer::addAtom(AtomPtr atom)
 	{
 		_backbone->addAtom(atom);
 	}
-	else if (!isBackbone)
+	else
 	{
 		_sidechain->addAtom(atom);
 	}
