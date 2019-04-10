@@ -1393,7 +1393,7 @@ void Polymer::refineGlobalFlexibility()
 		attachTargetToRefinement(lbfgs, target);
 
 		anchor->addLibrationParameters(lbfgs);
-		anchor->addScrewParameters(lbfgs);
+//		anchor->addScrewParameters(lbfgs);
 		lbfgs->refine();
 	}
 
