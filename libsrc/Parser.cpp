@@ -275,7 +275,7 @@ void Parser::outputContents(std::ofstream &stream, int in)
 
 		for (int i = 0; i < 8; i++)
 		{
-			stream << ptr->vals[i] << ",";
+			stream << f_to_str(ptr->vals[i], 10) << ",";
 		}
 
 		stream << ptr->vals[8] << std::endl;
