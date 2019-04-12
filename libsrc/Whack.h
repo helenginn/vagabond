@@ -114,6 +114,11 @@ public:
 		applyKick();
 	}
 	
+	bool isDisabled()
+	{
+		return !_enabled;
+	}
+	
 	void enable()
 	{
 		_enabled = true;

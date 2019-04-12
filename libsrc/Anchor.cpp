@@ -366,6 +366,15 @@ void Anchor::recalculateWhacks()
 	}
 	
 	propagateChange(-1, true);
+	
+	/* magic matrix should be calculated while all whacks are
+	 * off */
+	for (int i = 0; i < whackCount(); i++)
+	{
+		_whacks[i]->getBond()->calculateMagicMat();
+	}
+
+	propagateChange(-1, true);
 
 	for (int i = 0; i < whackCount(); i++)
 	{
@@ -436,20 +445,6 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 		WhackPtr whack = _whacks[i];
 		whack->applyToAnchorSamples(_storedSamples);
 	}
-
-	/*
-	if (_useMutex)
-	{
-		guiLock.lock();
-	}
-	
-	_absolute = meanOfManyPositions(&_storedSamples);
-
-	if (_useMutex)
-	{
-		guiLock.unlock();
-	}
-	*/
 
 	sanityCheck();
 	

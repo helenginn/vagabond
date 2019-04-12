@@ -690,8 +690,13 @@ double Bond::getBaseKick()
 		BondPtr parent = ToBondPtr(getParentModel());
 		sisBond = parent->downstreamBond(myGroup, 0);
 	}
-
+	
 	double baseKick = sisBond->_kick;
+
+	if (sisBond->hasWhack() && sisBond->getWhack()->isDisabled())
+	{
+		baseKick = 0;
+	}
 
 	return baseKick;
 }
@@ -1560,7 +1565,7 @@ void Bond::addProperties()
 	addBoolProperty("refine_flexibility", &_refineFlexibility);
 	addBoolProperty("disabled", &_disabled);
 	
-	addMat3x3Property("magic_mat", &_magicMat);
+//	addMat3x3Property("magic_mat", &_magicMat);
 
 	for (int i = 0; i < downstreamBondGroupCount(); i++)
 	{
