@@ -246,7 +246,7 @@ public:
 	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0,
 	                      double bFactor = 0);
 
-	double applyShellFactors(DiffractionPtr data);
+	void applyShellFactors(DiffractionPtr data);
 	double getAdjustBFactor();
 	
 	bool undoIfWorse();

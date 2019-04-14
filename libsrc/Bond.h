@@ -591,7 +591,7 @@ private:
 		return _bondGroups[group]->bond(i);
 	}
 	
-	bool setSplit(bool val)
+	void setSplit(bool val)
 	{
 		_split = true;
 	}

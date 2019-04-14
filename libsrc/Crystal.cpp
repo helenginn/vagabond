@@ -432,7 +432,7 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 	*bFactor = b;
 }
 
-double Crystal::applyShellFactors(DiffractionPtr data)
+void Crystal::applyShellFactors(DiffractionPtr data)
 {
 	FFTPtr fftData = data->getFFT();	
 	vec3 nLimits = getNLimits(fftData, _fft);
