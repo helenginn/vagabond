@@ -1202,7 +1202,6 @@ BondPtr Bond::splitBond(bool onlyExisting)
 	int last = parent->downstreamBondGroupCount();
 	
 	int num = parent->downstreamBondNum(this, NULL);
-	
 	BondPtr dupl = me->duplicateDownstream(parent, last, onlyExisting);
 	
 	if (dupl)
