@@ -606,7 +606,12 @@ void Bond::getAverageBasisPos(mat3x3 *aveBasis, vec3 *aveStart,
 	mat3x3_vectors_to_unity(aveBasis);
 }
 
-void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
+void Bond::correctTorsionAngles()
+{
+	correctTorsionAngles(&_storedSamples, false);
+}
+
+void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 {
 	const vec3 none = make_vec3(0, 0, 0);
 	double samples = prevs->size();
@@ -628,43 +633,43 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs)
 	/* Assume torsion of 0, as real torsion added later */
 	for (size_t i = 0; i < prevs->size(); i++)
 	{
-		mat3x3 thisBasis = (*prevs)[i].basis;
-		vec3 thisPos = prevs->at(i).start;
+		double kickValue = prevs->at(i).kickValue;
 
-		/* Difference between perfect and deviant position of major atom */
-		vec3 thisDeviation = vec3_subtract_vec3(thisPos, aveStart);
-		
-		/* Find out what this deviation is if sensitive axis is set to z */
-		mat3x3_mult_vec(magicMat, &thisDeviation);
-
-		double notZ = (thisDeviation.y * thisDeviation.y +
-		               thisDeviation.x * thisDeviation.x);
-		double c = thisDeviation.z * thisDeviation.z / notZ;
-
-		double sinAlpha = sqrt(c / (c + 1));
-		
-		if (thisDeviation.z < 0) sinAlpha *= -1;
-
-		double kickValue = sinAlpha;
-		
-		if (kickValue != kickValue)
+		if (!quick)
 		{
-			kickValue = 0;
+			mat3x3 thisBasis = (*prevs)[i].basis;
+			vec3 thisPos = prevs->at(i).start;
+
+			/* Difference between perfect and deviant position of major atom */
+			vec3 thisDeviation = vec3_subtract_vec3(thisPos, aveStart);
+
+			/* Find out what this deviation is if sensitive axis is set to z */
+			mat3x3_mult_vec(magicMat, &thisDeviation);
+
+			double notZ = (thisDeviation.y * thisDeviation.y +
+			               thisDeviation.x * thisDeviation.x);
+			double c = thisDeviation.z * thisDeviation.z / notZ;
+
+			double sinAlpha = sqrt(c / (c + 1));
+
+			if (thisDeviation.z < 0) sinAlpha *= -1;
+
+			kickValue = sinAlpha;
+
+			if (kickValue != kickValue)
+			{
+				kickValue = 0;
+			}
 		}
 
 		/* Baseline kick multiplied by kickValue */
 		double addBlur = baseKick * kickValue;
 
-		if (isFixed())
-		{
-			addBlur = 0;
-		}
-
-		double totalBlur = addBlur;
-		prevs->at(i).torsion = totalBlur;	
+		prevs->at(i).torsion = addBlur;	
 		prevs->at(i).kickValue = kickValue;
+
 		
-		averageModulation += totalBlur;
+		averageModulation += addBlur;
 	}
 
 	averageModulation /= (double)samples;
@@ -809,7 +814,27 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 
 	double totalAtoms = prevBond->downstreamBondCount(myGroup);
 
-	_storedSamples = *prevBond->getManyPositions(&*getMinor());
+//	_storedSamples = *prevBond->getManyPositions(&*getMinor());
+	std::vector<BondSample> tmp = *prevBond->getManyPositions(&*getMinor());
+	
+	if (_storedSamples.size() != tmp.size())
+	{
+		_storedSamples = tmp;
+
+		for (int i = 0; i < tmp.size(); i++)
+		{
+			_storedSamples[i].kickValue = 0;
+		}
+	}
+	else
+	{
+		for (int i = 0; i < tmp.size(); i++)
+		{
+			double kick = _storedSamples[i].kickValue;
+			memcpy(&_storedSamples[i], &tmp[i], sizeof(BondSample));
+			_storedSamples[i].kickValue = kick;
+		}
+	}
 	
 	double baseTorsion = getBaseTorsion();
 	
@@ -834,7 +859,8 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 
 	if (!isFixed())
 	{
-		correctTorsionAngles(&_storedSamples);
+		bool whacked = hasWhack();
+		correctTorsionAngles(&_storedSamples, whacked);
 	}
 
 	double occTotal = 0;
@@ -1565,7 +1591,7 @@ void Bond::addProperties()
 	addBoolProperty("refine_flexibility", &_refineFlexibility);
 	addBoolProperty("disabled", &_disabled);
 	
-//	addMat3x3Property("magic_mat", &_magicMat);
+	addMat3x3Property("magic_mat", &_magicMat);
 
 	for (int i = 0; i < downstreamBondGroupCount(); i++)
 	{

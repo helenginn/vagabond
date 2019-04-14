@@ -372,7 +372,8 @@ void Anchor::recalculateWhacks()
 	 * off */
 	for (int i = 0; i < whackCount(); i++)
 	{
-		_whacks[i]->getBond()->calculateMagicMat();
+		BondPtr child = _whacks[i]->getBond()->downstreamBond(0, 0);
+		child->calculateMagicMat();
 	}
 
 	propagateChange(-1, true);
@@ -434,8 +435,11 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 		}
 	}
 	
-	rotateBases();
-	translateStartPositions();
+	if (!_disableWhacks)
+	{
+		rotateBases();
+		translateStartPositions();
+	}
 
 	fixCentroid();
 

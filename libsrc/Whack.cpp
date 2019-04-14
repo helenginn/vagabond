@@ -54,8 +54,8 @@ void Whack::setBond(BondPtr bond)
 	}
 	
 	_bond->setWhack(shared_from_this());
-	applyKick();
 	saveSamples();
+	applyKick();
 }
 
 bool Whack::needsRefresh(std::vector<BondSample> &anchSamp)
@@ -67,7 +67,7 @@ void Whack::saveSamples()
 {
 	_samples = *_bond->getManyPositions();
 	BondPtr child = _bond->downstreamBond(0, 0);
-
+	child->correctTorsionAngles();
 	std::vector<BondSample> chSamples = *child->getManyPositions();
 	
 	for (size_t i = 0; i < chSamples.size(); i++)

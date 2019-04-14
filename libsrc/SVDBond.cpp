@@ -57,8 +57,10 @@ vec3 bond_effect_on_pos(vec3 atom_pos, mat3x3 &bond_basis, vec3 &bond_pos)
 
 double SVDBond::compareKicks(BondPtr a, BondPtr b)
 {
-	std::vector<BondSample> as = a->getFinalPositions();
-	std::vector<BondSample> bs = b->getFinalPositions();
+	BondPtr aChild = a->downstreamBond(0, 0);
+	BondPtr bChild = b->downstreamBond(0, 0);
+	std::vector<BondSample> as = aChild->getFinalPositions();
+	std::vector<BondSample> bs = bChild->getFinalPositions();
 
 	double total = 0;
 

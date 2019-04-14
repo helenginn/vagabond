@@ -512,6 +512,10 @@ public:
 		
 		return _whack.lock();
 	}
+
+	/* Public call to correct deviations and store as kickValues */
+	void correctTorsionAngles();
+
 protected:
 	virtual std::string getParserIdentifier()
 	{
@@ -602,7 +606,8 @@ private:
 	void addDownstreamBond(Bond *bond, int group);
 
 	/** Supply deviations of correct torsion angles into prevs->torsion */
-	void correctTorsionAngles(std::vector<BondSample> *prevs);
+	void correctTorsionAngles(std::vector<BondSample> *prevs, 
+	                          bool quick = false);
 
 	vec3 positionFromTorsion(mat3x3 torsionBasis, double angle,
 	                         double ratio, vec3 start);
