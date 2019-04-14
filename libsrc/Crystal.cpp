@@ -456,7 +456,7 @@ void Crystal::applyShellFactors(DiffractionPtr data)
 				
 				for (int l = 0; l < _shells.size(); l++)
 				{
-					if (real_space < _shells[l].minRes &&
+					if (real_space <= _shells[l].minRes &&
 					    real_space > _shells[l].maxRes)
 					{
 						index = l;
