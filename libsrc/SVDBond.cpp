@@ -242,7 +242,7 @@ void SVDBond::report()
 	
 	_wTotal = cuml; 
 	
-	double pc50 = cuml * 0.40;
+	double pc50 = cuml * 0.45;
 
 	cuml = 0;
 	_num = 0;
