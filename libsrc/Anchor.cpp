@@ -405,6 +405,17 @@ void Anchor::recalculateWhacks()
 
 std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 {
+	return getManyPositions(caller, false);	
+}
+
+void Anchor::forceRefresh()
+{
+	getManyPositions(&*_nAtom.lock(), true);
+	getManyPositions(&*_cAtom.lock(), true);
+}
+
+std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
+{
 	Atom *callAtom = static_cast<Atom *>(caller);
 	
 	if (!_samples.count(callAtom))
@@ -424,14 +435,21 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 	/* Check if number of samples has changed for any reason - if so,
 	 * initiate re-caching of initial atom positions for each Whack. */
 
-	for (int i = 0; i < _whacks.size() && !_disableWhacks; i++)
+	if (force)
 	{
-		bool refresh = _whacks[i]->needsRefresh(_storedSamples);	
-
-		if (refresh)
+		recalculateWhacks();
+	}
+	else
+	{
+		for (int i = 0; i < _whacks.size() && !_disableWhacks; i++)
 		{
-			recalculateWhacks();
-			break;
+			bool refresh = _whacks[i]->needsRefresh(_storedSamples);	
+
+			if (refresh)
+			{
+				recalculateWhacks();
+				break;
+			}
 		}
 	}
 	

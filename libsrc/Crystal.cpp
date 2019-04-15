@@ -214,6 +214,8 @@ void Crystal::realSpaceClutter(double maxRes)
 	_fft->createFFTWplan(8);
 	_difft->createFFTWplan(8);
 
+	refreshAnchors();
+
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		molecule(i)->propagateChange();
@@ -1895,3 +1897,14 @@ void Crystal::removeAtom(AtomPtr atom)
 	}
 }
 
+void Crystal::refreshAnchors()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (molecule(i)->isPolymer())
+		{
+			PolymerPtr pol = ToPolymerPtr(molecule(i));
+			pol->getAnchorModel()->forceRefresh();
+		}
+	}
+}

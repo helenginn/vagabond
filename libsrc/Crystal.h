@@ -367,6 +367,7 @@ public:
 	void refineCrude();
 	void savePositions();
 	void rigidBodyFit();
+	void refreshAnchors();
 	
 	double getRWork()
 	{

@@ -35,7 +35,10 @@ public:
 
 	virtual ~Anchor() {};
 
-	std::vector<BondSample> *getManyPositions(void *object = NULL);
+	virtual std::vector<BondSample> *getManyPositions(void *object = NULL);
+	std::vector<BondSample> *getManyPositions(void *object = NULL,
+	                                          bool force = false);
+	void forceRefresh();
 
 	/** Returns the offsets for an anchor residue on which a molecule may
 	* calculate translations and offsets.

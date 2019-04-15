@@ -1590,7 +1590,7 @@ void Bond::addProperties()
 	addBoolProperty("refine_flexibility", &_refineFlexibility);
 	addBoolProperty("disabled", &_disabled);
 	
-	addMat3x3Property("magic_mat", &_magicMat);
+//	addMat3x3Property("magic_mat", &_magicMat);
 
 	for (int i = 0; i < downstreamBondGroupCount(); i++)
 	{
