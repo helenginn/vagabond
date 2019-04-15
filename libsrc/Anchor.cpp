@@ -374,6 +374,7 @@ void Anchor::recalculateWhacks()
 	{
 		BondPtr child = _whacks[i]->getBond()->downstreamBond(0, 0);
 		child->calculateMagicMat();
+		child->correctTorsionAngles();
 	}
 
 	propagateChange(-1, true);
