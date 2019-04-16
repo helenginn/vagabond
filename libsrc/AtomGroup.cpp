@@ -810,6 +810,78 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 	return segment;
 }
 
+void AtomGroup::addToMap(FFTPtr fft, mat3x3 _real2frac)
+{
+	vec3 offset = make_vec3(0, 0, 0);
+	CrystalPtr crystal = Options::getActiveCrystal();
+	
+	size_t nElements = totalElements();
+	
+	if (nElements == 0)
+	{
+		return;
+	}
+	
+	FFTPtr scratchFull = FFTPtr(new FFT(*fft));
+	scratchFull->setAll(0);
+	FFTPtr scratch = FFTPtr(new FFT(*fft));
+	scratch->setAll(0);
+	FFTPtr eleFFT = FFTPtr(new FFT(*fft));
+	eleFFT->setAll(0);
+	std::vector<AtomPtr> after;
+	size_t totalElectrons;
+
+	for (int i = 0; i < nElements; i++)
+	{
+		ElementPtr ele = element(i);
+		ele->populateFFT(crystal, eleFFT);
+		size_t elementElectrons = 0;
+
+		for (int j = 0; j < atomCount(); j++)
+		{
+			if (atom(j)->getElement() == ele)
+			{
+				if (!atom(j)->getModel()->hasExplicitPositions())
+				{
+					after.push_back(atom(j));
+					continue;
+				}
+
+				atom(j)->addDirectlyToMap(scratch, crystal, offset);
+				int eCount = ele->electronCount() *
+				atom(j)->getModel()->getEffectiveOccupancy();
+				
+				elementElectrons += eCount;
+			}
+		}
+		
+		totalElectrons += elementElectrons;
+		
+		scratch->fft(1);
+		FFT::multiply(scratch, eleFFT);
+		scratch->fft(-1);
+		scratch->setTotal(elementElectrons);
+		FFT::addSimple(scratchFull, scratch);
+		scratch->setAll(0);
+	}
+	
+	scratchFull->setTotal(totalElectrons);
+	
+	int explicitElectrons = totalElectrons;
+	totalElectrons = 0;
+	
+	mat3x3 frac = crystal->getReal2Frac();
+	for (int i = 0; i < after.size(); i++)
+	{
+		after[i]->addToMap(scratch, frac, empty_vec3());
+		totalElectrons += after[i]->getElement()->electronCount();
+	}
+	
+	scratch->setTotal(totalElectrons);
+	FFT::addSimple(scratchFull, scratch);
+	FFT::addSimple(fft, scratchFull);
+}
+
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
                                       bool plot)
 {
@@ -877,7 +949,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 				workspace->extra[i]->addToMap(workspace->constant, 
 				                              workspace->basis,
 				                              workspace->ave, 
-				                              false, false, true);
+				                              false, true);
 
 				added.push_back(workspace->extra[i]);
 				count++;
@@ -892,7 +964,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	for (size_t i = 0; i < selected.size(); i++)
 	{
 		selected[i]->addToMap(workspace->segment, workspace->basis, 
-		                      workspace->ave, false, false, true);
+		                      workspace->ave, false, true);
 	}
 	
 	double score = 0;
@@ -1192,3 +1264,19 @@ void AtomGroup::boundingMonomers(int *begin, int *end)
 	}
 }
 
+size_t AtomGroup::totalElements()
+{
+	_elements.clear();
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		ElementPtr ele = atom(i)->getElement();
+		if (std::find(_elements.begin(), _elements.end(), ele) 
+		    == _elements.end())
+		{
+			_elements.push_back(ele);
+		}
+	}
+
+	return _elements.size();
+}

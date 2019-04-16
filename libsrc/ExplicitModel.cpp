@@ -209,6 +209,34 @@ void ExplicitModel::addRealSpacePositions(FFTPtr real, vec3 offset)
 	}
 }
 
+void ExplicitModel::addDirectlyToMap(FFTPtr real, CrystalPtr crystal, 
+                                     vec3 offset, bool noWrap)
+{
+	std::vector<BondSample> positions = getFinalPositions();
+	mat3x3 frac = crystal->getReal2Frac();
+
+	for (int i = 0; i < positions.size(); i++)
+	{
+		vec3 placement = positions[i].start;
+		placement = vec3_add_vec3(placement, offset);
+		double occupancy = positions[i].occupancy;
+		mat3x3_mult_vec(frac, &placement);
+		
+		if (noWrap)
+		{
+			if ((placement.x < 0 || placement.x >= 1) ||
+			    (placement.y < 0 || placement.y >= 1) ||
+			    (placement.z < 0 || placement.z >= 1))
+			{
+				continue;
+			}
+		}
+		
+		real->addInterpolatedToFrac(placement.x, placement.y, placement.z,
+		                            occupancy);
+	}
+}
+
 FFTPtr ExplicitModel::makeRealSpaceDistribution()
 {
 	double n = fftGridLength();

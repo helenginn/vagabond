@@ -43,6 +43,8 @@ public:
 	 * 	factors from International Tables F */
 	virtual FFTPtr getDistribution(bool = false, int new_n = -1);
 
+	void populateFFT(CrystalPtr crystal, FFTPtr fft);
+
 	/** Returns one- or two-letter abbreviation of element as on the periodic
 	  * table, fully capitalised */
 	std::string getSymbol()

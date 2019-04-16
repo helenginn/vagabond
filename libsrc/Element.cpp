@@ -113,6 +113,31 @@ FFTPtr Element::getDistribution(bool, int new_n)
 	return getDistributionCopy();
 }
 
+void Element::populateFFT(CrystalPtr crystal, FFTPtr fft)
+{
+	mat3x3 frac = crystal->getReal2Frac();
+
+	for (int z = 0; z < fft->nz; z++)
+	{
+		for (int y = 0; y < fft->ny; y++)
+		{
+			for (int x = 0; x < fft->nx; x++)
+			{
+				double fx = (double) x / (double)fft->nx;
+				double fy = (double) y / (double)fft->ny;
+				double fz = (double) z / (double)fft->nz;
+
+				vec3 fr = make_vec3(fx, fy, fz);
+				vec3 real = fr;
+				mat3x3_mult_vec(frac, &real);
+				double val = getVoxelValue(this, real.x, real.y, real.z);
+				int ele = fft->elementFromFrac(fr.x, fr.y, fr.z);
+				fft->data[ele][0] = val;
+			}
+		}
+	}
+}
+
 
 std::vector<ElementPtr> Element::elementList(std::vector<AtomPtr> atoms)
 {

@@ -118,6 +118,9 @@ public:
 	{
 		return _twists.size();
 	}
+	
+	void addDirectlyToMap(FFTPtr real, CrystalPtr crystal, vec3 offset,
+	                      bool noWrap = false);
 protected:
 	FFTPtr makeRealSpaceDistribution();
 	void addRealSpacePositions(FFTPtr real, vec3 offset);

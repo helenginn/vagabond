@@ -111,6 +111,14 @@ public:
 		return 0;
 	}
 
+	size_t totalElements();
+	
+	ElementPtr element(size_t which)
+	{
+		return _elements[which];
+	}
+	
+	void addToMap(FFTPtr fft, mat3x3 _real2frac);
 	void setTargetRefinement(CrystalPtr target, RefinementType rType);
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	void setWeighting(double value);
@@ -183,6 +191,7 @@ private:
 	void privateRefine(); 
 	std::map<std::string, size_t> conformerMap();
 
+	std::vector<ElementPtr> _elements;
 };
 
 #endif /* defined(__vagabond__AtomGroup__) */
