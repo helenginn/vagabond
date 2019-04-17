@@ -135,7 +135,7 @@ public:
 
 		std::map<long, MonomerPtr>::iterator it = _monomers.end();
 		it--;
-		return it->first;
+		return it->first + 1;
 	}
 	
 	int monomerCount()
