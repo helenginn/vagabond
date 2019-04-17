@@ -100,7 +100,7 @@ void Knotter::tieTowardsNTerminus()
 		prevBackbone = monomer->getBackbone(); // one before
 	}
 
-	if (resNum < polymer->monomerCount())
+	if (resNum < polymer->monomerEnd())
 	{
 		MonomerPtr monomer = polymer->getMonomer(resNum - 1);
 
@@ -192,7 +192,7 @@ void Knotter::tieTowardsCTerminus()
 	int resNum = _backbone->getResNum();
 	BackbonePtr prevBackbone, nextBackbone;
 
-	if (resNum > 1)
+	if (resNum > polymer->monomerBegin())
 	{
 		MonomerPtr monomer = polymer->getMonomer(resNum - 1);
 
@@ -202,7 +202,7 @@ void Knotter::tieTowardsCTerminus()
 		}
 	}
 
-	if (resNum < polymer->monomerCount())
+	if (resNum < polymer->monomerEnd())
 	{
 		MonomerPtr monomer = polymer->getMonomer(resNum + 1);
 

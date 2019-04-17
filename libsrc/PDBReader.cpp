@@ -383,7 +383,7 @@ CrystalPtr PDBReader::getCrystal()
 	_myCrystal->setFilename(getBaseFilename(filename));
 	Options::getRuntimeOptions()->addCrystal(_myCrystal);
 
-	_residueNum = 0;
+	_residueNum = -INT_MAX;
 	_myChain = "";
 
 	parse();

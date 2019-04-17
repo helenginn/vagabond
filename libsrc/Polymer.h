@@ -118,11 +118,21 @@ public:
 
 	int monomerBegin()
 	{
+		if (_monomers.size() == 0)
+		{
+			return 0;
+		}
+
 		return _monomers.begin()->first;
 	}
 
 	int monomerEnd()
 	{
+		if (_monomers.size() == 0)
+		{
+			return 0;
+		}
+
 		std::map<long, MonomerPtr>::iterator it = _monomers.end();
 		it--;
 		return it->first;

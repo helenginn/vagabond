@@ -79,7 +79,7 @@ void Polymer::checkChainContinuity()
 	int foundFirst = -1;
 	int foundGap = -1;
 
-	for (size_t i = 0; i < monomerCount(); i++)
+	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
 		if (foundFirst >= 0 && foundGap >= 0 && getMonomer(i))
 		{
@@ -258,7 +258,7 @@ void Polymer::tieAtomsUp()
 		n->setModel(newAnchor);
 	}
 
-	for (int i = _anchorNum; i < monomerCount(); i++)
+	for (int i = _anchorNum; i < monomerEnd(); i++)
 	{
 		if (getMonomer(i))
 		{
@@ -266,7 +266,7 @@ void Polymer::tieAtomsUp()
 		}
 	}
 
-	for (int i = _anchorNum - 1; i >= 0; i--)
+	for (int i = _anchorNum - 1; i >= monomerBegin(); i--)
 	{
 		if (getMonomer(i))
 		{
@@ -304,7 +304,7 @@ void Polymer::removeAtom(AtomPtr atom)
 
 void Polymer::splitConformers()
 {
-	for (int i = 0; i < monomerCount(); i++)
+	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
 		if (getMonomer(i))
 		{
@@ -492,7 +492,7 @@ void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
 void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 {
 	int start = monNum;
-	int end = (monNum < _anchorNum) ? -1 : monomerCount();
+	int end = (monNum < _anchorNum) ? monomerBegin() : monomerEnd();
 	
 	refineRange(start, end, target, rType);
 }
@@ -743,7 +743,7 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 	int count = 0;
 
-	for (int i = _anchorNum - 1; i >= 0; i--)
+	for (int i = _anchorNum - 1; i >= monomerBegin(); i--)
 	{
 		MonomerPtr monomer = getMonomer(i);
 
@@ -763,7 +763,7 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 	count = 0;
 
-	for (int i = _anchorNum; i < monomerCount(); i++)
+	for (int i = _anchorNum; i < monomerEnd(); i++)
 	{
 		MonomerPtr monomer = getMonomer(i);
 		refineMonomer(monomer, target, rType);
@@ -792,7 +792,7 @@ void Polymer::graph(std::string graphName)
 	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB"));
 
-	for (int i = 0; i < monomerCount(); i++)
+	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
 		if (!getMonomer(i))
 		{
@@ -939,7 +939,7 @@ void Polymer::ramachandranPlot()
 {
 	CSVPtr csv = CSVPtr(new CSV(3, "res", "phi", "psi"));
 
-	for (int i = 0; i < monomerCount(); i++)
+	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
 		if (!getMonomer(i))
 		{
@@ -980,7 +980,7 @@ std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal,
                              int conformer)
 {
 	std::ostringstream stream;
-	for (int i = 0; i < monomerCount(); i++)
+	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
 		MonomerPtr monomer = getMonomer(i);
 		
@@ -1069,7 +1069,7 @@ void Polymer::findAnchorNearestCentroid()
 	int anchorRes = -1;
 	double lowestLength = FLT_MAX;
 
-	for (int i = 1; i < monomerCount() - 1; i++)
+	for (int i = monomerBegin() + 1; i < monomerEnd() - 1; i++)
 	{
 		if (!getMonomer(i))
 		{
@@ -1361,7 +1361,7 @@ AtomGroupPtr Polymer::getAllBackbone()
 	
 	_allBackbones = AtomGroupPtr(new AtomGroup());
 
-	for (size_t i = 0; i < monomerCount(); i++)
+	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
 		if (!getMonomer(i))
 		{
@@ -1405,8 +1405,9 @@ void Polymer::addProperties()
 
 	addIntProperty("anchor_res", &_anchorNum);
 
-	for (size_t i = 0; i < monomerCount(); i++)
+	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
+		std::cout << i << std::endl;
 		if (!getMonomer(i)) continue;
 
 		addChild("monomer", getMonomer(i));
@@ -1435,7 +1436,7 @@ mat3x3 Polymer::fitEllipsoid()
 {
 	std::vector<vec3> points;
 
-	for (int i = 0; i < monomerCount(); i++)
+	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
 		if (!getMonomer(i))
 		{

@@ -43,7 +43,7 @@ void Reflex::segmentPolymer()
 	/* Divide the polymer into sections */
 	
 	for (size_t i = _polymer->monomerBegin(); 
-	     i <= _polymer->monomerCount() - _pieceCount; i++)
+	     i <= _polymer->monomerEnd() - _pieceCount; i++)
 	{
 		AtomGroupPtr segment = AtomGroupPtr(new AtomGroup());
 
