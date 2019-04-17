@@ -1063,9 +1063,8 @@ void Polymer::refitBackbone(int start_, int end_)
 
 void Polymer::findAnchorNearestCentroid()
 {
-	vec3 sum = make_vec3(0, 0, 0);
 	double count = 0;
-	vec3 ave = centroid();
+	vec3 sum = centroid();
 
 	int anchorRes = -1;
 	double lowestLength = FLT_MAX;
