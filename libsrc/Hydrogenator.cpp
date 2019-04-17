@@ -261,6 +261,10 @@ void Hydrogenator::hydrogenate()
 	
 	/* If anchored to C-terminus, required angle is different */
 	AtomPtr prevMajor = bone->betaCarbonTorsionAtom();
+	if (!prevMajor)
+	{
+		return;
+	}
 	
 	double angle = (prevMajor->getAtomName() == "C") ? 124.29 : 117.0;
 
