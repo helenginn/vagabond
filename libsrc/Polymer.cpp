@@ -1099,7 +1099,8 @@ void Polymer::findAnchorNearestCentroid()
 
 	if (anchorRes < 0)
 	{
-		shout_at_user("You appear to have no C-alpha atoms in your structure.");
+		shout_at_user("You appear to have no single-conformer "
+		              "C-alpha atoms in your structure.");
 	}
 	else
 	{
