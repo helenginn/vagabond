@@ -1065,37 +1065,19 @@ void Polymer::findAnchorNearestCentroid()
 {
 	vec3 sum = make_vec3(0, 0, 0);
 	double count = 0;
+	vec3 ave = centroid();
 
-	for (int i = 0; i < monomerCount(); i++)
-	{
-		if (!getMonomer(i))
-		{
-			continue;
-		}
-
-		AtomPtr n = getMonomer(i)->findAtom("N");
-		
-		if (!n)
-		{
-			continue;
-		}
-
-		n->getModel()->refreshPositions();
-		vec3 absN = n->getModel()->getAbsolutePosition();
-
-		if (!n) continue;
-
-		count++;
-		sum = vec3_add_vec3(sum, absN);
-	}
-
-	vec3_mult(&sum, 1 / count);
 	int anchorRes = -1;
 	double lowestLength = FLT_MAX;
 
 	for (int i = 0; i < monomerCount(); i++)
 	{
 		if (!getMonomer(i))
+		{
+			continue;
+		}
+		
+		if (getMonomer(i)->conformerCount() > 1)
 		{
 			continue;
 		}
