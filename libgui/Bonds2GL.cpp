@@ -56,13 +56,13 @@ void Bonds2GL::getPositions(AtomPtr minAtom, AtomPtr majAtom,
                             std::vector<vec3> *min,
                             std::vector<vec3> *maj)
 {
-	ModelPtr minBond = minAtom->getModel();
-	ModelPtr majBond = majAtom->getModel();
+	ExplicitModelPtr minBond = minAtom->getExplicitModel();
+	ExplicitModelPtr majBond = majAtom->getExplicitModel();
 	
 	vec3 minAve, majAve;
 
-	*maj = ToBondPtr(majBond)->fishPositions(&majAve);
-	*min = ToBondPtr(minBond)->fishPositions(&minAve);
+	*maj = majBond->fishPositions(&majAve);
+	*min = minBond->fishPositions(&minAve);
 	
 	if (_average)
 	{
