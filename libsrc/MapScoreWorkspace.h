@@ -4,6 +4,7 @@
 #include "shared_ptrs.h"
 #include "mat3x3.h"
 #include <vector>
+#include <map>
 
 /**
  * \struct MapScoreWorkspace

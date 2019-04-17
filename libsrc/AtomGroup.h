@@ -192,6 +192,8 @@ private:
 	std::map<std::string, size_t> conformerMap();
 
 	std::vector<ElementPtr> _elements;
+	std::map<ElementPtr, FFTPtr> _eleScratch;
+	size_t _scratchDims[3];
 };
 
 #endif /* defined(__vagabond__AtomGroup__) */

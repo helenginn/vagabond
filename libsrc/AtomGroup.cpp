@@ -813,6 +813,18 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
 		return;
 	}
 	
+	bool sameDims = (_scratchDims[0] == fft->nx && 
+	                 _scratchDims[1] == fft->ny &&
+	                 _scratchDims[2] == fft->nz);
+	
+	if (!sameDims)
+	{
+		_eleScratch = std::map<ElementPtr, FFTPtr>();
+		_scratchDims[0] = fft->nx;
+		_scratchDims[1] = fft->ny;
+		_scratchDims[2] = fft->nz;
+	}
+	
 	FFTPtr scratchFull = FFTPtr(new FFT(*fft));
 	scratchFull->setAll(0);
 	scratchFull->takePlansFrom(fft);
@@ -827,7 +839,16 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
 	for (int i = 0; i < nElements; i++)
 	{
 		ElementPtr ele = element(i);
-		ele->populateFFT(real2frac, eleFFT);
+		
+		if (_eleScratch.count(ele))
+		{
+			eleFFT = _eleScratch[ele];
+		}
+		else
+		{
+			ele->populateFFT(real2frac, eleFFT);
+			_eleScratch[ele] = eleFFT;
+		}
 		size_t elementElectrons = 0;
 
 		for (int j = 0; j < atomCount(); j++)
