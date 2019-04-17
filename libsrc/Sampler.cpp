@@ -546,7 +546,7 @@ void Sampler::setupScoreWithMap()
 	
 	_workspace.scoreType = _scoreType;
 	_workspace.crystal = _crystal;
-	_workspace.selectAtoms = _sampled;
+	_workspace.selectAtoms = sampled;
 	_workspace.segment = FFTPtr();
 	_workspace.ave = empty_vec3();
 	_workspace.basis = make_mat3x3();

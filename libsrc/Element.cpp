@@ -113,10 +113,8 @@ FFTPtr Element::getDistribution(bool, int new_n)
 	return getDistributionCopy();
 }
 
-void Element::populateFFT(CrystalPtr crystal, FFTPtr fft)
+void Element::populateFFT(mat3x3 basis, FFTPtr fft)
 {
-	mat3x3 frac = crystal->getReal2Frac();
-
 	for (int z = 0; z < fft->nz; z++)
 	{
 		for (int y = 0; y < fft->ny; y++)
@@ -129,7 +127,7 @@ void Element::populateFFT(CrystalPtr crystal, FFTPtr fft)
 
 				vec3 fr = make_vec3(fx, fy, fz);
 				vec3 real = fr;
-				mat3x3_mult_vec(frac, &real);
+				mat3x3_mult_vec(basis, &real);
 				double val = getVoxelValue(this, real.x, real.y, real.z);
 				int ele = fft->elementFromFrac(fr.x, fr.y, fr.z);
 				fft->data[ele][0] = val;

@@ -188,7 +188,7 @@ double FlexLocal::getScore(void *object)
 		AtomGroupPtr bb = local->_polymer->getAllBackbone();
 		setup_space(&local->_workspace);
 		local->_workspace.crystal = Options::getActiveCrystal();
-		local->_workspace.selectAtoms = bb->getAtoms();
+		local->_workspace.selectAtoms = bb;
 		local->_prepared = true;
 		AtomGroup::scoreWithMapGeneral(&local->_workspace);
 	}

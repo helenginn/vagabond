@@ -1501,10 +1501,10 @@ vec3 Crystal::snapToGrid(vec3 pos)
 	return pos;
 }
 
-std::vector<AtomPtr> Crystal::getAtomsInBox(vec3 target, double tolx,
-                                            double toly, double tolz)
+AtomGroupPtr Crystal::getAtomsInBox(vec3 target, double tolx,
+                                    double toly, double tolz)
 {
-	std::vector<AtomPtr> atoms;
+	AtomGroupPtr atoms = AtomGroupPtr(new AtomGroup());
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
@@ -1521,7 +1521,7 @@ std::vector<AtomPtr> Crystal::getAtomsInBox(vec3 target, double tolx,
 				continue;
 			}
 			
-			atoms.push_back(anAtom);
+			atoms->addAtom(anAtom);
 		}
 	}
 

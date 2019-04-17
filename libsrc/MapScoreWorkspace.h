@@ -54,8 +54,8 @@ typedef struct
 {
 	ScoreType scoreType;
 	CrystalPtr crystal;
-	std::vector<AtomPtr> selectAtoms;
-	std::vector<AtomPtr> extra;
+	AtomGroupPtr selectAtoms;
+	AtomGroupPtr extra;
 	FFTPtr segment;
 	FFTPtr fcSegment;
 	FFTPtr constant;

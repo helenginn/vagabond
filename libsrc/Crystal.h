@@ -270,8 +270,8 @@ public:
 	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol = 2, 
 	                                   bool cache = false);
 	
-	std::vector<AtomPtr> getAtomsInBox(vec3 target, double tolx,
-	                                   double toly, double tolz);
+	AtomGroupPtr getAtomsInBox(vec3 target, double tolx,
+	                           double toly, double tolz);
 
 	
 	std::vector<AtomPtr> getCloseAtoms(std::vector<AtomPtr> atoms,

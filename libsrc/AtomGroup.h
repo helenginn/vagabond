@@ -118,7 +118,7 @@ public:
 		return _elements[which];
 	}
 	
-	void addToMap(FFTPtr fft, mat3x3 _real2frac);
+	void addToMap(FFTPtr fft, mat3x3 _real2frac, vec3 offset = empty_vec3());
 	void setTargetRefinement(CrystalPtr target, RefinementType rType);
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	void setWeighting(double value);
@@ -172,7 +172,7 @@ private:
 	static void plotCoordVals(std::vector<CoordVal> &vals, bool difference,
 	                          double cutoff, std::string filename);
 	static FFTPtr prepareMapSegment(CrystalPtr crystal,
-	                                std::vector<AtomPtr> selected,
+	                                AtomGroupPtr selected,
 	                                mat3x3 *basis, vec3 *ave);
 
 	static double scoreFinalMap(MapScoreWorkspace *workspace, bool plot);

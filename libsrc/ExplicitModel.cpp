@@ -178,7 +178,7 @@ void ExplicitModel::addRealSpacePositions(FFTPtr real, vec3 offset)
 	std::vector<BondSample> positions = getFinalPositions();
 	double b = Options::getActiveCrystal()->getRealBFactor();
 	
-	double realLimits = real->scales[0] * real->nx;
+	double realLimits = real->getScale(0) * real->nx;
 	vec3 absolute = getAbsolutePosition();
 
 	for (int i = 0; i < positions.size(); i++)
@@ -209,18 +209,17 @@ void ExplicitModel::addRealSpacePositions(FFTPtr real, vec3 offset)
 	}
 }
 
-void ExplicitModel::addDirectlyToMap(FFTPtr real, CrystalPtr crystal, 
+void ExplicitModel::addDirectlyToMap(FFTPtr fft, mat3x3 basis,
                                      vec3 offset, bool noWrap)
 {
 	std::vector<BondSample> positions = getFinalPositions();
-	mat3x3 frac = crystal->getReal2Frac();
 
 	for (int i = 0; i < positions.size(); i++)
 	{
 		vec3 placement = positions[i].start;
-		placement = vec3_add_vec3(placement, offset);
+		placement = vec3_subtract_vec3(placement, offset);
 		double occupancy = positions[i].occupancy;
-		mat3x3_mult_vec(frac, &placement);
+		mat3x3_mult_vec(basis, &placement);
 		
 		if (noWrap)
 		{
@@ -232,8 +231,22 @@ void ExplicitModel::addDirectlyToMap(FFTPtr real, CrystalPtr crystal,
 			}
 		}
 		
-		real->addInterpolatedToFrac(placement.x, placement.y, placement.z,
+		double b = Options::getActiveCrystal()->getRealBFactor();
+
+		if (b > 0.1)
+		{
+			fft->addBlurredToReal(placement.x, placement.y, placement.z,
+			                       occupancy);
+		}
+		else
+		{
+			fft->addInterpolatedToFrac(placement.x, placement.y, placement.z,
+			                            occupancy);
+		}
+		/*
+		fft->addInterpolatedToFrac(placement.x, placement.y, placement.z,
 		                            occupancy);
+		*/
 	}
 }
 

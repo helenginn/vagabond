@@ -131,7 +131,7 @@ public:
 	              vec3 offset = make_vec3(0, 0, 0),
 	              bool sameScale = false, bool noWrap = false);
 
-	void addDirectlyToMap(FFTPtr fft, CrystalPtr crystal, 
+	void addDirectlyToMap(FFTPtr fft, mat3x3 basis, 
 	                      vec3 offset, bool noWrap = false);
 
 	void setOriginalOccupancy(double occ)

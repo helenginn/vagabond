@@ -696,17 +696,11 @@ double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plo
 	{
 		return 0;
 	}
-
-	std::vector<AtomPtr> selected;
-	for (size_t i = 0; i < atomCount(); i++)
-	{
-		selected.push_back(atom(i));
-	}
 	
 	MapScoreWorkspace workspace;
 	workspace.scoreType = scoreType;
 	workspace.crystal = crystal;
-	workspace.selectAtoms = selected;
+	workspace.selectAtoms = shared_from_this();
 	workspace.segment = FFTPtr();
 	workspace.ave = empty_vec3();
 	workspace.basis = make_mat3x3();
@@ -716,7 +710,7 @@ double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plo
 }
 
 FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
-                                    std::vector<AtomPtr> selected,
+                                    AtomGroupPtr selected,
                                     mat3x3 *basis, vec3 *ave)
 {
 	double maxDistance = 0;
@@ -726,14 +720,14 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 	vec3 sum = make_vec3(0, 0, 0);
 
 	/* Find centroid of atom set */
-	for (size_t i = 0; i < selected.size(); i++)
+	for (size_t i = 0; i < selected->atomCount(); i++)
 	{
-		selected[i]->getModel()->refreshPositions();
-		vec3 offset = selected[i]->getModel()->getAbsolutePosition();
+		selected->atom(i)->getModel()->refreshPositions();
+		vec3 offset = selected->atom(i)->getModel()->getAbsolutePosition();
 		sum = vec3_add_vec3(sum, offset);	
 	}
 
-	vec3_mult(&sum, 1 / (double)selected.size());
+	vec3_mult(&sum, 1 / (double)selected->atomCount());
 
 	if (sum.x != sum.x)
 	{
@@ -748,11 +742,11 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 	double ns[3];
 	ns[0] = 0; ns[1] = 0; ns[2] = 0;
 
-	for (size_t i = 0; i < selected.size(); i++)
+	for (size_t i = 0; i < selected->atomCount(); i++)
 	{
 		/* Refresh absolute position */
-		selected[i]->getModel()->refreshPositions();
-		vec3 offset = selected[i]->getModel()->getAbsolutePosition();
+		selected->atom(i)->getModel()->refreshPositions();
+		vec3 offset = selected->atom(i)->getModel()->getAbsolutePosition();
 
 		vec3 diff = vec3_subtract_vec3(offset, sum);
 
@@ -810,11 +804,8 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 	return segment;
 }
 
-void AtomGroup::addToMap(FFTPtr fft, mat3x3 _real2frac)
+void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
 {
-	vec3 offset = make_vec3(0, 0, 0);
-	CrystalPtr crystal = Options::getActiveCrystal();
-	
 	size_t nElements = totalElements();
 	
 	if (nElements == 0)
@@ -824,17 +815,19 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 _real2frac)
 	
 	FFTPtr scratchFull = FFTPtr(new FFT(*fft));
 	scratchFull->setAll(0);
+	scratchFull->takePlansFrom(fft);
 	FFTPtr scratch = FFTPtr(new FFT(*fft));
 	scratch->setAll(0);
+	scratch->takePlansFrom(fft);
 	FFTPtr eleFFT = FFTPtr(new FFT(*fft));
 	eleFFT->setAll(0);
 	std::vector<AtomPtr> after;
-	size_t totalElectrons;
+	size_t totalElectrons = 0;
 
 	for (int i = 0; i < nElements; i++)
 	{
 		ElementPtr ele = element(i);
-		ele->populateFFT(crystal, eleFFT);
+		ele->populateFFT(real2frac, eleFFT);
 		size_t elementElectrons = 0;
 
 		for (int j = 0; j < atomCount(); j++)
@@ -847,7 +840,7 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 _real2frac)
 					continue;
 				}
 
-				atom(j)->addDirectlyToMap(scratch, crystal, offset);
+				atom(j)->addDirectlyToMap(scratch, real2frac, offset);
 				int eCount = ele->electronCount() *
 				atom(j)->getModel()->getEffectiveOccupancy();
 				
@@ -870,10 +863,9 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 _real2frac)
 	int explicitElectrons = totalElectrons;
 	totalElectrons = 0;
 	
-	mat3x3 frac = crystal->getReal2Frac();
 	for (int i = 0; i < after.size(); i++)
 	{
-		after[i]->addToMap(scratch, frac, empty_vec3());
+		after[i]->addToMap(scratch, real2frac, empty_vec3());
 		totalElectrons += after[i]->getElement()->electronCount();
 	}
 	
@@ -885,12 +877,13 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 _real2frac)
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
                                       bool plot)
 {
-	if (!workspace->selectAtoms.size())
+	if (!workspace->selectAtoms->atomCount())
 	{
 		return 0;
 	}
+
 	CrystalPtr crystal = workspace->crystal;
-	std::vector<AtomPtr> selected = workspace->selectAtoms;
+	AtomGroupPtr selected = workspace->selectAtoms;
 
 	bool first = (workspace->segment == FFTPtr());
 
@@ -903,6 +896,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		workspace->constant = FFTPtr(new FFT(*workspace->segment));
 		workspace->fcSegment = FFTPtr(new FFT(*workspace->segment));
 		workspace->segment->createFFTWplan(1);
+		workspace->constant->takePlansFrom(workspace->segment);
 	}
 	else
 	{
@@ -924,48 +918,36 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		{
 			workspace->extra = crystal->getAtomsInBox(workspace->ave, 
 			                                          xAng, yAng, zAng);
-			int count = 0;
-			
-			std::vector<AtomPtr> added;
+			AtomGroupPtr added = AtomGroupPtr(new AtomGroup());
 
 			/* We want to add anything which is static to the 
 			 * constant fraction. */
-			for (size_t i = 0; i < workspace->extra.size(); i++)
+			for (size_t i = 0; i < workspace->extra->atomCount(); i++)
 			{
-				AtomPtr anAtom = workspace->extra[i];
+				AtomPtr anAtom = workspace->extra->atom(i);
 
-				if (std::find(selected.begin(), selected.end(), anAtom) 
-				    != selected.end())
+				if (workspace->selectAtoms->hasAtom(anAtom) ||
+				    added->hasAtom(anAtom))
 				{
 					continue;
 				}
 
-				if (std::find(added.begin(), added.end(), anAtom) 
-				    != added.end())
-				{
-					continue;
-				}
-
-				workspace->extra[i]->addToMap(workspace->constant, 
-				                              workspace->basis,
-				                              workspace->ave, 
-				                              false, true);
-
-				added.push_back(workspace->extra[i]);
-				count++;
+				added->addAtom(anAtom);
 			}
+			
+			/* Add the acceptable atoms to the map */
+			added->addToMap(workspace->constant, 
+			                workspace->basis,
+			                workspace->ave);
 			
 			/* Copy this constant fraction into the segment */
 			workspace->segment->copyFrom(workspace->constant);
 		}
 	}
 	
-
-	for (size_t i = 0; i < selected.size(); i++)
-	{
-		selected[i]->addToMap(workspace->segment, workspace->basis, 
-		                      workspace->ave, false, true);
-	}
+	workspace->selectAtoms->addToMap(workspace->segment,
+	                                 workspace->basis,
+	                                 workspace->ave);
 	
 	double score = 0;
 

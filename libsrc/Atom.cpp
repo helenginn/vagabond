@@ -397,7 +397,7 @@ void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
 	}
 }
 
-void Atom::addDirectlyToMap(FFTPtr fft, CrystalPtr crystal, vec3 offset,
+void Atom::addDirectlyToMap(FFTPtr fft, mat3x3 basis, vec3 offset,
                             bool noWrap)
 {
 	if (!getModel()->hasExplicitPositions())
@@ -406,7 +406,7 @@ void Atom::addDirectlyToMap(FFTPtr fft, CrystalPtr crystal, vec3 offset,
 	}
 	
 	ExplicitModelPtr expl = getExplicitModel();
-	expl->addDirectlyToMap(fft, crystal, offset, noWrap);
+	expl->addDirectlyToMap(fft, basis, offset, noWrap);
 	
 }
 

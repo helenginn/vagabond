@@ -125,7 +125,7 @@ void Reflex::prepareSegments(AtomGroupPtr segment, bool preprocess)
 	
 	_workspace.scoreType = ScoreTypeCorrel;
 	_workspace.crystal = crystal;
-	_workspace.selectAtoms = segment->getAtoms();
+	_workspace.selectAtoms = segment;
 	_workspace.segment = FFTPtr();
 	_workspace.ave = empty_vec3();
 	_workspace.basis = make_mat3x3();
