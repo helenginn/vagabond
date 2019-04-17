@@ -473,10 +473,11 @@ void FFT::addInterpolatedToReal(double sx, double sy, double sz, double val)
 	double xProps[2];
 	double yProps[2];
 	double zProps[2];
+	double rubbish;
 
-	xProps[1] = fmod(sx + 1, 1.);
-	yProps[1] = fmod(sy + 1, 1.);
-	zProps[1] = fmod(sz + 1, 1.);
+	xProps[1] = modf(sx + 1., &rubbish);
+	yProps[1] = modf(sy + 1., &rubbish);
+	zProps[1] = modf(sz + 1., &rubbish);
 
 	xProps[0] = 1 - xProps[1];
 	yProps[0] = 1 - yProps[1];
