@@ -1070,7 +1070,7 @@ void Polymer::findAnchorNearestCentroid()
 	int anchorRes = -1;
 	double lowestLength = FLT_MAX;
 
-	for (int i = 0; i < monomerCount(); i++)
+	for (int i = 1; i < monomerCount() - 1; i++)
 	{
 		if (!getMonomer(i))
 		{
