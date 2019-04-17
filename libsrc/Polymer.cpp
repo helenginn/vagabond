@@ -1126,40 +1126,6 @@ void Polymer::hydrogenateContents()
 	}
 }
 
-void Polymer::setInitialKick(void *object, double value)
-{
-	Polymer *polymer = static_cast<Polymer *>(object);
-	int anchorNum = polymer->_anchorNum;
-
-	for (int i = 0; i < polymer->monomerCount(); i++)
-	{
-		MonomerPtr monomer = polymer->getMonomer(i);
-
-		if (!monomer) continue;
-
-		BackbonePtr bone = monomer->getBackbone();
-		double kick = value * (monomer->getResidueNum() < anchorNum ? -1 : 1);
-
-		for (int j = 0; j < bone->atomCount(); j++)
-		{
-			ModelPtr model = bone->atom(j)->getModel();
-
-			if (model->isBond())
-			{
-				BondPtr bond = ToBondPtr(model);
-				Bond::setKick(&*bond, kick);
-			}
-		}
-	}
-}
-
-double Polymer::getInitialKick(void *object)
-{
-	Polymer *polymer = static_cast<Polymer *>(object);
-	int monomerNum = polymer->_anchorNum;
-	return polymer->getMonomer(monomerNum)->getKick();
-}
-
 AnchorPtr Polymer::getAnchorModel()
 {
 	MonomerPtr anchoredRes = getMonomer(getAnchor());

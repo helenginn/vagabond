@@ -52,9 +52,6 @@ public:
 	
 	virtual void graph(std::string graphName);
 
-	static void setInitialKick(void *object, double value);
-	static double getInitialKick(void *object);
-
 	void scaleSidechainsToBFactor();
 	void refineBackbone();
 	void refineBackboneFrom(int position);
