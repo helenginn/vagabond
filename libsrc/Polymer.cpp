@@ -1299,6 +1299,11 @@ void Polymer::reportParameters()
 				{
 					add = 2;
 				}
+				else if (isWhacking() && 
+				         (a->isBackbone() || a->isBackboneAndSidechain()))
+				{
+					add = 0;
+				}
 
 				if (back)
 				{
