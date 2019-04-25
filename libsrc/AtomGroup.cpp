@@ -798,56 +798,70 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 		toReal[i] = 1 / (segment->scales[i] * nl[i]);
 	}
 
+	vec3 half_box = make_vec3(nl[0] / 2, nl[1] / 2, nl[2] / 2);
+//	vec3_subtract_from_vec3(ave, half_box);
+	
 	mat3x3_scale(basis, nl[0], nl[1], nl[2]);
 	*basis = mat3x3_inverse(*basis);
 
 	return segment;
 }
 
-void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
+void AtomGroup::xyzLimits(vec3 *min, vec3 *max)
+{
+	*min = make_vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+	*max = make_vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	if (atomCount() == 0)
+	{
+		*min = empty_vec3();
+		*max = empty_vec3();
+	}
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		vec3 abs = atom(i)->getAbsolutePosition();
+		if (abs.x < min->x) min->x = abs.x;
+		if (abs.x > max->x) max->x = abs.x;
+		if (abs.y < min->y) min->y = abs.y;
+		if (abs.y > max->y) max->y = abs.y;
+		if (abs.z < min->z) min->z = abs.z;
+		if (abs.z > max->z) max->z = abs.z;
+	}
+}
+
+void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 {
 	size_t nElements = totalElements();
-	
-	if (nElements == 0)
-	{
-		return;
-	}
-	
-	bool sameDims = (_scratchDims[0] == fft->nx && 
-	                 _scratchDims[1] == fft->ny &&
-	                 _scratchDims[2] == fft->nz);
-	
-	if (!sameDims)
-	{
-		_eleScratch = std::map<ElementPtr, FFTPtr>();
-		_scratchDims[0] = fft->nx;
-		_scratchDims[1] = fft->ny;
-		_scratchDims[2] = fft->nz;
-	}
-	
-	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
-	double cubeDim = 1 / (2 * maxDStar);
-	
-	/* find out how many voxels in each dimension to cover entire map
-	 * with perfectly regular grid (furthest point) */
-	vec3 furth = make_vec3(1, 1, 1);
-	mat3x3 inv = mat3x3_inverse(real2frac);
-	mat3x3_mult_vec(inv, &furth);
-	vec3_mult(&furth, 1 / cubeDim);
-	
-	FFTPtr scratchFull = FFTPtr(new FFT());
-	/* Furthest should be positive, + 1 adds buffer for cast to integer */
-	std::cout << "Furthest: " << vec3_desc(furth) << std::endl;
-	scratchFull->create(furth.x + 1, furth.y + 1, furth.z + 1);
-	scratchFull->setScales(cubeDim);
-	scratchFull->createFFTWplan(1);
+
 	FFTPtr scratch = FFTPtr(new FFT(*scratchFull));
 	scratch->setAll(0);
-	scratch->takePlansFrom(fft);
+	scratch->takePlansFrom(scratchFull);
 	FFTPtr eleFFT = FFTPtr(new FFT(*scratchFull));
 	eleFFT->setAll(0);
 	std::vector<AtomPtr> after;
 	size_t totalElectrons = 0;
+
+	double cubeDim = scratchFull->getScale(0);
+	mat3x3 new_basis = make_mat3x3();
+	mat3x3_scale(&new_basis, 
+	             scratchFull->nx * cubeDim, 
+	             scratchFull->ny * cubeDim,
+	             scratchFull->nz * cubeDim);
+
+	new_basis = mat3x3_inverse(new_basis);
+
+	bool sameDims = (_scratchDims[0] == scratchFull->nx && 
+	                 _scratchDims[1] == scratchFull->ny &&
+	                 _scratchDims[2] == scratchFull->nz);
+	
+	if (!sameDims)
+	{
+		_eleScratch = std::map<ElementPtr, FFTPtr>();
+		_scratchDims[0] = scratchFull->nx;
+		_scratchDims[1] = scratchFull->ny;
+		_scratchDims[2] = scratchFull->nz;
+	}
 
 	for (int i = 0; i < nElements; i++)
 	{
@@ -859,7 +873,7 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
 		}
 		else
 		{
-			ele->populateFFT(real2frac, eleFFT);
+			ele->populateFFT(new_basis, eleFFT);
 			_eleScratch[ele] = eleFFT;
 		}
 		size_t elementElectrons = 0;
@@ -874,7 +888,7 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
 					continue;
 				}
 
-				atom(j)->addDirectlyToMap(scratch, real2frac, offset);
+				atom(j)->addDirectlyToMap(scratch, new_basis, offset);
 				int eCount = ele->electronCount() *
 				atom(j)->getModel()->getEffectiveOccupancy();
 				
@@ -899,15 +913,68 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
 	
 	for (int i = 0; i < after.size(); i++)
 	{
-		after[i]->addToMap(scratch, real2frac, empty_vec3());
+		after[i]->addToMap(scratch, new_basis, offset);
 		totalElectrons += after[i]->getElement()->electronCount();
 	}
 	
 	scratch->setTotal(totalElectrons);
 	FFT::addSimple(scratchFull, scratch);
+}
+
+void AtomGroup::prepareCubicMap(FFTPtr *scratchFull, vec3 *offset, 
+                                vec3 min, vec3 max)
+{
+	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
+	double cubeDim = 1 / (2 * maxDStar);
 	
-	vec3 empty = empty_vec3();
-	FFT::add(fft, scratchFull, empty, false);
+	/* find out how many voxels in each dimension to cover entire atom group
+	 * with a regular grid */
+	/* 2 Angstroms buffer region on either side of the protein */
+	vec3 buffer = make_vec3(2, 2, 2);
+	vec3_subtract_from_vec3(&min, buffer);
+	vec3_add_to_vec3(&max, buffer);
+	vec3 limits = vec3_subtract_vec3(max, min);
+	
+	/* Modify the offset */
+	vec3_add_to_vec3(&min, buffer);
+	vec3_add_to_vec3(offset, min);
+
+	/* Work out the nx, ny, nz for the new map */
+	vec3 extent = limits;
+	vec3_mult(&extent, 1 / cubeDim);
+	/* Furthest should be positive, + 1 adds buffer for cast to integer */
+	extent.x = (int)extent.x;
+	extent.y = (int)extent.y;
+	extent.z = (int)extent.z;
+	
+	(*scratchFull) = FFTPtr(new FFT());
+	(*scratchFull)->create(extent.x, extent.y, extent.z);
+	(*scratchFull)->setScales(cubeDim);
+	(*scratchFull)->createFFTWplan(1);
+}
+
+void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
+{
+	size_t nElements = totalElements();
+	
+	if (nElements == 0)
+	{
+		return;
+	}
+	
+	FFTPtr scratchFull;
+
+	vec3 min, max;
+	xyzLimits(&min, &max);
+	prepareCubicMap(&scratchFull, &offset, min, max);
+	addToCubicMap(scratchFull, offset);
+	
+	/* Add half box before addition to the FFT of arbitrary voxel size */
+	vec3 limits = vec3_subtract_vec3(max, min);
+	vec3_mult(&limits, 0.5);
+	vec3_add_to_vec3(&min, limits);
+	mat3x3_mult_vec(real2frac, &min);
+	FFT::add(fft, scratchFull, min, false);
 }
 
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
@@ -925,6 +992,9 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 
 	if (first)
 	{
+		workspace->ave = empty_vec3();
+//		prepareCubicMap(&workspace->segment,
+//		                &workspace->ave);
 		workspace->segment = prepareMapSegment(crystal, selected,
 		                                       &workspace->basis,
 		                                       &workspace->ave);

@@ -463,6 +463,7 @@ void Atom::addToMap(FFTPtr fft, mat3x3 unit_cell, vec3 offset,
 		return;
 	}
 
+	modified->shiftToCentre();
 	FFT::operation(fft, modified, pos, type, NULL, sameScale);
 }
 

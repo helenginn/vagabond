@@ -1127,6 +1127,8 @@ void FFT::addToValueAroundPoint(vec3 pos, double radius, double value,
 
 /*  For multiplying point-wise
  *  No assumption that interpolation is not needed.
+ *  vec3 add is in fractional coordinates and describes where the centre
+ *  of the fftAtom should be in relation to Crystal.
  */
 double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
                       MapScoreType mapScoreType, std::vector<CoordVal> *vals,
@@ -1177,7 +1179,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	mat3x3_mult_vec(crystal2AtomVox, &atomOffset);
 	vec3_mult(&atomOffset, -1);
 
-	fftAtom->shiftToCentre();
+//	fftAtom->shiftToCentre();
 	
 	mat3x3 crystBasis = fftCrystal->getBasis();
 	mat3x3 atomBasis = fftAtom->getBasis();
@@ -1290,14 +1292,14 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				/* We add the tiny offset which resulted from the atom
 				 * falling between two voxels, in atomic voxels */
 				vec3_add_to_vec3(&atomPos, atomOffset);
-
+				
 				/* If this value is within floating point error, stop now. */
 				if (fftAtom->getReal(atomPos.x, atomPos.y, atomPos.z) <= 10e-6
 				    && mapScoreType != MapScoreTypeCopyToSmaller)
 				{
 					continue;
 				}
-
+				
 				/* Find the interpolated value which atomPos falls on */
 				double atomReal = 0;
 
@@ -1337,10 +1339,13 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 					}
 				}
 
-				if (cVox.x < 0) cVox.x += fftCrystal->nx;
-				if (cVox.y < 0) cVox.y += fftCrystal->ny;
-				if (cVox.z < 0) cVox.z += fftCrystal->nz;
+				while (cVox.x < 0) cVox.x += fftCrystal->nx;
+				while (cVox.y < 0) cVox.y += fftCrystal->ny;
+				while (cVox.z < 0) cVox.z += fftCrystal->nz;
 
+				while (cVox.x >= fftCrystal->nx) cVox.x -= fftCrystal->nx;
+				while (cVox.y >= fftCrystal->ny) cVox.y -= fftCrystal->ny;
+				while (cVox.z >= fftCrystal->nz) cVox.z -= fftCrystal->nz;
 
 				/* Get the index of this final crystal voxel. */
 				long cIndex = fftCrystal->element(cVox.x + 0.5,

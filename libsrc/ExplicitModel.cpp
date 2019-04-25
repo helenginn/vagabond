@@ -22,6 +22,7 @@
 #include "fftw3d.h"
 #include "CSV.h"
 #include "Anisotropicator.h"
+#include "Atom.h"
 
 ExplicitModel::ExplicitModel() : Model()
 {
@@ -240,13 +241,10 @@ void ExplicitModel::addDirectlyToMap(FFTPtr fft, mat3x3 basis,
 		}
 		else
 		{
+
 			fft->addInterpolatedToFrac(placement.x, placement.y, placement.z,
 			                            occupancy);
 		}
-		/*
-		fft->addInterpolatedToFrac(placement.x, placement.y, placement.z,
-		                            occupancy);
-		*/
 	}
 }
 

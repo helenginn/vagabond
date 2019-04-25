@@ -119,6 +119,17 @@ public:
 	}
 	
 	void addToMap(FFTPtr fft, mat3x3 _real2frac, vec3 offset = empty_vec3());
+
+	/** Adds atoms to a map where the voxel morphology is cubic, with a
+	  * given offset specified which is subtracted from each atom
+	  * position. */
+	void addToCubicMap(FFTPtr scratchFull, vec3 offset);
+
+	/** Prepares a cubic map to add the AtomGroup to, including adjustment
+	 *  of the offset to place midpoint of the group of atoms at the midpoint 
+	 * 	of the map. Returns the minimum Atom position as well. */
+	void prepareCubicMap(FFTPtr *scratchFull, vec3 *offset, vec3 min, vec3 max);
+
 	void setTargetRefinement(CrystalPtr target, RefinementType rType);
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	void setWeighting(double value);
@@ -174,6 +185,7 @@ private:
 	static FFTPtr prepareMapSegment(CrystalPtr crystal,
 	                                AtomGroupPtr selected,
 	                                mat3x3 *basis, vec3 *ave);
+	void xyzLimits(vec3 *min, vec3 *max);
 
 	static double scoreFinalMap(MapScoreWorkspace *workspace, bool plot);
 
