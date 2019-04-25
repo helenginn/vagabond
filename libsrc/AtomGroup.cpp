@@ -825,13 +825,26 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
 		_scratchDims[2] = fft->nz;
 	}
 	
-	FFTPtr scratchFull = FFTPtr(new FFT(*fft));
-	scratchFull->setAll(0);
-	scratchFull->takePlansFrom(fft);
-	FFTPtr scratch = FFTPtr(new FFT(*fft));
+	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
+	double cubeDim = 1 / (2 * maxDStar);
+	
+	/* find out how many voxels in each dimension to cover entire map
+	 * with perfectly regular grid (furthest point) */
+	vec3 furth = make_vec3(1, 1, 1);
+	mat3x3 inv = mat3x3_inverse(real2frac);
+	mat3x3_mult_vec(inv, &furth);
+	vec3_mult(&furth, 1 / cubeDim);
+	
+	FFTPtr scratchFull = FFTPtr(new FFT());
+	/* Furthest should be positive, + 1 adds buffer for cast to integer */
+	std::cout << "Furthest: " << vec3_desc(furth) << std::endl;
+	scratchFull->create(furth.x + 1, furth.y + 1, furth.z + 1);
+	scratchFull->setScales(cubeDim);
+	scratchFull->createFFTWplan(1);
+	FFTPtr scratch = FFTPtr(new FFT(*scratchFull));
 	scratch->setAll(0);
 	scratch->takePlansFrom(fft);
-	FFTPtr eleFFT = FFTPtr(new FFT(*fft));
+	FFTPtr eleFFT = FFTPtr(new FFT(*scratchFull));
 	eleFFT->setAll(0);
 	std::vector<AtomPtr> after;
 	size_t totalElectrons = 0;
@@ -892,7 +905,9 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
 	
 	scratch->setTotal(totalElectrons);
 	FFT::addSimple(scratchFull, scratch);
-	FFT::addSimple(fft, scratchFull);
+	
+	vec3 empty = empty_vec3();
+	FFT::add(fft, scratchFull, empty, false);
 }
 
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
