@@ -895,17 +895,6 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		                      workspace->ave, false, false, true);
 	}
 	
-	if (false && workspace->flag & MapScoreFlagReplaceWithObs)
-	{
-		FFTPtr fcSegment = workspace->segment;
-		FFTPtr obsMap = crystal->getFFT();
-
-		FFT::operation(obsMap, fcSegment, workspace->ave,
-		               MapScoreTypeCopyToSmaller, NULL);
-		
-		return 0;
-	}
-	
 	double score = 0;
 
 	if (workspace->flag & MapScoreFlagSkipScore)
