@@ -858,3 +858,9 @@ int Atom::getElectronCount()
 {
 	return _element->electronCount();
 }
+
+bool Atom::isAtom(std::string atomName, int resNum)
+{
+	return (getMonomer() && getMonomer()->getResidueNum() == resNum 
+	        && _atomName == atomName);
+}

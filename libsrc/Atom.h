@@ -302,6 +302,8 @@ public:
 		_targetWeight = weight;
 	}
 	
+	bool isAtom(std::string atomName, int resNum);
+	
 	double getTargetWeight()
 	{
 		return _targetWeight;
