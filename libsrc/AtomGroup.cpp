@@ -6,7 +6,7 @@
 //  Copyright (c) 2017 Strubi. All rights reserved.
 //
 
-#define MAP_VALUE_CUTOFF 20.
+#define MAP_VALUE_CUTOFF (0.005)
 
 #include "Timer.h"
 #include "Twist.h"
