@@ -138,7 +138,7 @@ void FlexGlobal::prepareWorkspace()
 	_workspace.selectAtoms = _atomGroup;
 	
 	_prepared = true;
-	AtomGroup::scoreWithMapGeneral(&_workspace, true);
+	AtomGroup::scoreWithMapGeneral(&_workspace, false);
 }
 
 double FlexGlobal::score(void *object)
