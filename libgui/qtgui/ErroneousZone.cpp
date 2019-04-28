@@ -62,7 +62,7 @@ ErroneousZone::ErroneousZone(QWidget *parent, CrystalPtr crystal)
 	}
 	omitResidues(0.7);
 
-	_crystal->vsConcludeRefinement(&*(ToParserPtr(_crystal)));
+	Options::getActiveCrystal()->wrapUpRefinement();
 
 	return;
 	for (double weight = 1; weight >= 0; weight -= 0.1)

@@ -110,7 +110,7 @@ public:
 	double concludeRefinement(int cycleNum, DiffractionPtr data);
 	
 	/** Should be folded into previous concludeRefinement(...) soon */
-	static double vsConcludeRefinement(void *object);
+	void wrapUpRefinement();
 	
 	/** Calculate new observed/calculated density but don't write out
 	 * 	R factors to the screen */

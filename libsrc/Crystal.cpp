@@ -1378,9 +1378,6 @@ void Crystal::addProperties()
 	{
 		addChild("molecule", molecule(i));
 	}
-	
-	exposeFunction("recalculate_map", Crystal::vsConcludeRefinement);
-	exposeFunction("restore_state", Crystal::vsRestoreState);
 }
 
 void Crystal::vsRestoreState(void *object, double val)
@@ -1547,28 +1544,16 @@ void Crystal::silentConcludeRefinement()
 	_silent = false;
 }
 
-double Crystal::vsConcludeRefinement(void *object)
+void Crystal::wrapUpRefinement()
 {
-	if (object == NULL)
-	{
-		object = &*ToParserPtr(Options::getActiveCrystal());
-	}
-
 	OptionsPtr options = Options::getRuntimeOptions();
 	DiffractionPtr data = options->getActiveData();
 	
-	Parser *parser = static_cast<Parser *>(object);
-	Crystal *crystal = dynamic_cast<Crystal *>(parser);
-	crystal->_cycleNum++;
-	int num = crystal->_cycleNum;
-	crystal->concludeRefinement(num, data);
-	crystal->saveState();
+	_cycleNum++;
+	concludeRefinement(_cycleNum, data);
+	saveState();
 	
 	Options::getRuntimeOptions()->agreementSummary();
-	std::string agreement = crystal->agreementSummary();
-	crystal->addComment("Recalculated: " + agreement);
-	
-	return 0;
 }
 
 void Crystal::postRestoreState()
@@ -1577,7 +1562,7 @@ void Crystal::postRestoreState()
 	OptionsPtr options = Options::getRuntimeOptions();
 	DiffractionPtr data = options->getActiveData();
 
-	vsConcludeRefinement(NULL);
+	wrapUpRefinement();
 }
 
 void Crystal::openInCoot()

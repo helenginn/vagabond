@@ -834,7 +834,7 @@ void Options::recalculateFFT(bool saveState)
 {
 	statusMessage("Calculating R factors...");
 	
-	Crystal::vsConcludeRefinement(&*(getActiveCrystal()));
+	getActiveCrystal()->wrapUpRefinement();
 	agreementSummary();
 	
 //	std::cout << "Total states: " << getActiveCrystal()->stateCount() <<

@@ -1018,7 +1018,7 @@ void Polymer::refitBackbone(int start_, int end_)
 	
 	/* Get new map for this */
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	Crystal::vsConcludeRefinement(&*ToParserPtr(crystal));
+	crystal->wrapUpRefinement();
 	
 	/* Lower the number of samples */
 	int samples = getAnchorModel()->getFinalPositions().size();
