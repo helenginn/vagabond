@@ -77,6 +77,11 @@ void Crystal::tieAtomsUp()
 
 void Crystal::addMolecule(MoleculePtr molecule)
 {
+	if (!molecule)
+	{
+		return;
+	}
+
 	if (molecule->getChainID().length() <= 0)
 	{
 		shout_at_helen("Polymer chain ID is missing while trying\n"\
@@ -213,14 +218,11 @@ void Crystal::realSpaceClutter(double maxRes)
 
 	_fft->createFFTWplan(8);
 	_difft->createFFTWplan(8);
-
+	
 	refreshAnchors();
 
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		molecule(i)->propagateChange();
-		molecule(i)->addToMap(_fft, _real2frac);
-	}
+	refreshPositions();
+	addToMap(_fft, _real2frac);
 
 	_bucket = Bucket::chosenBucket();
 		
@@ -893,6 +895,7 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	realSpaceClutter(data->getMaxResolution());
 	
 	fourierTransform(1);
+	
 	scaleComponents(data);
 	
 	writeMillersToFile(data, prefix);

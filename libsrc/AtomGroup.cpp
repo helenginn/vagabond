@@ -821,6 +821,7 @@ void AtomGroup::xyzLimits(vec3 *min, vec3 *max)
 	for (int i = 0; i < atomCount(); i++)
 	{
 		vec3 abs = atom(i)->getAbsolutePosition();
+		
 		if (abs.x < min->x) min->x = abs.x;
 		if (abs.x > max->x) max->x = abs.x;
 		if (abs.y < min->y) min->y = abs.y;
@@ -876,7 +877,9 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 			ele->populateFFT(new_basis, eleFFT);
 			_eleScratch[ele] = eleFFT;
 		}
+
 		size_t elementElectrons = 0;
+		size_t count = 0;
 
 		for (int j = 0; j < atomCount(); j++)
 		{
@@ -893,6 +896,7 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 				atom(j)->getModel()->getEffectiveOccupancy();
 				
 				elementElectrons += eCount;
+				count++;
 			}
 		}
 		

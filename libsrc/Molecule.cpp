@@ -245,6 +245,7 @@ void Molecule::tiedUpScattering(double *tied, double *all)
 void Molecule::addAtom(AtomPtr atom)
 {
 	AtomGroup::addAtom(atom);
+	Options::getActiveCrystal()->addAtom(atom);
 }
 
 void Molecule::addProperties()

@@ -32,7 +32,6 @@
 #include "Molecule.h"
 #include "../libccp4/csymlib.h"
 #include <iostream>
-#include "Parser.h"
 
 /**
  * \class Crystal
@@ -89,7 +88,7 @@ inline vec3 getNLimits(FFTPtr data, FFTPtr fftModel)
 	return lims;
 }
 
-class Crystal : public Object, public Parser
+class Crystal : public Object, public AtomGroup
 {
 public:
 	CrystalPtr shared_from_this()
