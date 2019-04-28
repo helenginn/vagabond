@@ -19,6 +19,8 @@
 #include <map>
 #include <climits>
 
+#define BUFFER_REGION (2.0)
+
 /**
  * \class AtomGroup
  * \brief AtomGroup looks after the concept of any sensible group of Atoms,
@@ -131,7 +133,7 @@ public:
 	 *  \return offset which should be applied to each atom when calling
 	 *  AtomGroup::addToCubicMap */
 	vec3 prepareCubicMap(FFTPtr *scratchFull, vec3 *offset, 
-	                     vec3 min, vec3 max, double buffer = 2);
+	                     vec3 min, vec3 max, double buffer = BUFFER_REGION);
 
 	void setTargetRefinement(CrystalPtr target, RefinementType rType);
 	virtual void refine(CrystalPtr target, RefinementType rType);

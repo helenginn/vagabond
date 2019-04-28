@@ -928,22 +928,21 @@ vec3 AtomGroup::prepareCubicMap(FFTPtr *scratchFull, vec3 *offset,
 	double cubeDim = 1 / (2 * maxDStar);
 	CrystalPtr crystal = Options::getActiveCrystal();
 	
-	/* find out how many voxels in each dimension to cover entire atom group
-	 * with a regular grid */
+
 	/* 2 Angstroms buffer region on either side of the protein */
 	vec3 buffer = make_vec3(buff, buff, buff);
 	vec3_subtract_from_vec3(&min, buffer);
-	vec3_add_to_vec3(&max, buffer);
-	vec3 limits = vec3_subtract_vec3(max, min);
-	
-	/* Modify the offset */
-	vec3_add_to_vec3(&min, buffer);
+
+	/* Modify the offset to include buffer region */
 	vec3_add_to_vec3(offset, min);
 
-	/* Work out the nx, ny, nz for the new map */
+	vec3_add_to_vec3(&max, buffer);
+	vec3 limits = vec3_subtract_vec3(max, min);
+
+	/* find out how many voxels in each dimension to cover entire atom group
+	 * with a regular grid */
 	vec3 extent = limits;
 	vec3_mult(&extent, 1 / cubeDim);
-	/* Furthest should be positive, + 1 adds buffer for cast to integer */
 	extent.x = (int)lrint(extent.x);
 	extent.y = (int)lrint(extent.y);
 	extent.z = (int)lrint(extent.z);
@@ -956,17 +955,20 @@ vec3 AtomGroup::prepareCubicMap(FFTPtr *scratchFull, vec3 *offset,
 	return empty_vec3();
 }
 
-vec3 finalOffset(vec3 min, vec3 max, mat3x3 real2frac, double buff = 2)
+vec3 finalOffset(vec3 offset, FFTPtr cube,
+                 mat3x3 real2frac, double buff = BUFFER_REGION)
 {
 	/* Add half box before addition to the FFT of arbitrary voxel size */
-	vec3 limits = vec3_subtract_vec3(max, min);
-	vec3_mult(&limits, 0.5);
-	vec3_add_to_vec3(&min, limits);
+	double scale = cube->getScale(0);
+	vec3 half_box = make_vec3(cube->nx, cube->ny, cube->nz);
+	vec3_mult(&half_box, scale * 0.5);
+	
+	vec3_add_to_vec3(&offset, half_box);
 	vec3 buffer = make_vec3(buff, buff, buff);
-	vec3_add_to_vec3(&min, buffer);
-	mat3x3_mult_vec(real2frac, &min);
+	vec3_subtract_from_vec3(&offset, buffer);
+	mat3x3_mult_vec(real2frac, &offset);
 
-	return min;
+	return offset;
 }
 
 void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
@@ -980,13 +982,13 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
 	
 	FFTPtr scratchFull;
 
-	double buffer = 0;
+	double buffer = BUFFER_REGION;
 	vec3 min, max;
 	xyzLimits(&min, &max);
 	prepareCubicMap(&scratchFull, &offset, min, max, buffer);
 	addToCubicMap(scratchFull, offset);
 	
-	vec3 addvec = finalOffset(min, max, real2frac, buffer);
+	vec3 addvec = finalOffset(min, scratchFull, real2frac, buffer);
 	
 	FFT::operation(fft, scratchFull, addvec, MapScoreTypeNone, 
 	               NULL, false, true);
@@ -1084,7 +1086,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	if (first)
 	{
 		mat3x3 r2f = crystal->getReal2Frac();
-		workspace->working_ave = finalOffset(min, max, r2f);
+		workspace->working_ave = finalOffset(min, workspace->segment, r2f);
 	}
 
 	score = scoreFinalMap(workspace, plot);
