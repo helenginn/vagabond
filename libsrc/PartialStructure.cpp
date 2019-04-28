@@ -132,6 +132,7 @@ void PartialStructure::scalePartialStructure()
 	
 	FFTPtr fft = getCrystal()->getFFT();
 	mat3x3 real2frac = getCrystal()->getReal2Frac();
+	real2frac = mat3x3_transpose(real2frac);
 	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
 	FFTPtr fftData = _data->getFFT();
 
