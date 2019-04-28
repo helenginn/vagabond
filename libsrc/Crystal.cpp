@@ -1904,7 +1904,11 @@ void Crystal::refreshAnchors()
 		if (molecule(i)->isPolymer())
 		{
 			PolymerPtr pol = ToPolymerPtr(molecule(i));
-			pol->getAnchorModel()->forceRefresh();
+
+			if (pol->getAnchorModel())
+			{
+				pol->getAnchorModel()->forceRefresh();
+			}
 		}
 	}
 }
