@@ -532,6 +532,18 @@ void Sampler::setupCloseAtoms()
 
 void Sampler::setupScoreWithMap()
 {
+	AtomGroupPtr sampled = AtomGroupPtr(new AtomGroup());
+	
+	for (int i = 0; i < sampleSize(); i++)
+	{
+		sampled->addAtom(_sampled[i]);
+	}
+	
+	for (int i = 0; i < _includeForRefine.size(); i++)
+	{
+		sampled->addAtomsFrom(_includeForRefine[i]);
+	}
+	
 	_workspace.scoreType = _scoreType;
 	_workspace.crystal = _crystal;
 	_workspace.selectAtoms = _sampled;

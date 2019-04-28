@@ -123,16 +123,6 @@ public:
 	void propagateChange();
 	void refreshPositions(bool quick = true);
 
-	void clearIncludeForRefinements()
-	{
-		_includeForRefine.clear();
-	}
-
-	void addIncludeForRefinement(AtomGroupPtr group)
-	{
-		_includeForRefine.push_back(group);
-	}
-
 	AtomPtr getClosestAtom(CrystalPtr crystal, vec3 pos);
 	std::vector<AtomPtr> getHydrogenBonders();
 
@@ -147,11 +137,6 @@ public:
 	void saveAtomPositions();
 
 	void boundingMonomers(int *begin, int *end);
-	
-	std::vector<AtomGroupPtr> includingInRefinement()
-	{
-		return _includeForRefine;
-	}
 protected:
 	virtual bool shouldRefineAtom(AtomPtr atom) { return true; };
 	int _timesRefined;
@@ -175,7 +160,6 @@ protected:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void linkReference(ParserPtr object, std::string category);
 	std::vector<AtomPtr> _atoms;
-	std::vector<AtomGroupPtr> _includeForRefine;
 private:
 	static void plotCoordVals(std::vector<CoordVal> &vals, bool difference,
 	                          double cutoff, std::string filename);

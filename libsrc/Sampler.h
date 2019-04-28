@@ -181,6 +181,18 @@ public:
 	void addCustomParameter(void *object, Getter getter, Setter setter,
                                  double range, double interval,
                                  std::string name);
+
+
+	std::vector<AtomGroupPtr> includingInRefinement()
+	{
+		return _includeForRefine;
+	}
+
+
+	void addIncludeForRefinement(AtomGroupPtr group)
+	{
+		_includeForRefine.push_back(group);
+	}
 protected:
 	/** Create a torsion set which adds the primary chain (the backbone)
 
@@ -204,6 +216,13 @@ protected:
 	{
 		return _strategy;
 	}
+
+	void clearIncludeForRefinements()
+	{
+		_includeForRefine.clear();
+	}
+
+	std::vector<AtomGroupPtr> _includeForRefine;
 private:
 	void addParamsForBond(BondPtr bond, bool even = true);
 	CrystalPtr _crystal;
