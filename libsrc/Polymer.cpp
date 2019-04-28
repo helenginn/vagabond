@@ -1408,7 +1408,6 @@ void Polymer::addProperties()
 
 	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
-		std::cout << i << std::endl;
 		if (!getMonomer(i)) continue;
 
 		addChild("monomer", getMonomer(i));
