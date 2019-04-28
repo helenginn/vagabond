@@ -301,6 +301,13 @@ public:
 	{
 		return _basis;
 	}
+	
+	mat3x3 getReal2Frac()
+	{
+		mat3x3 new_basis = _basis;
+		mat3x3_scale(&new_basis, nx, ny, nz);
+		return mat3x3_inverse(new_basis);
+	}
 
 	mat3x3 getBasisInverse()
 	{

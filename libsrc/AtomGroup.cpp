@@ -921,16 +921,17 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 	FFT::addSimple(scratchFull, scratch);
 }
 
-void AtomGroup::prepareCubicMap(FFTPtr *scratchFull, vec3 *offset, 
-                                vec3 min, vec3 max)
+vec3 AtomGroup::prepareCubicMap(FFTPtr *scratchFull, vec3 *offset, 
+                                vec3 min, vec3 max, double buff)
 {
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double cubeDim = 1 / (2 * maxDStar);
+	CrystalPtr crystal = Options::getActiveCrystal();
 	
 	/* find out how many voxels in each dimension to cover entire atom group
 	 * with a regular grid */
 	/* 2 Angstroms buffer region on either side of the protein */
-	vec3 buffer = make_vec3(2, 2, 2);
+	vec3 buffer = make_vec3(buff, buff, buff);
 	vec3_subtract_from_vec3(&min, buffer);
 	vec3_add_to_vec3(&max, buffer);
 	vec3 limits = vec3_subtract_vec3(max, min);
@@ -943,14 +944,29 @@ void AtomGroup::prepareCubicMap(FFTPtr *scratchFull, vec3 *offset,
 	vec3 extent = limits;
 	vec3_mult(&extent, 1 / cubeDim);
 	/* Furthest should be positive, + 1 adds buffer for cast to integer */
-	extent.x = (int)extent.x;
-	extent.y = (int)extent.y;
-	extent.z = (int)extent.z;
+	extent.x = (int)lrint(extent.x);
+	extent.y = (int)lrint(extent.y);
+	extent.z = (int)lrint(extent.z);
 	
 	(*scratchFull) = FFTPtr(new FFT());
 	(*scratchFull)->create(extent.x, extent.y, extent.z);
 	(*scratchFull)->setScales(cubeDim);
 	(*scratchFull)->createFFTWplan(1);
+	
+	return empty_vec3();
+}
+
+vec3 finalOffset(vec3 min, vec3 max, mat3x3 real2frac, double buff = 2)
+{
+	/* Add half box before addition to the FFT of arbitrary voxel size */
+	vec3 limits = vec3_subtract_vec3(max, min);
+	vec3_mult(&limits, 0.5);
+	vec3_add_to_vec3(&min, limits);
+	vec3 buffer = make_vec3(buff, buff, buff);
+	vec3_add_to_vec3(&min, buffer);
+	mat3x3_mult_vec(real2frac, &min);
+
+	return min;
 }
 
 void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
@@ -964,17 +980,16 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
 	
 	FFTPtr scratchFull;
 
+	double buffer = 0;
 	vec3 min, max;
 	xyzLimits(&min, &max);
-	prepareCubicMap(&scratchFull, &offset, min, max);
+	prepareCubicMap(&scratchFull, &offset, min, max, buffer);
 	addToCubicMap(scratchFull, offset);
 	
-	/* Add half box before addition to the FFT of arbitrary voxel size */
-	vec3 limits = vec3_subtract_vec3(max, min);
-	vec3_mult(&limits, 0.5);
-	vec3_add_to_vec3(&min, limits);
-	mat3x3_mult_vec(real2frac, &min);
-	FFT::add(fft, scratchFull, min, false);
+	vec3 addvec = finalOffset(min, max, real2frac, buffer);
+	
+	FFT::operation(fft, scratchFull, addvec, MapScoreTypeNone, 
+	               NULL, false, true);
 }
 
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
@@ -990,18 +1005,18 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 
 	bool first = (workspace->segment == FFTPtr());
 
+	vec3 min, max; 
+	selected->xyzLimits(&min, &max);
+
 	if (first)
 	{
 		workspace->ave = empty_vec3();
-//		prepareCubicMap(&workspace->segment,
-//		                &workspace->ave);
-		workspace->segment = prepareMapSegment(crystal, selected,
-		                                       &workspace->basis,
-		                                       &workspace->ave);
-		
+		selected->prepareCubicMap(&workspace->segment,
+		                          &workspace->ave, min, max);
+		workspace->basis = workspace->segment->getReal2Frac();
+
 		workspace->constant = FFTPtr(new FFT(*workspace->segment));
 		workspace->fcSegment = FFTPtr(new FFT(*workspace->segment));
-		workspace->segment->createFFTWplan(1);
 		workspace->constant->takePlansFrom(workspace->segment);
 	}
 	else
@@ -1010,20 +1025,20 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	}
 	
 	/* Now we can add neighbouring atoms from the same Crystal
-	* with impunity, and they won't go over the borderline already
-	* established.*/
+	 * once we have established they do not go over the border. */
 	if (first)
 	{
 		/* Make half-box measures */
-		double xAng, yAng, zAng;
-		xAng = workspace->segment->nx * workspace->segment->scales[0] / 2;
-		yAng = workspace->segment->ny * workspace->segment->scales[1] / 2;
-		zAng = workspace->segment->nz * workspace->segment->scales[2] / 2;
+		vec3 minmax = vec3_add_vec3(min, max);
+		vec3_mult(&minmax, 0.5);
+		vec3 half = vec3_subtract_vec3(max, min);
+		vec3_mult(&half, 0.5);
 		
 		if (!(workspace->flag & MapScoreFlagNoSurround))
 		{
-			workspace->extra = crystal->getAtomsInBox(workspace->ave, 
-			                                          xAng, yAng, zAng);
+			workspace->extra = crystal->getAtomsInBox(minmax, half.x, 
+			                                          half.y, half.z);
+
 			AtomGroupPtr added = AtomGroupPtr(new AtomGroup());
 
 			/* We want to add anything which is static to the 
@@ -1042,18 +1057,16 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 			}
 			
 			/* Add the acceptable atoms to the map */
-			added->addToMap(workspace->constant, 
-			                workspace->basis,
-			                workspace->ave);
+			added->addToCubicMap(workspace->constant, 
+			                     workspace->ave);
 			
 			/* Copy this constant fraction into the segment */
 			workspace->segment->copyFrom(workspace->constant);
 		}
 	}
 	
-	workspace->selectAtoms->addToMap(workspace->segment,
-	                                 workspace->basis,
-	                                 workspace->ave);
+	workspace->selectAtoms->addToCubicMap(workspace->segment,
+	                                      workspace->ave);
 	
 	double score = 0;
 
@@ -1067,6 +1080,13 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	bool difference = (workspace->flag & MapScoreFlagDifference);
 	ScoreType type = workspace->scoreType;
 	
+	/* Convert average for comparing */
+	if (first)
+	{
+		mat3x3 r2f = crystal->getReal2Frac();
+		workspace->working_ave = finalOffset(min, max, r2f);
+	}
+
 	score = scoreFinalMap(workspace, plot);
 
 	return score;
@@ -1077,8 +1097,7 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 	/* Convert real2Frac to crystal coords to get correct segment
 	* of the big real space map. */
 	CrystalPtr crystal = ws->crystal;
-	vec3 ave = ws->ave;
-	mat3x3_mult_vec(crystal->getReal2Frac(), &ave);
+	vec3 ave = ws->working_ave;
 	
 	double cutoff = MAP_VALUE_CUTOFF;
 
@@ -1100,7 +1119,7 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 		mapType = MapScoreTypeCopyToSmaller;
 	}
 
-	FFT::operation(map, ws->segment, ave, mapType, &vals, true);
+	FFT::operation(map, ws->segment, ave, mapType, &vals);
 
 	/* For correlation calculations */
 	for (size_t i = 0; i < vals.size(); i++)

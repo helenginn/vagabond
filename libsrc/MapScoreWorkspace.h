@@ -61,6 +61,7 @@ typedef struct
 	FFTPtr fcSegment;
 	FFTPtr constant;
 	vec3 ave;
+	vec3 working_ave;
 	mat3x3 basis;
 	unsigned int flag;
 } MapScoreWorkspace;

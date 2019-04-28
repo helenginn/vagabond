@@ -1179,8 +1179,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	mat3x3_mult_vec(crystal2AtomVox, &atomOffset);
 	vec3_mult(&atomOffset, -1);
 
-//	fftAtom->shiftToCentre();
-	
 	mat3x3 crystBasis = fftCrystal->getBasis();
 	mat3x3 atomBasis = fftAtom->getBasis();
 	double vol_corr = mat3x3_volume(crystBasis) / mat3x3_volume(atomBasis);
@@ -1219,7 +1217,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	 * 	fraction of the crystal voxel. */
 	atomOffset = vec3_add_vec3(atomOffset, shiftRemainder);
 	vec3 crystOffset = mat3x3_mult_vec(atomVox2Crystal, atomOffset);
-
+	
 	/* We loop around these crystal voxel limits now (ss -> ms -> fs).
 	 * We also break the loop if it exceeds the limits of our atom voxels
 	 * during the loop itself. */
@@ -1303,9 +1301,13 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				/* Find the interpolated value which atomPos falls on */
 				double atomReal = 0;
 
-				if (atomPos.x < 0) atomPos.x += fftAtom->nx;
-				if (atomPos.y < 0) atomPos.y += fftAtom->ny;
-				if (atomPos.z < 0) atomPos.z += fftAtom->nz;
+				while (atomPos.x < 0) atomPos.x += fftAtom->nx;
+				while (atomPos.y < 0) atomPos.y += fftAtom->ny;
+				while (atomPos.z < 0) atomPos.z += fftAtom->nz;
+
+				while (atomPos.x >= fftAtom->nx) atomPos.x -= fftAtom->nx;
+				while (atomPos.y >= fftAtom->ny) atomPos.y -= fftAtom->ny;
+				while (atomPos.z >= fftAtom->nz) atomPos.z -= fftAtom->nz;
 
 				if (interp)
 				{

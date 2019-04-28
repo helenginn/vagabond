@@ -127,8 +127,11 @@ public:
 
 	/** Prepares a cubic map to add the AtomGroup to, including adjustment
 	 *  of the offset to place midpoint of the group of atoms at the midpoint 
-	 * 	of the map. Returns the minimum Atom position as well. */
-	void prepareCubicMap(FFTPtr *scratchFull, vec3 *offset, vec3 min, vec3 max);
+	 * 	of the map. Returns the minimum Atom position as well.
+	 *  \return offset which should be applied to each atom when calling
+	 *  AtomGroup::addToCubicMap */
+	vec3 prepareCubicMap(FFTPtr *scratchFull, vec3 *offset, 
+	                     vec3 min, vec3 max, double buffer = 2);
 
 	void setTargetRefinement(CrystalPtr target, RefinementType rType);
 	virtual void refine(CrystalPtr target, RefinementType rType);
