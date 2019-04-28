@@ -102,6 +102,13 @@ void VagWindow::makeMenu()
 		                     0.0); });
 	actions.push_back(bsubt);
 	
+	QAction *bprobe = model->addAction(tr("Solvent probe radius..."));
+	connect(bprobe, &QAction::triggered,
+			[=]{ dialogueModify(Options::setProbeRadius, 
+			                    "Set solvent probe radius (Å)",
+		                     0.0); });
+	actions.push_back(bprobe);
+	
 	/*
 	menuItem(model, "Omit scan", InstructionTypeOmitScan);
 	menuItem(model, "Find flexibility", InstructionTypeReflex);
