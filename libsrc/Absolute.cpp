@@ -162,7 +162,7 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 
 FFTPtr Absolute::makeDistribution()
 {
-	double n = fftGridLength();
+	double n = fftGridLength() * 2;
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double scale = 2 * maxDStar;
 
