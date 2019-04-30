@@ -147,6 +147,18 @@ void PartialStructure::scalePartialStructure()
 		{
 			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
+				long nModel = fft->element(i, j, k);
+				float realProtein = fft->data[nModel][0];
+				float imagProtein = fft->data[nModel][1];
+				float realPartial = _partial->data[nModel][0];	
+				float imagPartial = _partial->data[nModel][1];	
+				
+				if (realProtein != realProtein ||
+				    realPartial != realPartial)
+				{
+					continue;
+				}
+
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(real2frac, &ijk);
 				double length = vec3_length(ijk);
@@ -154,11 +166,6 @@ void PartialStructure::scalePartialStructure()
 				double four_d_sq = (4 * d * d);
 				double bFacMod = exp(-_solvBFac / four_d_sq);
 
-				long nModel = fft->element(i, j, k);
-				float realProtein = fft->data[nModel][0];
-				float imagProtein = fft->data[nModel][1];
-				float realPartial = _partial->data[nModel][0];	
-				float imagPartial = _partial->data[nModel][1];	
 				realPartial *= _solvScale * bFacMod;
 				imagPartial *= _solvScale * bFacMod;
 
@@ -200,17 +207,24 @@ double PartialStructure::scaleAndAddPartialScore()
 		{
 			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
+				long nModel = fft->element(i, j, k);
+				float realProtein = fft->data[nModel][0];
+				float imagProtein = fft->data[nModel][1];
+				float realPartial = _partial->data[nModel][0];	
+				float imagPartial = _partial->data[nModel][1];	
+				
+				if (realProtein != realProtein ||
+				    realPartial != realPartial)
+				{
+					continue;
+				}
+
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(tmp, &ijk);
 
 				int m, n, o;
 				int asu = CSym::ccp4spg_put_in_asu(spg, i, j, k, &m, &n, &o);
 				
-				if (!(i == m && j == n && k == o))
-				{
-//					continue;
-				}
-
 				double length = vec3_length(ijk);
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
@@ -223,12 +237,6 @@ double PartialStructure::scaleAndAddPartialScore()
 
 				if (ref != ref) continue;
 
-				long nModel = fft->element(i, j, k);
-				float realProtein = fft->data[nModel][0];
-				float imagProtein = fft->data[nModel][1];
-
-				float realPartial = _partial->data[nModel][0];	
-				float imagPartial = _partial->data[nModel][1];	
 				realPartial *= _solvScale * bFacMod;
 				imagPartial *= _solvScale * bFacMod;
 				
