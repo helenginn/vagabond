@@ -52,6 +52,8 @@ public:
 	{
 		_overrideN = n;
 	}
+
+	static void bFactorDistribute(FFTPtr fft, double b);
 protected:
 	bool _calculated;
 	int _overrideN;

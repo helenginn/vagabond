@@ -996,11 +996,17 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
 	xyzLimits(&min, &max);
 	prepareCubicMap(&scratchFull, &offset, min, max, buffer);
 	addToCubicMap(scratchFull, offset);
-	
+	scratchFull->fft(1);
+	double b = Options::getActiveCrystal()->getRealBFactor();
+	Distributor::bFactorDistribute(scratchFull, b);
+	scratchFull->fft(-1);
+
 	vec3 addvec = finalOffset(min, scratchFull, real2frac, buffer);
 	
 	FFT::operation(fft, scratchFull, addvec, MapScoreTypeNone, 
 	               NULL, false, true);
+
+	
 }
 
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,

@@ -10,6 +10,31 @@
 #include "fftw3d.h"
 #include <iostream>
 
+void Distributor::bFactorDistribute(FFTPtr fft, double b)
+{
+	mat3x3 basis = fft->getReal2Frac();
+	basis = mat3x3_transpose(basis);
+
+	for (int z = -fft->nz / 2; z < fft->nz / 2; z++)
+	{
+		for (int y = -fft->ny / 2; y < fft->ny / 2; y++)
+		{
+			for (int x = -fft->nx / 2; x < fft->nx / 2; x++)
+			{
+				vec3 xyz = make_vec3(x, y, z);
+				mat3x3_mult_vec(basis, &xyz);
+				double length = vec3_length(xyz);
+				double d = 1 / length;
+				double four_d_sq = (4 * d * d);
+				double bFacMod = exp(-b / four_d_sq);
+				int ele = fft->element(x, y, z);
+				fft->data[ele][0] *= bFacMod;
+				fft->data[ele][1] *= bFacMod;
+			}
+		}
+	}
+}
+
 FFTPtr Distributor::prepareDistribution(double n, double scale, void *object,
                                         get_voxel_value *voxel_value)
 {

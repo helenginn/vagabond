@@ -234,17 +234,9 @@ void ExplicitModel::addDirectlyToMap(FFTPtr fft, mat3x3 basis,
 		
 		double b = Options::getActiveCrystal()->getRealBFactor();
 
-		if (b > 0.1)
-		{
-			fft->addBlurredToReal(placement.x, placement.y, placement.z,
-			                       occupancy);
-		}
-		else
-		{
 
-			fft->addInterpolatedToFrac(placement.x, placement.y, placement.z,
-			                            occupancy);
-		}
+		fft->addInterpolatedToFrac(placement.x, placement.y, placement.z,
+		                           occupancy);
 	}
 }
 
