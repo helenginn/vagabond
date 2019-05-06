@@ -212,12 +212,14 @@ void Hydrogenator::addHydrogens(AtomPtr minor, std::vector<std::string> hNames)
 	remaining /= (double)(hNames.size() + add);
 
 	double nextPortion = circlePortion + remaining * add;
+	CrystalPtr crystal = Options::getActiveCrystal();
 
 	for (int j = 0; j < hNames.size(); j++)
 	{
 		AtomPtr hydrogen = prepareNewHydrogen(minor);
 		hydrogen->setAtomName(hNames[j]);
 		_monomer->addAtom(hydrogen);
+		crystal->addAtom(hydrogen);
 		hydrogen->setAlternativeConformer(alt);
 
 		/* Set the bond length for the new hydrogen */
