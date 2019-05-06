@@ -937,9 +937,10 @@ vec3 AtomGroup::prepareCubicMap(FFTPtr *scratchFull, vec3 *offset,
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double cubeDim = 1.0 / (maxDStar);
 	
-	if (cubeDim > 1)
+	const double maxD = 0.8;
+	if (cubeDim > maxD)
 	{
-		cubeDim = 1;
+		cubeDim = maxD;
 	}
 	CrystalPtr crystal = Options::getActiveCrystal();
 	
