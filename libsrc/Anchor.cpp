@@ -242,6 +242,12 @@ void Anchor::rotateBases()
 			                                  _storedSamples[i].basis); 
 			
 			rot_only = mat3x3_mult_mat3x3(rot_mat, rot_only);
+
+			vec3 screw_vec = mat3x3_axis(screw, j);
+			vec3_mult(&screw_vec, dot);
+
+			vec3_add_to_vec3(&_storedSamples[i].old_start, screw_vec);
+			vec3_add_to_vec3(&_storedSamples[i].start, screw_vec);
 		}
 		
 		vec3 diff_to_old = vec3_subtract_vec3(_storedSamples[i].old_start,
@@ -456,8 +462,8 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 	
 	if (!_disableWhacks)
 	{
-		rotateBases();
 		translateStartPositions();
+		rotateBases();
 	}
 
 	fixCentroid();
@@ -581,12 +587,12 @@ void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
 void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
                                       double mult)
 {
-	_libration->addTensorToStrategy(strategy, 0.2 * mult, 0.005, "li");
+	_libration->addTensorToStrategy(strategy, 0.2 * mult, 0.001, "li");
 }
 
 void Anchor::addScrewParameters(RefinementStrategyPtr strategy,
                                 double mult)
 {
-	_screw->addMatrixToStrategy(strategy, 0.2 * mult, 0.005, "sc");
+	_screw->addMatrixToStrategy(strategy, 2.0 * mult, 0.01, "sc");
 }
 
