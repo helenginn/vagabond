@@ -263,10 +263,6 @@ void Options::executeProtocol()
 			<< ")" << std::endl;
 		}
 
-		/* In case we need to do remedial work */
-		double oldWork = crystal->getRWork();
-		double oldB = crystal->averageBFactor();
-		
 		if (_rInter)
 		{
 			double oldWork = crystal->getRWork();
@@ -281,6 +277,10 @@ void Options::executeProtocol()
 			}
 		}
 
+		/* In case we need to do remedial work */
+		double oldWork = crystal->getRWork();
+		double oldB = crystal->averageBFactor();
+		
 		const int maxIntra = 3;
 		for (int i = 0; i < maxIntra && _rIntra; i++)
 		{
