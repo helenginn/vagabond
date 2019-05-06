@@ -23,7 +23,6 @@
 
 void BucketPerStrand::addSolvent()
 {
-	std::cout << "Attempting to add solvent." << std::endl;
 	CrystalPtr crystal = getCrystal();
 
 	FFTPtr total = FFTPtr(new FFT(*crystal->getFFT()));
@@ -32,8 +31,11 @@ void BucketPerStrand::addSolvent()
 	int confs = crystal->getSampleNum();
 	int count = 0;
 
+	std::cout << "Adding solvent for conformer " << std::flush;
+
 	for (int i = 0; i < crystal->getSampleNum(); i += SOLVENT_BITS)
 	{
+		std::cout << i << " ... " << std::flush;
 		int num = SOLVENT_BITS;
 
 		if (i + num > confs)
@@ -41,14 +43,14 @@ void BucketPerStrand::addSolvent()
 			num = confs - i;
 		}
 
-		std::cout << "Adding solvent for conformer " << i << "." << std::endl;
 		addSolventForConformer(i, num);
 		_solvent->bittyShrink(0.4, num);
 		_solvent->convertMaskToSolvent(num);
-		reportSolventContent();
 		FFT::addSimple(total, _solvent);
 		count++;
 	}
+	
+	std::cout << std::endl;
 	
 	/* We run without a conformer to get our atom pointers from
 	 * average values */
