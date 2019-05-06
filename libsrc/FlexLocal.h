@@ -71,6 +71,11 @@ public:
 	{
 		return _changed;
 	}
+	
+	PolymerPtr getPolymer()
+	{
+		return _polymer;
+	}
 private:
 	void findAtomsAndBonds();
 	void refineClusters();
