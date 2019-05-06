@@ -12,13 +12,13 @@
 
 #define C_CH1E_LENGTH    (1.525) // // 1.525 - Engh&Huber, 1.523 - ref1.
 #define CH1E_NH1_LENGTH  (1.458) // 1.458 - Engh&Huber, 1.455 - ref1.
-#define C_NH1_LENGTH     (1.332) // 1.329 - E&H91, 1.332 - ref1.
+#define C_NH1_LENGTH     (1.329) // 1.329 - E&H91, 1.332 - ref1.
 #define C_O_LENGTH       (1.231) // 1.229 - E&H91, 1.231 - ref1.
 
-#define CH1E_C_NH1_ANGLE     117.15 
-#define CH1E_C_O_ANGLE       120.4 // 120.1 - Engh&Huber, 120.7 - CCP4
-#define C_NH1_CH1E_ANGLE     121.5
-#define NH1_C_O_ANGLE        122.5
+#define CH1E_C_NH1_ANGLE     116.2 
+#define CH1E_C_O_ANGLE       120.8 // 120.1 - Engh&Huber, 120.7 - CCP4
+#define C_NH1_CH1E_ANGLE     121.7
+#define NH1_C_O_ANGLE        123.0
 #define C_CH1E_NH1_ANGLE     111.2 // matches Engh & Huber and CCP4
 
 #define deg2rad(a) ((a) * M_PI / 180)
@@ -501,12 +501,12 @@ GeomTable::GeomTable()
     addBondLength(AtomC, AtomGlyCA, 1.514);
     addBondLength(AtomNH1, AtomGlyCA, 1.456);
 
-    addBondAngle(AtomNH1, AtomGlyCA, AtomC, 113.9);
-    addBondAngle(AtomProNH1, AtomGlyCA, AtomC, 113.9);
-    addBondAngle(AtomGlyCA, AtomC, AtomNH1, 116.2);
+    addBondAngle(AtomNH1, AtomGlyCA, AtomC, 110.0);
+    addBondAngle(AtomProNH1, AtomGlyCA, AtomC, 112.4);
+    addBondAngle(AtomGlyCA, AtomC, AtomNH1, 115.2);
     addBondAngle(AtomGlyCA, AtomC, AtomProNH1, 117.2);
     addBondAngle(AtomGlyCA, AtomC, AtomO, 120.6);
-    addBondAngle(AtomGlyCA, AtomNH1, AtomC, 122.3);
+    addBondAngle(AtomGlyCA, AtomNH1, AtomC, 121.4);
     addBondAngle(AtomGlyCA, AtomNH1, AtomProC, 122.0);
 
     addBondLength(AtomC, AtomLysCA, 1.525);
@@ -537,7 +537,7 @@ GeomTable::GeomTable()
     addBondLength(AtomSerCA, AtomSerCB, 1.525);
     addBondLength(AtomSerCB, AtomSerOG, 1.418);
 
-    addBondAngle(AtomNH1, AtomSerCA, AtomC, C_CH1E_NH1_ANGLE);
+    addBondAngle(AtomNH1, AtomSerCA, AtomC, 111.2);
     addBondAngle(AtomProNH1, AtomSerCA, AtomC, C_CH1E_NH1_ANGLE);
     addBondAngle(AtomSerCA, AtomC, AtomO, CH1E_C_O_ANGLE);
     addBondAngle(AtomC, AtomNH1, AtomSerCA, C_NH1_CH1E_ANGLE);
