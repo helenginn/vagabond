@@ -141,8 +141,8 @@ void Bonds2GL::updateAtoms()
 		int total = _pairList[i].size;
 		int v = _pairList[i].vNum;
 
-		if (!min->getModel()->isBond()) continue;
-		if (!maj->getModel()->isBond()) continue;
+		if (!min->getModel()->hasExplicitPositions()) continue;
+		if (!maj->getModel()->hasExplicitPositions()) continue;
 		
 		std::vector<vec3> majBonds, minBonds;
 		getPositions(maj, min, &minBonds, &majBonds);
