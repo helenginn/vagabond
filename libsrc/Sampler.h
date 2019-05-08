@@ -149,6 +149,11 @@ public:
 	{
 		_mock = true;
 	}
+	
+	bool didChange()
+	{
+		return _changed;
+	}
 
 	void setScoreType(ScoreType type)
 	{
@@ -235,6 +240,7 @@ private:
 
 	bool _mock;
 	bool _silent;
+	bool _changed;
 
 	std::string _jobName;
 	ScoreType _scoreType;

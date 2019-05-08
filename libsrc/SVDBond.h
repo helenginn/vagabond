@@ -50,7 +50,8 @@ public:
 		return _num;
 	}
 
-	void addToStrategy(RefinementStrategyPtr strategy, int dir);
+	void addToStrategy(RefinementStrategyPtr strategy, int dir, 
+	                   FlexLocal *local);
 	void applyParameters();
 	void performSVD(BondBondCC *ccs = NULL);
 private:

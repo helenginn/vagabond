@@ -29,6 +29,7 @@
 
 Sampler::Sampler()
 {
+	_changed = false;
 	_mock = false;
 	_scoreType = ScoreTypeCorrel;
 	_refinedMagicAxisCount = 0;
@@ -608,7 +609,7 @@ bool Sampler::sample(bool clear)
 	_silent = false;
 	_scoreType = ScoreTypeCorrel;
 
-	bool changed = _strategy->didChange();
+	_changed = _strategy->didChange();
 
 	if (clear)
 	{
@@ -621,7 +622,7 @@ bool Sampler::sample(bool clear)
 	_unsampled.clear();
 	_crystal->clearCloseCache();
 
-	return changed;
+	return _changed;
 }
 
 double Sampler::getScore()

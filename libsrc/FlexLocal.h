@@ -9,6 +9,7 @@
 #ifndef FlexLocal_h
 #define FlexLocal_h
 
+class FlexLocal;
 #include "shared_ptrs.h"
 #include "RefinementStrategy.h"
 #include "MapScoreWorkspace.h"

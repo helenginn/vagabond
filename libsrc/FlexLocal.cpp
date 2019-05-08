@@ -94,11 +94,9 @@ void FlexLocal::refineClusters()
 	nelder->setSilent(true);
 
 	nelder->setEvaluationFunction(getScore, this);
-
-	_svd->addToStrategy(nelder, _negMult);
-
+	_svd->addToStrategy(nelder, _negMult, this);
 	nelder->refine();
-
+	
 	double val = (1 + getScore(this)) * 100.;
 	val = nelder->improvement();
 

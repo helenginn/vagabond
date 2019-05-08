@@ -524,6 +524,12 @@ void Selected2GL::cancelRefine()
 
 void Selected2GL::manualRefine()
 {
+	if (!getPicked())
+	{
+		std::cout << "No atoms selected for manual refinement." << std::endl;
+		return;
+	}
+
 	MoleculePtr mol = getPicked()->getMolecule();
 	if (!mol->isPolymer())
 	{
@@ -636,17 +642,37 @@ void Selected2GL::manualRefine()
 		{
 			group->addParamType(ParamOptionBondAngle, 0.5);
 			group->refine(crystal, RefinementFine);
+			bool changed = group->didChange();
 
 			group->addParamType(ParamOptionMaxTries, 1.0);
 			group->addParamType(ParamOptionNumBonds, 0.0);
 			group->addParamType(ParamOptionOccupancy, 1.0);
 
 			group->refine(crystal, RefinementFine);
+			changed &= group->didChange();
+
+			if (!changed)
+			{
+				std::cout << "No change from previous refinement. Done!"
+				<< std::endl;
+				Options::statusMessage("No more improvement, stopping.", false);
+				_refining = false;
+				break;
+			}
 		}
 		else if (!terminal)
 		{
 			PolymerPtr pol = ToPolymerPtr(mol);
 			pol->refineFromFarRegion(begin, end, crystal);
+			
+			if (!pol->didChange())
+			{
+				std::cout << "No change from previous refinement. Done!"
+				<< std::endl;
+				Options::statusMessage("No more improvement, stopping.", false);
+				_refining = false;
+				break;
+			}
 		}
 	}
 
