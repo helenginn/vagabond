@@ -37,6 +37,7 @@ typedef enum
 	InstructionTypeAdjustBFactor,
 	InstructionTypeRefitBackbone,
 	InstructionTypeChelate,
+	InstructionTypeCancel,
 	InstructionTypeManualRefine,
 } InstructionType;
 
@@ -154,6 +155,16 @@ public:
 	
 	virtual void appendToLog(char *msg) = 0;
 	virtual void pause(bool on) = 0;
+	
+	bool shouldCancel()
+	{
+		return _cancel;
+	}
+	
+	void setDoneCancelling()
+	{
+		_cancel = false;
+	}
 
 	virtual void setRenderDensity() = 0;
 protected:
@@ -169,9 +180,16 @@ protected:
 		return _value;
 	}
 
+	void setShouldCancel()
+	{
+		_cancel = true;
+		std::cout << "Should cancel after next FFT." << std::endl;
+		setMessage("Cancelling after next FFT.");
+	}
 private:
 	std::string _message;
 	bool _enabled;
+	bool _cancel;
 	void *_object;
 	Setter _setter;
 	Getter _getter;

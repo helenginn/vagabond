@@ -183,7 +183,17 @@ void Options::run()
 			_notify->setInstruction(InstructionTypeResetExplorer);
 		}
 		
-		executeProtocol();
+		try 
+		{
+			executeProtocol();
+		}
+		catch (int e)
+		{
+			if (e == -1)
+			{
+				std::cout << "Cancelled further refinement." << std::endl;
+			}
+		}
 	}
 	
 	notifyGUI(true);
@@ -837,8 +847,14 @@ void Options::recalculateFFT(bool saveState)
 	getActiveCrystal()->wrapUpRefinement();
 	agreementSummary();
 	
-//	std::cout << "Total states: " << getActiveCrystal()->stateCount() <<
-//	std::endl;
+	if (_notify)
+	{
+		if (_notify->shouldCancel())
+		{
+			_notify->setDoneCancelling();
+			throw -1;
+		}
+	}
 }
 
 void Options::openInCoot()

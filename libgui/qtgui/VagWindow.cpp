@@ -154,6 +154,10 @@ void VagWindow::makeMenu()
 	         InstructionTypeRefineDensity);
 	menuItem(mRefine, "Recalculate FFT",
 	         InstructionTypeRecalculateFFT);
+
+	QAction *action = mRefine->addAction("Cancel further refinement");
+	connect(action, &QAction::triggered,
+			[=]{ setShouldCancel(); });
 }
 
 void VagWindow::refitBackbone()
