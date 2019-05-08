@@ -318,21 +318,6 @@ void SVDBond::addToStrategy(RefinementStrategyPtr strategy, int dir,
 		strategy->addParameter(_params[i].pKick, Param::getValue,
 		                       Param::setValue, inv, tol);
 	}
-	
-	
-	return;
-	RefinementGridSearchPtr grid;
-	grid = RefinementGridSearchPtr(new RefinementGridSearch());
-	
-	grid->setEvaluationFunction(FlexLocal::getScore, local);
-	grid->addParameter(_params[8].pWhack, Param::getValue,
-	                   Param::setValue, inv * 4, inv / 3);
-	grid->addParameter(_params[9].pWhack, Param::getValue,
-	                   Param::setValue, inv * 4, inv / 3);
-	grid->setVerbose(true);
-	grid->setWritePNG();
-	grid->refine();
-
 }
 
 void SVDBond::applyParameters()
