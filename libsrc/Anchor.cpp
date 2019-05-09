@@ -555,6 +555,11 @@ void Anchor::propagateChange(int depth, bool refresh)
 
 	/* Will force recalculation of final positions */
 	Model::propagateChange(depth, refresh);
+	
+	if (refresh)
+	{
+		getFinalPositions();
+	}
 
 }
 
