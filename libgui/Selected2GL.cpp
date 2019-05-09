@@ -454,12 +454,6 @@ void Selected2GL::focusOnGroup()
 void Selected2GL::toggleKicks()
 {
 	_switch.lock();
-	if (!_refining)
-	{
-		_switch.unlock();
-
-		return;
-	}
 	_kicking = !_kicking;
 	
 	if (_kicking)
@@ -517,7 +511,7 @@ void Selected2GL::cancelRefine()
 {
 	Options::statusMessage("Cancelling refinement...", false);
 	_switch.lock();
-	_kicking = false;
+//	_kicking = false;
 	_refining = false;
 	_switch.unlock();
 }
@@ -651,12 +645,12 @@ void Selected2GL::manualRefine()
 			group->refine(crystal, RefinementFine);
 			changed &= group->didChange();
 
-			if (!changed)
+			if (!changed && false)
 			{
 				std::cout << "No change from previous refinement. Done!"
 				<< std::endl;
 				Options::statusMessage("No more improvement, stopping.", false);
-				_refining = false;
+				cancelRefine();	
 				break;
 			}
 		}
@@ -667,11 +661,10 @@ void Selected2GL::manualRefine()
 			
 			if (!pol->didChange())
 			{
-				std::cout << "No change from previous refinement. Done!"
+				std::cout << "No change from previous refinement."
 				<< std::endl;
-				Options::statusMessage("No more improvement, stopping.", false);
-				_refining = false;
-				break;
+//				cancelRefine();	
+//				break;
 			}
 		}
 	}
