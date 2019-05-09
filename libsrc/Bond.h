@@ -554,6 +554,7 @@ private:
 	double _geomRatio;
 	double _expectedAngle;
 	
+	bool _leftOfAnchor;
 	bool _usingTorsion;
 
 	/* Flag to say whether recalculation should occur */

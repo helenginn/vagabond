@@ -30,6 +30,7 @@ Bond::~Bond()
 
 void Bond::initialize()
 {
+	_leftOfAnchor = false;
 	_usingTorsion = false;
 	_bondLength = 0;
 	_changedSamples = true;
@@ -102,6 +103,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	deriveCirclePortion();
 	deriveTorsionAngle();
 	
+	postParseTidy();
 }
 
 Bond::Bond(Bond &other)
@@ -139,6 +141,8 @@ Bond::Bond(Bond &other)
 	_circlePortion = other._circlePortion;
 	_geomRatio = other._geomRatio;
 	_expectedAngle = other._expectedAngle;
+	
+	postParseTidy();
 }
 
 void Bond::deriveBondLength()
@@ -653,6 +657,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 			double sinAlpha = sqrt(c / (c + 1));
 
 			if (thisDeviation.z < 0) sinAlpha *= -1;
+			if (_leftOfAnchor) sinAlpha *= -1;
 
 			kickValue = sinAlpha;
 
@@ -1641,7 +1646,16 @@ void Bond::linkReference(BaseParserPtr object, std::string category)
 
 void Bond::postParseTidy()
 {	
-
+	PolymerPtr pol = getMinor()->getMonomer()->getPolymer();
+	if (pol)
+	{
+		int anch = pol->getAnchor();
+		
+		if (getMinor()->getResidueNum() < anch)
+		{
+			_leftOfAnchor = true;
+		}
+	}
 }
 
 void Bond::equaliseOccupancies()
