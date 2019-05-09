@@ -52,7 +52,7 @@ public:
 protected:
 	virtual std::string getParserIdentifier();
 	virtual void addProperties();
-	virtual void linkReference(ParserPtr object, std::string category);
+	virtual void linkReference(BaseParserPtr object, std::string category);
 	virtual void postParseTidy();
 
 private:

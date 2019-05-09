@@ -238,7 +238,7 @@ void Absolute::addProperties()
 	Model::addProperties();
 }
 
-void Absolute::linkReference(ParserPtr object, std::string category)
+void Absolute::linkReference(BaseParserPtr object, std::string category)
 {
 	if (category == "atom")
 	{

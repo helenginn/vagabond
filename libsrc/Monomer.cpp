@@ -231,7 +231,7 @@ void Monomer::addObject(ParserPtr object, std::string category)
 	AtomGroup::addObject(object, category);
 }
 
-void Monomer::linkReference(ParserPtr object, std::string category)
+void Monomer::linkReference(BaseParserPtr object, std::string category)
 {
 	if (category == "atom")
 	{

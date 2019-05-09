@@ -69,7 +69,7 @@ public:
 	}
 protected:
 	virtual void addProperties();
-	virtual void linkReference(ParserPtr object, std::string category);
+	virtual void linkReference(BaseParserPtr object, std::string category);
 	virtual std::string getParserIdentifier()
 	{
 		return "group_" + i_to_str(_group);

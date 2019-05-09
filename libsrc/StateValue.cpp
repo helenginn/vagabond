@@ -8,7 +8,7 @@
 #include "Parser.h"
 #include "Bond.h"
 
-void StateValue::applyToParser(Parser *parser)
+void StateValue::applyToParser(BaseParser *parser)
 {
 	bool found = false;
 

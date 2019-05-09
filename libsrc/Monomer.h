@@ -117,7 +117,7 @@ public:
 	virtual void addProperties();
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();
-	virtual void linkReference(ParserPtr object, std::string category);
+	virtual void linkReference(BaseParserPtr object, std::string category);
 	
 	static double vsRefine(void *object);
 	void refine(CrystalPtr target,

@@ -233,7 +233,7 @@ protected:
 
 	virtual void sanityCheck();
 	virtual void addProperties();
-	virtual void linkReference(ParserPtr object, std::string category); 
+	virtual void linkReference(BaseParserPtr object, std::string category); 
 	virtual void addObject(ParserPtr object, std::string category);
 
 	double _bFactor;

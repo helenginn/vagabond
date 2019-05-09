@@ -524,7 +524,7 @@ void Anchor::addObject(ParserPtr object, std::string category)
 	}
 }
 
-void Anchor::linkReference(ParserPtr object, std::string category)
+void Anchor::linkReference(BaseParserPtr object, std::string category)
 {
 	AtomPtr atom = ToAtomPtr(object);
 

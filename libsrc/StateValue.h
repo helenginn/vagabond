@@ -60,7 +60,7 @@ public:
 		_int = value;
 	}
 
-	void applyToParser(Parser *parser);
+	void applyToParser(BaseParser *parser);
 
 private:
 	void repairCustom();

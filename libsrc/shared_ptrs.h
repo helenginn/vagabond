@@ -47,6 +47,7 @@
 #define ToTwistPtr(a) (boost::static_pointer_cast<Twist>((a)))
 #define ToAtomGroupPtr(a) (boost::static_pointer_cast<AtomGroup>((a)))
 #define ToMonomerPtr(a) (boost::static_pointer_cast<Monomer>((a)))
+#define ToBaseParserPtr(a) (boost::static_pointer_cast<BaseParser>((a)))
 #define ToParserPtr(a) (boost::static_pointer_cast<Parser>((a)))
 #define ToGridPtr(a) (boost::static_pointer_cast<RefinementGridSearch>(a))
 
@@ -188,7 +189,10 @@ typedef boost::shared_ptr<Sampler> SamplerPtr;
 
 typedef std::vector<AtomPtr> AtomList;
 
+class BaseParser;
 class Parser;
+typedef boost::shared_ptr<BaseParser> BaseParserPtr;
+typedef boost::weak_ptr<BaseParser> BaseParserWkr;
 typedef boost::shared_ptr<Parser> ParserPtr;
 typedef boost::weak_ptr<Parser> ParserWkr;
 

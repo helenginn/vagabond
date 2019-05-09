@@ -49,7 +49,7 @@ void GhostBond::addProperties()
 	addReference("minor", _minor.lock());
 }
 
-void GhostBond::linkReference(ParserPtr object, std::string category)
+void GhostBond::linkReference(BaseParserPtr object, std::string category)
 {
 	if (category == "major")
 	{

@@ -1614,7 +1614,7 @@ void Bond::addObject(ParserPtr object, std::string category)
 	} 
 }
 
-void Bond::linkReference(ParserPtr object, std::string category)
+void Bond::linkReference(BaseParserPtr object, std::string category)
 {
 
 	if (category == "minor")

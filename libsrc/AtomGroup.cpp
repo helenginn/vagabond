@@ -1296,7 +1296,7 @@ void AtomGroup::addObject(ParserPtr object, std::string category)
 	} 
 }
 
-void AtomGroup::linkReference(ParserPtr object, std::string category)
+void AtomGroup::linkReference(BaseParserPtr object, std::string category)
 {
 	if (category == "atom")
 	{

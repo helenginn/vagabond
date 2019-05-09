@@ -93,7 +93,7 @@ class Crystal : public Object, public AtomGroup
 public:
 	CrystalPtr shared_from_this()
 	{
-		return ToCrystalPtr(Parser::shared_from_this());
+		return ToCrystalPtr(BaseParser::shared_from_this());
 	}
 	
 	Crystal();

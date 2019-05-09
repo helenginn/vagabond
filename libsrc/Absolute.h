@@ -247,7 +247,7 @@ protected:
 
 	virtual void addProperties();
 	virtual void addObject(ParserPtr, std::string) {};
-	virtual void linkReference(ParserPtr object, std::string category);
+	virtual void linkReference(BaseParserPtr object, std::string category);
 private:
 	void initialise();
 	AtomWkr _atom;

@@ -185,7 +185,7 @@ void Whack::addProperties()
 	addReference("bond", _bond);
 }
 
-void Whack::linkReference(ParserPtr object, std::string category)
+void Whack::linkReference(BaseParserPtr object, std::string category)
 {
 	if (category == "anchor")
 	{

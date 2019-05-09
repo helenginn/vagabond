@@ -182,7 +182,7 @@ protected:
 
 	virtual void addProperties();
 	virtual void addObject(ParserPtr object, std::string category);
-	virtual void linkReference(ParserPtr object, std::string category);
+	virtual void linkReference(BaseParserPtr object, std::string category);
 	std::vector<AtomPtr> _atoms;
 private:
 	static void plotCoordVals(std::vector<CoordVal> &vals, bool difference,
