@@ -53,6 +53,7 @@ public:
 	Notifiable()
 	{
 		_value = 0;
+		_cancel = false;
 		_result = 0;
 		_setter = NULL;
 		_getter = NULL;
