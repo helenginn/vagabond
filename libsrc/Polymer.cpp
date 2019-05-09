@@ -218,6 +218,11 @@ void Polymer::whack()
 
 void Polymer::tieAtomsUp()
 {
+	if (_anchorNum == -INT_MAX)
+	{
+		return;
+	}
+	
 	if (!getMonomer(_anchorNum) || !getMonomer(_anchorNum)->findAtom("N"))
 	{
 		shout_at_user("Anchor point specified isn't an available residue.\n"\
@@ -698,6 +703,12 @@ void Polymer::refineAnchorPosition(CrystalPtr target)
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
 {
+	if (_anchorNum == -INT_MAX)
+	{
+		return;
+	}
+	
+	
 	target->addComment("Refining against " + Options::rTypeString(rType));
 
 	if (rType == RefinementSidechain)
@@ -1066,7 +1077,7 @@ void Polymer::findAnchorNearestCentroid()
 	double count = 0;
 	vec3 sum = centroid();
 
-	int anchorRes = -1;
+	int anchorRes = -INT_MAX;
 	double lowestLength = FLT_MAX;
 
 	for (int i = monomerBegin() + 1; i < monomerEnd() - 1; i++)
@@ -1097,10 +1108,9 @@ void Polymer::findAnchorNearestCentroid()
 		}
 	}
 
-	if (anchorRes < 0)
+	if (anchorRes == -INT_MAX)
 	{
-		shout_at_user("You appear to have no single-conformer "
-		              "C-alpha atoms in your structure.");
+		std::cout << "Not anchoring " << getChainID() << std::endl;
 	}
 	else
 	{
@@ -1319,6 +1329,11 @@ void Polymer::reportParameters()
 
 void Polymer::refineGlobalFlexibility()
 {
+	if (_anchorNum == -INT_MAX)
+	{
+		return;
+	}
+
 	std::cout << "Optimising whole molecule movements, chain " << 
 	getChainID() << "." << std::endl;
 
