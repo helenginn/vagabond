@@ -112,6 +112,11 @@ void Polymer::reflex()
 
 bool Polymer::refineLocalFlexibility()
 {
+	if (_anchorNum == -INT_MAX)
+	{
+		return false;
+	}
+
 	Timer timer("flexibility refinement", true);
 	FlexLocal local;
 	whack();
