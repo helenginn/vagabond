@@ -296,6 +296,12 @@ void AtomGroup::refreshPositions(bool quick)
 		if (!atom(i)) continue;
 
 		atom(i)->getModel()->propagateChange(0);
+	}
+
+	for (size_t i = 0; i < atomCount(); i++)
+	{
+		if (!atom(i)) continue;
+
 		atom(i)->getModel()->refreshPositions();
 	}
 
