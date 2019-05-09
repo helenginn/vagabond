@@ -1304,7 +1304,7 @@ void Polymer::reportParameters()
 		}
 	}
 	
-	int flexChain = 6 * 2;
+	int flexChain = 6 * 2 + 9;
 	
 	_positionalParams = torsionCountBackbone + torsionCountSidechain 
 	+ angleCountBackbone + angleCountSidechain;
