@@ -70,6 +70,11 @@ bool Vagabond2GL::shouldGetBonds()
 			for (int i = 0; i < molecule->atomCount(); i++)
 			{
 				AtomPtr minor = molecule->atom(i);
+				
+				if (!minor)
+				{
+					continue;
+				}
 
 				if (!isAcceptableAtom(&*minor))
 				{
