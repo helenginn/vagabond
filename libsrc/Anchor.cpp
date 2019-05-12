@@ -255,7 +255,7 @@ void Anchor::rotateBases()
 		mat3x3_mult_vec(rot_only, &diff_to_old);
 		vec3 new_old = vec3_add_vec3(start, diff_to_old);
 		_storedSamples[i].old_start = new_old;
-		mat3x3 basis = mat3x3_mult_mat3x3(_storedSamples[i].basis, rot_only);
+		mat3x3 basis = mat3x3_mult_mat3x3(rot_only, _storedSamples[i].basis);
 		_storedSamples[i].basis = basis;
 	}
 }
