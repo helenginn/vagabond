@@ -402,6 +402,20 @@ void Atom::addDirectlyToMap(FFTPtr fft, mat3x3 basis, vec3 offset,
 {
 	if (!getModel()->hasExplicitPositions())
 	{
+		FFTPtr blur = getBlur();
+		blur->fft(1);
+		blur->invertScale();
+		double occ = _model->getEffectiveOccupancy();
+		double curr = blur->sumAll();
+		blur->multiplyAll(occ / curr);
+		
+		vec3 pos = _model->getAbsolutePosition();
+		vec3_subtract_from_vec3(&pos, offset);
+		mat3x3_mult_vec(basis, &pos);
+		blur->shiftToCentre();
+
+		FFT::add(fft, blur, pos, false);
+
 		return;
 	}
 	

@@ -883,7 +883,7 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 		{
 			if (atom(j)->getElement() == ele)
 			{
-				if (!atom(j)->getModel()->hasExplicitPositions())
+				if (false && !atom(j)->getModel()->hasExplicitPositions())
 				{
 					after.push_back(atom(j));
 					continue;
