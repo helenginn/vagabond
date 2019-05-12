@@ -1351,6 +1351,7 @@ void Polymer::refineGlobalFlexibility()
 		NelderMeadPtr lbfgs = NelderMeadPtr(new RefinementNelderMead());
 		lbfgs->setCycles(60);
 		lbfgs->setJobName("rot");
+		lbfgs->setVerbose(true);
 		attachTargetToRefinement(lbfgs, target);
 
 		anchor->addLibrationParameters(lbfgs);
@@ -1364,6 +1365,7 @@ void Polymer::refineGlobalFlexibility()
 		NelderMeadPtr lbfgs = NelderMeadPtr(new RefinementNelderMead());
 		lbfgs->setCycles(60);
 		lbfgs->setJobName("screw");
+		lbfgs->setVerbose(true);
 		attachTargetToRefinement(lbfgs, target);
 
 		anchor->addScrewParameters(lbfgs);
@@ -1377,11 +1379,14 @@ void Polymer::refineGlobalFlexibility()
 		NelderMeadPtr lbfgs = NelderMeadPtr(new RefinementNelderMead());
 		attachTargetToRefinement(lbfgs, target);
 		lbfgs->setJobName("translation");
+		lbfgs->setVerbose(true);
 		lbfgs->setCycles(60);
 
 		anchor->addTranslationParameters(lbfgs);
 		lbfgs->refine();
 	}
+
+	propagateChange();
 
 	timer.report();
 }
