@@ -274,27 +274,28 @@ void Anchor::translateStartPositions()
 	tropicator.setTensor(translation);
 	mat3x3 trans = tropicator.basis();
 
-	vec3 sum = empty_vec3();
+	vec3 sum_start = empty_vec3();
+	vec3 sum_old = empty_vec3();
+
+	for (int i = 0; i < _storedSamples.size(); i++)
+	{
+		vec3_add_to_vec3(&sum_start, _storedSamples[i].start);
+		vec3_add_to_vec3(&sum_old, _storedSamples[i].old_start);
+	}
+	
+	vec3_mult(&sum_start, 1 / (double)_storedSamples.size());
+	vec3_mult(&sum_old, 1 / (double)_storedSamples.size());
 
 	for (int i = 0; i < _storedSamples.size(); i++)
 	{
 		vec3 start = _storedSamples[i].start;
-		vec3 diff = vec3_subtract_vec3(start, _position);
-		vec3 moved_diff = mat3x3_mult_vec(trans, diff);
-		vec3 diffdiff = vec3_subtract_vec3(moved_diff, diff);
-		
-		vec3_add_to_vec3(&sum, diffdiff);
+		vec3 diff = vec3_subtract_vec3(start, sum_start);
+		mat3x3_mult_vec(trans, &diff);
+		vec3 new_start = vec3_add_vec3(sum_start, diff);
+		vec3 old_start = vec3_add_vec3(sum_old, diff);
 
-		vec3_add_to_vec3(&_storedSamples[i].start, diffdiff);
-		vec3_add_to_vec3(&_storedSamples[i].old_start, diffdiff);
-	}
-	
-	vec3_mult(&sum, -1 / (double)_storedSamples.size());
-
-	for (int i = 0; i < _storedSamples.size(); i++)
-	{
-		vec3_add_to_vec3(&_storedSamples[i].start, sum);
-		vec3_add_to_vec3(&_storedSamples[i].old_start, sum);
+		_storedSamples[i].start = new_start;
+		_storedSamples[i].old_start = old_start;
 	}
 }
 
