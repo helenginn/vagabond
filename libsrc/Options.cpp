@@ -173,7 +173,7 @@ void Options::run()
 		{
 			crystal->setAnchors();
 			crystal->tieAtomsUp();
-			getActiveCrystal()->hydrogenateContents();
+			crystal->hydrogenateContents();
 		}
 
 		crystal->tiedUpScattering();
