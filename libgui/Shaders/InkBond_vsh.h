@@ -38,8 +38,8 @@ std::string InkBond_vsh =
 "	     	 			axis[1], -axis[0]);\n"\
 "    vec2 shifted = bondMat * clean_shift;\n"\
 "    vec4 sum = model4 + norm4;\n"\
-"    shifted[0] *= sum[3] * 8. / model4[2];\n"\
-"    shifted[1] *= sum[3] * 8. / model4[2];\n"\
+"    shifted[0] *= 32.;// / model4[2];\n"\
+"    shifted[1] *= 32.;// / model4[2];\n"\
 "    model4[0] += shifted[0];\n"\
 "    model4[1] += shifted[1];\n"\
 "    gl_Position = model4;\n"\

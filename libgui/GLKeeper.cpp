@@ -30,8 +30,8 @@ void GLKeeper::updateProjection()
 
 	double side = 0.5;
 	float aspect = height / width;
-	projMat = mat4x4_frustum(side, -side, side * aspect, -side * aspect,
-	                         zNear, zFar);
+	projMat = mat4x4_ortho(side, -side, side * aspect, -side * aspect,
+	                       zNear, zFar);
 }
 
 void GLKeeper::setupCamera(void)
