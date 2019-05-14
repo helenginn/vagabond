@@ -1494,3 +1494,7 @@ mat3x3 Polymer::fitEllipsoid()
 	return basis;
 }
 
+bool Polymer::hasResidue(int resNum)
+{
+	return (resNum >= monomerBegin() && resNum <= monomerEnd());
+}

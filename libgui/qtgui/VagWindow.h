@@ -50,6 +50,9 @@ public:
 	virtual bool isRunningSomething();
 	void receiveDialogue(DialogueType type, std::string diagString);
 
+	void gotoResidueDialogue();
+	void receiveGotoResidue(std::string diagString);
+
 	virtual void setMessage(std::string message);
 	virtual void wakeup();
 	virtual void setRenderDensity();

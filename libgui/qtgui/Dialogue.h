@@ -27,6 +27,7 @@ typedef enum
 	DialogueUndefined,
 	DialogueBMultiplier,
 	DialogueRefit,
+	DialogueGoto,
 } DialogueType;
 
 class Dialogue : public QMainWindow

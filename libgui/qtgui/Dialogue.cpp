@@ -39,6 +39,7 @@ Dialogue::Dialogue(QWidget *parent, std::string windowText,
 	bDialogue->show();
 
 	connect(bDialogue, SIGNAL(clicked()), this, SLOT(returnClicked()));
+	connect(tDialogue, SIGNAL(returnPressed()), this, SLOT(returnClicked()));
 }
 
 void Dialogue::returnClicked()

@@ -42,6 +42,7 @@ public:
 	void toggleKicks();
 	void advanceMonomer(int dir);
 	void addPicked(AtomPtr atom, bool preserveType);
+	void selectResidue(std::string chain, int number);
 
 	void setAdding(bool val)
 	{

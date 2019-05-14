@@ -787,3 +787,66 @@ void Selected2GL::deleteSelected()
 		_picked.clear();
 	}
 }
+
+
+void Selected2GL::selectResidue(std::string chain, int resNum)
+{
+	CrystalPtr crystal = Options::getActiveCrystal();
+	
+	if (!chain.length())
+	{
+		if (getPicked())
+		{
+			chain = getPicked()->getMolecule()->getChainID();
+		}
+		else
+		{
+			if (crystal->atomCount())
+			{
+				chain = crystal->atom(0)->getMolecule()->getChainID();
+			}
+			else
+			{
+				return;
+			}
+		}
+	}
+
+	for (int i = 0; i < crystal->moleculeCount(); i++)
+	{
+		MoleculePtr molecule = crystal->molecule(i);
+
+		if (!molecule->isPolymer())
+		{
+			continue;
+		}
+		
+		if (molecule->getChainID()[0] != chain[0])
+		{
+			continue;
+		}
+		
+		PolymerPtr pol = ToPolymerPtr(molecule);
+		
+		if (resNum == -INT_MAX)
+		{
+			resNum = pol->monomerBegin();
+		}
+
+		if (pol->hasResidue(resNum))
+		{
+			MonomerPtr mon = pol->getMonomer(resNum);
+
+			if (mon)
+			{
+				AtomPtr atom = mon->findAtom("CA");
+				setPicked(atom, true);
+			}
+
+			focusOnGroup();
+			return;
+		}
+	}
+	
+	std::cout << "Did not find residue " << chain << " " << resNum << std::endl;
+}

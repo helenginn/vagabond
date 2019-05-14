@@ -390,3 +390,8 @@ void GLKeeper::setAdding(bool val)
 {
 	_selected2GL->setAdding(val);
 }
+
+void GLKeeper::selectResidue(std::string chain, int number)
+{
+	_selected2GL->selectResidue(chain, number);	
+}

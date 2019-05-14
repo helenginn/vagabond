@@ -68,6 +68,7 @@ public:
 	void deleteSelected();
 	void splitSelected();
 	void focusOnSelected();
+	void selectResidue(std::string chain, int number);
 	void advanceMonomer(int dir);
 	void setAdding(bool val);
 	vec3 setModelRay(double x, double y);

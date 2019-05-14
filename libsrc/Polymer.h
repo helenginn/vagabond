@@ -144,6 +144,7 @@ public:
 		return _totalMonomers;
 	}
 
+	bool hasResidue(int resNum);
 
 	virtual std::string getClassName()
 	{

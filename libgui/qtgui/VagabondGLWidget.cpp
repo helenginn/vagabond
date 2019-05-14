@@ -87,6 +87,10 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	{
 		keeper->toggleKicks();
 	}
+	else if (event->key() == Qt::Key_G)
+	{
+		_vag->gotoResidueDialogue();
+	}
 	else if (event->key() == Qt::Key_Comma)
 	{
 		keeper->advanceMonomer(-1);

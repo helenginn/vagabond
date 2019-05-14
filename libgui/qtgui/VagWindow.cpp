@@ -23,6 +23,7 @@
 #include "../../libsrc/Options.h"
 #include "InstructionThread.h"
 #include "Dialogue.h"
+#include "../../libsrc/charmanip.h"
 #include "../../libsrc/Crystal.h"
 #include "../../libsrc/Monomer.h"
 #include "../../libsrc/Polymer.h"
@@ -169,6 +170,18 @@ void VagWindow::refitBackbone()
 	                           "Refit");
 	_myDialogue->setWindow(this);
 	_myDialogue->setTag(DialogueRefit);
+	_myDialogue->show();
+}
+
+void VagWindow::gotoResidueDialogue()
+{
+	delete _myDialogue;
+	_myDialogue = new Dialogue(this, "Go to residue", 
+	                           "Choose chain and number",
+	                           "A320",
+	                           "Go");
+	_myDialogue->setWindow(this);
+	_myDialogue->setTag(DialogueGoto);
 	_myDialogue->show();
 }
 
@@ -433,7 +446,6 @@ int VagWindow::waitForInstructions()
 				display->manualRefine();
 				break;
 
-
 				default:
 				break;
 			}
@@ -602,8 +614,51 @@ void VagWindow::splitBond()
 	bond->getMinor()->getMolecule()->refreshPositions();
 }
 
+void VagWindow::receiveGotoResidue(std::string diagString)
+{
+	if (diagString.length() == 0)
+	{
+		std::cout << "No residue entered." << std::endl;
+		return;
+	}
+
+	to_upper(diagString);
+
+	char *start = &diagString[0];
+	std::string chain = "";
+
+	int resNum = 0;
+	
+	if (*start < '0' || *start > '9')
+	{
+		chain += *start;
+		
+		if (diagString.length() <= 1)
+		{
+			resNum = -INT_MAX;
+		}
+		else
+		{
+			start++;
+			resNum = atoi(start);
+		}
+	}
+	
+	display->getKeeper()->selectResidue(chain, resNum);
+
+	_myDialogue->hide();
+	_myDialogue->deleteLater();
+	_myDialogue = NULL;
+}
+
 void VagWindow::receiveDialogue(DialogueType type, std::string diagString)
 {
+	if (type == DialogueGoto)
+	{
+		receiveGotoResidue(diagString);
+		return;
+	}
+
 	std::vector<double> trial;
 
 	while (true)
@@ -634,7 +689,7 @@ void VagWindow::receiveDialogue(DialogueType type, std::string diagString)
 	}
 
 	_myDialogue->hide();
-	delete _myDialogue;
+	_myDialogue->deleteLater();
 	_myDialogue = NULL;
 }
 
