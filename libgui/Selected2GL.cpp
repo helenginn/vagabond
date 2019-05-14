@@ -663,8 +663,6 @@ void Selected2GL::manualRefine()
 			{
 				std::cout << "No change from previous refinement."
 				<< std::endl;
-//				cancelRefine();	
-//				break;
 			}
 		}
 	}
