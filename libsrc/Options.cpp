@@ -315,9 +315,8 @@ void Options::executeProtocol()
 			<< std::endl;
 			/* Remedial action required. */
 			double newB = crystal->averageBFactor();
-			double ratio = oldB / newB;
+			double ratio = 0.9;
 			/* Only do a smaller increment at a time */
-			double increment = (ratio - 1) / 2 + 1;
 
 			bool undone = false;
 
