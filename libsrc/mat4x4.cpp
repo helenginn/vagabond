@@ -99,7 +99,7 @@ mat4x4 mat4x4_ortho(float left, float right, float top,
 	mat4x4 mat = make_mat4x4();
 
 	mat.vals[0] = 2 / (right - left);
-	mat.vals[4] = -(left + right) / (right - left);
+	mat.vals[3] = -(left + right) / (right - left);
 	mat.vals[5] = 2 / (top - bottom);
 	mat.vals[7] = -(top + bottom) / (top - bottom);
 	mat.vals[10] = -2 / (far - near);
