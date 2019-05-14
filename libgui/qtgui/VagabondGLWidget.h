@@ -12,7 +12,7 @@
 #include <QtCore/qtimer.h>
 #include <QtWidgets/qopenglwidget.h>
 #include "../GLKeeper.h"
-#include <Qt3DInput/QMouseEvent>
+#include <QMouseEvent>
 #include "VagWindow.h"
 
 class VagabondGLWidget : public QOpenGLWidget
