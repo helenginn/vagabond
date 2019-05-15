@@ -297,6 +297,18 @@ void Polymer::tieAtomsUp()
 	n2ca->checkForSplits(shared_from_this());
 	n2c->checkForSplits(shared_from_this());
 	
+	/* test */
+	if (Options::getBondAngles() >= 4)
+	{
+		for (int i = 0; i < atomCount(); i++)
+		{
+			if (atom(i)->getModel()->isBond())
+			{
+				ToBondPtr(atom(i)->getModel())->setRefineBondAngle(true);
+			}
+		}
+	}
+	
 	whack();
 }
 
