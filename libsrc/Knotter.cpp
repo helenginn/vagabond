@@ -250,8 +250,15 @@ void Knotter::tieTowardsCTerminus()
 		Bond::setTorsion(&*nSpine2cAlpha, deg2rad(-180));
 	}
 
+	bool isGlycine = (_backbone->getMonomer()->getIdentifier() == "gly");
+	
 	BondPtr cAlpha2Carbonyl = BondPtr(new Bond(cAlpha, carbonylCarbon));
 	cAlpha2Carbonyl->activate();
+
+	if (isGlycine)
+	{
+		cAlpha2Carbonyl->setRefineBondAngle(true);
+	}
 
 	if (nSpine && nSpine->getModel()->isBond())
 	{
@@ -264,6 +271,11 @@ void Knotter::tieTowardsCTerminus()
 		BondPtr carbonyl2nextN = BondPtr(new Bond(carbonylCarbon, nextNSpine));
 		carbonyl2nextN->setRefineFlexibility(false);
 		carbonyl2nextN->activate();
+
+		if (isGlycine)
+		{
+			carbonyl2nextN->setRefineBondAngle(true);
+		}
 	}
 
 	BondPtr carbonyl2oxy = BondPtr(new Bond(carbonylCarbon, carbonylOxygen));
