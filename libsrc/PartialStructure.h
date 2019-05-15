@@ -21,6 +21,12 @@
 
 #include "shared_ptrs.h"
 
+/** \class PartialStructure
+ *  \brief Will scale with absolute value and B factor applied to a set
+ *   of partial structure factors which may either be input from the
+ *   command line or created by Vagabond (e.g. solvent models).
+ */
+
 class PartialStructure
 {
 public:
