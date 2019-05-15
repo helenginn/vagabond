@@ -54,6 +54,7 @@ bool Options::_rSidechains = true;
 bool Options::_rInter = true;
 bool Options::_rIntra = true;
 bool Options::_peptideMovement = true;
+bool Options::_hydrogens = true;
 
 std::string Options::_anchor = "";
 ScalingType Options::_scaleType = ScalingTypeShell;
@@ -173,7 +174,11 @@ void Options::run()
 		{
 			crystal->setAnchors();
 			crystal->tieAtomsUp();
-			crystal->hydrogenateContents();
+			
+			if (_hydrogens)
+			{
+				crystal->hydrogenateContents();
+			}
 		}
 
 		crystal->tiedUpScattering();
@@ -593,6 +598,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "rfree", &_useRFree);
 		understood |= parseParameter(arg, "diagnostics", &_diagnostics);
 		understood |= parseParameter(arg, "partial", &_usePartial);
+		understood |= parseParameter(arg, "hydrogens", &_hydrogens);
 		
 		int shellNum = 0;
 		bool shellstood = parseParameter(arg, "--shell-scale=", &shellNum);
