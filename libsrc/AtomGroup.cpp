@@ -884,7 +884,7 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 			_eleScratch[ele] = eleFFT;
 		}
 
-		size_t elementElectrons = 0;
+		double elementElectrons = 0;
 		size_t count = 0;
 
 		for (int j = 0; j < atomCount(); j++)
@@ -898,8 +898,14 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 				}
 
 				atom(j)->addDirectlyToMap(scratch, new_basis, offset);
-				int eCount = ele->electronCount() *
+				double eCount = ele->electronCount() *
 				atom(j)->getModel()->getEffectiveOccupancy();
+				
+				if (ele->getSymbol() == "S")
+				{
+					std::cout << atom(j)->shortDesc() << " " <<
+					eCount << std::endl;
+				}
 				
 				elementElectrons += eCount;
 				count++;
