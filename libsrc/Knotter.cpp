@@ -255,7 +255,7 @@ void Knotter::tieTowardsCTerminus()
 	BondPtr cAlpha2Carbonyl = BondPtr(new Bond(cAlpha, carbonylCarbon));
 	cAlpha2Carbonyl->activate();
 
-	if (isGlycine)
+	if (isGlycine && _bondAngles >= 3)
 	{
 		cAlpha2Carbonyl->setRefineBondAngle(true);
 	}
@@ -272,7 +272,7 @@ void Knotter::tieTowardsCTerminus()
 		carbonyl2nextN->setRefineFlexibility(false);
 		carbonyl2nextN->activate();
 
-		if (isGlycine)
+		if (isGlycine && _bondAngles >= 3)
 		{
 			carbonyl2nextN->setRefineBondAngle(true);
 		}
