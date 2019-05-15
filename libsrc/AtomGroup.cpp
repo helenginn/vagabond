@@ -901,12 +901,6 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 				double eCount = ele->electronCount() *
 				atom(j)->getModel()->getEffectiveOccupancy();
 				
-				if (ele->getSymbol() == "S")
-				{
-					std::cout << atom(j)->shortDesc() << " " <<
-					eCount << std::endl;
-				}
-				
 				elementElectrons += eCount;
 				count++;
 			}
