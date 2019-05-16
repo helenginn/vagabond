@@ -1370,7 +1370,7 @@ void Polymer::refineGlobalFlexibility()
 		lbfgs->refine();
 	}
 	
-	propagateChange();
+	getAnchorModel()->propagateChange(-1, true);
 
 	{
 		FlexGlobal target;
@@ -1384,7 +1384,7 @@ void Polymer::refineGlobalFlexibility()
 		lbfgs->refine();
 	}
 
-	propagateChange();
+	getAnchorModel()->propagateChange(-1, true);
 
 	{
 		FlexGlobal target;
@@ -1398,7 +1398,7 @@ void Polymer::refineGlobalFlexibility()
 		lbfgs->refine();
 	}
 
-	propagateChange();
+	getAnchorModel()->propagateChange(-1, true);
 
 	timer.report();
 }
