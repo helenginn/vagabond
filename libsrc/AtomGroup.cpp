@@ -883,12 +883,6 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 		{
 			if (atom(j)->getElement() == ele)
 			{
-				if (false && !atom(j)->getModel()->hasExplicitPositions())
-				{
-					after.push_back(atom(j));
-					continue;
-				}
-
 				atom(j)->addDirectlyToMap(scratch, new_basis, offset);
 				double eCount = ele->electronCount() *
 				atom(j)->getModel()->getEffectiveOccupancy();
@@ -907,18 +901,6 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 		scratch->setAll(0);
 	}
 	
-	scratchFull->setTotal(totalElectrons);
-	
-	int explicitElectrons = totalElectrons;
-	totalElectrons = 0;
-	
-	for (int i = 0; i < after.size(); i++)
-	{
-		after[i]->addToMap(scratch, new_basis, offset);
-		totalElectrons += after[i]->getElement()->electronCount();
-	}
-	
-	scratch->setTotal(totalElectrons);
 	FFT::addSimple(scratchFull, scratch);
 }
 
