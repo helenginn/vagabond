@@ -491,13 +491,14 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 {
 	std::vector<double> set1, set2, free1, free2;
 
-	CSVPtr csv = CSVPtr(new CSV(2, "fo" , "fc"));
+	CSVPtr csv = CSVPtr(new CSV(5, "h", "k", "l", "fo" , "fc"));
 
 	FFTPtr fftData = data->getFFT();	
 	vec3 nLimits = getNLimits(fftData, _fft);
 	mat3x3 tmp = mat3x3_transpose(_real2frac);
 	
 	double maxRes = 0;
+	double minRes = Options::minRes();
 
 	if (_shells.size())
 	{
@@ -518,7 +519,7 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 				double length = vec3_length(ijk);
 				double real = 1 / length;
 				
-				if (real < maxRes)
+				if (real < maxRes || real > minRes)
 				{
 					continue;
 				}
@@ -565,7 +566,8 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 				}
 				else
 				{
-					csv->addEntry(2, amp1, amp2);
+					csv->addEntry(3, (double)i, (double)j, (double)k, 
+					              amp1, amp2);
 
 					if (!isFree)
 					{
@@ -806,7 +808,8 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 	{
 		/* Then apply to individual resolution bins */
 		std::vector<double> bins;
-		generateResolutionBins(0, _maxResolution, 20, &bins);
+		double minRes = Options::minRes();
+		generateResolutionBins(minRes, _maxResolution, 20, &bins);
 
 		/* Extend the final bin by a little bit, so as not to lose any
 		 * stragglers. */
@@ -814,6 +817,7 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 
 		/* Make the series of shells */
 		_shells.clear();
+		
 		for (int i = 0; i < bins.size() - 1; i++)
 		{
 			ShellInfo shell = makeShellInfo(bins[i], bins[i + 1]);
