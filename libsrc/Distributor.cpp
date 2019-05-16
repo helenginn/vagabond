@@ -15,11 +15,11 @@ void Distributor::bFactorDistribute(FFTPtr fft, double b)
 	mat3x3 basis = fft->getReal2Frac();
 	basis = mat3x3_transpose(basis);
 
-	for (int z = -fft->nz / 2; z < fft->nz / 2; z++)
+	for (int z = -fft->nz / 2; z <= fft->nz / 2; z++)
 	{
-		for (int y = -fft->ny / 2; y < fft->ny / 2; y++)
+		for (int y = -fft->ny / 2; y <= fft->ny / 2; y++)
 		{
-			for (int x = -fft->nx / 2; x < fft->nx / 2; x++)
+			for (int x = -fft->nx / 2; x <= fft->nx / 2; x++)
 			{
 				vec3 xyz = make_vec3(x, y, z);
 				mat3x3_mult_vec(basis, &xyz);

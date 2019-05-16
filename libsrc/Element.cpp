@@ -115,27 +115,25 @@ FFTPtr Element::getDistribution(bool, int new_n)
 
 void Element::populateFFT(mat3x3 basis, FFTPtr fft)
 {
-	for (int z = 0; z < fft->nz; z++)
-	{
-		for (int y = 0; y < fft->ny; y++)
-		{
-			for (int x = 0; x < fft->nx; x++)
-			{
-				double fx = (double) x / (double)fft->nx;
-				double fy = (double) y / (double)fft->ny;
-				double fz = (double) z / (double)fft->nz;
+	mat3x3 fft_vox_basis = fft->getBasis();
 
-				vec3 fr = make_vec3(fx, fy, fz);
-				vec3 real = fr;
+	for (int z = -fft->nz / 2; z <= fft->nz / 2; z++)
+	{
+		for (int y = -fft->ny / 2; y <= fft->ny / 2; y++)
+		{
+			for (int x = -fft->nx / 2; x <= fft->nx / 2; x++)
+			{
+				vec3 real = make_vec3(x, y, z);
 				mat3x3_mult_vec(basis, &real);
+				mat3x3_mult_vec(fft_vox_basis, &real);
+
 				double val = getVoxelValue(this, real.x, real.y, real.z);
-				int ele = fft->elementFromFrac(fr.x, fr.y, fr.z);
+				int ele = fft->element(x, y, z);
 				fft->data[ele][0] = val;
 			}
 		}
 	}
 }
-
 
 std::vector<ElementPtr> Element::elementList(std::vector<AtomPtr> atoms)
 {
