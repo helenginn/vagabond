@@ -21,6 +21,8 @@
 #define NH1_C_O_ANGLE        123.0
 #define C_CH1E_NH1_ANGLE     111.2 // matches Engh & Huber and CCP4
 
+#define N_PROC_O_ANGLE       122.9
+
 #define deg2rad(a) ((a) * M_PI / 180)
 
 #include "GeomTable.h"
@@ -214,6 +216,7 @@ GeomTable::GeomTable()
     addBondLength(AtomC, AtomOXT, 1.229);
     addBondLength(AtomProC, AtomO, 1.228);
     addBondAngle(AtomNH1, AtomC, AtomO, 122.4);
+    addBondAngle(AtomNH1, AtomProC, AtomO, N_PROC_O_ANGLE);
     addBondAngle(AtomProNH1, AtomC, AtomO, 121.1);
     addBondAngle(AtomProNH1, AtomProC, AtomO, 121.1);
 
