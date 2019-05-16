@@ -867,15 +867,7 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 	{
 		ElementPtr ele = element(i);
 		
-		if (_eleScratch.count(ele))
-		{
-			eleFFT = _eleScratch[ele];
-		}
-		else
-		{
-			ele->populateFFT(new_basis, eleFFT);
-			_eleScratch[ele] = eleFFT;
-		}
+		ele->populateFFT(new_basis, eleFFT);
 
 		double elementElectrons = 0;
 
