@@ -77,7 +77,6 @@ double Element::getVoxelValue(void *object, double x, double y, double z)
 
 	double distSq = (x * x + y * y + z * z);
 	double dist = sqrt(distSq);
-	dist *= Options::getProteinSampling();
 
 	double val = 0;
 
@@ -92,7 +91,7 @@ double Element::getVoxelValue(void *object, double x, double y, double z)
 			break;
 		}
 	}
-
+	
 	return val;
 }
 
@@ -105,8 +104,8 @@ FFTPtr Element::getDistribution(bool, int new_n)
 		n = new_n;
 	}
 	
-	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
-	double scale = 2.0 * maxDStar;
+	double scale = Options::getRuntimeOptions()->getActiveCrystalDStar();
+	scale *= 2;
 	
 	get_voxel_value *func = getVoxelValue;
 
