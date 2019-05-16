@@ -345,12 +345,12 @@ void StartScreen::pushRun()
 		angles = 1;
 	}
 	
-	if (_cCgAngles->isChecked())
+	if (angles == 1 && _cCgAngles->isChecked())
 	{
 		angles = 2;
 	}
 	
-	if (_cGlyAngles->isChecked())
+	if (angles == 2 && _cGlyAngles->isChecked())
 	{
 		angles = 3;
 	}
