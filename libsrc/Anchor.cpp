@@ -183,7 +183,13 @@ void Anchor::createStartPositions(Atom *callAtom)
 
 	for (size_t i = 0; i < points.size(); i++)
 	{
-		vec3 full = vec3_add_vec3(points[i], _position);
+		vec3 usedPoint = points[i];
+		if (totalPoints == 0)
+		{
+			usedPoint = empty;
+		}
+
+		vec3 full = vec3_add_vec3(usedPoint, _position);
 		vec3 next = vec3_add_vec3(full, direction);
 		vec3 prev = vec3_add_vec3(full, other);
 	
