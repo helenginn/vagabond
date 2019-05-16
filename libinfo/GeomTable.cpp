@@ -57,6 +57,25 @@ double GeomTable::getBondLength(AtomType atom1, AtomType atom2)
     return -1;
 }
 
+int GeomTable::getChiralCentre(AtomType atom1, AtomType atom2, 
+                                  AtomType atom3)
+{
+    AtomPair pair;
+    pair.first = atom1;
+    pair.second = atom2;
+
+    AtomTrio trio;
+    trio.first = pair;
+    trio.second = atom3;
+
+    if (_chirals.count(trio))
+    {
+        return _chirals[trio];
+    }
+
+    return 0;
+}
+
 double GeomTable::getBondAngle(AtomType atom1, AtomType atom2, AtomType atom3)
 {
     AtomPair pair;
@@ -88,6 +107,31 @@ void GeomTable::addBondLength(AtomType atom1, AtomType atom2, double length)
     reverse.first = atom2;
 
     _bondLengths[reverse] = length;
+}
+
+void GeomTable::addSingleChiral(AtomType atom1, AtomType atom2, 
+                                AtomType atom3, int sign)
+{
+	AtomTrio trio;
+	AtomPair pair;
+	pair.first = atom1;
+	pair.second = atom2;
+	trio.first = pair;
+	trio.second = atom3;
+	_chirals[trio] = sign;
+
+}
+
+void GeomTable::addChiralCentre(AtomType a1, AtomType a2, 
+                                AtomType a3, int sign)
+{
+	addSingleChiral(a1, a2, a3, sign);
+	addSingleChiral(a2, a3, a1, sign);
+	addSingleChiral(a3, a1, a2, sign);
+
+	addSingleChiral(a1, a3, a2, -sign);
+	addSingleChiral(a2, a1, a3, -sign);
+	addSingleChiral(a3, a2, a1, -sign);
 }
 
 void GeomTable::addBondAngle(AtomType atom1, AtomType atom2,
@@ -140,6 +184,27 @@ GeomTable::GeomTable()
     _three2OneCode["arg"] = "R";
     _three2OneCode["ala"] = "A";
     _three2OneCode["gly"] = "G";
+
+	addChiralCentre(AtomNH1, AtomProCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomMetCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomTyrCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomTrpCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomPheCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomHisCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomIleCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomLeuCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomValCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomThrCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomSerCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomAspCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomAsnCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomGluCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomGlnCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomLysCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomArgCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomAlaCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomGlyCA, AtomO, -1);
+	addChiralCentre(AtomProNH1, AtomLeuCA, AtomO, 1);
 
     addBondLength(AtomNH1, AtomC, 1.336);
     addBondLength(AtomProNH1, AtomC, 1.338);
@@ -776,6 +841,8 @@ GeomTable::GeomTable()
     addBondAngle(AtomAspCB, AtomAspCG, AtomAspOD1, 118.3);
     addBondAngle(AtomAspCB, AtomAspCG, AtomAspOD2, 118.3);
     addBondAngle(AtomAspOD1, AtomAspCG, AtomAspOD2, 123.3);
+
+	addChiralCentre(AtomNH1, AtomAspCB, AtomC, -1);
 
     addBondLength(AtomC, AtomThrCA, 1.525);
     addBondLength(AtomNH1, AtomThrCA, 1.459);

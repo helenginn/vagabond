@@ -417,7 +417,7 @@ void Bond::deriveCirclePortion()
 	double angle_c = table.getBondAngle(preceding, central, lastAtom);
 	double angle_b = table.getBondAngle(preceding, central, newDownAtom);
 	double angle_a = table.getBondAngle(lastAtom, central, newDownAtom);
-
+	
 	bool ok = true;
 
 	if (angle_a < 0 || angle_b < 0 || angle_c < 0)
@@ -438,39 +438,56 @@ void Bond::deriveCirclePortion()
 		double increment = 0;
 		mat3x3_closest_rot_mat(lastAtomAxis, newAtomAxis, xAxis, &increment);
 		double theoretical = increment / (2 * M_PI);
+		
+		int chiral = table.getChiralCentre(preceding, lastAtom, newDownAtom);
 
-		/* This angle will always come out positive, so we must compare
-		 * to the original placement as well to maintain chirality */
-		double empirical = empiricalCirclePortion(lastBond);
-		
-		/* Now we clamp both the empirical and the theoretical values to
-		 * 	between -0.5 and +0.5 for comparison */
-		
-		if (empirical > 0.5) empirical -= 1;
-		if (empirical < -0.5) empirical += 1;
-		
-		if (theoretical > 0.5) theoretical -= 1;
-		if (theoretical < -0.5) theoretical += 1;
-		
-		/* there may be some remaining ambiguity around 0.5 here? */
-
-		if ((empirical < 0 && theoretical > 0) || empirical > 0 && theoretical < 0)
+		if (chiral != 0)
 		{
-			theoretical *= -1;
-		}
-		
-		/* Make the portion positive again if necessary */
-		
-		if (theoretical < 0) theoretical += 1;
+			if (theoretical > 0.5) theoretical -= 1;
+			if (theoretical < -0.5) theoretical += 1;
+			theoretical *= (double)chiral;
+			if (theoretical < 0) theoretical += 1;
 
-		if (theoretical == theoretical)
-		{
-			_circlePortion = lastBond->_circlePortion + theoretical;
+			if (theoretical == theoretical)
+			{
+				_circlePortion = lastBond->_circlePortion + theoretical;
+			}
 		}
 		else
 		{
-			/* We can't do this - we must derive from the model */
-			ok = false;
+			/* This angle will always come out positive, so we must compare
+			 * to the original placement as well to maintain chirality */
+			double empirical = empiricalCirclePortion(lastBond);
+
+			/* Now we clamp both the empirical and the theoretical values to
+			 * 	between -0.5 and +0.5 for comparison */
+
+			if (empirical > 0.5) empirical -= 1;
+			if (empirical < -0.5) empirical += 1;
+
+			if (theoretical > 0.5) theoretical -= 1;
+			if (theoretical < -0.5) theoretical += 1;
+
+			/* there may be some remaining ambiguity around 0.5 here? */
+
+			if (empirical * theoretical < 0)
+			{
+				theoretical *= -1;
+			}
+
+			/* Make the portion positive again if necessary */
+
+			if (theoretical < 0) theoretical += 1;
+
+			if (theoretical == theoretical)
+			{
+				_circlePortion = lastBond->_circlePortion + theoretical;
+			}
+			else
+			{
+				/* We can't do this - we must derive from the model */
+				ok = false;
+			}
 		}
 	}
 	

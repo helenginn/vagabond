@@ -70,6 +70,8 @@ public:
 	GeomTable();
 	double getBondLength(AtomType atom1, AtomType atom2);
 	double getBondAngle(AtomType atom1, AtomType atom2, AtomType atom3);
+	int getChiralCentre(AtomType atom1, AtomType atom2, 
+                                  AtomType atom3);
 	AtomType getType(std::string, std::string);
 
 	static std::string getResCode(std::string threeLetter);
@@ -79,12 +81,17 @@ private:
 					  AtomType atom3, double angle);
 	void addIdentityToType(std::string, std::string, AtomType type);
 	void addBondLength(AtomType atom1, AtomType atom2, double length);
+	void addChiralCentre(AtomType atom1, AtomType atom2, 
+	                     AtomType atom3, int sign);
+	void addSingleChiral(AtomType atom1, AtomType atom2, 
+	                     AtomType atom3, int sign);
 
 	static GeomTable _geomTable;
 	std::map<std::string, std::string> _three2OneCode;
 
 	std::map<AtomPair, double> _bondLengths;
 	std::map<AtomTrio, double> _bondAngles;
+	std::map<AtomTrio, int> _chirals;
 	std::map<AtomIdentity, AtomType> _identityToType;
 };
 
