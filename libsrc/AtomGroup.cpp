@@ -849,14 +849,7 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 	std::vector<AtomPtr> after;
 	size_t totalElectrons = 0;
 
-	double cubeDim = scratchFull->getScale(0);
-	mat3x3 new_basis = make_mat3x3();
-	mat3x3_scale(&new_basis, 
-	             scratchFull->nx * cubeDim, 
-	             scratchFull->ny * cubeDim,
-	             scratchFull->nz * cubeDim);
-
-	new_basis = mat3x3_inverse(new_basis);
+	mat3x3 new_basis = scratchFull->getReal2Frac();
 
 	bool sameDims = (_scratchDims[0] == scratchFull->nx && 
 	                 _scratchDims[1] == scratchFull->ny &&
