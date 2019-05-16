@@ -324,7 +324,7 @@ public:
 	                           int bitIndex = -1);
 	
 	void printCinema();
-	void printSlice(int zVal = 0);
+	void printSlice(int zVal = 0, double scale = 1);
 	void applySymmetry(CSym::CCP4SPG *spaceGroup, bool silent = false);
 	static vec3 collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup,
 	                              int *flipped = NULL);

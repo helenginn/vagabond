@@ -1457,8 +1457,12 @@ void FFT::printCinema()
 	}
 }
 
-void FFT::printSlice(int zVal)
+void FFT::printSlice(int zVal, double scale)
 {
+	if (scale < 0)
+	{
+		scale = averageAll() * 5;
+	}
 	for (int j = 0; j < ny; j++)
 	{
 		std::cout << "| ";
@@ -1467,14 +1471,14 @@ void FFT::printSlice(int zVal)
 			std::string symbol = " ";
 			double value = sqrt(getIntensity(i, j, zVal));
 
-			if (value > 0.01) symbol = ".";
-			if (value > 0.02) symbol = ":";
-			if (value > 0.04) symbol = "\"";
-			if (value > 0.08) symbol = "*";
-			if (value > 0.16) symbol = "x";
-			if (value > 0.32) symbol = "H";
-			if (value > 0.64) symbol = "#";
-			if (value > 1.00) symbol = "@";
+			if (value > 0.01 * scale) symbol = ".";
+			if (value > 0.02 * scale) symbol = ":";
+			if (value > 0.04 * scale) symbol = "\"";
+			if (value > 0.08 * scale) symbol = "*";
+			if (value > 0.16 * scale) symbol = "x";
+			if (value > 0.32 * scale) symbol = "H";
+			if (value > 0.64 * scale) symbol = "#";
+			if (value > 1.00 * scale) symbol = "@";
 
 			std::cout << symbol;
 		}
