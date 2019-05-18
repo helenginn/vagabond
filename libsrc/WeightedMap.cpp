@@ -18,7 +18,6 @@
 
 #include "WeightedMap.h"
 #include "mat3x3.h"
-#include "Crystal.h"
 #include "Diffraction.h"
 #include "Options.h"
 #include "fftw3d.h"

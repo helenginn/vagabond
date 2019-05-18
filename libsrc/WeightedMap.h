@@ -20,6 +20,7 @@
 #define __vagabond__weighted_map__
 
 #include "shared_ptrs.h"
+#include "Crystal.h"
 
 class WeightedMap
 {
@@ -35,6 +36,7 @@ private:
 	DiffractionPtr _data;
 	FFTPtr _fft;
 	FFTPtr _difft;
+	std::vector<ShellInfo> _shells;
 
 	void createWeightedCoefficients();
 };
