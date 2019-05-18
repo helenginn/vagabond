@@ -106,6 +106,7 @@ lib_vag= library('vag', gen_src, 'libsrc/Absolute.cpp',
 'libsrc/VBondReader.cpp', 
 'libsrc/vec3.cpp', 
 'libsrc/WaterNetwork.cpp', 
+'libsrc/WeightedMap.cpp', 
 'libsrc/Whack.cpp', 
 dependencies: [png_dep, fftw_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep], cpp_args: ['-w', '-std=c++11'], install: true)
 inc_vag = include_directories('libsrc')
