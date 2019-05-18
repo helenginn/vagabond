@@ -45,7 +45,7 @@ void WeightedMap::createWeightedMaps()
 	_difft->fft(-1);
 }
 
-void WeightedMap::createWeightedCoefficients()
+void WeightedMap::create2FoFcCoefficients()
 {
 	FFTPtr fftData = _data->getFFT();
 

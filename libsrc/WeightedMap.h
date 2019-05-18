@@ -38,7 +38,7 @@ private:
 	FFTPtr _difft;
 	std::vector<ShellInfo> _shells;
 
-	void createWeightedCoefficients();
+	void create2FoFcCoefficients();
 };
 
 #endif
