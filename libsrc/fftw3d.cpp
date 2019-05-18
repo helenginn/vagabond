@@ -124,12 +124,8 @@ FFT::FFT(FFT &other)
 
 void FFT::copyFrom(FFTPtr other)
 {
-	for (int i = 0; i < nn; i++)
-	{
-		data[i][0] = other->data[i][0];
-	}
+	memcpy(data, other->data, nn * sizeof(FFTW_DATA_TYPE));
 }
-
 
 void FFT::create(long nnx, long nny, long nnz)
 {
