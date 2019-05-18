@@ -39,6 +39,8 @@ void WeightedMap::setCrystalAndData(CrystalPtr crystal, DiffractionPtr data)
 
 void WeightedMap::createWeightedMaps()
 {
+	createWeightedCoefficients();
+
 	/* Back to real space */
 	_crystal->fourierTransform(-1);
 	_difft->fft(-1);
