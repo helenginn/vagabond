@@ -32,6 +32,8 @@ public:
 
 	void createWeightedMaps();
 private:
+	void calculateFiguresOfMerit();
+
 	CrystalPtr _crystal;
 	DiffractionPtr _data;
 	FFTPtr _fft;

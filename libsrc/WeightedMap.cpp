@@ -45,6 +45,45 @@ void WeightedMap::createWeightedMaps()
 	_difft->fft(-1);
 }
 
+void WeightedMap::calculateFiguresOfMerit()
+{
+	_shells = _crystal->getShells();
+	
+	
+	double sumFo = 0;
+	double sumFc = 0;
+
+	for (int i = 0; i < _shells.size(); i++)
+	{
+		for (int j = 0; j < _shells[i].work1.size(); j++)
+		{
+			double fo = _shells[i].work1[j];
+			double fc = _shells[i].work2[j];
+
+			sumFo += fo;
+			sumFc += fc;
+		}
+
+		double aveFo = sumFo / (double)_shells[i].work1.size();
+		double aveFc = sumFc / (double)_shells[i].work1.size();
+		double sumDiff = 0;
+
+		std::cout << "Average Fo: " << aveFo << std::endl;
+
+		for (int j = 0; j < _shells[i].work1.size(); j++)
+		{
+			double fo = _shells[i].work1[j];
+			double fc = _shells[i].work2[j];
+
+			double diff = pow(fo - fc, 2) / (fo * aveFo);
+			sumDiff += diff;
+		}
+
+		double aveDiff = sumDiff / (double)_shells[i].work1.size();
+		std::cout << _shells[i].maxRes << " " << aveDiff << std::endl;
+	}
+}
+
 void WeightedMap::create2FoFcCoefficients()
 {
 	FFTPtr fftData = _data->getFFT();
