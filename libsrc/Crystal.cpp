@@ -39,6 +39,7 @@
 #include "RefinementGridSearch.h"
 #include "Bucket.h"
 #include "Options.h"
+#include "WeightedMap.h"
 
 #include "../libccp4/cmtzlib.h"
 #include "../libccp4/csymlib.h"

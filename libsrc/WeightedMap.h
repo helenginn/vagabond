@@ -19,12 +19,24 @@
 #ifndef __vagabond__weighted_map__
 #define __vagabond__weighted_map__
 
+#include "shared_ptrs.h"
+
 class WeightedMap
 {
 public:
 	WeightedMap();
+	
+	/** Crystal should be provided after FFT and scaling */
+	void setCrystalAndData(CrystalPtr crystal, DiffractionPtr data);
 
+	void createWeightedMaps();
 private:
+	CrystalPtr _crystal;
+	DiffractionPtr _data;
+	FFTPtr _fft;
+	FFTPtr _difft;
+
+	void createWeightedCoefficients();
 };
 
 #endif

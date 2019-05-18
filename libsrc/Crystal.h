@@ -418,6 +418,11 @@ public:
 		return _largestNum + 1;
 	}
 	
+	FFTPtr getDifferenceMap()
+	{
+		return _difft;
+	}
+	
 	/** Scale any data set that has been provided as FPART/PHIPART in
 	 *  the input file */
 	void scaleAnyPartialSet();
