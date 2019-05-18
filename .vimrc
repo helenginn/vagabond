@@ -6,6 +6,5 @@ command! Make1 !cd libgui/qtgui; make;
 
 command! Doxy !doxygen Doxyfile
 
-command Indent normal 0ggggVG=
 
 
