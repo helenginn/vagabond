@@ -418,6 +418,11 @@ public:
 		return _largestNum + 1;
 	}
 	
+	std::vector<ShellInfo> getShells()
+	{
+		return _shells;
+	}
+	
 	FFTPtr getDifferenceMap()
 	{
 		return _difft;
