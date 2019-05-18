@@ -33,6 +33,7 @@ public:
 	void createWeightedMaps();
 private:
 	void calculateFiguresOfMerit();
+	double stdevForReflection(double fobs, double fcalc, double res);
 
 	CrystalPtr _crystal;
 	DiffractionPtr _data;
@@ -40,6 +41,8 @@ private:
 	FFTPtr _difft;
 	std::vector<ShellInfo> _shells;
 
+	void oneMap(FFTPtr scratch, int slice, bool diff);
+	void createVagaCoefficients();
 	void create2FoFcCoefficients();
 };
 

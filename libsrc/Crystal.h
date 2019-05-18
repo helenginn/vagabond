@@ -51,7 +51,8 @@ typedef struct
 	double maxRes;
 	double rFactor;
 	double scale;
-	double fom;
+	double std_err;
+	double aveFo;
 	std::vector<double> work1;
 	std::vector<double> work2;
 	std::vector<double> free1;
