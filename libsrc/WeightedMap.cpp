@@ -56,7 +56,7 @@ void WeightedMap::createWeightedCoefficients()
 	maxRes = 1 / maxRes;
 	bool ignoreRfree = Options::ignoreRFree();
 	double partsFo = 2;
-	double partsFc = 2;
+	double partsFc = 1;
 	
 	if (ignoreRfree)
 	{
