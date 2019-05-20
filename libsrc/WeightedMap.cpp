@@ -22,8 +22,9 @@
 #include "Options.h"
 #include "fftw3d.h"
 #include "Shouter.h"
+#include "../libinfo/CentroidToPhase.h"
 
-#define MAX_SLICES (25)
+#define MAX_SLICES (25.)
 
 WeightedMap::WeightedMap()
 {
@@ -88,37 +89,7 @@ void WeightedMap::calculateFiguresOfMerit()
 	}
 }
 
-/* y between -1 and 1 */
-double evaluationOnCircle(double fobs, double fcalc, double stdev, double y)
-{
-	double d = fobs * fobs + fcalc * fcalc;
-	double n = -2 * fobs * fcalc;
-
-	double expo = d + n * y;
-	double stdexpo = d + n;
-	expo *= -1 / stdev;
-	stdexpo *= -1 / stdev;
-	
-	return exp(expo - stdexpo);
-}
-
-double cutoff_position(double fobs, double fcalc, double stdev, double cut)
-{
-	double d = fobs * fobs + fcalc * fcalc;
-	double n = -2 * fobs * fcalc;
-	d /= -stdev; n /= -stdev;
-	
-	double y = (log(cut) + n) / n;
-	
-	if (y < -1)
-	{
-		y = -1;
-	}
-	
-	return y;
-}
-
-double WeightedMap::stdevForReflection(double fobs, double fcalc, double res)
+int WeightedMap::shellForResolution(double res)
 {
 	int index = -1;
 
@@ -132,30 +103,65 @@ double WeightedMap::stdevForReflection(double fobs, double fcalc, double res)
 		}
 	}
 
-	if (index < 0)
+	return index;
+}
+
+int centroid_qchop(double val)
+{
+	if (val > 1 || val < 0)
 	{
-		return HUGE_VAL;
+		return -1;
 	}
+	
+	int size = sizeof(centroid_to_phase_stdev) / sizeof(double) / 2;
+	int min = 0;
+	int max = size - 1;
 
-	double std_error = _shells[index].std_err;
-	double aveFo = _shells[index].aveFo;
-	double std_stdev = std_error * aveFo;
-	double my_dev = fabs(fobs - fcalc);
-	double combined_dev = sqrt(my_dev * my_dev + std_stdev * std_stdev);
-	double stdev = combined_dev;
+	if (val <= 0) return max;
+	if (val >= 1) return min;
 
-	return stdev;
+	while (true)
+	{
+		int chop = (max + min) / 2;
+		int higher = (val >= centroid_to_phase_stdev[chop * 2 + 1]);
+		if (higher) max = chop;
+		else min = chop;
+
+		if (max - min == 1)
+		{
+			return max;
+		}
+	}
+}
+
+double WeightedMap::phaseDevForWeight(double weight)
+{
+	int chop = centroid_qchop(weight);
+
+	return centroid_to_phase_stdev[chop * 2];
+}
+
+double WeightedMap::stdevForReflection(double fobs, double fcalc, 
+                                       double sigfobs)
+{
+	double stdev = (fobs - fcalc) / fobs;
+	stdev *= stdev;
+	double datadev = sigfobs / fobs;
+	
+	double combined = sqrt(stdev * stdev + datadev * datadev);
+
+	return combined;
 }
 
 void WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 {
 	FFTPtr fftData = _data->getFFT();
-	double divide = (MAX_SLICES - 1) / 2;
 	double lowRes = Options::minRes();
 	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
 	double maxRes = _crystal->getMaxResolution(_data);
 	maxRes = 1 / maxRes;
 	bool ignoreRfree = Options::ignoreRFree();
+	double this_phase_segment = -2 + (4 / MAX_SLICES) * slice;
 
 	if (ignoreRfree)
 	{
@@ -178,7 +184,9 @@ void WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				int _h, _k, _l;
 				CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
 
-				double fobs = sqrt(fftData->getIntensity(_h, _k, _l));
+				long dataidx = fftData->element(_h, _k, _l);
+				double fobs = fftData->data[dataidx][0];
+				double sigfobs = fftData->data[dataidx][1];
 				long index = _fft->element(i, j, k);
 
 				int isAbs = CSym::ccp4spg_is_sysabs(spg, i, j, k);
@@ -207,23 +215,27 @@ void WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				double fcalc = sqrt(complex.x * complex.x +
 				                      complex.y * complex.y);
 
-				double stdev = stdevForReflection(fobs, fcalc, 1 / length);
-//				stdev *= stdev;
-				double yCut = cutoff_position(fobs, fcalc, stdev, 0.05);
-				double portion = (1 - yCut) / divide;
-				double yCurr = yCut + portion * slice;
-				if (yCurr > 1) 
-				{
-					yCurr = 2 - yCurr;
-				}
-
-				double phi = acos(yCurr);
+				double stdev = stdevForReflection(fobs, fcalc, sigfobs);
+				stdev *= 2;
+				double downweight = exp(-(stdev * stdev));
 				
-				if (slice < divide) phi *= -1;
+				double phaseDev = phaseDevForWeight(downweight);
+				double o = this_phase_segment;
+				double phi = phaseDev * o;
+				double weight = exp(-(o*o)/(2));
 				
 				double phase = _fft->getPhase(i, j, k);
 				phi += deg2rad(phase);
-				double weight = evaluationOnCircle(fobs, fcalc, stdev, yCurr);
+				
+				int shx = shellForResolution(1 / length);
+				_shells[shx].count++;
+				_shells[shx].phi_spread += rad2deg(phaseDev);
+//				_shells[shx].phi_spread += downweight;
+				
+				if (i == 8 && j == 8 && k == 10 && diff)
+				{
+//					std::cout << weight << " " << rad2deg(phi) << std::endl;
+				}
 
 				if (diff)
 				{
@@ -324,7 +336,9 @@ void WeightedMap::create2FoFcCoefficients()
 				int _h, _k, _l;
 				CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
 
-				double obs_amp = sqrt(fftData->getIntensity(_h, _k, _l));
+				long dataidx = fftData->element(_h, _k, _l);
+				double obs_amp = fftData->data[dataidx][0];
+				double sigfobs = fftData->data[dataidx][1];
 				long index = _fft->element(i, j, k);
 
 				int isAbs = CSym::ccp4spg_is_sysabs(spg, i, j, k);

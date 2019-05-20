@@ -53,6 +53,8 @@ typedef struct
 	double scale;
 	double std_err;
 	double aveFo;
+	double phi_spread;
+	double count;
 	std::vector<double> work1;
 	std::vector<double> work2;
 	std::vector<double> free1;
@@ -66,6 +68,9 @@ inline ShellInfo makeShellInfo(double min, double max)
 	shell.maxRes = max;
 	shell.rFactor = 0;
 	shell.scale = 1;
+	shell.std_err = 0;
+	shell.phi_spread = 0;
+	shell.count = 0;
 	
 	return shell;
 }

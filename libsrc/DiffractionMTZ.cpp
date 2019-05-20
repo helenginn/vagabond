@@ -218,6 +218,7 @@ void DiffractionMtz::load()
 		int k = adata[col_k->source - 1];
 		int l = adata[col_l->source - 1];
 		float amplitude = adata[col_f->source - 1];
+		float sigma = adata[col_sigf->source - 1];
 		float flag = 1;
 
 		if (col_rfree)
@@ -234,7 +235,7 @@ void DiffractionMtz::load()
 		long element = fft->element(h, k, l);
 
 		fft->data[element][0] = amplitude;
-		fft->data[element][1] = 0;
+		fft->data[element][1] = sigma;
 		fft->mask[element] = mask;
 
 		count++;

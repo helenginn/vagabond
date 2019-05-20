@@ -33,14 +33,17 @@ public:
 	void createWeightedMaps();
 private:
 	void calculateFiguresOfMerit();
-	double stdevForReflection(double fobs, double fcalc, double res);
+	double stdevForReflection(double fobs, double fcalc, double sigfobs);
+	double phaseDevForWeight(double weight);
 
 	CrystalPtr _crystal;
 	DiffractionPtr _data;
 	FFTPtr _fft;
 	FFTPtr _difft;
 	std::vector<ShellInfo> _shells;
+	double _aveFo;
 
+	int shellForResolution(double res);
 	void oneMap(FFTPtr scratch, int slice, bool diff);
 	void createVagaCoefficients();
 	void create2FoFcCoefficients();
