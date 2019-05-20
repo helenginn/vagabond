@@ -819,7 +819,7 @@ void Selected2GL::selectResidue(std::string chain, int resNum)
 			continue;
 		}
 		
-		if (molecule->getChainID()[0] != chain[0])
+		if (chain.length() > 0 && molecule->getChainID()[0] != chain[0])
 		{
 			continue;
 		}

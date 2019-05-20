@@ -643,6 +643,10 @@ void VagWindow::receiveGotoResidue(std::string diagString)
 			resNum = atoi(start);
 		}
 	}
+	else
+	{
+		resNum = atoi(start);
+	}
 	
 	display->getKeeper()->selectResidue(chain, resNum);
 
