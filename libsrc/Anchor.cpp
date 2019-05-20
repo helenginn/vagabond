@@ -593,7 +593,7 @@ void Anchor::setPolymerBasis(mat3x3 basis)
 void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
                                       double mult)
 {
-	_trans->addTensorToStrategy(strategy, 0.5 * mult, 0.001, "tr");
+	_trans->addTensorToStrategy(strategy, 0.2 * mult, 0.001, "tr");
 }
 
 void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
