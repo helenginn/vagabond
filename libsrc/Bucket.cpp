@@ -189,12 +189,9 @@ void Bucket::writeMillersToFile(std::string prefix, double maxRes)
 {
 	std::string solventFileOnly = prefix + "_solvent_vbond.mtz";
 	CrystalPtr crystal = getCrystal();
-	std::vector<double> unitCell = crystal->getUnitCell();
-	mat3x3 real2frac = getCrystal()->getReal2Frac();
 	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
 	
-	_solvent->writeReciprocalToFile(solventFileOnly, maxRes,
-	                                spg, unitCell, real2frac);
+	_solvent->writeReciprocalToFile(solventFileOnly, maxRes, spg);
 	
 }
 

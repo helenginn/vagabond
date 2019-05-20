@@ -1615,11 +1615,11 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool silent)
 }
 
 void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
-                                CSym::CCP4SPG *mtzspg, std::vector<double> unitCell,
-                                mat3x3 real2Frac, FFTPtr data,
-	                           std::vector<double> bins, 
-	                           std::vector<double> ampAves) 
+                                CSym::CCP4SPG *mtzspg, FFTPtr data, 
+                                FFTPtr diff, FFTPtr calc)
 {
+	mat3x3 real2Frac = getReal2Frac();
+	
 	double nLimit[3];
 	nLimit[0] = nx;
 	nLimit[1] = ny;
@@ -1646,7 +1646,7 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 
 	/* For writing MTZ files */
 
-	int columns = 10;
+	int columns = 12;
 
 	float cell[6], wavelength;
 	float *fdata = new float[columns];
@@ -1659,20 +1659,18 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 	CMtz::MTZ *mtzout;
 	CMtz::MTZXTAL *xtal;
 	CMtz::MTZSET *set;
-	CMtz::MTZCOL *colout[11];
+	CMtz::MTZCOL *colout[columns + 1];
 
-	if (unitCell.size() < 6)
+	std::vector<double> unitCell;
+	unitCell.resize(6);
+	unit_cell_from_mat3x3(_basis, &unitCell[0]);
+	unitCell[0] *= nx;
+	unitCell[1] *= ny;
+	unitCell[2] *= nz;
+
+	if (mtzspg == NULL)
 	{
-		unitCell.resize(6);
-		unit_cell_from_mat3x3(_basis, &unitCell[0]);
-		unitCell[0] *= nx;
-		unitCell[1] *= ny;
-		unitCell[2] *= nz;
-
 		mtzspg = CSym::ccp4spg_load_by_ccp4_num(1);
-		real2Frac = mat3x3_from_unit_cell(&unitCell[0]);
-		real2Frac = mat3x3_inverse(real2Frac);
-		
 	}
 
 	cell[0] = unitCell[0];
@@ -1713,11 +1711,13 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 	colout[2] = MtzAddColumn(mtzout, set, "L", "H");
 	colout[3] = MtzAddColumn(mtzout, set, "FREE", "I");
 	colout[4] = MtzAddColumn(mtzout, set, "FP", "F");
-	colout[5] = MtzAddColumn(mtzout, set, "FC", "F");
-	colout[6] = MtzAddColumn(mtzout, set, "FWT", "F");
-	colout[7] = MtzAddColumn(mtzout, set, "PHWT", "P");
-	colout[8] = MtzAddColumn(mtzout, set, "DELFWT", "F");
-	colout[9] = MtzAddColumn(mtzout, set, "PHDELWT", "P");
+	colout[5] = MtzAddColumn(mtzout, set, "SIGFP", "Q");
+	colout[6] = MtzAddColumn(mtzout, set, "FC", "F");
+	colout[7] = MtzAddColumn(mtzout, set, "FWT", "F");
+	colout[8] = MtzAddColumn(mtzout, set, "PHIC", "P");
+	colout[9] = MtzAddColumn(mtzout, set, "PHWT", "P");
+	colout[10] = MtzAddColumn(mtzout, set, "DELFWT", "F");
+	colout[11] = MtzAddColumn(mtzout, set, "PHDELWT", "P");
 
 	int num = 0;
 
@@ -1744,43 +1744,58 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 					continue;
 				}
 
-				double phase = getPhase(i, j, k);
+				double wtInt = getIntensity(i, j, k);
+				double fwt = sqrt(wtInt);
+				double phwt = getPhase(i, j, k);
 
-				double intensity = getIntensity(i, j, k);
-				double calcAmp = sqrt(intensity);
+				double calcInt = getIntensity(i, j, k);
+				double phic = phwt;
+				
+				if (calc)
+				{
+					calcInt = calc->getIntensity(i, j, k);
+					phic = calc->getPhase(i, j, k);
+				}
+				
+				double calcAmp = sqrt(calcInt);
 
 				int free = 1;
-				double foInt = intensity;
+				double foInt = getIntensity(i, j, k);
+				double sigma = 0;
 
 				if (data)
 				{
-					foInt = data->getIntensity(i, j, k);
+					int ele = data->element(i, j, k);
+					foInt = data->data[ele][0];
+					sigma = data->data[ele][1];
 					free = data->getMask(i, j, k);
 				}
 
 				double foAmp = sqrt(foInt);
-				double fofofc = 2 * foAmp - calcAmp;
-				double fofc = foAmp - calcAmp;
+
+				double diffInt = 0;
+				double diffPhwt = 0;
 				
-				if (free == 0)
+				if (diff)
 				{
-					// Substitute Fcalc when free = 0 so as not
-					// to pollute with data.
-					fofofc = calcAmp;
+					diffInt = diff->getIntensity(i, j, k);
+					diffPhwt = diff->getPhase(i, j, k);
 				}
+
+				double diffFo = sqrt(diffInt);
 
 				if (foAmp != foAmp || (free == 0))
 				{
 					// i.e. diff of 0 when mask is free flag.
-					fofc = 0;
+//					fofc = 0;
 				}
 
 				/* MTZ file stuff */
 
 				if (f000)
 				{
-					fofofc = calcAmp;
-					fofc = 0;
+					fwt = calcAmp;
+					diffFo = 0;
 				}
 
 				fdata[0] = i;
@@ -1788,11 +1803,13 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 				fdata[2] = k;
 				fdata[3] = free;
 				fdata[4] = foAmp;
-				fdata[5] = calcAmp;
-				fdata[6] = fofofc;
-				fdata[7] = phase;
-				fdata[8] = fofc;
-				fdata[9] = phase;
+				fdata[5] = sigma;
+				fdata[6] = calcAmp;
+				fdata[7] = fwt;
+				fdata[8] = phwt;
+				fdata[9] = phic;
+				fdata[10] = diffFo;
+				fdata[11] = diffPhwt;
 
 				num++;
 				ccp4_lwrefl(mtzout, fdata, colout, columns, num);

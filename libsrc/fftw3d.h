@@ -331,14 +331,9 @@ public:
 
 	void writeReciprocalToFile(std::string filename, double maxResolution = 0,
 	                           CSym::CCP4SPG *mtzspg = NULL,
-	                           std::vector<double> unitCell = 
-	                           std::vector<double>(),
-	                           mat3x3 real2Frac = make_mat3x3(),
 	                           FFTPtr data = FFTPtr(),
-	                           std::vector<double> bins = 
-	                           std::vector<double>(),
-	                           std::vector<double> ampAves = 
-	                           std::vector<double>());
+	                           FFTPtr diff = FFTPtr(),
+	                           FFTPtr calc = FFTPtr());
 
 	long nx,ny,nz,nn;
 	fftwf_complex *data;

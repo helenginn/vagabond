@@ -296,8 +296,21 @@ void WeightedMap::createVagaCoefficients()
 	_difft->multiplyAll(2.0);
 	
 	duplicate->fft(1);
-	_fft->copyFrom(duplicate);
 	_difft->fft(1);
+	
+	std::string filename = _crystal->getFilename();
+	double maxRes = _crystal->getMaxResolution(_data);
+	CSym::CCP4SPG *spg = _crystal->getSpaceGroup();
+	std::vector<double> uc = _crystal->getUnitCell();
+	mat3x3 r2f = _crystal->getReal2Frac();
+	
+	std::string prefix = "cycle_" + i_to_str(_crystal->getCycleNum());
+
+	std::string outputFile = prefix + "_" + filename + "_vbond.mtz";
+	duplicate->writeReciprocalToFile(outputFile, maxRes, spg, _data->getFFT(), 
+	                                 _difft, _fft);
+
+	_fft->copyFrom(duplicate);
 }
 
 void WeightedMap::create2FoFcCoefficients()
