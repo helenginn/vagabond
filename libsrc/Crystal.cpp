@@ -335,7 +335,7 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 				mat3x3_mult_vec(_real2frac, &ijk);
 				double length = vec3_length(ijk);
 
-				double data = sqrt(fftData->getIntensity(_i, _j, _k));
+				double data = fftData->getReal(_i, _j, _k);
 				double calc = sqrt(model->getIntensity(i, j, k));
 
 				if (data != data || calc != calc) continue;
@@ -542,7 +542,7 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 					continue;
 				}
 
-				double amp1 = sqrt(fftData->getIntensity(_i, _j, _k));
+				double amp1 = fftData->getReal(_i, _j, _k);
 				double amp2 = sqrt(_fft->getIntensity(i, j, k));
 
 				int isFree = (fftData->getMask(_i, _j, _k) == 0);
