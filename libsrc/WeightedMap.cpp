@@ -48,6 +48,17 @@ void WeightedMap::createWeightedMaps()
 	/* Back to real space */
 	_crystal->fourierTransform(-1);
 	_difft->fft(-1);
+	
+	
+	/* report */
+	
+	std::cout << "Standard deviation of phase per resolution shell: " << std::endl;
+	
+	for (int i = 0; i < _shells.size(); i++)
+	{
+		_shells[i].phi_spread /= (double)_shells[i].count;
+		std::cout << "Bin from " << _shells[i].maxRes << " Å - " << _shells[i].phi_spread << "°" << std::endl;
+	}
 }
 
 void WeightedMap::calculateFiguresOfMerit()
