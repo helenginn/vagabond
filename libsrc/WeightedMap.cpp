@@ -241,23 +241,25 @@ void WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				int shx = shellForResolution(1 / length);
 				_shells[shx].count++;
 				_shells[shx].phi_spread += rad2deg(phaseDev);
-//				_shells[shx].phi_spread += downweight;
 				
-				if (i == 8 && j == 8 && k == 10 && diff)
+				double fused = fobs;
+				
+				if (fcalc > fobs)
 				{
-//					std::cout << weight << " " << rad2deg(phi) << std::endl;
+					fused = fobs * fobs / fcalc;
+				}
+				else
+				{
+					fused = 2 * fobs - fcalc;
 				}
 
 				if (diff)
 				{
-					complex.x = (fobs - fcalc) * weight * cos(phi);
-					complex.y = (fobs - fcalc) * weight * sin(phi);
+					fused = fobs - fcalc;
 				}
-				else
-				{
-					complex.x = fobs * weight * cos(phi);
-					complex.y = fobs * weight * sin(phi);
-				}
+
+				complex.x = fused * weight * cos(phi);
+				complex.y = fused * weight * sin(phi);
 				
 				if (complex.x != complex.x || complex.y != complex.y)
 				{
@@ -302,9 +304,9 @@ void WeightedMap::createVagaCoefficients()
 		scratch->setAll(0);
 	}
 	
-	_difft->multiplyAll(0.5);
-	FFT::addSimple(duplicate, _difft);
-	_difft->multiplyAll(2.0);
+//	_difft->multiplyAll(0.5);
+//	FFT::addSimple(duplicate, _difft);
+//	_difft->multiplyAll(2.0);
 	
 	duplicate->fft(1);
 	_difft->fft(1);
