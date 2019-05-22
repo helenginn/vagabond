@@ -45,7 +45,7 @@ void Bond::initialize()
 	double initialKick = Options::getKick();
 	_kick = initialKick;
 	_torsion = 0;
-	_phi = 0;//3.14/2;
+	_phi = 3.14/2;
 	_psi = 0;
 	_geomRatio = 0;
 	_circlePortion = -10;
