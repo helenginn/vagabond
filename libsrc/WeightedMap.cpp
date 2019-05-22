@@ -153,10 +153,11 @@ double WeightedMap::phaseDevForWeight(double weight)
 }
 
 double WeightedMap::stdevForReflection(double fobs, double fcalc, 
-                                       double sigfobs)
+                                       double sigfobs, double res)
 {
-	double stdev = (fobs - fcalc) / fobs;
-	stdev *= stdev;
+	int shx = shellForResolution(res);
+	
+	double stdev = _shells[shx].std_err;
 	double datadev = sigfobs / fobs;
 	
 	double combined = sqrt(stdev * stdev + datadev * datadev);
@@ -164,7 +165,7 @@ double WeightedMap::stdevForReflection(double fobs, double fcalc,
 	return combined;
 }
 
-void WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
+double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 {
 	FFTPtr fftData = _data->getFFT();
 	double lowRes = Options::minRes();
@@ -172,7 +173,8 @@ void WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 	double maxRes = _crystal->getMaxResolution(_data);
 	maxRes = 1 / maxRes;
 	bool ignoreRfree = Options::ignoreRFree();
-	double this_phase_segment = -2 + (4 / MAX_SLICES) * slice;
+	double o = -2 + (4 / MAX_SLICES) * slice;
+	double weight = exp(-(o*o)/(2));
 
 	if (ignoreRfree)
 	{
@@ -226,14 +228,12 @@ void WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				double fcalc = sqrt(complex.x * complex.x +
 				                      complex.y * complex.y);
 
-				double stdev = stdevForReflection(fobs, fcalc, sigfobs);
-				stdev *= 2;
+				double stdev = stdevForReflection(fobs, fcalc, sigfobs,
+				                                  1 / length);
 				double downweight = exp(-(stdev * stdev));
 				
 				double phaseDev = phaseDevForWeight(downweight);
-				double o = this_phase_segment;
 				double phi = phaseDev * o;
-				double weight = exp(-(o*o)/(2));
 				
 				double phase = _fft->getPhase(i, j, k);
 				phi += deg2rad(phase);
@@ -244,11 +244,13 @@ void WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				
 				double fused = fobs;
 				
+				/*
 				if (fcalc > fobs)
 				{
 					fused = fobs * fobs / fcalc;
 				}
 				else
+				*/
 				{
 					fused = 2 * fobs - fcalc;
 				}
@@ -258,8 +260,8 @@ void WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 					fused = fobs - fcalc;
 				}
 
-				complex.x = fused * weight * cos(phi);
-				complex.y = fused * weight * sin(phi);
+				complex.x = fused * cos(phi);
+				complex.y = fused * sin(phi);
 				
 				if (complex.x != complex.x || complex.y != complex.y)
 				{
@@ -277,29 +279,37 @@ void WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 			}
 		}
 	}
+	
+	return weight;
 }
 
 void WeightedMap::createVagaCoefficients()
 {
 	std::cout << "Creating Vagamap density..." << std::endl;
 	FFTPtr duplicate = FFTPtr(new FFT(*_fft));
-	FFTPtr scratch = FFTPtr(new FFT(*_fft));
+	duplicate->setAll(0);
+	FFTPtr scratch = FFTPtr(new FFT(*duplicate));
+	_allWeights = 0;
+	
+	scratch->setAll(0);
 	
 	for (int i = 0; i < MAX_SLICES; i++)
 	{
-		oneMap(scratch, i, false);
+		double weight = oneMap(scratch, i, false);
+		_allWeights += weight;
 		scratch->fft(-1);
+		scratch->multiplyAll(weight);
 		FFT::addSimple(duplicate, scratch);
 		scratch->setAll(0);
 	}
-	
 
 	_difft->setAll(0);
 	
 	for (int i = 0; i < MAX_SLICES; i++)
 	{
-		oneMap(scratch, i, true);
+		double weight = oneMap(scratch, i, true);
 		scratch->fft(-1);
+		scratch->multiplyAll(weight);
 		FFT::addSimple(_difft, scratch);
 		scratch->setAll(0);
 	}
@@ -311,6 +321,9 @@ void WeightedMap::createVagaCoefficients()
 	duplicate->fft(1);
 	_difft->fft(1);
 	
+	duplicate->multiplyAll(1 / _allWeights);
+	_difft->multiplyAll(1 / _allWeights);
+
 	std::string filename = _crystal->getFilename();
 	double maxRes = _crystal->getMaxResolution(_data);
 	CSym::CCP4SPG *spg = _crystal->getSpaceGroup();
