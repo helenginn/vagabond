@@ -42,8 +42,8 @@ void WeightedMap::setCrystalAndData(CrystalPtr crystal, DiffractionPtr data)
 void WeightedMap::createWeightedMaps()
 {
 	calculateFiguresOfMerit();
-//	create2FoFcCoefficients();
-	createVagaCoefficients();
+	create2FoFcCoefficients();
+//	createVagaCoefficients();
 
 	/* Back to real space */
 	_crystal->fourierTransform(-1);
