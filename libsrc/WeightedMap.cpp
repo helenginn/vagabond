@@ -49,6 +49,7 @@ void WeightedMap::createWeightedMaps()
 	_crystal->fourierTransform(-1);
 	_difft->fft(-1);
 	
+	return;
 	
 	/* report */
 	
