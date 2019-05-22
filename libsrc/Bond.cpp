@@ -674,7 +674,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 			double sinAlpha = sqrt(c / (c + 1));
 
 			if (thisDeviation.z < 0) sinAlpha *= -1;
-			if (_leftOfAnchor) sinAlpha *= -1;
+			if (_leftOfAnchor && hasWhack()) sinAlpha *= -1;
 
 			kickValue = sinAlpha;
 
