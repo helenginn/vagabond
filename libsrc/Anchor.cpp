@@ -390,8 +390,6 @@ void Anchor::recalculateWhacks()
 		child->correctTorsionAngles();
 	}
 
-	propagateChange(-1, true);
-
 	for (int i = 0; i < whackCount(); i++)
 	{
 		_whacks[i]->saveSamples();
@@ -401,6 +399,8 @@ void Anchor::recalculateWhacks()
 	{
 		_twists[i]->saveSamples();
 	}
+
+//	propagateChange(-1, true);
 
 	_disableWhacks = false;
 

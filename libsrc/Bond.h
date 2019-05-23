@@ -618,6 +618,7 @@ private:
 	                            bool onlyExisting = false);
 
 	mat3x3 _magicMat;
+	mat3x3 _baseMagic;
 };
 
 #endif /* defined(__vagabond__Bond__) */

@@ -101,7 +101,7 @@ void Whack::applyKick()
 
 		BondPtr child = _bond->downstreamBond(0, 0);
 		Bond::setKick(&*child, value);
-		child->propagateChange(-1);
+//		child->propagateChange(-1);
 	}
 }
 

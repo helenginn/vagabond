@@ -51,6 +51,7 @@ void Bond::initialize()
 	_circlePortion = -10;
 	_expectedAngle = 0;
 	_magicMat = make_mat3x3();
+	_baseMagic = make_mat3x3();
 }
 
 Bond::Bond()
@@ -133,6 +134,7 @@ Bond::Bond(Bond &other)
 	_heavyAlign = other._heavyAlign;
 	_split = other._split;
 	_magicMat = other._magicMat;
+	_baseMagic = other._baseMagic;
 	
 	_torsion = other._torsion;
 	_kick = other._kick;
@@ -583,15 +585,10 @@ mat3x3 Bond::getRotatedMagicMat()
 	{
 		calculateMagicMat();
 	}
-	
-//	mat3x3 rot = make_mat3x3();
 
-	if (_phi != 0 || _psi != 0)
-	{
-//		rot = mat3x3_rot_from_angles(_psi, _phi);
-	}
+	mat3x3 rot = mat3x3_rot_from_angles(_psi, _phi);
+	_magicMat = mat3x3_mult_mat3x3(_baseMagic, rot);
 
-//	mat3x3 multed = mat3x3_mult_mat3x3(_magicMat, rot);
 	return _magicMat;
 }
 
@@ -600,9 +597,7 @@ void Bond::calculateMagicMat()
 	vec3 aveStart;
 	mat3x3 basis;
 	getAverageBasisPos(&basis, &aveStart);
-	_magicMat = mat3x3_transpose(basis);
-	mat3x3 rot = mat3x3_rot_from_angles(_psi, _phi);
-	_magicMat = mat3x3_mult_mat3x3(_magicMat, rot);
+	_baseMagic = mat3x3_transpose(basis);
 }
 
 void Bond::getAverageBasisPos(mat3x3 *aveBasis, vec3 *aveStart, 
@@ -1613,8 +1608,6 @@ void Bond::addProperties()
 	addBoolProperty("refine_bond_angle", &_refineBondAngle);
 	addBoolProperty("refine_flexibility", &_refineFlexibility);
 	addBoolProperty("disabled", &_disabled);
-	
-//	addMat3x3Property("magic_mat", &_magicMat);
 
 	for (int i = 0; i < downstreamBondGroupCount(); i++)
 	{
