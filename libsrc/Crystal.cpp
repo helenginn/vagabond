@@ -1257,6 +1257,7 @@ void Crystal::addProperties()
 //	addStringProperty("comments", &_comments);
 	addIntProperty("cycles_since_best", &_sinceBestNum);
 	addIntProperty("sample_num", &_sampleNum);
+	addIntProperty("cycle_num", &_cycleNum);
 
 	_spgNum = 0;
 	_spgString = "";
