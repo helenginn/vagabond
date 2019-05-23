@@ -112,16 +112,21 @@ void FlexLocal::refineClusters()
 
 	nelder->setEvaluationFunction(getScore, this);
 
+	CrystalPtr crystal = Options::getActiveCrystal();
+
 	_svd->addToStrategy(nelder, _negMult, false);
 	nelder->refine();
 	reportResult(nelder);
 	
 	std::cout << "... and magic angles... " << std::endl;
 
-	nelder->clearParameters();
-	_svd->addToStrategy(nelder, _negMult, true);
-	nelder->refine();
-	reportResult(nelder);
+	if (crystal->getCycleNum() > 10)
+	{
+		nelder->clearParameters();
+		_svd->addToStrategy(nelder, _negMult, true);
+		nelder->refine();
+		reportResult(nelder);
+	}
 	
 
 	timer.quickReport();
