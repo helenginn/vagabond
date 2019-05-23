@@ -118,7 +118,7 @@ void FlexLocal::refineClusters()
 	nelder->refine();
 	reportResult(nelder);
 
-	if (crystal->getCycleNum() > 10)
+	if (crystal->getCycleNum() >= 10)
 	{
 		std::cout << std::endl << "... and magic angles... " << std::endl;
 		nelder->clearParameters();
