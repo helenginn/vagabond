@@ -23,6 +23,8 @@
 #include "Atom.h"
 #include "RefinementStrategy.h"
 #include "Bond.h"
+#include "Polymer.h"
+#include "Anchor.h"
 #include "Whack.h"
 #include "CSV.h"
 
@@ -278,8 +280,12 @@ void SVDBond::report()
 		Param *pk = new Param();
 		Param::setValue(pk, 0);
 		
+		Param *pph = new Param();
+		Param::setValue(pph, 0);
+		
 		set.pWhack = pw;
 		set.pKick = pk;
+		set.pPhi = pph;
 		set.rowPtr = _svd[i];
 
 		_params.push_back(set);
@@ -295,33 +301,50 @@ void SVDBond::report()
 		
 		double w = Whack::getWhack(&*whack);
 		double k = Whack::getKick(&*whack);
+		double phi = Bond::getMagicPhi(&*bond->downstreamBond(0, 0));
 		
 		BondParamPair pair;
 		pair.whack = w;
 		pair.kick = k;
+		pair.phi = phi;
 		_bondBase[bond] = pair;
 	}
 }
 
 void SVDBond::addToStrategy(RefinementStrategyPtr strategy, int dir,
-                            FlexLocal *local)
+                            bool phi)
 {
 	double inv = 1.0 / _wTotal;
 	double tol = inv / 100;
 	
 	inv *= (double)dir;
 	
-	for (int i = 0; i < _params.size(); i++)
+	for (int i = 0; i < _params.size() && !phi; i++)
 	{
 		strategy->addParameter(_params[i].pWhack, Param::getValue,
 		                       Param::setValue, inv, tol);
 		strategy->addParameter(_params[i].pKick, Param::getValue,
 		                       Param::setValue, inv, tol);
 	}
+	
+	double phi_step = deg2rad(180.);
+	
+	for (int i = 0; i < _params.size() && phi; i++)
+	{
+		strategy->addParameter(_params[i].pPhi, Param::getValue,
+		                       Param::setValue, phi_step, deg2rad(5.));
+	}
 }
 
 void SVDBond::applyParameters()
 {
+	if (!_bonds.size())
+	{
+		return;
+	}
+
+	PolymerPtr pol = ToPolymerPtr(_bonds[0]->getAtom()->getMolecule());
+
 	/* for every bond... */
 	for (int i = 0; i < _bonds.size(); i++)
 	{
@@ -334,12 +357,12 @@ void SVDBond::applyParameters()
 		
 		double w = _bondBase[bi].whack;
 		double k = _bondBase[bi].kick;
-		
-//		std::cout << "base: " << w << ", " << k << std::endl;
+		double ph = _bondBase[bi].phi;
 		
 		/* to store the total contributions to add to whack/kick */
 		double w_more = 0;
 		double k_more = 0;
+		double ph_more = 0;
 
 		/* loop round each cluster... */
 		for (int j = 0; j < _params.size(); j++)
@@ -359,12 +382,15 @@ void SVDBond::applyParameters()
 			/* get value of the whack/kick */
 			double wVal = Param::getValue(_params[j].pWhack);
 			double kVal = Param::getValue(_params[j].pKick);
+			double phVal = Param::getValue(_params[j].pPhi);
 
 			wVal *= total;
 			kVal *= total;
+			phVal *= total;
 
 			w_more += wVal;
 			k_more += kVal;
+			ph_more += phVal;
 
 			if (k_more != k_more)
 			{
@@ -375,6 +401,11 @@ void SVDBond::applyParameters()
 			{
 				w_more = 0;
 			}
+			
+			if (ph_more != ph_more)
+			{
+				ph_more = 0;
+			}
 		}
 
 		if (w != w)
@@ -384,12 +415,17 @@ void SVDBond::applyParameters()
 		
 		w += w_more;
 		k += k_more;
+		ph += ph_more;
 
 		WhackPtr whack = bi->getWhack();
 		Whack::setWhack(&*whack, w);
 		Whack::setKick(&*whack, k);
+		
+		Bond::setMagicPhi(&*bi->downstreamBond(0, 0), ph);
 	}
 
+	pol->getAnchorModel()->propagateChange(-1, true);
+	pol->getAnchorModel()->forceRefresh();
 }
 
 void SVDBond::cleanupSVD(double ***ptr)
@@ -421,6 +457,7 @@ SVDBond::~SVDBond()
 	for (int i = 0; i < _params.size(); i++)
 	{
 		delete _params[i].pWhack;
+		delete _params[i].pPhi;
 		delete _params[i].pKick;
 	}
 }

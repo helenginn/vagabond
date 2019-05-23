@@ -26,6 +26,7 @@ typedef struct
 {
 	Param *pWhack;
 	Param *pKick;
+	Param *pPhi;
 	double *rowPtr;
 } ParamSVDSet;
 
@@ -33,6 +34,7 @@ typedef struct
 {
 	double kick; /* Baseline kick, minus adjustments */
 	double whack; /* Baseline whack, minus adjustments */
+	double phi; /* Baseline phi, minus adjustments */
 } BondParamPair;
 
 typedef std::map<BondPtr, BondParamPair> BondBase;
@@ -51,7 +53,7 @@ public:
 	}
 
 	void addToStrategy(RefinementStrategyPtr strategy, int dir, 
-	                   FlexLocal *local);
+	                   bool phi = false);
 	void applyParameters();
 	void performSVD(BondBondCC *ccs = NULL);
 private:
