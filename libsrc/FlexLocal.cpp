@@ -82,21 +82,8 @@ void FlexLocal::svd()
 	std::cout << std::endl;
 }
 
-void FlexLocal::refineClusters()
+void FlexLocal::reportResult(NelderMeadPtr nelder)
 {
-	std::cout << "| 1. Refining bond clusters... " 
-	<< std::flush;
-	Timer timer;
-
-	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
-	nelder->setCycles(200);
-	nelder->setVerbose(true);	
-	nelder->setSilent(true);
-
-	nelder->setEvaluationFunction(getScore, this);
-	_svd->addToStrategy(nelder, _negMult, this);
-	nelder->refine();
-	
 	double val = (1 + getScore(this)) * 100.;
 	val = nelder->improvement();
 
@@ -110,6 +97,32 @@ void FlexLocal::refineClusters()
 	{
 		std::cout << " not improved.   ... done. ";
 	}
+}
+
+void FlexLocal::refineClusters()
+{
+	std::cout << "| 1. Refining bond clusters... " 
+	<< std::flush;
+	Timer timer;
+
+	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
+	nelder->setCycles(200);
+	nelder->setVerbose(true);	
+	nelder->setSilent(true);
+
+	nelder->setEvaluationFunction(getScore, this);
+
+	_svd->addToStrategy(nelder, _negMult, false);
+	nelder->refine();
+	reportResult(nelder);
+	
+	std::cout << "... and magic angles... " << std::endl;
+
+	nelder->clearParameters();
+	_svd->addToStrategy(nelder, _negMult, true);
+	nelder->refine();
+	reportResult(nelder);
+	
 
 	timer.quickReport();
 	std::cout << std::endl;

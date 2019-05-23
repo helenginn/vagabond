@@ -85,6 +85,7 @@ private:
 	void clear();
 	void propagateWhack();
 	void setBondParam(BondPtr b, double w, double k);
+	void reportResult(NelderMeadPtr nelder);
 	
 	PolymerPtr _polymer;
 
