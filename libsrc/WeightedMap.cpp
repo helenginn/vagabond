@@ -377,7 +377,7 @@ void WeightedMap::create2FoFcCoefficients()
 				CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
 
 				long dataidx = fftData->element(_h, _k, _l);
-				double obs_amp = fftData->data[dataidx][0];
+				double fobs = fftData->data[dataidx][0];
 				double sigfobs = fftData->data[dataidx][1];
 				long index = _fft->element(i, j, k);
 
@@ -405,7 +405,7 @@ void WeightedMap::create2FoFcCoefficients()
 					continue;
 				}
 
-				if (obs_amp != obs_amp || isRfree)
+				if (fobs != fobs || isRfree)
 				{
 					_fft->setElement(index, 0, 0);
 					_difft->setElement(index, 0, 0);
@@ -413,23 +413,29 @@ void WeightedMap::create2FoFcCoefficients()
 					continue;
 				}
 
-
 				vec2 complex;
 				complex.x = _fft->getReal(index);
 				complex.y = _fft->getImaginary(index);
-				double calc_amp = sqrt(complex.x * complex.x +
-				                      complex.y * complex.y);
+				double fcalc = sqrt(complex.x * complex.x +
+				                    complex.y * complex.y);
 
-				double new_amp = calc_amp;
-				new_amp = partsFo * obs_amp - partsFc * calc_amp;
-				double rescale = new_amp / calc_amp;
+				double phase = _fft->getPhase(i, j, k);
+				phase = deg2rad(phase);
+				
+				double stdev = stdevForReflection(fobs, fcalc, sigfobs,
+				                                  1 / length);
+				double downweight = exp(-(stdev * stdev));
+				
+				double fused = 2 * fobs - fcalc;
+				double weight = exp(-stdev * stdev);
+				
+				if (fcalc >= fobs)
+				{
+//					fused = m * fobs * fobs / (d * fcalc);
+				}
 
-				double diff_scale = obs_amp - calc_amp;
-				diff_scale /= calc_amp;
-
-				vec2 diff_complex = complex;
-				complex.x *= rescale;
-				complex.y *= rescale;
+				complex.x = weight * fused * cos(phase);
+				complex.y = weight * fused * sin(phase);
 
 				if (complex.x != complex.x || complex.y != complex.y)
 				{
@@ -445,16 +451,17 @@ void WeightedMap::create2FoFcCoefficients()
 					continue;
 				}
 				
-				diff_complex.x *= diff_scale;
-				diff_complex.y *= diff_scale;
+				fused = fobs - fcalc;
 
-				if (diff_complex.x != diff_complex.x || 
-				    diff_complex.y != diff_complex.y)
+				complex.x = fused * cos(phase);
+				complex.y = fused * sin(phase);
+
+				if (complex.x != complex.x || complex.y != complex.y)
 				{
 					continue;
 				}
 
-				_difft->setElement(index, diff_complex.x, diff_complex.y);
+				_difft->setElement(index, complex.x, complex.y);
 			}
 		}
 	}
