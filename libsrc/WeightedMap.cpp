@@ -294,7 +294,7 @@ void WeightedMap::createVagaCoefficients()
 	
 	scratch->setAll(0);
 	
-	for (int i = 0; i < MAX_SLICES; i++)
+	for (int i = 0; i <= MAX_SLICES; i++)
 	{
 		double weight = oneMap(scratch, i, false);
 		_allWeights += weight;
@@ -306,7 +306,7 @@ void WeightedMap::createVagaCoefficients()
 
 	_difft->setAll(0);
 	
-	for (int i = 0; i < MAX_SLICES; i++)
+	for (int i = 0; i <= MAX_SLICES; i++)
 	{
 		double weight = oneMap(scratch, i, true);
 		scratch->fft(-1);
