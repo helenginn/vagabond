@@ -1328,6 +1328,11 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 						                                 lrint(atomPos.z));
 					}
 				}
+				
+				if (atomReal < 1e-6 && mapScoreType == MapScoreTypeCorrel)
+				{
+					continue;
+				}
 
 				/* We add the crystal offset so we don't end up with thousands
 				 * of atoms at the very centre of our map */

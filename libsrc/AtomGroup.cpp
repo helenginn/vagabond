@@ -1112,21 +1112,25 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 	/* Actual variables to compare, correlation calculations */
 	ws->segment->copyRealToImaginary();
 	
-	vals.clear();
+	ws->vals.clear();
 	FFT::addSimple(ws->segment, ws->constant); /* add to real */
-	FFT::operation(map, ws->segment, ave, mapType, &vals);
+	FFT::operation(map, ws->segment, ave, mapType, &ws->vals);
 
-	for (size_t i = 0; i < vals.size(); i++)
+	for (size_t i = 0; i < ws->vals.size() && 
+	     ws->scoreType != ScoreTypeCorrel; i++)
 	{
-		ys.push_back(vals[i].fc);
-		xs.push_back(vals[i].fo);
-		weights.push_back(vals[i].weight);
-
-		if (weights[i] > 1e-6)
+		if (ws->vals[i].weight > 1e-6)
 		{
-//			std::cout << xs[i] << " " << ys[i] << " " << weights[i] 
-//			<< " " << vals[i].weight << std::endl;
+			ys.push_back(ws->vals[i].fc);
+			xs.push_back(ws->vals[i].fo);
+			weights.push_back(ws->vals[i].weight);
 		}
+	}
+	
+	if (ws->scoreType == ScoreTypeCorrel)
+	{
+		double correl = correlation(ws->vals);
+		return -correl;
 	}
 
 	if (ws->scoreType == ScoreTypeRFactor)
@@ -1137,7 +1141,7 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 		for (size_t i = 0; i < ys.size(); i++)
 		{
 			ys[i] /= scale;
-			vals[i].fc /= scale;
+			ws->vals[i].fc /= scale;
 		}
 	}
 
@@ -1146,13 +1150,8 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 
 	if (plot)
 	{
-		plotCoordVals(vals, difference, cutoff, ws->filename);
+		plotCoordVals(ws->vals, difference, cutoff, ws->filename);
 	}
-
-
-	/* Clear out the massive vectors */
-	vals.clear();
-	std::vector<CoordVal>().swap(vals);
 
 	double score = scoreFinalValues(xs, ys, weights, ws->scoreType, ws->flag);
 

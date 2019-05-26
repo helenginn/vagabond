@@ -14,6 +14,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <float.h>
+#include "MapScoreWorkspace.h"
 
 double scale_factor_cutoff(std::vector<double> &set1, std::vector<double> &set2,
                            double cutoff = -FLT_MAX);
@@ -24,9 +25,13 @@ double scaled_r_factor(std::vector<double> &set1, std::vector<double> &set2,
                        double cutoff = -FLT_MAX);
 double r_factor(std::vector<double> &set1, std::vector<double> &set2);
 double weightedMapScore(std::vector<double> &set1, std::vector<double> &set2);
+
 double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
                    double cutoff = -FLT_MAX, std::vector<double> *weights = 
                    NULL);
+double correlation(std::vector<CoordVal> &vals);
+
+
 double happiness_coefficient(std::vector<double> xs, std::vector<double> ys);
 double mean(std::vector<double> &vec1);
 /* second vec2 is ignored */

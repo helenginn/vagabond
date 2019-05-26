@@ -11,7 +11,7 @@
  * \brief Stores temporary information for repeated calculations of
  * correlation between calculated and comparison density */
 
-#define COORDVAL_FULL
+//#define COORDVAL_FULL
 
 typedef struct
 {
@@ -62,6 +62,7 @@ typedef struct
 	FFTPtr constant;
 	vec3 ave;
 	vec3 working_ave;
+	std::vector<CoordVal> vals;
 	mat3x3 basis;
 	std::string filename;
 	unsigned int flag;
