@@ -252,18 +252,7 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				_shells[shx].count++;
 				_shells[shx].phi_spread += rad2deg(phaseDev);
 				
-				double fused = fobs;
-				
-				/*
-				if (fcalc > fobs)
-				{
-					fused = fobs * fobs / fcalc;
-				}
-				else
-				*/
-				{
-					fused = 2 * fobs - fcalc;
-				}
+				double fused = 2 * fobs - fcalc;
 
 				if (diff)
 				{
@@ -324,16 +313,23 @@ void WeightedMap::createVagaCoefficients()
 		scratch->setAll(0);
 	}
 	
-//	_difft->multiplyAll(0.5);
-//	FFT::addSimple(duplicate, _difft);
-//	_difft->multiplyAll(2.0);
-	
 	duplicate->fft(1);
 	_difft->fft(1);
 	
-	duplicate->multiplyAll(1 / _allWeights);
-	_difft->multiplyAll(1 / _allWeights);
+	double aveOrig = _fft->averageBoth();
+	double aveDupl = duplicate->averageBoth();
+	double mult = aveOrig / aveDupl;
 
+	duplicate->multiplyAll(mult);
+	_difft->multiplyAll(mult);
+	
+	writeFile(duplicate);
+
+	_fft->copyFrom(duplicate);
+}
+
+void WeightedMap::writeFile(FFTPtr chosen)
+{
 	std::string filename = _crystal->getFilename();
 	double maxRes = _crystal->getMaxResolution(_data);
 	CSym::CCP4SPG *spg = _crystal->getSpaceGroup();
@@ -343,10 +339,8 @@ void WeightedMap::createVagaCoefficients()
 	std::string prefix = "cycle_" + i_to_str(_crystal->getCycleNum());
 
 	std::string outputFile = prefix + "_" + filename + "_vbond.mtz";
-	duplicate->writeReciprocalToFile(outputFile, maxRes, spg, _data->getFFT(), 
+	chosen->writeReciprocalToFile(outputFile, maxRes, spg, _data->getFFT(),
 	                                 _difft, _fft);
-
-	_fft->copyFrom(duplicate);
 }
 
 void WeightedMap::create2FoFcCoefficients()
@@ -474,4 +468,6 @@ void WeightedMap::create2FoFcCoefficients()
 			}
 		}
 	}
+	
+	writeFile(_fft);
 }

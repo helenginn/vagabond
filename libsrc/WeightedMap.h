@@ -49,6 +49,7 @@ private:
 	double oneMap(FFTPtr scratch, int slice, bool diff);
 	void createVagaCoefficients();
 	void create2FoFcCoefficients();
+	void writeFile(FFTPtr chosen);
 };
 
 #endif
