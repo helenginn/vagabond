@@ -40,7 +40,7 @@ private:
 	virtual bool acceptablePositions(AtomPtr minAtom);
 	void setupAverage();
 	void updateModel(int *v, int total, std::vector<vec3> &maj, 
-	                 std::vector<vec3> &min);
+	                 std::vector<vec3> &min, AtomPtr atm);
 
 	int _average;
 };

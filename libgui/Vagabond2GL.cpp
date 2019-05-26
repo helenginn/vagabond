@@ -6,6 +6,7 @@
 //  Copyright © 2017 Strubi. All rights reserved.
 //
 
+#include <iomanip>
 #include "Vagabond2GL.h"
 #include "../libsrc/Options.h"
 #include "../libsrc/Crystal.h"
@@ -31,6 +32,11 @@ bool Vagabond2GL::isAcceptableAtom(Atom *atom)
 	}
 
 	if (atom->getModel() && !atom->getModel()->isBond())
+	{
+		return false;
+	}
+	
+	if (_colourByFlex && atom->isSidechain())
 	{
 		return false;
 	}
@@ -99,6 +105,30 @@ bool Vagabond2GL::shouldGetBonds()
 	return false;
 }
 
+void Vagabond2GL::updateColour(AtomPtr atom, Vertex *vertex)
+{
+	if (_colourByFlex)
+	{
+		double val = atom->fishWhackMagnitude();
+		
+		if (val < 0)
+		{
+			return;
+		}
+		
+		val *= 500;
+		vertex->color[2] = val;
+		
+		if (vertex->color[2] < 0)
+		{
+			vertex->color[2] = 0;
+		}
+		
+		vertex->color[1] = vertex->color[2] / 2;
+		vertex->color[0] = vertex->color[2] / 2;
+	}
+}
+
 void Vagabond2GL::setVertexColour(AtomPtr atom, Vertex *vertex)
 {
 	vertex->color[0] = 100. / 255.;
@@ -128,6 +158,8 @@ void Vagabond2GL::setVertexColour(AtomPtr atom, Vertex *vertex)
 		vertex->color[1] = 255. / 255.;
 		vertex->color[2] = 0. / 255.;
 	}
+	
+	updateColour(atom, vertex);
 }
 
 void Vagabond2GL::findAtoms()

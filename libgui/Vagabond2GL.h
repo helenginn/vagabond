@@ -34,6 +34,7 @@ public:
 		_lastEnsembleCount = 0;
 		_shouldGetBonds = true;
 		_centroid = empty_vec3();
+		_colourByFlex = false;
 		
 		_pause = false;
 		_enabled = true;
@@ -63,12 +64,18 @@ public:
 	{
 		return true;
 	}
+	
+	void toggleColourByFlex()
+	{
+
+	}
 protected:
 	virtual void findAtoms();
 	bool isAcceptableAtom(Atom *atom);
 
 	virtual void bindTextures();
 	virtual void updateAtoms() = 0;
+	void updateColour(AtomPtr atom, Vertex *vertex);
 	virtual bool acceptablePositions(AtomPtr minAtom)
 	{
 		return true;
@@ -83,6 +90,7 @@ protected:
 	int _lastEnsembleCount;
 	bool _shouldGetBonds;
 	bool _enabled;
+	bool _colourByFlex;
 
 	/* First pair: number of bonds assoc. with atom,
 	 * Second pair: vertex num */

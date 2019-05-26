@@ -78,8 +78,11 @@ void Bonds2GL::getPositions(AtomPtr minAtom, AtomPtr majAtom,
 }
 
 void Bonds2GL::updateModel(int *v, int total, std::vector<vec3> &maj, 
-                           std::vector<vec3> &min)
+                           std::vector<vec3> &min, AtomPtr atm)
 {
+	Vertex vTest;
+	updateColour(atm, &vTest);
+
 	for (int k = 0; k < total; k++)
 	{
 		if (maj.size() <= k || min.size() <= k)
@@ -116,7 +119,12 @@ void Bonds2GL::updateModel(int *v, int total, std::vector<vec3> &maj,
 			       sizeof(GLfloat) * 3);
 			memcpy(_vertices[*v+3].normal, _vertices[*v].pos,
 			       sizeof(GLfloat) * 3);
+		}
 
+		for (int i = 0; i < 4 && _colourByFlex; i++)
+		{
+			memcpy(_vertices[*v+i].color, vTest.color, 
+			       sizeof(GLfloat) * 4);
 		}
 
 		*v += 4;
@@ -147,7 +155,7 @@ void Bonds2GL::updateAtoms()
 		std::vector<vec3> majBonds, minBonds;
 		getPositions(maj, min, &minBonds, &majBonds);
 		
-		updateModel(&v, total, minBonds, majBonds);
+		updateModel(&v, total, minBonds, majBonds, maj);
 	}
 }
 
