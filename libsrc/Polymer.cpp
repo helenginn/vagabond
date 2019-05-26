@@ -1442,6 +1442,13 @@ AtomGroupPtr Polymer::getAllBackbone()
 		{
 			_allBackbones->addAtomsFrom(bone);
 		}
+		
+		AtomList cbs = getMonomer(i)->findAtoms("CB");
+		
+		for (int j = 0; j < cbs.size(); j++)
+		{
+			_allBackbones->addAtom(cbs[j]);
+		}
 	}
 	
 	return _allBackbones;
