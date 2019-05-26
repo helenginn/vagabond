@@ -103,6 +103,13 @@ public:
 		return sumAll() / (double)nn;
 	}
 
+	/** Get the average of all real values (ignore imaginary component) */
+	double averageBoth()
+	{
+		return (sumAll() + sumImag()) / (double)(2*nn);
+	}
+
+
 	void setMask(long i, MaskType value)
 	{
 		mask[i] = value;
