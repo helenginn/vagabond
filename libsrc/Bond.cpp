@@ -586,9 +586,6 @@ mat3x3 Bond::getRotatedMagicMat()
 		calculateMagicMat();
 	}
 
-	mat3x3 rot = mat3x3_rot_from_angles(_psi, _phi);
-	_magicMat = mat3x3_mult_mat3x3(_baseMagic, rot);
-
 	return _magicMat;
 }
 
@@ -598,6 +595,8 @@ void Bond::calculateMagicMat()
 	mat3x3 basis;
 	getAverageBasisPos(&basis, &aveStart);
 	_baseMagic = mat3x3_transpose(basis);
+	mat3x3 rot = mat3x3_rot_from_angles(_psi, _phi);
+	_magicMat = mat3x3_mult_mat3x3(_baseMagic, rot);
 }
 
 void Bond::getAverageBasisPos(mat3x3 *aveBasis, vec3 *aveStart, 
