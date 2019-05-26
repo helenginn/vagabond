@@ -58,7 +58,6 @@ typedef struct
 	AtomGroupPtr selectAtoms;
 	AtomGroupPtr extra;
 	FFTPtr segment;
-	FFTPtr fcSegment;
 	FFTPtr constant;
 	vec3 ave;
 	vec3 working_ave;

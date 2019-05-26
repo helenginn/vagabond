@@ -1006,7 +1006,6 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		workspace->basis = workspace->segment->getReal2Frac();
 
 		workspace->constant = FFTPtr(new FFT(*workspace->segment));
-		workspace->fcSegment = FFTPtr(new FFT(*workspace->segment));
 		workspace->constant->takePlansFrom(workspace->segment);
 	}
 	else
