@@ -562,6 +562,7 @@ void Options::parse()
 
 		understood |= parseParameter(arg, "--max-res=", &_maxRes);
 		understood |= parseParameter(arg, "--min-res=", &_minRes);
+		understood |= parseParameter(arg, "--bsubtract=", &_bSubt);
 		understood |= parseParameter(arg, "--bfactor=", &_bStart);
 		understood |= parseParameter(arg, "--bond-angles=", &_bondAngles);
 		understood |= parseParameter(arg, "--nsamples=", &_nSamples);
