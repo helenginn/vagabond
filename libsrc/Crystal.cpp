@@ -1761,7 +1761,7 @@ void Crystal::rigidBodyFit()
 		if (molecule(i)->isPolymer())
 		{
 			PolymerPtr pol = ToPolymerPtr(molecule(i));
-			for (int j = 0; j < 2; j++)
+			for (int j = 0; j < 1; j++)
 			{
 				pol->getAnchorModel()->propagateChange(-1, true);
 				pol->refineAnchorPosition(shared_from_this());
