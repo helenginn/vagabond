@@ -13,6 +13,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include "Bond.h"
+#include "Whack.h"
 #include <iostream>
 #include "Element.h"
 #include "Monomer.h"
@@ -891,4 +892,39 @@ bool Atom::isAtom(std::string atomName, int resNum)
 {
 	return (getMonomer() && getMonomer()->getResidueNum() == resNum 
 	        && _atomName == atomName);
+}
+
+double Atom::fishWhackMagnitude()
+{
+	std::lock_guard<std::mutex> lock(_whackLock);
+
+	MonomerPtr m = getMonomer();
+
+	if (!m)
+	{
+		return -1;
+	}
+
+	AtomPtr ca = m->findAtom("CA");
+
+	if (!ca || !ca->getModel()->isBond())
+	{
+		return -1;
+	}
+
+	BondPtr b = ToBondPtr(ca->getModel());
+
+	if (!b->hasWhack())
+	{
+		return -1;
+	}
+
+	WhackPtr whack = b->getWhack();
+	double tot = fabs(Whack::getWhack(&*whack));
+	tot += fabs(Whack::getKick(&*whack));
+
+	return tot;
+
+	// is sidechain
+
 }

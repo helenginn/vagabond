@@ -16,6 +16,7 @@
 #include "mat3x3.h"
 #include "Element.h"
 #include <string>
+#include <mutex>
 #include "../libinfo/GeomTable.h"
 #include "fftw3d.h"
 #include "Parser.h"
@@ -370,6 +371,8 @@ public:
 	{
 		return _elementSymbol;
 	}
+
+	double fishWhackMagnitude();
 protected:
 	virtual std::string getClassName()
 	{
@@ -416,6 +419,8 @@ private:
 
 	GhostBondPtr _ghost;
 	AtomType _geomType;
+
+	std::mutex _whackLock;
 };
 
 #endif /* defined(__vagabond__Atom__) */
