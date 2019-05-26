@@ -214,6 +214,11 @@ public:
 	{
 		return _sampling;
 	}
+	
+	static int getMapType()
+	{
+		return _map;
+	}
 
 	void setManual(bool manual)
 	{
@@ -335,6 +340,7 @@ private:
 	static double _bStart;
 	static double _sampling;
 	static int _nSamples;
+	static int _map;
 	static double _probeRadius;
 	std::string _diffMatrix;
 	std::string _outputDir;
