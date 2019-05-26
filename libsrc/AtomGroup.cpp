@@ -1010,7 +1010,8 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	}
 	else
 	{
-		workspace->segment->copyFrom(workspace->constant);
+//		workspace->segment->copyFrom(workspace->constant);
+			workspace->segment->setAll(0);
 	}
 	
 	/* Now we can add neighbouring atoms from the same Crystal
@@ -1050,7 +1051,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 			                     workspace->ave);
 			
 			/* Copy this constant fraction into the segment */
-			workspace->segment->copyFrom(workspace->constant);
+//			workspace->segment->copyFrom(workspace->constant);
 		}
 	}
 	
@@ -1090,7 +1091,7 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 	
 	double cutoff = MAP_VALUE_CUTOFF;
 
-	std::vector<double> xs, ys;
+	std::vector<double> xs, ys, weights;
 	std::vector<CoordVal> vals;
 
 	FFTPtr map = ws->crystal->getFFT();
@@ -1107,14 +1108,25 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 	{
 		mapType = MapScoreTypeCopyToSmaller;
 	}
-
+	
+	/* Actual variables to compare, correlation calculations */
+	ws->segment->copyRealToImaginary();
+	
+	vals.clear();
+	FFT::addSimple(ws->segment, ws->constant); /* add to real */
 	FFT::operation(map, ws->segment, ave, mapType, &vals);
 
-	/* For correlation calculations */
 	for (size_t i = 0; i < vals.size(); i++)
 	{
-		xs.push_back(vals[i].fo);
 		ys.push_back(vals[i].fc);
+		xs.push_back(vals[i].fo);
+		weights.push_back(vals[i].weight);
+
+		if (weights[i] > 1e-6)
+		{
+//			std::cout << xs[i] << " " << ys[i] << " " << weights[i] 
+//			<< " " << vals[i].weight << std::endl;
+		}
 	}
 
 	if (ws->scoreType == ScoreTypeRFactor)
@@ -1142,25 +1154,27 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 	vals.clear();
 	std::vector<CoordVal>().swap(vals);
 
-	double score = scoreFinalValues(xs, ys, ws->scoreType, ws->flag);
+	double score = scoreFinalValues(xs, ys, weights, ws->scoreType, ws->flag);
 
 	return score;
 }
 
 
-double AtomGroup::scoreFinalValues(std::vector<double> xs,
-                                   std::vector<double> ys,
+double AtomGroup::scoreFinalValues(std::vector<double> &xs,
+                                   std::vector<double> &ys,
+                                   std::vector<double> &weights,
                                    ScoreType scoreType,
                                    unsigned int flags)
 {
 	bool difference = (flags & MapScoreFlagDifference);
 	double cutoff = MAP_VALUE_CUTOFF;
 	
-	if (difference) cutoff = -FLT_MAX;
+//	if (difference) cutoff = -FLT_MAX;
+	cutoff = -FLT_MAX;
 	
 	if (scoreType == ScoreTypeCorrel)
 	{
-		double correl = correlation(xs, ys, cutoff);
+		double correl = correlation(xs, ys, cutoff, &weights);
 		return -correl;
 	}
 	else if (scoreType == ScoreTypeHappiness)

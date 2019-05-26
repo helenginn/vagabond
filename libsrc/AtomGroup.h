@@ -194,8 +194,9 @@ private:
 
 	static double scoreFinalMap(MapScoreWorkspace *workspace, bool plot);
 
-	static double scoreFinalValues(std::vector<double> xs,
-	                               std::vector<double> ys,
+	static double scoreFinalValues(std::vector<double> &xs,
+	                               std::vector<double> &ys,
+                                   std::vector<double> &weights,
 	                               ScoreType scoreType,
                                    unsigned int flags);
 

@@ -191,7 +191,7 @@ double weightedMapScore(std::vector<double> &vec1, std::vector<double> &vec2)
 }
 
 double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
-                   double cutoff)
+                   double cutoff, std::vector<double> *weights)
 {
 	double sum_x = 0;
 	double sum_y = 0;
@@ -205,6 +205,11 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
 	for (int i = 0; i < vec1.size(); i++)
 	{
 		double weight = 1;
+		
+		if (weights != NULL)
+		{
+			weight = (*weights)[i];
+		}
 
 		if (vec1[i] != vec1[i] || vec2[i] != vec2[i] || weight != weight)
 		{
@@ -235,6 +240,11 @@ double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
 	for (int i = 0; i < vec1.size(); i++)
 	{
 		double weight = 1;
+		
+		if (weights != NULL)
+		{
+			weight = (*weights)[i];
+		}
 
 		if (vec1[i] != vec1[i] || vec2[i] != vec2[i] || weight != weight)
 		{
