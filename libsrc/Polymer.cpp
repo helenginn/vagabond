@@ -966,6 +966,7 @@ void Polymer::graph(std::string graphName)
 void Polymer::ramachandranPlot()
 {
 	CSVPtr csv = CSVPtr(new CSV(3, "res", "phi", "psi"));
+	CSVPtr kicks = CSVPtr(new CSV(3, "res", "whack", "kick"));
 
 	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
@@ -978,6 +979,7 @@ void Polymer::ramachandranPlot()
 
 		AtomList phiAtoms = getMonomer(i)->findAtoms("N");
 		AtomList psiAtoms = getMonomer(i)->findAtoms("C");
+		AtomList caAtoms = getMonomer(i)->findAtoms("CA");
 		
 		if (phiAtoms.size() != psiAtoms.size())
 		{
@@ -997,11 +999,27 @@ void Polymer::ramachandranPlot()
 			double tPhi = Bond::getTorsion(&*ToBondPtr(mPhi));
 			double tPsi = Bond::getTorsion(&*ToBondPtr(mPsi));
 			
-			csv->addEntry(3, i, rad2deg(tPhi), rad2deg(tPsi));
+			csv->addEntry(3, (double)i, rad2deg(tPhi), rad2deg(tPsi));
+		}
+		
+		for (int j = 0; j < caAtoms.size() && j < 1; j++)
+		{
+			ModelPtr ca = caAtoms[j]->getModel();
+			if (!ca->isBond() || !ToBondPtr(ca)->hasWhack())
+			{
+				continue;
+			}
+			
+			WhackPtr whack = ToBondPtr(ca)->getWhack();
+			double k = Whack::getKick(&*whack);
+			double w = Whack::getWhack(&*whack);
+			
+			kicks->addEntry(3, (double)i, w, k); 
 		}
 	}
 
 	csv->writeToFile("ramachandran.csv");
+	kicks->writeToFile("chainflex_" + getChainID() + ".csv");
 }
 
 std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal, 
