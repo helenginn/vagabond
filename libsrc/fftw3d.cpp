@@ -1362,12 +1362,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 
 				if (mapScoreType == MapScoreTypeCorrel)
 				{
-					if ((!fftCrystal->_writeToMaskZero &&
-					     fftCrystal->getMask(cIndex) == 0))
-					{
-						continue;
-					}
-
 					// We do NOT need to interpolate //
 					double realCryst = fftCrystal->getReal(cIndex);
 
@@ -1406,12 +1400,6 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 			}
 		}
 	}
-	
-	
-	if (mapScoreType == MapScoreTypeCopyToSmaller)
-	{
-		fftAtom->shiftToCentre();
-	}
 
 	return 0;
 }
@@ -1438,19 +1426,16 @@ void FFT::multiply(FFTPtr fftEdit, FFTPtr fftConst)
 
 /*  For multiplying point-wise
  *  Assumes identical nx/ny/nz/scales.
+ *  As of May 2019 I do rely on the fact this does not add to imaginary.
  */
 void FFT::addSimple(FFTPtr fftEdit, FFTPtr fftConst)
 {
 	for (long int i = 0; i < fftEdit->nn; i++)
 	{
-		if (!fftEdit->_writeToMaskZero && fftEdit->mask[i] == 0)
-		{
-			continue;
-		}
-
 		fftEdit->data[i][0] += fftConst->data[i][0];
 	}
 }
+
 
 void FFT::printCinema()
 {
