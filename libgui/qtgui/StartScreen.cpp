@@ -384,6 +384,7 @@ void StartScreen::pushRun()
 	
 	VagWindow *window = new VagWindow(NULL, _argc, _argv);
 	window->setStartScreen(this);
+	finishUp();
 	window->show();
 
 	// memory leak of this...
