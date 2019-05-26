@@ -127,6 +127,14 @@ void FFT::copyFrom(FFTPtr other)
 	memcpy(data, other->data, nn * sizeof(FFTW_DATA_TYPE));
 }
 
+void FFT::copyRealToImaginary()
+{
+	for (int i = 0; i < nn; i++)
+	{
+		data[i][1] = data[i][0];
+	}
+}
+
 void FFT::create(long nnx, long nny, long nnz)
 {
 	if (nnx % 2 == 1) nnx -= 1;
