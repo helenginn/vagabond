@@ -57,6 +57,11 @@ public:
 	* C-alphas for protein chains. */
 	bool isBackboneAndSidechain();
 
+	bool isSidechain()
+	{
+		return !(isBackbone() || isBackboneAndSidechain());
+	}
+
 	/** Get the average absolute position from the atom's Model */
 	vec3 getAbsolutePosition();
 	
