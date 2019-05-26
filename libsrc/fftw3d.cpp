@@ -1295,15 +1295,8 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				 * falling between two voxels, in atomic voxels */
 				vec3_add_to_vec3(&atomPos, atomOffset);
 				
-				/* If this value is within floating point error, stop now. */
-				if (fftAtom->getReal(atomPos.x, atomPos.y, atomPos.z) <= 10e-6
-				    && mapScoreType != MapScoreTypeCopyToSmaller)
-				{
-					continue;
-				}
-				
 				/* Find the interpolated value which atomPos falls on */
-				double atomReal = 0;
+				double atomReal = 0; double atomImag = 0;
 
 				while (atomPos.x < 0) atomPos.x += fftAtom->nx;
 				while (atomPos.y < 0) atomPos.y += fftAtom->ny;
@@ -1316,12 +1309,24 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 				if (interp)
 				{
 					atomReal = fftAtom->cubic_interpolate(atomPos, 0);
+					
+					if (vals != NULL)
+					{
+						atomImag = fftAtom->cubic_interpolate(atomPos, 1);
+					}
 				}
 				else
 				{
 					atomReal = fftAtom->getReal(lrint(atomPos.x),
                                                 lrint(atomPos.y), 
                                                 lrint(atomPos.z));
+					
+					if (vals != NULL)
+					{
+						atomImag = fftAtom->getImaginary(lrint(atomPos.x),
+						                                 lrint(atomPos.y), 
+						                                 lrint(atomPos.z));
+					}
 				}
 
 				/* We add the crystal offset so we don't end up with thousands
@@ -1370,6 +1375,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 						CoordVal val;
 						val.fo = realCryst;
 						val.fc = atomReal;
+						val.weight = atomImag;
 						#ifdef COORDVAL_FULL
 						vec3 frac = fftCrystal->fracFromElement(cIndex);
 						val.pos = frac;

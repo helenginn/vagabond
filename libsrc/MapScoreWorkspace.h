@@ -20,6 +20,7 @@ typedef struct
 #endif
 	double fo;
 	double fc;
+	double weight;
 } CoordVal;
 
 /** Scoring functions against map or PDB file */
