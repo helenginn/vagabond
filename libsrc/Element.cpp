@@ -40,6 +40,7 @@ void Element::setupElements()
 	elements.push_back(ElementPtr(new Element("SE", "selenium", 34,  ScatterFactors::seScatter)));
 	elements.push_back(ElementPtr(new Element("BR", "bromine", 35,  ScatterFactors::brScatter)));
 	elements.push_back(ElementPtr(new Element("TB", "terbium", 65,  ScatterFactors::tbScatter)));
+	elements.push_back(ElementPtr(new Element("HG", "mercury", 80,  ScatterFactors::hgScatter)));
 }
 
 Element::Element(std::string symbol, std::string name, double electrons, const float *scatter)
