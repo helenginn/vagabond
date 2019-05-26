@@ -1684,3 +1684,4 @@ void Bond::equaliseOccupancies()
 	
 	propagateChange();
 }
+
