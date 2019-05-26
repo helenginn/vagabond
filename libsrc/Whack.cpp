@@ -67,8 +67,8 @@ void Whack::saveSamples()
 {
 	_samples = *_bond->getManyPositions();
 	BondPtr child = _bond->downstreamBond(0, 0);
-	child->calculateMagicMat();
-	child->correctTorsionAngles();
+//	child->calculateMagicMat();
+//	child->correctTorsionAngles();
 	std::vector<BondSample> chSamples = *child->getManyPositions();
 	
 	for (size_t i = 0; i < chSamples.size(); i++)
@@ -101,7 +101,6 @@ void Whack::applyKick()
 
 		BondPtr child = _bond->downstreamBond(0, 0);
 		Bond::setKick(&*child, value);
-//		child->propagateChange(-1);
 	}
 }
 
