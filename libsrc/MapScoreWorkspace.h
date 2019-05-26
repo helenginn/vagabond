@@ -62,6 +62,7 @@ typedef struct
 	vec3 ave;
 	vec3 working_ave;
 	mat3x3 basis;
+	std::string filename;
 	unsigned int flag;
 } MapScoreWorkspace;
 

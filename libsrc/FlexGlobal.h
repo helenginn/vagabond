@@ -49,6 +49,8 @@ public:
 		_targetType = FlexTargetMatchElectronDensity;
 		prepareWorkspace();
 	}
+	
+	void plot(std::string filename);
 
 	/** Tries to match the anisotropic tensor to that found in the PDB file.
 	* [Not recommended]
@@ -69,6 +71,7 @@ public:
 	{
 		_crystal = crystal;	
 	}
+	
 private:
 	double _targetIsoB;
 	bool _prepared;

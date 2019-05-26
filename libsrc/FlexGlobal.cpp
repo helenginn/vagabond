@@ -167,3 +167,9 @@ double FlexGlobal::score(void *object)
 
 	return score;
 }
+
+void FlexGlobal::plot(std::string filename)
+{
+	_workspace.filename = filename;
+	AtomGroup::scoreWithMapGeneral(&_workspace, true);
+}

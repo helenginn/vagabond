@@ -1134,7 +1134,7 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 
 	if (plot)
 	{
-		plotCoordVals(vals, difference, cutoff, "cc_score");
+		plotCoordVals(vals, difference, cutoff, ws->filename);
 	}
 
 
@@ -1209,6 +1209,11 @@ void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals,
                               bool difference, double cutoff,
                               std::string filename)
 {
+	if (filename.length() == 0)
+	{
+		filename = "cc_score";
+	}
+
 	CSVPtr csv = CSVPtr(new CSV(6, "x", "y", "z", "fo", "fc"));
 
 	for (size_t i = 0; i < vals.size(); i++)
