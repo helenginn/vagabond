@@ -694,10 +694,11 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 
 bool Crystal::undoIfWorse()
 {
-	if (_lastRWork > _rWork)
+	if (_lastRWork < _rWork)
 	{
 		std::cout << "Decided to go back one state "
-		" results (Rwork = " << _lastRWork * 100 << "%) "
+		" results (Rwork = " << _lastRWork * 100 << "%, now " 
+		<< _rWork * 100 << "%) "
 		"due to Rwork rise since." << std::endl;
 
 		restoreState(-1);
@@ -716,11 +717,13 @@ bool Crystal::returnToBestState()
 	if (_rWork > _bestRWork)
 	{
 		std::cout << "Decided to undo to state " << _bestState << 
-		" results (Rwork = " << _bestRWork * 100 << "%) "
+		" results (Rwork = " << _bestRWork * 100 << "%, now " 
+		<< _rWork * 100 << "%) "
 		"due to Rwork rise since." << std::endl;
 
 		restoreState(_bestState);
 		_sinceBestNum = 0;
+		_bestState = stateCount() - 1;
 		return true;
 	}
 	else
@@ -1161,7 +1164,6 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 
 	std::string refineCount = "cycle_" + i_to_str(cycleNum);
 	double rFac = 0;
-	_lastRWork = _rWork;
 
 	if (!data)
 	{
@@ -1199,12 +1201,6 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	}
 	
 	writeVagabondFile(cycleNum);
-	
-	if (rFac < _bestRWork)
-	{
-		_bestRWork = rFac;
-		_bestState = stateCount(); /* we have not saved state yet */
-	}
 	
 	differenceAttribution();
 
@@ -1466,10 +1462,17 @@ void Crystal::wrapUpRefinement()
 	OptionsPtr options = Options::getRuntimeOptions();
 	DiffractionPtr data = options->getActiveData();
 	
+	_lastRWork = _rWork;
 	_cycleNum++;
 	concludeRefinement(_cycleNum, data);
 	saveState();
-	
+
+	if (_rWork <= _bestRWork)
+	{
+		_bestRWork = _rWork;
+		_bestState = stateCount() - 1;
+	}
+
 	Options::getRuntimeOptions()->agreementSummary();
 }
 
