@@ -701,16 +701,22 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 
 double Bond::getBaseKick()
 {
+	if (isFixed())
+	{
+		return 0;
+	}
+
 	ExplicitModelPtr model = getParentModel();
 	int myGroup = -1;
-	double torsionNumber = model->downstreamBondNum(this, &myGroup);
+	int torsionNumber = model->downstreamBondNum(this, &myGroup);
 
 	/* May be myself */
 	BondPtr sisBond = shared_from_this();
 
 	if (torsionNumber > 0)
 	{
-		BondPtr parent = ToBondPtr(getParentModel());
+
+		BondPtr parent = ToBondPtr(model);
 		sisBond = parent->downstreamBond(myGroup, 0);
 	}
 	
