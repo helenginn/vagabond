@@ -324,10 +324,11 @@ void Options::executeProtocol()
 			double ratio = 0.9;
 			/* Only do a smaller increment at a time */
 
-			bool undone = false;
+			int count = 0;
 
-			while (!undone)
+			while (count < 5)
 			{
+				count++;
 				crystal->scaleAnchorBs(ratio);
 				recalculateFFT();
 				double latest = crystal->getRWork();
