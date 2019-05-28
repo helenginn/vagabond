@@ -270,7 +270,7 @@ void Options::executeProtocol()
 	
 	for (int i = 0; i < _nCycles; i++)
 	{
-		double startWork = crystal->getRWork();
+		double startWork = crystal->getWorkValue();
 
 		if (_rInter || _rIntra)
 		{
@@ -281,20 +281,17 @@ void Options::executeProtocol()
 
 		if (_rInter)
 		{
-			double oldWork = crystal->getRWork();
 			crystal->fitWholeMolecules();
 			recalculateFFT();
 			
-			double newWork = crystal->getRWork();
-
-			if (newWork > oldWork && _rIntra)
+			if (_rIntra || _far)
 			{
-				crystal->restoreState(-1);
+				crystal->undoIfWorse();
 			}
 		}
 
 		/* In case we need to do remedial work */
-		double oldWork = crystal->getRWork();
+		double oldWork = crystal->getWorkValue();
 		double oldB = crystal->averageBFactor();
 		
 		const int maxIntra = 3;
@@ -313,7 +310,7 @@ void Options::executeProtocol()
 			}
 		}
 		
-		double newWork = crystal->getRWork();
+		double newWork = crystal->getWorkValue();
 		
 		if (newWork > oldWork)
 		{
@@ -331,18 +328,10 @@ void Options::executeProtocol()
 				count++;
 				crystal->scaleAnchorBs(ratio);
 				recalculateFFT();
-				double latest = crystal->getRWork();
-				
-				if (latest > newWork)
+
+				if (crystal->undoIfWorse())
 				{
-					std::cout << "Undoing last change and resuming next cycle." 
-					<< std::endl;
-					crystal->restoreState(-1);
 					break;
-				}
-				else
-				{
-					newWork = latest;
 				}
 			}
 		}
@@ -352,7 +341,7 @@ void Options::executeProtocol()
 			<< std::endl;
 		}
 
-		double endWork = crystal->getRWork();
+		double endWork = crystal->getWorkValue();
 
 		if (i == _nCycles - 1 && flexCycle && (endWork < startWork))
 		{
