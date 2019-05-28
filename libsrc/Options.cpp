@@ -292,7 +292,6 @@ void Options::executeProtocol()
 
 		/* In case we need to do remedial work */
 		double oldWork = crystal->getWorkValue();
-		double oldB = crystal->averageBFactor();
 		
 		const int maxIntra = 3;
 		for (int i = 0; i < maxIntra && _rIntra; i++)
@@ -317,10 +316,7 @@ void Options::executeProtocol()
 			std::cout << "Remedial work to reduce overall flexibility." 
 			<< std::endl;
 			/* Remedial action required. */
-			double newB = crystal->averageBFactor();
 			double ratio = 0.9;
-			/* Only do a smaller increment at a time */
-
 			int count = 0;
 
 			while (count < 5)
@@ -349,7 +345,7 @@ void Options::executeProtocol()
 		}
 	}
 	
-	crystal->undoIfWorse();
+	crystal->returnToBestState();
 	
 	if (_rSidechains)
 	{

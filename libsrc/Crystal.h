@@ -256,6 +256,7 @@ public:
 	double getAdjustBFactor();
 	
 	bool undoIfWorse();
+	bool returnToBestState();
 
 	void setupSymmetry();
 	void summary();
