@@ -697,7 +697,8 @@ bool Crystal::undoIfWorse()
 	if (_lastRWork > _bestRWork)
 	{
 		std::cout << "Decided to undo to state " << _bestState << 
-		" results due to rise in Rwork" << std::endl;
+		" results (Rwork = " << _bestRWork * 100 << "%) "
+		"due to Rwork rise since." << std::endl;
 
 		restoreState(_bestState);
 		_sinceBestNum = 0;
@@ -1183,7 +1184,7 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	if (rFac < _bestRWork)
 	{
 		_bestRWork = rFac;
-		_bestState = stateCount();
+		_bestState = stateCount() - 1;
 	}
 	
 	differenceAttribution();
