@@ -426,9 +426,9 @@ int VagWindow::waitForInstructions()
 				_xtalExplorer->updateCorrelation();
 				break;
 
-				case InstructionTypePreviousState:
-				options->previousState();
-				break;
+//				case InstructionTypePreviousState:
+//				options->previousState();
+//				break;
 				
 				case InstructionTypeSplitBond:
 				splitBond();

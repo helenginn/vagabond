@@ -861,14 +861,6 @@ void Options::openInCoot()
 	crystal->openInCoot();
 }
 
-void Options::previousState()
-{
-	int state = -1;
-	
-	statusMessage("Undo: restoring previous state...");
-	crystals[0]->restoreState(state);
-}
-
 void Options::statusMessage(std::string message, bool std_out)
 {
 	OptionsPtr opt = getRuntimeOptions();
