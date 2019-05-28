@@ -380,6 +380,16 @@ public:
 		return _rWork;
 	}
 	
+	double getCCWork()
+	{
+		return _ccWork;
+	}
+	
+	double getWorkValue()
+	{
+		return _rWork;
+	}
+	
 	int getCycleNum()
 	{
 		return _cycleNum;
