@@ -1126,6 +1126,14 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 			weights.push_back(ws->vals[i].weight);
 		}
 	}
+
+	/* Debugging ... writes cc_score.csv and cc_score.png, csv can be
+	* looked at with gnuplot quite nicely.*/
+
+	if (plot)
+	{
+		plotCoordVals(ws->vals, difference, cutoff, ws->filename);
+	}
 	
 	if (ws->scoreType == ScoreTypeCorrel)
 	{
@@ -1143,14 +1151,6 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 			ys[i] /= scale;
 			ws->vals[i].fc /= scale;
 		}
-	}
-
-	/* Debugging ... writes cc_score.csv and cc_score.png, csv can be
-	* looked at with gnuplot quite nicely.*/
-
-	if (plot)
-	{
-		plotCoordVals(ws->vals, difference, cutoff, ws->filename);
 	}
 
 	double score = scoreFinalValues(xs, ys, weights, ws->scoreType, ws->flag);
