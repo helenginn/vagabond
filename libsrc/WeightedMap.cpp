@@ -167,7 +167,12 @@ double WeightedMap::stdevForReflection(double fobs, double fcalc,
 {
 	int shx = shellForResolution(res);
 	
-	double stdev = _shells[shx].std_err;
+	double stdev = 0;
+	if (shx >= 0)
+	{
+		stdev = _shells[shx].std_err;
+	}
+	
 	double datadev = sigfobs / fobs;
 	
 	double combined = sqrt(stdev * stdev + datadev * datadev);
@@ -249,8 +254,12 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				phi += deg2rad(phase);
 				
 				int shx = shellForResolution(1 / length);
-				_shells[shx].count++;
-				_shells[shx].phi_spread += rad2deg(phaseDev);
+				
+				if (shx >= 0)
+				{
+					_shells[shx].count++;
+					_shells[shx].phi_spread += rad2deg(phaseDev);
+				}
 				
 				double fused = 2 * fobs - fcalc;
 
