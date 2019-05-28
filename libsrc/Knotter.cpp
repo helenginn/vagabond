@@ -753,8 +753,8 @@ void Knotter::makeTyrosine()
 	cg2cd1->addExtraTorsionSample(cOmega);
 	cg2cd1->addExtraTorsionSample(oxygen);
 
+	/* not fixed */
 	BondPtr cg2cd2 = BondPtr(new Bond(cGamma, cDelta2));
-	cg2cd2->setFixed(true);
 	cg2cd2->activate();
 
 	BondPtr cd22ce2 = BondPtr(new Bond(cDelta2, cEpsilon2));
@@ -769,6 +769,7 @@ void Knotter::makeTyrosine()
 	ce22cz->activate();
 
 	BondPtr cz2oh = BondPtr(new Bond(cOmega, oxygen));
+	cz2oh->setFixed(true);
 	cz2oh->activate();
 
 	GhostBondPtr ghost = GhostBondPtr(new GhostBond());
@@ -814,7 +815,6 @@ void Knotter::makePhenylalanine()
 	cg2cd1->addExtraTorsionSample(cOmega);
 
 	BondPtr cg2cd2 = BondPtr(new Bond(cGamma, cDelta2));
-	cg2cd2->setFixed(true);
 	cg2cd2->activate();
 
 	BondPtr cd22ce2 = BondPtr(new Bond(cDelta2, cEpsilon2));
@@ -878,7 +878,6 @@ void Knotter::makeTryptophan()
 	cg2cd1->addExtraTorsionSample(ch2);
 
 	BondPtr cg2cd2 = BondPtr(new Bond(cGamma, cDelta2));
-	cg2cd2->setFixed(true);
 	cg2cd2->activate();
 
 	BondPtr cd22ce2 = BondPtr(new Bond(cDelta2, cEpsilon3));
