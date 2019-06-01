@@ -1524,8 +1524,15 @@ int Crystal::getSampleNum()
 	{
 		_sampleNum = 120;
 	}
+
+	double totalPoints = _sampleNum - 1;
 	
-	return _sampleNum;
+	if (totalPoints < 0)
+	{
+		totalPoints = 0;
+	}
+	
+	return totalPoints;
 }
 
 void Crystal::differenceAttribution()

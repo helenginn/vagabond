@@ -230,6 +230,7 @@ protected:
 	
 	virtual std::string getParserIdentifier();
 	virtual void createStartPositions(Atom *callAtom);
+	void createLayeredSpherePositions();
 
 	virtual void sanityCheck();
 	virtual void addProperties();

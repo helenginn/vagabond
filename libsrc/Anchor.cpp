@@ -86,7 +86,7 @@ AtomPtr Anchor::getOtherAtom(AtomPtr calling)
 	}
 }
 
-void Anchor::createStartPositions(Atom *callAtom)
+void Anchor::createLayeredSpherePositions()
 {
 	_storedSamples.clear();
 	
@@ -95,16 +95,8 @@ void Anchor::createStartPositions(Atom *callAtom)
 	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
 	meanSqDisp = sqrt(meanSqDisp);
 
-	double occTotal = 0;
-
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	int totalPoints = crystal->getSampleNum();
-	totalPoints -= 1;
-	
-	if (totalPoints < 0)
-	{
-		totalPoints = 0;
-	}
 
 	double totalSurfaces = 0;
 	int layers = 10;
@@ -127,7 +119,6 @@ void Anchor::createStartPositions(Atom *callAtom)
 	double scale = totalPoints / (double)totalSurfaces;
 
 	int rnd = 1;
-	std::vector<vec3> points;
 	double increment = M_PI * (3.0 - sqrt(5));
 
 	_sphereAngles.clear();
@@ -154,11 +145,12 @@ void Anchor::createStartPositions(Atom *callAtom)
 			vec3 point = make_vec3(x * m, y * m, z * m);
 			vec3_add_to_vec3(&sum, point);
 
-			points.push_back(point);
 			_sphereAngles.push_back(point);
 			count++;
 		}
 	}
+	
+	return;
 	
 	vec3_mult(&sum, 1 / count);
 	
@@ -166,8 +158,14 @@ void Anchor::createStartPositions(Atom *callAtom)
 	{
 		vec3_subtract_from_vec3(&_sphereAngles[i], sum);
 	}
-	
+}
+
+void Anchor::createStartPositions(Atom *callAtom)
+{
 	bool isN = (callAtom == &*(_nAtom.lock()));
+
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	int totalPoints = crystal->getSampleNum();
 	
 	/* Get the rotation matrix for alpha, beta, gamma modifications */
 	mat3x3 rot = getAnchorRotation();
@@ -180,10 +178,11 @@ void Anchor::createStartPositions(Atom *callAtom)
 	mat3x3_mult_vec(rot, &other);
 	
 	vec3 empty = empty_vec3();
+	double occTotal = 0;
 
-	for (size_t i = 0; i < points.size(); i++)
+	for (size_t i = 0; i < _sphereAngles.size(); i++)
 	{
-		vec3 usedPoint = points[i];
+		vec3 usedPoint = _sphereAngles[i];
 		if (totalPoints == 0)
 		{
 			usedPoint = empty;
@@ -442,6 +441,7 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 		return &_samples[callAtom].samples;
 	}
 	
+	createLayeredSpherePositions();
 	createStartPositions(callAtom);
 
 	/* Check if number of samples has changed for any reason - if so,
@@ -469,6 +469,7 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 	{
 		translateStartPositions();
 		rotateBases();
+
 		fixCentroid();
 
 		/* Apply whacks as normal, if we are not re-caching Whacks. */
