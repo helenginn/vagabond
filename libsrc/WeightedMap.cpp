@@ -280,13 +280,6 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				}
 
 				scratch->setElement(index, complex.x, complex.y);
-				
-				bool f000 = (i == 0 && j == 0 && k == 0);
-				
-				if (f000)
-				{
-					continue;
-				}
 			}
 		}
 	}
