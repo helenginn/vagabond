@@ -168,10 +168,13 @@ double WeightedMap::stdevForReflection(double fobs, double fcalc,
 	int shx = shellForResolution(res);
 	
 	double stdev = 0;
+
 	if (shx >= 0)
 	{
 		stdev = _shells[shx].std_err;
 	}
+	
+	stdev = 0;
 	
 	double datadev = sigfobs / fobs;
 	
