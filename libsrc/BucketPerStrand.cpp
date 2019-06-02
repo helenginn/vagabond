@@ -60,7 +60,7 @@ void BucketPerStrand::addSolvent()
 	 * have calculated */
 	_solvent = total;
 	_solvent->multiplyAll(1 / (double)count);
-	removeSlivers(2.0);
+	removeSlivers(1.5);
 	
 	reportSolventContent();
 	
