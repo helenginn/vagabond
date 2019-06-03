@@ -249,9 +249,9 @@ void Options::executeProtocol()
 		{
 			std::cout << "Flex prior to position refinement" << std::endl;
 			crystal->fitWholeMolecules();
+			recalculateFFT();
 		}
 
-		recalculateFFT();
 		std::cout << "Refining positions to density (" << 
 		i + 1 << " / 5)" << std::endl;
 		crystal->refineCrude();
