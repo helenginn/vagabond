@@ -31,7 +31,7 @@
 
 OptionsPtr Options::options;
 double Options::_kick = 0.000;
-int Options::_solvent = 1;
+int Options::_solvent = 2;
 int Options::_nCycles = -1;
 double Options::_dampen = 0.0;
 double Options::_bStart = 20.;
@@ -40,7 +40,7 @@ double Options::_bSubt = -1;
 double Options::_bReal = -1;
 double Options::_minRes = HUGE_VAL;
 double Options::_maxRes = -1.0;
-double Options::_probeRadius = -0.1;
+double Options::_probeRadius = 0.2;
 bool Options::_useRFree = true;
 int Options::_bondAngles = 2;
 int Options::_map = 1;
