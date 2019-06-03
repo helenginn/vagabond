@@ -92,7 +92,7 @@ public:
 	void whack();
 	void whackMonomer(MonomerPtr mon);
 	void refineAnchorPosition(CrystalPtr target);
-	AtomGroupPtr monomerRange(int start, int end);
+	AtomGroupPtr monomerRange(int start, int end, bool side = false);
 	void ramachandranPlot();
 	virtual void removeAtom(AtomPtr atom);
 

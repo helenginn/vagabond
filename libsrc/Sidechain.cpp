@@ -44,7 +44,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 			break;
 
 			case RefinementSidePos:
-			addParamType(ParamOptionTorsion, 0.5);
+			addParamType(ParamOptionTorsion, 0.1);
 			addParamType(ParamOptionNumBonds, 3);
 			break;
 

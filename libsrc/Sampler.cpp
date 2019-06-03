@@ -29,6 +29,8 @@
 
 Sampler::Sampler()
 {
+	_cycles = 0;
+	_improv = 0;
 	_changed = false;
 	_mock = false;
 	_scoreType = ScoreTypeCorrel;
@@ -595,21 +597,32 @@ bool Sampler::sample(bool clear)
 	{
 		int cycles = 16 + paramCount;
 
+		if (_cycles > 0)
+		{
+			cycles = _cycles;
+		}
+
 		_strategy->setCycles(cycles);
 		setupCloseAtoms();
 		setupScoreWithMap();
 	}
+
+	double begin = getScore();
 
 	if (sampleSize() && _strategy->parameterCount())
 	{
 		_strategy->setJobName(_jobName);
 		_strategy->refine();
 	}
+
+	double end = getScore();
+	_improv = end - begin;
 	
 	_silent = false;
 	_scoreType = ScoreTypeCorrel;
 
 	_changed = _strategy->didChange();
+	
 
 	if (clear)
 	{
@@ -617,6 +630,7 @@ bool Sampler::sample(bool clear)
 		_strategy = RefinementStrategyPtr();
 	}
 
+	_cycles = 0;
 	_bonds.clear();
 	_sampled.clear();
 	_unsampled.clear();

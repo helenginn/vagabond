@@ -34,6 +34,8 @@ void trim(std::string& str);
 void to_lower(std::string &str);
 void to_upper(std::string &str);
 
+void print_cc_diff(double diff, int limit);
+
 class FileReader
 {
 

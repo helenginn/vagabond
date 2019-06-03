@@ -106,7 +106,7 @@ public:
 
 	void setCycles(int cycles)
 	{
-		_strategy->setCycles(cycles);
+		_cycles = cycles;
 	}
 
 	static double score(void *object)
@@ -153,6 +153,11 @@ public:
 	bool didChange()
 	{
 		return _changed;
+	}
+	
+	double getImprovement()
+	{
+		return _improv;
 	}
 
 	void setScoreType(ScoreType type)
@@ -241,6 +246,8 @@ private:
 	bool _mock;
 	bool _silent;
 	bool _changed;
+	double _improv;
+	int _cycles;
 
 	std::string _jobName;
 	ScoreType _scoreType;

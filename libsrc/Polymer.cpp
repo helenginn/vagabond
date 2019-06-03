@@ -418,8 +418,9 @@ void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
 	
 	double step = 0.5;
 
-	std::cout << "Refining core region, " << getChainID() << " " << coreStart
-	<< " to " << coreEnd << std::flush;
+	std::cout << "Refining region " << getChainID() << "   " << 
+	std::right << std::setw(3) << coreStart << " - " << coreEnd 
+	<< " |   " << std::flush;
 	
 	AtomList top = coreRegion->topLevelAtoms();
 	
@@ -448,10 +449,9 @@ void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
 
 	coreRegion->addParamType(ParamOptionNumBonds, (diff + 1) * 3);
 	coreRegion->addParamType(ParamOptionTorsion, step);
-	coreRegion->addParamType(ParamOptionTwist, step);
-	coreRegion->addParamType(ParamOptionBondAngle, step);
+	coreRegion->addParamType(ParamOptionTwist, -step);
+//	coreRegion->addParamType(ParamOptionBondAngle, step);
 	coreRegion->addParamType(ParamOptionMaxTries, 1);
-	coreRegion->addIncludeForRefinement(coreRegion);
 	coreRegion->refine(target, RefinementCrude);
 
 	coreRegion->saveAtomPositions();
@@ -463,8 +463,6 @@ void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
 	{
 		refineAnchorPosition(target);
 	}
-	
-	std::cout << "." << std::flush;
 	
 	int nTerm = -1;
 	int nStart = anchor - 1;
@@ -506,9 +504,14 @@ void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
 		refineRegion(rightRegion, target, step);
 	}
 
-	std::cout << " Displacement by " << coreRegion->getAverageDisplacement()
-	<< " Å." << std::endl;
+	double ccdiff = coreRegion->getImprovement();
+	ccdiff *= 100;
+	print_cc_diff(ccdiff, -1);
+	std::cout << std::endl;
 
+	return;
+
+	refineRange(coreStart, coreEnd, target, RefinementSidechain);
 }
 
 void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
@@ -519,7 +522,7 @@ void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 	refineRange(start, end, target, rType);
 }
 
-AtomGroupPtr Polymer::monomerRange(int start, int end)
+AtomGroupPtr Polymer::monomerRange(int start, int end, bool side)
 {
 	AtomGroupPtr all = AtomGroupPtr(new AtomGroup());
 	
@@ -536,13 +539,26 @@ AtomGroupPtr Polymer::monomerRange(int start, int end)
 	for (int i = start; i <= end; i++)
 	{
 		MonomerPtr monomer = getMonomer(i);
-
+		
 		if (!monomer)
 		{
 			continue;
 		}
 		
-		all->addAtomsFrom(monomer);
+		if (side)
+		{
+			all->addAtomsFrom(monomer);
+			continue;
+		}
+
+		BackbonePtr bone = monomer->getBackbone();
+
+		if (!bone)
+		{
+			continue;
+		}
+		
+		all->addAtomsFrom(bone);
 	}
 	
 	return all;
@@ -552,10 +568,18 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
                             RefinementType rType)
 {
 	int skip = (start < _anchorNum) ? -1 : 1;
-	if ((_anchorNum > start && _anchorNum < end) ||
-	    (_anchorNum > end && _anchorNum < start))
+	if (((_anchorNum > start && _anchorNum < end) ||
+	    (_anchorNum > end && _anchorNum < start)))
 	{
+		return 0;
 		shout_at_helen("Trying to refine a range which straddles the anchor.");	
+	}
+
+	if (end > start && skip < 0)
+	{
+		int tmp = end;
+		end = start;
+		start = tmp;
 	}
 
 	Timer timer("refine range", true);
@@ -565,7 +589,7 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 	std::map<MonomerPtr, vec3> preScores;
 
 	std::cout << "Refining chain " << getChainID();
-	std::cout  << " from residue " << start << " to ";
+	std::cout  << " from residue " << start << " towards ";
 	std::cout << (skip > 0 ? "C" : "N");
 	std::cout <<  "-terminus (residue " << end << ") ..." << std::endl;
 
@@ -643,6 +667,7 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 
 		/* improvement of 2% will be 20 + symbols after the residue! */
 		/* display backbone on one side */
+		/*
 		int signs = fabs(backdiff * 10);
 		int dir = (backdiff < 0);	
 		
@@ -657,7 +682,14 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		{
 			std::cout << " ";	
 		}
+		*/
+		
+		print_cc_diff(backdiff, 20);
+		std::cout << "| " << std::flush;
+		print_cc_diff(sidediff, -1);
+		std::cout << std::endl;
 
+		/*
 		signs = fabs(sidediff * 10);
 		dir = (sidediff < 0);	
 
@@ -668,6 +700,7 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		}
 
 		std::cout << std::endl;
+		*/
 
 		endCCAve += score;
 		count++;

@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include <cerrno>
+#include <cmath>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <dirent.h>
@@ -94,6 +95,31 @@ void trim(std::string &str)
 		if(pos != std::string::npos) str.erase(0, pos);
 	}
 	else str.erase(str.begin(), str.end());
+}
+
+void print_cc_diff(double diff, int limit)
+{
+	int signs = fabs(diff * 10);
+	int dir = (diff < 0);	
+
+	if (signs > limit && limit > 0)
+	{
+		signs = limit;
+	}
+
+	std::cout << " ";
+	for (int j = 0; j < signs; j++)
+	{
+		std::cout << (dir ? "+" : "-");
+	}
+
+	if (limit > 0)
+	{
+		for (int j = signs; j < 20; j++)
+		{
+			std::cout << " ";	
+		}
+	}
 }
 
 void to_lower(std::string &str)
