@@ -152,7 +152,7 @@ void Options::run()
 	if (!_manual && !crystals.size())
 	{
 		shout_at_user("I need a model.\n"\
-		              "\te.g. --with-pdb=xxxx.pdb");
+		              "\te.g. --with-model=xxxx.pdb");
 	}
 
 	if (!_manual && !datasets.size())
@@ -386,7 +386,10 @@ void Options::displayHelp()
 	std::cout << "--shell-scale\t\t\tWhen calculating R factors, scale each resolution bin of Fcalc "\
 	"to Fobs\n\t\t\t\t(default 0)." << std::endl;
 	std::cout << "--solvent=<num>\t\t\tUse solvent model 0 (none), 1 (simple) or 2 (average of unique"\
-	"\n\t\t\t\tsolvent mask per strand) (default 1)." << std::endl;;
+	"\n\t\t\t\tsolvent mask per strand) (default 2)." << std::endl;
+
+	std::cout << "--probe-radius=<value>\t\tUse additional positive radius to create solvent mask (default 0.2 Å)." << std::endl;
+
 	std::cout << "--(no-)partial\t\t\tScale custom partial structure from Fpart/PHIpart columns in input MTZ file.\n";
 	std::cout << "--(no-)tie\t\t\tChoose whether to tie PDB atoms up into Vagabond model definition." << std::endl;
 	std::cout << "--no-rfree\t\t\tDo not use this function.\n" << std::endl;
@@ -518,6 +521,16 @@ void Options::writeCommandLine()
 	}
 
 	std::cout << std::endl;	
+	
+	if (!arguments.size() && !_notify)
+	{
+		std::cout << std::endl;
+		std::cout << "Start me off with:"  << std::endl;
+		std::cout << "\tvagabond" << (_notify ? "-gui" : "") <<
+		" --with-mtz=path_to_data.mtz --with-model=path_to_model.pdb "
+		<< (_notify ? "" : "--output-dir=refine_1") << std::endl;
+		std::cout << std::endl;
+	}
 }
 
 void Options::parse()
