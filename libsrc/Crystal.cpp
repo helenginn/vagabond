@@ -1664,7 +1664,7 @@ double Crystal::getProbeRadius()
 	
 	if (_probeRadius < 0)
 	{
-		_probeRadius = 0.0;
+		_probeRadius = 0.2;
 	}
 	
 	return _probeRadius;
