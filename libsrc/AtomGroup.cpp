@@ -1012,6 +1012,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	if (first)
 	{
 		workspace->ave = empty_vec3();
+		workspace->eleCache.clear();
 		selected->prepareCubicMap(&workspace->segment,
 		                          &workspace->ave, min, max);
 		workspace->basis = workspace->segment->getReal2Frac();
