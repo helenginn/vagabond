@@ -110,7 +110,7 @@ void Polymer::reflex()
 	reflex.calculate();
 }
 
-bool Polymer::refineLocalFlexibility()
+bool Polymer::refineLocalFlexibility(bool magic)
 {
 	if (_anchorNum == -INT_MAX)
 	{
@@ -119,6 +119,7 @@ bool Polymer::refineLocalFlexibility()
 
 	Timer timer("flexibility refinement", true);
 	FlexLocal local;
+	local.refineMagic(magic);
 	whack();
 	local.setPolymer(shared_from_this(), _kickShift);
 	local.refine();

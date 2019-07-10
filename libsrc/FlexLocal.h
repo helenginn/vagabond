@@ -77,6 +77,11 @@ public:
 	{
 		return _polymer;
 	}
+	
+	void refineMagic(bool magic = true)
+	{
+		_magic = magic;
+	}
 private:
 	void findAtomsAndBonds();
 	void refineClusters();
@@ -97,6 +102,7 @@ private:
 	
 	FlexGlobal *_flexGlobal;
 	bool _useTarget;
+	bool _magic;
 	double _startB;
 	double _threshold;
 	double _increment;

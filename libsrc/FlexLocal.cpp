@@ -25,6 +25,7 @@
 
 FlexLocal::FlexLocal()
 {
+	_magic = false;
 	_prepared = false;
 	_startB = 0;
 	_shift = 0.05;
@@ -114,19 +115,9 @@ void FlexLocal::refineClusters()
 
 	CrystalPtr crystal = Options::getActiveCrystal();
 
-	_svd->addToStrategy(nelder, _negMult, false);
+	_svd->addToStrategy(nelder, _negMult, _magic);
 	nelder->refine();
 	reportResult(nelder);
-
-	if (false && crystal->getCycleNum() >= 10)
-	{
-		std::cout << std::endl << "... and magic angles... " << std::endl;
-		nelder->clearParameters();
-		_svd->addToStrategy(nelder, _negMult, true);
-		nelder->refine();
-		reportResult(nelder);
-	}
-	
 
 	timer.quickReport();
 	std::cout << std::endl;

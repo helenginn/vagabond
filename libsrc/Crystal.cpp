@@ -136,7 +136,7 @@ void Crystal::refineSidechainPositions()
 	refinePolymers(RefinementSidePos);
 }
 
-bool Crystal::refineIntraMovements()
+bool Crystal::refineIntraMovements(bool magic)
 {
 	bool changed = false;
 
@@ -147,7 +147,7 @@ bool Crystal::refineIntraMovements()
 			continue;
 		}
 
-		changed |= ToPolymerPtr(molecule(i))->refineLocalFlexibility();
+		changed |= ToPolymerPtr(molecule(i))->refineLocalFlexibility(magic);
 	}
 	
 	return changed;
