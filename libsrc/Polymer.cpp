@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Polymer.h"
+#include "Fibonacci.h"
 #include "Timer.h"
 #include "Twist.h"
 #include "Crystal.h"
@@ -44,6 +45,7 @@
 #include "Refitter.h"
 #include "RefinementNelderMead.h"
 #include "RefinementLBFGS.h"
+#include "RefinementList.h"
 #include "RefinementGridSearch.h"
 #include "Hydrogenator.h"
 
@@ -1410,33 +1412,64 @@ void Polymer::refineGlobalFlexibility()
 	
 	AnchorPtr anchor = getAnchorModel();
 	
+	for (int j = 0; j < 2; j++)
 	{
-		FlexGlobal target;
-		NelderMeadPtr lbfgs = NelderMeadPtr(new RefinementNelderMead());
-		lbfgs->setCycles(100);
-		lbfgs->setJobName("rot");
-		lbfgs->setVerbose(true);
-		attachTargetToRefinement(lbfgs, target);
+		if (j >= anchor->librationCount())
+		{
+			FlexGlobal target;
+			RefinementListPtr list = RefinementListPtr(new RefinementList());
+			list->setJobName("rot");
+			list->setVerbose(true);
+			attachTargetToRefinement(list, target);
+			anchor->addLibrationParameters(list, j);
 
-		anchor->addLibrationParameters(lbfgs);
-		lbfgs->refine();
+			Fibonacci fib;
+			fib.generateLattice(31, 0.02);
+			std::vector<vec3> points = fib.getPoints();
+			
+			std::vector<double> zero = std::vector<double>(3, 0);
+			list->addTestSet(zero);
+			
+			for (int i = 0; i < points.size(); i++)
+			{
+				std::vector<double> vals;
+				vals.push_back(points[i].x);
+				vals.push_back(points[i].y);
+				vals.push_back(points[i].z);
+				list->addTestSet(vals);
+			}
+
+			list->refine();
+		}
+
+		getAnchorModel()->propagateChange(-1, true);
+
+		{
+			FlexGlobal target;
+			NelderMeadPtr lbfgs = NelderMeadPtr(new RefinementNelderMead());
+			lbfgs->setCycles(100);
+			lbfgs->setJobName("rot_care");
+			lbfgs->setVerbose(true);
+			attachTargetToRefinement(lbfgs, target);
+
+			anchor->addLibrationParameters(lbfgs, -1);
+			lbfgs->refine();
+		}
+
+		getAnchorModel()->propagateChange(-1, true);
+
+		{
+			FlexGlobal target;
+			NelderMeadPtr lbfgs = NelderMeadPtr(new RefinementNelderMead());
+			attachTargetToRefinement(lbfgs, target);
+			lbfgs->setJobName("screw");
+			lbfgs->setVerbose(true);
+			lbfgs->setCycles(100);
+
+			anchor->addScrewParameters(lbfgs, -1);
+			lbfgs->refine();
+		}
 	}
-	
-	getAnchorModel()->propagateChange(-1, true);
-
-	{
-		FlexGlobal target;
-		NelderMeadPtr lbfgs = NelderMeadPtr(new RefinementNelderMead());
-		lbfgs->setCycles(100);
-		lbfgs->setJobName("screw");
-		lbfgs->setVerbose(true);
-		attachTargetToRefinement(lbfgs, target);
-
-		anchor->addScrewParameters(lbfgs);
-		lbfgs->refine();
-	}
-
-	getAnchorModel()->propagateChange(-1, true);
 
 	{
 		FlexGlobal target;
