@@ -1412,7 +1412,10 @@ void Polymer::refineGlobalFlexibility()
 	
 	AnchorPtr anchor = getAnchorModel();
 	
-	for (int j = 0; j < 2; j++)
+	int maxRot = Options::getMaxRotations();
+	bool maxed = false;
+	
+	for (int j = 0; j < maxRot; j++)
 	{
 		if (j >= anchor->librationCount())
 		{
@@ -1441,6 +1444,10 @@ void Polymer::refineGlobalFlexibility()
 
 			list->refine();
 		}
+		else
+		{
+			maxed = true;
+		}
 
 		getAnchorModel()->propagateChange(-1, true);
 
@@ -1468,6 +1475,11 @@ void Polymer::refineGlobalFlexibility()
 
 			anchor->addScrewParameters(lbfgs, -1);
 			lbfgs->refine();
+		}
+		
+		if (maxed)
+		{
+			break;
 		}
 	}
 

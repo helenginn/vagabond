@@ -224,6 +224,11 @@ public:
 	{
 		return _map;
 	}
+	
+	static int getMaxRotations()
+	{
+		return _maxRot;
+	}
 
 	void setManual(bool manual)
 	{
@@ -346,6 +351,7 @@ private:
 	static double _sampling;
 	static int _nSamples;
 	static int _map;
+	static int _maxRot;
 	static double _probeRadius;
 	std::string _diffMatrix;
 	std::string _outputDir;

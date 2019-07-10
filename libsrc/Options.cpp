@@ -44,6 +44,7 @@ double Options::_probeRadius = -0.2;
 bool Options::_useRFree = true;
 int Options::_bondAngles = 2;
 int Options::_map = 1;
+int Options::_maxRot = 2;
 bool Options::_powder = false;
 bool Options::_diagnostics = false;
 bool Options::_usePartial = false;
@@ -574,6 +575,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "--output-dir=", &_outputDir);
 		understood |= parseParameter(arg, "--anchor=", &_anchor);
 		understood |= parseParameter(arg, "--map=", &_map);
+		understood |= parseParameter(arg, "--max-rotations=", &_maxRot);
 
 		prefix = "--overfit-test";
 
