@@ -840,13 +840,20 @@ void AtomGroup::xyzLimits(vec3 *min, vec3 *max)
 void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset,
                               EleCache *cache)
 {
+	cache = NULL;
 	size_t nElements = totalElements();
 
 	FFTPtr scratch = FFTPtr(new FFT(*scratchFull));
 	scratch->setAll(0);
 	scratch->takePlansFrom(scratchFull);
-	FFTPtr eleFFT = FFTPtr(new FFT(*scratchFull));
-	eleFFT->setAll(0);
+	
+	FFTPtr eleFFT;
+	if (cache == NULL)
+	{
+		eleFFT = FFTPtr(new FFT(*scratchFull));
+		eleFFT->setAll(0);
+	}
+
 	std::vector<AtomPtr> after;
 	size_t totalElectrons = 0;
 
@@ -862,6 +869,8 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset,
 		}
 		else
 		{
+			eleFFT = FFTPtr(new FFT(*scratchFull));
+			eleFFT->setAll(0);
 			ele->populateFFT(new_basis, eleFFT);
 			
 			if (cache != NULL)

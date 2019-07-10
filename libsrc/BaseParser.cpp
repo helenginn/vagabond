@@ -766,6 +766,7 @@ char *BaseParser::parseNextArray(char *block)
 		Vec3ArrayProperty property = _vec3ArrayProperties[i];
 		if (property.ptrName == categoryName)
 		{
+			property.vec3ArrayPtr->clear();
 			size_t size = stream.size() / 3;
 			property.vec3ArrayPtr->resize(size);
 			vec3 *start = &((*property.vec3ArrayPtr)[0]);
