@@ -253,6 +253,13 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				double phaseDev = phaseDevForWeight(downweight);
 				double phi = phaseDev * o;
 				
+				int centric = ccp4spg_is_centric(spg, i, j, k);
+				
+				if (centric)
+				{
+					phi = 0;
+				}
+				
 				double phase = _fft->getPhase(i, j, k);
 				phi += deg2rad(phase);
 				
