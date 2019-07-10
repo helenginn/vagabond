@@ -27,6 +27,7 @@ class Sidechain : public AtomGroup
 public:
 	Sidechain()
 	{
+		_resNum = 0;
 		_canRefine = false;
 		_rotamerised = false;
 	}
