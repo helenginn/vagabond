@@ -10,13 +10,13 @@ fftw_dep = dependency('fftw3f')
 
 # Geometry and/or rotamer lookup madness
 
-lib_vgeom = library('vgeom', 'libinfo/GeomTable.cpp', 'libinfo/RotamerTable.cpp', cpp_args: ['-w'])
+lib_vgeom = library('vgeom', 'libinfo/GeomTable.cpp', 'libinfo/RotamerTable.cpp', cpp_args: ['-w'], install: true)
 inc_vgeom = include_directories('libinfo')
 dep_vgeom = declare_dependency(link_with: lib_vgeom, include_directories: inc_vgeom)
 
 # numerical recipes, single value decomposition
 
-lib_ica = library('ica', 'libica/matrix.cpp', 'libica/svdcmp.cpp', 'liblbfgs/lbfgs.c', cpp_args: ['-w'])
+lib_ica = library('ica', 'libica/matrix.cpp', 'libica/svdcmp.cpp', 'liblbfgs/lbfgs.c', cpp_args: ['-w'], install: true)
 inc_ica = include_directories('libica')
 dep_ica = declare_dependency(link_with: lib_ica, include_directories: inc_ica)
 
@@ -26,7 +26,7 @@ dep_ica = declare_dependency(link_with: lib_ica, include_directories: inc_ica)
 cc = meson.get_compiler('c')
 m_dep = cc.find_library('m', required : false)
 
-lib_ccp4 = library('ccp4', 'libccp4/ccp4_array.c', 'libccp4/ccp4_general.c', 'libccp4/ccp4_parser.c', 'libccp4/ccp4_program.c', 'libccp4/ccp4_unitcell.c', 'libccp4/cmap_accessor.c', 'libccp4/cmap_close.c', 'libccp4/cmap_data.c', 'libccp4/cmap_header.c', 'libccp4/cmap_labels.c', 'libccp4/cmap_open.c', 'libccp4/cmap_skew.c', 'libccp4/cmap_stats.c', 'libccp4/cmap_symop.c', 'libccp4/cmtzlib.c', 'libccp4/csymlib.c', 'libccp4/cvecmat.c', 'libccp4/library_err.c', 'libccp4/library_file.c', 'libccp4/library_utils.c', 'libccp4/pack_c.c', dependencies: m_dep, c_args: ['-w'])
+lib_ccp4 = library('ccp4', 'libccp4/ccp4_array.c', 'libccp4/ccp4_general.c', 'libccp4/ccp4_parser.c', 'libccp4/ccp4_program.c', 'libccp4/ccp4_unitcell.c', 'libccp4/cmap_accessor.c', 'libccp4/cmap_close.c', 'libccp4/cmap_data.c', 'libccp4/cmap_header.c', 'libccp4/cmap_labels.c', 'libccp4/cmap_open.c', 'libccp4/cmap_skew.c', 'libccp4/cmap_stats.c', 'libccp4/cmap_symop.c', 'libccp4/cmtzlib.c', 'libccp4/csymlib.c', 'libccp4/cvecmat.c', 'libccp4/library_err.c', 'libccp4/library_file.c', 'libccp4/library_utils.c', 'libccp4/pack_c.c', dependencies: m_dep, c_args: ['-w'], install: true)
 inc_ccp4 = include_directories('libccp4')
 dep_ccp4 = declare_dependency(link_with: lib_ccp4, include_directories: inc_ccp4)
 
