@@ -37,6 +37,7 @@ public:
 		if (!timer) return;
 		timer->start(100);
 	}
+
 	virtual void resizeGL();
 
 	void renderDensity(CrystalPtr crystal);
@@ -58,7 +59,7 @@ protected:
 
 	void convertCoords(double *x, double *y);
 
-	private:
+private:
 	GLKeeper *keeper;
 	QTimer *timer;
 
