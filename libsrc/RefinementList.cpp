@@ -64,6 +64,7 @@ void RefinementList::refine()
 			bestCycle = _cycleNum;
 		}
 		
+		reportProgress(eval);
 		_cycleNum++;
 	}
 

@@ -168,11 +168,13 @@ typedef boost::shared_ptr<RefineMat3x3> RefineMat3x3Ptr;
 class RefinementGridSearch;
 class RefinementStepSearch;
 class RefinementStrategy;
+class RefinementList;
 class RefinementLBFGS;
 class RefinementNelderMead;
 typedef boost::shared_ptr<RefinementStepSearch> RefinementStepSearchPtr;
 typedef boost::shared_ptr<RefinementGridSearch> RefinementGridSearchPtr;
 typedef boost::shared_ptr<RefinementStrategy> RefinementStrategyPtr;
+typedef boost::shared_ptr<RefinementList> RefinementListPtr;
 typedef boost::shared_ptr<RefinementLBFGS> RefinementLBFGSPtr;
 typedef boost::shared_ptr<RefinementNelderMead> NelderMeadPtr;
 
