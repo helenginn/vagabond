@@ -47,7 +47,6 @@
 #define ToTwistPtr(a) (boost::static_pointer_cast<Twist>((a)))
 #define ToAtomGroupPtr(a) (boost::static_pointer_cast<AtomGroup>((a)))
 #define ToMonomerPtr(a) (boost::static_pointer_cast<Monomer>((a)))
-#define ToBaseParserPtr(a) (boost::static_pointer_cast<BaseParser>((a)))
 #define ToParserPtr(a) (boost::static_pointer_cast<Parser>((a)))
 #define ToGridPtr(a) (boost::static_pointer_cast<RefinementGridSearch>(a))
 
