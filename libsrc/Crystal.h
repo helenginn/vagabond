@@ -504,8 +504,6 @@ private:
 	int _sampleNum;
 	bool _silent;
 	
-	double _solvScale;
-	double _solvBFac;
 	double _bFacFit;
 	int _correlPlotNum;
 	DiffractionPtr _data;

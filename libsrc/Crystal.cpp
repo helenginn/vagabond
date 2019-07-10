@@ -1041,8 +1041,6 @@ Crystal::Crystal()
 	_spgNum = 0;
 	_spgString = "";
 	_maxResolution = 0;
-	_solvScale = 0.5;
-	_solvBFac = 10;
 	_unitCell.resize(6);
 	_comments = "";
 }
