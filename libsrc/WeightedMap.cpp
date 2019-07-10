@@ -233,7 +233,7 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				}
 				
 				if ((length < minRes || length > maxRes || isAbs)
-				    || (fobs != fobs || isRfree))
+				    || (fobs != fobs || isRfree) || sigfobs != sigfobs)
 				{	
 					scratch->setElement(index, 0, 0);
 
