@@ -39,6 +39,7 @@ typedef enum
 	InstructionTypeChelate,
 	InstructionTypeCancel,
 	InstructionTypeManualRefine,
+	InstructionTypeRefineIntramagic,
 } InstructionType;
 
 /**
