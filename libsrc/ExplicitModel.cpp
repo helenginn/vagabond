@@ -26,6 +26,7 @@
 
 ExplicitModel::ExplicitModel() : Model()
 {
+	_changedSamples = true;
 	_modifySample = -1;
 }
 
