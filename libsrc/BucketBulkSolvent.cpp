@@ -79,7 +79,7 @@ void BucketBulkSolvent::addSolvent()
 	addSolventForConformer(-1);
 	reportSolventContent();
 	_solvent->shrink(shrink);
-	removeSlivers();
+	removeSlivers(2.0);
 	setPartialStructure(_solvent);
 }
 
