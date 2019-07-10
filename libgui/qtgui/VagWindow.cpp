@@ -149,6 +149,8 @@ void VagWindow::makeMenu()
 	         InstructionTypeFitTranslation);
 	menuItem(mRefine, "Intramolecule movements",
 	         InstructionTypeRefineIntramolecule);
+	menuItem(mRefine, "Intramolecule magic angles",
+	         InstructionTypeRefineIntramagic);
 	menuItem(mRefine, "Sidechain positions to density", 
 	         InstructionTypeRefineSidePos);
 	menuItem(mRefine, "Sidechains to density",
@@ -401,6 +403,13 @@ int VagWindow::waitForInstructions()
 				case InstructionTypeRefineIntramolecule:
 				disable();
 				crystal->refineIntraMovements();
+				options->recalculateFFT();
+				enable();
+				break;
+
+				case InstructionTypeRefineIntramagic:
+				disable();
+				crystal->refineIntraMovements(true);
 				options->recalculateFFT();
 				enable();
 				break;
