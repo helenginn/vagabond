@@ -53,7 +53,7 @@ Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
 	_atom = absolute->getAtom();
 }
 
-Anchor::~Anchor()
+void Anchor::deleteQuats()
 {
 	for (int i = 0; i < _quats.size(); i++)
 	{
@@ -63,6 +63,14 @@ Anchor::~Anchor()
 		delete _screws[i];
 		_screws[i] = NULL;
 	}
+	
+	_quats.clear();
+	_screws.clear();
+}
+
+Anchor::~Anchor()
+{
+	deleteQuats();
 }
 
 void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom, 
