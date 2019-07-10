@@ -840,7 +840,6 @@ void AtomGroup::xyzLimits(vec3 *min, vec3 *max)
 void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset,
                               EleCache *cache)
 {
-	cache = NULL;
 	size_t nElements = totalElements();
 
 	FFTPtr scratch = FFTPtr(new FFT(*scratchFull));
@@ -869,7 +868,11 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset,
 		}
 		else
 		{
-			eleFFT = FFTPtr(new FFT(*scratchFull));
+			if (!eleFFT)
+			{
+				eleFFT = FFTPtr(new FFT(*scratchFull));
+			}
+
 			eleFFT->setAll(0);
 			ele->populateFFT(new_basis, eleFFT);
 			
