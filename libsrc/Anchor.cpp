@@ -8,6 +8,7 @@
 
 #include "RefineMat3x3.h"
 #include "Anchor.h"
+#include "Fibonacci.h"
 #include "Absolute.h"
 #include "Anisotropicator.h"
 #include "Options.h"
@@ -117,13 +118,12 @@ void Anchor::createLayeredSpherePositions()
 	}
 
 	double scale = totalPoints / (double)totalSurfaces;
+	
+	/* Make Fibonacci lattice for each layer */
 
-	int rnd = 1;
-	double increment = M_PI * (3.0 - sqrt(5));
-
+	Fibonacci fib;
 	_sphereAngles.clear();
-	vec3 sum = empty_vec3();
-	double count = 0;
+	_sphereAngles.reserve(totalPoints);
 
 	for (int j = 0; j < layers; j++)
 	{
@@ -131,32 +131,11 @@ void Anchor::createLayeredSpherePositions()
 
 		int samples = layerSurfaces[j] * scale + 1;
 		double offset = 2. / (double)samples;
-
-		for (int i = 0; i < samples; i++)
-		{
-			double y = (((double)i * offset) - 1) + (offset / 2);
-			double r = sqrt(1 - y * y);
-
-			double phi = (double)((i + rnd) % samples) * increment;
-
-			double x = cos(phi) * r;
-			double z = sin(phi) * r;
-
-			vec3 point = make_vec3(x * m, y * m, z * m);
-			vec3_add_to_vec3(&sum, point);
-
-			_sphereAngles.push_back(point);
-			count++;
-		}
-	}
-	
-	return;
-	
-	vec3_mult(&sum, 1 / count);
-	
-	for (int i = 0; i < _sphereAngles.size(); i++)
-	{
-		vec3_subtract_from_vec3(&_sphereAngles[i], sum);
+		
+		fib.generateLattice(samples, m);
+		std::vector<vec3> points = fib.getPoints();
+		
+		_sphereAngles.insert(_sphereAngles.end(), points.begin(), points.end());
 	}
 }
 
