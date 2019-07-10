@@ -16,6 +16,7 @@
  * \brief Model for an anchor point in a tied-up polymer. */
 
 class RefineMat3x3;
+class Quat4Refine;
 
 typedef struct
 {
@@ -33,7 +34,7 @@ public:
 	/* Substantiate a default Anchor, to be used by Parser */
 	Anchor();
 
-	virtual ~Anchor() {};
+	virtual ~Anchor();
 
 	virtual std::vector<BondSample> *getManyPositions(void *object = NULL);
 	std::vector<BondSample> *getManyPositions(void *object = NULL,
@@ -245,6 +246,9 @@ protected:
 	RefineMat3x3Ptr _libration;
 	RefineMat3x3Ptr _screw;
 	
+	std::vector<Quat4Refine *> _quats;
+	std::vector<Quat4Refine *> _screws;
+	
 	bool _changedN;
 	bool _changedC;
 	
@@ -253,8 +257,10 @@ protected:
 	AtomWkr _atom;
 	AtomWkr _nAtom, _cAtom;
 private:
+	void initialise();
 	void translateStartPositions();
 	void rotateBases();
+	void applyQuaternions();
 	void fixCentroid();
 	mat3x3 getAnchorRotation();
 	mat3x3 _libMotion;

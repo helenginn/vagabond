@@ -7,6 +7,7 @@
 //
 
 #include "RefineMat3x3.h"
+#include "Quat4Refine.h"
 #include "Anchor.h"
 #include "Fibonacci.h"
 #include "Absolute.h"
@@ -18,21 +19,50 @@
 #include "mat4x4.h"
 #include <sstream>
 
+void Anchor::initialise()
+{
+	_bFactor = 0;
+	_alpha = 0;
+	_beta = 0;
+	_gamma = 0;
+	_position = empty_vec3();
+	_nDir = empty_vec3();
+	_cDir = empty_vec3();
+	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
+	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
+	_libration->setZero();
+	_screw = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
+	_screw->setZero();
+	_disableWhacks = false;
+
+	_quats = std::vector<Quat4Refine *>(3, NULL);
+	_screws = std::vector<Quat4Refine *>(3, NULL);
+	for (int i = 0; i < _quats.size(); i++)
+	{
+		_quats[i] = new Quat4Refine();
+		_screws[i] = new Quat4Refine();
+	}
+}
+
 Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
 {
+	initialise();
 	_bFactor = absolute->getBFactor();
 	_position = absolute->getAbsolutePosition();
 	_molecule = absolute->getMolecule();
 	_atom = absolute->getAtom();
-	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
-	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
-	_screw = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
-	_libration->setZero();
-	_screw->setZero();
-	_disableWhacks = false;
-	_alpha = 0;
-	_beta = 0;
-	_gamma = 0;
+}
+
+Anchor::~Anchor()
+{
+	for (int i = 0; i < _quats.size(); i++)
+	{
+		delete _quats[i];
+		_quats[i] = NULL;
+
+		delete _screws[i];
+		_screws[i] = NULL;
+	}
 }
 
 void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom, 
@@ -55,19 +85,7 @@ void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom,
 
 Anchor::Anchor() : ExplicitModel()
 {
-	_bFactor = 0;
-	_alpha = 0;
-	_beta = 0;
-	_gamma = 0;
-	_position = empty_vec3();
-	_nDir = empty_vec3();
-	_cDir = empty_vec3();
-	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
-	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
-	_libration->setZero();
-	_screw = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
-	_screw->setZero();
-	_disableWhacks = false;
+	initialise();
 }
 
 AtomPtr Anchor::getOtherAtom(AtomPtr calling)
@@ -196,6 +214,56 @@ void Anchor::createStartPositions(Atom *callAtom)
 			_storedSamples[i].occupancy /= occTotal;
 		}
 	}
+}
+
+void Anchor::applyQuaternions()
+{
+	double sum_dot = 0;
+	for (int i = 0; i < _storedSamples.size(); i++)
+	{
+		vec3 start = _storedSamples[i].start;
+		vec3 neg_start = vec3_mult(start, -1);
+		vec3 diff = vec3_subtract_vec3(start, _position);
+		mat3x3 rot_only = make_mat3x3();
+
+		for (int j = 0; j < 3; j++)
+		{
+			quat4 quat = _quats[j]->getQuat4();
+			vec3 screw = _screws[j]->getVec3();
+
+			vec3 rot_vec = quat4_axis(quat);
+			double ang = quat4_angle(quat);
+			double dot = vec3_dot_vec3(diff, rot_vec);
+			dot *= ang;
+			
+			if (rot_vec.x != rot_vec.x || ang != ang)
+			{
+				continue;
+			}
+
+			sum_dot += dot;
+
+			mat3x3 rot_mat = mat3x3_unit_vec_rotation(rot_vec, dot);
+			mat3x3 basis = mat3x3_mult_mat3x3(rot_mat, 
+			                                  _storedSamples[i].basis); 
+			
+			rot_only = mat3x3_mult_mat3x3(rot_mat, rot_only);
+			vec3_mult(&screw, dot);
+
+			vec3_add_to_vec3(&_storedSamples[i].old_start, screw);
+			vec3_add_to_vec3(&_storedSamples[i].start, screw);
+		}
+		
+		vec3 diff_to_old = vec3_subtract_vec3(_storedSamples[i].old_start,
+		                                      start);
+		mat3x3_mult_vec(rot_only, &diff_to_old);
+		vec3 new_old = vec3_add_vec3(start, diff_to_old);
+		_storedSamples[i].old_start = new_old;
+		mat3x3 basis = mat3x3_mult_mat3x3(rot_only, _storedSamples[i].basis);
+		_storedSamples[i].basis = basis;
+	}
+	
+	std::cout << "Sum dots: " << sum_dot << std::endl;
 }
 
 void Anchor::rotateBases()
@@ -447,7 +515,8 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 	if (!_disableWhacks)
 	{
 		translateStartPositions();
-		rotateBases();
+//		rotateBases();
+		applyQuaternions();
 
 		fixCentroid();
 
@@ -575,12 +644,16 @@ void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
 void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
                                       double mult)
 {
-	_libration->addTensorToStrategy(strategy, 0.2 * mult, 0.001, "li");
+	_quats[0]->addQuatToStrategy(strategy, -0.03, 0.0001, "rot0");
+//	_quats[1]->addQuatToStrategy(strategy, 0.03, 0.001, "rot1");
+//	_libration->addTensorToStrategy(strategy, 0.2 * mult, 0.001, "li");
 }
 
 void Anchor::addScrewParameters(RefinementStrategyPtr strategy,
                                 double mult)
 {
-	_screw->addMatrixToStrategy(strategy, 2.0 * mult, 0.01, "sc");
+	_screws[0]->addVecToStrategy(strategy, 1.0, 0.001, "screw0");
+//	_screws[1]->addVecToStrategy(strategy, 1.0, 0.001, "screw1");
+//	_screw->addMatrixToStrategy(strategy, 2.0 * mult, 0.01, "sc");
 }
 
