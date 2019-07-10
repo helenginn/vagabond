@@ -115,11 +115,10 @@ void DiffractionMtz::load()
 	errNames.push_back("SIGFP");
 
 	getCol(errNames, mtz, &col_sigf);
-	if (!col_sigf && false)
+	if (!col_sigf)
 	{
 		warn_user("I could not find your sigma/error column in\n"
-		          + _filename + " - please label as SIGF or SIGFP.\n"
-		"I can do without and will keep going.");
+		          + _filename + " - please label as SIGF or SIGFP.\n");
 	}
 
 
@@ -218,7 +217,13 @@ void DiffractionMtz::load()
 		int k = adata[col_k->source - 1];
 		int l = adata[col_l->source - 1];
 		float amplitude = adata[col_f->source - 1];
-		float sigma = adata[col_sigf->source - 1];
+		float sigma = amplitude / 10;
+		
+		if (col_sigf != NULL)
+		{
+			sigma = adata[col_sigf->source - 1];
+		}
+
 		float flag = 1;
 
 		if (col_rfree)
