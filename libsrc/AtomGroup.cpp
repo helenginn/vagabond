@@ -1123,7 +1123,8 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 		{
 			ys.push_back(ws->vals[i].fc);
 			xs.push_back(ws->vals[i].fo);
-			weights.push_back(ws->vals[i].weight);
+			double weight = (ws->vals[i].weight);
+			weights.push_back(weight);
 		}
 	}
 
