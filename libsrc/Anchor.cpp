@@ -34,14 +34,6 @@ void Anchor::initialise()
 	_screw = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_screw->setZero();
 	_disableWhacks = false;
-
-	_quats = std::vector<Quat4Refine *>(3, NULL);
-	_screws = std::vector<Quat4Refine *>(3, NULL);
-	for (int i = 0; i < _quats.size(); i++)
-	{
-		_quats[i] = new Quat4Refine();
-		_screws[i] = new Quat4Refine();
-	}
 }
 
 Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
@@ -226,7 +218,6 @@ void Anchor::createStartPositions(Atom *callAtom)
 
 void Anchor::applyQuaternions()
 {
-	double sum_dot = 0;
 	for (int i = 0; i < _storedSamples.size(); i++)
 	{
 		vec3 start = _storedSamples[i].start;
@@ -234,13 +225,18 @@ void Anchor::applyQuaternions()
 		vec3 diff = vec3_subtract_vec3(start, _position);
 		mat3x3 rot_only = make_mat3x3();
 
-		for (int j = 0; j < 3; j++)
+		for (int j = 0; j < _quats.size(); j++)
 		{
-			quat4 quat = _quats[j]->getQuat4();
-			vec3 screw = _screws[j]->getVec3();
+			vec3 quat = _quats[j]->getVec3();
+			mat3x3 rotbasis = mat3x3_ortho_axes(quat);
+			mat3x3 transbasis = mat3x3_transpose(rotbasis);
 
-			vec3 rot_vec = quat4_axis(quat);
-			double ang = quat4_angle(quat);
+			vec3 screw = _screws[j]->getVec3();
+			mat3x3_mult_vec(transbasis, &screw);
+			
+			vec3 rot_vec = quat;
+			vec3_set_length(&rot_vec, 1);
+			double ang = vec3_length(quat);
 			double dot = vec3_dot_vec3(diff, rot_vec);
 			dot *= ang;
 			
@@ -249,17 +245,23 @@ void Anchor::applyQuaternions()
 				continue;
 			}
 
-			sum_dot += dot;
-
 			mat3x3 rot_mat = mat3x3_unit_vec_rotation(rot_vec, dot);
 			mat3x3 basis = mat3x3_mult_mat3x3(rot_mat, 
 			                                  _storedSamples[i].basis); 
-			
 			rot_only = mat3x3_mult_mat3x3(rot_mat, rot_only);
-			vec3_mult(&screw, dot);
+			
+			vec3 shift = screw;
+			mat3x3_mult_vec(rot_mat, &shift);
+			vec3_subtract_from_vec3(&shift, screw);
+			
+			if (shift.x != shift.x)
+			{
+				continue;
+			}
 
-			vec3_add_to_vec3(&_storedSamples[i].old_start, screw);
-			vec3_add_to_vec3(&_storedSamples[i].start, screw);
+
+			vec3_add_to_vec3(&_storedSamples[i].old_start, shift);
+			vec3_add_to_vec3(&_storedSamples[i].start, shift);
 		}
 		
 		vec3 diff_to_old = vec3_subtract_vec3(_storedSamples[i].old_start,
@@ -271,7 +273,6 @@ void Anchor::applyQuaternions()
 		_storedSamples[i].basis = basis;
 	}
 	
-	std::cout << "Sum dots: " << sum_dot << std::endl;
 }
 
 void Anchor::rotateBases()
@@ -567,7 +568,43 @@ void Anchor::addProperties()
 		addChild("whack", _whacks[i]);
 	}
 	
+	_tmpQuats.clear();
+	_tmpScrews.clear();
+	
+	for (int i = 0; i < _quats.size(); i++)
+	{
+		vec3 v = _quats[i]->getVec3();
+		vec3 s = _screws[i]->getVec3();
+		_tmpQuats.push_back(v);
+		_tmpScrews.push_back(s);
+	}
+	
+	addVec3ArrayProperty("rots", &_tmpQuats);
+	addVec3ArrayProperty("screws", &_tmpScrews);
+	
 	Model::addProperties();
+}
+
+void Anchor::postParseTidy()
+{
+	deleteQuats();
+	
+	for (int i = 0; i < _tmpQuats.size(); i++)
+	{
+		Quat4Refine *q = new Quat4Refine();
+		Quat4Refine *s = new Quat4Refine();
+		
+		Quat4Refine::setX(q, _tmpQuats[i].x);
+		Quat4Refine::setY(q, _tmpQuats[i].y);
+		Quat4Refine::setZ(q, _tmpQuats[i].z);
+
+		Quat4Refine::setX(s, _tmpScrews[i].x);
+		Quat4Refine::setY(s, _tmpScrews[i].y);
+		
+		_quats.push_back(q);
+		_screws.push_back(s);
+	}
+
 }
 
 std::string Anchor::getParserIdentifier()
@@ -650,18 +687,46 @@ void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
 }
 
 void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
-                                      double mult)
+                                      int num)
 {
-	_quats[0]->addQuatToStrategy(strategy, -0.03, 0.0001, "rot0");
-//	_quats[1]->addQuatToStrategy(strategy, 0.03, 0.001, "rot1");
-//	_libration->addTensorToStrategy(strategy, 0.2 * mult, 0.001, "li");
+	if (num < 0)
+	{
+		for (int i = 0; i < _quats.size(); i++)
+		{
+			_quats[i]->addVecToStrategy(strategy, 0.01, 0.0001, "rot");
+		}
+	}
+	else
+	{
+		if (num >= _quats.size())
+		{
+			_quats.push_back(new Quat4Refine());
+			_screws.push_back(new Quat4Refine());
+			num = _quats.size() - 1;
+		}
+
+		_quats[num]->addVecToStrategy(strategy, 0.01, 0.0001, "rot");
+	}
 }
 
 void Anchor::addScrewParameters(RefinementStrategyPtr strategy,
-                                double mult)
+                                int num)
 {
-	_screws[0]->addVecToStrategy(strategy, 1.0, 0.001, "screw0");
-//	_screws[1]->addVecToStrategy(strategy, 1.0, 0.001, "screw1");
-//	_screw->addMatrixToStrategy(strategy, 2.0 * mult, 0.01, "sc");
+	if (num < 0)
+	{
+		for (int i = 0; i < _quats.size(); i++)
+		{
+			_screws[i]->addVec2ToStrategy(strategy, 3.0, 0.01, "screw");
+		}
+	}
+	else
+	{
+		if (num >= _quats.size())
+		{
+			return;
+		}
+
+		_screws[num]->addVec2ToStrategy(strategy, 3.0, 0.01, "screw");
+	}
 }
 

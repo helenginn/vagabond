@@ -127,9 +127,14 @@ public:
 	void addTranslationParameters(RefinementStrategyPtr strategy,
 	                              double mult = 1);
 	void addLibrationParameters(RefinementStrategyPtr strategy,
-	                              double mult = 1);
+	                              int num = 0);
 	void addScrewParameters(RefinementStrategyPtr strategy,
-	                              double mult = 1);
+	                              int num = -1);
+	
+	int librationCount()
+	{
+		return _quats.size();
+	}
 
 	static void cleanup(void *object)
 	{
@@ -235,6 +240,7 @@ protected:
 
 	virtual void sanityCheck();
 	virtual void addProperties();
+	virtual void postParseTidy();
 	virtual void linkReference(BaseParserPtr object, std::string category); 
 	virtual void addObject(ParserPtr object, std::string category);
 
@@ -262,6 +268,7 @@ private:
 	void rotateBases();
 	void applyQuaternions();
 	void fixCentroid();
+	void deleteQuats();
 	mat3x3 getAnchorRotation();
 	mat3x3 _libMotion;
 	
@@ -272,6 +279,9 @@ private:
 	std::vector<vec3> _sphereAngles;
 	std::vector<double> _occupancies;
 	std::vector<WhackPtr> _whacks;
+	
+	std::vector<vec3> _tmpQuats;
+	std::vector<vec3> _tmpScrews;
 	
 	bool _disableWhacks;
 };
