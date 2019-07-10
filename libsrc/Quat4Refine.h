@@ -102,6 +102,13 @@ public:
 		strategy->addParameter(this, getY, setY, step, tol, prefix + "_y");
 		strategy->addParameter(this, getZ, setZ, step, tol, prefix + "_z");
 	}
+
+	void addVec2ToStrategy(RefinementStrategyPtr strategy, double step,
+	                       double tol, std::string prefix)
+	{
+		strategy->addParameter(this, getX, setX, step, tol, prefix + "_x");
+		strategy->addParameter(this, getY, setY, step, tol, prefix + "_y");
+	}
 private:
 	void *_parent;
 	quat4 _quat;
