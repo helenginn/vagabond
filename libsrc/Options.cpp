@@ -56,6 +56,7 @@ bool Options::_rInter = true;
 bool Options::_rIntra = true;
 bool Options::_peptideMovement = true;
 bool Options::_hydrogens = true;
+bool Options::_fitBucket = false;
 
 std::string Options::_anchor = "";
 ScalingType Options::_scaleType = ScalingTypeShell;
@@ -600,6 +601,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "rfree", &_useRFree);
 		understood |= parseParameter(arg, "diagnostics", &_diagnostics);
 		understood |= parseParameter(arg, "partial", &_usePartial);
+		understood |= parseParameter(arg, "fit-solvent", &_fitBucket);
 		understood |= parseParameter(arg, "hydrogens", &_hydrogens);
 		
 		int shellNum = 0;

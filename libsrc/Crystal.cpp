@@ -219,19 +219,12 @@ void Crystal::realSpaceClutter(double maxRes)
 
 	_fft->createFFTWplan(8);
 	_difft->createFFTWplan(8);
+
 	
 	refreshAnchors();
 
 	refreshPositions();
 	addToMap(_fft, _real2frac);
-
-	_bucket = Bucket::chosenBucket();
-		
-	if (_bucket)
-	{
-		_bucket->setCrystal(shared_from_this());
-		_bucket->addSolvent();
-	}
 }
 
 double Crystal::totalToScale()
@@ -735,11 +728,21 @@ bool Crystal::returnToBestState()
 
 void Crystal::scaleSolvent(DiffractionPtr data)
 {
-	if (!Options::getAddSolvent() || !_bucket)
+	if (!Options::getAddSolvent())
 	{
 		return;
 	}
-	
+
+	_bucket = Bucket::chosenBucket();
+		
+	if (!_bucket)
+	{
+		return;
+	}
+
+	_bucket->setCrystal(shared_from_this());
+	_bucket->addSolvent();
+	_bucket->fourierTransform(1);
 	_bucket->setData(data);
 	_bucket->scalePartialStructure();
 	_bucket->reportScale();

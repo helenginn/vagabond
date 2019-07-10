@@ -139,6 +139,11 @@ public:
 		return _probeRadius;
 	}
 	
+	static bool fitSolventParameters()
+	{
+		return _fitBucket;
+	}
+	
 	static void changeSamplesAndFit(void *object, double n);
 
 	static void setNSamples(void *, int n)
@@ -324,6 +329,7 @@ private:
 	static bool _diagnostics;
 	static bool _useRFree;
 	static bool _usePartial;
+	static bool _fitBucket;
 	static ScalingType _scaleType;
 	static bool _powder;
 	static std::string _solventFile;
