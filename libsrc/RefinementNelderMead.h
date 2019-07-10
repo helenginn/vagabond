@@ -20,7 +20,6 @@
 #define __cppxfel__NelderMead__
 
 #include <stdio.h>
-#include "shared_ptrs.h"
 #include "RefinementStrategy.h"
 #include <map>
 
