@@ -120,12 +120,14 @@ public:
 		return _elements[which];
 	}
 	
-	void addToMap(FFTPtr fft, mat3x3 _real2frac, vec3 offset = empty_vec3());
+	void addToMap(FFTPtr fft, mat3x3 _real2frac, vec3 offset = empty_vec3(),
+	              EleCache *cache = NULL);
 
 	/** Adds atoms to a map where the voxel morphology is cubic, with a
 	  * given offset specified which is subtracted from each atom
 	  * position. */
-	void addToCubicMap(FFTPtr scratchFull, vec3 offset);
+	void addToCubicMap(FFTPtr scratchFull, vec3 offset, 
+	                   EleCache *cache = NULL);
 
 	/** Prepares a cubic map to add the AtomGroup to, including adjustment
 	 *  of the offset to place midpoint of the group of atoms at the midpoint 

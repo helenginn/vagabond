@@ -837,7 +837,8 @@ void AtomGroup::xyzLimits(vec3 *min, vec3 *max)
 	}
 }
 
-void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
+void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset,
+                              EleCache *cache)
 {
 	size_t nElements = totalElements();
 
@@ -851,23 +852,23 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset)
 
 	mat3x3 new_basis = scratchFull->getReal2Frac();
 
-	bool sameDims = (_scratchDims[0] == scratchFull->nx && 
-	                 _scratchDims[1] == scratchFull->ny &&
-	                 _scratchDims[2] == scratchFull->nz);
-	
-	if (!sameDims)
-	{
-		_eleScratch = std::map<ElementPtr, FFTPtr>();
-		_scratchDims[0] = scratchFull->nx;
-		_scratchDims[1] = scratchFull->ny;
-		_scratchDims[2] = scratchFull->nz;
-	}
-
 	for (int i = 0; i < nElements; i++)
 	{
 		ElementPtr ele = element(i);
 		
-		ele->populateFFT(new_basis, eleFFT);
+		if (cache != NULL && cache->count(ele))
+		{
+			eleFFT = (*cache)[ele];
+		}
+		else
+		{
+			ele->populateFFT(new_basis, eleFFT);
+			
+			if (cache != NULL)
+			{
+				(*cache)[ele] = eleFFT;
+			}
+		}
 
 		double elementElectrons = 0;
 
@@ -953,7 +954,8 @@ vec3 finalOffset(vec3 offset, FFTPtr cube,
 	return offset;
 }
 
-void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset)
+void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset,
+                         EleCache *cache)
 {
 	size_t nElements = totalElements();
 	
@@ -1048,7 +1050,8 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 			
 			/* Add the acceptable atoms to the map */
 			added->addToCubicMap(workspace->constant, 
-			                     workspace->ave);
+			                     workspace->ave,
+			                     &workspace->eleCache);
 			
 			/* Copy this constant fraction into the segment */
 //			workspace->segment->copyFrom(workspace->constant);
@@ -1056,7 +1059,8 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	}
 	
 	workspace->selectAtoms->addToCubicMap(workspace->segment,
-	                                      workspace->ave);
+	                                      workspace->ave,
+	                                      &workspace->eleCache);
 	
 	double score = 0;
 

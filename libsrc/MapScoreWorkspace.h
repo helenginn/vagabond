@@ -52,6 +52,8 @@ typedef enum
 	MapScoreFlagNegOnly = 32,
 } MapScoreFlag;
 
+typedef std::map<ElementPtr, FFTPtr> EleCache;
+
 typedef struct 
 {
 	ScoreType scoreType;
@@ -66,6 +68,7 @@ typedef struct
 	mat3x3 basis;
 	std::string filename;
 	unsigned int flag;
+	EleCache eleCache;
 } MapScoreWorkspace;
 
 inline void setup_space(MapScoreWorkspace *w)
