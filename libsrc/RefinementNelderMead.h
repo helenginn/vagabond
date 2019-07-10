@@ -29,6 +29,12 @@ typedef std::map<int, double> StepMap;
 
 class RefinementNelderMead : public RefinementStrategy
 {
+public:
+	void init();
+	RefinementNelderMead() : RefinementStrategy() { init(); };
+	virtual void refine();
+
+	virtual void clearParameters();
 private:
 	double alpha;
 	double gamma;
@@ -58,12 +64,6 @@ private:
 	void addPoints(std::vector<double> *point, std::vector<double> pointToAdd);
 	void scalePoint(std::vector<double> *point, double scale);
 	void subtractPoints(std::vector<double> *point, std::vector<double> pointToSubtract);
-public:
-	void init();
-	RefinementNelderMead() : RefinementStrategy() { init(); };
-	virtual void refine();
-
-	virtual void clearParameters();
 };
 
 #endif /* defined(__cppxfel__NelderMead__) */
