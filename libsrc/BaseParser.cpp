@@ -433,6 +433,7 @@ void BaseParser::restoreState(int num)
 		}
 
 		it->second.lock()->_restored = false;
+		it->second.lock()->postParseTidy();
 	}
 
 	postRestoreState();	
