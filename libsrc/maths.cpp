@@ -190,6 +190,34 @@ double weightedMapScore(std::vector<double> &vec1, std::vector<double> &vec2)
 	return sum_xy / sum_weight;
 }
 
+double weighted_r_factor(std::vector<CoordVal> &vals)
+{
+	double num = 0;
+	double den = 0;
+	double sum_w = 0;
+
+	for (int i = 0; i < vals.size(); i++)
+	{
+		if (vals[i].weight < 1e-6)
+		{
+			continue;
+		}
+
+		double weight = vals[i].weight;
+		double x = vals[i].fo;
+		double y = vals[i].fc;
+		
+		num += fabs(y - x) * weight;
+		den += fabs(x) * weight;
+		sum_w += weight;
+	}
+	
+	double r = num / den;
+	
+	return r;
+}
+
+
 double correlation(std::vector<CoordVal> &vals)
 {
 	double sum_x = 0;

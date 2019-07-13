@@ -1161,14 +1161,8 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 
 	if (ws->scoreType == ScoreTypeRFactor)
 	{
-		double scale = scale_factor_cutoff(xs, ys, cutoff);
-
-		cutoff /= scale;	
-		for (size_t i = 0; i < ys.size(); i++)
-		{
-			ys[i] /= scale;
-			ws->vals[i].fc /= scale;
-		}
+		double rfactor = weighted_r_factor(ws->vals);
+		return rfactor;
 	}
 
 	double score = scoreFinalValues(xs, ys, weights, ws->scoreType, ws->flag);

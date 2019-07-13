@@ -29,8 +29,9 @@ double weightedMapScore(std::vector<double> &set1, std::vector<double> &set2);
 double correlation(std::vector<double> &vec1, std::vector<double> &vec2,
                    double cutoff = -FLT_MAX, std::vector<double> *weights = 
                    NULL);
-double correlation(std::vector<CoordVal> &vals);
 
+double correlation(std::vector<CoordVal> &vals);
+double weighted_r_factor(std::vector<CoordVal> &vals);
 
 double happiness_coefficient(std::vector<double> xs, std::vector<double> ys);
 double mean(std::vector<double> &vec1);
