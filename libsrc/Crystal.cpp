@@ -36,7 +36,9 @@
 #include "PDBReader.h"
 #include "Atom.h"
 #include "Anchor.h"
+#include "FlexGlobal.h"
 #include "RefinementGridSearch.h"
+#include "RefinementNelderMead.h"
 #include "Bucket.h"
 #include "Options.h"
 #include "WeightedMap.h"
@@ -1253,6 +1255,54 @@ void Crystal::fitWholeMolecules()
 
 		ToPolymerPtr(molecule(i))->refineGlobalFlexibility();
 	}
+}
+
+bool Crystal::calibrateAllMolecules()
+{
+	FlexGlobal target;
+	AtomGroupPtr all = AtomGroupPtr(new AtomGroup());
+	NelderMeadPtr neld;
+	neld = NelderMeadPtr(new RefinementNelderMead());
+	int count = 0;
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+
+		count++;
+		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		AtomGroupPtr allBackbone = pol->getAllBackbone();
+		all->addAtomsFrom(allBackbone);
+		AnchorPtr anch = pol->getAnchorModel();
+
+		neld->addParameter(&*anch, Anchor::sgetBFactor, Anchor::ssetBFactor, 
+						   8.0, 0.01, "b_" + pol->getChainID());
+	}
+
+	if (count <= 1)
+	{
+		return false;
+	}
+	
+	target.setCrystal(shared_from_this());
+	target.setAtomGroup(all);
+	target.matchElectronDensity();
+
+	neld->setEvaluationFunction(FlexGlobal::score, &target);
+	neld->setVerbose(true);
+	neld->setCycles(60);
+	FlexGlobal::score(&target);
+	
+	all->scoreWithMap(ScoreTypeCorrel, shared_from_this(), "all_before");
+
+	neld->refine();
+
+	all->scoreWithMap(ScoreTypeCorrel, shared_from_this(), "all_after");
+	
+	return true;
 }
 
 void Crystal::addProperties()
