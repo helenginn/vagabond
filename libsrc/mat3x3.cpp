@@ -544,14 +544,14 @@ mat3x3 mat3x3_covariance(std::vector<vec3> points)
 
 mat3x3 mat3x3_rot_from_angles(double phi, double psi)
 {
-	vec3 zAxis = {0, 0, 1};
+	vec3 yAxis = {0, 1, 0};
 	vec3 xAxis = {1, 0, 0};
 	/* we shall rotate phi round the y axis for starters */
 	mat3x3 mat = mat3x3_rotate(0, phi, 0);
 	vec3 rotAxis = mat3x3_mult_vec(mat, xAxis);
 
 	/* we need to remake our next rotation axis as the cross product */
-	vec3 newAxis = vec3_cross_vec3(rotAxis, zAxis);
+	vec3 newAxis = vec3_cross_vec3(rotAxis, yAxis);
 
 	mat3x3 secondRot = mat3x3_unit_vec_rotation(newAxis, psi);
 
