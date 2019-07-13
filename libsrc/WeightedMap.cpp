@@ -20,7 +20,7 @@
 #include "mat3x3.h"
 #include "Diffraction.h"
 #include "Options.h"
-#include "fftw3d.h"
+#include <iomanip>
 #include "Shouter.h"
 #include "../libinfo/CentroidToPhase.h"
 
@@ -59,16 +59,6 @@ void WeightedMap::createWeightedMaps()
 	_difft->fft(-1);
 	
 	return;
-	
-	/* report */
-	
-	std::cout << "Standard deviation of phase per resolution shell: " << std::endl;
-	
-	for (int i = 0; i < _shells.size(); i++)
-	{
-		_shells[i].phi_spread /= (double)_shells[i].count;
-		std::cout << "Bin from " << _shells[i].maxRes << " Å - " << _shells[i].phi_spread << "°" << std::endl;
-	}
 }
 
 void WeightedMap::calculateFiguresOfMerit()
@@ -232,8 +222,10 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 					isRfree = 0;
 				}
 				
-				if ((length < minRes || length > maxRes || isAbs)
-				    || (fobs != fobs || isRfree) || sigfobs != sigfobs)
+				bool f000 = (i == 0 && j == 0 && k == 0);
+				
+				if (!f000 && ((length < minRes || length > maxRes || isAbs)
+				    || (fobs != fobs || isRfree) || sigfobs != sigfobs))
 				{	
 					scratch->setElement(index, 0, 0);
 
@@ -272,10 +264,17 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				}
 				
 				double fused = 2 * fobs - fcalc;
+				
+				if (f000)
+				{
+					fused = fcalc;
+				}
 
 				if (diff)
 				{
 					fused = fobs - fcalc;
+					
+					if (f000) fused = 0;
 				}
 
 				complex.x = fused * cos(phi);
@@ -297,6 +296,7 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 void WeightedMap::createVagaCoefficients()
 {
 	std::cout << "Creating Vagamap density..." << std::endl;
+	/* Note: _fft currently in reciprocal space */
 	FFTPtr duplicate = FFTPtr(new FFT(*_fft));
 	duplicate->setAll(0);
 	FFTPtr scratch = FFTPtr(new FFT(*duplicate));
@@ -308,7 +308,7 @@ void WeightedMap::createVagaCoefficients()
 	{
 		double weight = oneMap(scratch, i, false);
 		_allWeights += weight;
-		scratch->fft(-1);
+		scratch->fft(-1); /* to real space */
 		scratch->multiplyAll(weight);
 		FFT::addSimple(duplicate, scratch);
 		scratch->setAll(0);
@@ -325,18 +325,21 @@ void WeightedMap::createVagaCoefficients()
 		scratch->setAll(0);
 	}
 	
+	double normalise = 1 / _allWeights;
+	_difft->multiplyAll(normalise);
+	duplicate->multiplyAll(normalise);
+	
+	/* To reciprocal space for writing */
 	duplicate->fft(1);
 	_difft->fft(1);
 	
+	/*
 	double aveOrig = _fft->averageBoth();
 	double aveDupl = duplicate->averageBoth();
 	double mult = aveOrig / aveDupl;
-
-	duplicate->multiplyAll(mult);
-	_difft->multiplyAll(mult);
+	*/
 	
 	writeFile(duplicate);
-
 	_fft->copyFrom(duplicate);
 }
 

@@ -658,13 +658,13 @@ void FFT::fft(int direction)
 	else if (direction == -1)
 	{
 		fftwf_execute_dft(_myDims->iplan, data, data);
+		multiplyAll((double)1 / nn);
 	}
 	else
 	{
 		printf("Error: Undefined FFTW direction\n");
 		exit(1);
 	}
-
 }
 
 
