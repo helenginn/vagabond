@@ -283,12 +283,53 @@ void Options::executeProtocol()
 
 		if (_rInter)
 		{
+			double oldWork = crystal->getWorkValue();
 			crystal->fitWholeMolecules();
 			recalculateFFT();
+			bool did = crystal->calibrateAllMolecules();
 			
+			if (did)
+			{
+				recalculateFFT();
+			}
+
+			double newWork = crystal->getWorkValue();
+
+			if (newWork > oldWork || true)
+			{
+				std::cout << "Remedial work to reduce overall flexibility." 
+				<< std::endl;
+				/* Remedial action required. */
+				double ratio = 0.9;
+				int count = 0;
+
+				while (count < 10)
+				{
+					count++;
+					crystal->scaleAnchorBs(ratio);
+					recalculateFFT();
+
+					if (crystal->undoIfWorse())
+					{
+						break;
+					}
+				}
+
+				newWork = crystal->getWorkValue();
+				if (newWork > oldWork)
+				{
+					crystal->returnToBestState();
+				}
+			}
+			else
+			{
+				std::cout << "Rwork has reduced due to intramolecular flex." 
+				<< std::endl;
+			}
+
 			if (_rIntra || _far)
 			{
-				crystal->undoIfWorse();
+//				crystal->undoIfWorse();
 			}
 		}
 
@@ -321,7 +362,7 @@ void Options::executeProtocol()
 			double ratio = 0.9;
 			int count = 0;
 
-			while (count < 5)
+			while (count < 10)
 			{
 				count++;
 				crystal->scaleAnchorBs(ratio);
