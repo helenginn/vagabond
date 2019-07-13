@@ -1239,7 +1239,7 @@ void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals,
 		filename = "cc_score";
 	}
 
-	CSVPtr csv = CSVPtr(new CSV(6, "x", "y", "z", "fo", "fc"));
+	CSVPtr csv = CSVPtr(new CSV(5, "x", "y", "z", "fo", "fc"));
 
 	for (size_t i = 0; i < vals.size(); i++)
 	{
@@ -1253,7 +1253,7 @@ void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals,
 
 		if (!difference && fc < cutoff) continue;
 
-		csv->addEntry(6, pos.x, pos.y, pos.z, fo, fc);
+		csv->addEntry(5, pos.x, pos.y, pos.z, fo, fc);
 	}
 
 	csv->writeToFile(filename + ".csv");
