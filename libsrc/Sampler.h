@@ -132,7 +132,7 @@ public:
 
 	void setVerbose(bool verbose = true)
 	{
-		_strategy->setVerbose(verbose);
+		_verbose = true;
 	}
 	
 	int sampleSize()
@@ -154,6 +154,8 @@ public:
 	{
 		return _changed;
 	}
+	
+	void saveScore();
 	
 	double getImprovement()
 	{
@@ -247,6 +249,9 @@ private:
 	bool _silent;
 	bool _changed;
 	double _improv;
+	double _begin;
+	bool _shouldSave;
+	bool _verbose;
 	int _cycles;
 
 	std::string _jobName;

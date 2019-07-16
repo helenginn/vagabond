@@ -422,8 +422,8 @@ void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
 	double step = 0.5;
 
 	std::cout << "Refining region " << getChainID() << "   " << 
-	std::right << std::setw(3) << coreStart << " - " << coreEnd 
-	<< " |   " << std::flush;
+	std::right << std::setw(3) << coreStart << " - " << std::setw(3) <<
+	coreEnd << " |   " << std::flush;
 	
 	AtomList top = coreRegion->topLevelAtoms();
 	
@@ -453,9 +453,17 @@ void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
 	coreRegion->addParamType(ParamOptionNumBonds, (diff + 1) * 3);
 	coreRegion->addParamType(ParamOptionTorsion, step);
 	coreRegion->addParamType(ParamOptionTwist, -step);
-//	coreRegion->addParamType(ParamOptionBondAngle, step);
+	coreRegion->addParamType(ParamOptionMaxTries, 1);
+	coreRegion->saveScore();
+
+	coreRegion->refine(target, RefinementCrude);
+	
+	/*
+	coreRegion->clearParams();
+	coreRegion->addParamType(ParamOptionNumBonds, (diff + 1) * 3);
 	coreRegion->addParamType(ParamOptionMaxTries, 1);
 	coreRegion->refine(target, RefinementCrude);
+	*/
 
 	coreRegion->saveAtomPositions();
 	eModel->clearTwists();
@@ -513,8 +521,6 @@ void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
 	std::cout << std::endl;
 
 	return;
-
-	refineRange(coreStart, coreEnd, target, RefinementSidechain);
 }
 
 void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
@@ -1414,6 +1420,9 @@ void Polymer::refineGlobalFlexibility()
 	
 	int maxRot = Options::getMaxRotations();
 	bool maxed = false;
+
+	CrystalPtr crystal = Options::getActiveCrystal();
+	scoreWithMap(ScoreTypeCorrel, crystal, "before_glob_" + getChainID());
 	
 	for (int j = 0; j < maxRot; j++)
 	{
@@ -1461,6 +1470,7 @@ void Polymer::refineGlobalFlexibility()
 
 			anchor->addLibrationParameters(lbfgs, -1);
 			lbfgs->refine();
+
 		}
 
 		getAnchorModel()->propagateChange(-1, true);
@@ -1476,12 +1486,15 @@ void Polymer::refineGlobalFlexibility()
 			anchor->addScrewParameters(lbfgs, -1);
 			lbfgs->refine();
 		}
+
 		
 		if (maxed)
 		{
 			break;
 		}
 	}
+
+	scoreWithMap(ScoreTypeCorrel, crystal, "after_glob_" + getChainID());
 
 	{
 		FlexGlobal target;

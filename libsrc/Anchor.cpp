@@ -236,11 +236,11 @@ void Anchor::applyQuaternions()
 			
 			vec3 rot_vec = quat;
 			vec3_set_length(&rot_vec, 1);
-			double ang = vec3_length(quat);
-			double dot = vec3_dot_vec3(diff, rot_vec);
-			dot *= ang;
+//			double ang = vec3_length(quat);
+			double dot = vec3_dot_vec3(diff, quat);
+//			dot *= ang;
 			
-			if (rot_vec.x != rot_vec.x || ang != ang)
+			if (rot_vec.x != rot_vec.x || dot != dot)
 			{
 				continue;
 			}
@@ -523,8 +523,8 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 	
 	if (!_disableWhacks)
 	{
-		translateStartPositions();
 //		rotateBases();
+		translateStartPositions();
 		applyQuaternions();
 
 		fixCentroid();

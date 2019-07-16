@@ -929,7 +929,7 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	
 	fourierTransform(1);
 	
-	scaleComponents(data);
+	scaleComponents(data); /* change name of function to write solvent only */
 	
 	writeMillersToFile(data, prefix);
 

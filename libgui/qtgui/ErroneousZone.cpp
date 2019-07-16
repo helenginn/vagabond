@@ -81,11 +81,11 @@ void ErroneousZone::omitResidues(double weight)
 	_crystal->silentConcludeRefinement();
 	
 	double neg_diff = _everything->scoreWithMap(ScoreTypeAddDensity, _crystal,
-	                                            false, MapScoreFlagDifference
+	                                            "", MapScoreFlagDifference
 	                                            | MapScoreFlagNegOnly);
 	 
 	double pos_diff = _everything->scoreWithMap(ScoreTypeAddDensity, _crystal,
-	                                            false, MapScoreFlagDifference
+	                                            "", MapScoreFlagDifference
 	                                            | MapScoreFlagPosOnly);
 
 	std::cout << "Weight: " << weight << " " << neg_diff << " " 

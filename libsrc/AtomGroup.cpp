@@ -694,7 +694,8 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 	refreshPositions(true);
 }
 
-double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plot, unsigned int flags)
+double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, 
+                               std::string plot, unsigned int flags)
 {
 	OptionsPtr options = Options::getRuntimeOptions();
 	DiffractionPtr data = options->getActiveData();
@@ -711,8 +712,9 @@ double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, bool plo
 	workspace.ave = empty_vec3();
 	workspace.basis = make_mat3x3();
 	workspace.flag = flags;
+	workspace.filename = plot;
 
-	return scoreWithMapGeneral(&workspace, plot);
+	return scoreWithMapGeneral(&workspace, plot != "");
 }
 
 FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
@@ -999,6 +1001,11 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset,
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
                                       bool plot)
 {
+	if (plot && workspace->filename == "")
+	{
+		workspace->filename = "cc_score.png";
+	}
+
 	if (!workspace->selectAtoms->atomCount())
 	{
 		return 0;

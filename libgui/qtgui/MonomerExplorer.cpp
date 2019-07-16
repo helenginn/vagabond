@@ -118,7 +118,7 @@ void MonomerExplorer::updateCorrelation(bool force)
 			_lCorrel->show();
 		}
 
-		double score = -_monomer->scoreWithMap(ScoreTypeCorrel, crystal, true);
+		double score = -_monomer->scoreWithMap(ScoreTypeCorrel, crystal, "monomer_cc.png");
 		std::string scoreString = "CC (2Fo-Fc): " + f_to_str(score, 3);
 
 		_lCorrel->setText(QString::fromStdString(scoreString));

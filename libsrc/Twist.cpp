@@ -36,17 +36,17 @@ void Twist::setBond(BondPtr bond)
 
 	BondPtr child = bond->downstreamBond(0, 0);
 
-	if (child->isFixed() || !child->isUsingTorsion() ||
-	    bond->isFixed() || !bond->isUsingTorsion())
+	if (child->isFixed() || !child->isUsingTorsion())
 	{
 		return;
 	}
 	
 	if (bond->hasTwist())
 	{
+		std::cout << "Already has twist" << std::endl;
 		return;
 	}
-
+	
 	_bond = bond;
 	saveSamples();
 	_valid = true;

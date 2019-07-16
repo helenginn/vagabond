@@ -29,7 +29,10 @@
 
 Sampler::Sampler()
 {
+	_shouldSave = false;
+	_begin = 0;
 	_cycles = 0;
+	_verbose = false;
 	_improv = 0;
 	_changed = false;
 	_mock = false;
@@ -111,7 +114,11 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 		ParamOptionType option = it->first;
 		double range = it->second;
 		
-		if (range < 1e-6)
+		if (option == ParamOptionTwist)
+		{
+		}
+		
+		if (fabs(range) < 1e-6)
 		{
 			continue;
 		}
@@ -606,8 +613,17 @@ bool Sampler::sample(bool clear)
 		setupCloseAtoms();
 		setupScoreWithMap();
 	}
-
-	double begin = getScore();
+	
+	if (_verbose)
+	{
+		_strategy->setVerbose(true);
+	}
+	
+	if (_shouldSave)
+	{
+		_begin = getScore();
+		_shouldSave = false;
+	}
 
 	if (sampleSize() && _strategy->parameterCount())
 	{
@@ -616,7 +632,7 @@ bool Sampler::sample(bool clear)
 	}
 
 	double end = getScore();
-	_improv = end - begin;
+	_improv = end - _begin;
 	
 	_silent = false;
 	_scoreType = ScoreTypeCorrel;
@@ -637,6 +653,11 @@ bool Sampler::sample(bool clear)
 	_crystal->clearCloseCache();
 
 	return _changed;
+}
+
+void Sampler::saveScore()
+{
+	_shouldSave = true;
 }
 
 double Sampler::getScore()

@@ -136,6 +136,7 @@ void FlexGlobal::prepareWorkspace()
 
 	_workspace.crystal = _crystal;
 	_workspace.selectAtoms = _atomGroup;
+//	_workspace.scoreType = ScoreTypeRFactor;
 	
 	_prepared = true;
 	AtomGroup::scoreWithMapGeneral(&_workspace, false);

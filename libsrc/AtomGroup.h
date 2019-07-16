@@ -44,7 +44,7 @@ public:
 	AtomList findAtoms(std::string atomType, int resNum);
 
 	double scoreWithMap(ScoreType scoreType, CrystalPtr crystal, 
-	                    bool plot = false, unsigned int flags = 0);
+	                    std::string plot = "", unsigned int flags = 0);
 
 	
 	static double scoreWithMapGeneral(MapScoreWorkspace *workspace,
