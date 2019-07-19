@@ -178,7 +178,6 @@ mat3x3 ExplicitModel::makeTorsionBasis(vec3 hPos, vec3 maPos,
 void ExplicitModel::addRealSpacePositions(FFTPtr real, vec3 offset)
 {
 	std::vector<BondSample> positions = getFinalPositions();
-	double b = Options::getActiveCrystal()->getRealBFactor();
 	
 	double realLimits = real->getScale(0) * real->nx;
 	vec3 absolute = getAbsolutePosition();
@@ -198,16 +197,8 @@ void ExplicitModel::addRealSpacePositions(FFTPtr real, vec3 offset)
 			continue;
 		}
 		
-		if (b > 0.1)
-		{
-			real->addBlurredToReal(relative.x, relative.y, relative.z,
-			                       occupancy);
-		}
-		else
-		{
-			real->addInterpolatedToFrac(relative.x, relative.y, relative.z,
-			                            occupancy);
-		}
+		real->addInterpolatedToFrac(relative.x, relative.y, relative.z,
+		                            occupancy);
 	}
 }
 
