@@ -86,7 +86,8 @@ public:
 	
 	double sumImag();
 	
-	double sumAll()
+	/* Returns sum of all real components */
+	double sumReal()
 	{
 		double reals = 0;
 		for (int i = 0; i < nn; i++)
@@ -100,13 +101,13 @@ public:
 	/** Get the average of all real values (ignore imaginary component) */
 	double averageAll()
 	{
-		return sumAll() / (double)nn;
+		return sumReal() / (double)nn;
 	}
 
 	/** Get the average of all real values (ignore imaginary component) */
 	double averageBoth()
 	{
-		return (sumAll() + sumImag()) / (double)(2*nn);
+		return (sumReal() + sumImag()) / (double)(2*nn);
 	}
 
 

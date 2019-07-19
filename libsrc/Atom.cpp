@@ -407,7 +407,7 @@ void Atom::addDirectlyToMap(FFTPtr fft, mat3x3 basis, vec3 offset,
 		blur->fft(1);
 		blur->invertScale();
 		double occ = _model->getEffectiveOccupancy();
-		double curr = blur->sumAll();
+		double curr = blur->sumReal();
 		blur->multiplyAll(occ / curr);
 		
 		vec3 pos = _model->getAbsolutePosition();
