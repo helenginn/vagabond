@@ -126,18 +126,23 @@ public:
 		return (sumReal() + sumImag()) / (double)(2*nn);
 	}
 
-
+	/** Set mask value for index. Does not error-check if mask has not
+	 * been allocated yet with FFT::setMask(). */
 	void setMask(long i, MaskType value)
 	{
 		mask[i] = value;
 	}
 
+	/** Get mask value for (nx, ny, nz) voxel. Does not error-check if mask
+	 * has not been allocated yet with FFT::setMask(). */
 	int getMask(long x, long y, long z)
 	{
 		long elem = element(x, y, z);
 		return mask[elem];
 	}
 
+	/** Get mask value for index. Does not error-check if mask has not
+	 * been allocated yet with FFT::setMask(). */
 	int getMask(long i)
 	{
 		return mask[i];
@@ -210,11 +215,13 @@ public:
 	 * an atom without breaking it up at the densest point, for example */
 	void shiftToCentre();
 
+	/** Get real component for index */
 	double getReal(long index)
 	{
 		return data[index][0];
 	}
 
+	/** Get real component for integer voxel (x, y, z) */
 	double getReal(long x, long y, long z)
 	{
 		long index = element(x, y, z);
@@ -222,8 +229,10 @@ public:
 		return data[index][0];
 	}
 
+	/** Get imaginary component for integer voxel (x, y, z) */
 	double getImaginary(long x, long y, long z);
 
+	/** Get imaginary component for index */
 	double getImaginary(long index)
 	{
 		return data[index][1];
