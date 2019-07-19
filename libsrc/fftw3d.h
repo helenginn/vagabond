@@ -75,15 +75,31 @@ public:
 	FFT(long);
 	~FFT();
 
+	/** Does not currently work */
 	static void cleanupPlans();
-	void create(long);
-	void create(long, long, long);
+	
+	/** Create cubic grid of length n */
+	void create(long n);
+	
+	/** Create cuboid grid of lengths (nx, ny, nz) */
+	void create(long nx, long ny, long nz);
+	
+	/** Copy data (and data only) from a second FFT */
 	void copyFrom(FFTPtr other);
+	
+	/** Set the imaginary component of an FFT to the real component, and
+	 * leaves real component unchanged */
 	void copyRealToImaginary();
+	
+	/** Takes the ratio of the average of all real (only) components and
+	 * multiplies all values by this number so scales of two FFTs are the
+	 * same */
 	void scaleToFFT(FFTPtr other);
 
+	/** Allocates space for a mask of unsigned ints */
 	void setupMask();
 	
+	/** Returns sum of all imaginary components */
 	double sumImag();
 	
 	/* Returns sum of all real components */
