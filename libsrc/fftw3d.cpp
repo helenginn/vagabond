@@ -454,11 +454,11 @@ void FFT::addInterpolatedToReal(double sx, double sy, double sz, double val)
 	yProps[0] = 1 - yProps[1];
 	zProps[0] = 1 - zProps[1];
 
-	for (int p = 0; p < 2; p++)
+	for (int r = 0; r < 2; r++)
 	{
 		for (int q = 0; q < 2; q++)
 		{
-			for (int r = 0; r < 2; r++)
+			for (int p = 0; p < 2; p++)
 			{
 				int sx1 = lx + p;
 				int sy1 = ly + q;
