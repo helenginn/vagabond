@@ -42,7 +42,6 @@ std::deque<FourierDimension> FFT::_dimensions;
 
 FFT::FFT()
 {
-	_setupBlurring = false;
 	nx = 0;
 	ny = 0;
 	nz = 0;
@@ -89,7 +88,6 @@ void FFT::create(long n)
 
 FFT::FFT(FFT &other)
 {
-	_setupBlurring = false;
 	nx = other.nx;
 	ny = other.ny;
 	nz = other.nz;
@@ -435,37 +433,6 @@ void FFT::addToReal(double xfrac, double yfrac, double zfrac, double real)
 	long index = elementFromFrac(xfrac, yfrac, zfrac);
 
 	data[index][0] += real;
-}
-
-#define START_LOOP -1
-#define END_LOOP 2
-
-void FFT::setupBlurring()
-{
-	_blurAmounts.clear();
-
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	double bfac = crystal->getRealBFactor();
-	bfac /= 8 * M_PI * M_PI;
-
-	for (int i = START_LOOP; i < END_LOOP; i++)
-	{
-		for (int j = START_LOOP; j < END_LOOP; j++)
-		{
-			for (int k = START_LOOP; k < END_LOOP; k++)
-			{
-				vec3 shift = make_vec3(i, j, k);
-				mat3x3_mult_vec(_basis, &shift);
-				double movement = vec3_sqlength(shift);
-
-				float factor = normal_distribution(movement, bfac);
-
-				_blurAmounts.push_back(factor);
-			}
-		}
-	}		
-
-	_setupBlurring = true;
 }
 
 void FFT::addInterpolatedToReal(double sx, double sy, double sz, double val)
