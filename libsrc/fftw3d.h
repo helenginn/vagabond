@@ -255,10 +255,24 @@ public:
 	 * to a number. No interpolation. */
 	void setReal(double xfrac, double yfrac, double zfrac, double real);
 	
+	/** Add a value (of electron density units) into eight separate cuboids in
+	 * the neighbouring grid points around a grid point position */
 	void addInterpolatedToReal(double sx, double sy, double sz, double val);
+
+	/** Add a value (e.g. electron density units) into eight separate cuboids
+	 * in the neighbouring grid points around a fraction of the unit cell */
 	void addInterpolatedToFrac(double fx, double fy, double fz, double val);
-	void addToReal(double xfrac, double yfrac, double zfrac, double real);
+	
+	/** Add a non-interpolated value (e.g. of electron density units) to the
+	 * nearest grid point */
+	void addToReal(double xfrac, double yfrac, double zfrac, double value);
+
+	/** Remove whole numbers and leave remainder between 0 and 1 for each
+	 * x, y, z fraction (i.e. remove unit cells) */
 	static void collapseFrac(double *xfrac, double *yfrac, double *zfrac);
+	
+	/** For two identically dimensioned FFTs, multiply complex numbers
+	 * between all elements of each array */
 	static void multiply(FFTPtr fftEdit, FFTPtr fftConst);
 	void setAll(float);
 	void cap(float);
