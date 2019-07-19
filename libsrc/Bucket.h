@@ -51,7 +51,6 @@ public:
 	void abandonCalculations();
 	
 	bool isSolvent(vec3 pos);
-	void processMaskedRegions();
 	
 	bool isSolvent(int index);
 	Atom *nearbyAtom(int index);
