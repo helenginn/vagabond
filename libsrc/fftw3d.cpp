@@ -516,49 +516,6 @@ void FFT::addInterpolatedToFrac(double fx, double fy, double fz, double val)
 	addInterpolatedToReal(sx, sy, sz, val);
 }
 
-void FFT::addBlurredToReal(double xfrac, double yfrac, double zfrac, double real)
-{
-	if (!_setupBlurring)
-	{
-		setupBlurring();
-	}
-
-	collapseFrac(&xfrac, &yfrac, &zfrac);
-
-	double x = xfrac * nx;
-	double y = yfrac * ny;
-	double z = zfrac * nz;
-
-	int count = 0;
-	for (int k = START_LOOP; k < END_LOOP; k++)
-	{
-		double sz = z + (double)k;
-		for (int j = START_LOOP; j < END_LOOP; j++)
-		{
-			double sy = y + (double)j;
-			for (int i = START_LOOP; i < END_LOOP; i++)
-			{
-				double sx = x + (double)i;
-				long lx = (int)floor(sx);
-				long ly = (int)floor(sy);
-				long lz = (int)floor(sz);
-
-				long index = element(lx, ly, lz);
-
-				if (!_writeToMaskZero && mask[index] == 0)
-				{
-					continue;
-				}
-
-				float factor = _blurAmounts[count];
-				count++;
-
-				addInterpolatedToReal(sx, sy, sz, real * factor);
-			}
-		}
-	}
-}
-
 void FFT::multiplyAll(float value)
 {
 	for(long i = 0; i < nn; i++)

@@ -246,8 +246,6 @@ public:
 	 * to a number. No interpolation. */
 	void setReal(double xfrac, double yfrac, double zfrac, double real);
 	
-	void addBlurredToReal(double xfrac, double yfrac, double zfrac, 
-	                      double real);
 	void blurRealToImaginary(int i, int j, int k, mat3x3 tensor);
 	void addInterpolatedToReal(double sx, double sy, double sz, double val);
 	void addInterpolatedToFrac(double fx, double fy, double fz, double val);
