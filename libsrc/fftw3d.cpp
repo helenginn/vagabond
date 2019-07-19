@@ -780,61 +780,6 @@ typedef struct
 	double value;
 } IndexValue;
 
-void FFT::blurRealToImaginary(int x, int y, int z, mat3x3 tensor)
-{
-	long ele = element(x, y, z);
-	double val = data[ele][0];
-	
-	double longest = std::max(tensor.vals[0], 
-	                          std::max(tensor.vals[4], tensor.vals[8]));
-
-	vec3 mins = empty_vec3();
-	vec3 maxs = empty_vec3();
-	findLimitingValues(-longest, longest, -longest, longest, 
-	                   -longest, longest, &mins, &maxs);
-	
-	mat3x3 basis = getBasis();
-	
-	std::vector<IndexValue> additions;
-	double count = 0;
-
-	for (int k = mins.z; k < maxs.z; k++)
-	{
-		for (int j = mins.y; j < maxs.y; j++)
-		{
-			for (int i = mins.x; i < maxs.x; i++)
-			{
-				vec3 ijk = make_vec3(i, j, k);
-				mat3x3_mult_vec(basis, &ijk);
-				mat3x3_mult_vec(tensor, &ijk);
-
-				ijk.x *= i; ijk.y *= j; ijk.z *= k;
-				double dist = ijk.x + ijk.y + ijk.z;
-				double aniso = exp(2 * M_PI * M_PI * -(dist));
-				
-				long blele = element(x + i, y + j, z + k);
-				
-				IndexValue pair;
-				pair.element = blele;
-				pair.value = aniso * val;
-				additions.push_back(pair);
-				
-				count += aniso * val;
-				
-			}
-		}
-	}
-	
-	double ratio = 1 / count;
-	
-	for (int i = 0; i < additions.size(); i++)
-	{
-		long ele = additions[i].element;
-		double add = ratio * additions[i].value;
-		data[ele][1] += add;
-	}
-}
-
 void FFT::bittyShrink(double radius, int num)
 {
 	vec3 mins = make_vec3(0, 0, 0);
