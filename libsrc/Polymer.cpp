@@ -1423,6 +1423,20 @@ void Polymer::refineGlobalFlexibility()
 
 	CrystalPtr crystal = Options::getActiveCrystal();
 	scoreWithMap(ScoreTypeCorrel, crystal, "before_glob_" + getChainID());
+
+	{
+		FlexGlobal target;
+		NelderMeadPtr lbfgs = NelderMeadPtr(new RefinementNelderMead());
+		attachTargetToRefinement(lbfgs, target);
+		lbfgs->setJobName("translation");
+		lbfgs->setVerbose(true);
+		lbfgs->setCycles(100);
+
+		anchor->addTranslationParameters(lbfgs);
+		lbfgs->refine();
+	}
+
+	getAnchorModel()->propagateChange(-1, true);
 	
 	for (int j = 0; j < maxRot; j++)
 	{
@@ -1495,20 +1509,6 @@ void Polymer::refineGlobalFlexibility()
 	}
 
 	scoreWithMap(ScoreTypeCorrel, crystal, "after_glob_" + getChainID());
-
-	{
-		FlexGlobal target;
-		NelderMeadPtr lbfgs = NelderMeadPtr(new RefinementNelderMead());
-		attachTargetToRefinement(lbfgs, target);
-		lbfgs->setJobName("translation");
-		lbfgs->setVerbose(true);
-		lbfgs->setCycles(100);
-
-		anchor->addTranslationParameters(lbfgs);
-		lbfgs->refine();
-	}
-
-	getAnchorModel()->propagateChange(-1, true);
 
 	timer.report();
 }
