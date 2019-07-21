@@ -121,6 +121,7 @@ Bond::Bond(Bond &other)
 		_bondGroups.push_back(group);
 	}
 
+	_leftOfAnchor = other._leftOfAnchor;
 	_fixed = other._fixed;
 	_disabled = other._disabled;
 	_absolute = other._absolute;
@@ -1385,7 +1386,16 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum,
 		BondPtr nextBond = ToBondPtr(nextAtom->getModel());
 		BondPtr result = nextBond->duplicateDownstream(duplBond, 
 		                                               0, onlyExisting);
-		
+
+		if (onlyExisting)
+		{
+			if (duplBond->downstreamBondGroupCount() && 
+			    duplBond->downstreamBondCount(0) == 1)
+			    {
+				   setCirclePortion(&*result, 0.);
+			    }
+		     }
+
 		if (onlyExisting && !result)
 		{
 			nextBond->_resetOccupancy = true;
