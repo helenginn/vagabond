@@ -762,9 +762,6 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 		ns[1] = std::max(fabs(diff.y), ns[1]);
 		ns[2] = std::max(fabs(diff.z), ns[2]);
 	}
-	
-	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
-	double scales = 1.0 / (maxDStar);
 
 	/** Adding a buffer region */
 	long nl[3];
