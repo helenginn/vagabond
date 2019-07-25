@@ -95,6 +95,28 @@ inline vec3 getNLimits(FFTPtr data, FFTPtr fftModel)
 	return lims;
 }
 
+inline void makeShells(std::vector<ShellInfo> *shells, double min, double max)
+{
+	/* Then apply to individual resolution bins */
+	std::vector<double> bins;
+	generateResolutionBins(min, max, 20, &bins);
+
+	/* Extend the final bin by a little bit, so as not to lose any
+	 * stragglers. */
+	bins[bins.size() - 1] *= 0.95;
+
+	/* Make the series of shells */
+	shells->clear();
+
+	for (size_t i = 0; i < bins.size() - 1; i++)
+	{
+		ShellInfo shell = makeShellInfo(bins[i], bins[i + 1]);
+		shells->push_back(shell);
+	}
+
+}
+
+
 class Crystal : public Object, public AtomGroup
 {
 public:

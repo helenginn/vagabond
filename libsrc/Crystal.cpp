@@ -847,23 +847,8 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 	}
 	else if (scaleType == ScalingTypeShell)
 	{
-		/* Then apply to individual resolution bins */
-		std::vector<double> bins;
 		double minRes = Options::minRes();
-		generateResolutionBins(minRes, _maxResolution, 20, &bins);
-
-		/* Extend the final bin by a little bit, so as not to lose any
-		 * stragglers. */
-		bins[bins.size() - 1] *= 0.95;
-
-		/* Make the series of shells */
-		_shells.clear();
-		
-		for (int i = 0; i < bins.size() - 1; i++)
-		{
-			ShellInfo shell = makeShellInfo(bins[i], bins[i + 1]);
-			_shells.push_back(shell);
-		}
+		makeShells(&_shells, minRes, _maxResolution);
 
 		valueWithDiffraction(data, &scale_factor_by_sum, false, false);
 
