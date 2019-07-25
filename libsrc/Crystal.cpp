@@ -240,8 +240,20 @@ double Crystal::totalToScale()
 		sum += molecule(i)->totalElectrons(&weights);
 		weighted += weights;
 	}
+	
+	double unmodelled = Options::getUnmodelledFraction();
+	
+	double extra = (1 / (1 - unmodelled));
+	
+	if (unmodelled > 0)
+	{
+		std::cout << "Accounting for unmodelled percentage: " <<
+		unmodelled  * 100 << std::endl;
+		std::cout << "Total content: " <<
+		extra * 100 << "%" << std::endl;
+	}
 
-	return (sqrt((double)sum / (double)weighted)) * 1.0;
+	return (sqrt((double)sum / (double)weighted)) * extra;
 }
 
 void Crystal::omitScan()

@@ -33,7 +33,7 @@ OptionsPtr Options::options;
 double Options::_kick = 0.000;
 int Options::_solvent = 2;
 int Options::_nCycles = -1;
-double Options::_dampen = 0.0;
+double Options::_unmodelled = 0.0;
 double Options::_bStart = 20.;
 double Options::_bMult = 1;
 double Options::_bSubt = -1;
@@ -571,7 +571,10 @@ void Options::parse()
 		understood |= parseParameter(arg, "--ncycles=", &_nCycles);
 		understood |= parseParameter(arg, "--global-b=", &_bReal);
 		understood |= parseParameter(arg, "--kick=", &_kick);
-		understood |= parseParameter(arg, "--dampen=", &_dampen);
+		understood |= parseParameter(arg, "--unmodelled-fraction=", 
+		                             &_unmodelled);
+		understood |= parseParameter(arg, "--unmodelled=", 
+		                             &_unmodelled);
 		understood |= parseParameter(arg, "--output-dir=", &_outputDir);
 		understood |= parseParameter(arg, "--anchor=", &_anchor);
 		understood |= parseParameter(arg, "--map=", &_map);

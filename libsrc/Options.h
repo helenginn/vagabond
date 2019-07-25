@@ -99,11 +99,6 @@ public:
 		return _kick;
 	}
 
-	static double getDampen()
-	{
-		return _dampen;
-	}
-
 	static double minRes()
 	{
 		return _minRes;
@@ -255,6 +250,11 @@ public:
 		return _diagnostics;
 	}
 	
+	static double getUnmodelledFraction()
+	{
+		return _unmodelled;
+	}
+	
 	static double getGlobalBFactor()
 	{
 		return _bReal;
@@ -343,7 +343,7 @@ private:
 	static int _bondAngles;
 	static int _nCycles;
 	static bool _peptideMovement;
-	static double _dampen;
+	static double _unmodelled;
 	static double _bMult;
 	static double _bSubt;
 	static double _bReal;
