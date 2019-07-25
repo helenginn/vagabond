@@ -146,9 +146,9 @@ void Density2GL::setupIndexTable()
 	_cubeIndices[0b00001010] = makeList(6, 2, z, z1, 0, x1, x2);
 	_cubeIndices[0b11110101] = rewindTriangles(_cubeIndices[0b00001010]);
 
-	// type 4 checked
+	// type 4 checked and fixed
 	_cubeIndices[0b00001011] = makeList(9, 1, x1, z1, z1, x1, x2,
-	                                    x1, x2, z);
+	                                    z1, x2, z);
 	_cubeIndices[0b11110100] = rewindTriangles(_cubeIndices[0b00001011]);
 
 	// type 3 checked
@@ -368,12 +368,12 @@ void Density2GL::setupIndexTable()
 	_cubeIndices[0b11001100] = makeList(12, y, 1, 2, y, 2, xy2, 
 	                                    xy2, 2, z, xy2, z, xz1); 
 	
-	// type 11
+	// type 11 checked
 	_cubeIndices[0b00110100] = makeList(9, x2, xz1, z, x1, 1, y2,
 	                                    x1, y2, xy2);
 	_cubeIndices[0b11001011] = rewindTriangles(_cubeIndices[0b00110100]);
 
-	// type 6
+	// type 6 checked
 	_cubeIndices[0b00110101] = makeList(12, x2, xz1, z, 2, y2, xy2,
 	                                    2, xy2, 0, 0, xy2, x1);
 	_cubeIndices[0b11001010] = rewindTriangles(_cubeIndices[0b00110101]);
@@ -456,9 +456,9 @@ void Density2GL::setupIndexTable()
 	_cubeIndices[0b01000100] = makeList(6, y, 1, z1, y, z1, yz);
 	_cubeIndices[0b10111011] = rewindTriangles(_cubeIndices[0b01000100]);
 
-	// type 4
+	// type 4 fixed
 	_cubeIndices[0b01000101] = makeList(9, y, 0, yz, yz, 0, 2,
-	                                    yz, 2, z1);
+	                                    yz, 0, z1);
 	_cubeIndices[0b10111010] = rewindTriangles(_cubeIndices[0b01000101]);
 	
 	// type 11
