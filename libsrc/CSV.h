@@ -94,6 +94,9 @@ public:
 
 	void addPartialEntry(int dummy, ...);
 	void addEntry(int dummy, ...);
+	
+	/** Write contents of CSV to filename, which should include the file
+	 * extension */
 	void writeToFile(std::string filename);
 	double valueForEntry(std::string header, int entry);
 	std::string plotColumns(int col1, int col2);
