@@ -274,6 +274,8 @@ public:
 	/** For two identically dimensioned FFTs, multiply complex numbers
 	 * between all elements of each array */
 	static void multiply(FFTPtr fftEdit, FFTPtr fftConst);
+	
+
 	void setAll(float);
 	void cap(float);
 	void multiplyAll(float);

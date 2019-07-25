@@ -614,7 +614,8 @@ double FFT::cubic_interpolate(vec3 vox000, size_t im)
 {
 	/* vox000 has integer and real components */
 	
-	/* Pick out just the real components */
+	/* Pick out just the real components - this is faster
+	 * than modf */
 	vec3 remain = make_vec3(vox000.x - (double)((int)vox000.x),
 	                        vox000.y - (double)((int)vox000.y),
 	                        vox000.z - (double)((int)vox000.z));
