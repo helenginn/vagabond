@@ -285,6 +285,16 @@ public:
 
 	void tieAtomsUp();
 	
+	void setLastLocalCC(double cc)
+	{
+		_lastLocalCC = _localCC;
+		_localCC = cc;
+		if (_bestLocalCC < cc)
+		{
+			_bestLocalCC = cc;
+		}
+	}
+	
 	void hydrogenateContents();
 	
 	/**
@@ -517,6 +527,9 @@ private:
 	double _ccFree;
 	double _lastRWork;
 	double _bestRWork;
+	double _lastLocalCC;
+	double _localCC;
+	double _bestLocalCC;
 	
 	double _realBFactor;
 	double _probeRadius;

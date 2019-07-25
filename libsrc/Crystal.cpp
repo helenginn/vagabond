@@ -701,6 +701,26 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 
 bool Crystal::undoIfWorse()
 {
+	/*
+	if (_lastLocalCC > _localCC)
+	{
+		std::cout << std::setprecision(3);
+		std::cout << "Decided to go back one state "
+		" results (localCC = " << _lastLocalCC * 100 << "%, now " 
+		<< _localCC * 100 << "%) "
+		"due to local CC rise since." << std::endl;
+
+		restoreState(-1);
+		_sinceBestNum = 0;
+		return true;
+	}
+	else
+	{
+		std::cout << "Local CC has improved since last cycle" << std::endl;
+		return false;
+	}
+	
+	*/
 	if (_lastRWork < _rWork)
 	{
 		std::cout << "Decided to go back one state "

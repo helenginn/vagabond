@@ -180,7 +180,7 @@ void VagWindow::gotoResidueDialogue()
 	delete _myDialogue;
 	_myDialogue = new Dialogue(this, "Go to residue", 
 	                           "Choose chain and number",
-	                           "A320",
+	                           "A380",
 	                           "Go");
 	_myDialogue->setWindow(this);
 	_myDialogue->setTag(DialogueGoto);

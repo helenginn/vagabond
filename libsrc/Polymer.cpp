@@ -327,17 +327,6 @@ void Polymer::removeAtom(AtomPtr atom)
 	AtomGroup::removeAtom(atom);
 }
 
-void Polymer::splitConformers()
-{
-	for (int i = monomerBegin(); i < monomerEnd(); i++)
-	{
-		if (getMonomer(i))
-		{
-			getMonomer(i)->getSidechain()->splitConformers();
-		}
-	}
-}
-
 void Polymer::summary()
 {
 	Molecule::summary();
@@ -419,7 +408,7 @@ void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
 	
 	int anchor = getAnchor();
 	
-	double step = 0.5;
+	double step = 1.0;
 
 	std::cout << "Refining region " << getChainID() << "   " << 
 	std::right << std::setw(3) << coreStart << " - " << std::setw(3) <<
@@ -449,12 +438,16 @@ void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
 	}
 
 	coreRegion->makeBackboneTwists(eModel);
+	vec3 c = coreRegion->centroid();
+	eModel->setRotCentre(c);
+//	refineShiftModel(target, eModel, coreRegion);
 
+	coreRegion->saveScore();
 	coreRegion->addParamType(ParamOptionNumBonds, (diff + 1) * 3);
 	coreRegion->addParamType(ParamOptionTorsion, step);
 	coreRegion->addParamType(ParamOptionTwist, -step);
+//	coreRegion->addParamType(ParamOptionShift, 1);
 	coreRegion->addParamType(ParamOptionMaxTries, 1);
-	coreRegion->saveScore();
 
 	coreRegion->refine(target, RefinementCrude);
 	
@@ -470,36 +463,34 @@ void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
 	
 	bool coversAnchor = (anchor >= coreStart && anchor <= coreEnd);
 	
-	if (coversAnchor)
-	{
-		refineAnchorPosition(target);
-	}
-	
 	int nTerm = -1;
 	int nStart = anchor - 1;
 	int cStart = anchor + 1;
 	int cTerm = -1;
 	
+	int pre_step = 3;
+	int post_step = 12;
+	
 	if (coreStart < anchor && !coversAnchor)
 	{
-		nStart = coreEnd + 3;
+		nStart = coreEnd + pre_step;
 		if (nStart >= anchor)
 		{
 			nStart = anchor - 1;
 		}
 		
-		nTerm = coreStart - 10;
+		nTerm = coreStart - post_step;
 	}	
 	
 	if (coreEnd > anchor && !coversAnchor)
 	{
-		cStart = coreStart - 3;
+		cStart = coreStart - pre_step;
 		if (cStart > anchor)
 		{
 			cStart = coreEnd;
 		}
 		
-		cTerm = coreEnd + 10;
+		cTerm = coreEnd + post_step;
 	}
 	
 	AtomGroupPtr leftRegion = monomerRange(nTerm, nStart);
@@ -739,25 +730,62 @@ void Polymer::refineVScript(void *object, RefinementType rType)
 	polymer->refine(crystal, rType);
 }
 
+void Polymer::refineShiftModel(CrystalPtr target, ExplicitModelPtr e,
+                               AtomGroupPtr atoms)
+{
+	if (e->isAnchor())
+	{
+		return;
+	}
+
+	setupNelderMead();
+	setCrystal(target);
+	setCycles(100);
+	setScoreType(ScoreTypeCorrel);
+
+	setSilent(true);
+	addParamType(ParamOptionShift, 1);
+	addSampledAtoms(atoms);
+
+	addTwistShift(e, atoms);
+
+	sample();
+}
+
 void Polymer::refineAnchorPosition(CrystalPtr target)
 {
 	bool changed = true;
 	int count = 0;
+	saveAtomPositions();
 	
-	while (changed && count < 50)
+	AtomGroupPtr surround = monomerRange(_anchorNum - 2, _anchorNum + 2,
+	                                     false);
+	
+	AtomPtr n = getAnchorModel()->getNAtom();
+	AtomPtr c = getAnchorModel()->getCAtom();
+	
+	BondPtr n_next = ToBondPtr(n->getModel());
+	BondPtr c_next = ToBondPtr(c->getModel());
+	
+	while (changed && count < 1)
 	{
 		count++;
 		setupNelderMead();
 		setCrystal(target);
-		setCycles(16);
-		setScoreType(ScoreTypeSavedPos);
+		setCycles(200);
+		setScoreType(ScoreTypeCorrel);
+
 		setSilent(true);
+		addParamType(ParamOptionNumBonds, 8);
+		
+		setupThoroughSet(n_next, false);
+		setupThoroughSet(c_next, false);
 		addAnchorParams(getAnchorModel());
 
 		changed = sample();
 	}
 
-	getAnchorModel()->propagateChange(20, true);
+	surround->saveAtomPositions();
 }
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
@@ -783,13 +811,16 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 		double before = -scoreWithMap(ScoreTypeCorrel, target);
 		int start = monomerBegin() + 0;
 		int end = monomerEnd() - 0;
+		refineAnchorPosition(target);
+		
+		int step = 3;
 
-		for (int i = getAnchor() - 1; i >= start; i -= 3)
+		for (int i = getAnchor() - 1; i >= start; i -= step)
 		{
 			refineFromFarAroundMonomer(i, target);
 		}
 		
-		for (int i = getAnchor(); i <= end; i += 3)
+		for (int i = getAnchor(); i <= end; i += step)
 		{
 			refineFromFarAroundMonomer(i, target);
 		}
@@ -1466,6 +1497,12 @@ void Polymer::refineGlobalFlexibility()
 			}
 
 			list->refine();
+			
+			if (!list->didChange())
+			{
+				anchor->deleteLastScrew();
+				maxed = true;
+			}
 		}
 		else
 		{

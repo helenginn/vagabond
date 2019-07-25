@@ -10,6 +10,7 @@
 #define __vagabond__ExplicitModel__
 
 #include "Model.h"
+#include "Quat4Refine.h"
 
 /**
  * \class ExplicitModel
@@ -119,8 +120,18 @@ public:
 		return _twists.size();
 	}
 	
+	void addShifts(RefinementStrategyPtr strategy,
+                              AtomGroupPtr clearGroup);
+	
 	void addDirectlyToMap(FFTPtr fft, mat3x3 basis, vec3 offset,
 	                      bool noWrap = false);
+	
+	void setRotCentre(vec3 centre)
+	{
+		_centre = centre;
+	}
+
+	static double propagate(void *obj);
 protected:
 	FFTPtr makeRealSpaceDistribution();
 	void addRealSpacePositions(FFTPtr real, vec3 offset);
@@ -144,6 +155,10 @@ protected:
 private:
 	std::vector<BondSample> _finalSamples;
 	int _modifySample;
+	vec3 _centre;
+	
+	Quat4Refine _shift;
+	Quat4Refine _rotation;
 };
 
 #endif

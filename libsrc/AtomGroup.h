@@ -157,6 +157,8 @@ public:
 		return _atoms;
 	}
 	
+	static double recalculatePositions(void *obj);
+	
 	void refreshBondAngles();
 	virtual AtomList topLevelAtoms();
 	

@@ -1049,6 +1049,7 @@ void Bond::propagateChange(int depth, bool refresh)
 
 		bond->_changedSamples = true;
 		bond->_recalcDist = true;
+		
 		/* not recursive call - this fixes other problems */
 		bond->Model::propagateChange(depth, refresh);
 	}
@@ -1244,11 +1245,13 @@ BondPtr Bond::splitBond(bool onlyExisting)
 
 	double torsion = getBaseTorsion();
 	
+	std::cout << "Number: " << num << ", " << shortDesc() << std::endl;
 	if (num > 0)
 	{
 		torsion += getCirclePortion(&*me);
 		setCirclePortion(&*dupl, 0.);
-		dupl->setFixed(true);
+		std::cout << "Torsion: " << torsion << std::endl;
+//		dupl->setFixed(true);
 	}
 	
 	setTorsion(&*dupl, torsion);

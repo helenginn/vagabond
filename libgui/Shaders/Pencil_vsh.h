@@ -13,6 +13,7 @@ std::string Pencil_vsh =
 "varying vec4 vPos;\n"\
 "varying vec4 tPos;\n"\
 "varying vec2 vTex;\n"\
+"varying vec4 vExtra;\n"\
 "\n"\
 "uniform mat4 projection;\n"\
 "uniform mat4 model;\n"\
@@ -27,6 +28,7 @@ std::string Pencil_vsh =
 "    gl_Position = projection * tPos;\n"\
 "    vNormal = normalize(normal);\n"\
 "	 vColor = color;\n"\
+"	 vExtra = extra;\n"\
 "	 vTex = vec2(tex[0], tex[1]);\n"\
 "}";
 

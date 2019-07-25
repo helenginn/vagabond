@@ -48,6 +48,11 @@ public:
 		_recalculate = true;
 	}
 	
+	void setRenderType(GLuint type)
+	{
+		_renderType = type;
+	}
+	
 	void setKeeper(GLKeeper *keeper)
 	{
 		_keeper = keeper;

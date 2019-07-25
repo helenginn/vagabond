@@ -115,6 +115,7 @@ protected:
 	bool _usesLighting;
 	bool _usesFocalDepth;
 	GLfloat _lightPos[3];
+	GLfloat _xAxis[3];
 	GLfloat _focalPos[3];
 
 	bool _backToFront;
@@ -135,6 +136,7 @@ private:
 	GLint _modelUniform;
 	GLint _lightUniform;
 	GLint _focalUniform;
+	GLint _xUniform;
 	GLuint _colorRenderBuffer;
 	GLuint _depthRenderBuffer;
 	GLuint _vbo;

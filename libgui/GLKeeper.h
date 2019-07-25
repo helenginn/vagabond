@@ -50,6 +50,11 @@ public:
 		return _density2GL;
 	}
 	
+	Density2GLPtr getWire2GL()
+	{
+		return _wire2GL;
+	}
+	
 	vec3 getCentre()
 	{
 		return _centre;
@@ -71,7 +76,7 @@ public:
 	void selectResidue(std::string chain, int number);
 	void advanceMonomer(int dir);
 	void setAdding(bool val);
-	vec3 setModelRay(double x, double y);
+	void setModelRay(double x, double y);
 private:
 	std::vector<GLObjectPtr> _objects;
 
@@ -102,6 +107,7 @@ private:
 	GLObjectPtr activeObject();
 
 	Density2GLPtr _density2GL;
+	Density2GLPtr _wire2GL;
 	Density2GLPtr _diffDens2GL;
 	std::mutex _setup;
 

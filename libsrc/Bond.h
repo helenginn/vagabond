@@ -561,7 +561,6 @@ private:
 	bool _refineBondAngle;
 	bool _refineFlexibility;
 
-
 	std::vector<AtomWkr> _extraTorsionSamples;
 
 	bool _resetOccupancy;

@@ -140,6 +140,13 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	_density2GL->setKeeper(this);
 	_density2GL->recalculate();
 
+	_wire2GL = Density2GLPtr(new Density2GL());
+	_wire2GL->setRenderType(GL_LINES);
+	_wire2GL->setKeeper(this);
+	_wire2GL->setDiffDensity(true);
+	_wire2GL->setVisible(false);
+	_wire2GL->recalculate();
+
 	/* Difference density render */
 	_diffDens2GL = Density2GLPtr(new Density2GL());
 	_diffDens2GL->setKeeper(this);
@@ -152,6 +159,7 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	_objects.push_back(_selected2GL);
 	_objects.push_back(_atoms2GL);
 	_objects.push_back(_density2GL);
+	_objects.push_back(_wire2GL);
 	_objects.push_back(_diffDens2GL);
 
 	setupCamera();
@@ -181,18 +189,21 @@ void GLKeeper::toggleVisibleDensity()
 	{
 		_densityState++;
 		getDensity2GL()->setVisible(true);
+		getWire2GL()->setVisible(false);
 		getDiffDens2GL()->setVisible(false);
 	}
 	else if (_densityState == 1)
 	{
 		_densityState++;
 		getDensity2GL()->setVisible(true);
+		getWire2GL()->setVisible(true);
 		getDiffDens2GL()->setVisible(true);
 	}
 	else
 	{
 		_densityState = 0;	
 		getDensity2GL()->setVisible(false);
+		getWire2GL()->setVisible(false);
 		getDiffDens2GL()->setVisible(false);
 	}
 }
@@ -347,7 +358,7 @@ bool GLKeeper::isRefiningManually()
 	return _selected2GL->isRefining();
 }
 
-vec3 GLKeeper::setModelRay(double x, double y)
+void GLKeeper::setModelRay(double x, double y)
 {
 	/* assume a z position of -1 */
 	float aspect = height / width;

@@ -94,6 +94,11 @@ void Sampler::addAtomsForBond(BondPtr bond)
 	
 }
 
+void Sampler::addTwistShift(ExplicitModelPtr eModel, AtomGroupPtr clearGroup)
+{
+	eModel->addShifts(_strategy, clearGroup);
+}
+
 void Sampler::addCustomParameter(void *object, Getter getter, Setter setter,
                                  double range, double interval,
                                  std::string name)
@@ -327,6 +332,14 @@ void Sampler::addTwist(BondPtr bond, double range, double interval)
 		_strategy->addParameter(&*twist, Twist::getTwist,
 		                        Twist::setTwist, range, interval,
 		                        "tw" + bond->shortDesc());
+		
+		if (hasParameter(ParamOptionShift))
+		{
+			ExplicitModelPtr eModel = twist->getAppliedModel();
+			addTwistShift(eModel, AtomGroupPtr());
+			ParamMap::iterator it = _params.find(ParamOptionShift);
+			_params.erase(it);
+		}
 	}
 	else
 	{

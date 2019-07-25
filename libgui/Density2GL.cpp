@@ -825,6 +825,11 @@ void Density2GL::makeUniformGrid()
 					_vertices[c].normal[1] = 0;
 					_vertices[c].normal[2] = 0;
 
+					if (_renderType == GL_LINES)
+					{
+						_vertices[c].extra[0] = 1.5;
+					}
+					
 					/* Determine the colour for difference FFTs */
 					if (_diff)
 					{
@@ -1001,9 +1006,24 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 					_allBits[bit][i] += 1;
 				}
 				
-				_indices.reserve(_indices.size() + someIndices.size());
-				_indices.insert(_indices.end(), someIndices.begin(),
-				                someIndices.end());
+				if (_renderType == GL_TRIANGLES)
+				{
+					_indices.reserve(_indices.size() + someIndices.size());
+					_indices.insert(_indices.end(), someIndices.begin(),
+					                someIndices.end());
+				}
+				else
+				{
+					for (int n = 0; n < someIndices.size(); n+=3)
+					{
+						_indices.push_back(someIndices[n + 0]);
+						_indices.push_back(someIndices[n + 1]);
+						_indices.push_back(someIndices[n + 1]);
+						_indices.push_back(someIndices[n + 2]);
+						_indices.push_back(someIndices[n + 2]);
+						_indices.push_back(someIndices[n + 0]);
+					}
+				}
 			}
 		}
 	}

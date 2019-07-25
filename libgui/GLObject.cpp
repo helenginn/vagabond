@@ -25,6 +25,7 @@ GLObject::GLObject()
 	_usesFocalDepth = false;
 	_focus = empty_vec3();
 	_centroid = empty_vec3();
+	_xAxis[0] = 1; _xAxis[1] = 0; _xAxis[2] = 0;
 }
 
 void GLObject::rebindProgram()
@@ -255,6 +256,11 @@ vec3 vec_from_pos(GLfloat *pos)
 
 void GLObject::reorderIndices()
 {
+	if (_renderType == GL_LINES)
+	{
+		return;
+	}
+
 	_temp.resize(_indices.size() / 3);
 	
 	int count = 0;

@@ -70,7 +70,7 @@ public:
 	}
 
 	void setInitialKick();
-	void splitConformers(int count = -1);
+	void splitConformers(int count);
 	void parameteriseAsRotamers();
 	virtual void refine(CrystalPtr target, RefinementType rType);
 

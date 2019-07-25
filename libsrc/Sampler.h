@@ -213,6 +213,7 @@ protected:
 	FFTPtr _fft;
 	mat3x3 _real2Frac;
 
+	void addTwistShift(ExplicitModelPtr eModel, AtomGroupPtr clearGroup);
 	int _refinedMagicAxisCount;
 	virtual double getScore();
 	void setupCloseAtoms();

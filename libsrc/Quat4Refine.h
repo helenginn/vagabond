@@ -29,6 +29,8 @@ public:
 	{
 		_parent = parent;
 		_quat = empty_quat4();
+		_cleanup = NULL;
+		_cleaner = NULL;
 	}
 	
 	quat4 getQuat4()
@@ -41,6 +43,18 @@ public:
 		return make_vec3(_quat.x, _quat.y, _quat.z);
 	}
 	
+	static void cleanup(void *object)
+	{
+		Quat4Refine *q = toQuat(object);
+		
+		if (q->_cleanup == NULL || q->_cleaner == NULL)
+		{
+			return;
+		}
+
+		(*q->_cleanup)(q->_cleaner);
+	}
+	
 	static Quat4Refine *toQuat(void *object)
 	{
 		return static_cast<Quat4Refine *>(object);
@@ -49,16 +63,19 @@ public:
 	static void setX(void *object, double value)
 	{
 		toQuat(object)->_quat.x = value;
+		cleanup(object);
 	}
 	
 	static void setY(void *object, double value)
 	{
 		toQuat(object)->_quat.y = value;
+		cleanup(object);
 	}
 	
 	static void setZ(void *object, double value)
 	{
 		toQuat(object)->_quat.z = value;
+		cleanup(object);
 	}
 	
 	static void setT(void *object, double value)
@@ -84,6 +101,22 @@ public:
 	static double getT(void *object)
 	{
 		return toQuat(object)->_quat.t;
+	}
+	
+	void setZero()
+	{
+		_quat = empty_quat4();
+	}
+	
+	void setCleanup(void *object, Getter cleanup)
+	{
+		_cleaner = object;
+		_cleanup = cleanup;
+	}
+	
+	void setParent(void *parent)
+	{
+		_parent = parent;
 	}
 
 	void addQuatToStrategy(RefinementStrategyPtr strategy, double step,
@@ -111,6 +144,8 @@ public:
 	}
 private:
 	void *_parent;
+	void *_cleaner;
+	Getter _cleanup;
 	quat4 _quat;
 };
 

@@ -46,7 +46,7 @@ gen_src = custom_target('commit-output',
 
 # Meat of the vagabond library, minus command line-specific or GUI-specific source files.
 
-lib_vag= library('vag', gen_src, 'libsrc/Absolute.cpp', 
+lib_vag= static_library('vag', gen_src, 'libsrc/Absolute.cpp', 
 'libsrc/Anchor.cpp', 
 'libsrc/Anisotropicator.cpp', 
 'libsrc/Atom.cpp', 
@@ -60,6 +60,7 @@ lib_vag= library('vag', gen_src, 'libsrc/Absolute.cpp',
 'libsrc/BucketPerStrand.cpp', 
 'libsrc/Bucket.cpp', 
 'libsrc/Chelate.cpp', 
+'libsrc/Correl.cpp', 
 'libsrc/Crystal.cpp', 
 'libsrc/CSV.cpp', 
 'libsrc/Diffraction.cpp', 
@@ -168,8 +169,7 @@ dep_vgui = declare_dependency(link_with: lib_vgui, include_directories: inc_vgui
 'libgui/qtgui/StartScreen.cpp',
 'libgui/qtgui/VagabondGLWidget.cpp',
 'libgui/qtgui/VagWindow.cpp', 
-moc_files, dependencies: [qt5_dep, dep_vag, dep_vgeom, dep_vgui], install: true, cpp_args: ['-w',
-'-std=c++11'])
+moc_files, dependencies: [qt5_dep, dep_vag, dep_vgeom, dep_vgui], install: true, cpp_args: ['-w', '-std=c++11'])
 else
 	message('QT5 not found, so not building the GUI.')
 endif

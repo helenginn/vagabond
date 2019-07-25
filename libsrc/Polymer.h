@@ -44,7 +44,6 @@ public:
 	void addMonomer(MonomerPtr monomer);
 	virtual void summary();
 	virtual void tieAtomsUp();
-	void splitConformers();
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	
 	static void refineVScript(void *object, RefinementType rType);
@@ -202,6 +201,8 @@ private:
 	                   RefinementType rType);
 
 	std::map<long, MonomerPtr> _monomers;
+	void refineShiftModel(CrystalPtr target, ExplicitModelPtr e,
+	                      AtomGroupPtr atoms);
 
 	int _anchorNum;
 	double _startB;

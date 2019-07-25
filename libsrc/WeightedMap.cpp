@@ -22,6 +22,7 @@
 #include "Options.h"
 #include <iomanip>
 #include "Shouter.h"
+#include "Correl.h"
 #include "../libinfo/CentroidToPhase.h"
 
 #define MAX_SLICES (25.)
@@ -42,6 +43,10 @@ void WeightedMap::setCrystalAndData(CrystalPtr crystal, DiffractionPtr data)
 void WeightedMap::createWeightedMaps()
 {
 	calculateFiguresOfMerit();
+	
+	Correl correl;
+	correl.setCrystalAndData(_crystal, _data);
+	correl.localCC();
 	
 	int map = Options::getMapType();
 
@@ -96,7 +101,8 @@ void WeightedMap::calculateFiguresOfMerit()
 		}
 
 		double stDiff = sqrt(sumDiff / _shells[i].work1.size());
-		_shells[i].std_err = stDiff / aveFo;
+		stDiff /= aveFo;
+		_shells[i].std_err = stDiff;
 	}
 }
 

@@ -26,6 +26,11 @@
 
 ExplicitModel::ExplicitModel() : Model()
 {
+	_centre = empty_vec3();
+	_shift.setZero();
+	_rotation.setZero();
+	_shift.setParent(this);
+	_rotation.setParent(this);
 	_changedSamples = true;
 	_modifySample = -1;
 }
@@ -86,6 +91,16 @@ void ExplicitModel::sanityCheck()
 	}
 }
 
+inline vec3 get_rotated_vec(vec3 orig, vec3 centre, mat3x3 rot, vec3 shift)
+{
+	vec3_subtract_from_vec3(&orig, centre);
+	mat3x3_mult_vec(rot, &orig);
+	vec3_add_to_vec3(&orig, centre);
+	vec3_add_to_vec3(&orig, shift);
+
+	return orig;
+}
+
 std::vector<BondSample> ExplicitModel::getFinalPositions()
 {
 	if (!_recalcFinal && _storedSamples.size())
@@ -103,6 +118,28 @@ std::vector<BondSample> ExplicitModel::getFinalPositions()
 	{
 		TwistPtr twist = _twists[i];
 		twist->applyToAnchorSamples(_storedSamples);
+	}
+	
+	/* Add shift if twisting */
+	if (twistCount() > 0)
+	{
+		vec3 shift = _shift.getVec3();
+		vec3 r = _rotation.getVec3();
+		mat3x3 rot = mat3x3_rotate(r.x, r.y, r.z);
+
+		for (int i = 0; i < _storedSamples.size(); i++)
+		{
+			vec3 ns = get_rotated_vec(_storedSamples[i].start, 
+			                          _centre, rot, shift);
+			vec3 os = get_rotated_vec(_storedSamples[i].old_start, 
+			                          _centre, rot, shift);
+			
+			_storedSamples[i].start = ns;
+			_storedSamples[i].old_start = os;
+			
+			mat3x3 tmp = mat3x3_mult_mat3x3(rot, _storedSamples[i].basis);
+			_storedSamples[i].basis = tmp;
+		}
 	}
 
 	std::vector<vec3> posOnly;
@@ -185,7 +222,7 @@ void ExplicitModel::addRealSpacePositions(FFTPtr real, vec3 offset)
 	for (int i = 0; i < positions.size(); i++)
 	{
 		vec3 placement = positions[i].start;
-		placement = vec3_add_vec3(placement, offset);
+		vec3_add_to_vec3(&placement, offset);
 		vec3 relative = vec3_subtract_vec3(placement, absolute);
 
 		double occupancy = positions[i].occupancy;
@@ -363,6 +400,8 @@ double ExplicitModel::anisotropyExtent(bool withKabsch)
 void ExplicitModel::clearTwists()
 {
 	_twists.clear();
+	_shift.setZero();
+	_rotation.setZero();
 
 	for (int i = 0; i < twistCount(); i++)
 	{
@@ -370,5 +409,23 @@ void ExplicitModel::clearTwists()
 	}
 	
 	propagateChange(30, true);
+}
+
+void ExplicitModel::addShifts(RefinementStrategyPtr strategy,
+                              AtomGroupPtr clearGroup)
+{
+	_shift.setCleanup(this, ExplicitModel::propagate);
+	_rotation.setCleanup(this, ExplicitModel::propagate);
+	_shift.addVecToStrategy(strategy, 0.02, 0.002, "shift");
+	return;
+	_rotation.addVecToStrategy(strategy, deg2rad(0.2), 
+	                           deg2rad(.005), "rotation");
+	
+}
+
+double ExplicitModel::propagate(void *obj)
+{
+	static_cast<ExplicitModel *>(obj)->propagateChange(30, true);
+	return 0;
 }
 

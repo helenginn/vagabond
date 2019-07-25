@@ -912,7 +912,7 @@ vec3 AtomGroup::prepareCubicMap(FFTPtr *scratchFull, vec3 *offset,
                                 vec3 min, vec3 max, double buff)
 {
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
-	double cubeDim = 1.0 / (2 * maxDStar);
+	double cubeDim = 1.0 / (2.0 * maxDStar);
 	
 	const double maxD = 0.8;
 	if (cubeDim > maxD)
@@ -1409,4 +1409,11 @@ size_t AtomGroup::totalElements()
 	}
 
 	return _elements.size();
+}
+
+double AtomGroup::recalculatePositions(void *obj)
+{
+	static_cast<AtomGroup *>(obj)->refreshPositions();
+
+	return 0;
 }

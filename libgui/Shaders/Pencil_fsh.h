@@ -2,9 +2,12 @@
 #define __vagabond_Pencil_fsh__
 
 std::string Pencil_fsh =
+"#version 130\n"\
+"\n"\
 "varying vec4 vColor;\n"\
 "varying vec2 vTex;\n"\
 "varying vec3 vNormal;\n"\
+"varying vec4 vExtra;\n"\
 "varying vec4 vPos;\n"\
 "varying vec4 tPos;\n"\
 "\n"\
@@ -40,14 +43,20 @@ std::string Pencil_fsh =
 "	{\n"\
 "		min_distance = focus[2] + 0.;\n"\
 "		max_distance = focus[2] - 4.;\n"\
-"		if (tPos[2] > -2.) {\n"\
+"		if (tPos[2] > -2.)\n"\
+"		{\n"\
 "			discard;\n"\
 "		}\n"\
 "	}\n"\
-"   float transparency = (tPos[2] - min_distance) / (max_distance - min_distance);\n"\
+"	float transparency = (tPos[2] - min_distance) / (max_distance - min_distance);\n"\
 "	transparency = max(transparency, 0.0);\n"\
 "	transparency = min(transparency, 1.0);\n"\
 "	gl_FragColor[3] *= 1. - transparency;\n"\
+"	if (vExtra[0] >= 1.)\n"\
+"	{\n"\
+"		gl_FragColor = vec4(0., 0., 0., 1.);\n"\
+"	}\n"\
+"\n"\
 "\n"\
 "\n"\
 "\n"\
