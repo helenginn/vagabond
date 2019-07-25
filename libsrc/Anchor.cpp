@@ -731,3 +731,13 @@ void Anchor::addScrewParameters(RefinementStrategyPtr strategy,
 	}
 }
 
+void Anchor::deleteLastScrew()
+{
+	if (_screws.size() == 0)
+	{
+		return;
+	}
+
+	_screws.pop_back();
+	_quats.pop_back();
+}

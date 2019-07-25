@@ -124,6 +124,7 @@ public:
 		return _whacks[i];
 	}
 	
+	void deleteLastScrew();
 	void addTranslationParameters(RefinementStrategyPtr strategy,
 	                              double mult = 1);
 	void addLibrationParameters(RefinementStrategyPtr strategy,
