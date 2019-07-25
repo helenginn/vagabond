@@ -22,7 +22,7 @@ std::string Blob_vsh =
 "   gl_Position = projection * model * pos;\n"\
 "   vec4 model4 = model * pos;\n"\
 "	vPos = model4;\n"\
-"	gl_PointSize = -500. / model4[2];\n"\
+"	gl_PointSize = -800. / model4[2];\n"\
 "	vColor = color;\n"\
 "}";
 
