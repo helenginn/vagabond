@@ -118,9 +118,10 @@ void Anchor::createLayeredSpherePositions()
 	int totalPoints = crystal->getSampleNum();
 
 	double totalSurfaces = 0;
-	int layers = 10;
+	double factor = pow(totalPoints, 1./3.) * 2;
+	int layers = lrint(factor);
 	
-	if (totalPoints < 20)
+	if (totalPoints < 2)
 	{
 		layers = 1;
 	}
