@@ -1407,7 +1407,16 @@ void Polymer::reportParameters()
 		}
 	}
 	
-	int flexChain = 6 * 2 + 9;
+	int flexChain = 9;
+	
+	if (getAnchorModel())
+	{
+		size_t count = getAnchorModel()->screwCount();
+
+		count *= 5;
+		flexChain += count;
+	}
+
 	
 	_positionalParams = torsionCountBackbone + torsionCountSidechain 
 	+ angleCountBackbone + angleCountSidechain;

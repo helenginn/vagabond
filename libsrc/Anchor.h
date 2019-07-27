@@ -124,6 +124,11 @@ public:
 		return _whacks[i];
 	}
 	
+	size_t screwCount()
+	{
+		return _screws.size();
+	}
+
 	void deleteLastScrew();
 	void addTranslationParameters(RefinementStrategyPtr strategy,
 	                              double mult = 1);
