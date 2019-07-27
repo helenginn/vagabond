@@ -406,7 +406,7 @@ public:
 	void refineSidechains();
 	void refineCrude();
 	void savePositions();
-	void rigidBodyFit();
+	void refitToSavedPositions();
 	void refreshAnchors();
 	
 	double getRWork()

@@ -399,7 +399,7 @@ void Molecule::chelate(std::string element, double bufferB)
 	}
 }
 
-void Molecule::rigidBodyFit()
+void Molecule::refitToSavedPositions()
 {
 	std::cout << "Dud." << std::endl;
 }

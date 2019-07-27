@@ -1856,7 +1856,7 @@ void Crystal::savePositions()
 	}
 }
 
-void Crystal::rigidBodyFit()
+void Crystal::refitToSavedPositions()
 {
 	std::cout << "Refitting positions." << std::endl;
 	for (int i = 0; i < moleculeCount(); i++)

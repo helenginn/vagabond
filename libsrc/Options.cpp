@@ -992,7 +992,7 @@ void Options::changeSamplesAndFit(void *, double n)
 	
 	if (old < 80 || n < 80)
 	{
-		getActiveCrystal()->rigidBodyFit();
+		getActiveCrystal()->refitToSavedPositions();
 	}
 
 	std::cout << "Done" << std::endl;

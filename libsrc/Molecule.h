@@ -49,7 +49,7 @@ public:
 	void setAnchors();
 	void makePowderList();
 	void expandWaters();
-	virtual void rigidBodyFit();
+	virtual void refitToSavedPositions();
 
 	virtual void reportParameters();
 
