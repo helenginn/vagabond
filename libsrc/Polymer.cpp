@@ -1473,6 +1473,8 @@ void Polymer::refineGlobalFlexibility()
 	{
 		if (j >= anchor->librationCount())
 		{
+			std::cout << "Introducing screw #" << j << std::endl;
+			
 			FlexGlobal target;
 			RefinementListPtr list = RefinementListPtr(new RefinementList());
 			list->setJobName("rot");
@@ -1500,6 +1502,7 @@ void Polymer::refineGlobalFlexibility()
 			
 			if (!list->didChange())
 			{
+				std::cout << "Nevermind, no demand for a screw." << std::endl;
 				anchor->deleteLastScrew();
 				maxed = true;
 			}
