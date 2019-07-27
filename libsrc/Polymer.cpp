@@ -1482,6 +1482,7 @@ void Polymer::refineGlobalFlexibility()
 	{
 		if (j >= anchor->librationCount())
 		{
+			std::cout << std::endl;
 			std::cout << "Introducing screw #" << j << std::endl;
 			
 			FlexGlobal target;
