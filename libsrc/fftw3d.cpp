@@ -1618,10 +1618,13 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 					continue;
 				}
 
+				/* weighted amplitude and phase */
 				double wtInt = getIntensity(i, j, k);
 				double fwt = sqrt(wtInt);
 				double phwt = getPhase(i, j, k);
 
+				/* get calculated amplitude from calc map, ideally
+				 * available */
 				double calcInt = getIntensity(i, j, k);
 				double phic = phwt;
 				
@@ -1634,18 +1637,21 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 				double calcAmp = sqrt(calcInt);
 
 				int free = 1;
+
+				/* Sort out observed values from observed diffraction,
+				 * ideally available */
 				double foInt = getIntensity(i, j, k);
+				double foAmp = sqrt(foInt);
 				double sigma = 0;
 
 				if (data)
 				{
 					int ele = data->element(i, j, k);
-					foInt = data->data[ele][0];
+					foAmp = data->data[ele][0];
 					sigma = data->data[ele][1];
 					free = data->getMask(i, j, k);
 				}
 
-				double foAmp = sqrt(foInt);
 
 				double diffInt = 0;
 				double diffPhwt = 0;
@@ -1656,12 +1662,13 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 					diffPhwt = diff->getPhase(i, j, k);
 				}
 
-				double diffFo = sqrt(diffInt);
+				double diffAmp = sqrt(diffInt);
 
 				if (foAmp != foAmp || (free == 0))
 				{
 					// i.e. diff of 0 when mask is free flag.
-//					fofc = 0;
+					/* No longer the case because it should be sorted before
+					 * this point, and would not apply to Vagamaps */
 				}
 
 				/* MTZ file stuff */
@@ -1669,7 +1676,7 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 				if (f000)
 				{
 					fwt = calcAmp;
-					diffFo = 0;
+					diffAmp = 0;
 				}
 
 				fdata[0] = i;
@@ -1680,9 +1687,9 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 				fdata[5] = sigma;
 				fdata[6] = calcAmp;
 				fdata[7] = fwt;
-				fdata[8] = phwt;
-				fdata[9] = phic;
-				fdata[10] = diffFo;
+				fdata[8] = phic;
+				fdata[9] = phwt;
+				fdata[10] = diffAmp;
 				fdata[11] = diffPhwt;
 
 				num++;
