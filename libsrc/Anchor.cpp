@@ -331,7 +331,10 @@ mat3x3 Anchor::getAnchorRotation()
 
 void Anchor::translateStartPositions()
 {
-	mat3x3 trans= _trans->getMat3x3();
+	mat3x3 translation = _trans->getMat3x3();
+	Anisotropicator tropicator;
+	tropicator.setTensor(translation);
+	mat3x3 trans = tropicator.basis();
 
 	vec3 sum_start = empty_vec3();
 	vec3 sum_old = empty_vec3();
@@ -681,7 +684,7 @@ void Anchor::setPolymerBasis(mat3x3 basis)
 void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
                                       double mult)
 {
-	_trans->addMatrixToStrategy(strategy, 0.5 * mult, 0.001, "tr");
+	_trans->addTensorToStrategy(strategy, 0.2 * mult, 0.001, "tr");
 }
 
 void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
