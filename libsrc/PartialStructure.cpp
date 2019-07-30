@@ -115,9 +115,9 @@ void PartialStructure::scalePartialStructure()
 	fine = NelderMeadPtr(new RefinementNelderMead());
 	fine->setJobName("solvent_scale_fine");
 	fine->setEvaluationFunction(scalePartialScore, this);
-	fine->setCycles(40);
-	fine->addParameter(this, getSolvScale, setSolvScale, 0.4, 0.01, "scale");
-	fine->addParameter(this, getSolvBFac, setSolvBFac, 40, 1.0, "bfac");
+	fine->setCycles(100);
+	fine->addParameter(this, getSolvScale, setSolvScale, 0.4, 0.001, "scale");
+	fine->addParameter(this, getSolvBFac, setSolvBFac, 40, 0.1, "bfac");
 	fine->setSilent(true);
 	fine->refine();
 
