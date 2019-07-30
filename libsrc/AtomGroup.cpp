@@ -812,6 +812,16 @@ FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
 	return segment;
 }
 
+void expand_limits(vec3 *min, vec3 *max, vec3 abs)
+{
+	if (abs.x < min->x) min->x = abs.x;
+	if (abs.x > max->x) max->x = abs.x;
+	if (abs.y < min->y) min->y = abs.y;
+	if (abs.y > max->y) max->y = abs.y;
+	if (abs.z < min->z) min->z = abs.z;
+	if (abs.z > max->z) max->z = abs.z;
+}
+
 void AtomGroup::xyzLimits(vec3 *min, vec3 *max)
 {
 	*min = make_vec3(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -823,16 +833,22 @@ void AtomGroup::xyzLimits(vec3 *min, vec3 *max)
 		*max = empty_vec3();
 	}
 
+	CrystalPtr crystal = Options::getActiveCrystal();
 	for (int i = 0; i < atomCount(); i++)
 	{
 		vec3 abs = atom(i)->getAbsolutePosition();
-		
-		if (abs.x < min->x) min->x = abs.x;
-		if (abs.x > max->x) max->x = abs.x;
-		if (abs.y < min->y) min->y = abs.y;
-		if (abs.y > max->y) max->y = abs.y;
-		if (abs.z < min->z) min->z = abs.z;
-		if (abs.z > max->z) max->z = abs.z;
+		expand_limits(min, max, abs);
+
+		if (atom(i)->getModel()->hasExplicitPositions())
+		{
+			for (int j = 0; j < crystal->getSampleNum(); j++)
+			{
+				ExplicitModelPtr m = atom(i)->getExplicitModel();
+				vec3 abs = m->getFinalPositions()[j].start;
+
+				expand_limits(min, max, abs);
+			}
+		}
 	}
 }
 
