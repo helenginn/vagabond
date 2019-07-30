@@ -1245,13 +1245,10 @@ BondPtr Bond::splitBond(bool onlyExisting)
 
 	double torsion = getBaseTorsion();
 	
-	std::cout << "Number: " << num << ", " << shortDesc() << std::endl;
 	if (num > 0)
 	{
 		torsion += getCirclePortion(&*me);
 		setCirclePortion(&*dupl, 0.);
-		std::cout << "Torsion: " << torsion << std::endl;
-//		dupl->setFixed(true);
 	}
 	
 	setTorsion(&*dupl, torsion);

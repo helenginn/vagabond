@@ -190,9 +190,6 @@ void Crystal::realSpaceClutter(double maxRes)
 		uc_dims.y = mat3x3_length(_hkl2real, 1) / sampling;
 		uc_dims.z = mat3x3_length(_hkl2real, 2) / sampling;
 
-		double largest = std::max(uc_dims.x, uc_dims.y);
-		largest = std::max(largest, uc_dims.z);
-
 		fft_dims = uc_dims;
 		
 		for (int i = 0; i < 3; i++)
