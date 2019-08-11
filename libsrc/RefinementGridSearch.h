@@ -16,8 +16,8 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cppxfel__RefinementGridSearch__
-#define __cppxfel__RefinementGridSearch__
+#ifndef __vagabond__RefinementGridSearch__
+#define __vagabond__RefinementGridSearch__
 
 #include <stdio.h>
 #include <map>
@@ -89,4 +89,4 @@ public:
 	virtual void refine();
 };
 
-#endif /* defined(__cppxfel__RefinementGridSearch__) */
+#endif /* defined(__vagabond__RefinementGridSearch__) */

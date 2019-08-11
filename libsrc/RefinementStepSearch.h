@@ -16,8 +16,8 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cppxfel__RefinementStepSearch__
-#define __cppxfel__RefinementStepSearch__
+#ifndef __vagabond__RefinementStepSearch__
+#define __vagabond__RefinementStepSearch__
 
 #include <stdio.h>
 #include "shared_ptrs.h"
@@ -49,4 +49,4 @@ private:
 
 };
 
-#endif /* defined(__cppxfel__RefinementStepSearch__) */
+#endif /* defined(__vagabond__RefinementStepSearch__) */

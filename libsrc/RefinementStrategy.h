@@ -16,8 +16,8 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cppxfel__RefinementStrategy__
-#define __cppxfel__RefinementStrategy__
+#ifndef __vagabond__RefinementStrategy__
+#define __vagabond__RefinementStrategy__
 
 #include <stdio.h>
 #include "shared_ptrs.h"
@@ -198,4 +198,4 @@ protected:
 
 };
 
-#endif /* defined(__cppxfel__RefinementStrategy__) */
+#endif /* defined(__vagabond__RefinementStrategy__) */

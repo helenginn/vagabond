@@ -16,8 +16,8 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cppxfel__NelderMead__
-#define __cppxfel__NelderMead__
+#ifndef __vagabond__NelderMead__
+#define __vagabond__NelderMead__
 
 #include <stdio.h>
 #include "RefinementStrategy.h"
@@ -65,4 +65,4 @@ private:
 	void subtractPoints(std::vector<double> *point, std::vector<double> pointToSubtract);
 };
 
-#endif /* defined(__cppxfel__NelderMead__) */
+#endif /* defined(__vagabond__NelderMead__) */
