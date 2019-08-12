@@ -12,8 +12,8 @@
 #include "Picture.h"
 #include "Shaders/Pencil_vsh.h"
 #include "Shaders/Pencil_fsh.h"
-#include "../../libsrc/Crystal.h"
-#include "../../libsrc/fftw3d.h"
+#include "../libsrc/Crystal.h"
+#include "../libsrc/fftw3d.h"
 #include <cstdarg>
 #include <algorithm>
 
