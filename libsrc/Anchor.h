@@ -248,8 +248,6 @@ protected:
 	/* Euler angles for modifying _nAtom and _cAtom */
 	double _alpha, _beta, _gamma;
 	RefineMat3x3Ptr _trans;
-	RefineMat3x3Ptr _libration;
-	RefineMat3x3Ptr _screw;
 	
 	std::vector<Quat4Refine *> _quats;
 	std::vector<Quat4Refine *> _screws;

@@ -29,10 +29,6 @@ void Anchor::initialise()
 	_nDir = empty_vec3();
 	_cDir = empty_vec3();
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
-	_libration = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
-	_libration->setZero();
-	_screw = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
-	_screw->setZero();
 	_disableWhacks = false;
 }
 
@@ -513,8 +509,6 @@ void Anchor::addProperties()
 	addVec3Property("pre_n", &_nDir2);
 	addVec3Property("post_c", &_cDir2);
 	addMat3x3Property("translation", _trans->getMat3x3Ptr());
-	addMat3x3Property("libration", _libration->getMat3x3Ptr());
-	addMat3x3Property("screw", _screw->getMat3x3Ptr());
 	addReference("c_atom", _cAtom.lock());
 	
 	for (int i = 0; i < whackCount(); i++)
