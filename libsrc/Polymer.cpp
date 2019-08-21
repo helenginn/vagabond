@@ -1649,30 +1649,6 @@ void Polymer::postParseTidy()
 	
 }
 
-mat3x3 Polymer::fitEllipsoid()
-{
-	std::vector<vec3> points;
-
-	for (int i = monomerBegin(); i < monomerEnd(); i++)
-	{
-		if (!getMonomer(i))
-		{
-			continue;
-		}
-		
-		AtomPtr ca = getMonomer(i)->findAtom("CA");
-		points.push_back(ca->getAbsolutePosition());
-	}
-
-	Anisotropicator trop;
-	trop.setPoints(points);
-	
-	mat3x3 basis = trop.getTensor();
-	getAnchorModel()->setPolymerBasis(basis);
-
-	return basis;
-}
-
 bool Polymer::hasResidue(int resNum)
 {
 	return (resNum >= monomerBegin() && resNum <= monomerEnd());
