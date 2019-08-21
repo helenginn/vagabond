@@ -661,26 +661,6 @@ void Anchor::propagateChange(int depth, bool refresh)
 
 }
 
-void Anchor::setPolymerBasis(mat3x3 basis)
-{
-	_libMotion = mat3x3_inverse(basis);
-
-	double sum = 0;
-	for (int i = 0; i < 9; i++)
-	{
-		sum += _libMotion.vals[i];
-	}
-	
-	sum /= 9;
-	mat3x3_mult_scalar(&_libMotion, 0.10 / sum);
-	
-	for (int i = 0; i < 9; i++)
-	{
-		_libMotion.vals[i] = std::min(0.5, _libMotion.vals[i]);
-	}
-	
-}
-
 void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
                                       double mult)
 {
