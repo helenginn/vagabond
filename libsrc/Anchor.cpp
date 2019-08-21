@@ -276,52 +276,6 @@ void Anchor::applyQuaternions()
 	
 }
 
-void Anchor::rotateBases()
-{
-	vec3 empty = empty_vec3();
-	mat3x3 libration = _libration->getMat3x3();
-	Anisotropicator tropicator;
-	tropicator.setTensor(libration);
-	/* Get the orthogonal basis vectors of this tensor */
-	mat3x3 lib = tropicator.basis();
-
-	/* Screw in units: Angstroms times degree */
-	mat3x3 screw = _screw->getMat3x3();
-	
-	for (int i = 0; i < _storedSamples.size(); i++)
-	{
-		vec3 start = _storedSamples[i].start;
-		vec3 neg_start = vec3_mult(start, -1);
-		vec3 diff = vec3_subtract_vec3(start, _position);
-		mat3x3 rot_only = make_mat3x3();
-
-		for (int j = 0; j < 3; j++)
-		{
-			vec3 rot_vec = mat3x3_axis(lib, j);
-			double dot = vec3_dot_vec3(diff, rot_vec);
-			mat3x3 rot_mat = mat3x3_unit_vec_rotation(rot_vec, dot);
-			mat3x3 basis = mat3x3_mult_mat3x3(rot_mat, 
-			                                  _storedSamples[i].basis); 
-			
-			rot_only = mat3x3_mult_mat3x3(rot_mat, rot_only);
-
-			vec3 screw_vec = mat3x3_axis(screw, j);
-			vec3_mult(&screw_vec, dot);
-
-			vec3_add_to_vec3(&_storedSamples[i].old_start, screw_vec);
-			vec3_add_to_vec3(&_storedSamples[i].start, screw_vec);
-		}
-		
-		vec3 diff_to_old = vec3_subtract_vec3(_storedSamples[i].old_start,
-		                                      start);
-		mat3x3_mult_vec(rot_only, &diff_to_old);
-		vec3 new_old = vec3_add_vec3(start, diff_to_old);
-		_storedSamples[i].old_start = new_old;
-		mat3x3 basis = mat3x3_mult_mat3x3(rot_only, _storedSamples[i].basis);
-		_storedSamples[i].basis = basis;
-	}
-}
-
 mat3x3 Anchor::getAnchorRotation()
 {
 	mat3x3 rot = mat3x3_rotate(_alpha, _beta, _gamma);
@@ -524,7 +478,6 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 	
 	if (!_disableWhacks)
 	{
-//		rotateBases();
 		translateStartPositions();
 		applyQuaternions();
 
