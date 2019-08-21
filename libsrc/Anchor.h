@@ -76,11 +76,6 @@ public:
 		return _cAtom.lock();
 	}
 
-	void setOccupancies(std::vector<double> occ)
-	{
-		_occupancies = occ;
-	}
-	
 	double getBFactor()
 	{
 		return _bFactor;
@@ -269,7 +264,6 @@ protected:
 private:
 	void initialise();
 	void translateStartPositions();
-	void rotateBases();
 	void applyQuaternions();
 	void fixCentroid();
 	void deleteQuats();
