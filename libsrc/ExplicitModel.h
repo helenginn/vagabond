@@ -57,7 +57,7 @@ public:
 
 	vec3 getSpecificPosition(int i)
 	{
-		if (i > _finalPositions.size()) return empty_vec3();
+		if (i > (int)_finalPositions.size()) return empty_vec3();
 		return getFinalPositions()[i].start;
 	}
 	
