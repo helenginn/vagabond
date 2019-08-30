@@ -112,6 +112,9 @@ typedef boost::weak_ptr<Atom> AtomWkr;
 class Element;
 typedef boost::shared_ptr<Element> ElementPtr;
 
+class Motion;
+typedef boost::shared_ptr<Motion> MotionPtr;
+
 class Anchor;
 class Model;
 class ExplicitModel;
