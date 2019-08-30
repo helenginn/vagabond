@@ -16,6 +16,9 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#ifndef __vagabond__RefineMat3x3__
+#define __vagabond__RefineMat3x3__
+
 #include "mat3x3.h"
 #include "RefinementStrategy.h"
 
@@ -353,3 +356,6 @@ private:
 	void *_parent;
 	CleanUp _clean;
 };
+
+#endif
+
