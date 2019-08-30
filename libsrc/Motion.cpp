@@ -17,12 +17,36 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Motion.h"
+#include "Anchor.h"
+#include "Options.h"
+#include "Polymer.h"
+#include "Fibonacci.h"
 #include "Anisotropicator.h"
+#include "RefinementNelderMead.h"
+#include "RefinementList.h"
+#include "FlexGlobal.h"
 
 Motion::Motion()
 {
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, NULL));
+	_refined = false;
+	_allAtoms = AtomGroupPtr(new AtomGroup());
+	_allBackbone = AtomGroupPtr(new AtomGroup());
+}
 
+void Motion::addToPolymer(PolymerPtr pol)
+{
+	_allAtoms->addAtomsFrom(pol);
+	AtomGroupPtr back = pol->getAllBackbone();
+	_allBackbone->addAtomsFrom(back);
+
+	AnchorPtr anch = pol->getAnchorModel();
+	anch->addMotion(shared_from_this());
+	
+	if (!_refined)
+	{
+		_centre = _allAtoms->centroid();
+	}
 }
 
 void Motion::translateStartPositions(std::vector<BondSample> &stored)
@@ -57,4 +81,256 @@ void Motion::translateStartPositions(std::vector<BondSample> &stored)
 	}
 }
 
+void Motion::addTranslationParameters(RefinementStrategyPtr strategy)
+{
+	_refined = true;
+	_trans->addTensorToStrategy(strategy, 0.2, 0.001, "tr");
+}
 
+void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
+                                      FlexGlobal &target)
+{
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	target.setAtomGroup(_allBackbone);
+	target.setCrystal(crystal);
+	target.matchElectronDensity();
+	strategy->setVerbose(true);
+	strategy->setCycles(100);
+
+	strategy->setEvaluationFunction(FlexGlobal::score, &target);
+	FlexGlobal::score(&target);
+}
+
+void Motion::refine()
+{
+	int maxRot = Options::getMaxRotations();
+	bool maxed = false;
+
+	FlexGlobal target;
+	NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
+	attachTargetToRefinement(neld, target);
+
+	neld->setJobName("translation");
+	addTranslationParameters(neld);
+	neld->refine();
+
+	_allAtoms->refreshPositions();
+
+	for (int j = 0; j < maxRot; j++)
+	{
+		if (j >= librationCount())
+		{
+			std::cout << std::endl;
+			std::cout << "Introducing screw #" << j << std::endl;
+			
+			FlexGlobal target;
+			RefinementListPtr list = RefinementListPtr(new RefinementList());
+			list->setJobName("rot");
+			attachTargetToRefinement(list, target);
+			addLibrationParameters(list, j);
+
+			Fibonacci fib;
+			fib.generateLattice(31, 0.02);
+			std::vector<vec3> points = fib.getPoints();
+			
+			std::vector<double> zero = std::vector<double>(3, 0);
+			list->addTestSet(zero);
+			
+			for (int i = 0; i < points.size(); i++)
+			{
+				std::vector<double> vals;
+				vals.push_back(points[i].x);
+				vals.push_back(points[i].y);
+				vals.push_back(points[i].z);
+				list->addTestSet(vals);
+			}
+
+			list->refine();
+			
+			if (!list->didChange())
+			{
+				std::cout << "Nevermind, no demand for a screw." << std::endl;
+				deleteLastScrew();
+				maxed = true;
+			}
+		}
+		else
+		{
+			maxed = true;
+		}
+
+		_allAtoms->refreshPositions();
+
+		{
+			FlexGlobal target;
+			NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
+			neld->setJobName("rot_care");
+			attachTargetToRefinement(neld, target);
+
+			addLibrationParameters(neld, -1);
+			neld->refine();
+
+		}
+
+		_allAtoms->refreshPositions();
+
+		{
+			FlexGlobal target;
+			NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
+			attachTargetToRefinement(neld, target);
+			neld->setJobName("screw");
+
+			addScrewParameters(neld, -1);
+			neld->refine();
+		}
+
+		
+		if (maxed)
+		{
+			break;
+		}
+	}
+}
+
+void Motion::applyRotations(std::vector<BondSample> &stored)
+{
+	vec3 position = empty_vec3();
+
+	for (int i = 0; i < stored.size(); i++)
+	{
+		vec3_add_to_vec3(&position, stored[i].start);
+	}
+	
+	vec3_mult(&position, 1 / (double)stored.size());
+	
+	vec3 vec_to_centre = vec3_subtract_vec3(_centre, position);
+
+	for (int i = 0; i < stored.size(); i++)
+	{
+		vec3 start = stored[i].start;
+		vec3 neg_start = vec3_mult(start, -1);
+		vec3 diff = vec3_subtract_vec3(start, position);
+		mat3x3 rot_only = make_mat3x3();
+
+		for (int j = 0; j < _quats.size(); j++)
+		{
+			vec3 quat = _quats[j]->getVec3();
+			mat3x3 rotbasis = mat3x3_ortho_axes(quat);
+			mat3x3 transbasis = mat3x3_transpose(rotbasis);
+
+			vec3 screw = _screws[j]->getVec3();
+			mat3x3_mult_vec(transbasis, &screw);
+			
+			vec3 rot_vec = quat;
+			vec3_set_length(&rot_vec, 1);
+			double dot = vec3_dot_vec3(diff, quat);
+			
+			if (rot_vec.x != rot_vec.x || dot != dot)
+			{
+				continue;
+			}
+
+			mat3x3 rot_mat = mat3x3_unit_vec_rotation(rot_vec, dot);
+			mat3x3 basis = mat3x3_mult_mat3x3(rot_mat, 
+			                                  stored[i].basis); 
+			rot_only = mat3x3_mult_mat3x3(rot_mat, rot_only);
+			
+			vec3_add_to_vec3(&screw, vec_to_centre);
+			vec3 shift = screw;
+			mat3x3_mult_vec(rot_mat, &shift);
+			vec3_subtract_from_vec3(&shift, screw);
+			
+			if (shift.x != shift.x)
+			{
+				continue;
+			}
+
+
+			vec3_add_to_vec3(&stored[i].old_start, shift);
+			vec3_add_to_vec3(&stored[i].start, shift);
+		}
+		
+		vec3 diff_to_old = vec3_subtract_vec3(stored[i].old_start,
+		                                      start);
+		mat3x3_mult_vec(rot_only, &diff_to_old);
+		vec3 new_old = vec3_add_vec3(start, diff_to_old);
+		stored[i].old_start = new_old;
+		mat3x3 basis = mat3x3_mult_mat3x3(rot_only, stored[i].basis);
+		stored[i].basis = basis;
+	}
+}
+
+void Motion::addLibrationParameters(RefinementStrategyPtr strategy,
+                                      int num)
+{
+	if (num < 0)
+	{
+		for (int i = 0; i < _quats.size(); i++)
+		{
+			_quats[i]->addVecToStrategy(strategy, 0.01, 0.0001, "rot");
+		}
+	}
+	else
+	{
+		if (num >= _quats.size())
+		{
+			_quats.push_back(new Quat4Refine());
+			_screws.push_back(new Quat4Refine());
+			num = _quats.size() - 1;
+		}
+
+		_quats[num]->addVecToStrategy(strategy, 0.01, 0.0001, "rot");
+	}
+}
+
+void Motion::addScrewParameters(RefinementStrategyPtr strategy,
+                                int num)
+{
+	if (num < 0)
+	{
+		for (int i = 0; i < _quats.size(); i++)
+		{
+			_screws[i]->addVec2ToStrategy(strategy, 3.0, 0.01, "screw");
+		}
+	}
+	else
+	{
+		if (num >= _quats.size())
+		{
+			return;
+		}
+
+		_screws[num]->addVec2ToStrategy(strategy, 3.0, 0.01, "screw");
+	}
+}
+
+void Motion::deleteLastScrew()
+{
+	if (_screws.size() == 0)
+	{
+		return;
+	}
+
+	_screws.pop_back();
+	_quats.pop_back();
+}
+
+void Motion::deleteQuats()
+{
+	for (int i = 0; i < _quats.size(); i++)
+	{
+		delete _quats[i];
+		_quats[i] = NULL;
+
+		delete _screws[i];
+		_screws[i] = NULL;
+	}
+	
+	_quats.clear();
+	_screws.clear();
+}
+
+Motion::~Motion()
+{
+	deleteQuats();
+}

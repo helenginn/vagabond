@@ -26,6 +26,7 @@
 #include "mat3x3.h"
 #include "Object.h"
 #include "fftw3d.h"
+#include "Motion.h"
 #include <string>
 #include <map>
 #include "maths.h"
@@ -508,6 +509,7 @@ private:
 	double _maxResolution;
 	std::vector<int> _anchorResidues;
 	double totalToScale();
+	void makeOverallMotion();
 
 	void makePDBs(std::string suffix);
 	void writeVagabondFile(int cycleNum);
@@ -520,6 +522,7 @@ private:
 	
 	std::map<double, double> _resBinAves;
 	std::vector<ShellInfo> _shells;
+	std::vector<MotionPtr> _motions;
 
 	double _rWork;
 	double _rFree;
