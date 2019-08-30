@@ -40,6 +40,11 @@ public:
 	std::vector<BondSample> *getManyPositions(void *object = NULL,
 	                                          bool force = false);
 	void forceRefresh();
+	
+	void addMotion(MotionPtr mot)
+	{
+		_motions.push_back(mot);
+	}
 
 	/** Returns the offsets for an anchor residue on which a molecule may
 	* calculate translations and offsets.
@@ -145,7 +150,6 @@ public:
 	void recalculateWhacks();
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 	virtual std::string shortDesc();
-
 
 	static double getPosX(void *object)
 	{
@@ -262,6 +266,7 @@ protected:
 private:
 	void initialise();
 	void translateStartPositions();
+	void applyWholeMotions();
 	void applyQuaternions();
 	void fixCentroid();
 	void deleteQuats();
@@ -277,6 +282,7 @@ private:
 	
 	std::vector<vec3> _tmpQuats;
 	std::vector<vec3> _tmpScrews;
+	std::vector<MotionPtr> _motions;
 	
 	bool _disableWhacks;
 };

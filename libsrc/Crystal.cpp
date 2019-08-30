@@ -1243,8 +1243,42 @@ void Crystal::hydrogenateContents()
 	}
 }
 
+void Crystal::makeOverallMotion()
+{
+	MotionPtr mot = MotionPtr(new Motion());
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+
+		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		mot->addToPolymer(pol);
+	}
+
+	_motions.push_back(mot);
+}
+
 void Crystal::fitWholeMolecules()
 {
+	/* All molecules together */
+	
+	if (_motions.size() == 0)
+	{
+		makeOverallMotion();
+		_motions[0]->refine();
+		return;
+	}
+	
+	for (int i = 0; i < _motions.size(); i++)
+	{
+		_motions[0]->refine();
+	}
+
+	return;
+
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		if (!molecule(i)->isPolymer())

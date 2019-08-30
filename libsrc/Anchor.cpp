@@ -9,6 +9,7 @@
 #include "RefineMat3x3.h"
 #include "Quat4Refine.h"
 #include "Anchor.h"
+#include "Motion.h"
 #include "Fibonacci.h"
 #include "Absolute.h"
 #include "Anisotropicator.h"
@@ -30,6 +31,9 @@ void Anchor::initialise()
 	_cDir = empty_vec3();
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_disableWhacks = false;
+	
+	MotionPtr mot = MotionPtr(new Motion());
+	_motions.push_back(mot);
 }
 
 Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
@@ -279,6 +283,15 @@ mat3x3 Anchor::getAnchorRotation()
 	return rot;
 }
 
+void Anchor::applyWholeMotions()
+{
+	for (int i = 0; i < _motions.size(); i++)
+	{
+		_motions[i]->translateStartPositions(_storedSamples);
+		_motions[i]->applyRotations(_storedSamples);
+	}
+}
+
 void Anchor::translateStartPositions()
 {
 	mat3x3 translation = _trans->getMat3x3();
@@ -474,7 +487,8 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 	
 	if (!_disableWhacks)
 	{
-		translateStartPositions();
+		applyWholeMotions();
+//		translateStartPositions();
 		applyQuaternions();
 
 		fixCentroid();
@@ -611,7 +625,12 @@ void Anchor::propagateChange(int depth, bool refresh)
 void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
                                       double mult)
 {
-	_trans->addTensorToStrategy(strategy, 0.2 * mult, 0.001, "tr");
+	if (_motions.size() == 0)
+	{
+		return;
+	}
+
+	_motions[0]->addTranslationParameters(strategy);
 }
 
 void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
