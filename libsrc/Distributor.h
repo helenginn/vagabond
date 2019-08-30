@@ -39,6 +39,8 @@ public:
 		_activeNum = 0;
 		_overrideN = -1;
 	}
+	
+	virtual ~Distributor() {};
 
 	/** Call this if the subclass has changed (e.g., an Absolute atom has had
 	* its B factor altered), and an appropriate FFT will be recalculated on
