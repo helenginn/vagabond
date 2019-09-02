@@ -60,6 +60,10 @@ bool Options::_hydrogens = true;
 bool Options::_fitBucket = false;
 
 std::string Options::_anchor = "";
+std::string Options::_labFP = "";
+std::string Options::_labSIGFP = "";
+std::string Options::_labFree = "";
+
 ScalingType Options::_scaleType = ScalingTypeShell;
 double Options::_sampling = -1;
 int Options::_nSamples = -1;
@@ -579,6 +583,10 @@ void Options::parse()
 		understood |= parseParameter(arg, "--anchor=", &_anchor);
 		understood |= parseParameter(arg, "--map=", &_map);
 		understood |= parseParameter(arg, "--max-rotations=", &_maxRot);
+
+		understood |= parseParameter(arg, "--lab-f=", &_labFP);
+		understood |= parseParameter(arg, "--lab-sigf=", &_labSIGFP);
+		understood |= parseParameter(arg, "--lab-free=", &_labFree);
 
 		prefix = "--overfit-test";
 
