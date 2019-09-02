@@ -358,6 +358,9 @@ private:
 	static double _minRes;
 	static double _maxRes;
 	static std::string _anchor;
+	static std::string _labFP;
+	static std::string _labSIGFP;
+	static std::string _labFree;
 	
 	static bool _rPosition;
 	static bool _rSidechains;
