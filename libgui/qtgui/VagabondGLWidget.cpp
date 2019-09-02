@@ -27,7 +27,7 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 {
 	Density2GLPtr active = keeper->activeDensity();
 	
-	if (event->key() == Qt::Key_Alt)
+	if (event->key() == Qt::Key_Alt || event->key() == Qt::Key_Control)
 	{
 		_controlPressed = true;
 	}
