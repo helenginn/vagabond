@@ -260,6 +260,21 @@ public:
 		return _bReal;
 	}
 	
+	static std::string getLabSigF()
+	{
+		return _labSIGFP;
+	}
+	
+	static std::string getLabF()
+	{
+		return _labFP;
+	}
+	
+	static std::string getLabFree()
+	{
+		return _labFree;
+	}
+	
 	static void setGlobalBFactor(void *, double val)
 	{
 		_bReal = val;
