@@ -10,7 +10,6 @@
 #include <iostream>
 #include "Shouter.h"
 #include "../libccp4/csymlib.h"
-#include "../libccp4/cmtzlib.h"
 #include <vector>
 #include "fftw3d.h"
 #include "Options.h"
@@ -30,6 +29,37 @@ void getCol(std::vector<std::string> names, CMtz::MTZ *mtz,
 			break;
 		}
 	}
+}
+
+LabelChoice DiffractionMtz::prepareChoice(CMtz::MTZ *mtz)
+{
+	LabelChoice choice;
+
+	int nxtals = MtzNxtal(mtz);
+
+	for (size_t k = 0; k < nxtals; k++)
+	{
+		CMtz::MTZXTAL *xtal = MtzIxtal(mtz, k);
+		int nsets = MtzNsetsInXtal(xtal);
+
+		for (size_t j = 0; j < nsets; j++)
+		{
+			CMtz::MTZSET *set = MtzIsetInXtal(xtal, j);
+			int ncol = MtzNcolsInSet(set);
+
+			for (size_t i = 0; i < ncol; i++)
+			{
+				CMtz::MTZCOL *col = MtzIcolInSet(set, i);
+				std::string label = col->label;
+				std::string type = col->type;
+
+				choice.availabels.push_back(label);
+				choice.types.push_back(type);
+			}
+		}
+	}
+	
+	return choice;
 }
 
 void DiffractionMtz::load()
@@ -109,11 +139,16 @@ void DiffractionMtz::load()
 	fParts.push_back("FPART");
 
 	getCol(ampNames, mtz, &col_f);
+	LabelChoice choice = prepareChoice(mtz);
+
 	if (!col_f)
 	{
+		choice.original = "FP";
+		choice.wanted = "observed amplitudes";
 		Shouter *shout;
 		shout = new Shouter("I could not find your amplitude column in\n"
 		              + _filename + " - please label as F or FP.");
+		shout->setChoice(choice);
 		throw shout;
 	}
 
@@ -143,6 +178,7 @@ void DiffractionMtz::load()
 	{
 		rFreeNames.push_back(optFree);
 	}
+
 	rFreeNames.push_back("RFREE");
 	rFreeNames.push_back("FREER");
 	rFreeNames.push_back("FREE");
@@ -290,7 +326,6 @@ void DiffractionMtz::load()
 	std::cout << "Loaded " << count << " reflections into"\
 	" memory from " << _filename << "." << std::endl;
 	std::cout << "Counted " << maskCount << " free reflections." << std::endl << std::endl;
-
 }
 
 void DiffractionMtz::syminfoCheck()
