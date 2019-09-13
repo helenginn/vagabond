@@ -270,6 +270,11 @@ public:
 		return _labFP;
 	}
 	
+	static void setLabF(std::string f)
+	{
+		_labFP = f;
+	}
+	
 	static std::string getLabFree()
 	{
 		return _labFree;
