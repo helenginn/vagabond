@@ -11,11 +11,19 @@
 
 #include <stdio.h>
 #include <string>
+#include <vector>
 
 void shout_at_user(std::string fix_me_message);
 void shout_at_helen(std::string fix_me_message);
 void warn_user(std::string cautionary_tale);
 void shout_timer(time_t wall_start, std::string job);
+
+typedef struct
+{
+	std::vector<std::string> availabels;
+	std::vector<std::string> types;
+	std::string wanted;
+} LabelChoice;
 
 class Shouter
 {
@@ -27,10 +35,29 @@ public:
 		return _message;
 	}
 	
+	void setChoice(LabelChoice choice)
+	{
+		_choice = choice;
+		_fixable = true;
+	}
+	
+	bool isFixable()
+	{
+		return _fixable;
+	}
+	
+	LabelChoice &getChoice()
+	{
+		return _choice;
+	}
+	
 	static void throw_shout(std::string message);
 	void shoutToStdOut();
+
 private:
+	LabelChoice _choice;
 	
+	bool _fixable;
 	std::string _message;
 };
 
