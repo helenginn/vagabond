@@ -60,6 +60,14 @@ void DropDown::pressOK()
 	{
 		Options::setLabF(label);
 	}
+	else if (_choice.original == "FREE")
+	{
+		Options::setLabFree(label);
+	}
+	else if (_choice.original == "SIGFP")
+	{
+		Options::setLabSigF(label);
+	}
 	
 	_vag->attemptLoadAndRun();
 	hide();

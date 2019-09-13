@@ -189,9 +189,13 @@ void DiffractionMtz::load()
 
 	if (!col_rfree)
 	{
-		warn_user("I could not find your R-free-flag column in\n"
-		          + _filename + " - please label as FREE or RFREE.\n"
-		"I can do without and will keep going.");
+		choice.original = "FREE";
+		choice.wanted = "free set values";
+		Shouter *shout;
+		shout = new Shouter("I could not find your R-free-flag column in"
+		              + _filename + " - please label as FREE or FreeRflag.");
+		shout->setChoice(choice);
+		throw shout;
 	}
 
 	CMtz::MTZCOL *col_h = MtzColLookup(mtz, "H");

@@ -270,14 +270,24 @@ public:
 		return _labFP;
 	}
 	
+	static std::string getLabFree()
+	{
+		return _labFree;
+	}
+	
 	static void setLabF(std::string f)
 	{
 		_labFP = f;
 	}
 	
-	static std::string getLabFree()
+	static void setLabFree(std::string f)
 	{
-		return _labFree;
+		_labFree = f;
+	}
+	
+	static void setLabSigF(std::string f)
+	{
+		_labSIGFP = f;
 	}
 	
 	static void setGlobalBFactor(void *, double val)
