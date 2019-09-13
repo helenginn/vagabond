@@ -26,6 +26,11 @@ typedef struct
 	std::string original;
 } LabelChoice;
 
+/**
+ * \class Shouter
+ * \brief Handle to communicate a fatal error
+ */
+
 class Shouter
 {
 public:
