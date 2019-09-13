@@ -23,6 +23,7 @@ typedef struct
 	std::vector<std::string> availabels;
 	std::vector<std::string> types;
 	std::string wanted;
+	std::string original;
 } LabelChoice;
 
 class Shouter
