@@ -14,6 +14,7 @@
 
 #include "../../libsrc/shared_ptrs.h"
 #include "VagWindow.h"
+#include "DropDown.h"
 #include <QtCore/qdebug.h>
 #include <QtCore/qalgorithms.h>
 #include <QtWidgets/qgraphicsitem.h>
@@ -302,31 +303,40 @@ VagWindow::VagWindow(QWidget *parent,
 	_instructionThread.start(); 
 }
 
+int VagWindow::attemptLoadAndRun()
+{
+	_instructionThread.start(); 
+	return 0;
+}
+
 int VagWindow::waitForInstructions()
 {
 	OptionsPtr options = Options::getRuntimeOptions();
 	options->setNotify((Notifiable *)this);
-	InstructionThread *thread = NULL;
-	thread =  static_cast<InstructionThread *>(QThread::currentThread());
 
-	try
+	while (true)
 	{
-		options->run();
-	}
-	catch (int e)
-	{
-		if (e == 10)
+		try
 		{
+			options->run();
+			break;
+		}
+		catch (int e)
+		{
+			if (e == 10)
+			{
+				return 1;
+			}
+		}
+		catch (Shouter *shout)
+		{
+			emit errorReceived(shout);
+			options->clear();
+
 			return 1;
 		}
 	}
-	catch (Shouter *shout)
-	{
-		emit errorReceived(shout);
-		options->clear();
-		return 1;
-	}
-	
+
 	_startScreen->finishUp();
 
 	CrystalPtr crystal = options->getActiveCrystal();
@@ -467,7 +477,7 @@ int VagWindow::waitForInstructions()
 			}
 		}
 
-		if (thread->shouldDie())
+		if (_instructionThread.shouldDie())
 		{
 			return 0;
 		}
@@ -475,6 +485,8 @@ int VagWindow::waitForInstructions()
 		display->setFocus();
 		mutex.unlock();
 	}
+	
+	return 0;
 }
 
 bool VagWindow::isRunningSomething()
@@ -711,8 +723,27 @@ void VagWindow::wakeup()
 	wait.wakeAll();
 }
 
+void VagWindow::fixLabelChoice(LabelChoice &choice)
+{
+	std::cout << "Going to ask for a new label for " <<
+	choice.wanted << std::endl;
+
+	DropDown *down = new DropDown(choice);
+	down->setCallBack(this);
+	down->show();
+}
+
 void VagWindow::displayMessage(Shouter *shout)
 {
+	LabelChoice choice = shout->getChoice();
+	
+	if (choice.availabels.size())
+	{
+		fixLabelChoice(choice);
+		delete shout;
+		return;
+	}
+	
 	QString message = QString::fromStdString(shout->getMessage());
 	QMessageBox::critical(this, "Problem", message, QMessageBox::Ok);
 	this->hide();

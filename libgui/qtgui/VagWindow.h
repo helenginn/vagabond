@@ -81,6 +81,8 @@ public:
 	{
 		return display;
 	}
+
+	int attemptLoadAndRun();
 	
 signals:
 	void errorReceived(Shouter *shout);
@@ -103,6 +105,7 @@ private slots:
 	void displayMessage(Shouter *shout);
 private:
 	VagabondGLWidget *display;
+	void fixLabelChoice(LabelChoice &choice);
 	QWaitCondition wait;
 	QMutex mutex;
 	InstructionThread _instructionThread;
@@ -141,6 +144,8 @@ private:
 	
 	/* Scaling menu options */
 	QAction *_qaShell, *_qaKB, *_qaK;
+	
+	InstructionThread *_thread;
 	
 	std::vector<QMenu *> menus;
 	std::vector<QAction *> actions;
