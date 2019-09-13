@@ -128,6 +128,7 @@ executable('vagabond', 'libsrc/main.cpp', dependencies: [dep_vag, boost_dep], in
 if qt5_dep.found() and dep_gl.found()
 	moc_files = qt5.preprocess(moc_headers : ['libgui/qtgui/CrystalExplorer.h',
 'libgui/qtgui/Dialogue.h',
+'libgui/qtgui/DropDown.h',
 'libgui/qtgui/ErroneousZone.h',
 'libgui/qtgui/MoleculeExplorer.h',
 'libgui/qtgui/MonomerExplorer.h',
@@ -158,6 +159,7 @@ dep_vgui = declare_dependency(link_with: lib_vgui, include_directories: inc_vgui
 'libgui/qtgui/gui_main.cpp',
 'libgui/qtgui/CrystalExplorer.cpp',
 'libgui/qtgui/Dialogue.cpp',
+'libgui/qtgui/DropDown.cpp',
 'libgui/qtgui/ErroneousZone.cpp',
 'libgui/qtgui/gui_main.cpp',
 'libgui/qtgui/InstructionThread.cpp',
