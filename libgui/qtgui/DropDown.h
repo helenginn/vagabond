@@ -16,10 +16,15 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#ifndef __vagabond__dropdown__
+#define __vagabond__dropdown__
+
 #include <QMainWindow>
 #include <QLabel>
 #include <QComboBox>
+#include <QPushButton>
 #include "../../libsrc/Shouter.h"
+#include "VagWindow.h"
 
 class DropDown : public QMainWindow
 {
@@ -30,9 +35,22 @@ public:
 	DropDown(LabelChoice &choice);
 	~DropDown();
 
+	void setCallBack(VagWindow *vag)
+	{
+		_vag = vag;
+	}
+private slots:
+	void pressOK();
+	
 private:
 	void init();
+	
+	VagWindow *_vag;
 
+	LabelChoice _choice;
 	QLabel *_notice;
 	QComboBox *_combo;
+	QPushButton *_done;
 };
+
+#endif
