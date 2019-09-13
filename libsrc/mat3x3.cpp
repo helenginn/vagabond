@@ -619,7 +619,7 @@ vec3 mat3x3_rotation_axis(mat3x3 &mat)
 	double angle = mat3x3_rotation_angle(mat);
 	double cosangle = cos(angle);
 	double x = sqrt((mat.vals[0] - cosangle) / (1 - cosangle));
-	double y = sqrt((mat.vals[5] - cosangle) / (1 - cosangle));
+	double y = sqrt((mat.vals[4] - cosangle) / (1 - cosangle));
 	double z = sqrt((mat.vals[8] - cosangle) / (1 - cosangle));
 
 	return make_vec3(x, y, z);
