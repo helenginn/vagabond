@@ -26,6 +26,7 @@ void getCol(std::vector<std::string> names, CMtz::MTZ *mtz,
 
 		if (*column)
 		{
+			std::cout << "Found column: " << names[i] << std::endl;
 			break;
 		}
 	}
@@ -94,6 +95,12 @@ void DiffractionMtz::load()
 	CMtz::MTZCOL *col_phipart = NULL;
 
 	std::vector<std::string> ampNames;
+
+	std::string optAmp = Options::getLabF();
+	if (optAmp.length())
+	{
+		ampNames.push_back(optAmp);
+	}
 	ampNames.push_back("F");
 	ampNames.push_back("FP");
 	
@@ -111,6 +118,13 @@ void DiffractionMtz::load()
 	}
 
 	std::vector<std::string> errNames;
+	
+	std::string optSigF = Options::getLabSigF();
+	if (optSigF.length())
+	{
+		errNames.push_back(optSigF);
+	}
+	
 	errNames.push_back("SIGF");
 	errNames.push_back("SIGFP");
 
@@ -123,6 +137,12 @@ void DiffractionMtz::load()
 
 
 	std::vector<std::string> rFreeNames;
+
+	std::string optFree = Options::getLabFree();
+	if (optFree.length())
+	{
+		rFreeNames.push_back(optFree);
+	}
 	rFreeNames.push_back("RFREE");
 	rFreeNames.push_back("FREER");
 	rFreeNames.push_back("FREE");
