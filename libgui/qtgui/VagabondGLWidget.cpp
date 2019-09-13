@@ -206,10 +206,13 @@ void VagabondGLWidget::initializeGL()
 {
 	keeper = new GLKeeper(width(), height());
 
-	timer = new QTimer();
-	timer->setInterval(30);
-	connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-	timer->start();
+	if (timer == NULL)
+	{
+		timer = new QTimer();
+		timer->setInterval(30);
+		connect(timer, SIGNAL(timeout()), this, SLOT(update()));
+		timer->start();
+	}
 }
 
 void VagabondGLWidget::resizeGL()
