@@ -11,6 +11,8 @@
 
 #include <stdio.h>
 #include "Diffraction.h"
+#include "Shouter.h"
+#include "../libccp4/cmtzlib.h"
 
 /**
  * \class DiffractionMtz
@@ -24,6 +26,7 @@ public:
 
 	void syminfoCheck();
 private:
+	LabelChoice prepareChoice(CMtz::MTZ *mtz);
 };
 
 #endif /* defined(__vagabond__DiffractionMTZ__) */
