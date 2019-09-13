@@ -28,6 +28,7 @@ void shout_at_user(std::string fix_me_message)
 Shouter::Shouter(std::string message)
 {
 	_message = message;
+	_fixable = false;
 }
 
 void Shouter::shoutToStdOut()
