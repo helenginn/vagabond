@@ -239,6 +239,10 @@ vec3 Atom::getSymRelatedPosition(int i, int conf)
 	mod.y += trn[1];
 	mod.z += trn[2];
 	
+	fmod(mod.x, 1);
+	fmod(mod.y, 1);
+	fmod(mod.z, 1);
+	
 	mat3x3 frac2Real = crystal->getHKL2Frac();
 	mat3x3_mult_vec(frac2Real, &mod);
 	
@@ -345,20 +349,23 @@ void Atom::addManyToMask(FFTPtr fft, mat3x3 unit_cell,
 
 	for (int i = 0; i < total; i++)
 	{
-		vec3 pos = empty_vec3();
-		
-		if (!getModel()->hasExplicitPositions())
+		size_t max = symOpCount();
+		for (int j = 0; j < max; j++)
 		{
-			pos = getAbsolutePosition();
-		}
-		else
-		{
-			pos = getExplicitModel()->getFinalPositions()[i + conf].start;
-		}
+			vec3 pos = empty_vec3();
 
-		mat3x3_mult_vec(unit_cell, &pos);
+			if (!getModel()->hasExplicitPositions())
+			{
+				pos = getSymRelatedPosition(j, -1);
+			}
+			else
+			{
+				pos = getSymRelatedPosition(j, i);
+			}
 
-		fft->addToValueAroundPoint(pos, radius, 1, i);
+			mat3x3_mult_vec(unit_cell, &pos);
+			fft->addToValueAroundPoint(pos, radius, 1, i);
+		}
 	}
 }
 
