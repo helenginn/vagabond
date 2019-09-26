@@ -74,6 +74,7 @@ Options::Options(int argc, const char **argv)
 	_processes = 0;
 	_parsed = false;
 	_manual = false;
+	_couted = false;
 	_notify = NULL;
 	_globalCount = 0;
 
@@ -89,13 +90,11 @@ Options::Options(int argc, const char **argv)
 	}
 }
 
-void Options::run()
+void Options::makeCout()
 {
-	bool madeCout = _parsed;
-
-	if (!_parsed)
+	if (_couted)
 	{
-		parse();
+		return;
 	}
 
 	if (_outputDir.length())
@@ -103,12 +102,27 @@ void Options::run()
 		FileReader::setOutputDirectory(_outputDir);
 	}
 
-	if (!madeCout)
+	std::cout << "Redirecting to stream..." << std::endl;
+	/* Setup stream redirect */
+	_filter = new vagcout<char>(std::cout.rdbuf());
+	_filter->setNotify(_notify);
+	std::cout.rdbuf(_filter);
+
+	_couted = true;
+}
+
+void Options::run()
+{
+	if (!_parsed)
 	{
-		/* Setup stream redirect */
-		_filter = new vagcout<char>(std::cout.rdbuf());
-		_filter->setNotify(_notify);
-		std::cout.rdbuf(_filter);
+		parse();
+	}
+
+	makeCout();
+
+	if (_outputDir.length())
+	{
+		FileReader::setOutputDirectory(_outputDir);
 	}
 
 	/* ASCII art */
@@ -645,6 +659,7 @@ void Options::parse()
 	}
 	
 	_parsed = true;
+	makeCout();
 }
 
 void Options::outputCrystalInfo()

@@ -335,6 +335,7 @@ StartScreen::StartScreen(QWidget *parent,
 	_options->setManual(true);
     Options::setRuntimeOptions(_options);
 	_options->parse();
+	_options->makeCout();
 
 	_fileDialogue = NULL;
 
