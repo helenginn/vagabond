@@ -181,7 +181,7 @@ protected:
 
 	virtual std::string getParserIdentifier()
 	{
-		return "AtomGroupSomething";
+		return "AtomGroup_" + atomCount();
 	}
 
 	virtual void addProperties();
