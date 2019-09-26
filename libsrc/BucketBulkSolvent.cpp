@@ -30,8 +30,6 @@ void BucketBulkSolvent::reportSolventContent()
 		num0 += (_solvent->data[i][0] <= 0.5) ? 1 : 0;
 	}
 	
-	num0 *= crystal->symOpCount();
-
 	double frac = (double)num0 / (double)_solvent->nn * 100;
 	frac = 100. - frac;
 	
