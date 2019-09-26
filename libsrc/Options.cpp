@@ -243,14 +243,15 @@ void Options::run()
 
 void Options::executeProtocol()
 {
+	CrystalPtr crystal = getActiveCrystal();
+	crystal->makeOverallMotion();
+
 	if (!_refine)
 	{
 		std::cout << "No refinement protocol selected." << std::endl;
 		recalculateFFT();
 		return;
 	}
-	
-	CrystalPtr crystal = getActiveCrystal();
 	
 	for (int i = 0; i < 5 && _rPosition; i++)
 	{

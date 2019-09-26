@@ -412,6 +412,7 @@ public:
 	void refitToSavedPositions();
 	void refreshAnchors();
 	void makeOverallMotion();
+	MotionPtr getOverallMotion();
 	
 	void addMotion(MotionPtr mot)
 	{

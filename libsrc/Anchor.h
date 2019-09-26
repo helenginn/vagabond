@@ -155,6 +155,7 @@ public:
 	void recalculateWhacks();
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 	virtual std::string shortDesc();
+	void atLeastOneMotion();
 
 	static double getPosX(void *object)
 	{
@@ -275,7 +276,6 @@ private:
 	void applyQuaternions();
 	void fixCentroid();
 	void deleteQuats();
-	void atLeastOneMotion();
 	mat3x3 getAnchorRotation();
 	
 	vec3 _nDir, _nDir2;
