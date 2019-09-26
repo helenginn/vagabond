@@ -52,6 +52,8 @@ public:
 	
 	bool isSolvent(vec3 pos);
 	
+	/* only use before FFT */
+
 	bool isSolvent(int index);
 	Atom *nearbyAtom(int index);
 	
