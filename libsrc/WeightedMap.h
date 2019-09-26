@@ -33,6 +33,7 @@ public:
 	void createWeightedMaps();
 private:
 	void calculateFiguresOfMerit();
+	void writeCalculatedSlice();
 	double stdevForReflection(double fobs, double fcalc, 
 	                          double sigfobs, double res);
 	double phaseDevForWeight(double weight);

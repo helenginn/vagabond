@@ -43,16 +43,10 @@ void WeightedMap::setCrystalAndData(CrystalPtr crystal, DiffractionPtr data)
 	_difft = crystal->getDifferenceMap();
 }
 
-void WeightedMap::createWeightedMaps()
+void WeightedMap::writeCalculatedSlice()
 {
-	calculateFiguresOfMerit();
-	
-	Correl correl;
-	correl.setCrystalAndData(_crystal, _data);
-	correl.localCC();
-
-	int nx = _fft->nx;
 	/* Back to real space */
+	int nx = _fft->nx;
 	FFTPtr copy = FFTPtr(new FFT(*_fft));
 	copy->fft(-1);
 	
@@ -72,9 +66,17 @@ void WeightedMap::createWeightedMaps()
 				val = 1;
 			}
 
-			if (atom && atom->getElementSymbol() == "C")
+			if (atom && atom->getElementSymbol() == "N")
 			{
 				val = 2;
+			}
+			if (atom && atom->getElementSymbol() == "O")
+			{
+				val = 3;
+			}
+			else if (atom && atom->getElementSymbol() == "S")
+			{
+				val = 4;
 			}
 			calc->addEntry(4, (double)i, (double)j, copy->data[index][0],
 			               (double)val);
@@ -83,9 +85,20 @@ void WeightedMap::createWeightedMaps()
 	
 	solv->fourierTransform(1);
 	calc->writeToFile("slice_calculated.csv");
+}
 
-	/* Back to recip space */
+void WeightedMap::createWeightedMaps()
+{
+	calculateFiguresOfMerit();
 	
+	Correl correl;
+	correl.setCrystalAndData(_crystal, _data);
+	correl.localCC();
+	
+	writeCalculatedSlice();
+
+	int nx = _fft->nx;
+
 	int map = Options::getMapType();
 
 	if (map > 0)
