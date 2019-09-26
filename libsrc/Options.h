@@ -32,6 +32,7 @@ public:
 	Options(int argc, const char **argv);
 	void run();
 	void clear();
+	void makeCout();
 
 	double getActiveCrystalDStar();
 	
@@ -49,6 +50,11 @@ public:
 	void setNotify(Notifiable *notifiable)
 	{
 		_notify = notifiable;
+		
+		if (_filter != NULL)
+		{
+			_filter->setNotify(_notify);
+		}
 	}
 
 	Notifiable *getNotify()
@@ -354,6 +360,7 @@ private:
 	std::vector<DiffractionPtr> diffractions;
 
 	bool _parsed;
+	bool _couted;
 	int _globalCount;
 	bool _tie;
 	bool _manual;
