@@ -91,19 +91,24 @@ Options::Options(int argc, const char **argv)
 
 void Options::run()
 {
+	bool madeCout = _parsed;
+
 	if (!_parsed)
 	{
 		parse();
-
-		/* Setup stream redirect */
-		_filter = new vagcout<char>(std::cout.rdbuf());
-		_filter->setNotify(_notify);
-		std::cout.rdbuf(_filter);
 	}
 
 	if (_outputDir.length())
 	{
 		FileReader::setOutputDirectory(_outputDir);
+	}
+
+	if (!madeCout)
+	{
+		/* Setup stream redirect */
+		_filter = new vagcout<char>(std::cout.rdbuf());
+		_filter->setNotify(_notify);
+		std::cout.rdbuf(_filter);
 	}
 
 	/* ASCII art */
