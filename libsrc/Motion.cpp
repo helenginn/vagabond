@@ -332,7 +332,7 @@ void Motion::addProperties()
 	addChild("all_backbone", _allBackbone);
 }
 
-void Motion::linkReference(BaseParserPtr object, std::string category)
+void Motion::addObject(BaseParserPtr object, std::string category)
 {
 	if (category == "all_atoms")
 	{

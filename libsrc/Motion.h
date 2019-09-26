@@ -84,10 +84,14 @@ public:
 		return _name;
 	}
 
+	bool hasRefined()
+	{
+		return _refined;
+	}
 protected:
 	virtual void addProperties();
 	virtual void postParseTidy();
-	virtual void linkReference(BaseParserPtr object, std::string category);
+	virtual void addObject(BaseParserPtr object, std::string category);
 private:
 	void deleteQuats();
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,

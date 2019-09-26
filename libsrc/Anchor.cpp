@@ -41,13 +41,6 @@ Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
 	_position = absolute->getAbsolutePosition();
 	_molecule = absolute->getMolecule();
 	_atom = absolute->getAtom();
-	
-	atLeastOneMotion();
-
-	if (_motions.size() > 0)
-	{
-		_motions[0]->setName(getAtom()->shortDesc());
-	}
 }
 
 void Anchor::deleteQuats()
@@ -294,6 +287,8 @@ void Anchor::atLeastOneMotion()
 	MotionPtr mot = MotionPtr(new Motion());
 	PolymerPtr pol = ToPolymerPtr(getMolecule());
 	crystal->addMotion(mot);
+
+	mot->setName(getAtom()->shortDesc());
 	
 	if (pol)
 	{
@@ -600,8 +595,6 @@ void Anchor::postParseTidy()
 		_quats.push_back(q);
 		_screws.push_back(s);
 	}
-
-	atLeastOneMotion();
 }
 
 std::string Anchor::getParserIdentifier()

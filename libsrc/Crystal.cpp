@@ -1243,7 +1243,7 @@ void Crystal::hydrogenateContents()
 	}
 }
 
-void Crystal::makeOverallMotion()
+MotionPtr Crystal::getOverallMotion()
 {
 	if (_motions.size())
 	{
@@ -1251,9 +1251,19 @@ void Crystal::makeOverallMotion()
 		{
 			if (_motions[i]->getName() == "all")
 			{
-				return;
+				return _motions[i];
 			}
 		}
+	}
+
+	return MotionPtr();
+}
+
+void Crystal::makeOverallMotion()
+{
+	if (getOverallMotion() != MotionPtr())
+	{
+		return;
 	}
 
 	MotionPtr mot = MotionPtr(new Motion());
@@ -1268,6 +1278,7 @@ void Crystal::makeOverallMotion()
 
 		PolymerPtr pol = ToPolymerPtr(molecule(i));
 		mot->addToPolymer(pol);
+		pol->getAnchorModel()->atLeastOneMotion();
 	}
 
 	_motions.insert(_motions.begin(), mot);
@@ -1294,10 +1305,11 @@ void Crystal::fitWholeMolecules()
 {
 	/* All molecules together */
 	
-	if (_motions.size() == 0)
+	MotionPtr overall = getOverallMotion();
+	
+	if (!overall->hasRefined())
 	{
-		makeOverallMotion();
-		_motions[0]->refine();
+		overall->refine();
 		return;
 	}
 	

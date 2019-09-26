@@ -1297,6 +1297,7 @@ void AtomGroup::addProperties()
 {
 	addBoolProperty("been_tied", &_beenTied);
 	addIntProperty("times_refined", &_timesRefined);
+	addStringProperty("name", &_name);
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
