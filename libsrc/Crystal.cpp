@@ -1245,7 +1245,19 @@ void Crystal::hydrogenateContents()
 
 void Crystal::makeOverallMotion()
 {
+	if (_motions.size())
+	{
+		for (int i = 0; i < motionCount(); i++)
+		{
+			if (_motions[i]->getName() == "all")
+			{
+				return;
+			}
+		}
+	}
+
 	MotionPtr mot = MotionPtr(new Motion());
+	mot->setName("all");
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
@@ -1258,7 +1270,24 @@ void Crystal::makeOverallMotion()
 		mot->addToPolymer(pol);
 	}
 
-	_motions.push_back(mot);
+	_motions.insert(_motions.begin(), mot);
+}
+
+size_t Crystal::polymerCount()
+{
+	size_t count = 0;
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+
+		count++;
+	}
+
+	return count;
 }
 
 void Crystal::fitWholeMolecules()
@@ -1274,7 +1303,7 @@ void Crystal::fitWholeMolecules()
 	
 	for (int i = 0; i < _motions.size(); i++)
 	{
-		_motions[0]->refine();
+		_motions[i]->refine();
 	}
 
 	return;
@@ -1354,10 +1383,8 @@ void Crystal::addProperties()
 	addDoubleProperty("cc_free", &_ccFree);
 	addDoubleProperty("real_b_factor", &_realBFactor);
 	addDoubleProperty("probe_radius", &_probeRadius);
-//	addStringProperty("comments", &_comments);
 	addIntProperty("cycles_since_best", &_sinceBestNum);
 	addIntProperty("sample_num", &_sampleNum);
-//	addIntProperty("cycle_num", &_cycleNum);
 
 	_spgNum = 0;
 	_spgString = "";
@@ -1375,6 +1402,11 @@ void Crystal::addProperties()
 	{
 		addChild("molecule", molecule(i));
 	}
+	
+	for (size_t i = 0; i < motionCount(); i++)
+	{
+		addChild("motion", _motions[i]);
+	}
 }
 
 void Crystal::vsRestoreState(void *object, double val)
@@ -1391,6 +1423,12 @@ void Crystal::addObject(ParserPtr object, std::string category)
 	{
 		MoleculePtr molecule = ToMoleculePtr(object);
 		addMolecule(molecule);
+	}
+
+	if (category == "motion")
+	{
+		MotionPtr motion = ToMotionPtr(object);
+		addMotion(motion);
 	}
 }
 

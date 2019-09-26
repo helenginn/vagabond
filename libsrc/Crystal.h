@@ -236,6 +236,8 @@ public:
 	/** Calculates the anchor residue for each Polymer and assigns to each. */
 	void setAnchors();
 	
+	size_t polymerCount();
+	
 	/** Prints scattering proportion in this crystal determined by bonds. */
 	void tiedUpScattering();
 	
@@ -409,6 +411,17 @@ public:
 	void savePositions();
 	void refitToSavedPositions();
 	void refreshAnchors();
+	void makeOverallMotion();
+	
+	void addMotion(MotionPtr mot)
+	{
+		_motions.push_back(mot);
+	}
+	
+	size_t motionCount()
+	{
+		return _motions.size();
+	}
 	
 	double getRWork()
 	{
@@ -509,7 +522,6 @@ private:
 	double _maxResolution;
 	std::vector<int> _anchorResidues;
 	double totalToScale();
-	void makeOverallMotion();
 
 	void makePDBs(std::string suffix);
 	void writeVagabondFile(int cycleNum);

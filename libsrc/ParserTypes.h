@@ -28,6 +28,7 @@ typedef struct
 {
 	mat3x3 *mat3x3Ptr;
 	std::string ptrName;
+	bool receiveOnly;
 } Mat3x3Property;
 
 typedef struct
@@ -40,6 +41,7 @@ typedef struct
 {
 	std::vector<vec3> *vec3ArrayPtr;
 	std::string ptrName;
+	bool receiveOnly;
 } Vec3ArrayProperty;
 
 typedef struct

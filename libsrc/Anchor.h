@@ -45,6 +45,11 @@ public:
 	{
 		_motions.push_back(mot);
 	}
+	
+	size_t motionCount()
+	{
+		return _motions.size();
+	}
 
 	/** Returns the offsets for an anchor residue on which a molecule may
 	* calculate translations and offsets.
@@ -270,6 +275,7 @@ private:
 	void applyQuaternions();
 	void fixCentroid();
 	void deleteQuats();
+	void atLeastOneMotion();
 	mat3x3 getAnchorRotation();
 	
 	vec3 _nDir, _nDir2;
