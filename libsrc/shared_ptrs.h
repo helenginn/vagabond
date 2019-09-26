@@ -38,6 +38,7 @@
 #define ToModelPtr(a) (boost::static_pointer_cast<Model>((a)))
 #define ToExplicitModelPtr(a) (boost::static_pointer_cast<ExplicitModel>((a)))
 #define ToPolymerPtr(a) (boost::static_pointer_cast<Polymer>((a)))
+#define ToMotionPtr(a) (boost::static_pointer_cast<Motion>((a)))
 #define ToMoleculePtr(a) (boost::static_pointer_cast<Molecule>((a)))
 #define ToSidechainPtr(a) (boost::static_pointer_cast<Sidechain>((a)))
 #define ToBackbonePtr(a) (boost::static_pointer_cast<Backbone>((a)))

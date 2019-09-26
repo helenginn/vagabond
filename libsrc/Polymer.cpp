@@ -1593,6 +1593,7 @@ AtomGroupPtr Polymer::getAllBackbone()
 		}
 	}
 	
+	_allBackbones->setName(_name + "_backbone");
 	return _allBackbones;
 }
 
@@ -1647,6 +1648,7 @@ void Polymer::postParseTidy()
 	Molecule::postParseTidy();
 	//applyTranslationTensor();
 	
+	_name = "polymer_" + getChainID();
 }
 
 bool Polymer::hasResidue(int resNum)

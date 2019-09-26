@@ -31,7 +31,10 @@ Motion::Motion()
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, NULL));
 	_refined = false;
 	_allAtoms = AtomGroupPtr(new AtomGroup());
+	_allAtoms->setName("motion_all");
 	_allBackbone = AtomGroupPtr(new AtomGroup());
+	_allBackbone->setName("motion_bb");
+	_centre = empty_vec3();
 }
 
 void Motion::addToPolymer(PolymerPtr pol)
@@ -301,6 +304,65 @@ void Motion::addScrewParameters(RefinementStrategyPtr strategy,
 		}
 
 		_screws[num]->addVec2ToStrategy(strategy, 3.0, 0.01, "screw");
+	}
+}
+
+void Motion::addProperties()
+{
+	addMat3x3Property("translation", _trans->getMat3x3Ptr());
+	
+	_tmpQuats.clear();
+	_tmpScrews.clear();
+	
+	for (int i = 0; i < _quats.size(); i++)
+	{
+		vec3 v = _quats[i]->getVec3();
+		vec3 s = _screws[i]->getVec3();
+		_tmpQuats.push_back(v);
+		_tmpScrews.push_back(s);
+	}
+	
+	addBoolProperty("refined", &_refined);
+	addVec3Property("centre", &_centre);
+	addVec3ArrayProperty("rots", &_tmpQuats);
+	addVec3ArrayProperty("screws", &_tmpScrews);
+	
+	addStringProperty("name", &_name);
+	addChild("all_atoms", _allAtoms);
+	addChild("all_backbone", _allBackbone);
+}
+
+void Motion::linkReference(BaseParserPtr object, std::string category)
+{
+	if (category == "all_atoms")
+	{
+		_allAtoms = ToAtomGroupPtr(object);
+	}
+	else if (category == "all_backbone")
+	{
+		_allBackbone = ToAtomGroupPtr(object);
+	}
+
+}
+
+void Motion::postParseTidy()
+{
+	deleteQuats();
+	
+	for (int i = 0; i < _tmpQuats.size(); i++)
+	{
+		Quat4Refine *q = new Quat4Refine();
+		Quat4Refine *s = new Quat4Refine();
+		
+		Quat4Refine::setX(q, _tmpQuats[i].x);
+		Quat4Refine::setY(q, _tmpQuats[i].y);
+		Quat4Refine::setZ(q, _tmpQuats[i].z);
+
+		Quat4Refine::setX(s, _tmpScrews[i].x);
+		Quat4Refine::setY(s, _tmpScrews[i].y);
+		
+		_quats.push_back(q);
+		_screws.push_back(s);
 	}
 }
 

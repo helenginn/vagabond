@@ -94,6 +94,9 @@ void AtomGroup::addAtomsFrom(AtomGroupPtr group)
 	{
 		addAtom(group->atom(i));	
 	}
+	
+	std::string add = "+" + group->getName();
+	addToName(add);
 }
 
 std::map<std::string, size_t> AtomGroup::conformerMap()

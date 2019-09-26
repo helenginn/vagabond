@@ -30,7 +30,7 @@ class FlexGlobal;
  * points if needed. 
  **/
 
-class Motion : public boost::enable_shared_from_this<Motion>
+class Motion : public Parser
 {
 public:
 	Motion();
@@ -58,12 +58,48 @@ public:
 	void addScrewParameters(RefinementStrategyPtr strategy,
 	                              int num = -1);
 	void deleteLastScrew();
+
+	MotionPtr shared_from_this()
+	{
+		return ToMotionPtr(BaseParser::shared_from_this());
+	}
+	
+	virtual std::string getClassName()
+	{
+		return "Motion";
+	}
+	
+	virtual std::string getParserIdentifier()
+	{
+		return "Motion_" + _name;
+	}
+	
+	void setName(std::string name)
+	{
+		_name = name;
+	}
+	
+	std::string getName()
+	{
+		return _name;
+	}
+
+protected:
+	virtual void addProperties();
+	virtual void postParseTidy();
+	virtual void linkReference(BaseParserPtr object, std::string category);
 private:
 	void deleteQuats();
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,
 	                              FlexGlobal &target);
 
 	RefineMat3x3Ptr _trans;
+	std::string _name;
+
+	/* tmp for loading in/out of a vbond file */
+	std::vector<vec3> _tmpQuats;
+	std::vector<vec3> _tmpScrews;
+
 	std::vector<Quat4Refine *> _quats;
 	std::vector<Quat4Refine *> _screws;
 	

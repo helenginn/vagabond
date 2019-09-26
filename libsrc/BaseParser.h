@@ -165,11 +165,13 @@ protected:
 
 	/**
 	 * Adds a reference to a mat3x3 pointer */
-	void addMat3x3Property(std::string className, mat3x3 *ptr);
+	void addMat3x3Property(std::string className, mat3x3 *ptr, 
+	                       bool onlyReceive = false);
 	void addBoolProperty(std::string className, bool *ptr);
 	void addChild(std::string category, ParserPtr child);
 	void addReference(std::string category, ParserPtr cousin);
-	void addVec3ArrayProperty(std::string className, std::vector<vec3> *ptr);
+	void addVec3ArrayProperty(std::string className, std::vector<vec3> *ptr,
+	                          bool receiveOnly = false);
 	void addMat3x3ArrayProperty(std::string className, std::vector<mat3x3> *ptr);
 	void exposeFunction(std::string funcName, Getter func);
 	void exposeFunction(std::string funcName, Setter func);

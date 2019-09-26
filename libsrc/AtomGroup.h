@@ -165,6 +165,21 @@ public:
 	void saveAtomPositions();
 
 	void boundingMonomers(int *begin, int *end);
+	
+	void setName(std::string name)
+	{
+		_name = name;
+	}
+	
+	void addToName(std::string name)
+	{
+		_name += name;
+	}
+	
+	std::string getName()
+	{
+		return _name;
+	}
 protected:
 	virtual bool shouldRefineAtom(AtomPtr atom) { return true; };
 	int _timesRefined;
@@ -181,13 +196,14 @@ protected:
 
 	virtual std::string getParserIdentifier()
 	{
-		return "AtomGroup_" + atomCount();
+		return "AtomGroup_" + _name;
 	}
-
+	
 	virtual void addProperties();
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void linkReference(BaseParserPtr object, std::string category);
 	std::vector<AtomPtr> _atoms;
+	std::string _name;
 private:
 	static void plotCoordVals(std::vector<CoordVal> &vals, bool difference,
 	                          double cutoff, std::string filename);

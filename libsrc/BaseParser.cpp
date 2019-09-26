@@ -148,11 +148,13 @@ int *BaseParser::getIntProperty(std::string className)
 	return NULL;
 }
 
-void BaseParser::addMat3x3Property(std::string className, mat3x3 *ptr)
+void BaseParser::addMat3x3Property(std::string className, mat3x3 *ptr,
+                                   bool receiveOnly)
 {
 	Mat3x3Property property;
 	property.ptrName = className;
 	property.mat3x3Ptr = ptr;
+	property.receiveOnly = receiveOnly;
 	_mat3x3Properties.push_back(property);
 }
 
@@ -172,11 +174,12 @@ void BaseParser::addMat3x3ArrayProperty(std::string className, std::vector<mat3x
 	_mat3x3ArrayProperties.push_back(property);
 }
 
-void BaseParser::addVec3ArrayProperty(std::string className, std::vector<vec3> *ptr)
+void BaseParser::addVec3ArrayProperty(std::string className, std::vector<vec3> *ptr, bool receiveOnly)
 {
 	Vec3ArrayProperty property;
 	property.ptrName = className;
 	property.vec3ArrayPtr = ptr;
+	property.receiveOnly = receiveOnly;
 	_vec3ArrayProperties.push_back(property);
 }
 
@@ -267,6 +270,8 @@ void BaseParser::outputContents(std::ofstream &stream, int in)
 
 	for (int i = 0; i < _mat3x3Properties.size(); i++)
 	{
+		if (_mat3x3Properties[i].receiveOnly) continue;
+		
 		std::string name = _mat3x3Properties[i].ptrName;
 		mat3x3 *ptr = _mat3x3Properties[i].mat3x3Ptr;
 		if (!ptr) continue;
@@ -1241,6 +1246,10 @@ ParserPtr BaseParser::objectOfType(char *className)
 	{
 		object = ParserPtr(static_cast<Anchor *>(new Anchor()));        
 	}
+	else if (strcmp(className, "Motion") == 0)
+	{
+		object = ParserPtr(static_cast<Motion *>(new Motion()));        
+	}
 	else if (strcmp(className, "Bond") == 0)
 	{
 		object = ParserPtr(static_cast<Bond *>(new Bond()));        
@@ -1276,6 +1285,10 @@ ParserPtr BaseParser::objectOfType(char *className)
 	else if (strcmp(className, "Backbone") == 0)
 	{
 		object = ParserPtr(static_cast<Backbone *>(new Backbone()));        
+	}
+	else if (strcmp(className, "AtomGroup") == 0)
+	{
+		object = ParserPtr(static_cast<AtomGroup *>(new AtomGroup()));        
 	}
 	else
 	{

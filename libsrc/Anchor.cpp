@@ -14,6 +14,7 @@
 #include "Absolute.h"
 #include "Anisotropicator.h"
 #include "Options.h"
+#include "Polymer.h"
 #include "Crystal.h"
 #include "Whack.h"
 #include "Twist.h"
@@ -31,9 +32,6 @@ void Anchor::initialise()
 	_cDir = empty_vec3();
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_disableWhacks = false;
-	
-	MotionPtr mot = MotionPtr(new Motion());
-	_motions.push_back(mot);
 }
 
 Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
@@ -43,6 +41,13 @@ Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
 	_position = absolute->getAbsolutePosition();
 	_molecule = absolute->getMolecule();
 	_atom = absolute->getAtom();
+	
+	atLeastOneMotion();
+
+	if (_motions.size() > 0)
+	{
+		_motions[0]->setName(getAtom()->shortDesc());
+	}
 }
 
 void Anchor::deleteQuats()
@@ -274,6 +279,30 @@ void Anchor::applyQuaternions()
 		_storedSamples[i].basis = basis;
 	}
 	
+}
+
+void Anchor::atLeastOneMotion()
+{
+	/* if crystal only has one polymer we do not care */
+	CrystalPtr crystal = Options::getActiveCrystal();
+	
+	if (crystal->polymerCount() <= 1)
+	{
+		return;
+	}
+	
+	MotionPtr mot = MotionPtr(new Motion());
+	PolymerPtr pol = ToPolymerPtr(getMolecule());
+	crystal->addMotion(mot);
+	
+	if (pol)
+	{
+		mot->addToPolymer(pol);
+	}
+	else
+	{
+		_motions.push_back(mot);
+	}
 }
 
 mat3x3 Anchor::getAnchorRotation()
@@ -522,12 +551,17 @@ void Anchor::addProperties()
 	addVec3Property("c_dir", &_cDir);
 	addVec3Property("pre_n", &_nDir2);
 	addVec3Property("post_c", &_cDir2);
-	addMat3x3Property("translation", _trans->getMat3x3Ptr());
+	addMat3x3Property("translation", _trans->getMat3x3Ptr(), true);
 	addReference("c_atom", _cAtom.lock());
 	
 	for (int i = 0; i < whackCount(); i++)
 	{
 		addChild("whack", _whacks[i]);
+	}
+	
+	for (size_t i = 0; i < motionCount(); i++)
+	{
+		addReference("motion", _motions[i]);
 	}
 	
 	_tmpQuats.clear();
@@ -541,8 +575,8 @@ void Anchor::addProperties()
 		_tmpScrews.push_back(s);
 	}
 	
-	addVec3ArrayProperty("rots", &_tmpQuats);
-	addVec3ArrayProperty("screws", &_tmpScrews);
+	addVec3ArrayProperty("rots", &_tmpQuats, true);
+	addVec3ArrayProperty("screws", &_tmpScrews, true);
 	
 	Model::addProperties();
 }
@@ -567,6 +601,7 @@ void Anchor::postParseTidy()
 		_screws.push_back(s);
 	}
 
+	atLeastOneMotion();
 }
 
 std::string Anchor::getParserIdentifier()
@@ -598,6 +633,11 @@ void Anchor::linkReference(BaseParserPtr object, std::string category)
 	else if (category == "c_atom")
 	{
 		_cAtom = atom;
+	}
+	else if (category == "motion")
+	{
+		MotionPtr motion = ToMotionPtr(object);
+		addMotion(motion);
 	}
 }
 
