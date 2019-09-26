@@ -19,10 +19,13 @@
 #include "WeightedMap.h"
 #include "mat3x3.h"
 #include "Diffraction.h"
+#include "Bucket.h"
+#include "Atom.h"
 #include "Options.h"
 #include <iomanip>
 #include "Shouter.h"
 #include "Correl.h"
+#include "CSV.h"
 #include "../libinfo/CentroidToPhase.h"
 
 #define MAX_SLICES (25.)
@@ -47,6 +50,41 @@ void WeightedMap::createWeightedMaps()
 	Correl correl;
 	correl.setCrystalAndData(_crystal, _data);
 	correl.localCC();
+
+	int nx = _fft->nx;
+	/* Back to real space */
+	FFTPtr copy = FFTPtr(new FFT(*_fft));
+	copy->fft(-1);
+	
+	BucketPtr solv = _crystal->getBucket();
+	CSVPtr calc = CSVPtr(new CSV(4, "i", "j", "d", "s"));
+
+	for (int i = 0; i < _fft->nx; i++)
+	{
+		for (int j = 0; j < _fft->ny; j++)
+		{
+			int index = i + j * nx;
+			Atom *atom = solv->nearbyAtom(index);
+			int val = 0;
+			
+			if (atom)
+			{
+				val = 1;
+			}
+
+			if (atom && atom->getElementSymbol() == "C")
+			{
+				val = 2;
+			}
+			calc->addEntry(4, (double)i, (double)j, copy->data[index][0],
+			               (double)val);
+		}
+	}
+	
+	solv->fourierTransform(1);
+	calc->writeToFile("slice_calculated.csv");
+
+	/* Back to recip space */
 	
 	int map = Options::getMapType();
 
@@ -62,6 +100,18 @@ void WeightedMap::createWeightedMaps()
 	/* Back to real space */
 	_crystal->fourierTransform(-1);
 	_difft->fft(-1);
+	
+	CSVPtr csv = CSVPtr(new CSV(3, "i", "j", "d"));
+
+	for (int i = 0; i < _fft->nx; i++)
+	{
+		for (int j = 0; j < _fft->ny; j++)
+		{
+			csv->addEntry(3, (double)i, (double)j, _fft->data[i + j * nx][0]);
+		}
+	}
+	
+	csv->writeToFile("slice_observed.csv");
 	
 	return;
 }
