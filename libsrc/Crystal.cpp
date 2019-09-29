@@ -1262,6 +1262,11 @@ MotionPtr Crystal::getOverallMotion()
 
 void Crystal::makeOverallMotion()
 {
+	if (!_tied)
+	{
+		return;
+	}
+
 	if (getOverallMotion() != MotionPtr())
 	{
 		return;
