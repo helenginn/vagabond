@@ -29,7 +29,7 @@ void BucketFeatures::addSolvent()
 
 void BucketFeatures::postScaleWork()
 {
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 1; i++)
 	{
 		enhanceFeatures();
 	}
@@ -37,7 +37,7 @@ void BucketFeatures::postScaleWork()
 
 void BucketFeatures::enhanceFeatures()
 {
-	int total = 17;
+	int total = 35;
 	Fibonacci fib;
 	fib.generateLattice(total, 3.1);
 	std::vector<vec3> samples3 = fib.getPoints();
@@ -93,8 +93,9 @@ void BucketFeatures::enhanceFeatures()
 				double curr = fft->data[index][0];
 				double bit = far_ave - curr;
 				
-				double change = bit * 0.2;
+				double change = bit * 0.5;
 				double old = _solvCopy->data[index][0];
+				
 				_solvent->data[index][0] += change * old;
 				
 				total_change += change;
