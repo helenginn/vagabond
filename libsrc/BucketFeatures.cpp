@@ -29,7 +29,7 @@ void BucketFeatures::addSolvent()
 
 void BucketFeatures::postScaleWork()
 {
-	for (int i = 0; i < 1; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		enhanceFeatures();
 	}
@@ -39,10 +39,8 @@ void BucketFeatures::enhanceFeatures()
 {
 	int total = 17;
 	Fibonacci fib;
-	fib.generateLattice(total, 3.5);
+	fib.generateLattice(total, 3.1);
 	std::vector<vec3> samples3 = fib.getPoints();
-	fib.generateLattice(total, 1.5);
-	std::vector<vec3> samples1 = fib.getPoints();
 
 	FFTPtr fft = getCrystal()->getFFT();
 	fft->fft(-1);
@@ -52,8 +50,7 @@ void BucketFeatures::enhanceFeatures()
 	
 	for (int k = 0; k < samples3.size(); k++)
 	{
-		mat3x3_mult_vec(f2r, &samples3[k]);
-		mat3x3_mult_vec(f2r, &samples1[k]);
+		mat3x3_mult_vec(real2frac, &samples3[k]);
 	}
 
 	_solvent->setAll(0);
@@ -82,22 +79,16 @@ void BucketFeatures::enhanceFeatures()
 				vec3 pos = make_vec3(fi, fj, fk);
 
 				double far_den = 0;
-				double near_den = 0;
 
 				for (int l = 0; l < samples3.size(); l++)
 				{
 					vec3 sample = vec3_add_vec3(pos, samples3[l]);
 					double far = fft->getRealFromFrac(sample);
 
-					sample = vec3_add_vec3(pos, samples1[l]);
-					double near = fft->getRealFromFrac(sample);
-
 					far_den += far;
-					near_den += near;
 				}
 
 				double far_ave = far_den / (double)samples3.size();
-				double near_ave = near_den / (double)samples1.size();
 
 				double curr = fft->data[index][0];
 				double bit = far_ave - curr;
