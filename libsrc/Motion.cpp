@@ -328,19 +328,23 @@ void Motion::addProperties()
 	addVec3ArrayProperty("screws", &_tmpScrews);
 	
 	addStringProperty("name", &_name);
-	addChild("all_atoms", _allAtoms);
-	addChild("all_backbone", _allBackbone);
+	addChild("atoms", _allAtoms);
+	addChild("backbone", _allBackbone);
 }
 
-void Motion::addObject(BaseParserPtr object, std::string category)
+void Motion::addObject(ParserPtr object, std::string category)
 {
-	if (category == "all_atoms")
+	AtomGroupPtr grp = ToAtomGroupPtr(object);
+	std::cout << "Category: " << category << " : " 
+	<< grp->getName() << std::endl;
+
+	if (category == "atoms")
 	{
-		_allAtoms = ToAtomGroupPtr(object);
+		_allAtoms = grp;
 	}
-	else if (category == "all_backbone")
+	else if (category == "backbone")
 	{
-		_allBackbone = ToAtomGroupPtr(object);
+		_allBackbone = grp;
 	}
 
 }
