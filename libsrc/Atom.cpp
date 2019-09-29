@@ -408,7 +408,7 @@ void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
 		for (size_t i = 0; i < max; i++)
 		{
 			vec3 pos = getSymRelatedPosition(i, -1);
-			addPointerToLocalArea(fft, unit_cell, pos, ptrs, radius - 0.3);
+			addPointerToLocalArea(fft, unit_cell, pos, ptrs, radius);
 		}
 	}
 }
