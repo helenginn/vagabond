@@ -91,7 +91,7 @@ public:
 protected:
 	virtual void addProperties();
 	virtual void postParseTidy();
-	virtual void addObject(BaseParserPtr object, std::string category);
+	virtual void addObject(ParserPtr object, std::string category);
 private:
 	void deleteQuats();
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,
