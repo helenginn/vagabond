@@ -582,7 +582,7 @@ void FFT::fft(int direction)
 	else if (direction == -1)
 	{
 		fftwf_execute_dft(_myDims->iplan, data, data);
-		multiplyAll((double)1 / nn);
+		multiplyAll(1 / (double)nn);
 	}
 	else
 	{
