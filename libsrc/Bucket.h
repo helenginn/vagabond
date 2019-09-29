@@ -51,6 +51,7 @@ public:
 	void abandonCalculations();
 	
 	bool isSolvent(vec3 pos);
+	virtual void postScaleWork() {};
 	
 	/* only use before FFT */
 
