@@ -8,6 +8,7 @@
 
 #include "Bucket.h"
 #include "BucketBulkSolvent.h"
+#include "BucketFeatures.h"
 #include "BucketPerStrand.h"
 #include "FileReader.h"
 #include "Atom.h"
@@ -34,6 +35,14 @@ BucketPtr Bucket::chosenBucket()
 	else if (Options::getAddSolvent() == 2)
 	{
 		bucket = BucketPtr(new BucketPerStrand());
+	}
+	else if (Options::getAddSolvent() == 3)
+	{
+		bucket = BucketPtr(new BucketFeatures());
+	}
+	else
+	{
+		shout_at_user("Invalid choice of solvent model");
 	}
 	
 	return bucket;
