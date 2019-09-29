@@ -119,7 +119,7 @@ mat3x3 Model::getRealSpaceTensor()
 
 void Model::addProperties()
 {
-	addMat3x3Property("real_space_tensor", &_realSpaceTensor);
+	addMat3x3Property("real_space_tensor", &_realSpaceTensor, true);
 }
 
 
