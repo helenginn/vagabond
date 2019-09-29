@@ -34,6 +34,7 @@ public:
 private:
 	void calculateFiguresOfMerit();
 	void writeCalculatedSlice();
+	void writeObservedSlice();
 	double stdevForReflection(double fobs, double fcalc, 
 	                          double sigfobs, double res);
 	double phaseDevForWeight(double weight);

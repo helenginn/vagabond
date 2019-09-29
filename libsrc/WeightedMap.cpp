@@ -26,6 +26,7 @@
 #include "Shouter.h"
 #include "Correl.h"
 #include "CSV.h"
+#include "Fibonacci.h"
 #include "../libinfo/CentroidToPhase.h"
 
 #define MAX_SLICES (25.)
@@ -52,12 +53,14 @@ void WeightedMap::writeCalculatedSlice()
 	
 	BucketPtr solv = _crystal->getBucket();
 	CSVPtr calc = CSVPtr(new CSV(4, "i", "j", "d", "s"));
+	
+	int z = 0;
 
 	for (int i = 0; i < _fft->nx; i++)
 	{
 		for (int j = 0; j < _fft->ny; j++)
 		{
-			int index = i + j * nx;
+			int index = i + j * nx + z * nx * _fft->ny;
 			Atom *atom = solv->nearbyAtom(index);
 			int val = 0;
 			
@@ -83,8 +86,147 @@ void WeightedMap::writeCalculatedSlice()
 		}
 	}
 	
-	solv->fourierTransform(1);
 	calc->writeToFile("slice_calculated.csv");
+}
+
+void WeightedMap::writeObservedSlice()
+{
+	CSVPtr csv = CSVPtr(new CSV(3, "i", "j", "d"));
+
+	int nx = _fft->nx;
+	long z = 0;
+
+	for (int j = 0; j < _fft->ny; j++)
+	{
+		for (int i = 0; i < _fft->nx; i++)
+		{
+			long index = i + j * nx + z * nx * _fft->ny;
+			csv->addEntry(3, (double)i, (double)j, _fft->data[index][0]);
+		}
+	}
+
+	csv->writeToFile("slice_observed.csv");
+	return;
+
+	Fibonacci fib;
+	fib.generateLattice(15, 3.1);
+	std::vector<vec3> samples = fib.getPoints();
+	mat3x3 r2f = _crystal->getReal2Frac();
+	mat3x3 f2r = mat3x3_inverse(r2f);
+
+	for (int k = 0; k < samples.size(); k++)
+	{
+		mat3x3_mult_vec(r2f, &samples[k]);
+	}
+	
+	BucketPtr bucket = _crystal->getBucket();
+	std::map<double, double> scores;
+	
+	for (double i = 0.4; i < 4.5; i += 0.4)
+	{
+		scores[i] = 0;
+	}
+
+	double atoms = 0;
+	/*
+	for (int i = 0; i < _crystal->atomCount(); i++)
+	{
+		AtomPtr a = _crystal->atom(i);
+		if (!((a->getElementSymbol() == "O" || a->getElementSymbol() == "N")))
+		{
+			continue;
+		}
+		
+		vec3 abs = a->getAbsolutePosition();
+		mat3x3_mult_vec(f2r, &abs);
+	*/
+	
+	std::cout << "Printing out solvent." << std::flush;
+	double prog = 0;
+
+	for (int k = 0; k < _fft->nz; k++)
+	{
+		for (int j = 0; j < _fft->ny; j++)
+		{
+			for (int i = 0; i < _fft->nx; i++)
+			{
+				long ele = _fft->element(i, j, k);
+				if (bucket->nearbyAtom(ele) != NULL)
+				{
+					continue;
+				}
+				
+				if (_fft->getReal(i, j, k) < 0.02)
+				{
+					continue;
+				}
+				
+				vec3 frac = make_vec3((double)i / (double)_fft->nx,
+				                      (double)j / (double)_fft->ny,
+				                      (double)k / (double)_fft->nz);
+
+				atoms++;
+
+				for (std::map<double, double>::iterator it = scores.begin();
+				     it != scores.end(); it++)
+				{
+					double dist = it->first;
+					double score = FLT_MAX;
+					double count = 0;
+
+					for (int l = 0; l < samples.size(); l++)
+					{
+						vec3 copy = samples[l];
+						vec3_mult(&copy, dist);
+						vec3_add_to_vec3(&copy, frac);
+
+						double near = _fft->getRealFromFrac(copy);
+						if (near < score)
+						{
+							score = near;
+							count++;
+						}
+					}
+
+					score /= count;
+					it->second += score;
+				}
+				
+				scores[0] += _fft->getReal(i, j, k);
+			}
+		}
+		
+		prog = (double)k / _fft->nz;
+
+		printf("\rPrinting out solvent |");
+		
+		for (float p = 0; p < prog; p += 0.02)
+		{
+			printf("=");
+		}
+		printf(">");
+
+		for (float p = prog; p < 1; p += 0.02)
+		{
+			printf(" ");
+		}
+		printf("| ");
+
+		fflush(stdout);
+	}
+	
+	printf("\rPrinted out solvent from %.0f voxels.\n", atoms);
+	
+	CSVPtr solv = CSVPtr(new CSV(2, "distance", "density"));
+
+	for (std::map<double, double>::iterator it = scores.begin();
+	     it != scores.end(); it++)
+	{
+		it->second /= atoms;
+		solv->addEntry(2, it->first, it->second);
+	}
+	
+	solv->writeToFile("solvent_structure.csv");
 }
 
 void WeightedMap::createWeightedMaps()
@@ -96,8 +238,6 @@ void WeightedMap::createWeightedMaps()
 	correl.localCC();
 	
 	writeCalculatedSlice();
-
-	int nx = _fft->nx;
 
 	int map = Options::getMapType();
 
@@ -114,19 +254,7 @@ void WeightedMap::createWeightedMaps()
 	_crystal->fourierTransform(-1);
 	_difft->fft(-1);
 	
-	CSVPtr csv = CSVPtr(new CSV(3, "i", "j", "d"));
-
-	for (int i = 0; i < _fft->nx; i++)
-	{
-		for (int j = 0; j < _fft->ny; j++)
-		{
-			csv->addEntry(3, (double)i, (double)j, _fft->data[i + j * nx][0]);
-		}
-	}
-	
-	csv->writeToFile("slice_observed.csv");
-	
-	return;
+	writeObservedSlice();
 }
 
 void WeightedMap::calculateFiguresOfMerit()
