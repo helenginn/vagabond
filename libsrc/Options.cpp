@@ -307,12 +307,22 @@ void Options::executeProtocol()
 
 		if (_rInter)
 		{
-			crystal->fitWholeMolecules();
-			recalculateFFT();
+			int total = (i == 0 ? 2 : 1);
 			
-			if (_rIntra || _far)
+			for (int j = 0; j < total; j++)
 			{
-				crystal->undoIfWorse();
+				crystal->fitWholeMolecules();
+				recalculateFFT();
+
+				if (_rIntra || _far)
+				{
+					bool undid = crystal->undoIfWorse();
+					
+					if (undid)
+					{
+						break;
+					}
+				}
 			}
 		}
 
