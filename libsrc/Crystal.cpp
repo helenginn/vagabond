@@ -298,8 +298,6 @@ void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
 	}
 
 	std::string outputFileOnly = prefix + "_" + _filename + "_vbond.mtz";
-//	getFFT()->writeReciprocalToFile(outputFileOnly, _maxResolution, _spaceGroup,
-//	                                _unitCell, _real2frac, data->getFFT());
 	std::string outputFile = FileReader::addOutputDirectory(outputFileOnly);
 	
 	_lastMtz = outputFile;
