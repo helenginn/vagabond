@@ -1410,7 +1410,9 @@ void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool silent)
 	
 	if (!silent)
 	{
-		std::cout << "applying symmetry, space group " << spaceGroup->symbol_xHM;
+		std::cout << "applying " <<
+		spaceGroup->nsymop << " symmetry operators, space group " 
+		<< spaceGroup->symbol_xHM;
 		std::cout << " (" << spaceGroup->spg_num << ")"  << ": " << std::flush;
 	}
 
