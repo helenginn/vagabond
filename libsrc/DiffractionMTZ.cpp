@@ -97,6 +97,9 @@ void DiffractionMtz::load()
 	xtalCount << std::endl;
 	
 	CMtz::MTZXTAL **xtals = CMtz::MtzXtals(mtz);
+	
+	char *spgname = mtz->mtzsymm.spcgrpname;
+	CSym::CCP4SPG *spg = CSym::ccp4spg_load_by_ccp4_spgname(spgname);
 
 	if (xtalCount == 0)
 	{
@@ -274,9 +277,12 @@ void DiffractionMtz::load()
 	{
 		memcpy(adata, &refldata[i], mtz->ncol_read * sizeof(float));
 
-		int h = adata[col_h->source - 1];
-		int k = adata[col_k->source - 1];
-		int l = adata[col_l->source - 1];
+		int _h = adata[col_h->source - 1];
+		int _k = adata[col_k->source - 1];
+		int _l = adata[col_l->source - 1];
+		int h, k, l;
+		CSym::ccp4spg_put_in_asu(spg, _h, _k, _l, &h, &k, &l);
+
 		float amplitude = adata[col_f->source - 1];
 		float sigma = amplitude / 10;
 		
