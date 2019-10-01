@@ -1606,8 +1606,9 @@ void FFT::writeReciprocalToFile(std::string filename, double maxResolution,
 			{
 				bool asu = CSym::ccp4spg_is_in_asu(mtzspg, i, j, k);
 				bool f000 = (i == 0 && j == 0 && k == 0);
-
-				if (!asu || f000)
+				int abs = CSym::ccp4spg_is_sysabs(mtzspg, i, j, k);
+				
+				if (!asu || f000 || abs)
 				{
 					continue;
 				}
