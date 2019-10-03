@@ -85,7 +85,21 @@ void WeightedMap::writeCalculatedSlice()
 			               (double)val);
 		}
 	}
-	
+
+	std::map<std::string, std::string> plotMap;
+	plotMap["filename"] = "slice_calculated";
+	plotMap["height"] = "800";
+	plotMap["width"] = "800";
+	plotMap["xHeader0"] = "i";
+	plotMap["yHeader0"] = "j";
+	plotMap["zHeader0"] = "d";
+
+	plotMap["xTitle0"] = "a dim";
+	plotMap["yTitle0"] = "b dim";
+	plotMap["style0"] = "heatmap";
+	plotMap["stride"] = i_to_str(_fft->nx);
+
+	calc->plotPNG(plotMap);
 	calc->writeToFile("slice_calculated.csv");
 }
 
@@ -105,6 +119,20 @@ void WeightedMap::writeObservedSlice()
 		}
 	}
 
+	std::map<std::string, std::string> plotMap;
+	plotMap["filename"] = "slice_observed";
+	plotMap["height"] = "800";
+	plotMap["width"] = "800";
+	plotMap["xHeader0"] = "i";
+	plotMap["yHeader0"] = "j";
+	plotMap["zHeader0"] = "d";
+
+	plotMap["xTitle0"] = "a dim";
+	plotMap["yTitle0"] = "b dim";
+	plotMap["style0"] = "heatmap";
+	plotMap["stride"] = i_to_str(_fft->nx);
+
+	csv->plotPNG(plotMap);
 	csv->writeToFile("slice_observed.csv");
 	return;
 
