@@ -600,6 +600,14 @@ void Bond::calculateMagicMat()
 	_magicMat = mat3x3_mult_mat3x3(_baseMagic, rot);
 }
 
+AnchorPtr Bond::getAnchor()
+{
+	PolymerPtr poly = ToPolymerPtr(getMinor()->getMolecule());
+	AnchorPtr anch = poly->getAnchorModel();
+	
+	return anch;
+}
+
 void Bond::getAverageBasisPos(mat3x3 *aveBasis, vec3 *aveStart, 
                               std::vector<BondSample> *vals)
 {

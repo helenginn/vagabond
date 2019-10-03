@@ -544,6 +544,8 @@ private:
 
 	/* Downstream groups of bonds */
 	std::vector<BondGroupPtr> _bondGroups;
+	
+	AnchorPtr getAnchor();
 
 	double _occupancy;
 	double _torsion;
