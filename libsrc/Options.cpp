@@ -120,11 +120,6 @@ void Options::run()
 
 	makeCout();
 
-	if (_outputDir.length())
-	{
-		FileReader::setOutputDirectory(_outputDir);
-	}
-
 	/* ASCII art */
 	std::cout << "   _______                                _______\n";
 	std::cout << " |        ---__________________________---       |\n";
@@ -667,6 +662,15 @@ void Options::parse()
 				          + arg);
 			}
 		}
+	}
+
+	if (_outputDir.length())
+	{
+		FileReader::setOutputDirectory(_outputDir);
+	}
+	else
+	{
+		_outputDir = findNewFolder();
 	}
 	
 	_parsed = true;
