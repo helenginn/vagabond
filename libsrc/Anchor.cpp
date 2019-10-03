@@ -30,7 +30,6 @@ void Anchor::initialise()
 	_position = empty_vec3();
 	_nDir = empty_vec3();
 	_cDir = empty_vec3();
-	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, cleanup));
 	_disableWhacks = false;
 }
 
@@ -215,65 +214,6 @@ void Anchor::createStartPositions(Atom *callAtom)
 	}
 }
 
-void Anchor::applyQuaternions()
-{
-	for (int i = 0; i < _storedSamples.size(); i++)
-	{
-		vec3 start = _storedSamples[i].start;
-		vec3 neg_start = vec3_mult(start, -1);
-		vec3 diff = vec3_subtract_vec3(start, _position);
-		mat3x3 rot_only = make_mat3x3();
-
-		for (int j = 0; j < _quats.size(); j++)
-		{
-			vec3 quat = _quats[j]->getVec3();
-			mat3x3 rotbasis = mat3x3_ortho_axes(quat);
-			mat3x3 transbasis = mat3x3_transpose(rotbasis);
-
-			vec3 screw = _screws[j]->getVec3();
-			mat3x3_mult_vec(transbasis, &screw);
-			
-			vec3 rot_vec = quat;
-			vec3_set_length(&rot_vec, 1);
-//			double ang = vec3_length(quat);
-			double dot = vec3_dot_vec3(diff, quat);
-//			dot *= ang;
-			
-			if (rot_vec.x != rot_vec.x || dot != dot)
-			{
-				continue;
-			}
-
-			mat3x3 rot_mat = mat3x3_unit_vec_rotation(rot_vec, dot);
-			mat3x3 basis = mat3x3_mult_mat3x3(rot_mat, 
-			                                  _storedSamples[i].basis); 
-			rot_only = mat3x3_mult_mat3x3(rot_mat, rot_only);
-			
-			vec3 shift = screw;
-			mat3x3_mult_vec(rot_mat, &shift);
-			vec3_subtract_from_vec3(&shift, screw);
-			
-			if (shift.x != shift.x)
-			{
-				continue;
-			}
-
-
-			vec3_add_to_vec3(&_storedSamples[i].old_start, shift);
-			vec3_add_to_vec3(&_storedSamples[i].start, shift);
-		}
-		
-		vec3 diff_to_old = vec3_subtract_vec3(_storedSamples[i].old_start,
-		                                      start);
-		mat3x3_mult_vec(rot_only, &diff_to_old);
-		vec3 new_old = vec3_add_vec3(start, diff_to_old);
-		_storedSamples[i].old_start = new_old;
-		mat3x3 basis = mat3x3_mult_mat3x3(rot_only, _storedSamples[i].basis);
-		_storedSamples[i].basis = basis;
-	}
-	
-}
-
 void Anchor::atLeastOneMotion()
 {
 	/* if crystal only has one polymer we do not care */
@@ -315,39 +255,6 @@ void Anchor::applyWholeMotions()
 		_motions[i]->applyRotations(_storedSamples);
 	}
 }
-
-void Anchor::translateStartPositions()
-{
-	mat3x3 translation = _trans->getMat3x3();
-	Anisotropicator tropicator;
-	tropicator.setTensor(translation);
-	mat3x3 trans = tropicator.basis();
-
-	vec3 sum_start = empty_vec3();
-	vec3 sum_old = empty_vec3();
-
-	for (int i = 0; i < _storedSamples.size(); i++)
-	{
-		vec3_add_to_vec3(&sum_start, _storedSamples[i].start);
-		vec3_add_to_vec3(&sum_old, _storedSamples[i].old_start);
-	}
-	
-	vec3_mult(&sum_start, 1 / (double)_storedSamples.size());
-	vec3_mult(&sum_old, 1 / (double)_storedSamples.size());
-
-	for (int i = 0; i < _storedSamples.size(); i++)
-	{
-		vec3 start = _storedSamples[i].start;
-		vec3 diff = vec3_subtract_vec3(start, sum_start);
-		mat3x3_mult_vec(trans, &diff);
-		vec3 new_start = vec3_add_vec3(sum_start, diff);
-		vec3 old_start = vec3_add_vec3(sum_old, diff);
-
-		_storedSamples[i].start = new_start;
-		_storedSamples[i].old_start = old_start;
-	}
-}
-
 
 void Anchor::sanityCheck()
 {
@@ -512,8 +419,6 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 	if (!_disableWhacks)
 	{
 		applyWholeMotions();
-//		translateStartPositions();
-		applyQuaternions();
 
 		fixCentroid();
 
@@ -546,7 +451,7 @@ void Anchor::addProperties()
 	addVec3Property("c_dir", &_cDir);
 	addVec3Property("pre_n", &_nDir2);
 	addVec3Property("post_c", &_cDir2);
-	addMat3x3Property("translation", _trans->getMat3x3Ptr(), true);
+	addMat3x3Property("translation", &_trans, true);
 	addReference("c_atom", _cAtom.lock());
 	
 	for (int i = 0; i < whackCount(); i++)
@@ -664,59 +569,4 @@ void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
 	}
 
 	_motions[0]->addTranslationParameters(strategy);
-}
-
-void Anchor::addLibrationParameters(RefinementStrategyPtr strategy,
-                                      int num)
-{
-	if (num < 0)
-	{
-		for (int i = 0; i < _quats.size(); i++)
-		{
-			_quats[i]->addVecToStrategy(strategy, 0.01, 0.0001, "rot");
-		}
-	}
-	else
-	{
-		if (num >= _quats.size())
-		{
-			_quats.push_back(new Quat4Refine());
-			_screws.push_back(new Quat4Refine());
-			num = _quats.size() - 1;
-		}
-
-		_quats[num]->addVecToStrategy(strategy, 0.01, 0.0001, "rot");
-	}
-}
-
-void Anchor::addScrewParameters(RefinementStrategyPtr strategy,
-                                int num)
-{
-	if (num < 0)
-	{
-		for (int i = 0; i < _quats.size(); i++)
-		{
-			_screws[i]->addVec2ToStrategy(strategy, 3.0, 0.01, "screw");
-		}
-	}
-	else
-	{
-		if (num >= _quats.size())
-		{
-			return;
-		}
-
-		_screws[num]->addVec2ToStrategy(strategy, 3.0, 0.01, "screw");
-	}
-}
-
-void Anchor::deleteLastScrew()
-{
-	if (_screws.size() == 0)
-	{
-		return;
-	}
-
-	_screws.pop_back();
-	_quats.pop_back();
 }

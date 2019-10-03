@@ -128,24 +128,9 @@ public:
 	{
 		return _whacks[i];
 	}
-	
-	size_t screwCount()
-	{
-		return _screws.size();
-	}
 
-	void deleteLastScrew();
 	void addTranslationParameters(RefinementStrategyPtr strategy,
 	                              double mult = 1);
-	void addLibrationParameters(RefinementStrategyPtr strategy,
-	                              int num = 0);
-	void addScrewParameters(RefinementStrategyPtr strategy,
-	                              int num = -1);
-	
-	int librationCount()
-	{
-		return _quats.size();
-	}
 
 	static void cleanup(void *object)
 	{
@@ -257,7 +242,7 @@ protected:
 	
 	/* Euler angles for modifying _nAtom and _cAtom */
 	double _alpha, _beta, _gamma;
-	RefineMat3x3Ptr _trans;
+	mat3x3 _trans;
 	
 	std::vector<Quat4Refine *> _quats;
 	std::vector<Quat4Refine *> _screws;
@@ -271,9 +256,7 @@ protected:
 	AtomWkr _nAtom, _cAtom;
 private:
 	void initialise();
-	void translateStartPositions();
 	void applyWholeMotions();
-	void applyQuaternions();
 	void fixCentroid();
 	void deleteQuats();
 	mat3x3 getAnchorRotation();
