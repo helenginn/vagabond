@@ -432,9 +432,9 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
 
 		double lastX = (points[0].x - minX) / (maxX - minX);
 		double lastY = (points[0].y - minY) / (maxY - minY);
-		double xBlockSize = xAxis * width / (double)fastStride + 1.5;
+		double xBlockSize = xAxis * width / (double)fastStride;
 		int yNumber = entries.size() / (double)fastStride;
-		double yBlockSize = yAxis * height / yNumber + 1.5;
+		double yBlockSize = yAxis * height / yNumber;
 
 		for (int i = 0; i < points.size(); i++)
 		{
@@ -488,9 +488,9 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
 					blue = propZ * 255;
 				}
 
-				for (int j = yProp - yBlockSize; j < yProp; j++)
+				for (int j = yProp - yBlockSize; j < yProp + 1; j++)
 				{
-					for (int k = xProp - xBlockSize; k < xProp; k++)
+					for (int k = xProp - xBlockSize; k < xProp + 1; k++)
 					{
 						png->setPixelColourRelative(k, j, red, green, blue);
 					}
