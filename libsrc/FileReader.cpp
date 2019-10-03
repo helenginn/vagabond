@@ -158,3 +158,20 @@ std::string f_to_str(double val, int precision)
 
 	return temp;
 }
+
+std::string findNewFolder()
+{
+	int count = 1;
+	
+	while (1)
+	{
+		std::string test = "refine_" + i_to_str(count);
+
+		if (!file_exists(test))
+		{
+			return test;
+		}
+		
+		count++;
+	}
+}

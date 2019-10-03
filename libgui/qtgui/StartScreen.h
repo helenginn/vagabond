@@ -60,7 +60,6 @@ private:
 	char **_argv;
 
 	void getFile(std::string title, QString types, QLineEdit *edit);
-	std::string findNewFolder();
 private slots:
 	void pushRun();
 	void chooseMtz();

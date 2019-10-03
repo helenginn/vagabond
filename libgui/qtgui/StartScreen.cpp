@@ -30,23 +30,6 @@
 #include <QtWidgets/qmessagebox.h>
 #include "../../libsrc/FileReader.h"
 
-std::string StartScreen::findNewFolder()
-{
-	int count = 1;
-	
-	while (1)
-	{
-		std::string test = "refine_" + i_to_str(count);
-
-		if (!file_exists(test))
-		{
-			return test;
-		}
-		
-		count++;
-	}
-}
-
 void StartScreen::makeButtons()
 {
 	_bRun = new QPushButton("Start", this);

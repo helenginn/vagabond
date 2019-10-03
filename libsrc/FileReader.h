@@ -28,6 +28,8 @@ std::string getBaseFilename(std::string filename);
 std::string i_to_str(int val);
 std::string f_to_str(double val, int precision);
 
+std::string findNewFolder();
+
 /* Random string things */
 
 void trim(std::string& str);
