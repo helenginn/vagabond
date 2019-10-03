@@ -1411,10 +1411,7 @@ void Polymer::reportParameters()
 	
 	if (getAnchorModel())
 	{
-		size_t count = getAnchorModel()->screwCount();
-
-		count *= 5;
-		flexChain += count;
+		flexChain += 15;
 	}
 
 	
