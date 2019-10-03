@@ -710,7 +710,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 
 double Bond::getBaseKick()
 {
-	if (isFixed())
+	if (isFixed() || getAnchor()->whacksDisabled())
 	{
 		return 0;
 	}
