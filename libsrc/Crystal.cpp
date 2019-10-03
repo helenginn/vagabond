@@ -1321,18 +1321,6 @@ void Crystal::fitWholeMolecules()
 	{
 		_motions[i]->refine();
 	}
-
-	return;
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isPolymer())
-		{
-			continue;
-		}
-
-		ToPolymerPtr(molecule(i))->refineGlobalFlexibility();
-	}
 }
 
 bool Crystal::calibrateAllMolecules()

@@ -151,7 +151,6 @@ public:
 		return ToPolymerPtr(Molecule::shared_from_this());
 	}
 
-	void refineGlobalFlexibility();
 	bool refineLocalFlexibility(bool magic = false);
 	void reflex();
 	virtual void addProperties();

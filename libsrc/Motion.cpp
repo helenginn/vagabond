@@ -335,8 +335,6 @@ void Motion::addProperties()
 void Motion::addObject(ParserPtr object, std::string category)
 {
 	AtomGroupPtr grp = ToAtomGroupPtr(object);
-	std::cout << "Category: " << category << " : " 
-	<< grp->getName() << std::endl;
 
 	if (category == "atoms")
 	{
