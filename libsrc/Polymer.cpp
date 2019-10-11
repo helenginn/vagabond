@@ -45,7 +45,6 @@
 #include "Refitter.h"
 #include "RefinementNelderMead.h"
 #include "RefinementLBFGS.h"
-#include "RefinementList.h"
 #include "RefinementGridSearch.h"
 #include "Hydrogenator.h"
 
