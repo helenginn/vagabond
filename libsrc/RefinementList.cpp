@@ -48,7 +48,7 @@ void RefinementList::applyTest(int num)
 		std::cout << std::setprecision(5) << test[i] << ", ";
 	}
 
-	std::cout << ") " << std::endl;
+	std::cout << ") ";
 }
 
 void RefinementList::refine()
