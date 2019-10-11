@@ -1025,6 +1025,7 @@ void Crystal::setAnchors()
 
 Crystal::Crystal()
 {
+	_lastLocalCC = 0;
 	_bestState = 0;
 	_probeRadius = 0.;
 	_silent = false;
