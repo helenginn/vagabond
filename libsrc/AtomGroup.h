@@ -42,6 +42,7 @@ public:
 	AtomList findAtoms(std::string atomType);
 	AtomGroupPtr subGroupForConf(int conf);
 	AtomList findAtoms(std::string atomType, int resNum);
+	AtomList findAtomByNum(std::string atomType, int atomNum);
 
 	double scoreWithMap(ScoreType scoreType, CrystalPtr crystal, 
 	                    std::string plot = "", unsigned int flags = 0);

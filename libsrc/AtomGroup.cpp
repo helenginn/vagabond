@@ -42,18 +42,34 @@ AtomPtr AtomGroup::findAtom(std::string atomType)
 
 AtomList AtomGroup::findAtoms(std::string atomType, int resNum)
 {
-	AtomList atoms = findAtoms(atomType);
+	AtomList list;
 
-	for (size_t i = 0; i < atoms.size(); i++)
+	for (size_t i = 0; i < atomCount(); i++)
 	{
-		if (atoms[i]->getResidueNum() != resNum)
+		if ((atom(i)->getAtomName() == atomType)
+		 && (atom(i)->getResidueNum() == resNum))
 		{
-			atoms.erase(atoms.begin() + i);
-			i--;
+			list.push_back(atom(i));
 		}
 	}
 
-	return atoms;
+	return list;
+}
+
+AtomList AtomGroup::findAtomByNum(std::string atomType, int atomNum)
+{
+	AtomList list;
+
+	for (size_t i = 0; i < atomCount(); i++)
+	{
+		if ((atom(i)->getAtomName() == atomType)
+		 && (atom(i)->getAtomNum() == atomNum))
+		{
+			list.push_back(atom(i));
+		}
+	}
+
+	return list;
 }
 
 AtomGroupPtr AtomGroup::subGroupForConf(int conf)
