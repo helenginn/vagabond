@@ -52,7 +52,10 @@ void WeightedMap::writeCalculatedSlice()
 	copy->fft(-1);
 	
 	BucketPtr solv = _crystal->getBucket();
-	CSVPtr calc = CSVPtr(new CSV(4, "i", "j", "d", "s"));
+	FFTPtr mask = solv->getSolvent();
+	mask->fft(-1);
+	CSVPtr calc = CSVPtr(new CSV(5, "i", "j", "d", "m", "s"));
+	calc->setSubDirectory("slices");
 	
 	int z = 0;
 
@@ -81,13 +84,15 @@ void WeightedMap::writeCalculatedSlice()
 			{
 				val = 4;
 			}
-			calc->addEntry(4, (double)i, (double)j, copy->data[index][0],
-			               (double)val);
+
+			calc->addEntry(5, (double)i, (double)j, copy->data[index][0],
+			               (double)val, mask->data[index][0]);
 		}
 	}
 
+	std::string cycle = "_" + i_to_str(_crystal->getCycleNum());
 	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = "slice_calculated";
+	plotMap["filename"] = "calculated_slice" + cycle;
 	plotMap["height"] = "800";
 	plotMap["width"] = "800";
 	plotMap["xHeader0"] = "i";
@@ -100,12 +105,18 @@ void WeightedMap::writeCalculatedSlice()
 	plotMap["stride"] = i_to_str(_fft->nx);
 
 	calc->plotPNG(plotMap);
-	calc->writeToFile("slice_calculated.csv");
+	calc->writeToFile("calculated_slice.csv");
+
+	plotMap["filename"] = "solvent_slice" + cycle;
+	plotMap["zHeader0"] = "s";
+
+	calc->plotPNG(plotMap);
 }
 
 void WeightedMap::writeObservedSlice()
 {
 	CSVPtr csv = CSVPtr(new CSV(3, "i", "j", "d"));
+	csv->setSubDirectory("slices");
 
 	int nx = _fft->nx;
 	long z = 0;
@@ -119,8 +130,9 @@ void WeightedMap::writeObservedSlice()
 		}
 	}
 
+	std::string cycle = "_" + i_to_str(_crystal->getCycleNum());
 	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = "slice_observed";
+	plotMap["filename"] = "observed_slice" + cycle;
 	plotMap["height"] = "800";
 	plotMap["width"] = "800";
 	plotMap["xHeader0"] = "i";
@@ -133,7 +145,7 @@ void WeightedMap::writeObservedSlice()
 	plotMap["stride"] = i_to_str(_fft->nx);
 
 	csv->plotPNG(plotMap);
-	csv->writeToFile("slice_observed.csv");
+	csv->writeToFile("observed_slice.csv");
 	return;
 
 	Fibonacci fib;

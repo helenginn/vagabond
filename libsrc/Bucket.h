@@ -62,6 +62,11 @@ public:
 	{
 		return _maskedRegions;
 	}	
+	
+	FFTPtr getSolvent()
+	{
+		return _solvent;
+	}
 protected:
 	FFTPtr _solvent;
 	FFTPtr _maskedRegions;
