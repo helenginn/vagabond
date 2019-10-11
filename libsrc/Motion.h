@@ -104,7 +104,9 @@ private:
 	std::vector<vec3> _tmpQuats;
 	std::vector<vec3> _tmpScrews;
 
+	/* contains rotation information */
 	std::vector<Quat4Refine *> _quats;
+	
 	std::vector<Quat4Refine *> _screws;
 	
 	bool _refined;
