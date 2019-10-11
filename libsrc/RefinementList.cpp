@@ -41,14 +41,10 @@ void RefinementList::applyTest(int num)
 {
 	std::vector<double> test = _tests[num];
 
-	std::cout << "(";
 	for (int i = 0; i < test.size(); i++)
 	{
 		setValueForParam(i, test[i]);
-		std::cout << std::setprecision(5) << test[i] << ", ";
 	}
-
-	std::cout << ") ";
 }
 
 void RefinementList::refine()
@@ -62,7 +58,6 @@ void RefinementList::refine()
 		applyTest(_cycleNum);
 
 		double eval = (*evaluationFunction)(evaluateObject);
-		std::cout << std::setprecision(5) << eval << std::endl;
 
 		if (eval < bestScore)
 		{
