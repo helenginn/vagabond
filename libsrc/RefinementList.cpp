@@ -50,21 +50,21 @@ void RefinementList::refine()
 {
 	RefinementStrategy::refine();
 	int bestCycle = 0;
-	double bestScore = startingScore;
+	double bestScore = _prevScore;
 	
 	while (_cycleNum < _tests.size())
 	{
 		applyTest(_cycleNum);
 
-		double eval = evaluationFunction(evaluateObject);
+		double eval = (*evaluationFunction)(evaluateObject);
 		
 		if (eval < bestScore)
 		{
 			bestScore = eval;
 			bestCycle = _cycleNum;
 		}
-		
-		reportProgress(eval);
+		reportProgress(bestScore);
+
 		_cycleNum++;
 	}
 
