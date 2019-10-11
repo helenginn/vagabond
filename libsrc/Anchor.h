@@ -226,6 +226,11 @@ public:
 	{
 		return "Anchor";
 	}
+	
+	bool whacksDisabled()
+	{
+		return _disableWhacks;
+	}
 protected:
 	
 	virtual std::string getParserIdentifier();
