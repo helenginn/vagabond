@@ -70,6 +70,7 @@ inline ShellInfo makeShellInfo(double min, double max)
 	shell.rFactor = 0;
 	shell.scale = 1;
 	shell.std_err = 0;
+	shell.aveFo = 0;
 	shell.phi_spread = 0;
 	shell.count = 0;
 	
