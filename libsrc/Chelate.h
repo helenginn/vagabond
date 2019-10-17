@@ -52,7 +52,7 @@ public:
 	void setChelatedAtom(AtomPtr atom);
 	void addChelatingAtom(AtomPtr atom);
 
-	vec3 getAbsolutePosition();
+	virtual vec3 getAbsolutePosition();
 	virtual double getMeanSquareDeviation();
 	FFTPtr makeDistribution();
 	
