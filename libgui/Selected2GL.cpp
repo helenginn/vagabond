@@ -18,9 +18,9 @@
 
 #include "Selected.h"
 #include "Selected2GL.h"
-#include "Monomer.h"
-#include "Options.h"
-#include "Polymer.h"
+#include "../libsrc/Monomer.h"
+#include "../libsrc/Options.h"
+#include "../libsrc/Polymer.h"
 
 Selected2GL::Selected2GL()
 {

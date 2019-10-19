@@ -17,9 +17,9 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "ErroneousZone.h"
-#include "Crystal.h"
-#include "Polymer.h"
-#include "Monomer.h"
+#include "../../libsrc/Crystal.h"
+#include "../../libsrc/Polymer.h"
+#include "../../libsrc/Monomer.h"
 
 ErroneousZone::ErroneousZone(QWidget *parent, CrystalPtr crystal) 
 : QMainWindow(parent)

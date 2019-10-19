@@ -46,7 +46,7 @@ gen_src = custom_target('commit-output',
 
 # Meat of the vagabond library, minus command line-specific or GUI-specific source files.
 
-lib_vag= static_library('vag', gen_src, 'libsrc/Absolute.cpp', 
+base_files = files('libsrc/Absolute.cpp', 
 'libsrc/Anchor.cpp', 
 'libsrc/Anisotropicator.cpp', 
 'libsrc/Atom.cpp', 
@@ -112,7 +112,9 @@ lib_vag= static_library('vag', gen_src, 'libsrc/Absolute.cpp',
 'libsrc/vec3.cpp', 
 'libsrc/WaterNetwork.cpp', 
 'libsrc/WeightedMap.cpp', 
-'libsrc/Whack.cpp', 
+'libsrc/Whack.cpp')
+
+lib_vag = library('vag', gen_src, base_files,
 dependencies: [png_dep, fftw_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep], cpp_args: ['-w', '-std=c++11'], install: true)
 inc_vag = include_directories('libsrc')
 dep_vag = declare_dependency(link_with: lib_vag, include_directories: inc_vag)
@@ -144,7 +146,7 @@ if qt5_dep.found() and dep_gl.found()
 # Non-Qt5 GUI elements (mostly OpenGL stuff)
 # Uses Qt5-supplied OpenGL
 
-	lib_vgui = library('vgui',
+	executable('vagabond-gui', base_files,
 'libgui/Atoms2GL.cpp', 
 'libgui/Bonds2GL.cpp', 
 'libgui/Density2GL.cpp',
@@ -153,11 +155,6 @@ if qt5_dep.found() and dep_gl.found()
 'libgui/shader.cpp',
 'libgui/Selected2GL.cpp',
 'libgui/Vagabond2GL.cpp', 
-cpp_args: ['-w', '-std=c++11'], dependencies : [ qt5_dep, dep_vag ], install: true)
-	inc_vgui = include_directories('libgui')
-dep_vgui = declare_dependency(link_with: lib_vgui, include_directories: inc_vgui)
-
-	executable('vagabond-gui',
 'libgui/qtgui/gui_main.cpp',
 'libgui/qtgui/CrystalExplorer.cpp',
 'libgui/qtgui/Dialogue.cpp',
@@ -173,7 +170,8 @@ dep_vgui = declare_dependency(link_with: lib_vgui, include_directories: inc_vgui
 'libgui/qtgui/StartScreen.cpp',
 'libgui/qtgui/VagabondGLWidget.cpp',
 'libgui/qtgui/VagWindow.cpp', 
-moc_files, dependencies: [qt5_dep, dep_vag, dep_vgeom, dep_vgui], install: true, cpp_args: ['-w', '-std=c++11'])
+moc_files, dependencies: [qt5_dep, dep_vgeom], install: true, cpp_args: ['-w',
+'-std=c++11'])
 else
 	message('QT5 not found, so not building the GUI.')
 endif
