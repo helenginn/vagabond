@@ -170,7 +170,7 @@ if qt5_dep.found() and dep_gl.found()
 'libgui/qtgui/StartScreen.cpp',
 'libgui/qtgui/VagabondGLWidget.cpp',
 'libgui/qtgui/VagWindow.cpp', 
-moc_files, dependencies: [qt5_dep, dep_vgeom], install: true, cpp_args: ['-w',
+moc_files, dependencies: [qt5_dep, dep_ica, dep_ccp4, dep_vgeom, png_dep, fftw_dep, boost_dep], install: true, cpp_args: ['-w',
 '-std=c++11'])
 else
 	message('QT5 not found, so not building the GUI.')
