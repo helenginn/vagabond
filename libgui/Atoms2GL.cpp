@@ -18,7 +18,7 @@
 
 #include "Atoms2GL.h"
 #include "Blob.h"
-#include "Molecule.h"
+#include "../libsrc/Molecule.h"
 #include "Shaders/Blob_vsh.h"
 #include "Shaders/Blob_fsh.h"
 
