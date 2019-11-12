@@ -2,7 +2,6 @@
 #define __vagabond_Pencil_fsh__
 
 std::string Pencil_fsh =
-"#version 130\n"\
 "\n"\
 "varying vec4 vColor;\n"\
 "varying vec2 vTex;\n"\
