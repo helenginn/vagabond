@@ -121,6 +121,11 @@ void PartialStructure::scalePartialStructure()
 	fine->setSilent(true);
 	fine->refine();
 
+	if (_solvBFac < 0)
+	{
+		_solvBFac = 0;
+	}
+
 	/** If we are doing powder analysis we don't actually want
 	* 	to add the solvent */
 	if (Options::shouldPowder())
@@ -138,6 +143,8 @@ void PartialStructure::scalePartialStructure()
 
 	std::vector<double> fData, fModel;
 	CSVPtr csv = CSVPtr(new CSV(2, "fo", "fc"));
+
+	double adjB = _solvBFac;
 
 	vec3 nLimits = getNLimits(fftData, _partial);
 
@@ -164,7 +171,7 @@ void PartialStructure::scalePartialStructure()
 				double length = vec3_length(ijk);
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
-				double bFacMod = exp(-_solvBFac / four_d_sq);
+				double bFacMod = exp(-adjB / four_d_sq);
 
 				realPartial *= _solvScale * bFacMod;
 				imagPartial *= _solvScale * bFacMod;
@@ -200,6 +207,11 @@ double PartialStructure::scaleAndAddPartialScore()
 	vec3 nLimits = getNLimits(fftData, _partial);
 
 	std::vector<double> fData, fModel;
+	double adjB = _solvBFac;
+	if (adjB < 0)
+	{
+		adjB = 0;
+	}
 	
 	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
@@ -228,7 +240,7 @@ double PartialStructure::scaleAndAddPartialScore()
 				double length = vec3_length(ijk);
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
-				double bFacMod = exp(-_solvBFac / four_d_sq);
+				double bFacMod = exp(-adjB / four_d_sq);
 
 				bool isRfree = (fftData->getMask(m, n, o) == 0);
 				if (isRfree) continue;
