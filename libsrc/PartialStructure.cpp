@@ -126,6 +126,11 @@ void PartialStructure::scalePartialStructure()
 		_solvBFac = 0;
 	}
 
+	if (_solvScale < 0)
+	{
+		_solvScale = 0;
+	}
+
 	/** If we are doing powder analysis we don't actually want
 	* 	to add the solvent */
 	if (Options::shouldPowder())
@@ -143,8 +148,6 @@ void PartialStructure::scalePartialStructure()
 
 	std::vector<double> fData, fModel;
 	CSVPtr csv = CSVPtr(new CSV(2, "fo", "fc"));
-
-	double adjB = _solvBFac;
 
 	vec3 nLimits = getNLimits(fftData, _partial);
 
@@ -171,7 +174,7 @@ void PartialStructure::scalePartialStructure()
 				double length = vec3_length(ijk);
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
-				double bFacMod = exp(-adjB / four_d_sq);
+				double bFacMod = exp(-_solvBFac / four_d_sq);
 
 				realPartial *= _solvScale * bFacMod;
 				imagPartial *= _solvScale * bFacMod;
@@ -208,10 +211,9 @@ double PartialStructure::scaleAndAddPartialScore()
 
 	std::vector<double> fData, fModel;
 	double adjB = _solvBFac;
-	if (adjB < 0)
-	{
-		adjB = 0;
-	}
+	double adjS = _solvScale;
+	if (adjB < 0) { adjB = 0; }
+	if (adjS < 0) { adjS = 0; }
 	
 	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
@@ -249,8 +251,8 @@ double PartialStructure::scaleAndAddPartialScore()
 
 				if (ref != ref) continue;
 
-				realPartial *= _solvScale * bFacMod;
-				imagPartial *= _solvScale * bFacMod;
+				realPartial *= adjS * bFacMod;
+				imagPartial *= adjS * bFacMod;
 				
 				float real = realProtein + realPartial;
 				float imag = imagProtein + imagPartial;
