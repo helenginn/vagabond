@@ -121,11 +121,6 @@ void PartialStructure::scalePartialStructure()
 	fine->setSilent(true);
 	fine->refine();
 
-	if (_solvBFac < 0)
-	{
-		_solvBFac = 0;
-	}
-
 	if (_solvScale < 0)
 	{
 		_solvScale = 0;
@@ -212,7 +207,7 @@ double PartialStructure::scaleAndAddPartialScore()
 	std::vector<double> fData, fModel;
 	double adjB = _solvBFac;
 	double adjS = _solvScale;
-	if (adjB < 0) { adjB = 0; }
+//	if (adjB < 0) { adjB = 0; }
 	if (adjS < 0) { adjS = 0; }
 	
 	for (int k = -nLimits.z; k < nLimits.z; k++)
@@ -264,8 +259,14 @@ double PartialStructure::scaleAndAddPartialScore()
 		}
 	}
 
-
 	double correl = correlation(fData, fModel);
+	
+	/* Penalty for having a negative B factor */
+	if (adjB < 0)
+	{
+		adjB /= 100;
+		correl *= exp(adjB);
+	}
 	
 	return -correl;
 }
