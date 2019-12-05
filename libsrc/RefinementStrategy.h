@@ -166,6 +166,7 @@ public:
 		return fabs(_improvement);
 	}
 	
+	void reportResult();
 protected:
 	double degMult()
 	{

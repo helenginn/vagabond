@@ -269,3 +269,19 @@ void RefinementStrategy::resetToInitialParameters()
 		setValueForParam(i, value);
 	}
 }
+
+void RefinementStrategy::reportResult()
+{
+	double val = improvement();
+
+	if (didChange())
+	{
+		_changed = true;
+		std::cout << std::setw(3) << val << "% improved. ... done. ";
+	}
+	else
+	{
+		std::cout << " not improved.   ... done. ";
+	}
+}
+

@@ -83,23 +83,6 @@ void FlexLocal::svd()
 	std::cout << std::endl;
 }
 
-void FlexLocal::reportResult(NelderMeadPtr nelder)
-{
-	double val = (1 + getScore(this)) * 100.;
-	val = nelder->improvement();
-
-	if (nelder->didChange())
-	{
-		_changed = true;
-		std::cout << std::setw(3) << val << 
-		"% improved. ... done. ";
-	}
-	else
-	{
-		std::cout << " not improved.   ... done. ";
-	}
-}
-
 void FlexLocal::refineClusters()
 {
 	std::cout << "| 1. Refining bond clusters... " 
@@ -117,7 +100,7 @@ void FlexLocal::refineClusters()
 
 	_svd->addToStrategy(nelder, _negMult, _magic);
 	nelder->refine();
-	reportResult(nelder);
+	nelder->reportResult();
 
 	timer.quickReport();
 	std::cout << std::endl;
