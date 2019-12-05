@@ -300,6 +300,19 @@ AtomGroup::AtomGroup()
 	_timesRefined = 0;
 }
 
+void AtomGroup::propagateChangeExceptAnchor()
+{
+	for (size_t i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->getModel()->isAnchor())
+		{
+			continue;
+		}
+
+		atom(i)->getModel()->propagateChange(0);
+	}
+}
+
 void AtomGroup::propagateChange()
 {
 	for (size_t i = 0; i < atomCount(); i++)

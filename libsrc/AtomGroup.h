@@ -148,6 +148,7 @@ public:
 	/** Instructs the models of all the atoms inside to propagate a change of
 	* parameters. See also: Model::propagateChange(). */
 	void propagateChange();
+	void propagateChangeExceptAnchor();
 	void refreshPositions(bool quick = true);
 
 	AtomPtr getClosestAtom(CrystalPtr crystal, vec3 pos);

@@ -187,7 +187,7 @@ double FlexLocal::getScore(void *object)
 		local->_svd->applyParameters();
 	}
 
-	local->_polymer->propagateChange();
+	local->_polymer->propagateChangeExceptAnchor();
 	
 	double score = AtomGroup::scoreWithMapGeneral(&local->_workspace);
 	return score;
