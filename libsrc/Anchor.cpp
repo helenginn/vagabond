@@ -387,7 +387,7 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 		_samples[callAtom] = pair;
 	}
 	
-	if (!_samples[callAtom].changed)
+	if (!_samples[callAtom].changed && !force)
 	{
 		return &_samples[callAtom].samples;
 	}
