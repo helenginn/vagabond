@@ -106,6 +106,10 @@ class Polymer;
 typedef boost::shared_ptr<Polymer> PolymerPtr;
 typedef boost::weak_ptr<Polymer> PolymerWkr;
 
+class KeyPoints;
+typedef boost::shared_ptr<KeyPoints> KeyPointsPtr;
+typedef boost::weak_ptr<KeyPoints> KeyPointsWkr;
+
 class Atom;
 typedef boost::shared_ptr<Atom> AtomPtr;
 typedef boost::weak_ptr<Atom> AtomWkr;

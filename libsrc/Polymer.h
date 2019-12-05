@@ -192,6 +192,7 @@ protected:
 	}
 
 private:
+	void setupKeyPoints();
 	void refineMonomer(MonomerPtr monomer, CrystalPtr target,
 	                   RefinementType rType);
 
@@ -207,6 +208,7 @@ private:
 	int _flexibilityParams;
 	int _positionalParams;
 	std::string _graphName;
+	KeyPointsPtr _keyPoints;
 
 	AtomGroupPtr _allBackbones;
 

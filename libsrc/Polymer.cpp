@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Polymer.h"
+#include "KeyPoints.h"
 #include "Fibonacci.h"
 #include "Timer.h"
 #include "Twist.h"
@@ -128,6 +129,14 @@ bool Polymer::refineLocalFlexibility(bool magic)
 	timer.report();
 	
 	bool ch = local.didChange();
+	
+	if (!_keyPoints)
+	{
+		return ch;
+	}
+
+	ch |= _keyPoints->refineKeyPoints();
+
 	return ch;
 }
 
@@ -312,6 +321,14 @@ void Polymer::tieAtomsUp()
 	}
 	
 	whack();
+	setupKeyPoints();
+}
+
+void Polymer::setupKeyPoints()
+{
+	KeyPointsPtr kp = KeyPointsPtr(new KeyPoints());
+	kp->setPolymer(shared_from_this());
+	_keyPoints = kp;
 }
 
 void Polymer::removeAtom(AtomPtr atom)

@@ -512,6 +512,21 @@ public:
 		
 		return _whack.lock();
 	}
+	
+	KeyPointsPtr getKeyPoints()
+	{
+		if (_keyPoints.expired())
+		{
+			return KeyPointsPtr();
+		}
+		
+		return _keyPoints.lock();
+	}
+	
+	void setKeyPoints(KeyPointsPtr points)
+	{
+		_keyPoints = points;
+	}
 
 	/* Public call to correct deviations and store as kickValues */
 	void correctTorsionAngles();
@@ -587,6 +602,8 @@ private:
 
 	/* Private call allowing to break recursion */
 	std::vector<BondSample> *getManyPositionsPrivate();
+	
+	double getWorkingPhi();
 
 	Bond *nakedDownstreamBond(int group, int i)
 	{
@@ -620,6 +637,8 @@ private:
 
 	mat3x3 _magicMat;
 	mat3x3 _baseMagic;
+	
+	KeyPointsWkr _keyPoints;
 };
 
 #endif /* defined(__vagabond__Bond__) */

@@ -11,6 +11,7 @@
 #include <iomanip>
 
 #include "Bond.h"
+#include "KeyPoints.h"
 #include "Atom.h"
 #include "fftw3d.h"
 #include "Shouter.h"
@@ -600,7 +601,8 @@ void Bond::calculateMagicMat()
 	mat3x3 basis;
 	getAverageBasisPos(&basis, &aveStart);
 	_baseMagic = mat3x3_transpose(basis);
-	mat3x3 rot = mat3x3_rot_from_angles(_psi, _phi);
+	double phi = getWorkingPhi();
+	mat3x3 rot = mat3x3_rot_from_angles(_psi, phi);
 	_magicMat = mat3x3_mult_mat3x3(_baseMagic, rot);
 }
 
@@ -1711,5 +1713,19 @@ void Bond::equaliseOccupancies()
 	}
 	
 	propagateChange();
+}
+
+double Bond::getWorkingPhi()
+{
+	if (!getKeyPoints())
+	{
+		return _phi;
+	}
+
+	double phi = _phi;
+	double contrib = getKeyPoints()->getPhiContribution(shared_from_this());
+	
+	phi += contrib;
+	return phi;
 }
 
