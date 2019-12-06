@@ -82,6 +82,16 @@ void KeyPoints::setPolymer(PolymerPtr polymer)
 
 double KeyPoints::getPhiContribution(BondPtr bond)
 {
+	return getContribution(bond, true);
+}
+
+double KeyPoints::getPsiContribution(BondPtr bond)
+{
+	return getContribution(bond, false);
+}
+
+double KeyPoints::getContribution(BondPtr bond, bool phi)
+{
 	int res = bond->getMinor()->getResidueNum();
 	int wp = _points.size() - 1;
 	
@@ -98,10 +108,20 @@ double KeyPoints::getPhiContribution(BondPtr bond)
 	}
 	
 	double before = Param::getValue(&_points[wp].res);
-	double bValue = Param::getValue(&_points[wp].phi);
-
 	double after = Param::getValue(&_points[wp + 1].res);
-	double aValue = Param::getValue(&_points[wp + 1].phi);
+
+	double bValue = 0; double aValue = 0;
+
+	if (phi)
+	{
+		double bValue = Param::getValue(&_points[wp].phi);
+		double aValue = Param::getValue(&_points[wp + 1].phi);
+	}
+	else
+	{
+		double bValue = Param::getValue(&_points[wp].psi);
+		double aValue = Param::getValue(&_points[wp + 1].psi);
+	}
 	
 	double prop = (after - res) / (after - before);
 	prop *= M_PI;
@@ -113,11 +133,6 @@ double KeyPoints::getPhiContribution(BondPtr bond)
 	cosProp += aValue;
 
 	return cosProp;
-}
-
-double KeyPoints::getPsiContribution(BondPtr bond)
-{
-	return 0;
 }
 
 bool KeyPoints::refineKeyPoints()
@@ -140,6 +155,8 @@ bool KeyPoints::refineKeyPoints()
 	for (int i = 0; i < _points.size(); i++)
 	{
 		nelder->addParameter(&_points[i].phi, Param::getValue, 
+		                     Param::setValue, step, tol);
+		nelder->addParameter(&_points[i].psi, Param::getValue, 
 		                     Param::setValue, step, tol);
 	}
 

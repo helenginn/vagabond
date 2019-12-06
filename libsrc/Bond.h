@@ -604,6 +604,7 @@ private:
 	std::vector<BondSample> *getManyPositionsPrivate();
 	
 	double getWorkingPhi();
+	double getWorkingPsi();
 
 	Bond *nakedDownstreamBond(int group, int i)
 	{

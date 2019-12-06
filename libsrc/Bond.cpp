@@ -602,7 +602,8 @@ void Bond::calculateMagicMat()
 	getAverageBasisPos(&basis, &aveStart);
 	_baseMagic = mat3x3_transpose(basis);
 	double phi = getWorkingPhi();
-	mat3x3 rot = mat3x3_rot_from_angles(_psi, phi);
+	double psi = getWorkingPsi();
+	mat3x3 rot = mat3x3_rot_from_angles(_psi, psi);
 	_magicMat = mat3x3_mult_mat3x3(_baseMagic, rot);
 }
 
@@ -1719,6 +1720,20 @@ void Bond::equaliseOccupancies()
 	}
 	
 	propagateChange();
+}
+
+double Bond::getWorkingPsi()
+{
+	if (!getKeyPoints())
+	{
+		return _phi;
+	}
+
+	double psi = _psi;
+	double contrib = getKeyPoints()->getPsiContribution(shared_from_this());
+	
+	psi += contrib;
+	return psi;
 }
 
 double Bond::getWorkingPhi()

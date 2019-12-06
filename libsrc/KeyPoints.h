@@ -49,6 +49,7 @@ public:
 	
 	void setPolymer(PolymerPtr polymer);
 
+	double getContribution(BondPtr bond, bool phi = false);
 	double getPhiContribution(BondPtr bond);
 	double getPsiContribution(BondPtr bond);
 	
