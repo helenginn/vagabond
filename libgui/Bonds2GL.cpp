@@ -18,6 +18,7 @@
 
 #include "../libsrc/Atom.h"
 #include "../libsrc/Molecule.h"
+#include "../libsrc/ExplicitModel.h"
 #include "../libsrc/GhostBond.h"
 #include "Bonds2GL.h"
 #include "Shaders/InkBond_vsh.h"
@@ -61,11 +62,6 @@ bool Bonds2GL::getPositions(AtomPtr minAtom, AtomPtr majAtom,
 	
 	vec3 minAve, majAve;
 	
-	if (!minBond->canFish() || !majBond->canFish())
-	{
-		return false;
-	}
-
 	*maj = majBond->fishPositions(&majAve);
 	*min = minBond->fishPositions(&minAve);
 	
@@ -160,12 +156,8 @@ void Bonds2GL::updateAtoms()
 		if (!maj->getModel()->hasExplicitPositions()) continue;
 		
 		std::vector<vec3> majBonds, minBonds;
-		bool fished = getPositions(maj, min, &minBonds, &majBonds);
-		
-		if (fished)
-		{
-			updateModel(&v, total, minBonds, majBonds, maj);
-		}
+		getPositions(maj, min, &minBonds, &majBonds);
+		updateModel(&v, total, minBonds, majBonds, maj);
 		
 	}
 }
@@ -176,12 +168,7 @@ bool Bonds2GL::addToModel(AtomPtr minor, AtomPtr major, GLuint *count)
 	std::vector<vec3> majBonds;
 	GLuint start = *count;
 
-	bool fished = getPositions(minor, major, &minBonds, &majBonds);
-	
-	if (!fished)
-	{
-		_shouldGetBonds = true;
-	}
+	getPositions(minor, major, &minBonds, &majBonds);
 	
 	for (int j = 0; j < majBonds.size(); j++)
 	{
@@ -339,7 +326,7 @@ int Bonds2GL::processMolecule(MoleculePtr molecule)
 		{
 			continue;
 		}
-
+		
 		AtomPtr major = ToBondPtr(minor->getModel())->getMajor();
 
 		if (addToModel(minor, major, &count))
