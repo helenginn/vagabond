@@ -424,8 +424,10 @@ void SVDBond::applyParameters()
 		Bond::setMagicPhi(&*bi->downstreamBond(0, 0), ph);
 	}
 
+	/*
 	pol->getAnchorModel()->propagateChange(-1, true);
 	pol->getAnchorModel()->forceRefresh();
+	*/
 }
 
 void SVDBond::cleanupSVD(double ***ptr)
