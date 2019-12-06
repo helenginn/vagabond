@@ -67,15 +67,14 @@ void KeyPoints::setPolymer(PolymerPtr polymer)
 	
 	int begin = _polymer->monomerBegin();
 	int end = _polymer->monomerEnd();
-	const int offset = 3;
 	const int step = 6;
 	
-	for (int i = begin - step + offset; i <= end + step; i += step)
+	for (int i = begin - step; i <= end + step; i += step)
 	{
 		WayPoint way;
 		Param::setValue(&way.res, i);
-		Param::setValue(&way.psi, 0);
 		Param::setValue(&way.phi, 0);
+		Param::setValue(&way.psi, 0);
 		_points.push_back(way);
 	}
 }
