@@ -113,25 +113,38 @@ double KeyPoints::getContribution(BondPtr bond, bool phi)
 
 	if (phi)
 	{
-		double bValue = Param::getValue(&_points[wp].phi);
-		double aValue = Param::getValue(&_points[wp + 1].phi);
+		bValue = _points[wp].phi.value();
+		aValue = _points[wp + 1].phi.value();
 	}
 	else
 	{
-		double bValue = Param::getValue(&_points[wp].psi);
-		double aValue = Param::getValue(&_points[wp + 1].psi);
+		bValue = _points[wp].psi.value();
+		aValue = _points[wp + 1].psi.value();
 	}
 	
 	double prop = (after - res) / (after - before);
-	prop *= M_PI;
-	double cosProp = cos(prop);
+	double base = bValue;
+	base += prop * (aValue - bValue);
+	if (base != base)
+	{
+		base = 0;
+	}
+
+	return base;
 	
+	/*
+	double cosProp = cos(prop);
 	cosProp += 1;
 	double multiply = (bValue - aValue) / 2;
 	cosProp *= multiply;
 	cosProp += aValue;
 
+	if (cosProp != 0)
+	{
+		std::cout << cosProp << std::endl;
+	}
 	return cosProp;
+	*/
 }
 
 bool KeyPoints::refineKeyPoints()
