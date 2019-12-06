@@ -23,6 +23,7 @@
 #include "shared_ptrs.h"
 #include "FlexGlobal.h"
 #include "Param.h"
+#include "Parser.h"
 
 typedef struct
 {
@@ -36,9 +37,14 @@ typedef struct
  * \brief specify key points for a given monomer to derive phi/psi
  * modifications for a Bond */
 
-class KeyPoints : public boost::enable_shared_from_this<KeyPoints>
+class KeyPoints : public Parser
 {
 public:
+	KeyPointsPtr shared_from_this()
+	{
+		return ToKeyGroupPtr(Parser::shared_from_this());
+	}
+
 	KeyPoints();
 	
 	void setPolymer(PolymerPtr polymer);
@@ -47,13 +53,30 @@ public:
 	double getPsiContribution(BondPtr bond);
 	
 	bool refineKeyPoints();
+protected:
+	virtual std::string getClassName()
+	{
+		return "KeyPoints";
+	}
+
+	/* should only be one identifier per polymer */
+	virtual std::string getParserIdentifier()
+	{
+		return "KeyPoints";
+	}
+	
+	
+	virtual void addProperties();
+	virtual void addObject(ParserPtr object, std::string category);
+	virtual void linkReference(BaseParserPtr object, std::string category);
+	virtual void postParseTidy();
 private:
 	static double score(void *object);
 	std::vector<WayPoint> _points;
 
 	PolymerPtr _polymer;
 	FlexGlobal _global;
-
+	std::vector<vec3> _tmpWays;
 };
 
 #endif

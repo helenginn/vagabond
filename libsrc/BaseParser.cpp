@@ -8,6 +8,7 @@
 #include <iomanip>
 #include "Crystal.h"
 #include "Polymer.h"
+#include "KeyPoints.h"
 #include "Twist.h"
 #include "WaterNetwork.h"
 #include "Atom.h"
@@ -1253,6 +1254,10 @@ ParserPtr BaseParser::objectOfType(char *className)
 	else if (strcmp(className, "Bond") == 0)
 	{
 		object = ParserPtr(static_cast<Bond *>(new Bond()));        
+	}
+	else if (strcmp(className, "KeyPoints") == 0)
+	{
+		object = ParserPtr(static_cast<KeyPoints *>(new KeyPoints()));        
 	}
 	else if (strcmp(className, "Ghost") == 0)
 	{

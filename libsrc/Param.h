@@ -31,6 +31,16 @@ public:
 	{
 		return static_cast<Param *>(object)->_value;
 	}
+	
+	double value()
+	{
+		return _value;
+	}
+	
+	void set_value(double value)
+	{
+		_value = value;
+	}
 
 private:
 	double _value;

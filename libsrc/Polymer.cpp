@@ -1517,6 +1517,7 @@ void Polymer::addProperties()
 	Molecule::addProperties();
 
 	addIntProperty("anchor_res", &_anchorNum);
+	addChild("keypoints", _keyPoints);
 
 	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
@@ -1532,6 +1533,12 @@ void Polymer::addObject(ParserPtr object, std::string category)
 	{
 		MonomerPtr monomer = ToMonomerPtr(object);
 		addMonomer(monomer);
+	}
+
+	if (category == "keypoints")
+	{
+		KeyPointsPtr kp = ToKeyGroupPtr(object);
+		_keyPoints = kp;
 	}
 
 	Molecule::addObject(object, category);

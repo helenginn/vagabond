@@ -159,3 +159,50 @@ double KeyPoints::score(void *object)
 
 	return me->_global.score(&me->_global);
 }
+
+void KeyPoints::addProperties()
+{
+	_tmpWays.clear();
+
+	for (int i = 0; i < _points.size(); i++)
+	{
+		vec3 pt = empty_vec3();
+		pt.x = _points[i].res.value();
+		pt.y = _points[i].phi.value();
+		pt.z = _points[i].psi.value();
+		_tmpWays.push_back(pt);
+	}
+
+	addVec3ArrayProperty("waypoints", &_tmpWays);
+	addReference("polymer", _polymer);
+
+}
+
+void KeyPoints::addObject(ParserPtr object, std::string category)
+{
+
+}
+
+void KeyPoints::linkReference(BaseParserPtr object, std::string category)
+{
+	if (category == "polymer")
+	{
+		PolymerPtr polymer = ToPolymerPtr(object);
+		_polymer = polymer;
+	}
+}
+
+void KeyPoints::postParseTidy()
+{
+	_points.clear();
+	
+	for (int i = 0; i < _tmpWays.size(); i++)
+	{
+		WayPoint pt;
+		pt.res.set_value(_tmpWays[i].x);
+		pt.phi.set_value(_tmpWays[i].y);
+		pt.psi.set_value(_tmpWays[i].z);
+		_points.push_back(pt);
+	}
+
+}

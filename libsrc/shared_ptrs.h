@@ -43,6 +43,7 @@
 #define ToSidechainPtr(a) (boost::static_pointer_cast<Sidechain>((a)))
 #define ToBackbonePtr(a) (boost::static_pointer_cast<Backbone>((a)))
 #define ToCrystalPtr(a) (boost::static_pointer_cast<Crystal>((a)))
+#define ToKeyGroupPtr(a) (boost::static_pointer_cast<KeyPoints>((a)))
 #define ToAtomPtr(a) (boost::static_pointer_cast<Atom>((a)))
 #define ToWhackPtr(a) (boost::static_pointer_cast<Whack>((a)))
 #define ToTwistPtr(a) (boost::static_pointer_cast<Twist>((a)))

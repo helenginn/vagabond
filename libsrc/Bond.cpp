@@ -1610,6 +1610,7 @@ void Bond::addProperties()
 {
 	addReference("minor", getMinor());
 	addReference("major", getMajor());
+	addReference("keypoints", getKeyPoints());
 
 	addDoubleProperty("length", &_bondLength);    
 	addDoubleProperty("torsion", &_torsion);    
@@ -1672,6 +1673,11 @@ void Bond::linkReference(BaseParserPtr object, std::string category)
 	{
 		AtomPtr atom = ToAtomPtr(object);
 		_major = atom;
+	}
+	else if (category == "keypoints")
+	{
+		KeyPointsPtr kp = ToKeyGroupPtr(object);
+		_keyPoints = kp;
 	}
 	else if (category == "whack")
 	{
