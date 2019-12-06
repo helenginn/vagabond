@@ -603,6 +603,7 @@ void Bond::calculateMagicMat()
 	_baseMagic = mat3x3_transpose(basis);
 	double phi = getWorkingPhi();
 	double psi = getWorkingPsi();
+
 	mat3x3 rot = mat3x3_rot_from_angles(psi, phi);
 	_magicMat = mat3x3_mult_mat3x3(_baseMagic, rot);
 }
@@ -1726,7 +1727,7 @@ double Bond::getWorkingPsi()
 {
 	if (!getKeyPoints())
 	{
-		return _phi;
+		return _psi;
 	}
 
 	double psi = _psi;

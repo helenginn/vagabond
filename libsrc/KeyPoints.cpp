@@ -70,7 +70,7 @@ void KeyPoints::setPolymer(PolymerPtr polymer)
 	const int offset = 3;
 	const int step = 6;
 	
-	for (int i = begin + 3; i < end; i += step)
+	for (int i = begin - step + offset; i <= end + step; i += step)
 	{
 		WayPoint way;
 		Param::setValue(&way.res, i);
@@ -93,7 +93,7 @@ double KeyPoints::getPsiContribution(BondPtr bond)
 double KeyPoints::getContribution(BondPtr bond, bool phi)
 {
 	int res = bond->getMinor()->getResidueNum();
-	int wp = _points.size() - 1;
+	int wp = _points.size() - 2;
 	
 	for (int i = 0; i < _points.size() - 1; i++)
 	{
