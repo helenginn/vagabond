@@ -90,12 +90,14 @@ int Atoms2GL::processMolecule(MoleculePtr molecule)
 	_shouldGetBonds = false;
 }
 
-void Atoms2GL::getPositions(AtomPtr minor, AtomPtr major, 
+bool Atoms2GL::getPositions(AtomPtr minor, AtomPtr major, 
                             std::vector<vec3> *min,
                             std::vector<vec3> *maj)
 {
 	vec3 ave = minor->getAbsolutePosition();
 	*min = std::vector<vec3>(1, ave);
+	
+	return true;
 }
 
 void Atoms2GL::bindTextures()

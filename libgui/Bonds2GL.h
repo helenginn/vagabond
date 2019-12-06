@@ -27,7 +27,8 @@ public:
 
 protected:
 	virtual void updateAtoms();
-	virtual void getPositions(AtomPtr minAtom, AtomPtr majAtom, 
+	/** returns whether bonds could be fished */
+	virtual bool getPositions(AtomPtr minAtom, AtomPtr majAtom, 
 	                          std::vector<vec3> *min,
 	                          std::vector<vec3> *maj);
 

@@ -131,12 +131,18 @@ public:
 		_centre = centre;
 	}
 
+	virtual bool canFish()
+	{
+		return true;
+	}
+
 	static double propagate(void *obj);
 protected:
 	FFTPtr makeRealSpaceDistribution();
 	void addRealSpacePositions(FFTPtr real, vec3 offset);
 	bool _changedSamples;
 	virtual void sanityCheck();
+
 	std::vector<TwistPtr> _twists;
 
 	virtual void getAnisotropy(bool withKabsch = false);

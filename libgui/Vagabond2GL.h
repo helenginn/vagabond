@@ -81,7 +81,7 @@ protected:
 		return true;
 	};
 
-	virtual void getPositions(AtomPtr minAtom, AtomPtr majAtom, 
+	virtual bool getPositions(AtomPtr minAtom, AtomPtr majAtom, 
 	                          std::vector<vec3> *min,
 	                          std::vector<vec3> *maj) = 0;
 	virtual int processMolecule(MoleculePtr molecule) = 0;

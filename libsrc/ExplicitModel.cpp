@@ -335,6 +335,11 @@ double ExplicitModel::getMeanSquareDeviation()
 /* For GUI */
 std::vector<vec3> ExplicitModel::fishPositions(vec3 *ave)
 {
+	if (!canFish())
+	{
+		return std::vector<vec3>();
+	}
+
 	std::vector<vec3> positions;
 	std::lock_guard<std::mutex> lock(guiLock);
 	positions = _finalPositions;

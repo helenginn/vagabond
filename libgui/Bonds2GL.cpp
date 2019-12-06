@@ -52,7 +52,7 @@ bool Bonds2GL::acceptablePositions(AtomPtr minAtom)
 	return (minCount > 0 && majCount > 0);
 }
 
-void Bonds2GL::getPositions(AtomPtr minAtom, AtomPtr majAtom, 
+bool Bonds2GL::getPositions(AtomPtr minAtom, AtomPtr majAtom, 
                             std::vector<vec3> *min,
                             std::vector<vec3> *maj)
 {
@@ -60,6 +60,11 @@ void Bonds2GL::getPositions(AtomPtr minAtom, AtomPtr majAtom,
 	ExplicitModelPtr majBond = majAtom->getExplicitModel();
 	
 	vec3 minAve, majAve;
+	
+	if (!minBond->canFish() || !majBond->canFish())
+	{
+		return false;
+	}
 
 	*maj = majBond->fishPositions(&majAve);
 	*min = minBond->fishPositions(&minAve);
@@ -75,6 +80,8 @@ void Bonds2GL::getPositions(AtomPtr minAtom, AtomPtr majAtom,
 		_lastEnsembleCount = maj->size();
 		_shouldGetBonds = true;
 	}
+	
+	return true;
 }
 
 void Bonds2GL::updateModel(int *v, int total, std::vector<vec3> &maj, 
@@ -153,9 +160,13 @@ void Bonds2GL::updateAtoms()
 		if (!maj->getModel()->hasExplicitPositions()) continue;
 		
 		std::vector<vec3> majBonds, minBonds;
-		getPositions(maj, min, &minBonds, &majBonds);
+		bool fished = getPositions(maj, min, &minBonds, &majBonds);
 		
-		updateModel(&v, total, minBonds, majBonds, maj);
+		if (fished)
+		{
+			updateModel(&v, total, minBonds, majBonds, maj);
+		}
+		
 	}
 }
 
@@ -165,7 +176,12 @@ bool Bonds2GL::addToModel(AtomPtr minor, AtomPtr major, GLuint *count)
 	std::vector<vec3> majBonds;
 	GLuint start = *count;
 
-	getPositions(minor, major, &minBonds, &majBonds);
+	bool fished = getPositions(minor, major, &minBonds, &majBonds);
+	
+	if (!fished)
+	{
+		_shouldGetBonds = true;
+	}
 	
 	for (int j = 0; j < majBonds.size(); j++)
 	{

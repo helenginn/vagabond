@@ -531,6 +531,8 @@ public:
 	/* Public call to correct deviations and store as kickValues */
 	void correctTorsionAngles();
 
+	virtual bool canFish();
+
 protected:
 	virtual std::string getParserIdentifier()
 	{
@@ -640,6 +642,8 @@ private:
 	mat3x3 _baseMagic;
 	
 	KeyPointsWkr _keyPoints;
+	
+	bool _fish;
 };
 
 #endif /* defined(__vagabond__Bond__) */

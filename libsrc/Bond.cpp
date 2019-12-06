@@ -31,6 +31,7 @@ Bond::~Bond()
 
 void Bond::initialize()
 {
+	_fish = true;
 	_leftOfAnchor = false;
 	_usingTorsion = false;
 	_bondLength = 0;
@@ -778,6 +779,11 @@ double Bond::getBaseTorsion()
 	return baseTorsion;
 }
 
+bool Bond::canFish()
+{
+	return _fish;
+}
+
 std::vector<BondSample> *Bond::getManyPositions(void *)
 {
 	if (!_changedSamples)
@@ -786,9 +792,15 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 	}
 
 	ExplicitModelPtr model = getParentModel();
-
 	std::vector<ExplicitModelPtr> parents;
 
+	_fish = true;
+
+	if (getAnchor()->whacksDisabled())
+	{
+		_fish = false;
+	}
+	
 	/* Go back through the parental models until we find one
 	 * which does not have _changedSamples == true */
 	while (true)
