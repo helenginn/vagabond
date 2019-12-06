@@ -124,7 +124,7 @@ void Motion::refine()
 		if (j >= librationCount())
 		{
 			std::cout << std::endl;
-			std::cout << "Introducing screw #" << j << std::endl;
+			std::cout << "Introducing rotation #" << j << std::endl;
 			
 			FlexGlobal target;
 			RefinementListPtr list = RefinementListPtr(new RefinementList());
@@ -152,7 +152,7 @@ void Motion::refine()
 			
 			if (!list->didChange())
 			{
-				std::cout << "Nevermind, no demand for a screw." << std::endl;
+				std::cout << "Nevermind, no demand for a rotation." << std::endl;
 				deleteLastScrew();
 				maxed = true;
 			}
@@ -177,6 +177,7 @@ void Motion::refine()
 
 		_allAtoms->refreshPositions();
 
+		if (false)
 		{
 			FlexGlobal target;
 			NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
