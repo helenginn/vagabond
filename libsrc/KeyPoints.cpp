@@ -18,6 +18,7 @@
 
 #include "KeyPoints.h"
 #include "Param.h"
+#include "Timer.h"
 #include "Atom.h"
 #include "RefinementNelderMead.h"
 #include "Options.h"
@@ -163,6 +164,9 @@ bool KeyPoints::refineKeyPoints()
 	nelder->setCycles(60);
 	nelder->setVerbose(true);	
 	nelder->setSilent(true);
+	
+	std::cout << "Refining flexibility keypoints." << std::endl;
+	Timer timer;
 
 	for (int i = 0; i < _points.size(); i++)
 	{
@@ -175,6 +179,7 @@ bool KeyPoints::refineKeyPoints()
 	nelder->setEvaluationFunction(score, this);
 	nelder->refine();
 	nelder->reportResult();
+	timer.quickReport();
 	
 	return nelder->didChange();
 }
