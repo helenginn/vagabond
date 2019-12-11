@@ -70,6 +70,11 @@ void KeyPoints::setPolymer(PolymerPtr polymer)
 	int end = _polymer->monomerEnd();
 	int step = (end - begin) / 10;
 	
+	if (step < 5)
+	{
+		step = 5;
+	}
+	
 	for (int i = begin - step; i <= end + step; i += step)
 	{
 		WayPoint way;
