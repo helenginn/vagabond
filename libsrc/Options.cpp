@@ -24,6 +24,7 @@
 #include "Shouter.h"
 #include <iomanip>
 #include "Polymer.h"
+#include "Timer.h"
 #include "WaterNetwork.h"
 #include "FileReader.h"
 #include "VBondReader.h"
@@ -113,6 +114,8 @@ void Options::makeCout()
 
 void Options::run()
 {
+	Timer timer;
+
 	if (!_parsed)
 	{
 		parse();
@@ -230,6 +233,7 @@ void Options::run()
 	{
 		
 		std::cout << std::endl << "**** Finished. ****" << std::endl;
+		timer.report();
 		std::cout << std::endl;
 	}
 	
