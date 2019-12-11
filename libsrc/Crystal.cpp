@@ -1789,9 +1789,9 @@ double Crystal::getProbeRadius()
 		Options::setProbeRadius(NULL, -1);
 	}
 	
-	if (_probeRadius < 0)
+	if (Options::getProbeRadius() < 0)
 	{
-		_probeRadius = 0.2;
+		_probeRadius = 0.4;
 	}
 	
 	return _probeRadius;
