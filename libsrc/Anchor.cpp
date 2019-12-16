@@ -228,7 +228,7 @@ void Anchor::atLeastOneMotion()
 	PolymerPtr pol = ToPolymerPtr(getMolecule());
 	crystal->addMotion(mot);
 
-	mot->setName(pol()->getName() + "_" + getAtom()->shortDesc());
+	mot->setName(pol->getName() + "_" + getAtom()->shortDesc());
 	
 	if (pol)
 	{
