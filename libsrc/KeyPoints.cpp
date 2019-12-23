@@ -94,6 +94,11 @@ double KeyPoints::getPsiContribution(BondPtr bond)
 double KeyPoints::getKickContribution(BondPtr bond)
 {
 	return getContribution(bond, WayPointKick);
+}
+
+double KeyPoints::getWhackContribution(BondPtr bond)
+{
+	return getContribution(bond, WayPointWhack);
 
 }
 
@@ -133,6 +138,11 @@ double KeyPoints::getContribution(BondPtr bond, WayPointType type)
 	{
 		bValue = _points[wp].kick.value();
 		aValue = _points[wp + 1].kick.value();
+	}
+	else if (type == WayPointWhack)
+	{
+		bValue = _points[wp].whack.value();
+		aValue = _points[wp + 1].whack.value();
 	}
 	
 	double prop = (after - res) / (after - before);
@@ -243,7 +253,8 @@ void KeyPoints::addProperties()
 		pt.y = _points[i].phi.value();
 		pt.z = _points[i].psi.value();
 		_tmpWays.push_back(pt);
-		_tmpKicks.push_back(make_vec3(_points[i].kick.value(), 0, 0));
+		_tmpKicks.push_back(make_vec3(_points[i].kick.value(),
+		                              _points[i].whack.value(), 0));
 	}
 
 	addVec3ArrayProperty("waypoints", &_tmpWays);
@@ -281,6 +292,7 @@ void KeyPoints::postParseTidy()
 		if (_tmpKicks.size() > i)
 		{
 			pt.kick.set_value(_tmpKicks[i].x);
+			pt.whack.set_value(_tmpKicks[i].y);
 		}
 
 		_points.push_back(pt);

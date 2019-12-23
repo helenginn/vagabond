@@ -31,13 +31,15 @@ typedef struct
 	Param phi;
 	Param psi;
 	Param kick;
+	Param whack;
 } WayPoint;
 
 typedef enum
 {
 	WayPointPhi,
 	WayPointPsi,
-	WayPointKick
+	WayPointKick,
+	WayPointWhack
 } WayPointType;
 
 /** 
@@ -61,6 +63,7 @@ public:
 	double getPhiContribution(BondPtr bond);
 	double getPsiContribution(BondPtr bond);
 	double getKickContribution(BondPtr bond);
+	double getWhackContribution(BondPtr bond);
 	
 	bool refineKeyPoints();
 protected:

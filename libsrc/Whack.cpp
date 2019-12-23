@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Whack.h"
+#include "KeyPoints.h"
 #include <iomanip>
 #include "Bond.h"
 #include "Anchor.h"
@@ -78,6 +79,14 @@ void Whack::saveSamples()
 
 }
 
+double Whack::fullWhack()
+{
+	KeyPoints kp = _bond->getKeyPoints();
+	double whadd = kp->getWhackContribution(_bond);
+
+	return _whack + whadd;
+}
+
 void Whack::applyKick()
 {
 	if (!_bond)
@@ -92,7 +101,7 @@ void Whack::applyKick()
 	
 	if (_bond->downstreamBondGroupCount() && _bond->downstreamBondCount(0))
 	{
-		double value = 1 * _whack + _kick;
+		double value = 1 * fullWhack() + _kick;
 		
 		if (!_enabled)
 		{
@@ -137,7 +146,7 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 	for (int i = 0; i < anchSamp.size(); i++)
 	{
 		double kickvalue = _samples[i].kickValue;
-		double mag = kickvalue * _whack;
+		double mag = kickvalue * fullWhack();
 		anchSamp[i].kickValue = mag;
 		check += mag;
 	}
