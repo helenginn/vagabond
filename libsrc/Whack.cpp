@@ -81,7 +81,7 @@ void Whack::saveSamples()
 
 double Whack::fullWhack()
 {
-	KeyPoints kp = _bond->getKeyPoints();
+	KeyPointsPtr kp = _bond->getKeyPoints();
 	double whadd = kp->getWhackContribution(_bond);
 
 	return _whack + whadd;
