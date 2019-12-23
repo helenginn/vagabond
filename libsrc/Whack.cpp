@@ -82,7 +82,13 @@ void Whack::saveSamples()
 double Whack::fullWhack()
 {
 	KeyPointsPtr kp = _bond->getKeyPoints();
-	double whadd = kp->getWhackContribution(_bond);
+	
+	double whadd = 0;
+	
+	if (kp)
+	{
+		whadd = kp->getWhackContribution(_bond);
+	}
 
 	return _whack + whadd;
 }
