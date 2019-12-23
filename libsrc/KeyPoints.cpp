@@ -189,10 +189,8 @@ bool KeyPoints::refineKeyPoints()
 
 		for (int i = 0; i < _points.size(); i++)
 		{
-			nelder->addParameter(&_points[i].phi, Param::getValue, 
-			                     Param::setValue, step, tol);
-			nelder->addParameter(&_points[i].psi, Param::getValue, 
-			                     Param::setValue, step, tol);
+			nelder->addParameter(&_points[i].kick, Param::getValue, 
+			                     Param::setValue, 0.005, 0.00005);
 		}
 
 		nelder->setEvaluationFunction(score, this);
@@ -212,8 +210,10 @@ bool KeyPoints::refineKeyPoints()
 
 		for (int i = 0; i < _points.size(); i++)
 		{
-			nelder->addParameter(&_points[i].kick, Param::getValue, 
-			                     Param::setValue, 0.005, 0.00005);
+			nelder->addParameter(&_points[i].phi, Param::getValue, 
+			                     Param::setValue, step, tol);
+			nelder->addParameter(&_points[i].psi, Param::getValue, 
+			                     Param::setValue, step, tol);
 		}
 
 		nelder->setEvaluationFunction(score, this);
