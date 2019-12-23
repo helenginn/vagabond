@@ -183,13 +183,14 @@ bool KeyPoints::refineKeyPoints()
 	double tol = deg2rad(1);
 	bool changed = false;
 
+	std::cout << "Refining flexibility keypoints." << std::endl;
+
 	{
 		NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
 		nelder->setCycles(60);
 		nelder->setVerbose(true);	
 		nelder->setSilent(true);
 
-		std::cout << "Refining flexibility keypoints." << std::endl;
 		Timer timer;
 
 		for (int i = 0; i < _points.size(); i++)
@@ -228,6 +229,7 @@ bool KeyPoints::refineKeyPoints()
 		changed |= nelder->didChange();
 	}
 	
+	std::cout << std::endl;
 	return changed;
 }
 
