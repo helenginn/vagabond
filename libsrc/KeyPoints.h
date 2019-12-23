@@ -30,7 +30,15 @@ typedef struct
 	Param res;
 	Param phi;
 	Param psi;
+	Param kick;
 } WayPoint;
+
+typedef enum
+{
+	WayPointPhi,
+	WayPointPsi,
+	WayPointKick
+} WayPointType;
 
 /** 
  * \class KeyPoints
@@ -49,9 +57,10 @@ public:
 	
 	void setPolymer(PolymerPtr polymer);
 
-	double getContribution(BondPtr bond, bool phi = false);
+	double getContribution(BondPtr bond, WayPointType type);
 	double getPhiContribution(BondPtr bond);
 	double getPsiContribution(BondPtr bond);
+	double getKickContribution(BondPtr bond);
 	
 	bool refineKeyPoints();
 protected:
@@ -78,6 +87,7 @@ private:
 	PolymerPtr _polymer;
 	FlexGlobal _global;
 	std::vector<vec3> _tmpWays;
+	std::vector<vec3> _tmpKicks;
 };
 
 #endif

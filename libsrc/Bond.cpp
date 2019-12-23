@@ -739,6 +739,15 @@ double Bond::getBaseKick()
 	}
 	
 	double baseKick = sisBond->_kick;
+	
+	double extraKick = 0;
+	
+	if (getKeyPoints())
+	{
+		extraKick = getKeyPoints()->getKickContribution(shared_from_this());
+	}
+
+	baseKick += extraKick;
 
 	if (sisBond->hasWhack() && sisBond->getWhack()->isDisabled())
 	{

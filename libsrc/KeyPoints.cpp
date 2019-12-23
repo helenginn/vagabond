@@ -81,21 +81,28 @@ void KeyPoints::setPolymer(PolymerPtr polymer)
 		Param::setValue(&way.res, i);
 		Param::setValue(&way.phi, 0);
 		Param::setValue(&way.psi, 0);
+		Param::setValue(&way.kick, 0);
 		_points.push_back(way);
 	}
 }
 
 double KeyPoints::getPhiContribution(BondPtr bond)
 {
-	return getContribution(bond, true);
+	return getContribution(bond, WayPointPhi);
 }
 
 double KeyPoints::getPsiContribution(BondPtr bond)
 {
-	return getContribution(bond, false);
+	return getContribution(bond, WayPointPsi);
 }
 
-double KeyPoints::getContribution(BondPtr bond, bool phi)
+double KeyPoints::getKickContribution(BondPtr bond)
+{
+	return getContribution(bond, WayPointKick);
+
+}
+
+double KeyPoints::getContribution(BondPtr bond, WayPointType type)
 {
 	int res = bond->getMinor()->getResidueNum();
 	int wp = _points.size() - 2;
@@ -117,15 +124,20 @@ double KeyPoints::getContribution(BondPtr bond, bool phi)
 
 	double bValue = 0; double aValue = 0;
 
-	if (phi)
+	if (type == WayPointPhi)
 	{
 		bValue = _points[wp].phi.value();
 		aValue = _points[wp + 1].phi.value();
 	}
-	else
+	else if (type == WayPointPsi)
 	{
 		bValue = _points[wp].psi.value();
 		aValue = _points[wp + 1].psi.value();
+	}
+	else if (type == WayPointKick)
+	{
+		bValue = _points[wp].kick.value();
+		aValue = _points[wp + 1].kick.value();
 	}
 	
 	double prop = (after - res) / (after - before);
@@ -164,29 +176,54 @@ bool KeyPoints::refineKeyPoints()
 	
 	double step = deg2rad(45);
 	double tol = deg2rad(1);
+	bool changed = false;
 
-	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
-	nelder->setCycles(60);
-	nelder->setVerbose(true);	
-	nelder->setSilent(true);
-	
-	std::cout << "Refining flexibility keypoints." << std::endl;
-	Timer timer;
-
-	for (int i = 0; i < _points.size(); i++)
 	{
-		nelder->addParameter(&_points[i].phi, Param::getValue, 
-		                     Param::setValue, step, tol);
-		nelder->addParameter(&_points[i].psi, Param::getValue, 
-		                     Param::setValue, step, tol);
+		NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
+		nelder->setCycles(60);
+		nelder->setVerbose(true);	
+		nelder->setSilent(true);
+
+		std::cout << "Refining flexibility keypoints." << std::endl;
+		Timer timer;
+
+		for (int i = 0; i < _points.size(); i++)
+		{
+			nelder->addParameter(&_points[i].phi, Param::getValue, 
+			                     Param::setValue, step, tol);
+			nelder->addParameter(&_points[i].psi, Param::getValue, 
+			                     Param::setValue, step, tol);
+		}
+
+		nelder->setEvaluationFunction(score, this);
+		nelder->refine();
+		nelder->reportResult();
+		timer.quickReport();
+		changed |= nelder->didChange();
 	}
 
-	nelder->setEvaluationFunction(score, this);
-	nelder->refine();
-	nelder->reportResult();
-	timer.quickReport();
+	{
+		NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
+		nelder->setCycles(60);
+		nelder->setVerbose(true);	
+		nelder->setSilent(true);
+
+		Timer timer;
+
+		for (int i = 0; i < _points.size(); i++)
+		{
+			nelder->addParameter(&_points[i].kick, Param::getValue, 
+			                     Param::setValue, 0.005, 0.00005);
+		}
+
+		nelder->setEvaluationFunction(score, this);
+		nelder->refine();
+		nelder->reportResult();
+		timer.quickReport();
+		changed |= nelder->didChange();
+	}
 	
-	return nelder->didChange();
+	return changed;
 }
 
 double KeyPoints::score(void *object)
@@ -202,6 +239,7 @@ double KeyPoints::score(void *object)
 void KeyPoints::addProperties()
 {
 	_tmpWays.clear();
+	_tmpKicks.clear();
 
 	for (int i = 0; i < _points.size(); i++)
 	{
@@ -210,9 +248,11 @@ void KeyPoints::addProperties()
 		pt.y = _points[i].phi.value();
 		pt.z = _points[i].psi.value();
 		_tmpWays.push_back(pt);
+		_tmpKicks.push_back(make_vec3(_points[i].kick.value(), 0, 0));
 	}
 
 	addVec3ArrayProperty("waypoints", &_tmpWays);
+	addVec3ArrayProperty("waykicks", &_tmpKicks);
 	addReference("polymer", _polymer);
 
 }
@@ -241,7 +281,13 @@ void KeyPoints::postParseTidy()
 		pt.res.set_value(_tmpWays[i].x);
 		pt.phi.set_value(_tmpWays[i].y);
 		pt.psi.set_value(_tmpWays[i].z);
+		pt.kick.set_value(0);
+		
+		if (_tmpKicks.size() > i)
+		{
+			pt.kick.set_value(_tmpKicks[i].x);
+		}
+
 		_points.push_back(pt);
 	}
-
 }
