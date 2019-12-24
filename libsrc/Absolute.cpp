@@ -56,6 +56,12 @@ mat3x3 Absolute::getRealSpaceTensor()
 		mat3x3_mult_scalar(&realSpaceTensor, scale);
 		return realSpaceTensor;
 	}
+	
+	if (!getMolecule())
+	{
+		std::cerr << "about to die" << std::endl;
+		std::cerr << "I am res " << _resNum << " " << _atomName << std::endl;
+	}
 
 	double subtract = getMolecule()->getAbsoluteBFacSubt();
 	double mult = getMolecule()->getAbsoluteBFacMult();
