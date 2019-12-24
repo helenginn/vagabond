@@ -322,6 +322,7 @@ void Polymer::tieAtomsUp()
 	
 	whack();
 	setupKeyPoints();
+	setTied();
 }
 
 void Polymer::setupKeyPoints()
