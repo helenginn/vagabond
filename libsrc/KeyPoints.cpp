@@ -68,7 +68,7 @@ void KeyPoints::setPolymer(PolymerPtr polymer)
 	
 	int begin = _polymer->monomerBegin();
 	int end = _polymer->monomerEnd();
-	int step = (end - begin) / 10;
+	int step = (end - begin) / 10 + 1;
 	
 	for (int i = begin - step; i <= end + step; i += step)
 	{
