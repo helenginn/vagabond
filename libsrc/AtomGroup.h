@@ -182,14 +182,14 @@ public:
 	{
 		return _name;
 	}
-protected:
-	virtual bool shouldRefineAtom(AtomPtr atom) { return true; };
-	int _timesRefined;
 
 	bool isTied()
 	{
 		return _beenTied;
 	}
+protected:
+	virtual bool shouldRefineAtom(AtomPtr atom) { return true; };
+	int _timesRefined;
 
 	virtual std::string getClassName()
 	{
