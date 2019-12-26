@@ -122,6 +122,7 @@ void DiffractionMtz::load()
 	CMtz::MtzRrefl(mtz->filein, mtz->ncol_read * mtz->nref_filein, refldata);
 
 	CMtz::MTZCOL *col_f = NULL;
+	CMtz::MTZCOL *col_fwt = NULL;
 	CMtz::MTZCOL *col_sigf = NULL;
 	CMtz::MTZCOL *col_rfree = NULL;
 	CMtz::MTZCOL *col_fpart = NULL;
@@ -137,15 +138,22 @@ void DiffractionMtz::load()
 	ampNames.push_back("F");
 	ampNames.push_back("FP");
 
-	std::vector<std::string> phNames;
+	std::vector<std::string> phNames, fwtNames;
 	std::string optPh = Options::getLabPhase();
+	std::string optFwt = Options::getLabFWT();
 	if (optPh.length())
 	{
 		phNames.push_back(optPh);
 	}
-	phNames.push_back("PHI");
-	phNames.push_back("PHIC");
+	phNames.push_back("PHWT");
 	getCol(phNames, mtz, &col_phase);
+
+	if (optFwt.length())
+	{
+		fwtNames.push_back(optFwt);
+	}
+	fwtNames.push_back("FWT");
+	getCol(fwtNames, mtz, &col_fwt);
 	
 	std::vector<std::string> fParts, phiParts;
 	fParts.push_back("Fpart");
@@ -303,7 +311,19 @@ void DiffractionMtz::load()
 		CSym::ccp4spg_put_in_asu(spg, _h, _k, _l, &h, &k, &l);
 
 		float amplitude = adata[col_f->source - 1];
-		float phase = adata[col_phase->source - 1];
+		float phase = 0;
+		float fwt = 0;
+		
+		if (col_phase != NULL)
+		{
+			phase = adata[col_phase->source - 1];
+		}
+		
+		if (col_fwt != NULL)
+		{
+			fwt = adata[col_fwt->source - 1];
+		}
+
 		float sigma = amplitude / 10;
 		
 		if (col_sigf != NULL)
@@ -353,8 +373,8 @@ void DiffractionMtz::load()
 		if (col_phase != NULL)
 		{
 			double ph = deg2rad(phase);
-			float x = amplitude * cos(ph);
-			float y = amplitude * sin(ph);
+			float x = fwt * cos(ph);
+			float y = fwt * sin(ph);
 			_original->data[element][0] = x;
 			_original->data[element][1] = y;
 		}
@@ -369,6 +389,7 @@ void DiffractionMtz::load()
 	/* Apply all symmetry relations */ 
 	if (col_phase != NULL)	
 	{
+		_original->createFFTWplan(8);
 		_original->applySymmetry(spg, true);
 		/* increase scale to match those where other asus are not
 		 * filled with zeros */

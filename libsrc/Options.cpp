@@ -62,6 +62,7 @@ bool Options::_fitBucket = false;
 
 std::string Options::_anchor = "";
 std::string Options::_labFP = "";
+std::string Options::_labFWT = "";
 std::string Options::_labSIGFP = "";
 std::string Options::_labPHI = "";
 std::string Options::_labFree = "";

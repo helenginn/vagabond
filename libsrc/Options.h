@@ -281,6 +281,11 @@ public:
 		return _labPHI;
 	}
 	
+	static std::string getLabFWT()
+	{
+		return _labFWT;
+	}
+	
 	static std::string getLabFree()
 	{
 		return _labFree;
@@ -401,6 +406,7 @@ private:
 	static double _maxRes;
 	static std::string _anchor;
 	static std::string _labFP;
+	static std::string _labFWT;
 	static std::string _labSIGFP;
 	static std::string _labPHI;
 	static std::string _labFree;
