@@ -233,6 +233,9 @@ public:
 	 *  total difference density */
 	void differenceAttribution();
 	
+	/** Write out the peaks of differences with original */
+	void differenceWithOriginal();
+	
 	void removeAtom(AtomPtr atom);
 	
 	/** Takes an input crystal position and moves it to the nearest
@@ -569,6 +572,8 @@ private:
 
 	FFTPtr _fft;
 	FFTPtr _difft;
+	
+	/* imag component may contain (weighted map - original) */
 	FFTPtr _original;
 
 	BucketPtr _bucket;

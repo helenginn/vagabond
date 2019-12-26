@@ -1251,6 +1251,7 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	writeVagabondFile(cycleNum);
 	
 	differenceAttribution();
+	differenceWithOriginal();
 
 	return rFac;
 }
@@ -1707,6 +1708,63 @@ int Crystal::getSampleNum()
 	}
 	
 	return totalPoints;
+}
+
+void Crystal::differenceWithOriginal()
+{
+	std::vector<double> weights, origs;
+
+	for (int i = 0; i < _original->nn; i++)
+	{
+		double weight = _fft->data[i][0];
+		double orig = _original->data[i][0];
+
+		weights.push_back(weight);
+		origs.push_back(orig);
+	}
+	
+	double stwt = standard_deviation(weights);
+	double stor = standard_deviation(origs);
+	
+	double mwt = mean(weights);
+	double mor = mean(origs);
+	double top = 0;
+	long top_index = -1;
+
+	for (int i = 0; i < _original->nn; i++)
+	{
+		double real = _fft->data[i][0];
+		double orig = _original->data[i][0];
+		_original->data[i][1] = (real - mwt) / stwt;
+		_original->data[i][1] -= (orig - mor) / stor;
+		
+		if (fabs(_original->data[i][1]) > top)
+		{
+			top_index = i;
+			top = fabs(_original->data[i][1]);
+		}
+	}
+
+	if (top_index >= 0)
+	{
+		Atom *a = getBucket()->nearbyAtom(top_index);
+		std::cout << "Top difference from original processing (FWT/PHWT):" << std::endl;
+		
+		if (a)
+		{
+			std::cout << "\tNearest atom: " << a->shortDesc() << std::endl;
+		}
+		else
+		{
+			std::cout << "\tIn solvent region." << std::endl;
+		}
+		
+		bool neg = (_original->data[top_index][1] < 0);
+		
+		std::cout << "\tFound " << top << " standard deviations from mean." << std::endl;
+		std::cout << "\t" << (neg ? "Negative peak." : "Positive peak.");
+		std::cout << std::endl << std::endl;
+	}
 }
 
 void Crystal::differenceAttribution()
