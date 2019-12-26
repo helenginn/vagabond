@@ -45,6 +45,13 @@ public:
 		_dType = DensityOriginal;
 	}
 	
+	void setDiffWithOrigDensity()
+	{
+		_dType = DensityDiffWithOriginal;
+		_imag = 1;
+		_threshold = 3;
+	}
+	
 	void setDiffDensity(bool val = true)
 	{
 		_dType = DensityDifference;
@@ -75,11 +82,7 @@ protected:
 private:
 	DensityType _dType;
 	
-	bool isDifferenceDensity()
-	{
-		return (_dType == DensityDiffWithOriginal || 
-		        _dType == DensityDifference);
-	}
+	bool isDifferenceDensity();
 	
 	FFTPtr getFFT();
 	CrystalPtr _crystal;
@@ -89,6 +92,7 @@ private:
 	void setupIndexTable();
 	void getSigma(FFTPtr fft);
 	int _recalculate;
+	int _imag;
 	std::mutex _renderLock;
 	IntMap _flips;
 	IntMap _allBits;

@@ -20,6 +20,7 @@
 
 Density2GL::Density2GL()
 {
+	_imag = 0;
 	_dType = DensityWeighted;
 	_recalculate = 0;
 	_renderType = GL_TRIANGLES;
@@ -844,7 +845,7 @@ void Density2GL::makeUniformGrid()
 					if (isDifferenceDensity())
 					{
 						mat3x3_mult_vec(real2frac, &xyz);
-						double value = fft->getRealFromFrac(xyz);
+						double value = fft->getCompFromFrac(xyz, _imag);
 
 						if (value < 0)
 						{
@@ -929,7 +930,7 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 
 					mat3x3_mult_vec(real2frac, &xyz);
 
-					double value = fft->getRealFromFrac(xyz);
+					double value = fft->getCompFromFrac(xyz, _imag);
 					double absv = fabs(value);
 					int crosses = (absv - _mean > _threshold * _sigma);
 
@@ -1002,13 +1003,13 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 					vec3_add_to_vec3(&ave, cross);
 					
 					vec3 frac = mat3x3_mult_vec(real2frac, ave);
-					double value = fft->getRealFromFrac(frac);
+					double value = fft->getCompFromFrac(frac, _imag);
 
 					vec3_mult(&cross, -0.2);
 					vec3_add_to_vec3(&ave, cross);
 
 					frac = mat3x3_mult_vec(real2frac, ave);
-					double second = fft->getRealFromFrac(frac);
+					double second = fft->getCompFromFrac(frac, _imag);
 
 					double change = second - value;
 					
@@ -1088,6 +1089,11 @@ FFTPtr Density2GL::getFFT()
 	{
 		return _crystal->getOrigDensity();
 	}
+	if (_dType == DensityDiffWithOriginal)
+	{
+		/* and imag = 1 */
+		return _crystal->getOrigDensity();
+	}
 	else
 	{
 		return _crystal->getFFT();
@@ -1133,7 +1139,7 @@ void Density2GL::render()
 	rebindProgram();
 	reorderIndices();
 	
-	if (!isDifferenceDensity())
+	if (isDifferenceDensity())
 	{
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
@@ -1166,7 +1172,7 @@ void Density2GL::getSigma(FFTPtr fft)
 	std::vector<double> vals;
 	for (int i = 0; i < fft->nn; i++)
 	{
-		vals.push_back(fft->data[i][0]);
+		vals.push_back(fft->data[i][_imag]);
 	}
 
 	_mean = mean(vals);
@@ -1186,7 +1192,7 @@ void Density2GL::makeNewDensity(CrystalPtr crystal)
 	
 	_crystal = crystal;
 	
-	if (false && !getFFT())
+	if (!getFFT() || getFFT()->nn == 0)
 	{
 		return;
 	}
@@ -1210,4 +1216,11 @@ void Density2GL::makeNewDensity(CrystalPtr crystal)
 	recalculate();
 
 	_renderLock.unlock();
+}
+
+bool Density2GL::isDifferenceDensity()
+{
+	return (_dType == DensityDiffWithOriginal || 
+	        _dType == DensityDifference);
+
 }
