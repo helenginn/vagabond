@@ -77,11 +77,6 @@ void PartialStructure::setStructure(FFTPtr refPart)
 				/*  apply shift when filling in other sym units */
 				double newPhase = myPhase + shift * 2 * M_PI;
 
-				/* debug */
-				float symx = fft->data[index][0];
-				float symy = fft->data[index][1];
-				double orig = atan2(symy, symx);
-				
 				x = amp * cos(newPhase);
 				y = amp * sin(newPhase);
 
