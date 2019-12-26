@@ -276,6 +276,11 @@ public:
 		return _labFP;
 	}
 	
+	static std::string getLabPhase()
+	{
+		return _labPHI;
+	}
+	
 	static std::string getLabFree()
 	{
 		return _labFree;
@@ -397,6 +402,7 @@ private:
 	static std::string _anchor;
 	static std::string _labFP;
 	static std::string _labSIGFP;
+	static std::string _labPHI;
 	static std::string _labFree;
 	
 	static bool _rPosition;

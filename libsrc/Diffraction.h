@@ -47,6 +47,11 @@ public:
 	{
 		return fft;
 	}
+	
+	FFTPtr getOriginal()
+	{
+		return _original;
+	}
 
 	FFTPtr getPartial()
 	{
@@ -65,6 +70,7 @@ public:
 protected:
 	FFTPtr fft;
 	FFTPtr _partial;
+	FFTPtr _original;
 	std::string _filename;
 
 	float _minRes;

@@ -58,3 +58,4 @@ void Fibonacci::generateLattice(int num, double radius)
 		_points.push_back(point);
 	}
 }
+

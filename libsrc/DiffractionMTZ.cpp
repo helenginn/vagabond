@@ -125,10 +125,10 @@ void DiffractionMtz::load()
 	CMtz::MTZCOL *col_sigf = NULL;
 	CMtz::MTZCOL *col_rfree = NULL;
 	CMtz::MTZCOL *col_fpart = NULL;
+	CMtz::MTZCOL *col_phase = NULL;
 	CMtz::MTZCOL *col_phipart = NULL;
 
 	std::vector<std::string> ampNames;
-
 	std::string optAmp = Options::getLabF();
 	if (optAmp.length())
 	{
@@ -136,6 +136,16 @@ void DiffractionMtz::load()
 	}
 	ampNames.push_back("F");
 	ampNames.push_back("FP");
+
+	std::vector<std::string> phNames;
+	std::string optPh = Options::getLabPhase();
+	if (optPh.length())
+	{
+		phNames.push_back(optPh);
+	}
+	phNames.push_back("PHI");
+	phNames.push_back("PHIC");
+	getCol(phNames, mtz, &col_phase);
 	
 	std::vector<std::string> fParts, phiParts;
 	fParts.push_back("Fpart");
@@ -273,6 +283,15 @@ void DiffractionMtz::load()
 		_partial->multiplyAll(nan(" "));
 	}
 
+	if (col_phase != NULL)
+	{
+		std::cout << std::endl << "Found original phases from MTZ." 
+		<< std::endl;
+		_original = FFTPtr(new FFT());
+		_original->create(largest);
+		_original->multiplyAll(nan(" "));
+	}
+
 	for (int i = 0; i < mtz->nref_filein * mtz->ncol_read; i += mtz->ncol_read)
 	{
 		memcpy(adata, &refldata[i], mtz->ncol_read * sizeof(float));
@@ -284,6 +303,7 @@ void DiffractionMtz::load()
 		CSym::ccp4spg_put_in_asu(spg, _h, _k, _l, &h, &k, &l);
 
 		float amplitude = adata[col_f->source - 1];
+		float phase = adata[col_phase->source - 1];
 		float sigma = amplitude / 10;
 		
 		if (col_sigf != NULL)
@@ -329,6 +349,15 @@ void DiffractionMtz::load()
 			_partial->data[element][0] = x;
 			_partial->data[element][1] = y;
 		}
+		
+		if (col_phase != NULL)
+		{
+			double ph = deg2rad(phase);
+			float x = amplitude * cos(ph);
+			float y = amplitude * sin(ph);
+			_original->data[element][0] = x;
+			_original->data[element][1] = y;
+		}
 	}
 	
 	free(adata);
@@ -336,6 +365,18 @@ void DiffractionMtz::load()
 	std::cout << "Loaded " << count << " reflections into"\
 	" memory from " << _filename << "." << std::endl;
 	std::cout << "Counted " << maskCount << " free reflections." << std::endl << std::endl;
+	
+	/* Apply all symmetry relations */ 
+	if (col_phase != NULL)	
+	{
+		_original->applySymmetry(spg, true);
+		/* increase scale to match those where other asus are not
+		 * filled with zeros */
+		_original->multiplyAll(spg->nsymop);
+	}
+
+	/* to real space */
+	_original->fft(-1);
 }
 
 void DiffractionMtz::syminfoCheck()
