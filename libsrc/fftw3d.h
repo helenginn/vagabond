@@ -308,6 +308,14 @@ public:
 		return mask[ele];
 	}
 
+	double getCompFromFrac(vec3 frac, int comp)
+	{
+		frac.x *= nx;
+		frac.y *= ny;
+		frac.z *= nz;
+		return cubic_interpolate(frac, comp);
+	}
+
 	double getRealFromFrac(vec3 frac)
 	{
 		frac.x *= nx;
