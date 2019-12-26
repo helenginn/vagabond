@@ -906,9 +906,11 @@ void Polymer::graph(std::string graphName)
 
 	CSVPtr csv = CSVPtr(new CSV(5, "resnum", "newB", "oldB",
 	                            "pos", "sidepos"));
-	CSVPtr csvDamp = CSVPtr(new CSV(4, "resnum", "dN-CA", "dCA-C", "dC-N"));
-	CSVPtr csvBlur = CSVPtr(new CSV(4, "resnum", "bN-CA", "bCA-C", "bC-N"));
 	CSVPtr sidechainCsv = CSVPtr(new CSV(3, "resnum", "oldB", "newB"));
+	CSVPtr ccCsv = CSVPtr(new CSV(3, "resnum", "cc", "rf"));
+	CrystalPtr target = Options::getActiveCrystal();
+
+	bool extra = Options::makeDiagnostics();
 
 	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
@@ -919,6 +921,14 @@ void Polymer::graph(std::string graphName)
 
 		BackbonePtr backbone = getMonomer(i)->getBackbone();
 		SidechainPtr sidechain = getMonomer(i)->getSidechain();
+		double cc = 0; double rf = 0;
+
+		if (extra)
+		{
+			cc = -sidechain->scoreWithMap(ScoreTypeCorrel, target);
+			rf = sidechain->scoreWithMap(ScoreTypeRFactor, target);
+		}
+
 		AtomPtr ca = backbone->findAtom("CA");
 		ModelPtr caModel = ca->getModel();
 		AtomPtr n = backbone->findAtom("N");
@@ -938,8 +948,7 @@ void Polymer::graph(std::string graphName)
 		ModelPtr cModel = c->getModel();
 
 		double value = i;
-		double caDampen = 0; double cDampen = 0; double nDampen = 0;
-		double caBlur = 0; double cBlur = 0; double nBlur = 0;
+		ccCsv->addEntry(3, value, cc, rf);
 
 		if (caModel->getClassName() == "Bond")
 		{
@@ -951,7 +960,6 @@ void Polymer::graph(std::string graphName)
 
 			csv->addEntry(5, value, meanSq, ca->getInitialBFactor(),
 			              posDisp, sideDisp);
-			caBlur = Bond::getKick(&*caBond);
 		}
 		else
 		{
@@ -965,12 +973,8 @@ void Polymer::graph(std::string graphName)
 
 			sidechainCsv->addEntry(3, value, initialBee, nowBee);
 		}
-
-		csvDamp->addEntry(4, value, caDampen, cDampen, nDampen);
-		csvBlur->addEntry(4, value, caBlur, cBlur, nBlur);
 	}
 	
-	bool extra = Options::makeDiagnostics();
 
 	std::map<std::string, std::string> plotMap;
 	plotMap["filename"] = "mainchain_" + graphName;
@@ -1023,6 +1027,29 @@ void Polymer::graph(std::string graphName)
 		sidechainCsv->setSubDirectory("bfactor_plots");
 		sidechainCsv->plotPNG(plotMap);
 		sidechainCsv->writeToFile("sidechain_" + graphName + ".csv");
+	}
+	
+	if (extra)
+	{
+		std::map<std::string, std::string> plotMap;
+		plotMap["filename"] = "density_" + graphName;
+		plotMap["height"] = "700";
+		plotMap["width"] = "1200";
+		plotMap["xHeader0"] = "resnum";
+		plotMap["yHeader0"] = "cc";
+		plotMap["colour0"] = "black";
+		plotMap["yMin0"] = "0";
+		plotMap["yMax0"] = "1";
+
+		plotMap["xTitle0"] = "Sidechain number";
+		plotMap["yTitle0"] = "Value of CC or RF";
+		plotMap["style0"] = "line";
+
+		ccCsv->setSubDirectory("density_fit");
+		ccCsv->setSubDirectory("density_fit");
+		ccCsv->plotPNG(plotMap);
+		ccCsv->writeToFile("density_fit" + graphName + ".csv");
+
 	}
 
 	if (extra)
