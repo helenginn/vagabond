@@ -296,7 +296,7 @@ void DiffractionMtz::load()
 		std::cout << std::endl << "Found original phases from MTZ." 
 		<< std::endl;
 		_original = FFTPtr(new FFT());
-		_original->create(ilH, ilK, ilL);
+		_original->create(largest);
 		_original->multiplyAll(0);
 		_original->createFFTWplan(8);
 	}
