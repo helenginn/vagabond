@@ -835,9 +835,9 @@ void Density2GL::makeUniformGrid()
 					
 					if (_dType == DensityOriginal)
 					{
-						_vertices[c].color[0] = 1.0;
-						_vertices[c].color[1] = 1.0;
-						_vertices[c].color[2] = 0.7;
+						_vertices[c].color[0] = 0.85;
+						_vertices[c].color[1] = 0.85;
+						_vertices[c].color[2] = 1.0;
 
 					}
 					
