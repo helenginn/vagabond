@@ -216,6 +216,11 @@ public:
 	{
 		return _difft;
 	}
+
+	FFTPtr getOrigDensity()
+	{
+		return _original;
+	}
 	
 	size_t symOpCount()
 	{
@@ -528,6 +533,7 @@ private:
 	void makePDBs(std::string suffix);
 	void writeVagabondFile(int cycleNum);
 	void applySymOps();
+	void setupOriginalMap();
 	
 	std::string _lastEnsemblePDB;
 	std::string _lastAveragePDB;
@@ -563,6 +569,7 @@ private:
 
 	FFTPtr _fft;
 	FFTPtr _difft;
+	FFTPtr _original;
 
 	BucketPtr _bucket;
 	int _largestNum;

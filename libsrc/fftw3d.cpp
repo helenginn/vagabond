@@ -591,6 +591,27 @@ void FFT::fft(int direction)
 	}
 }
 
+/* is a given ijk within -n/2 < ijk <= n/2 */
+bool FFT::withinBounds(int i, int j, int k)
+{
+	if (i >= nx / 2 || i < -nx / 2)
+	{
+		return false;
+	}
+
+	if (j >= ny / 2 || j < -ny / 2)
+	{
+		return false;
+	}
+
+	if (k >= nz / 2 || k < -nz / 2)
+	{
+		return false;
+	}
+	
+	return true;
+}
+
 
 void FFT::setBasis(mat3x3 mat, double sampleScale)
 {

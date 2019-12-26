@@ -296,8 +296,9 @@ void DiffractionMtz::load()
 		std::cout << std::endl << "Found original phases from MTZ." 
 		<< std::endl;
 		_original = FFTPtr(new FFT());
-		_original->create(largest);
-		_original->multiplyAll(nan(" "));
+		_original->create(ilH, ilK, ilL);
+		_original->multiplyAll(0);
+		_original->createFFTWplan(8);
 	}
 
 	for (int i = 0; i < mtz->nref_filein * mtz->ncol_read; i += mtz->ncol_read)
@@ -389,15 +390,58 @@ void DiffractionMtz::load()
 	/* Apply all symmetry relations */ 
 	if (col_phase != NULL)	
 	{
-		_original->createFFTWplan(8);
-		_original->applySymmetry(spg, true);
-		/* increase scale to match those where other asus are not
-		 * filled with zeros */
-		_original->multiplyAll(spg->nsymop);
-	}
+		vec3 nLimits = getNLimits(_original, _original);
 
-	/* to real space */
-	_original->fft(-1);
+		for (int k = -nLimits.z; k < nLimits.z; k++)
+		{
+			for (int j = -nLimits.y; j < nLimits.y; j++)
+			{
+				for (int i = -nLimits.x; i < nLimits.x; i++)
+				{
+					int _h, _k, _l;
+					int sym = CSym::ccp4spg_put_in_asu(spg, i, j, k, 
+					                                   &_h, &_k, &_l);
+
+					long index = _original->element(i, j, k);
+					long asuIndex = _original->element(_h, _k, _l);
+
+					double x = _original->data[asuIndex][0];
+					double y = _original->data[asuIndex][1];
+
+					/* establish amp & phase */
+					double amp = sqrt(x * x + y * y);
+					double myPhase = atan2(y, x);
+
+					if (sym % 2 == 0)
+					{
+						myPhase *= -1;
+					}
+
+					int symop = (sym - 1) / 2;
+
+					/* calculate phase shift for symmetry operator */
+					float *trn = spg->symop[symop].trn;
+
+					/* rotation */
+					double shift = (float)i * trn[0];
+					shift += (float)j * trn[1];
+					shift += (float)k * trn[2];
+
+					shift = fmod(shift, 1.);
+
+					/*  apply shift when filling in other sym units */
+					double newPhase = myPhase + shift * 2 * M_PI;
+
+					x = amp * cos(newPhase);
+					y = amp * sin(newPhase);
+
+					_original->data[index][0] = x;
+					_original->data[index][1] = y;
+				}
+			}
+		}
+	}
+	
 }
 
 void DiffractionMtz::syminfoCheck()

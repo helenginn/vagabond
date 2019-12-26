@@ -206,6 +206,14 @@ void Crystal::realSpaceClutter(double maxRes)
 		_fft->create(fft_dims.x, fft_dims.y, fft_dims.z);
 		_fft->setupMask();
 
+		if (!_original)
+		{
+			_original = FFTPtr(new FFT());
+			_original->create(fft_dims.x, fft_dims.y, fft_dims.z);
+			_original->createFFTWplan(8);
+			setupOriginalMap();
+		}
+
 		_difft->create(fft_dims.x, fft_dims.y, fft_dims.z);
 
 		mat3x3 per_voxel = _hkl2real;
@@ -229,6 +237,39 @@ void Crystal::realSpaceClutter(double maxRes)
 
 	refreshPositions();
 	addToMap(_fft, _real2frac);
+}
+
+void Crystal::setupOriginalMap()
+{
+	FFTPtr orig = _data->getOriginal();
+	
+	if (!orig)
+	{
+		return;
+	}
+
+	vec3 nLimits = getNLimits(orig, _original);
+
+	for (int k = -nLimits.z; k < nLimits.z; k++)
+	{
+		for (int j = -nLimits.y; j < nLimits.y; j++)
+		{
+			for (int i = -nLimits.x; i < nLimits.x; i++)
+			{
+				long new_index = _original->element(i, j, k);
+				long old_index = orig->element(i, j, k);
+
+				double x = orig->data[old_index][0];
+				double y = orig->data[old_index][1];
+
+				_original->data[new_index][0] = x;
+				_original->data[new_index][1] = y;
+			}
+		}
+	}
+
+	/* to real space */
+	_original->fft(-1);
 }
 
 double Crystal::totalToScale()
@@ -327,7 +368,7 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 	std::map<int, std::vector<IntPair> > binRatios;
 
 	FFTPtr fftData = data->getFFT();	
-	vec3 nLimits = getNLimits(fftData, model);
+	vec3 nLimits = getNLimits(model, model);
 
 	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
@@ -335,6 +376,11 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 		{
 			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
+				if (!fftData->withinBounds(i, j, k))
+				{
+					continue;
+				}
+
 				int _i = 0; int _j = 0; int _k = 0;
 				vec3 ijk = make_vec3(i, j, k);
 				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_i, &_j, &_k);
@@ -1953,3 +1999,4 @@ void Crystal::refreshAnchors()
 		}
 	}
 }
+

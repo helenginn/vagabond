@@ -429,7 +429,7 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 		          "structure determination.");
 	}
 
-	vec3 nLimits = getNLimits(fftData, _fft);
+	vec3 nLimits = getNLimits(_fft, _fft);
 	CSym::CCP4SPG *spg = _crystal->getSpaceGroup();
 	mat3x3 real2frac = _crystal->getReal2Frac();
 
@@ -439,13 +439,21 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 		{
 			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
+				long index = _fft->element(i, j, k);
+
+				/* if no recorded observation then set element to 0 */
+				if (!fftData->withinBounds(i, j, k))
+				{
+					scratch->setElement(index, 0, 0);
+					continue;
+				}
+				
 				int _h, _k, _l;
 				CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
 
 				long dataidx = fftData->element(_h, _k, _l);
 				double fobs = fftData->data[dataidx][0];
 				double sigfobs = fftData->data[dataidx][1];
-				long index = _fft->element(i, j, k);
 
 				int isAbs = CSym::ccp4spg_is_sysabs(spg, i, j, k);
 				vec3 ijk = make_vec3(i, j, k);    

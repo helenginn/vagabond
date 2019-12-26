@@ -316,6 +316,8 @@ public:
 		return cubic_interpolate(frac, 0);
 	}
 
+	bool withinBounds(int i, int j, int k);
+
 	long int elementFromFrac(double xFrac, double yFrac, double zFrac);
 	vec3 fracFromElement(long int element);
 	void nxyzFromElement(long int element, long *x, long *y, long *z);
