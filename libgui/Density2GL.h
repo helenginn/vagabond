@@ -18,6 +18,14 @@ struct ivec
 	int z;
 };
 
+typedef enum
+{
+	DensityWeighted,
+	DensityDifference,
+	DensityOriginal,
+	DensityDiffWithOriginal
+} DensityType;
+
 typedef std::map<int, std::map<int, int> > IntMap;
 
 class GLKeeper;
@@ -32,9 +40,14 @@ public:
 	void makeNewDensity(CrystalPtr crystal = CrystalPtr());
 	void nudgeDensity(int dir);
 	
-	void setDiffDensity(bool val)
+	void setOrigDensity()
 	{
-		_diff = val;
+		_dType = DensityOriginal;
+	}
+	
+	void setDiffDensity(bool val = true)
+	{
+		_dType = DensityDifference;
 		_threshold = 3;
 	}
 	
@@ -60,6 +73,13 @@ public:
 protected:
 	virtual void bindTextures();
 private:
+	DensityType _dType;
+	
+	bool isDifferenceDensity()
+	{
+		return (_dType == DensityDiffWithOriginal || 
+		        _dType == DensityDifference);
+	}
 	
 	FFTPtr getFFT();
 	CrystalPtr _crystal;
@@ -79,7 +99,6 @@ private:
 	double _threshold;
 	double _sigma;
 	double _mean;
-	bool _diff;
 	ivec _dims;
 	bool _visible;
 	std::vector<std::vector<GLuint> > _cubeIndices;

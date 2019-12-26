@@ -13,13 +13,14 @@
 #include "Shaders/Pencil_vsh.h"
 #include "Shaders/Pencil_fsh.h"
 #include "../libsrc/Crystal.h"
+#include "../libsrc/Options.h"
 #include "../libsrc/fftw3d.h"
 #include <cstdarg>
 #include <algorithm>
 
 Density2GL::Density2GL()
 {
-	_diff = false;
+	_dType = DensityWeighted;
 	_recalculate = 0;
 	_renderType = GL_TRIANGLES;
 	_resolution = 0.5;
@@ -31,6 +32,7 @@ Density2GL::Density2GL()
 	_usesLighting = true;
 	_usesFocalDepth = true;
 	_extra = true;
+	_crystal = Options::getActiveCrystal();
 	
 	_vertShader = &Pencil_vsh;
 	_fragShader = &Pencil_fsh;
@@ -830,8 +832,16 @@ void Density2GL::makeUniformGrid()
 						_vertices[c].extra[0] = 1.5;
 					}
 					
+					if (_dType == DensityOriginal)
+					{
+						_vertices[c].color[0] = 1.0;
+						_vertices[c].color[1] = 1.0;
+						_vertices[c].color[2] = 0.7;
+
+					}
+					
 					/* Determine the colour for difference FFTs */
-					if (_diff)
+					if (isDifferenceDensity())
 					{
 						mat3x3_mult_vec(real2frac, &xyz);
 						double value = fft->getRealFromFrac(xyz);
@@ -839,14 +849,14 @@ void Density2GL::makeUniformGrid()
 						if (value < 0)
 						{
 							_vertices[c].color[0] = 1.0;
-							_vertices[c].color[1] = 0.7;
-							_vertices[c].color[2] = 0.7;
+							_vertices[c].color[1] = 0.5;
+							_vertices[c].color[2] = 0.5;
 						}
 						else
 						{
-							_vertices[c].color[0] = 0.7;
+							_vertices[c].color[0] = 0.5;
 							_vertices[c].color[1] = 1.0;
-							_vertices[c].color[2] = 0.7;
+							_vertices[c].color[2] = 0.5;
 						}
 					}
 
@@ -1066,13 +1076,21 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 
 FFTPtr Density2GL::getFFT()
 {
-	if (!_diff)
+	if (_dType == DensityWeighted)
 	{
 		return _crystal->getFFT();
 	}
-	else
+	else if (_dType == DensityDifference)
 	{
 		return _crystal->getDiFFT();
+	}
+	else if (_dType == DensityOriginal)
+	{
+		return _crystal->getOrigDensity();
+	}
+	else
+	{
+		return _crystal->getFFT();
 	}
 }
 
@@ -1115,7 +1133,7 @@ void Density2GL::render()
 	rebindProgram();
 	reorderIndices();
 	
-	if (_diff)
+	if (!isDifferenceDensity())
 	{
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
@@ -1167,6 +1185,11 @@ void Density2GL::makeNewDensity(CrystalPtr crystal)
 	}
 	
 	_crystal = crystal;
+	
+	if (false && !getFFT())
+	{
+		return;
+	}
 	
 	_renderLock.lock();
 

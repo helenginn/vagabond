@@ -55,6 +55,11 @@ public:
 		return _wire2GL;
 	}
 	
+	Density2GLPtr getOrig2GL()
+	{
+		return _orig2GL;
+	}
+	
 	vec3 getCentre()
 	{
 		return _centre;
@@ -108,6 +113,7 @@ private:
 
 	Density2GLPtr _density2GL;
 	Density2GLPtr _wire2GL;
+	Density2GLPtr _orig2GL;
 	Density2GLPtr _diffDens2GL;
 	std::mutex _setup;
 
