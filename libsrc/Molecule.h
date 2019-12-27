@@ -82,6 +82,7 @@ public:
 	void setChainID(std::string chain)
 	{
 		_chainID = chain;
+		_name = _chainID;
 	}
 
 	std::string getChainID()
