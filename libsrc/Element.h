@@ -73,7 +73,7 @@ public:
 	/** Pass in a std::vector of atoms and receive an std::vector of unique
 	 * Elements covering all atoms in the group. */
 	static std::vector<ElementPtr> elementList(std::vector<AtomPtr> atoms);
-protected:
+
 	/** Return an atomic scattering factor value for a given position
 	 * @param obj pointer to Element object which has been cast to void
 	 * @param x x position in inverse Angstroms
@@ -81,6 +81,7 @@ protected:
 	 * @param z z position in inverse Angstroms
 	 */
 	static double getVoxelValue(void *obj, double x, double y, double z);
+protected:
 
 private:
 	Element(std::string symbol, std::string name, double electrons,
