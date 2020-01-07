@@ -53,7 +53,7 @@ void BucketFeatures::enhanceFeatures()
 		mat3x3_mult_vec(real2frac, &samples3[k]);
 	}
 
-	_solvent->setAll(0);
+	_solvent->wipe();
 	
 	std::cout << "Enhancing solvent features.\r" << std::flush;
 

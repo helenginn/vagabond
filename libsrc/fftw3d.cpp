@@ -49,7 +49,6 @@ FFT::FFT()
 	data = NULL;
 	mask = NULL;
 	_myDims = NULL;
-	_writeToMaskZero = true;
 }
 
 
@@ -117,7 +116,6 @@ FFT::FFT(FFT &other)
 
 	_basis = other._basis;
 	_inverse = other._inverse;
-	_writeToMaskZero = other._writeToMaskZero;
 }
 
 void FFT::copyFrom(FFTPtr other)
@@ -169,16 +167,6 @@ double FFT::sumImag()
 	}
 	
 	return sum;
-}
-
-void FFT::scaleToFFT(FFTPtr other)
-{
-	double ave1 = averageAll();
-	double ave2 = other->averageAll();
-	
-	double scale = ave2 / ave1;
-	
-	multiplyAll(scale);
 }
 
 void FFT::setupMask()
@@ -326,23 +314,9 @@ void FFT::normalise()
 	multiplyAll(mult);
 }
 
-void FFT::valueMinus(float value)
+void FFT::wipe()
 {
-	for(long i=0; i<nn; i++)
-	{
-		data[i][0] = value - data[i][0];
-	}
-}
-
-void FFT::cap(float value)
-{
-	for(long i=0; i<nn; i++)
-	{
-		if (data[i][0] > value)
-		{
-			data[i][0] = value;
-		}
-	}
+	memset(data, '\0', sizeof(FFTW_DATA_TYPE) * nn);
 }
 
 void FFT::setAll(float value)
@@ -352,19 +326,6 @@ void FFT::setAll(float value)
 		data[i][0] = value;
 		data[i][1] = value;
 	}
-}
-
-void FFT::nxyzFromElement(long int element, long *x, long *y, long *z)
-{
-	*x = element % nx;
-	element -= *x;
-	element /= nx;
-
-	*y = element % ny;
-	element -= *y;
-	element /= ny;
-
-	*z = element;
 }
 
 vec3 FFT::fracFromElement(long int element)
@@ -514,7 +475,6 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 		}
 	}
 
-
 	/*
 	 *    Sanity check
 	 */
@@ -565,7 +525,7 @@ void FFT::createFFTWplan(int nthreads, unsigned fftw_flags)
 	fft(-1);
 
 	/* Reinitialise */
-	setAll(0);
+	wipe();
 }
 
 
@@ -1145,7 +1105,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 	 * We do not want any contamination with original Fc. */
 	if (mapScoreType == MapScoreTypeCopyToSmaller)
 	{
-		fftAtom->setAll(0);
+		fftAtom->wipe();
 	}
 	
 	double step = 1;
@@ -1293,11 +1253,7 @@ double FFT::operation(FFTPtr fftEdit, FFTPtr fftConst, vec3 add,
 					/* Add the density to the real value of the crystal
 					 * voxel. */
 
-					if (fftCrystal->_writeToMaskZero ||
-					    fftCrystal->getMask(cIndex) != 0)
-					{
-						fftCrystal->data[cIndex][0] += atomReal * vol_corr;
-					}
+					fftCrystal->data[cIndex][0] += atomReal * vol_corr;
 				}
 			}
 		}
@@ -1377,46 +1333,6 @@ void FFT::printSlice(int zVal, double scale)
 		std::cout << " |" << std::endl;
 	}
 	std::cout << std::endl;
-}
-
-vec3 FFT::collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup, 
-                            int *flipped)
-{
-	for (int l = 0; l < spaceGroup->nsymop; l++)
-	{
-		if (flipped && *flipped >= 0)
-		{
-			l = *flipped;
-		}
-	
-		vec3 ijk = frac;
-		float *trn = spaceGroup->symop[l].trn;
-		float *rot = &spaceGroup->symop[l].rot[0][0];
-
-		ijk.x = (int) rint(frac.x*rot[0] + frac.y*rot[3] + frac.z*rot[6]);
-		ijk.y = (int) rint(frac.x*rot[1] + frac.y*rot[4] + frac.z*rot[7]);
-		ijk.z = (int) rint(frac.x*rot[2] + frac.y*rot[5] + frac.z*rot[8]);
-
-		ijk.x += trn[0];
-		ijk.y += trn[1];
-		ijk.z += trn[2];
-
-		if (ijk.x < 0 || ijk.y < 0 || ijk.z < 0)
-		{
-			continue;
-		}
-
-		float *lim = spaceGroup->mapasu_zero;
-
-		if (ijk.x > lim[0] || ijk.y > lim[1] || ijk.z > lim[2])
-		{
-			continue;
-		}
-
-		return ijk;
-	}
-
-	return frac;
 }
 
 void FFT::applySymmetry(CSym::CCP4SPG *spaceGroup, bool silent)
@@ -1749,31 +1665,6 @@ vec3 getSymRelatedPosition(CrystalPtr crystal, vec3 pos, int i)
 	mat3x3_mult_vec(frac2Real, &mod);
 	
 	return mod;
-}
-
-
-vec3 FFT::getPositionInAsu(vec3 vec)
-{
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
-	mat3x3 real2Frac = crystal->getReal2Frac();
-	
-	for (int i = 0; i < spg->nsymop; i++)
-	{
-		vec3 pos = getSymRelatedPosition(crystal, vec, i);
-		vec3 tmp = pos;
-		mat3x3_mult_vec(real2Frac, &tmp);
-		FFT::collapseFrac(&tmp.x, &tmp.y, &tmp.z);
-		
-		if (tmp.x < spg->mapasu_zero[0] &&
-		    tmp.y < spg->mapasu_zero[1] &&
-		    tmp.z < spg->mapasu_zero[2]) 
-		{
-			return pos;
-		}
-	}
-	
-	return empty_vec3();
 }
 
 void FFT::convertMaskToSolvent(int expTotal)

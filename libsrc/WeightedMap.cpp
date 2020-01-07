@@ -543,11 +543,11 @@ void WeightedMap::createVagaCoefficients()
 	std::cout << "Creating Vagamap density..." << std::endl;
 	/* Note: _fft currently in reciprocal space */
 	FFTPtr duplicate = FFTPtr(new FFT(*_fft));
-	duplicate->setAll(0);
+	duplicate->wipe();
 	FFTPtr scratch = FFTPtr(new FFT(*duplicate));
 	_allWeights = 0;
 	
-	scratch->setAll(0);
+	scratch->wipe();
 	
 	for (int i = 0; i <= MAX_SLICES; i++)
 	{
@@ -556,10 +556,10 @@ void WeightedMap::createVagaCoefficients()
 		scratch->fft(-1); /* to real space */
 		scratch->multiplyAll(weight);
 		FFT::addSimple(duplicate, scratch);
-		scratch->setAll(0);
+		scratch->wipe();
 	}
 
-	_difft->setAll(0);
+	_difft->wipe();
 	
 	for (int i = 0; i <= MAX_SLICES; i++)
 	{
@@ -567,7 +567,7 @@ void WeightedMap::createVagaCoefficients()
 		scratch->fft(-1);
 		scratch->multiplyAll(weight);
 		FFT::addSimple(_difft, scratch);
-		scratch->setAll(0);
+		scratch->wipe();
 	}
 	
 	double normalise = 1 / _allWeights;
@@ -577,12 +577,6 @@ void WeightedMap::createVagaCoefficients()
 	/* To reciprocal space for writing */
 	duplicate->fft(1);
 	_difft->fft(1);
-	
-	/*
-	double aveOrig = _fft->averageBoth();
-	double aveDupl = duplicate->averageBoth();
-	double mult = aveOrig / aveDupl;
-	*/
 	
 	writeFile(duplicate);
 	_fft->copyFrom(duplicate);

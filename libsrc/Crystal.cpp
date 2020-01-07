@@ -161,7 +161,7 @@ void Crystal::realSpaceClutter(double maxRes)
 
 	if (_fft)
 	{
-		_fft->setAll(0);	
+		_fft->wipe();	
 	}
 	
 	if (!_fft)
@@ -225,8 +225,8 @@ void Crystal::realSpaceClutter(double maxRes)
 	}
 	else
 	{
-		_fft->setAll(0);
-		_difft->setAll(0);
+		_fft->wipe();
+		_difft->wipe();
 	}
 
 	_fft->createFFTWplan(8);

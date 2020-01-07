@@ -32,7 +32,7 @@ void PartialStructure::setStructure(FFTPtr refPart)
 	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
 
 	_partial = FFTPtr(new FFT(*fft));
-	_partial->setAll(0);
+	_partial->wipe();
 
 	vec3 nLimits = getNLimits(_partial, refPart);
 

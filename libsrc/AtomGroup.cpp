@@ -890,14 +890,14 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset,
 	size_t nElements = totalElements();
 
 	FFTPtr scratch = FFTPtr(new FFT(*scratchFull));
-	scratch->setAll(0);
+	scratch->wipe();
 	scratch->takePlansFrom(scratchFull);
 	
 	FFTPtr eleFFT;
 	if (cache == NULL)
 	{
 		eleFFT = FFTPtr(new FFT(*scratchFull));
-		eleFFT->setAll(0);
+		eleFFT->wipe();
 	}
 
 	std::vector<AtomPtr> after;
@@ -920,7 +920,7 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset,
 				eleFFT = FFTPtr(new FFT(*scratchFull));
 			}
 
-			eleFFT->setAll(0);
+			eleFFT->wipe();
 			ele->populateFFT(new_basis, eleFFT);
 			
 			if (cache != NULL)
@@ -950,7 +950,7 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset,
 		scratch->fft(-1);
 		scratch->setTotal(elementElectrons);
 		FFT::addSimple(scratchFull, scratch);
-		scratch->setAll(0);
+		scratch->wipe();
 	}
 	
 	FFT::addSimple(scratchFull, scratch);
@@ -1078,7 +1078,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	else
 	{
 //		workspace->segment->copyFrom(workspace->constant);
-			workspace->segment->setAll(0);
+			workspace->segment->wipe();
 	}
 	
 	/* Now we can add neighbouring atoms from the same Crystal

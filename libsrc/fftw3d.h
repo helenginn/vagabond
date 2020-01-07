@@ -18,16 +18,6 @@
 
 #define FFTW_DATA_TYPE fftwf_complex
 
-#define FFTW_INDEX_LOOP(a) for(long p=0; p<(a).nn; p++)
-#define FFTW_SPACE_LOOP(a) for(long z=0;z<(a).nz;z++)for(long y=0;y<(a).ny;y++)for(long x=0;x<(a).nx;x++)
-
-//#define space_loop for(long x=0;x<nx;++x)for(long y=0;y<ny;++y)for(long z=0;z<nz;++z)
-#define FFTW_INDEX_LOOP_PRIVATE for(long p=0;p<nn;p++)
-
-#define CPLX_SQR(__data, __p) ( __data[__p][0]*__data[__p][0] + __data[__p][1]*__data[__p][1] )
-#define CPLX_ABS(__data, __p) sqrt( __data[__p][0]*__data[__p][0] + __data[__p][1]*__data[__p][1] )
-#define CPLX_PHASE(__data, __p) atan2( __data[__p][1], __data[__p][0] )
-
 typedef enum
 {
 	MapScoreTypeNone,
@@ -37,13 +27,6 @@ typedef enum
 	MapScoreTypeCopyToSmaller,
 	MapScoreAddNoWrap,
 } MapScoreType;
-
-inline void fftwf_product(fftwf_complex comp1, fftwf_complex comp2, float *result)
-{
-	result[0] = comp1[0] * comp2[0] - comp1[1] * comp2[1];
-	result[1] = 2 * comp1[0] * comp2[1];
-}
-
 
 /** \cond SHOW_FOURIER_DIMENSION */
 
@@ -90,11 +73,6 @@ public:
 	/** Set the imaginary component of an FFT to the real component, and
 	 * leaves real component unchanged */
 	void copyRealToImaginary();
-	
-	/** Takes the ratio of the average of all real (only) components and
-	 * multiplies all values by this number so scales of two FFTs are the
-	 * same */
-	void scaleToFFT(FFTPtr other);
 
 	/** Allocates space for a mask of unsigned ints */
 	void setupMask();
@@ -120,12 +98,6 @@ public:
 		return sumReal() / (double)nn;
 	}
 
-	/** Get the average of all real values (ignore imaginary component) */
-	double averageBoth()
-	{
-		return (sumReal() + sumImag()) / (double)(2*nn);
-	}
-
 	/** Set mask value for index. Does not error-check if mask has not
 	 * been allocated yet with FFT::setMask(). */
 	void setMask(long i, MaskType value)
@@ -146,13 +118,6 @@ public:
 	int getMask(long i)
 	{
 		return mask[i];
-	}
-
-	/* If not writing to mask = 0, then mask will not apply to the
-	* "add" command in FFT::operation. */
-	void avoidWriteToMaskZero(bool set = true)
-	{
-		_writeToMaskZero = !set;
 	}
 
 	/** If parameters x, y, z fall outside of the unit cell (0 < n <= 1)
@@ -209,11 +174,6 @@ public:
 	/** Fast fourier transform of associated data
 	 * \param direction real -> reciprocal = 1; reciprocal -> real = -1 */
 	void fft(int direction);
-
-	/** Move (0, 0, 0) to (nx/2, ny/2, nz/2) and apply same transformation
-	 * to entire array, wrapping around if necessary. Useful for seeing
-	 * an atom without breaking it up at the densest point, for example */
-	void shiftToCentre();
 
 	/** Get real component for index */
 	double getReal(long index)
@@ -275,12 +235,17 @@ public:
 	 * between all elements of each array */
 	static void multiply(FFTPtr fftEdit, FFTPtr fftConst);
 	
+	/** Move (0, 0, 0) to (nx/2, ny/2, nz/2) and apply same transformation
+	 * to entire array, wrapping around if necessary. Useful for seeing
+	 * an atom without breaking it up at the densest point, for example */
+	void shiftToCentre();
 
+	/** Set all real and imaginary values to a single number */
 	void setAll(float);
-	void cap(float);
+	
+	void wipe();
 	void multiplyAll(float);
 	int setTotal(float value);
-	void valueMinus(float value);
 
 	double cubic_interpolate(vec3 vox000, size_t im = false);
 
@@ -296,17 +261,12 @@ public:
 	                        bool sameScale = false, bool interp = true);
 
 	static void addSimple(FFTPtr fftEdit, FFTPtr fftConst);
+
 	static double score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 position,
 	                    std::vector<CoordVal> *vals = NULL,
-	MapScoreType mapScore = MapScoreTypeCorrel);
+	                    MapScoreType mapScore = MapScoreTypeCorrel);
 
 	void normalise();
-
-	int getMaskFromFrac(vec3 frac)
-	{
-		long ele = elementFromFrac(frac.x, frac.y, frac.z);
-		return mask[ele];
-	}
 
 	double getCompFromFrac(vec3 frac, int comp)
 	{
@@ -328,7 +288,6 @@ public:
 
 	long int elementFromFrac(double xFrac, double yFrac, double zFrac);
 	vec3 fracFromElement(long int element);
-	void nxyzFromElement(long int element, long *x, long *y, long *z);
 
 	inline void setElement(long int index, float real, float imag)
 	{
@@ -380,11 +339,15 @@ public:
 	void addToValueAroundPoint(vec3 pos, double radius, double value,
 	                           int bitIndex = -1);
 	
+	/* print every slice of the FFT grid */
 	void printCinema();
+
+	/* print a single slice of the FFT grid at z = zVal; scale provides
+	 * option to change character output thresholds */
 	void printSlice(int zVal = 0, double scale = 1);
+
+	/* apply symmetry operations from given space group */
 	void applySymmetry(CSym::CCP4SPG *spaceGroup, bool silent = false);
-	static vec3 collapseToRealASU(vec3 frac, CSym::CCP4SPG *spaceGroup,
-	                              int *flipped = NULL);
 
 	void writeReciprocalToFile(std::string filename, double maxResolution = 0,
 	                           CSym::CCP4SPG *mtzspg = NULL,
@@ -396,8 +359,6 @@ public:
 	fftwf_complex *data;
 	MaskType *mask;
 
-	static vec3 getPositionInAsu(vec3 vec);
-	
 	void convertMaskToSolvent(int expTotal);
 
 	double scales[3];
@@ -410,10 +371,7 @@ private:
 	/* Transformation from Angstroms into basis vectors for FFT voxels */
 	mat3x3 _inverse;
 
-	bool _writeToMaskZero;
 	static std::deque<FourierDimension> _dimensions;
-
-	std::vector<float> _blurAmounts;
 };
 
 #endif /* fftw3d_h */
