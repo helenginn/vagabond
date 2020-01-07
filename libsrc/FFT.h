@@ -21,6 +21,7 @@
 
 #include <fftw3.h>
 #include "shared_ptrs.h"
+#include "mat3x3.h"
 
 typedef enum
 {
@@ -62,7 +63,9 @@ public:
 	void fft(FFTTransform transform);
 	void multiplyFinal(float val);
 	void multiplyDotty(float val);
+	void prepareAtomSpace();
 	
+	void setUnitCell(std::vector<double> dims);
 private:
 	/** returns true if sane */
 	bool sanityCheck();
@@ -70,6 +73,8 @@ private:
 	/** pre-loaded atom distributions converted to real space in final
 	 *  column */
 	void separateAtomTransform();
+
+	void setupElements(bool wipe = true);
 
 	std::vector<ElementPtr> _elements;
 	
@@ -87,6 +92,12 @@ private:
 	
 	static std::vector<FFTDim> _dimensions;
 	FFTDim *_myDims;
+	
+	mat3x3 _toReal;
+	mat3x3 _toRecip;
+	mat3x3 _realBasis;
+	mat3x3 _recipBasis;
+	bool _setMatrices;
 };
 
 #endif

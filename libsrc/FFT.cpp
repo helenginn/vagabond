@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "FFT.h"
+#include "Element.h"
 #include <cstring>
 #include <iostream>
 #include <stdlib.h>
@@ -28,6 +29,7 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele)
 	_nx = nx;
 	_ny = ny;
 	_nz = nz;
+	_myDims = NULL;
 
 	if (_nx % 2 == 1) _nx -= 1;
 	if (_ny % 2 == 1) _ny -= 1;
@@ -48,6 +50,10 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele)
 	}
 
 	memset(_data, 0, _total);
+	
+	_realBasis = make_mat3x3();
+	_recipBasis = make_mat3x3();
+	_setMatrices = false;
 }
 
 void VagFFT::addElement(ElementPtr ele)
@@ -71,12 +77,20 @@ bool VagFFT::sanityCheck()
 		return false;
 	}
 	
+	if (!_setMatrices)
+	{
+		std::cout << "Need to set up real / reciprocal change of bases" 
+		<< std::endl;
+		return false;
+	}
+	
 	return true;
 }
 
 void VagFFT::wipe()
 {
 	memset(_data, 0, _total);
+	_status = FFTEmpty;
 }
 
 void VagFFT::makePlans()
@@ -157,6 +171,65 @@ void VagFFT::multiplyFinal(float val)
 	}
 }
 
+void VagFFT::setupElements(bool wipe)
+{
+	for (int z = 0; z < _nz; z++)
+	{
+		for (int y = 0; y < _ny; y++)
+		{
+			for (int x = 0; z < _nx; x++)
+			{
+				int i = _nx + _ny * x + _nz * y * x;
+				
+				vec3 real = make_vec3(x, y, z);
+				mat3x3_mult_vec(_toRecip, &real);
+
+				for (int j = 0; j < _nele; j++)
+				{
+					long ele_index = i * _stride + (j * 2) + 1;
+					
+					ElementPtr ele = _elements[j];
+					double val = 0;
+					val = ele->getVoxelValue(&*ele, real.x, real.y, real.z);
+
+					_data[ele_index][0] = val;
+					_data[ele_index][1] = val;
+					
+					if (wipe)
+					{
+						long dotty_index = ele_index - 1;
+						_data[dotty_index][0] = 0; 
+						_data[dotty_index][1] = 0;
+					}
+				}
+			}
+		}
+	}
+}
+
+void VagFFT::prepareAtomSpace()
+{
+	if (_status == FFTEmpty)
+	{
+		setupElements();
+	}
+	else
+	{
+		for (int i = 0; i < _nn; i++)
+		{
+			for (int j = 0; j < _nele; j++)
+			{
+				long dotty_index = i * _stride + (j * 2);
+
+				_data[dotty_index][0] = 0; 
+				_data[dotty_index][1] = 0;
+			}
+		}
+	}
+
+	_status = FFTSeparateAtoms;
+}
+
 void VagFFT::separateAtomTransform()
 {
 	fftwf_execute_dft(_myDims->atom_real_to_recip, _data, _data);
@@ -194,6 +267,13 @@ void VagFFT::separateAtomTransform()
 
 void VagFFT::fft(FFTTransform transform)
 {
+	if (_myDims == NULL)
+	{
+		std::cout << "Attempting to transform FFT but not set up any"
+		" plans for doing so." << std::endl;
+		exit(1);
+	}
+
 	if (transform == FFTAtomsToReciprocal || transform == FFTAtomsToReal)
 	{
 		if (_status != FFTSeparateAtoms || _status != FFTEmpty)
@@ -242,3 +322,17 @@ void VagFFT::fft(FFTTransform transform)
 	}
 
 }
+
+void VagFFT::setUnitCell(std::vector<double> dims)
+{
+	_toReal = mat3x3_from_unit_cell(dims[0], dims[1], dims[2], dims[3],
+	                                dims[4], dims[5]);
+	_toRecip = mat3x3_inverse(_toReal);
+
+	_realBasis = _toReal;
+	mat3x3_scale(&_realBasis, 1 / (double)_nx, 1 / (double)_ny, 
+	             1 / (double)_nz);
+	_recipBasis = mat3x3_inverse(_realBasis);
+	_setMatrices = true;
+}
+
