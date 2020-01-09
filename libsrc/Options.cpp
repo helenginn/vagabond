@@ -413,6 +413,10 @@ void Options::displayHelp()
 	std::cout << "--with-mtz=<filename>\t\tName of the MTZ file to refine against." << std::endl;
 	std::cout << "--with-model=<filename>\t\tName of the input PDB or Vagabond model file to refine." << std::endl;
 	std::cout << "--output-dir=<directory>\tOptional name of a directory to dump processing.\n" << std::endl;
+	std::cout << "\n--lab-free=<LABIN>\t\tOptional custom label for R free flag MTZ column name." << std::endl;
+	std::cout << "\t\t\t\tNote the free set will be chosen where the flag is equal to zero." << std::endl;
+	std::cout << "--lab-f=<LABIN>\t\t\tOptional custom label for observed amplitude MTZ column name." << std::endl;
+	std::cout << "--lab-sigf=<LABIN>\t\tOptional custom label for amplitude error MTZ column name." << std::endl;
 	std::cout << "Model/data options:\n" << std::endl;
 	std::cout << "--bfactor=<num>\t\t\tOptional override for the assigned B factor for anchor residues" << std::endl;
 	std::cout << "--nsamples=<num>\t\tChange number of samples of model from default or saved value\n\t\t\t\t(default 120)." << std::endl;
