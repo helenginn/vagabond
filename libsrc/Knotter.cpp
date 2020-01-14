@@ -158,6 +158,7 @@ void Knotter::tieTowardsNTerminus()
 	}
 
 	BondPtr carbonyl2oxy = BondPtr(new Bond(carbonylCarbon, carbonylOxygen));
+	carbonyl2oxy->setRefineBondAngle();
 	carbonyl2oxy->activate();
 
 	BondPtr cAlpha2NSpine = BondPtr(new Bond(cAlpha, nSpine));
@@ -279,6 +280,7 @@ void Knotter::tieTowardsCTerminus()
 	}
 
 	BondPtr carbonyl2oxy = BondPtr(new Bond(carbonylCarbon, carbonylOxygen));
+	carbonyl2oxy->setRefineBondAngle();
 	carbonyl2oxy->activate();
 	
 	if (finalOxygen)

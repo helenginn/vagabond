@@ -1501,7 +1501,7 @@ std::string Bond::description()
 
 bool Bond::isRefinable()
 {
-	return isNotJustForHydrogens() && !isFixed();
+	return getRefineBondAngle() || (isNotJustForHydrogens() && !isFixed());
 }
 
 bool Bond::isTorsionRefinable()

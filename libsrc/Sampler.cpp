@@ -240,7 +240,10 @@ BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 				entry.bond = nextBond;
 				entry.num = num - 1;
 				
-				if (addBranches || (!addBranches && i == 0))
+				/* exception: carbonyl oxygen */
+				bool isCarbonyl = bond->getMinor()->getAtomName() == "C";
+				
+				if (addBranches || (!addBranches && i == 0) || isCarbonyl)
 				{
 					remaining.push_back(entry);
 				}
@@ -421,11 +424,11 @@ void Sampler::addMagicAngle(BondPtr bond, double range, double interval)
 
 void Sampler::addBendAngle(BondPtr bond, double range, double interval)
 {
-	if (!bond->getRefineBondAngle() || bond->isFixed())
+	if (!bond->getRefineBondAngle())// || bond->isFixed())
 	{
 		return;
 	}
-
+	
 	_strategy->addParameter(&*bond, Bond::getBendAngle, Bond::setBendAngle,
 	                        range, interval, "b0_" + bond->shortDesc());
 	
