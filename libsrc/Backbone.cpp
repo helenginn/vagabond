@@ -82,11 +82,13 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			switch (rType)
 			{
 				case RefinementModelPos:
-				addParamType(ParamOptionBondAngle, range / 1);
+				/* warning - bond angle will release too much carbonyl */
+				addParamType(ParamOptionCirclePortion, range / 1);
 				break;
 
 				case RefinementFine:
-				addParamType(ParamOptionBondAngle, 0.1);
+//				addParamType(ParamOptionBondAngle, 0.1);
+				addParamType(ParamOptionCirclePortion, 0.1);
 
 				default:
 				break;

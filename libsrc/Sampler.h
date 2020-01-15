@@ -80,7 +80,8 @@ public:
 	void addKick(BondPtr bond, double range, double interval);
 	void addDampening(BondPtr bond, double range, double interval);
 	void addBondLength(BondPtr bond, double range, double interval);
-	void addBendAngle(BondPtr bond, double range, double interval);
+	void addBendAngle(BondPtr bond, double range, double interval,
+	                  bool circlePortionOnly = false);
 	void addOccupancy(BondPtr bond, double range, double interval);
 
 	/** Add sampled atoms from a given atom group and conformer name */

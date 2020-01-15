@@ -152,6 +152,10 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 			addBendAngle(bond, degrange * mult, degtol);
 			break;
 
+			case ParamOptionCirclePortion:
+			addBendAngle(bond, degrange * mult, degtol, true);
+			break;
+
 			case ParamOptionKick:
 			addKick(bond, range * mult, 0.001);
 			break;
@@ -422,15 +426,19 @@ void Sampler::addMagicAngle(BondPtr bond, double range, double interval)
 
 }
 
-void Sampler::addBendAngle(BondPtr bond, double range, double interval)
+void Sampler::addBendAngle(BondPtr bond, double range, double interval,
+                           bool circlePortionOnly)
 {
-	if (!bond->getRefineBondAngle())// || bond->isFixed())
+	if (!bond->getRefineBondAngle())
 	{
 		return;
 	}
 	
-	_strategy->addParameter(&*bond, Bond::getBendAngle, Bond::setBendAngle,
-	                        range, interval, "b0_" + bond->shortDesc());
+	if (!circlePortionOnly)
+	{
+		_strategy->addParameter(&*bond, Bond::getBendAngle, Bond::setBendAngle,
+		                        range, interval, "b0_" + bond->shortDesc());
+	}
 	
 	ModelPtr parent = bond->getParentModel();
 

@@ -227,6 +227,7 @@ typedef enum
 	ParamOptionTwist,
 	ParamOptionShift,
 	ParamOptionBondAngle,
+	ParamOptionCirclePortion,
 	ParamOptionKick,
 	ParamOptionOccupancy,
 	ParamOptionMagicAngles,
