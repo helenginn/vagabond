@@ -63,12 +63,47 @@ public:
 	void fft(FFTTransform transform);
 	void multiplyFinal(float val);
 	void multiplyDotty(float val);
+
 	void prepareAtomSpace();
+	void addAtom(AtomPtr atom);
 	
+	/** a, b, c in Angstroms; alpha, beta, gamma in degrees */
 	void setUnitCell(std::vector<double> dims);
+	void printSlice(int zVal = -1, double scale = 1);
 private:
+	long element(long x, long y, long z)
+	{
+		collapse(&x, &y, &z);
+
+		return x + _nx*y + (_nx*_ny)*z;
+	}
+
+	void collapse(long *x, long *y, long *z)
+	{
+		while (*x < 0) *x += _nx;
+		while (*x >= _nx) *x -= _nx;
+
+		while (*y < 0) *y += _ny;
+		while (*y >= _ny) *y -= _ny;
+
+		while (*z < 0) *z += _nz;
+		while (*z >= _nz) *z -= _nz;
+	}
+
+	double getAmplitude(int x, int y, int z);
+
+	double getAmplitude(ElementPtr ele, int i, int j, int k);
+	int whichColumn(ElementPtr ele);
+	double cubic_interpolate(vec3 vox000, size_t im = false);
+	void addInterpolatedToReal(ElementPtr ele, double sx, double sy, 
+	                           double sz, double val); 
+	void addExplicitAtom(AtomPtr atom);
+	void addImplicitAtom(AtomPtr atom);
 	/** returns true if sane */
 	bool sanityCheck();
+
+	double populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
+	                        mat3x3 tensor, double scale, bool add);
 
 	/** pre-loaded atom distributions converted to real space in final
 	 *  column */
@@ -95,8 +130,14 @@ private:
 	
 	mat3x3 _toReal;
 	mat3x3 _toRecip;
+
+	/* small numbers */
 	mat3x3 _realBasis;
+
+	/* big numbers */
 	mat3x3 _recipBasis;
+	vec3 _origin;
+
 	bool _setMatrices;
 };
 

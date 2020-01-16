@@ -70,7 +70,9 @@ class Balance;
 typedef boost::shared_ptr<Balance> BalancePtr;
 
 class FFT;
+class VagFFT;
 typedef boost::shared_ptr<FFT> FFTPtr;
+typedef boost::shared_ptr<VagFFT> VagFFTPtr;
 
 class Crystal;
 typedef boost::shared_ptr<Crystal> CrystalPtr;
