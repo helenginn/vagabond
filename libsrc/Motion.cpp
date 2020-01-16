@@ -96,7 +96,6 @@ void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	target.setAtomGroup(_allBackbone);
 	target.setCrystal(crystal);
-	target.matchElectronDensity();
 	strategy->setVerbose(true);
 	strategy->setCycles(100);
 

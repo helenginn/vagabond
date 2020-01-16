@@ -1404,7 +1404,6 @@ bool Crystal::calibrateAllMolecules()
 	
 	target.setCrystal(shared_from_this());
 	target.setAtomGroup(all);
-	target.matchElectronDensity();
 
 	neld->setEvaluationFunction(FlexGlobal::score, &target);
 	neld->setVerbose(true);

@@ -177,7 +177,6 @@ bool KeyPoints::refineKeyPoints()
 	_global = FlexGlobal();
 	_global.setAtomGroup(backbone);
 	_global.setCrystal(crystal);
-	_global.matchElectronDensity();
 	
 	double step = deg2rad(45);
 	double tol = deg2rad(1);

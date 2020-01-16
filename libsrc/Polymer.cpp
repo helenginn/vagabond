@@ -1527,15 +1527,6 @@ void Polymer::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	target.setAtomGroup(allBackbone);
 	target.setCrystal(crystal);
 	
-	if (!isotropy)
-	{
-		target.matchElectronDensity();
-	}
-	else
-	{
-		target.maximiseIsotropy();
-	}
-
 	strategy->setEvaluationFunction(FlexGlobal::score, &target);
 	FlexGlobal::score(&target);
 }
