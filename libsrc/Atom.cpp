@@ -943,3 +943,19 @@ double Atom::fishWhackMagnitude()
 	// is sidechain
 
 }
+
+bool Atom::greater(AtomPtr a1, AtomPtr a2)
+{
+	double nEle1 = a1->getElement()->electronCount();
+	double nEle2 = a2->getElement()->electronCount();
+
+	if (nEle1 > nEle2)
+	{
+		return true;
+	}
+	
+	double z1 = a1->getAbsolutePosition().z;
+	double z2 = a2->getAbsolutePosition().z;
+	
+	return (z1 > z2);
+}

@@ -373,6 +373,8 @@ public:
 	}
 
 	double fishWhackMagnitude();
+	
+	static bool greater(AtomPtr a1, AtomPtr a2);
 protected:
 	virtual std::string getClassName()
 	{
