@@ -13,6 +13,7 @@
 #include "ExplicitModel.h"
 #include "AtomGroup.h"
 #include <climits>
+#include <algorithm>
 #include "Atom.h"
 #include "Anchor.h"
 #include "Bond.h"
@@ -555,6 +556,8 @@ void AtomGroup::addAtom(AtomPtr atom)
 		_atoms.push_back(atom);
 		crystal->updateLargestNum(atom);
 	}
+	
+	sort();
 }
 
 
@@ -1466,3 +1469,9 @@ double AtomGroup::recalculatePositions(void *obj)
 
 	return 0;
 }
+
+void AtomGroup::sort()
+{
+	std::sort(_atoms.begin(), _atoms.end(), Atom::greater);
+}
+

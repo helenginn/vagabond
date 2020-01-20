@@ -187,6 +187,8 @@ public:
 	{
 		return _beenTied;
 	}
+
+	void sort();
 protected:
 	virtual bool shouldRefineAtom(AtomPtr atom) { return true; };
 	int _timesRefined;
