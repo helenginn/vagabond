@@ -1497,6 +1497,7 @@ void Crystal::postParseTidy()
 
 	setupSymmetry();
 	_tied = true;
+	sort();
 }
 
 AtomPtr Crystal::getClosestAtom(vec3 pos)
