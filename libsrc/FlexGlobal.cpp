@@ -53,3 +53,16 @@ void FlexGlobal::plot(std::string filename)
 	_workspace.filename = filename;
 	AtomGroup::scoreWithMapGeneral(&_workspace, true);
 }
+
+double FlexGlobal::localCompareParams(Parameter &p1, Parameter &p2)
+{
+	return 0;
+}
+
+double FlexGlobal::compareParams(void *obj, Parameter &p1, Parameter &p2)
+{
+	FlexGlobal *me = static_cast<FlexGlobal *>(obj);
+	double score = me->localCompareParams(p1, p2);
+	
+	return score;
+}

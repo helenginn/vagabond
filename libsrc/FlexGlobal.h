@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include "shared_ptrs.h"
 #include "MapScoreWorkspace.h"
+#include "RefinementStrategy.h"
 
 /**
  * \class FlexGlobal
@@ -39,6 +40,8 @@ public:
 	
 	void plot(std::string filename);
 	
+	double localCompareParams(Parameter &p1, Parameter &p2);
+	double compareParams(void *obj, Parameter &p1, Parameter &p2);
 private:
 	bool _prepared;
 	void prepareWorkspace();
