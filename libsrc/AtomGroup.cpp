@@ -553,11 +553,12 @@ void AtomGroup::addAtom(AtomPtr atom)
 
 	if (it == _atoms.end())
 	{
-		_atoms.push_back(atom);
+		std::vector<AtomPtr>::iterator it;
+		it = std::lower_bound(_atoms.begin(), _atoms.end(), 
+		                      atom, Atom::greater);
+		_atoms.insert(it, atom);
 		crystal->updateLargestNum(atom);
 	}
-	
-	sort();
 }
 
 
@@ -1468,10 +1469,5 @@ double AtomGroup::recalculatePositions(void *obj)
 	static_cast<AtomGroup *>(obj)->refreshPositions();
 
 	return 0;
-}
-
-void AtomGroup::sort()
-{
-	std::sort(_atoms.begin(), _atoms.end(), Atom::greater);
 }
 
