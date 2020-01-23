@@ -23,6 +23,7 @@
 #include "shared_ptrs.h"
 #include <string>
 #include <vector>
+#include "Timer.h"
 
 typedef enum
 {
@@ -197,6 +198,7 @@ protected:
 	void reportProgress(double score);
 	void finish();
 
+	Timer _timer;
 };
 
 #endif /* defined(__vagabond__RefinementStrategy__) */

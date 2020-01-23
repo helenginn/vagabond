@@ -215,7 +215,9 @@ void RefinementStrategy::finish()
 				(_toDegrees ? "º" : "") << ", ";
 			}
 
-			std::cout << " (" << startingScore << ")" << std::endl;
+			std::cout << " (" << startingScore << ") ";
+			_timer.quickReport();
+			std::cout << std::endl;
 		}
 	}
 	else
@@ -247,7 +249,9 @@ void RefinementStrategy::finish()
 			}
 
 			std::cout << "(" << startingScore << " to " << 
-			endScore << ")" << std::endl;
+			endScore << ") ";
+			_timer.quickReport();
+			std::cout << std::endl;
 		}
 
 		_changed = 1;
