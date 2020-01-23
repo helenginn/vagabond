@@ -48,7 +48,7 @@ void Motion::addToPolymer(PolymerPtr pol)
 	
 	if (!_refined)
 	{
-		_centre = _allAtoms->centroid();
+		_centre = _allAtoms->initialCentroid();
 	}
 }
 
@@ -206,7 +206,7 @@ void Motion::applyRotations(std::vector<BondSample> &stored)
 	
 	vec3_mult(&position, 1 / (double)stored.size());
 	
-	vec3 vec_to_centre = vec3_subtract_vec3(_centre, position);
+	vec3 centre_to_vec = vec3_subtract_vec3(position, _centre);
 
 	for (int i = 0; i < stored.size(); i++)
 	{
@@ -238,7 +238,7 @@ void Motion::applyRotations(std::vector<BondSample> &stored)
 			                                  stored[i].basis); 
 			rot_only = mat3x3_mult_mat3x3(rot_mat, rot_only);
 			
-			vec3_add_to_vec3(&screw, vec_to_centre);
+			vec3_subtract_from_vec3(&screw, centre_to_vec);
 			vec3 shift = screw;
 			mat3x3_mult_vec(rot_mat, &shift);
 			vec3_subtract_from_vec3(&shift, screw);
