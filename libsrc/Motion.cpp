@@ -176,13 +176,14 @@ void Motion::refine()
 
 		_allAtoms->refreshPositions();
 
-		if (false)
+//		if (false)
 		{
 			FlexGlobal target;
 			NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 			attachTargetToRefinement(neld, target);
 			neld->setJobName("screw");
 
+			addLibrationParameters(neld, -1);
 			addScrewParameters(neld, -1);
 			neld->refine();
 		}
