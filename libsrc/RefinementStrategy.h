@@ -135,6 +135,11 @@ public:
 	{
 		return evaluateObject;
 	}
+	
+	Getter getEvaluationFunction()
+	{
+		return evaluationFunction;
+	}
 
 	virtual void clearParameters()
 	{
