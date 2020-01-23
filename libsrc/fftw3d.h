@@ -260,7 +260,7 @@ public:
 	                        std::vector<CoordVal> *vals = NULL, 
 	                        bool sameScale = false, bool interp = true);
 
-	static void addSimple(FFTPtr fftEdit, FFTPtr fftConst);
+	static void addSimple(FFTPtr fftEdit, FFTPtr fftConst, double mult = 1);
 
 	static double score(FFTPtr fftCrystal, FFTPtr fftThing, vec3 position,
 	                    std::vector<CoordVal> *vals = NULL,

@@ -1286,11 +1286,11 @@ void FFT::multiply(FFTPtr fftEdit, FFTPtr fftConst)
  *  Assumes identical nx/ny/nz/scales.
  *  As of May 2019 I do rely on the fact this does not add to imaginary.
  */
-void FFT::addSimple(FFTPtr fftEdit, FFTPtr fftConst)
+void FFT::addSimple(FFTPtr fftEdit, FFTPtr fftConst, double mult)
 {
 	for (long int i = 0; i < fftEdit->nn; i++)
 	{
-		fftEdit->data[i][0] += fftConst->data[i][0];
+		fftEdit->data[i][0] += fftConst->data[i][0] * mult;
 	}
 }
 
