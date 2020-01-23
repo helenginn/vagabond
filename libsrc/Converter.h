@@ -28,28 +28,57 @@ typedef struct
 {
 	Parameter oldParam; /** old column information */
 	Param param;    	/** new parameter to assign SVD version */
+	double start;
+	double scratch;
 } SVDCol;
 
 typedef double (*CompareParams)(void *obj, Parameter &p1, Parameter &p2);
+typedef double (*ScaleParam)(void *obj, Parameter &p1);
 
 class Converter
 {
 public:
-	Converter(int count);
+	Converter();
 	
-	void addColumn(Parameter param);
 	void setCompareFunction(void *obj, CompareParams comp);
+	void setScaleFunction(void *obj, ScaleParam comp);
+	void setStrategy(RefinementStrategyPtr strategy);
 
-	void performSVD();
+	static double score(void *object);
 private:
+	void setupConverter(int count);
+	void addParamsToStrategy();
+	void addColumn(Parameter param);
+	double myScore();
+	void scaleColumns();
 	void compareColumns();
+	void performSVD();
 	/** matrix will contain param-to-param correlations */
 	double *_matrix;
+	double *_v;
+
+	double **_matPtrs;
+	double **_vPtrs;
+	double *_w;
+
 	std::vector<SVDCol> _columns;
 
+	/* we copy the evaluation object/function from the strategy and
+	 * then act as an interface, converting parameters via SVD
+	 * calculations*/
+
+	void *_evalObject;
+	Getter _evalFunc;
+
+	RefinementStrategyPtr _strategy;
 	void *_compObject;
 	CompareParams _comp;
+
+	void *_scaleObject;
+	ScaleParam _scale;
+
 	int _nParam;
+	int _nLimit;
 };
 
 #endif

@@ -17,18 +17,58 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Converter.h"
+#include "../libica/svdcmp.h"
 #include <cstring>
 #include <iostream>
 
-Converter::Converter(int count)
+Converter::Converter()
 {
-	double size = sizeof(double) * count * count;
-	_matrix = (double *)malloc(size);
-	memset(_matrix, '\0', size);
-
-	_nParam = count;
+	_nLimit = 9;
+	_matrix = NULL;
+	_v = NULL;
+	_w = NULL;
+	_vPtrs = NULL;
+	_matPtrs = NULL;
 	_compObject = NULL;
 	_comp = NULL;
+	_scaleObject = NULL;
+	_scale = NULL;
+}
+
+void Converter::setupConverter(int count)
+{
+	_nParam = count;
+
+	double size = sizeof(double) * count * count;
+	_matrix = (double *)malloc(size);
+	_v = (double *)malloc(size);
+
+	memset(_matrix, '\0', size);
+	memset(_v, '\0', size);
+	
+	_matPtrs = (double **)malloc(sizeof(double **) * count);
+	_vPtrs = (double **)malloc(sizeof(double **) * count);
+	_w = (double *)malloc(sizeof(double *) * count);
+	
+	for (int i = 0; i < count; i++)
+	{
+		_matPtrs[i] = &_matrix[i * count];
+		_vPtrs[i] = &_v[i * count];
+	}
+}
+
+void Converter::setStrategy(RefinementStrategyPtr strategy)
+{
+	_strategy = strategy;
+	setupConverter(_strategy->parameterCount());
+
+	for (int i = 0; i < _strategy->parameterCount(); i++)
+	{
+		Parameter p = _strategy->getParamObject(i);
+		addColumn(p);
+	}
+
+	performSVD();
 }
 
 void Converter::addColumn(Parameter param)
@@ -45,8 +85,10 @@ void Converter::addColumn(Parameter param)
 	Getter g = param.getter;
 
 	double default_val = (*g)(o);
+	col.start = default_val;
+	col.oldParam.start_value = default_val;
 	Param p;
-	p.set_value(default_val);
+	p.set_value(0);
 	col.param = p;
 	_columns.push_back(col);
 }
@@ -57,24 +99,65 @@ void Converter::setCompareFunction(void *obj, CompareParams comp)
 	_compObject = obj;
 }
 
+void Converter::setScaleFunction(void *obj, ScaleParam scale)
+{
+	_scale = scale;
+	_scaleObject = obj;
+}
+
+void Converter::scaleColumns()
+{
+	if (_scale == NULL)
+	{
+		return;
+	}
+	std::cout << "Scaling columns..." << std::endl;
+
+	int n = _columns.size();
+	for (int j = 0; j < 5; j++)
+	{
+		for (int i = 0; i < n; i++)
+		{
+			double scale = (*_scale)(_scaleObject, _columns[i].oldParam);
+			if (j == 4)
+			{
+				std::cout << "Scale " << i << " : " << scale << std::endl;
+			}
+		}
+	}
+}
+
 void Converter::compareColumns()
 {
 	double score = 0;
 	int n = _columns.size();
 	
-	for (int i = 0; i < n - 1; i++)
+	std::cout << "Comparing columns: " << std::endl;
+	
+	for (int i = 0; i < n; i++)
 	{
-		for (int j = i + 1; j < n; j++)
+		for (int j = 0; j < n; j++)
 		{
 			if (i == j)
 			{
-				_matrix[i * n + j] = 0;
+				_matPtrs[i][i] = 0.;
+				continue;
+			}
+			
+			if (i < j)
+			{
+				_columns[i].oldParam.step_size *= -1;
 			}
 
 			double score = (*_comp)(_compObject, _columns[i].oldParam, 
 			                        _columns[j].oldParam);
-			_matrix[j * n + i] = score;
-			_matrix[i * n + j] = -score;
+			
+			if (i < j)
+			{
+				_columns[i].oldParam.step_size *= -1;
+			}
+
+			_matPtrs[i][j] = score;
 		}
 	}
 }
@@ -87,15 +170,115 @@ void Converter::performSVD()
 		return;
 	}
 
-	if (_compObject == NULL || _comp == NULL)
+	scaleColumns();
+	
+	if (!_compObject)
 	{
-		std::cout << "Aborting SVD: comparison objects not set up" << std::endl;
+		return;
+	}
+	
+	compareColumns();
+	
+	std::cout << "Pre-SVD results: " << std::endl;
+	for (int i = 0; i < _nParam; i++)
+	{
+		for (int j = 0; j < _nParam; j++)
+		{
+			std::cout << _matPtrs[i][j] << ", ";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
+	
+	size_t dim = _columns.size();
+	int success = svdcmp((mat)_matPtrs, dim, dim, (vect)_w, (mat)_vPtrs);
+	
+	if (!success)
+	{
+		std::cout << "SVD failure." << std::endl;
 		return;
 	}
 
-	compareColumns();
+	std::cout << "Post-SVD results: " << std::endl;
+	for (int i = 0; i < _nParam; i++)
+	{
+		std::cout << _w[i] << ", ";
+	}
+	std::cout << std::endl << std::endl;
 	
+	for (int i = 0; i < _nParam; i++)
+	{
+		for (int j = 0; j < _nParam; j++)
+		{
+			std::cout << _matPtrs[i][j] << ", ";
+		}
+		std::cout << std::endl;
+	}
+	std::cout << std::endl;
 
+	addParamsToStrategy();
 }
 
+double Converter::myScore()
+{
+	/** convert new parameters into old parameters */
+	
+	for (int i = 0; i < _columns.size(); i++)
+	{
+		_columns[i].scratch = _columns[i].start;
+	}
 
+	/** run nested evaluation function */
+	for (int i = 0; i < _columns.size(); i++)
+	{
+		double val = _columns[i].param.value();
+
+		for (int j = 0; j < _columns.size(); j++)
+		{
+			double step = _columns[j].oldParam.step_size;
+			double mod = _matPtrs[i][j];
+			step *= mod;
+			step *= 1/_w[i];
+			double add = step * val;
+
+			_columns[j].scratch += add;
+		}
+	}
+
+	for (int i = 0; i < _columns.size(); i++)
+	{
+		void *obj = _columns[i].oldParam.object;
+		(*_columns[i].oldParam.setter)(obj, _columns[i].scratch);
+	}
+	
+	double score = (*_evalFunc)(_evalObject);
+
+	return score;
+}
+
+double Converter::score(void *object)
+{
+	return static_cast<Converter *>(object)->myScore();
+}
+
+void Converter::addParamsToStrategy()
+{
+	_evalObject = _strategy->getEvaluationObject();
+	_evalFunc = _strategy->getEvaluationFunction();
+	
+	_strategy->setEvaluationFunction(Converter::score, this);
+	_strategy->clearParameters();
+
+	double step = 1.0;
+
+	for (int i = 0; i < _nParam; i++)
+	{
+		if (_w[i] < 0.2)
+		{
+			continue;
+		}
+
+		_strategy->addParameter(&_columns[i].param, Param::getValue,
+		                       Param::setValue, step, step / 200);
+	}
+}
