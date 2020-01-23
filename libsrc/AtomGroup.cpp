@@ -1082,8 +1082,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	}
 	else
 	{
-//		workspace->segment->copyFrom(workspace->constant);
-			workspace->segment->wipe();
+		workspace->segment->wipe();
 	}
 	
 	/* Now we can add neighbouring atoms from the same Crystal
