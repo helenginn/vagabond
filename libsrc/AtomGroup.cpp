@@ -1397,6 +1397,28 @@ vec3 AtomGroup::centroid()
 	return sum;
 }
 
+vec3 AtomGroup::initialCentroid()
+{
+	vec3 sum = empty_vec3();
+	double count = 0;
+	
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (!atom(i)->isFromPDB())
+		{
+			continue;
+		}
+
+		vec3 abs = atom(i)->getInitialPosition();
+		vec3_add_to_vec3(&sum, abs);
+		count++;
+	}
+	
+	vec3_mult(&sum, 1/count);
+	
+	return sum;
+}
+
 void AtomGroup::makeBackboneTwists(ExplicitModelPtr applied)
 {
 	for (int i = 0; i < atomCount(); i++)

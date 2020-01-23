@@ -85,6 +85,7 @@ public:
 	}
 	
 	vec3 centroid();
+	vec3 initialCentroid();
 
 	double totalElectrons();
 	double getAverageBFactor(bool initial = false);
