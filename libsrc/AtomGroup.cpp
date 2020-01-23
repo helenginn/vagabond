@@ -553,10 +553,11 @@ void AtomGroup::addAtom(AtomPtr atom)
 
 	if (it == _atoms.end())
 	{
-		std::vector<AtomPtr>::iterator it;
-		it = std::lower_bound(_atoms.begin(), _atoms.end(), 
-		                      atom, Atom::greater);
-		_atoms.insert(it, atom);
+//		std::vector<AtomPtr>::iterator it;
+//		it = std::lower_bound(_atoms.begin(), _atoms.end(), 
+//		                      atom, Atom::greater);
+//		_atoms.insert(it, atom);
+		_atoms.push_back(atom);
 		crystal->updateLargestNum(atom);
 	}
 }
