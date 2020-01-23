@@ -315,16 +315,16 @@ public:
 	{
 		strategy->addParameter(this, getTensor11, setTensor11, step,
 		                       tol, prefix + "_t11");
+		strategy->addParameter(this, getTensor22, setTensor22, step,
+		                       tol, prefix + "_t22");
+		strategy->addParameter(this, getTensor33, setTensor33, step,
+		                       tol, prefix + "_t33");
 		strategy->addParameter(this, getTensor12, setTensor12, step,
 		                       tol, prefix + "_t12");
 		strategy->addParameter(this, getTensor13, setTensor13, step,
 		                       tol, prefix + "_t13");
-		strategy->addParameter(this, getTensor22, setTensor22, step,
-		                       tol, prefix + "_t22");
 		strategy->addParameter(this, getTensor23, setTensor23, step,
 		                       tol, prefix + "_t23");
-		strategy->addParameter(this, getTensor33, setTensor33, step,
-		                       tol, prefix + "_t33");
 	}
 	
 	void addMatrixToStrategy(RefinementStrategyPtr strategy, double step,
