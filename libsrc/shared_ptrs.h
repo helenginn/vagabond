@@ -176,12 +176,14 @@ typedef boost::shared_ptr<ParamBand> ParamBandPtr;
 class RefineMat3x3;
 typedef boost::shared_ptr<RefineMat3x3> RefineMat3x3Ptr;
 
+class Converter;
 class RefinementGridSearch;
 class RefinementStepSearch;
 class RefinementStrategy;
 class RefinementList;
 class RefinementLBFGS;
 class RefinementNelderMead;
+typedef boost::shared_ptr<Converter> ConverterPtr;
 typedef boost::shared_ptr<RefinementStepSearch> RefinementStepSearchPtr;
 typedef boost::shared_ptr<RefinementGridSearch> RefinementGridSearchPtr;
 typedef boost::shared_ptr<RefinementStrategy> RefinementStrategyPtr;
