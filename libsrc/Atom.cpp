@@ -956,6 +956,17 @@ bool Atom::greater(AtomPtr a1, AtomPtr a2)
 		return false;
 	}
 	
+	/*
+	if (!a1->getElement())
+	{
+		a1->setElement(Element::getElement(a1->getElementSymbol()));
+	}
+	
+	if (!a2->getElement())
+	{
+		a2->setElement(Element::getElement(a2->getElementSymbol()));
+	}
+	
 	double nEle1 = a1->getElement()->electronCount();
 	double nEle2 = a2->getElement()->electronCount();
 
@@ -963,10 +974,11 @@ bool Atom::greater(AtomPtr a1, AtomPtr a2)
 	{
 		return true;
 	}
+	*/
 	
-	double z1 = a1->getInitialPosition().z;
-	double z2 = a2->getInitialPosition().z;
+	double z1 = a1->getAbsolutePosition().z;
+	double z2 = a2->getAbsolutePosition().z;
 	
-	return (z1 > z2);
+	return (z1 < z2);
 }
 
