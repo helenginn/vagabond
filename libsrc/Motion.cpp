@@ -218,15 +218,17 @@ void Motion::applyRotations(std::vector<BondSample> &stored)
 		for (int j = 0; j < _quats.size(); j++)
 		{
 			vec3 quat = _quats[j]->getVec3();
-			mat3x3 rotbasis = mat3x3_ortho_axes(quat);
+			vec3 bVec = make_vec3(1, 0, quat.x / quat.z);
+			mat3x3 rotbasis = mat3x3_rhbasis(bVec, quat);
 			mat3x3 transbasis = mat3x3_transpose(rotbasis);
 
 			vec3 screw = _screws[j]->getVec3();
-			mat3x3_mult_vec(transbasis, &screw);
+			mat3x3_mult_vec(rotbasis, &screw);
 			
 			vec3 rot_vec = quat;
 			vec3_set_length(&rot_vec, 1);
 			double dot = vec3_dot_vec3(diff, quat);
+//			dot /= vec3_length(screw);
 			
 			if (rot_vec.x != rot_vec.x || dot != dot)
 			{
