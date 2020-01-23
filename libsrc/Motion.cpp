@@ -273,7 +273,8 @@ void Motion::addLibrationParameters(RefinementStrategyPtr strategy,
 	{
 		for (int i = 0; i < _quats.size(); i++)
 		{
-			_quats[i]->addVecToStrategy(strategy, 0.01, 0.0001, "rot");
+			std::string rot = "rot" + i_to_str(i);
+			_quats[i]->addVecToStrategy(strategy, 0.01, 0.0001, rot);
 		}
 	}
 	else
@@ -285,7 +286,8 @@ void Motion::addLibrationParameters(RefinementStrategyPtr strategy,
 			num = _quats.size() - 1;
 		}
 
-		_quats[num]->addVecToStrategy(strategy, 0.01, 0.0001, "rot");
+		std::string rot = "rot" + i_to_str(num);
+		_quats[num]->addVecToStrategy(strategy, 0.01, 0.0001, rot);
 	}
 }
 
@@ -296,7 +298,8 @@ void Motion::addScrewParameters(RefinementStrategyPtr strategy,
 	{
 		for (int i = 0; i < _quats.size(); i++)
 		{
-			_screws[i]->addVec2ToStrategy(strategy, 3.0, 0.01, "screw");
+			std::string screw = "offset" + i_to_str(i);
+			_screws[i]->addVec2ToStrategy(strategy, 3.0, 0.01, screw);
 		}
 	}
 	else
@@ -306,7 +309,8 @@ void Motion::addScrewParameters(RefinementStrategyPtr strategy,
 			return;
 		}
 
-		_screws[num]->addVec2ToStrategy(strategy, 3.0, 0.01, "screw");
+		std::string screw = "offset" + i_to_str(num);
+		_screws[num]->addVec2ToStrategy(strategy, 3.0, 0.01, screw);
 	}
 }
 
