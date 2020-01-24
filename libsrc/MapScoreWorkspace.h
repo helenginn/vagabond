@@ -52,6 +52,16 @@ typedef enum
 	MapScoreFlagNegOnly = 32,
 } MapScoreFlag;
 
+typedef enum
+{
+	MapScoreTypeNone,
+	MapScoreTypeCorrel,
+	MapScoreTypeCorrelCopy,
+	MapScoreTypeRadialMagnitude,
+	MapScoreTypeCopyToSmaller,
+	MapScoreAddNoWrap,
+} MapScoreType;
+
 typedef std::map<ElementPtr, FFTPtr> EleCache;
 
 typedef struct 

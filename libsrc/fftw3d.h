@@ -18,16 +18,6 @@
 
 #define FFTW_DATA_TYPE fftwf_complex
 
-typedef enum
-{
-	MapScoreTypeNone,
-	MapScoreTypeCorrel,
-	MapScoreTypeCorrelCopy,
-	MapScoreTypeRadialMagnitude,
-	MapScoreTypeCopyToSmaller,
-	MapScoreAddNoWrap,
-} MapScoreType;
-
 /** \cond SHOW_FOURIER_DIMENSION */
 
 typedef struct

@@ -20,6 +20,7 @@
 #define __vagabond__fft__
 
 #include <fftw3.h>
+#include "MapScoreWorkspace.h"
 #include "shared_ptrs.h"
 #include "mat3x3.h"
 
@@ -70,12 +71,58 @@ public:
 	/** a, b, c in Angstroms; alpha, beta, gamma in degrees */
 	void setUnitCell(std::vector<double> dims);
 	void printSlice(int zVal = -1, double scale = 1);
+
+	double operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
+                      MapScoreType mapScoreType, std::vector<CoordVal> *vals,
+                      bool sameScale);
+
+	/* retrieves out of final column */
+	double getReal(long i)
+	{
+		long index = (i + 1) * _stride - 1;
+		return _data[index][0];
+	}
+	
+	/* retrieves out of final column */
+	double getImag(long i)
+	{
+		long index = (i + 1) * _stride - 1;
+		return _data[index][1];
+	}
+	
+	inline void addToReal(long i, float add)
+	{
+		long index = (i + 1) * _stride - 1;
+		_data[index][0] += add;
+	}
+	
+	inline void setElement(long int i, float real, float imag)
+	{
+		long index = (i + 1) * _stride - 1;
+		_data[index][0] = real;
+		_data[index][1] = imag;
+	}
+	
+	mat3x3 getRealBasis()
+	{
+		return _toReal;
+	}
+	
+	mat3x3 getRecipBasis()
+	{
+		return _toRecip;
+	}
 private:
 	long element(long x, long y, long z)
 	{
 		collapse(&x, &y, &z);
 
 		return x + _nx*y + (_nx*_ny)*z;
+	}
+
+	long element(vec3 xyz)
+	{
+		return element(xyz.x, xyz.y, xyz.z);
 	}
 
 	void collapse(long *x, long *y, long *z)
@@ -88,6 +135,20 @@ private:
 
 		while (*z < 0) *z += _nz;
 		while (*z >= _nz) *z -= _nz;
+	}
+
+	/** Remove whole numbers and leave remainder between 0 and 1 for each
+	 * x, y, z fraction (i.e. remove unit cells) */
+	static void collapseFrac(double *xfrac, double *yfrac, double *zfrac)
+	{
+		while (*xfrac < 0) *xfrac += 1;
+		while (*xfrac >= 1) *xfrac -= 1;
+
+		while (*yfrac < 0) *yfrac += 1;
+		while (*yfrac >= 1) *yfrac -= 1;
+
+		while (*zfrac < 0) *zfrac += 1;
+		while (*zfrac >= 1) *zfrac -= 1;
 	}
 
 	double getAmplitude(int x, int y, int z);
