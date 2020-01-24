@@ -31,6 +31,7 @@ void Anchor::initialise()
 	_nDir = empty_vec3();
 	_cDir = empty_vec3();
 	_disableWhacks = false;
+	_lastCount = 0;
 }
 
 Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
@@ -105,14 +106,19 @@ AtomPtr Anchor::getOtherAtom(AtomPtr calling)
 void Anchor::createLayeredSpherePositions()
 {
 	_storedSamples.clear();
+
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	int totalPoints = crystal->getSampleNum();
+	
+	if (_lastCount == totalPoints)
+	{
+		return;
+	}
 	
 	/* B factor isotropic only atm, get mean square displacement in
 	 * each dimension. */
 	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
 	meanSqDisp = sqrt(meanSqDisp);
-
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	int totalPoints = crystal->getSampleNum();
 
 	double totalSurfaces = 0;
 	double factor = pow(totalPoints, 1./3.) * 2;
@@ -153,6 +159,8 @@ void Anchor::createLayeredSpherePositions()
 		
 		_sphereAngles.insert(_sphereAngles.end(), points.begin(), points.end());
 	}
+	
+	_lastCount = totalPoints;
 }
 
 void Anchor::createStartPositions(Atom *callAtom)

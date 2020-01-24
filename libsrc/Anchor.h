@@ -275,6 +275,7 @@ private:
 	std::vector<vec3> _tmpScrews;
 	std::vector<MotionPtr> _motions;
 	
+	int _lastCount;
 	bool _disableWhacks;
 };
 
