@@ -129,9 +129,6 @@ public:
 		return _whacks[i];
 	}
 
-	void addTranslationParameters(RefinementStrategyPtr strategy,
-	                              double mult = 1);
-
 	static void cleanup(void *object)
 	{
 //		static_cast<Anchor *>(object)->propagateChange(-1, true);

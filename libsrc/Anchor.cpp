@@ -557,16 +557,5 @@ void Anchor::propagateChange(int depth, bool refresh)
 	{
 		getFinalPositions();
 	}
-
 }
 
-void Anchor::addTranslationParameters(RefinementStrategyPtr strategy,
-                                      double mult)
-{
-	if (_motions.size() == 0)
-	{
-		return;
-	}
-
-	_motions[0]->addTranslationParameters(strategy);
-}
