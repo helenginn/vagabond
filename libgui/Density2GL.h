@@ -84,13 +84,13 @@ private:
 	
 	bool isDifferenceDensity();
 	
-	FFTPtr getFFT();
+	VagFFTPtr getFFT();
 	CrystalPtr _crystal;
 	GLKeeper *_keeper;
 	void calculateContouring(CrystalPtr crystal);
 	void makeUniformGrid();
 	void setupIndexTable();
-	void getSigma(FFTPtr fft);
+	void getSigma(VagFFTPtr fft);
 	int _recalculate;
 	int _imag;
 	std::mutex _renderLock;

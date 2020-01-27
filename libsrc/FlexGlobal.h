@@ -39,11 +39,6 @@ public:
 	}
 	
 	void plot(std::string filename);
-	
-	double localCompareParams(Parameter &p1, Parameter &p2);
-	double localScaleParam(Parameter &p1);
-	static double scaleParam(void *obj, Parameter &p1);
-	static double compareParams(void *obj, Parameter &p1, Parameter &p2);
 private:
 	bool _prepared;
 	void prepareWorkspace();

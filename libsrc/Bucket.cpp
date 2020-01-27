@@ -36,10 +36,6 @@ BucketPtr Bucket::chosenBucket()
 	{
 		bucket = BucketPtr(new BucketPerStrand());
 	}
-	else if (Options::getAddSolvent() == 3)
-	{
-		bucket = BucketPtr(new BucketFeatures());
-	}
 	else
 	{
 		shout_at_user("Invalid choice of solvent model");
@@ -138,16 +134,3 @@ void Bucket::writeMillersToFile(std::string prefix, double maxRes)
 	
 }
 
-void Bucket::measureVolumes()
-{
-	for (long k = 0; k < _solvent->nz - 1; k++)
-	{
-		for (long j = 0; j < _solvent->nz - 1; j++)
-		{
-			for (long i = 0; i < _solvent->nz - 1; i++)
-			{
-			}
-		}
-	}
-
-}

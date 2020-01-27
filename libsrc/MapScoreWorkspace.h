@@ -70,8 +70,8 @@ typedef struct
 	CrystalPtr crystal;
 	AtomGroupPtr selectAtoms;
 	AtomGroupPtr extra;
-	FFTPtr segment;
-	FFTPtr constant;
+	VagFFTPtr segment;
+	VagFFTPtr constant;
 	vec3 ave;
 	vec3 working_ave;
 	std::vector<CoordVal> vals;
@@ -84,7 +84,6 @@ typedef struct
 inline void setup_space(MapScoreWorkspace *w)
 {
 	w->scoreType = ScoreTypeCorrel;
-	w->segment = FFTPtr();
 	w->ave = empty_vec3();
 	w->basis = make_mat3x3();
 	w->flag = MapScoreFlagNone;

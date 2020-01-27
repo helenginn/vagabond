@@ -14,6 +14,7 @@
 #include "MapScoreWorkspace.h"
 #include <deque>
 #include "mat3x3.h"
+#include "FFT.h"
 #include "shared_ptrs.h"
 
 #define FFTW_DATA_TYPE fftwf_complex
@@ -45,6 +46,7 @@ class FFT {
 public:
 	FFT();
 	FFT(FFT &other);
+	FFT(VagFFT &other);
 	FFT(long);
 	~FFT();
 

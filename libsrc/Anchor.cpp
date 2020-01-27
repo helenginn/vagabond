@@ -427,7 +427,6 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 	if (!_disableWhacks)
 	{
 		applyWholeMotions();
-
 		fixCentroid();
 
 		/* Apply whacks as normal, if we are not re-caching Whacks. */
@@ -436,6 +435,7 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 			WhackPtr whack = _whacks[i];
 			whack->applyToAnchorSamples(_storedSamples);
 		}
+
 	}
 
 	sanityCheck();

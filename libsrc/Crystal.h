@@ -26,6 +26,7 @@
 #include "mat3x3.h"
 #include "Object.h"
 #include "fftw3d.h"
+#include "FFT.h"
 #include "Motion.h"
 #include <string>
 #include <map>
@@ -77,10 +78,53 @@ inline ShellInfo makeShellInfo(double min, double max)
 	return shell;
 }
 
+inline double getNLimit(VagFFTPtr fftData, int axis = 0)
+{
+	double nLimit = 0;
+	if (axis == 0)
+	{
+		nLimit = fftData->nx();
+	}
+	else if (axis == 1)
+	{
+		nLimit = fftData->ny();
+	}
+	else if (axis == 2)
+	{
+		nLimit = fftData->nz();
+	}
+
+	nLimit = nLimit - ((int)nLimit % 2);
+	nLimit /= 2;
+
+	return nLimit;	
+	
+}
+
+inline vec3 getNLimits(VagFFTPtr data)
+{
+	vec3 lims;
+	lims.x = getNLimit(data, 0);
+	lims.y = getNLimit(data, 1);
+	lims.z = getNLimit(data, 2);
+	return lims;
+}
+
 inline double getNLimit(FFTPtr fftData, FFTPtr fftModel, int axis = 0)
 {
-	double nLimit = std::min(*(&fftData->nx + axis), 
-	                         *(&fftModel->nx + axis));
+	double nLimit = 0;
+	if (axis == 0)
+	{
+		nLimit = std::min(fftData->nx, fftModel->nx);
+	}
+	else if (axis == 1)
+	{
+		nLimit = std::min(fftData->ny, fftModel->ny);
+	}
+	else if (axis == 2)
+	{
+		nLimit = std::min(fftData->nz, fftModel->nz);
+	}
 
 	nLimit = nLimit - ((int)nLimit % 2);
 	nLimit /= 2;
@@ -89,6 +133,38 @@ inline double getNLimit(FFTPtr fftData, FFTPtr fftModel, int axis = 0)
 }
 
 inline vec3 getNLimits(FFTPtr data, FFTPtr fftModel)
+{
+	vec3 lims;
+	lims.x = getNLimit(data, fftModel, 0);
+	lims.y = getNLimit(data, fftModel, 1);
+	lims.z = getNLimit(data, fftModel, 2);
+	return lims;
+}
+
+
+inline double getNLimit(FFTPtr fftData, VagFFTPtr fftModel, int axis = 0)
+{
+	double nLimit = 0;
+	if (axis == 0)
+	{
+		nLimit = std::min((int)fftData->nx, fftModel->nx());
+	}
+	else if (axis == 1)
+	{
+		nLimit = std::min((int)fftData->ny, fftModel->ny());
+	}
+	else if (axis == 2)
+	{
+		nLimit = std::min((int)fftData->nz, fftModel->nz());
+	}
+
+	nLimit = nLimit - ((int)nLimit % 2);
+	nLimit /= 2;
+
+	return nLimit;	
+}
+
+inline vec3 getNLimits(FFTPtr data, VagFFTPtr fftModel)
 {
 	vec3 lims;
 	lims.x = getNLimit(data, fftModel, 0);
@@ -207,12 +283,12 @@ public:
 		return _hkl2real;
 	}
 
-	FFTPtr getFFT()
+	VagFFTPtr getFFT()
 	{
 		return _fft;
 	}
 
-	FFTPtr getDiFFT()
+	VagFFTPtr getDiFFT()
 	{
 		return _difft;
 	}
@@ -276,7 +352,7 @@ public:
 	                          double partsFc = 1, std::string prefix = "");
 	
 	void scaleAndBFactor(DiffractionPtr data, double *scale, 
-                              double *bFactor, FFTPtr model = FFTPtr());
+                              double *bFactor, VagFFTPtr model = VagFFTPtr());
 
 	/** Applies scale factor within the resolution ranges.
 	* 	\param scale factor (multiplies Fc with this)
@@ -498,11 +574,6 @@ public:
 		return _shells;
 	}
 	
-	FFTPtr getDifferenceMap()
-	{
-		return _difft;
-	}
-	
 	/** Scale any data set that has been provided as FPART/PHIPART in
 	 *  the input file */
 	void scaleAnyPartialSet();
@@ -570,8 +641,8 @@ private:
 	int _correlPlotNum;
 	DiffractionPtr _data;
 
-	FFTPtr _fft;
-	FFTPtr _difft;
+	VagFFTPtr _fft;
+	VagFFTPtr _difft;
 	
 	/* imag component may contain (weighted map - original) */
 	FFTPtr _original;

@@ -551,7 +551,7 @@ void Sampler::setCrystal(CrystalPtr crystal)
 {
 	_crystal = crystal;
 	_real2Frac = crystal->getReal2Frac();
-	_fft = crystal->getFFT();
+//	_fft = crystal->getFFT();
 }
 
 void Sampler::setupCloseAtoms()
@@ -581,7 +581,7 @@ void Sampler::setupScoreWithMap()
 	_workspace.scoreType = _scoreType;
 	_workspace.crystal = _crystal;
 	_workspace.selectAtoms = sampled;
-	_workspace.segment = FFTPtr();
+	_workspace.segment = VagFFTPtr();
 	_workspace.ave = empty_vec3();
 	_workspace.basis = make_mat3x3();
 	_workspace.flag = MapScoreFlagNone;

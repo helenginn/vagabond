@@ -26,6 +26,7 @@
 #include "../libccp4/ccp4_spg.h"
 #include "Options.h"
 #include "fftw3d.h"
+#include "FFT.h"
 #include <time.h>
 
 AtomPtr AtomGroup::findAtom(std::string atomType)
@@ -745,108 +746,13 @@ double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal,
 	workspace.scoreType = scoreType;
 	workspace.crystal = crystal;
 	workspace.selectAtoms = shared_from_this();
-	workspace.segment = FFTPtr();
+	workspace.segment = VagFFTPtr();
 	workspace.ave = empty_vec3();
 	workspace.basis = make_mat3x3();
 	workspace.flag = flags;
 	workspace.filename = plot;
 
 	return scoreWithMapGeneral(&workspace, plot != "");
-}
-
-FFTPtr AtomGroup::prepareMapSegment(CrystalPtr crystal,
-                                    AtomGroupPtr selected,
-                                    mat3x3 *basis, vec3 *ave)
-{
-	double maxDistance = 0;
-	FFTPtr map = crystal->getFFT();
-	mat3x3 real2Frac = crystal->getReal2Frac();
-
-	vec3 sum = make_vec3(0, 0, 0);
-
-	/* Find centroid of atom set */
-	for (size_t i = 0; i < selected->atomCount(); i++)
-	{
-		selected->atom(i)->getModel()->refreshPositions();
-		vec3 offset = selected->atom(i)->getModel()->getAbsolutePosition();
-		sum = vec3_add_vec3(sum, offset);	
-	}
-
-	vec3_mult(&sum, 1 / (double)selected->atomCount());
-
-	if (sum.x != sum.x)
-	{
-		return FFTPtr();
-	}
-
-	sum = crystal->snapToGrid(sum);
-	*ave = sum;
-
-	/* Find the longest distance from the centroid to determine
-	* the max FFT dimensions.*/
-	double ns[3];
-	ns[0] = 0; ns[1] = 0; ns[2] = 0;
-
-	for (size_t i = 0; i < selected->atomCount(); i++)
-	{
-		/* Refresh absolute position */
-		selected->atom(i)->getModel()->refreshPositions();
-		vec3 offset = selected->atom(i)->getModel()->getAbsolutePosition();
-
-		vec3 diff = vec3_subtract_vec3(offset, sum);
-
-		ns[0] = std::max(fabs(diff.x), ns[0]);
-		ns[1] = std::max(fabs(diff.y), ns[1]);
-		ns[2] = std::max(fabs(diff.z), ns[2]);
-	}
-
-	/** Adding a buffer region */
-	long nl[3];
-	const double buffer = 1.5;
-
-	for (int i = 0; i < 3; i++)
-	{
-		nl[i] = 2 * (ns[i] + buffer);
-	}
-	
-	/* Correction of non-orthogonal unit cells, I think */
-
-	mat3x3 crystal_basis = crystal->getFFT()->getBasisInverse();
-	mat3x3 angs = make_mat3x3();
-	mat3x3_scale(&angs, nl[0], nl[1], nl[2]);
-	mat3x3 resized = mat3x3_mult_mat3x3(crystal_basis, angs);
-
-	for (int i = 0; i < 9; i+=3)
-	{
-		nl[i / 3] = std::max(std::max(resized.vals[i], resized.vals[i + 1]), 
-		                     resized.vals[i + 2]);
-	}
-
-	/* Calculate appropriate box size and setup FFT */
-
-	FFTPtr segment = FFTPtr(new FFT());
-	segment->create(nl[0], nl[1], nl[2]);
-	
-	/* Basis of the segment itself needs to be in voxels to angstroms */
-	*basis = crystal->getFFT()->getBasis();
-	segment->setBasis(*basis);
-
-	/* but the basis of the map workspace should be a mini-
-	 * reciprocal unit cell */
-	double toReal[3];
-
-	for (int i = 0; i < 3; i++)
-	{
-		toReal[i] = 1 / (segment->scales[i] * nl[i]);
-	}
-
-	vec3 half_box = make_vec3(nl[0] / 2, nl[1] / 2, nl[2] / 2);
-//	vec3_subtract_from_vec3(ave, half_box);
-	
-	mat3x3_scale(basis, nl[0], nl[1], nl[2]);
-	*basis = mat3x3_inverse(*basis);
-
-	return segment;
 }
 
 void expand_limits(vec3 *min, vec3 *max, vec3 abs)
@@ -889,9 +795,15 @@ void AtomGroup::xyzLimits(vec3 *min, vec3 *max)
 	}
 }
 
-void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset,
+void AtomGroup::addToCubicMap(VagFFTPtr scratchFull, vec3 offset,
                               EleCache *cache)
 {
+	for (int i = 0; i < atomCount(); i++)
+	{
+		AtomPtr a = atom(i);
+		scratchFull->addAtom(a);
+	}
+	/*
 	size_t nElements = totalElements();
 
 	FFTPtr scratch = FFTPtr(new FFT(*scratchFull));
@@ -959,9 +871,10 @@ void AtomGroup::addToCubicMap(FFTPtr scratchFull, vec3 offset,
 	}
 	
 	FFT::addSimple(scratchFull, scratch);
+	*/
 }
 
-vec3 AtomGroup::prepareCubicMap(FFTPtr *scratchFull, vec3 *offset, 
+vec3 AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 *offset, 
                                 vec3 min, vec3 max, double buff)
 {
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
@@ -994,20 +907,27 @@ vec3 AtomGroup::prepareCubicMap(FFTPtr *scratchFull, vec3 *offset,
 	extent.y = (int)lrint(extent.y);
 	extent.z = (int)lrint(extent.z);
 	
-	(*scratchFull) = FFTPtr(new FFT());
-	(*scratchFull)->create(extent.x, extent.y, extent.z);
-	(*scratchFull)->setScales(cubeDim);
-	(*scratchFull)->createFFTWplan(1);
+	size_t nEle = totalElements();
+	(*scratchFull) = VagFFTPtr(new VagFFT(extent.x, extent.y, extent.z, nEle));
+	(*scratchFull)->setScale(cubeDim);
+	(*scratchFull)->makePlans();
+	
+	for (int i = 0; i < nEle; i++)
+	{
+		(*scratchFull)->addElement(_elements[i]);
+	}
+
+	(*scratchFull)->prepareAtomSpace();
 	
 	return empty_vec3();
 }
 
-vec3 finalOffset(vec3 offset, FFTPtr cube,
+vec3 finalOffset(vec3 offset, VagFFTPtr cube,
                  mat3x3 real2frac, double buff = BUFFER_REGION)
 {
 	/* Add half box before addition to the FFT of arbitrary voxel size */
-	double scale = cube->getScale(0);
-	vec3 half_box = make_vec3(cube->nx, cube->ny, cube->nz);
+	double scale = cube->getCubicScale();
+	vec3 half_box = make_vec3(cube->nx(), cube->ny(), cube->nz());
 	vec3_mult(&half_box, scale * 0.5);
 	
 	vec3_add_to_vec3(&offset, half_box);
@@ -1018,7 +938,7 @@ vec3 finalOffset(vec3 offset, FFTPtr cube,
 	return offset;
 }
 
-void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset,
+void AtomGroup::addToMap(VagFFTPtr fft, mat3x3 real2frac, vec3 offset,
                          EleCache *cache)
 {
 	size_t nElements = totalElements();
@@ -1028,24 +948,24 @@ void AtomGroup::addToMap(FFTPtr fft, mat3x3 real2frac, vec3 offset,
 		return;
 	}
 	
-	FFTPtr scratchFull;
+	VagFFTPtr scratchFull;
 
 	double buffer = BUFFER_REGION;
 	vec3 min, max;
 	xyzLimits(&min, &max);
 	prepareCubicMap(&scratchFull, &offset, min, max, buffer);
 	addToCubicMap(scratchFull, offset);
+	/*
 	scratchFull->fft(1);
 	double b = Options::getActiveCrystal()->getRealBFactor();
 	Distributor::bFactorDistribute(scratchFull, b);
 	scratchFull->fft(-1);
+	*/
 
 	vec3 addvec = finalOffset(min, scratchFull, real2frac, buffer);
+	scratchFull->setOrigin(addvec);
 	
-	FFT::operation(fft, scratchFull, addvec, MapScoreTypeNone, 
-	               NULL, false, true);
-
-	
+	VagFFT::operation(fft, scratchFull, MapScoreTypeNone, NULL, true);
 }
 
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
@@ -1064,21 +984,22 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	CrystalPtr crystal = workspace->crystal;
 	AtomGroupPtr selected = workspace->selectAtoms;
 
-	bool first = (workspace->segment == FFTPtr());
+	bool first = (workspace->segment == VagFFTPtr());
 
 	vec3 min, max; 
 	selected->xyzLimits(&min, &max);
 
+	/* this is the first time we are running the comparison */
 	if (first)
 	{
+		/* prepare the size of the maps */
 		workspace->ave = empty_vec3();
 		workspace->eleCache.clear();
 		selected->prepareCubicMap(&workspace->segment,
 		                          &workspace->ave, min, max);
-		workspace->basis = workspace->segment->getReal2Frac();
+//		workspace->basis = workspace->segment->getReal2Frac();
 
-		workspace->constant = FFTPtr(new FFT(*workspace->segment));
-		workspace->constant->takePlansFrom(workspace->segment);
+		workspace->constant = VagFFTPtr(new VagFFT(*workspace->segment));
 	}
 	else
 	{
@@ -1167,7 +1088,7 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 	std::vector<double> xs, ys, weights;
 	std::vector<CoordVal> vals;
 
-	FFTPtr map = ws->crystal->getFFT();
+	VagFFTPtr map = ws->crystal->getFFT();
 	bool difference = (ws->flag & MapScoreFlagDifference);
 	
 	if (difference)
@@ -1186,8 +1107,9 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 	ws->segment->copyRealToImaginary();
 	
 	ws->vals.clear();
-	FFT::addSimple(ws->segment, ws->constant); /* add to real */
-	FFT::operation(map, ws->segment, ave, mapType, &ws->vals);
+	ws->segment->addSimple(ws->constant);
+	ws->segment->setOrigin(ave);
+	VagFFT::operation(map, ws->segment, mapType, &ws->vals);
 
 	for (size_t i = 0; i < ws->vals.size() && 
 	     ws->scoreType != ScoreTypeCorrel; i++)

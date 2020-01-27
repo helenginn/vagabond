@@ -41,8 +41,8 @@ private:
 
 	CrystalPtr _crystal;
 	DiffractionPtr _data;
-	FFTPtr _fft;
-	FFTPtr _difft;
+	VagFFTPtr _fft;
+	VagFFTPtr _difft;
 	std::vector<ShellInfo> _shells;
 	double _aveFo;
 	double _allWeights;
@@ -51,7 +51,7 @@ private:
 	double oneMap(FFTPtr scratch, int slice, bool diff);
 	void createVagaCoefficients();
 	void create2FoFcCoefficients();
-	void writeFile(FFTPtr chosen);
+	void writeFile(VagFFTPtr chosen);
 };
 
 #endif

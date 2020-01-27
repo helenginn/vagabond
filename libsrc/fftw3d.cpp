@@ -57,6 +57,33 @@ FFT::FFT(long n)
 	create(n);
 }
 
+FFT::FFT(VagFFT &other)
+{
+	nx = other.nx();
+	ny = other.ny();
+	nz = other.nz();
+	nn = other.nn();
+	
+	mat3x3 real = other.getRealBasis();
+	scales[0] = real.vals[0];
+	scales[1] = real.vals[4];
+	scales[2] = real.vals[8];
+	mask = NULL;
+	data = NULL;
+
+
+	data = (FFTW_DATA_TYPE *)fftwf_malloc(nn * sizeof(FFTW_DATA_TYPE));
+	memset(data, 0, nn * sizeof(FFTW_DATA_TYPE));
+	
+	if (other._myDims)
+	{
+		createFFTWplan(1);
+	}
+	
+	_basis = other._toReal;
+	_inverse = other._toRecip;
+}
+
 FFT::~FFT()
 {
 	free(mask);
@@ -64,6 +91,7 @@ FFT::~FFT()
 
 	fftwf_free(data);
 	data = NULL;
+
 	/*
 	fftwf_cleanup_threads();
 	*/

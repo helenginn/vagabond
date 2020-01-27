@@ -24,6 +24,8 @@
 #include "shared_ptrs.h"
 #include "mat3x3.h"
 
+class FFT;
+
 typedef enum
 {
 	FFTEmpty,
@@ -55,50 +57,111 @@ typedef struct
 class VagFFT
 {
 public:
-	VagFFT(int nx, int ny, int nz, int nele);
+	friend class FFT;
+	VagFFT(int nx, int ny, int nz, int nele = 0);
+	VagFFT(VagFFT &fft);
 	
 	void addElement(ElementPtr ele);
 	
 	void wipe();
 	void makePlans();
+	void setSpaceGroup(CSym::CCP4SPG *spg);
 	void fft(FFTTransform transform);
 	void multiplyFinal(float val);
 	void multiplyDotty(float val);
+	void multiplyAll(float val);
 
 	void prepareAtomSpace();
 	void addAtom(AtomPtr atom);
 	
+	void applySymmetry(bool silent = true);
+	void writeToFile(std::string filename, double maxResolution,
+	                 FFTPtr data = FFTPtr(), VagFFTPtr diff = VagFFTPtr(), 
+	                 FFTPtr calc = FFTPtr());
+	
+	double sumReal();
+	
 	/** a, b, c in Angstroms; alpha, beta, gamma in degrees */
 	void setUnitCell(std::vector<double> dims);
+	
+	/* sets the unit cell dimension in Angstroms and updates other
+	 * matrices */
+	void setScale(double cubeDim);
+	
 	void printSlice(int zVal = -1, double scale = 1);
 
-	double operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
+	static double operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
                       MapScoreType mapScoreType, std::vector<CoordVal> *vals,
-                      bool sameScale);
+                      bool sameScale = false);
+
+	/* simple pair-wise addition of final index reals of two FFTs */
+	void addSimple(VagFFTPtr v2);
+	void addSimple(FFTPtr v2);
+	
+	void copyFrom(FFTPtr fft);
+	
+	void copyRealToImaginary();
+
+	void setOrigin(vec3 orig)
+	{
+		_origin = orig;
+	}
+	
+	long finalIndex(int i)
+	{
+		return (i + 1) * _stride - 1;
+	}
+
+	/** Returns the length of the vector described by the real
+	 * and imaginary components of a data index. Takes voxel numbers on
+	 * each axis. */
+	double getAmplitude(long x, long y, long z)
+	{
+		return getAmplitude(element(x, y, z));
+	}
+
+	double getPhase(int x, int y, int z);
+
+	double getAmplitude(long i);
 
 	/* retrieves out of final column */
 	double getReal(long i)
 	{
-		long index = (i + 1) * _stride - 1;
+		long index = finalIndex(i);
+		return _data[index][0];
+	}
+
+	/* retrieves out of final column */
+	double getComponent(long i, bool imag)
+	{
+		long index = finalIndex(i);
+		return _data[index][imag];
+	}
+
+	/* retrieves out of final column */
+	double getReal(int i, int j, int k)
+	{
+		long ii = element(i, j, k);
+		long index = finalIndex(ii);
 		return _data[index][0];
 	}
 	
 	/* retrieves out of final column */
 	double getImag(long i)
 	{
-		long index = (i + 1) * _stride - 1;
+		long index = finalIndex(i);
 		return _data[index][1];
 	}
-	
+
 	inline void addToReal(long i, float add)
 	{
-		long index = (i + 1) * _stride - 1;
+		long index = finalIndex(i);
 		_data[index][0] += add;
 	}
 	
 	inline void setElement(long int i, float real, float imag)
 	{
-		long index = (i + 1) * _stride - 1;
+		long index = finalIndex(i);
 		_data[index][0] = real;
 		_data[index][1] = imag;
 	}
@@ -112,7 +175,32 @@ public:
 	{
 		return _toRecip;
 	}
-private:
+	
+	double getCubicScale()
+	{
+		return _toReal.vals[0];
+	}
+	
+	int nx()
+	{
+		return _nx;
+	}
+	
+	int ny()
+	{
+		return _nx;
+	}
+	
+	int nz()
+	{
+		return _nx;
+	}
+	
+	int nn()
+	{
+		return _nn;
+	}
+
 	long element(long x, long y, long z)
 	{
 		collapse(&x, &y, &z);
@@ -124,6 +212,17 @@ private:
 	{
 		return element(xyz.x, xyz.y, xyz.z);
 	}
+
+	double getCompFromFrac(vec3 frac, int comp)
+	{
+		frac.x *= _nx;
+		frac.y *= _ny;
+		frac.z *= _nz;
+		return cubic_interpolate(frac, comp);
+	}
+
+	vec3 fracFromElement(long int element);
+private:
 
 	void collapse(long *x, long *y, long *z)
 	{
@@ -150,8 +249,6 @@ private:
 		while (*zfrac < 0) *zfrac += 1;
 		while (*zfrac >= 1) *zfrac -= 1;
 	}
-
-	double getAmplitude(int x, int y, int z);
 
 	double getAmplitude(ElementPtr ele, int i, int j, int k);
 	int whichColumn(ElementPtr ele);
@@ -189,15 +286,20 @@ private:
 	static std::vector<FFTDim> _dimensions;
 	FFTDim *_myDims;
 	
+	/* _realBasis accounting for unit cell size */
 	mat3x3 _toReal;
+	/* _recipBasis accounting for unit cell size */
 	mat3x3 _toRecip;
 
-	/* small numbers */
+	/* small numbers; voxel dimension in Angstroms */
 	mat3x3 _realBasis;
-
-	/* big numbers */
+	/* big numbers; voxel dimension in inverse Angstroms */
 	mat3x3 _recipBasis;
+	
+	/* denoting where the origin is, e.g. 0,0,0 or atom central pos */
 	vec3 _origin;
+	
+	CSym::CCP4SPG *_spg;
 
 	bool _setMatrices;
 };

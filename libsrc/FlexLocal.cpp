@@ -18,7 +18,6 @@
 #include "RefinementNelderMead.h"
 #include "ParamBand.h"
 #include "FlexGlobal.h"
-#include "Reflex.h"
 #include "Timer.h"
 #include <map>
 #include <iomanip>

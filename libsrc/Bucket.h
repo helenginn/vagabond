@@ -58,8 +58,6 @@ public:
 	bool isSolvent(int index);
 	Atom *nearbyAtom(int index);
 
-	void measureVolumes();
-	
 	FFTPtr getMaskedRegions()
 	{
 		return _maskedRegions;

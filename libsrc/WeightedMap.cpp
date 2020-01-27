@@ -24,7 +24,6 @@
 #include "Options.h"
 #include <iomanip>
 #include "Shouter.h"
-#include "Correl.h"
 #include "CSV.h"
 #include "Fibonacci.h"
 #include "../libinfo/CentroidToPhase.h"
@@ -41,13 +40,13 @@ void WeightedMap::setCrystalAndData(CrystalPtr crystal, DiffractionPtr data)
 	_crystal = crystal;
 	_data = data;
 	_fft = crystal->getFFT();
-	_difft = crystal->getDifferenceMap();
+	_difft = crystal->getDiFFT();
 }
 
 void WeightedMap::writeCalculatedSlice()
 {
 	/* Back to real space */
-	int nx = _fft->nx;
+	int nx = _fft->nx();
 	FFTPtr copy = FFTPtr(new FFT(*_fft));
 	copy->fft(-1);
 	
@@ -59,11 +58,11 @@ void WeightedMap::writeCalculatedSlice()
 	
 	int z = 0;
 
-	for (int j = 0; j < _fft->ny; j++)
+	for (int j = 0; j < _fft->ny(); j++)
 	{
-		for (int i = 0; i < _fft->nx; i++)
+		for (int i = 0; i < _fft->nx(); i++)
 		{
-			int index = i + j * nx + z * nx * _fft->ny;
+			int index = i + j * nx + z * nx * _fft->ny();
 			Atom *atom = solv->nearbyAtom(index);
 			int val = 0;
 			
@@ -102,7 +101,7 @@ void WeightedMap::writeCalculatedSlice()
 	plotMap["xTitle0"] = "a dim";
 	plotMap["yTitle0"] = "b dim";
 	plotMap["style0"] = "heatmap";
-	plotMap["stride"] = i_to_str(_fft->nx);
+	plotMap["stride"] = i_to_str(_fft->nx());
 
 	calc->plotPNG(plotMap);
 	calc->writeToFile("calculated_slice.csv");
@@ -118,15 +117,15 @@ void WeightedMap::writeObservedSlice()
 	CSVPtr csv = CSVPtr(new CSV(3, "i", "j", "d"));
 	csv->setSubDirectory("slices");
 
-	int nx = _fft->nx;
+	int nx = _fft->nx();
 	long z = 0;
 
-	for (int j = 0; j < _fft->ny; j++)
+	for (int j = 0; j < _fft->ny(); j++)
 	{
-		for (int i = 0; i < _fft->nx; i++)
+		for (int i = 0; i < _fft->nx(); i++)
 		{
-			long index = i + j * nx + z * nx * _fft->ny;
-			csv->addEntry(3, (double)i, (double)j, _fft->data[index][0]);
+			long index = i + j * nx + z * nx * _fft->ny();
+			csv->addEntry(3, (double)i, (double)j, _fft->getReal(index));
 		}
 	}
 
@@ -142,7 +141,7 @@ void WeightedMap::writeObservedSlice()
 	plotMap["xTitle0"] = "a dim";
 	plotMap["yTitle0"] = "b dim";
 	plotMap["style0"] = "heatmap";
-	plotMap["stride"] = i_to_str(_fft->nx);
+	plotMap["stride"] = i_to_str(_fft->nx());
 
 	csv->plotPNG(plotMap);
 	csv->writeToFile("observed_slice.csv");
@@ -184,11 +183,11 @@ void WeightedMap::writeObservedSlice()
 	std::cout << "Printing out solvent." << std::flush;
 	double prog = 0;
 
-	for (int k = 0; k < _fft->nz; k++)
+	for (int k = 0; k < _fft->nz(); k++)
 	{
-		for (int j = 0; j < _fft->ny; j++)
+		for (int j = 0; j < _fft->ny(); j++)
 		{
-			for (int i = 0; i < _fft->nx; i++)
+			for (int i = 0; i < _fft->nx(); i++)
 			{
 				long ele = _fft->element(i, j, k);
 				if (bucket->nearbyAtom(ele) != NULL)
@@ -201,9 +200,9 @@ void WeightedMap::writeObservedSlice()
 					continue;
 				}
 				
-				vec3 frac = make_vec3((double)i / (double)_fft->nx,
-				                      (double)j / (double)_fft->ny,
-				                      (double)k / (double)_fft->nz);
+				vec3 frac = make_vec3((double)i / (double)_fft->nx(),
+				                      (double)j / (double)_fft->ny(),
+				                      (double)k / (double)_fft->nz());
 
 				atoms++;
 
@@ -220,7 +219,7 @@ void WeightedMap::writeObservedSlice()
 						vec3_mult(&copy, dist);
 						vec3_add_to_vec3(&copy, frac);
 
-						double near = _fft->getRealFromFrac(copy);
+						double near = _fft->getCompFromFrac(copy, 0);
 						if (near < score)
 						{
 							score = near;
@@ -236,7 +235,7 @@ void WeightedMap::writeObservedSlice()
 			}
 		}
 		
-		prog = (double)k / _fft->nz;
+		prog = (double)k / _fft->nz();
 
 		printf("\rPrinting out solvent |");
 		
@@ -273,10 +272,6 @@ void WeightedMap::createWeightedMaps()
 {
 	calculateFiguresOfMerit();
 	
-	Correl correl;
-	correl.setCrystalAndData(_crystal, _data);
-	correl.localCC();
-	
 	writeCalculatedSlice();
 
 	int map = Options::getMapType();
@@ -292,7 +287,7 @@ void WeightedMap::createWeightedMaps()
 
 	/* Back to real space */
 	_crystal->fourierTransform(-1);
-	_difft->fft(-1);
+	_difft->fft(FFTReciprocalToReal);
 	
 	writeObservedSlice();
 }
@@ -429,7 +424,7 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 		          "structure determination.");
 	}
 
-	vec3 nLimits = getNLimits(_fft, _fft);
+	vec3 nLimits = getNLimits(_fft);
 	CSym::CCP4SPG *spg = _crystal->getSpaceGroup();
 	mat3x3 real2frac = _crystal->getReal2Frac();
 
@@ -479,7 +474,7 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 
 				vec2 complex;
 				complex.x = _fft->getReal(index);
-				complex.y = _fft->getImaginary(index);
+				complex.y = _fft->getImag(index);
 				double fcalc = sqrt(complex.x * complex.x +
 				                      complex.y * complex.y);
 
@@ -556,6 +551,7 @@ void WeightedMap::createVagaCoefficients()
 		scratch->fft(-1); /* to real space */
 		scratch->multiplyAll(weight);
 		FFT::addSimple(duplicate, scratch);
+//		duplicate->addSimple(scratch);
 		scratch->wipe();
 	}
 
@@ -566,7 +562,8 @@ void WeightedMap::createVagaCoefficients()
 		double weight = oneMap(scratch, i, true);
 		scratch->fft(-1);
 		scratch->multiplyAll(weight);
-		FFT::addSimple(_difft, scratch);
+		_difft->addSimple(scratch);
+//		FFT::addSimple(_difft, scratch);
 		scratch->wipe();
 	}
 	
@@ -576,25 +573,20 @@ void WeightedMap::createVagaCoefficients()
 	
 	/* To reciprocal space for writing */
 	duplicate->fft(1);
-	_difft->fft(1);
+	_difft->fft(FFTRealToReciprocal);
 	
-	writeFile(duplicate);
 	_fft->copyFrom(duplicate);
+	writeFile(_fft);
 }
 
-void WeightedMap::writeFile(FFTPtr chosen)
+void WeightedMap::writeFile(VagFFTPtr chosen)
 {
 	std::string filename = _crystal->getFilename();
 	double maxRes = _crystal->getMaxResolution(_data);
-	CSym::CCP4SPG *spg = _crystal->getSpaceGroup();
-	std::vector<double> uc = _crystal->getUnitCell();
-	mat3x3 r2f = _crystal->getReal2Frac();
-	
 	std::string prefix = "cycle_" + i_to_str(_crystal->getCycleNum());
 
 	std::string outputFile = prefix + "_" + filename + "_vbond.mtz";
-	chosen->writeReciprocalToFile(outputFile, maxRes, spg, _data->getFFT(),
-	                                 _difft, _fft);
+	chosen->writeToFile(outputFile, maxRes);
 }
 
 void WeightedMap::create2FoFcCoefficients()
@@ -672,7 +664,7 @@ void WeightedMap::create2FoFcCoefficients()
 
 				vec2 complex;
 				complex.x = _fft->getReal(index);
-				complex.y = _fft->getImaginary(index);
+				complex.y = _fft->getImag(index);
 				double fcalc = sqrt(complex.x * complex.x +
 				                    complex.y * complex.y);
 

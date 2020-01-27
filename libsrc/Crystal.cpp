@@ -25,6 +25,7 @@
 #include <time.h>
 
 #include "Crystal.h"
+#include "FFT.h"
 #include "Bond.h"
 #include "fftw3d.h"
 #include "vec3.h"
@@ -158,11 +159,6 @@ bool Crystal::refineIntraMovements(bool magic)
 void Crystal::realSpaceClutter(double maxRes)
 {
 	maxRes = getMaxResolution(_data);
-
-	if (_fft)
-	{
-		_fft->wipe();	
-	}
 	
 	if (!_fft)
 	{
@@ -180,10 +176,7 @@ void Crystal::realSpaceClutter(double maxRes)
 			Options::setProteinSampling(sampling);
 		}
 		
-		/* Now create the FFT */
-		_fft = FFTPtr(new FFT());
-		_difft = FFTPtr(new FFT());
-
+		/* work out what our nx/ny/nz dimensions should be */
 		vec3 uc_dims = empty_vec3();
 		vec3 fft_dims = empty_vec3();
 		uc_dims.x = mat3x3_length(_hkl2real, 0) / sampling;
@@ -192,6 +185,7 @@ void Crystal::realSpaceClutter(double maxRes)
 
 		fft_dims = uc_dims;
 		
+		/* even-ise them */
 		for (int i = 0; i < 3; i++)
 		{
 			double val = *(&fft_dims.x + i);
@@ -203,8 +197,11 @@ void Crystal::realSpaceClutter(double maxRes)
 			*(&fft_dims.x + i) = fixed;
 		}
 
-		_fft->create(fft_dims.x, fft_dims.y, fft_dims.z);
-		_fft->setupMask();
+		/* Now create the FFTs */
+		_fft = VagFFTPtr(new VagFFT(fft_dims.x, fft_dims.y, fft_dims.z));
+		_difft = VagFFTPtr(new VagFFT(fft_dims.x, fft_dims.y, fft_dims.z));
+
+//		_fft->setupMask();
 
 		if (!_original)
 		{
@@ -214,23 +211,17 @@ void Crystal::realSpaceClutter(double maxRes)
 			setupOriginalMap();
 		}
 
-		_difft->create(fft_dims.x, fft_dims.y, fft_dims.z);
+		_fft->setUnitCell(_unitCell);
+		_difft->setUnitCell(_unitCell);
+		_fft->makePlans();
+		_difft->makePlans();
 
-		mat3x3 per_voxel = _hkl2real;
-		mat3x3_scale(&per_voxel, 1 / fft_dims.x, 
-		             1 / fft_dims.y, 1 / fft_dims.z);
-		
-		_fft->setBasis(per_voxel, 1);
-		_difft->setBasis(per_voxel, 1);
 	}
 	else
 	{
 		_fft->wipe();
 		_difft->wipe();
 	}
-
-	_fft->createFFTWplan(8);
-	_difft->createFFTWplan(8);
 
 	
 	refreshAnchors();
@@ -356,7 +347,7 @@ typedef struct
 } IntPair;
 
 void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale, 
-                              double *bFactor, FFTPtr model)
+                              double *bFactor, VagFFTPtr model)
 {
 	if (!model)
 	{
@@ -368,7 +359,7 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 	std::map<int, std::vector<IntPair> > binRatios;
 
 	FFTPtr fftData = data->getFFT();	
-	vec3 nLimits = getNLimits(model, model);
+	vec3 nLimits = getNLimits(fftData, model);
 
 	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
@@ -389,7 +380,7 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 				double length = vec3_length(ijk);
 
 				double data = fftData->getReal(_i, _j, _k);
-				double calc = sqrt(model->getIntensity(i, j, k));
+				double calc = model->getAmplitude(i, j, k);
 
 				if (data != data || calc != calc) continue;
 				
@@ -528,7 +519,7 @@ void Crystal::applyShellFactors(DiffractionPtr data)
 				}
 
 				double real = _fft->getReal(element);
-				double imag = _fft->getImaginary(element);
+				double imag = _fft->getImag(element);
 
 				real /= _shells[index].scale;
 				imag /= _shells[index].scale;
@@ -596,7 +587,7 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 				}
 
 				double amp1 = fftData->getReal(_i, _j, _k);
-				double amp2 = sqrt(_fft->getIntensity(i, j, k));
+				double amp2 = _fft->getAmplitude(i, j, k);
 
 				int isFree = (fftData->getMask(_i, _j, _k) == 0);
 
@@ -696,9 +687,9 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
                                double bFactor)
 {
-	double xLimit = _fft->nx / 2;
-	double yLimit = _fft->ny / 2;
-	double zLimit = _fft->nz / 2;
+	double xLimit = _fft->nx() / 2;
+	double yLimit = _fft->ny() / 2;
+	double zLimit = _fft->nz() / 2;
 
 	std::vector<double> set1, set2, free1, free2;
 
@@ -725,7 +716,7 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 				}
 
 				double real = _fft->getReal(element);
-				double imag = _fft->getImaginary(element);
+				double imag = _fft->getImag(element);
 
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
@@ -1100,16 +1091,19 @@ void Crystal::applySymOps()
 	}
 
 	std::cout << "Protein: ";
-	_fft->applySymmetry(_spaceGroup, false);
+	_fft->applySymmetry(false);
 }
 
 void Crystal::fourierTransform(int dir, double res)
 {
-	_fft->fft(dir);
-
 	if (dir == 1)
 	{
+		_fft->fft(FFTRealToReciprocal);
 		applySymOps();
+	}
+	else
+	{
+		_fft->fft(FFTReciprocalToReal);
 	}
 	
 	if (_bucket)
@@ -1219,9 +1213,9 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 		"Cannot perform map recalculation." << std::endl;
 		std::cout << std::setprecision(4);
 		realSpaceClutter(1.8);
-		_fft->fft(1);
-		_fft->normalise();
-		_fft->writeReciprocalToFile("calc_" + i_to_str(cycleNum) + ".mtz", 1.8);
+		_fft->fft(FFTRealToReciprocal);
+//		_fft->writeReciprocalToFile("calc_" + i_to_str(cycleNum) + ".mtz", 1.8);
+		_fft->writeToFile("calc_" + i_to_str(cycleNum) + ".mtz", 1.8);
 		Options::flagDensityChanged();
 	}
 	else
@@ -1570,17 +1564,17 @@ std::vector<AtomPtr> Crystal::getCloseAtoms(AtomPtr one, double tol, bool cache)
 vec3 Crystal::snapToGrid(vec3 pos)
 {
 	mat3x3_mult_vec(_real2frac, &pos);
-	pos.x *= _fft->nx;
-	pos.y *= _fft->ny;
-	pos.z *= _fft->nz;
+	pos.x *= _fft->nx();
+	pos.y *= _fft->ny();
+	pos.z *= _fft->nz();
 	
 	pos.x = lrint(pos.x);
 	pos.y = lrint(pos.y);
 	pos.z = lrint(pos.z);
 	
-	pos.x /= _fft->nx;
-	pos.y /= _fft->ny;
-	pos.z /= _fft->nz;
+	pos.x /= _fft->nx();
+	pos.y /= _fft->ny();
+	pos.z /= _fft->nz();
 	mat3x3_mult_vec(_hkl2real, &pos);
 	return pos;
 }
@@ -1715,7 +1709,7 @@ void Crystal::differenceWithOriginal()
 
 	for (int i = 0; i < _original->nn; i++)
 	{
-		double weight = _fft->data[i][0];
+		double weight = _fft->getReal(i);
 		double orig = _original->data[i][0];
 
 		weights.push_back(weight);
@@ -1732,7 +1726,7 @@ void Crystal::differenceWithOriginal()
 
 	for (int i = 0; i < _original->nn; i++)
 	{
-		double real = _fft->data[i][0];
+		double real = _fft->getReal(i);
 		double orig = _original->data[i][0];
 		_original->data[i][1] = (real - mwt) / stwt;
 		_original->data[i][1] -= (orig - mor) / stor;
@@ -1784,7 +1778,7 @@ void Crystal::differenceAttribution()
 	double num_back = 0;
 	double num_hetatm = 0;
 	
-	for (int i = 0; i < _difft->nn; i++)
+	for (int i = 0; i < _difft->nn(); i++)
 	{
 		vec3 frac = _difft->fracFromElement(i);
 		
@@ -1796,7 +1790,7 @@ void Crystal::differenceAttribution()
 		}
 		
 		Atom *atom = _bucket->nearbyAtom(i);
-		double density = _difft->data[i][0];
+		double density = _difft->getReal(i);
 		density *= density;
 		
 		sum_all += fabs(density);
@@ -2056,4 +2050,5 @@ void Crystal::refreshAnchors()
 		}
 	}
 }
+
 

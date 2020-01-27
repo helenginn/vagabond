@@ -801,7 +801,7 @@ void Density2GL::makeUniformGrid()
 	_vertices.resize(total);
 	long c = 0;
 	vec3 central = getCentreOffset();
-	FFTPtr fft = getFFT();
+	VagFFTPtr fft = getFFT();
 	mat3x3 real2frac = _crystal->getReal2Frac();
 	
 	for (int z = 0; z < _dims.z; z++)
@@ -886,7 +886,7 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 	vec3 shifts[] = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1},
 	                 {1, 1, 0}, {1, 0, 1}, {0, 1, 1}, {1, 1, 1}};
 
-	FFTPtr fft = getFFT();
+	VagFFTPtr fft = getFFT();
 	mat3x3 real2frac = crystal->getReal2Frac();
 	
 	long count = -3;
@@ -1075,7 +1075,7 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 //	std::cout << std::endl;
 }
 
-FFTPtr Density2GL::getFFT()
+VagFFTPtr Density2GL::getFFT()
 {
 	if (_dType == DensityWeighted)
 	{
@@ -1084,15 +1084,6 @@ FFTPtr Density2GL::getFFT()
 	else if (_dType == DensityDifference)
 	{
 		return _crystal->getDiFFT();
-	}
-	else if (_dType == DensityOriginal)
-	{
-		return _crystal->getOrigDensity();
-	}
-	if (_dType == DensityDiffWithOriginal)
-	{
-		/* and imag = 1 */
-		return _crystal->getOrigDensity();
 	}
 	else
 	{
@@ -1166,13 +1157,14 @@ void Density2GL::render()
 	}
 }
 
-void Density2GL::getSigma(FFTPtr fft)
+void Density2GL::getSigma(VagFFTPtr fft)
 {
 	/* so many cpu ticks wasted -shrug- */
 	std::vector<double> vals;
-	for (int i = 0; i < fft->nn; i++)
+	for (int i = 0; i < fft->nn(); i++)
 	{
-		vals.push_back(fft->data[i][_imag]);
+		double val = fft->getComponent(i, _imag);
+		vals.push_back(val);
 	}
 
 	_mean = mean(vals);
@@ -1192,7 +1184,7 @@ void Density2GL::makeNewDensity(CrystalPtr crystal)
 	
 	_crystal = crystal;
 	
-	if (!getFFT() || getFFT()->nn == 0)
+	if (!getFFT() || getFFT()->nn() == 0)
 	{
 		return;
 	}
@@ -1208,7 +1200,7 @@ void Density2GL::makeNewDensity(CrystalPtr crystal)
 		setupIndexTable();
 	}
 	
-	FFTPtr fft = getFFT();
+	VagFFTPtr fft = getFFT();
 	getSigma(fft);
 
 	calculateContouring(crystal);

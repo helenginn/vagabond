@@ -122,13 +122,13 @@ public:
 		return _elements[which];
 	}
 	
-	void addToMap(FFTPtr fft, mat3x3 _real2frac, vec3 offset = empty_vec3(),
+	void addToMap(VagFFTPtr fft, mat3x3 _real2frac, vec3 offset = empty_vec3(),
 	              EleCache *cache = NULL);
 
 	/** Adds atoms to a map where the voxel morphology is cubic, with a
 	  * given offset specified which is subtracted from each atom
 	  * position. */
-	void addToCubicMap(FFTPtr scratchFull, vec3 offset, 
+	void addToCubicMap(VagFFTPtr scratchFull, vec3 offset, 
 	                   EleCache *cache = NULL);
 
 	/** Prepares a cubic map to add the AtomGroup to, including adjustment
@@ -136,7 +136,7 @@ public:
 	 * 	of the map. Returns the minimum Atom position as well.
 	 *  \return offset which should be applied to each atom when calling
 	 *  AtomGroup::addToCubicMap */
-	vec3 prepareCubicMap(FFTPtr *scratchFull, vec3 *offset, 
+	vec3 prepareCubicMap(VagFFTPtr *scratchFull, vec3 *offset, 
 	                     vec3 min, vec3 max, double buffer = BUFFER_REGION);
 
 	void setTargetRefinement(CrystalPtr target, RefinementType rType);
@@ -211,9 +211,6 @@ protected:
 private:
 	static void plotCoordVals(std::vector<CoordVal> &vals, bool difference,
 	                          double cutoff, std::string filename);
-	static FFTPtr prepareMapSegment(CrystalPtr crystal,
-	                                AtomGroupPtr selected,
-	                                mat3x3 *basis, vec3 *ave);
 	void xyzLimits(vec3 *min, vec3 *max);
 
 	static double scoreFinalMap(MapScoreWorkspace *workspace, bool plot);

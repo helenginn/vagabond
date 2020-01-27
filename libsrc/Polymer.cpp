@@ -42,7 +42,6 @@
 #include "Options.h"
 #include "FlexGlobal.h"
 #include "FlexLocal.h"
-#include "Reflex.h"
 #include "Refitter.h"
 #include "RefinementNelderMead.h"
 #include "RefinementLBFGS.h"
@@ -102,14 +101,6 @@ void Polymer::checkChainContinuity()
 			foundGap = i;
 		}
 	}
-}
-
-void Polymer::reflex()
-{
-	Reflex reflex;
-	reflex.setPolymer(shared_from_this());
-	reflex.setPieceCount(3);
-	reflex.calculate();
 }
 
 bool Polymer::refineLocalFlexibility(bool magic)

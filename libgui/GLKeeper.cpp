@@ -220,6 +220,7 @@ void GLKeeper::toggleVisibleDensity()
 		getOrig2GL()->setVisible(false);
 		getOrigDiff2GL()->setVisible(false);
 	}
+	/*
 	else if (_densityState == 2)
 	{
 		_densityState++;
@@ -236,6 +237,7 @@ void GLKeeper::toggleVisibleDensity()
 		getOrig2GL()->setVisible(true);
 		getOrigDiff2GL()->setVisible(true);
 	}
+	*/
 	else
 	{
 		_densityState = 0;	

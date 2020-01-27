@@ -27,7 +27,43 @@
 #include <iomanip>
 #include <stdlib.h>
 
+#include "../libccp4/cmtzlib.h"
+#include "../libccp4/csymlib.h"
+#include "../libccp4/ccp4_spg.h"
+#include "../libccp4/ccp4_general.h"
+
 std::vector<FFTDim> VagFFT::_dimensions;
+
+VagFFT::VagFFT(VagFFT &fft)
+{
+	_nx = fft._nx;
+	_ny = fft._ny;
+	_nz = fft._nz;
+	_nele = fft._nele;
+	_nn = fft._nn;
+	_status = fft._status;
+	_stride = fft._stride;
+	_total = fft._total;
+	_origin = fft._origin;
+	_toReal = fft._toReal;
+	_toRecip = fft._toRecip;
+	_recipBasis = fft._recipBasis;
+	_realBasis = fft._realBasis;
+	_setMatrices = fft._setMatrices;
+	_myDims = fft._myDims;
+	_elements = fft._elements;
+	_spg = CSym::ccp4spg_load_by_ccp4_num(1);
+
+	_data = (fftwf_complex *)fftwf_malloc(_total);
+
+	if (!_data)
+	{
+		printf("ERROR: Malloc failed for VagFFT, nn = %i\n", _nn);
+		exit(1);
+	}
+
+	memcpy(_data, fft._data, _total * sizeof(fftwf_complex));
+}
 
 VagFFT::VagFFT(int nx, int ny, int nz, int nele)
 {
@@ -35,6 +71,7 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele)
 	_ny = ny;
 	_nz = nz;
 	_myDims = NULL;
+	_spg = CSym::ccp4spg_load_by_ccp4_num(1);
 
 	if (_nx % 2 == 1) _nx -= 1;
 	if (_ny % 2 == 1) _ny -= 1;
@@ -173,7 +210,7 @@ void VagFFT::multiplyFinal(float val)
 {
 	for (int i = 0; i < _nn; i++)
 	{
-		long final_index = (i + 1) * _stride - 1;
+		long final_index = finalIndex(i);
 		_data[final_index][0] *= val;
 		_data[final_index][1] *= val;
 	}
@@ -266,7 +303,7 @@ void VagFFT::separateAtomTransform()
 
 	for (int i = 0; i < _nn; i++)
 	{
-		long final_index = (i + 1) * _stride - 1;
+		long final_index = finalIndex(i);
 
 		for (int j = 0; j < _nele; j++)
 		{
@@ -492,20 +529,25 @@ void VagFFT::addInterpolatedToReal(ElementPtr ele, double sx, double sy,
 	}
 }
 
+double VagFFT::getPhase(int x, int y, int z)
+{
+	long pre_index = element(x, y, z);
+	long index = finalIndex(pre_index);
+
+	double degrees = atan2(_data[index][1], _data[index][0]) * 180 / M_PI;
+
+	while (degrees >= 360) degrees -= 360;
+
+	while (degrees < 0) degrees += 360;
+
+	return degrees;
+
+}
+
 double VagFFT::getAmplitude(ElementPtr ele, int x, int y, int z)
 {
 	int col = whichColumn(ele);
 	long index = element(x, y, z) * _stride + col;
-
-	double val =  (_data[index][0] * _data[index][0] + 
-	               _data[index][1] * _data[index][1]);
-	
-	return sqrt(val);
-}
-
-double VagFFT::getAmplitude(int x, int y, int z)
-{
-	long index = (1 + element(x, y, z)) * _stride - 1;
 
 	double val =  (_data[index][0] * _data[index][0] + 
 	               _data[index][1] * _data[index][1]);
@@ -926,5 +968,409 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	}
 
 	return 0;
+}
+
+void VagFFT::setScale(double cubeDim)
+{
+	mat3x3 real = make_mat3x3();
+	mat3x3_scale(&real, cubeDim, cubeDim, cubeDim);
+	_toReal = real;
+	_toRecip = mat3x3_inverse(real);
+	
+	_realBasis = _toReal;
+	mat3x3_scale(&_realBasis, _nx, _ny, _nz);
+
+	_recipBasis = mat3x3_inverse(_realBasis);
+}
+
+void VagFFT::addSimple(VagFFTPtr v2)
+{
+	for (int i = 0; i < _nn; i++)
+	{
+		long final_index = finalIndex(i);
+		_data[final_index][0] += v2->_data[final_index][0];
+	}
+}
+
+void VagFFT::addSimple(FFTPtr v2)
+{
+	for (int i = 0; i < _nn; i++)
+	{
+		long final_index = finalIndex(i);
+		_data[final_index][0] += v2->data[i][0];
+	}
+}
+
+void VagFFT::copyFrom(FFTPtr fft)
+{
+	wipe();
+	addSimple(fft);
+}
+
+void VagFFT::copyRealToImaginary()
+{
+	for (int i = 0; i < _nn; i++)
+	{
+		long final_index = finalIndex(i);
+		_data[final_index][1] = _data[final_index][0];
+	}
+}
+
+double VagFFT::sumReal()
+{
+	double sum = 0;
+
+	for (int i = 0; i < _nn; i++)
+	{
+		long final_index = finalIndex(i);
+		sum += fabs(_data[final_index][0]);
+	}
+
+	return sum;
+}
+
+double VagFFT::getAmplitude(long i)
+{
+	long index = finalIndex(i);
+	double val = _data[index][0] * _data[index][0] + 
+	_data[index][1] * _data[index][1];
+	return sqrt(val);
+}
+
+vec3 VagFFT::fracFromElement(long int element)
+{
+	long x = element % _nx;
+	element -= x;
+	element /= _nx;
+
+	long y = element % _ny;
+	element -= y;
+	element /= _ny;
+
+	long z = element;
+
+	double xfrac = (double)x / (double)_nx;
+	double yfrac = (double)y / (double)_ny;
+	double zfrac = (double)z / (double)_nz;
+
+	return make_vec3(xfrac, yfrac, zfrac);
+}
+
+void VagFFT::writeToFile(std::string filename, double maxResolution,
+                         FFTPtr data, VagFFTPtr diff, FFTPtr calc)
+{
+	mat3x3 realToFrac = _toReal;
+
+	double nLimit[3];
+	nLimit[0] = _nx;
+	nLimit[1] = _ny;
+	nLimit[2] = _nz;
+	
+	for (int i = 0; i < 3; i++)
+	{
+		nLimit[i] = nLimit[i] - ((int)nLimit[i] % 2); // make even
+		nLimit[i] /= 2;
+	}
+	
+	if (data)
+	{
+		// lower limit if data has smaller spacing
+		nLimit[0] = (nLimit[0] > data->nx) ? data->nx : nLimit[0];
+		nLimit[1] = (nLimit[1] > data->ny) ? data->ny : nLimit[1];
+		nLimit[2] = (nLimit[2] > data->nz) ? data->nz : nLimit[2];
+	}
+	
+	double dStar = 1 / maxResolution;
+
+	if (maxResolution <= 0) dStar = FLT_MAX;
+
+	/* For writing MTZ files */
+
+	int columns = 12;
+
+	float cell[6], wavelength;
+	float *fdata = new float[columns];
+
+	/* variables for symmetry */
+	float rsm[192][4][4];
+	char ltypex[2];
+
+	/* variables for MTZ data structure */
+	CMtz::MTZ *mtzout;
+	CMtz::MTZXTAL *xtal;
+	CMtz::MTZSET *set;
+	CMtz::MTZCOL *colout[columns + 1];
+
+	double unitCell[6];
+	unit_cell_from_mat3x3(_toReal, unitCell);
+	cell[0] = unitCell[0];
+	cell[1] = unitCell[1];
+	cell[2] = unitCell[2];
+	cell[3] = unitCell[3];
+	cell[4] = unitCell[4];
+	cell[5] = unitCell[5];
+	wavelength = 1.00; // fixme
+
+	std::string outputFileOnly = filename;
+	std::string outputFile = FileReader::addOutputDirectory(outputFileOnly);
+
+	mtzout = CMtz::MtzMalloc(0, 0);
+	ccp4_lwtitl(mtzout, "Written from Helen's XFEL tasks ", 0);
+	mtzout->refs_in_memory = 0;
+	mtzout->fileout = CMtz::MtzOpenForWrite(outputFile.c_str());
+
+	if (!mtzout->fileout)
+	{
+		std::cout << "Could not open " << outputFile.c_str() << std::endl;
+		std::cerr << "Error: " << strerror(errno) << std::endl;
+		return;
+	}
+
+	// then add symm headers...
+	for (int i = 0; i < _spg->nsymop; ++i)
+	CCP4::rotandtrn_to_mat4(rsm[i], _spg->symop[i]);
+	strncpy(ltypex, _spg->symbol_old, 1);
+	ccp4_lwsymm(mtzout, _spg->nsymop, _spg->nsymop_prim, rsm, ltypex,
+	            _spg->spg_ccp4_num, _spg->symbol_old, _spg->point_group);
+
+	// then add xtals, datasets, cols
+	xtal = MtzAddXtal(mtzout, "vagabond_crystal", "vagabond_project", cell);
+	set = MtzAddDataset(mtzout, xtal, "Dataset", wavelength);
+	colout[0] = MtzAddColumn(mtzout, set, "H", "H");
+	colout[1] = MtzAddColumn(mtzout, set, "K", "H");
+	colout[2] = MtzAddColumn(mtzout, set, "L", "H");
+	colout[3] = MtzAddColumn(mtzout, set, "FREE", "I");
+	colout[4] = MtzAddColumn(mtzout, set, "FP", "F");
+	colout[5] = MtzAddColumn(mtzout, set, "SIGFP", "Q");
+	colout[6] = MtzAddColumn(mtzout, set, "FC", "F");
+	colout[7] = MtzAddColumn(mtzout, set, "FWT", "F");
+	colout[8] = MtzAddColumn(mtzout, set, "PHIC", "P");
+	colout[9] = MtzAddColumn(mtzout, set, "PHWT", "P");
+	colout[10] = MtzAddColumn(mtzout, set, "DELFWT", "F");
+	colout[11] = MtzAddColumn(mtzout, set, "PHDELWT", "P");
+
+	int num = 0;
+
+	/* symmetry issues */
+	for (int k = -nLimit[2]; k < nLimit[2]; k++)
+	{
+		for (int j = -nLimit[1]; j < nLimit[1]; j++)
+		{
+			for (int i = -nLimit[0]; i < nLimit[0]; i++)
+			{
+				bool asu = CSym::ccp4spg_is_in_asu(_spg, i, j, k);
+				bool f000 = (i == 0 && j == 0 && k == 0);
+				int abs = CSym::ccp4spg_is_sysabs(_spg, i, j, k);
+				
+				if (!asu || f000 || abs)
+				{
+					continue;
+				}
+
+				vec3 pos = make_vec3(i, j, k);
+				mat3x3_mult_vec(realToFrac, &pos);
+
+				if (vec3_length(pos) > dStar)
+				{
+					continue;
+				}
+
+				/* weighted amplitude and phase */
+				double fwt = getAmplitude(i, j, k);
+				double phwt = getPhase(i, j, k);
+
+				/* get calculated amplitude from calc map, ideally
+				 * available */
+				double calcAmp = getAmplitude(i, j, k);
+				double phic = phwt;
+				
+				if (calc)
+				{
+					calcAmp = sqrt(calc->getIntensity(i, j, k));
+					phic = calc->getPhase(i, j, k);
+				}
+
+				int free = 1;
+
+				/* Sort out observed values from observed diffraction,
+				 * ideally available */
+				double foInt = fwt * fwt;
+				double foAmp = fwt;
+				double sigma = 0;
+
+				if (data)
+				{
+					int ele = data->element(i, j, k);
+					foAmp = data->data[ele][0];
+					sigma = data->data[ele][1];
+					free = data->getMask(i, j, k);
+				}
+
+
+				double diffPhwt = 0;
+				double diffAmp = 0;
+				
+				if (diff)
+				{
+					diffPhwt = diff->getPhase(i, j, k);
+					diffAmp = diff->getAmplitude(i, j, k);
+				}
+
+
+				if (foAmp != foAmp || (free == 0))
+				{
+					// i.e. diff of 0 when mask is free flag.
+					/* No longer the case because it should be sorted before
+					 * this point, and would not apply to Vagamaps */
+				}
+
+				/* MTZ file stuff */
+
+				if (f000)
+				{
+					fwt = calcAmp;
+					diffAmp = 0;
+				}
+
+				fdata[0] = i;
+				fdata[1] = j;
+				fdata[2] = k;
+				fdata[3] = free;
+				fdata[4] = foAmp;
+				fdata[5] = sigma;
+				fdata[6] = calcAmp;
+				fdata[7] = fwt;
+				fdata[8] = phic;
+				fdata[9] = phwt;
+				fdata[10] = diffAmp;
+				fdata[11] = diffPhwt;
+
+				num++;
+				ccp4_lwrefl(mtzout, fdata, colout, columns, num);
+			}
+		}
+	}
+
+	MtzPut(mtzout, " ");
+	MtzFree(mtzout);
+
+	delete [] fdata;
+
+}
+
+void VagFFT::applySymmetry(bool silent)
+{
+	fftwf_complex *tempData;
+	tempData = (fftwf_complex *)fftwf_malloc(_nn * sizeof(FFTW_DATA_TYPE));
+	memset(tempData, 0, sizeof(FFTW_DATA_TYPE) * _nn);
+
+	int count = 0;
+	
+	if (_spg->spg_num == 1)
+	{
+		return;
+	}
+
+	if (!silent)
+	{
+		std::cout << "applying " <<
+		_spg->nsymop << " symmetry operators, space group " 
+		<< _spg->symbol_xHM;
+		std::cout << " (" << _spg->spg_num << ")"  << ": " << std::flush;
+	}
+
+	/* Loop through and convert data into amplitude and phase */
+	for (int pre_n = 0; pre_n < _nn; pre_n++)
+	{
+		long n = finalIndex(pre_n);
+		double xOrig = _data[n][0];
+		double yOrig = _data[n][1];
+		double myAmp = sqrt(xOrig * xOrig + yOrig * yOrig);
+		double myPhase = atan2(yOrig, xOrig) * 180 / M_PI;
+		while (myPhase >= 360) myPhase -= 360;
+		while (myPhase < 0) myPhase += 360;
+
+		_data[n][0] = myAmp;
+		_data[n][1] = myPhase;
+	}
+
+	for (int k = -_nz / 2; k < _nz / 2; k++)
+	{
+		for (int j = -_ny / 2; j < _ny / 2; j++)
+		{
+			for (int i = -_nx / 2; i < _nx / 2; i++)
+			{
+				int abs = CSym::ccp4spg_is_sysabs(_spg, i, j, k);
+
+				if (abs)
+				{
+					continue;	
+				}
+
+				long pre_index = element(i, j, k);
+				long index = finalIndex(pre_index);
+				/* Not misnomers: dealt with in previous paragraph */
+				double myAmp = _data[index][0];
+				double myPhase = _data[index][1];
+
+				for (int l = 0; l < _spg->nsymop; l++)
+				{
+					float *rot = &_spg->invsymop[l].rot[0][0];
+
+					/* rotation */
+					int _h, _k, _l;
+					_h = (int) rint(i*rot[0] + j*rot[3] + k*rot[6]);
+					_k = (int) rint(i*rot[1] + j*rot[4] + k*rot[7]);
+					_l = (int) rint(i*rot[2] + j*rot[5] + k*rot[8]);
+
+					long sym_index = element(_h, _k, _l);
+					long index = finalIndex(pre_index);
+					/* translation */
+					float *trn = _spg->symop[l].trn;
+
+					double shift = (float)_h * trn[0];
+					shift += (float)_k * trn[1];
+					shift += (float)_l * trn[2];
+					shift = fmod(shift, 1.);
+
+					double deg = myPhase + shift * 360.;
+					double newPhase = deg2rad(deg);
+					
+					/* add to temporary data array */
+					double x = myAmp * cos(newPhase);
+					double y = myAmp * sin(newPhase);
+
+					tempData[sym_index][0] += x;
+					tempData[sym_index][1] += y;
+				}
+			}
+		}
+	}
+
+	if (!silent)
+	{
+		std::cout << "... done." << std::endl;
+	}
+
+	/* Loop through and convert data into amplitude and phase */
+	for (int n = 0; n < _nn; n++)
+	{
+		long m = finalIndex(n);
+		_data[m][0] = tempData[n][0];
+		_data[m][1] = tempData[n][1];
+	}
+
+	free(tempData);
+
+}
+
+void VagFFT::multiplyAll(float value)
+{
+	for(long i = 0; i < nn(); i++)
+	{
+		int index = finalIndex(i);
+		_data[index][0] *= value;
+		_data[index][1] *= value;
+	}
 }
 
