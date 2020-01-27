@@ -65,7 +65,14 @@ public:
 	
 	void wipe();
 	void makePlans();
-	void setSpaceGroup(CSym::CCP4SPG *spg);
+	void setStatus(FFTStatus status)
+	{
+		_status = status;
+	}
+	void setSpaceGroup(CSym::CCP4SPG *spg)
+	{
+		_spg = spg;
+	}
 	void fft(FFTTransform transform);
 	void multiplyFinal(float val);
 	void multiplyDotty(float val);
@@ -77,9 +84,15 @@ public:
 	void applySymmetry(bool silent = true);
 	void writeToFile(std::string filename, double maxResolution,
 	                 FFTPtr data = FFTPtr(), VagFFTPtr diff = VagFFTPtr(), 
-	                 FFTPtr calc = FFTPtr());
+	                 VagFFTPtr calc = VagFFTPtr());
 	
 	double sumReal();
+
+	double averageAll()
+	{
+		return sumReal() / (double)nn();
+	}
+
 	
 	/** a, b, c in Angstroms; alpha, beta, gamma in degrees */
 	void setUnitCell(std::vector<double> dims);
@@ -88,7 +101,7 @@ public:
 	 * matrices */
 	void setScale(double cubeDim);
 	
-	void printSlice(int zVal = -1, double scale = 1);
+	void printSlice(double zVal = -1, double scale = 1);
 
 	static double operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
                       MapScoreType mapScoreType, std::vector<CoordVal> *vals,
@@ -99,6 +112,7 @@ public:
 	void addSimple(FFTPtr v2);
 	
 	void copyFrom(FFTPtr fft);
+	void copyFrom(VagFFTPtr other);
 	
 	void copyRealToImaginary();
 
@@ -117,7 +131,8 @@ public:
 	 * each axis. */
 	double getAmplitude(long x, long y, long z)
 	{
-		return getAmplitude(element(x, y, z));
+		double ele = element(x, y, z);
+		return getAmplitude(ele);
 	}
 
 	double getPhase(int x, int y, int z);
@@ -188,12 +203,12 @@ public:
 	
 	int ny()
 	{
-		return _nx;
+		return _ny;
 	}
 	
 	int nz()
 	{
-		return _nx;
+		return _nz;
 	}
 	
 	int nn()
@@ -222,6 +237,7 @@ public:
 	}
 
 	vec3 fracFromElement(long int element);
+	void printStatus();
 private:
 
 	void collapse(long *x, long *y, long *z)
@@ -282,8 +298,9 @@ private:
 
 	long _total;
 	fftwf_complex *_data;
+	fftwf_complex *_lastData;
 	
-	static std::vector<FFTDim> _dimensions;
+	static std::vector<FFTDim *> _dimensions;
 	FFTDim *_myDims;
 	
 	/* _realBasis accounting for unit cell size */
@@ -291,9 +308,9 @@ private:
 	/* _recipBasis accounting for unit cell size */
 	mat3x3 _toRecip;
 
-	/* small numbers; voxel dimension in Angstroms */
+	/* small numbers; apply to convert voxel dimension to Angstroms */
 	mat3x3 _realBasis;
-	/* big numbers; voxel dimension in inverse Angstroms */
+	/* big numbers; apply to convert real dimensions to voxel */
 	mat3x3 _recipBasis;
 	
 	/* denoting where the origin is, e.g. 0,0,0 or atom central pos */

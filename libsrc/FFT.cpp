@@ -32,7 +32,7 @@
 #include "../libccp4/ccp4_spg.h"
 #include "../libccp4/ccp4_general.h"
 
-std::vector<FFTDim> VagFFT::_dimensions;
+std::vector<FFTDim *> VagFFT::_dimensions;
 
 VagFFT::VagFFT(VagFFT &fft)
 {
@@ -55,6 +55,8 @@ VagFFT::VagFFT(VagFFT &fft)
 	_spg = CSym::ccp4spg_load_by_ccp4_num(1);
 
 	_data = (fftwf_complex *)fftwf_malloc(_total);
+	int start = finalIndex(0);
+	_lastData = &_data[start];
 
 	if (!_data)
 	{
@@ -62,7 +64,7 @@ VagFFT::VagFFT(VagFFT &fft)
 		exit(1);
 	}
 
-	memcpy(_data, fft._data, _total * sizeof(fftwf_complex));
+	memcpy(_data, fft._data, _total);
 }
 
 VagFFT::VagFFT(int nx, int ny, int nz, int nele)
@@ -85,6 +87,9 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele)
 	_total = _nn * _stride * sizeof(fftwf_complex);
 	_data = (fftwf_complex *)fftwf_malloc(_total);
 
+	int start = finalIndex(0);
+	_lastData = &_data[start];
+
 	if (!_data)
 	{
 		printf("ERROR: Malloc failed for VagFFT, nn = %i\n", _nn);
@@ -106,6 +111,32 @@ void VagFFT::addElement(ElementPtr ele)
 	_elements.push_back(ele);
 }
 
+void VagFFT::printStatus()
+{
+	std::cout << "Current status: " << std::flush;
+	
+	switch (_status)
+	{
+		case FFTEmpty:
+		std::cout << "FFTEmpty";
+		break;
+		case FFTRealSpace:
+		std::cout << "FFTRealSpace";
+		break;
+		case FFTReciprocalSpace:
+		std::cout << "FFTReciprocalSpace";
+		break;
+		case FFTSeparateAtoms:
+		std::cout << "FFTSeperateAtoms";
+		break;
+		default:
+		std::cout << "Unknown";
+		break;
+	}
+	
+	std::cout << std::endl;
+}
+
 bool VagFFT::sanityCheck()
 {
 	if (_nx <= 0 || _ny <= 0 || _nz <= 0)
@@ -118,7 +149,7 @@ bool VagFFT::sanityCheck()
 	if (_nele != _elements.size())
 	{
 		std::cout << "Element number and assigned element count do"\
-		" not match" << std::endl;
+		" not match, " << _nele << " vs. " << _elements.size() << std::endl;
 		return false;
 	}
 	
@@ -149,46 +180,45 @@ void VagFFT::makePlans()
 	/* do we already have this planned dimension? */
 	for (int i = 0; i < _dimensions.size(); i++)
 	{
-		if (_dimensions[i].nx == _nx
-		    && _dimensions[i].ny == _ny
-		    && _dimensions[i].nz == _nz
-		    && _dimensions[i].nele == _nele)
+		if (_dimensions[i]->nx == _nx
+		    && _dimensions[i]->ny == _ny
+		    && _dimensions[i]->nz == _nz
+		    && _dimensions[i]->nele == _nele)
 		{
-			_myDims = &_dimensions[i];
+			_myDims = _dimensions[i];
 			return;
 		}
 	}
 
-	FFTDim dims;
-	dims.nx = _nx; dims.ny = _ny; dims.nz = _nz; dims.nele = _nele;
+	FFTDim *dims = (FFTDim *)malloc(sizeof(FFTDim));
+	dims->nx = _nx; dims->ny = _ny; dims->nz = _nz; dims->nele = _nele;
 	_dimensions.push_back(dims);
-	_myDims = &_dimensions.back();
+	_myDims = _dimensions.back();
 	
 	int ns[3] = {_nz, _ny, _nx};
 	unsigned fftw_flags = FFTW_MEASURE;
 
-	fftwf_plan plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, _stride, 
-	                                      2, _data, 
+	fftwf_plan plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, 
+	                                      _stride, 2, _data, 
 	                                      NULL, _stride, 2, 
-	                                      1, fftw_flags); 
+	                                      -1, fftw_flags); 
 	_myDims->atom_real_to_recip = plan;
 
 	plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, _stride, 
 	                                      2, _data, 
 	                                      NULL, _stride, 2, 
-	                                      -1, fftw_flags); 
+	                                      1, fftw_flags); 
 	_myDims->atom_recip_to_real = plan;
 
-	int start = 2 * _nele;
-	plan = fftwf_plan_many_dft(3, ns, 1, &_data[start], NULL, 
-	                           _stride, 2, _data, NULL, _stride, 
-	                           2, 1, fftw_flags); 
+	plan = fftwf_plan_many_dft(3, ns, 1, _lastData, NULL, /*null=embed*/
+	                           _stride, 2, _lastData, NULL, 
+	                           _stride, 2, -1, fftw_flags); 
 
 	_myDims->real_to_recip = plan;
 
-	plan = fftwf_plan_many_dft(3, ns, 1, &_data[start], NULL, 
-	                           _stride, 2, _data, NULL, _stride, 
-	                           2, -1, fftw_flags); 
+	plan = fftwf_plan_many_dft(3, ns, 1, _lastData, NULL, 
+	                           _stride, 2, _lastData, NULL,
+	                           _stride, 2, 1, fftw_flags); 
 
 	_myDims->recip_to_real = plan;
 }
@@ -286,6 +316,7 @@ void VagFFT::separateAtomTransform()
 {
 	fftwf_execute_dft(_myDims->atom_real_to_recip, _data, _data);
 	
+	/* go through and multiply transform of atoms by element factor */
 	for (int i = 0; i < _nn; i++)
 	{
 		for (int j = 0; j < _nele; j++)
@@ -298,9 +329,7 @@ void VagFFT::separateAtomTransform()
 		}
 	}
 
-	fftwf_execute_dft(_myDims->atom_recip_to_real, _data, _data);
-	multiplyDotty(1 / (double)_nn);
-
+	/* add up final indices as sum of individual atom types */
 	for (int i = 0; i < _nn; i++)
 	{
 		long final_index = finalIndex(i);
@@ -313,8 +342,8 @@ void VagFFT::separateAtomTransform()
 			_data[dotty_index][1] += _data[dotty_index][1];
 		}
 	}
-	
-	_status = FFTRealSpace;
+
+	_status = FFTReciprocalSpace;
 }
 
 void VagFFT::fft(FFTTransform transform)
@@ -332,30 +361,30 @@ void VagFFT::fft(FFTTransform transform)
 		{
 			std::cout << "Trying to transform individual atoms when status is "
 			<< "not FFTSeparateAtoms" << std::endl;
+			printStatus();
 			exit(1);
 		}
 
 		separateAtomTransform();
 
-		if (transform == FFTAtomsToReciprocal)
+		if (transform == FFTAtomsToReal)
 		{
-			fftwf_execute_dft(_myDims->real_to_recip, _data, _data);
-			multiplyFinal(1 / (double)_nn);
-			_status = FFTReciprocalSpace;
+			fftwf_execute_dft(_myDims->recip_to_real, _lastData, _lastData);
+			_status = FFTRealSpace;
 		}
 	}
 
 	if (transform == FFTRealToReciprocal)
 	{
-		if ((!_status == FFTRealSpace || _status == FFTEmpty))
+		if (!(_status == FFTRealSpace || _status == FFTEmpty))
 		{
 			std::cout << "Asking for transform Real to Reciprocal, but "\
 			"FFT status is not Real Space" << std::endl;
+			printStatus();
 			exit(1);
 		}
 
-		fftwf_execute_dft(_myDims->real_to_recip, _data, _data);
-		multiplyFinal(1 / (double)_nn);
+		fftwf_execute_dft(_myDims->real_to_recip, _lastData, _lastData);
 		_status = FFTReciprocalSpace;
 	}
 
@@ -365,10 +394,11 @@ void VagFFT::fft(FFTTransform transform)
 		{
 			std::cout << "Asking for transform Reciprocal to Real, but "\
 			"FFT status is not Reciprocal Space" << std::endl;
+			printStatus();
 			exit(1);
 		}
 
-		fftwf_execute_dft(_myDims->recip_to_real, _data, _data);
+		fftwf_execute_dft(_myDims->recip_to_real, _lastData, _lastData);
 		multiplyFinal(1 / (double)_nn);
 		_status = FFTRealSpace;
 	}
@@ -380,7 +410,6 @@ void VagFFT::setUnitCell(std::vector<double> dims)
 	_toReal = mat3x3_from_unit_cell(dims[0], dims[1], dims[2], dims[3],
 	                                dims[4], dims[5]);
 	_toRecip = mat3x3_inverse(_toReal);
-	_toRecip = mat3x3_transpose(_toRecip);
 
 	_realBasis = _toReal;
 	mat3x3_scale(&_realBasis, 1 / (double)_nx, 1 / (double)_ny, 
@@ -555,14 +584,17 @@ double VagFFT::getAmplitude(ElementPtr ele, int x, int y, int z)
 	return sqrt(val);
 }
 
-void VagFFT::printSlice(int zVal, double scale)
+void VagFFT::printSlice(double zVal, double scale)
 {
 	sanityCheck();
 
 	if (scale < 0)
 	{
-		scale = 1;//averageAll() * 5;
+		scale = averageAll() * 5;
 	}
+	
+	zVal *= _nz;
+	
 	for (int j = 0; j < _ny; j++)
 	{
 		std::cout << "| ";
@@ -722,7 +754,7 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	 * (c) Atom voxels */
 
 	double volume = 1;
-	vec3 add = fftAtom->_origin;
+	vec3 add = vec3_subtract_vec3(fftAtom->_origin, fftCrystal->_origin);
 
 	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
 	if (mapScoreType != MapScoreAddNoWrap)
@@ -745,22 +777,18 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	vec3 atomWholeCoords = make_vec3((int)multX, (int)multY, (int)multZ);
 
 	/* Prepare a matrix to convert crystal voxels into atomic voxels */
-	mat3x3 crystal2AtomVox = mat3x3_mult_mat3x3(fftAtom->getRecipBasis(),
-	                                            fftCrystal->getRealBasis());
+	mat3x3 crystal2AtomVox = mat3x3_mult_mat3x3(fftAtom->getRealBasis(),
+	                                            fftCrystal->getRecipBasis());
 
 	/* Prepare a matrix to convert atomic voxels into crystal voxels */
-	mat3x3 atomVox2Crystal = mat3x3_mult_mat3x3(fftCrystal->getRecipBasis(),
-	                                            fftAtom->getRealBasis());
+	mat3x3 atomVox2Crystal = mat3x3_mult_mat3x3(fftCrystal->getRealBasis(),
+	                                            fftAtom->getRecipBasis());
 
 	/* Apply this offset and reverse it. This small offset must be added
 	 * to all future atomic coordinates prior to interpolation. This
 	 * is therefore now in atom voxels.*/
 	mat3x3_mult_vec(crystal2AtomVox, &atomOffset);
 	vec3_mult(&atomOffset, -1);
-
-	mat3x3 crystBasis = fftCrystal->getRealBasis();
-	mat3x3 atomBasis = fftAtom->getRealBasis();
-	double vol_corr = mat3x3_volume(crystBasis) / mat3x3_volume(atomBasis);
 
 	/* There will be an additional shift having moved the atom by
 	 * half the dimension length which needs to be taken into account, 
@@ -801,10 +829,8 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	 * We also break the loop if it exceeds the limits of our atom voxels
 	 * during the loop itself. */
 
-	int count = 0;
-
 	/* Determine bounding box - 9th Dec 2017 */
-	vec3 minAtom = make_vec3(0, 0, 0);
+	vec3 minAtom = make_vec3(FLT_MAX, FLT_MAX, FLT_MAX);
 	vec3 maxAtom = make_vec3(0, 0, 0);
 
 	for (int k = 0; k <= fftAtom->_nz; k += fftAtom->_nz)
@@ -927,8 +953,6 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 				                                  cVox.y + 0.5,
 				                                  cVox.z + 0.5);
 
-				count++;
-
 				if (mapScoreType == MapScoreTypeCorrel)
 				{
 					// We do NOT need to interpolate //
@@ -961,7 +985,7 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 					/* Add the density to the real value of the crystal
 					 * voxel. */
 
-					fftCrystal->addToReal(cIndex, atomReal * vol_corr);
+					fftCrystal->addToReal(cIndex, atomReal);
 				}
 			}
 		}
@@ -974,13 +998,14 @@ void VagFFT::setScale(double cubeDim)
 {
 	mat3x3 real = make_mat3x3();
 	mat3x3_scale(&real, cubeDim, cubeDim, cubeDim);
-	_toReal = real;
-	_toRecip = mat3x3_inverse(real);
+	_realBasis = real;
+	_recipBasis = mat3x3_inverse(real);
 	
-	_realBasis = _toReal;
-	mat3x3_scale(&_realBasis, _nx, _ny, _nz);
+	_toReal = _realBasis;
+	mat3x3_scale(&_toReal, _nx, _ny, _nz);
 
-	_recipBasis = mat3x3_inverse(_realBasis);
+	_toRecip = mat3x3_inverse(_toReal);
+	_setMatrices = true;
 }
 
 void VagFFT::addSimple(VagFFTPtr v2)
@@ -1057,10 +1082,14 @@ vec3 VagFFT::fracFromElement(long int element)
 }
 
 void VagFFT::writeToFile(std::string filename, double maxResolution,
-                         FFTPtr data, VagFFTPtr diff, FFTPtr calc)
+                         FFTPtr data, VagFFTPtr diff, VagFFTPtr calc)
 {
-	mat3x3 realToFrac = _toReal;
-
+	if (_status != FFTReciprocalSpace)
+	{
+		std::cout << "Warning: writing MTZ file for grid in "
+		"real space: " << filename << std::endl;
+	}
+	
 	double nLimit[3];
 	nLimit[0] = _nx;
 	nLimit[1] = _ny;
@@ -1168,7 +1197,7 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 				}
 
 				vec3 pos = make_vec3(i, j, k);
-				mat3x3_mult_vec(realToFrac, &pos);
+				mat3x3_mult_vec(_toRecip, &pos);
 
 				if (vec3_length(pos) > dStar)
 				{
@@ -1186,7 +1215,7 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 				
 				if (calc)
 				{
-					calcAmp = sqrt(calc->getIntensity(i, j, k));
+					calcAmp = calc->getAmplitude(i, j, k);
 					phic = calc->getPhase(i, j, k);
 				}
 
@@ -1374,3 +1403,14 @@ void VagFFT::multiplyAll(float value)
 	}
 }
 
+void VagFFT::copyFrom(VagFFTPtr other)
+{
+	for(long i = 0; i < nn(); i++)
+	{
+		int index = finalIndex(i);
+		int iother = other->finalIndex(i);
+		_data[index][0] = other->_data[iother][0];
+		_data[index][1] = other->_data[iother][1];
+	}
+
+}

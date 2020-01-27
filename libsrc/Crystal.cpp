@@ -211,16 +211,22 @@ void Crystal::realSpaceClutter(double maxRes)
 			setupOriginalMap();
 		}
 
+		_fft->setSpaceGroup(_spaceGroup);
+		_difft->setSpaceGroup(_spaceGroup);
 		_fft->setUnitCell(_unitCell);
 		_difft->setUnitCell(_unitCell);
 		_fft->makePlans();
 		_difft->makePlans();
+		_fft->setStatus(FFTRealSpace);
+		_difft->setStatus(FFTRealSpace);
 
 	}
 	else
 	{
 		_fft->wipe();
 		_difft->wipe();
+		_fft->setStatus(FFTRealSpace);
+		_difft->setStatus(FFTRealSpace);
 	}
 
 	
@@ -1353,6 +1359,11 @@ void Crystal::fitWholeMolecules()
 	/* All molecules together */
 	
 	MotionPtr overall = getOverallMotion();
+	
+	if (!overall)
+	{
+		return;
+	}
 	
 	if (!overall->hasRefined())
 	{

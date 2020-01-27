@@ -239,6 +239,8 @@ public:
 	void multiplyAll(float);
 	int setTotal(float value);
 
+	static FFTPtr makeFromVag(VagFFTPtr vag);
+
 	double cubic_interpolate(vec3 vox000, size_t im = false);
 
 	static void add(FFTPtr fftEdit, FFTPtr fftConst,

@@ -47,7 +47,7 @@ void WeightedMap::writeCalculatedSlice()
 {
 	/* Back to real space */
 	int nx = _fft->nx();
-	FFTPtr copy = FFTPtr(new FFT(*_fft));
+	FFTPtr copy = FFT::makeFromVag(_fft);
 	copy->fft(-1);
 	
 	BucketPtr solv = _crystal->getBucket();
@@ -537,8 +537,9 @@ void WeightedMap::createVagaCoefficients()
 {
 	std::cout << "Creating Vagamap density..." << std::endl;
 	/* Note: _fft currently in reciprocal space */
-	FFTPtr duplicate = FFTPtr(new FFT(*_fft));
+	VagFFTPtr duplicate = VagFFTPtr(new VagFFT(*_fft));
 	duplicate->wipe();
+	duplicate->setStatus(FFTRealSpace);
 	FFTPtr scratch = FFTPtr(new FFT(*duplicate));
 	_allWeights = 0;
 	
@@ -550,12 +551,12 @@ void WeightedMap::createVagaCoefficients()
 		_allWeights += weight;
 		scratch->fft(-1); /* to real space */
 		scratch->multiplyAll(weight);
-		FFT::addSimple(duplicate, scratch);
-//		duplicate->addSimple(scratch);
+		duplicate->addSimple(scratch);
 		scratch->wipe();
 	}
 
 	_difft->wipe();
+	_difft->setStatus(FFTRealSpace);
 	
 	for (int i = 0; i <= MAX_SLICES; i++)
 	{
@@ -563,7 +564,6 @@ void WeightedMap::createVagaCoefficients()
 		scratch->fft(-1);
 		scratch->multiplyAll(weight);
 		_difft->addSimple(scratch);
-//		FFT::addSimple(_difft, scratch);
 		scratch->wipe();
 	}
 	
@@ -572,11 +572,11 @@ void WeightedMap::createVagaCoefficients()
 	duplicate->multiplyAll(normalise);
 	
 	/* To reciprocal space for writing */
-	duplicate->fft(1);
+	duplicate->fft(FFTRealToReciprocal);
 	_difft->fft(FFTRealToReciprocal);
 	
+	writeFile(duplicate);
 	_fft->copyFrom(duplicate);
-	writeFile(_fft);
 }
 
 void WeightedMap::writeFile(VagFFTPtr chosen)
@@ -584,9 +584,10 @@ void WeightedMap::writeFile(VagFFTPtr chosen)
 	std::string filename = _crystal->getFilename();
 	double maxRes = _crystal->getMaxResolution(_data);
 	std::string prefix = "cycle_" + i_to_str(_crystal->getCycleNum());
+	FFTPtr fftData = _data->getFFT();
 
 	std::string outputFile = prefix + "_" + filename + "_vbond.mtz";
-	chosen->writeToFile(outputFile, maxRes);
+	chosen->writeToFile(outputFile, maxRes, fftData, _difft, _fft);
 }
 
 void WeightedMap::create2FoFcCoefficients()

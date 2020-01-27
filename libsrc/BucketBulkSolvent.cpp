@@ -40,7 +40,12 @@ void BucketBulkSolvent::addSolventForConformer(int conf, int num)
 {
 	CrystalPtr crystal = getCrystal();
 
-	_solvent = FFTPtr(new FFT(*crystal->getFFT()));
+	FFTPtr total = FFTPtr(new FFT());
+	VagFFTPtr f = crystal->getFFT();
+	_solvent = FFTPtr(new FFT());
+	_solvent->create(f->nx(), f->ny(), f->nz());
+	_solvent->createFFTWplan(1);
+
 	mat3x3 real2frac = crystal->getReal2Frac();
 
 	if (conf < 0)

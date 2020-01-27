@@ -795,14 +795,23 @@ void AtomGroup::xyzLimits(vec3 *min, vec3 *max)
 	}
 }
 
-void AtomGroup::addToCubicMap(VagFFTPtr scratchFull, vec3 offset,
-                              EleCache *cache)
+void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
 {
+	scratchFull->prepareAtomSpace();
+
 	for (int i = 0; i < atomCount(); i++)
 	{
 		AtomPtr a = atom(i);
 		scratchFull->addAtom(a);
 	}
+	
+	scratchFull->fft(FFTAtomsToReciprocal);
+	scratchFull->writeToFile("scratch.mtz", 1.5);
+	scratchFull->printSlice(0.2);
+	scratchFull->fft(FFTReciprocalToReal);
+	scratchFull->printSlice(0.2);
+
+	
 	/*
 	size_t nElements = totalElements();
 
@@ -874,8 +883,8 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull, vec3 offset,
 	*/
 }
 
-vec3 AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 *offset, 
-                                vec3 min, vec3 max, double buff)
+void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max, 
+                                double buff)
 {
 	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
 	double cubeDim = 1.0 / (2.0 * maxDStar);
@@ -888,13 +897,13 @@ vec3 AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 *offset,
 	
 	CrystalPtr crystal = Options::getActiveCrystal();
 	
-
 	/* 2 Angstroms buffer region on either side of the protein */
 	vec3 buffer = make_vec3(buff, buff, buff);
 	vec3_subtract_from_vec3(&min, buffer);
 
 	/* Modify the offset to include buffer region */
-	vec3_add_to_vec3(offset, min);
+	vec3 offset = empty_vec3();
+	vec3_add_to_vec3(&offset, min);
 
 	vec3_add_to_vec3(&max, buffer);
 	vec3 limits = vec3_subtract_vec3(max, min);
@@ -910,16 +919,14 @@ vec3 AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 *offset,
 	size_t nEle = totalElements();
 	(*scratchFull) = VagFFTPtr(new VagFFT(extent.x, extent.y, extent.z, nEle));
 	(*scratchFull)->setScale(cubeDim);
-	(*scratchFull)->makePlans();
 	
 	for (int i = 0; i < nEle; i++)
 	{
 		(*scratchFull)->addElement(_elements[i]);
 	}
 
-	(*scratchFull)->prepareAtomSpace();
-	
-	return empty_vec3();
+	(*scratchFull)->makePlans();
+	(*scratchFull)->setOrigin(offset);
 }
 
 vec3 finalOffset(vec3 offset, VagFFTPtr cube,
@@ -938,8 +945,7 @@ vec3 finalOffset(vec3 offset, VagFFTPtr cube,
 	return offset;
 }
 
-void AtomGroup::addToMap(VagFFTPtr fft, mat3x3 real2frac, vec3 offset,
-                         EleCache *cache)
+void AtomGroup::addToMap(VagFFTPtr fft, mat3x3 real2frac)
 {
 	size_t nElements = totalElements();
 	
@@ -953,19 +959,13 @@ void AtomGroup::addToMap(VagFFTPtr fft, mat3x3 real2frac, vec3 offset,
 	double buffer = BUFFER_REGION;
 	vec3 min, max;
 	xyzLimits(&min, &max);
-	prepareCubicMap(&scratchFull, &offset, min, max, buffer);
-	addToCubicMap(scratchFull, offset);
-	/*
-	scratchFull->fft(1);
-	double b = Options::getActiveCrystal()->getRealBFactor();
-	Distributor::bFactorDistribute(scratchFull, b);
-	scratchFull->fft(-1);
-	*/
+	prepareCubicMap(&scratchFull, min, max, buffer);
+	addToCubicMap(scratchFull);
 
 	vec3 addvec = finalOffset(min, scratchFull, real2frac, buffer);
 	scratchFull->setOrigin(addvec);
 	
-	VagFFT::operation(fft, scratchFull, MapScoreTypeNone, NULL, true);
+	VagFFT::operation(fft, scratchFull, MapScoreTypeNone, NULL, false);
 }
 
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
@@ -988,6 +988,8 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 
 	vec3 min, max; 
 	selected->xyzLimits(&min, &max);
+	
+	std::cout << "Here, first = " << first << std::endl;
 
 	/* this is the first time we are running the comparison */
 	if (first)
@@ -995,8 +997,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		/* prepare the size of the maps */
 		workspace->ave = empty_vec3();
 		workspace->eleCache.clear();
-		selected->prepareCubicMap(&workspace->segment,
-		                          &workspace->ave, min, max);
+		selected->prepareCubicMap(&workspace->segment, min, max);
 //		workspace->basis = workspace->segment->getReal2Frac();
 
 		workspace->constant = VagFFTPtr(new VagFFT(*workspace->segment));
@@ -1039,18 +1040,14 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 			}
 			
 			/* Add the acceptable atoms to the map */
-			added->addToCubicMap(workspace->constant, 
-			                     workspace->ave,
-			                     &workspace->eleCache);
+			added->addToCubicMap(workspace->constant);
 			
 			/* Copy this constant fraction into the segment */
 //			workspace->segment->copyFrom(workspace->constant);
 		}
 	}
 	
-	workspace->selectAtoms->addToCubicMap(workspace->segment,
-	                                      workspace->ave,
-	                                      &workspace->eleCache);
+	workspace->selectAtoms->addToCubicMap(workspace->segment);
 	
 	double score = 0;
 
@@ -1108,7 +1105,6 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 	
 	ws->vals.clear();
 	ws->segment->addSimple(ws->constant);
-	ws->segment->setOrigin(ave);
 	VagFFT::operation(map, ws->segment, mapType, &ws->vals);
 
 	for (size_t i = 0; i < ws->vals.size() && 

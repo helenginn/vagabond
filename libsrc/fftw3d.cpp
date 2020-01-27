@@ -71,17 +71,19 @@ FFT::FFT(VagFFT &other)
 	mask = NULL;
 	data = NULL;
 
-
 	data = (FFTW_DATA_TYPE *)fftwf_malloc(nn * sizeof(FFTW_DATA_TYPE));
 	memset(data, 0, nn * sizeof(FFTW_DATA_TYPE));
 	
-	if (other._myDims)
-	{
-		createFFTWplan(1);
-	}
-	
 	_basis = other._toReal;
 	_inverse = other._toRecip;
+}
+
+FFTPtr FFT::makeFromVag(VagFFTPtr vag)
+{
+	FFTPtr fft = FFTPtr(new FFT());
+	fft->create(vag->nx(), vag->ny(), vag->nz());
+	fft->createFFTWplan(1);
+	return fft;
 }
 
 FFT::~FFT()
@@ -567,7 +569,7 @@ void FFT::fft(int direction)
 	{
 		fftwf_execute_dft(_myDims->plan, data, data);
 	}
-	else if (direction == -1)
+	else if (direction == -1) /* real to recip */
 	{
 		fftwf_execute_dft(_myDims->iplan, data, data);
 		multiplyAll(1 / (double)nn);

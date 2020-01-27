@@ -122,22 +122,20 @@ public:
 		return _elements[which];
 	}
 	
-	void addToMap(VagFFTPtr fft, mat3x3 _real2frac, vec3 offset = empty_vec3(),
-	              EleCache *cache = NULL);
+	void addToMap(VagFFTPtr fft, mat3x3 real2frac);
 
 	/** Adds atoms to a map where the voxel morphology is cubic, with a
 	  * given offset specified which is subtracted from each atom
 	  * position. */
-	void addToCubicMap(VagFFTPtr scratchFull, vec3 offset, 
-	                   EleCache *cache = NULL);
+	void addToCubicMap(VagFFTPtr scratchFull);
 
 	/** Prepares a cubic map to add the AtomGroup to, including adjustment
 	 *  of the offset to place midpoint of the group of atoms at the midpoint 
 	 * 	of the map. Returns the minimum Atom position as well.
 	 *  \return offset which should be applied to each atom when calling
 	 *  AtomGroup::addToCubicMap */
-	vec3 prepareCubicMap(VagFFTPtr *scratchFull, vec3 *offset, 
-	                     vec3 min, vec3 max, double buffer = BUFFER_REGION);
+	void prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max, 
+	                     double buffer = BUFFER_REGION);
 
 	void setTargetRefinement(CrystalPtr target, RefinementType rType);
 	virtual void refine(CrystalPtr target, RefinementType rType);

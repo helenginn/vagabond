@@ -25,8 +25,11 @@ void BucketPerStrand::addSolvent()
 {
 	CrystalPtr crystal = getCrystal();
 
-	FFTPtr total = FFTPtr(new FFT(*crystal->getFFT()));
-	total->wipe();
+	FFTPtr total = FFTPtr(new FFT());
+	VagFFTPtr f = crystal->getFFT();
+	total->create(f->nx(), f->ny(), f->nz());
+	total->setupMask();
+	total->createFFTWplan(1);
 
 	int confs = crystal->getSampleNum();
 	int count = 0;
