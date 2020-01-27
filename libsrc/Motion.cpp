@@ -127,7 +127,7 @@ void Motion::refine()
 			
 			FlexGlobal target;
 			RefinementListPtr list = RefinementListPtr(new RefinementList());
-			list->setJobName("rot");
+			list->setJobName("rot_search");
 			attachTargetToRefinement(list, target);
 			addLibrationParameters(list, j);
 
@@ -166,7 +166,7 @@ void Motion::refine()
 		{
 			FlexGlobal target;
 			NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
-			neld->setJobName("rot_care");
+			neld->setJobName("rots_only");
 			attachTargetToRefinement(neld, target);
 
 			addLibrationParameters(neld, -1);
@@ -181,7 +181,7 @@ void Motion::refine()
 			FlexGlobal target;
 			NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 			attachTargetToRefinement(neld, target);
-			neld->setJobName("screw");
+			neld->setJobName("rots_and_offsets");
 
 			addLibrationParameters(neld, -1);
 			addScrewParameters(neld, -1);
