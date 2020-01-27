@@ -101,6 +101,7 @@ public:
 	{
 		Anchor *anch = static_cast<Anchor *>(object);
 		anch->_bFactor = b;
+		anch->_lastCount = 0;
 		anch->propagateChange(-1, true);
 	}
 	
