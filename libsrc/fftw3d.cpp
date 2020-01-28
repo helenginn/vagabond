@@ -947,8 +947,7 @@ void FFT::addToValueAroundPoint(vec3 pos, double radius, double value,
                                 int bitIndex)
 {
 	/* Determine square bounding box for radius in Ang. */
-	vec3 minRadius = make_vec3(0, 0, 0);
-	vec3 maxRadius = make_vec3(0, 0, 0);
+	vec3 minRadius, maxRadius;
 	
 	collapseFrac(&pos.x, &pos.y, &pos.z);
 	pos.x *= nx;
@@ -965,7 +964,7 @@ void FFT::addToValueAroundPoint(vec3 pos, double radius, double value,
 	{
 		bitty = (value >= 0.5 ? 1 : 0) << bitIndex;
 	}
-
+	
 	for (double k = minRadius.z; k < maxRadius.z; k++)
 	{
 		for (double j = minRadius.y; j < maxRadius.y; j++)
