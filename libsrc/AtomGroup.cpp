@@ -882,11 +882,12 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
 }
 
 void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max, 
-                                double buff)
+                                bool cc)
 {
 	double cubeDim = Options::getProteinSampling();
 	
 	/* 2 Angstroms buffer region on either side of the protein */
+	double buff = BUFFER_REGION;
 	vec3 buffer = make_vec3(buff, buff, buff);
 	vec3_subtract_from_vec3(&min, buffer);
 
@@ -936,7 +937,7 @@ void AtomGroup::addToMap(VagFFTPtr fft, mat3x3 real2frac)
 	double buffer = BUFFER_REGION;
 	vec3 min, max;
 	xyzLimits(&min, &max);
-	prepareCubicMap(&scratchFull, min, max, buffer);
+	prepareCubicMap(&scratchFull, min, max);
 	addToCubicMap(scratchFull);
 
 	VagFFT::operation(fft, scratchFull, MapScoreTypeNone, NULL, false);
