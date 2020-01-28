@@ -147,6 +147,13 @@ public:
 	}
 
 	/* retrieves out of final column */
+	void setComponent(long i, bool imag, double val)
+	{
+		long index = finalIndex(i);
+		_data[index][imag] = val;
+	}
+
+	/* retrieves out of final column */
 	double getComponent(long i, bool imag)
 	{
 		long index = finalIndex(i);
