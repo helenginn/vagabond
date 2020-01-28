@@ -423,33 +423,40 @@ void VagFFT::setUnitCell(std::vector<double> dims)
 void VagFFT::addImplicitAtom(AtomPtr atom)
 {
 	mat3x3 tensor = atom->getModel()->getRealSpaceTensor();
-	mat3x3 real_space = mat3x3_inverse(tensor);
 
 	Anisotropicator aniso;
 	aniso.setTensor(tensor);
 	mat3x3 ellipsoid = aniso.basis();
-
-	vec3 centre = atom->getAbsolutePosition();
 	
-	/* TODO find limiting voxels */
-	const int scale = 5.0; /* no. standard devs we care about */
-
-	vec3 maxVals = make_vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
-	
-	double dampen = 1;
 	for (int i = 0; i < 3; i++)
 	{
 		vec3 axis = mat3x3_axis(ellipsoid, i);
 		double length = vec3_length(axis);
-		vec3_max_each(&maxVals, axis);
-		vec3_mult(&axis, -1);
-		vec3_max_each(&maxVals, axis);
+		
+		for (int j = 0; j < 3; j++)
+		{
+			ellipsoid.vals[j * 3 + i] *= 1 / sqrt(length);
+		}
 	}
+
+	vec3 centre = atom->getAbsolutePosition();
 	
+	/* TODO find limiting voxels */
+	const int scale = 10.0; /* no. standard devs we care about */
+
+	vec3 maxVals = make_vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+	
+	for (int i = 0; i < 3; i++)
+	{
+		vec3 axis = mat3x3_axis(ellipsoid, i);
+		double length = vec3_length(axis);
+		*(&maxVals.x + i) = length;
+	}
 	
 	vec3_mult(&maxVals, scale);
 	mat3x3_mult_vec(_recipBasis, &maxVals);
-	maxVals.x++; maxVals.y++; maxVals.z++;
+	vec3 four = make_vec3(4, 4, 4);
+	vec3_max_each(&maxVals, four);
 	
 	vec3_subtract_from_vec3(&centre, _origin);
 	mat3x3_mult_vec(_recipBasis, &centre);
@@ -458,7 +465,6 @@ void VagFFT::addImplicitAtom(AtomPtr atom)
 	double occ = atom->getModel()->getEffectiveOccupancy();
 	double total = populateImplicit(ele, centre, maxVals, 
 	                                ellipsoid, occ, true);
-	std::cout << total << std::endl;
 }
 
 double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
@@ -466,6 +472,7 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 {
 	double total = 0;
 	double count = 0;
+	
 	mat3x3 inv = mat3x3_inverse(tensor);
 	vec3 xl = mat3x3_axis(tensor, 0);
 	vec3 yl = mat3x3_axis(tensor, 1);
@@ -473,6 +480,7 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 	double std_x = vec3_length(xl);
 	double std_y = vec3_length(yl);
 	double std_z = vec3_length(zl);
+	double vol = mat3x3_volume(_realBasis);
 	
 	for (int z = centre.z - maxVals.z; z <= centre.z + maxVals.z; z++)
 	{
@@ -483,30 +491,34 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 				vec3 pos = make_vec3(x, y, z);
 				/* in voxel system */
 				vec3 offset = vec3_subtract_vec3(pos, centre);
+				/* and then to Angstroms */
 				mat3x3_mult_vec(_realBasis, &offset);
+				/* to aniso-U-sensitive coordinates */
 				mat3x3_mult_vec(inv, &offset);
-				offset.x = fabs(offset.x) / 2;
-				offset.y = fabs(offset.y) / 2;
-				offset.z = fabs(offset.z) / 2;
-				
-				double mult = (1 / (std_x * sqrt(2*M_PI))) * exp(- offset.x);
-				mult *= (1 / (std_y * sqrt(2*M_PI))) * exp(- offset.y);
-				mult *= (1 / (std_z * sqrt(2*M_PI))) * exp(- offset.z);
 
-				double density = mult;
+				offset.x = fabs(offset.x);
+				offset.y = fabs(offset.y);
+				offset.z = fabs(offset.z);
+				offset.x *= offset.x / 2;
+				offset.y *= offset.y / 2;
+				offset.z *= offset.z / 2;
+				
+				double factor = 1 / sqrt(2 * M_PI);
+				double dens = (factor / std_x) * exp(- offset.x);
+				dens *= (factor / std_y) * exp(- offset.y);
+				dens *= (factor / std_z) * exp(- offset.z);
 
 				if (add)
 				{
-					addInterpolatedToReal(ele, x, y, z, density * scale);
+					addInterpolatedToReal(ele, x, y, z, dens * scale);
 				}
 				
-				total += density * scale;
-				count++;
+				total += dens * vol;
 			}
 		}
 	}
 
-	return total / count;
+	return total;
 }
 
 int VagFFT::whichColumn(ElementPtr ele)
