@@ -68,14 +68,14 @@ FFT::FFT(VagFFT &other)
 	scales[0] = real.vals[0];
 	scales[1] = real.vals[4];
 	scales[2] = real.vals[8];
+	_basis = real;
+	_inverse = mat3x3_inverse(real);
+
 	mask = NULL;
 	data = NULL;
 
 	data = (FFTW_DATA_TYPE *)fftwf_malloc(nn * sizeof(FFTW_DATA_TYPE));
 	memset(data, 0, nn * sizeof(FFTW_DATA_TYPE));
-	
-	_basis = other._toReal;
-	_inverse = other._toRecip;
 }
 
 FFTPtr FFT::makeFromVag(VagFFTPtr vag)
