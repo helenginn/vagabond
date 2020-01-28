@@ -428,6 +428,7 @@ void VagFFT::addImplicitAtom(AtomPtr atom)
 	aniso.setTensor(tensor);
 	mat3x3 ellipsoid = aniso.basis();
 	
+	/* make these variances into standard deviations */
 	for (int i = 0; i < 3; i++)
 	{
 		vec3 axis = mat3x3_axis(ellipsoid, i);
@@ -442,7 +443,7 @@ void VagFFT::addImplicitAtom(AtomPtr atom)
 	vec3 centre = atom->getAbsolutePosition();
 	
 	/* TODO find limiting voxels */
-	const int scale = 10.0; /* no. standard devs we care about */
+	const int scale = 5.0; /* no. standard devs we care about */
 
 	vec3 maxVals = make_vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 	
