@@ -238,6 +238,11 @@ void Crystal::realSpaceClutter(double maxRes)
 
 void Crystal::setupOriginalMap()
 {
+	if (!_data)
+	{
+		return;
+	}
+
 	FFTPtr orig = _data->getOriginal();
 	
 	if (!orig)

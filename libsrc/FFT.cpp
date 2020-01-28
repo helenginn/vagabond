@@ -201,24 +201,24 @@ void VagFFT::makePlans()
 	fftwf_plan plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, 
 	                                      _stride, 2, _data, 
 	                                      NULL, _stride, 2, 
-	                                      -1, fftw_flags); 
+	                                      1, fftw_flags); 
 	_myDims->atom_real_to_recip = plan;
 
 	plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, _stride, 
 	                                      2, _data, 
 	                                      NULL, _stride, 2, 
-	                                      1, fftw_flags); 
+	                                      -1, fftw_flags); 
 	_myDims->atom_recip_to_real = plan;
 
 	plan = fftwf_plan_many_dft(3, ns, 1, _lastData, NULL, /*null=embed*/
 	                           _stride, 2, _lastData, NULL, 
-	                           _stride, 2, -1, fftw_flags); 
+	                           _stride, 2, 1, fftw_flags); 
 
 	_myDims->real_to_recip = plan;
 
 	plan = fftwf_plan_many_dft(3, ns, 1, _lastData, NULL, 
 	                           _stride, 2, _lastData, NULL,
-	                           _stride, 2, 1, fftw_flags); 
+	                           _stride, 2, -1, fftw_flags); 
 
 	_myDims->recip_to_real = plan;
 }
@@ -270,9 +270,9 @@ void VagFFT::setupElements(bool wipe)
 				{
 					long ele_index = ele * _stride + (j * 2) + 1;
 					
-					ElementPtr ele = _elements[j];
-					double val = 0;
-					val = ele->getVoxelValue(&*ele, real.x, real.y, real.z);
+					ElementPtr elem = _elements[j];
+					double val = Element::getVoxelValue(&*elem, real.x, 
+					                                    real.y, real.z);
 
 					_data[ele_index][0] = val;
 					_data[ele_index][1] = 0;
@@ -325,7 +325,7 @@ void VagFFT::separateAtomTransform()
 			long ele_index = dotty_index + 1;
 
 			_data[dotty_index][0] *= _data[ele_index][0];
-			_data[dotty_index][1] *= _data[ele_index][1];
+			_data[dotty_index][1] *= _data[ele_index][0];
 		}
 	}
 
@@ -333,13 +333,15 @@ void VagFFT::separateAtomTransform()
 	for (int i = 0; i < _nn; i++)
 	{
 		long final_index = finalIndex(i);
+		_data[final_index][0] = 0;
+		_data[final_index][1] = 0;
 
 		for (int j = 0; j < _nele; j++)
 		{
 			long dotty_index = i * _stride + (j * 2);
 
 			_data[final_index][0] += _data[dotty_index][0];
-			_data[dotty_index][1] += _data[dotty_index][1];
+			_data[final_index][1] += _data[dotty_index][1];
 		}
 	}
 
@@ -430,13 +432,11 @@ void VagFFT::addImplicitAtom(AtomPtr atom)
 	vec3 centre = atom->getAbsolutePosition();
 	
 	/* TODO find limiting voxels */
-	const int scale = 2.5; /* no. standard devs we care about */
-
-//	mat3x3_scale(&ellipsoid, scale, scale, scale);
+	const int scale = 5.0; /* no. standard devs we care about */
 
 	vec3 maxVals = make_vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
 	
-	double dampen = 0;
+	double dampen = 1;
 	for (int i = 0; i < 3; i++)
 	{
 		vec3 axis = mat3x3_axis(ellipsoid, i);
@@ -444,27 +444,35 @@ void VagFFT::addImplicitAtom(AtomPtr atom)
 		vec3_max_each(&maxVals, axis);
 		vec3_mult(&axis, -1);
 		vec3_max_each(&maxVals, axis);
-		dampen += length / 3;
-		
-		/* reduction in height of gaussian with this stdev */
 	}
 	
-	vec3_mult(&maxVals, 2.5);
-	maxVals.x++; maxVals.y++; maxVals.z++;
+	
+	vec3_mult(&maxVals, scale);
 	mat3x3_mult_vec(_recipBasis, &maxVals);
+	maxVals.x++; maxVals.y++; maxVals.z++;
 	
 	vec3_subtract_from_vec3(&centre, _origin);
 	mat3x3_mult_vec(_recipBasis, &centre);
 	ElementPtr ele = atom->getElement();
 
-	double total = populateImplicit(ele, centre, maxVals, tensor, 1., false);
-	total = populateImplicit(ele, centre, maxVals, tensor, total, true);
+	double occ = atom->getModel()->getEffectiveOccupancy();
+	double total = populateImplicit(ele, centre, maxVals, 
+	                                ellipsoid, occ, true);
+	std::cout << total << std::endl;
 }
 
 double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
                                 mat3x3 tensor, double scale, bool add)
 {
 	double total = 0;
+	double count = 0;
+	mat3x3 inv = mat3x3_inverse(tensor);
+	vec3 xl = mat3x3_axis(tensor, 0);
+	vec3 yl = mat3x3_axis(tensor, 1);
+	vec3 zl = mat3x3_axis(tensor, 2);
+	double std_x = vec3_length(xl);
+	double std_y = vec3_length(yl);
+	double std_z = vec3_length(zl);
 	
 	for (int z = centre.z - maxVals.z; z <= centre.z + maxVals.z; z++)
 	{
@@ -476,15 +484,16 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 				/* in voxel system */
 				vec3 offset = vec3_subtract_vec3(pos, centre);
 				mat3x3_mult_vec(_realBasis, &offset);
+				mat3x3_mult_vec(inv, &offset);
+				offset.x = fabs(offset.x) / 2;
+				offset.y = fabs(offset.y) / 2;
+				offset.z = fabs(offset.z) / 2;
+				
+				double mult = (1 / (std_x * sqrt(2*M_PI))) * exp(- offset.x);
+				mult *= (1 / (std_y * sqrt(2*M_PI))) * exp(- offset.y);
+				mult *= (1 / (std_z * sqrt(2*M_PI))) * exp(- offset.z);
 
-				vec3 copy = offset;
-				mat3x3_mult_vec(tensor, &copy);
-
-				copy.x *= offset.x;
-				copy.y *= offset.y;
-				copy.z *= offset.z;
-				double multByTranspose = copy.x + copy.y + copy.z;
-				double density = exp((2 * M_PI * M_PI) * -(multByTranspose));
+				double density = mult;
 
 				if (add)
 				{
@@ -492,11 +501,12 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 				}
 				
 				total += density * scale;
+				count++;
 			}
 		}
 	}
 
-	return 1 / total;
+	return total / count;
 }
 
 int VagFFT::whichColumn(ElementPtr ele)
@@ -576,7 +586,7 @@ double VagFFT::getPhase(int x, int y, int z)
 double VagFFT::getAmplitude(ElementPtr ele, int x, int y, int z)
 {
 	int col = whichColumn(ele);
-	long index = element(x, y, z) * _stride + col;
+	long index = element(x, y, z) * _stride + col + 1;
 
 	double val =  (_data[index][0] * _data[index][0] + 
 	               _data[index][1] * _data[index][1]);
@@ -601,7 +611,7 @@ void VagFFT::printSlice(double zVal, double scale)
 		for (int i = 0; i < _nx; i++)
 		{
 			std::string symbol = " ";
-			double value = getAmplitude(i, j, zVal);
+			double value = getAmplitude(_elements[0], i, j, zVal);
 
 			if (value > 0.01 * scale) symbol = ".";
 			if (value > 0.02 * scale) symbol = ":";
@@ -753,8 +763,14 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	 * (b) Crystal voxels
 	 * (c) Atom voxels */
 
-	double volume = 1;
 	vec3 add = vec3_subtract_vec3(fftAtom->_origin, fftCrystal->_origin);
+
+	vec3 half_box = make_vec3(0.5, 0.5, 0.5);
+	mat3x3_mult_vec(fftAtom->_toReal, &half_box);
+	
+	vec3_add_to_vec3(&add, half_box);
+
+	mat3x3_mult_vec(fftCrystal->_toRecip, &add);
 
 	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
 	if (mapScoreType != MapScoreAddNoWrap)
@@ -777,12 +793,12 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	vec3 atomWholeCoords = make_vec3((int)multX, (int)multY, (int)multZ);
 
 	/* Prepare a matrix to convert crystal voxels into atomic voxels */
-	mat3x3 crystal2AtomVox = mat3x3_mult_mat3x3(fftAtom->getRealBasis(),
-	                                            fftCrystal->getRecipBasis());
+	mat3x3 crystal2AtomVox = mat3x3_mult_mat3x3(fftAtom->getRecipBasis(),
+	                                            fftCrystal->getRealBasis());
 
 	/* Prepare a matrix to convert atomic voxels into crystal voxels */
-	mat3x3 atomVox2Crystal = mat3x3_mult_mat3x3(fftCrystal->getRealBasis(),
-	                                            fftAtom->getRecipBasis());
+	mat3x3 atomVox2Crystal = mat3x3_mult_mat3x3(fftCrystal->getRecipBasis(),
+	                                            fftAtom->getRealBasis());
 
 	/* Apply this offset and reverse it. This small offset must be added
 	 * to all future atomic coordinates prior to interpolation. This

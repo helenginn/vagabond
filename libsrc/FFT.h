@@ -183,12 +183,12 @@ public:
 	
 	mat3x3 getRealBasis()
 	{
-		return _toReal;
+		return _realBasis;
 	}
 	
 	mat3x3 getRecipBasis()
 	{
-		return _toRecip;
+		return _recipBasis;
 	}
 	
 	double getCubicScale()

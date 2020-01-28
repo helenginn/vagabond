@@ -807,9 +807,7 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
 	
 	scratchFull->fft(FFTAtomsToReciprocal);
 	scratchFull->writeToFile("scratch.mtz", 1.5);
-	scratchFull->printSlice(0.2);
 	scratchFull->fft(FFTReciprocalToReal);
-	scratchFull->printSlice(0.2);
 
 	
 	/*
@@ -919,14 +917,13 @@ void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max,
 	size_t nEle = totalElements();
 	(*scratchFull) = VagFFTPtr(new VagFFT(extent.x, extent.y, extent.z, nEle));
 	(*scratchFull)->setScale(cubeDim);
-	
+	(*scratchFull)->setOrigin(offset);
 	for (int i = 0; i < nEle; i++)
 	{
 		(*scratchFull)->addElement(_elements[i]);
 	}
 
 	(*scratchFull)->makePlans();
-	(*scratchFull)->setOrigin(offset);
 }
 
 vec3 finalOffset(vec3 offset, VagFFTPtr cube,
@@ -963,7 +960,7 @@ void AtomGroup::addToMap(VagFFTPtr fft, mat3x3 real2frac)
 	addToCubicMap(scratchFull);
 
 	vec3 addvec = finalOffset(min, scratchFull, real2frac, buffer);
-	scratchFull->setOrigin(addvec);
+//	scratchFull->setOrigin(addvec);
 	
 	VagFFT::operation(fft, scratchFull, MapScoreTypeNone, NULL, false);
 }
