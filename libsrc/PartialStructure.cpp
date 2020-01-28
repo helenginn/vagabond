@@ -131,8 +131,8 @@ void PartialStructure::scalePartialStructure()
 	
 	/** Now add this into the FFT */
 	
-	VagFFTPtr vFFT = getCrystal()->getFFT();
-	FFTPtr fft = FFTPtr(new FFT(*vFFT));
+	VagFFTPtr fft = getCrystal()->getFFT();
+
 	mat3x3 real2frac = getCrystal()->getReal2Frac();
 	real2frac = mat3x3_transpose(real2frac);
 	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
@@ -150,8 +150,8 @@ void PartialStructure::scalePartialStructure()
 			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
 				long nModel = fft->element(i, j, k);
-				float realProtein = fft->data[nModel][0];
-				float imagProtein = fft->data[nModel][1];
+				float realProtein = fft->getReal(nModel);
+				float imagProtein = fft->getImag(nModel);
 				float realPartial = _partial->data[nModel][0];	
 				float imagPartial = _partial->data[nModel][1];	
 				
@@ -179,8 +179,8 @@ void PartialStructure::scalePartialStructure()
 					continue;
 				}
 
-				fft->data[nModel][0] = real;
-				fft->data[nModel][1] = imag;
+				fft->setComponent(nModel, 0, real);
+				fft->setComponent(nModel, 1, imag);
 			}
 		}
 	}
@@ -194,8 +194,7 @@ double PartialStructure::scalePartialScore(void *object)
 double PartialStructure::scaleAndAddPartialScore()
 {
 	FFTPtr fftData = _data->getFFT();
-	VagFFTPtr vFFT = getCrystal()->getFFT();
-	FFTPtr fft = FFTPtr(new FFT(*vFFT));
+	VagFFTPtr fft = getCrystal()->getFFT();
 	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
 	mat3x3 real2frac = getCrystal()->getReal2Frac();
 	mat3x3 tmp = mat3x3_transpose(real2frac);
@@ -215,8 +214,8 @@ double PartialStructure::scaleAndAddPartialScore()
 			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
 				long nModel = fft->element(i, j, k);
-				float realProtein = fft->data[nModel][0];
-				float imagProtein = fft->data[nModel][1];
+				float realProtein = fft->getReal(nModel);
+				float imagProtein = fft->getImag(nModel);
 				float realPartial = _partial->data[nModel][0];	
 				float imagPartial = _partial->data[nModel][1];	
 				
