@@ -29,10 +29,9 @@
 void PartialStructure::setStructure(FFTPtr refPart)
 {
 	VagFFTPtr vFFT = getCrystal()->getFFT();
-	FFTPtr fft = FFTPtr(new FFT(*vFFT));
 	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
 
-	_partial = FFTPtr(new FFT(*fft));
+	_partial = FFTPtr(new FFT(*vFFT));
 	_partial->wipe();
 
 	vec3 nLimits = getNLimits(_partial, refPart);
@@ -204,7 +203,6 @@ double PartialStructure::scaleAndAddPartialScore()
 	std::vector<double> fData, fModel;
 	double adjB = _solvBFac;
 	double adjS = _solvScale;
-//	if (adjB < 0) { adjB = 0; }
 	if (adjS < 0) { adjS = 0; }
 	
 	for (int k = -nLimits.z; k < nLimits.z; k++)
@@ -213,6 +211,14 @@ double PartialStructure::scaleAndAddPartialScore()
 		{
 			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
+				int m, n, o;
+				int asu = CSym::ccp4spg_put_in_asu(spg, i, j, k, &m, &n, &o);
+				
+				if (!(m == i && n == j && o == k))
+				{
+					continue;
+				}
+				
 				long nModel = fft->element(i, j, k);
 				float realProtein = fft->getReal(nModel);
 				float imagProtein = fft->getImag(nModel);
@@ -228,9 +234,6 @@ double PartialStructure::scaleAndAddPartialScore()
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(tmp, &ijk);
 
-				int m, n, o;
-				int asu = CSym::ccp4spg_put_in_asu(spg, i, j, k, &m, &n, &o);
-				
 				double length = vec3_length(ijk);
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);

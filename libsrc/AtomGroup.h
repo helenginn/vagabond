@@ -135,7 +135,7 @@ public:
 	 *  \return offset which should be applied to each atom when calling
 	 *  AtomGroup::addToCubicMap */
 	void prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max, 
-	                     double buffer = BUFFER_REGION);
+	                     bool cc = false);
 
 	void setTargetRefinement(CrystalPtr target, RefinementType rType);
 	virtual void refine(CrystalPtr target, RefinementType rType);

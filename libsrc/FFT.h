@@ -58,7 +58,7 @@ class VagFFT
 {
 public:
 	friend class FFT;
-	VagFFT(int nx, int ny, int nz, int nele = 0);
+	VagFFT(int nx, int ny, int nz, int nele = 0, int scratches = 0);
 	VagFFT(VagFFT &fft);
 	
 	void addElement(ElementPtr ele);
@@ -86,7 +86,7 @@ public:
 	                 FFTPtr data = FFTPtr(), VagFFTPtr diff = VagFFTPtr(), 
 	                 VagFFTPtr calc = VagFFTPtr());
 	
-	double sumReal();
+	double sumReal(int scratch = -1);
 
 	double averageAll()
 	{
@@ -104,7 +104,8 @@ public:
 	void printSlice(double zVal = -1, double scale = 1);
 
 	static double operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
-                      MapScoreType mapScoreType, std::vector<CoordVal> *vals,
+                      MapScoreType mapScoreType, 
+                      std::vector<CoordVal> *vals = NULL,
                       bool sameScale = false);
 
 	/* simple pair-wise addition of final index reals of two FFTs */
@@ -120,10 +121,39 @@ public:
 	{
 		_origin = orig;
 	}
+
+	/* copy contents of final to scratch map (overwrite) */
+	void copyToScratch(int scratch);
+
+	/* add contents of scratch back to final map */
+	void addScratchBack(int scratch);
+	
+	void setActiveScratch(int scratch)
+	{
+		_activeScratch = scratch;
+	}
+
+	/** i = index of nn, j = scratch map number */
+	long scratchIndex(int i, int j)
+	{
+		return i * _stride + _nele * 2 + j + 1;
+	}
 	
 	long finalIndex(int i)
 	{
-		return (i + 1) * _stride - 1;
+		return i * _stride + _nele * 2;
+	}
+	
+	/** i = index of nn, j = element number */
+	long dottyIndex(int i, int j)
+	{
+		return i * _stride + (j * 2);
+	}
+	
+	/** i = index of nn, j = element number */
+	long eleIndex(int i, int j)
+	{
+		return i * _stride + (j * 2) + 1;
 	}
 
 	/** Returns the length of the vector described by the real
@@ -276,7 +306,7 @@ private:
 	double getAmplitude(ElementPtr ele, int i, int j, int k);
 	int whichColumn(ElementPtr ele);
 	double cubic_interpolate(vec3 vox000, size_t im = false);
-	void addInterpolatedToReal(ElementPtr ele, double sx, double sy, 
+	void addInterpolatedToReal(int column, double sx, double sy, 
 	                           double sz, double val); 
 	void addExplicitAtom(AtomPtr atom);
 	void addImplicitAtom(AtomPtr atom);
@@ -293,6 +323,7 @@ private:
 	void setupElements(bool wipe = true);
 
 	std::vector<ElementPtr> _elements;
+	std::map<ElementPtr, int> _elementMap;
 	
 	FFTStatus _status;
 
@@ -301,6 +332,8 @@ private:
 	
 	/** number of elements */
 	int _nele;
+	int _nscratch;
+	int _activeScratch;
 	int _stride;
 
 	long _total;

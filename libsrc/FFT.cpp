@@ -19,8 +19,9 @@
 #include "FFT.h"
 #include "Element.h"
 #include "Atom.h"
+#include "Timer.h"
 #include "Anisotropicator.h"
-#include "Model.h"
+#include "ExplicitModel.h"
 #include <cstring>
 #include <float.h>
 #include <iostream>
@@ -40,6 +41,8 @@ VagFFT::VagFFT(VagFFT &fft)
 	_ny = fft._ny;
 	_nz = fft._nz;
 	_nele = fft._nele;
+	_nscratch = fft._nscratch;
+	_activeScratch = fft._activeScratch;
 	_nn = fft._nn;
 	_status = fft._status;
 	_stride = fft._stride;
@@ -52,6 +55,7 @@ VagFFT::VagFFT(VagFFT &fft)
 	_setMatrices = fft._setMatrices;
 	_myDims = fft._myDims;
 	_elements = fft._elements;
+	_elementMap = fft._elementMap;
 	_spg = CSym::ccp4spg_load_by_ccp4_num(1);
 
 	_data = (fftwf_complex *)fftwf_malloc(_total);
@@ -67,7 +71,7 @@ VagFFT::VagFFT(VagFFT &fft)
 	memcpy(_data, fft._data, _total);
 }
 
-VagFFT::VagFFT(int nx, int ny, int nz, int nele)
+VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
 {
 	_nx = nx;
 	_ny = ny;
@@ -80,10 +84,12 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele)
 	if (_nz % 2 == 1) _nz -= 1;
 
 	_nele = nele;
+	_nscratch = scratches;
+	_activeScratch = 0;
 	_nn = _nx * _ny * _nz;
 	_status = FFTEmpty;
 
-	_stride = 2 * (_nele) + 1;
+	_stride = 2 * (_nele) + 1 + _nscratch;
 	_total = _nn * _stride * sizeof(fftwf_complex);
 	_data = (fftwf_complex *)fftwf_malloc(_total);
 
@@ -108,6 +114,7 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele)
 
 void VagFFT::addElement(ElementPtr ele)
 {
+	_elementMap[ele] = _elements.size();
 	_elements.push_back(ele);
 }
 
@@ -189,6 +196,13 @@ void VagFFT::makePlans()
 			return;
 		}
 	}
+	
+	Timer timer;
+	if (_nele > 0)
+	{
+		std::cout << "Planning FFT... " << std::flush;
+	}
+
 
 	FFTDim *dims = (FFTDim *)malloc(sizeof(FFTDim));
 	dims->nx = _nx; dims->ny = _ny; dims->nz = _nz; dims->nele = _nele;
@@ -221,6 +235,13 @@ void VagFFT::makePlans()
 	                           _stride, 2, -1, fftw_flags); 
 
 	_myDims->recip_to_real = plan;
+	
+	if (_nele > 0)
+	{
+		std::cout << " done. ";
+		timer.quickReport();
+		std::cout << std::endl;
+	}
 }
 
 void VagFFT::multiplyDotty(float val)
@@ -229,7 +250,7 @@ void VagFFT::multiplyDotty(float val)
 	{
 		for (int j = 0; j < _nele; j++)
 		{
-			long dotty_index = i * _stride + (j * 2);
+			long dotty_index = dottyIndex(i, j);
 			_data[dotty_index][0] *= val;
 			_data[dotty_index][1] *= val;
 		}
@@ -268,7 +289,7 @@ void VagFFT::setupElements(bool wipe)
 
 				for (int j = 0; j < _nele; j++)
 				{
-					long ele_index = ele * _stride + (j * 2) + 1;
+					long ele_index = eleIndex(ele, j);
 					
 					ElementPtr elem = _elements[j];
 					double val = Element::getVoxelValue(&*elem, real.x, 
@@ -299,13 +320,13 @@ void VagFFT::prepareAtomSpace()
 	{
 		for (int i = 0; i < _nn; i++)
 		{
-			for (int j = 0; j < _nele; j++)
-			{
-				long dotty_index = i * _stride + (j * 2);
+			// elements should be hoovered up straight after last
 
-				_data[dotty_index][0] = 0; 
-				_data[dotty_index][1] = 0;
-			}
+			// transform.
+
+			long final_index = finalIndex(i);
+			_data[final_index][0] = 0; 
+			_data[final_index][1] = 0;
 		}
 	}
 
@@ -321,7 +342,7 @@ void VagFFT::separateAtomTransform()
 	{
 		for (int j = 0; j < _nele; j++)
 		{
-			long dotty_index = i * _stride + (j * 2);
+			long dotty_index = dottyIndex(i, j);
 			long ele_index = dotty_index + 1;
 
 			_data[dotty_index][0] *= _data[ele_index][0];
@@ -338,10 +359,13 @@ void VagFFT::separateAtomTransform()
 
 		for (int j = 0; j < _nele; j++)
 		{
-			long dotty_index = i * _stride + (j * 2);
+			long dotty_index = dottyIndex(i, j);
 
 			_data[final_index][0] += _data[dotty_index][0];
 			_data[final_index][1] += _data[dotty_index][1];
+			
+			_data[dotty_index][0] = 0;
+			_data[dotty_index][1] = 0;
 		}
 	}
 
@@ -372,6 +396,7 @@ void VagFFT::fft(FFTTransform transform)
 		if (transform == FFTAtomsToReal)
 		{
 			fftwf_execute_dft(_myDims->recip_to_real, _lastData, _lastData);
+			multiplyFinal(1 / (double)_nn);
 			_status = FFTRealSpace;
 		}
 	}
@@ -482,6 +507,7 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 	double std_y = vec3_length(yl);
 	double std_z = vec3_length(zl);
 	double vol = mat3x3_volume(_realBasis);
+	int column = whichColumn(ele);
 	
 	for (int z = centre.z - maxVals.z; z <= centre.z + maxVals.z; z++)
 	{
@@ -511,7 +537,7 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 
 				if (add)
 				{
-					addInterpolatedToReal(ele, x, y, z, dens * scale);
+					addInterpolatedToReal(column, x, y, z, dens * scale);
 				}
 				
 				total += dens * vol;
@@ -524,18 +550,15 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 
 int VagFFT::whichColumn(ElementPtr ele)
 {
-	for (int i = 0; i < _elements.size(); i++)
+	if (_elementMap.count(ele))
 	{
-		if (_elements[i] == ele)
-		{
-			return i * 2;
-		}
+		return _elementMap[ele] * 2;
 	}
 
 	return -1;
 }
 
-void VagFFT::addInterpolatedToReal(ElementPtr ele, double sx, double sy, 
+void VagFFT::addInterpolatedToReal(int column, double sx, double sy, 
                                    double sz, double val)
 {
 	long lx = (int)floor(sx);
@@ -555,11 +578,9 @@ void VagFFT::addInterpolatedToReal(ElementPtr ele, double sx, double sy,
 	yProps[0] = 1 - yProps[1];
 	zProps[0] = 1 - zProps[1];
 	
-	int column = whichColumn(ele);
-	
 	if (column < 0)
 	{
-//		std::cout << "No element!" << std::endl;
+		std::cout << "No element!" << std::endl;
 		return;
 	}
 
@@ -646,7 +667,23 @@ void VagFFT::printSlice(double zVal, double scale)
 
 void VagFFT::addExplicitAtom(AtomPtr atom)
 {
+	std::vector<BondSample> positions;
+	positions = atom->getExplicitModel()->getFinalPositions();
+	ElementPtr ele = atom->getElement();
+	int column = whichColumn(ele);
+	double vol = mat3x3_volume(_realBasis);
 
+	for (int i = 0; i < positions.size(); i++)
+	{
+		vec3 pos = positions[i].start;
+		vec3_subtract_from_vec3(&pos, _origin);
+		mat3x3_mult_vec(_recipBasis, &pos);
+
+		double occ = positions[i].occupancy;
+		double dens = occ / vol;
+
+		addInterpolatedToReal(column, pos.x, pos.y, pos.z, dens);
+	}
 }
 
 void VagFFT::addAtom(AtomPtr atom)
@@ -732,23 +769,23 @@ double VagFFT::cubic_interpolate(vec3 vox000, size_t im)
 	double v = uvw[1];
 	double w = uvw[2];
 	
-	double p000 = _data[(idx000 + 1) * _stride - 1][im];
-	double p001 = _data[(idx001 + 1) * _stride - 1][im];
-	double p010 = _data[(idx010 + 1) * _stride - 1][im];
-	double p011 = _data[(idx011 + 1) * _stride - 1][im];
-	double p100 = _data[(idx100 + 1) * _stride - 1][im];
-	double p101 = _data[(idx101 + 1) * _stride - 1][im];
-	double p110 = _data[(idx110 + 1) * _stride - 1][im];
-	double p111 = _data[(idx111 + 1) * _stride - 1][im];
+	double p000 = _data[finalIndex(idx000)][im];
+	double p001 = _data[finalIndex(idx001)][im];
+	double p010 = _data[finalIndex(idx010)][im];
+	double p011 = _data[finalIndex(idx011)][im];
+	double p100 = _data[finalIndex(idx100)][im];
+	double p101 = _data[finalIndex(idx101)][im];
+	double p110 = _data[finalIndex(idx110)][im];
+	double p111 = _data[finalIndex(idx111)][im];
 	
 	double a = p100 - p000;
 	double b = p010 - p000;
 	double c = p110 - p010;
 	double d = p101 - p001;
 	
-	double pn00 = _data[(idxn00 + 1) * _stride - 1][im];
-	double p0n0 = _data[(idx0n0 + 1) * _stride - 1][im];
-	double p00n = _data[(idx00n + 1) * _stride - 1][im];
+	double pn00 = _data[finalIndex(idxn00)][im];
+	double p0n0 = _data[finalIndex(idx0n0)][im];
+	double p00n = _data[finalIndex(idx00n)][im];
 
 	double p8value = p000+u*(a+w*(-a+d)+v*((c-a)+w*( a-c-d-p011+p111)))
 	+ v*(b+w*(-p001+p011-b))+w*(-p000+p001);
@@ -878,13 +915,6 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 				vec3_max_each(&maxAtom, toCrystal);
 			}
 		}
-	}
-
-	/* Set all the voxels to zero if we are going to copy across info.
-	 * We do not want any contamination with original Fc. */
-	if (mapScoreType == MapScoreTypeCopyToSmaller)
-	{
-		fftAtom->wipe();
 	}
 	
 	double step = 1;
@@ -1070,14 +1100,23 @@ void VagFFT::copyRealToImaginary()
 	}
 }
 
-double VagFFT::sumReal()
+double VagFFT::sumReal(int scratch)
 {
 	double sum = 0;
 
 	for (int i = 0; i < _nn; i++)
 	{
-		long final_index = finalIndex(i);
-		sum += fabs(_data[final_index][0]);
+		long index = 0;
+		if (scratch < 0 || scratch >= _nscratch)
+		{
+			index = finalIndex(i);
+		}
+		else
+		{
+			index = scratchIndex(i, scratch);
+		}
+
+		sum += fabs(_data[index][0]);
 	}
 
 	return sum;
@@ -1424,7 +1463,7 @@ void VagFFT::applySymmetry(bool silent)
 
 void VagFFT::multiplyAll(float value)
 {
-	for(long i = 0; i < nn(); i++)
+	for (long i = 0; i < nn(); i++)
 	{
 		int index = finalIndex(i);
 		_data[index][0] *= value;
@@ -1434,12 +1473,34 @@ void VagFFT::multiplyAll(float value)
 
 void VagFFT::copyFrom(VagFFTPtr other)
 {
-	for(long i = 0; i < nn(); i++)
+	for (long i = 0; i < nn(); i++)
 	{
 		int index = finalIndex(i);
 		int iother = other->finalIndex(i);
 		_data[index][0] = other->_data[iother][0];
 		_data[index][1] = other->_data[iother][1];
 	}
+}
 
+void VagFFT::copyToScratch(int scratch)
+{
+	for (long i = 0; i < nn(); i++)
+	{
+		int index = finalIndex(i);
+		int sindex = scratchIndex(i, scratch);
+		_data[sindex][0] = _data[index][0];
+		_data[sindex][1] = _data[index][1];
+	}
+}
+
+void VagFFT::addScratchBack(int scratch)
+{
+	for (long i = 0; i < nn(); i++)
+	{
+		int index = finalIndex(i);
+		int sindex = scratchIndex(i, scratch);
+		_data[index][0] += _data[sindex][0];
+		_data[index][1] += _data[sindex][1];
+
+	}
 }
