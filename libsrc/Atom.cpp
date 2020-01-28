@@ -399,11 +399,6 @@ void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
 	
 	if (conf < 0)
 	{
-		/*
-		vec3 asu = getPositionInAsu(conf);
-		addPointerToLocalArea(fft, unit_cell, asu, ptrs, radius);
-		*/
-		
 		size_t max = symOpCount();
 		for (size_t i = 0; i < max; i++)
 		{
