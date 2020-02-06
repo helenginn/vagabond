@@ -561,29 +561,22 @@ int VagFFT::whichColumn(ElementPtr ele)
 void VagFFT::addInterpolatedToReal(int column, double sx, double sy, 
                                    double sz, double val)
 {
-	long lx = (int)floor(sx);
-	long ly = (int)floor(sy);
-	long lz = (int)floor(sz);
+	int lx = (int)floor(sx);
+	int ly = (int)floor(sy);
+	int lz = (int)floor(sz);
 
 	double xProps[2];
 	double yProps[2];
 	double zProps[2];
-	double rubbish;
 
-	xProps[1] = modf(sx + 1., &rubbish);
-	yProps[1] = modf(sy + 1., &rubbish);
-	zProps[1] = modf(sz + 1., &rubbish);
+	xProps[1] = sx - (double)lx;
+	yProps[1] = sy - (double)ly;
+	zProps[1] = sz - (double)lz;
 
 	xProps[0] = 1 - xProps[1];
 	yProps[0] = 1 - yProps[1];
 	zProps[0] = 1 - zProps[1];
 	
-	if (column < 0)
-	{
-		std::cout << "No element!" << std::endl;
-		return;
-	}
-
 	for (int r = 0; r < 2; r++)
 	{
 		for (int q = 0; q < 2; q++)
