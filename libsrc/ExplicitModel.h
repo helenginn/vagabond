@@ -135,6 +135,11 @@ public:
 	{
 		return true;
 	}
+	
+	double getLowestZ()
+	{
+		return _lowestZ;
+	}
 
 	static double propagate(void *obj);
 protected:
@@ -158,6 +163,9 @@ protected:
 	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
 	                        vec3 miPos, vec3 lPos, double *newAngle = NULL);
 	std::mutex guiLock;
+	
+	/* lowest Z value for re-ordering */
+	double _lowestZ;
 private:
 	std::vector<BondSample> _finalSamples;
 	int _modifySample;

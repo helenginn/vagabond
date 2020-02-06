@@ -941,38 +941,18 @@ double Atom::fishWhackMagnitude()
 
 bool Atom::greater(AtomPtr a1, AtomPtr a2)
 {
-	if (!a1)
-	{
-		return false;
-	}
-	
-	if (!a2)
-	{
-		return false;
-	}
-	
-	/*
-	if (!a1->getElement())
-	{
-		a1->setElement(Element::getElement(a1->getElementSymbol()));
-	}
-	
-	if (!a2->getElement())
-	{
-		a2->setElement(Element::getElement(a2->getElementSymbol()));
-	}
-	
-	double nEle1 = a1->getElement()->electronCount();
-	double nEle2 = a2->getElement()->electronCount();
-
-	if (nEle1 > nEle2)
-	{
-		return true;
-	}
-	*/
-	
 	double z1 = a1->getAbsolutePosition().z;
 	double z2 = a2->getAbsolutePosition().z;
+
+	if (a1->hasExplicitPositions())
+	{
+		z1 = a1->getExplicitModel()->getLowestZ();
+	}
+
+	if (a2->hasExplicitPositions())
+	{
+		z2 = a2->getExplicitModel()->getLowestZ();
+	}
 	
 	return (z1 < z2);
 }

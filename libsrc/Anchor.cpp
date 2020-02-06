@@ -435,7 +435,15 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 			WhackPtr whack = _whacks[i];
 			whack->applyToAnchorSamples(_storedSamples);
 		}
-
+	}
+	
+	_lowestZ = FLT_MAX;
+	for (int i = 0; i < _storedSamples.size(); i++)
+	{
+		if (_storedSamples[i].start.z < _lowestZ)
+		{
+			_lowestZ = _storedSamples[i].start.z;
+		}
 	}
 
 	sanityCheck();

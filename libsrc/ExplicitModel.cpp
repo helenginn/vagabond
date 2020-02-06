@@ -27,6 +27,7 @@
 ExplicitModel::ExplicitModel() : Model()
 {
 	_centre = empty_vec3();
+	_lowestZ = FLT_MAX;
 	_shift.setZero();
 	_rotation.setZero();
 	_shift.setParent(this);
