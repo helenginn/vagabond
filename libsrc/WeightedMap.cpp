@@ -62,7 +62,7 @@ void WeightedMap::writeCalculatedSlice()
 	{
 		for (int i = 0; i < _fft->nx(); i++)
 		{
-			int index = i + j * nx + z * nx * _fft->ny();
+			int index = _fft->element(i, j, 0);
 			Atom *atom = solv->nearbyAtom(index);
 			int val = 0;
 			
