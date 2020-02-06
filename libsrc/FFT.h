@@ -106,7 +106,8 @@ public:
 	static double operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
                       MapScoreType mapScoreType, 
                       std::vector<CoordVal> *vals = NULL,
-                      bool sameScale = false);
+                      bool sameScale = false,
+                         bool fcOnly = false);
 
 	/* simple pair-wise addition of final index reals of two FFTs */
 	void addSimple(VagFFTPtr v2);

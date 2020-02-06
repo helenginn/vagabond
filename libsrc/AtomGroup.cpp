@@ -1010,12 +1010,13 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	
 	workspace->selectAtoms->addToCubicMap(workspace->segment);
 	
-	double score = scoreFinalMap(workspace, plot);
+	double score = scoreFinalMap(workspace, plot, first);
 
 	return score;
 }
 
-double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
+double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot,
+                                   bool first)
 {
 	/* Convert real2Frac to crystal coords to get correct segment
 	* of the big real space map. */
@@ -1023,7 +1024,6 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 	double cutoff = MAP_VALUE_CUTOFF;
 
 	std::vector<double> xs, ys, weights;
-	std::vector<CoordVal> vals;
 
 	VagFFTPtr map = ws->crystal->getFFT();
 	bool difference = (ws->flag & MapScoreFlagDifference);
@@ -1040,9 +1040,12 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot)
 	/* Add constant fraction to model map */
 	ws->segment->addScratchBack(0);
 	
-	ws->vals.clear();
-	ws->segment->addSimple(ws->constant);
-	VagFFT::operation(map, ws->segment, mapType, &ws->vals);
+	if (first)
+	{
+		ws->vals.clear();
+	}
+
+	VagFFT::operation(map, ws->segment, mapType, &ws->vals, false, !first);
 
 	for (size_t i = 0; i < ws->vals.size() && 
 	     ws->scoreType != ScoreTypeCorrel; i++)

@@ -211,7 +211,8 @@ private:
 	                          double cutoff, std::string filename);
 	void xyzLimits(vec3 *min, vec3 *max);
 
-	static double scoreFinalMap(MapScoreWorkspace *workspace, bool plot);
+	static double scoreFinalMap(MapScoreWorkspace *workspace, bool plot,
+	                            bool first);
 
 	static double scoreFinalValues(std::vector<double> &xs,
 	                               std::vector<double> &ys,

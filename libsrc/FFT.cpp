@@ -804,7 +804,7 @@ double VagFFT::cubic_interpolate(vec3 vox000, size_t im)
  */
 double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
                       MapScoreType mapScoreType, std::vector<CoordVal> *vals,
-                      bool sameScale)
+                      bool sameScale, bool fcOnly)
 {
 	/* I rarely comment something so heavily but I will get confused if
 	 * I don't, this time, as I can't soak the protocol into the variable
@@ -918,6 +918,7 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	}
 	
 	double step = 1;
+	long count = 0;
 
 	/* min/maxAtoms are in crystal coordinates.*/
 	for (double k = minAtom.z; k < maxAtom.z; k += step)
@@ -975,60 +976,75 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 
 				if (atomReal < 1e-6 && mapScoreType == MapScoreTypeCorrel)
 				{
-					continue;
+//					continue;
 				}
 
 				/* We add the crystal offset so we don't end up with thousands
 				 * of atoms at the very centre of our map */
-				vec3 cVox = vec3_add_vec3(crystalPos, cornerCrystal);
-
-				if (mapScoreType == MapScoreAddNoWrap)
+				vec3 cVox = empty_vec3();
+				long cIndex = 0;
+				
+				if (!fcOnly)
 				{
-					if (cVox.x < -fftCrystal->_nx / 2 || 
-					    cVox.y < -fftCrystal->_ny / 2 ||
-					    cVox.z < -fftCrystal->_nz / 2)
-					{
-						continue;
-					}					
+					cVox = vec3_add_vec3(crystalPos, cornerCrystal);
 
-					if (cVox.x > fftCrystal->_nx / 2 ||
-					    cVox.y > fftCrystal->_ny / 2 ||
-					    cVox.z > fftCrystal->_nz / 2)
+					if (mapScoreType == MapScoreAddNoWrap)
 					{
-						continue;
+						if (cVox.x < -fftCrystal->_nx / 2 || 
+						    cVox.y < -fftCrystal->_ny / 2 ||
+						    cVox.z < -fftCrystal->_nz / 2)
+						{
+							continue;
+						}					
+
+						if (cVox.x > fftCrystal->_nx / 2 ||
+						    cVox.y > fftCrystal->_ny / 2 ||
+						    cVox.z > fftCrystal->_nz / 2)
+						{
+							continue;
+						}
 					}
+
+					while (cVox.x < 0) cVox.x += fftCrystal->_nx;
+					while (cVox.y < 0) cVox.y += fftCrystal->_ny;
+					while (cVox.z < 0) cVox.z += fftCrystal->_nz;
+
+					while (cVox.x>=fftCrystal->_nx) cVox.x -= fftCrystal->_nx;
+					while (cVox.y>=fftCrystal->_ny) cVox.y -= fftCrystal->_ny;
+					while (cVox.z>=fftCrystal->_nz) cVox.z -= fftCrystal->_nz;
+
+					/* Get the index of this final crystal voxel. */
+					cIndex = fftCrystal->element(cVox.x + 0.5,
+					                             cVox.y + 0.5,
+					                             cVox.z + 0.5);
 				}
-
-				while (cVox.x < 0) cVox.x += fftCrystal->_nx;
-				while (cVox.y < 0) cVox.y += fftCrystal->_ny;
-				while (cVox.z < 0) cVox.z += fftCrystal->_nz;
-
-				while (cVox.x >= fftCrystal->_nx) cVox.x -= fftCrystal->_nx;
-				while (cVox.y >= fftCrystal->_ny) cVox.y -= fftCrystal->_ny;
-				while (cVox.z >= fftCrystal->_nz) cVox.z -= fftCrystal->_nz;
-
-				/* Get the index of this final crystal voxel. */
-				long cIndex = fftCrystal->element(cVox.x + 0.5,
-				                                  cVox.y + 0.5,
-				                                  cVox.z + 0.5);
 
 				if (mapScoreType == MapScoreTypeCorrel)
 				{
-					// We do NOT need to interpolate //
-					double realCryst = fftCrystal->getReal(cIndex);
-
-					if (vals)
+					if (!fcOnly)
 					{
-						CoordVal val;
-						val.fo = realCryst;
-						val.fc = atomReal;
-						val.weight = atomImag;
-						#ifdef COORDVAL_FULL
-						vec3 frac = fftCrystal->fracFromElement(cIndex);
-						val.pos = frac;
-						#endif
+						// We do NOT need to interpolate //
+						double realCryst = fftCrystal->getReal(cIndex);
 
-						vals->push_back(val);
+						if (vals)
+						{
+							CoordVal val;
+							val.fo = realCryst;
+							val.fc = atomReal;
+							val.weight = atomImag;
+							#ifdef COORDVAL_FULL
+							vec3 frac = fftCrystal->fracFromElement(cIndex);
+							val.pos = frac;
+							#endif
+
+							vals->push_back(val);
+						}
+					}
+					else
+					{
+						vals->at(count).fc = atomReal;
+						vals->at(count).weight = atomImag;
+						count++;
 					}
 				}
 				else if (mapScoreType == MapScoreTypeCopyToSmaller)
