@@ -891,9 +891,7 @@ void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max,
 	vec3_subtract_from_vec3(&min, buffer);
 
 	/* Modify the offset to include buffer region */
-	vec3 offset = empty_vec3();
-	vec3_add_to_vec3(&offset, min);
-
+	vec3 offset = min;
 	vec3_add_to_vec3(&max, buffer);
 	vec3 limits = vec3_subtract_vec3(max, min);
 
