@@ -278,7 +278,8 @@ public:
 	void printStatus();
 private:
 
-	void collapse(long *x, long *y, long *z)
+	template <typename T>
+	void collapse(T *x, T *y, T *z)
 	{
 		while (*x < 0) *x += _nx;
 		while (*x >= _nx) *x -= _nx;
