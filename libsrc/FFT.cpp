@@ -1097,7 +1097,12 @@ void VagFFT::addSimple(FFTPtr v2)
 void VagFFT::copyFrom(FFTPtr fft)
 {
 	wipe();
-	addSimple(fft);
+	for (int i = 0; i < _nn; i++)
+	{
+		long final_index = finalIndex(i);
+		_data[final_index][0] += fft->data[i][0];
+		_data[final_index][1] += fft->data[i][1];
+	}
 }
 
 void VagFFT::copyRealToImaginary()
