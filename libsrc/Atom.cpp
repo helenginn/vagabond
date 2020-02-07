@@ -944,16 +944,16 @@ bool Atom::greater(AtomPtr a1, AtomPtr a2)
 	double z1 = a1->getAbsolutePosition().z;
 	double z2 = a2->getAbsolutePosition().z;
 
-	if (a1->hasExplicitPositions())
+	if (a1->getExplicitModel()->hasExplicitPositions())
 	{
 		z1 = a1->getExplicitModel()->getLowestZ();
 	}
 
-	if (a2->hasExplicitPositions())
+	if (a2->getExplicitModel()->hasExplicitPositions())
 	{
 		z2 = a2->getExplicitModel()->getLowestZ();
 	}
 	
-	return (z1 < z2);
+	return (z2 > z1);
 }
 
