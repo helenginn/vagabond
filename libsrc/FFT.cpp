@@ -937,6 +937,7 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 
 				if (!sameScale)
 				{
+					/* now we convert this into atomic voxels */
 					mat3x3_mult_vec(crystal2AtomVox, &atomPos);
 
 					if (atomPos.x < 0 || atomPos.y < 0 || atomPos.z < 0)
