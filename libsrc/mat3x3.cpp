@@ -503,7 +503,7 @@ void free_2d_array(double **values)
 	free(values);
 }
 
-mat3x3 mat3x3_covariance(std::vector<vec3> points)
+mat3x3 mat3x3_covariance(std::vector<vec3> &points)
 {
 	mat3x3 mat = make_mat3x3();
 	memset(mat.vals, 0, sizeof(double) * 9);
@@ -517,18 +517,15 @@ mat3x3 mat3x3_covariance(std::vector<vec3> points)
 
 	vec3_mult(&mean, 1 / (double)points.size());
 
-	for (int i = 0; i < points.size(); i++)
+	for (int k = 0; k < points.size(); k++)
 	{
-		points[i] = vec3_subtract_vec3(points[i], mean);
-	}
-
-	for (int j = 0; j < 3; j++)
-	{
-		for (int i = 0; i < 3; i++)
+		for (int j = 0; j < 3; j++)
 		{
-			for (int k = 0; k < points.size(); k++)
+			for (int i = 0; i < 3; i++)
 			{
-				double add = *(&points[k].x + i) * *(&points[k].x + j);
+				double vi = *(&points[k].x + i) - *(&mean.x + i);
+				double vj = *(&points[k].x + j) - *(&mean.x + j);
+				double add = vi * vj;
 				mat.vals[j * 3 + i] += add;
 			}
 		}

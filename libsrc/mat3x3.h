@@ -126,7 +126,7 @@ mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis,
 
 /** Supply a C++ std::vector of vec3 positions and this will
  *  return the covariance matrix of this list. */
-mat3x3 mat3x3_covariance(std::vector<vec3> points);
+mat3x3 mat3x3_covariance(std::vector<vec3> &points);
 
 /** Multiplies each basis vector of mat3x3 &tensify by the appropriate
  * length in vec3 &lengths, then multiplies by its transpose... might
