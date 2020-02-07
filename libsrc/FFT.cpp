@@ -712,40 +712,38 @@ double VagFFT::cubic_interpolate(vec3 vox000, size_t im)
 	
 	/* Pick out just the real components - this is faster
 	 * than modf */
-	vec3 remain = make_vec3(vox000.x - (double)((int)vox000.x),
+	vec3 uvw = make_vec3(vox000.x - (double)((int)vox000.x),
 	                        vox000.y - (double)((int)vox000.y),
 	                        vox000.z - (double)((int)vox000.z));
-	
-	double uvw[3] = {remain.x, remain.y, remain.z};
 
 	/* Extra refers to the additional index to be fished
 	 * for 11-point interpolation. We already get 0 and 1. */
 	int extra[3] = {-1, -1, -1};
-	double central[3] = {0, 0, 0};
-	double next[3] = {1, 1, 1};
+	int central[3] = {0, 0, 0};
+	int next[3] = {1, 1, 1};
 	
 	/* If uvw components are greater than 0.5, then flip them 
 	 * make the extra index one ahead and reverse the order */
 	for (int i = 0; i < 3; i++)
 	{
-		if (uvw[i] > 0.5)
+		if (*(&uvw.x + i) > 0.5)
 		{
 			extra[i] = 2;
 			central[i] = 1;
 			next[i] = 0;
-			uvw[i] = 1 - uvw[i];
+			*(&uvw.x + i) = 1 - *(&uvw.x + i);
 		}
 	}
 
-	long vox000x = vox000.x + central[0];
-	long vox000y = vox000.y + central[1];
-	long vox000z = vox000.z + central[2];
-	long vox000xm = vox000.x + next[0];
-	long vox000ym = vox000.y + next[1];
-	long vox000zm = vox000.z + next[2];
-	long vox000xn = vox000.x + extra[0];
-	long vox000yn = vox000.y + extra[1];
-	long vox000zn = vox000.z + extra[2];
+	int vox000x = vox000.x + central[0];
+	int vox000y = vox000.y + central[1];
+	int vox000z = vox000.z + central[2];
+	int vox000xm = vox000.x + next[0];
+	int vox000ym = vox000.y + next[1];
+	int vox000zm = vox000.z + next[2];
+	int vox000xn = vox000.x + extra[0];
+	int vox000yn = vox000.y + extra[1];
+	int vox000zn = vox000.z + extra[2];
 
 	collapse(&vox000x, &vox000y, &vox000z);
 	collapse(&vox000xm, &vox000ym, &vox000zm);
@@ -758,22 +756,22 @@ double VagFFT::cubic_interpolate(vec3 vox000, size_t im)
 	vox000zm *= _nx * _ny;
 	vox000zn *= _nx * _ny;
 
-	long int idx000 = vox000x + vox000y + vox000z;
-	long int idx100 = vox000xm + vox000y + vox000z;
-	long int idx010 = vox000x + vox000ym + vox000z;
-	long int idx110 = vox000xm + vox000ym + vox000z;
-	long int idx001 = vox000x + vox000y + vox000zm;
-	long int idx101 = vox000xm + vox000y + vox000zm;
-	long int idx011 = vox000x + vox000ym + vox000zm;
-	long int idx111 = vox000xm + vox000ym + vox000zm;
+	long idx000 = vox000x + vox000y + vox000z;
+	long idx100 = vox000xm + vox000y + vox000z;
+	long idx010 = vox000x + vox000ym + vox000z;
+	long idx110 = vox000xm + vox000ym + vox000z;
+	long idx001 = vox000x + vox000y + vox000zm;
+	long idx101 = vox000xm + vox000y + vox000zm;
+	long idx011 = vox000x + vox000ym + vox000zm;
+	long idx111 = vox000xm + vox000ym + vox000zm;
 	
-	long int idxn00 = vox000xn + vox000y + vox000z;
-	long int idx0n0 = vox000x + vox000yn + vox000z;
-	long int idx00n = vox000x + vox000y + vox000zn;
+	long idxn00 = vox000xn + vox000y + vox000z;
+	long idx0n0 = vox000x + vox000yn + vox000z;
+	long idx00n = vox000x + vox000y + vox000zn;
 	
-	double u = uvw[0];
-	double v = uvw[1];
-	double w = uvw[2];
+	double u = uvw.x;
+	double v = uvw.y;
+	double w = uvw.z;
 	
 	double p000 = _data[finalIndex(idx000)][im];
 	double p001 = _data[finalIndex(idx001)][im];
