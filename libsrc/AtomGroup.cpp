@@ -899,9 +899,9 @@ void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max,
 	 * with a regular grid */
 	vec3 extent = limits;
 	vec3_mult(&extent, 1 / cubeDim);
-	extent.x = (int)lrint(extent.x);
-	extent.y = (int)lrint(extent.y);
-	extent.z = (int)lrint(extent.z);
+	extent.x = floor(extent.x) + 1;
+	extent.y = floor(extent.y) + 1;
+	extent.z = floor(extent.z) + 1;
 	
 	CrystalPtr cryst = Options::getActiveCrystal();
 	size_t nEle = cryst->totalElements();
