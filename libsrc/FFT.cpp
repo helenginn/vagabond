@@ -665,10 +665,23 @@ void VagFFT::addExplicitAtom(AtomPtr atom)
 	ElementPtr ele = atom->getElement();
 	int column = whichColumn(ele);
 	double vol = mat3x3_volume(_realBasis);
+	double low = atom->getExplicitModel()->getLowestZ();
 
 	for (int i = 0; i < positions.size(); i++)
 	{
 		vec3 pos = positions[i].start;
+
+		/* force cache hit for the rest, hopefully */
+		if (i == 0)
+		{
+			vec3 first = make_vec3(pos.x - _origin.x, 
+			                       pos.y - _origin.y, 
+			                       low - _origin.z);
+
+			mat3x3_mult_vec(_recipBasis, &first);
+			addInterpolatedToReal(column, first.x, first.y, first.z, 0.);
+		}
+
 		vec3_subtract_from_vec3(&pos, _origin);
 		mat3x3_mult_vec(_recipBasis, &pos);
 

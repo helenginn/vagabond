@@ -163,6 +163,7 @@ public:
 	void refreshBondAngles();
 	virtual AtomList topLevelAtoms();
 	
+	void sort();
 	void saveAtomPositions();
 
 	void boundingMonomers(int *begin, int *end);

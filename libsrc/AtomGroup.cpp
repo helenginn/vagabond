@@ -935,6 +935,7 @@ void AtomGroup::addToMap(VagFFTPtr fft, mat3x3 real2frac)
 	vec3 min, max;
 	xyzLimits(&min, &max);
 	prepareCubicMap(&scratchFull, min, max);
+	sort();
 	addToCubicMap(scratchFull);
 
 	VagFFT::operation(fft, scratchFull, MapScoreTypeNone, NULL, false);
@@ -964,6 +965,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	/* this is the first time we are running the comparison */
 	if (first)
 	{
+		selected->sort();
 		/* prepare the size of the maps */
 		selected->prepareCubicMap(&workspace->segment, min, max, true);
 
@@ -1348,3 +1350,7 @@ double AtomGroup::recalculatePositions(void *obj)
 	return 0;
 }
 
+void AtomGroup::sort()
+{
+	std::sort(_atoms.begin(), _atoms.end(), Atom::greater);
+}
