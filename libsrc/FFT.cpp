@@ -922,15 +922,14 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 		}
 	}
 	
-	double step = 1;
 	long count = 0;
 
 	/* min/maxAtoms are in crystal coordinates.*/
-	for (double k = minAtom.z; k < maxAtom.z; k += step)
+	for (double k = minAtom.z; k < maxAtom.z; k += 1)
 	{
-		for (double j = minAtom.y; j < maxAtom.y; j += step)
+		for (double j = minAtom.y; j < maxAtom.y; j += 1)
 		{
-			for (double i = minAtom.x; i < maxAtom.x; i += step)
+			for (double i = minAtom.x; i < maxAtom.x; i += 1)
 			{
 				/* Position currently in crystal coords - change to atom. */
 				vec3 crystalPos = make_vec3(i, j, k);
