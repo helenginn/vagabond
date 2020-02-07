@@ -46,15 +46,12 @@ void WeightedMap::setCrystalAndData(CrystalPtr crystal, DiffractionPtr data)
 void WeightedMap::writeCalculatedSlice()
 {
 	/* Back to real space */
-	int nx = _fft->nx();
-	FFTPtr copy = FFT::makeFromVag(_fft);
-	copy->fft(-1);
-	
 	BucketPtr solv = _crystal->getBucket();
 	FFTPtr mask = solv->getSolvent();
 	mask->fft(-1);
 	CSVPtr calc = CSVPtr(new CSV(5, "i", "j", "d", "m", "s"));
 	calc->setSubDirectory("slices");
+	_fft->fft(FFTReciprocalToReal);
 	
 	int z = 0;
 
@@ -84,10 +81,13 @@ void WeightedMap::writeCalculatedSlice()
 				val = 4;
 			}
 
-			calc->addEntry(5, (double)i, (double)j, copy->data[index][0],
+			double fc = _fft->getReal(index);
+			calc->addEntry(5, (double)i, (double)j, fc,
 			               (double)val, mask->data[index][0]);
 		}
 	}
+
+	_fft->fft(FFTRealToReciprocal);
 
 	std::string cycle = "_" + i_to_str(_crystal->getCycleNum());
 	std::map<std::string, std::string> plotMap;
