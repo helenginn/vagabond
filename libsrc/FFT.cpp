@@ -817,13 +817,15 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	 * (b) Crystal voxels
 	 * (c) Atom voxels */
 
+	/* find offset from origins of two maps */
 	vec3 add = vec3_subtract_vec3(fftAtom->_origin, fftCrystal->_origin);
 
+	/* find the centre of the atom FFT grid */
 	vec3 half_box = make_vec3(0.5, 0.5, 0.5);
 	mat3x3_mult_vec(fftAtom->_toReal, &half_box);
-	
 	vec3_add_to_vec3(&add, half_box);
 
+	/* to reciprocal space coordinates */
 	mat3x3_mult_vec(fftCrystal->_toRecip, &add);
 
 	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
