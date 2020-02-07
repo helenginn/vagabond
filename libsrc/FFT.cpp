@@ -963,15 +963,7 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 				
 				/* Find the interpolated value which atomPos falls on */
 				double atomReal = 0; double atomImag = 0;
-
-				while (atomPos.x < 0) atomPos.x += fftAtom->_nx;
-				while (atomPos.y < 0) atomPos.y += fftAtom->_ny;
-				while (atomPos.z < 0) atomPos.z += fftAtom->_nz;
-
-				while (atomPos.x >= fftAtom->_nx) atomPos.x -= fftAtom->_nx;
-				while (atomPos.y >= fftAtom->_ny) atomPos.y -= fftAtom->_ny;
-				while (atomPos.z >= fftAtom->_nz) atomPos.z -= fftAtom->_nz;
-
+				fftAtom->collapse(&atomPos.x, &atomPos.y, &atomPos.z);
 				atomReal = fftAtom->cubic_interpolate(atomPos, 0);
 
 				if (vals != NULL)
@@ -988,30 +980,7 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 				{
 					cVox = vec3_add_vec3(crystalPos, cornerCrystal);
 
-					if (mapScoreType == MapScoreAddNoWrap)
-					{
-						if (cVox.x < -fftCrystal->_nx / 2 || 
-						    cVox.y < -fftCrystal->_ny / 2 ||
-						    cVox.z < -fftCrystal->_nz / 2)
-						{
-							continue;
-						}					
-
-						if (cVox.x > fftCrystal->_nx / 2 ||
-						    cVox.y > fftCrystal->_ny / 2 ||
-						    cVox.z > fftCrystal->_nz / 2)
-						{
-							continue;
-						}
-					}
-
-					while (cVox.x < 0) cVox.x += fftCrystal->_nx;
-					while (cVox.y < 0) cVox.y += fftCrystal->_ny;
-					while (cVox.z < 0) cVox.z += fftCrystal->_nz;
-
-					while (cVox.x>=fftCrystal->_nx) cVox.x -= fftCrystal->_nx;
-					while (cVox.y>=fftCrystal->_ny) cVox.y -= fftCrystal->_ny;
-					while (cVox.z>=fftCrystal->_nz) cVox.z -= fftCrystal->_nz;
+					fftCrystal->collapse(&cVox.x, &cVox.y, &cVox.z);
 
 					/* Get the index of this final crystal voxel. */
 					cIndex = fftCrystal->element(cVox.x + 0.5,
