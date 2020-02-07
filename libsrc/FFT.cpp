@@ -862,14 +862,14 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 
 	/* There will be an additional shift having moved the atom by
 	 * half the dimension length which needs to be taken into account, 
-	 * unfortunately. */
+	 * unfortunately.*/
 	vec3 atomShift = make_vec3((double)(-fftAtom->_nx) * 0.5,
 	                           (double)(-fftAtom->_ny) * 0.5,
 	                           (double)(-fftAtom->_nz) * 0.5);
 	vec3 shift = mat3x3_mult_vec(atomVox2Crystal, atomShift);
 
 	/* In crystal voxels at the moment - don't worry about fractional
-	 * shifts. */
+	 * shifts. n.b. may have made this obselete */
 	vec3 shiftRemainder = make_vec3(fmod(shift.x, 1),
 	                                fmod(shift.y, 1),
 	                                fmod(shift.z, 1));
