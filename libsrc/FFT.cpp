@@ -829,10 +829,7 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	mat3x3_mult_vec(fftCrystal->_toRecip, &add);
 
 	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
-	if (mapScoreType != MapScoreAddNoWrap)
-	{
-		FFT::collapseFrac(&add.x, &add.y, &add.z);
-	}
+	FFT::collapseFrac(&add.x, &add.y, &add.z);
 
 	/* Multiply by the relative dimensions of the crystal */
 	double multX = add.x * fftCrystal->_nx;
@@ -980,11 +977,6 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 					atomImag = fftAtom->cubic_interpolate(atomPos, 1);
 				}
 
-				if (atomReal < 1e-6 && mapScoreType == MapScoreTypeCorrel)
-				{
-//					continue;
-				}
-
 				/* We add the crystal offset so we don't end up with thousands
 				 * of atoms at the very centre of our map */
 				vec3 cVox = empty_vec3();
@@ -1053,15 +1045,7 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 						count++;
 					}
 				}
-				else if (mapScoreType == MapScoreTypeCopyToSmaller)
-				{
-					double realCryst = fftCrystal->getReal(cIndex);
-					int ele = fftAtom->element(atomPos);
-
-					fftAtom->setElement(ele, realCryst, 0);
-				}
-				else if (mapScoreType == MapScoreTypeNone ||
-				         mapScoreType == MapScoreAddNoWrap)
+				else if (mapScoreType == MapScoreTypeNone)
 				{
 					/* Add the density to the real value of the crystal
 					 * voxel. */
