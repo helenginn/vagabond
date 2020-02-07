@@ -978,11 +978,13 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 				
 				if (!fcOnly)
 				{
+					/* this is where we add the offset from the corner */
 					cVox = vec3_add_vec3(crystalPos, cornerCrystal);
 
 					fftCrystal->collapse(&cVox.x, &cVox.y, &cVox.z);
 
-					/* Get the index of this final crystal voxel. */
+					/* Get the index of this final crystal voxel.
+ * 					+0.5 ensures no rounding errors with floating points */
 					cIndex = fftCrystal->element(cVox.x + 0.5,
 					                             cVox.y + 0.5,
 					                             cVox.z + 0.5);
