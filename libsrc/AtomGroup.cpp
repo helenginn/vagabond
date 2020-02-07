@@ -805,9 +805,8 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
 		scratchFull->addAtom(a);
 	}
 	
-	scratchFull->fft(FFTAtomsToReciprocal);
-	scratchFull->writeToFile("scratch.mtz", 1.5);
-	scratchFull->fft(FFTReciprocalToReal);
+	scratchFull->fft(FFTAtomsToReal);
+//	scratchFull->writeToFile("scratch.mtz", 1.5);
 
 	
 	/*
