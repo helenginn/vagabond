@@ -56,7 +56,7 @@ VagFFT::VagFFT(VagFFT &fft)
 	_myDims = fft._myDims;
 	_elements = fft._elements;
 	_elementMap = fft._elementMap;
-	_spg = CSym::ccp4spg_load_by_ccp4_num(1);
+	_spg = fft._spg;
 
 	_data = (fftwf_complex *)fftwf_malloc(_total);
 	int start = finalIndex(0);
