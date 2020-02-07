@@ -959,7 +959,7 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 
 				/* We add the tiny offset which resulted from the atom
 				 * falling between two voxels, in atomic voxels */
-				vec3_add_to_vec3(&atomPos, atomOffset);
+				vec3_add_to_vec3(&atomPos, crystFracOffset);
 				
 				/* Find the interpolated value which atomPos falls on */
 				double atomReal = 0; double atomImag = 0;
