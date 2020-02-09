@@ -206,6 +206,9 @@ bool KeyPoints::refineKeyPoints()
 		changed |= nelder->didChange();
 	}
 
+	std::cout << std::endl;
+	return changed;
+
 	{
 		NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
 		nelder->setCycles(60);
