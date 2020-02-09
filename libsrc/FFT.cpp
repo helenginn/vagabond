@@ -198,11 +198,6 @@ void VagFFT::makePlans()
 	}
 	
 	Timer timer;
-	if (_nele > 0)
-	{
-		std::cout << "Planning FFT... " << std::flush;
-	}
-
 
 	FFTDim *dims = (FFTDim *)malloc(sizeof(FFTDim));
 	dims->nx = _nx; dims->ny = _ny; dims->nz = _nz; dims->nele = _nele;
@@ -235,13 +230,6 @@ void VagFFT::makePlans()
 	                           _stride, 2, -1, fftw_flags); 
 
 	_myDims->recip_to_real = plan;
-	
-	if (_nele > 0)
-	{
-		std::cout << " done. ";
-		timer.quickReport();
-		std::cout << std::endl;
-	}
 }
 
 void VagFFT::multiplyDotty(float val)
