@@ -166,7 +166,7 @@ void Crystal::realSpaceClutter(double maxRes)
 
 		if (sampling < 0)
 		{
-			sampling = maxRes / 3.;
+			sampling = maxRes / 2.;
 			
 			if (sampling >= 1.0)
 			{
