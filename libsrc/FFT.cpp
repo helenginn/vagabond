@@ -811,11 +811,6 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	/* find offset from origins of two maps */
 	vec3 add = vec3_subtract_vec3(fftAtom->_origin, fftCrystal->_origin);
 
-	/* find the centre of the atom FFT grid */
-	vec3 half_box = make_vec3(0.5, 0.5, 0.5);
-	mat3x3_mult_vec(fftAtom->_toReal, &half_box);
-	vec3_add_to_vec3(&add, half_box);
-
 	/* to reciprocal space coordinates */
 	mat3x3_mult_vec(fftCrystal->_toRecip, &add);
 
@@ -828,13 +823,13 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	double multZ = add.z * fftCrystal->_nz;
 
 	/* Get the remainder after subtracting a number of whole voxels */
-	vec3 crystFracOffset; // in crystal coordinates, converted later.
-	crystFracOffset.x = fmod(multX, 1.);
-	crystFracOffset.y = fmod(multY, 1.);
-	crystFracOffset.z = fmod(multZ, 1.);
+	vec3 atomOffset; // in crystal coordinates, converted later.
+	atomOffset.x = fmod(multX, 1.);
+	atomOffset.y = fmod(multY, 1.);
+	atomOffset.z = fmod(multZ, 1.);
 
 	/* Store the non-remainder whole voxel values for way later. */
-	vec3 atomWholeCrystCoords = make_vec3((int)multX, (int)multY, (int)multZ);
+	vec3 cornerCrystal = make_vec3((int)multX, (int)multY, (int)multZ);
 
 	/* Prepare a matrix to convert crystal voxels into atomic voxels */
 	mat3x3 crystal2AtomVox = mat3x3_mult_mat3x3(fftAtom->getRecipBasis(),
@@ -848,48 +843,8 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	 * This small offset must be added to all future atomic coordinates prior
 	 * to interpolation. This will be subtracted from an atom voxel to find
 	 * the relevant crystal voxel, and should therefore be in atom voxels */
-	mat3x3_mult_vec(crystal2AtomVox, &crystFracOffset);
-	vec3_mult(&crystFracOffset, -1);
-
-	/* There will be an additional shift having moved the atom by
-	 * half the dimension length which needs to be taken into account, 
-	 * unfortunately.*/
-	vec3 atomShift = make_vec3((double)(-fftAtom->_nx) * 0.5,
-	                           (double)(-fftAtom->_ny) * 0.5,
-	                           (double)(-fftAtom->_nz) * 0.5);
-	vec3 shift = mat3x3_mult_vec(atomVox2Crystal, atomShift);
-
-	/* In crystal voxels at the moment - don't worry about fractional
-	 * shifts. n.b. may have made this obselete */
-	vec3 shiftRemainder = make_vec3(fmod(shift.x, 1),
-	                                fmod(shift.y, 1),
-	                                fmod(shift.z, 1));
-
-	vec3 wholeShiftOnly = make_vec3(shift.x - shiftRemainder.x - 1,
-	                                shift.y - shiftRemainder.y - 1,
-	                                shift.z - shiftRemainder.z - 1);
-
-	shiftRemainder.x = 1 + shiftRemainder.x;
-	shiftRemainder.y = 1 + shiftRemainder.y;
-	shiftRemainder.z = 1 + shiftRemainder.z;
-
-	/* The crystal voxels must be converted to atomic voxels to determine
-	 * final offset for atom sampling. */
-	mat3x3_mult_vec(crystal2AtomVox, &shiftRemainder);
-	vec3_mult(&shiftRemainder, -1);
-
-	/* Corner of atom as whole value offset in the crystal coordinates. */
-	vec3 cornerCrystal = vec3_add_vec3(wholeShiftOnly, atomWholeCrystCoords);
-//	vec3 cornerCrystal = atomWholeCrystCoords;
-
-	/* Fractional offset in atomic coordinates, for each atom as a
-	 * 	fraction of the crystal voxel. */
-	crystFracOffset = vec3_add_vec3(crystFracOffset, shiftRemainder);
-	vec3 crystOffset = mat3x3_mult_vec(atomVox2Crystal, crystFracOffset);
-	
-	/* We loop around these crystal voxel limits now (ss -> ms -> fs).
-	 * We also break the loop if it exceeds the limits of our atom voxels
-	 * during the loop itself. */
+	mat3x3_mult_vec(crystal2AtomVox, &atomOffset);
+	vec3_mult(&atomOffset, -1);
 
 	/* Determine bounding box - 9th Dec 2017 */
 	vec3 minAtom = make_vec3(FLT_MAX, FLT_MAX, FLT_MAX);
@@ -949,8 +904,8 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 				 * even dimension lengths. */
 
 				/* We add the tiny offset which resulted from the atom
-				 * falling between two voxels, in atomic voxels */
-				vec3_add_to_vec3(&atomPos, crystFracOffset);
+				 * falling between two voxels, in crystal voxels */
+				vec3_add_to_vec3(&atomPos, atomOffset);
 				
 				/* Find the interpolated value which atomPos falls on */
 				double atomReal = 0; double atomImag = 0;
