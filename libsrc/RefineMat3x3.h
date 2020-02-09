@@ -309,9 +309,21 @@ public:
 	{
 		mat3x3_mult_scalar(&_mat, 0);
 	}
+	
+	void addMajorAxesToStrategy(RefinementStrategyPtr strategy, double step,
+	                            double tol, std::string prefix)
+	{
+		strategy->addParameter(this, getTensor11, setTensor11, step,
+		                       tol, prefix + "_t11");
+		strategy->addParameter(this, getTensor22, setTensor22, step,
+		                       tol, prefix + "_t22");
+		strategy->addParameter(this, getTensor33, setTensor33, step,
+		                       tol, prefix + "_t33");
+
+	}
 
 	void addTensorToStrategy(RefinementStrategyPtr strategy, double step,
-	                   double tol, std::string prefix)
+	                         double tol, std::string prefix)
 	{
 		strategy->addParameter(this, getTensor11, setTensor11, step,
 		                       tol, prefix + "_t11");

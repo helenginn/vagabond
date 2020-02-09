@@ -87,7 +87,7 @@ void Motion::translateStartPositions(std::vector<BondSample> &stored)
 void Motion::addTranslationParameters(RefinementStrategyPtr strategy)
 {
 	_refined = true;
-	_trans->addTensorToStrategy(strategy, 0.2, 0.001, "tr");
+	_trans->addTensorToStrategy(strategy, 0.1, 0.001, "tr");
 }
 
 void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
@@ -114,7 +114,7 @@ void Motion::refine()
 
 	neld->setJobName("translation");
 	addTranslationParameters(neld);
-	neld->refine();
+//	neld->refine();
 
 	_allAtoms->refreshPositions();
 
@@ -158,7 +158,7 @@ void Motion::refine()
 		}
 		else
 		{
-			maxed = true;
+//			maxed = true;
 		}
 
 		_allAtoms->refreshPositions();
@@ -185,11 +185,12 @@ void Motion::refine()
 
 			addLibrationParameters(neld, -1);
 			addScrewParameters(neld, -1);
+			_trans->addMajorAxesToStrategy(neld, 0.1, 0.001, "tr");
 			neld->refine();
 		}
 
 		
-		if (maxed)
+		if (maxRot == librationCount() || maxed)
 		{
 			break;
 		}
