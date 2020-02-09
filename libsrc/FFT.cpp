@@ -549,6 +549,8 @@ int VagFFT::whichColumn(ElementPtr ele)
 void VagFFT::addInterpolatedToReal(int column, double sx, double sy, 
                                    double sz, double val)
 {
+	collapse(&sx, &sy, &sz);
+
 	int lx = (int)floor(sx);
 	int ly = (int)floor(sy);
 	int lz = (int)floor(sz);
@@ -697,12 +699,13 @@ void VagFFT::addAtom(AtomPtr atom)
 double VagFFT::cubic_interpolate(vec3 vox000, size_t im)
 {
 	/* vox000 has integer and real components */
+	collapse(&vox000.x, &vox000.y, &vox000.z);
 	
 	/* Pick out just the real components - this is faster
 	 * than modf */
-	vec3 uvw = make_vec3(vox000.x - (double)((int)vox000.x),
-	                        vox000.y - (double)((int)vox000.y),
-	                        vox000.z - (double)((int)vox000.z));
+	vec3 uvw = make_vec3(vox000.x - floor(vox000.x),
+	                     vox000.y - floor(vox000.y),
+	                     vox000.z - floor(vox000.z));
 
 	/* Extra refers to the additional index to be fished
 	 * for 11-point interpolation. We already get 0 and 1. */
