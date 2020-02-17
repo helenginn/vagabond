@@ -345,7 +345,7 @@ public:
 	static void statusMessage(std::string message, bool std_out = true);
 	void agreementSummary();
 	void applyBMultiplier();
-	void openModel(std::string pdbName);
+	CrystalPtr openModel(std::string pdbName);
 	void openMTZ(std::string mtzName);
 	void recalculateFFT(bool saveState = true);
 	void openInCoot();

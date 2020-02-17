@@ -160,7 +160,12 @@ void Options::run()
 	/* Load model file */
 	if (_modelFile.length())
 	{
-		openModel(_modelFile);
+		CrystalPtr crystal = openModel(_modelFile);
+		
+		if (crystal)
+		{
+			objects.push_back(crystal);
+		}
 	}
 	
 	notifyGUI(false);
@@ -793,12 +798,12 @@ void Options::findDisulphides()
 	notifyGUI(true);
 }
 
-void Options::openModel(std::string pdbName)
+CrystalPtr Options::openModel(std::string pdbName)
 {
 	if (crystals.size())
 	{
 		statusMessage("Already have a crystal, not loading another. Not yet.");
-		return;
+		return CrystalPtr();
 	}
 
 	ModelFile modelType = ModelFilePDB;
@@ -836,10 +841,9 @@ void Options::openModel(std::string pdbName)
 	}
 	
 	crystal->summary();
-
-	objects.push_back(crystal);
-
 	notifyGUI(true);
+	
+	return crystal;
 }
 
 void Options::openMTZ(std::string mtzName)
