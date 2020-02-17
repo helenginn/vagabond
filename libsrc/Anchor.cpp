@@ -31,7 +31,9 @@ void Anchor::initialise()
 	_gamma = 0;
 	_position = empty_vec3();
 	_nDir = empty_vec3();
+	_nDir2 = empty_vec3();
 	_cDir = empty_vec3();
+	_cDir2 = empty_vec3();
 	_disableWhacks = false;
 	_lastCount = 0;
 }
