@@ -150,6 +150,7 @@ void Anchor::createLayeredSpherePositions()
 	Fibonacci fib;
 	_sphereAngles.clear();
 	_sphereAngles.reserve(totalPoints);
+	double addTotal = 0;
 
 	for (int j = 0; j < layers; j++)
 	{
@@ -161,9 +162,21 @@ void Anchor::createLayeredSpherePositions()
 		fib.generateLattice(samples, m);
 		std::vector<vec3> points = fib.getPoints();
 		
+		for (int i = 0; i < points.size(); i++)
+		{
+			double add = exp(-m);
+			_occupancies.push_back(add);
+			addTotal += add;
+		}
+		
 		_sphereAngles.insert(_sphereAngles.end(), points.begin(), points.end());
 	}
 	
+	for (int i = 0; i < _occupancies.size(); i++)
+	{
+		_occupancies[i] /= addTotal;
+	}
+
 	_lastCount = totalPoints;
 }
 
