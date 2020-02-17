@@ -45,6 +45,11 @@ public:
 		return &_mat;
 	}
 	
+	void setMat3x3(mat3x3 mat)
+	{
+		_mat = mat;
+	}
+	
 	static RefineMat3x3 *toMat(void *object)
 	{
 		return static_cast<RefineMat3x3 *>(object);
