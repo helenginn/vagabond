@@ -1420,6 +1420,8 @@ void VagFFT::copyToScratch(int scratch)
 		int sindex = scratchIndex(i, scratch);
 		_data[sindex][0] = _data[index][0];
 		_data[sindex][1] = _data[index][1];
+		_data[index][0] = 0;
+		_data[index][1] = 0;
 	}
 }
 
