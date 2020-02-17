@@ -273,21 +273,31 @@ void Options::executeProtocol()
 			rigger.findDisulphides();
 		}
 	}
+
+	if (_addPDB.length() > 0)
+	{
+		recalculateFFT();
+		crystal->addPDBContents(_addPDB);
+	}
 	
-	for (int i = 0; i < 5 && _far; i++)
+	if (getRigidBody())
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			recalculateFFT();
+			crystal->rigidBodyRefinement();
+		}
+	}
+
+	
+	for (int i = 0; i < 2 && _far; i++)
 	{
 		recalculateFFT();
 
-		if (i == 0 && _rInter)
-		{
-			std::cout << "Flex prior to position refinement" << std::endl;
-			crystal->fitWholeMolecules();
-			recalculateFFT();
-		}
-
 		std::cout << "Refining positions to density (" << 
-		i + 1 << " / 5)" << std::endl;
+		i + 1 << " / 2)" << std::endl;
 		crystal->refineCrude();
+		crystal->refineSidechainPositions();
 	}
 	
 	recalculateFFT();
