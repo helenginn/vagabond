@@ -185,12 +185,17 @@ void DiffractionMtz::load()
 	errNames.push_back("SIGFP");
 
 	getCol(errNames, mtz, &col_sigf);
+
 	if (!col_sigf)
 	{
-		warn_user("I could not find your sigma/error column in\n"
-		          + _filename + " - please label as SIGF or SIGFP.\n");
+		choice.original = "SIGFP";
+		choice.wanted = "sigma values on amplitudes";
+		Shouter *shout;
+		shout = new Shouter("I could not find your sigma/error column in\n"
+		              + _filename + " - please label as SIGF or SIGFP.");
+		shout->setChoice(choice);
+		throw shout;
 	}
-
 
 	std::vector<std::string> rFreeNames;
 
