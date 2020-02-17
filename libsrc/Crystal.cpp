@@ -1918,7 +1918,7 @@ void Crystal::differenceAttribution()
 
 double Crystal::getProbeRadius()
 {
-	if (Options::getProbeRadius() < 0)
+	if (Options::getProbeRadius() < 0 && _probeRadius <= 0)
 	{
 		_probeRadius = 0.4;
 		Options::setProbeRadius(NULL, _probeRadius);
@@ -1927,7 +1927,7 @@ double Crystal::getProbeRadius()
 	if (Options::getProbeRadius() >= 0)
 	{
 		_probeRadius = Options::getProbeRadius();
-		Options::setProbeRadius(NULL, -1);
+		Options::setProbeRadius(NULL, _probeRadius);
 	}
 	
 	return _probeRadius;
