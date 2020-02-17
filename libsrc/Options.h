@@ -382,6 +382,7 @@ private:
 	
 	std::string _modelFile;
 	std::string _mtzFile;
+	std::string _addPDB;
 
 	static bool _diagnostics;
 	static bool _useRFree;

@@ -598,6 +598,7 @@ void Options::parse()
 
 		understood |= parseParameter(arg, "--with-model=", &_modelFile);
 		understood |= parseParameter(arg, "--with-mtz=", &_mtzFile);
+		understood |= parseParameter(arg, "--add-pdb=", &_addPDB);
 
 		understood |= parseParameter(arg, "--solvent=", &_solvent);
 
