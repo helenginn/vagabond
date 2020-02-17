@@ -88,14 +88,15 @@ public:
 	{
 		return _refined;
 	}
+
+	void attachTargetToRefinement(RefinementStrategyPtr strategy,
+	                              FlexGlobal &target);
 protected:
 	virtual void addProperties();
 	virtual void postParseTidy();
 	virtual void addObject(ParserPtr object, std::string category);
 private:
 	void deleteQuats();
-	void attachTargetToRefinement(RefinementStrategyPtr strategy,
-	                              FlexGlobal &target);
 
 	RefineMat3x3Ptr _trans;
 	std::string _name;
