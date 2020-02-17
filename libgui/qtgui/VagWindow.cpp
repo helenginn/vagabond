@@ -131,6 +131,8 @@ void VagWindow::makeMenu()
 	         InstructionTypeRefinePositions);
 	menuItem(mRefine, "Backbone to density", 
 	         InstructionTypeRefinePosToDensity);
+	menuItem(mRefine, "Rigid body",
+	         InstructionTypeRigidBody);
 	menuItem(mRefine, "Intermolecule movements",
 	         InstructionTypeFitTranslation);
 	menuItem(mRefine, "Intramolecule movements",
@@ -400,9 +402,13 @@ int VagWindow::waitForInstructions()
 				enable();
 				break;
 
-				case InstructionTypeRefineIntramagic:
+				case InstructionTypeRigidBody:
 				disable();
-				crystal->refineIntraMovements(true);
+				crystal->rigidBodyRefinement();
+				options->recalculateFFT();
+				enable();
+				break;
+
 				options->recalculateFFT();
 				enable();
 				break;
