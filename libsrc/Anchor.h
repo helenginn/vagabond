@@ -40,6 +40,7 @@ public:
 	std::vector<BondSample> *getManyPositions(void *object = NULL,
 	                                          bool force = false);
 	void forceRefresh();
+	void rigidBodyRefinement();
 	
 	void addMotion(MotionPtr mot)
 	{

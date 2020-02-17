@@ -8,9 +8,11 @@
 
 #include "RefineMat3x3.h"
 #include "Quat4Refine.h"
+#include "RefinementNelderMead.h"
 #include "Anchor.h"
 #include "Motion.h"
 #include "Fibonacci.h"
+#include "FlexGlobal.h"
 #include "Absolute.h"
 #include "Anisotropicator.h"
 #include "Options.h"
@@ -575,3 +577,22 @@ void Anchor::propagateChange(int depth, bool refresh)
 	}
 }
 
+void Anchor::rigidBodyRefinement()
+{
+	FlexGlobal target;
+	NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
+	_motions[0]->attachTargetToRefinement(neld, target);
+
+	double step = 0.1; double tol = 0.001;
+	double astep = deg2rad(2);
+	neld->setJobName("rigid_body");
+	neld->addParameter(this, getPosX, setPosX, step, tol, "px");
+	neld->addParameter(this, getPosY, setPosY, step, tol, "py");
+	neld->addParameter(this, getPosZ, setPosZ, step, tol, "pz");
+	neld->addParameter(this, getAlpha, setAlpha, astep, astep/100, "alpha");
+	neld->addParameter(this, getBeta, setBeta, astep, astep/100, "beta");
+	neld->addParameter(this, getGamma, setGamma, astep, astep/100, "gamma");
+
+	neld->refine();
+
+}
