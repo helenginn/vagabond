@@ -272,7 +272,7 @@ VagWindow::VagWindow(QWidget *parent,
 	_showingLog = false;
 	display->setFocus();
 	display->setFocusPolicy(Qt::StrongFocus);
-
+	_fileDialogue = NULL;
 
 	_instructionType = InstructionTypeNone;
 	_instructionThread.setVagWindow(this);
