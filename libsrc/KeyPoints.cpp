@@ -192,7 +192,7 @@ bool KeyPoints::refineKeyPoints()
 		for (int i = 0; i < _points.size(); i++)
 		{
 			nelder->addParameter(&_points[i].kick, Param::getValue, 
-			                     Param::setValue, 0.005 / fac, 0.00005 / fac);
+			                     Param::setValue, 0.005 / fac, 0.0001 / fac);
 		}
 
 		nelder->setEvaluationFunction(score, this);
