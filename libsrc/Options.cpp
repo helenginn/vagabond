@@ -366,9 +366,9 @@ void Options::executeProtocol()
 		
 		if (newWork > oldWork)
 		{
+			/*
 			std::cout << "Remedial work to reduce overall flexibility." 
 			<< std::endl;
-			/* Remedial action required. */
 			double ratio = 0.9;
 			int count = 0;
 
@@ -383,6 +383,8 @@ void Options::executeProtocol()
 					break;
 				}
 			}
+			*/
+			std::cout << "Rwork has increased." << std::endl;
 		}
 		else
 		{
