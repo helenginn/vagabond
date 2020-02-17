@@ -196,6 +196,11 @@ public:
 		return _peptideMovement;
 	}
 	
+	static bool getRigidBody()
+	{
+		return _rRigidBody;
+	}
+	
 	static bool isRefiningPositions()
 	{
 		return _rPosition;
@@ -411,6 +416,7 @@ private:
 	static std::string _labPHI;
 	static std::string _labFree;
 	
+	static bool _rRigidBody;
 	static bool _rPosition;
 	static bool _rSidechains;
 	static bool _refine;

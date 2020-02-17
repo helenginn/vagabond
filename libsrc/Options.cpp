@@ -52,6 +52,7 @@ bool Options::_usePartial = false;
 
 bool Options::_refine = false;
 bool Options::_far = false;
+bool Options::_rRigidBody = false;
 bool Options::_rPosition = true;
 bool Options::_rSidechains = true;
 bool Options::_rInter = true;
@@ -644,6 +645,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "far", &_far);
 		understood |= parseParameter(arg, "position", &_rPosition);
 		understood |= parseParameter(arg, "inter-mol", &_rInter);
+		understood |= parseParameter(arg, "rigid-body", &_rRigidBody);
 		understood |= parseParameter(arg, "intra-mol", &_rIntra);
 		understood |= parseParameter(arg, "sidechain", &_rSidechains);
 		understood |= parseParameter(arg, "rfree", &_useRFree);

@@ -30,6 +30,8 @@ typedef enum
 	InstructionTypeGetObjectValue,
 	InstructionTypePreviousState,
 	InstructionTypeRefineSidePos,
+	InstructionTypeRigidBody,
+	InstructionTypeAddPDBFile,
 	InstructionTypeFitTranslation,
 	InstructionTypeFindDisulphides,
 	InstructionTypeRefineIntramolecule,
