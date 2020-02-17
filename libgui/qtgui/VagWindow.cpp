@@ -122,7 +122,11 @@ void VagWindow::makeMenu()
 	QAction *coot = model->addAction("Open in Coot");
 	connect(coot, SIGNAL(triggered()), this, 
 	        SLOT(openInCoot()));
-//	actions.push_back(coot);
+
+	QAction *addPDB = model->addAction("Add atoms from PDB...");
+	connect(addPDB, SIGNAL(triggered()), this, 
+	        SLOT(addPDBFile()));
+	actions.push_back(addPDB);
 
 	QMenu *mRefine = menuBar()->addMenu(tr("&Refine"));
 	menus.push_back(mRefine);
@@ -409,6 +413,9 @@ int VagWindow::waitForInstructions()
 				enable();
 				break;
 
+				case InstructionTypeAddPDBFile:
+				disable();
+				crystal->addPDBContents(_pdbStr);
 				options->recalculateFFT();
 				enable();
 				break;
@@ -836,4 +843,33 @@ VagWindow::~VagWindow()
 	delete _fileDialogue;
 }
 
+void VagWindow::addPDBFile()
+{
+	if (_fileDialogue != NULL)
+	{
+		delete _fileDialogue;
+	}
 
+	QString types = "Protein data bank file (*.pdb)";
+	_fileDialogue = new QFileDialog(this, "Choose PDB file",
+	                                types);
+	_fileDialogue->setNameFilter(types);
+	_fileDialogue->setFileMode(QFileDialog::AnyFile);
+	_fileDialogue->show();
+
+    QStringList fileNames;
+    if (_fileDialogue->exec())
+    {
+        fileNames = _fileDialogue->selectedFiles();
+    }
+    
+    if (fileNames.size() < 1)
+    {
+		return;
+    }
+
+	_pdbStr = fileNames[0].toStdString();
+	setMessage("Adding atoms from " + _pdbStr + ".");
+	_instructionType = InstructionTypeAddPDBFile;
+	wait.wakeAll();
+}

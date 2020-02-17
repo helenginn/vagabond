@@ -101,6 +101,7 @@ private slots:
 	void fixErroneousZones();
 	void append();
 	void openInCoot();
+	void addPDBFile();
 
 	void displayMessage(Shouter *shout);
 private:
@@ -161,6 +162,7 @@ private:
 	
 	std::mutex _guiOutMut;
 	std::string _guiOut;
+	std::string _pdbStr;
 
 	void makeMenu();
 	void makeButtons();
