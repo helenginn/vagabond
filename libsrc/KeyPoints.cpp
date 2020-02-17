@@ -120,6 +120,15 @@ double KeyPoints::getContribution(BondPtr bond, WayPointType type)
 		}
 	}
 	
+	if (wp < 0)
+	{
+		wp = 0;
+	}
+	if (wp >= _points.size() - 1)
+	{
+		wp = _points.size() - 2;
+	}
+	
 	double before = Param::getValue(&_points[wp].res);
 	double after = Param::getValue(&_points[wp + 1].res);
 
