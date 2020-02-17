@@ -175,23 +175,21 @@ void Motion::refine()
 		}
 
 		_allAtoms->refreshPositions();
-
-//		if (false)
-		{
-			NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
-			attachTargetToRefinement(neld, target);
-			neld->setJobName("rots_and_offsets");
-
-			addLibrationParameters(neld, -1);
-			addScrewParameters(neld, -1);
-			neld->refine();
-		}
-
 		
 		if (maxRot == librationCount() || maxed)
 		{
 			break;
 		}
+	}
+
+	{
+		NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
+		attachTargetToRefinement(neld, target);
+		neld->setJobName("rots_and_offsets");
+
+		addLibrationParameters(neld, -1);
+		addScrewParameters(neld, -1);
+		neld->refine();
 	}
 }
 
