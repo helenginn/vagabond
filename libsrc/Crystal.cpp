@@ -1388,6 +1388,21 @@ void Crystal::fitWholeMolecules()
 	}
 }
 
+void Crystal::rigidBodyRefinement()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+
+		PolymerPtr poly = ToPolymerPtr(molecule(i));
+		poly->getAnchorModel()->rigidBodyRefinement();
+	}
+
+}
+
 bool Crystal::calibrateAllMolecules()
 {
 	FlexGlobal target;

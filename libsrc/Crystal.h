@@ -482,6 +482,7 @@ public:
 		return _bucket;
 	}
 
+	void rigidBodyRefinement();
 	/** Fit whole molecules to electron density as a refinement protocol.
 	* 	\param translation if true, will refine translation parameters
 	* 	\param rotation if true, will refine rotation parameters. */
