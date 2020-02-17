@@ -77,6 +77,7 @@ void KeyPoints::setPolymer(PolymerPtr polymer)
 		Param::setValue(&way.phi, 0);
 		Param::setValue(&way.psi, 0);
 		Param::setValue(&way.kick, 0);
+		Param::setValue(&way.whack, 0);
 		_points.push_back(way);
 	}
 }
