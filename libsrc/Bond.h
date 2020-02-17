@@ -610,6 +610,11 @@ private:
 
 	Bond *nakedDownstreamBond(int group, int i)
 	{
+		if (!_bondGroups.size() || !_bondGroups[0]->bondCount())
+		{
+			return NULL;
+		}
+
 		return _bondGroups[group]->bond(i);
 	}
 	
