@@ -405,3 +405,11 @@ Motion::~Motion()
 {
 	deleteQuats();
 }
+
+void Motion::setScale(double scale)
+{
+	mat3x3 mat = _trans->getMat3x3();
+	mat3x3_scale(&mat, 2, 2, 2);
+	_trans->setMat3x3(mat);
+
+}

@@ -58,6 +58,8 @@ public:
 	void addScrewParameters(RefinementStrategyPtr strategy,
 	                              int num = -1);
 	void deleteLastScrew();
+	
+	void setScale(double scale);
 
 	MotionPtr shared_from_this()
 	{
