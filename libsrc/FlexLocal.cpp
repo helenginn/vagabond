@@ -89,7 +89,7 @@ void FlexLocal::refineClusters()
 	Timer timer;
 
 	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
-	nelder->setCycles(200);
+	nelder->setCycles(120);
 	nelder->setVerbose(true);	
 	nelder->setSilent(true);
 
