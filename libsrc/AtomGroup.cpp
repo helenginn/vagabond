@@ -433,6 +433,7 @@ AtomList AtomGroup::topLevelAtoms()
 		size_t j = 0;
 		AtomPtr topAtom = atom(0);
 
+		/* Find an appropriate starting atom */
 		while (true)
 		{
 			if (topAtom->getModel()->isBond() &&
