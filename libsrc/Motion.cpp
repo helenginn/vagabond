@@ -125,10 +125,10 @@ void Motion::refine()
 			std::cout << std::endl;
 			std::cout << "Introducing rotation #" << j << std::endl;
 			
-			FlexGlobal target;
 			RefinementListPtr list = RefinementListPtr(new RefinementList());
 			list->setJobName("rot_search");
 			attachTargetToRefinement(list, target);
+			target.recalculateConstant();
 			addLibrationParameters(list, j);
 
 			Fibonacci fib;
@@ -164,10 +164,10 @@ void Motion::refine()
 		_allAtoms->refreshPositions();
 
 		{
-			FlexGlobal target;
 			NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 			neld->setJobName("rots_only");
 			attachTargetToRefinement(neld, target);
+			target.recalculateConstant();
 
 			addLibrationParameters(neld, -1);
 			neld->refine();
@@ -178,7 +178,6 @@ void Motion::refine()
 
 //		if (false)
 		{
-			FlexGlobal target;
 			NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 			attachTargetToRefinement(neld, target);
 			neld->setJobName("rots_and_offsets");
