@@ -994,7 +994,7 @@ void VagFFT::setScale(double cubeDim)
 
 void VagFFT::addSimple(VagFFTPtr v2)
 {
-	for (int i = 0; i < _nn; i++)
+	for (int i = 0; i < nn(); i++)
 	{
 		long final_index = finalIndex(i);
 		_data[final_index][0] += v2->_data[final_index][0];
@@ -1003,7 +1003,7 @@ void VagFFT::addSimple(VagFFTPtr v2)
 
 void VagFFT::addSimple(FFTPtr v2)
 {
-	for (int i = 0; i < _nn; i++)
+	for (int i = 0; i < nn(); i++)
 	{
 		long final_index = finalIndex(i);
 		_data[final_index][0] += v2->data[i][0];
@@ -1013,7 +1013,7 @@ void VagFFT::addSimple(FFTPtr v2)
 void VagFFT::copyFrom(FFTPtr fft)
 {
 	wipe();
-	for (int i = 0; i < _nn; i++)
+	for (int i = 0; i < nn(); i++)
 	{
 		long final_index = finalIndex(i);
 		_data[final_index][0] += fft->data[i][0];
