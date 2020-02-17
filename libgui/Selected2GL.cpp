@@ -72,12 +72,15 @@ AtomGroupPtr Selected2GL::refinableSelection()
 		return AtomGroupPtr();
 	}
 	
+	AtomList list = raw->findAtoms("CA");
+	AtomList more = raw->findAtoms("HA");
+	list.reserve(list.size() + more.size());
+	list.insert(list.end(), more.begin(), more.end());
+
 	if (_sType == SelectMonomer || _sType == SelectMonConf)
 	{
 		return raw;
 	}
-	
-	AtomList list = raw->findAtoms("CA");
 
 	for (int i = 0; i < list.size(); i++)
 	{
