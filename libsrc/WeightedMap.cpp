@@ -105,6 +105,8 @@ void WeightedMap::writeCalculatedSlice()
 
 	calc->plotPNG(plotMap);
 	calc->writeToFile("calculated_slice.csv");
+	calc->getMinMaxZ(&_minZ, &_maxZ);
+	calc->plotPNG(plotMap);
 
 	plotMap["filename"] = "solvent_slice" + cycle;
 	plotMap["zHeader0"] = "s";

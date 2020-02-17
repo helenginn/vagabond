@@ -46,6 +46,8 @@ private:
 	std::vector<ShellInfo> _shells;
 	double _aveFo;
 	double _allWeights;
+	double _minZ;
+	double _maxZ;
 
 	int shellForResolution(double res);
 	double oneMap(FFTPtr scratch, int slice, bool diff);
