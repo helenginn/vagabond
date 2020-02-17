@@ -427,6 +427,7 @@ void WeightedMap::createVagaCoefficients()
 	FFTPtr scratch = FFTPtr(new FFT(*duplicate));
 	_allWeights = 0;
 	
+	scratch->createFFTWplan(1);
 	scratch->wipe();
 	
 	for (int i = 0; i <= MAX_SLICES; i++)
