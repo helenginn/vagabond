@@ -73,69 +73,6 @@ void Monomer::addAtom(AtomPtr atom)
 	}
 }
 
-void Monomer::setSideKick(double value)
-{
-	AtomPtr atom = findAtom("CB");
-
-	if (!atom)
-	{
-		return;
-	}
-
-	ModelPtr model = atom->getModel();
-	if (!model->isBond())
-	{
-		return;
-	}
-
-	BondPtr bond = ToBondPtr(model);
-
-	if (bond->isFixed() || !bond->isUsingTorsion())
-	{
-		return;
-	}
-
-	Bond::setKick(&*bond, value);
-}
-
-void Monomer::setKick(double value, bool beforeAnchor)
-{
-	AtomPtr atom;
-
-	if (beforeAnchor)
-	{
-		atom = findAtom("C");
-	}
-	else
-	{
-		atom = findAtom("CA");
-	}
-
-	ModelPtr model = atom->getModel();
-	if (model->getClassName() != "Bond")
-	{
-		shout_at_helen("Can't kick something that\n isn't a bond!");
-	}
-
-	BondPtr bond = ToBondPtr(model);
-
-	Bond::setKick(&*bond, value);
-}
-
-double Monomer::getKick()
-{
-	AtomPtr ca = findAtom("CA");
-	ModelPtr model = ca->getModel();
-	if (model->getClassName() != "Bond")
-	{
-		shout_at_helen("Can't kick something that\n isn't a bond!");
-	}
-
-	BondPtr bond = ToBondPtr(model);
-
-	return Bond::getKick(&*bond);
-}
-
 void Monomer::tieAtomsUp()
 {
 	KnotterPtr knotter = KnotterPtr(new Knotter());

@@ -164,20 +164,6 @@ double KeyPoints::getContribution(BondPtr bond, WayPointType type)
 	}
 
 	return base;
-	
-	/*
-	double cosProp = cos(prop);
-	cosProp += 1;
-	double multiply = (bValue - aValue) / 2;
-	cosProp *= multiply;
-	cosProp += aValue;
-
-	if (cosProp != 0)
-	{
-		std::cout << cosProp << std::endl;
-	}
-	return cosProp;
-	*/
 }
 
 bool KeyPoints::refineKeyPoints()

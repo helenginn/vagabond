@@ -100,41 +100,6 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 	clearIncludeForRefinements();
 }
 
-void Sidechain::setInitialKick()
-{
-	for (int i = 0; i < atomCount(); i++)
-	{
-		if (atom(i)->isBackbone())
-		{
-			continue;
-		}
-
-		BondPtr bond = BondPtr();
-
-		if (atom(i)->getModel()->isBond())
-		{
-			bond = ToBondPtr(atom(i)->getModel());
-		}
-		else
-		{
-			continue;
-		}
-
-		double kick = 0.2;
-		std::string id = getMonomer()->getIdentifier();
-
-		if (id == "tyr" || id == "phe" || id == "trp" || id == "his")
-		{
-			kick = 0.1;
-		}
-
-		if (bond->isRefinable() && atom(i)->getAtomName() == "CB")
-		{
-			Bond::setKick(&*bond, kick);
-		}
-	}
-}
-
 void Sidechain::splitConformers(int count)
 {
 	if (count < 0)

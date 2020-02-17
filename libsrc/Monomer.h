@@ -98,11 +98,7 @@ public:
 		return _models[i];
 	}
 
-	void setKick(double value, bool beforeAnchor);
-	double getKick();
-
 	std::string getResCode();
-	void setSideKick(double value);
 
 	virtual std::string getClassName()
 	{

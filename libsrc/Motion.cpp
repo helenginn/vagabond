@@ -228,7 +228,6 @@ void Motion::applyRotations(std::vector<BondSample> &stored)
 			vec3 rot_vec = quat;
 			vec3_set_length(&rot_vec, 1);
 			double dot = vec3_dot_vec3(diff, quat);
-//			dot /= vec3_length(screw);
 			
 			if (rot_vec.x != rot_vec.x || dot != dot)
 			{

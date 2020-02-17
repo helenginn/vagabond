@@ -69,7 +69,6 @@ public:
 		return _rotamerised;	
 	}
 
-	void setInitialKick();
 	void splitConformers(int count);
 	void parameteriseAsRotamers();
 	virtual void refine(CrystalPtr target, RefinementType rType);
