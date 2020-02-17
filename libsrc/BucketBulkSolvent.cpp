@@ -132,6 +132,7 @@ bool BucketBulkSolvent::sliverRemovalIteration(vec3 limits)
 	lims[1] = limits.y;
 	lims[2] = limits.z;
 	int changed = 0;
+	const int min = 0.2;
 	
 	for (long k = 0; k < _solvent->nz + limits.z; k++)
 	{
@@ -142,7 +143,7 @@ bool BucketBulkSolvent::sliverRemovalIteration(vec3 limits)
 				long index = _solvent->element(i, j, k);
 				float value = _solvent->getReal(index);
 				
-				if (value <= 0)
+				if (value <= min)
 				{
 					continue;
 				}
@@ -159,11 +160,11 @@ bool BucketBulkSolvent::sliverRemovalIteration(vec3 limits)
 						long index = _solvent->element(i + px, j + py, k + pz);
 						float value = _solvent->getReal(index);
 						
-						if (value <= 0 && p < 0)
+						if (value <= min && p < 0)
 						{
 							firstSide = true;
 						}
-						else if (value <= 0 && p > 0 && firstSide)
+						else if (value <= min && p > 0 && firstSide)
 						{
 							clearSliver(i, j, k, px, py, pz);
 							changed++;
