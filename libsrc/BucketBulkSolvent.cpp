@@ -97,9 +97,9 @@ void BucketBulkSolvent::removeSlivers(double maxDist)
 	
 	vec3_mult(&uc_dims, 2);
 
-	uc_dims.x = (int)(maxDist / uc_dims.x + 0.5);
-	uc_dims.y = (int)(maxDist / uc_dims.y + 0.5);
-	uc_dims.z = (int)(maxDist / uc_dims.z + 0.5);
+	uc_dims.x = (int)(maxDist / uc_dims.x) + 1;
+	uc_dims.y = (int)(maxDist / uc_dims.y) + 1;
+	uc_dims.z = (int)(maxDist / uc_dims.z) + 1;
 	
 	bool changed = true;
 
