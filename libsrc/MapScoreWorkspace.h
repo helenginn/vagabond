@@ -78,6 +78,7 @@ typedef struct
 	mat3x3 basis;
 	std::string filename;
 	unsigned int flag;
+	bool recalc;
 	EleCache eleCache;
 } MapScoreWorkspace;
 
@@ -87,8 +88,7 @@ inline void setup_space(MapScoreWorkspace *w)
 	w->ave = empty_vec3();
 	w->basis = make_mat3x3();
 	w->flag = MapScoreFlagNone;
-	
-
+	w->recalc = false;
 }
 
 #endif

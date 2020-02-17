@@ -56,3 +56,8 @@ void FlexGlobal::plot(std::string filename)
 	AtomGroup::scoreWithMapGeneral(&_workspace, true);
 }
 
+void FlexGlobal::recalculateConstant()
+{
+	_workspace.recalc = true;
+}
+

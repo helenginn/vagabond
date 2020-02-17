@@ -39,6 +39,8 @@ public:
 	}
 	
 	void plot(std::string filename);
+	
+	void recalculateConstant();
 private:
 	bool _prepared;
 	void prepareWorkspace();
