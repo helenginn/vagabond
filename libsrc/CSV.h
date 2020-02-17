@@ -55,6 +55,7 @@ private:
 	std::vector<Entry> entries;
 	std::vector<double> histCategories;
 	double minX, minY, maxX, maxY;
+	double _minZ, _maxZ;
 	bool didSetMinMaxXY;
 
 	std::string mapToAscii(Plot plot);
@@ -63,7 +64,8 @@ private:
 public:
 	CSV()
 	{
-
+		_minZ = 0;
+		_maxZ = 0;
 	}
 
 	CSV(int count, ...)
@@ -103,6 +105,12 @@ public:
 	void addToCSV(MDNode *node);
 
 	void setValueForEntry(int entry, std::string header, double value);
+	
+	void getMinMaxZ(double *min, double *max)
+	{
+		*min = _minZ;
+		*max = _maxZ;
+	}
 	
 	void setSubDirectory(std::string name)
 	{

@@ -307,8 +307,14 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
 
 		if (hasZ)
 		{
-			if (minZ == -FLT_MAX || maxZ == FLT_MAX) minMaxCol(zCol, &minZ, &maxZ, round);
+			if (minZ == -FLT_MAX || maxZ == FLT_MAX) 
+			{
+				minMaxCol(zCol, &minZ, &maxZ, round);
+			}
 		}
+
+		_minZ = minZ;
+		_maxZ = maxZ;
 
 		if (count == 0)
 		{
@@ -471,21 +477,37 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
 			{
 				double zValue = entries[i][zCol];
 				double propZ = (zValue - minZ) / (maxZ - minZ);
+				
+				if (propZ > 2) propZ = 2;
 
-				if (propZ < 0.5)
+				if (propZ <= 0)
 				{
-					/* we go blue. propZ now % blue. */
-					propZ = (0.5 - propZ) / 0.5;
-					red = propZ * 255;
+					propZ = std::min(-propZ, 1.);
+					red = 0;
+					green = 0;
+					blue = 255 - propZ * 255;
+				}
+				else if (propZ < 0.5)
+				{
+					/* we go blue. */
+					propZ = (0.5 - propZ ) * 2.;
+					red = 255 - propZ * 255;
+					green = 255 - propZ * 255;
+					blue = 255;
+				}
+				else if (propZ >= 1.0) /* We go red. */
+				{
+					propZ -= 1; 
+					red = 255;
 					green = propZ * 255;
 					blue = 0;
 				}
 				else if (propZ >= 0.5) /* We go red. */
 				{
-					propZ = (propZ - 0.5) / 0.5;
-					red = 0;
-					green = propZ * 255;
-					blue = propZ * 255;
+					propZ = (propZ - 0.5) * 2.0;
+					red = 255;
+					green = 255 - propZ * 255;
+					blue = 255 - propZ * 255;
 				}
 
 				for (int j = yProp - yBlockSize; j < yProp + 1; j++)
