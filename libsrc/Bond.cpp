@@ -44,8 +44,7 @@ void Bond::initialize()
 	_occupancy = 1.0;
 	_resetOccupancy = false;
 	_anisotropyExtent = 0.0;
-	double initialKick = Options::getKick();
-	_kick = initialKick;
+	_kick = 0;
 	_torsion = 0;
 	_phi = 3.14/2;
 	_psi = 0;
@@ -729,16 +728,20 @@ double Bond::getBaseKick()
 	int torsionNumber = model->downstreamBondNum(this, &myGroup);
 
 	/* May be myself */
-	BondPtr sisBond = shared_from_this();
+	double baseKick = _kick;
+	BondPtr sisBond;
 
-	if (torsionNumber > 0)
+	if (torsionNumber > 0 && model->isBond())
 	{
-
 		BondPtr parent = ToBondPtr(model);
 		sisBond = parent->downstreamBond(myGroup, 0);
+		
+		if (sisBond)
+		{
+			baseKick = sisBond->_kick;
+		}
 	}
 	
-	double baseKick = sisBond->_kick;
 	
 	double extraKick = 0;
 	
@@ -749,7 +752,7 @@ double Bond::getBaseKick()
 
 	baseKick += extraKick;
 
-	if (sisBond->hasWhack() && sisBond->getWhack()->isDisabled())
+	if (sisBond && sisBond->hasWhack() && sisBond->getWhack()->isDisabled())
 	{
 		baseKick = 0;
 	}
