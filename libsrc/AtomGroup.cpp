@@ -1001,11 +1001,18 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 				added->addAtom(anAtom);
 			}
 			
-			/* Add the acceptable atoms to the map */
-			added->addToCubicMap(workspace->segment);
-			/* copy the constant fraction into the scratch */
-			workspace->segment->copyToScratch(0);
+			workspace->extra = added;
 		}
+	}
+			
+	if (first || workspace->recalc)
+	{
+		/* Add the acceptable atoms to the map */
+		workspace->extra->addToCubicMap(workspace->segment);
+		/* copy the constant fraction into the scratch */
+		workspace->segment->copyToScratch(0);
+		
+		workspace->recalc = false;
 	}
 	
 	workspace->selectAtoms->addToCubicMap(workspace->segment);
