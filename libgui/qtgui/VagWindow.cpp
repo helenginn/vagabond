@@ -110,21 +110,6 @@ void VagWindow::makeMenu()
 			                    "Set solvent probe radius (Å)",
 		                     0.0); });
 	actions.push_back(bprobe);
-	
-	/*
-	menuItem(model, "Omit scan", InstructionTypeOmitScan);
-	menuItem(model, "Find flexibility", InstructionTypeReflex);
-	
-	QAction *refit = model->addAction(tr("Refit backbone region..."));
-	connect(refit, SIGNAL(triggered()), this, 
-	        SLOT(refitBackbone()));
-	actions.push_back(refit);
-	
-	refit = model->addAction(tr("Fix erroneous zones..."));
-	connect(refit, SIGNAL(triggered()), this, 
-	        SLOT(fixErroneousZones()));
-	actions.push_back(refit);
-	*/
 
 	sep = model->addSeparator();
 	actions.push_back(sep);
@@ -150,8 +135,6 @@ void VagWindow::makeMenu()
 	         InstructionTypeFitTranslation);
 	menuItem(mRefine, "Intramolecule movements",
 	         InstructionTypeRefineIntramolecule);
-	menuItem(mRefine, "Intramolecule magic angles",
-	         InstructionTypeRefineIntramagic);
 	menuItem(mRefine, "Sidechain positions to density", 
 	         InstructionTypeRefineSidePos);
 	menuItem(mRefine, "Sidechains to density",
