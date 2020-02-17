@@ -555,6 +555,8 @@ public:
 	 * target is required; resolution will be determined from this if not
 	 * already determined, or input as command line option. */
 	double getMaxResolution(DiffractionPtr data);
+
+	double getProteinSampling();
 	
 	void updateLargestNum(AtomPtr atom);
 	void whack();

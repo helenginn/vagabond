@@ -156,25 +156,31 @@ bool Crystal::refineIntraMovements(bool magic)
 	return changed;
 }
 
+double Crystal::getProteinSampling()
+{
+	double sampling = Options::getProteinSampling();
+	double maxRes = getMaxResolution(_data);
+	
+	if (sampling < 0)
+	{
+		sampling = maxRes / 3.;
+
+		if (sampling >= 1.0)
+		{
+			sampling = 1.0;
+		}
+
+		Options::setProteinSampling(sampling);
+	}
+
+	return sampling;
+}
+
 void Crystal::realSpaceClutter(double maxRes)
 {
-	maxRes = getMaxResolution(_data);
-	
 	if (!_fft)
 	{
-		double sampling = Options::getProteinSampling();
-
-		if (sampling < 0)
-		{
-			sampling = maxRes / 2.;
-			
-			if (sampling >= 1.0)
-			{
-				sampling = 1.0;
-			}
-
-			Options::setProteinSampling(sampling);
-		}
+		double sampling = getProteinSampling();
 		
 		/* work out what our nx/ny/nz dimensions should be */
 		vec3 uc_dims = empty_vec3();
