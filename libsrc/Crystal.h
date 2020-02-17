@@ -499,6 +499,8 @@ public:
 	void refreshAnchors();
 	void makeOverallMotion();
 	MotionPtr getOverallMotion();
+
+	void addPDBContents(std::string pdb);
 	
 	void addMotion(MotionPtr mot)
 	{

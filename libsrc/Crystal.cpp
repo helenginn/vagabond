@@ -2088,4 +2088,38 @@ void Crystal::refreshAnchors()
 	}
 }
 
+void Crystal::addPDBContents(std::string pdbName)
+{
+	PDBReader pdb = PDBReader();
+	pdb.setFilename(pdbName);
+	CrystalPtr crystal = pdb.getCrystal();
+	crystal->setAnchors();
+	crystal->tieAtomsUp();
+	crystal->hydrogenateContents();
 
+	for (int i = 0; i < crystal->moleculeCount(); i++)
+	{
+		MoleculePtr mol = crystal->molecule(i);
+		addMolecule(mol);
+		vec3 centroid = mol->initialCentroid();
+		Options::getRuntimeOptions()->focusOnPosition(centroid);
+		
+		if (!mol->isPolymer())
+		{
+			continue;
+		}
+		
+		PolymerPtr pol = ToPolymerPtr(mol);
+
+		MotionPtr overall = getOverallMotion();
+		overall->addToPolymer(pol);
+		
+		for (int j = 0; j < 5; j++)
+		{
+			pol->refine(shared_from_this(), RefinementModelPos);
+		}
+
+		pol->getAnchorModel()->atLeastOneMotion();
+		_motions.back()->refine();
+	}
+}
