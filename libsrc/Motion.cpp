@@ -114,7 +114,7 @@ void Motion::refine()
 
 	neld->setJobName("translation");
 	addTranslationParameters(neld);
-//	neld->refine();
+	neld->refine();
 
 	_allAtoms->refreshPositions();
 
@@ -185,7 +185,6 @@ void Motion::refine()
 
 			addLibrationParameters(neld, -1);
 			addScrewParameters(neld, -1);
-			_trans->addMajorAxesToStrategy(neld, 0.1, 0.001, "tr");
 			neld->refine();
 		}
 
