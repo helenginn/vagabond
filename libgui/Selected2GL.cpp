@@ -637,7 +637,6 @@ void Selected2GL::manualRefine()
 		}
 		else if (terminal)
 		{
-			group->addParamType(ParamOptionBondAngle, 0.5);
 			group->refine(crystal, RefinementFine);
 			bool changed = group->didChange();
 
