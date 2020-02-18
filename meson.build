@@ -123,6 +123,7 @@ dep_vag = declare_dependency(link_with: lib_vag, include_directories: inc_vag)
 # Command line interface
 
 executable('vagabond', 'libsrc/main.cpp', dependencies: [dep_vag, boost_dep], cpp_args: ['-std=c++11'], install: true)
+#executable('vagabond', 'libsrc/main.cpp', base_files, dependencies: [boost_dep, dep_ica, png_dep, fftw_dep, dep_vgeom, dep_ccp4], cpp_args: ['-std=c++11', '-pg'], link_args: ['-pg'], install: true)
 
 # Graphical user interface
 # (including all the Qt and OpenGL stuff)
