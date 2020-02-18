@@ -87,7 +87,7 @@ void Motion::translateStartPositions(std::vector<BondSample> &stored)
 void Motion::addTranslationParameters(RefinementStrategyPtr strategy)
 {
 	_refined = true;
-	_trans->addTensorToStrategy(strategy, 0.1, 0.001, "tr");
+	_trans->addTensorToStrategy(strategy, 0.2, 0.001, "tr");
 }
 
 void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
