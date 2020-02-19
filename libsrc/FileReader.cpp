@@ -108,7 +108,7 @@ void print_cc_diff(double diff, int limit)
 	}
 
 	std::cout << " ";
-	for (int j = 0; j < signs; j++)
+	for (int j = 0; j < signs && j < 1000; j++)
 	{
 		std::cout << (dir ? "+" : "-");
 	}

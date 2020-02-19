@@ -672,43 +672,11 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		double diff = (score - pre) * 100.;
 		double backdiff = (backScore - preBack) * 100.;
 		double sidediff = (sideScore - preSide) * 100.;
-
-		/* improvement of 2% will be 20 + symbols after the residue! */
-		/* display backbone on one side */
-		/*
-		int signs = fabs(backdiff * 10);
-		int dir = (backdiff < 0);	
-		
-		if (signs > 20) signs = 20;
-
-		std::cout << " ";
-		for (int j = 0; j < signs; j++)
-		{
-			std::cout << (dir ? "+" : "-");
-		}
-		for (int j = signs; j < 20; j++)
-		{
-			std::cout << " ";	
-		}
-		*/
 		
 		print_cc_diff(backdiff, 20);
 		std::cout << "| " << std::flush;
 		print_cc_diff(sidediff, -1);
 		std::cout << std::endl;
-
-		/*
-		signs = fabs(sidediff * 10);
-		dir = (sidediff < 0);	
-
-		std::cout << " | ";
-		for (int j = 0; j < signs; j++)
-		{
-			std::cout << (dir ? "+" : "-");
-		}
-
-		std::cout << std::endl;
-		*/
 
 		endCCAve += score;
 		count++;
