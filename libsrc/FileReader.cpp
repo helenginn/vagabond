@@ -99,8 +99,18 @@ void trim(std::string &str)
 
 void print_cc_diff(double diff, int limit)
 {
+	if (diff != diff)
+	{
+		diff = 0;
+	}
+
 	int signs = fabs(diff * 10);
 	int dir = (diff < 0);	
+	
+	if (signs > 1000)
+	{
+		signs = 1000;
+	}
 
 	if (signs > limit && limit > 0)
 	{
@@ -108,7 +118,7 @@ void print_cc_diff(double diff, int limit)
 	}
 
 	std::cout << " ";
-	for (int j = 0; j < signs && j < 1000; j++)
+	for (int j = 0; j < signs; j++)
 	{
 		std::cout << (dir ? "+" : "-");
 	}
