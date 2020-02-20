@@ -89,9 +89,6 @@ void DiffractionMtz::load()
 	memset(refldata, '\0', (mtz->ncol_read + 1) *
 	       mtz->nref_filein * sizeof(float));
 
-	float *adata = (float *) CCP4::ccp4_utils_malloc((mtz->ncol_read)
-	                                                 * sizeof(float));
-	
 	int xtalCount = CMtz::MtzNxtal(mtz);
 	std::cout << "Total crystals in " << _filename << ": " << 
 	xtalCount << std::endl;
@@ -319,7 +316,7 @@ void DiffractionMtz::load()
 
 	for (int i = 0; i < mtz->nref_filein * mtz->ncol_read; i += mtz->ncol_read)
 	{
-		memcpy(adata, &refldata[i], mtz->ncol_read * sizeof(float));
+		float *adata = &refldata[i];
 
 		int _h = adata[col_h->source - 1];
 		int _k = adata[col_k->source - 1];
@@ -398,8 +395,6 @@ void DiffractionMtz::load()
 		}
 	}
 	
-	free(adata);
-
 	std::cout << "Loaded " << count << " reflections into"\
 	" memory from " << _filename << "." << std::endl;
 	std::cout << "Counted " << maskCount << " free reflections." << std::endl << std::endl;
