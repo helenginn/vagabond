@@ -33,6 +33,8 @@ typedef enum
 	InstructionTypeRigidBody,
 	InstructionTypeAddPDBFile,
 	InstructionTypeFitTranslation,
+	InstructionTypeResetMotion,
+	InstructionTypeResetSides,
 	InstructionTypeFindDisulphides,
 	InstructionTypeRefineIntramolecule,
 	InstructionTypeSplitBond,
