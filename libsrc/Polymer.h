@@ -151,6 +151,9 @@ public:
 		return ToPolymerPtr(Molecule::shared_from_this());
 	}
 
+	void resetMotion();
+	void refineMotions();
+	void resetSidechains();
 	bool refineLocalFlexibility(bool magic = false);
 	virtual void addProperties();
 	virtual void addObject(ParserPtr object, std::string category);

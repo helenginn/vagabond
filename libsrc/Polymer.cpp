@@ -1534,3 +1534,43 @@ bool Polymer::hasResidue(int resNum)
 {
 	return (resNum >= monomerBegin() && resNum <= monomerEnd());
 }
+
+void Polymer::refineMotions()
+{
+	AnchorPtr anch = getAnchorModel();
+	
+	for (int i = 0; i < anch->motionCount(); i++)
+	{
+		MotionPtr mot = anch->getMotion(i);
+		mot->refine();
+	}
+}
+
+void Polymer::resetMotion()
+{
+	AnchorPtr anch = getAnchorModel();
+	
+	for (int i = 0; i < anch->motionCount(); i++)
+	{
+		MotionPtr mot = anch->getMotion(i);
+		mot->reset();
+	}
+
+	refreshPositions();
+}
+
+void Polymer::resetSidechains()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (!atom(i)->isSidechain() || !atom(i)->getModel()->isBond()) 
+		{
+			continue;
+		}
+		
+		BondPtr bond = ToBondPtr(atom(i)->getModel());
+		bond->reset();
+	}
+
+	refreshPositions();
+}
