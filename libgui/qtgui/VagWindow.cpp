@@ -19,6 +19,7 @@
 #include <QtCore/qalgorithms.h>
 #include <QtWidgets/qgraphicsitem.h>
 #include <QtWidgets/qmenubar.h>
+#include <QtWidgets/qscrollbar.h>
 #include <QtWidgets/qmessagebox.h>
 #include <iostream>
 #include "../../libsrc/Options.h"
@@ -812,13 +813,30 @@ void VagWindow::toggleLog()
 
 void VagWindow::append()
 {
+	bool end = false;
+	QScrollBar *scroll = _logView->verticalScrollBar();
+	int val = scroll->sliderPosition();
+	
+	if (val == scroll->maximum())
+	{
+		end = true;
+	}
+
 	_logView->moveCursor(QTextCursor::End);
 	_guiOutMut.lock();
 	QString qOut = QString::fromStdString(_guiOut);
 	_guiOut.clear();
 	_guiOutMut.unlock();
 	_logView->insertPlainText(qOut);
-	_logView->moveCursor(QTextCursor::End);
+
+	if (end)
+	{
+		_logView->moveCursor(QTextCursor::End);
+	}
+	else
+	{
+		scroll->setSliderPosition(val);
+	}
 }
 
 void VagWindow::appendToLog(char *msg)
