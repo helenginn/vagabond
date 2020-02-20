@@ -246,7 +246,7 @@ void Anchor::atLeastOneMotion()
 	
 	if (crystal->polymerCount() <= 1)
 	{
-		return;
+//		return;
 	}
 	
 	MotionPtr mot = MotionPtr(new Motion());

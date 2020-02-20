@@ -51,6 +51,11 @@ public:
 	{
 		return _motions.size();
 	}
+	
+	MotionPtr getMotion(int i)
+	{
+		return _motions[i];
+	}
 
 	/** Returns the offsets for an anchor residue on which a molecule may
 	* calculate translations and offsets.

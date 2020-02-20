@@ -1328,10 +1328,7 @@ void Crystal::makeOverallMotion()
 	{
 		return;
 	}
-
-	MotionPtr mot = MotionPtr(new Motion());
-	mot->setName("all");
-
+	
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		if (!molecule(i)->isPolymer() ||
@@ -1341,11 +1338,8 @@ void Crystal::makeOverallMotion()
 		}
 
 		PolymerPtr pol = ToPolymerPtr(molecule(i));
-		mot->addToPolymer(pol);
 		pol->getAnchorModel()->atLeastOneMotion();
 	}
-
-	_motions.insert(_motions.begin(), mot);
 }
 
 size_t Crystal::polymerCount()
@@ -1369,6 +1363,7 @@ void Crystal::fitWholeMolecules()
 {
 	/* All molecules together */
 	
+	/*
 	MotionPtr overall = getOverallMotion();
 	
 	if (!overall)
@@ -1381,9 +1376,15 @@ void Crystal::fitWholeMolecules()
 		overall->refine();
 		return;
 	}
+	*/
 	
 	for (int i = 0; i < _motions.size(); i++)
 	{
+		if (_motions[i]->getName() == "all")
+		{
+			continue;
+		}
+
 		_motions[i]->refine();
 	}
 }
@@ -2112,7 +2113,11 @@ void Crystal::addPDBContents(std::string pdbName)
 		PolymerPtr pol = ToPolymerPtr(mol);
 
 		MotionPtr overall = getOverallMotion();
-		overall->addToPolymer(pol);
+		
+		if (overall)
+		{
+			overall->addToPolymer(pol);
+		}
 		
 		for (int j = 0; j < 5; j++)
 		{
