@@ -888,6 +888,7 @@ void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max,
 	
 	/* 2 Angstroms buffer region on either side of the protein */
 	double buff = BUFFER_REGION;
+	buff += cubeDim * 3;
 	vec3 buffer = make_vec3(buff, buff, buff);
 	vec3_subtract_from_vec3(&min, buffer);
 
