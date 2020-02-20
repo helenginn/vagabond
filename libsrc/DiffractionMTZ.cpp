@@ -227,6 +227,10 @@ void DiffractionMtz::load()
 	CMtz::MTZCOL *col_h = MtzColLookup(mtz, "H");
 	CMtz::MTZCOL *col_k = MtzColLookup(mtz, "K");
 	CMtz::MTZCOL *col_l = MtzColLookup(mtz, "L");
+	
+	CMtz::MTZCOL *sorted[] = {col_h, col_k, col_l};
+	
+	CMtz::MtzSetSortOrder(mtz, sorted);
 
 	if (!col_h || !col_k || !col_l)
 	{
@@ -241,17 +245,24 @@ void DiffractionMtz::load()
 	_minRes = 1.0 / sqrt(_minRes);
 	_maxRes = 1.0 / sqrt(_maxRes);
 
-	int largest = 0;
+	int indexLimitH = 0; int indexLimitK = 0; int indexLimitL = 0;
 
-	int indexLimitH = std::max(fabs(col_h->min), fabs(col_h->max));
-	int indexLimitK = std::max(fabs(col_k->min), fabs(col_k->max));
-	int indexLimitL = std::max(fabs(col_l->min), fabs(col_l->max));
+	for (int i = 0; i < mtz->nref_filein * mtz->ncol_read; i += mtz->ncol_read)
+	{
+		float *ptr = &refldata[i];
+		int h = abs(ptr[col_h->source - 1]);
+		int k = abs(ptr[col_k->source - 1]);
+		int l = abs(ptr[col_l->source - 1]);
+		
+		indexLimitH = std::max(indexLimitH, h);
+		indexLimitK = std::max(indexLimitK, k);
+		indexLimitL = std::max(indexLimitL, l);
+	}
 
-	largest = std::max(indexLimitH, indexLimitK);
+	int largest = std::max(indexLimitH, indexLimitK);
 	largest = std::max(largest, indexLimitL);
 
-	largest *= 2;
-	largest += 1;
+	largest = 2 * largest + 1;
 
 	if (largest == 0)
 	{
@@ -315,10 +326,11 @@ void DiffractionMtz::load()
 		int _l = adata[col_l->source - 1];
 		int h, k, l;
 		CSym::ccp4spg_put_in_asu(spg, _h, _k, _l, &h, &k, &l);
-
+		
 		float amplitude = adata[col_f->source - 1];
 		float phase = 0;
 		float fwt = 0;
+
 		
 		if (col_phase != NULL)
 		{
