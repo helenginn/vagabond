@@ -367,8 +367,15 @@ int VagWindow::waitForInstructions()
 				break;
 
 				case InstructionTypeFitTranslation: 
-				crystal->fitWholeMolecules();
-				options->recalculateFFT();
+				disable();
+				fitWholeMolecules();
+				enable();
+				break;
+				
+				case InstructionTypeResetMotion:
+				disable();
+				resetMotion();
+				enable();
 				break;
 
 				case InstructionTypeSidechainsToEnd: 
@@ -385,8 +392,13 @@ int VagWindow::waitForInstructions()
 
 				case InstructionTypeRefineDensity: 
 				disable();
-				crystal->refineSidechains();
-				options->recalculateFFT();
+				refineSidechains();
+				enable();
+				break;
+
+				case InstructionTypeResetSides: 
+				disable();
+				resetSides();
 				enable();
 				break;
 
@@ -820,7 +832,7 @@ void VagWindow::append()
 	QScrollBar *scroll = _logView->verticalScrollBar();
 	int val = scroll->sliderPosition();
 	
-	if (val == scroll->maximum())
+	if (val >= scroll->maximum() - 1)
 	{
 		end = true;
 	}
@@ -893,4 +905,55 @@ void VagWindow::addPDBFile()
 	setMessage("Adding atoms from " + _pdbStr + ".");
 	_instructionType = InstructionTypeAddPDBFile;
 	wait.wakeAll();
+}
+
+void VagWindow::fitWholeMolecules()
+{
+	if (_obj == NULL)
+	{
+		Options::getActiveCrystal()->fitWholeMolecules();
+		Options::getRuntimeOptions()->recalculateFFT();
+	}
+
+	Polymer *p = static_cast<Polymer *>(_obj);
+	p->refineMotions();
+	
+	setMessage("Refined whole motions for chain " + p->getChainID());
+}
+
+void VagWindow::resetMotion()
+{
+	if (_obj == NULL)
+	{
+		return;
+	}
+
+	Polymer *p = static_cast<Polymer *>(_obj);
+	p->resetMotion();
+}
+
+void VagWindow::resetSides()
+{
+	if (_obj == NULL)
+	{
+		return;
+	}
+
+	Polymer *p = static_cast<Polymer *>(_obj);
+	p->resetSidechains();
+}
+
+void VagWindow::refineSidechains()
+{
+	if (_obj == NULL)
+	{
+		crystal->refineSidechains();
+		options->recalculateFFT();
+		return;
+	}
+
+	CrystalPtr crystal = options->getActiveCrystal();
+
+	Polymer *p = static_cast<Polymer *>(_obj);
+	p->refine(crystal, RefinementSidechain);
 }

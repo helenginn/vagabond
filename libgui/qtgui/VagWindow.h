@@ -59,6 +59,7 @@ public:
 	virtual void focusOnPosition(vec3 pos);
 	virtual void pause(bool on);
 	virtual void appendToLog(char *msg);
+	void pushSendInstruction(InstructionType inst);
 	
 	void toggleLog();
 	
@@ -98,7 +99,6 @@ private slots:
 	void pushBMultiplier();
 	void pushExploreCrystal();
 	void restorePreviousState();
-	void pushSendInstruction(InstructionType inst);
 
 	void toggleScaling(ScalingType type);
 	void adjustBFactor();
@@ -124,9 +124,12 @@ private:
 	void dialogueModify(Setter set, std::string title, 
 	                    double _default = 100);
 	void splitBond();
+	void resetSides();
+	void resetMotion();
 	void refineToEnd();
 	void modelPosToEnd();
 	void sidechainsToEnd();
+	void fitWholeMolecules();
 	void getPolymerMonomerCrystal(PolymerPtr *poly, CrystalPtr *cryst, 
 	                              MonomerPtr *monomer);
 	void menuItem(QMenu *menu, std::string title,
