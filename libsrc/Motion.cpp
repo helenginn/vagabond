@@ -105,6 +105,8 @@ void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
 
 void Motion::refine()
 {
+	std::cout << "Refining motion: " << _name << std::endl;
+	
 	int maxRot = Options::getMaxRotations();
 	bool maxed = false;
 
