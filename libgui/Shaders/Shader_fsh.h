@@ -7,7 +7,7 @@ std::string Shader_fsh =
 "{\n"\
 "	float min_distance = -20.;\n"\
 "	float max_distance = -100.;\n"\
-"	if (focus[2] > -15.)\n"\
+"	if (focus[2] > -25.)\n"\
 "	{\n"\
 "		min_distance = focus[2] + 0.;\n"\
 "		max_distance = focus[2] - 8.;\n"\
