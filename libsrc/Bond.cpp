@@ -40,6 +40,7 @@ void Bond::initialize()
 	_refineBondAngle = false;
 	_refineFlexibility = true;
 	_fixed = false;
+	_initialTorsion = 0;
 	_splitBlock = false;
 	_occupancy = 1.0;
 	_resetOccupancy = false;
@@ -274,6 +275,7 @@ void Bond::deriveTorsionAngle()
 	AtomPtr four = getMinor();
 	
 	setTorsionAngleFrom(one, two, three, four);
+	_initialTorsion = _torsion;
 }
 
 void Bond::deriveBondAngle()
@@ -1639,6 +1641,7 @@ void Bond::addProperties()
 
 	addDoubleProperty("length", &_bondLength);    
 	addDoubleProperty("torsion", &_torsion);    
+	addDoubleProperty("initial_torsion", &_initialTorsion);    
 	addDoubleProperty("exp_angle", &_expectedAngle);    
 	addDoubleProperty("circle", &_circlePortion);    
 	addDoubleProperty("ratio", &_geomRatio);    
@@ -1728,6 +1731,11 @@ void Bond::postParseTidy()
 			_leftOfAnchor = true;
 		}
 	}
+	
+	if (fabs(_initialTorsion) < 1e-6)
+	{
+		_initialTorsion = _torsion;
+	}
 }
 
 void Bond::equaliseOccupancies()
@@ -1774,3 +1782,11 @@ double Bond::getWorkingPhi()
 	return phi;
 }
 
+
+void Bond::reset()
+{
+	_torsion = _initialTorsion;
+	_phi = 3.14/2;
+	_psi = 0;
+	_kick = 0;
+}

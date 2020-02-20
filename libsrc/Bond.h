@@ -388,6 +388,7 @@ public:
 	
 	void equaliseOccupancies();
 	void destroy(bool start = true);
+	void reset();
 
 	void checkForSplits(AtomGroupPtr polymer);
 
@@ -566,6 +567,7 @@ private:
 
 	double _occupancy;
 	double _torsion;
+	double _initialTorsion;
 	double _kick;
 	double _phi;
 	double _psi;
