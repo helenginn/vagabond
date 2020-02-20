@@ -144,17 +144,27 @@ void Monomer::tieAtomsUp()
 
 	knotter->setBackbone(_backbone);
 
-	if (getResidueNum() >= start)
+	try
 	{
-		knotter->tieTowardsCTerminus();
-	}
-	else
-	{
-		knotter->tieTowardsNTerminus();
-	}
+		if (getResidueNum() >= start)
+		{
+			knotter->tieTowardsCTerminus();
+		}
+		else
+		{
+			knotter->tieTowardsNTerminus();
+		}
 
-	knotter->setSidechain(_sidechain);
-	knotter->tie();
+		knotter->setSidechain(_sidechain);
+		knotter->tie();
+	}
+	catch (AtomPtr a)
+	{
+		shout_at_user("Could not tie protein due to a problem around\n"\
+		              "atom " + a->shortDesc() + "! Please check all "\
+		              "your atoms are\nin the model for this monomer.");
+		exit(1);
+	}
 
 	if (getResidueNum() == start)
 	{

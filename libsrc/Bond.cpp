@@ -289,10 +289,14 @@ void Bond::deriveBondAngle()
 		AnchorPtr parent = ToAnchorPtr(getParentModel());
 		pMajor = parent->getOtherAtom(getMinor());
 	}
-	else
+	else if (getParentModel()->isBond())
 	{
 		BondPtr parent = ToBondPtr(getParentModel());
 		pMajor = parent->getMajor();
+	}
+	else
+	{
+		throw getMajor();
 	}
 	
 	_expectedAngle = -1;
