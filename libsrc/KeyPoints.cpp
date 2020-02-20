@@ -237,7 +237,6 @@ double KeyPoints::score(void *object)
 	KeyPoints *me = static_cast<KeyPoints *>(object);
 	PolymerPtr pol = me->_polymer;
 	pol->getAnchorModel()->forceRefresh();
-	pol->propagateChange();
 
 	return me->_global.score(&me->_global);
 }
