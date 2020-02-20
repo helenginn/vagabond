@@ -100,13 +100,42 @@ void CrystalExplorer::clickedMoleListItem()
 		_widgets.push_back(edit);
 		
 		QPushButton *b = new QPushButton("Sequence", this);
-		b->setGeometry(460, height, 80, TEXT_HEIGHT);
+		b->setGeometry(460, height, 120, TEXT_HEIGHT);
 		b->show();
 		connect(b, &QPushButton::clicked,
 		        [=]{ pushSequence(); });
 		_widgets.push_back(b);
-	}
+		
+		height += TEXT_HEIGHT;
+		b = new QPushButton("Reset motion", this);
+		b->setGeometry(160, height, 120, TEXT_HEIGHT);
+		b->show();
+		connect(b, &QPushButton::clicked,
+		        [=]{ pushResetMotion(); });
+		_widgets.push_back(b);
 
+		b = new QPushButton("Fit inter-molecular motion", this);
+		b->setGeometry(380, height, 200, TEXT_HEIGHT);
+		b->show();
+		connect(b, &QPushButton::clicked,
+		        [=]{ pushFitMotion(); });
+		_widgets.push_back(b);
+
+		height += TEXT_HEIGHT;
+		b = new QPushButton("Reset sidechains", this);
+		b->setGeometry(160, height, 160, TEXT_HEIGHT);
+		b->show();
+		connect(b, &QPushButton::clicked,
+		        [=]{ pushResetSides(); });
+		_widgets.push_back(b);
+
+		b = new QPushButton("Fit sidechains", this);
+		b->setGeometry(380, height, 200, TEXT_HEIGHT);
+		b->show();
+		connect(b, &QPushButton::clicked,
+		        [=]{ pushFitSides(); });
+		_widgets.push_back(b);
+	}
 }
 
 CrystalExplorer::CrystalExplorer(QWidget *parent, CrystalPtr crystal)
@@ -122,6 +151,55 @@ CrystalExplorer::CrystalExplorer(QWidget *parent, CrystalPtr crystal)
 	
 	populateList();
 }
+
+void CrystalExplorer::pushResetMotion()
+{
+	if (!_currMole->isPolymer())
+	{
+		return;
+	}
+
+	PolymerPtr pol = ToPolymerPtr(_currMole);
+	_vagWindow->setObject(&*pol);
+	_vagWindow->pushSendInstruction(InstructionTypeResetMotion);
+}
+
+void CrystalExplorer::pushResetSides()
+{
+	if (!_currMole->isPolymer())
+	{
+		return;
+	}
+
+	PolymerPtr pol = ToPolymerPtr(_currMole);
+	_vagWindow->setObject(&*pol);
+	_vagWindow->pushSendInstruction(InstructionTypeResetSides);
+}
+
+void CrystalExplorer::pushFitMotion()
+{
+	if (!_currMole->isPolymer())
+	{
+		return;
+	}
+
+	PolymerPtr pol = ToPolymerPtr(_currMole);
+	_vagWindow->setObject(&*pol);
+	_vagWindow->pushSendInstruction(InstructionTypeFitTranslation);
+}
+
+void CrystalExplorer::pushFitSides()
+{
+	if (!_currMole->isPolymer())
+	{
+		return;
+	}
+
+	PolymerPtr pol = ToPolymerPtr(_currMole);
+	_vagWindow->setObject(&*pol);
+	_vagWindow->pushSendInstruction(InstructionTypeRefineDensity);
+}
+
 
 void CrystalExplorer::pushSequence()
 {

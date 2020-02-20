@@ -48,7 +48,11 @@ public:
 private slots:
 	void clickedMoleListItem();
 	void pushSequence();
-	
+	void pushFitSides();
+	void pushFitMotion();
+	void pushResetSides();
+	void pushResetMotion();
+
 private:
 	MoleculePtr _currMole;
 	MoleculeExplorer *_moleExplorer;
@@ -58,7 +62,7 @@ private:
 	CrystalPtr _crystal;
 	QListWidget *_moleList;
 	VagWindow *_vagWindow;
-
+	
 	std::vector<QWidget *> _widgets;
 	void populateList();
 	void clearWidgets();
