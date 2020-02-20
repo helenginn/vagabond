@@ -98,6 +98,7 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	vec3 difference = vec3_subtract_vec3(majorPos, minorPos);
 	_bondLength = vec3_length(difference);
 
+	/* makes difference the right direction */
 	deriveBondLength();
 	vec3_set_length(&difference, _bondLength);
 
