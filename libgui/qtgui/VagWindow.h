@@ -81,6 +81,11 @@ public:
 	{
 		return display;
 	}
+	
+	void setObject(void *obj)
+	{
+		_obj = obj;
+	}
 
 	int attemptLoadAndRun();
 	
@@ -166,6 +171,7 @@ private:
 
 	void makeMenu();
 	void makeButtons();
+	void *_obj;
 };
 
 #endif /* defined(__Vagabond__VagWindow__) */

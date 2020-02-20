@@ -246,6 +246,7 @@ void VagWindow::resizeEvent(QResizeEvent *)
 VagWindow::VagWindow(QWidget *parent,
                      int argc, char *argv[]) : QMainWindow(parent)
 {
+	_obj = NULL;
 	this->resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
 	this->setWindowTitle("Vagabond");
@@ -473,6 +474,8 @@ int VagWindow::waitForInstructions()
 				return 1;
 			}
 		}
+		
+		_obj = NULL;
 
 		if (_instructionThread.shouldDie())
 		{
