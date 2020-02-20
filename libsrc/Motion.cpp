@@ -413,3 +413,11 @@ void Motion::setScale(double scale)
 	_trans->setMat3x3(mat);
 
 }
+
+void Motion::reset()
+{
+	_quats.clear();
+	_screws.clear();
+	mat3x3 cleared = make_mat3x3();
+	_trans->setMat3x3(cleared);
+}

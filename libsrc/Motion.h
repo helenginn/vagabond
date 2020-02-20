@@ -59,6 +59,7 @@ public:
 	                              int num = -1);
 	void deleteLastScrew();
 	
+	void reset();
 	void setScale(double scale);
 
 	MotionPtr shared_from_this()
