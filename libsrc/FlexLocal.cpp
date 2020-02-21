@@ -60,6 +60,7 @@ void FlexLocal::setPolymer(PolymerPtr pol, double shift)
 {
 	_polymer = pol;
 	_shift = shift;
+	_bb = _polymer->getAllBackbone();
 }
 
 void FlexLocal::svd()
@@ -186,7 +187,7 @@ double FlexLocal::getScore(void *object)
 		local->_svd->applyParameters();
 	}
 
-	local->_polymer->propagateChange();
+	local->_bb->refreshPositions();
 	
 	double score = AtomGroup::scoreWithMapGeneral(&local->_workspace);
 	return score;

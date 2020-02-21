@@ -92,6 +92,7 @@ private:
 	void setBondParam(BondPtr b, double w, double k);
 	
 	PolymerPtr _polymer;
+	AtomGroupPtr _bb;
 
 	BondEffects _bondEffects;
 	
