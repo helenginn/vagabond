@@ -945,14 +945,15 @@ void VagWindow::resetSides()
 
 void VagWindow::refineSidechains()
 {
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr crystal = options->getActiveCrystal();
+
 	if (_obj == NULL)
 	{
 		crystal->refineSidechains();
 		options->recalculateFFT();
 		return;
 	}
-
-	CrystalPtr crystal = options->getActiveCrystal();
 
 	Polymer *p = static_cast<Polymer *>(_obj);
 	p->refine(crystal, RefinementSidechain);

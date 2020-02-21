@@ -129,6 +129,7 @@ private:
 	void refineToEnd();
 	void modelPosToEnd();
 	void sidechainsToEnd();
+	void refineSidechains();
 	void fitWholeMolecules();
 	void getPolymerMonomerCrystal(PolymerPtr *poly, CrystalPtr *cryst, 
 	                              MonomerPtr *monomer);
