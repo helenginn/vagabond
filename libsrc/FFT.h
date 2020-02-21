@@ -60,6 +60,7 @@ public:
 	friend class FFT;
 	VagFFT(int nx, int ny, int nz, int nele = 0, int scratches = 0);
 	VagFFT(VagFFT &fft);
+	~VagFFT();
 	
 	void addElement(ElementPtr ele);
 	

@@ -71,6 +71,12 @@ VagFFT::VagFFT(VagFFT &fft)
 	memcpy(_data, fft._data, _total);
 }
 
+VagFFT::~VagFFT()
+{
+	fftwf_free(_data);
+
+}
+
 VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
 {
 	_nx = nx;
