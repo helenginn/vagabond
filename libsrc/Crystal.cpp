@@ -2128,3 +2128,11 @@ void Crystal::addPDBContents(std::string pdbName)
 		_motions.back()->refine();
 	}
 }
+
+void Crystal::resetMotions()
+{
+	for (int i = 0; i < _motions.size(); i++)
+	{
+		_motions[i]->reset();
+	}
+}

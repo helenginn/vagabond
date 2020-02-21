@@ -494,6 +494,7 @@ public:
 	void refineSidechainPositions();
 	void refineSidechains();
 	void refineCrude();
+	void resetMotions();
 	void savePositions();
 	void refitToSavedPositions();
 	void refreshAnchors();
