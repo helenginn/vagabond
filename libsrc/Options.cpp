@@ -371,24 +371,6 @@ void Options::executeProtocol()
 		
 		if (newWork > oldWork)
 		{
-			/*
-			std::cout << "Remedial work to reduce overall flexibility." 
-			<< std::endl;
-			double ratio = 0.9;
-			int count = 0;
-
-			while (count < 5)
-			{
-				count++;
-				crystal->scaleAnchorBs(ratio);
-				recalculateFFT();
-
-				if (crystal->undoIfWorse())
-				{
-					break;
-				}
-			}
-			*/
 			std::cout << "Rwork has increased." << std::endl;
 		}
 		else
