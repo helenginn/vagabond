@@ -44,7 +44,8 @@ double FlexGlobal::score(void *object)
 	FlexGlobal *flexer = static_cast<FlexGlobal *>(object);
 	flexer->prepareWorkspace();
 
-	flexer->_atomGroup->propagateChange();
+	flexer->_atomGroup->refreshPositions();
+//	flexer->_atomGroup->propagateChange();
 	double score = AtomGroup::scoreWithMapGeneral(&flexer->_workspace);
 
 	return score;
