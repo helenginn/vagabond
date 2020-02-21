@@ -2135,4 +2135,6 @@ void Crystal::resetMotions()
 	{
 		_motions[i]->reset();
 	}
+	
+	refreshPositions();
 }
