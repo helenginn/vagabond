@@ -73,8 +73,12 @@ VagFFT::VagFFT(VagFFT &fft)
 
 VagFFT::~VagFFT()
 {
-	fftwf_free(_data);
-
+	if (_data != NULL)
+	{
+		fftwf_free(_data);
+	}
+	
+	_data = NULL;
 }
 
 VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
