@@ -41,6 +41,7 @@ typedef enum
 	InstructionTypeAdjustBFactor,
 	InstructionTypeRefitBackbone,
 	InstructionTypeChelate,
+	InstructionTypeSponge,
 	InstructionTypeCancel,
 	InstructionTypeManualRefine,
 	InstructionTypeRefineIntramagic,
