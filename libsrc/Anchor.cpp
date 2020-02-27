@@ -11,7 +11,6 @@
 #include "RefinementNelderMead.h"
 #include "Anchor.h"
 #include "Motion.h"
-#include "Fibonacci.h"
 #include "FlexGlobal.h"
 #include "Absolute.h"
 #include "Anisotropicator.h"
@@ -123,59 +122,12 @@ void Anchor::createLayeredSpherePositions()
 	 * each dimension. */
 	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
 	meanSqDisp = sqrt(meanSqDisp);
-
-	double totalSurfaces = 0;
-	double factor = pow(totalPoints, 1./3.) * 2;
-	int layers = lrint(factor);
-	
-	if (totalPoints < 2)
-	{
-		layers = 1;
-	}
-	
-	std::vector<double> layerSurfaces;
-
-	/* Work out relative ratios of the surfaces on which points
-	 * will be generated. */
-	for (int i = 1; i <= layers; i++)
-	{
-		layerSurfaces.push_back(i * i);
-		totalSurfaces += i * i;
-	}
-
-	double scale = totalPoints / (double)totalSurfaces;
+	_occupancies.clear();
 	
 	/* Make Fibonacci lattice for each layer */
 
-	Fibonacci fib;
-	_sphereAngles.clear();
-	_sphereAngles.reserve(totalPoints);
-	double addTotal = 0;
-
-	for (int j = 0; j < layers; j++)
-	{
-		double m = meanSqDisp * (double)(j + 1) / (double)layers;
-
-		int samples = layerSurfaces[j] * scale + 1;
-		double offset = 2. / (double)samples;
-		
-		fib.generateLattice(samples, m);
-		std::vector<vec3> points = fib.getPoints();
-		
-		for (int i = 0; i < points.size(); i++)
-		{
-			double add = exp(-m);
-			_occupancies.push_back(add);
-			addTotal += add;
-		}
-		
-		_sphereAngles.insert(_sphereAngles.end(), points.begin(), points.end());
-	}
-	
-	for (int i = 0; i < _occupancies.size(); i++)
-	{
-		_occupancies[i] /= addTotal;
-	}
+	_sphereAngles = ExplicitModel::makeCloud(totalPoints, meanSqDisp,
+	                                         _occupancies);
 
 	_lastCount = totalPoints;
 }

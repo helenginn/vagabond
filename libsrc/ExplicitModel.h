@@ -142,6 +142,9 @@ public:
 	}
 
 	static double propagate(void *obj);
+	static std::vector<vec3> makeCloud(double totalPoints, 
+	                                   double b,
+	                                   std::vector<double> &occs);
 protected:
 	FFTPtr makeRealSpaceDistribution();
 	void addRealSpacePositions(FFTPtr real, vec3 offset);

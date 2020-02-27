@@ -18,6 +18,7 @@
 
 #include "ExplicitModel.h"
 #include "Twist.h"
+#include "Fibonacci.h"
 #include "Options.h"
 #include "fftw3d.h"
 #include "CSV.h"
@@ -436,3 +437,74 @@ double ExplicitModel::propagate(void *obj)
 	return 0;
 }
 
+std::vector<vec3> ExplicitModel::makeCloud(double totalPoints,
+                                           double b, 
+                                           std::vector<double> &occs)
+{
+	double totalSurfaces = 0;
+	double factor = pow(totalPoints, 1./3.) * 2;
+	int layers = lrint(factor);
+	
+	if (layers % 2 == 0)
+	{
+		layers++;
+	}
+	
+	if (totalPoints < 2)
+	{
+		layers = 1;
+	}
+	
+	std::vector<double> layerSurfaces;
+
+	/* Work out relative ratios of the surfaces on which points
+	 * will be generated. */
+	for (int i = 1; i <= layers; i++)
+	{
+		layerSurfaces.push_back(i * i);
+		totalSurfaces += i * i;
+	}
+
+	double scale = totalPoints / (double)totalSurfaces;
+
+	double addTotal = 0;
+	Fibonacci fib;
+	fib.generateLattice(layers, 1);
+	std::vector<vec3> directions = fib.getPoints();
+	std::vector<vec3> sphereAngles;
+	sphereAngles.reserve(totalPoints);
+	vec3 yAxis = make_vec3(0, 1, 0);
+
+	for (int j = 0; j < layers; j++)
+	{
+		vec3 cross = vec3_cross_vec3(directions[j], yAxis);
+		
+		mat3x3 mat = mat3x3_closest_rot_mat(yAxis, directions[j], cross);
+
+		double m = b * (double)(j + 1) / (double)layers;
+
+		int samples = layerSurfaces[j] * scale + 1;
+		double offset = 2. / (double)samples;
+		
+		fib.generateLattice(samples, m);
+		std::vector<vec3> points = fib.getPoints();
+		
+		for (int i = 0; i < points.size(); i++)
+		{
+//			double add = exp(-m);
+			double add = 1;
+			occs.push_back(add);
+			addTotal += add;
+			
+			mat3x3_mult_vec(mat, &points[i]);
+			sphereAngles.push_back(points[i]);
+		}
+	}
+	
+	for (int i = 0; i < occs.size(); i++)
+	{
+		occs[i] /= addTotal;
+	}
+
+	return sphereAngles;
+}
