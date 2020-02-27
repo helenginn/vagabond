@@ -328,10 +328,7 @@ void Options::executeProtocol()
 			
 			for (int j = 0; j < total; j++)
 			{
-				if (i >= 3)
-				{
-					crystal->resetMotions();
-				}
+//			crystal->resetMotions();
 
 				crystal->fitWholeMolecules();
 				recalculateFFT();
