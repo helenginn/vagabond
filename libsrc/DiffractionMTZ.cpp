@@ -454,6 +454,7 @@ void DiffractionMtz::load()
 		}
 	}
 	
+	free(refldata);
 }
 
 void DiffractionMtz::syminfoCheck()
