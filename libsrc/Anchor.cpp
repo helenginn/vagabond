@@ -349,6 +349,11 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 
 void Anchor::forceRefresh()
 {
+	for (int i = 0; i < motionCount(); i++)
+	{
+		getMotion(i)->absorbScale();
+	}
+
 	getManyPositions(&*_nAtom.lock(), true);
 	getManyPositions(&*_cAtom.lock(), true);
 }
