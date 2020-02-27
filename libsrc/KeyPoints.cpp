@@ -187,12 +187,13 @@ bool KeyPoints::refineKeyPoints()
 		nelder->setSilent(true);
 
 		Timer timer;
-		double fac = (double)_polymer->monomerCount() / 50.;
 
 		for (int i = 0; i < _points.size(); i++)
 		{
-			nelder->addParameter(&_points[i].kick, Param::getValue, 
-			                     Param::setValue, 0.005 / fac, 0.0001 / fac);
+			nelder->addParameter(&_points[i].phi, Param::getValue, 
+			                     Param::setValue, step, tol);
+			nelder->addParameter(&_points[i].psi, Param::getValue, 
+			                     Param::setValue, step, tol);
 		}
 
 		nelder->setEvaluationFunction(score, this);
@@ -212,13 +213,12 @@ bool KeyPoints::refineKeyPoints()
 		nelder->setSilent(true);
 
 		Timer timer;
+		double fac = (double)_polymer->monomerCount() / 50.;
 
 		for (int i = 0; i < _points.size(); i++)
 		{
-			nelder->addParameter(&_points[i].phi, Param::getValue, 
-			                     Param::setValue, step, tol);
-			nelder->addParameter(&_points[i].psi, Param::getValue, 
-			                     Param::setValue, step, tol);
+			nelder->addParameter(&_points[i].kick, Param::getValue, 
+			                     Param::setValue, 0.005 / fac, 0.0001 / fac);
 		}
 
 		nelder->setEvaluationFunction(score, this);
