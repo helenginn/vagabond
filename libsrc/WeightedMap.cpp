@@ -397,6 +397,10 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 					_shells[shx].count++;
 					_shells[shx].phi_spread += rad2deg(phaseDev);
 				}
+				else
+				{
+					continue;
+				}
 				
 				double fused = 2 * fobs - fcalc;
 				
@@ -551,7 +555,9 @@ void WeightedMap::create2FoFcCoefficients()
 					continue;
 				}
 
-				if (fobs != fobs || isRfree)
+				if (fobs != fobs ||
+				    sigfobs != sigfobs ||
+				    isRfree)
 				{
 					_fft->setElement(index, 0, 0);
 					_difft->setElement(index, 0, 0);
