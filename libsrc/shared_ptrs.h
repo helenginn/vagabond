@@ -36,8 +36,11 @@
 #define ToAbsolutePtr(a) (boost::static_pointer_cast<Absolute>((a)))
 #define ToAnchorPtr(a) (boost::static_pointer_cast<Anchor>((a)))
 #define ToModelPtr(a) (boost::static_pointer_cast<Model>((a)))
+#define ToNovalentPtr(a) (boost::static_pointer_cast<Novalent>((a)))
+#define ToSpongePtr(a) (boost::static_pointer_cast<Sponge>((a)))
 #define ToExplicitModelPtr(a) (boost::static_pointer_cast<ExplicitModel>((a)))
 #define ToPolymerPtr(a) (boost::static_pointer_cast<Polymer>((a)))
+#define ToWaterNetworkPtr(a) (boost::static_pointer_cast<WaterNetwork>((a)))
 #define ToMotionPtr(a) (boost::static_pointer_cast<Motion>((a)))
 #define ToMoleculePtr(a) (boost::static_pointer_cast<Molecule>((a)))
 #define ToSidechainPtr(a) (boost::static_pointer_cast<Sidechain>((a)))
@@ -125,6 +128,8 @@ typedef boost::shared_ptr<Motion> MotionPtr;
 
 class Anchor;
 class Model;
+class Novalent;
+class Sponge;
 class ExplicitModel;
 class Absolute;
 class Chelate;
@@ -134,6 +139,8 @@ class GhostBond;
 
 typedef boost::shared_ptr<Absolute> AbsolutePtr;
 typedef boost::shared_ptr<Anchor> AnchorPtr;
+typedef boost::shared_ptr<Novalent> NovalentPtr;
+typedef boost::shared_ptr<Sponge> SpongePtr;
 typedef boost::weak_ptr<Anchor> AnchorWkr;
 typedef boost::shared_ptr<Model> ModelPtr;
 typedef boost::weak_ptr<Model> ModelWkr;
