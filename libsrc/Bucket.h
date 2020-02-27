@@ -40,6 +40,8 @@ public:
 	
 	virtual ~Bucket()
 	{
+		_atomPtrs.clear();
+		std::vector<Atom *>().swap(_atomPtrs);
 	}
 
 	int getRandomValues(double left, double *right, double *angle);
