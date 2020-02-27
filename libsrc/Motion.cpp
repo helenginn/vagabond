@@ -28,6 +28,7 @@
 
 Motion::Motion()
 {
+	_scale = 1;
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, NULL));
 	_refined = false;
 	_allAtoms = AtomGroupPtr(new AtomGroup());
@@ -215,6 +216,7 @@ void Motion::applyRotations(std::vector<BondSample> &stored)
 		for (int j = 0; j < _quats.size(); j++)
 		{
 			vec3 quat = _quats[j]->getVec3();
+			vec3_mult(&quat, _scale);
 			vec3 bVec = make_vec3(1, 0, quat.x / quat.z);
 			mat3x3 rotbasis = mat3x3_rhbasis(bVec, quat);
 			mat3x3 transbasis = mat3x3_transpose(rotbasis);
@@ -324,6 +326,7 @@ void Motion::addProperties()
 		_tmpScrews.push_back(s);
 	}
 	
+	addDoubleProperty("scale", &_scale);
 	addBoolProperty("refined", &_refined);
 	addVec3Property("centre", &_centre);
 	addVec3ArrayProperty("rots", &_tmpQuats);
@@ -401,18 +404,33 @@ Motion::~Motion()
 	deleteQuats();
 }
 
-void Motion::setScale(double scale)
+double Motion::getScale(void *object)
 {
-	mat3x3 mat = _trans->getMat3x3();
-	mat3x3_scale(&mat, 2, 2, 2);
-	_trans->setMat3x3(mat);
+	return static_cast<Motion *>(object)->_scale;
+}
 
+void Motion::setScale(void *object, double scale)
+{
+	static_cast<Motion *>(object)->_scale = scale;
+}
+
+void Motion::absorbScale()
+{
+	for (int i = 0; i < _quats.size(); i++)
+	{
+		vec3 v = _quats[i]->getVec3();
+		vec3_mult(&v, _scale);
+		_quats[i]->setVec3(v);
+	}
+	
+	_scale = 1;
 }
 
 void Motion::reset()
 {
 	_quats.clear();
 	_screws.clear();
+	
 	mat3x3 cleared = make_mat3x3();
 	_trans->setMat3x3(cleared);
 }

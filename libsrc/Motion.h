@@ -60,7 +60,10 @@ public:
 	void deleteLastScrew();
 	
 	void reset();
-	void setScale(double scale);
+	static void setScale(void *object, double scale);
+	static double getScale(void *object);
+	
+	void absorbScale();
 
 	MotionPtr shared_from_this()
 	{
@@ -113,6 +116,7 @@ private:
 	
 	std::vector<Quat4Refine *> _screws;
 	
+	double _scale;
 	bool _refined;
 	vec3 _centre;
 	AtomGroupPtr _allAtoms;
