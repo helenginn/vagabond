@@ -41,6 +41,17 @@ void WeightedMap::setCrystalAndData(CrystalPtr crystal, DiffractionPtr data)
 	_data = data;
 	_fft = crystal->getFFT();
 	_difft = crystal->getDiFFT();
+	
+	for (int i = 0; i < _fft->nn(); i++)
+	{
+		double real = _fft->getReal(i);
+		
+		if (real != real || !isfinite(real))
+		{
+			_fft->setComponent(i, 0, 0);
+			_fft->setComponent(i, 1, 0);
+		}
+	}
 }
 
 void WeightedMap::writeCalculatedSlice()
