@@ -69,6 +69,8 @@ void RefinementList::refine()
 		_cycleNum++;
 	}
 
+	_chosen = bestCycle;
+
 	applyTest(bestCycle);
 	finish();
 }

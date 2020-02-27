@@ -28,10 +28,16 @@ public:
 	
 	void addTestSet(std::vector<double> &vals);
 	virtual void refine();
+	
+	int getChosen()
+	{
+		return _chosen;
+	}
 private:
 	void applyTest(int num);
 	std::vector<std::vector<double> > _tests;
 	int _cycleNum;
+	int _chosen;
 };
 
 #endif
