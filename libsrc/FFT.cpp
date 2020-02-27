@@ -595,6 +595,20 @@ void VagFFT::addInterpolatedToReal(int column, double sx, double sy,
 	}
 }
 
+double VagFFT::getPhase(long i)
+{
+	long index = finalIndex(i);
+
+	double degrees = atan2(_data[index][1], _data[index][0]) * 180 / M_PI;
+
+	while (degrees >= 360) degrees -= 360;
+
+	while (degrees < 0) degrees += 360;
+
+	return degrees;
+
+}
+
 double VagFFT::getPhase(int x, int y, int z)
 {
 	long pre_index = element(x, y, z);

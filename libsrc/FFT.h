@@ -170,6 +170,7 @@ public:
 	double getPhase(int x, int y, int z);
 
 	double getAmplitude(long i);
+	double getPhase(long i);
 
 	/* retrieves out of final column */
 	double getReal(long i)
