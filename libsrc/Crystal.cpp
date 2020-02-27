@@ -537,9 +537,16 @@ void Crystal::applyShellFactors(DiffractionPtr data)
 
 				double real = _fft->getReal(element);
 				double imag = _fft->getImag(element);
+				
+				double scale = _shells[index].scale;
+				
+				if (scale != scale || !isfinite(scale))
+				{
+					scale = 0;
+				}
 
-				real /= _shells[index].scale;
-				imag /= _shells[index].scale;
+				real /= scale;
+				imag /= scale;
 
 				_fft->setElement(element, real, imag);
 			}
