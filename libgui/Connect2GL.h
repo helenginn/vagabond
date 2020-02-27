@@ -1,5 +1,5 @@
 // Vagabond
-// Copyright (C) 2017-2018 Helen Ginn
+// Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,26 +16,36 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __vagabond__atoms2gl__
-#define __vagabond__atoms2gl__
+#ifndef __vagabond__Connect2GL__
+#define __vagabond__Connect2GL__
 
 #include "Vagabond2GL.h"
 
-class Atoms2GL : public Vagabond2GL
+class Connect2GL : public Vagabond2GL
 {
 public:
-	Atoms2GL();
+	Connect2GL();
 
-	virtual void render();
+	void clear();
+	void render();
+	void addAtoms(AtomPtr major, AtomPtr minor);
 protected:
-	virtual int processMolecule(MoleculePtr molecule);
+	virtual void findAtoms()
+	{
+
+	}
+
+	int processMolecule(MoleculePtr molecule)
+	{
+		return 0;
+	}
+
 	virtual void updateAtoms();
 	virtual void bindTextures();
 	virtual bool getPositions(AtomPtr major, AtomPtr minor,
 	                          std::vector<vec3> *min,
 	                          std::vector<vec3> *maj);
 
-	void addAtom(AtomPtr atom);
 private:
 
 };

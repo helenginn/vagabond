@@ -16,6 +16,8 @@
 
 #include "GLKeeper.h"
 #include "Density2GL.h"
+#include "Connect2GL.h"
+#include "Multi2GL.h"
 #include "Bonds2GL.h"
 #include "Selected2GL.h"
 #include <float.h>
@@ -131,6 +133,10 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	
 	/* Atom pos render */
 	_atoms2GL = Atoms2GLPtr(new Atoms2GL());
+	
+	/* Atom pos render for multiple positions */
+	Multi2GLPtr multi2GL = Multi2GLPtr(new Multi2GL());
+	_multi2GL = multi2GL;
 
 	/* Selected atoms render */
 	_selected2GL = Selected2GLPtr(new Selected2GL());
@@ -164,6 +170,8 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	_objects.push_back(_aveBond2GL);
 	_objects.push_back(_selected2GL);
 	_objects.push_back(_atoms2GL);
+	_objects.push_back(_multi2GL);
+	_objects.push_back(multi2GL->getConnected2GL());
 	_objects.push_back(_density2GL);
 	_objects.push_back(_orig2GL);
 	_objects.push_back(_origDiff2GL);
@@ -445,4 +453,9 @@ void GLKeeper::setAdding(bool val)
 void GLKeeper::selectResidue(std::string chain, int number)
 {
 	_selected2GL->selectResidue(chain, number);	
+}
+
+void GLKeeper::novalentSelected()
+{
+	_selected2GL->novalentSelected(this);
 }

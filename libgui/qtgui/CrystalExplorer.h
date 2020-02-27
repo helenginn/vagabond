@@ -47,6 +47,7 @@ public:
 	void updateCorrelation();
 private slots:
 	void clickedMoleListItem();
+	void slideScale(QSlider *s);
 	void pushSequence();
 	void pushFitSides();
 	void pushFitMotion();

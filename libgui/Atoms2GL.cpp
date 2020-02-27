@@ -40,6 +40,7 @@ void Atoms2GL::addAtom(AtomPtr atom)
 	vertex.pos[0] = pos.x;
 	vertex.pos[1] = pos.y;
 	vertex.pos[2] = pos.z;
+	vertex.normal[0] = 1.;
 	setVertexColour(atom, &vertex);
 	GLuint count = (int)_vertices.size();
 	_vertices.push_back(vertex);
@@ -47,7 +48,7 @@ void Atoms2GL::addAtom(AtomPtr atom)
 	Atom3D pair;
 	pair.min = atom;
 	pair.size = 0;
-	pair.vNum = 0;
+	pair.vNum = count;
 	_pairList.push_back(pair);
 }
 

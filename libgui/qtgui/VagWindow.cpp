@@ -31,6 +31,9 @@
 #include "../../libsrc/Polymer.h"
 #include "ChainMenuAction.h"
 #include "../../libsrc/FileReader.h"
+#include <../../libsrc/Motion.h>
+#include <../../libsrc/Anchor.h>
+#include "../libsrc/Sponge.h"
 
 #ifdef __APPLE__
 #define MENU_HAS_HEIGHT 0
@@ -377,7 +380,7 @@ int VagWindow::waitForInstructions()
 				resetMotion();
 				enable();
 				break;
-
+				
 				case InstructionTypeSidechainsToEnd: 
 				sidechainsToEnd();
 				break;
@@ -461,6 +464,10 @@ int VagWindow::waitForInstructions()
 				
 				case InstructionTypeSplitBond:
 				splitBond();
+				break;
+				
+				case InstructionTypeSponge:
+				sponge();
 				break;
 				
 				case InstructionTypeAdjustBFactor:
@@ -957,4 +964,40 @@ void VagWindow::refineSidechains()
 
 	Polymer *p = static_cast<Polymer *>(_obj);
 	p->refine(crystal, RefinementSidechain);
+}
+
+void VagWindow::sponge()
+{
+	if (getObject() == NULL)
+	{
+		return;
+	}
+	disable();
+
+	Atom *w = static_cast<Atom *>(getObject());
+	AtomPtr water = w->shared_from_this();
+	
+	Options::statusMessage("Watering " + water->shortDesc(), false);
+
+	if (water->getModel()->isSponge())
+	{
+		SpongePtr sponge = ToSpongePtr(water->getModel());
+		sponge->initialConnections();
+		enable();
+		return;
+	}
+
+	SpongePtr nov = SpongePtr(new Sponge(water));
+
+	if (nov->isDisabled())
+	{
+		std::cout << "Novalent only" << std::endl;
+		return;
+	}
+
+	water->setModel(nov);
+	nov->singleRefine();
+	nov->initialConnections();
+	nov->getFinalPositions();
+	enable();
 }

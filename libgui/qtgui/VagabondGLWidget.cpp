@@ -83,6 +83,10 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	{
 		keeper->deleteSelected();
 	}
+	else if (event->key() == Qt::Key_W)
+	{
+		keeper->novalentSelected();
+	}
 	else if (event->key() == Qt::Key_K)
 	{
 		keeper->toggleKicks();

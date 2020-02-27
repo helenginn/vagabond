@@ -17,10 +17,12 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Selected.h"
+#include "GLKeeper.h"
 #include "Selected2GL.h"
 #include "../libsrc/Monomer.h"
 #include "../libsrc/Options.h"
 #include "../libsrc/Polymer.h"
+#include "../libsrc/WaterNetwork.h"
 
 Selected2GL::Selected2GL()
 {
@@ -528,6 +530,13 @@ void Selected2GL::manualRefine()
 	}
 
 	MoleculePtr mol = getPicked()->getMolecule();
+	if (mol->isWaterNetwork())
+	{
+		ToWaterNetworkPtr(mol)->recalculate();
+		return;
+	}
+
+	
 	if (!mol->isPolymer())
 	{
 		std::cout << "Need to refine atoms from polymer" << std::endl;
@@ -849,4 +858,23 @@ void Selected2GL::selectResidue(std::string chain, int resNum)
 	}
 	
 	std::cout << "Did not find residue " << chain << " " << resNum << std::endl;
+}
+
+void Selected2GL::novalentSelected(GLKeeper *k)
+{
+	if (!getPicked())
+	{
+		return;
+	}
+	
+	if (getPicked()->isHeteroAtom())
+	{
+		AtomPtr water = getPicked();
+		Notifiable *n = Options::getRuntimeOptions()->getNotify();
+		n->setObject(&*water);
+		n->setInstruction(InstructionTypeSponge);
+		n->wakeup();
+	}
+	
+	k->getMulti2GL()->setShouldGetBonds();
 }

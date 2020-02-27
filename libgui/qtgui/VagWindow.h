@@ -123,6 +123,7 @@ private:
 
 	void dialogueModify(Setter set, std::string title, 
 	                    double _default = 100);
+	void sponge();
 	void splitBond();
 	void resetSides();
 	void resetMotion();

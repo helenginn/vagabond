@@ -158,7 +158,6 @@ void Bonds2GL::updateAtoms()
 		std::vector<vec3> majBonds, minBonds;
 		getPositions(maj, min, &minBonds, &majBonds);
 		updateModel(&v, total, minBonds, majBonds, maj);
-		
 	}
 }
 
@@ -361,12 +360,7 @@ void Bonds2GL::bindTextures()
 		return;
 	}
 
-	int num = 1;
-	_textures.resize(num);
-
-	glGenTextures(num, &_textures[0]);
-	glBindTexture(GL_TEXTURE_2D, _textures[0]);
-	checkErrors();
+	Vagabond2GL::bindTextures();
 	bindOneTexture(pic_bond);
 }
 

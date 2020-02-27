@@ -1,7 +1,7 @@
 #ifndef __vagabond_Blob_vsh__
 #define __vagabond_Blob_vsh__
 
-std::string Blob_vsh =
+inline std::string Blob_vsh =
 "attribute vec3 normal;\n"\
 "attribute vec3 position;\n"\
 "attribute vec4 color;\n"\
@@ -23,6 +23,7 @@ std::string Blob_vsh =
 "   vec4 model4 = model * pos;\n"\
 "	vPos = model4;\n"\
 "	gl_PointSize = -800. / model4[2];\n"\
+"	gl_PointSize *= normal[0];\n"\
 "	vColor = color;\n"\
 "}";
 

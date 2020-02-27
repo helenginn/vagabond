@@ -1,7 +1,7 @@
 #ifndef __vagabond_InkBond_fsh__
 #define __vagabond_InkBond_fsh__
 
-std::string InkBond_fsh =
+inline std::string InkBond_fsh =
 "varying vec4 vColor;\n"\
 "varying vec2 vTex;\n"\
 "varying vec4 vPos;\n"\

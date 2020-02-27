@@ -135,7 +135,58 @@ void CrystalExplorer::clickedMoleListItem()
 		connect(b, &QPushButton::clicked,
 		        [=]{ pushFitSides(); });
 		_widgets.push_back(b);
+
+		height += TEXT_HEIGHT;
+
+		PolymerPtr p= ToPolymerPtr(molecule);
+		AnchorPtr a = p->getAnchorModel();
+
+		if (a->motionCount() >= 1)
+		{
+			label = new QLabel("Rotation scale", this);
+			label->setGeometry(160, height, 200, TEXT_HEIGHT);
+			_widgets.push_back(label);
+			label->show();
+
+			height += TEXT_HEIGHT;
+			QSlider *s = new QSlider(Qt::Horizontal, this);
+			s->setGeometry(160, height, 420, TEXT_HEIGHT);
+			s->setMinimum(0);
+			s->setMaximum(200);
+			double now = Motion::getScale(&*a->getMotion(0));
+			s->setValue(now * 100);
+			s->show();
+			connect(s, &QSlider::valueChanged,
+			        [=]{ slideScale(s); });
+			_widgets.push_back(s);
+		}
 	}
+}
+
+void CrystalExplorer::slideScale(QSlider *s)
+{
+	if (!_currMole->isPolymer())
+	{
+		return;
+	}
+
+	PolymerPtr p= ToPolymerPtr(_currMole);
+	AnchorPtr a = p->getAnchorModel();
+	
+	if (a->motionCount() < 1)
+	{
+		return;
+	}
+	
+	double value = s->value();
+	value /= 100;
+
+	MotionPtr mot = a->getMotion(0);
+    Notifiable *notify = Options::getRuntimeOptions()->getNotify();
+    notify->setObject(&*mot);
+    notify->setSetter(Motion::setScale, value);
+    notify->setRefreshGroup(p);
+    notify->setInstruction(InstructionTypeSetObjectValue);
 }
 
 CrystalExplorer::CrystalExplorer(QWidget *parent, CrystalPtr crystal)

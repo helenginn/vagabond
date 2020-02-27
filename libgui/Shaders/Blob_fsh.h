@@ -1,7 +1,7 @@
 #ifndef __vagabond_Blob_fsh__
 #define __vagabond_Blob_fsh__
 
-std::string Blob_fsh =
+inline std::string Blob_fsh =
 "#version 120\n"\
 "varying vec4 vColor;\n"\
 "varying vec2 vTex;\n"\

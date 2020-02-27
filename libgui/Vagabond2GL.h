@@ -28,7 +28,7 @@ typedef std::map<MoleculePtr, int> GLMoleculeMap;
 class Vagabond2GL : public GLObject
 {
 public:
-	Vagabond2GL()
+	Vagabond2GL() : GLObject()
 	{
 		_renders = 0;
 		_lastEnsembleCount = 0;
@@ -63,6 +63,11 @@ public:
 	virtual bool isVagabond2GL()
 	{
 		return true;
+	}
+	
+	void setShouldGetBonds(bool should = true)
+	{
+		_shouldGetBonds = should;
 	}
 	
 	void toggleColourByFlex()

@@ -1,7 +1,7 @@
 #ifndef __vagabond_InkBond__
 #define __vagabond_InkBond__
 
-std::string InkBond_vsh =
+inline std::string InkBond_vsh =
 "attribute vec3 normal;\n"\
 "attribute vec3 position;\n"\
 "attribute vec4 color;\n"\

@@ -40,6 +40,11 @@ public:
 	void draggedRightMouse(float x, float y);
 	void panned(float x, float y);
 	
+	Vagabond2GLPtr getMulti2GL()
+	{
+		return _multi2GL;
+	}
+	
 	Density2GLPtr getDiffDens2GL()
 	{
 		return _diffDens2GL;
@@ -80,6 +85,7 @@ public:
 	void setMouseRefine(bool val);
 	
 	void toggleKicks();
+	void novalentSelected();
 	void deleteSelected();
 	void splitSelected();
 	void focusOnSelected();
@@ -128,6 +134,7 @@ private:
 	Vagabond2GLPtr _allBond2GL;
 	Vagabond2GLPtr _aveBond2GL;
 	Vagabond2GLPtr _atoms2GL;
+	Vagabond2GLPtr _multi2GL;
 	Selected2GLPtr _selected2GL;
 };
 

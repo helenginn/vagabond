@@ -1,4 +1,4 @@
-std::string Shader_fsh =
+inline std::string Shader_fsh =
 "varying vec4 vColor;\n"\
 "varying vec4 vPos;\n"\
 "uniform vec3 focus;\n"\
