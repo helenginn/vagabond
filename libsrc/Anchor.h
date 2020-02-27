@@ -224,8 +224,6 @@ public:
 		anch->propagateChange(-1);
 	}
 	
-	/* Set matrix describing principle axes of polymer. This should
-	 * help choose sensible starting parameters for libration */
 	virtual std::string getClassName()
 	{
 		return "Anchor";
