@@ -755,6 +755,11 @@ MoleculePtr Atom::getMolecule()
 	{
 		return getMonomer()->getPolymer();
 	}
+	
+	if (getModel() && getModel()->getMolecule())
+	{
+		return getModel()->getMolecule();
+	}
 
 	return MoleculePtr();
 }
