@@ -54,6 +54,11 @@ double scale_factor_by_sum(std::vector<double> &set1, std::vector<double> &set2)
 
 	if (grad < 0)
 	grad = -1;
+	
+	if (grad != grad)
+	{
+		grad = 0;
+	}
 
 	return grad;
 }
