@@ -255,6 +255,8 @@ void RefinementStrategy::finish()
 		}
 
 		_changed = 1;
+		
+		findIfSignificant();
 	}
 
 	cycleNum = 0;
@@ -289,3 +291,19 @@ void RefinementStrategy::reportResult()
 	}
 }
 
+
+void RefinementStrategy::findIfSignificant()
+{
+	_enough = false;
+	for (int i = 0; i < parameterCount(); i++)
+	{
+		Parameter p = getParamObject(i);
+		double change = fabs(p.other_value - p.start_value);
+		
+		if (change > p.step_size * 2)
+		{
+			_enough = true;
+		}
+	}
+
+}

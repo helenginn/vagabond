@@ -59,6 +59,7 @@ class RefinementStrategy
 public:
 	RefinementStrategy()
 	{
+		_enough = false;
 		evaluationFunction = NULL;
 		maxCycles = 30;
 		cycleNum = 0;
@@ -82,6 +83,11 @@ public:
 	}
 	virtual void refine();
 	void resetToInitialParameters();
+	
+	bool changedSignificantly()
+	{
+		return _enough;
+	}
 
 	void addParameter(void *object, Getter getter, Setter setter, 
 	                  double stepSize, double otherValue, 
@@ -195,7 +201,9 @@ protected:
 	double startingScore;
 	double _prevScore;
 	bool _verbose;
+	bool _enough;
 
+	void findIfSignificant();
 	double getGradientForParam(int i);
 	double estimateGradientForParam(int i);
 	double getValueForParam(int i);
