@@ -46,7 +46,7 @@ void WeightedMap::setCrystalAndData(CrystalPtr crystal, DiffractionPtr data)
 	{
 		double real = _fft->getReal(i);
 		
-		if (real != real || !isfinite(real))
+		if (real != real || !std::isfinite(real))
 		{
 			_fft->setComponent(i, 0, 0);
 			_fft->setComponent(i, 1, 0);

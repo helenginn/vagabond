@@ -540,7 +540,7 @@ void Crystal::applyShellFactors(DiffractionPtr data)
 				
 				double scale = _shells[index].scale;
 				
-				if (scale != scale || !isfinite(scale))
+				if (scale != scale || !std::isfinite(scale))
 				{
 					scale = 0;
 				}
