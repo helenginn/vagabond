@@ -106,6 +106,14 @@ AtomPtr AtomGroup::findAtom(std::string atomType, std::string confID)
 	return AtomPtr();
 }
 
+void AtomGroup::addAtomsFrom(std::vector<AtomPtr> group)
+{
+	for (size_t i = 0; i < group.size(); i++)
+	{
+		addAtom(group[i]);	
+	}
+}
+
 void AtomGroup::addAtomsFrom(AtomGroupPtr group)
 {
 	for (size_t i = 0; i < group->atomCount(); i++)

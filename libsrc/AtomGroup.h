@@ -69,6 +69,7 @@ public:
 	virtual void removeAtom(AtomPtr atom);
 
 	void addAtomsFrom(AtomGroupPtr group);
+	void addAtomsFrom(std::vector<AtomPtr> group);
 
 	AtomList beyondGroupAtoms(bool just_bottom = false);
 	
