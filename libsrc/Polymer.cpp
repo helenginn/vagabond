@@ -952,8 +952,8 @@ void Polymer::graph(std::string graphName)
 	plotMap["colour1"] = "red";
 	plotMap["yMin0"] = "0";
 	plotMap["yMin1"] = "0";
-	plotMap["yMax0"] = "60";
-	plotMap["yMax1"] = "60";
+	plotMap["yMax0"] = "100";
+	plotMap["yMax1"] = "100";
 
 	plotMap["xTitle0"] = "Residue number";
 	plotMap["yTitle0"] = "B factor";
