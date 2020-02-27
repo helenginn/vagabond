@@ -202,6 +202,11 @@ void Atom::inheritParents()
 
 void Atom::setModel(ModelPtr model)
 {
+	if (_model)
+	{
+		model->setMolecule(_model->getMolecule());
+	}
+
 	_model = model;
 }
 
