@@ -581,11 +581,6 @@ void WeightedMap::create2FoFcCoefficients()
 				double fused = 2 * fobs - fcalc;
 				double weight = exp(-stdev * stdev);
 				
-				if (fcalc >= fobs)
-				{
-//					fused = m * fobs * fobs / (d * fcalc);
-				}
-
 				complex.x = fused * cos(phase);
 				complex.y = fused * sin(phase);
 
