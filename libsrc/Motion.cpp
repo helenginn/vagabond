@@ -105,20 +105,16 @@ void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
 
 void Motion::refine()
 {
-	std::cout << "Refining motion: " << _name << std::endl;
+	std::cout << "\nRefining motion: " << _name << std::endl;
 	
 	int maxRot = Options::getMaxRotations();
 	bool maxed = false;
 
 	FlexGlobal target;
-	NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
-	attachTargetToRefinement(neld, target);
 
-	neld->setJobName("translation");
-	addTranslationParameters(neld);
-	neld->refine();
-
-	_allAtoms->refreshPositions();
+	Fibonacci fib;
+	fib.generateLattice(31, 0.02);
+	std::vector<vec3> points = fib.getPoints();
 
 	for (int j = 0; j < maxRot; j++)
 	{
@@ -132,10 +128,6 @@ void Motion::refine()
 			attachTargetToRefinement(list, target);
 			target.recalculateConstant();
 			addLibrationParameters(list, j);
-
-			Fibonacci fib;
-			fib.generateLattice(31, 0.02);
-			std::vector<vec3> points = fib.getPoints();
 			
 			std::vector<double> zero = std::vector<double>(3, 0);
 			list->addTestSet(zero);
@@ -157,23 +149,15 @@ void Motion::refine()
 				deleteLastScrew();
 				maxed = true;
 			}
+			else
+			{
+				int num = list->getChosen();
+				points.erase(points.begin() + num - 1);
+			}
 		}
 		else
 		{
 //			maxed = true;
-		}
-
-		_allAtoms->refreshPositions();
-
-		{
-			NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
-			neld->setJobName("rots_only");
-			attachTargetToRefinement(neld, target);
-			target.recalculateConstant();
-
-			addLibrationParameters(neld, -1);
-			neld->refine();
-
 		}
 
 		_allAtoms->refreshPositions();
@@ -184,14 +168,27 @@ void Motion::refine()
 		}
 	}
 
+
+	for (int i = 0; i < 2; i++)
 	{
 		NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 		attachTargetToRefinement(neld, target);
-		neld->setJobName("rots_and_offsets");
+		neld->setJobName("translation");
+		addTranslationParameters(neld);
+		neld->refine();
+		_allAtoms->refreshPositions();
+	}
+
+	for (int i = 0; i < 2; i++)
+	{
+		NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
+		neld->setJobName("rots_only");
+		attachTargetToRefinement(neld, target);
+		target.recalculateConstant();
 
 		addLibrationParameters(neld, -1);
-		addScrewParameters(neld, -1);
 		neld->refine();
+		_allAtoms->refreshPositions();
 	}
 }
 
@@ -297,7 +294,7 @@ void Motion::addScrewParameters(RefinementStrategyPtr strategy,
 		for (int i = 0; i < _quats.size(); i++)
 		{
 			std::string screw = "offset" + i_to_str(i);
-			_screws[i]->addVec2ToStrategy(strategy, 3.0, 0.01, screw);
+			_screws[i]->addVec2ToStrategy(strategy, 1.0, 0.05, screw);
 		}
 	}
 	else
@@ -308,7 +305,7 @@ void Motion::addScrewParameters(RefinementStrategyPtr strategy,
 		}
 
 		std::string screw = "offset" + i_to_str(num);
-		_screws[num]->addVec2ToStrategy(strategy, 3.0, 0.01, screw);
+		_screws[num]->addVec2ToStrategy(strategy, 1.0, 0.05, screw);
 	}
 }
 
