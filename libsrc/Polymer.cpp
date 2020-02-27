@@ -587,9 +587,13 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 	{
 		int tmp = end;
 		end = start;
-		start = tmp;
+		start = tmp - 1;
 	}
-
+	else
+	{
+		end++;
+	}
+	
 	Timer timer("refine range", true);
 
 	int count = 0;
