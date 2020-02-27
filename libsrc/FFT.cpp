@@ -89,9 +89,9 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
 	_myDims = NULL;
 	_spg = CSym::ccp4spg_load_by_ccp4_num(1);
 
-	if (_nx % 2 == 1) _nx -= 1;
-	if (_ny % 2 == 1) _ny -= 1;
-	if (_nz % 2 == 1) _nz -= 1;
+	if (_nx % 2 == 1 && _nx != 1) _nx -= 1;
+	if (_ny % 2 == 1 && _ny != 1) _ny -= 1;
+	if (_nz % 2 == 1 && _nz != 1) _nz -= 1;
 
 	_nele = nele;
 	_nscratch = scratches;
