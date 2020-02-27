@@ -60,6 +60,13 @@ public:
 		return static_cast<Quat4Refine *>(object);
 	}
 	
+	void setVec3(vec3 v)
+	{
+		_quat.x = v.x;
+		_quat.y = v.y;
+		_quat.z = v.z;
+	}
+	
 	static void setX(void *object, double value)
 	{
 		toQuat(object)->_quat.x = value;
