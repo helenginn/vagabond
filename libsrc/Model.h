@@ -126,6 +126,11 @@ public:
 		return (getClassName() == "Bond");
 	}
 
+	bool isSponge()
+	{
+		return (getClassName() == "Sponge");
+	}
+
 	bool isAbsolute()
 	{
 		return (getClassName() == "Absolute");
