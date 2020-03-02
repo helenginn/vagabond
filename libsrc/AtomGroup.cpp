@@ -1001,12 +1001,6 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot,
 		return rfactor;
 	}
 
-	if (ws->scoreType == ScoreTypeHappiness)
-	{
-		double happy = happiness_coefficient(ws->vals);
-		return happy;
-	}
-
 	double score = 0;
 	return score;
 }
