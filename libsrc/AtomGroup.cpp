@@ -1033,6 +1033,8 @@ void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals,
 		#endif
 
 		if (!difference && fc < cutoff) continue;
+		
+		if (vals[i].weight < cutoff) continue;
 
 		csv->addEntry(5, pos.x, pos.y, pos.z, fo, fc);
 	}
