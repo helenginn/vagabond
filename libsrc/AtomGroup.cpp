@@ -22,6 +22,7 @@
 #include <iomanip>
 #include "CSV.h"
 #include "maths.h"
+#include "Bucket.h"
 #include "Diffraction.h"
 #include "Shouter.h"
 #include "../libccp4/ccp4_spg.h"
@@ -919,12 +920,22 @@ double AtomGroup::scoreWithReciprocal(MapScoreWorkspace *ws)
 		createConstantFraction(ws, min, max);
 
 		/* copy the exact dimensions of the crystal's FFT */
-		ws->recip = VagFFTPtr(new VagFFT(*crystal->getFFT(), 2));
+		ws->recip = VagFFTPtr(new VagFFT(*crystal->getFFT(), 3));
 		ws->recip->makePlans();
+
+		/* grab the solvent */
+		
+		if (crystal->getBucket())
+		{
+			VagFFTPtr solv = crystal->getBucket()->getSolvent();
+			ws->recip->copyFrom(solv);
+			ws->recip->copyToScratch(1);
+		}
+		
 		/* get the data amplitudes and copy to scratch */
 		DiffractionPtr data = Options::getRuntimeOptions()->getActiveData();
 		data->copyToFFT(ws->recip);
-		ws->recip->copyToScratch(1);
+		ws->recip->copyToScratch(2);
 
 		/* now we get a new min/max fraction for creation of our
 		 * own segment map */
@@ -955,8 +966,9 @@ double AtomGroup::scoreWithReciprocal(MapScoreWorkspace *ws)
 	ws->recip->fft(FFTRealToReciprocal);
 	ws->recip->addScratchBack(0);
 	ws->recip->applySymmetry(true, mr);
+	ws->recip->addScratchBack(1);
 
-	double cc = ws->recip->compareReciprocalToScratch(1);
+	double cc = ws->recip->compareReciprocalToScratch(2);
 	return -cc;
 }
 
