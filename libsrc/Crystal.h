@@ -514,7 +514,7 @@ public:
 	/** Fit whole molecules to electron density as a refinement protocol.
 	* 	\param translation if true, will refine translation parameters
 	* 	\param rotation if true, will refine rotation parameters. */
-	void fitWholeMolecules();
+	void fitWholeMolecules(bool recip = false);
 	bool calibrateAllMolecules();
 	void refinePolymers(RefinementType type);
 	void refinePositions();

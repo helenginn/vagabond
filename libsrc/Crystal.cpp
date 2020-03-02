@@ -1346,25 +1346,12 @@ size_t Crystal::polymerCount()
 	return count;
 }
 
-void Crystal::fitWholeMolecules()
+void Crystal::fitWholeMolecules(bool recip)
 {
-	/* All molecules together */
-	
-	/*
-	MotionPtr overall = getOverallMotion();
-	
-	if (!overall)
-	{
-		return;
-	}
-	
-	if (!overall->hasRefined())
-	{
-		overall->refine();
-		return;
-	}
-	*/
-	
+	std::cout << "Refining in " << 
+	(recip ? "reciprocal " : "real ") << 
+	"space." << std::endl;
+
 	for (int i = 0; i < _motions.size(); i++)
 	{
 		if (_motions[i]->getName() == "all")
@@ -1372,7 +1359,7 @@ void Crystal::fitWholeMolecules()
 			continue;
 		}
 
-		_motions[i]->refine(true);
+		_motions[i]->refine(recip);
 	}
 }
 
