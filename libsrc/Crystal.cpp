@@ -1115,11 +1115,6 @@ void Crystal::fourierTransform(int dir, double res)
 	{
 		_fft->fft(FFTReciprocalToReal);
 	}
-	
-	if (_bucket)
-	{
-		_bucket->fourierTransform(dir);
-	}
 }
 
 void Crystal::makePDBs(std::string suffix)
