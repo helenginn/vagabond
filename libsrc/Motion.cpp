@@ -174,7 +174,7 @@ void Motion::refine(bool reciprocal)
 	}
 
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 1; i++)
 	{
 		NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 		attachTargetToRefinement(neld, target);
