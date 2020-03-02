@@ -62,6 +62,17 @@ public:
 	void reset();
 	static void setScale(void *object, double scale);
 	static double getScale(void *object);
+
+	static void setTransScale(void *object, double scale)
+	{
+		static_cast<Motion *>(object)->_transScale = scale;
+	}
+
+	static double getTransScale(void *object)
+	{
+		return static_cast<Motion *>(object)->_transScale;
+
+	}
 	
 	void absorbScale();
 
@@ -117,6 +128,7 @@ private:
 	std::vector<Quat4Refine *> _screws;
 	
 	double _scale;
+	double _transScale;
 	bool _refined;
 	vec3 _centre;
 	AtomGroupPtr _allAtoms;

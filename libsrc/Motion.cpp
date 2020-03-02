@@ -30,6 +30,7 @@ Motion::Motion()
 {
 	_scale = 1;
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, NULL));
+	_transScale = 1;
 	_refined = false;
 	_allAtoms = AtomGroupPtr(new AtomGroup());
 	_allAtoms->setName("motion_all");
@@ -77,6 +78,7 @@ void Motion::translateStartPositions(std::vector<BondSample> &stored)
 		vec3 start = stored[i].start;
 		vec3 diff = vec3_subtract_vec3(start, sum_start);
 		mat3x3_mult_vec(trans, &diff);
+		vec3_mult(&diff, _transScale);
 		vec3 new_start = vec3_add_vec3(sum_start, diff);
 		vec3 old_start = vec3_add_vec3(sum_old, diff);
 
@@ -424,6 +426,12 @@ void Motion::absorbScale()
 	}
 	
 	_scale = 1;
+
+	mat3x3 mat = _trans->getMat3x3();
+	mat3x3_mult_scalar(&mat, _transScale);
+	_trans->setMat3x3(mat);
+
+	_transScale = 1;
 }
 
 void Motion::reset()
