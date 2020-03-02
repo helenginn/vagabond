@@ -535,7 +535,7 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 
 				if (add)
 				{
-					addInterpolatedToReal(column, x, y, z, dens * scale);
+					addInterpolatedToReal(column, x, y, z, dens * scale * vol);
 				}
 				
 				total += dens * vol;
@@ -652,7 +652,7 @@ void VagFFT::printSlice(double zVal, double scale)
 		for (int i = 0; i < _nx; i++)
 		{
 			std::string symbol = " ";
-			double value = getAmplitude(_elements[0], i, j, zVal);
+			double value = getAmplitude(i, j, zVal);
 
 			if (value > 0.01 * scale) symbol = ".";
 			if (value > 0.02 * scale) symbol = ":";
@@ -678,7 +678,6 @@ void VagFFT::addExplicitAtom(AtomPtr atom)
 	positions = atom->getExplicitModel()->getFinalPositions();
 	ElementPtr ele = atom->getElement();
 	int column = whichColumn(ele);
-	double vol = mat3x3_volume(_realBasis);
 	double low = atom->getExplicitModel()->getLowestZ();
 
 	for (int i = 0; i < positions.size(); i++)
@@ -689,7 +688,7 @@ void VagFFT::addExplicitAtom(AtomPtr atom)
 		mat3x3_mult_vec(_recipBasis, &pos);
 
 		double occ = positions[i].occupancy;
-		double dens = occ / vol;
+		double dens = occ;
 
 		addInterpolatedToReal(column, pos.x, pos.y, pos.z, dens);
 	}
