@@ -19,7 +19,6 @@
 #include "BucketPerStrand.h"
 #include "Crystal.h"
 #include "shared_ptrs.h"
-#include "fftw3d.h"
 
 void BucketPerStrand::addSolvent()
 {

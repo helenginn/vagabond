@@ -6,7 +6,6 @@
 //  Copyright (c) 2017 Strubi. All rights reserved.
 //
 
-#include "fftw3d.h"
 #include "BucketBulkSolvent.h"
 #include "Crystal.h"
 #include "mat3x3.h"

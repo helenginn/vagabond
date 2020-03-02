@@ -105,11 +105,6 @@ double Chelate::getMeanSquareDeviation()
 	return _chelateAbs->getMeanSquareDeviation();
 }
 
-FFTPtr Chelate::makeDistribution()
-{
-	return _chelateAbs->makeDistribution();
-}
-
 vec3 Chelate::getAbsolutePosition()
 {
 	return _chelateAbs->getAbsolutePosition();

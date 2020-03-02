@@ -94,11 +94,22 @@ void Motion::addTranslationParameters(RefinementStrategyPtr strategy)
 }
 
 void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
-                                      FlexGlobal &target)
+                                      FlexGlobal &target,
+                                      bool recip)
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	target.setAtomGroup(_allBackbone);
 	target.setCrystal(crystal);
+	target.setReciprocalRefinement(recip);
+	
+	if (!recip)
+	{
+		target.setAtomGroup(_allBackbone);
+	}
+	else
+	{
+		target.setAtomGroup(_allAtoms);
+	}
+
 	strategy->setVerbose(true);
 	strategy->setCycles(100);
 	target.getWorkspace().filename = "pre_motion";
@@ -115,7 +126,6 @@ void Motion::refine(bool reciprocal)
 	bool maxed = false;
 
 	FlexGlobal target;
-	target.setReciprocalRefinement(reciprocal);
 
 	Fibonacci fib;
 	fib.generateLattice(31, 0.02);
@@ -130,7 +140,7 @@ void Motion::refine(bool reciprocal)
 			
 			RefinementListPtr list = RefinementListPtr(new RefinementList());
 			list->setJobName("rot_search");
-			attachTargetToRefinement(list, target);
+			attachTargetToRefinement(list, target, reciprocal);
 			target.recalculateConstant();
 			addLibrationParameters(list, j);
 			
@@ -177,7 +187,7 @@ void Motion::refine(bool reciprocal)
 	for (int i = 0; i < 1; i++)
 	{
 		NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
-		attachTargetToRefinement(neld, target);
+		attachTargetToRefinement(neld, target, reciprocal);
 		target.recalculateConstant();
 		neld->setJobName("translation");
 		addTranslationParameters(neld);
@@ -190,7 +200,7 @@ void Motion::refine(bool reciprocal)
 	{
 		NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 		neld->setJobName("rots_only");
-		attachTargetToRefinement(neld, target);
+		attachTargetToRefinement(neld, target, reciprocal);
 		target.recalculateConstant();
 
 		addLibrationParameters(neld, -1);

@@ -22,7 +22,6 @@
 #include "Options.h"
 #include "ExplicitModel.h"
 #include "WaterNetwork.h"
-#include "MapScoreWorkspace.h"
 
 void Sponge::findConnections()
 {

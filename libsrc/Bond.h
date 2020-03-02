@@ -26,7 +26,6 @@
 #include <string>
 #include <vector>
 #include "mat3x3.h"
-#include "Distributor.h"
 #include <iostream>
 #include "Atom.h"
 #include "BondGroup.h"

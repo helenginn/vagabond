@@ -10,7 +10,6 @@
 #include "Atom.h"
 #include <math.h>
 #include "Shouter.h"
-#include "fftw3d.h"
 #include <stdlib.h>
 #include <iostream>
 #include "../libinfo/ScatterFactors.h"
@@ -94,46 +93,6 @@ double Element::getVoxelValue(void *object, double x, double y, double z)
 	}
 	
 	return val;
-}
-
-FFTPtr Element::getDistribution(bool, int new_n)
-{
-	double n = ATOM_SAMPLING_COUNT;
-	
-	if (new_n > 0)
-	{
-		n = new_n;
-	}
-	
-	double scale = Options::getRuntimeOptions()->getActiveCrystalDStar();
-	scale *= 2;
-	
-	get_voxel_value *func = getVoxelValue;
-
-	prepareDistribution(n, scale, this, func);
-	return getDistributionCopy();
-}
-
-void Element::populateFFT(mat3x3 basis, FFTPtr fft)
-{
-	mat3x3 fft_vox_basis = fft->getBasis();
-
-	for (int z = -fft->nz / 2; z <= fft->nz / 2; z++)
-	{
-		for (int y = -fft->ny / 2; y <= fft->ny / 2; y++)
-		{
-			for (int x = -fft->nx / 2; x <= fft->nx / 2; x++)
-			{
-				vec3 real = make_vec3(x, y, z);
-				mat3x3_mult_vec(basis, &real);
-				mat3x3_mult_vec(fft_vox_basis, &real);
-
-				double val = getVoxelValue(this, real.x, real.y, real.z);
-				int ele = fft->element(x, y, z);
-				fft->data[ele][0] = val;
-			}
-		}
-	}
 }
 
 std::vector<ElementPtr> Element::elementList(std::vector<AtomPtr> atoms)

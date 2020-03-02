@@ -11,7 +11,6 @@
 #include "Shouter.h"
 #include "../libccp4/csymlib.h"
 #include <vector>
-#include "fftw3d.h"
 #include "Options.h"
 #include "FileReader.h"
 

@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 #include "shared_ptrs.h"
-#include "Distributor.h"
+#include "mat3x3.h"
 
 /**
  * \class Element
@@ -25,7 +25,7 @@
  * to Element::getElement().
  */
 
-class Element : public Distributor
+class Element
 {
 public:
 
@@ -38,12 +38,6 @@ public:
 	/** Get the appropriate Element object for a given capitalised two-letter
 	  * symbol as seen on the periodic table */
 	static ElementPtr getElement(std::string symbol);
-	
-	/** Get the FFT distribution for this atom, using the scattering
-	 * 	factors from International Tables F */
-	virtual FFTPtr getDistribution(bool = false, int new_n = -1);
-
-	void populateFFT(mat3x3 basis, FFTPtr fft);
 
 	/** Returns one- or two-letter abbreviation of element as on the periodic
 	  * table, fully capitalised */
@@ -91,7 +85,6 @@ private:
 	double _electrons;
 
 	float _scattering[62];
-	FFTPtr _fft;
 
 	static std::vector<ElementPtr> elements;
 

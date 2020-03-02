@@ -65,10 +65,8 @@ base_files = files('libsrc/Absolute.cpp',
 'libsrc/CSV.cpp', 
 'libsrc/Diffraction.cpp', 
 'libsrc/DiffractionMTZ.cpp', 
-'libsrc/Distributor.cpp', 
 'libsrc/Element.cpp', 
 'libsrc/ExplicitModel.cpp', 
-'libsrc/fftw3d.cpp', 
 'libsrc/FFT.cpp', 
 'libsrc/Fibonacci.cpp', 
 'libsrc/FileReader.cpp', 
@@ -120,7 +118,6 @@ lib_vag = library('vag', gen_src, base_files,
 dependencies: [png_dep, fftw_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep], cpp_args: ['-w', '-std=c++11'], install: true)
 inc_vag = include_directories('libsrc')
 dep_vag = declare_dependency(link_with: lib_vag, include_directories: inc_vag)
-
 
 # Command line interface
 

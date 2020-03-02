@@ -44,7 +44,6 @@ public:
 	{
 		return true;
 	}
-	FFTPtr makeDistribution();
 
 	/** Mean position of blurred positions without including whole-molecule
 	* 	deviations. Should not be used for finding final atom position
@@ -133,9 +132,6 @@ public:
 	void addShifts(RefinementStrategyPtr strategy,
                               AtomGroupPtr clearGroup);
 	
-	void addDirectlyToMap(FFTPtr fft, mat3x3 basis, vec3 offset,
-	                      bool noWrap = false);
-	
 	void setRotCentre(vec3 centre)
 	{
 		_centre = centre;
@@ -156,8 +152,6 @@ public:
 	                                   double b,
 	                                   std::vector<double> &occs);
 protected:
-	FFTPtr makeRealSpaceDistribution();
-	void addRealSpacePositions(FFTPtr real, vec3 offset);
 	bool _changedSamples;
 	virtual void sanityCheck();
 

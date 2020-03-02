@@ -25,7 +25,6 @@
 #include "shared_ptrs.h"
 #include "mat3x3.h"
 #include "Object.h"
-#include "fftw3d.h"
 #include "FFT.h"
 #include "Motion.h"
 #include <string>
@@ -107,68 +106,6 @@ inline vec3 getNLimits(VagFFTPtr data)
 	lims.x = getNLimit(data, 0);
 	lims.y = getNLimit(data, 1);
 	lims.z = getNLimit(data, 2);
-	return lims;
-}
-
-inline double getNLimit(FFTPtr fftData, FFTPtr fftModel, int axis = 0)
-{
-	double nLimit = 0;
-	if (axis == 0)
-	{
-		nLimit = std::min(fftData->nx, fftModel->nx);
-	}
-	else if (axis == 1)
-	{
-		nLimit = std::min(fftData->ny, fftModel->ny);
-	}
-	else if (axis == 2)
-	{
-		nLimit = std::min(fftData->nz, fftModel->nz);
-	}
-
-	nLimit = nLimit - ((int)nLimit % 2);
-	nLimit /= 2;
-
-	return nLimit;	
-}
-
-inline vec3 getNLimits(FFTPtr data, FFTPtr fftModel)
-{
-	vec3 lims;
-	lims.x = getNLimit(data, fftModel, 0);
-	lims.y = getNLimit(data, fftModel, 1);
-	lims.z = getNLimit(data, fftModel, 2);
-	return lims;
-}
-
-inline double getNLimit(FFTPtr fftData, VagFFTPtr fftModel, int axis = 0)
-{
-	double nLimit = 0;
-	if (axis == 0)
-	{
-		nLimit = std::min((int)fftData->nx, fftModel->nx());
-	}
-	else if (axis == 1)
-	{
-		nLimit = std::min((int)fftData->ny, fftModel->ny());
-	}
-	else if (axis == 2)
-	{
-		nLimit = std::min((int)fftData->nz, fftModel->nz());
-	}
-
-	nLimit = nLimit - ((int)nLimit % 2);
-	nLimit /= 2;
-
-	return nLimit;	
-}
-
-inline vec3 getNLimits(FFTPtr data, VagFFTPtr fftModel)
-{
-	vec3 lims;
-	lims.x = getNLimit(data, fftModel, 0);
-	lims.y = getNLimit(data, fftModel, 1);
-	lims.z = getNLimit(data, fftModel, 2);
 	return lims;
 }
 
@@ -568,7 +505,6 @@ public:
 		_comments += "\n";
 	}
 	
-	double getMaximumDStar(DiffractionPtr data = DiffractionPtr());
 	void openInCoot();
 	
 	/** Obtain the current number of samples, i.e. number of conformers

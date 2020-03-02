@@ -8,14 +8,12 @@
 
 #include "Bucket.h"
 #include "BucketBulkSolvent.h"
-#include "BucketFeatures.h"
 #include "BucketPerStrand.h"
 #include "FileReader.h"
 #include "Atom.h"
 #include <iostream>
 #include <iomanip>
 #include <algorithm>
-#include "fftw3d.h"
 #include "Shouter.h"
 #include "Crystal.h"
 #include "Diffraction.h"
@@ -73,6 +71,7 @@ void Bucket::fourierTransform(int dir)
 		_solvent->fft(FFTRealToReciprocal);
 		_solvent->applySymmetry(true);
 
+		return;
 		/* F000 = nothing */
 		_solvent->setComponent(0, 0, 0);
 		_solvent->setComponent(0, 1, 0);

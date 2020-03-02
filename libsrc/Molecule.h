@@ -37,15 +37,13 @@ public:
 	
 	virtual void summary();
 	virtual void tieAtomsUp();
-	virtual void refine(CrystalPtr target, RefinementType rType);
 	void tiedUpScattering(double *tied, double *all);
 	virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal,
 	                            int conformer = -1);
 	virtual void graph(std::string) {};
 	virtual void differenceGraphs(std::string, CrystalPtr) {};
 	void setAnchors();
-	void makePowderList();
-	void expandWaters();
+
 	virtual void refitToSavedPositions();
 
 	virtual void reportParameters();
@@ -63,17 +61,14 @@ public:
 	void setAbsoluteBFacSubtract(double subtract)
 	{
 		_absoluteBFacSubtract = subtract;
-		refreshBModels();
 	}
 	
 	static void setAbsoluteBFacSubtract(void *object, double subtract);
 
 	double getAbsoluteBFacMult();
 	double getAbsoluteBFacSubt();
-	void forceModelRecalculation();
 	void chelate(std::string element, double bufferB = 0);
 
-	void refreshBModels();
 	void setAbsoluteBFacMult(double mult);
 
 	void setChainID(std::string chain)

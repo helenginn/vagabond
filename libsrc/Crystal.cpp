@@ -27,7 +27,6 @@
 #include "Crystal.h"
 #include "FFT.h"
 #include "Bond.h"
-#include "fftw3d.h"
 #include "vec3.h"
 #include "Shouter.h"
 #include "Diffraction.h"
@@ -834,16 +833,6 @@ double Crystal::getMaxResolution(DiffractionPtr data)
 	}
 	
 	return _maxResolution;
-}
-
-/* bigger number is more detail */
-double Crystal::getMaximumDStar(DiffractionPtr data)
-{
-	double maxRes = getMaxResolution(data);
-	maxRes = 1 / maxRes;
-	maxRes *= 2.0;
-
-	return maxRes;
 }
 
 double Crystal::getAdjustBFactor()

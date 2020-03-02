@@ -19,6 +19,8 @@
 #ifndef __vagabond__fft__
 #define __vagabond__fft__
 
+#define FFTW_DATA_TYPE fftwf_complex
+
 #include <fftw3.h>
 #include "MapScoreWorkspace.h"
 #include "shared_ptrs.h"
@@ -317,20 +319,6 @@ public:
 	void addToValueAroundPoint(vec3 pos, double radius, double value,
 	                           int bitIndex = -1);
 	void convertMaskToSolvent(int expTotal);
-private:
-
-	template <typename T>
-	void collapse(T *x, T *y, T *z)
-	{
-		while (*x < 0) *x += _nx;
-		while (*x >= _nx) *x -= _nx;
-
-		while (*y < 0) *y += _ny;
-		while (*y >= _ny) *y -= _ny;
-
-		while (*z < 0) *z += _nz;
-		while (*z >= _nz) *z -= _nz;
-	}
 
 	/** Remove whole numbers and leave remainder between 0 and 1 for each
 	 * x, y, z fraction (i.e. remove unit cells) */
@@ -344,6 +332,20 @@ private:
 
 		while (*zfrac < 0) *zfrac += 1;
 		while (*zfrac >= 1) *zfrac -= 1;
+	}
+private:
+
+	template <typename T>
+	void collapse(T *x, T *y, T *z)
+	{
+		while (*x < 0) *x += _nx;
+		while (*x >= _nx) *x -= _nx;
+
+		while (*y < 0) *y += _ny;
+		while (*y >= _ny) *y -= _ny;
+
+		while (*z < 0) *z += _nz;
+		while (*z >= _nz) *z -= _nz;
 	}
 
 	double getAmplitude(ElementPtr ele, int i, int j, int k);

@@ -18,7 +18,6 @@
 
 #include "PartialStructure.h"
 #include "maths.h"
-#include "fftw3d.h"
 #include "Diffraction.h"
 #include "CSV.h"
 #include "RefinementNelderMead.h"

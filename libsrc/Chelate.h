@@ -54,7 +54,6 @@ public:
 
 	virtual vec3 getAbsolutePosition();
 	virtual double getMeanSquareDeviation();
-	FFTPtr makeDistribution();
 	
 	virtual std::string getClassName()
 	{

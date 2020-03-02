@@ -54,43 +54,6 @@ double Model::biggestStdevDim()
 	return sqrt(max);
 }
 
-int Model::fftGridLength()
-{
-	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
-	double scale = 2.0 * maxDStar;
-
-	/* Target dimension in Angstroms */
-	double dim = biggestStdevDim() * 2;
-	
-	if (dim != dim || dim <= 0)
-	{
-		dim = 0;
-	}
-	
-	/* Add some Angstroms for good luck */
-	dim += 2;
-	dim *= 2;
-	
-	int n = scale * dim + 0.5;
-	
-	if (n % 2 == 1)
-	{
-		n += 1;
-	}
-	
-	return n;
-}
-
-FFTPtr Model::getDistribution()
-{
-	if (_recalcDist)
-	{
-		_lastDistribution = makeDistribution();
-	}
-	
-	return _lastDistribution;
-}
-
 void Model::propagateChange(int depth, bool refresh)
 {
 	_recalcFinal = true;

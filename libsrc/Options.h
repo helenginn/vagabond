@@ -34,8 +34,6 @@ public:
 	void clear();
 	void makeCout();
 
-	double getActiveCrystalDStar();
-	
 	static void setRuntimeOptions(OptionsPtr pointer)
 	{
 		Options::options = pointer;

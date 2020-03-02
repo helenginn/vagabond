@@ -107,7 +107,7 @@ public:
 	}
 
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,
-	                              FlexGlobal &target);
+	                              FlexGlobal &target, bool recip = false);
 protected:
 	virtual void addProperties();
 	virtual void postParseTidy();

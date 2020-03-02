@@ -20,7 +20,6 @@
 #include "shared_ptrs.h"
 #include "Atom.h"
 #include <math.h>
-#include "fftw3d.h"
 #include "Element.h"
 #include <iostream>
 #include "Monomer.h"
@@ -170,20 +169,6 @@ double Absolute::getExpValue(void *object, double x, double y, double z)
 	double value = exp(exponent);
 
 	return value;
-}
-
-/*  Absolute distribution only needs to be the blurring due to the atomic
- *  B factor. The position should be provided by a different function. */
-
-FFTPtr Absolute::makeDistribution()
-{
-	double n = fftGridLength() * 2;
-	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
-	double scale = 2 * maxDStar;
-
-	prepareDistribution(n, scale, this, Absolute::getExpValue);
-
-	return getDistributionCopy();
 }
 
 void Absolute::resetSamples()

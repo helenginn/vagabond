@@ -857,7 +857,7 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	mat3x3_mult_vec(fftCrystal->_toRecip, &add);
 
 	/* Bring the fractional coordinate of the atom into range 0 < frac <= 1 */
-	FFT::collapseFrac(&add.x, &add.y, &add.z);
+	VagFFT::collapseFrac(&add.x, &add.y, &add.z);
 
 	/* Multiply by the relative dimensions of the crystal */
 	double multX = add.x * fftCrystal->_nx;
@@ -1510,12 +1510,9 @@ double VagFFT::minValue()
 
 double VagFFT::compareReciprocalToScratch(int scratch)
 {
-	double sum_x = 0;
-	double sum_y = 0;
-	double sum_xx = 0;
-	double sum_yy = 0;
-	double sum_xy = 0;
-	double sum_w = 0;
+	double sum = 0;
+	double stdev = 5.0;
+	double weights = 0;
 
 	for (int k = -_nz / 2; k < _nz / 2; k++)
 	{
@@ -1542,15 +1539,10 @@ double VagFFT::compareReciprocalToScratch(int scratch)
 
 				double sqlength = vec3_sqlength(ijk);
 
-				if (sqlength < 1 / 36.0)
-				{
-					continue;
-				}
-
 				long pre_index = element(i, j, k);
 				long scr_index = scratchIndex(pre_index, scratch);
 				
-				float y = _data[scr_index][0];
+				float y = _data[scr_index][0]; /* reference */
 				
 				if (y != y)
 				{
@@ -1558,32 +1550,30 @@ double VagFFT::compareReciprocalToScratch(int scratch)
 				}
 
 				double x = getIntensity(pre_index);
-//				std::cout << x << " " << y << std::endl;
 				
 				double weight = 1;
 
-				sum_x += x * weight;
-				sum_y += y * weight;
-				sum_yy += y * y * weight;
-				sum_xx += x * x * weight;
-				sum_xy += x * y * weight;
-				sum_w += weight;
+				double err = fabs(x - y) / y;
+				err /= stdev;
+				double e = exp(-(err * err));
+				
+				if (e != e)
+				{
+					continue;
+				}
+				
+				sum += e;
+				weights += weight;
 			}
 		}
 	}
 	
-	double top = sum_w * sum_xy - sum_x * sum_y;
-	double bottom_left = sum_w * sum_xx - sum_x * sum_x;
-	double bottom_right = sum_w * sum_yy - sum_y * sum_y;
-	
-	double cc = top / sqrt(bottom_left * bottom_right);
-	
 	/*
 	std::cout << "Compare recip to scratch: " << 
-	std::setprecision(6) << cc << std::endl;
+	std::setprecision(6) << sum / weights << std::endl;
 	*/
 
-	return cc;
+	return sum / weights;
 }
 
 void VagFFT::setAllReal(double val)

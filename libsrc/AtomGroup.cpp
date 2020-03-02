@@ -27,7 +27,6 @@
 #include "Shouter.h"
 #include "../libccp4/ccp4_spg.h"
 #include "Options.h"
-#include "fftw3d.h"
 #include "FFT.h"
 #include <time.h>
 

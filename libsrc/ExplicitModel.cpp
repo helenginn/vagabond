@@ -20,7 +20,6 @@
 #include "Twist.h"
 #include "Fibonacci.h"
 #include "Options.h"
-#include "fftw3d.h"
 #include "CSV.h"
 #include "Anisotropicator.h"
 #include "Atom.h"
@@ -218,94 +217,6 @@ mat3x3 ExplicitModel::makeTorsionBasis(vec3 hPos, vec3 maPos,
 	}
 
 	return basis;
-}
-
-void ExplicitModel::addRealSpacePositions(FFTPtr real, vec3 offset)
-{
-	std::vector<BondSample> positions = getFinalPositions();
-	
-	double realLimits = real->getScale(0) * real->nx;
-	vec3 absolute = getAbsolutePosition();
-
-	for (int i = 0; i < positions.size(); i++)
-	{
-		vec3 placement = positions[i].start;
-		vec3_add_to_vec3(&placement, offset);
-		vec3 relative = vec3_subtract_vec3(placement, absolute);
-
-		double occupancy = positions[i].occupancy;
-
-		vec3_mult(&relative, 1 / realLimits);
-
-		if (relative.x != relative.x)
-		{
-			continue;
-		}
-		
-		real->addInterpolatedToFrac(relative.x, relative.y, relative.z,
-		                            occupancy);
-	}
-}
-
-void ExplicitModel::addDirectlyToMap(FFTPtr fft, mat3x3 basis,
-                                     vec3 offset, bool noWrap)
-{
-	std::vector<BondSample> positions = getFinalPositions();
-
-	for (int i = 0; i < positions.size(); i++)
-	{
-		vec3 placement = positions[i].start;
-		placement = vec3_subtract_vec3(placement, offset);
-		double occupancy = positions[i].occupancy;
-		mat3x3_mult_vec(basis, &placement);
-		
-		if (noWrap)
-		{
-			if ((placement.x < 0 || placement.x >= 1) ||
-			    (placement.y < 0 || placement.y >= 1) ||
-			    (placement.z < 0 || placement.z >= 1))
-			{
-				continue;
-			}
-		}
-		
-		double b = Options::getActiveCrystal()->getRealBFactor();
-
-
-		fft->addInterpolatedToFrac(placement.x, placement.y, placement.z,
-		                           occupancy);
-	}
-}
-
-FFTPtr ExplicitModel::makeRealSpaceDistribution()
-{
-	double n = fftGridLength();
-	vec3 offset = empty_vec3();
-	
-	if (_overrideN > 0) n = _overrideN;
-	
-	/* Don't panic, invert scale below... this is in real space */
-	double maxDStar = Options::getRuntimeOptions()->getActiveCrystalDStar();
-	double scale = 1.0 / (2 * maxDStar);
-
-	FFTPtr fft = FFTPtr(new FFT());
-	fft->create(n);
-	fft->setScales(scale);
-	fft->createFFTWplan(1);
-
-	addRealSpacePositions(fft, offset);
-
-	fft->fft(1);
-	fft->invertScale();
-
-	FFTPtr newPtr;
-	newPtr.reset(new FFT(*fft));
-	return newPtr;
-}
-
-FFTPtr ExplicitModel::makeDistribution()
-{
-	return makeRealSpaceDistribution();
 }
 
 void ExplicitModel::writePositionsToFile(std::string filename)

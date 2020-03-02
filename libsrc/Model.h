@@ -12,7 +12,6 @@
 #include "shared_ptrs.h"
 #include <stdio.h>
 #include <vector>
-#include "Distributor.h"
 #include <mutex>
 #include "Parser.h"
 
@@ -31,7 +30,7 @@
  */
 
 
-class Model : public Distributor, public Parser
+class Model : public Parser
 {
 public:
 	ModelPtr shared_from_this()
@@ -41,11 +40,6 @@ public:
 
 	Model();
 	virtual ~Model() {};
-
-	/** Return an atom probability distribution from this model. Needs
-	 * 	to be reimplemented by non-abstract models. */
-	virtual FFTPtr makeDistribution() = 0;
-	FFTPtr getDistribution();
 
 	virtual std::string getClassName() = 0;
 
@@ -78,12 +72,6 @@ public:
 	* \return standard deviation (Angstroms)
 	*/
 	double biggestStdevDim();
-	
-	/**
-	* Suggests a grid length to use for an FFT containing this atom.
-	* \return integer grid length for x=y=z.
-	*/
-	int fftGridLength();
 	
 	/** Return the directly controlled atom of this model. Needs
 	 * reimplementing by non-abstract model classes. */
@@ -183,7 +171,6 @@ protected:
 	vec3 _longest;
 	double _anisotropyExtent;
 	double _smallness;
-	FFTPtr _lastDistribution;
 
 	virtual void getAnisotropy(bool) {};
 	virtual double anisotropyExtent(bool withKabsch = false);

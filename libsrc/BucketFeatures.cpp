@@ -19,7 +19,6 @@
 #include "BucketFeatures.h"
 #include "Fibonacci.h"
 #include "Crystal.h"
-#include "fftw3d.h"
 
 void BucketFeatures::addSolvent()
 {

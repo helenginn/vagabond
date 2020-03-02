@@ -244,8 +244,6 @@ void Options::run()
 		timer.report();
 		std::cout << std::endl;
 	}
-	
-	FFT::cleanupPlans();
 }
 
 void Options::executeProtocol()
@@ -326,9 +324,9 @@ void Options::executeProtocol()
 		{
 			int total = (i == 0 ? 2 : 1);
 			
-			for (int j = 0; j < 2; j++)
+			for (int j = 0; j < total; j++)
 			{
-				crystal->fitWholeMolecules(j == 1);
+				crystal->fitWholeMolecules(false);
 				recalculateFFT();
 
 				if (_rIntra || _far)
@@ -764,17 +762,6 @@ void Options::applyBMultiplier()
 	std::cout << "Applied HETATM B multiplier " << _bMult <<
 	" and subtraction " << _bSubt << "." << std::endl;
 
-	for (size_t i = 0; i < crystal->moleculeCount(); i++)
-	{
-		MoleculePtr molecule = crystal->molecule(i);
-
-		if (!molecule->isPolymer())
-		{
-			molecule->forceModelRecalculation();
-		}
-	}
-	
-
 	notifyGUI(true);
 }
 
@@ -965,14 +952,6 @@ bool Options::parseJoke(std::string arg)
 	}
 
 	return false;
-}
-
-double Options::getActiveCrystalDStar()
-{
-	CrystalPtr crystal = getActiveCrystal();
-	DiffractionPtr data = getActiveData();
-	
-	return crystal->getMaximumDStar(data);
 }
 
 void Options::renderDensity()

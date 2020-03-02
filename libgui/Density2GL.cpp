@@ -14,7 +14,6 @@
 #include "Shaders/Pencil_fsh.h"
 #include "../libsrc/Crystal.h"
 #include "../libsrc/Options.h"
-#include "../libsrc/fftw3d.h"
 #include <cstdarg>
 #include <algorithm>
 

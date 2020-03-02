@@ -20,6 +20,7 @@
 #define __vagabond__Sponge__
 
 #include "Novalent.h"
+#include "MapScoreWorkspace.h"
 
 class Sponge : public Novalent
 {

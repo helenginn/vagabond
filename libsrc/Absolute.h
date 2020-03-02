@@ -14,7 +14,6 @@
 #include "vec3.h"
 #include <string>
 #include "FileReader.h"
-#include "Distributor.h"
 #include "Bond.h"
 #include "Parser.h"
 
@@ -55,7 +54,6 @@ public:
 	Absolute();
 	virtual ~Absolute() {};
 
-	virtual FFTPtr makeDistribution();
 	virtual vec3 getAbsolutePosition()
 	{
 		return _position;
@@ -88,7 +86,6 @@ public:
 
 	virtual void propagateChange(int depth, bool refresh)
 	{
-		_calculated = false;
 		Model::propagateChange(depth, refresh);
 	}
 
@@ -162,7 +159,6 @@ public:
 	{
 		Absolute *abs = static_cast<Absolute *>(object);
 		abs->_bFactor = b;
-		abs->_calculated = false;
 	}
 
 	virtual std::string getClassName()

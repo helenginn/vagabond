@@ -18,7 +18,6 @@
 #include <string>
 #include <mutex>
 #include "../libinfo/GeomTable.h"
-#include "fftw3d.h"
 #include "Parser.h"
 #include "FileReader.h"
 
@@ -44,11 +43,6 @@ public:
 	/** Change the atom's model to a new one, which will now be called when
 	 * the atom distribution is required. Can be changed at any time */
 	void setModel(ModelPtr model);
-	
-	/** Get the atom position probability distribution (flexibility effects
-	 * 	caused by the model in reciprocal space with any weighting terms
-	 * 	applied */
-	FFTPtr getBlur();
 
 	/** Atom is *only* part of the backbone (so *not* including C-alpha atoms)
 	 */
@@ -130,9 +124,6 @@ public:
 	void addPointerToLocalArea(VagFFTPtr fft, vec3 pos,
 	                           std::vector<Atom *> *ptrs,
 	                           double rad = 0);
-
-	void addDirectlyToMap(FFTPtr fft, mat3x3 basis, 
-	                      vec3 offset, bool noWrap = false);
 
 	void setOriginalOccupancy(double occ)
 	{

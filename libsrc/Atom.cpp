@@ -8,7 +8,6 @@
 
 #include "Atom.h"
 #include "Absolute.h"
-#include "fftw3d.h"
 #include "mat3x3.h"
 #include <math.h>
 #include <stdlib.h>
@@ -210,14 +209,6 @@ void Atom::setModel(ModelPtr model)
 	_model = model;
 }
 
-FFTPtr Atom::getBlur()
-{
-	FFTPtr modelDist = _model->getDistribution();
-	/* YEAH, that line does something */
-
-	return modelDist;
-}
-
 vec3 Atom::getSymRelatedPosition(int i, int conf)
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
@@ -267,7 +258,7 @@ vec3 Atom::getPositionInAsu(int conf)
 		vec3 pos = getSymRelatedPosition(i, conf);
 		vec3 tmp = pos;
 		mat3x3_mult_vec(f2r, &tmp);
-		FFT::collapseFrac(&tmp.x, &tmp.y, &tmp.z);
+		VagFFT::collapseFrac(&tmp.x, &tmp.y, &tmp.z);
 		
 		if (tmp.x < spg->mapasu_zero[0] &&
 		    tmp.y < spg->mapasu_zero[1] &&
@@ -297,9 +288,6 @@ void Atom::addPointerToLocalArea(VagFFTPtr fft, vec3 pos,
 	double b = this->getBFactor();
 	mat3x3 unit_cell = fft->getRecipBasis();
 	mat3x3_mult_vec(unit_cell, &pos);
-	pos.x *= fft->nx();
-	pos.y *= fft->ny();
-	pos.z *= fft->nz();
 	
 	vec3 mins, maxs;
 	mat3x3 basis = fft->getRealBasis();	
@@ -408,33 +396,6 @@ void Atom::addToSolventMask(VagFFTPtr fft, double rad,
 			addPointerToLocalArea(fft, pos, ptrs, radius);
 		}
 	}
-}
-
-void Atom::addDirectlyToMap(FFTPtr fft, mat3x3 basis, vec3 offset,
-                            bool noWrap)
-{
-	if (!getModel()->hasExplicitPositions())
-	{
-		FFTPtr blur = getBlur();
-		blur->fft(1);
-		blur->invertScale();
-		double occ = _model->getEffectiveOccupancy();
-		double curr = blur->sumReal();
-		blur->multiplyAll(occ / curr);
-		
-		vec3 pos = _model->getAbsolutePosition();
-		vec3_subtract_from_vec3(&pos, offset);
-		mat3x3_mult_vec(basis, &pos);
-		blur->shiftToCentre();
-
-		FFT::add(fft, blur, pos, false);
-
-		return;
-	}
-	
-	ExplicitModelPtr expl = getExplicitModel();
-	expl->addDirectlyToMap(fft, basis, offset, noWrap);
-	
 }
 
 vec3 Atom::getAbsolutePosition()

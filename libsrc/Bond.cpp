@@ -13,7 +13,6 @@
 #include "Bond.h"
 #include "KeyPoints.h"
 #include "Atom.h"
-#include "fftw3d.h"
 #include "Shouter.h"
 #include "AtomGroup.h"
 #include "Whack.h"
