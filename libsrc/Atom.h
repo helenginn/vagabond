@@ -132,11 +132,6 @@ public:
 	                           std::vector<Atom *> *ptrs,
 	                           double rad = 0);
 
-	/* Returns a FFT for the model dist, for reuse */
-	void addToMap(FFTPtr fft, mat3x3 unit_cell,
-	              vec3 offset = make_vec3(0, 0, 0),
-	              bool sameScale = false, bool noWrap = false);
-
 	void addDirectlyToMap(FFTPtr fft, mat3x3 basis, 
 	                      vec3 offset, bool noWrap = false);
 
