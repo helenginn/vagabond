@@ -1,4 +1,4 @@
-set path+=libsrc/**,libgui/**,libinfo/**,doc/
+set path=libsrc/**,libgui/**,libinfo/**,doc/
 
 command! Tags !ctags -R libgui/* libsrc/*
 command! Ninja :wa|!ninja -C build/current
