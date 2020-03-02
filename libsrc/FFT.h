@@ -124,9 +124,7 @@ public:
 
 	/* simple pair-wise addition of final index reals of two FFTs */
 	void addSimple(VagFFTPtr v2);
-	void addSimple(FFTPtr v2);
 	
-	void copyFrom(FFTPtr fft);
 	void copyFrom(VagFFTPtr other);
 	
 	void copyRealToImaginary();
