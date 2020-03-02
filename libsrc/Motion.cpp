@@ -101,12 +101,13 @@ void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	target.setCrystal(crystal);
 	strategy->setVerbose(true);
 	strategy->setCycles(100);
+	target.getWorkspace().filename = "pre_motion";
 
 	strategy->setEvaluationFunction(FlexGlobal::score, &target);
 	FlexGlobal::score(&target);
 }
 
-void Motion::refine()
+void Motion::refine(bool reciprocal)
 {
 	std::cout << "\nRefining motion: " << _name << std::endl;
 	
@@ -114,6 +115,7 @@ void Motion::refine()
 	bool maxed = false;
 
 	FlexGlobal target;
+	target.setReciprocalRefinement(reciprocal);
 
 	Fibonacci fib;
 	fib.generateLattice(31, 0.02);
@@ -176,8 +178,10 @@ void Motion::refine()
 	{
 		NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 		attachTargetToRefinement(neld, target);
+		target.recalculateConstant();
 		neld->setJobName("translation");
 		addTranslationParameters(neld);
+
 		neld->refine();
 		_allAtoms->refreshPositions();
 	}
@@ -193,6 +197,7 @@ void Motion::refine()
 		neld->refine();
 		_allAtoms->refreshPositions();
 	}
+
 }
 
 void Motion::applyRotations(std::vector<BondSample> &stored)

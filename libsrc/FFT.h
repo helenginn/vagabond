@@ -48,6 +48,7 @@ typedef struct
 	int ny;
 	int nz;
 	int nele;
+	int nscratch;
 	fftwf_plan atom_real_to_recip;
 	fftwf_plan atom_recip_to_real;
 	fftwf_plan real_to_recip;
@@ -59,7 +60,7 @@ class VagFFT
 public:
 	friend class FFT;
 	VagFFT(int nx, int ny, int nz, int nele = 0, int scratches = 0);
-	VagFFT(VagFFT &fft);
+	VagFFT(VagFFT &fft, int scratch = 0);
 	~VagFFT();
 	
 	void addElement(ElementPtr ele);
@@ -74,6 +75,12 @@ public:
 	{
 		_spg = spg;
 	}
+	
+	CSym::CCP4SPG *getSpaceGroup()
+	{
+		return _spg;
+	}
+	
 	void fft(FFTTransform transform);
 	void multiplyFinal(float val);
 	void multiplyDotty(float val);
@@ -82,9 +89,13 @@ public:
 	void prepareAtomSpace();
 	void addAtom(AtomPtr atom);
 	
-	void applySymmetry(bool silent = true);
+	/** Applies symmetry operations. If topRes > 0 then resolution is
+	 * cut and symmetry application only applies to asymmetric unit,
+	 * for speed */
+	void applySymmetry(bool silent = true, double topRes = -1);
 	void writeToFile(std::string filename, double maxResolution,
-	                 FFTPtr data = FFTPtr(), VagFFTPtr diff = VagFFTPtr(), 
+	                 VagFFTPtr data = VagFFTPtr(), 
+	                 VagFFTPtr diff = VagFFTPtr(), 
 	                 VagFFTPtr calc = VagFFTPtr());
 	
 	double sumReal(int scratch = -1);
@@ -94,6 +105,7 @@ public:
 		return sumReal() / (double)nn();
 	}
 
+	void setAllReal(double val);
 	
 	/** a, b, c in Angstroms; alpha, beta, gamma in degrees */
 	void setUnitCell(std::vector<double> dims);
@@ -119,15 +131,29 @@ public:
 	
 	void copyRealToImaginary();
 
+	double compareReciprocalToScratch(int scratch);
+
 	void setOrigin(vec3 orig)
 	{
 		_origin = orig;
 	}
+	
+	void setScratchComponent(int index, int scratch, int comp, double val);
+	
+	double getScratchComponent(int index, int si, int comp)
+	{
+		long ii = scratchIndex(index, si);
+		return _data[ii][comp];
+	}
+	
+	bool withinBounds(int i, int j, int k);
 
-	/* copy contents of final to scratch map (overwrite) */
+	/** copy contents of final to scratch map (overwrite) */
 	void copyToScratch(int scratch);
+	/** add contents of final to scratch map (addition) */
+	void addToScratch(int scratch);
 
-	/* add contents of scratch back to final map */
+	/** add contents of scratch back to final map */
 	void addScratchBack(int scratch);
 	
 	void setActiveScratch(int scratch)
@@ -170,8 +196,11 @@ public:
 	double getPhase(int x, int y, int z);
 
 	double minValue();
+	double getIntensity(long i);
 	double getAmplitude(long i);
 	double getPhase(long i);
+
+	double sumAmp(int scratch = -1);
 
 	/* retrieves out of final column */
 	double getReal(long i)
@@ -279,6 +308,17 @@ public:
 
 	vec3 fracFromElement(long int element);
 	void printStatus();
+
+	void findLimitingValues(double xMin, double xMax, double yMin,
+	                        double yMax, double zMin, double zMax,
+	                        vec3 *minVals, vec3 *maxVals);
+
+	void shrink(double radius);
+	void bittyShrink(double radius, int num);
+	vec3 getSymRelatedPosition(vec3 pos, int i);
+	void addToValueAroundPoint(vec3 pos, double radius, double value,
+	                           int bitIndex = -1);
+	void convertMaskToSolvent(int expTotal);
 private:
 
 	template <typename T>

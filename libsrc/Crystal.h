@@ -141,7 +141,6 @@ inline vec3 getNLimits(FFTPtr data, FFTPtr fftModel)
 	return lims;
 }
 
-
 inline double getNLimit(FFTPtr fftData, VagFFTPtr fftModel, int axis = 0)
 {
 	double nLimit = 0;
@@ -165,6 +164,37 @@ inline double getNLimit(FFTPtr fftData, VagFFTPtr fftModel, int axis = 0)
 }
 
 inline vec3 getNLimits(FFTPtr data, VagFFTPtr fftModel)
+{
+	vec3 lims;
+	lims.x = getNLimit(data, fftModel, 0);
+	lims.y = getNLimit(data, fftModel, 1);
+	lims.z = getNLimit(data, fftModel, 2);
+	return lims;
+}
+
+inline double getNLimit(VagFFTPtr fftData, VagFFTPtr fftModel, int axis = 0)
+{
+	double nLimit = 0;
+	if (axis == 0)
+	{
+		nLimit = std::min((int)fftData->nx(), fftModel->nx());
+	}
+	else if (axis == 1)
+	{
+		nLimit = std::min((int)fftData->ny(), fftModel->ny());
+	}
+	else if (axis == 2)
+	{
+		nLimit = std::min((int)fftData->nz(), fftModel->nz());
+	}
+
+	nLimit = nLimit - ((int)nLimit % 2);
+	nLimit /= 2;
+
+	return nLimit;	
+}
+
+inline vec3 getNLimits(VagFFTPtr data, VagFFTPtr fftModel)
 {
 	vec3 lims;
 	lims.x = getNLimit(data, fftModel, 0);
@@ -293,7 +323,7 @@ public:
 		return _difft;
 	}
 
-	FFTPtr getOrigDensity()
+	VagFFTPtr getOrigDensity()
 	{
 		return _original;
 	}
@@ -305,12 +335,10 @@ public:
 	
 	void omitScan();
 	
+	void prepareFFT(VagFFTPtr ft);
 	/** Write out the % contribution of elements in the crystal to the
 	 *  total difference density */
 	void differenceAttribution();
-	
-	/** Write out the peaks of differences with original */
-	void differenceWithOriginal();
 	
 	void removeAtom(AtomPtr atom);
 	
@@ -558,7 +586,7 @@ public:
 	/** Returns the maximum resolution. Diffraction data as the input
 	 * target is required; resolution will be determined from this if not
 	 * already determined, or input as command line option. */
-	double getMaxResolution(DiffractionPtr data);
+	double getMaxResolution(DiffractionPtr data = DiffractionPtr());
 
 	double getProteinSampling();
 	
@@ -651,7 +679,7 @@ private:
 	VagFFTPtr _difft;
 	
 	/* imag component may contain (weighted map - original) */
-	FFTPtr _original;
+	VagFFTPtr _original;
 
 	BucketPtr _bucket;
 	int _largestNum;

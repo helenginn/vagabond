@@ -69,6 +69,7 @@ typedef struct
 	AtomGroupPtr selectAtoms;
 	AtomGroupPtr extra;
 	VagFFTPtr segment;
+	VagFFTPtr recip;
 	std::vector<CoordVal> vals;
 	std::string filename;
 	unsigned int flag;

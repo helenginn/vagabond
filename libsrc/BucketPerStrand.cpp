@@ -24,14 +24,18 @@
 void BucketPerStrand::addSolvent()
 {
 	CrystalPtr crystal = getCrystal();
+	
+	/* We run without a conformer to get our atom pointers from
+	 * average values */
+	addSolventForConformer(-1);
 
 	VagFFTPtr f = crystal->getFFT();
-	FFTPtr total = FFTPtr(new FFT(*f));
-	total->setupMask();
-	total->createFFTWplan(1);
+	_solvent = VagFFTPtr(new VagFFT(*f, 1));
+	_solvent->makePlans();
+	_solvent->setStatus(FFTRealSpace);
 
 	int confs = crystal->getSampleNum();
-	int count = 0;
+	double count = 0;
 
 	std::cout << "Adding solvent for conformer " << std::flush;
 
@@ -48,22 +52,20 @@ void BucketPerStrand::addSolvent()
 		addSolventForConformer(i, num);
 		_solvent->bittyShrink(0.4, num);
 		_solvent->convertMaskToSolvent(num);
-		FFT::addSimple(total, _solvent);
+		_solvent->addToScratch(0);
+		_solvent->multiplyAll(0);
 		count++;
 	}
 	
 	std::cout << std::endl;
-	
-	/* We run without a conformer to get our atom pointers from
-	 * average values */
-	addSolventForConformer(-1);
 
 	/* But overwrite the solvent afterwards with the new one we 
 	 * have calculated */
-	_solvent = total;
+	_solvent->addScratchBack(0);
 	_solvent->multiplyAll(1 / (double)count);
 	removeSlivers(1.5);
 	
+	adjustForVoxelVolume();
 	reportSolventContent();
 	
 	setPartialStructure(_solvent);

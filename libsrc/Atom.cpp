@@ -288,20 +288,21 @@ size_t Atom::symOpCount()
 	return spg->nsymop;
 }
 
-void Atom::addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell, vec3 pos,
+void Atom::addPointerToLocalArea(VagFFTPtr fft, vec3 pos,
                                  std::vector<Atom *> *ptrs, double rad)
 {
 	/* Limiting case must be far enough away to merge 'nicely' into the
 	 * constant-1 solvent mask area */
 
 	double b = this->getBFactor();
+	mat3x3 unit_cell = fft->getRecipBasis();
 	mat3x3_mult_vec(unit_cell, &pos);
-	pos.x *= fft->nx;
-	pos.y *= fft->ny;
-	pos.z *= fft->nz;
+	pos.x *= fft->nx();
+	pos.y *= fft->ny();
+	pos.z *= fft->nz();
 	
 	vec3 mins, maxs;
-	mat3x3 basis = fft->getBasis();	
+	mat3x3 basis = fft->getRealBasis();	
 	fft->findLimitingValues(-rad, rad, -rad, 
 	                        rad, -rad, rad,
 	                        &mins, &maxs);
@@ -334,8 +335,7 @@ void Atom::addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell, vec3 pos,
 	}
 }
 
-void Atom::addManyToMask(FFTPtr fft, mat3x3 unit_cell,
-                              int conf, int total)
+void Atom::addManyToMask(VagFFTPtr fft, int conf, int total)
 {
 
 	if (getElectronCount() <= 1 || _weighting <= 0)
@@ -368,13 +368,12 @@ void Atom::addManyToMask(FFTPtr fft, mat3x3 unit_cell,
 				pos = getSymRelatedPosition(j, i);
 			}
 
-			mat3x3_mult_vec(unit_cell, &pos);
 			fft->addToValueAroundPoint(pos, radius, 1, i);
 		}
 	}
 }
 
-void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
+void Atom::addToSolventMask(VagFFTPtr fft, double rad,
 							std::vector<Atom *> *ptrs, int conf)
 {
 	if (getElectronCount() <= 1 || _weighting <= 0)
@@ -398,17 +397,15 @@ void Atom::addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double rad,
 		pos = getExplicitModel()->getFinalPositions()[conf].start;
 	}
 	
-	mat3x3_mult_vec(unit_cell, &pos);
-
-	fft->addToValueAroundPoint(pos, radius, -1);
-	
 	if (conf < 0)
 	{
 		size_t max = symOpCount();
 		for (size_t i = 0; i < max; i++)
 		{
 			vec3 pos = getSymRelatedPosition(i, -1);
-			addPointerToLocalArea(fft, unit_cell, pos, ptrs, radius);
+			fft->addToValueAroundPoint(pos, radius, -1);
+	
+			addPointerToLocalArea(fft, pos, ptrs, radius);
 		}
 	}
 }

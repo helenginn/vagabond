@@ -51,6 +51,7 @@ public:
 	static double scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	                                  bool plot = false);
 
+	static double scoreWithReciprocal(MapScoreWorkspace *ws);
 
 	void makeBackboneTwists(ExplicitModelPtr applied);
 
@@ -123,7 +124,7 @@ public:
 		return _elements[which];
 	}
 	
-	void addToMap(VagFFTPtr fft, mat3x3 real2frac);
+	void addToMap(VagFFTPtr fft);
 
 	/** Adds atoms to a map where the voxel morphology is cubic, with a
 	  * given offset specified which is subtracted from each atom

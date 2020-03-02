@@ -22,6 +22,7 @@
 #include <iomanip>
 #include "CSV.h"
 #include "maths.h"
+#include "Diffraction.h"
 #include "Shouter.h"
 #include "../libccp4/ccp4_spg.h"
 #include "Options.h"
@@ -803,7 +804,7 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
 }
 
 void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max, 
-                                bool cc)
+                                bool addScratch)
 {
 	double cubeDim = Options::getProteinSampling();
 	
@@ -830,7 +831,7 @@ void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max,
 	size_t nEle = cryst->totalElements();
 	/* two scratches: first will be "constant" FFT and second will
 	 * store observed values */
-	int scratch = (cc ? 1 : 0);
+	int scratch = (addScratch ? 1 : 0);
 	(*scratchFull) = VagFFTPtr(new VagFFT(extent.x, extent.y, extent.z, 
 	                                      nEle, scratch));
 	(*scratchFull)->setScale(cubeDim);
@@ -843,7 +844,7 @@ void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max,
 	(*scratchFull)->makePlans();
 }
 
-void AtomGroup::addToMap(VagFFTPtr fft, mat3x3 real2frac)
+void AtomGroup::addToMap(VagFFTPtr fft)
 {
 	size_t nElements = totalElements();
 	
@@ -899,6 +900,66 @@ void AtomGroup::createConstantFraction(MapScoreWorkspace *ws,
 	ws->extra = added;
 }
 
+double AtomGroup::scoreWithReciprocal(MapScoreWorkspace *ws)
+{
+	if (!ws->selectAtoms->atomCount())
+	{
+		return 0;
+	}
+
+	bool first = (ws->recip == VagFFTPtr());
+	
+	if (first)
+	{
+		CrystalPtr crystal = ws->crystal;
+		/* first get min/max from entire crystal to make constant
+		 * fraction, which is everything we are not */
+		vec3 min, max;
+		crystal->xyzLimits(&min, &max);
+		createConstantFraction(ws, min, max);
+
+		/* copy the exact dimensions of the crystal's FFT */
+		ws->recip = VagFFTPtr(new VagFFT(*crystal->getFFT(), 2));
+		ws->recip->makePlans();
+		/* get the data amplitudes and copy to scratch */
+		DiffractionPtr data = Options::getRuntimeOptions()->getActiveData();
+		data->copyToFFT(ws->recip);
+		ws->recip->copyToScratch(1);
+
+		/* now we get a new min/max fraction for creation of our
+		 * own segment map */
+		ws->selectAtoms->xyzLimits(&min, &max);
+		ws->selectAtoms->prepareCubicMap(&ws->segment, min, max, false);
+	}
+
+	if (first || ws->recalc)
+	{
+		/* Add the constant atoms to the reciprocal map */
+		ws->recip->setStatus(FFTRealSpace);
+		ws->recip->multiplyAll(0);
+		ws->extra->addToMap(ws->recip);
+		ws->recip->fft(FFTRealToReciprocal);
+
+		/* copy the constant fraction into the scratch */
+		ws->recip->copyToScratch(0);
+		ws->recalc = false;
+	}
+
+	double mr = ws->crystal->getMaxResolution();
+
+	ws->recip->multiplyAll(0);
+	ws->recip->setStatus(FFTRealSpace);
+	ws->selectAtoms->addToCubicMap(ws->segment);
+
+	VagFFT::operation(ws->recip, ws->segment, MapScoreTypeNone);
+	ws->recip->fft(FFTRealToReciprocal);
+	ws->recip->addScratchBack(0);
+	ws->recip->applySymmetry(true, mr);
+
+	double cc = ws->recip->compareReciprocalToScratch(1);
+	return -cc;
+}
+
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
                                       bool plot)
 {
@@ -915,14 +976,14 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	AtomGroupPtr selected = workspace->selectAtoms;
 
 	bool first = (workspace->segment == VagFFTPtr());
-
-	vec3 min, max; 
-	selected->xyzLimits(&min, &max);
 	
 	/* this is the first time we are running the comparison */
 	if (first)
 	{
+		vec3 min, max; 
+		selected->xyzLimits(&min, &max);
 		selected->sort();
+
 		/* prepare the size of the maps */
 		selected->prepareCubicMap(&workspace->segment, min, max, true);
 

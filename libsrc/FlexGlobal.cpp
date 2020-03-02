@@ -18,6 +18,7 @@
 FlexGlobal::FlexGlobal()
 {
 	_prepared = false;
+	_recip = false;
 }
 
 void FlexGlobal::prepareWorkspace()
@@ -36,7 +37,6 @@ void FlexGlobal::prepareWorkspace()
 	_workspace.selectAtoms = _atomGroup;
 	
 	_prepared = true;
-	AtomGroup::scoreWithMapGeneral(&_workspace, false);
 }
 
 double FlexGlobal::score(void *object)
@@ -45,8 +45,16 @@ double FlexGlobal::score(void *object)
 	flexer->prepareWorkspace();
 
 	flexer->_atomGroup->refreshPositions();
-//	flexer->_atomGroup->propagateChange();
-	double score = AtomGroup::scoreWithMapGeneral(&flexer->_workspace);
+	
+	double score = 0;
+	if (flexer->_recip)
+	{
+		score = AtomGroup::scoreWithReciprocal(&flexer->_workspace);
+	}
+	else
+	{
+		score = AtomGroup::scoreWithMapGeneral(&flexer->_workspace);
+	}
 
 	return score;
 }

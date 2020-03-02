@@ -58,8 +58,18 @@ void WeightedMap::writeCalculatedSlice()
 {
 	/* Back to real space */
 	BucketPtr solv = _crystal->getBucket();
-	FFTPtr mask = solv->getSolvent();
-	mask->fft(-1);
+	VagFFTPtr mask;
+	
+	if (solv)
+	{
+		mask = solv->getSolvent();
+	}
+	
+	if (mask)
+	{
+		mask->fft(FFTReciprocalToReal);
+	}
+
 	CSVPtr calc = CSVPtr(new CSV(5, "i", "j", "d", "m", "s"));
 	calc->setSubDirectory("slices");
 	_fft->fft(FFTReciprocalToReal);
@@ -71,34 +81,49 @@ void WeightedMap::writeCalculatedSlice()
 		for (int i = 0; i < _fft->nx(); i++)
 		{
 			int index = _fft->element(i, j, 0);
-			Atom *atom = solv->nearbyAtom(index);
 			int val = 0;
-			
-			if (atom)
+			if (solv)
 			{
-				val = 1;
+				Atom *atom = solv->nearbyAtom(index);
+
+				if (atom)
+				{
+					val = 1;
+				}
+
+				if (atom && atom->getElementSymbol() == "N")
+				{
+					val = 2;
+				}
+				if (atom && atom->getElementSymbol() == "O")
+				{
+					val = 3;
+				}
+				else if (atom && atom->getElementSymbol() == "S")
+				{
+					val = 4;
+				}
 			}
 
-			if (atom && atom->getElementSymbol() == "N")
+			double s = 0;
+
+			if (mask)
 			{
-				val = 2;
-			}
-			if (atom && atom->getElementSymbol() == "O")
-			{
-				val = 3;
-			}
-			else if (atom && atom->getElementSymbol() == "S")
-			{
-				val = 4;
+				s = mask->getReal(index);
 			}
 
 			double fc = _fft->getReal(index);
 			calc->addEntry(5, (double)i, (double)j, fc,
-			               (double)val, mask->data[index][0]);
+			               (double)val, s);
 		}
 	}
 
 	_fft->fft(FFTRealToReciprocal);
+	
+	if (mask)
+	{
+		mask->fft(FFTRealToReciprocal);
+	}
 
 	std::string cycle = "_" + i_to_str(_crystal->getCycleNum());
 	std::map<std::string, std::string> plotMap;
@@ -313,9 +338,9 @@ double WeightedMap::stdevForReflection(double fobs, double fcalc,
 	return combined;
 }
 
-double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
+double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 {
-	FFTPtr fftData = _data->getFFT();
+	VagFFTPtr fftData = _data->getFFT();
 	double lowRes = Options::minRes();
 	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
 	double maxRes = _crystal->getMaxResolution(_data);
@@ -355,19 +380,20 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
 
 				long dataidx = fftData->element(_h, _k, _l);
-				double fobs = fftData->data[dataidx][0];
-				double sigfobs = fftData->data[dataidx][1];
+				double fobs = fftData->getReal(dataidx);
+				double sigfobs = fftData->getImag(dataidx);
 
 				int isAbs = CSym::ccp4spg_is_sysabs(spg, i, j, k);
 				vec3 ijk = make_vec3(i, j, k);    
 				mat3x3_mult_vec(real2frac, &ijk);
 				double length = vec3_length(ijk);
 
-				bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
+				bool isFree;
+				isFree = (fftData->getScratchComponent(dataidx, 0, 0) < 0.5);
 
 				if (ignoreRfree)
 				{
-					isRfree = 0;
+					isFree = 0;
 				}
 				
 				bool f000 = (i == 0 && j == 0 && k == 0);
@@ -379,7 +405,7 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				                      complex.y * complex.y);
 				
 				if (!f000 && ((length < minRes || length > maxRes || isAbs)
-				    || (fobs != fobs || isRfree) || sigfobs != sigfobs))
+				    || (fobs != fobs || isFree) || sigfobs != sigfobs))
 				{	
 					scratch->setElement(index, fcalc, 0);
 
@@ -451,17 +477,17 @@ void WeightedMap::createVagaCoefficients()
 	VagFFTPtr duplicate = VagFFTPtr(new VagFFT(*_fft));
 	duplicate->wipe();
 	duplicate->setStatus(FFTRealSpace);
-	FFTPtr scratch = FFTPtr(new FFT(*duplicate));
+	VagFFTPtr scratch = VagFFTPtr(new VagFFT(*duplicate));
 	_allWeights = 0;
 	
-	scratch->createFFTWplan(1);
+	scratch->makePlans();
 	scratch->wipe();
 	
 	for (int i = 0; i <= MAX_SLICES; i++)
 	{
 		double weight = oneMap(scratch, i, false);
 		_allWeights += weight;
-		scratch->fft(-1); /* to real space */
+		scratch->fft(FFTReciprocalToReal); /* to real space */
 		scratch->multiplyAll(weight);
 		duplicate->addSimple(scratch);
 		scratch->wipe();
@@ -473,7 +499,7 @@ void WeightedMap::createVagaCoefficients()
 	for (int i = 0; i <= MAX_SLICES; i++)
 	{
 		double weight = oneMap(scratch, i, true);
-		scratch->fft(-1);
+		scratch->fft(FFTReciprocalToReal);
 		scratch->multiplyAll(weight);
 		_difft->addSimple(scratch);
 		scratch->wipe();
@@ -496,7 +522,7 @@ void WeightedMap::writeFile(VagFFTPtr chosen)
 	std::string filename = _crystal->getFilename();
 	double maxRes = _crystal->getMaxResolution(_data);
 	std::string prefix = "cycle_" + i_to_str(_crystal->getCycleNum());
-	FFTPtr fftData = _data->getFFT();
+	VagFFTPtr fftData = _data->getFFT();
 
 	std::string outputFile = prefix + "_" + filename + "_vbond.mtz";
 	chosen->writeToFile(outputFile, maxRes, fftData, _difft, _fft);
@@ -505,7 +531,7 @@ void WeightedMap::writeFile(VagFFTPtr chosen)
 void WeightedMap::create2FoFcCoefficients(VagFFTPtr copy, bool patt)
 {
 //	std::cout << "Creating 2Fo-Fc density..." << std::endl;
-	FFTPtr fftData = _data->getFFT();
+	VagFFTPtr fftData = _data->getFFT();
 	
 	if (!copy)
 	{
@@ -544,8 +570,8 @@ void WeightedMap::create2FoFcCoefficients(VagFFTPtr copy, bool patt)
 				CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
 
 				long dataidx = fftData->element(_h, _k, _l);
-				double fobs = fftData->data[dataidx][0];
-				double sigfobs = fftData->data[dataidx][1];
+				double fobs = fftData->getReal(dataidx);
+				double sigfobs = fftData->getImag(dataidx);
 				long index = copy->element(i, j, k);
 
 				int isAbs = CSym::ccp4spg_is_sysabs(spg, i, j, k);
@@ -553,7 +579,8 @@ void WeightedMap::create2FoFcCoefficients(VagFFTPtr copy, bool patt)
 				mat3x3_mult_vec(real2frac, &ijk);
 				double length = vec3_length(ijk);
 
-				bool isRfree = (fftData->getMask(_h, _k, _l) == 0);
+				bool isFree;
+				isFree = (fftData->getScratchComponent(dataidx, 0, 0) < 0.5);
 				
 				/* If the naughty flag is set on the command line,
 				 * we DO include R free in refinement - this is to show
@@ -561,7 +588,7 @@ void WeightedMap::create2FoFcCoefficients(VagFFTPtr copy, bool patt)
 
 				if (ignoreRfree)
 				{
-					isRfree = 0;
+					isFree = 0;
 				}
 				
 				if (length < minRes || length > maxRes || isAbs)
@@ -574,7 +601,7 @@ void WeightedMap::create2FoFcCoefficients(VagFFTPtr copy, bool patt)
 
 				if (fobs != fobs ||
 				    sigfobs != sigfobs ||
-				    isRfree)
+				    isFree)
 				{
 					copy->setElement(index, 0, 0);
 					_difft->setElement(index, 0, 0);

@@ -211,21 +211,14 @@ void Crystal::realSpaceClutter(double maxRes)
 
 		if (!_original)
 		{
-			_original = FFTPtr(new FFT());
-			_original->create(fft_dims.x, fft_dims.y, fft_dims.z);
-			_original->createFFTWplan(8);
+			_original = VagFFTPtr(new VagFFT(fft_dims.x, 
+			                                 fft_dims.y, fft_dims.z));
+			prepareFFT(_original);
 			setupOriginalMap();
 		}
 
-		_fft->setSpaceGroup(_spaceGroup);
-		_difft->setSpaceGroup(_spaceGroup);
-		_fft->setUnitCell(_unitCell);
-		_difft->setUnitCell(_unitCell);
-		_fft->makePlans();
-		_difft->makePlans();
-		_fft->setStatus(FFTRealSpace);
-		_difft->setStatus(FFTRealSpace);
-
+		prepareFFT(_fft);
+		prepareFFT(_difft);
 	}
 	else
 	{
@@ -235,11 +228,18 @@ void Crystal::realSpaceClutter(double maxRes)
 		_difft->setStatus(FFTRealSpace);
 	}
 
-	
 	refreshAnchors();
-
 	refreshPositions();
-	addToMap(_fft, _real2frac);
+
+	addToMap(_fft);
+}
+
+void Crystal::prepareFFT(VagFFTPtr ft)
+{
+	ft->setSpaceGroup(_spaceGroup);
+	ft->setUnitCell(_unitCell);
+	ft->makePlans();
+	ft->setStatus(FFTRealSpace);
 }
 
 void Crystal::setupOriginalMap()
@@ -248,36 +248,20 @@ void Crystal::setupOriginalMap()
 	{
 		return;
 	}
-
-	FFTPtr orig = _data->getOriginal();
 	
-	if (!orig)
+	if (!_data->getOriginal())
 	{
 		return;
 	}
 
-	vec3 nLimits = getNLimits(orig, _original);
-
-	for (int k = -nLimits.z; k < nLimits.z; k++)
-	{
-		for (int j = -nLimits.y; j < nLimits.y; j++)
-		{
-			for (int i = -nLimits.x; i < nLimits.x; i++)
-			{
-				long new_index = _original->element(i, j, k);
-				long old_index = orig->element(i, j, k);
-
-				double x = orig->data[old_index][0];
-				double y = orig->data[old_index][1];
-
-				_original->data[new_index][0] = x;
-				_original->data[new_index][1] = y;
-			}
-		}
-	}
+	_original = VagFFTPtr(new VagFFT(*_data->getOriginal()));
+	_original->setStatus(FFTReciprocalSpace);
+	_original->setSpaceGroup(_spaceGroup);
+	_original->setUnitCell(_unitCell);
+	_original->makePlans();
 
 	/* to real space */
-	_original->fft(-1);
+	_original->fft(FFTReciprocalToReal);
 }
 
 double Crystal::totalToScale()
@@ -375,7 +359,7 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 	generateResolutionBins(6, _maxResolution, 20, &bins);
 	std::map<int, std::vector<IntPair> > binRatios;
 
-	FFTPtr fftData = data->getFFT();	
+	VagFFTPtr fftData = data->getFFT();	
 	vec3 nLimits = getNLimits(fftData, model);
 
 	for (int k = -nLimits.z; k < nLimits.z; k++)
@@ -384,11 +368,6 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 		{
 			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
-				if (!fftData->withinBounds(i, j, k))
-				{
-					continue;
-				}
-
 				int _i = 0; int _j = 0; int _k = 0;
 				vec3 ijk = make_vec3(i, j, k);
 				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_i, &_j, &_k);
@@ -500,7 +479,7 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 
 void Crystal::applyShellFactors(DiffractionPtr data)
 {
-	FFTPtr fftData = data->getFFT();	
+	VagFFTPtr fftData = data->getFFT();	
 	vec3 nLimits = getNLimits(fftData, _fft);
 	mat3x3 tmp = mat3x3_transpose(_real2frac);
 
@@ -562,7 +541,7 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 
 	CSVPtr csv = CSVPtr(new CSV(5, "h", "k", "l", "fo" , "fc"));
 
-	FFTPtr fftData = data->getFFT();	
+	VagFFTPtr fftData = data->getFFT();	
 	vec3 nLimits = getNLimits(fftData, _fft);
 	mat3x3 tmp = mat3x3_transpose(_real2frac);
 	
@@ -610,12 +589,14 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 					continue;
 				}
 
-				double amp1 = fftData->getReal(_i, _j, _k);
+				long fi = fftData->element(_i, _j, _k);
+				double amp1 = fftData->getReal(fi);
 				double amp2 = _fft->getAmplitude(i, j, k);
 
-				int isFree = (fftData->getMask(_i, _j, _k) == 0);
+				float rfree = fftData->getScratchComponent(fi, 0, 0);
+				int isFree = (rfree < 0.5);
 
-				if (amp1 != amp1 || amp2 != amp2)
+				if (amp1 != amp1 || amp2 != amp2 || rfree != rfree)
 				{
 					continue;
 				}
@@ -652,7 +633,7 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 			}
 		}
 	}
-
+	
 	if (op == r_factor && allShells)
 	{
 		_correlPlotNum++;
@@ -826,6 +807,11 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 
 double Crystal::getMaxResolution(DiffractionPtr data)
 {
+	if (!data)
+	{
+		data = _data;
+	}
+
 	std::cout << std::setprecision(2);
 	if (_maxResolution <= 0)
 	{
@@ -932,7 +918,7 @@ void Crystal::scaleAnyPartialSet()
 	PartialStructurePtr structure;
 	structure = PartialStructurePtr(new PartialStructure());
 	
-	FFTPtr partial = _data->getPartial();
+	VagFFTPtr partial = _data->getPartial();
 	structure->setData(_data);
 	structure->setCrystal(shared_from_this());
 	
@@ -1269,7 +1255,6 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	writeVagabondFile(cycleNum);
 	
 	differenceAttribution();
-	differenceWithOriginal();
 
 	return rFac;
 }
@@ -1392,7 +1377,7 @@ void Crystal::fitWholeMolecules()
 			continue;
 		}
 
-		_motions[i]->refine();
+		_motions[i]->refine(true);
 	}
 }
 
@@ -1746,63 +1731,6 @@ int Crystal::getSampleNum()
 	}
 	
 	return totalPoints;
-}
-
-void Crystal::differenceWithOriginal()
-{
-	std::vector<double> weights, origs;
-
-	for (int i = 0; i < _original->nn; i++)
-	{
-		double weight = _fft->getReal(i);
-		double orig = _original->data[i][0];
-
-		weights.push_back(weight);
-		origs.push_back(orig);
-	}
-	
-	double stwt = standard_deviation(weights);
-	double stor = standard_deviation(origs);
-	
-	double mwt = mean(weights);
-	double mor = mean(origs);
-	double top = 0;
-	long top_index = -1;
-
-	for (int i = 0; i < _original->nn; i++)
-	{
-		double real = _fft->getReal(i);
-		double orig = _original->data[i][0];
-		_original->data[i][1] = (real - mwt) / stwt;
-		_original->data[i][1] -= (orig - mor) / stor;
-		
-		if (fabs(_original->data[i][1]) > top)
-		{
-			top_index = i;
-			top = fabs(_original->data[i][1]);
-		}
-	}
-
-	if (top_index >= 0)
-	{
-		Atom *a = getBucket()->nearbyAtom(top_index);
-		std::cout << "Top difference from original processing (FWT/PHWT):" << std::endl;
-		
-		if (a)
-		{
-			std::cout << "\tNearest atom: " << a->shortDesc() << std::endl;
-		}
-		else
-		{
-			std::cout << "\tIn solvent region." << std::endl;
-		}
-		
-		bool neg = (_original->data[top_index][1] < 0);
-		
-		std::cout << "\tFound " << top << " standard deviations from mean." << std::endl;
-		std::cout << "\t" << (neg ? "Negative peak." : "Positive peak.");
-		std::cout << std::endl << std::endl;
-	}
 }
 
 void Crystal::differenceAttribution()

@@ -40,6 +40,11 @@ public:
 	
 	void plot(std::string filename);
 	
+	void setReciprocalRefinement(bool recip = true)
+	{
+		_recip = recip;
+	}
+	
 	MapScoreWorkspace &getWorkspace()
 	{
 		return _workspace;
@@ -48,6 +53,7 @@ public:
 	void recalculateConstant();
 private:
 	bool _prepared;
+	bool _recip;
 	void prepareWorkspace();
 
 	AtomGroupPtr _atomGroup;

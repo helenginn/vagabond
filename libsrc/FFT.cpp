@@ -35,7 +35,18 @@
 
 std::vector<FFTDim *> VagFFT::_dimensions;
 
-VagFFT::VagFFT(VagFFT &fft)
+void checkDataPtr(fftwf_complex *data, long nn)
+{
+	if (!data)
+	{
+		std::cout << "Error: likely exceeded available memory." << std::endl;
+		std::cout << "Malloc failed for VagFFT, nn = " << nn << std::endl;
+		exit(1);
+	}
+}
+
+
+VagFFT::VagFFT(VagFFT &fft, int scratch)
 {
 	_nx = fft._nx;
 	_ny = fft._ny;
@@ -43,6 +54,7 @@ VagFFT::VagFFT(VagFFT &fft)
 	_nele = fft._nele;
 	_nscratch = fft._nscratch;
 	_activeScratch = fft._activeScratch;
+
 	_nn = fft._nn;
 	_status = fft._status;
 	_stride = fft._stride;
@@ -53,22 +65,32 @@ VagFFT::VagFFT(VagFFT &fft)
 	_recipBasis = fft._recipBasis;
 	_realBasis = fft._realBasis;
 	_setMatrices = fft._setMatrices;
-	_myDims = fft._myDims;
 	_elements = fft._elements;
 	_elementMap = fft._elementMap;
 	_spg = fft._spg;
-
-	_data = (fftwf_complex *)fftwf_malloc(_total);
-	int start = finalIndex(0);
-	_lastData = &_data[start];
-
-	if (!_data)
+	
+	if (scratch != fft._nscratch)
 	{
-		printf("ERROR: Malloc failed for VagFFT, nn = %i\n", _nn);
-		exit(1);
+		_nscratch = scratch; 
+		_stride = 2 * (_nele) + 1 + _nscratch;
+		_total = _nn * _stride * sizeof(fftwf_complex);
+		_data = (fftwf_complex *)fftwf_malloc(_total);
+		int start = finalIndex(0);
+		_lastData = &_data[start];
+		checkDataPtr(_data, _nn);
+		memset(_data, '\0', _total);
+		_myDims = 0;
+	}
+	else
+	{
+		_myDims = fft._myDims;
+		_data = (fftwf_complex *)fftwf_malloc(_total);
+		checkDataPtr(_data, _nn);
+		int start = finalIndex(0);
+		_lastData = &_data[start];
+		memcpy(_data, fft._data, _total);
 	}
 
-	memcpy(_data, fft._data, _total);
 }
 
 VagFFT::~VagFFT()
@@ -102,15 +124,10 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
 	_stride = 2 * (_nele) + 1 + _nscratch;
 	_total = _nn * _stride * sizeof(fftwf_complex);
 	_data = (fftwf_complex *)fftwf_malloc(_total);
+	checkDataPtr(_data, _nn);
 
 	int start = finalIndex(0);
 	_lastData = &_data[start];
-
-	if (!_data)
-	{
-		printf("ERROR: Malloc failed for VagFFT, nn = %i\n", _nn);
-		exit(1);
-	}
 
 	memset(_data, 0, _total);
 
@@ -149,6 +166,17 @@ void VagFFT::printStatus()
 		default:
 		std::cout << "Unknown";
 		break;
+	}
+	
+	std::cout << std::endl;
+	
+	std::cout << "Dimensions: " << _nx << " " << _ny <<
+	" " << _nz << std::endl;
+	
+	for (int i = -1; i < _nscratch; i++)
+	{
+		std::cout << "Amplitude for scratch " << i <<
+		" " << std::setprecision(6) << sumAmp(i) << std::endl;
 	}
 	
 	std::cout << std::endl;
@@ -200,7 +228,8 @@ void VagFFT::makePlans()
 		if (_dimensions[i]->nx == _nx
 		    && _dimensions[i]->ny == _ny
 		    && _dimensions[i]->nz == _nz
-		    && _dimensions[i]->nele == _nele)
+		    && _dimensions[i]->nele == _nele
+		    && _dimensions[i]->nscratch == _nscratch)
 		{
 			_myDims = _dimensions[i];
 			return;
@@ -211,6 +240,7 @@ void VagFFT::makePlans()
 
 	FFTDim *dims = (FFTDim *)malloc(sizeof(FFTDim));
 	dims->nx = _nx; dims->ny = _ny; dims->nz = _nz; dims->nele = _nele;
+	dims->nscratch = _nscratch;
 	_dimensions.push_back(dims);
 	_myDims = _dimensions.back();
 	
@@ -1064,6 +1094,14 @@ double VagFFT::sumReal(int scratch)
 	return sum;
 }
 
+double VagFFT::getIntensity(long i)
+{
+	long index = finalIndex(i);
+	double val = _data[index][0] * _data[index][0] + 
+	_data[index][1] * _data[index][1];
+	return val;
+}
+
 double VagFFT::getAmplitude(long i)
 {
 	long index = finalIndex(i);
@@ -1092,7 +1130,7 @@ vec3 VagFFT::fracFromElement(long int element)
 }
 
 void VagFFT::writeToFile(std::string filename, double maxResolution,
-                         FFTPtr data, VagFFTPtr diff, VagFFTPtr calc)
+                         VagFFTPtr data, VagFFTPtr diff, VagFFTPtr calc)
 {
 	if (_status != FFTReciprocalSpace)
 	{
@@ -1114,9 +1152,9 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 	if (data)
 	{
 		// lower limit if data has smaller spacing
-		nLimit[0] = (nLimit[0] > data->nx) ? data->nx : nLimit[0];
-		nLimit[1] = (nLimit[1] > data->ny) ? data->ny : nLimit[1];
-		nLimit[2] = (nLimit[2] > data->nz) ? data->nz : nLimit[2];
+		nLimit[0] = (nLimit[0] > data->nx()) ? data->nx() : nLimit[0];
+		nLimit[1] = (nLimit[1] > data->ny()) ? data->ny() : nLimit[1];
+		nLimit[2] = (nLimit[2] > data->nz()) ? data->nz() : nLimit[2];
 	}
 	
 	double dStar = 1 / maxResolution;
@@ -1229,7 +1267,7 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 					phic = calc->getPhase(i, j, k);
 				}
 
-				int free = 1;
+				double free = 1;
 
 				/* Sort out observed values from observed diffraction,
 				 * ideally available */
@@ -1240,9 +1278,9 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 				if (data)
 				{
 					int ele = data->element(i, j, k);
-					foAmp = data->data[ele][0];
-					sigma = data->data[ele][1];
-					free = data->getMask(i, j, k);
+					foAmp = data->getReal(ele);
+					sigma = data->getImag(ele);
+					free = data->getScratchComponent(ele, 0, 0);
 				}
 
 
@@ -1253,14 +1291,6 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 				{
 					diffPhwt = diff->getPhase(i, j, k);
 					diffAmp = diff->getAmplitude(i, j, k);
-				}
-
-
-				if (foAmp != foAmp || (free == 0))
-				{
-					// i.e. diff of 0 when mask is free flag.
-					/* No longer the case because it should be sorted before
-					 * this point, and would not apply to Vagamaps */
 				}
 
 				/* MTZ file stuff */
@@ -1297,7 +1327,7 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 
 }
 
-void VagFFT::applySymmetry(bool silent)
+void VagFFT::applySymmetry(bool silent, double topRes)
 {
 	fftwf_complex *tempData;
 	tempData = (fftwf_complex *)fftwf_malloc(_nn * sizeof(FFTW_DATA_TYPE));
@@ -1332,6 +1362,12 @@ void VagFFT::applySymmetry(bool silent)
 		_data[n][0] = myAmp;
 		_data[n][1] = myPhase;
 	}
+	
+	double dMax = FLT_MAX;
+	if (topRes > 0)
+	{
+		dMax = 1 / topRes;
+	}
 
 	for (int k = -_nz / 2; k < _nz / 2; k++)
 	{
@@ -1347,6 +1383,20 @@ void VagFFT::applySymmetry(bool silent)
 				}
 
 				long pre_index = element(i, j, k);
+				
+				if (topRes > 0)
+				{
+					vec3 ijk = make_vec3(i, j, k);
+					mat3x3_mult_vec(_toRecip, &ijk);
+
+					double sqlength = vec3_sqlength(ijk);
+
+					if (sqlength > dMax * dMax)
+					{
+						continue;
+					}
+				}
+
 				long index = finalIndex(pre_index);
 				/* Not misnomers: dealt with in previous paragraph */
 				double myAmp = _data[index][0];
@@ -1424,6 +1474,19 @@ void VagFFT::copyFrom(VagFFTPtr other)
 	}
 }
 
+void VagFFT::addToScratch(int scratch)
+{
+	for (long i = 0; i < nn(); i++)
+	{
+		int index = finalIndex(i);
+		int sindex = scratchIndex(i, scratch);
+		_data[sindex][0] += _data[index][0];
+		_data[sindex][1] += _data[index][1];
+		_data[index][0] = 0;
+		_data[index][1] = 0;
+	}
+}
+
 void VagFFT::copyToScratch(int scratch)
 {
 	for (long i = 0; i < nn(); i++)
@@ -1464,3 +1527,461 @@ double VagFFT::minValue()
 	
 	return min;
 }
+
+double VagFFT::compareReciprocalToScratch(int scratch)
+{
+	double sum_x = 0;
+	double sum_y = 0;
+	double sum_xx = 0;
+	double sum_yy = 0;
+	double sum_xy = 0;
+	double sum_w = 0;
+
+	for (int k = -_nz / 2; k < _nz / 2; k++)
+	{
+		for (int j = -_ny / 2; j < _ny / 2; j++)
+		{
+			for (int i = -_nx / 2; i < _nx / 2; i++)
+			{
+				int abs = CSym::ccp4spg_is_sysabs(_spg, i, j, k);
+
+				if (abs)
+				{
+					continue;	
+				}
+
+				bool asu = CSym::ccp4spg_is_in_asu(_spg, i, j, k);
+				
+				if (!asu)
+				{
+					continue;
+				}
+
+				vec3 ijk = make_vec3(i, j, k);
+				mat3x3_mult_vec(_toRecip, &ijk);
+
+				double sqlength = vec3_sqlength(ijk);
+
+				if (sqlength < 1 / 36.0)
+				{
+					continue;
+				}
+
+				long pre_index = element(i, j, k);
+				long scr_index = scratchIndex(pre_index, scratch);
+				
+				float y = _data[scr_index][0];
+				
+				if (y != y)
+				{
+					continue;
+				}
+
+				double x = getIntensity(pre_index);
+//				std::cout << x << " " << y << std::endl;
+				
+				double weight = 1;
+
+				sum_x += x * weight;
+				sum_y += y * weight;
+				sum_yy += y * y * weight;
+				sum_xx += x * x * weight;
+				sum_xy += x * y * weight;
+				sum_w += weight;
+			}
+		}
+	}
+	
+	double top = sum_w * sum_xy - sum_x * sum_y;
+	double bottom_left = sum_w * sum_xx - sum_x * sum_x;
+	double bottom_right = sum_w * sum_yy - sum_y * sum_y;
+	
+	double cc = top / sqrt(bottom_left * bottom_right);
+	
+	/*
+	std::cout << "Compare recip to scratch: " << 
+	std::setprecision(6) << cc << std::endl;
+	*/
+
+	return cc;
+}
+
+void VagFFT::setAllReal(double val)
+{
+	for (long i = 0; i < nn(); i++)
+	{
+		long ii = finalIndex(i);
+		_data[ii][0] = val;
+		_data[ii][1] = 0;
+	}
+}
+
+double VagFFT::sumAmp(int scratch)
+{
+	double sum = 0;
+
+	for (long i = 0; i < nn(); i++)
+	{
+		int in = 0;
+		if (scratch < 0)
+		{
+			in = finalIndex(i);
+		}
+		else
+		{
+			in = scratchIndex(i, scratch);
+		}
+
+		double intensity = _data[in][0] * _data[in][0] 
+		+ _data[in][1] * _data[in][1];
+		
+		if (intensity != intensity)
+		{
+			continue;
+		}
+		
+		sum += intensity;
+	}
+	
+	return sum;
+}
+
+void VagFFT::findLimitingValues(double xMin, double xMax, double yMin,
+                                double yMax, double zMin, double zMax,
+                                vec3 *minVals, vec3 *maxVals)
+{
+	mat3x3 toCrystBasis = getRecipBasis();
+	*minVals = make_vec3(FLT_MAX, FLT_MAX, FLT_MAX);
+	*maxVals = make_vec3(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+
+	for (double k = zMin; k <= zMax + 0.1; k += (zMax - zMin))
+	{
+		for (double j = yMin; j <= yMax + 0.1; j += (zMax - zMin))
+		{
+			for (double i = xMin; i <= xMax + 0.1; i += (zMax - zMin))
+			{
+				vec3 angCorner = make_vec3(i, j, k);
+				vec3 toCrystal = mat3x3_mult_vec(toCrystBasis, angCorner);
+				toCrystal.x = lrint(toCrystal.x);
+				toCrystal.y = lrint(toCrystal.y);
+				toCrystal.z = lrint(toCrystal.z);
+
+				vec3_min_each(minVals, toCrystal);
+				vec3_max_each(maxVals, toCrystal);
+			}
+		}
+	}
+}
+
+/* is a given ijk within -n/2 < ijk <= n/2 */
+bool VagFFT::withinBounds(int i, int j, int k)
+{
+	if (i >= _nx / 2 || i < -_nx / 2)
+	{
+		return false;
+	}
+
+	if (j >= _ny / 2 || j < -_ny / 2)
+	{
+		return false;
+	}
+
+	if (k >= _nz / 2 || k < -_nz / 2)
+	{
+		return false;
+	}
+	
+	return true;
+}
+
+
+void VagFFT::setScratchComponent(int index, int scratch, int comp, double val)
+{
+	long si = scratchIndex(index, scratch);
+	_data[si][comp] = val;
+}
+
+void VagFFT::shrink(double radius)
+{
+	vec3 mins = make_vec3(0, 0, 0);
+	vec3 maxs = make_vec3(0, 0, 0);
+	mat3x3 basis = getRealBasis();
+	findLimitingValues(0, radius, 0, radius, 0, radius, &mins, &maxs);
+					
+	int count = 0;
+	int total = 0;
+	int solv = 0;
+
+	for (int z = 0; z < nz(); z++)
+	{
+		for (int y = 0; y < ny(); y++)
+		{
+			for (int x = 0; x < nx(); x++)
+			{
+				long raw = element(x, y, z);
+				long iraw = finalIndex(raw);
+				/* We only want to modify protein to become
+				 * more like solvent */
+				if (_data[iraw][0] == 1)
+				{
+					solv++;
+					_data[iraw][1] = 1;
+					continue;
+				}
+
+				/* Default is to be protein */
+				_data[raw][1] = 0;
+				bool done = false;
+
+				for (int k = 0; k < maxs.z && !done; k++)
+				{
+					for (int j = 0; j < maxs.y && !done; j++)
+					{
+						for (int i = 0; i < maxs.x && !done; i++)
+						{
+							vec3 ijk = make_vec3(i, j, k);
+							mat3x3_mult_vec(basis, &ijk);
+
+							/* Doesn't matter if it goes over radial
+							 * boundary */
+							if (vec3_sqlength(ijk) > radius * radius)
+							{
+								continue;
+							}
+
+							long index = element(i + x, j + y, k + z);
+							long ii = finalIndex(index);
+							
+							if (_data[ii][0] == 1)
+							{
+								count++;
+								done = true;
+								_data[iraw][1] = 1;
+								break;
+							}
+						}
+					}
+				}
+				
+				total++;
+			}
+		}
+	}
+	
+	for (int i = 0; i < nn(); i++)
+	{
+		_data[i][0] = _data[i][1];
+		_data[i][1] = 0;
+	}
+}
+
+
+void VagFFT::bittyShrink(double radius, int num)
+{
+	vec3 mins = make_vec3(0, 0, 0);
+	vec3 maxs = make_vec3(0, 0, 0);
+	mat3x3 basis = getRealBasis();
+	findLimitingValues(0, radius, 0, radius, 0, radius,
+					   &mins, &maxs);
+
+	for (int z = 0; z < nz(); z++)
+	{
+		for (int y = 0; y < ny(); y++)
+		{
+			for (int x = 0; x < nx(); x++)
+			{
+				long raw = element(x, y, z);
+				long iraw = finalIndex(raw);
+				bool change = false;
+
+				int work = (int)_data[iraw][0];
+				
+				for (int b = 0; b < num; b++)
+				{
+					unsigned char byte = (work >> b) & 1;
+					unsigned char newbyte = 1; /* protein */
+
+					/* We only want to modify protein to become
+					 * more like solvent, so ignore solvent */
+					if (byte == 0)
+					{
+						/* set new bit to solvent and continue */
+						work &= ~(1 << b + num); 
+						continue;
+					}
+
+					bool done = false;
+
+					/* Default is to be protein */
+					newbyte = 1;
+
+					/* now byte is protein, but will it remain protein? */
+					for (int k = 0; k < maxs.z && !done; k++)
+					{
+						for (int j = 0; j < maxs.y && !done; j++)
+						{
+							for (int i = 0; i < maxs.x && !done; i++)
+							{
+								vec3 ijk = make_vec3(i, j, k);
+
+								mat3x3_mult_vec(basis, &ijk);
+
+								/* Doesn't matter if it goes over radial
+								 * boundary */
+								if (vec3_sqlength(ijk) > radius * radius)
+								{
+									continue;
+								}
+
+								long index = element(i + x, j + y, k + z);
+								long ii = finalIndex(index);
+								int neigh = _data[ii][0];
+
+								/* Switch to solvent if we found solvent */
+								unsigned char other = (neigh >> b) & 1;
+
+								if (other == 0)
+								{
+									done = true;
+									change = true;
+									newbyte = 0;
+									break;
+								}
+							}
+						}
+					}
+					
+					work |= (newbyte << b + num);
+				}
+				
+				int newmask = work >> num;
+				_data[iraw][1] = (float)newmask;
+			}
+		}
+	}
+	
+	for (int i = 0; i < nn(); i++)
+	{
+		_data[i][0] = _data[i][1];
+		_data[i][1] = 0;
+	}
+}
+
+void VagFFT::addToValueAroundPoint(vec3 pos, double radius, double value,
+                                   int bitIndex)
+{
+	/* Determine square bounding box for radius in Ang. */
+	vec3 minRadius, maxRadius;
+	
+	mat3x3_mult_vec(_toRecip, &pos);
+	collapseFrac(&pos.x, &pos.y, &pos.z);
+	pos.x *= nx();
+	pos.y *= ny();
+	pos.z *= nz();
+	
+	findLimitingValues(-radius, radius, -radius, radius, -radius, radius,
+	                   &minRadius, &maxRadius);
+	mat3x3 basis = getRealBasis();
+	
+	bool useBit = (bitIndex >= 0);
+	int bitty = 0;
+	if (useBit)
+	{
+		bitty = 1 << bitIndex;
+	}
+	
+	for (double k = minRadius.z; k < maxRadius.z; k++)
+	{
+		for (double j = minRadius.y; j < maxRadius.y; j++)
+		{
+			for (double i = minRadius.x; i < maxRadius.x; i++)
+			{
+				vec3 ijk = make_vec3(i, j, k);
+				mat3x3_mult_vec(basis, &ijk);
+				
+				/* Doesn't matter if it goes over radial
+				 * boundary */
+				if (vec3_sqlength(ijk) > radius * radius)
+				{
+					continue;
+				}
+
+				double x = lrint(i + pos.x);
+				double y = lrint(j + pos.y);
+				double z = lrint(k + pos.z);
+				
+				long index = element(x, y, z);
+				long ii = finalIndex(index);
+
+				if (!useBit)
+				{
+					_data[ii][0] += value;
+
+					if (_data[ii][0] < 0)
+					{
+						_data[ii][0] = 0;
+					}
+				}
+				else
+				{
+					int work = (int)_data[ii][0];
+					work |= bitty;
+					_data[ii][0] = work;
+				}
+			}
+		}
+	}
+}
+
+vec3 VagFFT::getSymRelatedPosition(vec3 pos, int i)
+{
+	mat3x3_mult_vec(_toRecip, &pos);
+
+	float *rot = &_spg->symop[i].rot[0][0];
+	float *trn = _spg->symop[i].trn;
+
+	vec3 mod = empty_vec3();
+	mod.x = pos.x * rot[0] + pos.y * rot[1] + pos.z * rot[2];
+	mod.y = pos.x * rot[3] + pos.y * rot[4] + pos.z * rot[5];
+	mod.z = pos.x * rot[6] + pos.y * rot[7] + pos.z * rot[8];
+	mod.x += trn[0];
+	mod.y += trn[1];
+	mod.z += trn[2];
+	
+	mat3x3_mult_vec(_toReal, &mod);
+	
+	return mod;
+}
+
+void VagFFT::convertMaskToSolvent(int expTotal)
+{
+	for (size_t i = 0; i < nn(); i++)
+	{
+		int ayes = 0;
+		int noes = 0;
+
+		long ii = finalIndex(i);
+		int val = _data[ii][0];
+		
+		for (int j = 0; j < expTotal; j++)
+		{
+			unsigned char byte = (val >> j) & 1;
+			
+			if (byte)
+			{
+				ayes++;
+			}
+			else
+			{
+				noes++;
+			}
+		}
+
+		/* no is solvent */
+		float frac = (float)noes / (float)(noes + ayes);
+		_data[ii][0] = frac;
+		_data[ii][1] = 0; /* should be the case */
+	}
+}
+
+

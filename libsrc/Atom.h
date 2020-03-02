@@ -124,11 +124,10 @@ public:
 
 	/** Solvent content added for multiple conformers of a mask at once,
 	 * with one flag per bit */
-	void addManyToMask(FFTPtr fft, mat3x3 unit_cell,
-                              int conf, int total);
-	void addToSolventMask(FFTPtr fft, mat3x3 unit_cell, double radius,
+	void addManyToMask(VagFFTPtr fft, int conf, int total);
+	void addToSolventMask(VagFFTPtr fft, double radius,
 	                      std::vector<Atom *> *ptrs, int conf);
-	void addPointerToLocalArea(FFTPtr fft, mat3x3 unit_cell, vec3 pos,
+	void addPointerToLocalArea(VagFFTPtr fft, vec3 pos,
 	                           std::vector<Atom *> *ptrs,
 	                           double rad = 0);
 

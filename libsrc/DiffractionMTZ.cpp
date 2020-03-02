@@ -268,10 +268,10 @@ void DiffractionMtz::load()
 		              "Do you have a unit cell and some reflections?");
 	}
 
-	fft = FFTPtr(new FFT());
-	fft->create(largest);
-	fft->multiplyAll(nan(" "));
-	fft->setupMask();
+	_fft = VagFFTPtr(new VagFFT(largest, largest, largest, 1));
+	_fft->multiplyAll(nan(" "));
+	_fft->copyToScratch(0);
+	_fft->multiplyAll(nan(" "));
 
 	int count = 0;
 	int maskCount = 0;
@@ -299,8 +299,7 @@ void DiffractionMtz::load()
 	{
 		std::cout << std::endl << "Found partial F/PHI columns; loading"
 		" partial structure." << std::endl;
-		_partial = FFTPtr(new FFT());
-		_partial->create(largest);
+		_partial = VagFFTPtr(new VagFFT(largest, largest, largest));
 		_partial->multiplyAll(nan(" "));
 	}
 
@@ -308,10 +307,10 @@ void DiffractionMtz::load()
 	{
 		std::cout << std::endl << "Found original phases from MTZ." 
 		<< std::endl;
-		_original = FFTPtr(new FFT());
-		_original->create(largest);
+		_original = VagFFTPtr(new VagFFT(largest, largest, largest));
 		_original->multiplyAll(0);
-		_original->createFFTWplan(8);
+		_original->makePlans();
+		_original->setStatus(FFTReciprocalSpace);
 	}
 
 	for (int i = 0; i < mtz->nref_filein * mtz->ncol_read; i += mtz->ncol_read)
@@ -357,17 +356,17 @@ void DiffractionMtz::load()
 		
 		if (flag == 0 && amplitude != amplitude) flag = 1;
 
-		int mask = flag;
+		float mask = flag;
 
-		long element = fft->element(h, k, l);
+		long element = _fft->element(h, k, l);
 
-		fft->data[element][0] = amplitude;
-		fft->data[element][1] = sigma;
-		fft->mask[element] = mask;
+		_fft->setComponent(element, 0, amplitude);
+		_fft->setComponent(element, 1, sigma);
+		_fft->setScratchComponent(element, 0, 0, mask + 0.1);
 
 		count++;
 
-		if (mask == 0)
+		if (mask < 0.5)
 		{
 			maskCount++;
 		}
@@ -381,8 +380,8 @@ void DiffractionMtz::load()
 			float x = fpart * cos(phipart);
 			float y = fpart * sin(phipart);
 			
-			_partial->data[element][0] = x;
-			_partial->data[element][1] = y;
+			_partial->setComponent(element, 0, x);
+			_partial->setComponent(element, 1, y);
 		}
 		
 		if (col_phase != NULL)
@@ -390,8 +389,8 @@ void DiffractionMtz::load()
 			double ph = deg2rad(phase);
 			float x = fwt * cos(ph);
 			float y = fwt * sin(ph);
-			_original->data[element][0] = x;
-			_original->data[element][1] = y;
+			_original->setComponent(element, 0, x);
+			_original->setComponent(element, 1, y);
 		}
 	}
 	
@@ -417,8 +416,8 @@ void DiffractionMtz::load()
 					long index = _original->element(i, j, k);
 					long asuIndex = _original->element(_h, _k, _l);
 
-					double x = _original->data[asuIndex][0];
-					double y = _original->data[asuIndex][1];
+					double x = _original->getReal(asuIndex);
+					double y = _original->getImag(asuIndex);
 
 					/* establish amp & phase */
 					double amp = sqrt(x * x + y * y);
@@ -447,8 +446,8 @@ void DiffractionMtz::load()
 					x = amp * cos(newPhase);
 					y = amp * sin(newPhase);
 
-					_original->data[index][0] = x;
-					_original->data[index][1] = y;
+					_original->setComponent(index, 0, x);
+					_original->setComponent(index, 1, y);
 				}
 			}
 		}

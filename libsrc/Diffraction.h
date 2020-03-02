@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include "Dataset.h"
-#include "fftw3d.h"
+#include "FFT.h"
 #include "shared_ptrs.h"
 #include <string>
 
@@ -43,17 +43,17 @@ public:
 
 	virtual void load() = 0;
 
-	FFTPtr getFFT()
+	VagFFTPtr getFFT()
 	{
-		return fft;
+		return _fft;
 	}
 	
-	FFTPtr getOriginal()
+	VagFFTPtr getOriginal()
 	{
 		return _original;
 	}
 
-	FFTPtr getPartial()
+	VagFFTPtr getPartial()
 	{
 		return _partial;
 	}
@@ -67,10 +67,12 @@ public:
 	{
 		return _maxRes;
 	}
+
+	void copyToFFT(VagFFTPtr vag);
 protected:
-	FFTPtr fft;
-	FFTPtr _partial;
-	FFTPtr _original;
+	VagFFTPtr _fft;
+	VagFFTPtr _partial;
+	VagFFTPtr _original;
 	std::string _filename;
 
 	float _minRes;

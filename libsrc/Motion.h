@@ -41,7 +41,7 @@ public:
 	void applyRotations(std::vector<BondSample> &stored);
 
 	void addTranslationParameters(RefinementStrategyPtr strategy);
-	void refine();
+	void refine(bool reciprocal = false);
 	
 	int librationCount()
 	{

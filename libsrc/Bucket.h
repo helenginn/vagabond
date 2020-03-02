@@ -47,37 +47,28 @@ public:
 	int getRandomValues(double left, double *right, double *angle);
 	int getReallyRandomValues(double left, double *right, double *angle);
 
-	void applySymOps(CSym::CCP4SPG *spaceGroup);
 	void fourierTransform(int dir);
 	void writeMillersToFile(std::string prefix, double maxRes);
 	void abandonCalculations();
 	
-	bool isSolvent(vec3 pos);
 	virtual void postScaleWork() {};
 	
 	/* only use before FFT */
 
 	bool isSolvent(int index);
 	Atom *nearbyAtom(int index);
-
-	FFTPtr getMaskedRegions()
-	{
-		return _maskedRegions;
-	}	
 	
-	FFTPtr getSolvent()
+	VagFFTPtr getSolvent()
 	{
 		return _solvent;
 	}
 protected:
-	FFTPtr _solvent;
-	FFTPtr _maskedRegions;
+	VagFFTPtr _solvent;
 	std::vector<Atom *> _atomPtrs;
 	
 private:
 	/* Mask regions with protein = 0, solvent = 1 and protein/solvent
 	* interface = 2 */
-	int _wanted;
 	
 	double _averages[3];
 };

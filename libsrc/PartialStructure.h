@@ -32,7 +32,7 @@ class PartialStructure
 public:
 	PartialStructure() {};
 	
-	void setStructure(FFTPtr refPart);
+	void setStructure(VagFFTPtr refPart);
 	void scalePartialStructure();
 
 	static double getSolvScale(void *object)
@@ -76,7 +76,7 @@ protected:
 	double _solvScale;
 	double _solvBFac;
 
-	void setPartialStructure(FFTPtr solvent)
+	void setPartialStructure(VagFFTPtr solvent)
 	{
 		_partial = solvent;
 	}
@@ -84,7 +84,7 @@ private:
 	DiffractionPtr _data;
 	double scaleAndAddPartialScore();
 	static double scalePartialScore(void *object);
-	FFTPtr _partial;
+	VagFFTPtr _partial;
 	
 };
 

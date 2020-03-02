@@ -29,6 +29,7 @@ public:
 	
 	virtual ~BucketBulkSolvent() {}
 protected:
+	void adjustForVoxelVolume();
 	void addSolventForConformer(int conf, int num = 1);
 	void reportSolventContent();
 	void removeSlivers(double maxDist = 2.0);

@@ -58,7 +58,6 @@ Bucket::Bucket()
 {
 	_solvBFac = 0;
 	_solvScale = 0;
-	_wanted = 1;
 	
 	for (int i = 0; i < 3; i++)
 	{
@@ -66,29 +65,17 @@ Bucket::Bucket()
 	}
 }
 
-void Bucket::applySymOps(CSym::CCP4SPG *spaceGroup)
-{
-	if (spaceGroup->spg_num == 1)
-	{
-		return;
-	}
-	
-	std::cout << "Solvent: ";
-	_solvent->applySymmetry(spaceGroup, false);
-}
-
 void Bucket::fourierTransform(int dir)
 {
 	/* Only care about reciprocal space */
 	if (dir == 1)
 	{
-		CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
+		_solvent->fft(FFTRealToReciprocal);
+		_solvent->applySymmetry(true);
 
-		_solvent->fft(dir);
-		applySymOps(spg);
-		_solvent->normalise();
-		_solvent->data[0][0] = 0;
-		_solvent->data[0][1] = 0;
+		/* F000 = nothing */
+		_solvent->setComponent(0, 0, 0);
+		_solvent->setComponent(0, 1, 0);
 	}
 }
 
@@ -104,24 +91,12 @@ Atom *Bucket::nearbyAtom(int index)
 
 bool Bucket::isSolvent(int index)
 {
-	return (_solvent->data[index][0] > 0.8);
-}
-
-bool Bucket::isSolvent(vec3 pos)
-{
-	mat3x3 real2Frac = getCrystal()->getReal2Frac();
-	mat3x3_mult_vec(real2Frac, &pos);
-	
-	long index = _maskedRegions->elementFromFrac(pos.x, pos.y, pos.z);
-	int mask = _maskedRegions->getMask(index);
-	
-	return (mask == 1);
+	return (_solvent->getReal(index) > 0.8);
 }
 
 void Bucket::abandonCalculations()
 {
 	return;
-	_solvent = FFTPtr();
 }
 
 void Bucket::writeMillersToFile(std::string prefix, double maxRes)
@@ -130,7 +105,7 @@ void Bucket::writeMillersToFile(std::string prefix, double maxRes)
 	CrystalPtr crystal = getCrystal();
 	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
 	
-	_solvent->writeReciprocalToFile(solventFileOnly, maxRes, spg);
+	_solvent->writeToFile(solventFileOnly, maxRes);
 	
 }
 
