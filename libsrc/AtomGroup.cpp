@@ -310,19 +310,6 @@ AtomGroup::AtomGroup()
 	_timesRefined = 0;
 }
 
-void AtomGroup::propagateChangeExceptAnchor()
-{
-	for (size_t i = 0; i < atomCount(); i++)
-	{
-		if (atom(i)->getModel()->isAnchor())
-		{
-			continue;
-		}
-
-		atom(i)->getModel()->propagateChange(0);
-	}
-}
-
 void AtomGroup::propagateChange()
 {
 	for (size_t i = 0; i < atomCount(); i++)
@@ -1286,13 +1273,6 @@ size_t AtomGroup::totalElements()
 	}
 
 	return _elements.size();
-}
-
-double AtomGroup::recalculatePositions(void *obj)
-{
-	static_cast<AtomGroup *>(obj)->refreshPositions();
-
-	return 0;
 }
 
 void AtomGroup::sort()
