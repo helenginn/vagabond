@@ -1449,3 +1449,19 @@ void VagFFT::addScratchBack(int scratch)
 
 	}
 }
+
+double VagFFT::minValue()
+{
+	double min = FLT_MAX;
+
+	for (long i = 0; i < nn(); i++)
+	{
+		int index = finalIndex(i);
+		if (min > _data[index][0])
+		{
+			min = _data[index][0];
+		}
+	}
+	
+	return min;
+}

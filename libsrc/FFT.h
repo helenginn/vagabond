@@ -169,6 +169,7 @@ public:
 
 	double getPhase(int x, int y, int z);
 
+	double minValue();
 	double getAmplitude(long i);
 	double getPhase(long i);
 
