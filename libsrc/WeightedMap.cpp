@@ -173,17 +173,30 @@ void WeightedMap::createWeightedMaps()
 
 	if (map > 0)
 	{
+		VagFFTPtr copy = VagFFTPtr(new VagFFT(*_fft));
+		create2FoFcCoefficients(copy, true);
+		copy->fft(FFTReciprocalToReal);
+		double min = copy->minValue();
+		double pc = -min / copy->getReal(0);
+		std::cout << "Min value of F000 "; 
+		std::cout << "increases electron content by " << 
+		pc * 100 << "%." << std::endl;
+
+		double f000 = _fft->getReal(0);
+		f000 *= 1 + pc;
+		_fft->setComponent(0, 0, f000);
+
 		createVagaCoefficients();
 	}
 	else
 	{
 		create2FoFcCoefficients();
 	}
-
+	
 	/* Back to real space */
 	_crystal->fourierTransform(-1);
 	_difft->fft(FFTReciprocalToReal);
-	
+
 	writeObservedSlice();
 }
 
@@ -358,20 +371,20 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				}
 				
 				bool f000 = (i == 0 && j == 0 && k == 0);
-				
-				if (!f000 && ((length < minRes || length > maxRes || isAbs)
-				    || (fobs != fobs || isRfree) || sigfobs != sigfobs))
-				{	
-					scratch->setElement(index, 0, 0);
-
-					continue;
-				}
 
 				vec2 complex;
 				complex.x = _fft->getReal(index);
 				complex.y = _fft->getImag(index);
 				double fcalc = sqrt(complex.x * complex.x +
 				                      complex.y * complex.y);
+				
+				if (!f000 && ((length < minRes || length > maxRes || isAbs)
+				    || (fobs != fobs || isRfree) || sigfobs != sigfobs))
+				{	
+					scratch->setElement(index, fcalc, 0);
+
+					continue;
+				}
 
 				double stdev = stdevForReflection(fobs, fcalc, sigfobs,
 				                                  1 / length);
@@ -412,7 +425,6 @@ double WeightedMap::oneMap(FFTPtr scratch, int slice, bool diff)
 				if (diff)
 				{
 					fused = fobs - fcalc;
-					
 					if (f000) fused = 0;
 				}
 
@@ -490,10 +502,15 @@ void WeightedMap::writeFile(VagFFTPtr chosen)
 	chosen->writeToFile(outputFile, maxRes, fftData, _difft, _fft);
 }
 
-void WeightedMap::create2FoFcCoefficients()
+void WeightedMap::create2FoFcCoefficients(VagFFTPtr copy, bool patt)
 {
-	std::cout << "Creating 2Fo-Fc density..." << std::endl;
+//	std::cout << "Creating 2Fo-Fc density..." << std::endl;
 	FFTPtr fftData = _data->getFFT();
+	
+	if (!copy)
+	{
+		copy = _fft;
+	}
 
 	double lowRes = Options::minRes();
 	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
@@ -513,7 +530,7 @@ void WeightedMap::create2FoFcCoefficients()
 	
 	std::cout << "Mixing in data for weighed density map..." << std::endl;
 
-	vec3 nLimits = getNLimits(fftData, _fft);
+	vec3 nLimits = getNLimits(fftData, copy);
 	CSym::CCP4SPG *spg = _crystal->getSpaceGroup();
 	mat3x3 real2frac = _crystal->getReal2Frac();
 
@@ -529,7 +546,7 @@ void WeightedMap::create2FoFcCoefficients()
 				long dataidx = fftData->element(_h, _k, _l);
 				double fobs = fftData->data[dataidx][0];
 				double sigfobs = fftData->data[dataidx][1];
-				long index = _fft->element(i, j, k);
+				long index = copy->element(i, j, k);
 
 				int isAbs = CSym::ccp4spg_is_sysabs(spg, i, j, k);
 				vec3 ijk = make_vec3(i, j, k);    
@@ -549,7 +566,7 @@ void WeightedMap::create2FoFcCoefficients()
 				
 				if (length < minRes || length > maxRes || isAbs)
 				{	
-					_fft->setElement(index, 0, 0);
+					copy->setElement(index, 0, 0);
 					_difft->setElement(index, 0, 0);
 
 					continue;
@@ -559,19 +576,19 @@ void WeightedMap::create2FoFcCoefficients()
 				    sigfobs != sigfobs ||
 				    isRfree)
 				{
-					_fft->setElement(index, 0, 0);
+					copy->setElement(index, 0, 0);
 					_difft->setElement(index, 0, 0);
 
 					continue;
 				}
 
 				vec2 complex;
-				complex.x = _fft->getReal(index);
-				complex.y = _fft->getImag(index);
+				complex.x = copy->getReal(index);
+				complex.y = copy->getImag(index);
 				double fcalc = sqrt(complex.x * complex.x +
 				                    complex.y * complex.y);
 
-				double phase = _fft->getPhase(i, j, k);
+				double phase = copy->getPhase(i, j, k);
 				phase = deg2rad(phase);
 				
 				double stdev = stdevForReflection(fobs, fcalc, sigfobs,
@@ -583,13 +600,19 @@ void WeightedMap::create2FoFcCoefficients()
 				
 				complex.x = fused * cos(phase);
 				complex.y = fused * sin(phase);
+				
+				if (patt)
+				{
+					complex.x = fobs;
+					complex.y = 0;
+				}
 
 				if (complex.x != complex.x || complex.y != complex.y)
 				{
 					continue;
 				}
 
-				_fft->setElement(index, complex.x, complex.y);
+				copy->setElement(index, complex.x, complex.y);
 				
 				bool f000 = (i == 0 && j == 0 && k == 0);
 				
@@ -613,5 +636,5 @@ void WeightedMap::create2FoFcCoefficients()
 		}
 	}
 	
-	writeFile(_fft);
+	writeFile(copy);
 }

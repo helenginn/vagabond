@@ -52,7 +52,8 @@ private:
 	int shellForResolution(double res);
 	double oneMap(FFTPtr scratch, int slice, bool diff);
 	void createVagaCoefficients();
-	void create2FoFcCoefficients();
+	void create2FoFcCoefficients(VagFFTPtr copy = VagFFTPtr(),
+	                             bool patt = false);
 	void writeFile(VagFFTPtr chosen);
 };
 
