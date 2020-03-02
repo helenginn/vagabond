@@ -65,8 +65,8 @@ void BucketPerStrand::addSolvent()
 	_solvent->multiplyAll(1 / (double)count);
 	removeSlivers(1.5);
 	
-	adjustForVoxelVolume();
 	reportSolventContent();
+	adjustForVoxelVolume();
 	
 	setPartialStructure(_solvent);
 }
