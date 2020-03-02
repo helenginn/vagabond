@@ -27,6 +27,14 @@ void Diffraction::copyToFFT(VagFFTPtr vag)
 				long index = _fft->element(i, j, k);
 				long vindex = vag->element(i, j, k);
 
+				bool isFree;
+				isFree = (_fft->getScratchComponent(index, 0, 0) < 0.5);
+				
+				if (isFree)
+				{
+					continue;
+				}
+
 				double amp = _fft->getReal(index);
 				amp *= amp;
 				vag->setComponent(vindex, 0, amp);
