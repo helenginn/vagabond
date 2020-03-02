@@ -407,7 +407,8 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 				if (!f000 && ((length < minRes || length > maxRes || isAbs)
 				    || (fobs != fobs || isFree) || sigfobs != sigfobs))
 				{	
-					scratch->setElement(index, fcalc, 0);
+					scratch->setComponent(index, 0, complex.x);
+					scratch->setComponent(index, 1, complex.y);
 
 					continue;
 				}
