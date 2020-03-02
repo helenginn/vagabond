@@ -172,6 +172,9 @@ void PartialStructure::scalePartialStructure()
 				float real = realProtein + realPartial;
 				float imag = imagProtein + imagPartial;
 				
+				_partial->setComponent(nModel, 0, realPartial);
+				_partial->setComponent(nModel, 1, imagPartial);
+				
 				if (real != real || imag != imag)
 				{
 					continue;
