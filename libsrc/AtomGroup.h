@@ -212,12 +212,8 @@ private:
 
 	static double scoreFinalMap(MapScoreWorkspace *workspace, bool plot,
 	                            bool first);
-
-	static double scoreFinalValues(std::vector<double> &xs,
-	                               std::vector<double> &ys,
-                                   std::vector<double> &weights,
-	                               ScoreType scoreType,
-                                   unsigned int flags);
+	static void createConstantFraction(MapScoreWorkspace *ws,
+	                                   vec3 min, vec3 max);
 
 	MonomerWkr _monomer;
 

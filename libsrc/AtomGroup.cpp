@@ -739,12 +739,10 @@ double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal,
 	}
 	
 	MapScoreWorkspace workspace;
+	setup_space(&workspace);
 	workspace.scoreType = scoreType;
 	workspace.crystal = crystal;
 	workspace.selectAtoms = shared_from_this();
-	workspace.segment = VagFFTPtr();
-	workspace.ave = empty_vec3();
-	workspace.basis = make_mat3x3();
 	workspace.flag = flags;
 	workspace.filename = plot;
 
@@ -866,6 +864,41 @@ void AtomGroup::addToMap(VagFFTPtr fft, mat3x3 real2frac)
 	VagFFT::operation(fft, scratchFull, MapScoreTypeNone, NULL, false);
 }
 
+void AtomGroup::createConstantFraction(MapScoreWorkspace *ws,
+                                       vec3 min, vec3 max)
+{
+	/* Now we can add neighbouring constant atoms from the same Crystal
+	 * once we have established they do not go over the border. */
+
+	/* Make half-box measures */
+	vec3 minmax = vec3_add_vec3(min, max);
+	vec3_mult(&minmax, 0.5);
+	vec3 half = vec3_subtract_vec3(max, min);
+	vec3_mult(&half, 0.5);
+
+	CrystalPtr crystal = ws->crystal;
+	ws->extra = crystal->getAtomsInBox(minmax, half.x, half.y, half.z);
+
+	AtomGroupPtr added = AtomGroupPtr(new AtomGroup());
+
+	/* We want to add anything which is static to the 
+	 * constant fraction. */
+	for (size_t i = 0; i < ws->extra->atomCount(); i++)
+	{
+		AtomPtr anAtom = ws->extra->atom(i);
+
+		if (ws->selectAtoms->hasAtom(anAtom) ||
+		    added->hasAtom(anAtom))
+		{
+			continue;
+		}
+
+		added->addAtom(anAtom);
+	}
+
+	ws->extra = added;
+}
+
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
                                       bool plot)
 {
@@ -879,7 +912,6 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		return 0;
 	}
 
-	CrystalPtr crystal = workspace->crystal;
 	AtomGroupPtr selected = workspace->selectAtoms;
 
 	bool first = (workspace->segment == VagFFTPtr());
@@ -894,41 +926,11 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		/* prepare the size of the maps */
 		selected->prepareCubicMap(&workspace->segment, min, max, true);
 
-		/* Now we can add neighbouring constant atoms from the same Crystal
-		 * once we have established they do not go over the border. */
-
-		/* Make half-box measures */
-		vec3 minmax = vec3_add_vec3(min, max);
-		vec3_mult(&minmax, 0.5);
-		vec3 half = vec3_subtract_vec3(max, min);
-		vec3_mult(&half, 0.5);
-		
-		if (!(workspace->flag & MapScoreFlagNoSurround))
-		{
-			workspace->extra = crystal->getAtomsInBox(minmax, half.x, 
-			                                          half.y, half.z);
-
-			AtomGroupPtr added = AtomGroupPtr(new AtomGroup());
-
-			/* We want to add anything which is static to the 
-			 * constant fraction. */
-			for (size_t i = 0; i < workspace->extra->atomCount(); i++)
-			{
-				AtomPtr anAtom = workspace->extra->atom(i);
-
-				if (workspace->selectAtoms->hasAtom(anAtom) ||
-				    added->hasAtom(anAtom))
-				{
-					continue;
-				}
-
-				added->addAtom(anAtom);
-			}
-			
-			workspace->extra = added;
-		}
+		/* find all the non-moving atoms */
+		createConstantFraction(workspace, min, max);
 	}
 			
+	/* in the case where we wish to recalculate constant atom positions */
 	if (first || workspace->recalc)
 	{
 		/* Add the acceptable atoms to the map */
@@ -939,6 +941,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		workspace->recalc = false;
 	}
 	
+	/* add our moving fraction, updated elsewhere */
 	workspace->selectAtoms->addToCubicMap(workspace->segment);
 	
 	double score = scoreFinalMap(workspace, plot, first);
@@ -978,18 +981,6 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot,
 
 	VagFFT::operation(map, ws->segment, mapType, &ws->vals, false, !first);
 
-	for (size_t i = 0; i < ws->vals.size() && 
-	     ws->scoreType != ScoreTypeCorrel; i++)
-	{
-		if (ws->vals[i].weight > 1e-6)
-		{
-			ys.push_back(ws->vals[i].fc);
-			xs.push_back(ws->vals[i].fo);
-			double weight = (ws->vals[i].weight);
-			weights.push_back(weight);
-		}
-	}
-
 	/* Debugging ... writes cc_score.csv and cc_score.png, csv can be
 	* looked at with gnuplot quite nicely.*/
 
@@ -1003,76 +994,21 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot,
 		double correl = correlation(ws->vals);
 		return -correl;
 	}
-
+	
 	if (ws->scoreType == ScoreTypeRFactor)
 	{
 		double rfactor = weighted_r_factor(ws->vals);
 		return rfactor;
 	}
 
-	double score = scoreFinalValues(xs, ys, weights, ws->scoreType, ws->flag);
+	if (ws->scoreType == ScoreTypeHappiness)
+	{
+		double happy = happiness_coefficient(ws->vals);
+		return happy;
+	}
 
+	double score = 0;
 	return score;
-}
-
-
-double AtomGroup::scoreFinalValues(std::vector<double> &xs,
-                                   std::vector<double> &ys,
-                                   std::vector<double> &weights,
-                                   ScoreType scoreType,
-                                   unsigned int flags)
-{
-	bool difference = (flags & MapScoreFlagDifference);
-	double cutoff = MAP_VALUE_CUTOFF;
-	
-//	if (difference) cutoff = -FLT_MAX;
-	cutoff = -FLT_MAX;
-	
-	if (scoreType == ScoreTypeCorrel)
-	{
-		double correl = correlation(xs, ys, cutoff, &weights);
-		return -correl;
-	}
-	else if (scoreType == ScoreTypeHappiness)
-	{
-		double happiness = happiness_coefficient(xs, ys);
-		return -happiness;
-	}
-	else if (scoreType == ScoreTypeRFactor)
-	{
-		double rFactor = scaled_r_factor(xs, ys, cutoff);
-		return rFactor;
-	}
-	else if (scoreType == ScoreTypeMultiply)
-	{
-		double mult = weightedMapScore(xs, ys);
-		return -mult;
-	}
-	else if (scoreType == ScoreTypeAddDensity)
-	{
-		int option = 0;
-		
-		if (flags & MapScoreFlagPosOnly)
-		{
-			option = 1;
-		}
-		else if (flags & MapScoreFlagNegOnly)
-		{
-			option = -1;
-		}
-		
-		double sum = add_x_if_y(xs, ys, option);
-		return sum;
-	}
-	else if (scoreType == ScoreTypeAddVoxels)
-	{
-		double sum = add_if_gt_zero(ys);
-		return sum;
-	}
-	
-	
-	
-	return 0;
 }
 
 void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals, 

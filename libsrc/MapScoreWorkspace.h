@@ -62,8 +62,6 @@ typedef enum
 	MapScoreAddNoWrap,
 } MapScoreType;
 
-typedef std::map<ElementPtr, FFTPtr> EleCache;
-
 typedef struct 
 {
 	ScoreType scoreType;
@@ -71,22 +69,15 @@ typedef struct
 	AtomGroupPtr selectAtoms;
 	AtomGroupPtr extra;
 	VagFFTPtr segment;
-	VagFFTPtr constant;
-	vec3 ave;
-	vec3 working_ave;
 	std::vector<CoordVal> vals;
-	mat3x3 basis;
 	std::string filename;
 	unsigned int flag;
 	bool recalc;
-	EleCache eleCache;
 } MapScoreWorkspace;
 
 inline void setup_space(MapScoreWorkspace *w)
 {
 	w->scoreType = ScoreTypeCorrel;
-	w->ave = empty_vec3();
-	w->basis = make_mat3x3();
 	w->flag = MapScoreFlagNone;
 	w->recalc = false;
 }

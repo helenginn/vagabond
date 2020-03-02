@@ -40,6 +40,11 @@ public:
 	
 	void plot(std::string filename);
 	
+	MapScoreWorkspace &getWorkspace()
+	{
+		return _workspace;
+	}
+	
 	void recalculateConstant();
 private:
 	bool _prepared;

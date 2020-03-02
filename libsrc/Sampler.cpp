@@ -578,13 +578,10 @@ void Sampler::setupScoreWithMap()
 		sampled->addAtomsFrom(_includeForRefine[i]);
 	}
 	
+	setup_space(&_workspace);
 	_workspace.scoreType = _scoreType;
 	_workspace.crystal = _crystal;
 	_workspace.selectAtoms = sampled;
-	_workspace.segment = VagFFTPtr();
-	_workspace.ave = empty_vec3();
-	_workspace.basis = make_mat3x3();
-	_workspace.flag = MapScoreFlagNone;
 		
 	AtomGroup::scoreWithMapGeneral(&_workspace);
 }
