@@ -535,6 +535,7 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 	double std_y = vec3_length(yl);
 	double std_z = vec3_length(zl);
 	double vol = mat3x3_volume(_realBasis);
+	scale *= vol;
 	int column = whichColumn(ele);
 	
 	for (int z = centre.z - maxVals.z; z <= centre.z + maxVals.z; z++)
@@ -565,7 +566,7 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 
 				if (add)
 				{
-					addInterpolatedToReal(column, x, y, z, dens * scale * vol);
+					addInterpolatedToReal(column, x, y, z, dens * scale);
 				}
 				
 				total += dens * vol;
