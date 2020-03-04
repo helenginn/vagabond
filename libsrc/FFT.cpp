@@ -313,7 +313,7 @@ void VagFFT::setupElements(bool wipe)
 				
 				vec3 real = make_vec3(x, y, z);
 				mat3x3_mult_vec(_toRecip, &real);
-				mat3x3_mult_vec(_realBasis, &real);
+				vec3_mult(&real, 0.5);
 
 				for (int j = 0; j < _nele; j++)
 				{
