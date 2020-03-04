@@ -388,14 +388,14 @@ private:
 	static std::vector<FFTDim *> _dimensions;
 	FFTDim *_myDims;
 	
-	/* _realBasis accounting for unit cell size */
+	/* _realBasis accounting for unit cell size. Large numbers */
 	mat3x3 _toReal;
-	/* _recipBasis accounting for unit cell size */
+	/* _recipBasis accounting for unit cell size. Small numbers */
 	mat3x3 _toRecip;
 
 	/* small numbers; apply to convert voxel dimension to Angstroms */
 	mat3x3 _realBasis;
-	/* big numbers; apply to convert real dimensions to voxel */
+	/* big numbers; apply to convert Angstrom dimensions to voxel */
 	mat3x3 _recipBasis;
 	
 	/* denoting where the origin is, e.g. 0,0,0 or atom central pos */
