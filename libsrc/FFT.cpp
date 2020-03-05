@@ -542,24 +542,23 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 		squash /= length;
 	}
 	
-	squash /= pow(2., 1/8.);
 	double vol = mat3x3_volume(_realBasis);
 	mat3x3 inv = mat3x3_inverse(tensor);
 
 	int column = whichColumn(ele);
 	
-	for (int z = centre.z - maxVals.z; z <= centre.z + maxVals.z; z++)
+	for (int z = -maxVals.z; z <= maxVals.z + 0.5; z++)
 	{
-		for (int y = centre.y - maxVals.y; y <= centre.y + maxVals.y; y++)
+		for (int y = -maxVals.y; y <= maxVals.y + 0.5; y++)
 		{
-			for (int x = centre.x - maxVals.x; x <= centre.x + maxVals.x; x++)
+			for (int x = -maxVals.x; x <= maxVals.x + 0.5; x++)
 			{
-				vec3 pos = make_vec3(x, y, z);
+				vec3 pos = make_vec3(x + centre.x, y + centre.y, z + centre.z);
 				/* in voxel system */
 				vec3 offset = vec3_subtract_vec3(pos, centre);
-				vec3 orig = offset;
 				/* and then to Angstroms */
 				mat3x3_mult_vec(_realBasis, &offset);
+				vec3 orig = offset;
 
 				/* to aniso-U-sensitive coordinates */
 				mat3x3_mult_vec(inv, &offset);
@@ -569,12 +568,13 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 				offset.z *= orig.z;
 				double mult = offset.x + offset.y + offset.z;
 				
-				double dens = exp(-mult / 4);
+				double dens = exp(-mult / 2);
 				dens *= squash * scale * vol;
 
 				if (add)
 				{
-					addInterpolatedToReal(column, x, y, z, dens);
+					addInterpolatedToReal(column, x + centre.x, 
+					                      y + centre.y, z + centre.z, dens);
 				}
 				
 				total += dens;
