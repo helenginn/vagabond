@@ -172,7 +172,6 @@ double mat3x3_volume(mat3x3 mat)
 	double cosA = cos(deg2rad(vals[3]));
 	double cosB = cos(deg2rad(vals[4]));
 	double cosC = cos(deg2rad(vals[5]));
-	double sinC = sin(deg2rad(vals[5]));
 	
 	double vol_bit = 1 - cosA * cosA - cosB * cosB - cosC * cosC;
 	vol_bit += 2 * cosA * cosB * cosC;
