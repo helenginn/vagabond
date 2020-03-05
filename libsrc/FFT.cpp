@@ -509,6 +509,7 @@ void VagFFT::addImplicitAtom(AtomPtr atom)
 	}
 	
 	vec3_mult(&maxVals, scale);
+	maxVals.x += 1; maxVals.y += 1; maxVals.z += 1;
 	/* into voxel coordinates */
 	mat3x3_mult_vec(_recipBasis, &maxVals);
 	
