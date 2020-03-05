@@ -1206,6 +1206,11 @@ void Polymer::findAnchorNearestCentroid()
 		{
 			continue;
 		}
+		
+		if (getMonomer(i - 1) && getMonomer(i - 1)->conformerCount() > 1)
+		{
+			continue;
+		}
 
 		AtomPtr n = getMonomer(i)->findAtom("N");
 
