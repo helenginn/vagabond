@@ -125,6 +125,11 @@ bool Polymer::refineLocalFlexibility(bool magic)
 	{
 		return ch;
 	}
+	
+	if (ch)
+	{
+		return ch;
+	}
 
 	ch |= _keyPoints->refineKeyPoints();
 
@@ -956,7 +961,7 @@ void Polymer::graph(std::string graphName)
 	plotMap["yMax1"] = "100";
 
 	plotMap["xTitle0"] = "Residue number";
-	plotMap["yTitle0"] = "B factor";
+	plotMap["yTitle0"] = "B equivalent";
 	plotMap["style0"] = "line";
 	plotMap["style1"] = "line";
 
@@ -982,7 +987,7 @@ void Polymer::graph(std::string graphName)
 		plotMap["yMax1"] = "40";
 
 		plotMap["xTitle0"] = "Sidechain number";
-		plotMap["yTitle0"] = "B factor";
+		plotMap["yTitle0"] = "B equivalent";
 		plotMap["style0"] = "line";
 		plotMap["style1"] = "line";
 
@@ -1296,7 +1301,7 @@ void Polymer::closenessSummary()
 	bSum /= count;
 
 	std::cout << "Across all Chain " << getChainID() << " atoms:\n";
-	std::cout << "\tB factor (Å^2): " << std::setprecision(4) <<
+	std::cout << "\tDerived B equivalent (Å^2): " << std::setprecision(4) <<
 	bSum << std::endl;
 	std::cout << "\tPositional displacement from PDB (Å): " << posSum << std::endl;
 }

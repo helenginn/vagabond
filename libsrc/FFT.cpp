@@ -302,7 +302,7 @@ void VagFFT::setupElements(bool wipe)
 	{
 		return;
 	}
-
+	
 	for (int z = -_nz / 2; z <= _nz / 2; z++)
 	{
 		for (int y = -_ny / 2; y <= _ny / 2; y++)
@@ -568,7 +568,7 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 				offset.z *= orig.z;
 				double mult = offset.x + offset.y + offset.z;
 				
-				double dens = exp(-mult / 2);
+				double dens = exp(-mult / 2.0);
 				dens *= squash * scale * vol;
 
 				if (add)

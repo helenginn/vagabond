@@ -797,6 +797,13 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 
 	_bucket->setCrystal(shared_from_this());
 	_bucket->addSolvent();
+
+	std::cout << "Ave calculated density before: " << _fft->averageAll() << 
+	" electrons/A^(-3)" << std::endl;
+	std::cout << "Ave partial density before: " << 
+	_bucket->getSolvent()->averageAll() << 
+	" electrons/A^(-3)" << std::endl;
+
 	_bucket->fourierTransform(1);
 	_bucket->setData(data);
 	_bucket->scalePartialStructure();
@@ -872,6 +879,8 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 	if (scaleType == ScalingTypeAbs)
 	{
 		/* Same as above, nothing left to do */
+		/* just for vagadensity */
+		makeShells(&_shells, 0, _maxResolution);
 		return;
 	}
 	else if (scaleType == ScalingTypeAbsBFactor)
@@ -1194,6 +1203,11 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	
 	if (!_silent)
 	{
+		writeVagabondFile(cycleNum);
+	}
+	
+	if (!_silent)
+	{
 		std::cout << "*******************************" << std::endl;
 		std::cout << "\tCycle " << cycleNum << std::endl;
 	}
@@ -1235,8 +1249,6 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 			polymer->closenessSummary();
 		}
 	}
-	
-	writeVagabondFile(cycleNum);
 	
 	differenceAttribution();
 
@@ -1354,15 +1366,9 @@ void Crystal::fitWholeMolecules(bool recip)
 
 void Crystal::rigidBodyRefinement()
 {
-	for (int i = 0; i < moleculeCount(); i++)
+	for (int i = 0; i < motionCount(); i++)
 	{
-		if (!molecule(i)->isPolymer())
-		{
-			continue;
-		}
-
-		PolymerPtr poly = ToPolymerPtr(molecule(i));
-		poly->getAnchorModel()->rigidBodyRefinement();
+		_motions[i]->rigidRefine();
 	}
 
 }
@@ -2043,4 +2049,29 @@ void Crystal::resetMotions()
 	}
 	
 	refreshPositions();
+}
+
+void Crystal::addMotion(MotionPtr mot, PolymerPtr origPol)
+{
+	_motions.push_back(mot);
+	
+	if (!origPol)
+	{
+		return;
+	}
+	
+	char first = origPol->getChainID()[0];
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer() || molecule(i) == origPol)
+		{
+			continue;
+		}
+		
+		if (molecule(i)->getChainID()[0] == first)
+		{
+			mot->addToPolymer(ToPolymerPtr(molecule(i)));
+		}
+	}
 }

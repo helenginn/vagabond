@@ -42,6 +42,7 @@ public:
 
 	void addTranslationParameters(RefinementStrategyPtr strategy);
 	void refine(bool reciprocal = false);
+	void rigidRefine();
 	
 	int librationCount()
 	{
@@ -115,6 +116,8 @@ protected:
 private:
 	void deleteQuats();
 
+	mat3x3 getOverallRotation();
+
 	RefineMat3x3Ptr _trans;
 	std::string _name;
 
@@ -126,7 +129,12 @@ private:
 	std::vector<Quat4Refine *> _quats;
 	
 	std::vector<Quat4Refine *> _screws;
-	
+
+	Quat4Refine *_rotation;
+	vec3 _r;
+	Quat4Refine *_displacement;
+	vec3 _d;
+
 	double _scale;
 	double _transScale;
 	bool _refined;

@@ -193,19 +193,16 @@ void Anchor::createStartPositions(Atom *callAtom)
 
 void Anchor::atLeastOneMotion()
 {
+	if (_motions.size() > 0)
+	{
+		return;
+	}
+	
 	/* if crystal only has one polymer we do not care */
 	CrystalPtr crystal = Options::getActiveCrystal();
 	
-	if (crystal->polymerCount() <= 1)
-	{
-//		return;
-	}
-	
 	MotionPtr mot = MotionPtr(new Motion());
 	PolymerPtr pol = ToPolymerPtr(getMolecule());
-	crystal->addMotion(mot);
-
-	mot->setName(pol->getName() + "_" + getAtom()->shortDesc());
 	
 	if (pol)
 	{
@@ -215,6 +212,10 @@ void Anchor::atLeastOneMotion()
 	{
 		_motions.push_back(mot);
 	}
+
+	crystal->addMotion(mot, pol);
+
+	mot->setName(pol->getName() + "_" + getAtom()->shortDesc());
 }
 
 mat3x3 Anchor::getAnchorRotation()
@@ -400,8 +401,8 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 	
 	if (!_disableWhacks)
 	{
-		applyWholeMotions();
 		fixCentroid();
+		applyWholeMotions();
 
 		/* Apply whacks as normal, if we are not re-caching Whacks. */
 		for (int i = 0; i < _whacks.size(); i++)
@@ -551,20 +552,11 @@ void Anchor::propagateChange(int depth, bool refresh)
 
 void Anchor::rigidBodyRefinement()
 {
-	FlexGlobal target;
-	NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
-	_motions[0]->attachTargetToRefinement(neld, target);
+	if (!_motions.size())
+	{
+		return;
+	}
 
-	double step = 0.1; double tol = 0.001;
-	double astep = deg2rad(2);
-	neld->setJobName("rigid_body");
-	neld->addParameter(this, getPosX, setPosX, step, tol, "px");
-	neld->addParameter(this, getPosY, setPosY, step, tol, "py");
-	neld->addParameter(this, getPosZ, setPosZ, step, tol, "pz");
-	neld->addParameter(this, getAlpha, setAlpha, astep, astep/100, "alpha");
-	neld->addParameter(this, getBeta, setBeta, astep, astep/100, "beta");
-	neld->addParameter(this, getGamma, setGamma, astep, astep/100, "gamma");
-
-	neld->refine();
+	_motions[0]->rigidRefine();
 
 }

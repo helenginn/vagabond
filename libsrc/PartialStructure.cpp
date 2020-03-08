@@ -101,6 +101,11 @@ void PartialStructure::scalePartialStructure()
 	{
 		shout_at_helen("Need diffraction data to scale solvent");
 	}
+
+	VagFFTPtr fft = getCrystal()->getFFT();
+	
+	/*
+	*/
 	
 	setSolvScale(this, 0.0);
 	setSolvBFac(this, 40);
@@ -109,9 +114,9 @@ void PartialStructure::scalePartialStructure()
 	fine = NelderMeadPtr(new RefinementNelderMead());
 	fine->setJobName("solvent_scale_fine");
 	fine->setEvaluationFunction(scalePartialScore, this);
-	fine->setCycles(100);
-	fine->addParameter(this, getSolvScale, setSolvScale, 0.4, 0.001, "scale");
-	fine->addParameter(this, getSolvBFac, setSolvBFac, 40, 0.1, "bfac");
+	fine->setCycles(120);
+	fine->addParameter(this, getSolvScale, setSolvScale, 0.2, 0.0001, "scale");
+	fine->addParameter(this, getSolvBFac, setSolvBFac, 20, 0.1, "bfac");
 	fine->setSilent(true);
 	fine->refine();
 
@@ -128,8 +133,6 @@ void PartialStructure::scalePartialStructure()
 	}	
 	
 	/** Now add this into the FFT */
-	
-	VagFFTPtr fft = getCrystal()->getFFT();
 
 	mat3x3 real2frac = getCrystal()->getReal2Frac();
 	real2frac = mat3x3_transpose(real2frac);

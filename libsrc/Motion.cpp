@@ -36,6 +36,10 @@ Motion::Motion()
 	_allAtoms->setName("motion_all");
 	_allBackbone = AtomGroupPtr(new AtomGroup());
 	_allBackbone->setName("motion_bb");
+	_rotation = new Quat4Refine();
+	_r = empty_vec3();
+	_displacement = new Quat4Refine();
+	_d = empty_vec3();
 	_centre = empty_vec3();
 }
 
@@ -51,6 +55,10 @@ void Motion::addToPolymer(PolymerPtr pol)
 	if (!_refined)
 	{
 		_centre = _allAtoms->initialCentroid();
+	}
+	else
+	{
+		_centre = _allAtoms->centroid();
 	}
 }
 
@@ -118,8 +126,23 @@ void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	FlexGlobal::score(&target);
 }
 
+void Motion::rigidRefine()
+{
+	_centre = _allAtoms->centroid();
+	std::cout << "\nRefining rigid body: " << _name << std::endl;
+	FlexGlobal target;
+	NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
+	attachTargetToRefinement(neld, target, false);
+	target.setAtomGroup(_allAtoms);
+	neld->setJobName("rigid");
+	_rotation->addVecToStrategy(neld, deg2rad(4), deg2rad(0.04), "rotation");
+	_displacement->addVecToStrategy(neld, 0.1, 0.001, "displacement");
+	neld->refine();
+}
+
 void Motion::refine(bool reciprocal)
 {
+	_centre = _allAtoms->centroid();
 	std::cout << "\nRefining motion: " << _name << std::endl;
 	
 	int maxRot = Options::getMaxRotations();
@@ -183,7 +206,6 @@ void Motion::refine(bool reciprocal)
 		}
 	}
 
-
 	for (int i = 0; i < 1; i++)
 	{
 		NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
@@ -222,13 +244,20 @@ void Motion::applyRotations(std::vector<BondSample> &stored)
 	vec3_mult(&position, 1 / (double)stored.size());
 	
 	vec3 centre_to_vec = vec3_subtract_vec3(position, _centre);
+	mat3x3 basis_rot = getOverallRotation();
+	vec3 rot_disp = centre_to_vec;
+	mat3x3_mult_vec(basis_rot, &rot_disp);
+	vec3_subtract_from_vec3(&rot_disp, centre_to_vec);
+
+	vec3 displacement = _displacement->getVec3();
+	vec3_add_to_vec3(&displacement, rot_disp);
 
 	for (int i = 0; i < stored.size(); i++)
 	{
 		vec3 start = stored[i].start;
 		vec3 neg_start = vec3_mult(start, -1);
 		vec3 diff = vec3_subtract_vec3(start, position);
-		mat3x3 rot_only = make_mat3x3();
+		mat3x3 rot_only = basis_rot;
 
 		for (int j = 0; j < _quats.size(); j++)
 		{
@@ -265,7 +294,6 @@ void Motion::applyRotations(std::vector<BondSample> &stored)
 				continue;
 			}
 
-
 			vec3_add_to_vec3(&stored[i].old_start, shift);
 			vec3_add_to_vec3(&stored[i].start, shift);
 		}
@@ -277,6 +305,8 @@ void Motion::applyRotations(std::vector<BondSample> &stored)
 		stored[i].old_start = new_old;
 		mat3x3 basis = mat3x3_mult_mat3x3(rot_only, stored[i].basis);
 		stored[i].basis = basis;
+		vec3_add_to_vec3(&stored[i].old_start, displacement);
+		vec3_add_to_vec3(&stored[i].start, displacement);
 	}
 }
 
@@ -352,6 +382,11 @@ void Motion::addProperties()
 	addStringProperty("name", &_name);
 	addChild("atoms", _allAtoms);
 	addChild("backbone", _allBackbone);
+	
+	_r = _rotation->getVec3();
+	_d = _displacement->getVec3();
+	addVec3Property("rotation", &_r);
+	addVec3Property("displacement", &_d);
 }
 
 void Motion::addObject(ParserPtr object, std::string category)
@@ -388,6 +423,11 @@ void Motion::postParseTidy()
 		_quats.push_back(q);
 		_screws.push_back(s);
 	}
+	
+	_rotation->setVec3(_r);
+	_displacement->setVec3(_d);
+	
+	_centre = _allAtoms->initialCentroid();
 }
 
 void Motion::deleteLastScrew()
@@ -456,4 +496,11 @@ void Motion::reset()
 	
 	mat3x3 cleared = make_mat3x3();
 	_trans->setMat3x3(cleared);
+}
+
+mat3x3 Motion::getOverallRotation()
+{
+	vec3 rot = _rotation->getVec3();
+	mat3x3 mat = mat3x3_rotate(rot.x, rot.y, rot.z);
+	return mat;
 }

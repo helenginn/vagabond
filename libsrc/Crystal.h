@@ -468,10 +468,7 @@ public:
 
 	void addPDBContents(std::string pdb);
 	
-	void addMotion(MotionPtr mot)
-	{
-		_motions.push_back(mot);
-	}
+	void addMotion(MotionPtr mot, PolymerPtr pol = PolymerPtr());
 	
 	size_t motionCount()
 	{

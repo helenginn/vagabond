@@ -1265,6 +1265,7 @@ void Bond::checkForSplits(AtomGroupPtr polymer)
 BondPtr Bond::splitBond(bool onlyExisting)
 {
 	BondPtr me = ToBondPtr(shared_from_this());
+	
 	BondPtr parent = ToBondPtr(getParentModel());
 	int last = parent->downstreamBondGroupCount();
 	

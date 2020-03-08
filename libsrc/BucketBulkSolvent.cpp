@@ -62,7 +62,7 @@ void BucketBulkSolvent::adjustForVoxelVolume()
 	double volume = mat3x3_volume(real);
 
 	double conc = 0.3;
-	double stuff = conc * volume;
+	double stuff = conc / volume;
 	
 	_solvent->multiplyAll(stuff);
 }
