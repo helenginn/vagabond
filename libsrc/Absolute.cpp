@@ -238,6 +238,11 @@ void Absolute::addProperties()
 	Model::addProperties();
 }
 
+void Absolute::postParseTidy()
+{
+	_realSpaceTensor = _tensor;
+}
+
 void Absolute::linkReference(BaseParserPtr object, std::string category)
 {
 	if (category == "atom")
