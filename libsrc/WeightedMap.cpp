@@ -16,6 +16,7 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#include "SpaceWarp.h"
 #include "WeightedMap.h"
 #include "mat3x3.h"
 #include "Diffraction.h"
@@ -509,6 +510,17 @@ void WeightedMap::createVagaCoefficients()
 	double normalise = 1 / _allWeights;
 	_difft->multiplyAll(normalise);
 	duplicate->multiplyAll(normalise);
+	
+	SpaceWarpPtr sw = Options::getActiveCrystal()->getWarp();
+	sw->recalculate(duplicate);
+	for (int i = 4; i < 56; i++)
+	{
+		sw->addRefinedAtom(Options::getActiveCrystal()->findAtoms("CA", i)[0]);
+		sw->addRefinedAtom(Options::getActiveCrystal()->findAtoms("C", i)[0]);
+		sw->addRefinedAtom(Options::getActiveCrystal()->findAtoms("N", i)[0]);
+	}
+	
+	sw->svd();
 	
 	/* To reciprocal space for writing */
 	duplicate->fft(FFTRealToReciprocal);

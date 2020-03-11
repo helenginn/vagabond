@@ -245,6 +245,21 @@ vec3 Atom::getSymRelatedPosition(int i, int conf)
 	return mod;
 }
 
+vec3 Atom::getPositionInUnitCell()
+{
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
+	mat3x3 f2r = crystal->getFFT()->toRecip();
+	mat3x3 r2f = crystal->getFFT()->toReal();
+
+	vec3 tmp = getAbsolutePosition();
+	mat3x3_mult_vec(f2r, &tmp);
+	VagFFT::collapseFrac(&tmp.x, &tmp.y, &tmp.z);
+	mat3x3_mult_vec(r2f, &tmp);
+
+	return tmp;
+}
+
 vec3 Atom::getPositionInAsu(int conf)
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();

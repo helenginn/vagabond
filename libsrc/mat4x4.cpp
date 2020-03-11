@@ -193,6 +193,32 @@ mat3x3 mat4x4_get_rot(mat4x4 &mat)
 	return rot;
 }
 
+mat4x4 mat4x4_transpose(mat4x4 m)
+{
+	mat4x4 t;
+	t.vals[0] = m.vals[0];
+	t.vals[4] = m.vals[1];
+	t.vals[8] = m.vals[2];
+	t.vals[12] = m.vals[3];
+
+	t.vals[1] = m.vals[4];
+	t.vals[5] = m.vals[5];
+	t.vals[9] = m.vals[6];
+	t.vals[13] = m.vals[7];
+
+	t.vals[2] = m.vals[8];
+	t.vals[6] = m.vals[9];
+	t.vals[10] = m.vals[10];
+	t.vals[14] = m.vals[11];
+
+	t.vals[3] = m.vals[12];
+	t.vals[7] = m.vals[13];
+	t.vals[11] = m.vals[14];
+	t.vals[15] = m.vals[15];
+
+	return t;
+}
+
 void mat4x4_translate(mat4x4 *mat, vec3 centre)
 {
 	mat4x4 transMat = make_mat4x4();

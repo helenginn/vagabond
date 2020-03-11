@@ -66,6 +66,8 @@ public:
 	
 	void saveInitialPosition();
 
+	vec3 getPositionInUnitCell();
+
 	/** Change the periodic table element of the atom */
 	void setElement(ElementPtr element)
 	{

@@ -280,7 +280,7 @@ void Options::executeProtocol()
 	
 	if (getRigidBody())
 	{
-		for (int i = 0; i < 3; i++)
+		for (int i = 0; i < 1; i++)
 		{
 			recalculateFFT();
 			crystal->rigidBodyRefinement();
@@ -952,6 +952,17 @@ bool Options::parseJoke(std::string arg)
 	}
 
 	return false;
+}
+
+void Options::renderWarp()
+{
+	if (!_notify)
+	{
+		return;
+	}
+	
+	_notify->renderWarp();
+
 }
 
 void Options::renderDensity()

@@ -267,7 +267,7 @@ void DiffractionMtz::load()
 		              "Do you have a unit cell and some reflections?");
 	}
 
-	_fft = VagFFTPtr(new VagFFT(largest, largest, largest, 1));
+	_fft = VagFFTPtr(new VagFFT(largest, largest, largest, 0, 1));
 	_fft->multiplyAll(nan(" "));
 	_fft->copyToScratch(0);
 	_fft->multiplyAll(nan(" "));

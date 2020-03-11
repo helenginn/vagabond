@@ -35,5 +35,6 @@ vec3 mat4x4_mult_vec(struct mat4x4 mat, struct vec3 vec);
 vec3 mat4x4_mult_vec3(struct mat4x4 mat, struct vec3 vec, 
                       double *last);
 mat4x4 mat4x4_inverse(mat4x4 &mat);
+mat4x4 mat4x4_transpose(mat4x4 m);
 
 #endif /* mat4x4_hpp */

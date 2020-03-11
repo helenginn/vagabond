@@ -606,6 +606,8 @@ private:
 	/* Private call allowing to break recursion */
 	std::vector<BondSample> *getManyPositionsPrivate();
 	
+	AtomGroupPtr _connectedGroup;
+	
 	double getWorkingPhi();
 	double getWorkingPsi();
 

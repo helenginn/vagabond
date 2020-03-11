@@ -516,7 +516,7 @@ void VagFFT::addImplicitAtom(AtomPtr atom)
 	vec3_subtract_from_vec3(&centre, _origin);
 	mat3x3_mult_vec(_recipBasis, &centre);
 	ElementPtr ele = atom->getElement();
-
+	
 	double occ = atom->getModel()->getEffectiveOccupancy();
 	double total = populateImplicit(ele, centre, maxVals, 
 	                                tensor, occ, true);
@@ -719,6 +719,7 @@ void VagFFT::addExplicitAtom(AtomPtr atom)
 	int column = whichColumn(ele);
 	double low = atom->getExplicitModel()->getLowestZ();
 	double vol = mat3x3_volume(_realBasis);
+	double total = 0;
 
 	for (int i = 0; i < positions.size(); i++)
 	{
@@ -729,6 +730,7 @@ void VagFFT::addExplicitAtom(AtomPtr atom)
 
 		double occ = positions[i].occupancy;
 		double dens = occ;
+		total += dens;
 
 		addInterpolatedToReal(column, pos.x, pos.y, pos.z, dens);
 	}

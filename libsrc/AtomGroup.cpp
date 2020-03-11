@@ -859,7 +859,7 @@ void AtomGroup::addToMap(VagFFTPtr fft)
 	vec3 min, max;
 	xyzLimits(&min, &max);
 	prepareCubicMap(&scratchFull, min, max);
-	sort();
+//	sort();
 	addToCubicMap(scratchFull);
 
 	VagFFT::operation(fft, scratchFull, MapScoreTypeNone, NULL, false);
@@ -1281,5 +1281,6 @@ size_t AtomGroup::totalElements()
 
 void AtomGroup::sort()
 {
+	return;
 	std::sort(_atoms.begin(), _atoms.end(), Atom::greater);
 }

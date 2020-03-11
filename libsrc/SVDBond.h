@@ -85,5 +85,6 @@ private:
 	double _wTotal;
 };
 
+vec3 bond_effect_on_pos(vec3 atom_pos, mat3x3 &bond_basis, vec3 &bond_pos);
 
 #endif

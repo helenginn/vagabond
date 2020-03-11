@@ -42,6 +42,7 @@
 #include "Bucket.h"
 #include "Options.h"
 #include "WeightedMap.h"
+#include "SpaceWarp.h"
 
 #include "../libccp4/cmtzlib.h"
 #include "../libccp4/csymlib.h"
@@ -218,6 +219,8 @@ void Crystal::realSpaceClutter(double maxRes)
 
 		prepareFFT(_fft);
 		prepareFFT(_difft);
+		
+		_sw = SpaceWarpPtr(new SpaceWarp(_fft));
 	}
 	else
 	{
@@ -798,8 +801,6 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 	_bucket->setCrystal(shared_from_this());
 	_bucket->addSolvent();
 
-	std::cout << "Ave calculated density before: " << _fft->averageAll() << 
-	" electrons/A^(-3)" << std::endl;
 	std::cout << "Ave partial density before: " << 
 	_bucket->getSolvent()->averageAll() << 
 	" electrons/A^(-3)" << std::endl;
@@ -969,6 +970,10 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
                                    double partsFc, std::string prefix)
 {
 	realSpaceClutter(data->getMaxResolution());
+
+	std::cout << "Ave calculated density before: " << 
+	std::setprecision(4) << _fft->averageAll() << 
+	" electrons/A^(-3)" << std::endl;
 	
 	fourierTransform(1);
 	

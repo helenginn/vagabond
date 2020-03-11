@@ -339,6 +339,7 @@ public:
 	void refitBackbone(int start, int end);
 	void omitScan();
 	void chelate();
+	void renderWarp();
 	void renderDensity();
 	static void statusMessage(std::string message, bool std_out = true);
 	void agreementSummary();

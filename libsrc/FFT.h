@@ -261,6 +261,16 @@ public:
 		return _recipBasis;
 	}
 	
+	mat3x3 toReal()
+	{
+		return _toReal;
+	}
+	
+	mat3x3 toRecip()
+	{
+		return _toRecip;
+	}
+	
 	double getCubicScale()
 	{
 		return _toReal.vals[0];
@@ -296,6 +306,13 @@ public:
 	long element(vec3 xyz)
 	{
 		return element(xyz.x, xyz.y, xyz.z);
+	}
+	
+	void expandToVoxel(vec3 *frac)
+	{
+		frac->x *= _nx;
+		frac->y *= _ny;
+		frac->z *= _nz;
 	}
 
 	double getCompFromFrac(vec3 frac, int comp)
@@ -333,6 +350,8 @@ public:
 		while (*zfrac < 0) *zfrac += 1;
 		while (*zfrac >= 1) *zfrac -= 1;
 	}
+
+	double cubic_interpolate(vec3 vox000, size_t im = false);
 private:
 
 	template <typename T>
@@ -350,7 +369,6 @@ private:
 
 	double getAmplitude(ElementPtr ele, int i, int j, int k);
 	int whichColumn(ElementPtr ele);
-	double cubic_interpolate(vec3 vox000, size_t im = false);
 	void addInterpolatedToReal(int column, double sx, double sy, 
 	                           double sz, double val); 
 	void addExplicitAtom(AtomPtr atom);

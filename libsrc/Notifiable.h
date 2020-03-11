@@ -174,6 +174,7 @@ public:
 	}
 
 	virtual void setRenderDensity() = 0;
+	virtual void renderWarp() = 0;
 protected:
 	InstructionType _instructionType;
 

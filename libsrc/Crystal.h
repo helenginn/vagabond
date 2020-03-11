@@ -249,6 +249,11 @@ public:
 	{
 		return _hkl2real;
 	}
+	
+	SpaceWarpPtr getWarp()
+	{
+		return _sw;
+	}
 
 	VagFFTPtr getFFT()
 	{
@@ -610,6 +615,8 @@ private:
 
 	VagFFTPtr _fft;
 	VagFFTPtr _difft;
+	
+	SpaceWarpPtr _sw;
 	
 	/* imag component may contain (weighted map - original) */
 	VagFFTPtr _original;

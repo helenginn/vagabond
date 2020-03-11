@@ -957,7 +957,7 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 		
 		occTotal += _storedSamples[i].occupancy;
 	}
-
+	
 	if (_resetOccupancy)
 	{
 		for (size_t i = 0; i < _storedSamples.size(); i++)
@@ -999,7 +999,12 @@ bool Bond::isNotJustForHydrogens()
 
 AtomGroupPtr Bond::makeAtomGroup(BondPtr endBond)
 {
-	AtomGroupPtr group = AtomGroupPtr(new AtomGroup());
+	if (_connectedGroup)
+	{
+		return _connectedGroup;
+	}
+
+	_connectedGroup = AtomGroupPtr(new AtomGroup());
 
 	std::vector<BondPtr> propagateBonds;
 	propagateBonds.push_back(shared_from_this());
@@ -1025,10 +1030,10 @@ AtomGroupPtr Bond::makeAtomGroup(BondPtr endBond)
 		}
 		
 		AtomPtr minor = bond->getMinor();
-		group->addAtom(minor);
+		_connectedGroup->addAtom(minor);
 	}
 	
-	return group;
+	return _connectedGroup;
 }
 
 void Bond::propagateChange(int depth, bool refresh)
@@ -1783,7 +1788,6 @@ double Bond::getWorkingPhi()
 	return phi;
 }
 
-
 void Bond::reset()
 {
 	_torsion = _initialTorsion;
@@ -1791,3 +1795,4 @@ void Bond::reset()
 	_psi = 0;
 	_kick = 0;
 }
+
