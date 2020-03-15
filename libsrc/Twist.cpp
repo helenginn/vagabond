@@ -71,7 +71,7 @@ void Twist::saveSamples()
 
 void Twist::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 {
-	if (fabs(_twist) < 1e-6 || !_enabled)
+	if (fabs(_twist) <= 0 || !_enabled)
 	{
 		return;
 	}
