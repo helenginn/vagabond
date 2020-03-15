@@ -508,9 +508,8 @@ void SpaceWarp::svd()
 	_target->setAtomGroup(_all);
 	AnyPtr any = AnyPtr(new Any(&_magnitude));
 	grid->addParameter(&*any, Any::get, Any::set, 
-	                   _magnitude * 0.2, _magnitude * 0.0001);
+	                   _magnitude * 0.5, _magnitude * 0.0001);
 	_magnitude = 0;
-//	_magnitude = 0.02;
 	grid->setVerbose(true);
 	grid->setSilent(false);
 	grid->setCycles(100);
