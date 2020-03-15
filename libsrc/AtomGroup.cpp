@@ -1233,6 +1233,11 @@ void AtomGroup::makeBackboneTwists(ExplicitModelPtr applied)
 		{
 			continue;
 		}
+		
+		if (b->hasTwist())
+		{
+			continue;
+		}
 
 		TwistPtr twist = TwistPtr(new Twist());
 		twist->setBond(b);
