@@ -7,9 +7,11 @@
 //
 
 #include "WaterNetwork.h"
+#include "MapScoreWorkspace.h"
 #include "Crystal.h"
 #include "Sponge.h"
 #include "Atom.h"
+#include "Absolute.h"
 #include "RefinementNelderMead.h"
 
 #define MAX_HBOND_DISTANCE 3.4
