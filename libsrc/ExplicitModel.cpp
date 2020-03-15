@@ -155,13 +155,13 @@ std::vector<BondSample> ExplicitModel::getFinalPositions()
 	{
 		std::lock_guard<std::mutex> lock(guiLock);
 
+		_absolute = meanOfManyPositions(&_storedSamples);
+
 		if (canFish() || _finalPositions.size() == 0)
 		{
 			_finalPositions = posOnly;
+			_finalFish = _absolute;
 		}
-
-		_absolute = meanOfManyPositions(&_storedSamples);
-		
 	}
 	else
 	{
@@ -259,7 +259,7 @@ std::vector<vec3> ExplicitModel::fishPositions(vec3 *ave)
 	positions = _finalPositions;
 	if (ave)
 	{
-		*ave = _absolute;
+		*ave = _finalFish;
 	}
 
 	return positions;

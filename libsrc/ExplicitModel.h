@@ -177,6 +177,7 @@ private:
 	std::vector<BondSample> _finalSamples;
 	int _modifySample;
 	vec3 _centre;
+	vec3 _finalFish;
 	
 	Quat4Refine _shift;
 	Quat4Refine _rotation;
