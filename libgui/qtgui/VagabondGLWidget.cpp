@@ -239,9 +239,7 @@ void VagabondGLWidget::renderDensity(CrystalPtr crystal)
 	if (keeper)
 	{
 		keeper->getDensity2GL()->makeNewDensity(crystal);
-		keeper->getOrig2GL()->makeNewDensity(crystal);
 		keeper->getDiffDens2GL()->makeNewDensity(crystal);
-		keeper->getOrigDiff2GL()->makeNewDensity(crystal);
 	}
 }
 

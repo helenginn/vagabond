@@ -146,25 +146,12 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	_density2GL->setKeeper(this);
 	_density2GL->recalculate();
 
-	_origDiff2GL = Density2GLPtr(new Density2GL());
-	_origDiff2GL->setKeeper(this);
-	_origDiff2GL->setDiffWithOrigDensity();
-	_origDiff2GL->setVisible(false);
-	_origDiff2GL->recalculate();
-
 	/* Difference density render */
 	_diffDens2GL = Density2GLPtr(new Density2GL());
 	_diffDens2GL->setKeeper(this);
 	_diffDens2GL->setDiffDensity(true);
 	_diffDens2GL->setVisible(false);
 	_diffDens2GL->recalculate();
-
-	/* Original density render */
-	_orig2GL = Density2GLPtr(new Density2GL());
-	_orig2GL->setKeeper(this);
-	_orig2GL->setOrigDensity();
-	_orig2GL->setVisible(false);
-	_orig2GL->recalculate();
 
 	_objects.push_back(_allBond2GL);
 	_objects.push_back(_aveBond2GL);
@@ -173,8 +160,6 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	_objects.push_back(_multi2GL);
 	_objects.push_back(multi2GL->getConnected2GL());
 	_objects.push_back(_density2GL);
-	_objects.push_back(_orig2GL);
-	_objects.push_back(_origDiff2GL);
 	_objects.push_back(_diffDens2GL);
 
 	setupCamera();
@@ -198,14 +183,6 @@ Density2GLPtr GLKeeper::activeDensity()
 	{
 		return getDiffDens2GL();
 	}
-	else if (_densityState == 3)
-	{
-		return getOrig2GL();
-	}
-	else if (_densityState == 4)
-	{
-		return getOrigDiff2GL();
-	}
 	
 	return getDiffDens2GL();
 }
@@ -217,42 +194,18 @@ void GLKeeper::toggleVisibleDensity()
 		_densityState++;
 		getDensity2GL()->setVisible(true);
 		getDiffDens2GL()->setVisible(false);
-		getOrig2GL()->setVisible(false);
-		getOrigDiff2GL()->setVisible(false);
 	}
 	else if (_densityState == 1)
 	{
 		_densityState++;
 		getDensity2GL()->setVisible(true);
 		getDiffDens2GL()->setVisible(true);
-		getOrig2GL()->setVisible(false);
-		getOrigDiff2GL()->setVisible(false);
 	}
-	/*
-	else if (_densityState == 2)
-	{
-		_densityState++;
-		getDensity2GL()->setVisible(false);
-		getDiffDens2GL()->setVisible(false);
-		getOrig2GL()->setVisible(true);
-		getOrigDiff2GL()->setVisible(false);
-	}
-	else if (_densityState == 3)
-	{
-		_densityState++;
-		getDensity2GL()->setVisible(false);
-		getDiffDens2GL()->setVisible(false);
-		getOrig2GL()->setVisible(true);
-		getOrigDiff2GL()->setVisible(true);
-	}
-	*/
 	else
 	{
 		_densityState = 0;	
 		getDensity2GL()->setVisible(false);
 		getDiffDens2GL()->setVisible(false);
-		getOrig2GL()->setVisible(false);
-		getOrigDiff2GL()->setVisible(false);
 	}
 }
 
