@@ -42,6 +42,7 @@
 #include "Bucket.h"
 #include "Options.h"
 #include "WeightedMap.h"
+#include "WaterNetwork.h"
 #include "SpaceWarp.h"
 
 #include "../libccp4/cmtzlib.h"
@@ -2078,5 +2079,18 @@ void Crystal::addMotion(MotionPtr mot, PolymerPtr origPol)
 		{
 			mot->addToPolymer(ToPolymerPtr(molecule(i)));
 		}
+	}
+}
+
+void Crystal::pruneWaters()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isWaterNetwork())
+		{
+			continue;
+		}
+
+		ToWaterNetworkPtr(molecule(i))->prune();
 	}
 }

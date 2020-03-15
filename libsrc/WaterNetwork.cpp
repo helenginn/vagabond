@@ -321,4 +321,52 @@ void WaterNetwork::recalculate()
 	}
 }
 
+void WaterNetwork::prune()
+{
+	int deleted = 0;
+	int total = atomCount();
+	std::cout << "Pruning waters" << std::endl;
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (!atom(i)->getModel()->isAbsolute())
+		{
+			continue;
+		}
+
+		MapScoreWorkspace ws;
+		setup_space(&ws);
+		ws.crystal = Options::getActiveCrystal();
+
+		AtomGroupPtr single = AtomGroupPtr(new AtomGroup());
+		single->addAtom(atom(i));
+		AtomList extra = ws.crystal->getCloseAtoms(atom(i), 3.0, false);
+		single->addAtomsFrom(extra);
+		
+		ws.selectAtoms = single;
+		
+		double score = AtomGroup::scoreWithMapGeneral(&ws);
+		double orig = atom(i)->getModel()->getEffectiveOccupancy();
+		ToAbsolutePtr(atom(i)->getModel())->setOccupancy(0.1);
+		double newscore = AtomGroup::scoreWithMapGeneral(&ws);
+		
+		std::cout << score << " to " << newscore << std::flush;
+		if (newscore < score)
+		{
+			std::cout << "- deleted" << std::endl;
+			ws.crystal->removeAtom(atom(i));
+			deleted++;
+			i--;
+		}
+		else
+		{
+			ToAbsolutePtr(atom(i)->getModel())->setOccupancy(orig);
+			std::cout << std::endl;
+		}
+	}
+
+	std::cout << "Deleted " << deleted << " out of " << total
+	<< " waters (" << (double)deleted/(double)total *100 << "%)." 
+	<< std::endl;
+}
+
 

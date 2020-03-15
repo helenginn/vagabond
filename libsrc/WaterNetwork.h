@@ -65,6 +65,8 @@ public:
 	virtual void addProperties();
 	virtual void postParseTidy();
 	
+	void prune();
+	
 	void setMonomer(MonomerPtr _monomer);
 private:	
 	void setActive(int a);
