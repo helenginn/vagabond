@@ -924,6 +924,7 @@ void VagWindow::fitWholeMolecules()
 	{
 		Options::getActiveCrystal()->fitWholeMolecules();
 		Options::getRuntimeOptions()->recalculateFFT();
+		return;
 	}
 
 	Polymer *p = static_cast<Polymer *>(_obj);
