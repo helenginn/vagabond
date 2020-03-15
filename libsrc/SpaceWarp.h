@@ -23,6 +23,8 @@
 
 typedef std::vector<BondPtr> BondList;
 
+class FlexGlobal;
+
 class SpaceWarp
 {
 public:
@@ -43,58 +45,68 @@ public:
 		_bonds.push_back(bond);
 	}
 	
-	void addWhack(WhackPtr whack)
-	{
-		_whacks.push_back(whack);
-	}
-	
 	void addRefinedAtom(AtomPtr atom);
 
 	VagFFTPtr getFFT()
 	{
 		return _fft;
 	}
+	
+	void setCalculated(VagFFTPtr);
 
 	vec3 getWarp(int n)
 	{
 		return _warps[n];
 	}
+	
+	void setActiveAtoms(AtomGroupPtr atoms);
 
+	static double staticScore(void *object)
+	{
+		return static_cast<SpaceWarp *>(object)->score();
+	}
+	double score();
 	void svd();
 private:
 	vec3 bondEffect(vec3 pos, BondPtr b);
 	void setupSVD();
-	void populateSVD(BondPtr bond);
-	void populateSVD(AtomPtr a, BondList bonds);
+	void wipeSVD();
+	void populateSVD(AtomPtr atom, BondPtr bond, int interaction);
+	void populateSVD(AtomPtr a);
 	void cleanupSVD();
 	void addTargets();
 	void addBondAtoms(BondPtr bond);
 	void initAtom(AtomPtr atom);
 	void nudgeAtom(AtomPtr atom);
+	void nudge();
 	vec3 target(AtomPtr atom);
 	double cost();
 	VagFFTPtr _fft;
 	VagFFTPtr _data;
 	
-	std::map<AtomPtr, BondList> _atomBonds;
+	std::map<AtomPtr, std::map<BondPtr, int> > _interactions;
 	
+	AtomGroupPtr _atomsForSVD;
 	AtomGroupPtr _atoms;
+	AtomGroupPtr _all;
 	std::vector<BondPtr> _bonds;
-	std::vector<WhackPtr> _whacks;
 	
 	/* offsets in voxels */
 	vec3 *_warps;
 	
 	std::vector<AnyPtr> _varying;
 	
-	vec3 _minRegion;
-	vec3 _maxRegion;
+	vec3 _activePos;
+	
+	FlexGlobal *_target;
 
+	double _magnitude;
 	double *_matrix;
 	double *_w;
 	double *_v;
 	double *_t;
 	double *_weights;
+	double *_torsions;
 
 	double **_matPtrs;
 	double **_vPtrs;

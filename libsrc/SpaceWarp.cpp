@@ -21,9 +21,12 @@
 #include "SVDBond.h"
 #include "RefinementNelderMead.h"
 #include "FFT.h"
+#include "CSV.h"
 #include "Timer.h"
+#include "Twist.h"
 #include "Atom.h"
 #include "AtomGroup.h"
+#include "FlexGlobal.h"
 #include "Options.h"
 #include "Bond.h"
 #include "maths.h"
@@ -37,8 +40,7 @@ SpaceWarp::SpaceWarp(VagFFTPtr fft)
 	_atomCounter = 0;
 	_bondCounter = 0;
 	
-	_minRegion = empty_vec3();
-	_maxRegion = empty_vec3();
+	_activePos = empty_vec3();
 
 	_warps = (vec3 *)malloc(nn * sizeof(vec3));
 	memset(_warps, '\0', nn * sizeof(vec3));
@@ -50,12 +52,10 @@ vec3 SpaceWarp::target(AtomPtr atom)
 	vec3 pos = atom->getPositionInUnitCell();
 	mat3x3_mult_vec(rb, &pos);
 	_fft->expandToVoxel(&pos);
-	vec3 buffer = make_vec3(0, 0, 0);
 
-	_minRegion = vec3_subtract_vec3(pos, buffer);
-	_maxRegion = vec3_add_vec3(pos, buffer);
+	_activePos = pos;
 	
-	long ele = _fft->element(_minRegion.x, _minRegion.y, _minRegion.z);
+	long ele = _fft->element(_activePos.x, _activePos.y, _activePos.z);
 
 	return _warps[ele];
 }
@@ -66,27 +66,17 @@ void SpaceWarp::initAtom(AtomPtr atom)
 	vec3 pos = atom->getPositionInUnitCell();
 	mat3x3_mult_vec(rb, &pos);
 	_fft->expandToVoxel(&pos);
-	vec3 buffer = make_vec3(2, 2, 2);
 
-	_minRegion = vec3_subtract_vec3(pos, buffer);
-	_maxRegion = vec3_add_vec3(pos, buffer);
+	_activePos = pos;
 	
-	for (int z = _minRegion.z + 1; z <= _maxRegion.z - 1; z++)
+	long ele = _fft->element(pos.x, pos.y, pos.z);
+	_warps[ele] = empty_vec3();
+
+	std::vector<AnyPtr> anys;
+	for (int i = 0; i < 3; i++)
 	{
-		for (int y = _minRegion.y + 1; y <= _maxRegion.y - 1; y++)
-		{
-			for (int x = _minRegion.x + 1; x <= _maxRegion.x - 1; x++)
-			{
-				long ele = _fft->element(x, y, z);
-				
-				std::vector<AnyPtr> anys;
-				for (int i = 0; i < 3; i++)
-				{
-					AnyPtr any = AnyPtr(new Any(&_warps[ele].x + i));
-					_varying.push_back(any);
-				}
-			}
-		}
+		AnyPtr any = AnyPtr(new Any(&_warps[ele].x + i));
+		_varying.push_back(any);
 	}
 }
 
@@ -98,55 +88,47 @@ double SpaceWarp::evaluate()
 	double sum_yy = 0;
 	double sum_xy = 0;
 	double sum_w = 0;
-	double penalty = 0;
+	
+	vec3 c = _activePos;
 
-	for (int z = _minRegion.z; z < _maxRegion.z; z++)
+	long ele = _fft->element(c.x, c.y, c.z);
+	vec3 nudge = _warps[ele];
+	int buf = 3;
+
+	for (int l = -buf; l <= buf; l++)
 	{
-		for (int y = _minRegion.y; y <= _maxRegion.y; y++)
+		for (int k = -buf; k <= buf; k++)
 		{
-			for (int x = _minRegion.x; x <= _maxRegion.x; x++)
+			for (int h = -buf; h <= buf; h++)
 			{
-				long ele = _fft->element(x, y, z);
-				vec3 pos = make_vec3(x, y, z);
-				vec3 nudge = _warps[ele];
+				vec3 nbr = make_vec3(c.x + h, c.y + k, c.z + l);
+				vec3 shift = vec3_add_vec3(nbr, nudge);
 
-				for (int l = -1; l <= 1; l++)
-				{
-					for (int k = -1; k <= 1; k++)
-					{
-						for (int h = -1; h <= 1; h++)
-						{
-							long mele = _fft->element(x + h, y + k, z + l);
-							double mult = exp(-(h * h + k * k + l * l));
-							vec3 mini_nudge = _warps[mele];
-							vec3_mult(&mini_nudge, mult);
-
-							vec3_add_to_vec3(&pos, nudge);
-						}
-					}
-				}
-
-				double nx = _data->cubic_interpolate(pos, 0);
-				double y = _fft->getReal(ele);
+				double x = _fft->cubic_interpolate(nbr, 0);
+				double y = _data->cubic_interpolate(shift, 0);
 				double weight = 1;
 
-				sum_x += nx * weight;
+				sum_x += x * weight;
 				sum_y += y * weight;
 				sum_yy += y * y * weight;
-				sum_xx += nx * nx * weight;
-				sum_xy += nx * y * weight;
+				sum_xx += x * x * weight;
+				sum_xy += x * y * weight;
 				sum_w += weight;
 			}
 		}
 	}
+	
+	mat3x3 toRealPos = _fft->getRealBasis();
+	mat3x3_mult_vec(toRealPos, &nudge);
+	double penalty = exp(-vec3_sqlength(nudge));
 
 	double top = sum_w * sum_xy - sum_x * sum_y;
 	double bottom_left = sum_w * sum_xx - sum_x * sum_x;
 	double bottom_right = sum_w * sum_yy - sum_y * sum_y;
 	
 	double r = top / sqrt(bottom_left * bottom_right);
+	r *= penalty;
 	
-//	std::cout << correl << std::endl;
 	return -r;
 }
 
@@ -157,48 +139,45 @@ void SpaceWarp::nudgeAtom(AtomPtr atom)
 	NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 	neld->setVerbose(false);
 	neld->setSilent(true);
-	neld->setCycles(10);
+	neld->setCycles(200);
 	neld->setEvaluationFunction(SpaceWarp::getScore, this);
+	mat3x3 rb = _fft->getRealBasis();
 	
-	for (int i = 0; i < _varying.size(); i += 3)
+	vec3 sum = empty_vec3();
+	vec3 pos = _activePos;
+	long ele = _fft->element(pos.x, pos.y, pos.z);
+
+	for (int j = 0; j < 3; j++)
 	{
-		for (int j = 0; j < 3; j++)
-		{
-			AnyPtr any = _varying[i + j];
-			neld->addParameter(&*any, Any::get, Any::set, 0.1, 0.0001,
-			                   "a" + i_to_str(j));
-		}
-		neld->refine();
-		neld->clearParameters();
+		double step = 0.5;
+
+		AnyPtr any = _varying[j];
+		neld->addParameter(&*any, Any::get, Any::set, step, 0.0001,
+		                   atom->shortDesc() + "_" + i_to_str(j));
 	}
-	
+
+	neld->refine();
+
+	vec3 warp = _warps[ele];
+
+	neld->clearParameters();
 
 	_varying.clear();
 }
 
-void SpaceWarp::recalculate(VagFFTPtr data)
+void SpaceWarp::nudge()
 {
-	_bonds.clear();
-	_whacks.clear();
-	_atoms = AtomGroupPtr();
-	_atomBonds.clear();
-
-	Options::getRuntimeOptions()->renderDensity();
 	long nn = _fft->nn();
-	memset(_warps, '\0', nn * sizeof(vec3));
+	_fft->wipe();
+	_atoms->addToMap(_fft);
 
-	Timer timer;
-	std::cout << "Calculating local map warp... " << std::flush;
-	_data = data;
-	_fft->fft(FFTReciprocalToReal);
 	mat3x3 rb = _fft->getRealBasis();
 	
-	CrystalPtr crystal = Options::getActiveCrystal();
-	
-	for (int i = 0; i < crystal->atomCount(); i++)
+	for (int i = 0; i < _atoms->atomCount(); i++)
 	{
-		AtomPtr a = crystal->atom(i);
-		if (a->isBackbone() && a->getElectronCount() > 1)
+		AtomPtr a = _atoms->atom(i);
+		
+		if (a->getElectronCount() > 1)
 		{
 			nudgeAtom(a);
 		}
@@ -206,12 +185,43 @@ void SpaceWarp::recalculate(VagFFTPtr data)
 
 	Options::getRuntimeOptions()->renderWarp();
 
-	_fft->fft(FFTRealToReciprocal);
-
 	for (int i = 0; i < _fft->nn(); i++)
 	{
 		mat3x3_mult_vec(rb, &_warps[i]);
 	}
+
+}
+
+void SpaceWarp::recalculate(VagFFTPtr data)
+{
+	Timer timer;
+	std::cout << "Nudging atoms around... " << std::flush;
+
+	_bonds.clear();
+	_interactions.clear();
+	_data = data;
+
+	for (int i = 0; i < _atoms->atomCount(); i++)
+	{
+		AtomPtr a = _atoms->atom(i);
+		if (a->getModel()->isBond() && 
+		    ToBondPtr(a->getModel())->isRefinable() && 
+		    ToBondPtr(a->getModel())->isUsingTorsion())
+		{
+
+			addRefinedAtom(a);
+		}
+	}
+	
+
+	setupSVD();
+	for (int i = 0; i < 1; i++)
+	{
+		nudge();
+		svd();
+	}
+
+	cleanupSVD();
 	
 	timer.quickReport();
 	std::cout << std::endl;
@@ -234,41 +244,49 @@ void SpaceWarp::addRefinedAtom(AtomPtr atom)
 
 	BondPtr bond = ToBondPtr(atom->getModel());
 	addBondAtoms(bond);
-
-	if (!bond->hasWhack())
-	{
-		return;
-	}
-	
-	addWhack(bond->getWhack());
 }
 
 void SpaceWarp::addBondAtoms(BondPtr bond)
 {
 	addBond(bond);
 	
-	if (!_atoms)
-	{
-		_atoms = AtomGroupPtr(new AtomGroup());
-	}
-
-	AtomGroupPtr atoms = bond->makeAtomGroup();
+	AtomGroupPtr downstream = bond->makeAtomGroup();
 	
-	for (int i = 0; i < atoms->atomCount(); i++)
+	for (int i = 0; i < downstream->atomCount(); i++)
 	{
-		AtomPtr a = atoms->atom(i);
-		if (!a->isBackbone() || a->getElectronCount() <= 1)
+		AtomPtr a = downstream->atom(i);
+		if (a->getElectronCount() <= 1)
 		{
 			continue;
 		}
 
-		if (!_atomBonds.count(a))
+		_interactions[a][bond] = 1;
+
+		_atomsForSVD->addAtom(a);
+	}
+	
+	if (!bond->hasTwist())
+	{
+		return;
+	}
+	
+	for (int i = 0; i < _atoms->atomCount(); i++)
+	{
+		if (downstream->hasAtom(_atoms->atom(i)))
 		{
-			_atomBonds[a] = BondList();
+			continue;
 		}
 
-		_atomBonds[a].push_back(bond);
-		_atoms->addAtom(a);
+		AtomPtr a = _atoms->atom(i);
+
+		if (a->getElectronCount() <= 1)
+		{
+			continue;
+		}
+		
+		_interactions[a][bond] = -1;
+
+		_atomsForSVD->addAtom(a);
 	}
 }
 
@@ -282,20 +300,17 @@ vec3 SpaceWarp::bondEffect(vec3 atomPos, BondPtr b)
 	return derivative;
 }
 
-void SpaceWarp::populateSVD(BondPtr bond)
+void SpaceWarp::populateSVD(AtomPtr a, BondPtr bond, int interaction)
 {
-	mat3x3 toRealPos = _fft->getRealBasis();
+	vec3 atomPos = a->getAbsolutePosition();
+	vec3 effect = bondEffect(atomPos, bond);
 
-	vec3 xyz = make_vec3(_minRegion.x, _minRegion.y, _minRegion.z);
-	mat3x3_mult_vec(toRealPos, &xyz);
-	vec3 effect = bondEffect(xyz, bond);
-
-	_matPtrs[_bondCounter][_atomCounter + 0] = effect.x;
-	_matPtrs[_bondCounter][_atomCounter + 1] = effect.y;
-	_matPtrs[_bondCounter][_atomCounter + 2] = effect.z;
+	_matPtrs[_atomCounter + 0][_bondCounter] = effect.x * abs(interaction);
+	_matPtrs[_atomCounter + 1][_bondCounter] = effect.y * abs(interaction);
+	_matPtrs[_atomCounter + 2][_bondCounter] = effect.z * abs(interaction);
 }
 
-void SpaceWarp::populateSVD(AtomPtr atom, BondList bonds)
+void SpaceWarp::populateSVD(AtomPtr atom)
 {
 	mat3x3 rb = _fft->toRecip();
 	vec3 pos = atom->getPositionInUnitCell();
@@ -303,64 +318,134 @@ void SpaceWarp::populateSVD(AtomPtr atom, BondList bonds)
 	_fft->expandToVoxel(&pos);
 	vec3 buffer = make_vec3(0, 0, 0);
 	
-	_minRegion = vec3_subtract_vec3(pos, buffer);
-	_maxRegion = vec3_add_vec3(pos, buffer);
+	_activePos = pos;
 	
-	for (int i = 0; i < bonds.size(); i++)
+	_bondCounter = 0;
+
+	for (int i = 0; i < _bonds.size(); i++)
 	{
-		BondPtr b = bonds[i];
-		populateSVD(b);
+		BondPtr b = _bonds[i];
+		int interaction = 0;
+		
+		if (_interactions.count(atom) && _interactions[atom].count(b))
+		{
+			interaction = _interactions[atom][b];
+			
+			if (interaction > 0)
+			{
+				populateSVD(atom, b, interaction);
+			}
+		}
+
+		_bondCounter++;
+		
+		if (_interactions.count(atom) && _interactions[atom].count(b))
+		{
+			interaction = _interactions[atom][b];
+			
+			if (interaction < 0)
+			{
+				populateSVD(atom, b, interaction);
+			}
+		}
+
 		_bondCounter++;
 	}
 }
 
 void SpaceWarp::addTargets()
 {
-	for (int i = 0; i < _atoms->atomCount(); i++)
+	double sum = 0;
+	for (int i = 0; i < _atomsForSVD->atomCount(); i++)
 	{
-		vec3 t = target(_atoms->atom(i));
+		vec3 t = target(_atomsForSVD->atom(i));
 		
 		for (int j = 0; j < 3; j++)
 		{
 			int index = i * 3 + j;
-			_t[index] = *(&t.x + j);
+			_t[index] = -*(&t.x + j);
+			sum += *(&t.x + j) * *(&t.x + j);
 		}
 	}
+	std::cout << "Target sum: " << sum << std::endl;
 }
 
 void SpaceWarp::svd()
 {
-	setupSVD();
+	std::cout << "Starting SVD..." << std::endl;
+	Timer t;
 	
 	_atomCounter = 0;
 
-	for (int i = 0; i < _atoms->atomCount(); i++)
+	for (int i = 0; i < _atomsForSVD->atomCount(); i++)
 	{
-		AtomPtr a = _atoms->atom(i);
-		BondList bonds = _atomBonds[a];
-		
-		populateSVD(a, bonds);
+		AtomPtr a = _atomsForSVD->atom(i);
+		populateSVD(a);
+
 		_atomCounter += 3;
-		_bondCounter = 0;
 	}
 	
 	addTargets();
 
-	int bDim = _bonds.size();
-	int aDim = _atoms->atomCount() * 3;
-
-	int success = svdcmp((mat)_matPtrs, aDim, bDim, (vect)_w, (mat)_vPtrs);
+	int bDim = _bonds.size() * 2;
+	int aDim = _atomsForSVD->atomCount() * 3;
 	
-	std::cout << "Success: " << success << std::endl;
+	CSVPtr csv = CSVPtr(new CSV(3, "b", "a", "v"));
+	csv->setSubDirectory("local_flex");
+	
+	for (int j = 0; j < bDim; j++)
+	{
+		for (int i = 0; i < aDim; i++)
+		{
+			csv->addEntry(3, (double)j, (double)i, (double)(_matPtrs[i][j]));
+		}
+	}
+
+	std::map<std::string, std::string> plotMap;
+	plotMap["filename"] = "spacewarp";
+	plotMap["height"] = "3400";
+	plotMap["width"] = "1400";
+	plotMap["xHeader0"] = "b";
+	plotMap["yHeader0"] = "a";
+	plotMap["zHeader0"] = "v";
+
+	plotMap["xTitle0"] = "b dim";
+	plotMap["yTitle0"] = "a dim";
+	plotMap["style0"] = "heatmap";
+	plotMap["stride"] = i_to_str(bDim);
+
+	csv->writeToFile("spacewarp.csv");
+	csv->plotPNG(plotMap);
+
+	csv = CSVPtr(new CSV(3, "b", "a", "v"));
+	csv->setSubDirectory("local_flex");
+	
+	for (int j = 0; j < _bonds.size(); j++)
+	{
+		for (int i = 0; i < _atomsForSVD->atomCount(); i++)
+		{
+			double val = _interactions[_atomsForSVD->atom(i)][_bonds[j]];
+			csv->addEntry(3, (double)j, (double)i, val);
+		}
+	}
+
+	plotMap["stride"] = i_to_str(_bonds.size());
+	plotMap["filename"] = "interactions";
+	csv->plotPNG(plotMap);
+
+
+	std::cout << "Doing the SVD..." << std::endl;
+	int success = svdcmp((mat)_matPtrs, aDim, bDim, (vect)_w, (mat)_vPtrs);
 	
 	if (!success)
 	{
 		std::cout << "shit." << std::endl;
-		cleanupSVD();
+		std::cout << "m x n = " << aDim << " " << bDim << std::endl;
 		return;
 	}
 	
 	double *tmp = (double *)malloc(sizeof(double *) * bDim);
+	memset(tmp, '\0', sizeof(double *) * bDim);
 
 	double sum = 0;
 	for (int j = 0; j < bDim; j++)
@@ -372,23 +457,29 @@ void SpaceWarp::svd()
 
 	for (int j = 0; j < bDim; j++)
 	{
-		if (_w[j] < sum * 0.1)
+		BondPtr b = _bonds[j / 2];
+		if (_w[j] < sum * 0.001)
 		{
-			continue;
+//			if (b->makeAtomGroup()->atomCount() > 1)
+			{
+				continue;
+			}
 		}
 
 		double sum = 0;
 		for (int i = 0; i < aDim; i++)
 		{
-			sum += _matPtrs[j][i] * _t[i];
+			sum += _matPtrs[i][j] * _t[i];
 		}
 		
 		tmp[j] = 1 / _w[j] * sum;
+		
+		if (tmp[j] != tmp[j] || !std::isfinite(tmp[j]))
+		{
+			tmp[j] = 0;
+		}
 	}
 	
-	double step = 0.2;
-	
-	std::cout << "Weights: " << std::endl;
 	for (int i = 0; i < bDim; i++)
 	{
 		double sum = 0;
@@ -397,37 +488,74 @@ void SpaceWarp::svd()
 			sum += _vPtrs[i][j] * tmp[j];
 		}
 		
-		_weights[i] = sum * step;
-		std::cout << _weights[i] << std::endl;
+		_weights[i] = sum;
 	}
 	
-	for (int i = 0; i < bDim; i++)
+	for (int i = 0; i < _bonds.size(); i++)
 	{
 		BondPtr b = _bonds[i];
 		double t = Bond::getTorsion(&*b);
-		t += _weights[i];
+		_torsions[i * 2] = t;
+	}
+
+	_magnitude = 10 / (double)_bonds.size();
+	
+	NelderMeadPtr grid;
+	grid = NelderMeadPtr(new RefinementNelderMead());
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	_target = new FlexGlobal();
+	_target->setCrystal(crystal);
+	_target->setAtomGroup(_all);
+	AnyPtr any = AnyPtr(new Any(&_magnitude));
+	grid->addParameter(&*any, Any::get, Any::set, 
+	                   _magnitude * 0.2, _magnitude * 0.0001);
+	_magnitude = 0;
+//	_magnitude = 0.02;
+	grid->setVerbose(true);
+	grid->setSilent(false);
+	grid->setCycles(100);
+	grid->setEvaluationFunction(SpaceWarp::staticScore, this);
+	FlexGlobal::score(_target);
+	score();
+	grid->refine();
+	
+	delete _target;
+	free(tmp);
+	t.quickReport();
+}
+
+double SpaceWarp::score()
+{
+	int bDim = _bonds.size();
+	for (int i = 0; i < bDim; i++)
+	{
+		BondPtr b = _bonds[i];
+		double t = _torsions[i * 2];
+		t += _weights[i * 2] * _magnitude;
 		Bond::setTorsion(&*b, t);
+		
+		if (b->hasTwist())
+		{
+			double tw = _weights[i * 2 + 1] * _magnitude;
+			Twist::setTwist(&*b->getTwist(), tw);
+			b->getTwist()->getAppliedModel()->propagateChange();
+		}
 	}
 	
-	Options::getActiveCrystal()->refreshPositions();
-	
-	free(tmp);
-
-	cleanupSVD();
+	_atoms->refreshPositions(false);
+	return FlexGlobal::score(_target);
 }
 
 void SpaceWarp::setupSVD()
 {
-	size_t atomCount = _atoms->atomCount() * 3; /* 3 = 3D */
-	size_t bondCount = _bonds.size();
+	_atomsForSVD = _atoms;
+	size_t atomCount = _atomsForSVD->atomCount() * 3;
+	size_t bondCount = _bonds.size() * 2;
 	double rectsize = sizeof(double) * atomCount * bondCount;
 	double squaresize = sizeof(double) * bondCount * bondCount;
 
 	_matrix = (double *)malloc(rectsize);
 	_v = (double *)malloc(squaresize);
-
-	memset(_matrix, '\0', rectsize);
-	memset(_v, '\0', squaresize);
 	
 	_matPtrs = (double **)malloc(sizeof(double **) * atomCount);
 	_vPtrs = (double **)malloc(sizeof(double **) * bondCount);
@@ -435,9 +563,7 @@ void SpaceWarp::setupSVD()
 	_t = (double *)malloc(sizeof(double *) * atomCount);
 	_weights = (double *)malloc(sizeof(double *) * bondCount);
 
-	memset(_w, '\0', sizeof(double) * bondCount);
-	memset(_t, '\0', sizeof(double) * atomCount);
-	memset(_weights, '\0', sizeof(double) * bondCount);
+	_torsions = (double *)malloc(sizeof(double *) * bondCount);
 	
 	for (int i = 0; i < atomCount; i++)
 	{
@@ -448,6 +574,21 @@ void SpaceWarp::setupSVD()
 	{
 		_vPtrs[i] = &_v[i * bondCount];
 	}
+	
+	wipeSVD();
+}
+
+void SpaceWarp::wipeSVD()
+{
+	size_t atomCount = _atomsForSVD->atomCount() * 3;
+	size_t bondCount = _bonds.size() * 2;
+
+	memset(_matrix, '\0', sizeof(double) * atomCount * bondCount);
+	memset(_v, '\0', sizeof(double) * bondCount * bondCount);
+	memset(_w, '\0', sizeof(double) * bondCount);
+	memset(_t, '\0', sizeof(double) * atomCount);
+	memset(_weights, '\0', sizeof(double) * bondCount);
+	memset(_torsions, '\0', sizeof(double) * bondCount);
 }
 
 void SpaceWarp::cleanupSVD()
@@ -458,6 +599,7 @@ void SpaceWarp::cleanupSVD()
 	free(_matPtrs);
 	free(_vPtrs);
 	free(_weights);
+	free(_torsions);
 	
 	_matrix = NULL;
 	_w = NULL;
@@ -465,4 +607,38 @@ void SpaceWarp::cleanupSVD()
 	_matPtrs = NULL;
 	_vPtrs = NULL;
 	_weights = NULL;
+	_torsions = NULL;
+}
+
+void SpaceWarp::setCalculated(VagFFTPtr fft)
+{
+	_fft = VagFFTPtr(new VagFFT(*fft));
+	_fft->fft(FFTReciprocalToReal);
+}
+
+void SpaceWarp::setActiveAtoms(AtomGroupPtr atoms)
+{
+	_atoms = AtomGroupPtr(new AtomGroup());
+	_atomsForSVD = AtomGroupPtr(new AtomGroup());
+	_all = atoms;
+	
+	for (int i = 0; i < atoms->atomCount(); i++)
+	{
+		AtomPtr a = atoms->atom(i);
+		
+		if (a->getModel()->isAnchor())
+		{
+			_atoms->addAtom(a);
+		}
+
+		if (a->getAtomName() != "CA")
+		{
+			continue;
+		}
+
+		if (a->getElectronCount() > 1)
+		{
+			_atoms->addAtom(a);
+		}
+	}
 }
