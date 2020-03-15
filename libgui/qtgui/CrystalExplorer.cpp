@@ -137,6 +137,14 @@ void CrystalExplorer::clickedMoleListItem()
 		_widgets.push_back(b);
 
 		height += TEXT_HEIGHT;
+		b = new QPushButton("Fit rigid body", this);
+		b->setGeometry(160, height, 160, TEXT_HEIGHT);
+		b->show();
+		connect(b, &QPushButton::clicked,
+		        [=]{ pushRigidBody(); });
+		_widgets.push_back(b);
+
+		height += TEXT_HEIGHT;
 
 		PolymerPtr p= ToPolymerPtr(molecule);
 		AnchorPtr a = p->getAnchorModel();
@@ -249,6 +257,18 @@ void CrystalExplorer::pushFitSides()
 	PolymerPtr pol = ToPolymerPtr(_currMole);
 	_vagWindow->setObject(&*pol);
 	_vagWindow->pushSendInstruction(InstructionTypeRefineDensity);
+}
+
+void CrystalExplorer::pushRigidBody()
+{
+	if (!_currMole->isPolymer())
+	{
+		return;
+	}
+
+	PolymerPtr pol = ToPolymerPtr(_currMole);
+	_vagWindow->setObject(&*pol);
+	_vagWindow->pushSendInstruction(InstructionTypeRigidBody);
 }
 
 

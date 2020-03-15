@@ -51,6 +51,7 @@ private slots:
 	void pushSequence();
 	void pushFitSides();
 	void pushFitMotion();
+	void pushRigidBody();
 	void pushResetSides();
 	void pushResetMotion();
 

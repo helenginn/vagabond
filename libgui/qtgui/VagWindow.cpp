@@ -425,8 +425,7 @@ int VagWindow::waitForInstructions()
 
 				case InstructionTypeRigidBody:
 				disable();
-				crystal->rigidBodyRefinement();
-				options->recalculateFFT();
+				fitRigidBody();
 				enable();
 				break;
 
@@ -931,6 +930,21 @@ void VagWindow::fitWholeMolecules()
 	p->refineMotions();
 	
 	setMessage("Refined whole motions for chain " + p->getChainID());
+}
+
+void VagWindow::fitRigidBody()
+{
+	if (_obj == NULL)
+	{
+		Options::getActiveCrystal()->rigidBodyRefinement();
+		Options::getRuntimeOptions()->recalculateFFT();
+		return;
+	}
+
+	Polymer *p = static_cast<Polymer *>(_obj);
+	p->getAnchorModel()->rigidBodyRefinement();
+	
+	setMessage("Refined rigid body for chain " + p->getChainID());
 }
 
 void VagWindow::resetMotion()

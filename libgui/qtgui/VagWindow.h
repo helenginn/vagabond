@@ -129,6 +129,7 @@ private:
 	void resetSides();
 	void resetMotion();
 	void refineToEnd();
+	void fitRigidBody();
 	void modelPosToEnd();
 	void sidechainsToEnd();
 	void refineSidechains();
