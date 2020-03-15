@@ -364,7 +364,7 @@ int VagWindow::waitForInstructions()
 				
 				case InstructionTypeRefinePosToDensity:
 				disable();
-				crystal->refineCrude();
+				crystal->spaceWarp();
 				options->recalculateFFT();
 				enable();
 				break;
