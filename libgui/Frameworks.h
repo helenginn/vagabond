@@ -11,6 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include "../libsrc/vec3.h"
 
 #define MAX_LIGHTS 20
 #define START_Z -64
@@ -23,6 +24,20 @@ typedef struct
 	GLfloat extra[4];
 	GLfloat tex[2];
 } Vertex;
+
+inline void vec3ToVertex(Vertex &v, vec3 &vec)
+{
+	v.pos[0] = vec.x;
+	v.pos[1] = vec.y;
+	v.pos[2] = vec.z;
+}
+
+inline void vec3ToNormal(Vertex &v, vec3 &vec)
+{
+	v.normal[0] = vec.x;
+	v.normal[1] = vec.y;
+	v.normal[2] = vec.z;
+}
 
 typedef struct
 {
