@@ -595,10 +595,10 @@ private:
 	double _rFree;
 	double _ccWork;
 	double _ccFree;
-	double _lastRWork;
-	double _bestRWork;
-	double _lastLocalCC;
+	double _lastMetric;
+	double _bestMetric;
 	double _localCC;
+	double _lastLocalCC;
 	double _bestLocalCC;
 	
 	double _realBFactor;

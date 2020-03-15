@@ -746,12 +746,12 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 
 bool Crystal::undoIfWorse()
 {
-	if (_lastRWork < _rWork)
+	if (_lastMetric > _ccWork)
 	{
 		std::cout << "Decided to go back one state "
-		" results (Rwork = " << _lastRWork * 100 << "%, now " 
-		<< _rWork * 100 << "%) "
-		"due to Rwork rise since." << std::endl;
+		" results (CC = " << _lastMetric * 100 << "%, now " 
+		<< _ccWork * 100 << "%) "
+		"due to CCwork rise since." << std::endl;
 
 		restoreState(-1);
 		_sinceBestNum = 0;
@@ -759,17 +759,17 @@ bool Crystal::undoIfWorse()
 	}
 	else
 	{
-		std::cout << "Rwork has improved since last cycle" << std::endl;
+		std::cout << "CCwork has improved since last cycle" << std::endl;
 		return false;
 	}
 }
 
 bool Crystal::returnToBestState()
 {
-	if (_rWork > _bestRWork)
+	if (_rWork > _bestMetric)
 	{
 		std::cout << "Decided to undo to state " << _bestState << 
-		" results (Rwork = " << _bestRWork * 100 << "%, now " 
+		" results (Rwork = " << _bestMetric * 100 << "%, now " 
 		<< _rWork * 100 << "%) "
 		"due to Rwork rise since." << std::endl;
 
@@ -1084,8 +1084,8 @@ Crystal::Crystal()
 	_realBFactor = -1;
 	_sampleNum = -1;
 	_cycleNum = 0;
-	_lastRWork = FLT_MAX;
-	_bestRWork = FLT_MAX;
+	_lastMetric = FLT_MAX;
+	_bestMetric = FLT_MAX;
 	_sinceBestNum = 0;
 	_correlPlotNum = 0;
 	_tied = false;
@@ -1643,14 +1643,15 @@ void Crystal::wrapUpRefinement()
 	OptionsPtr options = Options::getRuntimeOptions();
 	DiffractionPtr data = options->getActiveData();
 	
-	_lastRWork = _rWork;
+	_lastMetric = _ccWork;
 	_cycleNum++;
 	concludeRefinement(_cycleNum, data);
 	saveState();
 
-	if (_rWork <= _bestRWork)
+	//if (_rWork <= _bestMetric)
+	if (_ccWork > _bestMetric)
 	{
-		_bestRWork = _rWork;
+		_bestMetric = _ccWork;
 		_bestState = stateCount() - 1;
 	}
 
