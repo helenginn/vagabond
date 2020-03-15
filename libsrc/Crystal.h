@@ -255,6 +255,8 @@ public:
 		return _sw;
 	}
 
+	void spaceWarp();
+
 	VagFFTPtr getFFT()
 	{
 		return _fft;

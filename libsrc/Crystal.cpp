@@ -2083,6 +2083,27 @@ void Crystal::addMotion(MotionPtr mot, PolymerPtr origPol)
 	}
 }
 
+void Crystal::spaceWarp()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+
+		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		AtomGroupPtr backbone = pol->getAllBackbone();
+		ExplicitModelPtr anch = pol->getAnchorModel();
+		pol->makeBackboneTwists(anch);
+
+		_sw->setActiveAtoms(backbone);
+		_sw->recalculate(_fft);
+	}
+
+	//	Options::getRuntimeOptions()->recalculateFFT(true);
+}
+
 void Crystal::pruneWaters()
 {
 	for (int i = 0; i < moleculeCount(); i++)
