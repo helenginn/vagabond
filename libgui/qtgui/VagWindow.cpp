@@ -790,6 +790,11 @@ void VagWindow::setMessage(std::string message)
 	_lStatus->setText(QString::fromStdString(message));
 }
 
+void VagWindow::renderWarp()
+{
+	display->renderWarp();
+}
+
 void VagWindow::setRenderDensity()
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();

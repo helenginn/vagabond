@@ -40,6 +40,7 @@ public:
 
 	virtual void resizeGL();
 
+	void renderWarp();
 	void renderDensity(CrystalPtr crystal);
 	void manualRefine();
 	

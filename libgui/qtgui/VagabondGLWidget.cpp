@@ -9,6 +9,7 @@
 #include "VagabondGLWidget.h"
 #include "../Density2GL.h"
 #include "../../libsrc/shared_ptrs.h"
+#include "../WarpGL.h"
 
 #define PAN_SENSITIVITY 30
 
@@ -241,6 +242,11 @@ void VagabondGLWidget::renderDensity(CrystalPtr crystal)
 		keeper->getDensity2GL()->makeNewDensity(crystal);
 		keeper->getDiffDens2GL()->makeNewDensity(crystal);
 	}
+}
+
+void VagabondGLWidget::renderWarp()
+{
+	keeper->getWarpGL()->refresh();
 }
 
 VagabondGLWidget::~VagabondGLWidget()
