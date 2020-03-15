@@ -512,22 +512,29 @@ void WeightedMap::createVagaCoefficients()
 	duplicate->multiplyAll(normalise);
 	
 	SpaceWarpPtr sw = Options::getActiveCrystal()->getWarp();
+	sw->setCalculated(_fft);
+	/*
 	sw->recalculate(duplicate);
+
+	CrystalPtr crystal = Options::getActiveCrystal();
+
 	for (int i = 4; i < 56; i++)
 	{
-		sw->addRefinedAtom(Options::getActiveCrystal()->findAtoms("CA", i)[0]);
-		sw->addRefinedAtom(Options::getActiveCrystal()->findAtoms("C", i)[0]);
-		sw->addRefinedAtom(Options::getActiveCrystal()->findAtoms("N", i)[0]);
+		sw->addRefinedAtom(crystal->findAtoms("CA", i)[0]);
+		sw->addRefinedAtom(crystal->findAtoms("C", i)[0]);
+		sw->addRefinedAtom(crystal->findAtoms("N", i)[0]);
 	}
 	
 	sw->svd();
+	*/
 	
 	/* To reciprocal space for writing */
 	duplicate->fft(FFTRealToReciprocal);
 	_difft->fft(FFTRealToReciprocal);
-	
+
 	writeFile(duplicate);
 	_fft->copyFrom(duplicate);
+
 }
 
 void WeightedMap::writeFile(VagFFTPtr chosen)
