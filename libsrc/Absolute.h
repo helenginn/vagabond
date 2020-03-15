@@ -187,6 +187,11 @@ public:
 		return _occupancy;	
 	}
 	
+	void setOccupancy(double occ)
+	{
+		_occupancy = occ;
+	}
+	
 	vec3 getRandomPosition();
 
 	static void setPosX(void *object, double x)
