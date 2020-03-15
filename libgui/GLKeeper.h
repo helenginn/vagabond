@@ -70,6 +70,11 @@ public:
 		return _origDiff2GL;
 	}
 	
+	WarpGLPtr getWarpGL()
+	{
+		return _warpGL;
+	}
+	
 	vec3 getCentre()
 	{
 		return _centre;
@@ -131,6 +136,7 @@ private:
 
 	int _densityState;
 	
+	WarpGLPtr _warpGL;
 	Vagabond2GLPtr _allBond2GL;
 	Vagabond2GLPtr _aveBond2GL;
 	Vagabond2GLPtr _atoms2GL;

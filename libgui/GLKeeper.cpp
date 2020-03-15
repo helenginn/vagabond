@@ -20,6 +20,7 @@
 #include "Multi2GL.h"
 #include "Bonds2GL.h"
 #include "Selected2GL.h"
+#include "WarpGL.h"
 #include <float.h>
 #include "../libsrc/vec3.h"
 
@@ -152,6 +153,8 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	_diffDens2GL->setDiffDensity(true);
 	_diffDens2GL->setVisible(false);
 	_diffDens2GL->recalculate();
+	
+	_warpGL = WarpGLPtr(new WarpGL());
 
 	_objects.push_back(_allBond2GL);
 	_objects.push_back(_aveBond2GL);
@@ -159,6 +162,7 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 	_objects.push_back(_atoms2GL);
 	_objects.push_back(_multi2GL);
 	_objects.push_back(multi2GL->getConnected2GL());
+	_objects.push_back(_warpGL);
 	_objects.push_back(_density2GL);
 	_objects.push_back(_diffDens2GL);
 
