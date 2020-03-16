@@ -1142,6 +1142,8 @@ void AtomGroup::addObject(ParserPtr object, std::string category)
 	{
 		AtomPtr atom = ToAtomPtr(object);
 		addAtom(atom);
+		
+		Options::getActiveCrystal()->addAtom(atom);
 	} 
 }
 
