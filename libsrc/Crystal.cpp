@@ -2103,6 +2103,7 @@ void Crystal::addPDBContents(std::string pdbName)
 	crystal->setAnchors();
 	crystal->tieAtomsUp();
 	crystal->hydrogenateContents();
+	Options::getRuntimeOptions()->removeLastCrystal();
 
 	for (int i = 0; i < crystal->moleculeCount(); i++)
 	{
