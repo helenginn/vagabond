@@ -125,68 +125,9 @@ void PartialStructure::scalePartialStructure()
 		_solvScale = 0;
 	}
 
-	/** If we are doing powder analysis we don't actually want
-	* 	to add the solvent */
-	if (Options::shouldPowder())
-	{
-		return;
-	}	
-	
 	/** Now add this into the FFT */
 
-	mat3x3 real2frac = getCrystal()->getReal2Frac();
-	real2frac = mat3x3_transpose(real2frac);
-	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
-
-	std::vector<double> fData, fModel;
-	CSVPtr csv = CSVPtr(new CSV(2, "fo", "fc"));
-
-	vec3 nLimits = getNLimits(fft, _partial);
-
-	for (int k = -nLimits.z; k < nLimits.z; k++)
-	{
-		for (int j = -nLimits.y; j < nLimits.y; j++)
-		{
-			for (int i = -nLimits.x; i < nLimits.x; i++)
-			{
-				long nModel = fft->element(i, j, k);
-				float realProtein = fft->getReal(nModel);
-				float imagProtein = fft->getImag(nModel);
-				float realPartial = _partial->getReal(nModel);
-				float imagPartial = _partial->getImag(nModel);
-				
-				if (realProtein != realProtein ||
-				    realPartial != realPartial)
-				{
-					continue;
-				}
-
-				vec3 ijk = make_vec3(i, j, k);
-				mat3x3_mult_vec(real2frac, &ijk);
-				double length = vec3_length(ijk);
-				double d = 1 / length;
-				double four_d_sq = (4 * d * d);
-				double bFacMod = exp(-_solvBFac / four_d_sq);
-
-				realPartial *= _solvScale * bFacMod;
-				imagPartial *= _solvScale * bFacMod;
-
-				float real = realProtein + realPartial;
-				float imag = imagProtein + imagPartial;
-				
-				_partial->setComponent(nModel, 0, realPartial);
-				_partial->setComponent(nModel, 1, imagPartial);
-				
-				if (real != real || imag != imag)
-				{
-					continue;
-				}
-
-				fft->setComponent(nModel, 0, real);
-				fft->setComponent(nModel, 1, imag);
-			}
-		}
-	}
+	scaleOrScore(false);
 }
 
 double PartialStructure::scalePartialScore(void *object)
@@ -195,6 +136,12 @@ double PartialStructure::scalePartialScore(void *object)
 }
 
 double PartialStructure::scaleAndAddPartialScore()
+{
+	return scaleOrScore(true);
+
+}
+
+double PartialStructure::scaleOrScore(bool score)
 {
 	VagFFTPtr fftData = _data->getFFT();
 	VagFFTPtr fft = getCrystal()->getFFT();
@@ -218,7 +165,7 @@ double PartialStructure::scaleAndAddPartialScore()
 				int m, n, o;
 				int asu = CSym::ccp4spg_put_in_asu(spg, i, j, k, &m, &n, &o);
 				
-				if (!(m == i && n == j && o == k))
+				if (score && !(m == i && n == j && o == k))
 				{
 					continue;
 				}
@@ -243,25 +190,47 @@ double PartialStructure::scaleAndAddPartialScore()
 				double four_d_sq = (4 * d * d);
 				double bFacMod = exp(-adjB / four_d_sq);
 
-				long fi = fftData->element(m, n, o);
+				long fi = fftData->element(i, j, k);
 				bool isFree = (fftData->getScratchComponent(fi, 0, 0) < 0.5);
-				if (isFree) continue;
+				if (score && isFree) continue;
 
 				float ref = sqrt(fftData->getIntensity(fi));
 
-				if (ref != ref) continue;
+				if (score && ref != ref) continue;
 
 				realPartial *= adjS * bFacMod;
 				imagPartial *= adjS * bFacMod;
 				
 				float real = realProtein + realPartial;
 				float imag = imagProtein + imagPartial;
-				float amp = sqrt(real * real + imag * imag);
 				
-				fData.push_back(ref);
-				fModel.push_back(amp);
+				if (score)
+				{
+					float amp = sqrt(real * real + imag * imag);
+
+					fData.push_back(ref);
+					fModel.push_back(amp);
+				}
+				else
+				{
+					_partial->setComponent(nModel, 0, realPartial);
+					_partial->setComponent(nModel, 1, imagPartial);
+
+					if (real != real || imag != imag)
+					{
+						continue;
+					}
+
+					fft->setComponent(nModel, 0, real);
+					fft->setComponent(nModel, 1, imag);
+				}
 			}
 		}
+	}
+	
+	if (!score)
+	{
+		return 0;
 	}
 
 	double correl = correlation(fData, fModel);

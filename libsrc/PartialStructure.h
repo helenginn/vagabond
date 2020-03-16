@@ -83,6 +83,7 @@ protected:
 private:
 	DiffractionPtr _data;
 	double scaleAndAddPartialScore();
+	double scaleOrScore(bool score);
 	static double scalePartialScore(void *object);
 	VagFFTPtr _partial;
 	
