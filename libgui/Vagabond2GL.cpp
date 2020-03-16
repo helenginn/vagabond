@@ -168,21 +168,24 @@ void Vagabond2GL::findAtoms()
 
 	clearVertices();
 	_moleculeMap.clear();
+	_pairList.clear();
 
 	if (globalOptions)
 	{
-		for (int i = 0; i < globalOptions->crystalCount(); i++)
+		CrystalPtr crystal = globalOptions->getActiveCrystal();
+		
+		if (!crystal)
 		{
-			CrystalPtr crystal = globalOptions->getCrystal(i);
+			return;
+		}
 
-			for (int j = 0; j < crystal->moleculeCount(); j++)
-			{
-				MoleculePtr molecule = crystal->molecule(j);
+		for (int j = 0; j < crystal->moleculeCount(); j++)
+		{
+			MoleculePtr molecule = crystal->molecule(j);
 
-				int expected = processMolecule(molecule);
+			int expected = processMolecule(molecule);
 
-				_moleculeMap[molecule] = expected;
-			}
+			_moleculeMap[molecule] = expected;
 		}
 	}
 }
