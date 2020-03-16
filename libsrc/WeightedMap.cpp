@@ -385,6 +385,13 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 				double sigfobs = fftData->getImag(dataidx);
 
 				int isAbs = CSym::ccp4spg_is_sysabs(spg, i, j, k);
+				
+				if (isAbs)
+				{
+					scratch->setElement(index, 0, 0);
+					continue;
+				}
+				
 				vec3 ijk = make_vec3(i, j, k);    
 				mat3x3_mult_vec(real2frac, &ijk);
 				double length = vec3_length(ijk);
@@ -399,20 +406,18 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 				
 				bool f000 = (i == 0 && j == 0 && k == 0);
 
+				if (!f000 && ((length < minRes || length > maxRes)
+				    || (fobs != fobs || isFree) || sigfobs != sigfobs))
+				{	
+					scratch->setElement(index, 0, 0);
+					continue;
+				}
+
 				vec2 complex;
 				complex.x = _fft->getReal(index);
 				complex.y = _fft->getImag(index);
 				double fcalc = sqrt(complex.x * complex.x +
 				                      complex.y * complex.y);
-				
-				if (!f000 && ((length < minRes || length > maxRes || isAbs)
-				    || (fobs != fobs || isFree) || sigfobs != sigfobs))
-				{	
-					scratch->setComponent(index, 0, 0);
-					scratch->setComponent(index, 1, 0);
-
-					continue;
-				}
 
 				double stdev = stdevForReflection(fobs, fcalc, sigfobs,
 				                                  1 / length);
@@ -643,7 +648,6 @@ void WeightedMap::create2FoFcCoefficients(VagFFTPtr copy, bool patt)
 				double downweight = exp(-(stdev * stdev));
 				
 				double fused = 2 * fobs - fcalc;
-				double weight = exp(-stdev * stdev);
 				
 				complex.x = fused * cos(phase);
 				complex.y = fused * sin(phase);
