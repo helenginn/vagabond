@@ -79,7 +79,18 @@ public:
 	static CrystalPtr getActiveCrystal()
 	{
 		if (!getRuntimeOptions()->crystals.size()) return CrystalPtr();
-		return getRuntimeOptions()->crystals[0];
+		return getRuntimeOptions()->crystals[_active];
+	}
+	
+	static void setActiveCrystal(int c)
+	{
+		_active = c;
+	}
+	
+	void removeLastCrystal()
+	{
+		crystals.pop_back();
+		_active = 0;
 	}
 
 	DiffractionPtr getActiveData()
@@ -424,6 +435,8 @@ private:
 	static bool _rInter;
 	static bool _rIntra;
 	static bool _hydrogens;
+	/*crystal*/
+	static int _active;
 	
 	/* how many processes are currently locking GUI controls */
 	int _processes;
