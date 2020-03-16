@@ -1794,5 +1794,6 @@ void Bond::reset()
 	_phi = 3.14/2;
 	_psi = 0;
 	_kick = 0;
+	deriveBondAngle();
 }
 
