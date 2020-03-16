@@ -15,12 +15,15 @@
 #include "Monomer.h"
 #include "FileReader.h"
 #include "Absolute.h"
+#include "Crystal.h"
 #include "Backbone.h"
 #include "../libinfo/RotamerTable.h"
 
 void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
 	if (!canRefine()) return;
+	
+	bool lowRes = (target->getMaxResolution() > 2.5);
 	
 	if (!paramCount())
 	{
@@ -51,7 +54,12 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 			case RefinementSidechain:
 			addParamType(ParamOptionTorsion, 0.1);
 			addParamType(ParamOptionKick, 0.5);
-			addParamType(ParamOptionMagicAngles, 30.0);
+			
+			if (!lowRes)
+			{
+				addParamType(ParamOptionMagicAngles, 30.0);
+			}
+
 			addParamType(ParamOptionNumBonds, 3);
 			break;
 
@@ -72,7 +80,10 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 				break;
 
 				case RefinementSidechain:
-				addParamType(ParamOptionBondAngle, 0.1);
+				if (!lowRes)
+				{
+					addParamType(ParamOptionBondAngle, 0.1);
+				}
 
 				default:
 				break;
