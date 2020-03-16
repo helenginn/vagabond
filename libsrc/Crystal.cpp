@@ -53,7 +53,8 @@
 void Crystal::summary()
 {
 	std::cout << "|----------------" << std::endl;
-	std::cout << "| Crystal summary (" << _filename << "): " << std::endl;
+	std::cout << "| Crystal summary (" << _filename << "): "
+	<< atomCount() << " atoms." << std::endl;
 	std::cout << "|----------------" << std::endl;
 
 	for (int i = 0; i < moleculeCount(); i++)
