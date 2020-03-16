@@ -382,6 +382,8 @@ CrystalPtr PDBReader::getCrystal()
 	_myCrystal = CrystalPtr(new Crystal());
 	_myCrystal->setFilename(getBaseFilename(filename));
 	Options::getRuntimeOptions()->addCrystal(_myCrystal);
+	int count = Options::getRuntimeOptions()->crystalCount();
+	Options::getRuntimeOptions()->setActiveCrystal(count - 1);
 
 	_residueNum = -INT_MAX;
 	_myChain = "";
