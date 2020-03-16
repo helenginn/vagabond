@@ -530,7 +530,8 @@ void Sampler::addSampled(AtomPtr atom)
 		return;
 	}
 	
-	if (atom->getElectronCount() == 1 && _scoreType == RefinementSavedPos)
+	if (atom->getElectronCount() == 1 && _scoreType == RefinementSavedPos
+	|| atom->getElectronCount() == 1 && _scoreType == RefinementModelPos)
 	{
 		return;
 	}
@@ -733,12 +734,6 @@ double Sampler::getScore()
 		for (int i = 0; i < sampleSize(); i++)
 		{
 			double oneScore = 0;
-			
-			if (_scoreType == ScoreTypeSavedPos && 
-			    _sampled[i]->getElectronCount() == 1)
-			{
-				continue;
-			}
 			
 			switch (_scoreType)
 			{
