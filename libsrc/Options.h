@@ -250,11 +250,6 @@ public:
 		_manual = manual;
 	}
 
-	static bool shouldPowder()
-	{
-		return _powder;
-	}
-
 	static ScalingType getScalingType()
 	{
 		return _scaleType;
@@ -399,7 +394,6 @@ private:
 	static bool _usePartial;
 	static bool _fitBucket;
 	static ScalingType _scaleType;
-	static bool _powder;
 	static std::string _solventFile;
 	static double _kick;
 	static int _solvent;
