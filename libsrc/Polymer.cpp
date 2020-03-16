@@ -705,16 +705,6 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 	return -endCCAve + startCCAve;
 }
 
-void Polymer::refineVScript(void *object, RefinementType rType)
-{
-	OptionsPtr options = Options::getRuntimeOptions();
-	CrystalPtr crystal = options->getActiveCrystal();
-	
-	Parser *parser = static_cast<Parser *>(object);
-	Polymer *polymer = dynamic_cast<Polymer *>(parser);
-	polymer->refine(crystal, rType);
-}
-
 void Polymer::refineShiftModel(CrystalPtr target, ExplicitModelPtr e,
                                AtomGroupPtr atoms)
 {
