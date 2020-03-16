@@ -165,11 +165,11 @@ double Crystal::getProteinSampling()
 	
 	if (sampling < 0)
 	{
-		sampling = maxRes / 3.;
+		sampling = maxRes / 4.;
 
-		if (sampling >= 1.0)
+		if (sampling >= 0.7)
 		{
-			sampling = 1.0;
+			sampling = 0.7;
 		}
 
 		Options::setProteinSampling(sampling);
