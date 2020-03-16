@@ -32,6 +32,7 @@ typedef enum
 	InstructionTypeRefineSidePos,
 	InstructionTypeRigidBody,
 	InstructionTypeAddPDBFile,
+	InstructionTypeUpdateFromPDB,
 	InstructionTypeFitTranslation,
 	InstructionTypeResetMotion,
 	InstructionTypeResetSides,
