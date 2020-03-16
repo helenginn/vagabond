@@ -108,6 +108,7 @@ private slots:
 	void append();
 	void openInCoot();
 	void addPDBFile();
+	void addUpdateFile();
 
 	void displayMessage(Shouter *shout);
 private:
@@ -122,8 +123,10 @@ private:
 	QFileDialog *_fileDialogue;   
 	QTextEdit *_logView;
 
+	std::string getFile(QString types, QString title);
 	void dialogueModify(Setter set, std::string title, 
 	                    double _default = 100);
+
 	void sponge();
 	void splitBond();
 	void resetSides();

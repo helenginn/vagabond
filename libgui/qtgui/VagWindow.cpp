@@ -132,6 +132,11 @@ void VagWindow::makeMenu()
 	        SLOT(addPDBFile()));
 	actions.push_back(addPDB);
 
+	QAction *updatePDB = model->addAction("New atom positions from PDB...");
+	connect(updatePDB, SIGNAL(triggered()), this, 
+	        SLOT(addUpdateFile()));
+	actions.push_back(updatePDB);
+
 	QMenu *mRefine = menuBar()->addMenu(tr("&Refine"));
 	menus.push_back(mRefine);
 
@@ -433,6 +438,12 @@ int VagWindow::waitForInstructions()
 				disable();
 				crystal->addPDBContents(_pdbStr);
 				options->recalculateFFT();
+				enable();
+				break;
+
+				case InstructionTypeUpdateFromPDB:
+				disable();
+				crystal->updatePDBContents(_pdbStr);
 				enable();
 				break;
 
@@ -887,34 +898,54 @@ VagWindow::~VagWindow()
 	delete _fileDialogue;
 }
 
-void VagWindow::addPDBFile()
+std::string VagWindow::getFile(QString types, QString title)
 {
-	if (_fileDialogue != NULL)
-	{
-		delete _fileDialogue;
-	}
-
-	QString types = "Protein data bank file (*.pdb)";
-	_fileDialogue = new QFileDialog(this, "Choose PDB file",
-	                                types);
-	_fileDialogue->setNameFilter(types);
-	_fileDialogue->setFileMode(QFileDialog::AnyFile);
-	_fileDialogue->show();
+	std::cout << "Setting up file dialogue" << std::endl;
+	QFileDialog *f = new QFileDialog(this, title, types);
+//	f->setNameFilter(types);
+	f->setFileMode(QFileDialog::AnyFile);
+	f->setOptions(QFileDialog::DontUseNativeDialog);
+	std::cout << "Ready to show file dialogue" << std::endl;
+	f->show();
+	std::cout << "Shown file dialogue" << std::endl;
 
     QStringList fileNames;
-    if (_fileDialogue->exec())
+
+    if (f->exec())
     {
-        fileNames = _fileDialogue->selectedFiles();
+		std::cout << "Executed file dialogue" << std::endl;
+        fileNames = f->selectedFiles();
     }
     
     if (fileNames.size() < 1)
     {
-		return;
+		return "";
     }
 
-	_pdbStr = fileNames[0].toStdString();
+	f->deleteLater();
+	return fileNames[0].toStdString();
+}
+
+void VagWindow::addPDBFile()
+{
+	QString types = "Protein data bank file (*.pdb)";
+	QString title = "Choose PDB file";
+
+	_pdbStr = getFile(types, title);
 	setMessage("Adding atoms from " + _pdbStr + ".");
 	_instructionType = InstructionTypeAddPDBFile;
+	wait.wakeAll();
+}
+
+void VagWindow::addUpdateFile()
+{
+	QString types = "Protein data bank file (*.pdb)";
+	QString title = "Choose PDB file";
+
+	std::cout << "Attempting to get PDB file..." << std::endl;
+	_pdbStr = getFile(types, title);
+	setMessage("Updating atoms from " + _pdbStr + ".");
+	_instructionType = InstructionTypeUpdateFromPDB;
 	wait.wakeAll();
 }
 
