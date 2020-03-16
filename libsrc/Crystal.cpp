@@ -2009,6 +2009,92 @@ void Crystal::refreshAnchors()
 	}
 }
 
+void Crystal::updatePDBContents(std::string pdbName)
+{
+	int missed = 0;
+	int count = 0;
+
+	PDBReader pdb = PDBReader();
+	pdb.setFilename(pdbName);
+	{
+		CrystalPtr crystal = pdb.getCrystal();
+		crystal->summary();
+
+		std::cout << "Updating atoms from PDB ... " << std::endl;
+		for (int i = 0; i < crystal->atomCount(); i++)
+		{
+			AtomPtr a = crystal->atom(i);
+
+			if (a->getElectronCount() <= 1)
+			{
+				continue;
+			}
+
+			vec3 new_pos = a->getPDBPosition();
+			std::string type = a->getAtomName();
+			int num = a->getResidueNum();
+			num = a->getAtomNum();
+
+			AtomList as = findAtomByNum(type, num);
+
+			if (as.size() == 1) 
+			{
+				AtomPtr mine = as[0];
+
+				if (!mine->isFromPDB())
+				{
+					continue;
+				}
+
+				vec3 old = mine->getPDBPosition();
+				mine->setPDBPosition(new_pos);
+				count++;
+			}
+			else if (as.size() > 1)
+			{
+				std::string conf = a->getAlternativeConformer();
+
+				AtomPtr mine = findAtom(type, conf);
+
+				if (mine && mine->isFromPDB())
+				{
+					mine->setPDBPosition(new_pos);
+					count++;
+				}
+				else
+				{
+					missed++;
+				}
+			}
+			else
+			{
+				missed++;
+			}
+		}
+
+		Options::getRuntimeOptions()->removeLastCrystal();
+	}
+
+	std::cout << std::endl;
+
+	std::cout << "Updated " << count << " atoms from PDB file "
+	<< pdbName << std::endl;
+	std::cout << "Could not match " << missed << " atoms to those from "
+	<< pdbName << std::endl;
+	std::cout << std::endl;
+	
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (molecule(i)->isPolymer())
+		{
+			PolymerPtr pol = ToPolymerPtr(molecule(i));
+			pol->closenessSummary();
+		}
+	}
+
+	refinePositions();
+}
+
 void Crystal::addPDBContents(std::string pdbName)
 {
 	PDBReader pdb = PDBReader();

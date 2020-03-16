@@ -475,6 +475,7 @@ public:
 	MotionPtr getOverallMotion();
 
 	void addPDBContents(std::string pdb);
+	void updatePDBContents(std::string pdbName);
 	
 	void addMotion(MotionPtr mot, PolymerPtr pol = PolymerPtr());
 	
