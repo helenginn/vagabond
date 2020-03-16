@@ -55,6 +55,7 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	_nscratch = fft._nscratch;
 	_activeScratch = fft._activeScratch;
 
+	_bFactor = fft._bFactor;
 	_nn = fft._nn;
 	_status = fft._status;
 	_stride = fft._stride;
@@ -105,6 +106,7 @@ VagFFT::~VagFFT()
 
 VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
 {
+	_bFactor = 0;
 	_nx = nx;
 	_ny = ny;
 	_nz = nz;
@@ -313,6 +315,12 @@ void VagFFT::setupElements(bool wipe)
 				
 				vec3 real = make_vec3(x, y, z);
 				mat3x3_mult_vec(_toRecip, &real);
+
+				double length = vec3_length(real);
+				double d = 1 / length;
+				double four_d_sq = (4 * d * d);
+				double bFacMod = exp(-_bFactor / four_d_sq);
+
 				vec3_mult(&real, 0.5);
 
 				for (int j = 0; j < _nele; j++)
@@ -322,6 +330,7 @@ void VagFFT::setupElements(bool wipe)
 					ElementPtr elem = _elements[j];
 					double val = Element::getVoxelValue(&*elem, real.x, 
 					                                    real.y, real.z);
+					val *= bFacMod;
 
 					_data[ele_index][0] = val;
 					_data[ele_index][1] = 0;

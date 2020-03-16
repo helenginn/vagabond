@@ -834,6 +834,10 @@ void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max,
 	int scratch = (addScratch ? 1 : 0);
 	(*scratchFull) = VagFFTPtr(new VagFFT(extent.x, extent.y, extent.z, 
 	                                      nEle, scratch));
+
+	double bFac = cryst->getRealBFactor();
+
+	(*scratchFull)->setBFactor(bFac);
 	(*scratchFull)->setScale(cubeDim);
 	(*scratchFull)->setOrigin(offset);
 	for (int i = 0; i < nEle; i++)

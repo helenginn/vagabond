@@ -295,6 +295,16 @@ public:
 	{
 		return _nn;
 	}
+	
+	double getBFactor()
+	{
+		return _bFactor;
+	}
+	
+	void setBFactor(double b)
+	{
+		_bFactor = b;
+	}
 
 	long element(long x, long y, long z)
 	{
@@ -390,6 +400,7 @@ private:
 	
 	FFTStatus _status;
 
+	double _bFactor;
 	int _nx, _ny, _nz;
 	long _nn;
 	
