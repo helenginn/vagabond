@@ -49,7 +49,8 @@ void BucketPerStrand::addSolvent()
 		}
 
 		addSolventForConformer(i, num);
-		_solvent->bittyShrink(0.4, num);
+		/* does not appear to help matters here */
+//		_solvent->bittyShrink(0.4, num);
 		_solvent->convertMaskToSolvent(num);
 		_solvent->addToScratch(0);
 		_solvent->multiplyAll(0);
