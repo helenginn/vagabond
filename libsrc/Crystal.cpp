@@ -1210,17 +1210,14 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	
 	if (!_silent)
 	{
-		writeVagabondFile(cycleNum);
-	}
-	
-	if (!_silent)
-	{
 		std::cout << "*******************************" << std::endl;
 		std::cout << "\tCycle " << cycleNum << std::endl;
 	}
 
 	std::string refineCount = "cycle_" + i_to_str(cycleNum);
 	double rFac = 0;
+
+	makePDBs(i_to_str(cycleNum));
 
 	if (!data)
 	{
@@ -1239,16 +1236,19 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 		Options::flagDensityChanged();
 	}
 	
+	if (!_silent)
+	{
+		writeVagabondFile(cycleNum);
+	}
+	
 	if (_silent)
 	{
 		return 0;
 	}
 
-	makePDBs(i_to_str(cycleNum));
-
 	for (int i = 0; i < moleculeCount(); i++)
 	{
-		if (molecule(i)->getClassName() == "Polymer")
+		if (molecule(i)->isPolymer())
 		{
 			PolymerPtr polymer = ToPolymerPtr(molecule(i));
 			polymer->graph("bfactor_" + polymer->getChainID() +
