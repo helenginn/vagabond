@@ -21,7 +21,7 @@ bool Backbone::shouldRefineAtom(AtomPtr atom)
 
 void Backbone::refine(CrystalPtr target, RefinementType rType)
 {
-	if (!isTied())
+	if (!isFullyTied())
 	{
 		return;
 	}

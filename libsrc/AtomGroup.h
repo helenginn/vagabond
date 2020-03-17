@@ -183,11 +183,7 @@ public:
 		return _name;
 	}
 
-	bool isTied()
-	{
-		return _beenTied;
-	}
-
+	bool isFullyTied();
 protected:
 	virtual bool shouldRefineAtom(AtomPtr atom) { return true; };
 	int _timesRefined;

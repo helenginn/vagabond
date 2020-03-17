@@ -1353,7 +1353,7 @@ void Crystal::makeOverallMotion()
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		if (!molecule(i)->isPolymer() ||
-		    !molecule(i)->isTied())
+		    !ToPolymerPtr(molecule(i))->getAnchorModel())
 		{
 			continue;
 		}

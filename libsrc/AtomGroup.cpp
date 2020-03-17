@@ -1310,3 +1310,16 @@ void AtomGroup::sort()
 	return;
 	std::sort(_atoms.begin(), _atoms.end(), Atom::greater);
 }
+
+bool AtomGroup::isFullyTied()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (!atom(i)->getModel()->hasExplicitPositions())
+		{
+			return false;
+		}
+	}
+	
+	return true;
+}
