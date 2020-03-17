@@ -52,7 +52,7 @@ void Motion::updateAtoms()
 	{
 		if (_molecules[i].expired())
 		{
-			std::cout << "Losing molecule due to deletion" << std::endl;
+			std::cout << "Losing molecule due to deletion elsewhere." << std::endl;
 			_molecules.erase(_molecules.begin() + i);
 		}
 
