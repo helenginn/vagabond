@@ -815,9 +815,13 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 	_bucket->setCrystal(shared_from_this());
 	_bucket->addSolvent();
 
-	std::cout << "Ave partial density before: " << 
-	_bucket->getSolvent()->averageAll() << 
+	/*
+	std::cout << "Sum partial density before: " << 
+	_bucket->getSolvent()->sumReal() << 
 	" electrons/A^(-3)" << std::endl;
+	*/
+
+	scaleToDiffraction(data, false);
 
 	_bucket->fourierTransform(1);
 	_bucket->setData(data);
@@ -875,6 +879,12 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 	                                    true, false);
 
 	applyScaleFactor(totalFc / ratio, 0, 0);
+//	std::cout << std::setprecision(6) << "Ratio: " << 1 / ratio << std::endl;
+	
+	if (_bucket)
+	{
+		_bucket->getSolvent()->multiplyAll(1 / ratio);
+	}
 
 	if (!full)
 	{
@@ -952,7 +962,6 @@ void Crystal::scaleComponents(DiffractionPtr data)
 {
 	std::cout << "Scaling model to data..." << std::endl;
 	/* Just scale using an absolute value only */
-	scaleToDiffraction(data, false);
 	scaleSolvent(data);
 	scaleAnyPartialSet();
 	/* Scale using the favoured mechanism (e.g. per-shell) */
@@ -985,9 +994,14 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 {
 	realSpaceClutter(data->getMaxResolution());
 
-	std::cout << "Ave calculated density before: " << 
-	std::setprecision(4) << _fft->averageAll() << 
-	" electrons/A^(-3)" << std::endl;
+	_calcElec = _fft->sumReal();
+	double density = _calcElec / mat3x3_volume(_hkl2real);
+	/*
+	std::cout << "Sum calculated density before: " << 
+	std::setprecision(4) << _calcElec << std::endl;
+	std::cout << "Concentration of electron density: " << 
+	std::setprecision(4) << density << " electrons/Å³" << std::endl;
+	*/
 	
 	fourierTransform(1);
 	
