@@ -1436,13 +1436,14 @@ void VagFFT::applySymmetry(bool silent, double topRes)
 			for (int i = -_nx / 2; i < _nx / 2; i++)
 			{
 				int abs = CSym::ccp4spg_is_sysabs(_spg, i, j, k);
+				long pre_index = element(i, j, k);
+				long index = finalIndex(pre_index);
 
 				if (abs)
 				{
+					/* we know this has to be zero, tempData already is */
 					continue;	
 				}
-
-				long pre_index = element(i, j, k);
 				
 				if (topRes > 0)
 				{
@@ -1457,11 +1458,11 @@ void VagFFT::applySymmetry(bool silent, double topRes)
 					}
 				}
 
-				long index = finalIndex(pre_index);
 				/* Not misnomers: dealt with in previous paragraph */
 				double myAmp = _data[index][0];
 				double myPhase = _data[index][1];
 
+				/* loop through all symops this index applies to */
 				for (int l = 0; l < _spg->nsymop; l++)
 				{
 					float *rot = &_spg->invsymop[l].rot[0][0];
@@ -1473,14 +1474,13 @@ void VagFFT::applySymmetry(bool silent, double topRes)
 					_l = (int) rint(i*rot[2] + j*rot[5] + k*rot[8]);
 
 					long sym_index = element(_h, _k, _l);
-					long index = finalIndex(pre_index);
 					/* translation */
 					float *trn = _spg->symop[l].trn;
 
 					double shift = (float)_h * trn[0];
 					shift += (float)_k * trn[1];
 					shift += (float)_l * trn[2];
-					shift = fmod(shift, 1.);
+					shift = shift - floor(shift);
 
 					double deg = myPhase + shift * 360.;
 					double newPhase = deg2rad(deg);
