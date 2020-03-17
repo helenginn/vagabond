@@ -42,10 +42,7 @@ public:
 	void forceRefresh();
 	void rigidBodyRefinement();
 	
-	void addMotion(MotionPtr mot)
-	{
-		_motions.push_back(mot);
-	}
+	void addMotion(MotionPtr mot);
 	
 	size_t motionCount()
 	{

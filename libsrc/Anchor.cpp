@@ -562,3 +562,16 @@ void Anchor::rigidBodyRefinement()
 	_motions[0]->rigidRefine();
 
 }
+
+void Anchor::addMotion(MotionPtr mot)
+{
+	std::vector<MotionPtr>::iterator it;
+	
+	it = std::find(_motions.begin(), _motions.end(), mot);
+	
+	if (it == _motions.end())
+	{
+		_motions.push_back(mot);
+	}
+}
+
