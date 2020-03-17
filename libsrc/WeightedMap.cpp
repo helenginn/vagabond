@@ -326,11 +326,21 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 				double fcalc = sqrt(complex.x * complex.x +
 				                      complex.y * complex.y);
 
-				double stdev = stdevForReflection(fobs, fcalc, sigfobs,
-				                                  1 / length);
-				double downweight = exp(-(stdev * stdev));
-				
-				double phaseDev = phaseDevForWeight(downweight);
+				double phaseDev = 0;
+				if (slice == 0)
+				{
+					double stdev = stdevForReflection(fobs, fcalc, sigfobs,
+					                                  1 / length);
+					double downweight = exp(-(stdev * stdev));
+					phaseDev = phaseDevForWeight(downweight);
+
+					scratch->setScratchComponent(index, 0, 0, phaseDev);
+				}
+				else
+				{
+					phaseDev = scratch->getScratchComponent(index, 0, 0);
+				}
+
 				double phi = phaseDev * o;
 				
 				int centric = ccp4spg_is_centric(spg, i, j, k);
@@ -391,7 +401,7 @@ void WeightedMap::createVagaCoefficients()
 	VagFFTPtr duplicate = VagFFTPtr(new VagFFT(*_fft));
 	duplicate->wipe();
 	duplicate->setStatus(FFTRealSpace);
-	VagFFTPtr scratch = VagFFTPtr(new VagFFT(*duplicate));
+	VagFFTPtr scratch = VagFFTPtr(new VagFFT(*duplicate, 1));
 	_allWeights = 0;
 	
 	scratch->makePlans();
@@ -404,7 +414,8 @@ void WeightedMap::createVagaCoefficients()
 		scratch->fft(FFTReciprocalToReal); /* to real space */
 		scratch->multiplyAll(weight);
 		duplicate->addSimple(scratch);
-		scratch->wipe();
+		scratch->multiplyAll(0);
+		scratch->setStatus(FFTEmpty);
 	}
 
 	_difft->wipe();
@@ -417,6 +428,8 @@ void WeightedMap::createVagaCoefficients()
 		scratch->multiplyAll(weight);
 		_difft->addSimple(scratch);
 		scratch->wipe();
+		scratch->multiplyAll(0);
+		scratch->setStatus(FFTEmpty);
 	}
 	
 	double normalise = 1 / _allWeights;
