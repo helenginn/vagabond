@@ -43,14 +43,16 @@ Motion::Motion()
 	_centre = empty_vec3();
 }
 
-void Motion::addToPolymer(PolymerPtr pol)
+void Motion::updateAtoms(PolymerPtr pol)
 {
+	std::cout << pol->getChainID() << " backbone " 
+	<< _allBackbone->atomCount() << " to ";
+	_allAtoms->empty();
+	_allBackbone->empty();
 	_allAtoms->addAtomsFrom(pol);
 	AtomGroupPtr back = pol->getAllBackbone();
 	_allBackbone->addAtomsFrom(back);
-
-	AnchorPtr anch = pol->getAnchorModel();
-	anch->addMotion(shared_from_this());
+	std::cout << _allBackbone->atomCount() << std::endl;
 	
 	if (!_refined)
 	{
@@ -60,6 +62,14 @@ void Motion::addToPolymer(PolymerPtr pol)
 	{
 		_centre = _allAtoms->centroid();
 	}
+}
+
+void Motion::addToPolymer(PolymerPtr pol)
+{
+	updateAtoms(pol);
+
+	AnchorPtr anch = pol->getAnchorModel();
+	anch->addMotion(shared_from_this());
 }
 
 void Motion::translateStartPositions(std::vector<BondSample> &stored)

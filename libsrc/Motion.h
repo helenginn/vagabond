@@ -36,6 +36,7 @@ public:
 	Motion();
 	~Motion();
 	void addToPolymer(PolymerPtr pol);
+	void updateAtoms(PolymerPtr pol);
 
 	void translateStartPositions(std::vector<BondSample> &stored);
 	void applyRotations(std::vector<BondSample> &stored);
