@@ -813,7 +813,8 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 	Timer timer = Timer("refinement", true);
 	
 	std::cout << std::endl;
-	std::cout << "Refining chain " << getChainID() << " from anchor to N-terminus...";
+	std::cout << "Refining chain " << getChainID() << 
+	" from anchor to N-terminus... (" << monomerBegin() << ")";
 	std::cout << std::endl << std::endl << "\t";
 
 	int count = 0;
@@ -833,7 +834,8 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 	}
 
 	std::cout << std::endl << std::endl;
-	std::cout << "Refining chain " << getChainID() << " from anchor to C-terminus...";
+	std::cout << "Refining chain " << getChainID() << 
+	" from anchor to C-terminus... (" << monomerEnd() << ")";
 	std::cout << std::endl << std::endl << "\t";
 
 	count = 0;
