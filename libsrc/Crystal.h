@@ -77,6 +77,42 @@ inline ShellInfo makeShellInfo(double min, double max)
 	return shell;
 }
 
+/* resolutions are in real space */
+inline int findShell(std::vector<ShellInfo> &shells, double res)
+{
+	if (res < shells.back().maxRes || 
+	    res > shells.front().minRes)
+	{
+		return -1;
+	}
+	
+	int size = shells.size();
+	int min = 0;
+	int max = size - 1;
+	
+	if (res >= shells[min].maxRes) return min;
+	if (res <= shells[max].minRes) return max;
+	
+	while (true)
+	{
+		int chop = (max + min) / 2;
+		int higher = (res <= shells[chop].maxRes);
+		if (higher) 
+		{
+			min = chop;
+		}
+		else 
+		{
+			max = chop;
+		}
+		
+		if (max - min == 1)
+		{
+			return max;
+		}
+	}
+}
+
 inline double getNLimit(VagFFTPtr fftData, int axis = 0)
 {
 	double nLimit = 0;

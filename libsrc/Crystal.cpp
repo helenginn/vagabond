@@ -595,14 +595,9 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 
 				int index = -1;
 				
-				for (int l = 0; l < _shells.size() && !allShells; l++)
+				if (!allShells)
 				{
-					if (real <= _shells[l].minRes &&
-					    real > _shells[l].maxRes)
-					{
-						index = l;
-						break;
-					}
+					index = findShell(_shells, real);
 				}
 
 				if (index < 0 && !allShells)
