@@ -1311,6 +1311,19 @@ void AtomGroup::sort()
 	std::sort(_atoms.begin(), _atoms.end(), Atom::greater);
 }
 
+void AtomGroup::empty()
+{
+	_atoms.clear();
+}
+
+void AtomGroup::printList()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		std::cout << atom(i)->longDesc() << std::endl;
+	}
+}
+
 bool AtomGroup::isFullyTied()
 {
 	for (int i = 0; i < atomCount(); i++)

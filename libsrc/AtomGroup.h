@@ -152,6 +152,8 @@ public:
 	void propagateChange();
 	void refreshPositions(bool quick = true);
 
+	void printList();
+	virtual void empty();
 	AtomPtr getClosestAtom(CrystalPtr crystal, vec3 pos);
 	std::vector<AtomPtr> getHydrogenBonders();
 
