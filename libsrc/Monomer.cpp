@@ -104,9 +104,18 @@ void Monomer::tieAtomsUp()
 	}
 	catch (AtomPtr a)
 	{
+		printList();
+
+		std::cout << std::endl <<"Backbone: " << std::endl;
+		_backbone->printList();
+
+		std::cout << std::endl <<"Sidechain: " << std::endl;
+		_sidechain->printList();
 		shout_at_user("Could not tie protein due to a problem around\n"\
 		              "atom " + a->shortDesc() + "! Please check all "\
 		              "your atoms are\nin the model for this monomer.");
+		std::cout << "Monomer: " << std::endl;
+
 		exit(1);
 	}
 
