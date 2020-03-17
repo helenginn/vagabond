@@ -1568,6 +1568,8 @@ void Polymer::redefineMotion()
 
 void Polymer::resetMotion()
 {
+	redefineMotion();
+
 	AnchorPtr anch = getAnchorModel();
 	
 	for (int i = 0; i < anch->motionCount(); i++)
