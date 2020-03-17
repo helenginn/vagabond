@@ -241,12 +241,18 @@ void Crystal::realSpaceClutter(double maxRes)
 
 void Crystal::recalculateAtoms()
 {
+	std::cout << "Atoms in crystal before recalculation: "
+	<< atomCount() << std::endl;
+
 	empty();
 	
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		addAtomsFrom(molecule(i));
 	}
+
+	std::cout << "Atoms in crystal after recalculation: "
+	<< atomCount() << std::endl;
 }
 
 void Crystal::prepareFFT(VagFFTPtr ft)
@@ -2013,10 +2019,14 @@ void Crystal::refitToSavedPositions()
 
 void Crystal::removeAtom(AtomPtr atom)
 {
+	std::cout << "Removing atom " << atom->longDesc() << std::endl;
+
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		molecule(i)->removeAtom(atom);
 	}
+	
+	AtomGroup::removeAtom(atom);
 }
 
 void Crystal::refreshAnchors()
