@@ -102,22 +102,21 @@ void PartialStructure::scalePartialStructure()
 		shout_at_helen("Need diffraction data to scale solvent");
 	}
 
+	std::string cycle = i_to_str(getCrystal()->getCycleNum());
+
 	VagFFTPtr fft = getCrystal()->getFFT();
 	
-	/*
-	*/
-	
-	setSolvScale(this, 0.0);
-	setSolvBFac(this, 40);
+	setSolvScale(this, 0);
+	setSolvBFac(this, 20);
 	
 	NelderMeadPtr fine;
 	fine = NelderMeadPtr(new RefinementNelderMead());
 	fine->setJobName("solvent_scale_fine");
 	fine->setEvaluationFunction(scalePartialScore, this);
 	fine->setCycles(120);
-	fine->addParameter(this, getSolvScale, setSolvScale, 0.2, 0.0001, "scale");
-	fine->addParameter(this, getSolvBFac, setSolvBFac, 20, 0.1, "bfac");
 	fine->setSilent(true);
+	fine->addParameter(this, getSolvScale, setSolvScale, 0.2, 1.0, "scale");
+	fine->addParameter(this, getSolvBFac, setSolvBFac, 40, 0.1, "bfac");
 	fine->refine();
 
 	if (_solvScale < 0)
@@ -126,7 +125,7 @@ void PartialStructure::scalePartialStructure()
 	}
 
 	/** Now add this into the FFT */
-
+	
 	scaleOrScore(false);
 }
 
@@ -146,15 +145,17 @@ double PartialStructure::scaleOrScore(bool score)
 	VagFFTPtr fftData = _data->getFFT();
 	VagFFTPtr fft = getCrystal()->getFFT();
 	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
-	mat3x3 real2frac = getCrystal()->getReal2Frac();
-	mat3x3 tmp = mat3x3_transpose(real2frac);
+	mat3x3 toRecip = _partial->toRecip();
 	
-	vec3 nLimits = getNLimits(fftData, _partial);
+	vec3 nLimits = getNLimits(fft, _partial);
 
 	std::vector<double> fData, fModel;
 	double adjB = _solvBFac;
 	double adjS = _solvScale;
 	if (adjS < 0) { adjS = 0; }
+	
+	double swapped = 0;
+	double lowres = 0;
 	
 	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
@@ -162,19 +163,37 @@ double PartialStructure::scaleOrScore(bool score)
 		{
 			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
-				int m, n, o;
-				int asu = CSym::ccp4spg_put_in_asu(spg, i, j, k, &m, &n, &o);
-				
-				if (score && !(m == i && n == j && o == k))
+				if (score)
 				{
-					continue;
+					if (!fftData->withinBounds(i, j, k))
+					{
+						continue;
+					}
+
+					int m, n, o;
+					int asu = CSym::ccp4spg_put_in_asu(spg, i, j, k, 
+					                                   &m, &n, &o);
+
+					if (!(m == i && n == j && o == k))
+					{
+						continue;
+					}
 				}
+
+				long fi = fftData->element(i, j, k);
+				
+				double test = fftData->getReal(fi);
+				if (test != test && score) continue;
+				
+				float ref = sqrt(fftData->getIntensity(fi));
+				if (score && ref != ref) continue;
 				
 				long nModel = fft->element(i, j, k);
+				long nPart = _partial->element(i, j, k);
 				float realProtein = fft->getReal(nModel);
 				float imagProtein = fft->getImag(nModel);
-				float realPartial = _partial->getReal(nModel);
-				float imagPartial = _partial->getImag(nModel);
+				float realPartial = _partial->getReal(nPart);
+				float imagPartial = _partial->getImag(nPart);
 				
 				if (realProtein != realProtein ||
 				    realPartial != realPartial)
@@ -183,20 +202,21 @@ double PartialStructure::scaleOrScore(bool score)
 				}
 
 				vec3 ijk = make_vec3(i, j, k);
-				mat3x3_mult_vec(tmp, &ijk);
+				mat3x3_mult_vec(toRecip, &ijk);
 
 				double length = vec3_length(ijk);
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
 				double bFacMod = exp(-adjB / four_d_sq);
 
-				long fi = fftData->element(i, j, k);
-				bool isFree = (fftData->getScratchComponent(fi, 0, 0) < 0.5);
-				if (score && isFree) continue;
 
-				float ref = sqrt(fftData->getIntensity(fi));
+				if (score)
+				{
+					bool isFree;
+					isFree = fftData->getScratchComponent(fi, 0, 0) < 0.5;
+					if (isFree) continue;
+				}
 
-				if (score && ref != ref) continue;
 
 				realPartial *= adjS * bFacMod;
 				imagPartial *= adjS * bFacMod;
@@ -213,8 +233,8 @@ double PartialStructure::scaleOrScore(bool score)
 				}
 				else
 				{
-					_partial->setComponent(nModel, 0, realPartial);
-					_partial->setComponent(nModel, 1, imagPartial);
+					_partial->setComponent(nPart, 0, realPartial);
+					_partial->setComponent(nPart, 1, imagPartial);
 
 					if (real != real || imag != imag)
 					{
