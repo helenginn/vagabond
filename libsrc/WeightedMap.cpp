@@ -174,6 +174,7 @@ void WeightedMap::calculateFiguresOfMerit()
 
 int WeightedMap::shellForResolution(double res)
 {
+	return findShell(_shells, res);
 	int index = -1;
 
 	for (int l = 0; l < _shells.size(); l++)
