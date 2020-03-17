@@ -41,7 +41,8 @@ public:
 	AtomPtr findAtom(std::string atomType, std::string confID);
 	AtomList findAtoms(std::string atomType);
 	AtomGroupPtr subGroupForConf(int conf);
-	AtomList findAtoms(std::string atomType, int resNum);
+	AtomList findAtoms(std::string atomType, int resNum,
+	                       std::string chainID = "");
 	AtomList findAtomByNum(std::string atomType, int atomNum);
 
 	double scoreWithMap(ScoreType scoreType, CrystalPtr crystal, 

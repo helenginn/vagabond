@@ -43,7 +43,8 @@ AtomPtr AtomGroup::findAtom(std::string atomType)
 	return AtomPtr();
 }
 
-AtomList AtomGroup::findAtoms(std::string atomType, int resNum)
+AtomList AtomGroup::findAtoms(std::string atomType, int resNum,
+                              std::string chainID)
 {
 	AtomList list;
 
@@ -52,6 +53,12 @@ AtomList AtomGroup::findAtoms(std::string atomType, int resNum)
 		if ((atom(i)->getAtomName() == atomType)
 		 && (atom(i)->getResidueNum() == resNum))
 		{
+			if (chainID.length() && 
+			    atom(i)->getMolecule()->getChainID() != chainID)
+			{
+				continue;
+			}
+
 			list.push_back(atom(i));
 		}
 	}
