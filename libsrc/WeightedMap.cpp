@@ -71,122 +71,28 @@ void WeightedMap::writeCalculatedSlice()
 		mask->fft(FFTReciprocalToReal);
 	}
 
-	CSVPtr calc = CSVPtr(new CSV(5, "i", "j", "d", "m", "s"));
-	calc->setSubDirectory("slices");
+	std::string cycle = "_" + i_to_str(_crystal->getCycleNum());
+	mask->drawSlice(0, "solvent_slice" + cycle);
+
 	_fft->fft(FFTReciprocalToReal);
-	
-	int z = 0;
-
-	for (int j = 0; j < _fft->ny(); j++)
+	_fft->drawSlice(0, "calculated_slice" + cycle);
+	for (int i = 0; i < _fft->nz() && Options::makeDiagnostics(); i++)
 	{
-		for (int i = 0; i < _fft->nx(); i++)
-		{
-			int index = _fft->element(i, j, 0);
-			int val = 0;
-			if (solv)
-			{
-				Atom *atom = solv->nearbyAtom(index);
-
-				if (atom)
-				{
-					val = 1;
-				}
-
-				if (atom && atom->getElementSymbol() == "N")
-				{
-					val = 2;
-				}
-				if (atom && atom->getElementSymbol() == "O")
-				{
-					val = 3;
-				}
-				else if (atom && atom->getElementSymbol() == "S")
-				{
-					val = 4;
-				}
-			}
-
-			double s = 0;
-
-			if (mask)
-			{
-				s = mask->getReal(index);
-			}
-
-			double fc = _fft->getReal(index);
-			calc->addEntry(5, (double)i, (double)j, fc,
-			               (double)val, s);
-		}
+//		_fft->drawSlice(i, "calculated_slice_s" + i_to_str(i));
 	}
 
 	_fft->fft(FFTRealToReciprocal);
-	
-	if (mask)
-	{
-		mask->fft(FFTRealToReciprocal);
-	}
-
-	std::string cycle = "_" + i_to_str(_crystal->getCycleNum());
-	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = "calculated_slice" + cycle;
-	plotMap["height"] = "800";
-	plotMap["width"] = "800";
-	plotMap["xHeader0"] = "i";
-	plotMap["yHeader0"] = "j";
-	plotMap["zHeader0"] = "d";
-
-	plotMap["xTitle0"] = "a dim";
-	plotMap["yTitle0"] = "b dim";
-	plotMap["style0"] = "heatmap";
-	plotMap["stride"] = i_to_str(_fft->nx());
-
-	calc->plotPNG(plotMap);
-	calc->writeToFile("calculated_slice.csv");
-	calc->getMinMaxZ(&_minZ, &_maxZ);
-	calc->plotPNG(plotMap);
-
-	plotMap["filename"] = "solvent_slice" + cycle;
-	plotMap["zHeader0"] = "s";
-
-	calc->plotPNG(plotMap);
 }
 
 void WeightedMap::writeObservedSlice()
 {
-	CSVPtr csv = CSVPtr(new CSV(3, "i", "j", "d"));
-	csv->setSubDirectory("slices");
-
-	int nx = _fft->nx();
-	long z = 0;
-
-	for (int j = 0; j < _fft->ny(); j++)
-	{
-		for (int i = 0; i < _fft->nx(); i++)
-		{
-			long index = i + j * nx + z * nx * _fft->ny();
-			csv->addEntry(3, (double)i, (double)j, _fft->getReal(index));
-		}
-	}
-
 	std::string cycle = "_" + i_to_str(_crystal->getCycleNum());
-	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = "observed_slice" + cycle;
-	plotMap["height"] = "800";
-	plotMap["width"] = "800";
-	plotMap["xHeader0"] = "i";
-	plotMap["yHeader0"] = "j";
-	plotMap["zHeader0"] = "d";
-
-	plotMap["xTitle0"] = "a dim";
-	plotMap["yTitle0"] = "b dim";
-	plotMap["zMin0"] = f_to_str(_minZ, 3);
-	plotMap["zMax0"] = f_to_str(_maxZ, 3);
-	plotMap["style0"] = "heatmap";
-	plotMap["stride"] = i_to_str(_fft->nx());
-
-	csv->plotPNG(plotMap);
-	csv->writeToFile("observed_slice.csv");
-	return;
+	
+	_fft->drawSlice(0, "observed_slices" + cycle);
+	for (int i = 0; i < _fft->nz() && Options::makeDiagnostics(); i++)
+	{
+//		_fft->drawSlice(i, "observed_slice_" + i_to_str(i));
+	}
 }
 
 void WeightedMap::createWeightedMaps()
@@ -518,22 +424,7 @@ void WeightedMap::createVagaCoefficients()
 	
 	SpaceWarpPtr sw = Options::getActiveCrystal()->getWarp();
 	sw->setCalculated(_fft);
-	/*
-	sw->recalculate(duplicate);
 
-	CrystalPtr crystal = Options::getActiveCrystal();
-
-	for (int i = 4; i < 56; i++)
-	{
-		sw->addRefinedAtom(crystal->findAtoms("CA", i)[0]);
-		sw->addRefinedAtom(crystal->findAtoms("C", i)[0]);
-		sw->addRefinedAtom(crystal->findAtoms("N", i)[0]);
-	}
-	
-	sw->svd();
-	*/
-	
-	/* To reciprocal space for writing */
 	duplicate->fft(FFTRealToReciprocal);
 	_difft->fft(FFTRealToReciprocal);
 
