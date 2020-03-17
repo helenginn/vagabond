@@ -71,7 +71,7 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	_elementMap = fft._elementMap;
 	_spg = fft._spg;
 	
-	if (scratch != fft._nscratch)
+	if (scratch >= 0 && scratch != fft._nscratch)
 	{
 		_nscratch = scratch; 
 		_stride = 2 * (_nele) + 1 + _nscratch;
