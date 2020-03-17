@@ -70,11 +70,10 @@ public:
 	{
 		return _residueNum;
 	}
+	
+	void empty();
 
-	void setPolymer(PolymerPtr poly)
-	{
-		_myPolymer = poly;
-	}
+	void setPolymer(PolymerPtr poly);
 
 	PolymerPtr getPolymer()
 	{

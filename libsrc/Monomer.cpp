@@ -40,6 +40,13 @@ void Monomer::removeAtom(AtomPtr atom)
 	AtomGroup::removeAtom(atom);
 }
 
+void Monomer::empty()
+{
+	_backbone->empty();
+	_sidechain->empty();
+	AtomGroup::empty();
+}
+
 void Monomer::addAtom(AtomPtr atom)
 {
 	AtomGroup::addAtom(atom);
@@ -190,4 +197,19 @@ void Monomer::linkReference(BaseParserPtr object, std::string category)
 void Monomer::postParseTidy()
 {
 
+}
+
+void Monomer::setPolymer(PolymerPtr pol)
+{
+	_myPolymer = pol;
+	
+	if (_backbone)
+	{
+		_backbone->setPolymer(pol);
+	}
+	
+	if (_sidechain)
+	{
+		_sidechain->setPolymer(pol);
+	}
 }
