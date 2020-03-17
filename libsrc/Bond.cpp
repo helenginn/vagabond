@@ -67,6 +67,12 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 	_minor = minor;
 
 	_disabled = (!major || !minor);
+	
+	if (!_disabled && minor && minor->getModel() && 
+	    minor->getModel()->hasExplicitPositions())
+	{
+		_disabled = true;
+	}
 
 	if (_disabled)
 	{
