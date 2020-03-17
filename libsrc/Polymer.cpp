@@ -1551,6 +1551,30 @@ void Polymer::refineMotions()
 	}
 }
 
+void Polymer::removeIntramolecularMotion()
+{
+	std::cout << "Wiping intramolecular motions for Polymer " << getChainID() 
+	<< std::endl;
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (atom(i)->getModel()->isBond())
+		{
+			BondPtr b = ToBondPtr(atom(i)->getModel());
+			Bond::setKick(&*b, 0.);
+			
+			if (b->hasWhack())
+			{
+				WhackPtr w = b->getWhack();
+				Whack::setKick(&*w, 0.);
+				Whack::setWhack(&*w, 0.);
+			}
+		}
+	}
+
+	getAnchorModel()->forceRefresh();
+	refreshPositions();
+}
+
 void Polymer::redefineMotion()
 {
 	_allBackbones = AtomGroupPtr();

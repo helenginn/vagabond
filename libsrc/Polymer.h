@@ -154,6 +154,7 @@ public:
 	void refineMotions();
 	void redefineMotion();
 	void resetSidechains();
+	void removeIntramolecularMotion();
 	bool refineLocalFlexibility(bool magic = false);
 	virtual void addProperties();
 	virtual void addObject(ParserPtr object, std::string category);
