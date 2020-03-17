@@ -57,48 +57,50 @@ bool Vagabond2GL::shouldGetBonds()
 
 	OptionsPtr globalOptions = Options::getRuntimeOptions();
 
-	for (int i = 0; i < globalOptions->crystalCount(); i++)
+	CrystalPtr crystal = globalOptions->getActiveCrystal();
+	
+	if (_moleculeMap.size() != crystal->moleculeCount())
 	{
-		CrystalPtr crystal = globalOptions->getCrystal(i);
+		return true;
+	}
 
-		for (int j = 0; j < crystal->moleculeCount(); j++)
+	for (int j = 0; j < crystal->moleculeCount(); j++)
+	{
+		MoleculePtr molecule = crystal->molecule(j);
+
+		if (!_moleculeMap.count(molecule))
 		{
-			MoleculePtr molecule = crystal->molecule(j);
+			return true;
+		}
 
-			if (!_moleculeMap.count(molecule))
+		int expected = _moleculeMap[molecule];
+		int existing = 0;
+
+		for (int i = 0; i < molecule->atomCount(); i++)
+		{
+			AtomPtr minor = molecule->atom(i);
+
+			if (!minor)
 			{
-				return true;
+				continue;
 			}
 
-			int expected = _moleculeMap[molecule];
-			int existing = 0;
-
-			for (int i = 0; i < molecule->atomCount(); i++)
+			if (!isAcceptableAtom(&*minor))
 			{
-				AtomPtr minor = molecule->atom(i);
-				
-				if (!minor)
-				{
-					continue;
-				}
-
-				if (!isAcceptableAtom(&*minor))
-				{
-					continue;
-				}
-				
-				if (!acceptablePositions(minor))
-				{
-					continue;
-				}
-
-				existing++;
+				continue;
 			}
-			
-			if (expected != existing)
+
+			if (!acceptablePositions(minor))
 			{
-				return true;
+				continue;
 			}
+
+			existing++;
+		}
+
+		if (expected != existing)
+		{
+			return true;
 		}
 	}
 
