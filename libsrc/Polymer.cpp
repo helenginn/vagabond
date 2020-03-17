@@ -148,10 +148,8 @@ void Polymer::whackMonomer(MonomerPtr mon)
 		return;
 	}
 	
-	AtomList atoms = mon->getBackbone()->topLevelAtoms();
-	atoms = mon->findAtoms("CA");
+	AtomList atoms = mon->findAtoms("CA");
 	AnchorPtr anchor = getAnchorModel();
-	long num = mon->getResidueNum();
 
 	if (atoms.size() == 0)
 	{
@@ -171,6 +169,11 @@ void Polymer::whackMonomer(MonomerPtr mon)
 	{
 		return;
 	}
+	
+	if (bond->hasWhack())
+	{
+		return;
+	}
 
 	WhackPtr whack = WhackPtr(new Whack());
 	whack->setBond(bond);
@@ -181,38 +184,10 @@ void Polymer::whackMonomer(MonomerPtr mon)
 	}
 
 	whack->addToAnchor(anchor);
-
-	BondPtr next;
-
-	while (true)
-	{
-		if (bond->downstreamBondGroupCount() && 
-		    bond->downstreamBondCount(0))
-		{
-			next = bond->downstreamBond(0, 0);
-		}
-		else
-		{
-			break;
-		}
-
-		if (next->getAtom()->getResidueNum() != num)
-		{
-			break;
-		}
-
-		bond = ToBondPtr(next);
-	}
-
 }
 
 void Polymer::whack()
 {
-	if (isWhacking())
-	{
-		return;
-	}
-
 	std::cout << "Whacking chain " << getChainID() << std::endl;
 	
 	for (int i = getAnchor(); i < monomerEnd(); i++)
@@ -225,7 +200,8 @@ void Polymer::whack()
 		whackMonomer(getMonomer(i));
 	}
 
-	getAnchorModel()->propagateChange(-1, true);
+	getAnchorModel()->forceRefresh();
+	refreshPositions();
 }
 
 void Polymer::tieAtomsUp()
