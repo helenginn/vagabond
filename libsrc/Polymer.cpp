@@ -243,16 +243,23 @@ void Polymer::tieAtomsUp()
 
 	ModelPtr nModel = n->getModel();
 
+	bool newly_tied = false;
 	if (nModel->isAbsolute())
 	{
 		AnchorPtr newAnchor = AnchorPtr(new Anchor(ToAbsolutePtr(nModel)));
 		newAnchor->setBFactor(_startB);
 		newAnchor->setNeighbouringAtoms(prev_ca, prev_c, ca, c);
 		n->setModel(newAnchor);
+		newly_tied = true;
 	}
 
 	for (int i = _anchorNum; i < monomerEnd(); i++)
 	{
+		if (!newly_tied && i == _anchorNum)
+		{
+			continue;
+		}
+
 		if (getMonomer(i))
 		{
 			getMonomer(i)->tieAtomsUp();
@@ -261,6 +268,11 @@ void Polymer::tieAtomsUp()
 
 	for (int i = _anchorNum - 1; i >= monomerBegin(); i--)
 	{
+		if (newly_tied && i == _anchorNum)
+		{
+			continue;
+		}
+
 		if (getMonomer(i))
 		{
 			getMonomer(i)->tieAtomsUp();
@@ -271,11 +283,14 @@ void Polymer::tieAtomsUp()
 	BondPtr ca2c = ToBondPtr(c->getModel());
 	BondPtr n2c = ToBondPtr(prev_c->getModel());
 	BondPtr c2ca = ToBondPtr(prev_ca->getModel());
-	
-	ca2c->setHeavyAlign(prev_c);
-	n2ca->setHeavyAlign(prev_ca);
-	n2c->setHeavyAlign(c);
-	c2ca->setHeavyAlign(ca);
+
+	if (newly_tied)
+	{
+		ca2c->setHeavyAlign(prev_c);
+		n2ca->setHeavyAlign(prev_ca);
+		n2c->setHeavyAlign(c);
+		c2ca->setHeavyAlign(ca);
+	}
 	
 	n2ca->checkForSplits(shared_from_this());
 	n2c->checkForSplits(shared_from_this());
