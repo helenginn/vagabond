@@ -1986,7 +1986,8 @@ void VagFFT::addToValueAroundPoint(vec3 pos, double radius, double value,
 				{
 					int work = (int)_data[ii][0];
 					work |= bitty;
-					_data[ii][0] = work;
+					
+					_data[ii][0] = (float)work;
 				}
 			}
 		}
