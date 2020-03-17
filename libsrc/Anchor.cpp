@@ -350,6 +350,8 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller)
 
 void Anchor::forceRefresh()
 {
+	std::sort(_whacks.begin(), _whacks.end(), Whack::greater);
+
 	for (int i = 0; i < motionCount(); i++)
 	{
 		getMotion(i)->absorbScale();
