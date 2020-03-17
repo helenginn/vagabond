@@ -481,6 +481,7 @@ void VagFFT::setUnitCell(std::vector<double> dims)
 	             1 / (double)_nz);
 	_recipBasis = mat3x3_inverse(_realBasis);
 	_setMatrices = true;
+	_unitCell = dims;
 }
 
 void VagFFT::addImplicitAtom(AtomPtr atom)

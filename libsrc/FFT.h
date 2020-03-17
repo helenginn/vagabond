@@ -106,11 +106,18 @@ public:
 	{
 		return sumReal() / (double)nn();
 	}
+	
+	double voxelVolume();
 
 	void setAllReal(double val);
 	
 	/** a, b, c in Angstroms; alpha, beta, gamma in degrees */
 	void setUnitCell(std::vector<double> dims);
+	
+	std::vector<double> getUnitCell()
+	{
+		return _unitCell;
+	}
 	
 	/* sets the unit cell dimension in Angstroms and updates other
 	 * matrices */
@@ -398,6 +405,7 @@ private:
 
 	std::vector<ElementPtr> _elements;
 	std::map<ElementPtr, int> _elementMap;
+	std::vector<double> _unitCell;
 	
 	FFTStatus _status;
 
