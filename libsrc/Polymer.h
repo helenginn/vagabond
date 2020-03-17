@@ -152,6 +152,7 @@ public:
 
 	void resetMotion();
 	void refineMotions();
+	void redefineMotion();
 	void resetSidechains();
 	bool refineLocalFlexibility(bool magic = false);
 	virtual void addProperties();

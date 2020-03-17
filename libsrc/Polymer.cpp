@@ -1551,6 +1551,21 @@ void Polymer::refineMotions()
 	}
 }
 
+void Polymer::redefineMotion()
+{
+	_allBackbones = AtomGroupPtr();
+	AnchorPtr anch = getAnchorModel();
+	
+	for (int i = 0; i < anch->motionCount(); i++)
+	{
+		MotionPtr mot = anch->getMotion(i);
+		mot->updateAtoms();
+	}
+	
+	getAnchorModel()->forceRefresh();
+	refreshPositions();
+}
+
 void Polymer::resetMotion()
 {
 	AnchorPtr anch = getAnchorModel();
