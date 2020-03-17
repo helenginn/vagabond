@@ -68,5 +68,6 @@ void BucketPerStrand::addSolvent()
 	reportSolventContent();
 	adjustForVoxelVolume();
 	
+	_solvent->drawSlice(0, "solvent_slice_unfit");
 	setPartialStructure(_solvent);
 }
