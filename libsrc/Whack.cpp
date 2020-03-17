@@ -20,6 +20,7 @@
 #include "KeyPoints.h"
 #include <iomanip>
 #include "Bond.h"
+#include "Atom.h"
 #include "Anchor.h"
 #include "Shouter.h"
 #include "mat3x3.h"
@@ -214,4 +215,36 @@ void Whack::linkReference(BaseParserPtr object, std::string category)
 void Whack::postParseTidy()
 {
 
+}
+
+bool Whack::greater(WhackPtr w1, WhackPtr w2)
+{
+	int anchRes = w1->getAnchor()->getAtom()->getResidueNum();
+	int r1 = w1->getBond()->getMinor()->getResidueNum();
+	int r2 = w2->getBond()->getMinor()->getResidueNum();
+
+	if (r2 >= anchRes && r1 < anchRes)
+	{
+		return false;
+	}
+	else if (r1 >= anchRes && r2 < anchRes)
+	{
+		return true;
+	}
+	else if (r2 >= anchRes && r2 < r1)
+	{
+		return false;
+	}
+	else if (r2 >= anchRes && r1 < r2)
+	{
+		return true;
+	}
+	else if (r1 < anchRes && r1 > r2)
+	{
+		return true;
+	}
+	else if (r1 <= anchRes && r2 > r1)
+	{
+		return false;
+	}
 }

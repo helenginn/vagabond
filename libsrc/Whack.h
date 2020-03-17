@@ -134,6 +134,8 @@ public:
 
 	/** If the number of samples in the ensemble has changed, returns true */
 	bool needsRefresh(std::vector<BondSample> &anchSamp);
+
+	static bool greater(WhackPtr w1, WhackPtr w2);
 protected:
 	virtual std::string getParserIdentifier();
 	
