@@ -94,6 +94,16 @@ public:
 	 * \param num if positive, will take the Nth saved state; if negative,
 	 * will take the -Nth from the end. */
 	void restoreState(int num);
+	
+	virtual std::string shortDesc()
+	{
+		return "";
+	}
+	
+	virtual std::string longDesc()
+	{
+		return "";
+	}
 
 	/** Number of classes in the current structure, to be called on a top
 	 * level Crystal BaseParserPtr. */

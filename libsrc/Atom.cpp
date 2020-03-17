@@ -646,6 +646,13 @@ std::string Atom::getPDBContribution(int ensembleNum)
 	return stream.str();
 }
 
+std::string Atom::longDesc()
+{
+	std::string str = getMolecule()->getChainID() + "_" + shortDesc();
+
+	return str;
+}
+
 std::string Atom::shortDesc()
 {
 	if (!getMonomer())

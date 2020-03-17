@@ -270,7 +270,8 @@ public:
 	int getResidueNum();
 
 	std::string description();
-	std::string shortDesc();
+	virtual std::string shortDesc();
+	virtual std::string longDesc();
 
 	MoleculePtr getMolecule();
 	std::string getPDBContribution(int ensembleNum = -1);
