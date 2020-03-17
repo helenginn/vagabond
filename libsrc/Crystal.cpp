@@ -31,6 +31,7 @@
 #include "Shouter.h"
 #include "Diffraction.h"
 #include "Polymer.h"
+#include "Monomer.h"
 #include "CSV.h"
 #include "FileReader.h"
 #include "PDBReader.h"
@@ -234,8 +235,18 @@ void Crystal::realSpaceClutter(double maxRes)
 
 	refreshAnchors();
 	refreshPositions();
-
+	
 	addToMap(_fft);
+}
+
+void Crystal::recalculateAtoms()
+{
+	empty();
+	
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		addAtomsFrom(molecule(i));
+	}
 }
 
 void Crystal::prepareFFT(VagFFTPtr ft)

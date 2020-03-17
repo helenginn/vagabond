@@ -230,6 +230,8 @@ public:
 		return MoleculePtr();
 	}
 
+	void recalculateAtoms();
+
 	void setReal2Frac(mat3x3 mat);
 
 	void setHKL2Real(mat3x3 mat);
