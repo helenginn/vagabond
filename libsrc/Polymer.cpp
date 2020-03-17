@@ -328,6 +328,14 @@ void Polymer::removeAtom(AtomPtr atom)
 		mon->removeAtom(atom);
 	}
 	
+	if (getAnchorModel())
+	{
+		for (int i = 0; i < getAnchorModel()->motionCount(); i++)
+		{
+			getAnchorModel()->getMotion(i)->removeAtom(atom);
+		}
+	}
+	
 	AtomGroup::removeAtom(atom);
 }
 
