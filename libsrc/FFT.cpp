@@ -2045,4 +2045,7 @@ void VagFFT::convertMaskToSolvent(int expTotal)
 	}
 }
 
-
+double VagFFT::voxelVolume()
+{
+	return mat3x3_volume(_realBasis);
+}
