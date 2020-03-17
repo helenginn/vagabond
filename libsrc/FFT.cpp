@@ -1917,6 +1917,16 @@ void VagFFT::bittyShrink(double radius, int num)
 	}
 }
 
+void printb(int val)
+{
+	for (int i = 16; i >= 0; i--)
+	{
+		std::cout << ((val >> i) & 0b00000001 ? 1 : 0);
+	}
+
+	std::cout << std::endl;
+}
+
 void VagFFT::addToValueAroundPoint(vec3 pos, double radius, double value,
                                    int bitIndex)
 {
