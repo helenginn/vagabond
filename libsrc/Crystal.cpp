@@ -2040,6 +2040,7 @@ void Crystal::updatePDBContents(std::string pdbName)
 	int missed = 0;
 	int count = 0;
 
+	std::vector<AtomPtr> missedAtoms;
 	PDBReader pdb = PDBReader();
 	pdb.setFilename(pdbName);
 	{
@@ -2059,9 +2060,13 @@ void Crystal::updatePDBContents(std::string pdbName)
 			vec3 new_pos = a->getPDBPosition();
 			std::string type = a->getAtomName();
 			int num = a->getResidueNum();
+			/*
 			num = a->getAtomNum();
-
 			AtomList as = findAtomByNum(type, num);
+			*/
+
+			AtomList as = findAtoms(type, num, 
+			                        a->getMolecule()->getChainID());
 
 			if (as.size() == 1) 
 			{
@@ -2074,13 +2079,28 @@ void Crystal::updatePDBContents(std::string pdbName)
 
 				vec3 old = mine->getPDBPosition();
 				mine->setPDBPosition(new_pos);
+				
+				vec3 abs = mine->getAbsolutePosition();
+				vec3 diff = vec3_subtract_vec3(old, abs);
+
 				count++;
 			}
 			else if (as.size() > 1)
 			{
 				std::string conf = a->getAlternativeConformer();
 
-				AtomPtr mine = findAtom(type, conf);
+				int num = a->getResidueNum();
+				AtomList mines = findAtoms(type, num);
+				AtomPtr mine;
+
+				for (int j = 0; j < mines.size(); j++)
+				{
+					if (mines[j]->getAlternativeConformer() == conf)
+					{
+						mine = mines[j];
+						break;
+					}
+				}
 
 				if (mine && mine->isFromPDB())
 				{
@@ -2090,23 +2110,60 @@ void Crystal::updatePDBContents(std::string pdbName)
 				else
 				{
 					missed++;
+					missedAtoms.push_back(a);
 				}
 			}
 			else
 			{
 				missed++;
+				missedAtoms.push_back(a);
 			}
 		}
 
+		std::cout << "Updated " << count << " atoms from PDB file "
+		<< pdbName << std::endl;
+		std::cout << "Could not match " << missed << " atoms to those from "
+		<< pdbName << std::endl;
+		std::cout << std::endl;
+
 		Options::getRuntimeOptions()->removeLastCrystal();
+
+		addMissingAtoms(missedAtoms);
+
+		fusePolymers();
+		refinePositions();
+		
+		for (int i = 0; i < moleculeCount(); i++)
+		{
+			std::string id = molecule(i)->getChainID();
+
+			MoleculePtr find = crystal->molecule(id);
+
+			if (!find)
+			{
+				std::cout << "Removing molecule " << id << std::endl;
+				
+				if (molecule(i)->isPolymer())
+				{
+					PolymerPtr pol = ToPolymerPtr(molecule(i));
+					int count = pol->getAnchorModel()->motionCount();
+					
+					for (int j = 0; j < count; j++)
+					{
+						MotionPtr mot = pol->getAnchorModel()->getMotion(j);
+						mot->removeFromPolymer(pol);
+					}
+				}
+
+				_molecules.erase(id);
+				i--;
+			}
+		}
+		
+		hydrogenateContents();
+		recalculateAtoms();
 	}
 
-	std::cout << std::endl;
-
-	std::cout << "Updated " << count << " atoms from PDB file "
-	<< pdbName << std::endl;
-	std::cout << "Could not match " << missed << " atoms to those from "
-	<< pdbName << std::endl;
 	std::cout << std::endl;
 	
 	for (int i = 0; i < moleculeCount(); i++)
@@ -2118,7 +2175,16 @@ void Crystal::updatePDBContents(std::string pdbName)
 		}
 	}
 
-	refinePositions();
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (molecule(i)->isPolymer())
+		{
+			PolymerPtr pol = ToPolymerPtr(molecule(i));
+			pol->redefineMotion();
+		}
+	}
+
+	Options::getRuntimeOptions()->recalculateFFT();
 }
 
 void Crystal::addPDBContents(std::string pdbName)
@@ -2215,7 +2281,7 @@ void Crystal::spaceWarp()
 		_sw->recalculate(_fft);
 	}
 
-	//	Options::getRuntimeOptions()->recalculateFFT(true);
+	Options::getRuntimeOptions()->recalculateFFT(true);
 }
 
 void Crystal::pruneWaters()
@@ -2228,5 +2294,137 @@ void Crystal::pruneWaters()
 		}
 
 		ToWaterNetworkPtr(molecule(i))->prune();
+	}
+}
+
+void Crystal::addMissingAtoms(std::vector<AtomPtr> atoms)
+{
+	refreshAnchors();
+	refreshPositions();
+
+	std::map<PolymerPtr, bool> toWipe;
+	for (int i = 0; i < atoms.size(); i++)
+	{
+		if (atoms.size() == 0)
+		{
+			break;
+		}
+		
+		bool done = false;
+		
+		AtomPtr a = atoms[i];
+		char chain = a->getMolecule()->getChainID()[0];
+		
+		for (int k = 0; k < moleculeCount(); k++)
+		{
+			if (molecule(k)->getChainID()[0] != chain)
+			{
+				continue;
+			}
+			
+			if (!molecule(k)->isPolymer())
+			{
+				continue;
+			}
+
+			/* only add if neighbouring residue number */
+			PolymerPtr pol = ToPolymerPtr(molecule(k));
+			int res = a->getResidueNum();
+			int begin = pol->monomerBegin();
+			int end = pol->monomerEnd();
+			
+			if (res == end - 1 || res == begin)
+			{
+				/* add to existing monomer */
+				MonomerPtr mon = pol->getMonomer(res);
+				mon->addAtom(a);
+				a->setMonomer(mon);
+				a->getModel()->setMolecule(molecule(k));
+				atoms.erase(atoms.begin() + i);
+				i--;
+				done = true;
+				break;
+			}
+			else if (res == end)
+			{
+				MonomerPtr mon = MonomerPtr(new Monomer());
+				mon->setResidueNum(res);
+				mon->setIdentifier(a->getMonomer()->getIdentifier());
+				mon->setup();
+				pol->addMonomer(mon);
+				toWipe[pol] = true;
+				mon->addAtom(a);
+				a->getModel()->setMolecule(molecule(k));
+				addAtom(a);
+				atoms.erase(atoms.begin() + i);
+				/* may now find atoms which were at the beginning */
+				i = -1;
+				done = true;
+				break;
+			}
+			else
+			{
+				std::cout << "Not C-terminus" << std::endl;
+			}
+		}
+
+		/* if we could not find a suitable polymer, go back and try to add
+		 * to N-terminus instead - avoid overlapping molecules */
+		for (int k = 0; k < moleculeCount() && !done; k++)
+		{
+			if (molecule(k)->getChainID()[0] != chain)
+			{
+				continue;
+			}
+			
+			if (!molecule(k)->isPolymer())
+			{
+				continue;
+			}
+
+			PolymerPtr pol = ToPolymerPtr(molecule(k));
+			int res = a->getResidueNum();
+			int begin = pol->monomerBegin();
+			if (res == begin - 1)
+			{
+				std::cout << "It's the N-terminus" << std::endl;
+				MonomerPtr mon = MonomerPtr(new Monomer());
+				mon->setResidueNum(res);
+				mon->setIdentifier(a->getMonomer()->getIdentifier());
+				mon->setup();
+				pol->addMonomer(mon);
+				mon->addAtom(a);
+				toWipe[pol] = true;
+				a->getModel()->setMolecule(molecule(k));
+				addAtom(a);
+				atoms.erase(atoms.begin() + i);
+				/* may now find atoms which were at the beginning */
+				i = 0;
+				break;
+			}
+			else
+			{
+				std::cout << "Could not locate it" << std::endl;
+			}
+		}
+	}
+
+	for (std::map<PolymerPtr, bool>::iterator it = toWipe.begin();
+	     it != toWipe.end(); it++)
+	{
+		it->first->removeIntramolecularMotion();
+	}
+}
+
+void Crystal::fusePolymers()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (molecule(i)->isPolymer())
+		{
+			PolymerPtr pol = ToPolymerPtr(molecule(i));
+			pol->tieAtomsUp();
+			pol->refreshPositions();
+		}
 	}
 }

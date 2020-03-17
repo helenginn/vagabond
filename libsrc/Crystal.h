@@ -602,6 +602,9 @@ protected:
 	virtual void addProperties();
 	virtual void postParseTidy();
 private:
+	void addMissingAtoms(std::vector<AtomPtr> atoms);
+	void fusePolymers();
+
 	MoleculeMap _molecules;
 	std::string _filename;
 	std::string _vbondFile;
@@ -617,6 +620,7 @@ private:
 	double _maxResolution;
 	std::vector<int> _anchorResidues;
 	double totalToScale();
+	double _calcElec;
 
 	void makePDBs(std::string suffix);
 	void writeVagabondFile(int cycleNum);
