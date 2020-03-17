@@ -44,6 +44,7 @@ public:
 	void addTranslationParameters(RefinementStrategyPtr strategy);
 	void refine(bool reciprocal = false);
 	void rigidRefine();
+	void removeAtom(AtomPtr atom);
 	
 	int librationCount()
 	{

@@ -64,6 +64,12 @@ void Motion::updateAtoms(PolymerPtr pol)
 	}
 }
 
+void Motion::removeAtom(AtomPtr atom)
+{
+	_allAtoms->removeAtom(atom);
+	_allBackbone->removeAtom(atom);
+}
+
 void Motion::addToPolymer(PolymerPtr pol)
 {
 	updateAtoms(pol);
