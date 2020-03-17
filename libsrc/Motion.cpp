@@ -43,16 +43,26 @@ Motion::Motion()
 	_centre = empty_vec3();
 }
 
-void Motion::updateAtoms(PolymerPtr pol)
+void Motion::updateAtoms()
 {
-	std::cout << pol->getChainID() << " backbone " 
-	<< _allBackbone->atomCount() << " to ";
 	_allAtoms->empty();
 	_allBackbone->empty();
-	_allAtoms->addAtomsFrom(pol);
-	AtomGroupPtr back = pol->getAllBackbone();
-	_allBackbone->addAtomsFrom(back);
-	std::cout << _allBackbone->atomCount() << std::endl;
+
+	for (int i = 0; i < _molecules.size(); i++)
+	{
+		if (_molecules[i].expired())
+		{
+			std::cout << "Losing molecule due to deletion" << std::endl;
+			_molecules.erase(_molecules.begin() + i);
+		}
+
+		PolymerPtr pol = ToPolymerPtr(_molecules[i].lock());
+		_allAtoms->addAtomsFrom(pol);
+		AtomGroupPtr back = pol->getAllBackbone();
+		_allBackbone->addAtomsFrom(back);
+	}
+	
+	std::cout << " - " << _allAtoms->atomCount() << " atoms." << std::endl;
 	
 	if (!_refined)
 	{
@@ -72,7 +82,8 @@ void Motion::removeAtom(AtomPtr atom)
 
 void Motion::addToPolymer(PolymerPtr pol)
 {
-	updateAtoms(pol);
+	_molecules.push_back(pol);
+	updateAtoms();
 
 	AnchorPtr anch = pol->getAnchorModel();
 	anch->addMotion(shared_from_this());
@@ -281,8 +292,7 @@ void Motion::applyRotations(std::vector<BondSample> &stored)
 			vec3_mult(&quat, _scale);
 			vec3 bVec = make_vec3(1, 0, quat.x / quat.z);
 			mat3x3 rotbasis = mat3x3_rhbasis(bVec, quat);
-			mat3x3 transbasis = mat3x3_transpose(rotbasis);
-
+			
 			vec3 screw = _screws[j]->getVec3();
 			mat3x3_mult_vec(rotbasis, &screw);
 			
@@ -296,11 +306,10 @@ void Motion::applyRotations(std::vector<BondSample> &stored)
 			}
 
 			mat3x3 rot_mat = mat3x3_unit_vec_rotation(rot_vec, dot);
-			mat3x3 basis = mat3x3_mult_mat3x3(rot_mat, 
-			                                  stored[i].basis); 
+			mat3x3 basis = mat3x3_mult_mat3x3(rot_mat, stored[i].basis); 
 			rot_only = mat3x3_mult_mat3x3(rot_mat, rot_only);
 			
-			vec3_subtract_from_vec3(&screw, centre_to_vec);
+			vec3_add_to_vec3(&screw, centre_to_vec);
 			vec3 shift = screw;
 			mat3x3_mult_vec(rot_mat, &shift);
 			vec3_subtract_from_vec3(&shift, screw);
@@ -310,17 +319,23 @@ void Motion::applyRotations(std::vector<BondSample> &stored)
 				continue;
 			}
 
+			/* just dealing with translation shifts due to rotation! */
 			vec3_add_to_vec3(&stored[i].old_start, shift);
 			vec3_add_to_vec3(&stored[i].start, shift);
 		}
 		
+		/* changing old_start to match rotation */
 		vec3 diff_to_old = vec3_subtract_vec3(stored[i].old_start,
 		                                      start);
 		mat3x3_mult_vec(rot_only, &diff_to_old);
 		vec3 new_old = vec3_add_vec3(start, diff_to_old);
 		stored[i].old_start = new_old;
+
+		/* rotate bond */
 		mat3x3 basis = mat3x3_mult_mat3x3(rot_only, stored[i].basis);
 		stored[i].basis = basis;
+
+		/* displacement from whole-molecule translation */
 		vec3_add_to_vec3(&stored[i].old_start, displacement);
 		vec3_add_to_vec3(&stored[i].start, displacement);
 	}
@@ -396,19 +411,30 @@ void Motion::addProperties()
 	addVec3ArrayProperty("screws", &_tmpScrews);
 	
 	addStringProperty("name", &_name);
-	addChild("atoms", _allAtoms);
-	addChild("backbone", _allBackbone);
 	
+	for (int i = 0; i < _molecules.size(); i++)
+	{
+		addReference("molecule", _molecules[i].lock());
+	}
+
 	_r = _rotation->getVec3();
 	_d = _displacement->getVec3();
 	addVec3Property("rotation", &_r);
 	addVec3Property("displacement", &_d);
 }
 
+void Motion::linkReference(BaseParserPtr object, std::string category)
+{
+	if (category == "molecule")
+	{
+		MoleculePtr mol = ToMoleculePtr(object);
+		_molecules.push_back(mol);
+	}
+}
+
 void Motion::addObject(ParserPtr object, std::string category)
 {
 	AtomGroupPtr grp = ToAtomGroupPtr(object);
-
 	if (category == "atoms")
 	{
 		_allAtoms = grp;
@@ -417,7 +443,6 @@ void Motion::addObject(ParserPtr object, std::string category)
 	{
 		_allBackbone = grp;
 	}
-
 }
 
 void Motion::postParseTidy()
@@ -442,8 +467,6 @@ void Motion::postParseTidy()
 	
 	_rotation->setVec3(_r);
 	_displacement->setVec3(_d);
-	
-	_centre = _allAtoms->initialCentroid();
 }
 
 void Motion::deleteLastScrew()

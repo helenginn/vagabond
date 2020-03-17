@@ -36,7 +36,7 @@ public:
 	Motion();
 	~Motion();
 	void addToPolymer(PolymerPtr pol);
-	void updateAtoms(PolymerPtr pol);
+	void updateAtoms();
 
 	void translateStartPositions(std::vector<BondSample> &stored);
 	void applyRotations(std::vector<BondSample> &stored);
@@ -115,6 +115,7 @@ protected:
 	virtual void addProperties();
 	virtual void postParseTidy();
 	virtual void addObject(ParserPtr object, std::string category);
+	virtual void linkReference(BaseParserPtr object, std::string category);
 private:
 	void deleteQuats();
 
@@ -143,6 +144,8 @@ private:
 	vec3 _centre;
 	AtomGroupPtr _allAtoms;
 	AtomGroupPtr _allBackbone;
+	
+	std::vector<MoleculeWkr> _molecules;
 };
 
 #endif
