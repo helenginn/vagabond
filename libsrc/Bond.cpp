@@ -305,6 +305,10 @@ void Bond::deriveBondAngle()
 	}
 	else
 	{
+		std::cout << "Parent model for " << 
+		getParentModel()->shortDesc() 
+		<< " is " << getParentModel()->getClassName() 
+		<< std::endl;
 		throw getMajor();
 	}
 	
