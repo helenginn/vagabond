@@ -394,6 +394,8 @@ private:
 	/** returns true if sane */
 	bool sanityCheck();
 
+	void addLessSimple(VagFFTPtr v2);
+
 	double populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 	                        mat3x3 tensor, double scale, bool add);
 

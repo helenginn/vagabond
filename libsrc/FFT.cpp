@@ -1097,8 +1097,25 @@ void VagFFT::setScale(double cubeDim)
 	_setMatrices = true;
 }
 
+void VagFFT::addLessSimple(VagFFTPtr v2)
+{
+	for (int i = 0; i < nn(); i++)
+	{
+		long f1 = finalIndex(i);
+		long f2 = v2->finalIndex(i);
+		_data[f1][0] += v2->_data[f2][0];
+	}
+
+}
+
 void VagFFT::addSimple(VagFFTPtr v2)
 {
+	if (v2->_total != _total)
+	{
+		addLessSimple(v2);
+		return;
+	}
+
 	for (int i = 0; i < nn(); i++)
 	{
 		long final_index = finalIndex(i);
