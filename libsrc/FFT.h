@@ -116,6 +116,7 @@ public:
 	 * matrices */
 	void setScale(double cubeDim);
 	
+	void drawSlice(int zVal, std::string filename);
 	void printSlice(double zVal = -1, double scale = 1);
 
 	static double operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,

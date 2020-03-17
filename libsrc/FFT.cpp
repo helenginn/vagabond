@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "FFT.h"
+#include "CSV.h"
 #include "Element.h"
 #include "Atom.h"
 #include "Timer.h"
@@ -681,6 +682,46 @@ double VagFFT::getAmplitude(ElementPtr ele, int x, int y, int z)
 	               _data[index][1] * _data[index][1]);
 	
 	return sqrt(val);
+}
+
+void VagFFT::drawSlice(int zVal, std::string filename)
+{
+	CSVPtr csv = CSVPtr(new CSV(4, "x", "y", "z", "val"));
+	csv->setSubDirectory("slices");
+
+	for (int j = 0; j < ny(); j++)
+	{
+		for (int i = 0; i < nx(); i++)
+		{
+			if (_status == FFTReciprocalSpace)
+			{
+				if (i == 0 && j == 0)
+				{
+					continue;
+				}
+			}
+			int index = element(i, j, zVal);
+			double s = getAmplitude(index);
+			
+			csv->addEntry(4, (double)i, (double)j, (double)zVal, s);
+		}
+	}
+
+	std::map<std::string, std::string> plotMap;
+	plotMap["filename"] = filename;
+	plotMap["height"] = "800";
+	plotMap["width"] = "800";
+	plotMap["xHeader0"] = "x";
+	plotMap["yHeader0"] = "y";
+	plotMap["zHeader0"] = "val";
+
+	plotMap["xTitle0"] = "a dim";
+	plotMap["yTitle0"] = "b dim";
+	plotMap["style0"] = "heatmap";
+	plotMap["stride"] = i_to_str(nx());
+
+	csv->writeToFile(filename + ".csv");
+	csv->plotPNG(plotMap);
 }
 
 void VagFFT::printSlice(double zVal, double scale)
