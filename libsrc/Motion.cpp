@@ -89,6 +89,29 @@ void Motion::addToPolymer(PolymerPtr pol)
 	anch->addMotion(shared_from_this());
 }
 
+void Motion::removeFromPolymer(PolymerPtr pol)
+{
+	std::cout << "Attempting to remove polymer " << pol->getChainID() 
+	<< " from Motion " << getName() << std::endl;
+
+	for (int i = 0; i < _molecules.size(); i++)
+	{
+		if (!_molecules[i].expired() && _molecules[i].lock() == pol)
+		{
+			std::cout << "Found it!" << std::endl;
+			_molecules.erase(_molecules.begin() + i);
+			i--;
+		}
+		
+		if (i < 0)
+		{
+			break;
+		}
+	}
+
+	updateAtoms();
+}
+
 void Motion::translateStartPositions(std::vector<BondSample> &stored)
 {
 	mat3x3 translation = _trans->getMat3x3();
