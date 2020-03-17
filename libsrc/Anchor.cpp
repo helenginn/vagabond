@@ -354,6 +354,7 @@ void Anchor::forceRefresh()
 
 	for (int i = 0; i < motionCount(); i++)
 	{
+		getMotion(i)->updateAtoms();
 		getMotion(i)->absorbScale();
 	}
 
