@@ -358,6 +358,7 @@ void Anchor::forceRefresh()
 		getMotion(i)->absorbScale();
 	}
 
+	_lastCount = 0;
 	getManyPositions(&*_nAtom.lock(), true);
 	getManyPositions(&*_cAtom.lock(), true);
 }
