@@ -332,7 +332,7 @@ void Polymer::removeAtom(AtomPtr atom)
 	{
 		for (int i = 0; i < getAnchorModel()->motionCount(); i++)
 		{
-			getAnchorModel()->getMotion(i)->removeAtom(atom);
+//			getAnchorModel()->getMotion(i)->removeAtom(atom);
 		}
 	}
 	
@@ -1586,7 +1586,7 @@ void Polymer::redefineMotion()
 		mot->updateAtoms();
 	}
 	
-	getAnchorModel()->forceRefresh();
+	anch->forceRefresh();
 	refreshPositions();
 }
 
