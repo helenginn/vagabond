@@ -55,6 +55,12 @@ Polymer::Polymer()
 	_anchorNum = -1;
 	_totalMonomers = 0;
 	_startB = Options::getBStart();
+	
+	if (_startB < 0)
+	{
+		_startB = 20;
+	}
+	
 	_flexibilityParams = 0;
 	_positionalParams = 0;
 	_whacked = -1;

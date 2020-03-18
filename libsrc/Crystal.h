@@ -491,6 +491,13 @@ public:
 	{
 		return _bucket;
 	}
+	
+	double getDataWilsonB()
+	{
+		return _dataWilsonB;
+	}
+
+	void applyWilsonToAnchors();
 
 	void rigidBodyRefinement();
 	/** Fit whole molecules to electron density as a refinement protocol.
@@ -669,6 +676,7 @@ private:
 
 	BucketPtr _bucket;
 	int _largestNum;
+	double _dataWilsonB;
 	
 	void scaleSolvent(DiffractionPtr data);
 	void scaleToDiffraction(DiffractionPtr data, bool full = true);

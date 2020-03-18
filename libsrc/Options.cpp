@@ -35,7 +35,7 @@ double Options::_kick = 0.000;
 int Options::_solvent = 2;
 int Options::_nCycles = -1;
 double Options::_unmodelled = 0.0;
-double Options::_bStart = 20.;
+double Options::_bStart = -1;
 double Options::_bMult = 1;
 double Options::_bSubt = -1;
 double Options::_bReal = -1;
@@ -270,13 +270,12 @@ void Options::executeProtocol()
 		std::cout << "Refining positions to PDB (" << 
 		i + 1 << " / 5)" << std::endl;
 		crystal->refinePositions();
-		
-		if (i == 1)
-		{
-			SSRigger rigger;
-			rigger.setCrystal(crystal);
-			rigger.findDisulphides();
-		}
+	}
+
+	if (_bStart == -1)
+	{
+		recalculateFFT();
+		crystal->applyWilsonToAnchors();
 	}
 
 	if (_addPDB.length() > 0)

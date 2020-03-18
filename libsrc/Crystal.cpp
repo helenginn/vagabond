@@ -483,6 +483,8 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 	{
 		std::cout << "Wilson plot  (data): " << -gradient << std::endl;
 	}
+	_dataWilsonB = -gradient;
+
 	regression_line(xs, zs, &intercept, &gradient);
 	if (!_silent)
 	{
@@ -1109,6 +1111,7 @@ void Crystal::setAnchors()
 
 Crystal::Crystal()
 {
+	_dataWilsonB = 0;
 	_lastLocalCC = 0;
 	_bestState = 0;
 	_probeRadius = 0.;
@@ -2437,4 +2440,32 @@ void Crystal::fusePolymers()
 			pol->refreshPositions();
 		}
 	}
+}
+
+void Crystal::applyWilsonToAnchors()
+{
+	double b = getDataWilsonB();
+	std::cout << "Expanding ensemble in response to "
+	<< "Wilson B of data." << std::endl;
+	
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+		
+		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		
+		if (!pol->getAnchorModel())
+		{
+			continue;
+		}
+		
+		pol->getAnchorModel()->setBFactor(b);
+		pol->getAnchorModel()->forceRefresh();
+		pol->getAnchorModel()->propagateChange(-1, true);
+	}
+	
+	refreshPositions();
 }
