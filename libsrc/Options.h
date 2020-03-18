@@ -388,6 +388,7 @@ private:
 	std::string _modelFile;
 	std::string _mtzFile;
 	std::string _addPDB;
+	std::string _updatePDB;
 
 	static bool _diagnostics;
 	static bool _useRFree;

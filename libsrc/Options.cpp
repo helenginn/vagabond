@@ -251,6 +251,13 @@ void Options::executeProtocol()
 	CrystalPtr crystal = getActiveCrystal();
 	crystal->makeOverallMotion();
 
+	if (_updatePDB.length() > 0)
+	{
+		crystal->updatePDBContents(_updatePDB);
+		return;
+	}
+	
+
 	if (!_refine)
 	{
 		std::cout << "No refinement protocol selected." << std::endl;
@@ -277,7 +284,13 @@ void Options::executeProtocol()
 		recalculateFFT();
 		crystal->addPDBContents(_addPDB);
 	}
-	
+
+	if (_updatePDB.length() > 0)
+	{
+		recalculateFFT();
+		crystal->updatePDBContents(_addPDB);
+	}
+
 	if (getRigidBody())
 	{
 		for (int i = 0; i < 1; i++)
@@ -596,6 +609,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "--with-model=", &_modelFile);
 		understood |= parseParameter(arg, "--with-mtz=", &_mtzFile);
 		understood |= parseParameter(arg, "--add-pdb=", &_addPDB);
+		understood |= parseParameter(arg, "--update-pdb=", &_updatePDB);
 
 		understood |= parseParameter(arg, "--solvent=", &_solvent);
 
