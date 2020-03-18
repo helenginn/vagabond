@@ -911,6 +911,8 @@ void Options::refinementCycle(MoleculePtr molecule, RefinementType type)
 
 void Options::recalculateFFT(bool saveState)
 {
+	Timer t("FFT recalculation", true);
+
 	statusMessage("Calculating R factors...");
 	
 	getActiveCrystal()->wrapUpRefinement();
@@ -924,6 +926,8 @@ void Options::recalculateFFT(bool saveState)
 			throw -1;
 		}
 	}
+	
+	t.report();
 }
 
 void Options::openInCoot()
