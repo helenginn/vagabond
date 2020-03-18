@@ -36,6 +36,7 @@ typedef enum
 	InstructionTypeFitTranslation,
 	InstructionTypeResetMotion,
 	InstructionTypeResetSides,
+	InstructionTypeResetIntra,
 	InstructionTypeFindDisulphides,
 	InstructionTypeRefineIntramolecule,
 	InstructionTypeSplitBond,
@@ -45,6 +46,7 @@ typedef enum
 	InstructionTypeSponge,
 	InstructionTypeCancel,
 	InstructionTypeManualRefine,
+	InstructionTypeWritePNG,
 	InstructionTypeRefineIntramagic,
 } InstructionType;
 
