@@ -62,8 +62,6 @@ void Motion::updateAtoms()
 		_allBackbone->addAtomsFrom(back);
 	}
 	
-	std::cout << " - " << _allAtoms->atomCount() << " atoms." << std::endl;
-	
 	if (!_refined)
 	{
 		_centre = _allAtoms->initialCentroid();
