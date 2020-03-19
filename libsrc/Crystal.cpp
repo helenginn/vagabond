@@ -179,7 +179,7 @@ double Crystal::getProteinSampling()
 	return sampling;
 }
 
-void Crystal::realSpaceClutter(double maxRes)
+void Crystal::realSpaceClutter()
 {
 	if (!_fft)
 	{
@@ -838,6 +838,11 @@ double Crystal::getMaxResolution(DiffractionPtr data)
 	{
 		data = _data;
 	}
+	
+	if (!data)
+	{
+		data = Options::getRuntimeOptions()->getActiveData();
+	}
 
 	std::cout << std::setprecision(2);
 	if (_maxResolution <= 0)
@@ -855,6 +860,7 @@ double Crystal::getMaxResolution(DiffractionPtr data)
 		}
 		else
 		{
+			std::cout << "Taking default resolution of 1.8 Å." << std::endl;
 			_maxResolution = 1.8;
 		}
 
@@ -994,8 +1000,7 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
                                    double partsFc, std::string prefix)
 {
-	getMaxResolution(data);
-	realSpaceClutter(data->getMaxResolution());
+	realSpaceClutter();
 
 	_calcElec = _fft->sumReal();
 	double density = _calcElec / mat3x3_volume(_hkl2real);

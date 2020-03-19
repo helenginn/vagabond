@@ -342,7 +342,7 @@ public:
 	/** Loops through all molecules and places them in the map.
 	* 	\param maxRes max resolution used to determine voxel spacing if it has
 	* 	not yet been determined, in Angstroms. */
-	void realSpaceClutter(double maxRes);
+	void realSpaceClutter();
 	
 	/** Creates an MTZ file to open in Coot.
 	* 	\param data diffraction data to get F-obs from.
