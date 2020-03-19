@@ -994,6 +994,7 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
                                    double partsFc, std::string prefix)
 {
+	getMaxResolution(data);
 	realSpaceClutter(data->getMaxResolution());
 
 	_calcElec = _fft->sumReal();
