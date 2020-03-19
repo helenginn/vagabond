@@ -586,12 +586,6 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 				vec3 ijk = make_vec3(i, j, k);
 				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_i, &_j, &_k);
 				
-				if (op == scale_factor_by_sum &&
-				    !(i == _i && j == _j && k == _k))
-				{
-					continue;
-				}
-				
 				mat3x3_mult_vec(tmp, &ijk);
 				double length = vec3_length(ijk);
 				double real = 1 / length;
