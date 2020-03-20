@@ -887,7 +887,6 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 	                                    true, false);
 
 	applyScaleFactor(totalFc / ratio, 0, 0);
-//	std::cout << std::setprecision(6) << "Ratio: " << 1 / ratio << std::endl;
 	
 	if (_bucket)
 	{
@@ -1259,7 +1258,7 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 		std::cout << "No reflection file has been specified.\n"\
 		"Cannot perform map recalculation." << std::endl;
 		std::cout << std::setprecision(4);
-		realSpaceClutter(1.8);
+		realSpaceClutter();
 		_fft->fft(FFTRealToReciprocal);
 //		_fft->writeReciprocalToFile("calc_" + i_to_str(cycleNum) + ".mtz", 1.8);
 		_fft->writeToFile("calc_" + i_to_str(cycleNum) + ".mtz", 1.8);
