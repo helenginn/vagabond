@@ -19,6 +19,7 @@
 #include <algorithm>
 #include "Sponge.h"
 #include "Atom.h"
+#include "Any.h"
 #include "Options.h"
 #include "ExplicitModel.h"
 #include "WaterNetwork.h"
@@ -53,6 +54,16 @@ AtomGroupPtr Sponge::correlGroup()
 	AtomGroupPtr correl = AtomGroupPtr(new AtomGroup());
 	correl->addAtom(getAtom());
 	return correl;
+}
+
+void Sponge::addRestraintsToStrategy(RefinementStrategyPtr strategy)
+{
+	for (Restraint::iterator it = _restraints.begin();
+	      it != _restraints.end(); it++)
+	{
+		AnyPtr any = AnyPtr(new Any(&it->second));
+		strategy->addParameter(&*any, Any::get, Any::set, 0.2, 0.01);
+	}
 }
 
 std::string Sponge::shortDesc()

@@ -22,6 +22,8 @@
 #include "Novalent.h"
 #include "MapScoreWorkspace.h"
 
+typedef std::map<AtomWkr, double> Restraint;
+
 class Sponge : public Novalent
 {
 public:
@@ -69,6 +71,7 @@ public:
 	void findConnections();
 	void initialConnections();
 	void copyActiveToFinalPos();
+	void addRestraintsToStrategy(RefinementStrategyPtr strategy);
 
 	void recalculated()
 	{
@@ -128,7 +131,7 @@ private:
 	double _preScore;
 	bool _disabled;
 	int _n;
-	std::map<AtomWkr, double> _restraints;
+	Restraint _restraints;
 };
 
 #endif
