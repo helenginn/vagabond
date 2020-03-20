@@ -22,16 +22,17 @@
 #include <QtWidgets/qscrollbar.h>
 #include <QtWidgets/qmessagebox.h>
 #include <iostream>
-#include "../../libsrc/Options.h"
 #include "InstructionThread.h"
 #include "Dialogue.h"
+#include "ChainMenuAction.h"
+#include "../../libsrc/Options.h"
 #include "../../libsrc/charmanip.h"
 #include "../../libsrc/Crystal.h"
 #include "../../libsrc/Monomer.h"
 #include "../../libsrc/Polymer.h"
-#include "ChainMenuAction.h"
 #include "../../libsrc/FileReader.h"
 #include <../../libsrc/Motion.h>
+#include "../../libsrc/WaterNetwork.h"
 #include <../../libsrc/Anchor.h>
 #include "../libsrc/Sponge.h"
 
@@ -423,8 +424,19 @@ int VagWindow::waitForInstructions()
 
 				case InstructionTypeRefineIntramolecule:
 				disable();
-				crystal->refineIntraMovements();
-				options->recalculateFFT();
+				refineIntramolecule();
+				enable();
+				break;
+
+				case InstructionTypeWritePNG:
+				disable();
+				writePNG();
+				enable();
+				break;
+
+				case InstructionTypeResetIntra:
+				disable();
+				resetIntramolecule();
 				enable();
 				break;
 
@@ -466,6 +478,12 @@ int VagWindow::waitForInstructions()
 				case InstructionTypeGetObjectValue:
 				Notifiable::performObjectGet();
 				_xtalExplorer->updateCorrelation();
+				break;
+
+				case InstructionTypeRefineSponges:
+				disable();
+				refineSponges();
+				enable();
 				break;
 
 //				case InstructionTypePreviousState:
@@ -1017,6 +1035,55 @@ void VagWindow::refineSidechains()
 	p->refine(crystal, RefinementSidechain);
 }
 
+void VagWindow::resetIntramolecule()
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr crystal = options->getActiveCrystal();
+
+	if (_obj == NULL)
+	{
+		return;
+	}
+
+	Polymer *p = static_cast<Polymer *>(_obj);
+	p->removeIntramolecularMotion();
+}
+
+void VagWindow::refineIntramolecule()
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr crystal = options->getActiveCrystal();
+
+	if (_obj == NULL)
+	{
+		crystal->refineIntraMovements();
+		options->recalculateFFT();
+		return;
+	}
+
+	Polymer *p = static_cast<Polymer *>(_obj);
+	p->refineLocalFlexibility();
+}
+
+void VagWindow::writePNG()
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr crystal = options->getActiveCrystal();
+
+	if (_obj == NULL)
+	{
+		return;
+	}
+
+	int cycleNum = crystal->getCycleNum();
+	Polymer *p = static_cast<Polymer *>(_obj);
+	std::cout << "Write PNG for polymer " << p->getChainID() << std::endl;
+	std::string filename;
+	filename = "bfactor_" + p->getChainID() + "_" + i_to_str(cycleNum) + "a";
+	p->graph(filename);
+
+}
+
 void VagWindow::sponge()
 {
 	if (getObject() == NULL)
@@ -1051,4 +1118,17 @@ void VagWindow::sponge()
 	nov->initialConnections();
 	nov->getFinalPositions();
 	enable();
+}
+
+void VagWindow::refineSponges()
+{
+	if (getObject() == NULL)
+	{
+		return;
+	}
+
+	WaterNetworkPtr w = ToWaterNetworkPtr(getObject());
+	Options::statusMessage("Refining sponges.");
+
+	w->macroRefineSponges();
 }

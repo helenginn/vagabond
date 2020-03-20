@@ -128,15 +128,19 @@ private:
 	                    double _default = 100);
 
 	void sponge();
+	void writePNG();
 	void splitBond();
 	void resetSides();
 	void resetMotion();
 	void refineToEnd();
 	void fitRigidBody();
+	void refineSponges();
 	void modelPosToEnd();
 	void sidechainsToEnd();
 	void refineSidechains();
 	void fitWholeMolecules();
+	void resetIntramolecule();
+	void refineIntramolecule();
 	void getPolymerMonomerCrystal(PolymerPtr *poly, CrystalPtr *cryst, 
 	                              MonomerPtr *monomer);
 	void menuItem(QMenu *menu, std::string title,
