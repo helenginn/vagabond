@@ -236,6 +236,7 @@ protected:
 
 	std::vector<AtomGroupPtr> _includeForRefine;
 private:
+	double constraint();
 	void addParamsForBond(BondPtr bond, bool even = true);
 	CrystalPtr _crystal;
 	std::vector<BalancePtr> _balances;

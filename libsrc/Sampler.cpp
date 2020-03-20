@@ -765,9 +765,22 @@ double Sampler::getScore()
 	if (sampleSize())
 	{
 		score = AtomGroup::scoreWithMapGeneral(&_workspace);
+		score += constraint();
 	}
 
 	return score;
 }
 
+double Sampler::constraint()
+{
+	for (int i = 0; i < _bonds.size(); i++)
+	{
+		bool allowed = _bonds[i]->allowBondAngle();
+		if (!allowed)
+		{
+			return FLT_MAX;
+		}
+	}
 
+	return 0;
+}
