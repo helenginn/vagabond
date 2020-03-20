@@ -62,6 +62,8 @@ public:
 		_n = n;
 	}
 	
+	virtual std::string shortDesc();
+	
 	void singleRefine(bool others = false);
 	void setupRestraints();
 	void findConnections();

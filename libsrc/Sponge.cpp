@@ -55,6 +55,12 @@ AtomGroupPtr Sponge::correlGroup()
 	return correl;
 }
 
+std::string Sponge::shortDesc()
+{
+	return ("Sponge_" + getAtom()->shortDesc() + 
+	        i_to_str(_restraints.size()) + "r");
+}
+
 void Sponge::initialConnections()
 {
 	double bestScore = 0;
