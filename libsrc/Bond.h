@@ -234,6 +234,12 @@ public:
 	* 	\return angle in radians.
 	*/
 	static double getBendAngle(void *object);
+
+	/**
+	 * Returns false if the bond angle is too far away from the expected
+	 * value.
+	 **/
+	bool allowBondAngle();
 	
 	/**
 	* 	Sets the bond angle for a bond between upstream->major->minor.
@@ -628,7 +634,7 @@ private:
 
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();
-	void deriveBondAngle();
+	void deriveBondAngle(bool assign = true);
 	void deriveCirclePortion();
 	void deriveTorsionAngle();
 	double empiricalCirclePortion(Bond *lastBond);

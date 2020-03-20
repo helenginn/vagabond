@@ -284,7 +284,7 @@ void Bond::deriveTorsionAngle()
 	_initialTorsion = _torsion;
 }
 
-void Bond::deriveBondAngle()
+void Bond::deriveBondAngle(bool assign)
 {
 	if (!getParentModel())
 	{
@@ -314,6 +314,7 @@ void Bond::deriveBondAngle()
 	
 	_expectedAngle = -1;
 	double angle = Atom::getAngle(getMinor(), getMajor(), pMajor);
+	_expectedAngle = angle;
 	
 	/* In some cases, may not be able to assign, in which case
 	 * 	we must fish from the original model */
@@ -334,7 +335,10 @@ void Bond::deriveBondAngle()
 	 *  we don't need to constantly take the tan of something) */
 	double ratio = tan(angle - M_PI / 2);
 	
-	_geomRatio = ratio;
+	if (assign)
+	{
+		_geomRatio = ratio;
+	}
 }
 
 double Bond::empiricalCirclePortion(Bond *lastBond)
@@ -605,6 +609,31 @@ mat3x3 Bond::getRotatedMagicMat()
 	}
 
 	return _magicMat;
+}
+
+bool Bond::allowBondAngle()
+{
+	double expect = getExpectedAngle();
+	
+	if (expect < 0)
+	{
+		deriveBondAngle(false);
+	}
+	
+	/* no expected bond angle I suppose */
+	if (expect < 0)
+	{
+		return true;
+	}
+
+	double current = getBendAngle(this);
+
+	if (fabs(expect - current) > deg2rad(10))
+	{
+		return false;
+	}
+	
+	return true;
 }
 
 void Bond::calculateMagicMat()
