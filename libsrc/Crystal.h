@@ -323,6 +323,7 @@ public:
 	void differenceAttribution();
 	
 	void removeAtom(AtomPtr atom);
+	void removeMolecule(MoleculePtr mol);
 	
 	/** Takes an input crystal position and moves it to the nearest
 	 *  position which falls on an integer value of the FFT grid */

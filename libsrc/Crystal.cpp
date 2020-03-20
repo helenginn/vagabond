@@ -2019,6 +2019,25 @@ void Crystal::refitToSavedPositions()
 	}
 }
 
+void Crystal::removeMolecule(MoleculePtr mol)
+{
+	std::cout << "Removing molecule " << mol->getChainID() << std::endl;
+
+	for (int i = 0; i < mol->atomCount(); i++)
+	{
+		if (mol->isPolymer())
+		{
+			PolymerPtr pol = ToPolymerPtr(mol);
+			pol->removeAtom(mol->atom(i));
+		}
+
+		removeAtom(mol->atom(i));
+		i--;
+	}
+	
+	_molecules.erase(mol->getChainID());
+}
+
 void Crystal::removeAtom(AtomPtr atom)
 {
 	std::cout << "Removing atom " << atom->longDesc() << std::endl;
