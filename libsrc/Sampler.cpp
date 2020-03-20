@@ -689,6 +689,13 @@ double Sampler::getScore()
 		return 0;
 	}
 	
+	for (int i = 0; i < _sampled.size(); i++)
+	{
+		AtomPtr s = _sampled[i];
+		s->getModel()->propagateChange(0);
+		s->getModel()->refreshPositions();
+	}
+	
 	for (int i = 0; i < _balances.size(); i++)
 	{
 		_balances[i]->adjustment();
@@ -700,11 +707,6 @@ double Sampler::getScore()
 		vec3 new_cent = empty_vec3();
 		double count = 0;
 		
-		for (int i = 0; i < _bonds.size() && i < 1; i++)
-		{
-			_bonds[i]->propagateChange(-1, true);
-		}
-
 		for (int i = 0; i < sampleSize(); i++)
 		{
 			vec3 init = _sampled[i]->getPDBPosition();

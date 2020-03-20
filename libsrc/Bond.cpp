@@ -1198,7 +1198,7 @@ void Bond::setBendAngle(void *object, double value)
 	double ratio = tan(value - M_PI / 2);
 	bond->_geomRatio = ratio;
 
-	bond->propagateChange(10);
+//	bond->propagateChange(10);
 }
 
 BondGroupPtr Bond::bondGroupForBond()

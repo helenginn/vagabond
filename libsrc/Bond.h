@@ -168,7 +168,7 @@ public:
 		}
 		
 		bond->_kick = value;
-		static_cast<Bond *>(object)->propagateChange(16);
+//		static_cast<Bond *>(object)->propagateChange(16);
 	}
 
 	static double getKick(void *object)
@@ -190,7 +190,7 @@ public:
 		if (!bond->_disabled)
 		{
 			bond->_torsion = value;
-			static_cast<Bond *>(object)->propagateChange(16);
+//			static_cast<Bond *>(object)->propagateChange(16);
 		}
 	}
 
@@ -204,7 +204,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_psi = angle;
-		static_cast<Bond *>(object)->propagateChange(16);
+//		static_cast<Bond *>(object)->propagateChange(16);
 	}
 
 	static double getMagicPhi(void *object)
@@ -217,7 +217,7 @@ public:
 	{
 		Bond *bond = static_cast<Bond *>(object);
 		bond->_phi = angle;
-		static_cast<Bond *>(object)->propagateChange(16);
+//		static_cast<Bond *>(object)->propagateChange(16);
 	}
 
 	static double getOccupancy(void *object)
