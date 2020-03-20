@@ -334,11 +334,13 @@ void Polymer::removeAtom(AtomPtr atom)
 		mon->removeAtom(atom);
 	}
 	
-	if (getAnchorModel())
+	if (atom->getModel()->isBond())
 	{
-		for (int i = 0; i < getAnchorModel()->motionCount(); i++)
+		BondPtr bond = ToBondPtr(atom->getModel());
+
+		if (bond->hasWhack() && getAnchorModel())
 		{
-//			getAnchorModel()->getMotion(i)->removeAtom(atom);
+			getAnchorModel()->removeWhack(bond->getWhack());
 		}
 	}
 	
