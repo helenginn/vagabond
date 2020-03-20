@@ -46,6 +46,7 @@ typedef enum
 	InstructionTypeSponge,
 	InstructionTypeCancel,
 	InstructionTypeManualRefine,
+	InstructionTypeRefineSponges,
 	InstructionTypeWritePNG,
 	InstructionTypeRefineIntramagic,
 } InstructionType;
