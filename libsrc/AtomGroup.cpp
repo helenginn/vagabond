@@ -1336,3 +1336,27 @@ bool AtomGroup::isFullyTied()
 	
 	return true;
 }
+
+void AtomGroup::reset()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		if (!atom(i)->isSidechain())
+		{
+			continue;
+		}
+
+		if (!atom(i)->getModel()->isBond()) 
+		{
+			continue;
+		}
+		
+		BondPtr bond = ToBondPtr(atom(i)->getModel());
+		
+		
+		bond->reset();
+//		bond->getMajor()->refreshPosition();
+	}
+
+	refreshPositions();
+}

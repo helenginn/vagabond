@@ -185,6 +185,7 @@ public:
 		return _name;
 	}
 
+	void reset();
 	bool isFullyTied();
 protected:
 	virtual bool shouldRefineAtom(AtomPtr atom) { return true; };

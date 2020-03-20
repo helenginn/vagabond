@@ -1613,15 +1613,15 @@ void Polymer::resetMotion()
 
 void Polymer::resetSidechains()
 {
-	for (int i = 0; i < atomCount(); i++)
+	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
-		if (!atom(i)->isSidechain() || !atom(i)->getModel()->isBond()) 
+		MonomerPtr mon = getMonomer(i);
+		if (!mon)
 		{
 			continue;
 		}
-		
-		BondPtr bond = ToBondPtr(atom(i)->getModel());
-		bond->reset();
+		SidechainPtr side = mon->getSidechain();
+		side->reset();
 	}
 
 	refreshPositions();
