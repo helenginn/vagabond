@@ -512,6 +512,26 @@ void Selected2GL::advanceMonomer(int dir)
 	focusOnGroup();
 }
 
+void Selected2GL::resetSelection()
+{
+	if (!getPicked())
+	{
+		Options::statusMessage("Reset failed (no selection)", false);
+		return;
+	}
+
+	AtomGroupPtr group = refinableSelection();
+	bool terminal = (group->beyondGroupAtoms().size() == 0);
+	
+	if (!terminal)
+	{
+		Options::statusMessage("Reset failed (group not terminal)", false);
+		return;
+	}
+	
+	group->reset();
+}
+
 void Selected2GL::cancelRefine()
 {
 	Options::statusMessage("Cancelling refinement...", false);
@@ -587,6 +607,7 @@ void Selected2GL::manualRefine()
 		group->addParamType(ParamOptionMaxTries, 1.0);
 		group->addParamType(ParamOptionNumBonds, 4.0);
 		group->addParamType(ParamOptionTorsion, 0.5);
+		group->addParamType(ParamOptionBondAngle, 0.1);
 		
 		if (kicking && !mousey)
 		{

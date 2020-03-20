@@ -87,6 +87,7 @@ public:
 	
 	bool isRefiningManually();
 	void cancelRefine();
+	void resetSelection();
 	void setMouseRefine(bool val);
 	
 	void toggleKicks();

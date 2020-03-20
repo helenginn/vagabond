@@ -416,3 +416,8 @@ void GLKeeper::novalentSelected()
 {
 	_selected2GL->novalentSelected(this);
 }
+
+void GLKeeper::resetSelection()
+{
+	_selected2GL->resetSelection();
+}

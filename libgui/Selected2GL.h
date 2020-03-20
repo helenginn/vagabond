@@ -39,6 +39,7 @@ public:
 	void focusOnGroup();
 	void splitSelected();
 	void deleteSelected();
+	void resetSelection();
 	void novalentSelected(GLKeeper *k);
 	void toggleKicks();
 	void advanceMonomer(int dir);

@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 
+#include "../../libsrc/Notifiable.h"
 #include <QtCore/qglobal.h>
 #include <QtWidgets/qapplication.h>
 #include <QtWidgets/qwidget.h>
@@ -48,14 +49,20 @@ public:
 private slots:
 	void clickedMoleListItem();
 	void slideScale(QSlider *s);
+	void pushWritePNG();
 	void pushSequence();
 	void pushFitSides();
+	void pushFitIntra();
+	void refineSponges();
 	void pushFitMotion();
 	void pushRigidBody();
 	void pushResetSides();
+	void pushResetIntra();
 	void pushResetMotion();
 
 private:
+	void sendObject(InstructionType type);
+
 	MoleculePtr _currMole;
 	MoleculeExplorer *_moleExplorer;
 	

@@ -58,7 +58,7 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	{
 		_vag->toggleLog();
 	}
-	else if (event->key() == Qt::Key_R)
+	else if (event->key() == Qt::Key_R && !_shiftPressed)
 	{
 		if (!keeper->isRefiningManually())
 		{
@@ -72,6 +72,10 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 			keeper->cancelRefine();
 		}
 	}
+	else if (event->key() == Qt::Key_R && _shiftPressed)
+	{
+		keeper->resetSelection();
+	}
 	else if (event->key() == Qt::Key_Space)
 	{
 		keeper->focusOnSelected();
@@ -84,7 +88,7 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	{
 		keeper->deleteSelected();
 	}
-	else if (event->key() == Qt::Key_W)
+	else if (event->key() == Qt::Key_W && !_shiftPressed)
 	{
 		keeper->novalentSelected();
 	}

@@ -14,6 +14,7 @@
 #include "SetterEdit.h"
 #include "VagWindow.h"
 #include "../../libsrc/Polymer.h"
+#include "../../libsrc/WaterNetwork.h"
 #include "../../libsrc/Anchor.h"
 
 #define TEXT_HEIGHT 28
@@ -58,7 +59,7 @@ void CrystalExplorer::clickedMoleListItem()
 	int height = 0;
 	
 	QLabel *label = new QLabel(intro, this);
-	label->setGeometry(160, height, 200, TEXT_HEIGHT);
+	label->setGeometry(160, height, 400, TEXT_HEIGHT);
 	label->show();
 	_widgets.push_back(label);
 	
@@ -76,6 +77,17 @@ void CrystalExplorer::clickedMoleListItem()
 	label->setGeometry(160, height, 200, TEXT_HEIGHT);
 	label->show();
 	_widgets.push_back(label);
+	
+	if (molecule->isWaterNetwork())
+	{
+		height += TEXT_HEIGHT;
+		QPushButton *b = new QPushButton("Refine sponges", this);
+		b->setGeometry(160, height, 200, TEXT_HEIGHT);
+		b->show();
+		connect(b, &QPushButton::clicked,
+		        [=]{ refineSponges(); });
+		_widgets.push_back(b);
+	}
 	
 	if (molecule->isPolymer())
 	{
@@ -108,7 +120,7 @@ void CrystalExplorer::clickedMoleListItem()
 		
 		height += TEXT_HEIGHT;
 		b = new QPushButton("Reset motion", this);
-		b->setGeometry(160, height, 120, TEXT_HEIGHT);
+		b->setGeometry(160, height, 160, TEXT_HEIGHT);
 		b->show();
 		connect(b, &QPushButton::clicked,
 		        [=]{ pushResetMotion(); });
@@ -119,6 +131,22 @@ void CrystalExplorer::clickedMoleListItem()
 		b->show();
 		connect(b, &QPushButton::clicked,
 		        [=]{ pushFitMotion(); });
+		_widgets.push_back(b);
+
+		height += TEXT_HEIGHT;
+
+		b = new QPushButton("Reset intra-motion", this);
+		b->setGeometry(160, height, 160, TEXT_HEIGHT);
+		b->show();
+		connect(b, &QPushButton::clicked,
+		        [=]{ pushResetIntra(); });
+		_widgets.push_back(b);
+
+		b = new QPushButton("Fit intramolecular motion", this);
+		b->setGeometry(380, height, 200, TEXT_HEIGHT);
+		b->show();
+		connect(b, &QPushButton::clicked,
+		        [=]{ pushFitIntra(); });
 		_widgets.push_back(b);
 
 		height += TEXT_HEIGHT;
@@ -144,6 +172,13 @@ void CrystalExplorer::clickedMoleListItem()
 		        [=]{ pushRigidBody(); });
 		_widgets.push_back(b);
 
+		b = new QPushButton("Write B factors to PNG", this);
+		b->setGeometry(380, height, 200, TEXT_HEIGHT);
+		b->show();
+		connect(b, &QPushButton::clicked,
+		        [=]{ pushWritePNG(); });
+		_widgets.push_back(b);
+
 		height += TEXT_HEIGHT;
 
 		PolymerPtr p= ToPolymerPtr(molecule);
@@ -160,7 +195,7 @@ void CrystalExplorer::clickedMoleListItem()
 			QSlider *s = new QSlider(Qt::Horizontal, this);
 			s->setGeometry(160, height, 420, TEXT_HEIGHT);
 			s->setMinimum(0);
-			s->setMaximum(200);
+			s->setMaximum(500);
 			double now = Motion::getScale(&*a->getMotion(0));
 			s->setValue(now * 100);
 			s->show();
@@ -193,7 +228,7 @@ void CrystalExplorer::slideScale(QSlider *s)
     Notifiable *notify = Options::getRuntimeOptions()->getNotify();
     notify->setObject(&*mot);
     notify->setSetter(Motion::setScale, value);
-    notify->setRefreshGroup(p);
+    notify->setRefreshGroup(_crystal);
     notify->setInstruction(InstructionTypeSetObjectValue);
 }
 
@@ -211,7 +246,7 @@ CrystalExplorer::CrystalExplorer(QWidget *parent, CrystalPtr crystal)
 	populateList();
 }
 
-void CrystalExplorer::pushResetMotion()
+void CrystalExplorer::sendObject(InstructionType type)
 {
 	if (!_currMole->isPolymer())
 	{
@@ -220,55 +255,43 @@ void CrystalExplorer::pushResetMotion()
 
 	PolymerPtr pol = ToPolymerPtr(_currMole);
 	_vagWindow->setObject(&*pol);
-	_vagWindow->pushSendInstruction(InstructionTypeResetMotion);
+	_vagWindow->pushSendInstruction(type);
+
+}
+
+void CrystalExplorer::pushResetMotion()
+{
+	sendObject(InstructionTypeResetMotion);
 }
 
 void CrystalExplorer::pushResetSides()
 {
-	if (!_currMole->isPolymer())
-	{
-		return;
-	}
+	sendObject(InstructionTypeResetSides);
+}
 
-	PolymerPtr pol = ToPolymerPtr(_currMole);
-	_vagWindow->setObject(&*pol);
-	_vagWindow->pushSendInstruction(InstructionTypeResetSides);
+void CrystalExplorer::pushResetIntra()
+{
+	sendObject(InstructionTypeResetIntra);
 }
 
 void CrystalExplorer::pushFitMotion()
 {
-	if (!_currMole->isPolymer())
-	{
-		return;
-	}
-
-	PolymerPtr pol = ToPolymerPtr(_currMole);
-	_vagWindow->setObject(&*pol);
-	_vagWindow->pushSendInstruction(InstructionTypeFitTranslation);
+	sendObject(InstructionTypeFitTranslation);
 }
 
 void CrystalExplorer::pushFitSides()
 {
-	if (!_currMole->isPolymer())
-	{
-		return;
-	}
+	sendObject(InstructionTypeRefineDensity);
+}
 
-	PolymerPtr pol = ToPolymerPtr(_currMole);
-	_vagWindow->setObject(&*pol);
-	_vagWindow->pushSendInstruction(InstructionTypeRefineDensity);
+void CrystalExplorer::pushFitIntra()
+{
+	sendObject(InstructionTypeRefineIntramolecule);
 }
 
 void CrystalExplorer::pushRigidBody()
 {
-	if (!_currMole->isPolymer())
-	{
-		return;
-	}
-
-	PolymerPtr pol = ToPolymerPtr(_currMole);
-	_vagWindow->setObject(&*pol);
-	_vagWindow->pushSendInstruction(InstructionTypeRigidBody);
+	sendObject(InstructionTypeRigidBody);
 }
 
 
@@ -300,6 +323,23 @@ void CrystalExplorer::clearWidgets()
 	}
 	
 	_widgets.clear();
+}
+
+void CrystalExplorer::pushWritePNG()
+{
+	sendObject(InstructionTypeWritePNG);
+}
+
+void CrystalExplorer::refineSponges()
+{
+	if (!_currMole->isWaterNetwork())
+	{
+		return;
+	}
+
+	WaterNetworkPtr wat = ToWaterNetworkPtr(_currMole);
+	_vagWindow->setObject(&*wat);
+	_vagWindow->pushSendInstruction(InstructionTypeRefineSponges);
 }
 
 CrystalExplorer::~CrystalExplorer()
