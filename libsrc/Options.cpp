@@ -272,7 +272,7 @@ void Options::executeProtocol()
 		crystal->refinePositions();
 	}
 
-	if (_bStart == -1)
+	if (_bStart == -1 && _rPosition)
 	{
 		recalculateFFT();
 		crystal->applyWilsonToAnchors();
