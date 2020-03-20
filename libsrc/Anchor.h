@@ -117,6 +117,8 @@ public:
 	{
 		return _atom.lock();
 	}
+	
+	void removeWhack(WhackPtr whack);
 
 	void addWhack(WhackPtr whack)
 	{

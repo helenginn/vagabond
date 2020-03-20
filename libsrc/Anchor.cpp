@@ -577,3 +577,13 @@ void Anchor::addMotion(MotionPtr mot)
 	}
 }
 
+void Anchor::removeWhack(WhackPtr whack)
+{
+	std::vector<WhackPtr>::iterator it;
+	it = std::find(_whacks.begin(), _whacks.end(), whack);
+	
+	if (it != _whacks.end())
+	{
+		_whacks.erase(it);
+	}
+}
