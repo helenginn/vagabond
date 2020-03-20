@@ -107,7 +107,7 @@ void PartialStructure::scalePartialStructure()
 	VagFFTPtr fft = getCrystal()->getFFT();
 	
 	setSolvScale(this, 0);
-	setSolvBFac(this, 20);
+	setSolvBFac(this, 40);
 	
 	NelderMeadPtr fine;
 	fine = NelderMeadPtr(new RefinementNelderMead());
@@ -115,7 +115,7 @@ void PartialStructure::scalePartialStructure()
 	fine->setEvaluationFunction(scalePartialScore, this);
 	fine->setCycles(120);
 	fine->setSilent(true);
-	fine->addParameter(this, getSolvScale, setSolvScale, 0.2, 1.0, "scale");
+	fine->addParameter(this, getSolvScale, setSolvScale, 0.2, 0.0001, "scale");
 	fine->addParameter(this, getSolvBFac, setSolvBFac, 40, 0.1, "bfac");
 	fine->refine();
 
