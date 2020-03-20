@@ -78,7 +78,6 @@ public:
 	* \param interval unused usually, but could be stopping point. 	 
 	*/
 	void addKick(BondPtr bond, double range, double interval);
-	void addDampening(BondPtr bond, double range, double interval);
 	void addBondLength(BondPtr bond, double range, double interval);
 	void addBendAngle(BondPtr bond, double range, double interval,
 	                  bool circlePortionOnly = false);
@@ -211,7 +210,6 @@ protected:
 
 	 * 	appropriate bond parameters and the sensitive atoms. */	
 	BondPtr setupThoroughSet(BondPtr bond, bool addBranches = true);
-//	FFTPtr _fft;
 	mat3x3 _real2Frac;
 
 	void addTwistShift(ExplicitModelPtr eModel, AtomGroupPtr clearGroup);
@@ -243,7 +241,6 @@ private:
 	std::vector<BalancePtr> _balances;
 
 	std::vector<AtomPtr> _sampled;
-	std::vector<AtomPtr> _unsampled;
 	std::vector<BondPtr> _bonds;
 	ParamMap _params;
 

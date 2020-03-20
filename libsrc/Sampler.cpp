@@ -671,7 +671,6 @@ bool Sampler::sample(bool clear)
 	_cycles = 0;
 	_bonds.clear();
 	_sampled.clear();
-	_unsampled.clear();
 	_crystal->clearCloseCache();
 
 	return _changed;
