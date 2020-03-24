@@ -530,8 +530,8 @@ void VagFFT::addImplicitAtom(AtomPtr atom)
 	int column = whichColumn(ele);
 	
 	double occ = atom->getModel()->getEffectiveOccupancy();
-	double total = populateImplicit(column, centre, maxVals, ellipsoid,
-	                                tensor, occ, true);
+	double total = populateImplicit(column, centre, maxVals, tensor,
+	                                ellipsoid, occ, true);
 }
 
 double VagFFT::populateImplicit(int ele, vec3 centre, vec3 maxVals,
@@ -579,7 +579,7 @@ double VagFFT::populateImplicit(int ele, vec3 centre, vec3 maxVals,
 
 				if (add)
 				{
-					addInterpolatedToReal(column, x + centre.x, 
+					addInterpolatedToReal(ele, x + centre.x, 
 					                      y + centre.y, z + centre.z, dens);
 				}
 				
