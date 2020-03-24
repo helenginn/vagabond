@@ -396,8 +396,9 @@ private:
 
 	void addLessSimple(VagFFTPtr v2);
 
-	double populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
-	                        mat3x3 tensor, double scale, bool add);
+	double populateImplicit(int ele, vec3 centre, vec3 maxVals,
+	                        mat3x3 tensor, mat3x3 ellipsoid, double scale, 
+	                        bool add);
 
 	/** pre-loaded atom distributions converted to real space in final
 	 *  column */

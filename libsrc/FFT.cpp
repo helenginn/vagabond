@@ -527,21 +527,19 @@ void VagFFT::addImplicitAtom(AtomPtr atom)
 	vec3_subtract_from_vec3(&centre, _origin);
 	mat3x3_mult_vec(_recipBasis, &centre);
 	ElementPtr ele = atom->getElement();
+	int column = whichColumn(ele);
 	
 	double occ = atom->getModel()->getEffectiveOccupancy();
-	double total = populateImplicit(ele, centre, maxVals, 
+	double total = populateImplicit(column, centre, maxVals, ellipsoid,
 	                                tensor, occ, true);
 }
 
-double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
-                                mat3x3 tensor, double scale, bool add)
+double VagFFT::populateImplicit(int ele, vec3 centre, vec3 maxVals,
+                                mat3x3 tensor, mat3x3 ellipsoid, 
+                                double scale, bool add)
 {
 	double total = 0;
 	double count = 0;
-	
-	Anisotropicator aniso;
-	aniso.setTensor(tensor);
-	mat3x3 ellipsoid = aniso.basis();
 	
 	const double factor = 1 / sqrt(2 * M_PI);
 	double squash = factor * factor * factor;
@@ -549,14 +547,11 @@ double VagFFT::populateImplicit(ElementPtr ele, vec3 centre, vec3 maxVals,
 	for (int i = 0; i < 3; i++)
 	{
 		vec3 axis = mat3x3_axis(ellipsoid, i);
-		double length = sqrt(vec3_length(axis));
-		squash /= length;
+		squash /= vec3_length(axis);
 	}
 	
 	double vol = mat3x3_volume(_realBasis);
 	mat3x3 inv = mat3x3_inverse(tensor);
-
-	int column = whichColumn(ele);
 	
 	for (int z = -maxVals.z; z <= maxVals.z + 0.5; z++)
 	{
