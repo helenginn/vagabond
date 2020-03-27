@@ -126,6 +126,9 @@ typedef boost::shared_ptr<Element> ElementPtr;
 class Motion;
 typedef boost::shared_ptr<Motion> MotionPtr;
 
+class Any;
+typedef boost::shared_ptr<Any> AnyPtr;
+
 class Anchor;
 class Model;
 class Novalent;

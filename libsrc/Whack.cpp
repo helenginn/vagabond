@@ -55,9 +55,8 @@ void Whack::setBond(BondPtr bond)
 		return;
 	}
 	
-	_bond->setWhack(shared_from_this());
 	saveSamples();
-	applyKick();
+	_bond->setWhack(shared_from_this());
 }
 
 bool Whack::needsRefresh(std::vector<BondSample> &anchSamp)
@@ -68,16 +67,6 @@ bool Whack::needsRefresh(std::vector<BondSample> &anchSamp)
 void Whack::saveSamples()
 {
 	_samples = *_bond->getManyPositions();
-	BondPtr child = _bond->downstreamBond(0, 0);
-//	child->calculateMagicMat();
-//	child->correctTorsionAngles();
-	std::vector<BondSample> chSamples = *child->getManyPositions();
-	
-	for (size_t i = 0; i < chSamples.size(); i++)
-	{
-		_samples[i].kickValue = chSamples[i].kickValue;
-	}
-
 }
 
 double Whack::fullWhack()
@@ -94,6 +83,12 @@ double Whack::fullWhack()
 	return _whack + whadd;
 }
 
+double Whack::whackCorrection()
+{
+	double value = fullWhack();
+	return value;
+}
+
 void Whack::applyKick()
 {
 	if (!_bond)
@@ -105,6 +100,8 @@ void Whack::applyKick()
 	{
 		return;
 	}
+	
+	return;
 	
 	if (_bond->downstreamBondGroupCount() && _bond->downstreamBondCount(0))
 	{
@@ -145,7 +142,6 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 	
 	AnchorPtr anchor = _anchor.lock();
 	
-	AtomPtr anchAtom = anchor->getAtom();
 	AtomPtr bondAtom = _bond->getAtom();
 	
 	double check = 0;
