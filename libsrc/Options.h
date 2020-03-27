@@ -275,6 +275,11 @@ public:
 		return _bReal;
 	}
 	
+	static bool getScrew()
+	{
+		return _screw;
+	}
+	
 	static bool getLowResMode()
 	{
 		return _lowResMode;
@@ -436,6 +441,8 @@ private:
 	static bool _rInter;
 	static bool _rIntra;
 	static bool _hydrogens;
+	static bool _screw;
+
 	/*crystal*/
 	static int _active;
 	

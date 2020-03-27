@@ -274,6 +274,13 @@ void Motion::refine(bool reciprocal)
 		target.recalculateConstant();
 
 		addLibrationParameters(neld, -1);
+		
+		if (i == 1 && Options::getScrew())
+		{
+			addScrewParameters(neld, -1);
+			neld->setJobName("rots_screws");
+		}
+		
 		neld->refine();
 		_allAtoms->refreshPositions();
 	}

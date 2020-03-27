@@ -52,6 +52,7 @@ bool Options::_diagnostics = false;
 bool Options::_usePartial = false;
 
 bool Options::_refine = false;
+bool Options::_screw = false;
 bool Options::_far = false;
 bool Options::_rRigidBody = false;
 bool Options::_rPosition = true;
@@ -654,6 +655,7 @@ void Options::parse()
 
 		understood |= parseParameter(arg, "tie", &_tie);
 		understood |= parseParameter(arg, "refine", &_refine);
+		understood |= parseParameter(arg, "screw", &_screw);
 		understood |= parseParameter(arg, "far", &_far);
 		understood |= parseParameter(arg, "position", &_rPosition);
 		understood |= parseParameter(arg, "inter-mol", &_rInter);
