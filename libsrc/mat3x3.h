@@ -41,6 +41,9 @@ void unit_cell_from_mat3x3(mat3x3 mat, double *vals);
 /** Return an identity matrix */
 mat3x3 make_mat3x3();
 
+/** Return an orthogonal matrix */
+mat3x3 make_mat3x3(double l1, double l2, double l3);
+
 /** mat3x3 matrix from CCP4 symmetry operation as a 
  * rotation matrix */
 mat3x3 mat3x3_from_ccp4(CSym::ccp4_symop symop);

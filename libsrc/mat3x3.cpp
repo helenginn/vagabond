@@ -29,6 +29,19 @@ struct mat3x3 make_mat3x3()
 	return mat;
 }
 
+mat3x3 make_mat3x3(double l1, double l2, double l3)
+{
+	struct mat3x3 mat;
+
+	memset(mat.vals, 0, 9 * sizeof(double));
+
+	mat.vals[0] = l1;
+	mat.vals[4] = l2;
+	mat.vals[8] = l3;
+
+	return mat;
+}
+
 void mat3x3_add_mat3x3(mat3x3 *alter, mat3x3 &_const)
 {
 	for (int i = 0; i < 9; i++)
