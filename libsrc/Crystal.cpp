@@ -175,6 +175,10 @@ double Crystal::getProteinSampling()
 
 		Options::setProteinSampling(sampling);
 	}
+	else if (sampling == 0)
+	{
+		std::cout << "Protein sampling set to zero?" << std::endl;
+	}
 
 	return sampling;
 }

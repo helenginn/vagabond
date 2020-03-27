@@ -623,6 +623,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "--probe-radius=", &_probeRadius);
 		understood |= parseParameter(arg, "--ncycles=", &_nCycles);
 		understood |= parseParameter(arg, "--global-b=", &_bReal);
+		understood |= parseParameter(arg, "--sampling=", &_sampling);
 		understood |= parseParameter(arg, "--kick=", &_kick);
 		understood |= parseParameter(arg, "--unmodelled-fraction=", 
 		                             &_unmodelled);
