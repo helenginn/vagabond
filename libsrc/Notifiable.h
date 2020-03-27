@@ -94,11 +94,6 @@ public:
 		_message = message;
 	}
 
-	void setObject(void *object)
-	{
-		_object = object;
-	}
-	
 	void setValue(double value)
 	{
 		_value = value;
@@ -179,6 +174,12 @@ public:
 
 	virtual void setRenderDensity() = 0;
 	virtual void renderWarp() = 0;
+
+	void setObject(void *object)
+	{
+		_object = object;
+	}
+	
 protected:
 	InstructionType _instructionType;
 
