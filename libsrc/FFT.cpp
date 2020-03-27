@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "FFT.h"
+#include "Options.h"
 #include "CSV.h"
 #include "Element.h"
 #include "Atom.h"
@@ -70,6 +71,7 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	_elements = fft._elements;
 	_elementMap = fft._elementMap;
 	_spg = fft._spg;
+	_lowResMode = fft._lowResMode;
 	
 	if (scratch >= 0 && scratch != fft._nscratch)
 	{
@@ -113,6 +115,7 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
 	_nz = nz;
 	_myDims = NULL;
 	_spg = CSym::ccp4spg_load_by_ccp4_num(1);
+	_lowResMode = Options::getLowResMode();
 
 	if (_nx % 2 == 1 && _nx != 1) _nx -= 1;
 	if (_ny % 2 == 1 && _ny != 1) _ny -= 1;
@@ -553,17 +556,27 @@ double VagFFT::populateImplicit(int ele, vec3 centre, vec3 maxVals,
 	double vol = mat3x3_volume(_realBasis);
 	mat3x3 inv = mat3x3_inverse(tensor);
 	
+	vec3 whole = make_vec3((int)floor(centre.x), 
+                           (int)floor(centre.y),
+                           (int)floor(centre.z));
+
+	vec3 rest = make_vec3(centre.x - whole.x, 
+	                      centre.y - whole.y,
+	                      centre.z - whole.z);
+
 	for (int z = -maxVals.z; z <= maxVals.z + 0.5; z++)
 	{
 		for (int y = -maxVals.y; y <= maxVals.y + 0.5; y++)
 		{
 			for (int x = -maxVals.x; x <= maxVals.x + 0.5; x++)
 			{
-				vec3 pos = make_vec3(x + centre.x, y + centre.y, z + centre.z);
+				vec3 pos = make_vec3(x, y, z);
+				pos = make_vec3(x + centre.x, y + centre.y, z + centre.z);
 				/* in voxel system */
 				vec3 offset = vec3_subtract_vec3(pos, centre);
 				/* and then to Angstroms */
 				mat3x3_mult_vec(_realBasis, &offset);
+
 				vec3 orig = offset;
 
 				/* to aniso-U-sensitive coordinates */
@@ -579,6 +592,12 @@ double VagFFT::populateImplicit(int ele, vec3 centre, vec3 maxVals,
 
 				if (add)
 				{
+					/*
+					vec3 inPlace = vec3_add_vec3(pos, whole);
+					long voxel = element(inPlace.x, inPlace.y, inPlace.z);
+					long index = dottyIndex(voxel, ele);
+					*/
+//					_data[index][0] += dens;
 					addInterpolatedToReal(ele, x + centre.x, 
 					                      y + centre.y, z + centre.z, dens);
 				}
@@ -766,9 +785,14 @@ void VagFFT::addExplicitAtom(AtomPtr atom)
 	double low = atom->getExplicitModel()->getLowestZ();
 	double vol = mat3x3_volume(_realBasis);
 	double total = 0;
-	vec3 maxVals = make_vec3(2, 2, 2);
-	mat3x3 tensor = make_mat3x3(1, 1, 1);
-	mat3x3 ellipsoid = make_mat3x3(1, 1, 1);
+	double spread = 0.5;
+	vec3 maxVals = make_vec3(2*spread, 2*spread, 2*spread);
+	/* spread should become actual B factor required for this.
+	 * assumes cubic !! */
+	spread = 0.5;
+	double stdev = sqrt(spread);
+	mat3x3 tensor = make_mat3x3(spread, spread, spread);
+	mat3x3 ellipsoid = make_mat3x3(stdev, stdev, stdev);
 
 	for (int i = 0; i < positions.size(); i++)
 	{
@@ -781,8 +805,14 @@ void VagFFT::addExplicitAtom(AtomPtr atom)
 		double dens = occ;
 		total += dens;
 
-//		addInterpolatedToReal(column, pos.x, pos.y, pos.z, dens);
-		populateImplicit(column, pos, maxVals, tensor, ellipsoid, occ, true);
+		if (_lowResMode)
+		{
+			populateImplicit(column, pos, maxVals, tensor, ellipsoid, occ, true);
+		}
+		else
+		{
+			addInterpolatedToReal(column, pos.x, pos.y, pos.z, occ);
+		}
 	}
 }
 

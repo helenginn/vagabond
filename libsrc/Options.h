@@ -275,6 +275,11 @@ public:
 		return _bReal;
 	}
 	
+	static bool getLowResMode()
+	{
+		return _lowResMode;
+	}
+	
 	static std::string getLabSigF()
 	{
 		return _labSIGFP;
@@ -390,6 +395,7 @@ private:
 	std::string _addPDB;
 	std::string _updatePDB;
 
+	static bool _lowResMode;
 	static bool _diagnostics;
 	static bool _useRFree;
 	static bool _usePartial;

@@ -444,6 +444,7 @@ private:
 	
 	CSym::CCP4SPG *_spg;
 
+	bool _lowResMode;
 	bool _setMatrices;
 };
 

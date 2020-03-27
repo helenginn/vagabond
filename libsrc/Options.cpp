@@ -43,6 +43,7 @@ double Options::_minRes = HUGE_VAL;
 double Options::_maxRes = -1.0;
 double Options::_probeRadius = -0.2;
 bool Options::_useRFree = true;
+bool Options::_lowResMode = false;
 int Options::_bondAngles = 2;
 int Options::_map = 1;
 int Options::_active = 0;
@@ -664,6 +665,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "partial", &_usePartial);
 		understood |= parseParameter(arg, "fit-solvent", &_fitBucket);
 		understood |= parseParameter(arg, "hydrogens", &_hydrogens);
+		understood |= parseParameter(arg, "low-res-mode", &_lowResMode);
 		
 		int shellNum = 0;
 		bool shellstood = parseParameter(arg, "--shell-scale=", &shellNum);
