@@ -58,11 +58,14 @@ AtomGroupPtr Sponge::correlGroup()
 
 void Sponge::addRestraintsToStrategy(RefinementStrategyPtr strategy)
 {
+	_anys.clear();
 	for (Restraint::iterator it = _restraints.begin();
 	      it != _restraints.end(); it++)
 	{
 		AnyPtr any = AnyPtr(new Any(&it->second));
-		strategy->addParameter(&*any, Any::get, Any::set, 0.2, 0.01);
+		strategy->addParameter(&*any, Any::get, Any::set, 0.2, 0.01,
+		shortDesc() + "_" + i_to_str(_anys.size()));
+		_anys.push_back(any);
 	}
 }
 
@@ -215,7 +218,7 @@ std::vector<BondSample> *Sponge::getManyPositions(void *object)
 	}
 
 	/* should switch _changedSamples to false */
-	getNetwork()->recalculate();
+	getNetwork()->calculateSingle(shared_from_this());
 	
 	return &_storedSamples;
 }

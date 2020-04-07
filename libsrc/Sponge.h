@@ -128,6 +128,7 @@ private:
 	MapScoreWorkspace _workspace;
 	std::vector<AtomPtr> _candidates;
 
+	std::vector<AnyPtr> _anys;
 	double _preScore;
 	bool _disabled;
 	int _n;
