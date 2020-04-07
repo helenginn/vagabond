@@ -100,6 +100,6 @@ void Twist::setTwist(void *object, double val)
 {
 	Twist *twist = static_cast<Twist *>(object);
 	twist->_twist = val;
-	twist->getAppliedModel()->propagateChange(20);
+	twist->getAppliedModel()->propagateChange(0);
 }
 
