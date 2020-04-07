@@ -19,7 +19,14 @@
 
 WaterNetwork::WaterNetwork()
 {
+	_ws = new MapScoreWorkspace();
+	setup_space(_ws);
+}
 
+WaterNetwork::~WaterNetwork()
+{
+	delete _ws;
+	_ws = NULL;
 }
 
 void WaterNetwork::summary()
@@ -207,6 +214,68 @@ double WaterNetwork::score()
 	}
 
 	return sum;
+}
+
+void WaterNetwork::macroRefineSponges()
+{
+	std::cout << "Refreshing all sponges" << std::endl;
+	refreshSponges();
+	SpongePtr sponge = findFirstSponge();
+
+	while (sponge)
+	{
+		std::cout << "Sponge: " << sponge->shortDesc() << std::endl;
+		_sponges = acquireSponges(sponge);
+		_refined = _sponges;
+
+		std::cout << "Sponge selection now " << _refined.size() 
+		<< " strong." << std::endl;
+		for (int i = 0; i < _refined.size(); i++)
+		{
+			std::cout << _refined[i]->shortDesc() << std::endl;
+		}
+
+		delete _ws;
+		_ws = new MapScoreWorkspace();
+		setup_space(_ws);
+
+		_ws->crystal = Options::getActiveCrystal();
+		_ws->selectAtoms = AtomGroupPtr(new AtomGroup());
+
+		for (int i = 0; i < _refined.size(); i++)
+		{
+			_ws->selectAtoms->addAtom(_refined[i]->getAtom());
+		}
+
+		double score = AtomGroup::scoreWithMapGeneral(_ws);
+		std::cout << "Starting score: " << score << std::endl;
+
+		NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
+		for (int i = 0; i < _refined.size(); i++)
+		{
+			_refined[i]->addRestraintsToStrategy(neld);
+		}
+		
+		neld->setCycles(20);
+		neld->setSilent(false);
+		neld->setVerbose(false);
+		neld->setEvaluationFunction(macroScore, this);
+		neld->refine();
+		std::cout << "Done" << std::endl;
+
+		sponge = findFirstSponge();
+	}
+}
+
+double WaterNetwork::macroEvaluation()
+{
+	_sponges = _refined;
+	generateCalculations();
+	refineSponges();
+
+	double score = AtomGroup::scoreWithMapGeneral(_ws);
+	std::cout << score << std::endl;
+	return score;
 }
 
 void WaterNetwork::calculateSingle(SpongePtr sponge, bool others)

@@ -43,7 +43,7 @@ public:
 	}
 
 	WaterNetwork();
-	virtual ~WaterNetwork() {}
+	virtual ~WaterNetwork();
 	
 	virtual void summary();
 
@@ -64,18 +64,27 @@ public:
 	
 	virtual void addProperties();
 	virtual void postParseTidy();
+	void macroRefineSponges();
 	
 	void prune();
 	
 	void setMonomer(MonomerPtr _monomer);
 private:	
+	static double macroScore(void *object)
+	{
+		return static_cast<WaterNetwork *>(object)->macroEvaluation();
+	}
+
+	double macroEvaluation();
 	void setActive(int a);
 	void generateCalculations();
 	SpongePtr findFirstSponge();
 	void refineSponges();
+	MapScoreWorkspace *_ws;
 	std::vector<SpongePtr> acquireSponges(SpongePtr seed);
 
 	std::vector<SpongePtr> _sponges;
+	std::vector<SpongePtr> _refined;
 	std::vector<WaterCalcs> _calcs;
 
 	int _n;
