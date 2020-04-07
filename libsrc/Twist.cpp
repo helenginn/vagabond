@@ -81,10 +81,7 @@ void Twist::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 		mat3x3 bond_basis = _samples[i].basis;
 		vec3 bond_axis = mat3x3_axis(bond_basis, 2);
 
-		/* dividing by two equally distributes the twist across
-		 * both sides of the bond, which ought to be the same as
-		 * a twist + global shift */
-		mat3x3 rot = mat3x3_unit_vec_rotation(bond_axis, _twist / 2);
+		mat3x3 rot = mat3x3_unit_vec_rotation(bond_axis, _twist);
 
 		vec3 start = anchSamp[i].start;
 		vec3 old_start = anchSamp[i].old_start;

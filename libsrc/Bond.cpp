@@ -686,7 +686,7 @@ void Bond::correctTorsionAngles()
 	correctTorsionAngles(&_storedSamples, false);
 }
 
-void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool whacked)
+void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 {
 	const vec3 none = make_vec3(0, 0, 0);
 	double samples = prevs->size();
@@ -710,11 +710,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool whacked)
 	{
 		double kickValue = prevs->at(i).kickValue;
 
-		if ((hasWhack() || whacked) && !getAnchor()->whacksDisabled())
-		{
-
-		}
-		else
+		if (!quick)
 		{
 			mat3x3 thisBasis = (*prevs)[i].basis;
 			vec3 thisPos = prevs->at(i).start;
@@ -740,14 +736,14 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool whacked)
 			{
 				kickValue = 0;
 			}
-
-			prevs->at(i).kickValue = kickValue;
 		}
 
 		/* Baseline kick multiplied by kickValue */
 		double addBlur = baseKick * kickValue;
 
 		prevs->at(i).torsion = addBlur;	
+		prevs->at(i).kickValue = kickValue;
+
 		
 		averageModulation += addBlur;
 	}
@@ -788,20 +784,14 @@ double Bond::getBaseKick()
 	}
 	
 	
+	double extraKick = 0;
+	
 	if (getKeyPoints())
 	{
-		baseKick += getKeyPoints()->getKickContribution(shared_from_this());
+		extraKick = getKeyPoints()->getKickContribution(shared_from_this());
 	}
 
-	if (getParentModel()->isBond())
-	{
-		BondPtr bond = ToBondPtr(getParentModel());
-		if (bond->hasWhack())
-		{
-			WhackPtr w = bond->getWhack();
-			baseKick += w->whackCorrection();
-		}
-	}
+	baseKick += extraKick;
 
 	if (sisBond && sisBond->hasWhack() && sisBond->getWhack()->isDisabled())
 	{
@@ -910,9 +900,10 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 	}
 
 	ExplicitModelPtr model = getParentModel();
-	BondPtr prevBond = ToBondPtr(model);
+	BondPtr prevBond = boost::static_pointer_cast<Bond>(model);
 	int myGroup = -1;
-	double torsionNumber = prevBond->downstreamBondNum(this, &myGroup);
+	double torsionNumber = prevBond->downstreamBondNum(this,
+	                                                   &myGroup);
 
 	bool nextBondExists = false;
 	if (downstreamBondGroupCount())
@@ -921,9 +912,6 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 	}
 
 	double totalAtoms = prevBond->downstreamBondCount(myGroup);
-
-	bool whacked = (prevBond->isBond() && prevBond->hasWhack() && 
-	                !prevBond->getWhack()->isDisabled());
 
 	std::vector<BondSample> tmp = *prevBond->getManyPositions(&*getMinor());
 	
@@ -938,14 +926,17 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 	}
 	else
 	{
+		_lowestZ = FLT_MAX;
+
 		for (int i = 0; i < tmp.size(); i++)
 		{
 			double kick = _storedSamples[i].kickValue;
 			memcpy(&_storedSamples[i], &tmp[i], sizeof(BondSample));
+			_storedSamples[i].kickValue = kick;
 			
-			if (!whacked)
+			if (_storedSamples[i].start.z < _lowestZ)
 			{
-				_storedSamples[i].kickValue = kick;
+				_lowestZ = _storedSamples[i].start.z;
 			}
 		}
 	}
@@ -969,8 +960,11 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 
 	double ratio = _geomRatio;
 
+	std::vector<BondSample> myTorsions;
+
 	if (!isFixed())
 	{
+		bool whacked = hasWhack();
 		correctTorsionAngles(&_storedSamples, whacked);
 	}
 

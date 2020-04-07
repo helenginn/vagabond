@@ -131,8 +131,6 @@ public:
 	}
 
 	double fullWhack();
-	
-	double whackCorrection();
 
 	/** If the number of samples in the ensemble has changed, returns true */
 	bool needsRefresh(std::vector<BondSample> &anchSamp);
