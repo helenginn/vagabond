@@ -255,7 +255,7 @@ void VagWindow::resizeEvent(QResizeEvent *)
 VagWindow::VagWindow(QWidget *parent,
                      int argc, char *argv[]) : QMainWindow(parent)
 {
-	_obj = NULL;
+	setObject(NULL);
 	this->resize(DEFAULT_WIDTH, DEFAULT_HEIGHT);
 
 	this->setWindowTitle("Vagabond");
@@ -522,7 +522,7 @@ int VagWindow::waitForInstructions()
 			}
 		}
 		
-		_obj = NULL;
+		setObject(NULL);
 
 		if (_instructionThread.shouldDie())
 		{
@@ -969,14 +969,14 @@ void VagWindow::addUpdateFile()
 
 void VagWindow::fitWholeMolecules()
 {
-	if (_obj == NULL)
+	if (getObject() == NULL)
 	{
 		Options::getActiveCrystal()->fitWholeMolecules();
 		Options::getRuntimeOptions()->recalculateFFT();
 		return;
 	}
 
-	Polymer *p = static_cast<Polymer *>(_obj);
+	Polymer *p = static_cast<Polymer *>(getObject());
 	p->refineMotions();
 	
 	setMessage("Refined whole motions for chain " + p->getChainID());
@@ -984,14 +984,14 @@ void VagWindow::fitWholeMolecules()
 
 void VagWindow::fitRigidBody()
 {
-	if (_obj == NULL)
+	if (getObject() == NULL)
 	{
 		Options::getActiveCrystal()->rigidBodyRefinement();
 		Options::getRuntimeOptions()->recalculateFFT();
 		return;
 	}
 
-	Polymer *p = static_cast<Polymer *>(_obj);
+	Polymer *p = static_cast<Polymer *>(getObject());
 	p->getAnchorModel()->rigidBodyRefinement();
 	
 	setMessage("Refined rigid body for chain " + p->getChainID());
@@ -999,23 +999,23 @@ void VagWindow::fitRigidBody()
 
 void VagWindow::resetMotion()
 {
-	if (_obj == NULL)
+	if (getObject() == NULL)
 	{
 		return;
 	}
 
-	Polymer *p = static_cast<Polymer *>(_obj);
+	Polymer *p = static_cast<Polymer *>(getObject());
 	p->resetMotion();
 }
 
 void VagWindow::resetSides()
 {
-	if (_obj == NULL)
+	if (getObject() == NULL)
 	{
 		return;
 	}
 
-	Polymer *p = static_cast<Polymer *>(_obj);
+	Polymer *p = static_cast<Polymer *>(getObject());
 	p->resetSidechains();
 }
 
@@ -1024,14 +1024,14 @@ void VagWindow::refineSidechains()
 	OptionsPtr options = Options::getRuntimeOptions();
 	CrystalPtr crystal = options->getActiveCrystal();
 
-	if (_obj == NULL)
+	if (getObject() == NULL)
 	{
 		crystal->refineSidechains();
 		options->recalculateFFT();
 		return;
 	}
 
-	Polymer *p = static_cast<Polymer *>(_obj);
+	Polymer *p = static_cast<Polymer *>(getObject());
 	p->refine(crystal, RefinementSidechain);
 }
 
@@ -1040,12 +1040,12 @@ void VagWindow::resetIntramolecule()
 	OptionsPtr options = Options::getRuntimeOptions();
 	CrystalPtr crystal = options->getActiveCrystal();
 
-	if (_obj == NULL)
+	if (getObject() == NULL)
 	{
 		return;
 	}
 
-	Polymer *p = static_cast<Polymer *>(_obj);
+	Polymer *p = static_cast<Polymer *>(getObject());
 	p->removeIntramolecularMotion();
 }
 
@@ -1054,14 +1054,14 @@ void VagWindow::refineIntramolecule()
 	OptionsPtr options = Options::getRuntimeOptions();
 	CrystalPtr crystal = options->getActiveCrystal();
 
-	if (_obj == NULL)
+	if (getObject() == NULL)
 	{
 		crystal->refineIntraMovements();
 		options->recalculateFFT();
 		return;
 	}
 
-	Polymer *p = static_cast<Polymer *>(_obj);
+	Polymer *p = static_cast<Polymer *>(getObject());
 	p->refineLocalFlexibility();
 }
 
@@ -1070,13 +1070,13 @@ void VagWindow::writePNG()
 	OptionsPtr options = Options::getRuntimeOptions();
 	CrystalPtr crystal = options->getActiveCrystal();
 
-	if (_obj == NULL)
+	if (getObject() == NULL)
 	{
 		return;
 	}
 
 	int cycleNum = crystal->getCycleNum();
-	Polymer *p = static_cast<Polymer *>(_obj);
+	Polymer *p = static_cast<Polymer *>(getObject());
 	std::cout << "Write PNG for polymer " << p->getChainID() << std::endl;
 	std::string filename;
 	filename = "bfactor_" + p->getChainID() + "_" + i_to_str(cycleNum) + "a";
