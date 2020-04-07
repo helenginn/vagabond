@@ -630,6 +630,7 @@ private:
 	double totalToScale();
 	double _calcElec;
 
+	void reportScaling();
 	void makePDBs(std::string suffix);
 	void writeVagabondFile(int cycleNum);
 	void applySymOps();

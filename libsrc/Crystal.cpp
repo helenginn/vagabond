@@ -897,6 +897,28 @@ double Crystal::getAdjustBFactor()
 	return change;
 }
 
+void Crystal::reportScaling()
+{
+	if (!_shells.size())
+	{
+		return;
+	}
+	std::cout << std::setw(18) << "Resolution bin  " << std::flush;
+	std::cout << std::setw(10) << "R work" << std::flush;
+	std::cout << std::setw(13) << "Scale factor" << std::flush;
+	std::cout << std::setw(13) << "st. err." << std::endl;
+
+	for (int i = 0; i < _shells.size(); i++)
+	{
+		ShellInfo *sh = &_shells[i];
+		std::cout << std::setw(6) << sh->maxRes << " - " << 
+		std::setw(6) << sh->minRes << " Å";
+		std::cout << std::setw(10) << sh->rFactor;
+		std::cout << std::setw(10) << sh->scale;
+		std::cout << std::setw(13) << sh->std_err << std::endl;
+	}
+}
+
 void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 {
 	getMaxResolution(data);
@@ -949,7 +971,7 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 		makeShells(&_shells, minRes, _maxResolution);
 
 		valueWithDiffraction(data, &scale_factor_by_sum, false, false);
-
+		reportScaling();
 		applyShellFactors(data);
 	}
 	else
