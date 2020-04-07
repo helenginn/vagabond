@@ -11,6 +11,7 @@
 #include "Crystal.h"
 #include "Sponge.h"
 #include "Atom.h"
+#include "AtomGroup.h"
 #include "Absolute.h"
 #include "RefinementNelderMead.h"
 
