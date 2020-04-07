@@ -12,6 +12,7 @@
 
 void shout_at_user(std::string fix_me_message)
 {
+	std::cout << std::endl;
 	std::cout << "****************************************" << std::endl;
 	std::cout << "**               Error                **" << std::endl;
 	std::cout << "****************************************" << std::endl;
@@ -38,6 +39,7 @@ void Shouter::shoutToStdOut()
 
 void shout_at_helen(std::string fix_me_message)
 {
+	std::cout << std::endl;
 	std::cout << "****************************************" << std::endl;
 	std::cout << "**           Bug detected!            **" << std::endl;
 	std::cout << "****************************************" << std::endl;
