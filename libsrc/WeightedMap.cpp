@@ -236,12 +236,17 @@ double WeightedMap::stdevForReflection(double fobs, double fcalc,
 	{
 		stdev = _shells[shx].std_err;
 	}
-	
+
 	stdev = 0;
 	
 	double datadev = sigfobs / fobs;
+	double margin = (fcalc - fobs) / fobs;
 	
-	double combined = sqrt(stdev * stdev + datadev * datadev);
+	double combined = sqrt(stdev * stdev + 
+	                       datadev * datadev +
+	                       margin * margin);
+	
+	combined *= 2;
 
 	return combined;
 }
@@ -254,8 +259,8 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 	double maxRes = _crystal->getMaxResolution(_data);
 	maxRes = 1 / maxRes;
 	bool ignoreRfree = Options::ignoreRFree();
-	double o = -2 + (4 / MAX_SLICES) * slice;
-	double weight = exp(-(o*o)/(2));
+	double prop = -2 + (4 / MAX_SLICES) * slice;
+	double weight = exp(-(prop*prop)/(2));
 
 	if (ignoreRfree)
 	{
@@ -332,7 +337,7 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 					double stdev = stdevForReflection(fobs, fcalc, sigfobs,
 					                                  1 / length);
 					double downweight = exp(-(stdev * stdev));
-					phaseDev = phaseDevForWeight(downweight);
+					phaseDev = stdev;
 
 					scratch->setScratchComponent(index, 0, 0, phaseDev);
 				}
@@ -341,7 +346,8 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 					phaseDev = scratch->getScratchComponent(index, 0, 0);
 				}
 
-				double phi = phaseDev * o;
+				/* in radians */
+				double phi = phaseDev * prop;
 				
 				int centric = ccp4spg_is_centric(spg, i, j, k);
 				
@@ -349,6 +355,8 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 				{
 					phi = 0;
 				}
+				
+				phi = 0;
 				
 				double phase = _fft->getPhase(i, j, k);
 				phi += deg2rad(phase);
@@ -366,6 +374,7 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 				}
 				
 				double fused = 2 * fobs - fcalc;
+//				fused = fobs * exp(-(phaseDev * phaseDev));
 				
 				if (f000)
 				{
@@ -410,9 +419,9 @@ void WeightedMap::createVagaCoefficients()
 	for (int i = 0; i <= MAX_SLICES; i++)
 	{
 		double weight = oneMap(scratch, i, false);
+		scratch->multiplyAll(weight);
 		_allWeights += weight;
 		scratch->fft(FFTReciprocalToReal); /* to real space */
-		scratch->multiplyAll(weight);
 		duplicate->addSimple(scratch);
 		scratch->multiplyAll(0);
 		scratch->setStatus(FFTEmpty);
