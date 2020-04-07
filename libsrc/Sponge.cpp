@@ -68,7 +68,7 @@ void Sponge::addRestraintsToStrategy(RefinementStrategyPtr strategy)
 
 std::string Sponge::shortDesc()
 {
-	return ("Sponge_" + getAtom()->shortDesc() + 
+	return ("Sponge_" + getAtom()->shortDesc() + "_" +
 	        i_to_str(_restraints.size()) + "r");
 }
 
