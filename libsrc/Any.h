@@ -42,4 +42,3 @@ private:
 
 };
 
-typedef boost::shared_ptr<Any> AnyPtr;
