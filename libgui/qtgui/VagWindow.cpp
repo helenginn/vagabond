@@ -1127,8 +1127,8 @@ void VagWindow::refineSponges()
 		return;
 	}
 
-	WaterNetworkPtr w = ToWaterNetworkPtr(getObject());
+//	WaterNetworkPtr w = ToWaterNetworkPtr(getObject());
 	Options::statusMessage("Refining sponges.");
 
-	w->macroRefineSponges();
+//	w->macroRefineSponges();
 }
