@@ -705,6 +705,22 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 		{
 			_shells[i].scale = scale_factor_by_sum(_shells[i].work1,
 			                                       _shells[i].work2);
+			
+			_shells[i].rFactor = r_factor(_shells[i].work1,
+			                              _shells[i].work2);
+			
+			std::vector<double> diffs;
+			
+			for (int j = 0; j < _shells[i].work1.size(); j++)
+			{
+				double diff = _shells[i].work1[j] - _shells[i].work2[j];
+				diffs.push_back(diff);
+			}
+			
+			double stdev = standard_deviation(diffs);
+			double m = mean(_shells[i].work1);
+			
+			_shells[i].std_err = stdev / m;
 		}
 	}
 
