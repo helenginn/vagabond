@@ -35,6 +35,10 @@ inline std::string InkBond_fsh =
 "	transparency = max(transparency, 0.0);\n"\
 "	transparency = min(transparency, 1.0);\n"\
 "   gl_FragColor[3] = 1. - transparency;\n"\
+"	if (focus[2] < -120.)\n"\
+"	{\n"\
+"       gl_FragColor[3] = 1.;\n"\
+"   }\n"\
 "\n"\
 "\n"\
 "\n"\
