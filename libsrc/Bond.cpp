@@ -1473,7 +1473,7 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum,
 		BondPtr result = nextBond->duplicateDownstream(duplBond, 
 		                                               0, onlyExisting);
 
-		if (onlyExisting)
+		if (onlyExisting && result)
 		{
 			if (duplBond->downstreamBondGroupCount() && 
 			    duplBond->downstreamBondCount(0) == 1)
