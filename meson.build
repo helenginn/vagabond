@@ -147,7 +147,7 @@ if qt5_dep.found() and dep_gl.found()
 # Non-Qt5 GUI elements (mostly OpenGL stuff)
 # Uses Qt5-supplied OpenGL
 
-	executable('vagabond-gui', base_files,
+executable('vagabond-gui', base_files,
 'libgui/Atoms2GL.cpp', 
 'libgui/Bonds2GL.cpp', 
 'libgui/Connect2GL.cpp', 
@@ -177,5 +177,50 @@ if qt5_dep.found() and dep_gl.found()
 moc_files, dependencies: [qt5_dep, dep_ica, dep_ccp4, dep_vgeom, png_dep, fftw_dep, boost_dep], install: true, cpp_args: ['-w',
 '-std=c++11'])
 else
-	message('QT5 not found, so not building the GUI.')
+	message('QT5 not found, so not building vagabond-gui.')
 endif
+
+# Pre-processing by Qt5
+
+if qt5_dep.found() and dep_gl.found()
+	moc_cluster4x = qt5.preprocess(moc_headers : [
+'c4xsrc/Averager.h', 
+'c4xsrc/AxisScroll.h', 
+'c4xsrc/GLPoint.h', 
+'c4xsrc/Screen.h', 
+'c4xsrc/SelectionWindow.h', 
+'c4xsrc/KeeperGL.h', 
+'c4xsrc/ClusterList.h', 
+],
+		moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'])
+
+executable('cluster4x', gen_src, moc_cluster4x,
+'c4xsrc/main.cpp', 
+'c4xsrc/Averager.cpp', 
+'c4xsrc/AxisScroll.cpp', 
+'c4xsrc/ClusterList.cpp', 
+'c4xsrc/MatrixView.cpp', 
+'c4xsrc/MtzFile.cpp', 
+'c4xsrc/MtzFFT.cpp', 
+'c4xsrc/Screen.cpp', 
+'c4xsrc/KeeperGL.cpp', 
+'c4xsrc/GLAxis.cpp', 
+'c4xsrc/GLPoint.cpp', 
+'c4xsrc/GLObject.cpp', 
+'c4xsrc/SelectionWindow.cpp', 
+cpp_args: ['-std=c++11'], dependencies : [ qt5_dep, dep_gl, dep_vag, png_dep, dep_ica ], install: true)
+else
+	message('QT5 not found, so not building cluster4x.')
+endif
+
+
+pkg = import('pkgconfig')
+libs = [lib_vag, lib_ica]
+h = ['libsrc'] # subdirectories of ${prefix}/${includedir} to add to header path
+pkg.generate(libraries : libs,
+             subdirs : h,
+             version : '1.0',
+             name : 'libvag',
+             filebase : 'simple',
+             description : 'Library for vagabond')
+
