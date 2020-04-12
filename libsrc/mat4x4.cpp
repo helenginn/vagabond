@@ -24,6 +24,16 @@ mat4x4 make_mat4x4()
 	return mat;
 }
 
+void mat4x4_mult_scalar(struct mat4x4 *mat, double scalar)
+{
+	for (int i = 0; i < 16; i += 4)
+	{
+		mat->vals[i] *= scalar;
+		mat->vals[i+1] *= scalar;
+		mat->vals[i+2] *= scalar;
+	}
+}
+
 /* Auto add 1 at end of vec3 */
 vec3 mat4x4_mult_vec(struct mat4x4 mat, struct vec3 vec)
 {

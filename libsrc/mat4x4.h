@@ -32,6 +32,7 @@ mat4x4 mat4x4_from_rot_trans(mat3x3 rot, vec3 trans);
 mat3x3 mat4x4_get_rot(mat4x4 &mat);
 mat4x4 mat4x4_mult_mat4x4(mat4x4 l, mat4x4 r);
 vec3 mat4x4_mult_vec(struct mat4x4 mat, struct vec3 vec);
+void mat4x4_mult_scalar(mat4x4 *mat, double scalar);
 vec3 mat4x4_mult_vec3(struct mat4x4 mat, struct vec3 vec, 
                       double *last);
 mat4x4 mat4x4_inverse(mat4x4 &mat);

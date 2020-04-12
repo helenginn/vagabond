@@ -160,6 +160,7 @@ void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	if (!recip)
 	{
 		target.setAtomGroup(_allBackbone);
+		target.setAtomGroup(_allAtoms);
 	}
 	else
 	{

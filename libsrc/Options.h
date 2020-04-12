@@ -144,6 +144,11 @@ public:
 		_probeRadius = r;
 	}
 	
+	static double getShrink()
+	{
+		return _shrink;
+	}
+	
 	static double getProbeRadius()
 	{
 		return _probeRadius;
@@ -422,6 +427,7 @@ private:
 	static int _map;
 	static int _maxRot;
 	static double _probeRadius;
+	static double _shrink;
 	std::string _diffMatrix;
 	std::string _outputDir;
 	static double _minRes;

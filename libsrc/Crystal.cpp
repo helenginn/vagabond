@@ -1913,40 +1913,37 @@ void Crystal::differenceAttribution()
 	std::cout << std::endl;
 }
 
-double Crystal::getProbeRadius()
+double Crystal::updateVariable(double *local, option_getter get, Setter set,
+                               std::string name, std::string unit,
+                               double default_val)
 {
-	if (Options::getProbeRadius() < 0 && _probeRadius <= 0)
+	double new_val = (*get)();
+	if (new_val >= 0)
 	{
-		_probeRadius = 0.4;
-		Options::setProbeRadius(NULL, _probeRadius);
+		*local = new_val;
+		std::cout << "Picked up new " << name << " of " << *local <<
+		"." << std::endl;
+		(*set)(NULL, -1);
 	}
 
-	if (Options::getProbeRadius() >= 0)
+	if (*local < 0)
 	{
-		_probeRadius = Options::getProbeRadius();
-		Options::setProbeRadius(NULL, _probeRadius);
+		*local = default_val;
 	}
 	
-	return _probeRadius;
+	return *local;
+}
 
+double Crystal::getProbeRadius()
+{
+	return updateVariable(&_probeRadius, Options::getProbeRadius,
+	               Options::setProbeRadius, "probe radius", "Å", 0.4);
 }
 
 double Crystal::getRealBFactor()
 {
-	if (Options::getGlobalBFactor() >= 0)
-	{
-		_realBFactor = Options::getGlobalBFactor();
-		std::cout << "Picked up new B factor of " << _realBFactor <<
-		"." <<  std::endl;
-		Options::resetGlobalBFactor();
-	}
-	
-	if (_realBFactor < 0)
-	{
-		_realBFactor = 0;
-	}
-	
-	return _realBFactor;
+	return updateVariable(&_realBFactor, Options::getGlobalBFactor,
+	               Options::setGlobalBFactor, "B factor", "Å²", 0);
 }
 
 void Crystal::updateLargestNum(AtomPtr atom)

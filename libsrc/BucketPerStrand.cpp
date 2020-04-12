@@ -18,6 +18,7 @@
 
 #include "BucketPerStrand.h"
 #include "Crystal.h"
+#include "Options.h"
 #include "shared_ptrs.h"
 
 void BucketPerStrand::addSolvent()
@@ -50,7 +51,14 @@ void BucketPerStrand::addSolvent()
 
 		addSolventForConformer(i, num);
 		/* does not appear to help matters here */
-//		_solvent->bittyShrink(0.4, num);
+		
+		double shrink = Options::getShrink();
+
+		if (shrink > 0)
+		{
+			_solvent->bittyShrink(0.4, num);
+		}
+		
 		_solvent->convertMaskToSolvent(num);
 		_solvent->addToScratch(0);
 		_solvent->multiplyAll(0);

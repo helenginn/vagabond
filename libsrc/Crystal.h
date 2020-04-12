@@ -46,6 +46,8 @@
 
 typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
+typedef double (*option_getter)();
+
 typedef struct
 {
 	double minRes;
@@ -679,6 +681,10 @@ private:
 	BucketPtr _bucket;
 	int _largestNum;
 	double _dataWilsonB;
+
+	double updateVariable(double *local, option_getter get, Setter set,
+	                      std::string name, std::string unit, 
+	                      double default_val);
 	
 	void scaleSolvent(DiffractionPtr data);
 	void scaleToDiffraction(DiffractionPtr data, bool full = true);

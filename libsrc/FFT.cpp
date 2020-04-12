@@ -2074,6 +2074,13 @@ void VagFFT::convertMaskToSolvent(int expTotal)
 	}
 }
 
+double VagFFT::resolution(int i, int j, int k)
+{
+	vec3 ijk = make_vec3(i, j, k);
+	mat3x3_mult_vec(_toRecip, &ijk);
+	return 1 / vec3_length(ijk);
+}
+
 double VagFFT::voxelVolume()
 {
 	return mat3x3_volume(_realBasis);

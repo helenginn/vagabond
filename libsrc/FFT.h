@@ -21,6 +21,7 @@
 
 #define FFTW_DATA_TYPE fftwf_complex
 
+#include "../libccp4/csymlib.h"
 #include <fftw3.h>
 #include "MapScoreWorkspace.h"
 #include "shared_ptrs.h"
@@ -90,6 +91,7 @@ public:
 
 	void prepareAtomSpace();
 	void addAtom(AtomPtr atom);
+	double resolution(int i, int j, int k);
 	
 	/** Applies symmetry operations. If topRes > 0 then resolution is
 	 * cut and symmetry application only applies to asymmetric unit,
@@ -229,6 +231,14 @@ public:
 	{
 		long index = finalIndex(i);
 		return _data[index][imag];
+	}
+
+	/* retrieves out of final column */
+	void setReal(int i, int j, int k, double val)
+	{
+		long ii = element(i, j, k);
+		long index = finalIndex(ii);
+		_data[index][0] = val;
 	}
 
 	/* retrieves out of final column */

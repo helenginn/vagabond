@@ -240,6 +240,11 @@ void DiffractionMtz::load()
 	MtzResLimits(mtz, &_minRes, &_maxRes);
 	_minRes = 1.0 / sqrt(_minRes);
 	_maxRes = 1.0 / sqrt(_maxRes);
+	
+	if (_limit >= 0)
+	{
+		_maxRes = _limit;
+	}
 
 	int indexLimitH = 0; int indexLimitK = 0; int indexLimitL = 0;
 
@@ -254,11 +259,27 @@ void DiffractionMtz::load()
 		indexLimitK = std::max(indexLimitK, k);
 		indexLimitL = std::max(indexLimitL, l);
 	}
+		
+		double hres = xtals[0]->cell[0] / indexLimitH;
+		if (_limit > 0 && 1 / hres < _limit)
+		{
+			indexLimitH = xtals[0]->cell[0] / _limit + 1;
+		}
+		double kres = xtals[0]->cell[1] / indexLimitK;
+		if (_limit > 0 && 1 / kres < _limit)
+		{
+			indexLimitK = xtals[0]->cell[1] / _limit + 1;
+		}
+		double lres = xtals[0]->cell[2] / indexLimitL;
+		if (_limit > 0 && 1 / lres < _limit)
+		{
+			indexLimitL = xtals[0]->cell[2] / _limit + 1;
+		}
 
-	int largest = std::max(indexLimitH, indexLimitK);
-	largest = std::max(largest, indexLimitL);
+		int largest = std::max(indexLimitH, indexLimitK);
+		largest = std::max(largest, indexLimitL);
 
-	largest = 2 * largest + 1;
+		largest = 2 * largest + 1;
 
 	if (largest == 0)
 	{
@@ -266,8 +287,23 @@ void DiffractionMtz::load()
 		shout = new Shouter("Problem determining resolution limits.\n"\
 		              "Do you have a unit cell and some reflections?");
 	}
+	
+	std::vector<double> unitCell;
+	for (int i = 0; i < 6; i++)
+	{
+		unitCell.push_back(xtals[0]->cell[i]);
+	}
 
-	_fft = VagFFTPtr(new VagFFT(largest, largest, largest, 0, 1));
+	if (_limit < 0)
+	{
+		_fft = VagFFTPtr(new VagFFT(largest, largest, largest, 0, 1));
+	}
+	else
+	{
+		_fft = VagFFTPtr(new VagFFT(indexLimitH, indexLimitK, 
+		                            indexLimitL, 0, 1));
+	}
+	_fft->setUnitCell(unitCell);
 	_fft->multiplyAll(nan(" "));
 	_fft->copyToScratch(0);
 	_fft->multiplyAll(nan(" "));
@@ -320,7 +356,13 @@ void DiffractionMtz::load()
 		int _k = adata[col_k->source - 1];
 		int _l = adata[col_l->source - 1];
 		int h, k, l;
+		
 		CSym::ccp4spg_put_in_asu(spg, _h, _k, _l, &h, &k, &l);
+		
+		if (!_fft->withinBounds(h, k, l))
+		{
+			continue;
+		}
 		
 		float amplitude = adata[col_f->source - 1];
 		float phase = 0;
@@ -453,6 +495,7 @@ void DiffractionMtz::load()
 	}
 	
 	free(refldata);
+	MtzFree(mtz);
 }
 
 void DiffractionMtz::syminfoCheck()

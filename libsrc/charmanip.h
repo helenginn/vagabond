@@ -26,7 +26,7 @@ inline char *strchrwhite(char *block)
 	while (true)
 	{
 		if (*block == ' ' || *block == '\n' 
-		    || *block == '\t' || *block == NULL)
+		    || *block == '\t' || *block == '\0')
 		{
 			return block;
 		}

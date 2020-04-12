@@ -27,6 +27,7 @@ public:
 	{
 		_minRes = 0;
 		_maxRes = 0;
+		_limit = -1;
 	}
 
 	virtual ~Diffraction() {};
@@ -67,6 +68,11 @@ public:
 	{
 		return _maxRes;
 	}
+	
+	void setResLimit(double limit)
+	{
+		_limit = limit;
+	}
 
 	void copyToFFT(VagFFTPtr vag);
 protected:
@@ -77,6 +83,7 @@ protected:
 
 	float _minRes;
 	float _maxRes;
+	float _limit;
 
 private:
 	/* Contains the reciprocal reflection values */

@@ -42,6 +42,7 @@ double Options::_bReal = -1;
 double Options::_minRes = HUGE_VAL;
 double Options::_maxRes = -1.0;
 double Options::_probeRadius = -0.2;
+double Options::_shrink = -0.2;
 bool Options::_useRFree = true;
 bool Options::_lowResMode = false;
 int Options::_bondAngles = 2;
@@ -141,6 +142,11 @@ void Options::run()
 	std::cout << "            Vagabond at your service.\n" << std::endl;
 	std::cout << std::endl;
 	std::cout << "Vagabond v" << VAGABOND_VERSION_COMMIT_ID <<  std::endl;
+
+	if (arguments.size() && arguments[0] == "--hang")
+	{
+		return;
+	}
 	
 	writeCommandLine();
 	
@@ -621,6 +627,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "--bond-angles=", &_bondAngles);
 		understood |= parseParameter(arg, "--nsamples=", &_nSamples);
 		understood |= parseParameter(arg, "--probe-radius=", &_probeRadius);
+		understood |= parseParameter(arg, "--shrink=", &_shrink);
 		understood |= parseParameter(arg, "--ncycles=", &_nCycles);
 		understood |= parseParameter(arg, "--global-b=", &_bReal);
 		understood |= parseParameter(arg, "--sampling=", &_sampling);
