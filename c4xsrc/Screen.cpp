@@ -38,13 +38,13 @@
 #include "MtzFFTPtr.h"
 
 #define TOOL_BAR_HEIGHT 50
-#define TREE_VIEW_WIDTH 200
-#define TAB_VIEW_WIDTH 500
+#define TREE_VIEW_WIDTH 300
+#define TAB_VIEW_WIDTH 800
 #define RIGHT_VIEW_WIDTH 200
 
 Screen::Screen(QWidget *widget) : QMainWindow(widget)
 {
-	setGeometry(0, 0, 1000, 600);
+	setGeometry(0, 0, 1200, 800);
 
 	_tabs = NULL;
 	_correlLabel = NULL;
@@ -88,30 +88,33 @@ void Screen::resizeEvent(QResizeEvent *e)
 		                   - RIGHT_VIEW_WIDTH, height());
 		if (_correlLabel)
 		{
-			_correlLabel->setGeometry(0, 0, _tabs->width(), _tabs->height());
+			/*
+			_correlLabel->setGeometry(0, tabtop, _tabs->width(), 
+			                          _tabs->height());
+			*/
 
 			relinkPixmap();
 		}
 		
 		if (_graph)
 		{
-			_graph->setGeometry(0, 0, _tabs->width(), _tabs->height());
+			int axh = 60;
 			
 			if (_keeper)
 			{
-				_keeper->setGeometry(0, 60, _tabs->width(), 
-				                     _tabs->height() - 60);
+				_keeper->setGeometry(0, axh, _tabs->width(), 
+				                     _tabs->height() - axh);
 			}
 			
 			if (_selection)
 			{
-				_selection->setGeometry(-2, 58, _tabs->width() + 2, 
-				                        _tabs->height() - 60);
+				_selection->setGeometry(-2, axh - 2, _tabs->width() + 2, 
+				                        _tabs->height() - axh);
 			}
 			
 			if (_scroll)
 			{
-				_scroll->setGeometry(0, 0, _tabs->width(), 60);
+				_scroll->setGeometry(0, 0, _tabs->width(), axh);
 			}
 
 			if (_newSel)
@@ -125,7 +128,7 @@ void Screen::resizeEvent(QResizeEvent *e)
 				_invertSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 				                     _invertSele->y(), RIGHT_VIEW_WIDTH - 20, 40);
 				_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-				                      _export->y(), RIGHT_VIEW_WIDTH - 20, 40);
+				                      h - 50, RIGHT_VIEW_WIDTH - 20, 40);
 			}
 		}
 	}
@@ -211,116 +214,116 @@ void Screen::displayResults(Averager *ave)
 	_tabs = new QTabWidget(this);
 	resizeEvent(NULL);
 
-	if (ave->getCorrelMatrix())
+	if (!ave->getCorrelMatrix())
 	{
-		_correlImage = ave->getCorrelMatrix();
-		_correlImage->updateSelection();
-
-		QLabel *l = new QLabel(NULL);
-		l->setGeometry(0, 0, _tabs->height(), _tabs->width());
-		_correlLabel = l;
-		relinkPixmap();
-		_tabs->addTab(l, "Correlation matrix");
-
-
-		_graph = new QWidget(this);
-		_graph->setGeometry(0, 0, _tabs->width(), _tabs->width());
-		_tabs->addTab(_graph, "Axis explorer");
-
-		KeeperGL *gl = new KeeperGL(_graph);
-		gl->addAxes();
-		gl->setAverager(ave);
-		GLPoint *points = gl->getPoints();
-
-		_keeper = gl;
-		
-		connect(points, &GLPoint::updateSelection,
-		        this, &Screen::refreshSelection);
-		
-		_selection = new SelectionWindow(_graph, gl);
-		_selection->setPoints(_keeper->getPoints());
-		_selection->show();
-		_selection->setFocusPolicy(Qt::StrongFocus);
-		
-		_scroll = new AxisScroll(_graph);
-		_scroll->setAverager(ave);
-		_scroll->setPoints(gl->getPoints());
-		_scroll->makeLayout();
-		
-		int top = 10;
-		
-		_newSel = new QPushButton("New selection", this);
-		_newSel->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
-		                     RIGHT_VIEW_WIDTH - 20, 40);
-		_newSel->show();
-		
-		top += 50;
-		
-		QMenu *menu = new QMenu(this);
-		_withAve = menu->addAction("Using existing average");
-		connect(_withAve, &QAction::triggered,
-		        this, &Screen::newSelection);
-		_newAve = menu->addAction("Calculate new average");
-		connect(_newAve, &QAction::triggered,
-		        this, &Screen::newSelection);
-		_newSel->setMenu(menu);
-
-		_invertSele = new QPushButton("Invert selection", this);
-		_invertSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
-		                       RIGHT_VIEW_WIDTH - 20, 40);
-		_invertSele->show();
-		connect(_invertSele, &QPushButton::clicked,
-		        _list, &ClusterList::invertSelection);
-
-		top += 50;
-
-		_markSele = new QPushButton("Mark all in cluster", this);
-		_markSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
-		                       RIGHT_VIEW_WIDTH - 20, 40);
-		_markSele->show();
-		connect(_markSele, &QPushButton::clicked,
-		        this, &Screen::markSelection);
-
-		top += 50;
-
-		_unmarkSele = new QPushButton("Unmark datasets", this);
-		_unmarkSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
-		                         RIGHT_VIEW_WIDTH - 20, 40);
-		_unmarkSele->show();
-		connect(_unmarkSele, &QPushButton::clicked,
-		        this, &Screen::markSelection);
-
-		top += 50;
-		
-		
-		int bottom = height() - 50;
-
-		_export = new QPushButton("Export all", this);
-		_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, bottom,
-		                         RIGHT_VIEW_WIDTH - 20, 40);
-		_export->show();
-		connect(_export, &QPushButton::clicked,
-		        _list, &ClusterList::exportAll);
-		
-		bottom -= 50;
-
-		_bin.push_back((QWidget **)&_export);
-		_bin.push_back((QWidget **)&_invertSele);
-		_bin.push_back((QWidget **)&_markSele);
-		_bin.push_back((QWidget **)&_unmarkSele);
-		_bin.push_back((QWidget **)&_newAve);
-		_bin.push_back((QWidget **)&_withAve);
-		_bin.push_back((QWidget **)&_scroll);
-		_bin.push_back((QWidget **)&_correlLabel);
-		_bin.push_back((QWidget **)&_selection);
-		_bin.push_back((QWidget **)&_keeper);
-		_bin.push_back((QWidget **)&_graph);
-		_bin.push_back((QWidget **)&_newSel);
+		return;
 	}
+
+	_correlImage = ave->getCorrelMatrix();
+	_correlImage->updateSelection();
+
+	QLabel *l = new QLabel(NULL);
+	_correlLabel = l;
+	_tabs->addTab(l, "Correlation matrix");
+
+	_graph = new QWidget(this);
+	_tabs->addTab(_graph, "Axis explorer");
+
+	KeeperGL *gl = new KeeperGL(_graph);
+	gl->addAxes();
+	gl->setAverager(ave);
+	GLPoint *points = gl->getPoints();
+
+	_keeper = gl;
+
+	connect(points, &GLPoint::updateSelection,
+	        this, &Screen::refreshSelection);
+
+	_selection = new SelectionWindow(_graph, gl);
+	_selection->setPoints(_keeper->getPoints());
+	_selection->show();
+	_selection->setFocusPolicy(Qt::StrongFocus);
+
+	_scroll = new AxisScroll(_graph);
+	_scroll->setAverager(ave);
+	_scroll->setPoints(gl->getPoints());
+	_scroll->makeLayout();
+
+	int top = 10;
+
+	_newSel = new QPushButton("New selection", this);
+	_newSel->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
+	                     RIGHT_VIEW_WIDTH - 20, 40);
+	_newSel->show();
+
+	top += 50;
+
+	QMenu *menu = new QMenu(this);
+	_withAve = menu->addAction("Using existing average");
+	connect(_withAve, &QAction::triggered,
+	        this, &Screen::newSelection);
+	_newAve = menu->addAction("Calculate new average");
+	connect(_newAve, &QAction::triggered,
+	        this, &Screen::newSelection);
+	_newSel->setMenu(menu);
+
+	_invertSele = new QPushButton("Invert selection", this);
+	_invertSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
+	                         RIGHT_VIEW_WIDTH - 20, 40);
+	_invertSele->show();
+	connect(_invertSele, &QPushButton::clicked,
+	        _list, &ClusterList::invertSelection);
+
+	top += 50;
+
+	_markSele = new QPushButton("Mark all in cluster", this);
+	_markSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
+	                       RIGHT_VIEW_WIDTH - 20, 40);
+	_markSele->show();
+	connect(_markSele, &QPushButton::clicked,
+	        this, &Screen::markSelection);
+
+	top += 50;
+
+	_unmarkSele = new QPushButton("Unmark datasets", this);
+	_unmarkSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
+	                         RIGHT_VIEW_WIDTH - 20, 40);
+	_unmarkSele->show();
+	connect(_unmarkSele, &QPushButton::clicked,
+	        this, &Screen::markSelection);
+
+	top += 50;
+
+
+	int bottom = height() - 50;
+
+	_export = new QPushButton("Export all", this);
+	_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, bottom,
+	                     RIGHT_VIEW_WIDTH - 20, 40);
+	_export->show();
+	connect(_export, &QPushButton::clicked,
+	        _list, &ClusterList::exportAll);
+
+	bottom -= 50;
+
+	_bin.push_back((QWidget **)&_export);
+	_bin.push_back((QWidget **)&_invertSele);
+	_bin.push_back((QWidget **)&_markSele);
+	_bin.push_back((QWidget **)&_unmarkSele);
+	_bin.push_back((QWidget **)&_newAve);
+	_bin.push_back((QWidget **)&_withAve);
+	_bin.push_back((QWidget **)&_scroll);
+	_bin.push_back((QWidget **)&_correlLabel);
+	_bin.push_back((QWidget **)&_selection);
+	_bin.push_back((QWidget **)&_keeper);
+	_bin.push_back((QWidget **)&_graph);
+	_bin.push_back((QWidget **)&_newSel);
 
 	connect(_tabs, &QTabWidget::tabBarClicked, 
 	        this, &Screen::refocus);
 	_tabs->show();
+	relinkPixmap();
+	resizeEvent(NULL);
 }
 
 void Screen::markSelection()
@@ -345,8 +348,8 @@ void Screen::relinkPixmap()
 		return;
 	}
 
-	int smaller = std::min(_correlImage->width() - 40, 
-	                       _correlImage->height());
+	int smaller = std::min(_correlLabel->width(), 
+	                       _correlLabel->height());
 	QImage i = _correlImage->scaled(smaller, smaller,
 	                                Qt::KeepAspectRatio);
 	_correlLabel->setPixmap(QPixmap::fromImage(i));

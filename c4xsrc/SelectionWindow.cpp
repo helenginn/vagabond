@@ -55,11 +55,16 @@ void SelectionWindow::mouseReleaseEvent(QMouseEvent *e)
 
 	int endX = e->x();
 	int endY = e->y();
+
+	float x1 = std::min(_startX, endX);
+	float y1 = std::max(_startY, endY);
+	float x2 = std::max(_startX, endX);
+	float y2 = std::min(_startY, endY);
 	
-	float x1 = _startX / (float)scene()->width();
-	float y1 = endY / (float)scene()->height();
-	float y2 = _startY / (float)scene()->height();
-	float x2 = endX / (float)scene()->width();
+	x1 /= (float)scene()->width();
+	x2 /= (float)scene()->width();
+	y1 /= (float)scene()->height();
+	y2 /= (float)scene()->height();
 
 	x1 = 2 * x1 - 1;
 	x2 = 2 * x2 - 1;
@@ -68,7 +73,7 @@ void SelectionWindow::mouseReleaseEvent(QMouseEvent *e)
 	
 	y1 *= -1;
 	y2 *= -1;
-	
+
 	int add = 1;
 	
 	if (_startX == endX && _startY == endY)
@@ -95,8 +100,16 @@ void SelectionWindow::mouseMoveEvent(QMouseEvent *e)
 	}
 	
 	QRectF r;
-	r.setTopLeft(QPoint(_startX, _startY));
-	r.setBottomRight(QPoint(e->x(), e->y()));
+	
+	int left = std::min(_startX, e->x());
+	int right = std::max(_startX, e->x());
+	int top = std::min(_startY, e->y());
+	int bottom = std::max(_startY, e->y());
+
+	r.setTop(top);
+	r.setBottom(bottom);
+	r.setLeft(left);
+	r.setRight(right);
 	
 	scene()->clear();
 	scene()->addRect(r);
