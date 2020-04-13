@@ -19,6 +19,7 @@ Averager::Averager(QTreeWidget *parent) : QTreeWidgetItem(parent)
 	_vPtrs = NULL;
 	_w = NULL;
 	_correlMatrix = NULL;
+	_marked = false;
 }
 
 void Averager::performAverage()
@@ -257,7 +258,7 @@ void Averager::findIntercorrelations()
 	memcpy(_orig, _svd, sizeof(double) * dims * dims);
 
 	_correlMatrix = new MatrixView(this);
-	_correlMatrix->populate(dims, _origPtrs);
+	_correlMatrix->populate();
 	drawResults(_svdPtrs, "correlation_0");
 }
 
@@ -511,12 +512,6 @@ void Averager::svd()
 		return;
 	}
 	
-	for (size_t i = 0; i < _mtzs.size(); i++)
-	{
-		std::cout << _w[i] << ", " << std::flush;
-	}
-	std::cout << std::endl;
-	
 	drawResults(_svdPtrs, "correlation_1");
 }
 
@@ -601,4 +596,41 @@ void Averager::cleanupSVD()
 	_v = NULL;
 	_vPtrs = NULL;
 	_w = NULL;
+}
+
+void Averager::setMarked(bool marked)
+{
+	for (size_t i = 0; i < _mtzs.size(); i++)
+	{
+		MtzFile *file = _mtzs[i]->getMtzFile();
+		file->setMarked(marked);
+	}
+
+	_marked = marked;
+
+	QFont curr = font(0);
+	curr.setBold(marked);
+	setFont(0, curr);
+}
+
+void Averager::writeToStream(std::ofstream &f, bool complete)
+{
+	for (size_t i = 0; i < _mtzs.size(); i++)
+	{
+		MtzFile *file = _mtzs[i]->getMtzFile();
+		
+		if (complete && !file->isMarked())
+		{
+			continue;
+		}
+		
+		f << file->getFilename();
+		
+		if (i < _mtzs.size() - 1)
+		{
+			f << ", ";
+		}
+	}
+
+	f << std::endl;
 }

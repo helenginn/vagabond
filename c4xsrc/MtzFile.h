@@ -49,7 +49,10 @@ public:
 	
 	void setSelected(bool sele)
 	{
-		_sele = sele;
+		if (!_mark)
+		{
+			_sele = sele;
+		}
 	}
 private:
 	std::string _filename;

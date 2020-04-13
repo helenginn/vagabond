@@ -29,7 +29,7 @@ class MatrixView : public QImage
 public:
 	MatrixView(Averager *ave, int width = 500, int height = 500);
 
-	void populate(int num = -1, double **raw = NULL);
+	void populate();
 	
 	void setContrast(double cont)
 	{
@@ -40,8 +40,6 @@ public:
 private:
 	double _contrast;
 	Averager *_ave;
-	int _num;
-	double **_raw;
 
 };
 

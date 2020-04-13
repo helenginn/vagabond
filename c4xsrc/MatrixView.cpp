@@ -28,27 +28,16 @@ MatrixView::MatrixView(Averager *ave, int w, int h) : QImage(w, h, QImage::Forma
 	_ave = ave;
 	_contrast = 1;
 	fill(Qt::white);
-	_num = 0;
-	_raw = NULL;
 }
 
-void MatrixView::populate(int num, double **raw)
+void MatrixView::populate()
 {
-	if (num > 0 && raw != NULL)
-	{
-		_num = num;
-		_raw = raw;
-	}
-	else
-	{
-		num = _num;
-		raw = _raw;
-	}
+	int num = _ave->mtzCount();
+	double **raw = _ave->getRawPtr();
 
 	QPainter painter(this);
 
 	double box_size = ((double)width() / (double)(num)) + 1;
-	std::cout << "Box size is " << box_size << std::endl;
 	
 	int red = 255;
 	int green = 0;

@@ -1,0 +1,11 @@
+prefix=/usr/local
+libdir=${prefix}/lib64
+includedir=${prefix}/include
+
+Name: libica
+Description: Library for svdcmp
+Version: 1.0
+Requires.private: 
+Libs: -L${libdir} -lica
+Libs.private: -L${libdir} -lm
+Cflags: -I${includedir}/libsrc

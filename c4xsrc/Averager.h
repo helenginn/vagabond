@@ -3,6 +3,7 @@
 
 #include <libsrc/FFT.h>
 #include <QTreeWidgetItem>
+#include <fstream>
 
 #include "MtzFFTPtr.h"
 #include <libsrc/DiffractionMTZ.h>
@@ -124,6 +125,13 @@ public:
 		_fft = fft;
 	}
 	
+	bool isMarked()
+	{
+		return _marked;
+	}
+
+	void setMarked(bool marked);
+	
 	void scaleIndividuals();
 	
 	void findIntercorrelations();
@@ -142,6 +150,13 @@ public:
 	{
 		return _w[i];
 	}
+	
+	double **getRawPtr()
+	{
+		return _origPtrs;
+	}
+	
+	void writeToStream(std::ofstream &f, bool complete);
 	
 	std::string getError()
 	{
@@ -194,6 +209,8 @@ private:
 	double *_v;
 	
 	double *_w;
+	
+	bool _marked;
 };
 
 #endif

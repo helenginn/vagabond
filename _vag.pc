@@ -1,0 +1,11 @@
+prefix=/usr/local
+libdir=${prefix}/lib64
+includedir=${prefix}/include
+
+Name: libvag
+Description: Library for vagabond
+Version: 1.0
+Requires.private: libpng, fftw3f
+Libs: -L${libdir} -lvag -lica
+Libs.private: -L${libdir} -lvgeom -lccp4 -lm
+Cflags: -I${includedir}/libsrc

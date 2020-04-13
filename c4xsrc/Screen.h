@@ -52,6 +52,7 @@ public slots:
 	void removeCluster();
 	void refreshSelection();
 private:
+	void relinkPixmap();
 	void addToolBar();
 	void binTab();
 
@@ -70,6 +71,7 @@ private:
 	QPushButton *_markSele;
 	QPushButton *_unmarkSele;
 	QPushButton *_invertSele;
+	QPushButton *_export;
 	QAction *_withAve;
 	QAction *_newAve;
 	ClusterList *_list;

@@ -69,13 +69,10 @@ void SelectionWindow::mouseReleaseEvent(QMouseEvent *e)
 	y1 *= -1;
 	y2 *= -1;
 	
-	std::cout << x1 << " " << y1 << " " << x2 << " " << y2 << std::endl;
-	
 	int add = 1;
 	
 	if (_startX == endX && _startY == endY)
 	{
-		std::cout << "Equivalent" << std::endl;
 		add = 0;
 	}
 	

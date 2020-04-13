@@ -48,9 +48,14 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 
 	_tabs = NULL;
 	_correlLabel = NULL;
+	_correlImage = NULL;
 	_graph = NULL;
 	_keeper = NULL;
 	_scroll = NULL;
+	_newSel = NULL;
+	_markSele = NULL;
+	_unmarkSele = NULL;
+	_invertSele = NULL;
 
 	_inputTree = new QTreeWidget(this);
 	_inputTree->show();
@@ -84,10 +89,8 @@ void Screen::resizeEvent(QResizeEvent *e)
 		if (_correlLabel)
 		{
 			_correlLabel->setGeometry(0, 0, _tabs->width(), _tabs->height());
-			QImage i = _correlImage->scaled(_correlLabel->width(), 
-			                                _correlLabel->height(),
-			                                Qt::KeepAspectRatioByExpanding);
-			_correlLabel->setPixmap(QPixmap::fromImage(i));
+
+			relinkPixmap();
 		}
 		
 		if (_graph)
@@ -113,8 +116,16 @@ void Screen::resizeEvent(QResizeEvent *e)
 
 			if (_newSel)
 			{
-				_newSel->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 10,
-				                     RIGHT_VIEW_WIDTH - 20, 40);
+				_newSel->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
+				                     _newSel->y(), RIGHT_VIEW_WIDTH - 20, 40);
+				_markSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+				                     _markSele->y(), RIGHT_VIEW_WIDTH - 20, 40);
+				_unmarkSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+				                     _unmarkSele->y(), RIGHT_VIEW_WIDTH - 20, 40);
+				_invertSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+				                     _invertSele->y(), RIGHT_VIEW_WIDTH - 20, 40);
+				_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+				                      _export->y(), RIGHT_VIEW_WIDTH - 20, 40);
 			}
 		}
 	}
@@ -125,7 +136,7 @@ void Screen::addToolBar()
 	_toolBar = new QToolBar(this);
 	_toolBar->show();
 	
-	QAction *a = _toolBar->addAction("Average");
+	QAction *a = _toolBar->addAction("New average");
 	connect(a, &QAction::triggered, this, &Screen::averageGroup);
 
 	QAction *c = _toolBar->addAction("Cluster");
@@ -207,12 +218,10 @@ void Screen::displayResults(Averager *ave)
 
 		QLabel *l = new QLabel(NULL);
 		l->setGeometry(0, 0, _tabs->height(), _tabs->width());
-		QImage i = _correlImage->scaled(l->width() - 40, l->height(),
-		                                Qt::KeepAspectRatioByExpanding);
-		l->setPixmap(QPixmap::fromImage(i));
+		_correlLabel = l;
+		relinkPixmap();
 		_tabs->addTab(l, "Correlation matrix");
 
-		_correlLabel = l;
 
 		_graph = new QWidget(this);
 		_graph->setGeometry(0, 0, _tabs->width(), _tabs->width());
@@ -282,7 +291,20 @@ void Screen::displayResults(Averager *ave)
 		        this, &Screen::markSelection);
 
 		top += 50;
+		
+		
+		int bottom = height() - 50;
 
+		_export = new QPushButton("Export all", this);
+		_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, bottom,
+		                         RIGHT_VIEW_WIDTH - 20, 40);
+		_export->show();
+		connect(_export, &QPushButton::clicked,
+		        _list, &ClusterList::exportAll);
+		
+		bottom -= 50;
+
+		_bin.push_back((QWidget **)&_export);
 		_bin.push_back((QWidget **)&_invertSele);
 		_bin.push_back((QWidget **)&_markSele);
 		_bin.push_back((QWidget **)&_unmarkSele);
@@ -304,13 +326,9 @@ void Screen::displayResults(Averager *ave)
 void Screen::markSelection()
 {
 	bool mark = (QObject::sender() == _markSele);
-	std::vector<MtzFFTPtr> mtzs = _keeper->getMtzs();
-	_list->markMtzs(mtzs, mark);
-	
 	Averager *ave = _keeper->getAverager();
-	QFont curr = ave->font(0);
-	curr.setBold(mark);
-	ave->setFont(0, curr);
+	ave->setMarked(mark);
+	refreshSelection();
 }
 
 void Screen::newSelection()
@@ -320,12 +338,27 @@ void Screen::newSelection()
 	_list->makeGroup(mtzs, withAve);
 }
 
+void Screen::relinkPixmap()
+{
+	if (!_correlImage || !_correlLabel)
+	{
+		return;
+	}
+
+	int smaller = std::min(_correlImage->width() - 40, 
+	                       _correlImage->height());
+	QImage i = _correlImage->scaled(smaller, smaller,
+	                                Qt::KeepAspectRatio);
+	_correlLabel->setPixmap(QPixmap::fromImage(i));
+
+}
+
 void Screen::refreshSelection()
 {
-	if (_correlImage)
+	if (_correlImage && _correlLabel)
 	{
 		_correlImage->updateSelection();
-		_correlLabel->setPixmap(QPixmap::fromImage(*_correlImage));
+		relinkPixmap();
 	}
 	
 	if (_keeper)
@@ -341,3 +374,4 @@ void Screen::refocus(int index)
 		_keeper->setFocus();
 	}
 }
+

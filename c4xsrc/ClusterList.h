@@ -29,7 +29,6 @@ public:
 	}
 	
 	void makeGroup(std::vector<MtzFFTPtr> mtzs, bool useAve);
-	void markMtzs(std::vector<MtzFFTPtr> mtzs, bool mark);
 	
 	void removeCluster(Averager *ave);
 	void clearSelection();
@@ -39,10 +38,13 @@ signals:
 	void cluster();
 	void updateSelections();
 public slots:
+	void exportAll();
 	void handleResults();
 	void handleError();
 	void displayResults();
 private:
+	std::string findNextFilename(std::string file);
+
 	Screen *_screen;
 	QTreeWidget *_widget;
 	QThread *_worker;

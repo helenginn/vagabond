@@ -20,7 +20,9 @@
 #include <QMessageBox>
 #include <QThread>
 #include <iostream>
+#include <fstream>
 
+#include "FileReader.h"
 #include "ClusterList.h"
 #include "MtzFile.h"
 #include "MtzFFT.h"
@@ -69,16 +71,41 @@ void ClusterList::loadFiles(std::vector<std::string> files)
 
 void ClusterList::removeCluster(Averager *ave)
 {
+	if (ave->isMarked())
+	{
+		QMessageBox msgBox;
+		msgBox.setText(tr("Please unmark this cluster before removing it."));
+		msgBox.exec();
+		return;
+	}
+	
 	std::cout << "Removing cluster " <<
 	ave->text(0).toStdString() << std::endl;
 	int index = _widget->indexOfTopLevelItem(ave);
+	
+	if (index == 0)
+	{
+		QMessageBox msgBox;
+		msgBox.setText(tr("Will not remove top level cluster."));
+		msgBox.exec();
+		return;
+	}
+
 	_widget->takeTopLevelItem(index);
 }
 
 void ClusterList::average(Averager *item)
 {
-	delete _worker;
-	_worker = new QThread();
+	if (_worker && _worker->isRunning())
+	{
+		return;
+	}
+	
+	if (!_worker)
+	{
+		_worker = new QThread();
+	}
+
 	item->moveToThread(_worker);
 	connect(this, SIGNAL(average()),
 	        item, SLOT(performAverage()));
@@ -94,8 +121,16 @@ void ClusterList::average(Averager *item)
 
 void ClusterList::cluster(Averager *item)
 {
-	delete _worker;
-	_worker = new QThread();
+	if (_worker && _worker->isRunning())
+	{
+		return;
+	}
+
+	if (!_worker)
+	{
+		_worker = new QThread();
+	}
+
 	item->moveToThread(_worker);
 	connect(this, SIGNAL(cluster()),
 	        item, SLOT(performCluster()));
@@ -107,6 +142,58 @@ void ClusterList::cluster(Averager *item)
 	_worker->start();
 
 	emit cluster();
+}
+
+std::string ClusterList::findNextFilename(std::string file)
+{
+	std::string trial = file;
+	int count = 0;
+
+	while (true)
+	{
+		std::string test = i_to_str(count) + "_" + trial;
+
+		if (!file_exists(test))
+		{
+			return test;
+		}
+		
+		count++;
+	}
+}
+
+void ClusterList::exportAll()
+{
+	std::string fnall = findNextFilename("all_clusters.txt");
+	std::string fnmarked = findNextFilename("marked_clusters.txt");
+	std::ofstream fall;
+	std::ofstream fmarked;
+	fall.open(fnall);
+	fmarked.open(fnmarked);
+	
+	for (int i = 0; i < _widget->topLevelItemCount(); i++)
+	{
+		QTreeWidgetItem *item = _widget->topLevelItem(i);
+		
+		if (!Averager::isAverager(item))
+		{
+			continue;
+		}
+		
+		Averager *obj = static_cast<Averager *>(item);
+		obj->writeToStream(fall, false);
+		obj->writeToStream(fmarked, true);
+	}
+
+	fall.close();
+	fmarked.close();
+
+	std::string m = "Written all clusters to " + fnall + "\n";
+	m += "Written marked clusters only to " + fnmarked + "\n";
+
+	QMessageBox msgBox;
+	msgBox.setText(QString::fromStdString(m));
+	msgBox.exec();
 }
 
 void ClusterList::displayResults()
@@ -156,22 +243,11 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 	_commands = commands;
 }
 
-void ClusterList::markMtzs(std::vector<MtzFFTPtr> mtzs, bool mark)
-{
-	for (size_t i = 0; i < mtzs.size(); i++)
-	{
-		MtzFile *file = mtzs[i]->getMtzFile();
-		file->setMarked(mark);
-	}
-
-	emit updateSelections();
-}
-
 void ClusterList::invertSelection()
 {
-	for (size_t i = 0; i < _files.size(); i++)
+	for (size_t i = 0; i < _lastAverage->mtzCount(); i++)
 	{
-		MtzFile *file = _files[i];
+		MtzFile *file = _lastAverage->getMtz(i)->getMtzFile();
 		bool select = file->isSelected();
 		file->setSelected(!select);
 	}
