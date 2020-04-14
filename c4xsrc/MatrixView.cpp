@@ -37,7 +37,7 @@ void MatrixView::populate()
 
 	QPainter painter(this);
 
-	double box_size = ((double)width() / (double)(num)) + 1;
+	double box_size = ((double)width() / (double)(num));
 	
 	int red = 255;
 	int green = 0;

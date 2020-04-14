@@ -25,6 +25,7 @@ class Diffraction : public Dataset
 public:
 	Diffraction()
 	{
+		_needsFree = true;
 		_minRes = 0;
 		_maxRes = 0;
 		_limit = -1;
@@ -73,6 +74,11 @@ public:
 	{
 		_limit = limit;
 	}
+	
+	void setNeedsRfree(bool needsFree)
+	{
+		_needsFree = needsFree;
+	}
 
 	void copyToFFT(VagFFTPtr vag);
 protected:
@@ -84,6 +90,7 @@ protected:
 	float _minRes;
 	float _maxRes;
 	float _limit;
+	bool _needsFree;
 
 private:
 	/* Contains the reciprocal reflection values */

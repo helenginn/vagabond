@@ -50,9 +50,13 @@ int main(int argc, char * argv[])
 	
 	ClusterList *list = scr.getList();
 	list->setCommands(commands);
-	list->loadFiles(files);
+	bool success = list->loadFiles(files);
+	int status = 0;
 
-	int status = app.exec();
+	if (success)
+	{
+		status = app.exec();
+	}
 	
 	return status;
 }

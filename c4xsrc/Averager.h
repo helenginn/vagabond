@@ -100,6 +100,10 @@ public:
 		_res = res;
 	}
 	
+	MtzFile *getMtzFile(int i);
+	void setMtzSelection(size_t i, bool val);
+	void flipMtzSelection(int i);
+	
 	MtzFFTPtr getMtz(int i)
 	{
 		return _mtzs[i];
@@ -151,6 +155,9 @@ public:
 		return _w[i];
 	}
 	
+	void useOriginalAverage();
+	void copyFromAverage(Averager *ave);
+	
 	double **getRawPtr()
 	{
 		return _origPtrs;
@@ -184,6 +191,7 @@ private:
 	std::vector<MtzFFTPtr> _mtzs;
 	std::vector<std::string> _names;
 	VagFFTPtr _fft;
+	VagFFTPtr _origAve;
 	
 	std::map<Pair, VagScore> _vagVals;
 

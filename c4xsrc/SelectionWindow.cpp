@@ -53,8 +53,9 @@ void SelectionWindow::mouseReleaseEvent(QMouseEvent *e)
 		return;
 	}
 
-	int endX = e->x();
-	int endY = e->y();
+	QPoint p = mapFromGlobal(e->globalPos());
+	int endX = p.x();
+	int endY = p.y();
 
 	float x1 = std::min(_startX, endX);
 	float y1 = std::max(_startY, endY);
@@ -100,11 +101,13 @@ void SelectionWindow::mouseMoveEvent(QMouseEvent *e)
 	}
 	
 	QRectF r;
+
+	QPoint p = mapFromGlobal(e->globalPos());
 	
-	int left = std::min(_startX, e->x());
-	int right = std::max(_startX, e->x());
-	int top = std::min(_startY, e->y());
-	int bottom = std::max(_startY, e->y());
+	int left = std::min(_startX, p.x());
+	int right = std::max(_startX, p.x());
+	int top = std::min(_startY, p.y());
+	int bottom = std::max(_startY, p.y());
 
 	r.setTop(top);
 	r.setBottom(bottom);
@@ -123,8 +126,9 @@ void SelectionWindow::mousePressEvent(QMouseEvent *e)
 		return;
 	}
 	
-	_startX = e->x();
-	_startY = e->y();
+	QPoint p = mapFromGlobal(e->globalPos());
+	_startX = p.x();
+	_startY = p.y();
 }
 
 void SelectionWindow::keyPressEvent(QKeyEvent *event)

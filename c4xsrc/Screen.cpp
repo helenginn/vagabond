@@ -20,6 +20,7 @@
 #include <QToolBar>
 #include <QApplication>
 #include <QTabWidget>
+#include <QActionGroup>
 #include <QPushButton>
 #include <QMessageBox>
 #include <QMenu>
@@ -30,6 +31,7 @@
 #include "Screen.h"
 #include "SelectionWindow.h"
 #include "ClusterList.h"
+#include "CorrelLabel.h"
 #include "KeeperGL.h"
 #include "GLPoint.h"
 #include "Averager.h"
@@ -139,11 +141,20 @@ void Screen::addToolBar()
 	_toolBar = new QToolBar(this);
 	_toolBar->show();
 	
-	QAction *a = _toolBar->addAction("New average");
-	connect(a, &QAction::triggered, this, &Screen::averageGroup);
+	QPushButton *a = new QPushButton("Set average");
+	
+	QMenu *m = new QMenu(a);
+	QAction *a1 = m->addAction("Recalculate");
+	connect(a1, &QAction::triggered, this, &Screen::averageGroup);
+	QAction *a2 = m->addAction("Use original");
+	connect(a2, &QAction::triggered, _list, &ClusterList::resetAverage);
+	QAction *a3 = m->addAction("Use top level");
+	connect(a3, &QAction::triggered, _list, &ClusterList::topAverage);
+	a->setMenu(m);
+	_toolBar->addWidget(a);
 
-	QAction *c = _toolBar->addAction("Cluster");
-	connect(c, &QAction::triggered, this, &Screen::clusterGroup);
+	_cluster = _toolBar->addAction("Cluster");
+	connect(_cluster, &QAction::triggered, this, &Screen::clusterGroup);
 
 	QIcon del = qApp->style()->standardIcon(QStyle::SP_TrashIcon);
 	QAction *d = _toolBar->addAction(del, "Bin");
@@ -222,8 +233,9 @@ void Screen::displayResults(Averager *ave)
 	_correlImage = ave->getCorrelMatrix();
 	_correlImage->updateSelection();
 
-	QLabel *l = new QLabel(NULL);
+	CorrelLabel *l = new CorrelLabel(NULL, _correlImage, this);
 	_correlLabel = l;
+	_correlLabel->setFocusPolicy(Qt::StrongFocus);
 	_tabs->addTab(l, "Correlation matrix");
 
 	_graph = new QWidget(this);
@@ -251,21 +263,14 @@ void Screen::displayResults(Averager *ave)
 
 	int top = 10;
 
-	_newSel = new QPushButton("New selection", this);
+	_newSel = new QPushButton("New group", this);
 	_newSel->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
 	                     RIGHT_VIEW_WIDTH - 20, 40);
+	connect(_newSel, &QPushButton::clicked,
+	        this, &Screen::newSelection);
 	_newSel->show();
 
 	top += 50;
-
-	QMenu *menu = new QMenu(this);
-	_withAve = menu->addAction("Using existing average");
-	connect(_withAve, &QAction::triggered,
-	        this, &Screen::newSelection);
-	_newAve = menu->addAction("Calculate new average");
-	connect(_newAve, &QAction::triggered,
-	        this, &Screen::newSelection);
-	_newSel->setMenu(menu);
 
 	_invertSele = new QPushButton("Invert selection", this);
 	_invertSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
@@ -310,8 +315,6 @@ void Screen::displayResults(Averager *ave)
 	_bin.push_back((QWidget **)&_invertSele);
 	_bin.push_back((QWidget **)&_markSele);
 	_bin.push_back((QWidget **)&_unmarkSele);
-	_bin.push_back((QWidget **)&_newAve);
-	_bin.push_back((QWidget **)&_withAve);
 	_bin.push_back((QWidget **)&_scroll);
 	_bin.push_back((QWidget **)&_correlLabel);
 	_bin.push_back((QWidget **)&_selection);
@@ -324,6 +327,7 @@ void Screen::displayResults(Averager *ave)
 	_tabs->show();
 	relinkPixmap();
 	resizeEvent(NULL);
+	refocus(0);
 }
 
 void Screen::markSelection()
@@ -336,9 +340,8 @@ void Screen::markSelection()
 
 void Screen::newSelection()
 {
-	bool withAve = (QObject::sender() == _withAve);
 	std::vector<MtzFFTPtr> mtzs = _keeper->getMtzsFromSelection();
-	_list->makeGroup(mtzs, withAve);
+	_list->makeGroup(mtzs, true);
 }
 
 void Screen::relinkPixmap()
@@ -348,12 +351,10 @@ void Screen::relinkPixmap()
 		return;
 	}
 
-	int smaller = std::min(_correlLabel->width(), 
-	                       _correlLabel->height());
-	QImage i = _correlImage->scaled(smaller, smaller,
-	                                Qt::KeepAspectRatio);
+	QImage i = _correlImage->scaled(_correlLabel->width(), 
+	                                _correlLabel->height(),
+	                                Qt::IgnoreAspectRatio);
 	_correlLabel->setPixmap(QPixmap::fromImage(i));
-
 }
 
 void Screen::refreshSelection()
@@ -374,7 +375,11 @@ void Screen::refocus(int index)
 {
 	if (index == 1)
 	{
-		_keeper->setFocus();
+		_selection->setFocus();
+	}
+	else if (index == 0)
+	{
+		_correlLabel->setFocus();
 	}
 }
 

@@ -17,8 +17,10 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include <QTreeWidget>
+#include <QApplication>
 #include <QMessageBox>
 #include <QThread>
+#include <QPushButton>
 #include <iostream>
 #include <fstream>
 
@@ -34,6 +36,7 @@
 ClusterList::ClusterList(QTreeWidget *widget)
 {
 	_lastAverage = NULL;
+	_res = 3.5;
 	_worker = NULL;
 	_widget = widget;
 	_widget->setHeaderLabel("Dataset groups");
@@ -41,14 +44,13 @@ ClusterList::ClusterList(QTreeWidget *widget)
 	        this, &ClusterList::displayResults);
 }
 
-void ClusterList::loadFiles(std::vector<std::string> files)
+bool ClusterList::loadFiles(std::vector<std::string> files)
 {
 	try
 	{
-		double res = 3.5;
 		Averager *ave = new Averager(_widget);
 		_clusters.push_back(ave);
-		ave->setMaxResolution(res);
+		ave->setMaxResolution(_res);
 
 		for (size_t i = 1; i < files.size(); i++)
 		{
@@ -56,17 +58,34 @@ void ClusterList::loadFiles(std::vector<std::string> files)
 			_files.push_back(file);
 
 			DiffractionMtzPtr mtz = DiffractionMtzPtr(new DiffractionMtz());
-			mtz->setResLimit(res);
+			mtz->setNeedsRfree(false);
+			mtz->setResLimit(_res);
 			mtz->setFilename(files[i]);
 			mtz->load();
 
 			ave->addMtz(mtz, file);
 		}
+		
+		if (ave->mtzCount() == 0)
+		{
+			QMessageBox msgBox;
+			msgBox.setText(tr("No data sets have been successfully loaded.\n"
+			                  "Please pass MTZ files in on the command"
+			                  " line."));
+			QPushButton quit("Quit");
+			msgBox.setDefaultButton(&quit);
+			msgBox.exec();
+			return false;
+		}
+		
+		_widget->setCurrentItem(ave);
 	}
 	catch (Shouter *s)
 	{
 		s->shoutToStdOut();
+		return false;
 	}
+	return true;
 }
 
 void ClusterList::removeCluster(Averager *ave)
@@ -238,9 +257,28 @@ void ClusterList::handleError()
 	msgBox.exec();
 }
 
+std::string isCommand(std::string command, std::string start)
+{
+	if (command.substr(0, start.length()) == start)
+	{
+		return command.substr(start.length(), std::string::npos);
+	}
+	
+	return "";
+}
+
 void ClusterList::setCommands(std::vector<std::string> commands)
 {
 	_commands = commands;
+	
+	for (size_t i = 0; i < _commands.size(); i++)
+	{
+		std::string value = isCommand(_commands[i], "--max-res=");
+		if (value.length())
+		{
+			_res = atof(value.c_str());
+		}
+	}
 }
 
 void ClusterList::invertSelection()
@@ -266,9 +304,34 @@ void ClusterList::clearSelection()
 	emit updateSelections();
 }
 
+void ClusterList::topAverage()
+{
+	QTreeWidgetItem *item = _widget->topLevelItem(0);
+
+	if (!item || !Averager::isAverager(item))
+	{
+		return;
+	}
+
+	Averager *ave = static_cast<Averager *>(item);
+	_lastAverage->copyFromAverage(ave);
+}
+
+void ClusterList::resetAverage()
+{
+	_lastAverage->useOriginalAverage();
+}
+
 void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs, bool withAve)
 {
-	double res = 3.5;
+	if (mtzs.size() == 0)
+	{
+		QMessageBox msgBox;
+		msgBox.setText(tr("No data sets have been selected."));
+		msgBox.exec();
+		return;
+	}
+
 	Averager *ave = new Averager(_widget);
 	
 	if (withAve && _lastAverage)
@@ -278,9 +341,8 @@ void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs, bool withAve)
 	}
 	
 	_clusters.push_back(ave);
-	ave->setMaxResolution(res);
+	ave->setMaxResolution(_res);
 
-	std::cout << "We have " << mtzs.size() << std::endl;
 	for (size_t i = 0; i < mtzs.size(); i++)
 	{
 		MtzFFTPtr mtz = mtzs[i];

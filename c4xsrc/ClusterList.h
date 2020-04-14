@@ -19,7 +19,7 @@ public:
 	ClusterList(QTreeWidget *widget);
 
 	void setCommands(std::vector<std::string> commands);
-	void loadFiles(std::vector<std::string> files);
+	bool loadFiles(std::vector<std::string> files);
 
 	void average(Averager *item);
 	void cluster(Averager *item);
@@ -42,6 +42,8 @@ public slots:
 	void handleResults();
 	void handleError();
 	void displayResults();
+	void resetAverage();
+	void topAverage();
 private:
 	std::string findNextFilename(std::string file);
 
@@ -53,6 +55,7 @@ private:
 	std::vector<Averager *> _clusters;
 	std::vector<MtzFile *> _files;
 	std::vector<std::string> _commands;
+	double _res;
 };
 
 

@@ -37,6 +37,11 @@ public:
 	}
 	
 	void updateSelection();
+	
+	Averager *getAverager()
+	{
+		return _ave;
+	}
 private:
 	double _contrast;
 	Averager *_ave;

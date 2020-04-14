@@ -18,6 +18,7 @@
 
 #include <QMainWindow>
 
+class CorrelLabel;
 class QTreeWidget;
 class QImage;
 class QPushButton;
@@ -43,6 +44,7 @@ public:
 
 	virtual void resizeEvent(QResizeEvent *e);
 	void displayResults(Averager *ave);
+	
 public slots:
 	void refocus(int index);
 	void averageGroup();
@@ -61,7 +63,7 @@ private:
 	SelectionWindow *_selection;
 	MatrixView *_correlImage;
 	KeeperGL *_keeper;
-	QLabel *_correlLabel;
+	CorrelLabel *_correlLabel;
 	QTabWidget *_tabs;
 	QWidget *_graph;
 	AxisScroll *_scroll;
@@ -72,8 +74,7 @@ private:
 	QPushButton *_unmarkSele;
 	QPushButton *_invertSele;
 	QPushButton *_export;
-	QAction *_withAve;
-	QAction *_newAve;
+	QAction *_cluster;
 	ClusterList *_list;
 
 };

@@ -191,6 +191,7 @@ if qt5_dep.found() and dep_gl.found()
 'c4xsrc/SelectionWindow.h', 
 'c4xsrc/KeeperGL.h', 
 'c4xsrc/ClusterList.h', 
+'c4xsrc/CorrelLabel.h', 
 ],
 		moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'])
 
@@ -199,6 +200,7 @@ executable('cluster4x', gen_src, moc_cluster4x,
 'c4xsrc/Averager.cpp', 
 'c4xsrc/AxisScroll.cpp', 
 'c4xsrc/ClusterList.cpp', 
+'c4xsrc/CorrelLabel.cpp', 
 'c4xsrc/MatrixView.cpp', 
 'c4xsrc/MtzFile.cpp', 
 'c4xsrc/MtzFFT.cpp', 

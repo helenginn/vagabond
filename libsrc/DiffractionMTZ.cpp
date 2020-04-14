@@ -209,7 +209,7 @@ void DiffractionMtz::load()
 
 	getCol(rFreeNames, mtz, &col_rfree);
 
-	if (!col_rfree)
+	if (!col_rfree && _needsFree)
 	{
 		choice.original = "FREE";
 		choice.wanted = "free set values";

@@ -62,6 +62,19 @@ void Averager::performCluster()
 	}
 }
 
+void Averager::useOriginalAverage()
+{
+	if (_origAve)
+	{
+		_fft = _origAve;
+	}
+}
+
+void Averager::copyFromAverage(Averager *ave)
+{
+	_fft = ave->_fft;
+}
+
 void Averager::makeAverage(bool force)
 {
 	if (_mtzs.size() == 0)
@@ -73,6 +86,11 @@ void Averager::makeAverage(bool force)
 	if (_fft && _fft->nn() > 0 && !force)
 	{
 		return;
+	}
+	
+	if (force)
+	{
+		_origAve = VagFFTPtr(new VagFFT(*_fft));
 	}
 
 	VagFFTPtr first = _mtzs[0];
@@ -257,7 +275,7 @@ void Averager::findIntercorrelations()
 	size_t dims = _mtzs.size();
 	memcpy(_orig, _svd, sizeof(double) * dims * dims);
 
-	_correlMatrix = new MatrixView(this);
+	_correlMatrix = new MatrixView(this, dims, dims);
 	_correlMatrix->populate();
 	drawResults(_svdPtrs, "correlation_0");
 }
@@ -529,9 +547,6 @@ void Averager::drawAxes()
 {
 	CSVPtr csv = CSVPtr(new CSV(7, "mtz", "a", "b", "c", "d", "e", "f"));
 
-	std::ofstream f;
-	f.open("mtz_names.txt");
-	
 	matAlloc(&_cluster, &_clusterPtrs);
 
 	for (size_t i = 0; i < _mtzs.size(); i++)
@@ -559,13 +574,8 @@ void Averager::drawAxes()
 		              aligned[3], aligned[4], aligned[5], aligned[6]);
 		
 		free(aligned);
-		
-		MtzFile *file = _mtzs[i]->getMtzFile();
-		f << file->getFilename() << " " << dist << std::endl;
 	}
 	
-	f.close();
-
 	std::map<std::string, std::string> plotMap;
 	plotMap["filename"] = "principal_axes";
 	plotMap["xHeader0"] = "a";
@@ -628,9 +638,36 @@ void Averager::writeToStream(std::ofstream &f, bool complete)
 		
 		if (i < _mtzs.size() - 1)
 		{
-			f << ", ";
+			f << ",";
 		}
 	}
 
 	f << std::endl;
+}
+
+MtzFile *Averager::getMtzFile(int i)
+{
+	return _mtzs[i]->getMtzFile();
+}
+
+void Averager::flipMtzSelection(int i)
+{
+	MtzFile *file = _mtzs[i]->getMtzFile();
+	if (!file) 
+	{
+		return;
+	}
+	
+	file->flipSelected();
+}
+
+void Averager::setMtzSelection(size_t i, bool val)
+{
+	if (i >= _mtzs.size())
+	{
+		return;
+	}
+
+	MtzFile *file = _mtzs[i]->getMtzFile();
+	file->setSelected(val);
 }

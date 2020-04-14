@@ -98,8 +98,8 @@ void GLPoint::recolour()
 		MtzFile *file = _ave->getMtz(i)->getMtzFile();
 		if (file->isSelected())
 		{
-			v.color[0] = 100;
-			v.color[1] = 100;
+			v.color[0] = 60;
+			v.color[1] = 60;
 		}
 		else if (file->isMarked())
 		{

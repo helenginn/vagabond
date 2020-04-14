@@ -1,4 +1,4 @@
-// Clusterxxxx
+// Cluster4x
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,55 +16,34 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __clusterxxxx__MtzFile__
-#define __clusterxxxx__MtzFile__
+#ifndef __cluster4x__CorrelLabel__
+#define __cluster4x__CorrelLabel__
 
-#include <string>
+#include <QLabel>
 
-class MtzFile
+class Screen;
+class MatrixView;
+
+class CorrelLabel : public QLabel
 {
+Q_OBJECT
 public:
-	MtzFile(std::string filename);
+	CorrelLabel(QWidget *parent, MatrixView *image, Screen *screen);
 
-	std::string getFilename()
-	{
-		return _filename;
-	}
-	
-	void setMarked(bool mark)
-	{
-		_mark = mark;
-		_sele = false;
-	}
-	
-	bool isMarked()
-	{
-		return _mark;
-	}
-	
-	bool isSelected()
-	{
-		return _sele;
-	}
-	
-	void flipSelected()
-	{
-		_sele = !_sele;
-	}
-	
-	void setSelected(bool sele)
-	{
-		if (!_mark)
-		{
-			_sele = sele;
-		}
-	}
-private:
-	std::string _filename;
+protected:
+	virtual void mousePressEvent(QMouseEvent *e);
+	virtual void mouseMoveEvent(QMouseEvent *e);
+	virtual void mouseReleaseEvent(QMouseEvent *e);
+	virtual void keyPressEvent(QKeyEvent *e);
+	virtual void keyReleaseEvent(QKeyEvent *e);
+	int findMtzForXY(int x, int y);
 
-	bool _mark;
-	bool _sele;
+	MatrixView *_image;
+	Screen *_screen;
+	bool _shift;
+	bool _ctrl;
+	int _startFile;
+	int _lastFile;
 };
 
 #endif
-
