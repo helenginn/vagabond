@@ -28,6 +28,7 @@
 #include <QIcon>
 #include <iostream>
 
+#include "FileReader.h"
 #include "Screen.h"
 #include "SelectionWindow.h"
 #include "ClusterList.h"
@@ -48,6 +49,9 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 {
 	setGeometry(0, 0, 1200, 800);
 
+	_scale = -1;
+	_storeHKL = make_mat4x4();
+	mat4x4_mult_scalar(&_storeHKL, 5);
 	_tabs = NULL;
 	_correlLabel = NULL;
 	_correlImage = NULL;
@@ -58,6 +62,9 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 	_markSele = NULL;
 	_unmarkSele = NULL;
 	_invertSele = NULL;
+	_hkl = NULL;
+	_hklKeeper = NULL;
+	_currIndex = 0;
 
 	_inputTree = new QTreeWidget(this);
 	_inputTree->show();
@@ -90,14 +97,18 @@ void Screen::resizeEvent(QResizeEvent *e)
 		                   - RIGHT_VIEW_WIDTH, height());
 		if (_correlLabel)
 		{
-			/*
-			_correlLabel->setGeometry(0, tabtop, _tabs->width(), 
+			_correlLabel->setGeometry(0, 0, _tabs->width(), 
 			                          _tabs->height());
-			*/
 
 			relinkPixmap();
 		}
-		
+
+		if (_hklKeeper)
+		{
+			_hklKeeper->setGeometry(0, 0, _tabs->width(), 
+			                        _tabs->height());
+		}
+
 		if (_graph)
 		{
 			int axh = 60;
@@ -210,7 +221,8 @@ void Screen::binTab()
 {
 	for (size_t i = 0; i < _bin.size(); i++)
 	{
-		delete *_bin[i];
+		(*_bin[i])->hide();
+		(*_bin[i])->deleteLater();
 		*_bin[i] = 0;
 	}
 
@@ -219,12 +231,8 @@ void Screen::binTab()
 	_tabs = NULL;
 }
 
-void Screen::displayResults(Averager *ave)
+void Screen::addCorrelImage(Averager *ave)
 {
-	binTab();
-	_tabs = new QTabWidget(this);
-	resizeEvent(NULL);
-
 	if (!ave->getCorrelMatrix())
 	{
 		return;
@@ -237,29 +245,142 @@ void Screen::displayResults(Averager *ave)
 	_correlLabel = l;
 	_correlLabel->setFocusPolicy(Qt::StrongFocus);
 	_tabs->addTab(l, "Correlation matrix");
+	_bin.push_back((QWidget **)&_correlLabel);
+}
+
+void Screen::addAxisExplorer(Averager *ave)
+{
+	if (!ave->getCorrelMatrix())
+	{
+		return;
+	}
 
 	_graph = new QWidget(this);
 	_tabs->addTab(_graph, "Axis explorer");
 
-	KeeperGL *gl = new KeeperGL(_graph);
-	gl->addAxes();
-	gl->setAverager(ave);
-	GLPoint *points = gl->getPoints();
+	_keeper = new KeeperGL(_graph);
+	_keeper->addAxes();
+	_keeper->addSVDPoints(ave);
 
-	_keeper = gl;
+	GLPoint *points = _keeper->getPoints();
 
 	connect(points, &GLPoint::updateSelection,
 	        this, &Screen::refreshSelection);
 
-	_selection = new SelectionWindow(_graph, gl);
-	_selection->setPoints(_keeper->getPoints());
+	_selection = new SelectionWindow(_graph, _keeper);
+	_selection->setPoints(points);
 	_selection->show();
 	_selection->setFocusPolicy(Qt::StrongFocus);
 
 	_scroll = new AxisScroll(_graph);
 	_scroll->setAverager(ave);
-	_scroll->setPoints(gl->getPoints());
+	_scroll->setPoints(points);
 	_scroll->makeLayout();
+
+	_bin.push_back((QWidget **)&_graph);
+	_bin.push_back((QWidget **)&_scroll);
+	_bin.push_back((QWidget **)&_selection);
+	_bin.push_back((QWidget **)&_keeper);
+}
+
+void Screen::addHKLView(VagFFTPtr fft)
+{
+	if (!fft)
+	{
+		return;
+	}
+
+	_hkl = new QWidget(this);
+	_tabs->addTab(_hkl, "HKL explorer");
+	
+	std::cout << fft->nn() << std::endl;
+	
+	if (_scale < 0 || _scale != _scale)
+	{
+		double average = fft->averageAll();
+		_scale = average * 5;
+	}
+
+	_hklKeeper = new KeeperGL(_hkl);
+	_hklKeeper->addAxes();
+	_hklKeeper->setModelMatrix(_storeHKL);
+	_hklKeeper->addHKLView(fft, _scale);
+	_hklKeeper->setStoreMatrix(&_storeHKL);
+	
+	std::vector<double> uc = fft->getUnitCell();
+	std::string ucInfo;
+	ucInfo += fft->getSpaceGroup()->symbol_Hall;
+	ucInfo += "; a, b, c =  ";
+	for (int i = 0; i < 3; i++)
+	{
+		ucInfo += f_to_str(uc[i], 2) + "   ";
+	}
+	ucInfo += " Å; a, b, g =  ";
+	for (int i = 3; i < 6; i++)
+	{
+		ucInfo += f_to_str(uc[i], 2) + "   ";
+	}
+	ucInfo += "°.";
+	
+	_ucLabel = new QLabel(QString::fromStdString(ucInfo), _hkl);
+	_ucLabel->setGeometry(0, 0, 600, 40);
+	_ucLabel->show();
+
+	_bin.push_back((QWidget **)&_hklKeeper);
+	_bin.push_back((QWidget **)&_ucLabel);
+	_bin.push_back((QWidget **)&_hkl);
+}
+
+void Screen::displaySingle(VagFFTPtr fft)
+{
+	if (_tabs != NULL)
+	{
+		disconnect(_tabs, &QTabWidget::currentChanged, 
+		           this, &Screen::changeIndex);
+	}
+
+	binTab();
+	_tabs = new QTabWidget(this);
+	resizeEvent(NULL);
+
+
+	addHKLView(fft);
+	_tabs->show();
+
+	int top = 10;
+
+	_toggleDead = new QPushButton("Toggle dead", this);
+	_toggleDead ->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
+	                          RIGHT_VIEW_WIDTH - 20, 40);
+	connect(_toggleDead, &QPushButton::clicked,
+	        _list, &ClusterList::toggleDead);
+	_toggleDead->show();
+	
+	_bin.push_back((QWidget **)&_toggleDead);
+
+	resizeEvent(NULL);
+}
+
+void Screen::displayResults(Averager *ave)
+{
+	if (_tabs != NULL)
+	{
+		disconnect(_tabs, &QTabWidget::currentChanged, 
+		           this, &Screen::changeIndex);
+	}
+
+	binTab();
+	if (!ave->getCorrelMatrix())
+	{
+		return;
+	}
+	_tabs = new QTabWidget(this);
+
+	resizeEvent(NULL);
+
+	addCorrelImage(ave);
+	addAxisExplorer(ave);
+	addHKLView(ave->getAverageFFT());
 
 	int top = 10;
 
@@ -299,6 +420,21 @@ void Screen::displayResults(Averager *ave)
 
 	top += 50;
 
+	_deadSele = new QPushButton("Mark all dead/rubbish", this);
+	_deadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
+	                       RIGHT_VIEW_WIDTH - 20, 40);
+	_deadSele->show();
+	connect(_deadSele, &QPushButton::clicked,
+	        this, &Screen::killSelection);
+
+	top += 50;
+
+	_undeadSele = new QPushButton("Unmark dead/rubbish", this);
+	_undeadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
+	                         RIGHT_VIEW_WIDTH - 20, 40);
+	_undeadSele->show();
+	connect(_undeadSele, &QPushButton::clicked,
+	        this, &Screen::killSelection);
 
 	int bottom = height() - 50;
 
@@ -315,19 +451,19 @@ void Screen::displayResults(Averager *ave)
 	_bin.push_back((QWidget **)&_invertSele);
 	_bin.push_back((QWidget **)&_markSele);
 	_bin.push_back((QWidget **)&_unmarkSele);
-	_bin.push_back((QWidget **)&_scroll);
-	_bin.push_back((QWidget **)&_correlLabel);
-	_bin.push_back((QWidget **)&_selection);
-	_bin.push_back((QWidget **)&_keeper);
-	_bin.push_back((QWidget **)&_graph);
+	_bin.push_back((QWidget **)&_deadSele);
+	_bin.push_back((QWidget **)&_undeadSele);
 	_bin.push_back((QWidget **)&_newSel);
 
+	_tabs->setCurrentIndex(_currIndex);
+	_tabs->show();
 	connect(_tabs, &QTabWidget::tabBarClicked, 
 	        this, &Screen::refocus);
-	_tabs->show();
-	relinkPixmap();
+	connect(_tabs, &QTabWidget::currentChanged, 
+	        this, &Screen::changeIndex);
 	resizeEvent(NULL);
-	refocus(0);
+	refocus(_currIndex);
+	relinkPixmap();
 }
 
 void Screen::markSelection()
@@ -335,6 +471,14 @@ void Screen::markSelection()
 	bool mark = (QObject::sender() == _markSele);
 	Averager *ave = _keeper->getAverager();
 	ave->setMarked(mark);
+	refreshSelection();
+}
+
+void Screen::killSelection()
+{
+	bool dead = (QObject::sender() == _deadSele);
+	Averager *ave = _keeper->getAverager();
+	ave->setDead(dead);
 	refreshSelection();
 }
 
@@ -348,6 +492,7 @@ void Screen::relinkPixmap()
 {
 	if (!_correlImage || !_correlLabel)
 	{
+		std::cout << "Something doesn't exist" << std::endl;
 		return;
 	}
 
@@ -356,6 +501,7 @@ void Screen::relinkPixmap()
 	                                Qt::IgnoreAspectRatio);
 	_correlLabel->setPixmap(QPixmap::fromImage(i));
 }
+
 
 void Screen::refreshSelection()
 {
@@ -369,17 +515,28 @@ void Screen::refreshSelection()
 	{
 		_keeper->getPoints()->repopulate();
 	}
+	
+	_list->updateColours();
+}
+
+void Screen::changeIndex(int index)
+{
+	if (_currIndex >= 0)
+	{
+		_currIndex = index;
+	}
 }
 
 void Screen::refocus(int index)
 {
-	if (index == 1)
+	if (index == 1 && _selection != NULL)
 	{
 		_selection->setFocus();
 	}
-	else if (index == 0)
+	else if (index <= 0 && _correlLabel != NULL)
 	{
 		_correlLabel->setFocus();
+		resizeEvent(NULL);
 	}
 }
 

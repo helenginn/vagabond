@@ -58,10 +58,12 @@ typedef struct
 	fftwf_plan recip_to_real;
 } FFTDim;
 
-class VagFFT
+class VagFFT : public boost::enable_shared_from_this<VagFFT>
 {
 public:
 	friend class FFT;
+	
+
 	VagFFT(int nx, int ny, int nz, int nele = 0, int scratches = 0);
 	VagFFT(VagFFT &fft, int scratch = -1);
 	~VagFFT();
@@ -103,6 +105,7 @@ public:
 	                 VagFFTPtr calc = VagFFTPtr());
 	
 	double sumReal(int scratch = -1);
+	double nanlessAverage();
 
 	double averageAll()
 	{

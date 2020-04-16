@@ -1,5 +1,5 @@
-// Fuck COV
-// Copyright (C) 2020 Helen Ginn
+// Cluster4x
+// Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,54 +16,33 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __fuck_cov__GLPoint__
-#define __fuck_cov__GLPoint__
+#ifndef __cluster4x__hklview__
+#define __cluster4x__hklview__
 
+#include <libsrc/mat3x3.h>
+#include <libsrc/FFT.h>
 #include "GLObject.h"
-#include "vec3.h"
 
-class Averager;
 class KeeperGL;
 
-class GLPoint : public QObject, public GLObject
+class HKLView : public QObject, public GLObject
 {
 Q_OBJECT
 public:
-	GLPoint();
-	
-	void setAverager(Averager *ave);
-	void addPoint(vec3 point);
+	HKLView(VagFFTPtr fft, double scale);
 	virtual void initialisePrograms();
-	
-	void setAxes(int a, int b, int c)
-	{
-		_a = a;
-		_b = b;
-		_c = c;
-	}
-	
+
 	void setKeeper(KeeperGL *gl)
 	{
 		_keeper = gl;
 	}
 
-	/* add 1 = add to selection
-	 * add 0 = replace selection
-	 * add -1 = remove from selection */
-	void selectInWindow(float x1, float y1, float x2, float y2,
-	                    int add);
 	void repopulate();
-signals:
-	void updateSelection();
 private:
-	Averager *_ave;
+	void addPoint(vec3 point, double value);
+	VagFFTPtr _fft;
 	KeeperGL *_keeper;
-	void recolour();
-	
-	int _a;
-	int _b;
-	int _c;
+	double _scale;
 };
 
 #endif
-

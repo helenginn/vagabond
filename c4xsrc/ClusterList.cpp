@@ -20,6 +20,7 @@
 #include <QApplication>
 #include <QMessageBox>
 #include <QThread>
+#include <QKeyEvent>
 #include <QPushButton>
 #include <iostream>
 #include <fstream>
@@ -35,6 +36,8 @@
 
 ClusterList::ClusterList(QTreeWidget *widget)
 {
+	_selectMode = false;
+	_removeMode = false;
 	_lastAverage = NULL;
 	_res = 3.5;
 	_worker = NULL;
@@ -42,7 +45,11 @@ ClusterList::ClusterList(QTreeWidget *widget)
 	_widget->setHeaderLabel("Dataset groups");
 	connect(_widget, &QTreeWidget::currentItemChanged,
 	        this, &ClusterList::displayResults);
+	connect(this, &ClusterList::updateSelections,
+	        this, &ClusterList::updateColours);
 }
+
+
 
 bool ClusterList::loadFiles(std::vector<std::string> files)
 {
@@ -52,7 +59,7 @@ bool ClusterList::loadFiles(std::vector<std::string> files)
 		_clusters.push_back(ave);
 		ave->setMaxResolution(_res);
 
-		for (size_t i = 1; i < files.size(); i++)
+		for (size_t i = 0; i < files.size(); i++)
 		{
 			MtzFile *file = new MtzFile(files[i]);
 			_files.push_back(file);
@@ -185,6 +192,7 @@ void ClusterList::exportAll()
 {
 	std::string fnall = findNextFilename("all_clusters.txt");
 	std::string fnmarked = findNextFilename("marked_clusters.txt");
+	std::string fndead = findNextFilename("dead_sets.txt");
 	std::ofstream fall;
 	std::ofstream fmarked;
 	fall.open(fnall);
@@ -206,13 +214,50 @@ void ClusterList::exportAll()
 
 	fall.close();
 	fmarked.close();
+	
+	std::ofstream fdead;
+	fdead.open(fndead);
+	for (size_t i = 0; i < _files.size(); i++)
+	{
+		if (_files[i]->isDead())
+		{
+			fdead << _files[i]->getFilename() << std::endl;
+		}
+	}
+
+	fdead.close();
 
 	std::string m = "Written all clusters to " + fnall + "\n";
 	m += "Written marked clusters only to " + fnmarked + "\n";
+	m += "Written dead data sets to " + fndead + "\n";
 
 	QMessageBox msgBox;
 	msgBox.setText(QString::fromStdString(m));
 	msgBox.exec();
+}
+
+void ClusterList::keyPressEvent(QKeyEvent *event)
+{
+	if (event->key() == Qt::Key_Shift)
+	{
+		_selectMode = true;
+	}
+	if (event->key() == Qt::Key_Control)
+	{
+		_removeMode = true;
+	}
+}
+
+void ClusterList::keyReleaseEvent(QKeyEvent *event)
+{
+	if (event->key() == Qt::Key_Shift)
+	{
+		_selectMode = false;
+	}
+	if (event->key() == Qt::Key_Control)
+	{
+		_removeMode = false;
+	}
 }
 
 void ClusterList::displayResults()
@@ -224,15 +269,18 @@ void ClusterList::displayResults()
 		return;
 	}
 	
-	if (!Averager::isAverager(item))
+	if (Averager::isAverager(item))
 	{
-		return;
+		Averager *obj = static_cast<Averager *>(item);
+		_lastAverage = obj;
+		_screen->displayResults(obj);
 	}
-
-	Averager *obj = static_cast<Averager *>(item);
-	
-	_lastAverage = obj;
-	_screen->displayResults(obj);
+	else if (MtzFFT::isMtzFFT(item))
+	{
+		MtzFFT *obj = static_cast<MtzFFT *>(item);
+		VagFFTPtr vag = obj->shared_from_this();
+		_screen->displaySingle(vag);
+	}
 }
 
 void ClusterList::handleResults()
@@ -304,6 +352,20 @@ void ClusterList::clearSelection()
 	emit updateSelections();
 }
 
+void ClusterList::updateColours()
+{
+	for (size_t i = 0; i < _clusters.size(); i++)
+	{
+		Averager *ave = _clusters[i];
+		
+		for (size_t j = 0; j < ave->mtzCount(); j++)
+		{
+			ave->getMtz(j)->updateText();
+		}
+	}
+
+}
+
 void ClusterList::topAverage()
 {
 	QTreeWidgetItem *item = _widget->topLevelItem(0);
@@ -351,4 +413,20 @@ void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs, bool withAve)
 	ave->updateText();
 	
 	_widget->addTopLevelItem(ave);
+}
+
+void ClusterList::toggleDead()
+{
+	QTreeWidgetItem *item = _widget->currentItem();
+
+	if (!item || !MtzFFT::isMtzFFT(item))
+	{
+		return;
+	}
+
+	MtzFFT *obj = static_cast<MtzFFT *>(item);
+	bool dead = obj->getMtzFile()->isDead();
+	obj->getMtzFile()->setDead(!dead);
+
+	updateSelections();
 }

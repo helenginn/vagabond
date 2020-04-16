@@ -135,6 +135,7 @@ public:
 	}
 
 	void setMarked(bool marked);
+	void setDead(bool dead);
 	
 	void scaleIndividuals();
 	
@@ -219,6 +220,7 @@ private:
 	double *_w;
 	
 	bool _marked;
+	bool _dead;
 };
 
 #endif

@@ -96,10 +96,18 @@ void Averager::makeAverage(bool force)
 	VagFFTPtr first = _mtzs[0];
 	_fft = VagFFTPtr(new VagFFT(*first));
 	_fft->wipe();
+	int count = 0;
 
 	for (size_t i = 0; i < _mtzs.size(); i++)
 	{
-		VagFFTPtr current = _mtzs[i];
+		MtzFFTPtr current = _mtzs[i];
+		if (current->getMtzFile()->isDead())
+		{
+			continue;
+		}
+		
+		count++;
+
 		vec3 nLimits = getNLimits(_fft, current);
 
 		for (int k = -nLimits.z; k < nLimits.z; k++)
@@ -125,7 +133,7 @@ void Averager::makeAverage(bool force)
 		}
 	}
 	
-	_fft->multiplyAll(1 / (double)_mtzs.size());
+	_fft->multiplyAll(1 / (double)count);
 }
 
 void Averager::updateText()
@@ -137,8 +145,6 @@ void Averager::updateText()
 void Averager::addMtz(MtzFFTPtr mtz)
 {
 	MtzFFTPtr tmp = MtzFFTPtr(new MtzFFT(this, *mtz));
-//	tmp->setText(0, mtz->text(0));
-//	_names.push_back(mtz->text(0).toStdString());
 	updateText();
 	_mtzs.push_back(tmp);
 }
@@ -156,6 +162,8 @@ void Averager::addMtz(DiffractionMtzPtr mtzDiff, MtzFile *file)
 
 	/* ensure identical spacing for subsequent mtzs added */
 	MtzFFTPtr tmp = MtzFFTPtr(new MtzFFT(this, *ref));
+	std::vector<double> uc = mtzDiff->getFFT()->getUnitCell();
+	tmp->setUnitCell(uc);
 	tmp->setText(0, QString::fromStdString(mtzDiff->getFilename()));
 	tmp->setMtzFile(file);
 	tmp->wipe();
@@ -603,6 +611,8 @@ void Averager::cleanupSVD()
 	_svdPtrs = NULL;
 	_orig = NULL;
 	_origPtrs = NULL;
+	_cluster = NULL;
+	_clusterPtrs = NULL;
 	_v = NULL;
 	_vPtrs = NULL;
 	_w = NULL;
@@ -620,6 +630,21 @@ void Averager::setMarked(bool marked)
 
 	QFont curr = font(0);
 	curr.setBold(marked);
+	setFont(0, curr);
+}
+
+void Averager::setDead(bool dead)
+{
+	for (size_t i = 0; i < _mtzs.size(); i++)
+	{
+		MtzFile *file = _mtzs[i]->getMtzFile();
+		file->setDead(dead);
+	}
+
+	_dead = dead;
+
+	QFont curr = font(0);
+	curr.setItalic(_dead);
 	setFont(0, curr);
 }
 

@@ -17,11 +17,13 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "MtzFile.h"
+#include <QFont>
 
 MtzFile::MtzFile(std::string filename)
 {
 	_filename = filename;
 	_mark = false;
 	_sele = false;
+	_dead = false;
 }
 

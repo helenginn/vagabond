@@ -20,6 +20,7 @@
 #include "KeeperGL.h"
 #include "GLAxis.h"
 #include "GLPoint.h"
+#include "HKLView.h"
 #include "MtzFFT.h"
 #include "MtzFile.h"
 #include <QApplication>
@@ -39,7 +40,6 @@ void KeeperGL::initializeGL()
 	_controlPressed = false;
 	_lastX = 0;
 	_lastY = 0;
-	_scale = 1;
 	_moving = false;
 	initializeOpenGLFunctions();
 
@@ -93,11 +93,35 @@ void KeeperGL::updateCamera(void)
 	mat4x4 tmp = mat4x4_mult_mat4x4(change, transMat);
 	_model = mat4x4_mult_mat4x4(_model, tmp);
 	
+	mat3x3 rot = mat4x4_get_rot(_model);
+	double det = mat3x3_determinant(rot);
+	
 	mat4x4_mult_scalar(&_model, _scale);
 	_scale = 1;
+	
+	if (det < 0.05 && _store != NULL)
+	{
+		_model = make_mat4x4();
+	}
 
 	camAlpha = 0; camBeta = 0; camGamma = 0;
 	_translation = make_vec3(0, 0, 0);
+	
+	if (_store != NULL)
+	{
+		*_store = _model;
+		std::cout << "Store now" << std::endl;
+		std::cout << mat4x4_desc(*_store) << std::endl;
+	}
+	
+	for (int i = 0; i < 16; i++)
+	{
+		if (_model.vals[i] != _model.vals[i])
+		{
+			_model = make_mat4x4();
+			std::cout << "Resetting model matrix" << std::endl;
+		}
+	}
 }
 
 void KeeperGL::setupCamera(void)
@@ -109,8 +133,7 @@ void KeeperGL::setupCamera(void)
 	camAlpha = 0;
 	camBeta = 0;
 	camGamma = 0;
-	_model = make_mat4x4();
-	_rotMat = make_mat4x4();
+	_scale = 1;
 
 	updateProjection();
 
@@ -119,7 +142,12 @@ void KeeperGL::setupCamera(void)
 
 KeeperGL::KeeperGL(QWidget *p) : QOpenGLWidget(p)
 {
+	_store = NULL;
+	_model = make_mat4x4();
+	_rotMat = make_mat4x4();
 	setGeometry(0, 0, p->width(), p->height());
+	_points = NULL;
+	_hklView = NULL;
 }
 
 std::vector<MtzFFTPtr> KeeperGL::getMtzs()
@@ -146,14 +174,34 @@ void KeeperGL::addAxes()
 {
 	GLAxis *axis = new GLAxis(make_vec3(1, 0, 0));
 	_axes.push_back(axis);
+	_renderMe.push_back(axis);
 	axis = new GLAxis(make_vec3(0, 1, 0));
 	_axes.push_back(axis);
+	_renderMe.push_back(axis);
 	axis = new GLAxis(make_vec3(0, 0, 1));
 	_axes.push_back(axis);
+	_renderMe.push_back(axis);
 	
+	
+	update();
+}
+
+void KeeperGL::addSVDPoints(Averager *ave)
+{
+	_ave = ave;
 	_points = new GLPoint();
 	_points->setKeeper(this);
-	
+	_points->setAverager(ave);
+	_renderMe.push_back(_points);
+}
+
+void KeeperGL::addHKLView(VagFFTPtr fft, double scale)
+{
+	_hklView = new HKLView(fft, scale);
+	_renderMe.push_back(_hklView);
+	_hklView->setKeeper(this);
+	_hklView->repopulate();
+	updateCamera();
 	update();
 }
 
@@ -228,24 +276,20 @@ void KeeperGL::mouseMoveEvent(QMouseEvent *e)
 }
 void KeeperGL::initialisePrograms()
 {
-	for (unsigned int i = 0; i < _axes.size(); i++)
+	for (unsigned int i = 0; i < _renderMe.size(); i++)
 	{
-		_axes[i]->initialisePrograms();
+		_renderMe[i]->initialisePrograms();
 	}
-
-	_points->initialisePrograms();
 }
 
 void KeeperGL::paintGL()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	for (unsigned int i = 0; i < _axes.size(); i++)
+	for (unsigned int i = 0; i < _renderMe.size(); i++)
 	{
-		_axes[i]->render(this);
+		_renderMe[i]->render(this);
 	}
-	
-	_points->render(this);
 }
 
 void KeeperGL::setAverager(Averager *ave)

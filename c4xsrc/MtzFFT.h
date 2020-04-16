@@ -13,6 +13,11 @@ public:
 	MtzFFT(QTreeWidgetItem *parent, VagFFT &vag);
 	MtzFFT(QTreeWidgetItem *parent, MtzFFT &vag);
 
+	static bool isMtzFFT(QTreeWidgetItem *item)
+	{
+		return (dynamic_cast<MtzFFT *>(item) != NULL);
+	}
+
 	void setMtzFile(MtzFile *file)
 	{
 		_file = file;
@@ -22,6 +27,8 @@ public:
 	{
 		return _file;
 	}
+
+	void updateText();
 private:
 	MtzFile *_file;
 

@@ -21,6 +21,8 @@
 
 #include <QtGui/qopengl.h>
 #include <QtGui/qopenglfunctions.h>
+#include "shaders/Blob_vsh.h"
+#include "shaders/Blob_fsh.h"
 
 typedef struct
 {
@@ -38,7 +40,12 @@ class GLObject : public QOpenGLFunctions
 public:
 	GLObject();
 	virtual ~GLObject() {};
-	void initialisePrograms(std::string *v = NULL, std::string *f = NULL);
+	void initialisePrograms(std::string *v, std::string *f);
+
+	virtual void initialisePrograms()
+	{
+		initialisePrograms(NULL, NULL);
+	}
 	void render(KeeperGL *sender);
 	
 	Vertex *vPointer()

@@ -20,6 +20,7 @@
 #define __Slip__KeeperGL
 
 #include <QtWidgets/qopenglwidget.h>
+#include <iostream>
 #include <QtGui/qopengl.h>
 #include <QtGui/qopenglfunctions.h>
 #include "MtzFFT.h"
@@ -28,7 +29,9 @@
 #include <libsrc/mat4x4.h>
 
 class GLAxis;
+class HKLView;
 class GLPoint;
+class GLObject;
 class Averager;
 
 class KeeperGL : public QOpenGLWidget, QOpenGLFunctions
@@ -40,6 +43,8 @@ public:
 	
 	void preparePanels(int n);
 	void addAxes();
+	void addHKLView(VagFFTPtr fft, double scale);
+	void addSVDPoints(Averager *ave);
 	void setupCamera(void);
 	
 	void panned(double x, double y);
@@ -67,6 +72,17 @@ public:
 	{
 		return _points;
 	}
+	
+	void setStoreMatrix(mat4x4 *store)
+	{
+		_store = store;
+	}
+	
+	void setModelMatrix(mat4x4 mat)
+	{
+		_model = mat;
+		std::cout << mat4x4_desc(mat) << std::endl;
+	}
 
 	std::vector<MtzFFTPtr> getMtzsFromSelection();
 	std::vector<MtzFFTPtr> getMtzs();
@@ -87,8 +103,12 @@ private:
 	Averager *_ave;
 	Qt::MouseButton _mouseButton;
 	mat4x4 _model;
+	mat4x4 *_store;
 	std::vector<GLAxis *> _axes;
 	GLPoint *_points;
+	HKLView *_hklView;
+	
+	std::vector<GLObject *> _renderMe;
 
 	bool _controlPressed;
 	bool _moving;

@@ -33,6 +33,8 @@ public:
 	
 	void setMarked(bool mark)
 	{
+		if (_dead) return;
+
 		_mark = mark;
 		_sele = false;
 	}
@@ -40,6 +42,18 @@ public:
 	bool isMarked()
 	{
 		return _mark;
+	}
+	
+	bool isDead()
+	{
+		return _dead;
+	}
+	
+	void setDead(bool dead)
+	{
+		_dead = dead;
+		_mark = false;
+		_sele = false;
 	}
 	
 	bool isSelected()
@@ -51,10 +65,10 @@ public:
 	{
 		_sele = !_sele;
 	}
-	
+
 	void setSelected(bool sele)
 	{
-		if (!_mark)
+		if (!_mark && !_dead)
 		{
 			_sele = sele;
 		}
@@ -64,6 +78,7 @@ private:
 
 	bool _mark;
 	bool _sele;
+	bool _dead;
 };
 
 #endif

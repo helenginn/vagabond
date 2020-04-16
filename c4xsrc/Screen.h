@@ -17,6 +17,8 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include <QMainWindow>
+#include <libsrc/mat4x4.h>
+#include <libsrc/FFT.h>
 
 class CorrelLabel;
 class QTreeWidget;
@@ -44,37 +46,52 @@ public:
 
 	virtual void resizeEvent(QResizeEvent *e);
 	void displayResults(Averager *ave);
+	void displaySingle(VagFFTPtr fft);
 	
 public slots:
 	void refocus(int index);
+	void changeIndex(int index);
 	void averageGroup();
 	void clusterGroup();
 	void newSelection();
 	void markSelection();
 	void removeCluster();
 	void refreshSelection();
+	void killSelection();
 private:
 	void relinkPixmap();
 	void addToolBar();
 	void binTab();
+	void addCorrelImage(Averager *ave);
+	void addAxisExplorer(Averager *ave);
+	void addHKLView(VagFFTPtr fft);
 
+	int _currIndex;
+	double _scale;
 	std::vector<QWidget **> _bin;
 	QGraphicsScene *_scene;
 	SelectionWindow *_selection;
 	MatrixView *_correlImage;
 	KeeperGL *_keeper;
+	KeeperGL *_hklKeeper;
 	CorrelLabel *_correlLabel;
 	QTabWidget *_tabs;
 	QWidget *_graph;
+	QWidget *_hkl;
 	AxisScroll *_scroll;
 	QTreeWidget *_inputTree;
 	QToolBar *_toolBar;
 	QPushButton *_newSel;
 	QPushButton *_markSele;
 	QPushButton *_unmarkSele;
+	QPushButton *_deadSele;
+	QPushButton *_undeadSele;
 	QPushButton *_invertSele;
 	QPushButton *_export;
+	QPushButton *_toggleDead;
+	QLabel *_ucLabel;
 	QAction *_cluster;
 	ClusterList *_list;
 
+	mat4x4 _storeHKL;
 };

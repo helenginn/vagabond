@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "MtzFFT.h"
+#include "MtzFile.h"
 
 MtzFFT::MtzFFT(QTreeWidgetItem *parent, VagFFT &vag) : VagFFT(vag, -1), QTreeWidgetItem(parent)
 {
@@ -27,4 +28,23 @@ MtzFFT::MtzFFT(QTreeWidgetItem *parent, MtzFFT &vag) : VagFFT(vag, -1), QTreeWid
 {
 	_file = vag._file;
 	setText(0, vag.text(0));
+}
+
+void MtzFFT::updateText()
+{
+	QColor c = QColor(255, 255, 255, 255);
+	if (getMtzFile()->isMarked())
+	{
+		c = QColor(255, 50, 50, 255);
+	}
+	else if (getMtzFile()->isSelected())
+	{
+		c = QColor(200, 200, 0, 255);
+	}
+	else if (getMtzFile()->isDead())
+	{
+		c = QColor(100, 100, 100, 255);
+	}
+
+	setBackground(0, QBrush(c));
 }

@@ -83,17 +83,24 @@ void MatrixView::populate()
 				blue = 255 - val * 255;
 			}
 			
-			if (file->isSelected())
+			
+			if (file->isDead())
 			{
-				red = 255 - (255 - red) / 2;
-				green = 255 - (255 - green) / 2;
+				red = 0;
+				green = 0;
 				blue = 0;
 			}
-			if (file->isMarked())
+			else if (file->isMarked())
 			{
 				red *= 0.5;
 				green *= 0.5;
 				blue *= 0.5;
+			}
+			else if (file->isSelected())
+			{
+				red = 255 - (255 - red) / 2;
+				green = 255 - (255 - green) / 2;
+				blue = 0;
 			}
 
 			QColor c = QColor(red, green, blue, 255);

@@ -304,6 +304,7 @@ void DiffractionMtz::load()
 		                            indexLimitL, 0, 1));
 	}
 	_fft->setUnitCell(unitCell);
+	_fft->setSpaceGroup(spg);
 	_fft->multiplyAll(nan(" "));
 	_fft->copyToScratch(0);
 	_fft->multiplyAll(nan(" "));
@@ -394,7 +395,7 @@ void DiffractionMtz::load()
 		}
 
 		if (flag != flag) flag = 1;
-		
+
 		if (flag == 0 && amplitude != amplitude) flag = 1;
 
 		float mask = flag;
@@ -411,20 +412,20 @@ void DiffractionMtz::load()
 		{
 			maskCount++;
 		}
-		
+
 		if (addPartial)
 		{
 			float fpart = adata[col_fpart->source - 1];
 			float phipart = adata[col_phipart->source - 1];
 			phipart = deg2rad(phipart);
-			
+
 			float x = fpart * cos(phipart);
 			float y = fpart * sin(phipart);
-			
+
 			_partial->setComponent(element, 0, x);
 			_partial->setComponent(element, 1, y);
 		}
-		
+
 		if (col_phase != NULL)
 		{
 			double ph = deg2rad(phase);
@@ -434,66 +435,66 @@ void DiffractionMtz::load()
 			_original->setComponent(element, 1, y);
 		}
 	}
-	
+
 	std::cout << "Loaded " << count << " reflections into"\
 	" memory from " << _filename << "." << std::endl;
 	std::cout << "Counted " << maskCount << " free reflections." << std::endl << std::endl;
-	
+
 	/* Apply all symmetry relations */ 
-	if (col_phase != NULL)	
+	vec3 nLimits = getNLimits(_fft, _fft);
+
+	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
-		vec3 nLimits = getNLimits(_original, _original);
-
-		for (int k = -nLimits.z; k < nLimits.z; k++)
+		for (int j = -nLimits.y; j < nLimits.y; j++)
 		{
-			for (int j = -nLimits.y; j < nLimits.y; j++)
+			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
-				for (int i = -nLimits.x; i < nLimits.x; i++)
+				int _h, _k, _l;
+				int sym = CSym::ccp4spg_put_in_asu(spg, i, j, k, 
+				                                   &_h, &_k, &_l);
+
+				long index = _fft->element(i, j, k);
+				long asuIndex = _fft->element(_h, _k, _l);
+
+				double x = _fft->getReal(asuIndex);
+				double y = _fft->getImag(asuIndex);
+
+				/* establish amp & phase */
+				double amp = sqrt(x * x + y * y);
+				double myPhase = atan2(y, x);
+
+				if (sym % 2 == 0)
 				{
-					int _h, _k, _l;
-					int sym = CSym::ccp4spg_put_in_asu(spg, i, j, k, 
-					                                   &_h, &_k, &_l);
+					myPhase *= -1;
+				}
 
-					long index = _original->element(i, j, k);
-					long asuIndex = _original->element(_h, _k, _l);
+				int symop = (sym - 1) / 2;
 
-					double x = _original->getReal(asuIndex);
-					double y = _original->getImag(asuIndex);
+				/* calculate phase shift for symmetry operator */
+				float *trn = spg->symop[symop].trn;
 
-					/* establish amp & phase */
-					double amp = sqrt(x * x + y * y);
-					double myPhase = atan2(y, x);
+				/* rotation */
+				double shift = (float)i * trn[0];
+				shift += (float)j * trn[1];
+				shift += (float)k * trn[2];
 
-					if (sym % 2 == 0)
-					{
-						myPhase *= -1;
-					}
+				shift = fmod(shift, 1.);
 
-					int symop = (sym - 1) / 2;
+				/*  apply shift when filling in other sym units */
+				double newPhase = myPhase + shift * 2 * M_PI;
 
-					/* calculate phase shift for symmetry operator */
-					float *trn = spg->symop[symop].trn;
+				x = amp * cos(newPhase);
+				y = amp * sin(newPhase);
 
-					/* rotation */
-					double shift = (float)i * trn[0];
-					shift += (float)j * trn[1];
-					shift += (float)k * trn[2];
-
-					shift = fmod(shift, 1.);
-
-					/*  apply shift when filling in other sym units */
-					double newPhase = myPhase + shift * 2 * M_PI;
-
-					x = amp * cos(newPhase);
-					y = amp * sin(newPhase);
-
-					_original->setComponent(index, 0, x);
-					_original->setComponent(index, 1, y);
+				if (_fft)
+				{
+					_fft->setComponent(index, 0, x);
+					_fft->setComponent(index, 1, y);
 				}
 			}
 		}
 	}
-	
+
 	free(refldata);
 	MtzFree(mtz);
 }
@@ -505,11 +506,11 @@ void DiffractionMtz::syminfoCheck()
 	{
 		shout_at_user("I can't seem to load space group P1!\n" \
 		              "If CCP4 is installed, it may need sourcing.\n"\
-		"Please make sure the value of the\n"\
-		"environment variable $SYMINFO is set correctly.\n"\
-		"Something like (bash):\n\texport SYMINFO=/path/to/ccp4-vX.X.X/lib/data/syminfo.lib\n"\
-		"Something like (csh):\n\tsetenv SYMINFO /path/to/ccp4-vX.X.X/lib/data/syminfo.lib\n"\
-		"\t(... make sure you correct these paths!)");
+		              "Please make sure the value of the\n"\
+		              "environment variable $SYMINFO is set correctly.\n"\
+		              "Something like (bash):\n\texport SYMINFO=/path/to/ccp4-vX.X.X/lib/data/syminfo.lib\n"\
+		              "Something like (csh):\n\tsetenv SYMINFO /path/to/ccp4-vX.X.X/lib/data/syminfo.lib\n"\
+		              "\t(... make sure you correct these paths!)");
 
 	}
 }

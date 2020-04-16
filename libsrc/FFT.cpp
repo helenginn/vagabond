@@ -72,6 +72,7 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	_elementMap = fft._elementMap;
 	_spg = fft._spg;
 	_lowResMode = fft._lowResMode;
+	_unitCell = fft._unitCell;
 	
 	if (scratch >= 0 && scratch != fft._nscratch)
 	{
@@ -1159,6 +1160,29 @@ void VagFFT::copyRealToImaginary()
 		long final_index = finalIndex(i);
 		_data[final_index][1] = _data[final_index][0];
 	}
+}
+
+
+double VagFFT::nanlessAverage()
+{
+	double sum = 0;
+	double count = 0;
+
+	for (int i = 0; i < _nn; i++)
+	{
+		long index = finalIndex(i);
+		double val = _data[index][0];
+		
+		if (val != val)
+		{
+			continue;
+		}
+
+		sum += fabs(val);
+		count++;
+	}
+
+	return sum / count;
 }
 
 double VagFFT::sumReal(int scratch)

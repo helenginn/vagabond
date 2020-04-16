@@ -22,8 +22,8 @@
 #include "KeeperGL.h"
 #include "MtzFFT.h"
 #include "MtzFile.h"
-#include "shaders/Blob_vsh.h"
 #include "shaders/Blob_fsh.h"
+#include "shaders/Blob_vsh.h"
 
 GLPoint::GLPoint() : GLObject()
 {
@@ -35,7 +35,9 @@ GLPoint::GLPoint() : GLObject()
 
 void GLPoint::initialisePrograms()
 {
-	GLObject::initialisePrograms(&Blob_vsh, &Blob_fsh);
+	std::string fsh = blobFsh();
+	std::string vsh = blobVsh();
+	GLObject::initialisePrograms(&vsh, &fsh);
 }
 
 void GLPoint::addPoint(vec3 point)
@@ -96,14 +98,20 @@ void GLPoint::recolour()
 		v.color[2] = 0;
 
 		MtzFile *file = _ave->getMtz(i)->getMtzFile();
+		if (file->isDead())
+		{
+			v.color[0] = 100. / 255.;
+			v.color[1] = 100. / 255.;
+			v.color[2] = 100. / 255.;
+		}
 		if (file->isSelected())
 		{
-			v.color[0] = 60;
-			v.color[1] = 60;
+			v.color[0] = 200. / 255.;
+			v.color[1] = 200. / 255.;
 		}
-		else if (file->isMarked())
+		if (file->isMarked())
 		{
-			v.color[0] = 250;
+			v.color[0] = 255 / 255;
 			v.color[1] = 0;
 		}
 	}
