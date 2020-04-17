@@ -110,8 +110,6 @@ void KeeperGL::updateCamera(void)
 	if (_store != NULL)
 	{
 		*_store = _model;
-		std::cout << "Store now" << std::endl;
-		std::cout << mat4x4_desc(*_store) << std::endl;
 	}
 	
 	for (int i = 0; i < 16; i++)

@@ -27,7 +27,6 @@ HKLView::HKLView(VagFFTPtr fft, double scale)
 	_fft = fft;
 	_renderType = GL_POINTS;
 	_scale = fft->nanlessAverage() * 5;
-	std::cout << _scale << std::endl;
 }
 
 void HKLView::initialisePrograms()
