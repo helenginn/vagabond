@@ -50,6 +50,7 @@ void KeeperGL::initializeGL()
 
 	glEnable(GL_BLEND);
 	glEnable(GL_PROGRAM_POINT_SIZE);
+	glEnable(GL_POINT_SPRITE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	setupCamera();
