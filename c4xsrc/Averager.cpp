@@ -96,6 +96,7 @@ void Averager::makeAverage(bool force)
 	VagFFTPtr first = _mtzs[0];
 	_fft = VagFFTPtr(new VagFFT(*first));
 	_fft->wipe();
+	std::vector<double> ucs = std::vector<double>(6, 0);
 	int count = 0;
 
 	for (size_t i = 0; i < _mtzs.size(); i++)
@@ -104,6 +105,13 @@ void Averager::makeAverage(bool force)
 		if (current->getMtzFile()->isDead())
 		{
 			continue;
+		}
+		
+		std::vector<double> uc = current->getUnitCell();
+		
+		for (size_t j = 0; j < uc.size(); j++)
+		{
+			ucs[j] += uc[j];
 		}
 		
 		count++;
@@ -133,6 +141,12 @@ void Averager::makeAverage(bool force)
 		}
 	}
 	
+	for (size_t i = 0; i < ucs.size(); i++)
+	{
+		ucs[i] /= (double)count;
+	}
+
+	_fft->setUnitCell(ucs);
 	_fft->multiplyAll(1 / (double)count);
 }
 
@@ -164,6 +178,7 @@ void Averager::addMtz(DiffractionMtzPtr mtzDiff, MtzFile *file)
 	MtzFFTPtr tmp = MtzFFTPtr(new MtzFFT(this, *ref));
 	std::vector<double> uc = mtzDiff->getFFT()->getUnitCell();
 	tmp->setUnitCell(uc);
+	tmp->setSpaceGroup(mtzDiff->getFFT()->getSpaceGroup());
 	tmp->setText(0, QString::fromStdString(mtzDiff->getFilename()));
 	tmp->setMtzFile(file);
 	tmp->wipe();

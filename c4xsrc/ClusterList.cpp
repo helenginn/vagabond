@@ -278,7 +278,7 @@ void ClusterList::displayResults()
 	else if (MtzFFT::isMtzFFT(item))
 	{
 		MtzFFT *obj = static_cast<MtzFFT *>(item);
-		VagFFTPtr vag = obj->shared_from_this();
+		MtzFFTPtr vag = obj->shared_from_this();
 		_screen->displaySingle(vag);
 	}
 }

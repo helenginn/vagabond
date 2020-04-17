@@ -7,6 +7,7 @@
 
 class MtzFFT;
 typedef boost::shared_ptr<MtzFFT> MtzFFTPtr;
+#define ToMtzFFTPtr(a) (boost::static_pointer_cast<MtzFFT>((a)))
 
 
 #endif

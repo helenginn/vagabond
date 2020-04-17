@@ -61,7 +61,6 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 	_keeper = NULL;
 	_scroll = NULL;
 	_newSel = NULL;
-	_toggleDead = NULL;
 	_markSele = NULL;
 	_unmarkSele = NULL;
 	_invertSele = NULL;
@@ -110,11 +109,6 @@ void Screen::resizeEvent(QResizeEvent *e)
 		{
 			_hklKeeper->setGeometry(0, 0, _tabs->width(), 
 			                        _tabs->height());
-			
-			if (_ucLabel)
-			{
-				_ucLabel->setGeometry(0, 0, _tabs->width(), 40);
-			}
 		}
 
 		if (_graph)
@@ -126,6 +120,7 @@ void Screen::resizeEvent(QResizeEvent *e)
 				_keeper->setGeometry(0, axh, _tabs->width(), 
 				                     _tabs->height() - axh);
 			}
+			
 			
 			if (_selection)
 			{
@@ -151,13 +146,13 @@ void Screen::resizeEvent(QResizeEvent *e)
 				_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 				                      h - 50, RIGHT_VIEW_WIDTH - 20, 40);
 			}
-		}
 
-		if (_toggleDead)
-		{
-			_toggleDead->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
-			                         _toggleDead->y(), RIGHT_VIEW_WIDTH - 20,
-			                         60);
+			if (_toggleDead)
+			{
+				_toggleDead->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
+				                     _toggleDead->y(), RIGHT_VIEW_WIDTH - 20,
+				 40);
+			}
 		}
 	}
 }
@@ -340,7 +335,7 @@ void Screen::addHKLView(VagFFTPtr fft, std::string filename)
 	
 	_ucLabel = new QPlainTextEdit(QString::fromStdString(ucInfo), _hkl);
 	_ucLabel->setReadOnly(true);
-	_ucLabel->setGeometry(0, 0, 600, 60);
+	_ucLabel->setGeometry(0, 0, 600, 40);
 	_ucLabel->show();
 
 	_bin.push_back((QWidget **)&_hklKeeper);

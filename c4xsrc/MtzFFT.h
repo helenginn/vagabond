@@ -4,6 +4,7 @@
 #include <libsrc/DiffractionMTZ.h>
 #include <libsrc/FFT.h>
 #include <QTreeWidgetItem>
+#include "MtzFFTPtr.h"
 
 class MtzFile;
 
@@ -12,6 +13,11 @@ class MtzFFT : public VagFFT, public QTreeWidgetItem
 public:
 	MtzFFT(QTreeWidgetItem *parent, VagFFT &vag);
 	MtzFFT(QTreeWidgetItem *parent, MtzFFT &vag);
+
+	MtzFFTPtr shared_from_this()
+	{
+		return ToMtzFFTPtr(VagFFT::shared_from_this());
+	}
 
 	static bool isMtzFFT(QTreeWidgetItem *item)
 	{

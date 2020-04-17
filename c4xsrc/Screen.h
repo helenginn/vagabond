@@ -19,8 +19,10 @@
 #include <QMainWindow>
 #include <libsrc/mat4x4.h>
 #include <libsrc/FFT.h>
+#include "MtzFFTPtr.h"
 
 class CorrelLabel;
+class QPlainTextEdit;
 class QTreeWidget;
 class QImage;
 class QPushButton;
@@ -46,7 +48,7 @@ public:
 
 	virtual void resizeEvent(QResizeEvent *e);
 	void displayResults(Averager *ave);
-	void displaySingle(VagFFTPtr fft);
+	void displaySingle(MtzFFTPtr fft);
 	
 public slots:
 	void refocus(int index);
@@ -64,7 +66,7 @@ private:
 	void binTab();
 	void addCorrelImage(Averager *ave);
 	void addAxisExplorer(Averager *ave);
-	void addHKLView(VagFFTPtr fft);
+	void addHKLView(VagFFTPtr fft, std::string filename = "");
 
 	int _currIndex;
 	double _scale;
@@ -89,7 +91,7 @@ private:
 	QPushButton *_invertSele;
 	QPushButton *_export;
 	QPushButton *_toggleDead;
-	QLabel *_ucLabel;
+	QPlainTextEdit *_ucLabel;
 	QAction *_cluster;
 	ClusterList *_list;
 
