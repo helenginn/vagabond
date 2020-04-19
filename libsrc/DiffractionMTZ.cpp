@@ -132,6 +132,7 @@ void DiffractionMtz::load()
 		ampNames.push_back(optAmp);
 	}
 	ampNames.push_back("F");
+	ampNames.push_back("F-obs");
 	ampNames.push_back("FP");
 
 	std::vector<std::string> phNames, fwtNames;
@@ -179,6 +180,7 @@ void DiffractionMtz::load()
 	
 	errNames.push_back("SIGF");
 	errNames.push_back("SIGFP");
+	errNames.push_back("SIGF-obs");
 
 	getCol(errNames, mtz, &col_sigf);
 

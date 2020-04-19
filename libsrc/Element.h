@@ -33,7 +33,7 @@ public:
 	 * can then be accessed using the static function getElement() */
 	static void setupElements();
 
-	~Element() {}
+	virtual ~Element() {}
 	
 	/** Get the appropriate Element object for a given capitalised two-letter
 	  * symbol as seen on the periodic table */

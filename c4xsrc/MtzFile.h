@@ -19,6 +19,8 @@
 #ifndef __clusterxxxx__MtzFile__
 #define __clusterxxxx__MtzFile__
 
+#include <libsrc/shared_ptrs.h>
+#include <libsrc/vec3.h>
 #include <string>
 
 class MtzFile
@@ -73,8 +75,30 @@ public:
 			_sele = sele;
 		}
 	}
+	
+	void setCrystal(CrystalPtr crystal)
+	{
+		_crystal = crystal;
+	}
+	
+	CrystalPtr getCrystal()
+	{
+		return _crystal;
+	}
+	
+	std::vector<vec3> getAtomPositions()
+	{
+		return _positions;
+	}
+	
+	void setAtomPositions(std::vector<vec3> positions)
+	{
+		_positions = positions;
+	}
 private:
 	std::string _filename;
+	CrystalPtr _crystal;
+	std::vector<vec3> _positions;
 
 	bool _mark;
 	bool _sele;

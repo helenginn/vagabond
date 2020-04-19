@@ -170,8 +170,10 @@ void Screen::addToolBar()
 	QPushButton *a = new QPushButton("Set average");
 	
 	QMenu *m = new QMenu(a);
-	QAction *a1 = m->addAction("Recalculate");
+	QAction *a1 = m->addAction("Recalculate, diffraction");
 	connect(a1, &QAction::triggered, this, &Screen::averageGroup);
+	QAction *a4 = m->addAction("Recalculate, C-alphas");
+	connect(a4, &QAction::triggered, _list, &ClusterList::pdbAverage);
 	QAction *a2 = m->addAction("Use original");
 	connect(a2, &QAction::triggered, _list, &ClusterList::resetAverage);
 	QAction *a3 = m->addAction("Use top level");
@@ -214,7 +216,9 @@ void Screen::averageGroup()
 		return;
 	}
 	
-	_list->average(static_cast<Averager *>(item));
+	Averager *ave = static_cast<Averager*>(item);
+	ave->setType(AveDiffraction);
+	_list->average(ave);
 }
 
 void Screen::clusterGroup()

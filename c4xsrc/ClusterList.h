@@ -47,6 +47,7 @@ public slots:
 	void displayResults();
 	void resetAverage();
 	void topAverage();
+	void pdbAverage();
 protected:
 	virtual void keyPressEvent(QKeyEvent *event);
 	virtual void keyReleaseEvent(QKeyEvent *event);

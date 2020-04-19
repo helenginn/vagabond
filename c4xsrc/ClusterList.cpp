@@ -27,6 +27,7 @@
 
 #include "FileReader.h"
 #include "ClusterList.h"
+#include <libsrc/PDBReader.h>
 #include "MtzFile.h"
 #include "MtzFFT.h"
 #include "Averager.h"
@@ -53,45 +54,58 @@ ClusterList::ClusterList(QTreeWidget *widget)
 
 bool ClusterList::loadFiles(std::vector<std::string> files)
 {
-	try
+	Averager *ave = new Averager(_widget);
+	_clusters.push_back(ave);
+	ave->setMaxResolution(_res);
+
+	for (size_t i = 0; i < files.size(); i++)
 	{
-		Averager *ave = new Averager(_widget);
-		_clusters.push_back(ave);
-		ave->setMaxResolution(_res);
+		MtzFile *file = new MtzFile(files[i]);
+		_files.push_back(file);
 
-		for (size_t i = 0; i < files.size(); i++)
+		DiffractionMtzPtr mtz = DiffractionMtzPtr(new DiffractionMtz());
+		mtz->setNeedsRfree(false);
+		mtz->setResLimit(_res);
+		mtz->setFilename(files[i]);
+		try
 		{
-			MtzFile *file = new MtzFile(files[i]);
-			_files.push_back(file);
-
-			DiffractionMtzPtr mtz = DiffractionMtzPtr(new DiffractionMtz());
-			mtz->setNeedsRfree(false);
-			mtz->setResLimit(_res);
-			mtz->setFilename(files[i]);
 			mtz->load();
-
-			ave->addMtz(mtz, file);
 		}
-		
-		if (ave->mtzCount() == 0)
+		catch (Shouter *s)
 		{
-			QMessageBox msgBox;
-			msgBox.setText(tr("No data sets have been successfully loaded.\n"
-			                  "Please pass MTZ files in on the command"
-			                  " line."));
-			QPushButton quit("Quit");
-			msgBox.setDefaultButton(&quit);
-			msgBox.exec();
-			return false;
+			std::cout << "Ignoring mtz " << files[i] << 
+			" due to problems" << std::endl;
+			continue;
 		}
-		
-		_widget->setCurrentItem(ave);
+
+		std::string base = getBaseFilename(files[i]);
+		std::string pdb = base + ".pdb";
+
+		CrystalPtr crystal;
+
+		if (file_exists(pdb))
+		{
+			PDBReader reader;
+			reader.setFilename(pdb);
+			crystal = reader.getCrystal();
+		}
+
+		ave->addMtz(mtz, file, crystal);
 	}
-	catch (Shouter *s)
+
+	if (ave->mtzCount() == 0)
 	{
-		s->shoutToStdOut();
+		QMessageBox msgBox;
+		msgBox.setText(tr("No data sets have been successfully loaded.\n"
+		                  "Please pass MTZ files in on the command"
+		                  " line."));
+		QPushButton quit("Quit");
+		msgBox.setDefaultButton(&quit);
+		msgBox.exec();
 		return false;
 	}
+
+	_widget->setCurrentItem(ave);
 	return true;
 }
 
@@ -384,6 +398,11 @@ void ClusterList::resetAverage()
 	_lastAverage->useOriginalAverage();
 }
 
+void ClusterList::pdbAverage()
+{
+	_lastAverage->setType(AveCAlpha);
+}
+
 void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs, bool withAve)
 {
 	if (mtzs.size() == 0)
@@ -398,8 +417,7 @@ void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs, bool withAve)
 	
 	if (withAve && _lastAverage)
 	{
-		VagFFTPtr fft = _lastAverage->getAverageFFT();
-		ave->setAverageFFT(fft);
+		ave->copyFromAverage(_lastAverage);
 	}
 	
 	_clusters.push_back(ave);

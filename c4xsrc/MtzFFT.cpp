@@ -48,3 +48,4 @@ void MtzFFT::updateText()
 
 	setBackground(0, QBrush(c));
 }
+

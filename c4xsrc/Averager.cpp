@@ -4,12 +4,16 @@
 #include "MtzFile.h"
 #include <libsrc/Crystal.h>
 #include <libsrc/CSV.h>
+#include <libsrc/Atom.h>
+#include <libsrc/Monomer.h>
+#include <libsrc/Polymer.h>
 #include <libica/svdcmp.h>
 #include "FileReader.h"
 #include "MatrixView.h"
 
 Averager::Averager(QTreeWidget *parent) : QTreeWidgetItem(parent)
 {
+	_type = AveDiffraction;
 	_res = 2;
 	_svd = NULL;
 	_svdPtrs = NULL;
@@ -27,6 +31,7 @@ void Averager::performAverage()
 	_message = "";
 
 	makeAverage(true);
+	std::cout << "Average sorted" << std::endl;
 	
 	if (_message.length() > 0)
 	{
@@ -67,12 +72,108 @@ void Averager::useOriginalAverage()
 	if (_origAve)
 	{
 		_fft = _origAve;
+		_type = _origType;
 	}
 }
 
 void Averager::copyFromAverage(Averager *ave)
 {
 	_fft = ave->_fft;
+	_atomPos = ave->_atomPos;
+	_atomNum = ave->_atomNum;
+	_type = ave->_type;
+	_origType = ave->_type;
+}
+
+void Averager::populatePolymer(MtzFFTPtr mtz, PolymerPtr p)
+{
+	std::vector<vec3> locals;
+	locals.resize(_atomPos.size());
+
+	for (int i = p->monomerBegin(); i < p->monomerEnd(); i++)
+	{
+		MonomerPtr m = p->getMonomer(i);
+		
+		if (!m)
+		{
+			continue;
+		}
+		
+		AtomPtr a = m->findAtom("CA");
+
+		if (!a)
+		{
+			continue;
+		}
+
+		int id = a->getResidueNum();
+		if (id < 0 || (int)_atomPos.size() <= id)
+		{
+			continue;
+		}
+
+		vec3 pos = a->getPDBPosition();
+		locals[id] = pos;
+
+		vec3_add_to_vec3(&pos, _atomPos[id]);
+		_atomPos[id] = pos;
+		_atomNum[id]++;
+	}
+
+	mtz->getMtzFile()->setAtomPositions(locals);
+}
+
+void Averager::makeCAlphaAverage(bool force)
+{
+	if (_atomPos.size() > 0 && !force)
+	{
+		return;
+	}
+
+	_atomPos.clear();
+	_atomNum.clear();
+
+	std::cout << "starting calpha average, force = " << force << std::endl;
+	for (size_t i = 0; i < _mtzs.size(); i++)
+	{
+		MtzFFTPtr current = _mtzs[i];
+		
+		if (!current->getMtzFile()->getCrystal())
+		{
+			continue;
+		}
+
+		CrystalPtr c = current->getMtzFile()->getCrystal();
+		
+		for (size_t j = 0; j < c->moleculeCount(); j++)
+		{
+			MoleculePtr mol = c->molecule(j);
+			std::cout << "trying " << i << " " << j << std::endl;
+
+			if (!mol->isPolymer())
+			{
+				continue;
+			}
+
+			PolymerPtr p = ToPolymerPtr(mol);
+			if (_atomPos.size() == 0)
+			{
+				_atomPos.resize(p->monomerEnd());
+				_atomNum.resize(p->monomerEnd());
+				memset(&_atomPos[0], '\0', sizeof(vec3) * _atomPos.size());
+			}
+
+			populatePolymer(current, p);
+			break;
+		}
+	}
+	
+	for (size_t i = 0; i < _atomPos.size(); i++)
+	{
+		vec3_mult(&_atomPos[i], 1 / (double)_atomNum[i]);
+	}
+	
+	std::cout << "Made C-alpha average" << std::endl;
 }
 
 void Averager::makeAverage(bool force)
@@ -82,6 +183,8 @@ void Averager::makeAverage(bool force)
 		_message += "No data sets in this group.\n";
 		return;
 	}
+	
+	makeCAlphaAverage(force);
 	
 	if (_fft && _fft->nn() > 0 && !force)
 	{
@@ -163,7 +266,8 @@ void Averager::addMtz(MtzFFTPtr mtz)
 	_mtzs.push_back(tmp);
 }
 
-void Averager::addMtz(DiffractionMtzPtr mtzDiff, MtzFile *file)
+void Averager::addMtz(DiffractionMtzPtr mtzDiff, MtzFile *file,
+                      CrystalPtr crystal)
 {
 //	_names.push_back(mtzDiff->getFilename());
 
@@ -182,6 +286,8 @@ void Averager::addMtz(DiffractionMtzPtr mtzDiff, MtzFile *file)
 	tmp->setText(0, QString::fromStdString(mtzDiff->getFilename()));
 	tmp->setMtzFile(file);
 	tmp->wipe();
+	
+	file->setCrystal(crystal);
 	
 	VagFFTPtr mtz = mtzDiff->getFFT();
 
@@ -274,6 +380,11 @@ void Averager::scaleIndividuals()
 void Averager::findIntercorrelations()
 {
 	svdAlloc();
+	
+	if (_type == AveCAlpha && _atomPos.size() == 0)
+	{
+		makeCAlphaAverage(false);
+	}
 
 	for (size_t i = 1; i < _mtzs.size(); i++)
 	{
@@ -283,7 +394,14 @@ void Averager::findIntercorrelations()
 			
 			if (i != j)
 			{
-				cc = findCorrelation(i, j);
+				if (_type == AveDiffraction)
+				{
+					cc = findCorrelation(i, j);
+				}
+				else if (_type == AveCAlpha)
+				{
+					cc = findPDBCorrelation(i, j);
+				}
 			}
 			
 			_svdPtrs[i][j] = cc;
@@ -483,8 +601,42 @@ double Averager::comparePairwise(int i, int j)
 		}
 	}
 
+	double cc = evaluate_CD(cd);
+	return cc;
+}
+
+double Averager::findPDBCorrelation(int i, int j)
+{
+	std::vector<vec3> one = _mtzs[i]->getMtzFile()->getAtomPositions();
+	std::vector<vec3> two = _mtzs[j]->getMtzFile()->getAtomPositions();
+	
+	if (one.size() == 0 || two.size() == 0)
+	{
+		return 0;
+	}
+	
+	CorrelData cd = empty_CD();
+
+	for (size_t i = 0; i < one.size(); i++)
+	{
+		vec3 aPos = one[i];
+		vec3 bPos = two[i];
+
+		vec3 ave = _atomPos[i];
+		
+		vec3_subtract_from_vec3(&aPos, ave);
+		vec3_subtract_from_vec3(&bPos, ave);
+
+		add_to_CD(&cd, aPos.x, bPos.x);
+		add_to_CD(&cd, aPos.y, bPos.y);
+		add_to_CD(&cd, aPos.z, bPos.z);
+	}
 
 	double cc = evaluate_CD(cd);
+	if (cc < 0)
+	{
+		cc = 0;
+	}
 	return cc;
 }
 
@@ -494,7 +646,7 @@ double Averager::findCorrelation(int i, int j)
 	VagFFTPtr two = _mtzs[j];
 
 	CorrelData cd = empty_CD();
-	
+
 	for (int i = 0; i < one->nn(); i++)
 	{
 		double ave = _fft->getReal(i);
@@ -506,7 +658,7 @@ double Averager::findCorrelation(int i, int j)
 
 		add_to_CD(&cd, x, y);
 	}
-	
+
 	double cc = evaluate_CD(cd);
 	if (cc < 0) return 0;
 	return cc;
@@ -519,7 +671,7 @@ void Averager::svdAlloc()
 	matAlloc(&_svd, &_svdPtrs);
 	matAlloc(&_orig, &_origPtrs);
 	matAlloc(&_v, &_vPtrs);
-	
+
 	size_t svd_dims = _mtzs.size();
 	_w = (double *)malloc(sizeof(double) * svd_dims);
 	memset(_w, '\0', sizeof(double) * svd_dims);
@@ -546,13 +698,13 @@ void Averager::svd()
 	size_t dims = _mtzs.size();
 
 	int success = svdcmp((mat)_svdPtrs, dims, dims, (vect)_w, (mat)_vPtrs);
-	
+
 	if (success == 0)
 	{
 		_message = "Single value decomposition failed.";
 		return;
 	}
-	
+
 	drawResults(_svdPtrs, "correlation_1");
 }
 
@@ -584,21 +736,21 @@ void Averager::drawAxes()
 			aligned[j] *= _w[j];
 			_clusterPtrs[i][j] = aligned[j];
 		}
-		
+
 		double dist = 0;
 		for (int i = 0; i < 5; i++)
 		{
 			dist += aligned[0] * aligned[0];
 		}
-		
+
 		dist = sqrt(dist);
-		
+
 		csv->addEntry(7, (double)i, aligned[0], aligned[1], aligned[2],
 		              aligned[3], aligned[4], aligned[5], aligned[6]);
-		
+
 		free(aligned);
 	}
-	
+
 	std::map<std::string, std::string> plotMap;
 	plotMap["filename"] = "principal_axes";
 	plotMap["xHeader0"] = "a";
@@ -668,14 +820,14 @@ void Averager::writeToStream(std::ofstream &f, bool complete)
 	for (size_t i = 0; i < _mtzs.size(); i++)
 	{
 		MtzFile *file = _mtzs[i]->getMtzFile();
-		
+
 		if (complete && !file->isMarked())
 		{
 			continue;
 		}
-		
+
 		f << file->getFilename();
-		
+
 		if (i < _mtzs.size() - 1)
 		{
 			f << ",";
@@ -697,7 +849,7 @@ void Averager::flipMtzSelection(int i)
 	{
 		return;
 	}
-	
+
 	file->flipSelected();
 }
 

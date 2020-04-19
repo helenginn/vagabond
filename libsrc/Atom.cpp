@@ -890,3 +890,12 @@ bool Atom::greater(AtomPtr a1, AtomPtr a2)
 	return (z2 > z1);
 }
 
+std::string Atom::getChainID()
+{
+	if (!getMolecule())
+	{
+		return "";
+	}
+	
+	return getMolecule()->getChainID();
+}

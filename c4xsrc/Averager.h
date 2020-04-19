@@ -8,6 +8,12 @@
 #include "MtzFFTPtr.h"
 #include <libsrc/DiffractionMTZ.h>
 
+typedef enum
+{
+	AveDiffraction,
+	AveCAlpha,
+} AveragerType;
+
 typedef struct
 {
 	VagFFT *one;
@@ -87,7 +93,7 @@ Q_OBJECT
 public:
 	Averager(QTreeWidget *parent);
 
-	void addMtz(DiffractionMtzPtr mtz, MtzFile *file);
+	void addMtz(DiffractionMtzPtr mtz, MtzFile *file, CrystalPtr c);
 	void addMtz(MtzFFTPtr mtz);
 	
 	static bool isAverager(QTreeWidgetItem *item)
@@ -99,6 +105,18 @@ public:
 	{
 		_res = res;
 	}
+	
+	void setType(AveragerType ave)
+	{
+		_type = ave;
+	}
+
+	AveragerType getType()
+	{
+		return _type;
+	}
+
+	double findPDBCorrelation(int i, int j);
 	
 	MtzFile *getMtzFile(int i);
 	void setMtzSelection(size_t i, bool val);
@@ -170,6 +188,7 @@ public:
 	{
 		return _message;
 	}
+
 public slots:
 	void performAverage();
 	void performCluster();
@@ -178,6 +197,7 @@ signals:
 	void failed();
 private:
 	void makeAverage(bool force = false);
+	void makeCAlphaAverage(bool force);
 	double findCorrelation(int i, int j);
 	double comparePairwise(int i, int j);
 	VagFFTPtr makeDifference(VagFFTPtr one, VagFFTPtr two);
@@ -188,6 +208,7 @@ private:
 	void scaleIndividualMtz(int i);
 	void svdAlloc();
 	void drawResults(double **data, std::string filename);
+	void populatePolymer(MtzFFTPtr mtz, PolymerPtr p);
 
 	std::vector<MtzFFTPtr> _mtzs;
 	std::vector<std::string> _names;
@@ -195,6 +216,8 @@ private:
 	VagFFTPtr _origAve;
 	
 	std::map<Pair, VagScore> _vagVals;
+	std::vector<vec3> _atomPos;
+	std::vector<int> _atomNum;
 
 	void cleanupSVD();
 	void matAlloc(double **raw, double ***ptrs);
@@ -221,6 +244,9 @@ private:
 	
 	bool _marked;
 	bool _dead;
+	
+	AveragerType _type;
+	AveragerType _origType;
 };
 
 #endif

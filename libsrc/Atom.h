@@ -286,6 +286,8 @@ public:
 	double getDistanceFrom(Atom *other, int nSample = -1, bool quick = false);
 	static double getAngle(AtomPtr atom1, AtomPtr atom2, AtomPtr atom3);
 	
+	std::string getChainID();
+	
 	void setWater(int set = 1)
 	{
 		_isWater = set;
