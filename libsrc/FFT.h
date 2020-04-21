@@ -245,6 +245,13 @@ public:
 	}
 
 	/* retrieves out of final column */
+	void setReal(long i, double val)
+	{
+		long index = finalIndex(i);
+		_data[index][0] = val;
+	}
+
+	/* retrieves out of final column */
 	double getReal(int i, int j, int k)
 	{
 		long ii = element(i, j, k);
@@ -263,6 +270,12 @@ public:
 	{
 		long index = finalIndex(i);
 		_data[index][0] += add;
+	}
+
+	inline void addToImag(long i, float add)
+	{
+		long index = finalIndex(i);
+		_data[index][1] += add;
 	}
 	
 	inline void setElement(long int i, float real, float imag)
