@@ -817,14 +817,14 @@ void Averager::setDead(bool dead)
 
 void Averager::writeToStream(std::ofstream &f, bool complete)
 {
+	if (complete && !_marked)
+	{
+		return;
+	}
+
 	for (size_t i = 0; i < _mtzs.size(); i++)
 	{
 		MtzFile *file = _mtzs[i]->getMtzFile();
-
-		if (complete && !file->isMarked())
-		{
-			continue;
-		}
 
 		f << file->getFilename();
 
