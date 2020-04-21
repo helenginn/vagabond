@@ -238,6 +238,7 @@ void Averager::makeAverage(bool force)
 					if (amp == amp)
 					{
 						_fft->addToReal(ele, amp);
+						_fft->addToReal(ele, 1);
 					}
 				}
 			}
@@ -250,7 +251,16 @@ void Averager::makeAverage(bool force)
 	}
 
 	_fft->setUnitCell(ucs);
-	_fft->multiplyAll(1 / (double)count);
+	
+	for (long i = 0; i < _fft->nn(); i++)
+	{
+		double imag = _fft->getImag(i);
+		double real = _fft->getReal(i);
+
+		real /= imag;
+
+		_fft->setReal(i, real);
+	}
 }
 
 void Averager::updateText()
