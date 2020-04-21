@@ -78,7 +78,7 @@ bool ClusterList::loadFiles(std::vector<std::string> files)
 			continue;
 		}
 
-		std::string base = getBaseFilename(files[i]);
+		std::string base = getBaseFilenameWithPath(files[i]);
 		std::string pdb = base + ".pdb";
 
 		CrystalPtr crystal;
