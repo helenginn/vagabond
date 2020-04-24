@@ -1,7 +1,9 @@
 #ifndef __vagabond_Pencil_fsh__
 #define __vagabond_Pencil_fsh__
 
-std::string Pencil_fsh =
+inline std::string Pencil_fsh()
+{
+	std::string str = 
 "\n"\
 "varying vec4 vColor;\n"\
 "varying vec2 vTex;\n"\
@@ -60,6 +62,8 @@ std::string Pencil_fsh =
 "\n"\
 "\n"\
 "}\n";
+return str;
+}
 
 
 #endif

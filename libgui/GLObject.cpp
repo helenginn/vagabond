@@ -17,8 +17,8 @@ GLObject::GLObject()
     _projectionUniform = 0;
     initializeOpenGLFunctions();
 	_renderType = GL_LINES;
-	_fragShader = &Shader_fsh;
-	_vertShader = &Shader_vsh;
+	_fragShader = Shader_fsh();
+	_vertShader = Shader_vsh();
 	_extra = false;
 	_backToFront = true;
 	_usesLighting = false;
@@ -142,8 +142,8 @@ void GLObject::initialisePrograms()
 	/* create program object and attach shaders */
 	_program = glCreateProgram();
 
-	Shader::shaderAttachFromFile(_program,  GL_FRAGMENT_SHADER, _fragShader->c_str(), true);
-	Shader::shaderAttachFromFile(_program,  GL_VERTEX_SHADER, _vertShader->c_str(), true);
+	Shader::shaderAttachFromFile(_program,  GL_FRAGMENT_SHADER, _fragShader.c_str(), true);
+	Shader::shaderAttachFromFile(_program,  GL_VERTEX_SHADER, _vertShader.c_str(), true);
 
 	glBindAttribLocation(_program, 0, "position");
 	glBindAttribLocation(_program, 1, "normal");

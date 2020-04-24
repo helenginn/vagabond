@@ -27,8 +27,8 @@
 WarpGL::WarpGL() : GLObject()
 {
 	_renderType = GL_TRIANGLES;
-	_vertShader = &PointyTriangle_vsh;
-	_fragShader = &InkBond_fsh;
+	_vertShader = PointyTriangle_vsh();
+	_fragShader = InkBond_fsh();
 	_extra = true;
 	_usesFocalDepth = true;
 }

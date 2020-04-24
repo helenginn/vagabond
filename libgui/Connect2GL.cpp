@@ -28,8 +28,8 @@
 Connect2GL::Connect2GL() : Vagabond2GL()
 {
 	_renderType = GL_TRIANGLES;
-	_vertShader = &InkBond_vsh;
-	_fragShader = &InkBond_fsh;
+	_vertShader = InkBond_vsh();
+	_fragShader = InkBond_fsh();
 	_extra = true;
 	_shouldGetBonds = false;
 	_usesFocalDepth = true;

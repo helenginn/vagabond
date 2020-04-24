@@ -29,8 +29,8 @@
 Multi2GL::Multi2GL()
 {
 	_renderType = GL_POINTS;
-	_vertShader = &Blob_vsh;
-	_fragShader = &Blob_fsh;
+	_vertShader = Blob_vsh();
+	_fragShader = Blob_fsh();
 	_usesFocalDepth = true;
 	
 	_connected = Connect2GLPtr(new Connect2GL());

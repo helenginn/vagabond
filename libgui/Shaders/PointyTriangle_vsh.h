@@ -1,7 +1,9 @@
 #ifndef __vagabond_PointyTriangle_vsh__
 #define __vagabond_PointyTriangle_vsh__
 
-inline std::string PointyTriangle_vsh =
+inline std::string PointyTriangle_vsh ()
+{
+	std::string str =
 "attribute vec3 normal;\n"\
 "attribute vec3 position;\n"\
 "attribute vec4 color;\n"\
@@ -38,6 +40,8 @@ inline std::string PointyTriangle_vsh =
 "    vTex = tex;\n"\
 "    vPos = model * pos;\n"\
 "}";
+return str;
+}
 
 
 #endif

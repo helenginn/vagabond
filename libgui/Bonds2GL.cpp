@@ -39,8 +39,8 @@ void Bonds2GL::setupAverage()
 	}
 
 	_renderType = GL_TRIANGLES;
-	_vertShader = &InkBond_vsh;
-	_fragShader = &InkBond_fsh;
+	_vertShader = InkBond_vsh();
+	_fragShader = InkBond_fsh();
 	_extra = true;
 }
 

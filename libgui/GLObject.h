@@ -120,8 +120,8 @@ protected:
 
 	bool _backToFront;
 	GLenum _renderType;
-	std::string *_fragShader;
-	std::string *_vertShader;
+	std::string _fragShader;
+	std::string _vertShader;
 	
 	std::vector<GLuint> _textures;
 	void reorderIndices();

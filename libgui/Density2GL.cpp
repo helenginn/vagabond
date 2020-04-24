@@ -34,8 +34,8 @@ Density2GL::Density2GL()
 	_extra = true;
 	_crystal = Options::getActiveCrystal();
 	
-	_vertShader = &Pencil_vsh;
-	_fragShader = &Pencil_fsh;
+	_vertShader = Pencil_vsh();
+	_fragShader = Pencil_fsh();
 }
 
 std::vector<GLuint> makeList(int count, ...)

@@ -301,7 +301,7 @@ void CSV::plotPNG(std::map<std::string, std::string> properties)
 		if (properties.count("x" + maxKey)) maxX = atof(properties["x" + maxKey].c_str());
 		if (properties.count("y" + maxKey)) maxY = atof(properties["y" + maxKey].c_str());
 		if (properties.count("z" + maxKey)) maxZ = atof(properties["z" + maxKey].c_str());
-
+		
 		if (minX == -FLT_MAX || maxX == FLT_MAX) minMaxCol(xCol, &minX, &maxX, false);
 		if (minY == -FLT_MAX || maxY == FLT_MAX) minMaxCol(yCol, &minY, &maxY, round);
 

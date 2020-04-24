@@ -25,8 +25,8 @@
 Atoms2GL::Atoms2GL()
 {
 	_renderType = GL_POINTS;
-	_vertShader = &Blob_vsh;
-	_fragShader = &Blob_fsh;
+	_vertShader = Blob_vsh();
+	_fragShader = Blob_fsh();
 	_usesFocalDepth = true;
 }
 
