@@ -44,6 +44,12 @@ AbsolutePtr PDBReader::makeAbsolute(std::string line)
 
 	atomNum = line.substr(6, 5);
 	atomName = line.substr(11, 5);
+	
+	if (_type.length() && atomName != _type)
+	{
+		return AbsolutePtr();
+	}
+
 	alternate = line.substr(16, 1);
 	resName = line.substr(17, 3);
 	chainID = line.substr(21, 1);
@@ -255,6 +261,12 @@ void PDBReader::addAtomToMolecule(std::string line)
 {
 	AbsolutePtr abs = makeAbsolute(line);
 	/* Makes sure we're ready to append to the correct molecule */
+	
+	if (!abs)
+	{
+		return;
+	}
+
 	validateMolecule(abs);
 
 	if (abs->isHeteroAtom())
@@ -340,7 +352,6 @@ void PDBReader::parse()
 	/* Prepare water network for HOH atoms */
 	_myHOH = WaterNetworkPtr(new WaterNetwork());
 	_myHOH->setChainID("HOH");
-
 
 	std::string pdbContents = get_file_contents(filename);
 
@@ -432,3 +443,5 @@ std::string PDBReader::writeLine(AtomPtr atom, vec3 placement, int count,
 
 	return stream.str();
 }
+
+

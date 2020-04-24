@@ -28,6 +28,10 @@ public:
 	void setFilename(std::string);
 	CrystalPtr getCrystal();
 
+	void ignoreAtomsExcept(std::string type)
+	{
+		_type = type;
+	}
 
 	static std::string writeCryst(mat3x3 frac2real, CSym::CCP4SPG *spg);
 	static std::string writeLine(AtomPtr atom, vec3 placement, int count,
@@ -43,6 +47,7 @@ private:
 	CrystalPtr _myCrystal;
 	MonomerPtr _myMonomer;
 	std::string _myChain;
+	std::string _type;
 	bool _breakMe;
 	int _chainFrag;
 	AbsolutePtr _myAbsolute;
