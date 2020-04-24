@@ -186,6 +186,7 @@ void Wilson::findStraightB()
 	std::cout << "Shell (Å)\tlog(mean intensity)\tsum residual" << std::endl;
 	*/
 	int shellOverThreshold = -1;
+	double threshold = 0.1;
 	
 	for (size_t i = 0; i < _xs.size(); i++)
 	{
@@ -195,7 +196,7 @@ void Wilson::findStraightB()
 		residual << std::endl;
 		*/
 		
-		if (shellOverThreshold < 0 && residual > 0.1)
+		if (shellOverThreshold < 0 && residual > threshold)
 		{
 			shellOverThreshold = i;
 		}
@@ -203,12 +204,12 @@ void Wilson::findStraightB()
 	
 	if (shellOverThreshold < 0)
 	{
-		std::cout << "Residual never goes over 20%!" << std::endl;
+		std::cout << "Residual never goes over " << threshold << "!" << std::endl;
 		std::cout << "Nothing more to do." << std::endl;
 		exit(0);
 	}
 	
-	std::cout << "First shell over residual of 20% is at " <<
+	std::cout << "First shell over residual of " << threshold << " is at " <<
 	pow(_xs[shellOverThreshold], -1./3.) << " Å." << std::endl;
 	
 	shellOverThreshold--;
