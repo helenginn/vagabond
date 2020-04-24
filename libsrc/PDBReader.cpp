@@ -45,7 +45,8 @@ AbsolutePtr PDBReader::makeAbsolute(std::string line)
 	atomNum = line.substr(6, 5);
 	atomName = line.substr(11, 5);
 	
-	std::string trName = trim(atomName);
+	std::string trName = atomName;
+	trim(trName);
 	if (_type.length() && trName != _type)
 	{
 		return AbsolutePtr();
