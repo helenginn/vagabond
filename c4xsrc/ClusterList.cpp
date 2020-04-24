@@ -87,6 +87,7 @@ bool ClusterList::loadFiles(std::vector<std::string> files)
 		{
 			PDBReader reader;
 			reader.setFilename(pdb);
+			reader.ignoreAtomsExcept("CA");
 			crystal = reader.getCrystal();
 		}
 
