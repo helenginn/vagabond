@@ -258,6 +258,22 @@ public:
 		long index = finalIndex(ii);
 		return _data[index][0];
 	}
+
+	/* retrieves out of final column */
+	double getImag(int i, int j, int k)
+	{
+		long ii = element(i, j, k);
+		long index = finalIndex(ii);
+		return _data[index][1];
+	}
+
+	/* retrieves out of final column */
+	void setImag(int i, int j, int k, double val)
+	{
+		long ii = element(i, j, k);
+		long index = finalIndex(ii);
+		_data[index][1] = val;
+	}
 	
 	/* retrieves out of final column */
 	double getImag(long i)

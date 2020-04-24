@@ -1340,6 +1340,8 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 	colout[11] = MtzAddColumn(mtzout, set, "PHDELWT", "P");
 
 	int num = 0;
+	
+	mat3x3 transpose = mat3x3_transpose(_toRecip);
 
 	/* symmetry issues */
 	for (int k = -nLimit[2]; k < nLimit[2]; k++)
@@ -1358,7 +1360,7 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 				}
 
 				vec3 pos = make_vec3(i, j, k);
-				mat3x3_mult_vec(_toRecip, &pos);
+				mat3x3_mult_vec(transpose, &pos);
 
 				if (vec3_length(pos) > dStar)
 				{
@@ -1417,7 +1419,7 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 				fdata[0] = i;
 				fdata[1] = j;
 				fdata[2] = k;
-				fdata[3] = free;
+				fdata[3] = free - 0.1;
 				fdata[4] = foAmp;
 				fdata[5] = sigma;
 				fdata[6] = calcAmp;
@@ -2100,8 +2102,9 @@ void VagFFT::convertMaskToSolvent(int expTotal)
 
 double VagFFT::resolution(int i, int j, int k)
 {
+	mat3x3 transpose = mat3x3_transpose(_toRecip);
 	vec3 ijk = make_vec3(i, j, k);
-	mat3x3_mult_vec(_toRecip, &ijk);
+	mat3x3_mult_vec(transpose, &ijk);
 	return 1 / vec3_length(ijk);
 }
 

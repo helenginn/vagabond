@@ -178,11 +178,12 @@ inline vec3 getNLimits(VagFFTPtr data, VagFFTPtr fftModel)
 	return lims;
 }
 
-inline void makeShells(std::vector<ShellInfo> *shells, double min, double max)
+inline void makeShells(std::vector<ShellInfo> *shells, double min, double max,
+                       int number = 20)
 {
 	/* Then apply to individual resolution bins */
 	std::vector<double> bins;
-	generateResolutionBins(min, max, 20, &bins);
+	generateResolutionBins(min, max, number, &bins);
 
 	/* Extend the final bin by a little bit, so as not to lose any
 	 * stragglers. */

@@ -45,7 +45,7 @@ double add_x_if_y(std::vector<double> &vec1, std::vector<double> &vec2,
 double add_if_gt_zero(std::vector<double> &vec2);
 double standard_deviation(std::vector<double> &values);
 void regression_line(std::vector<double> xs, std::vector<double> ys,
-                     double *intercept, double *gradient);
+                     double *intercept, double *gradient, int max = 0);
 
 typedef double (*two_dataset_op)(std::vector<double>&, std::vector<double>&);
 

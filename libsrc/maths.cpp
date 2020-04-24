@@ -411,7 +411,7 @@ double happiness_coefficient(std::vector<double> xs, std::vector<double> ys)
 }
 
 void regression_line(std::vector<double> xs, std::vector<double> ys,
-                     double *intercept, double *gradient)
+                     double *intercept, double *gradient, int max)
 {
 	double sigma_x = 0;
 	double sigma_y = 0;
@@ -430,6 +430,11 @@ void regression_line(std::vector<double> xs, std::vector<double> ys,
 		sigma_x_y += x * y * weight;
 		sigma_x_2 += x * x * weight;
 		weight_n += weight;
+		
+		if (max > 0 && i > max)
+		{
+			break;
+		}
 	}
 
 	double mean_x = sigma_x / weight_n;
