@@ -238,7 +238,7 @@ void Averager::makeAverage(bool force)
 					if (amp == amp)
 					{
 						_fft->addToReal(ele, amp);
-						_fft->addToReal(ele, 1);
+						_fft->addToImag(ele, 1);
 					}
 				}
 			}
