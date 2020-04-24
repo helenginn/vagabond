@@ -196,6 +196,12 @@ if qt5_dep.found() and dep_gl.found()
 ],
 		moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'])
 
+
+executable('force_down', gen_src, 
+'force_down/main.cpp', 
+'force_down/Wilson.cpp', 
+cpp_args: ['-std=c++11'], dependencies : [ dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
+
 executable('cluster4x', gen_src, moc_cluster4x,
 'c4xsrc/main.cpp', 
 'c4xsrc/Averager.cpp', 
