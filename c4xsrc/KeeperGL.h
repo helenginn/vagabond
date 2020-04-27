@@ -43,8 +43,8 @@ public:
 	
 	void preparePanels(int n);
 	void addAxes();
-	void addHKLView(VagFFTPtr fft, double scale);
 	void addSVDPoints(Averager *ave);
+	void addHKLView(VagFFTPtr fft, double scale, mat4x4 *mat);
 	void setupCamera(void);
 	
 	void panned(double x, double y);

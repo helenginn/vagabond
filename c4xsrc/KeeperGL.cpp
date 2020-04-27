@@ -194,9 +194,10 @@ void KeeperGL::addSVDPoints(Averager *ave)
 	_renderMe.push_back(_points);
 }
 
-void KeeperGL::addHKLView(VagFFTPtr fft, double scale)
+void KeeperGL::addHKLView(VagFFTPtr fft, double scale, mat4x4 *mat)
 {
 	_hklView = new HKLView(fft, scale);
+	_hklView->setStoreMatrix(mat);
 	_renderMe.push_back(_hklView);
 	_hklView->setKeeper(this);
 	_hklView->repopulate();

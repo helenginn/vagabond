@@ -323,8 +323,7 @@ void Screen::addHKLView(VagFFTPtr fft, std::string filename)
 	_hklKeeper = new KeeperGL(_hkl);
 	_hklKeeper->addAxes();
 	_hklKeeper->setModelMatrix(_storeHKL);
-	_hklKeeper->addHKLView(fft, _scale);
-	_hklKeeper->setStoreMatrix(&_storeHKL);
+	_hklKeeper->addHKLView(fft, _scale, &_storeHKL);
 	
 	std::vector<double> uc = fft->getUnitCell();
 	std::string ucInfo;
