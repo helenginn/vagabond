@@ -44,7 +44,7 @@ public:
 	void preparePanels(int n);
 	void addAxes();
 	void addSVDPoints(Averager *ave);
-	void addHKLView(VagFFTPtr fft, double scale, mat4x4 *mat);
+	void addHKLView(VagFFTPtr fft, double scale);
 	void setupCamera(void);
 	
 	void panned(double x, double y);
@@ -75,6 +75,7 @@ public:
 	
 	void setStoreMatrix(mat4x4 *store)
 	{
+		_model = *store;
 		_store = store;
 	}
 	
