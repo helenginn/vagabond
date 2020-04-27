@@ -147,6 +147,7 @@ KeeperGL::KeeperGL(QWidget *p) : QOpenGLWidget(p)
 	setGeometry(0, 0, p->width(), p->height());
 	_points = NULL;
 	_hklView = NULL;
+	setupCamera();
 }
 
 std::vector<MtzFFTPtr> KeeperGL::getMtzs()
