@@ -50,7 +50,8 @@ int main(int argc, char * argv[])
 	
 	ClusterList *list = scr.getList();
 	list->setCommands(commands);
-	bool success = list->loadFiles(files);
+	list->setFiles(files);
+	bool success = list->loadFiles();
 	int status = 0;
 
 	if (success)

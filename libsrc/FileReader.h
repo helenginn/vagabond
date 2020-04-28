@@ -25,6 +25,7 @@ bool file_exists(const std::string& name);
 std::string getFilename(std::string filename);
 std::string getBaseFilename(std::string filename);
 std::string getBaseFilenameWithPath(std::string filename);
+std::string findNextFilename(std::string file);
 
 std::string i_to_str(int val);
 std::string f_to_str(double val, int precision);

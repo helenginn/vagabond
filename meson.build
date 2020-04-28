@@ -1,7 +1,7 @@
 project('vagabond', 'cpp', 'c')
 qt5 = import('qt5')
 
-qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets'], required : false)
+qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets', 'Sql'], required : false)
 dep_gl = dependency('gl', required : false)
 
 png_dep = dependency('libpng')
@@ -191,6 +191,8 @@ if qt5_dep.found() and dep_gl.found()
 'c4xsrc/GLPoint.h', 
 'c4xsrc/Screen.h', 
 'c4xsrc/SelectionWindow.h', 
+'c4xsrc/SQLCredentials.h', 
+'c4xsrc/SQLInput.h', 
 'c4xsrc/KeeperGL.h', 
 'c4xsrc/ClusterList.h', 
 'c4xsrc/CorrelLabel.h', 
@@ -214,6 +216,8 @@ executable('cluster4x', gen_src, moc_cluster4x,
 'c4xsrc/MtzFile.cpp', 
 'c4xsrc/MtzFFT.cpp', 
 'c4xsrc/Screen.cpp', 
+'c4xsrc/SQLCredentials.cpp', 
+'c4xsrc/SQLInput.cpp', 
 'c4xsrc/KeeperGL.cpp', 
 'c4xsrc/HKLView.cpp', 
 'c4xsrc/GLAxis.cpp', 

@@ -6,6 +6,7 @@
 #include <QObject>
 #include <libsrc/DiffractionMTZ.h>
 #include "MtzFFTPtr.h"
+#include "SQLInput.h"
 
 class QTreeWidget;
 class MtzFile;
@@ -19,17 +20,26 @@ Q_OBJECT
 public:
 	ClusterList(QTreeWidget *widget);
 
+	~ClusterList();
+
 	void setCommands(std::vector<std::string> commands);
-	bool loadFiles(std::vector<std::string> files);
+	bool loadFiles();
+	void load(std::vector<DatasetPaths> paths);
 
 	void average(Averager *item);
 	void cluster(Averager *item);
+	void getFromDatabase();
 	void setScreen(Screen *scr)
 	{
 		_screen = scr;
 	}
 	
 	void makeGroup(std::vector<MtzFFTPtr> mtzs, bool useAve);
+	
+	void setFiles(std::vector<std::string> files)
+	{
+		_filenames = files;
+	}
 	
 	Averager *topCluster();
 	void removeCluster(Averager *ave);
@@ -53,7 +63,6 @@ protected:
 	virtual void keyPressEvent(QKeyEvent *event);
 	virtual void keyReleaseEvent(QKeyEvent *event);
 private:
-	std::string findNextFilename(std::string file);
 
 	Screen *_screen;
 	QTreeWidget *_widget;
@@ -62,10 +71,12 @@ private:
 	bool _selectMode;
 	bool _removeMode;
 
+	std::vector<std::string> _filenames;
 	std::vector<Averager *> _clusters;
 	std::vector<MtzFile *> _files;
 	std::vector<std::string> _commands;
 	double _res;
+	bool _sqlInput;
 };
 
 

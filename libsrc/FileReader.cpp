@@ -98,6 +98,24 @@ std::string getBaseFilename(std::string filename)
 	return fName.substr(0, pos);
 }
 
+std::string findNextFilename(std::string file)
+{
+	std::string trial = file;
+	int count = 0;
+
+	while (true)
+	{
+		std::string test = i_to_str(count) + "_" + trial;
+
+		if (!file_exists(test))
+		{
+			return test;
+		}
+		
+		count++;
+	}
+}
+
 void trim(std::string &str)
 {
 	std::string::size_type pos = str.find_last_not_of(' ');

@@ -32,11 +32,13 @@
 #include "MtzFFT.h"
 #include "Averager.h"
 #include "Screen.h"
+#include "SQLInput.h"
 
 #include <libsrc/FFT.h>
 
 ClusterList::ClusterList(QTreeWidget *widget)
 {
+	_sqlInput = false;
 	_selectMode = false;
 	_removeMode = false;
 	_lastAverage = NULL;
@@ -50,35 +52,55 @@ ClusterList::ClusterList(QTreeWidget *widget)
 	        this, &ClusterList::updateColours);
 }
 
-
-
-bool ClusterList::loadFiles(std::vector<std::string> files)
+ClusterList::~ClusterList()
 {
+
+}
+
+void ClusterList::getFromDatabase()
+{
+	SQLInput *input = new SQLInput(NULL);
+	input->setList(this);
+}
+
+void ClusterList::load(std::vector<DatasetPaths> paths)
+{
+	
+}
+
+bool ClusterList::loadFiles()
+{
+	if (_sqlInput)
+	{
+		getFromDatabase();
+		return true;
+	}
+
 	Averager *ave = new Averager(_widget);
 	_clusters.push_back(ave);
 	ave->setMaxResolution(_res);
 
-	for (size_t i = 0; i < files.size(); i++)
+	for (size_t i = 0; i < _filenames.size(); i++)
 	{
-		MtzFile *file = new MtzFile(files[i]);
+		MtzFile *file = new MtzFile(_filenames[i]);
 		_files.push_back(file);
 
 		DiffractionMtzPtr mtz = DiffractionMtzPtr(new DiffractionMtz());
 		mtz->setNeedsRfree(false);
 		mtz->setResLimit(_res);
-		mtz->setFilename(files[i]);
+		mtz->setFilename(_filenames[i]);
 		try
 		{
 			mtz->load();
 		}
 		catch (Shouter *s)
 		{
-			std::cout << "Ignoring mtz " << files[i] << 
+			std::cout << "Ignoring mtz " << _filenames[i] << 
 			" due to problems" << std::endl;
 			continue;
 		}
 
-		std::string base = getBaseFilenameWithPath(files[i]);
+		std::string base = getBaseFilenameWithPath(_filenames[i]);
 		std::string pdb = base + ".pdb";
 
 		CrystalPtr crystal;
@@ -183,24 +205,6 @@ void ClusterList::cluster(Averager *item)
 	_worker->start();
 
 	emit cluster();
-}
-
-std::string ClusterList::findNextFilename(std::string file)
-{
-	std::string trial = file;
-	int count = 0;
-
-	while (true)
-	{
-		std::string test = i_to_str(count) + "_" + trial;
-
-		if (!file_exists(test))
-		{
-			return test;
-		}
-		
-		count++;
-	}
 }
 
 Averager *ClusterList::topCluster()
@@ -353,6 +357,14 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 		if (value.length())
 		{
 			_res = atof(value.c_str());
+		}
+
+		value = isCommand(_commands[i], "--sql=");
+		to_lower(value);
+		if (value == "yes" || value == "true")
+		{
+			std::cout << "Using SQL Input" << std::endl;
+			_sqlInput = true;
 		}
 	}
 }
