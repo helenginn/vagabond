@@ -203,6 +203,19 @@ std::string ClusterList::findNextFilename(std::string file)
 	}
 }
 
+Averager *ClusterList::topCluster()
+{
+	QTreeWidgetItem *item = _widget->topLevelItem(0);
+
+	if (!Averager::isAverager(item))
+	{
+		return NULL;
+	}
+
+	Averager *obj = static_cast<Averager *>(item);
+	return obj;
+}
+
 void ClusterList::exportAll()
 {
 	std::string fnall = findNextFilename("all_clusters.txt");

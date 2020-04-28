@@ -21,6 +21,7 @@
 #include "GLAxis.h"
 #include "GLPoint.h"
 #include "HKLView.h"
+#include "CAlphaView.h"
 #include "MtzFFT.h"
 #include "MtzFile.h"
 #include <QApplication>
@@ -100,7 +101,7 @@ void KeeperGL::updateCamera(void)
 	mat4x4_mult_scalar(&_model, _scale);
 	_scale = 1;
 	
-	if (det < 0.05 && _store != NULL)
+	if (det < 0.01 && _autoCorrect)
 	{
 		_model = make_mat4x4();
 	}
@@ -141,6 +142,7 @@ void KeeperGL::setupCamera(void)
 
 KeeperGL::KeeperGL(QWidget *p) : QOpenGLWidget(p)
 {
+	_autoCorrect = false;
 	_store = NULL;
 	_model = make_mat4x4();
 	_rotMat = make_mat4x4();
@@ -195,12 +197,34 @@ void KeeperGL::addSVDPoints(Averager *ave)
 	_renderMe.push_back(_points);
 }
 
+void KeeperGL::finishCAlphaView()
+{
+	_renderMe.push_back(_cAlphaView);
+	_cAlphaView->setKeeper(this);
+	_cAlphaView->repopulate();
+	updateCamera();
+	update();
+}
+
+void KeeperGL::addCAlphaView(Averager *ave, vec3 centre)
+{
+	_cAlphaView = new CAlphaView(ave, centre);
+	finishCAlphaView();
+}
+
+void KeeperGL::addCAlphaView(MtzFile *file, vec3 centre)
+{
+	_cAlphaView = new CAlphaView(file, centre);
+	finishCAlphaView();
+}
+
 void KeeperGL::addHKLView(VagFFTPtr fft, double scale)
 {
 	_hklView = new HKLView(fft, scale);
 	_renderMe.push_back(_hklView);
 	_hklView->setKeeper(this);
 	_hklView->repopulate();
+	_autoCorrect = true;
 	updateCamera();
 	update();
 }

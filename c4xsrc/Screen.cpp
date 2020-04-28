@@ -32,6 +32,7 @@
 #include "FileReader.h"
 #include "Screen.h"
 #include "SelectionWindow.h"
+#include "CAlphaView.h"
 #include "ClusterList.h"
 #include "CorrelLabel.h"
 #include "MtzFile.h"
@@ -53,7 +54,9 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 
 	_scale = -1;
 	_storeHKL = make_mat4x4();
+	_storeCAlpha = make_mat4x4();
 	mat4x4_mult_scalar(&_storeHKL, 5);
+	mat4x4_mult_scalar(&_storeCAlpha, 0.1);
 	_tabs = NULL;
 	_correlLabel = NULL;
 	_correlImage = NULL;
@@ -67,6 +70,7 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 	_invertSele = NULL;
 	_hkl = NULL;
 	_hklKeeper = NULL;
+	_cAlphaKeeper = NULL;
 	_currIndex = 0;
 
 	_inputTree = new QTreeWidget(this);
@@ -117,6 +121,12 @@ void Screen::resizeEvent(QResizeEvent *e)
 			}
 		}
 
+		if (_cAlphaKeeper)
+		{
+			_cAlphaKeeper->setGeometry(0, 0, _tabs->width(), 
+			                           _tabs->height());
+		}
+
 		if (_graph)
 		{
 			int axh = 60;
@@ -142,14 +152,27 @@ void Screen::resizeEvent(QResizeEvent *e)
 			{
 				_newSel->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
 				                     _newSel->y(), RIGHT_VIEW_WIDTH - 20, 40);
+
 				_markSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-				                     _markSele->y(), RIGHT_VIEW_WIDTH - 20, 40);
+				                       _markSele->y(), RIGHT_VIEW_WIDTH - 20,
+				                       40);
 				_unmarkSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-				                     _unmarkSele->y(), RIGHT_VIEW_WIDTH - 20, 40);
+										 _unmarkSele->y(), RIGHT_VIEW_WIDTH -
+										                   20, 40);
+
 				_invertSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-				                     _invertSele->y(), RIGHT_VIEW_WIDTH - 20, 40);
+				                         _invertSele->y(), RIGHT_VIEW_WIDTH -
+				                         20, 40);
+
+				_deadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
+				                       _deadSele->y(), RIGHT_VIEW_WIDTH - 20,
+				                       40);
+				_undeadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+				                         _undeadSele->y(), RIGHT_VIEW_WIDTH -
+				                         20, 40);
+
 				_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-				                      h - 50, RIGHT_VIEW_WIDTH - 20, 40);
+				                     h - 50, RIGHT_VIEW_WIDTH - 20, 40);
 			}
 		}
 
@@ -302,6 +325,18 @@ void Screen::addAxisExplorer(Averager *ave)
 	_bin.push_back((QWidget **)&_keeper);
 }
 
+void Screen::addCAlphaView()
+{
+	_cAlpha = new QWidget(this);
+	_tabs->addTab(_cAlpha, "C-alpha explorer");
+	
+	_cAlphaKeeper = new KeeperGL(_cAlpha);
+	_cAlphaKeeper->setStoreMatrix(&_storeCAlpha);
+
+	_bin.push_back((QWidget **)&_cAlphaKeeper);
+	_bin.push_back((QWidget **)&_cAlpha);
+}
+
 void Screen::addHKLView(VagFFTPtr fft, std::string filename)
 {
 	if (!fft)
@@ -311,8 +346,6 @@ void Screen::addHKLView(VagFFTPtr fft, std::string filename)
 
 	_hkl = new QWidget(this);
 	_tabs->addTab(_hkl, "HKL explorer");
-	
-	std::cout << fft->nn() << std::endl;
 	
 	if (_scale < 0 || _scale != _scale)
 	{
@@ -365,6 +398,10 @@ void Screen::displaySingle(MtzFFTPtr fft)
 
 
 	addHKLView(fft, fft->getMtzFile()->getFilename());
+	addCAlphaView();
+	vec3 centre = _list->topCluster()->getCentre();
+	_cAlphaKeeper->addCAlphaView(fft->getMtzFile(), centre);
+
 	_tabs->show();
 
 	int top = 10;
@@ -378,6 +415,9 @@ void Screen::displaySingle(MtzFFTPtr fft)
 	
 	_bin.push_back((QWidget **)&_toggleDead);
 
+	_tabs->setCurrentIndex(_currIndex);
+	connect(_tabs, &QTabWidget::currentChanged, 
+	        this, &Screen::changeIndex);
 	resizeEvent(NULL);
 }
 
@@ -402,6 +442,10 @@ void Screen::displayResults(Averager *ave)
 	addAxisExplorer(ave);
 	std::string average = "Average";
 	addHKLView(ave->getAverageFFT(), average);
+
+	addCAlphaView();
+	vec3 centre = _list->topCluster()->getCentre();
+	_cAlphaKeeper->addCAlphaView(ave, centre);
 
 	int top = 10;
 
@@ -536,6 +580,11 @@ void Screen::refreshSelection()
 	if (_keeper)
 	{
 		_keeper->getPoints()->repopulate();
+	}
+	
+	if (_cAlphaKeeper)
+	{
+		_cAlphaKeeper->getCAlphaView()->repopulate();
 	}
 	
 	_list->updateColours();

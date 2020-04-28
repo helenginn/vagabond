@@ -1,4 +1,4 @@
-// clusterxxxx
+// 
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,43 +16,39 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#include "MtzFile.h"
-#include <QFont>
+#ifndef __cluster__calphaview__
+#define __cluster__calphaview__
 
-MtzFile::MtzFile(std::string filename)
+#include <libsrc/vec3.h>
+#include "GLObject.h"
+
+class Averager;
+class MtzFile;
+
+class CAlphaView : public QObject, public GLObject
 {
-	_filename = filename;
-	_mark = false;
-	_sele = false;
-	_dead = false;
-}
+Q_OBJECT
+public:
+	CAlphaView(MtzFile *mtz, vec3 centre = empty_vec3());
+	CAlphaView(Averager *ave, vec3 centre = empty_vec3());
 
+	void setKeeper(KeeperGL *gl)
+	{
+		_keeper = gl;
+	}
 
-void MtzFile::recolourVertex(Vertex *v, bool fullDead)
-{
-	v->color[0] = 0;
-	v->color[1] = 0;
-	v->color[2] = 0;
+	virtual void initialisePrograms();
+	void repopulate();
+	void recolour();
+private:
+	void addCAlpha(vec3 point);
 
-	if (isDead())
-	{
-		v->color[0] = 100. / 255.;
-		v->color[1] = 100. / 255.;
-		v->color[2] = 100. / 255.;
-		
-		if (fullDead)
-		{
-			v->color[3] = 0.;
-		}
-	}
-	if (isSelected())
-	{
-		v->color[0] = 200. / 255.;
-		v->color[1] = 200. / 255.;
-	}
-	if (isMarked())
-	{
-		v->color[0] = 255 / 255;
-		v->color[1] = 0;
-	}
-}
+	std::map<MtzFile *, size_t> _starts;
+	std::map<MtzFile *, size_t> _ends;
+	std::vector<MtzFile *> _mtzs;
+	vec3 _centre;
+	KeeperGL *_keeper;
+
+};
+
+#endif

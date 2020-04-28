@@ -22,6 +22,7 @@
 #include "MtzFFTPtr.h"
 
 class CorrelLabel;
+class MtzFile;
 class QPlainTextEdit;
 class QTreeWidget;
 class QImage;
@@ -66,6 +67,7 @@ private:
 	void binTab();
 	void addCorrelImage(Averager *ave);
 	void addAxisExplorer(Averager *ave);
+	void addCAlphaView();
 	void addHKLView(VagFFTPtr fft, std::string filename = "");
 
 	int _currIndex;
@@ -76,10 +78,12 @@ private:
 	MatrixView *_correlImage;
 	KeeperGL *_keeper;
 	KeeperGL *_hklKeeper;
+	KeeperGL *_cAlphaKeeper;
 	CorrelLabel *_correlLabel;
 	QTabWidget *_tabs;
 	QWidget *_graph;
 	QWidget *_hkl;
+	QWidget *_cAlpha;
 	AxisScroll *_scroll;
 	QTreeWidget *_inputTree;
 	QToolBar *_toolBar;
@@ -96,4 +100,5 @@ private:
 	ClusterList *_list;
 
 	mat4x4 _storeHKL;
+	mat4x4 _storeCAlpha;
 };

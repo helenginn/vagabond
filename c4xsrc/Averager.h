@@ -118,6 +118,11 @@ public:
 
 	double findPDBCorrelation(int i, int j);
 	
+	vec3 getCentre()
+	{
+		return _centre;
+	}
+	
 	MtzFile *getMtzFile(int i);
 	void setMtzSelection(size_t i, bool val);
 	void flipMtzSelection(int i);
@@ -244,6 +249,8 @@ private:
 	
 	bool _marked;
 	bool _dead;
+	
+	vec3 _centre;
 	
 	AveragerType _type;
 	AveragerType _origType;

@@ -93,7 +93,6 @@ public:
 	
 	void select(bool sel, double red, double green, double blue);
 	void changeProgram(std::string &v, std::string &f);
-	void wipeEffect();
 	
 	void setZCoord(float z);
 protected:

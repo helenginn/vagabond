@@ -92,28 +92,9 @@ void GLPoint::recolour()
 {
 	for (size_t i = 0; i < _ave->mtzCount(); i++)
 	{
-		Vertex &v = _vertices[i];
-		v.color[0] = 0;
-		v.color[1] = 0;
-		v.color[2] = 0;
-
+		Vertex *v = &_vertices[i];
 		MtzFile *file = _ave->getMtz(i)->getMtzFile();
-		if (file->isDead())
-		{
-			v.color[0] = 100. / 255.;
-			v.color[1] = 100. / 255.;
-			v.color[2] = 100. / 255.;
-		}
-		if (file->isSelected())
-		{
-			v.color[0] = 200. / 255.;
-			v.color[1] = 200. / 255.;
-		}
-		if (file->isMarked())
-		{
-			v.color[0] = 255 / 255;
-			v.color[1] = 0;
-		}
+		file->recolourVertex(v);
 	}
 
 	_keeper->update();

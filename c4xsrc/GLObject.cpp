@@ -210,14 +210,16 @@ void GLObject::deletePrograms()
 
 void GLObject::initialisePrograms(std::string *v, std::string *f)
 {
+	std::string vv = vImage();
+	std::string ff = fImage();
 	if (v == NULL)
 	{
-		v = &vImage;
+		v = &vv;
 	}
 
 	if (f == NULL)
 	{
-		f = &fImage;
+		f = &ff;
 	}
 	
 	initializeOpenGLFunctions();
@@ -413,11 +415,6 @@ void GLObject::changeProgram(std::string &v, std::string &f)
 {
 	deletePrograms();
 	initialisePrograms(&v, &f);
-}
-
-void GLObject::wipeEffect()
-{
-	changeProgram(vImage, fImage);
 }
 
 void GLObject::setDisabled(bool dis)

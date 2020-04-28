@@ -22,6 +22,7 @@
 #include <libsrc/shared_ptrs.h>
 #include <libsrc/vec3.h>
 #include <string>
+#include "GLObject.h"
 
 class MtzFile
 {
@@ -75,6 +76,8 @@ public:
 			_sele = sele;
 		}
 	}
+	
+	void recolourVertex(Vertex *v, bool fullDead = false);
 	
 	void setCrystal(CrystalPtr crystal)
 	{

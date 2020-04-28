@@ -30,6 +30,7 @@
 
 class GLAxis;
 class HKLView;
+class CAlphaView;
 class GLPoint;
 class GLObject;
 class Averager;
@@ -45,6 +46,8 @@ public:
 	void addAxes();
 	void addSVDPoints(Averager *ave);
 	void addHKLView(VagFFTPtr fft, double scale);
+	void addCAlphaView(MtzFile *file, vec3 centre);
+	void addCAlphaView(Averager *ave, vec3 centre);
 	void setupCamera(void);
 	
 	void panned(double x, double y);
@@ -71,6 +74,11 @@ public:
 	GLPoint *getPoints()
 	{
 		return _points;
+	}
+	
+	CAlphaView *getCAlphaView()
+	{
+		return _cAlphaView;
 	}
 	
 	void setStoreMatrix(mat4x4 *store)
@@ -100,6 +108,7 @@ private:
 	void initialisePrograms();
 	void updateProjection();
 	void updateCamera();
+	void finishCAlphaView();
 	
 	Averager *_ave;
 	Qt::MouseButton _mouseButton;
@@ -108,6 +117,8 @@ private:
 	std::vector<GLAxis *> _axes;
 	GLPoint *_points;
 	HKLView *_hklView;
+	CAlphaView *_cAlphaView;
+	bool _autoCorrect;
 	
 	std::vector<GLObject *> _renderMe;
 

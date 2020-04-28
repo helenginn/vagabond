@@ -13,6 +13,7 @@
 
 Averager::Averager(QTreeWidget *parent) : QTreeWidgetItem(parent)
 {
+	_centre = empty_vec3();
 	_type = AveDiffraction;
 	_res = 2;
 	_svd = NULL;
@@ -87,8 +88,16 @@ void Averager::copyFromAverage(Averager *ave)
 
 void Averager::populatePolymer(MtzFFTPtr mtz, PolymerPtr p)
 {
-	std::vector<vec3> locals;
+	std::vector<vec3> locals = mtz->getMtzFile()->getAtomPositions();
+	size_t old = locals.size();
 	locals.resize(_atomPos.size());
+	
+	for (size_t i = old; i < locals.size(); i++)
+	{
+		locals[i].x = std::nan("");
+		locals[i].y = std::nan("");
+		locals[i].z = std::nan("");
+	}
 
 	for (int i = p->monomerBegin(); i < p->monomerEnd(); i++)
 	{
@@ -132,6 +141,7 @@ void Averager::makeCAlphaAverage(bool force)
 
 	_atomPos.clear();
 	_atomNum.clear();
+	std::string chain = "";
 
 	std::cout << "starting calpha average, force = " << force << std::endl;
 	for (size_t i = 0; i < _mtzs.size(); i++)
@@ -156,22 +166,52 @@ void Averager::makeCAlphaAverage(bool force)
 			}
 
 			PolymerPtr p = ToPolymerPtr(mol);
-			if (_atomPos.size() == 0)
+			
+			if (chain.length() > 0 && p->getChainID()[0] != chain[0])
 			{
+				continue;
+			}
+
+			if ((int)_atomPos.size() < p->monomerEnd())
+			{
+				size_t old = _atomPos.size();
 				_atomPos.resize(p->monomerEnd());
 				_atomNum.resize(p->monomerEnd());
-				memset(&_atomPos[0], '\0', sizeof(vec3) * _atomPos.size());
+				
+				for (size_t i = old; i < _atomPos.size(); i++)
+				{
+					_atomPos[i] = empty_vec3();
+					_atomNum[i] = 0;
+				}
 			}
 
 			populatePolymer(current, p);
-			break;
+			
+			if (chain.length() == 0)
+			{
+				chain = p->getChainID()[0];
+			}
 		}
 	}
 	
+	_centre = empty_vec3();
+	int count = 0;
 	for (size_t i = 0; i < _atomPos.size(); i++)
 	{
 		vec3_mult(&_atomPos[i], 1 / (double)_atomNum[i]);
+		
+		vec3 add = _atomPos[i];
+		
+		if (add.x != add.x)
+		{
+			continue;
+		}
+
+		vec3_add_to_vec3(&_centre, add);
+		count++;
 	}
+	
+	vec3_mult(&_centre, 1 / (double)count);
 	
 	std::cout << "Made C-alpha average" << std::endl;
 }

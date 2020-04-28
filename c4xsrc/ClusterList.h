@@ -31,6 +31,7 @@ public:
 	
 	void makeGroup(std::vector<MtzFFTPtr> mtzs, bool useAve);
 	
+	Averager *topCluster();
 	void removeCluster(Averager *ave);
 	void clearSelection();
 	void invertSelection();
