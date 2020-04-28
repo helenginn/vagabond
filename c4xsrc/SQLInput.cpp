@@ -30,7 +30,7 @@
 
 SQLInput::SQLInput(QWidget *widget) : QMainWindow(widget)
 {
-	setGeometry(100, 100, 700, 600);
+	setGeometry(100, 100, 800, 660);
 	show();
 
 	setupTable();
@@ -122,12 +122,27 @@ void SQLInput::setupTable()
 	left = 10;
 
 	QStringList list;
-	list << "refinement_id" << "method" << "res cutoff (Å)"
-	<< "resolution (Å)" << "R work (%)" << "R free (%)"; 
+	list << "load?" <<  "id" << "method" << "res cutoff (Å)"
+	<< "resolution (Å)" << "R work (%)" << "R free (%)" << "hit" << 
+	"clustered"; 
 	_results = new QTreeWidget(this);
-	_results->setGeometry(left, top, width() - 20, height() - top - 20);
+	_results->setGeometry(left, top, width() - 20, height() - top - 60);
 	_results->setHeaderLabels(list);
+	
+	_results->resizeColumnToContents(0);
+	_results->resizeColumnToContents(7);
+	_results->resizeColumnToContents(8);
+
 	_results->show();
+	_bin.push_back(_results);
+	
+	top = height() - 50;
+	left = width() - 120;
+	
+	QPushButton *b = new QPushButton("Load", this);
+	b->setGeometry(left, top, 100, 40);
+	b->show();
+	_bin.push_back(b);
 }
 
 void SQLInput::connect(QString hostname, QString database, 
