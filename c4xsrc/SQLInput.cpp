@@ -30,6 +30,7 @@
 
 SQLInput::SQLInput(QWidget *widget) : QMainWindow(widget)
 {
+	_db = QSqlDatabase::addDatabase("QMYSQL");
 	setGeometry(100, 100, 800, 660);
 	show();
 
@@ -148,7 +149,6 @@ void SQLInput::setupTable()
 void SQLInput::connect(QString hostname, QString database, 
                        QString username, QString password)
 {
-	_db = QSqlDatabase::addDatabase("QMYSQL");
 	_db.setHostName(hostname);
 	_db.setDatabaseName(database);
 	_db.setUserName(username);
@@ -157,9 +157,11 @@ void SQLInput::connect(QString hostname, QString database,
 
 	if (!ok)
 	{
+		QSqlError err = _db.lastError();
 		QMessageBox msgBox;
 		msgBox.setText(tr("Unable to connect to database with "
-		                  "your given credentials."));
+		                  "your given credentials. Database says: ")
+		                  + err.databaseText());
 		msgBox.exec();
 		
 		SQLCredentials *cred = new SQLCredentials(this);
