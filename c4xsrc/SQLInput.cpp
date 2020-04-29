@@ -148,7 +148,7 @@ void SQLInput::setupTable()
 void SQLInput::connect(QString hostname, QString database, 
                        QString username, QString password)
 {
-	_db = QSqlDatabase::database();
+	_db = QSqlDatabase::addDatabase("QMYSQL");
 	_db.setHostName(hostname);
 	_db.setDatabaseName(database);
 	_db.setUserName(username);

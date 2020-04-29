@@ -18,6 +18,7 @@
 
 #include "SQLCredentials.h"
 #include "SQLInput.h"
+#include "credentials.h"
 #include <QLineEdit>
 #include <QLabel>
 #include <QPushButton>
@@ -35,29 +36,31 @@ SQLCredentials::SQLCredentials(QWidget *widget) : QMainWindow(widget)
 	
 	top += 40;
 
-	l = new QLabel("Database name", this);
+	l = new QLabel("Hostname", this);
 	l->setGeometry(40, top, 140, 40);
 	l->show();
 	_bin.push_back(l);
 
 	QLineEdit *line = new QLineEdit(this);
+	line->setText(DEFAULT_HOSTNAME);
 	line->setGeometry(200, top, 150, 40);
 	line->show();
-	_database = line;
+	_hostname = line;
 	_bin.push_back(line);
-
 	top += 40;
 
-	l = new QLabel("Hostname", this);
+	l = new QLabel("Database name", this);
 	l->setGeometry(40, top, 140, 40);
 	l->show();
 	_bin.push_back(l);
 
 	line = new QLineEdit(this);
 	line->setGeometry(200, top, 150, 40);
+	line->setText(DEFAULT_DATABASE);
 	line->show();
-	_hostname = line;
+	_database = line;
 	_bin.push_back(line);
+
 	top += 40;
 
 	l = new QLabel("Username", this);
@@ -67,6 +70,7 @@ SQLCredentials::SQLCredentials(QWidget *widget) : QMainWindow(widget)
 
 	line = new QLineEdit(this);
 	line->setGeometry(200, top, 150, 40);
+	line->setText(DEFAULT_USERNAME);
 	line->show();
 	_username = line;
 	_bin.push_back(line);
