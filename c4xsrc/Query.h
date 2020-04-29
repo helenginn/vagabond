@@ -22,25 +22,34 @@
 #include <mysql.h>
 #include <string>
 #include <vector>
+#include <QString>
+
+typedef std::vector<std::string> Results;
 
 class Query
 {
 public:
 	Query(MYSQL *con, std::string query);
 
-	size_t valueCount()
+	size_t rowCount()
 	{
-		return _results.size();
+		return _rows.size();
 	}
 
-	std::string value(int i)
+	size_t valueCount()
 	{
-		return _results[i];
+		return _num_fields;
+	}
+
+	QString qValue(int i, int j)
+	{
+		return QString::fromStdString(_rows[i][j]);
 	}
 private:
 	std::string _query;
+	size_t _num_fields;
 
-	std::vector<std::string> _results;
+	std::vector<Results> _rows;
 };
 
 #endif

@@ -87,6 +87,7 @@ SQLCredentials::SQLCredentials(QWidget *widget) : QMainWindow(widget)
 	line->setEchoMode(QLineEdit::Password);
 	line->show();
 	_password = line;
+	_password->setText(DEFAULT_PASSWORD);
 	_password->setFocus();
 	_bin.push_back(line);
 
@@ -108,7 +109,7 @@ void SQLCredentials::connectDB()
 	QString username = _username->text();
 	QString password = _password->text();
 
-	_input->connect(hostname, database, username, password);
+	_input->connectDb(hostname, database, username, password);
 	hide();
 	deleteLater();
 }

@@ -62,28 +62,32 @@ void SQLInput::setupTable()
 
 	top += 40;
 
-	l = new QLabel("Method", this);
-	l->setGeometry(left, top, 100, 40);
+	l = new QLabel("Refinement method", this);
+	l->setGeometry(left, top, 150, 40);
 	l->show();
 	_bin.push_back(l);
 
 	QComboBox *c = new QComboBox(this);
-	c->setGeometry(left + 100, top, 150, 40);
+	c->setGeometry(left + 150, top, 210, 40);
 	c->show();
+	connect(c, QOverload<int>::of(&QComboBox::currentIndexChanged),
+	        this, &SQLInput::queryAltered);
 	_methods = c;
 	_bin.push_back(c);
 	
-	left += 360;
+	left += 380;
 
-	l = new QLabel("Res cutoff (Å)", this);
-	l->setGeometry(left, top, 100, 40);
+	l = new QLabel("Data reduction method", this);
+	l->setGeometry(left, top, 150, 40);
 	l->show();
 	_bin.push_back(l);
 
 	c = new QComboBox(this);
-	c->setGeometry(left + 100, top, 150, 40);
+	c->setGeometry(left + 170, top, 210, 40);
 	c->show();
-	_cutoff = c;
+	_redMeth = c;
+	connect(c, QOverload<int>::of(&QComboBox::currentIndexChanged),
+	        this, &SQLInput::queryAltered);
 	_bin.push_back(c);
 	
 	left = 10;
@@ -121,10 +125,12 @@ void SQLInput::setupTable()
 	ch->setChecked(true);
 	ch->setGeometry(left, top, 40, 40);
 	ch->show();
+	connect(ch, &QCheckBox::stateChanged,
+	        this, &SQLInput::queryAltered);
 	_successful = ch;
 	_bin.push_back(ch);
 
-	l = new QLabel("Successful", this);
+	l = new QLabel("Must be successful", this);
 	l->setGeometry(left + 40, top, 140, 40);
 	l->show();
 	_bin.push_back(l);
@@ -133,9 +139,9 @@ void SQLInput::setupTable()
 	left = 10;
 
 	QStringList list;
-	list << "load?" <<  "id" << "method" << "res cutoff (Å)"
-	<< "resolution (Å)" << "R work (%)" << "R free (%)" << "hit" << 
-	"clustered"; 
+	list << "load?" <<  "id" << "refinement" << "reduction"
+	<< "resolution (Å)" << "R work (%)" << "R free (%)" <<
+	"MTZ path" << "PDB path" << "hit" << "clustered"; 
 	_results = new QTreeWidget(this);
 	_results->setGeometry(left, top, width() - 20, height() - top - 60);
 	_results->setHeaderLabels(list);
@@ -153,6 +159,7 @@ void SQLInput::setupTable()
 	QPushButton *b = new QPushButton("Load", this);
 	b->setGeometry(left, top, 100, 40);
 	b->show();
+	connect(b, &QPushButton::clicked, this, &SQLInput::load);
 	_bin.push_back(b);
 }
 
@@ -171,8 +178,8 @@ void SQLInput::outputError()
 	cred->show();
 }
 
-void SQLInput::connect(QString hostname, QString database, 
-                       QString username, QString password)
+void SQLInput::connectDb(QString hostname, QString database, 
+                         QString username, QString password)
 {
 	_con = mysql_init(NULL);
 
@@ -192,22 +199,135 @@ void SQLInput::connect(QString hostname, QString database,
 		return;
 	}  
 
-	Query q(_con, "SELECT DISTINCT method FROM "
-	        "SARS_COV_2_Analysis_v2.Refinement;");
-
-	_methods->clear();
-	_cutoff->clear();
-	_methods->addItem("all");
-	_cutoff->addItem("any");
-
-	for (size_t i = 0; i < q.valueCount(); i++)
 	{
-		QString method = QString::fromStdString(q.value(0));
-		if (method == "NULL")
-		{
-			method = "none";
-		}
+		Query q(_con, "SELECT DISTINCT method FROM "
+		        "SARS_COV_2_Analysis_v2.Refinement;");
 
-		_methods->addItem(method);
+		_methods->clear();
+		_methods->addItem("all");
+
+		for (size_t i = 0; i < q.rowCount(); i++)
+		{
+			QString method = q.qValue(i, 0);
+			if (method == "NULL")
+			{
+				method = "none";
+			}
+
+			_methods->addItem(method);
+		}
 	}
+
+	{
+		Query q(_con, "SELECT DISTINCT "
+		        "SARS_COV_2_Analysis_v2.Data_Reduction.method FROM "
+		        "SARS_COV_2_Analysis_v2.Refinement JOIN "
+		        "SARS_COV_2_Analysis_v2.Data_Reduction ON "
+		        "SARS_COV_2_Analysis_v2.Refinement.data_reduction_id = "
+		        "SARS_COV_2_Analysis_v2.Data_Reduction.data_reduction_id;");
+
+		_redMeth->clear();
+		_redMeth->addItem("all");
+
+		for (size_t i = 0; i < q.rowCount(); i++)
+		{
+			QString method = q.qValue(i, 0);
+			if (method == "NULL")
+			{
+				method = "none";
+			}
+
+			_redMeth->addItem(method);
+		}
+	}
+
+}
+
+void SQLInput::queryAltered()
+{
+	std::string query = "SELECT ";
+	
+	query += "refinement_id, ";
+	query += "SARS_COV_2_Analysis_v2.Refinement.method as refinement_method, ";
+	query += "SARS_COV_2_Analysis_v2.Data_Reduction.method";
+	query += " as reduction_method, ";
+	query += "resolution_cut, rwork, rfree, ";
+	query += "refinement_mtz_path, final_pdb_path";
+	
+	query += " FROM SARS_COV_2_Analysis_v2.Refinement";
+	
+	query += " JOIN SARS_COV_2_Analysis_v2.Data_Reduction ON "
+	"SARS_COV_2_Analysis_v2.Refinement.data_reduction_id = "
+	"SARS_COV_2_Analysis_v2.Data_Reduction.data_reduction_id";
+
+	query += " WHERE (";
+	bool changed = false;
+
+	if (_methods->currentIndex() > 0)
+	{
+		changed = true;
+		std::string method = _methods->currentText().toStdString();
+		query += " SARS_COV_2_Analysis_v2.Refinement.method = '";
+		query += method + "' AND";
+	}
+
+	if (_redMeth->currentIndex() > 0)
+	{
+		changed = true;
+		std::string reduct = _redMeth->currentText().toStdString();
+		query += " SARS_COV_2_Analysis_v2.Data_Reduction.method = '";
+		query += reduct + "' AND";
+	}
+
+	if (_successful->isChecked())
+	{
+		changed = true;
+		query += " final_pdb_path IS NOT NULL AND";
+	}
+	
+	query.erase(query.size() - 4, 4);
+	
+	if (!changed)
+	{
+		query.erase(query.size() - 3, 3); /* fully get rid of 'where' */
+	}
+	else
+	{
+		query += ")";
+	}
+	query += ";";
+
+	Query q(_con, query);
+	
+	_results->clear();
+	
+	for (size_t i = 0; i < q.rowCount(); i++)
+	{
+		QTreeWidgetItem *item = new QTreeWidgetItem(_results);
+		item->setCheckState(0, Qt::Checked);
+		item->setText(1, q.qValue(i, 0));
+		item->setText(2, q.qValue(i, 1));
+		item->setText(3, q.qValue(i, 2));
+		item->setText(4, q.qValue(i, 3));
+		item->setText(5, q.qValue(i, 4));
+		item->setText(6, q.qValue(i, 5));
+		item->setText(7, q.qValue(i, 6));
+		item->setText(8, q.qValue(i, 7));
+
+	}
+}
+
+void SQLInput::load()
+{
+	for (int i = 0; i < _results->topLevelItemCount(); i++)
+	{
+		QTreeWidgetItem *item = _results->topLevelItem(i);
+		bool state = (item->checkState(0) == Qt::Checked);
+		
+		if (!state)
+		{
+			continue;
+		}
+	}
+
 }

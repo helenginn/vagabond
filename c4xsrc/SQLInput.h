@@ -48,8 +48,11 @@ public:
 		_list = list;
 	}
 
-	void connect(QString hostname, QString database, 
-	             QString username, QString password);
+	void connectDb(QString hostname, QString database, 
+	               QString username, QString password);
+private slots:
+	void queryAltered();
+	void load();
 private:
 	void outputError();
 	void setupTable();
@@ -57,7 +60,7 @@ private:
 
 	MYSQL *_con;
 	QComboBox *_methods;
-	QComboBox *_cutoff;
+	QComboBox *_redMeth;
 	QCheckBox *_noHits;
 	QCheckBox *_noCluster;
 	QCheckBox *_successful;

@@ -18,6 +18,7 @@
 
 #include "Query.h"
 #include <QMessageBox>
+#include <iostream>
 
 void finishWithError(MYSQL *sql)
 {
@@ -33,6 +34,8 @@ void finishWithError(MYSQL *sql)
 Query::Query(MYSQL *sql, std::string query)
 {
 	_query = query;
+	std::cout << std::endl;
+	std::cout << _query << std::endl;
 	
 	if (mysql_query(sql, query.c_str()))
 	{
@@ -46,17 +49,21 @@ Query::Query(MYSQL *sql, std::string query)
 		finishWithError(sql);
 	}
 
-	int num_fields = mysql_num_fields(result);
+	_num_fields = mysql_num_fields(result);
 
 	MYSQL_ROW row;
 
 	while ((row = mysql_fetch_row(result))) 
 	{ 
-		for(int i = 0; i < num_fields; i++) 
+		Results results;
+
+		for(int i = 0; i < _num_fields; i++) 
 		{ 
 			std::string str = (row[i] ? row[i] : "NULL");
-			_results.push_back(str);
+			results.push_back(str);
 		} 
+		
+		_rows.push_back(results);
 	}
 
 	mysql_free_result(result);
