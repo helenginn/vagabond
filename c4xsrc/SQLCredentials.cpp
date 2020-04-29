@@ -87,6 +87,7 @@ SQLCredentials::SQLCredentials(QWidget *widget) : QMainWindow(widget)
 	line->setEchoMode(QLineEdit::Password);
 	line->show();
 	_password = line;
+	_password->setFocus();
 	_bin.push_back(line);
 
 	top += 60;

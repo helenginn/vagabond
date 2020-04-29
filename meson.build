@@ -7,6 +7,7 @@ dep_gl = dependency('gl', required : false)
 png_dep = dependency('libpng')
 boost_dep = dependency('boost')
 fftw_dep = dependency('fftw3f')
+maria_dep = dependency('libmariadb', required: false)
 
 # Geometry and/or rotamer lookup madness
 
@@ -180,10 +181,14 @@ else
 	message('QT5 not found, so not building vagabond-gui.')
 endif
 
-# Pre-processing by Qt5
+executable('force_down', gen_src, 
+'force_down/main.cpp', 
+'force_down/Wilson.cpp', 
+cpp_args: ['-std=c++11'], dependencies : [ dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
 
 if qt5_dep.found() and dep_gl.found()
-	moc_cluster4x = qt5.preprocess(moc_headers : [
+
+headers = [
 'c4xsrc/Averager.h', 
 'c4xsrc/AxisScroll.h', 
 'c4xsrc/CAlphaView.h', 
@@ -191,21 +196,12 @@ if qt5_dep.found() and dep_gl.found()
 'c4xsrc/GLPoint.h', 
 'c4xsrc/Screen.h', 
 'c4xsrc/SelectionWindow.h', 
-'c4xsrc/SQLCredentials.h', 
-'c4xsrc/SQLInput.h', 
 'c4xsrc/KeeperGL.h', 
 'c4xsrc/ClusterList.h', 
-'c4xsrc/CorrelLabel.h', 
-],
-		moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'])
+'c4xsrc/CorrelLabel.h'
+]
 
-
-executable('force_down', gen_src, 
-'force_down/main.cpp', 
-'force_down/Wilson.cpp', 
-cpp_args: ['-std=c++11'], dependencies : [ dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
-
-executable('cluster4x', gen_src, moc_cluster4x,
+c4xsrc = [
 'c4xsrc/main.cpp', 
 'c4xsrc/Averager.cpp', 
 'c4xsrc/AxisScroll.cpp', 
@@ -216,15 +212,46 @@ executable('cluster4x', gen_src, moc_cluster4x,
 'c4xsrc/MtzFile.cpp', 
 'c4xsrc/MtzFFT.cpp', 
 'c4xsrc/Screen.cpp', 
-'c4xsrc/SQLCredentials.cpp', 
-'c4xsrc/SQLInput.cpp', 
 'c4xsrc/KeeperGL.cpp', 
 'c4xsrc/HKLView.cpp', 
 'c4xsrc/GLAxis.cpp', 
 'c4xsrc/GLPoint.cpp', 
 'c4xsrc/GLObject.cpp', 
-'c4xsrc/SelectionWindow.cpp', 
-cpp_args: ['-std=c++11'], dependencies : [ qt5_dep, dep_gl, dep_vag, png_dep, dep_ica ], install: true)
+'c4xsrc/SelectionWindow.cpp'
+]
+
+
+c4xdeps = [
+qt5_dep,
+dep_gl,
+dep_vag,
+dep_ica,
+png_dep
+]
+
+if (maria_dep.found())
+c4xsrc += ['c4xsrc/ClusterListSQL.cpp',
+'c4xsrc/SQLCredentials.cpp', 
+'c4xsrc/SQLInput.cpp', 
+'c4xsrc/Query.cpp' ]
+
+headers += [
+'c4xsrc/SQLCredentials.h', 
+'c4xsrc/SQLInput.h'
+]
+
+c4xdeps += maria_dep
+
+else
+
+c4xsrc += 'c4xsrc/ClusterListNoSQL.cpp'
+endif
+
+moc_cluster4x = qt5.preprocess(moc_headers : headers,
+		moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'])
+
+executable('cluster4x', c4xsrc, moc_cluster4x,
+cpp_args: ['-std=c++11'], dependencies : c4xdeps, install: true)
 else
 	message('QT5 not found, so not building cluster4x.')
 endif

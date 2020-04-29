@@ -32,7 +32,6 @@
 #include "MtzFFT.h"
 #include "Averager.h"
 #include "Screen.h"
-#include "SQLInput.h"
 
 #include <libsrc/FFT.h>
 
@@ -55,12 +54,6 @@ ClusterList::ClusterList(QTreeWidget *widget)
 ClusterList::~ClusterList()
 {
 
-}
-
-void ClusterList::getFromDatabase()
-{
-	SQLInput *input = new SQLInput(NULL);
-	input->setList(this);
 }
 
 void ClusterList::load(std::vector<DatasetPaths> paths)

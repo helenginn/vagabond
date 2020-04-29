@@ -22,6 +22,7 @@
 #include <string>
 #include <QMainWindow>
 #include <QtSql>
+#include <mysql/mysql.h>
 
 typedef struct
 {
@@ -40,6 +41,7 @@ class SQLInput : public QMainWindow
 Q_OBJECT
 public:
 	SQLInput(QWidget *widget = NULL);
+	~SQLInput();
 	
 	void setList(ClusterList *list)
 	{
@@ -49,9 +51,11 @@ public:
 	void connect(QString hostname, QString database, 
 	             QString username, QString password);
 private:
+	void outputError();
 	void setupTable();
 	ClusterList *_list;
 
+	MYSQL *_con;
 	QComboBox *_methods;
 	QComboBox *_cutoff;
 	QCheckBox *_noHits;
@@ -59,7 +63,6 @@ private:
 	QCheckBox *_successful;
 	QTreeWidget *_results;
 	std::vector<QWidget *> _bin;
-	QSqlDatabase _db;
 	std::vector<DatasetPaths> _datasets;
 };
 

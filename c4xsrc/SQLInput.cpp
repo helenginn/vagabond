@@ -27,10 +27,12 @@
 #include "ClusterList.h"
 #include "SQLInput.h"
 #include "SQLCredentials.h"
+#include "Query.h"
+
 
 SQLInput::SQLInput(QWidget *widget) : QMainWindow(widget)
 {
-	_db = QSqlDatabase::addDatabase("QMYSQL");
+	_con = NULL;
 	setGeometry(100, 100, 800, 660);
 	show();
 
@@ -39,6 +41,14 @@ SQLInput::SQLInput(QWidget *widget) : QMainWindow(widget)
 	SQLCredentials *cred = new SQLCredentials(this);
 	cred->setSQLParent(this);
 	cred->show();
+}
+
+SQLInput::~SQLInput()
+{
+	if (_con != NULL)
+	{
+		mysql_close(_con);
+	}
 }
 
 void SQLInput::setupTable()
@@ -146,40 +156,54 @@ void SQLInput::setupTable()
 	_bin.push_back(b);
 }
 
+void SQLInput::outputError()
+{
+	const char *error = mysql_error(_con);
+	QMessageBox msgBox;
+	std::string str = error;
+	msgBox.setText(tr("Unable to connect to database with "
+	                  "your given credentials. Database says: ")
+	+ QString::fromStdString(error));
+	msgBox.exec();
+
+	SQLCredentials *cred = new SQLCredentials(this);
+	cred->setSQLParent(this);
+	cred->show();
+}
+
 void SQLInput::connect(QString hostname, QString database, 
                        QString username, QString password)
 {
-	_db.setHostName(hostname);
-	_db.setDatabaseName(database);
-	bool ok = _db.open(username, password);
+	_con = mysql_init(NULL);
 
-	if (!ok)
+	if (_con == NULL) 
 	{
-		QSqlError err = _db.lastError();
-		QMessageBox msgBox;
-		msgBox.setText(tr("Unable to connect to database with "
-		                  "your given credentials. Database says: ")
-		                  + err.databaseText());
-		msgBox.exec();
-		
-		SQLCredentials *cred = new SQLCredentials(this);
-		cred->setSQLParent(this);
-		cred->show();
+		outputError();
 		return;
 	}
-	
-	QSqlQuery query = _db.exec("SELECT DISTINCT method FROM "
-	                           "SARS_COV_2_Analysis_v2.Refinement;");
+
+	if (mysql_real_connect(_con, hostname.toStdString().c_str(), 
+	                       username.toStdString().c_str(),
+	                       password.toStdString().c_str(),
+	                       database.toStdString().c_str(),
+	                       0, NULL, 0) == NULL) 
+	{
+		outputError();
+		return;
+	}  
+
+	Query q(_con, "SELECT DISTINCT method FROM "
+	        "SARS_COV_2_Analysis_v2.Refinement;");
 
 	_methods->clear();
 	_cutoff->clear();
 	_methods->addItem("all");
 	_cutoff->addItem("any");
 
-	while (query.next())
+	for (size_t i = 0; i < q.valueCount(); i++)
 	{
-		QString method = query.value(0).toString();
-		if (method == "__NULL__")
+		QString method = QString::fromStdString(q.value(0));
+		if (method == "NULL")
 		{
 			method = "none";
 		}
