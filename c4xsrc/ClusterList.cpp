@@ -56,9 +56,26 @@ ClusterList::~ClusterList()
 
 }
 
-void ClusterList::load(std::vector<DatasetPaths> paths)
+void ClusterList::load(std::vector<DatasetPath> paths)
 {
-	
+	_sqlInput = false;
+	_paths = paths;
+	loadFiles();
+}
+
+void ClusterList::setFiles(std::vector<std::string> files)
+{
+	for (size_t i = 0; i < files.size(); i++)
+	{
+		DatasetPath path;
+		path.refinement_id = -1;
+		path.mtz_path = files[i];
+		std::string base = getBaseFilenameWithPath(files[i]);
+		std::string pdb = base + ".pdb";
+		path.pdb_path = pdb;
+
+		_paths.push_back(path);
+	}
 }
 
 bool ClusterList::loadFiles()
@@ -73,30 +90,31 @@ bool ClusterList::loadFiles()
 	_clusters.push_back(ave);
 	ave->setMaxResolution(_res);
 
-	for (size_t i = 0; i < _filenames.size(); i++)
+	for (size_t i = 0; i < _paths.size(); i++)
 	{
-		MtzFile *file = new MtzFile(_filenames[i]);
+		MtzFile *file = new MtzFile(_paths[i].mtz_path);
 		_files.push_back(file);
 
 		DiffractionMtzPtr mtz = DiffractionMtzPtr(new DiffractionMtz());
 		mtz->setNeedsRfree(false);
 		mtz->setResLimit(_res);
-		mtz->setFilename(_filenames[i]);
+		mtz->setFilename(_paths[i].mtz_path);
+		file->setRefinementID(_paths[i].refinement_id);
+
 		try
 		{
 			mtz->load();
 		}
 		catch (Shouter *s)
 		{
-			std::cout << "Ignoring mtz " << _filenames[i] << 
+			std::cout << "Ignoring mtz " << _paths[i].mtz_path << 
 			" due to problems" << std::endl;
 			continue;
 		}
 
-		std::string base = getBaseFilenameWithPath(_filenames[i]);
-		std::string pdb = base + ".pdb";
-
 		CrystalPtr crystal;
+
+		std::string pdb = _paths[i].pdb_path;
 
 		if (file_exists(pdb))
 		{

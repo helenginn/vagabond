@@ -161,6 +161,14 @@ void SQLInput::setupTable()
 	b->show();
 	connect(b, &QPushButton::clicked, this, &SQLInput::load);
 	_bin.push_back(b);
+	
+	left = 10;
+	
+	l = new QLabel("Datasets found", this);
+	l->setGeometry(left, top, 400, 40);
+	l->show();
+	_status = l;
+	_bin.push_back(l);
 }
 
 void SQLInput::outputError()
@@ -243,16 +251,23 @@ void SQLInput::connectDb(QString hostname, QString database,
 
 }
 
-void SQLInput::queryAltered()
+std::string SQLInput::constructRowQuery(bool distinctCrystals)
 {
 	std::string query = "SELECT ";
 	
-	query += "refinement_id, ";
-	query += "SARS_COV_2_Analysis_v2.Refinement.method as refinement_method, ";
-	query += "SARS_COV_2_Analysis_v2.Data_Reduction.method";
-	query += " as reduction_method, ";
-	query += "resolution_cut, rwork, rfree, ";
-	query += "refinement_mtz_path, final_pdb_path";
+	if (!distinctCrystals)
+	{
+		query += "refinement_id, ";
+		query += "SARS_COV_2_Analysis_v2.Refinement.method as refinement_method, ";
+		query += "SARS_COV_2_Analysis_v2.Data_Reduction.method";
+		query += " as reduction_method, ";
+		query += "resolution_cut, rwork, rfree, ";
+		query += "refinement_mtz_path, final_pdb_path";
+	}
+	else
+	{
+		query += "DISTINCT crystal_id";
+	}
 	
 	query += " FROM SARS_COV_2_Analysis_v2.Refinement";
 	
@@ -295,11 +310,25 @@ void SQLInput::queryAltered()
 	{
 		query += ")";
 	}
+
 	query += ";";
 
-	Query q(_con, query);
+	return query;
+}
+
+void SQLInput::queryAltered()
+{
+	std::string full = constructRowQuery(false);
+	std::string crystals = constructRowQuery(true);
+
+	Query q(_con, full);
+	Query cryst(_con, crystals);
 	
 	_results->clear();
+	
+	QString status = QString::number(q.rowCount()) + " datasets found "
+	+ " (" + QString::number(cryst.rowCount()) + " unique crystals)";
+	_status->setText(status);
 	
 	for (size_t i = 0; i < q.rowCount(); i++)
 	{
@@ -313,12 +342,13 @@ void SQLInput::queryAltered()
 		item->setText(6, q.qValue(i, 5));
 		item->setText(7, q.qValue(i, 6));
 		item->setText(8, q.qValue(i, 7));
-
 	}
 }
 
 void SQLInput::load()
 {
+	std::cout << "Loading sets..." << std::endl;
+
 	for (int i = 0; i < _results->topLevelItemCount(); i++)
 	{
 		QTreeWidgetItem *item = _results->topLevelItem(i);
@@ -328,6 +358,15 @@ void SQLInput::load()
 		{
 			continue;
 		}
+
+		DatasetPath path;
+		path.refinement_id = item->text(1).toStdString();
+		path.mtz_path = item->text(7).toStdString();
+		path.pdb_path = item->text(8).toStdString();
+		_datasets.push_back(path);
 	}
 
+	_list->load(_datasets);
+	hide();
+	deleteLater();
 }

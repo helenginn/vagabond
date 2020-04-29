@@ -6,7 +6,7 @@
 #include <QObject>
 #include <libsrc/DiffractionMTZ.h>
 #include "MtzFFTPtr.h"
-#include "SQLInput.h"
+#include "DatasetPath.h"
 
 class QTreeWidget;
 class MtzFile;
@@ -24,7 +24,7 @@ public:
 
 	void setCommands(std::vector<std::string> commands);
 	bool loadFiles();
-	void load(std::vector<DatasetPaths> paths);
+	void load(std::vector<DatasetPath> paths);
 
 	void average(Averager *item);
 	void cluster(Averager *item);
@@ -36,10 +36,7 @@ public:
 	
 	void makeGroup(std::vector<MtzFFTPtr> mtzs, bool useAve);
 	
-	void setFiles(std::vector<std::string> files)
-	{
-		_filenames = files;
-	}
+	void setFiles(std::vector<std::string> files);
 	
 	Averager *topCluster();
 	void removeCluster(Averager *ave);
@@ -71,7 +68,7 @@ private:
 	bool _selectMode;
 	bool _removeMode;
 
-	std::vector<std::string> _filenames;
+	std::vector<DatasetPath> _paths;
 	std::vector<Averager *> _clusters;
 	std::vector<MtzFile *> _files;
 	std::vector<std::string> _commands;

@@ -28,6 +28,16 @@ class MtzFile
 {
 public:
 	MtzFile(std::string filename);
+	
+	void setRefinementID(std::string id)
+	{
+		_refinementID = id;
+	}
+	
+	std::string refinementID()
+	{
+		return _refinementID;
+	}
 
 	std::string getFilename()
 	{
@@ -100,6 +110,7 @@ public:
 	}
 private:
 	std::string _filename;
+	std::string _refinementID;
 	CrystalPtr _crystal;
 	std::vector<vec3> _positions;
 

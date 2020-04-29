@@ -19,22 +19,17 @@
 #ifndef __cluster4x__sqlinput__
 #define __cluster4x__sqlinput__
 
+#include "DatasetPath.h"
 #include <string>
 #include <QMainWindow>
 #include <QtSql>
 #include <mysql/mysql.h>
 
-typedef struct
-{
-	std::string mtz_path;
-	std::string pdb_path;
-	long refinement_id;
-} DatasetPaths;
-
-class ClusterList;
 class QComboBox;
 class QCheckBox;
+class QLabel;
 class QTreeWidget;
+class ClusterList;
 
 class SQLInput : public QMainWindow
 {
@@ -54,6 +49,7 @@ private slots:
 	void queryAltered();
 	void load();
 private:
+	std::string constructRowQuery(bool distinctCrystals);
 	void outputError();
 	void setupTable();
 	ClusterList *_list;
@@ -64,9 +60,10 @@ private:
 	QCheckBox *_noHits;
 	QCheckBox *_noCluster;
 	QCheckBox *_successful;
+	QLabel *_status;
 	QTreeWidget *_results;
 	std::vector<QWidget *> _bin;
-	std::vector<DatasetPaths> _datasets;
+	std::vector<DatasetPath> _datasets;
 };
 
 #endif
