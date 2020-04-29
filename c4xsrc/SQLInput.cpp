@@ -151,9 +151,7 @@ void SQLInput::connect(QString hostname, QString database,
 {
 	_db.setHostName(hostname);
 	_db.setDatabaseName(database);
-	_db.setUserName(username);
-	_db.setPassword(password);
-	bool ok = _db.open();
+	bool ok = _db.open(username, password);
 
 	if (!ok)
 	{
