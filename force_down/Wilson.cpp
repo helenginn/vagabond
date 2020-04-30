@@ -206,7 +206,8 @@ void Wilson::findStraightB()
 	{
 		std::cout << "Residual never goes over " << threshold << "!" << std::endl;
 		std::cout << "Nothing more to do." << std::endl;
-		exit(0);
+		_lastShell = _xs.size();
+		return;
 	}
 	
 	std::cout << "First shell over residual of " << threshold << " is at " <<
