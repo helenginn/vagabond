@@ -441,6 +441,7 @@ void ClusterList::resetAverage()
 void ClusterList::pdbAverage()
 {
 	_lastAverage->setType(AveCAlpha);
+	average(_lastAverage);
 }
 
 void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs, bool withAve)
