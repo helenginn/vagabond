@@ -57,7 +57,7 @@ Query::Query(MYSQL *sql, std::string query)
 	{ 
 		Results results;
 
-		for(int i = 0; i < _num_fields; i++) 
+		for (size_t i = 0; i < _num_fields; i++) 
 		{ 
 			std::string str = (row[i] ? row[i] : "NULL");
 			results.push_back(str);
