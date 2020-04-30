@@ -347,7 +347,9 @@ void DiffractionMtz::load()
 		<< std::endl;
 		_original = VagFFTPtr(new VagFFT(largest, largest, largest));
 		_original->multiplyAll(0);
-		_original->makePlans();
+		_original->setUnitCell(unitCell);
+		_original->setSpaceGroup(spg);
+//		_original->makePlans();
 		_original->setStatus(FFTReciprocalSpace);
 	}
 
