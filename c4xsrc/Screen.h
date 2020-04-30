@@ -54,6 +54,7 @@ public:
 public slots:
 	void refocus(int index);
 	void changeIndex(int index);
+	void saveImages();
 	void averageGroup();
 	void clusterGroup();
 	void newSelection();
@@ -94,6 +95,7 @@ private:
 	QPushButton *_undeadSele;
 	QPushButton *_invertSele;
 	QPushButton *_export;
+	QPushButton *_images;
 	QPushButton *_toggleDead;
 	QPlainTextEdit *_ucLabel;
 	QAction *_cluster;

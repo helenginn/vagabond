@@ -66,6 +66,7 @@ public:
 	}
 	
 	void setAverager(Averager *ave);
+	void saveImage(std::string filename);
 	
 	Averager *getAverager()
 	{

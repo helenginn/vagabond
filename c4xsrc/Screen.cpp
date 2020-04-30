@@ -173,6 +173,9 @@ void Screen::resizeEvent(QResizeEvent *e)
 
 				_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 				                     h - 50, RIGHT_VIEW_WIDTH - 20, 40);
+
+				_images->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+				                     h - 100, RIGHT_VIEW_WIDTH - 20, 40);
 			}
 		}
 
@@ -509,6 +512,15 @@ void Screen::displayResults(Averager *ave)
 	_export->show();
 	connect(_export, &QPushButton::clicked,
 	        _list, &ClusterList::exportAll);
+	
+	bottom -= 50;
+
+	_images = new QPushButton("Export images", this);
+	_images->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, bottom,
+	                     RIGHT_VIEW_WIDTH - 20, 40);
+	_images->show();
+	connect(_images, &QPushButton::clicked,
+	        this, &Screen::saveImages);
 
 	bottom -= 50;
 
@@ -611,3 +623,12 @@ void Screen::refocus(int index)
 	}
 }
 
+void Screen::saveImages()
+{
+	if (_cAlphaKeeper)
+	{
+		std::string fnAlpha = findNextFilename("cAlphas.png");
+		_cAlphaKeeper->saveImage(fnAlpha);
+	}
+
+}

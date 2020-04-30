@@ -31,6 +31,7 @@
 #include <QWindow>
 #include <QTimer>
 #include <iostream>
+#include <QImageWriter>
 #include <libsrc/mat4x4.h>
 
 #define MOUSE_SENSITIVITY 500
@@ -329,5 +330,14 @@ void KeeperGL::setAverager(Averager *ave)
 {
 	_ave = ave;
 	_points->setAverager(ave);
+}
+
+void KeeperGL::saveImage(std::string filename)
+{
+	QImage image = grabFramebuffer();
+	QImageWriter writer(QString::fromStdString(filename));
+	writer.write(image);
+	
+	std::cout << "Written C-alpha plot to " << filename << std::endl;
 }
 
