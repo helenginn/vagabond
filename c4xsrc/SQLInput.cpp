@@ -20,10 +20,12 @@
 #include <QMessageBox>
 #include <QComboBox>
 #include <QCheckBox>
+#include <QSlider>
 #include <QLabel>
 #include <QPushButton>
 #include <QTreeWidget>
 
+#include "../libsrc/FileReader.h"
 #include "ClusterList.h"
 #include "SQLInput.h"
 #include "SQLCredentials.h"
@@ -70,8 +72,6 @@ void SQLInput::setupTable()
 	QComboBox *c = new QComboBox(this);
 	c->setGeometry(left + 150, top, 210, 40);
 	c->show();
-	connect(c, QOverload<int>::of(&QComboBox::currentIndexChanged),
-	        this, &SQLInput::queryAltered);
 	_methods = c;
 	_bin.push_back(c);
 	
@@ -86,8 +86,6 @@ void SQLInput::setupTable()
 	c->setGeometry(left + 170, top, 210, 40);
 	c->show();
 	_redMeth = c;
-	connect(c, QOverload<int>::of(&QComboBox::currentIndexChanged),
-	        this, &SQLInput::queryAltered);
 	_bin.push_back(c);
 	
 	left = 10;
@@ -125,8 +123,6 @@ void SQLInput::setupTable()
 	ch->setChecked(true);
 	ch->setGeometry(left, top, 40, 40);
 	ch->show();
-	connect(ch, &QCheckBox::stateChanged,
-	        this, &SQLInput::queryAltered);
 	_successful = ch;
 	_bin.push_back(ch);
 
@@ -169,6 +165,25 @@ void SQLInput::setupTable()
 	l->show();
 	_status = l;
 	_bin.push_back(l);
+
+	left += 300;
+	top += 15;
+	
+	QSlider *sl = new QSlider(Qt::Horizontal, this);
+	sl->setGeometry(left, top, 300, 30);
+	_slider = sl;
+	sl->show();
+	_bin.push_back(sl);
+
+	top -= 20;
+	left += 60;
+	
+	l = new QLabel("Datasets chosen:", this);
+	l->setGeometry(left, top, 240, 20);
+	l->show();
+	_chosen = l;
+	_bin.push_back(l);
+
 }
 
 void SQLInput::outputError()
@@ -249,6 +264,14 @@ void SQLInput::connectDb(QString hostname, QString database,
 		}
 	}
 
+	connect(_methods, QOverload<int>::of(&QComboBox::currentIndexChanged),
+	        this, &SQLInput::queryAltered);
+	connect(_redMeth, QOverload<int>::of(&QComboBox::currentIndexChanged),
+	        this, &SQLInput::queryAltered);
+	connect(_successful, &QCheckBox::stateChanged,
+	        this, &SQLInput::queryAltered);
+	connect(_slider, &QSlider::valueChanged,
+	        this, &SQLInput::sliderChanged);
 }
 
 std::string SQLInput::constructRowQuery(bool distinctCrystals)
@@ -330,6 +353,10 @@ void SQLInput::queryAltered()
 	+ " (" + QString::number(cryst.rowCount()) + " unique crystals)";
 	_status->setText(status);
 	
+	size_t num = q.rowCount();
+	num /= 1000;
+	_slider->setMaximum(num);
+	
 	for (size_t i = 0; i < q.rowCount(); i++)
 	{
 		QTreeWidgetItem *item = new QTreeWidgetItem(_results);
@@ -342,6 +369,30 @@ void SQLInput::queryAltered()
 		item->setText(6, q.qValue(i, 5));
 		item->setText(7, q.qValue(i, 6));
 		item->setText(8, q.qValue(i, 7));
+	}
+
+	sliderChanged();
+}
+
+void SQLInput::sliderChanged()
+{
+	int chosen = _slider->value();
+	int begin = chosen * 1000;
+	std::string str = "Datasets chosen: ";
+	int end = (chosen + 1) * 1000;
+	if (end > _results->topLevelItemCount())
+	{
+		end = _results->topLevelItemCount();
+	}
+
+	str += i_to_str(begin) + " - " + i_to_str(end);
+	_chosen->setText(QString::fromStdString(str));
+	
+	for (int i = 0; i < _results->topLevelItemCount(); i++)
+	{
+		QTreeWidgetItem *item = _results->topLevelItem(i);
+		bool state = (i >= begin && i < end);
+		item->setCheckState(0, (state ? Qt::Checked : Qt::Unchecked));
 	}
 }
 

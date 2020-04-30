@@ -29,6 +29,7 @@ class QComboBox;
 class QCheckBox;
 class QLabel;
 class QTreeWidget;
+class QSlider;
 class ClusterList;
 
 class SQLInput : public QMainWindow
@@ -48,6 +49,7 @@ public:
 private slots:
 	void queryAltered();
 	void load();
+	void sliderChanged();
 private:
 	std::string constructRowQuery(bool distinctCrystals);
 	void outputError();
@@ -60,7 +62,9 @@ private:
 	QCheckBox *_noHits;
 	QCheckBox *_noCluster;
 	QCheckBox *_successful;
+	QSlider *_slider;
 	QLabel *_status;
+	QLabel *_chosen;
 	QTreeWidget *_results;
 	std::vector<QWidget *> _bin;
 	std::vector<DatasetPath> _datasets;
