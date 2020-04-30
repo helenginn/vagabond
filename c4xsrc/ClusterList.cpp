@@ -122,6 +122,9 @@ bool ClusterList::loadFiles()
 			reader.setFilename(pdb);
 			reader.ignoreAtomsExcept("CA");
 			crystal = reader.getCrystal();
+			
+			file->setRWork(reader.getRWork());
+			file->setRFree(reader.getRFree());
 		}
 
 		ave->addMtz(mtz, file, crystal);

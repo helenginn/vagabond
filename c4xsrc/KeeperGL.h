@@ -29,6 +29,7 @@
 #include <libsrc/mat4x4.h>
 
 class GLAxis;
+class QLabel;
 class HKLView;
 class CAlphaView;
 class GLPoint;
@@ -118,6 +119,7 @@ private:
 	GLPoint *_points;
 	HKLView *_hklView;
 	CAlphaView *_cAlphaView;
+	QLabel *_rValues;
 	bool _autoCorrect;
 	
 	std::vector<GLObject *> _renderMe;

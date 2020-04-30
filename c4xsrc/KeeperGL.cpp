@@ -26,6 +26,7 @@
 #include "MtzFile.h"
 #include <QApplication>
 #include <QMouseEvent>
+#include <QLabel>
 #include <QKeyEvent>
 #include <QWindow>
 #include <QTimer>
@@ -142,6 +143,7 @@ void KeeperGL::setupCamera(void)
 
 KeeperGL::KeeperGL(QWidget *p) : QOpenGLWidget(p)
 {
+	_rValues = NULL;
 	_autoCorrect = false;
 	_store = NULL;
 	_model = make_mat4x4();
@@ -202,6 +204,13 @@ void KeeperGL::finishCAlphaView()
 	_renderMe.push_back(_cAlphaView);
 	_cAlphaView->setKeeper(this);
 	_cAlphaView->repopulate();
+	std::string str = _cAlphaView->getRworkRfree();
+	
+	delete _rValues;
+	_rValues = new QLabel(QString::fromStdString(str), this);
+	_rValues->setGeometry(10, 10, 200, 100);
+	_rValues->show();
+
 	updateCamera();
 	update();
 }

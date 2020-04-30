@@ -108,6 +108,26 @@ public:
 	{
 		_positions = positions;
 	}
+	
+	void setRWork(double rw)
+	{
+		_rWork = rw;
+	}
+	
+	void setRFree(double rf)
+	{
+		_rFree = rf;
+	}
+	
+	double getRWork()
+	{
+		return _rWork;
+	}
+	
+	double getRFree()
+	{
+		return _rFree;
+	}
 private:
 	std::string _filename;
 	std::string _refinementID;
@@ -117,6 +137,9 @@ private:
 	bool _mark;
 	bool _sele;
 	bool _dead;
+	
+	double _rWork;
+	double _rFree;
 };
 
 #endif

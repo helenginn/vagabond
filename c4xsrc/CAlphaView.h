@@ -40,9 +40,16 @@ public:
 	virtual void initialisePrograms();
 	void repopulate();
 	void recolour();
+	
+	std::string getRworkRfree();
 private:
 	void addCAlpha(vec3 point);
+	void updateRs();
 
+	double _mean_rwork;
+	double _mean_rfree;
+	double _stdev_rwork;
+	double _stdev_rfree;
 	std::map<MtzFile *, size_t> _starts;
 	std::map<MtzFile *, size_t> _ends;
 	std::vector<MtzFile *> _mtzs;

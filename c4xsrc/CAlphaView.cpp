@@ -21,6 +21,7 @@
 #include "Averager.h"
 #include "KeeperGL.h"
 #include <iostream>
+#include <libsrc/FileReader.h>
 
 CAlphaView::CAlphaView(MtzFile *mtz, vec3 centre)
 {
@@ -31,13 +32,28 @@ CAlphaView::CAlphaView(MtzFile *mtz, vec3 centre)
 
 CAlphaView::CAlphaView(Averager *ave, vec3 centre)
 {
+
 	for (size_t i = 0; i < ave->mtzCount(); i++)
 	{
 		MtzFile *file = ave->getMtzFile(i);
 		_mtzs.push_back(file);
 	}
+
 	_centre = centre;
 	_renderType = GL_LINES;
+}
+
+void CAlphaView::updateRs()
+{
+	CorrelData cd = empty_CD();
+
+	for (size_t i = 0; i < _mtzs.size(); i++)
+	{
+		add_to_CD(&cd, _mtzs[i]->getRWork(), _mtzs[i]->getRFree());
+	}
+
+	means_stdevs_CD(cd, &_mean_rwork, &_mean_rfree, 
+	                &_stdev_rwork, &_stdev_rfree);
 }
 
 void CAlphaView::initialisePrograms()
@@ -74,6 +90,7 @@ void CAlphaView::repopulate()
 	
 	_indices.pop_back();
 	recolour();
+	updateRs();
 }
 
 void CAlphaView::recolour()
@@ -118,4 +135,27 @@ void CAlphaView::addCAlpha(vec3 point)
 	v.pos[2] = point.z;
 
 	_vertices.push_back(v);
+}
+
+std::string CAlphaView::getRworkRfree()
+{
+	std::string str;
+	str += "Rwork: " + f_to_str(_mean_rwork * 100, 1);
+	
+	if (_mtzs.size() > 1)
+	{
+		str += " (stdev ";
+		str += f_to_str(_stdev_rwork * 100, 1) + ")";
+	}
+
+	str += " %\nRfree: " + f_to_str(_mean_rfree * 100, 1);
+	
+	if (_mtzs.size() > 1)
+	{
+		str += " (stdev ";
+		str += f_to_str(_stdev_rfree * 100, 1) + ")";
+	}
+
+	str += " %\n";
+	return str;
 }

@@ -56,7 +56,8 @@ inline CorrelData empty_CD()
 	return cd;
 }
 
-inline void add_to_CD(CorrelData *cd, double &x, double &y)
+template <class T>
+inline void add_to_CD(CorrelData *cd, T x, T y)
 {
 	if (x != x || y != y)
 	{
@@ -69,6 +70,15 @@ inline void add_to_CD(CorrelData *cd, double &x, double &y)
 	cd->sum_xx += x * x;
 	cd->sum_xy += x * y;
 	cd->sum_w += 1;
+}
+
+inline void means_stdevs_CD(CorrelData &cd, double *xm, double *ym,
+                            double *xs, double *ys)
+{
+	*xm = cd.sum_x / cd.sum_w;
+	*ym = cd.sum_y / cd.sum_w;
+	*xs = sqrt((cd.sum_xx / cd.sum_w) - (*xm) * (*xm));
+	*ys = sqrt((cd.sum_yy / cd.sum_w) - (*ym) * (*ym));
 }
 
 inline double evaluate_CD(CorrelData &cd)
