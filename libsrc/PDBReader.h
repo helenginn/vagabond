@@ -37,6 +37,15 @@ public:
 	static std::string writeLine(AtomPtr atom, vec3 placement, int count,
 	                             double occupancy, double bFactor);
 
+	double getRWork()
+	{
+		return _rWork;
+	}
+
+	double getRFree()
+	{
+		return _rFree;
+	}
 private:
 	std::string filename;
 
@@ -66,6 +75,8 @@ private:
 	void addAnisotropicBFactors(std::string line);
 
 	bool _foundCrystal;
+	double _rWork;
+	double _rFree;
 };
 
 #endif /* defined(__vagabond__PDBReader__) */

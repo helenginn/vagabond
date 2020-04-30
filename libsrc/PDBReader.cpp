@@ -25,6 +25,8 @@
 
 PDBReader::PDBReader()
 {
+	_rWork = -1;
+	_rFree = -1;
 	_foundCrystal = false;
 	_breakMe = false;
 }
@@ -329,16 +331,33 @@ void PDBReader::parseLine(std::string line)
 	if (line.substr(0, 6) == "CRYST1")
 	{
 		getSymmetry(line);
+		return;
 	}
 
 	if (line.substr(0, 6) == "ATOM  " || line.substr(0, 6) == "HETATM")
 	{
 		addAtomToMolecule(line);
+		return;
 	}
 
 	if (line.substr(0, 6) == "ANISOU")
 	{
 		addAnisotropicBFactors(line);
+		return;
+	}
+	
+	std::string rwork = "REMARK   3   R VALUE            (WORKING SET) : ";
+	std::string rfree = "REMARK   3   FREE R VALUE                     : ";
+
+	if (line.substr(0, rwork.size()) == rwork)
+	{
+		std::string rest = line.substr(rwork.size(), std::string::npos);
+		_rWork = atof(rest.c_str());
+	}
+	else if (line.substr(0, rfree.size()) == rfree)
+	{
+		std::string rest = line.substr(rwork.size(), std::string::npos);
+		_rFree = atof(rest.c_str());
 	}
 }
 
