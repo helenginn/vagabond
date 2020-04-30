@@ -148,6 +148,11 @@ void Averager::makeCAlphaAverage(bool force)
 	{
 		MtzFFTPtr current = _mtzs[i];
 		
+		if (current->getMtzFile()->isDead())
+		{
+			continue;
+		}
+		
 		if (!current->getMtzFile()->getCrystal())
 		{
 			continue;
