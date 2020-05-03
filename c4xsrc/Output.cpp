@@ -22,6 +22,7 @@
 #include <libsrc/FileReader.h>
 #include <unistd.h>
 #include <iostream>
+#include <fstream>
 
 Output::Output()
 {
@@ -79,6 +80,25 @@ bool Output::prepCluster(Averager *ave)
 		std::cout << "Created soft links for " << metadata << std::endl;
 	}
 	
+	std::string pandda = path + "/pandda.sh";
+	createPanDDAFile(pandda);
+	
 	ave->setExported(true);
 	return true;
+}
+
+void Output::createPanDDAFile(std::string file)
+{
+	std::ofstream f;
+	f.open(file);
+
+	f << "#!/bin/bash" << std::endl;
+	f << std::endl;
+	f << "pandda.analyse data_dirs='*' "
+	<< "pdb_style='final.pdb' mtz_style='final.mtz' "
+	<< "cpus=`grep '^processor' /proc/cpuinfo | wc -l` "
+	<< "high_res_increment=0.3 min_build_datasets=20" << std::endl;
+
+
+	f.close();
 }

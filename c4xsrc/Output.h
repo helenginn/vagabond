@@ -19,6 +19,8 @@
 #ifndef __cluster4x__Output__
 #define __cluster4x__Output__
 
+#include <string>
+
 class Averager;
 
 class Output
@@ -29,6 +31,7 @@ public:
 	bool prepCluster(Averager *ave);
 
 private:
+	void createPanDDAFile(std::string file);
 
 };
 
