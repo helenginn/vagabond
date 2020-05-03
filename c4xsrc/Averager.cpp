@@ -339,9 +339,9 @@ void Averager::addMtz(DiffractionMtzPtr mtzDiff, MtzFile *file,
 	std::vector<double> uc = mtzDiff->getFFT()->getUnitCell();
 	tmp->setUnitCell(uc);
 	tmp->setSpaceGroup(mtzDiff->getFFT()->getSpaceGroup());
-	tmp->setText(0, QString::fromStdString(mtzDiff->getFilename()));
 	tmp->setMtzFile(file);
 	tmp->wipe();
+	tmp->updateText();
 	
 	file->setCrystal(crystal);
 	
