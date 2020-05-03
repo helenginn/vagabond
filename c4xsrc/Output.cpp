@@ -22,7 +22,6 @@
 #include <libsrc/FileReader.h>
 #include <unistd.h>
 #include <iostream>
-#include <filesystem>
 
 Output::Output()
 {
