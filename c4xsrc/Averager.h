@@ -149,6 +149,16 @@ public:
 	{
 		return _message;
 	}
+	
+	void setExported(bool exp)
+	{
+		_exported = true;
+	}
+	
+	bool isExported()
+	{
+		return _exported;
+	}
 
 public slots:
 	void performAverage();
@@ -205,6 +215,7 @@ private:
 	
 	bool _marked;
 	bool _dead;
+	bool _exported;
 	
 	vec3 _centre;
 	

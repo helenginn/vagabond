@@ -13,6 +13,7 @@
 
 Averager::Averager(QTreeWidget *parent) : QTreeWidgetItem(parent)
 {
+	_exported = false;
 	_centre = empty_vec3();
 	_type = AveDiffraction;
 	_res = 2;
