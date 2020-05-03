@@ -30,6 +30,7 @@ class QCheckBox;
 class QLabel;
 class QTreeWidget;
 class QSlider;
+class QLineEdit;
 class ClusterList;
 
 class SQLInput : public QMainWindow
@@ -54,6 +55,7 @@ private:
 	std::string constructRowQuery(bool distinctCrystals);
 	void outputError();
 	void setupTable();
+	void updateSlider();
 	ClusterList *_list;
 
 	MYSQL *_con;
@@ -63,11 +65,14 @@ private:
 	QCheckBox *_noCluster;
 	QCheckBox *_successful;
 	QSlider *_slider;
+	QLineEdit *_chunker;
 	QLabel *_status;
 	QLabel *_chosen;
 	QTreeWidget *_results;
 	std::vector<QWidget *> _bin;
 	std::vector<DatasetPath> _datasets;
+	
+	size_t _chunkSize;
 };
 
 #endif

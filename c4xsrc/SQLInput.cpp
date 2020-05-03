@@ -21,6 +21,7 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QSlider>
+#include <QLineEdit>
 #include <QLabel>
 #include <QPushButton>
 #include <QTreeWidget>
@@ -34,8 +35,9 @@
 
 SQLInput::SQLInput(QWidget *widget) : QMainWindow(widget)
 {
+	_chunkSize = 500;
 	_con = NULL;
-	setGeometry(100, 100, 800, 660);
+	setGeometry(100, 100, 800, 800);
 	show();
 
 	setupTable();
@@ -139,7 +141,7 @@ void SQLInput::setupTable()
 	<< "resolution (Å)" << "R work (%)" << "R free (%)" <<
 	"MTZ path" << "PDB path" << "metadata" << "hit" << "clustered"; 
 	_results = new QTreeWidget(this);
-	_results->setGeometry(left, top, width() - 20, height() - top - 60);
+	_results->setGeometry(left, top, width() - 20, height() - top - 120);
 	_results->setHeaderLabels(list);
 	
 	_results->resizeColumnToContents(0);
@@ -149,16 +151,8 @@ void SQLInput::setupTable()
 	_results->show();
 	_bin.push_back(_results);
 	
-	top = height() - 50;
-	left = width() - 120;
-	
-	QPushButton *b = new QPushButton("Load", this);
-	b->setGeometry(left, top, 100, 40);
-	b->show();
-	connect(b, &QPushButton::clicked, this, &SQLInput::load);
-	_bin.push_back(b);
-	
-	left = 10;
+	left = 30;
+	top = height() - 110;
 	
 	l = new QLabel("Datasets found", this);
 	l->setGeometry(left, top, 400, 40);
@@ -166,8 +160,8 @@ void SQLInput::setupTable()
 	_status = l;
 	_bin.push_back(l);
 
-	left += 300;
-	top += 15;
+	left += 270;
+	top += 45;
 	
 	QSlider *sl = new QSlider(Qt::Horizontal, this);
 	sl->setGeometry(left, top, 300, 30);
@@ -176,7 +170,7 @@ void SQLInput::setupTable()
 	_bin.push_back(sl);
 
 	top -= 20;
-	left += 60;
+	left += 70;
 	
 	l = new QLabel("Datasets chosen:", this);
 	l->setGeometry(left, top, 240, 20);
@@ -184,6 +178,31 @@ void SQLInput::setupTable()
 	_chosen = l;
 	_bin.push_back(l);
 
+	left = 30;
+	top = height() - 60;
+
+	l = new QLabel("Chunk size:", this);
+	l->setGeometry(left, top, 100, 40);
+	l->show();
+	_bin.push_back(l);
+
+	left += 120;
+
+	QLineEdit *le = new QLineEdit(this);
+	le->setGeometry(left, top, 100, 40);
+	le->setText(QString::number(_chunkSize));
+	le->show();
+	_chunker = le;
+	_bin.push_back(le);
+	
+	top = height() - 60;
+	left = width() - 120;
+	
+	QPushButton *b = new QPushButton("Load", this);
+	b->setGeometry(left, top, 100, 40);
+	b->show();
+	connect(b, &QPushButton::clicked, this, &SQLInput::load);
+	_bin.push_back(b);
 }
 
 void SQLInput::outputError()
@@ -272,6 +291,9 @@ void SQLInput::connectDb(QString hostname, QString database,
 	        this, &SQLInput::queryAltered);
 	connect(_slider, &QSlider::valueChanged,
 	        this, &SQLInput::sliderChanged);
+	connect(_chunker, &QLineEdit::textChanged,
+	        this, &SQLInput::updateSlider);
+
 }
 
 std::string SQLInput::constructRowQuery(bool distinctCrystals)
@@ -363,10 +385,6 @@ void SQLInput::queryAltered()
 	+ " (" + QString::number(cryst.rowCount()) + " unique crystals)";
 	_status->setText(status);
 	
-	size_t num = q.rowCount();
-	num /= 1000;
-	_slider->setMaximum(num);
-	
 	for (size_t i = 0; i < q.rowCount(); i++)
 	{
 		QTreeWidgetItem *item = new QTreeWidgetItem(_results);
@@ -382,15 +400,25 @@ void SQLInput::queryAltered()
 		item->setText(9, q.qValue(i, 8));
 	}
 
+	updateSlider();
+}
+
+void SQLInput::updateSlider()
+{
+	_chunkSize = atoi(_chunker->text().toStdString().c_str());
+	size_t num = _results->topLevelItemCount();
+	num /= _chunkSize;
+	_slider->setMaximum(num);
+
 	sliderChanged();
 }
 
 void SQLInput::sliderChanged()
 {
 	int chosen = _slider->value();
-	int begin = chosen * 1000;
+	int begin = chosen * _chunkSize;
 	std::string str = "Datasets chosen: ";
-	int end = (chosen + 1) * 1000;
+	int end = (chosen + 1) * _chunkSize;
 	if (end > _results->topLevelItemCount())
 	{
 		end = _results->topLevelItemCount();
