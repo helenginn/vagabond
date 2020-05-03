@@ -81,4 +81,61 @@ inline double random_norm_dist(double x, double sigma)
 	return total;
 }
 
+typedef struct
+{
+	double sum_x;
+	double sum_y;
+	double sum_xx;
+	double sum_yy;
+	double sum_xy;
+	double sum_w;
+} CorrelData;
+
+inline CorrelData empty_CD()
+{
+	CorrelData cd;
+	memset(&cd, '\0', sizeof(cd));
+	return cd;
+}
+
+template <class T>
+inline void add_to_CD(CorrelData *cd, T x, T y)
+{
+	if (x != x || y != y)
+	{
+		return;
+	}
+
+	cd->sum_x += x;
+	cd->sum_y += y;
+	cd->sum_yy += y * y;
+	cd->sum_xx += x * x;
+	cd->sum_xy += x * y;
+	cd->sum_w += 1;
+}
+
+inline void means_stdevs_CD(CorrelData &cd, double *xm, double *ym,
+                            double *xs, double *ys)
+{
+	*xm = cd.sum_x / cd.sum_w;
+	*ym = cd.sum_y / cd.sum_w;
+	*xs = sqrt((cd.sum_xx / cd.sum_w) - (*xm) * (*xm));
+	*ys = sqrt((cd.sum_yy / cd.sum_w) - (*ym) * (*ym));
+}
+
+inline double evaluate_CD(CorrelData &cd)
+{
+	double top = cd.sum_w * cd.sum_xy - cd.sum_x * cd.sum_y;
+	double bottom_left = cd.sum_w * cd.sum_xx - cd.sum_x * cd.sum_x;
+	double bottom_right = cd.sum_w * cd.sum_yy - cd.sum_y * cd.sum_y;
+	
+	double r = top / sqrt(bottom_left * bottom_right);
+	
+	if (r != r) return 0;
+	
+	return r;
+}
+
+
 #endif /* defined(__vagabond__maths__) */
+
