@@ -164,7 +164,6 @@ void Averager::makeCAlphaAverage(bool force)
 		for (size_t j = 0; j < c->moleculeCount(); j++)
 		{
 			MoleculePtr mol = c->molecule(j);
-			std::cout << "trying " << i << " " << j << std::endl;
 
 			if (!mol->isPolymer())
 			{
