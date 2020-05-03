@@ -76,6 +76,45 @@ double SVDBond::compareKicks(BondPtr a, BondPtr b)
 	return total;
 }
 
+double SVDBond::compareTorsions(BondPtr a, BondPtr b)
+{
+	mat3x3 aBasis, bBasis;
+	vec3 aPos, bPos;
+
+	a->getAverageBasisPos(&aBasis, &aPos);
+	b->getAverageBasisPos(&bBasis, &bPos);
+	
+	CorrelData cd = empty_CD();
+	
+	for (int i = 0; i < _atoms.size(); i++)
+	{
+		/* Exclude self, nan-potential */
+		if (a->getMinor() == _atoms[i] || b->getMinor() == _atoms[i])
+		{
+			continue;
+		}
+		
+		vec3 pos = _atoms[i]->getAbsolutePosition();
+		
+		/* The real important directions are rotated 90° but it doesn't
+		 * really matter because we're comparing them */
+		vec3 aDir = bond_effect_on_pos(pos, aBasis, aPos);
+		vec3 bDir = bond_effect_on_pos(pos, bBasis, bPos);
+		
+		for (int j = 0; j < 3; j++)
+		{
+			double *aVal = &aDir.x + j;
+			double *bVal = &bDir.x + j;
+			
+			add_to_CD(&cd, *aVal, *bVal);
+		}
+	}
+	
+	double total = evaluate_CD(cd);
+
+	return total;
+}
+
 double SVDBond::compareBonds(BondPtr a, BondPtr b)
 {
 	/* Get all the bond directions and positions */
