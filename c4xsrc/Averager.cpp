@@ -474,7 +474,6 @@ void Averager::findIntercorrelations()
 
 	_correlMatrix = new MatrixView(this, dims, dims);
 	_correlMatrix->populate();
-	drawResults(_svdPtrs, "correlation_0");
 }
 
 void Averager::drawResults(double **data, std::string filename)
@@ -622,7 +621,6 @@ void Averager::exhaustiveCorrelations()
 	}
 
 	std::cout << std::endl;
-	drawResults(_svdPtrs, "correlation_0");
 }
 
 double Averager::comparePairwise(int i, int j)
@@ -760,8 +758,6 @@ void Averager::svd()
 		_message = "Single value decomposition failed.";
 		return;
 	}
-
-	drawResults(_svdPtrs, "correlation_1");
 }
 
 vec3 Averager::getPoint(int num, int a1, int a2, int a3)
@@ -776,8 +772,6 @@ vec3 Averager::getPoint(int num, int a1, int a2, int a3)
 
 void Averager::drawAxes()
 {
-	CSVPtr csv = CSVPtr(new CSV(7, "mtz", "a", "b", "c", "d", "e", "f"));
-
 	matAlloc(&_cluster, &_clusterPtrs);
 
 	for (size_t i = 0; i < _mtzs.size(); i++)
@@ -801,24 +795,8 @@ void Averager::drawAxes()
 
 		dist = sqrt(dist);
 
-		csv->addEntry(7, (double)i, aligned[0], aligned[1], aligned[2],
-		              aligned[3], aligned[4], aligned[5], aligned[6]);
-
 		free(aligned);
 	}
-
-	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = "principal_axes";
-	plotMap["xHeader0"] = "a";
-	plotMap["yHeader0"] = "b";
-	plotMap["colour0"] = "black";
-
-	plotMap["xTitle0"] = "p-ness";
-	plotMap["yTitle0"] = "q-ness";
-	plotMap["style0"] = "scatter";
-	csv->plotPNG(plotMap);
-
-	csv->writeToFile("principal_axes.csv");
 }
 
 void Averager::cleanupSVD()
