@@ -30,7 +30,7 @@ std::string findNextFilename(std::string file);
 std::string i_to_str(int val);
 std::string f_to_str(double val, int precision);
 
-std::string findNewFolder();
+std::string findNewFolder(std::string prefix = "refine_");
 
 /* Random string things */
 

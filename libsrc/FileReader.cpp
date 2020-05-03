@@ -200,13 +200,13 @@ std::string f_to_str(double val, int precision)
 	return temp;
 }
 
-std::string findNewFolder()
+std::string findNewFolder(std::string prefix)
 {
 	int count = 1;
 	
 	while (1)
 	{
-		std::string test = "refine_" + i_to_str(count);
+		std::string test = prefix + i_to_str(count);
 
 		if (!file_exists(test))
 		{
