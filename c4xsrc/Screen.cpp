@@ -531,6 +531,7 @@ void Screen::displayResults(Averager *ave)
 	_bin.push_back((QWidget **)&_deadSele);
 	_bin.push_back((QWidget **)&_undeadSele);
 	_bin.push_back((QWidget **)&_newSel);
+	_bin.push_back((QWidget **)&_images);
 
 	_tabs->setCurrentIndex(_currIndex);
 	_tabs->show();
