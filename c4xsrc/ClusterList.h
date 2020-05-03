@@ -50,6 +50,7 @@ public slots:
 	void toggleDead();
 	void updateColours();
 	void exportAll();
+	void prepDirs();
 	void handleResults();
 	void handleError();
 	void displayResults();

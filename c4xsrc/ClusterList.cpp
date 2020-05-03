@@ -27,6 +27,7 @@
 
 #include "FileReader.h"
 #include "ClusterList.h"
+#include "Output.h"
 #include <libsrc/PDBReader.h>
 #include "MtzFile.h"
 #include "MtzFFT.h"
@@ -492,4 +493,29 @@ void ClusterList::toggleDead()
 	obj->getMtzFile()->setDead(!dead);
 
 	updateSelections();
+}
+
+void ClusterList::prepDirs()
+{
+	Output o;
+
+	int count = 0;
+	for (int i = 0; i < _widget->topLevelItemCount(); i++)
+	{
+		QTreeWidgetItem *item = _widget->topLevelItem(i);
+		if (!Averager::isAverager(item))
+		{
+			continue;
+		}
+
+		Averager *obj = static_cast<Averager *>(item);
+		count += o.prepCluster(obj);
+	}
+
+	QMessageBox msgBox;
+	std::string str = ("Set up directories for " + 
+	                   i_to_str(count) + " clusters.");
+
+	msgBox.setText(QString::fromStdString(str));
+	msgBox.exec();
 }

@@ -506,12 +506,18 @@ void Screen::displayResults(Averager *ave)
 
 	int bottom = height() - 50;
 
-	_export = new QPushButton("Export all", this);
+	_export = new QPushButton("Export", this);
 	_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, bottom,
 	                     RIGHT_VIEW_WIDTH - 20, 40);
+
+	QMenu *m = new QMenu(_export);
+	QAction *a1 = m->addAction("Text files only");
+	connect(a1, &QAction::triggered, _list, &ClusterList::exportAll);
+	QAction *a2 = m->addAction("Prepare directories");
+	connect(a2, &QAction::triggered, _list, &ClusterList::prepDirs);
+
+	_export->setMenu(m);
 	_export->show();
-	connect(_export, &QPushButton::clicked,
-	        _list, &ClusterList::exportAll);
 	
 	bottom -= 50;
 

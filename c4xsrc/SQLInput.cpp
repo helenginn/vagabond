@@ -295,9 +295,18 @@ std::string SQLInput::constructRowQuery(bool distinctCrystals)
 	
 	query += " FROM SARS_COV_2_Analysis_v2.Refinement";
 	
-	query += " JOIN SARS_COV_2_Analysis_v2.Data_Reduction ON "
-	"SARS_COV_2_Analysis_v2.Refinement.data_reduction_id = "
-	"SARS_COV_2_Analysis_v2.Data_Reduction.data_reduction_id";
+	if (!distinctCrystals)
+	{
+		query += " JOIN SARS_COV_2_Analysis_v2.Data_Reduction ON "
+		"SARS_COV_2_Analysis_v2.Refinement.data_reduction_id = "
+		"SARS_COV_2_Analysis_v2.Data_Reduction.data_reduction_id";
+	
+		query += " JOIN SARS_COV_2_v2.Diffraction ON "
+		"SARS_COV_2_Analysis_v2.Data_Reduction.crystal_id = "
+		"SARS_COV_2_v2.Diffractions.crystal_id AND "
+		"SARS_COV_2_Analysis_v2.Data_Reduction.run_id = "
+		"SARS_COV_2_v2.Diffractions.run_id";
+	}
 
 	query += " WHERE (";
 	bool changed = false;
