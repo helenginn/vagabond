@@ -19,3 +19,4 @@
 #define DEFAULT_DATABASE ("")
 #define DEFAULT_HOSTNAME ("")
 #define DEFAULT_USERNAME ("")
+#define DEFAULT_PASSWORD ("")
