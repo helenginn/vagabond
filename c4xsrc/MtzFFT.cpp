@@ -32,6 +32,9 @@ MtzFFT::MtzFFT(QTreeWidgetItem *parent, MtzFFT &vag) : VagFFT(vag, -1), QTreeWid
 
 void MtzFFT::updateText()
 {
+	std::string metadata = _file->metadata();
+	setText(0, QString::fromStdString(metadata));
+
 	QColor c = QColor(255, 255, 255, 255);
 	if (getMtzFile()->isMarked())
 	{

@@ -43,6 +43,26 @@ public:
 	{
 		return _filename;
 	}
+
+	std::string metadata()
+	{
+		return _metadata;
+	}
+
+	void setMetadata(std::string metadata)
+	{
+		_metadata = metadata;
+	}
+	
+	void setPdbPath(std::string path)
+	{
+		_pdbPath = path;
+	}
+	
+	std::string getPdbPath()
+	{
+		return _pdbPath;
+	}
 	
 	void setMarked(bool mark)
 	{
@@ -130,6 +150,8 @@ public:
 	}
 private:
 	std::string _filename;
+	std::string _pdbPath;
+	std::string _metadata;
 	std::string _refinementID;
 	CrystalPtr _crystal;
 	std::vector<vec3> _positions;

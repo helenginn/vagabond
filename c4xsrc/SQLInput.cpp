@@ -137,7 +137,7 @@ void SQLInput::setupTable()
 	QStringList list;
 	list << "load?" <<  "id" << "refinement" << "reduction"
 	<< "resolution (Å)" << "R work (%)" << "R free (%)" <<
-	"MTZ path" << "PDB path" << "hit" << "clustered"; 
+	"MTZ path" << "PDB path" << "metadata" << "hit" << "clustered"; 
 	_results = new QTreeWidget(this);
 	_results->setGeometry(left, top, width() - 20, height() - top - 60);
 	_results->setHeaderLabels(list);
@@ -285,7 +285,8 @@ std::string SQLInput::constructRowQuery(bool distinctCrystals)
 		query += "SARS_COV_2_Analysis_v2.Data_Reduction.method";
 		query += " as reduction_method, ";
 		query += "resolution_cut, rwork, rfree, ";
-		query += "refinement_mtz_path, final_pdb_path";
+		query += "refinement_mtz_path, final_pdb_path, ";
+		query += "SARS_COV_2_v2.Diffractions.metadata";
 	}
 	else
 	{
@@ -369,6 +370,7 @@ void SQLInput::queryAltered()
 		item->setText(6, q.qValue(i, 5));
 		item->setText(7, q.qValue(i, 6));
 		item->setText(8, q.qValue(i, 7));
+		item->setText(9, q.qValue(i, 8));
 	}
 
 	sliderChanged();
@@ -414,6 +416,7 @@ void SQLInput::load()
 		path.refinement_id = item->text(1).toStdString();
 		path.mtz_path = item->text(7).toStdString();
 		path.pdb_path = item->text(8).toStdString();
+		path.metadata = item->text(9).toStdString();
 		_datasets.push_back(path);
 	}
 
