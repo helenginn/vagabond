@@ -217,7 +217,8 @@ c4xsrc = [
 'c4xsrc/GLAxis.cpp', 
 'c4xsrc/GLPoint.cpp', 
 'c4xsrc/GLObject.cpp', 
-'c4xsrc/SelectionWindow.cpp'
+'c4xsrc/SelectionWindow.cpp',
+'c4xsrc/Output.cpp'
 ]
 
 

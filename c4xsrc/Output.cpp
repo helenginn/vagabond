@@ -1,0 +1,85 @@
+// cluster4x
+// Copyright (C) 2019 Helen Ginn
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// Please email: vagabond @ hginn.co.uk for more details.
+
+#include "Output.h"
+#include "Averager.h"
+#include "MtzFile.h"
+#include <libsrc/FileReader.h>
+#include <unistd.h>
+#include <iostream>
+#include <filesystem>
+
+Output::Output()
+{
+
+}
+
+bool Output::prepCluster(Averager *ave)
+{
+	if (!ave->isMarked() || ave->isExported())
+	{
+		return false;
+	}
+	std::string folder = findNewFolder("cluster4x_");
+	std::string cwd = getcwd(NULL, 0);
+	std::string path = cwd + "/" + folder;
+
+	DIR *dir = opendir(path.c_str());
+
+	if (dir)
+	{
+		closedir(dir);
+		std::cout << "Warning! " << folder << " already exists!" << std::endl;
+	}
+	else if (ENOENT == errno)
+	{
+		mkdir(path.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+	}
+
+	for (size_t i = 0; i < ave->mtzCount(); i++)
+	{
+		MtzFile *file = ave->getMtzFile(i);
+		std::string metadata = file->metadata();
+
+		std::string subpath = path + "/" + metadata;
+		mkdir(subpath.c_str(), S_IRWXU | S_IRWXG | S_IROTH | S_IXOTH);
+		
+		std::string pdbpath = subpath + "/final.pdb";
+		std::string mtzpath = subpath + "/final.mtz";
+		
+		std::string mtzlink = file->getFilename();
+		if (mtzlink[0] != '/')
+		{
+			mtzlink = cwd + "/" + file->getFilename();
+		}
+		
+		std::string pdblink = file->getPdbPath();
+		if (pdblink[0] != '/')
+		{
+			pdblink = cwd + "/" + file->getPdbPath();
+		}
+		
+		symlink(pdblink.c_str(), pdbpath.c_str());
+		symlink(mtzlink.c_str(), mtzpath.c_str());
+		
+		std::cout << "Created soft links for " << metadata << std::endl;
+	}
+	
+	ave->setExported(true);
+	return true;
+}
