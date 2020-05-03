@@ -209,7 +209,7 @@ void DiffractionMtz::load()
 	rFreeNames.push_back("FREER");
 	rFreeNames.push_back("FREE");
 	rFreeNames.push_back("FreeR_flag");
-	rFreeNames.push_back("FreeRflag");
+	rFreeNames.push_back("R-free-flags");
 
 	getCol(rFreeNames, mtz, &col_rfree);
 
