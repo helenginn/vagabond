@@ -2,6 +2,7 @@
 #include <libsrc/shared_ptrs.h>
 #include <libsrc/DiffractionMTZ.h>
 #include <libsrc/Shouter.h>
+#include <libsrc/FileReader.h>
 #include "Wilson.h"
 
 int main(int argc, char * argv[])
@@ -28,6 +29,9 @@ int main(int argc, char * argv[])
 
 	VagFFTPtr fft = mtz->getFFT();
 	Wilson w(fft);
-	w.setFilename("fd-" + std::string(argv[1]));
+	std::string whole = std::string(argv[1]);
+	std::string path = getPath(whole);
+	std::string file = getFilename(whole);
+	w.setFilename(path + "fd-" + file);
 	w.forceDown();
 }

@@ -62,6 +62,18 @@ std::string get_file_contents(std::string filename)
 	throw(errno);
 }
 
+std::string getPath(std::string whole)
+{
+	size_t pos = whole.rfind("/");
+	if(pos == std::string::npos)  //No path.
+	{
+		return "./";
+	}
+	else
+	{
+		return whole.substr(0, pos + 1);
+	}
+}
 
 std::string getFilename(std::string filename)
 {
