@@ -406,6 +406,10 @@ void SQLInput::queryAltered()
 void SQLInput::updateSlider()
 {
 	_chunkSize = atoi(_chunker->text().toStdString().c_str());
+	if (_chunkSize == 0)
+	{
+		_chunkSize = 500;
+	}
 	size_t num = _results->topLevelItemCount();
 	num /= _chunkSize;
 	_slider->setMaximum(num);
