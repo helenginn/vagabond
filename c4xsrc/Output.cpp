@@ -89,8 +89,48 @@ bool Output::prepCluster(Averager *ave)
 	std::string pandda = path + "/pandda.sh";
 	createPanDDAFile(pandda);
 	
+	createNotes(ave, "notes.txt");
+	
 	ave->setExported(true);
 	return true;
+}
+
+void Output::createNotes(Averager *ave, std::string file)
+{
+	std::ofstream f;
+	f.open(file);
+	int dead = 0;
+	int total = 0;
+	CorrelData cd = empty_CD();
+
+	for (size_t i = 0; i < ave->mtzCount(); i++)
+	{
+		MtzFile *file = ave->getMtzFile(i);
+		
+		if (file->isDead())
+		{
+			dead++;
+			continue;
+		}
+		
+		add_to_CD(&cd, file->getRWork(), file->getRFree());
+		total++;
+	}
+	
+	double mean_rwork, mean_rfree, stdev_rwork, stdev_rfree;
+
+	means_stdevs_CD(cd, &mean_rwork, &mean_rfree, 
+	                &stdev_rwork, &stdev_rfree);
+	
+	f << "Notes for cluster:" << std::endl;
+	f << "\tNo. datasets: " << total << std::endl;
+	f << "\tNo. discarded dead sets: " << dead << std::endl;
+	f << "\tAverage Rwork: " << mean_rwork << " (s="
+	<< stdev_rwork << ")" << std::endl;
+	f << "\tAverage Rfree: " << mean_rfree << " (s="
+	<< stdev_rfree << ")" << std::endl;
+
+	f.close();
 }
 
 void Output::createPanDDAFile(std::string file)
@@ -100,10 +140,19 @@ void Output::createPanDDAFile(std::string file)
 
 	f << "#!/bin/bash" << std::endl;
 	f << std::endl;
+
+	f << "mycpus=`grep '^processor' /proc/cpuinfo | wc -l`" << std::endl;
+	f << "cpus=`echo \"32 $mycpus\" | tr ' ' \"\n\" | sort -rn | tail -1 `";
+	f << std::endl;
+	f << "echo \"CPUs: $cpus\"" << std::endl;
+
 	f << "pandda.analyse data_dirs='*' "
 	<< "pdb_style='final.pdb' mtz_style='final.mtz' "
-	<< "cpus=`grep '^processor' /proc/cpuinfo | wc -l` "
-	<< "high_res_increment=0.3 min_build_datasets=20" << std::endl;
+	<< "cpus=$cpus "
+	<< "high_res_increment=0.3 min_build_datasets=20 "
+	<< "check.all_data_are_valid_values=None";
+	
+	f << std::endl;
 
 
 	f.close();

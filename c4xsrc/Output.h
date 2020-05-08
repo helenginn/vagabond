@@ -32,6 +32,7 @@ public:
 
 private:
 	void createPanDDAFile(std::string file);
+	void createNotes(Averager *ave, std::string file);
 
 };
 
