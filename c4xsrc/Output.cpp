@@ -54,6 +54,12 @@ bool Output::prepCluster(Averager *ave)
 	for (size_t i = 0; i < ave->mtzCount(); i++)
 	{
 		MtzFile *file = ave->getMtzFile(i);
+		
+		if (file->isDead())
+		{
+			continue;
+		}
+		
 		std::string metadata = file->metadata();
 
 		std::string subpath = path + "/" + metadata;

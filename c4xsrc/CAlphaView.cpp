@@ -49,6 +49,11 @@ void CAlphaView::updateRs()
 
 	for (size_t i = 0; i < _mtzs.size(); i++)
 	{
+		if (_mtzs[i]->isDead())
+		{
+			continue;
+		}
+
 		add_to_CD(&cd, _mtzs[i]->getRWork(), _mtzs[i]->getRFree());
 	}
 
