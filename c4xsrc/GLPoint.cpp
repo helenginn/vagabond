@@ -18,7 +18,7 @@
 
 #include <iostream>
 #include "GLPoint.h"
-#include "Averager.h"
+#include "Group.h"
 #include "KeeperGL.h"
 #include "MtzFFT.h"
 #include "MtzFile.h"
@@ -115,7 +115,7 @@ void GLPoint::repopulate()
 	_keeper->update();
 }
 
-void GLPoint::setAverager(Averager *ave)
+void GLPoint::setGroup(Group *ave)
 {
 	_ave = ave;
 	repopulate();

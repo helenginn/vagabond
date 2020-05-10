@@ -1,4 +1,4 @@
-// 
+// cluster4x
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,46 +16,37 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster__calphaview__
-#define __cluster__calphaview__
+#ifndef __cluster4x__AveDiffraction__
+#define __cluster4x__AveDiffraction__
 
-#include <libsrc/vec3.h>
-#include "GLObject.h"
+#include <libsrc/shared_ptrs.h>
+#include "Average.h"
+#include "MtzFFTPtr.h"
 
 class Group;
-class MtzFile;
 
-class CAlphaView : public QObject, public GLObject
+class AveDiffraction : public Average
 {
-Q_OBJECT
 public:
-	CAlphaView(MtzFile *mtz, vec3 centre = empty_vec3());
-	CAlphaView(Group *ave);
+	AveDiffraction(Group *group, double maxRes);
+	virtual ~AveDiffraction();
 
-	void setKeeper(KeeperGL *gl)
-	{
-		_keeper = gl;
-	}
-
-	virtual void initialisePrograms();
-	void repopulate();
-	void recolour();
+	virtual void calculate();
+	virtual void findIntercorrelations(Group *other, double **svd);
 	
-	std::string getRworkRfree();
-	void addCAlpha(vec3 point);
+	VagFFTPtr getFFT()
+	{
+		return _fft;
+	}
 private:
-	void updateRs();
+	virtual double findCorrelation(MtzFFTPtr one, MtzFFTPtr two);
+	void scaleIndividualMtz(MtzFFTPtr mtz);
+	void scaleIndividuals(Group *other);
 
-	double _mean_rwork;
-	double _mean_rfree;
-	double _stdev_rwork;
-	double _stdev_rfree;
-	std::map<MtzFile *, size_t> _starts;
-	std::map<MtzFile *, size_t> _ends;
-	std::vector<MtzFile *> _mtzs;
-	vec3 _centre;
-	KeeperGL *_keeper;
+	double _maxRes;
+	Group *_origGroup;
 
+	VagFFTPtr _fft;
 };
 
 #endif

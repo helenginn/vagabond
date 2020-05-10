@@ -22,7 +22,7 @@
 #include "Screen.h"
 #include "MtzFile.h"
 #include "MatrixView.h"
-#include "Averager.h"
+#include "Group.h"
 
 CorrelLabel::CorrelLabel(QWidget *parent, MatrixView *image,
 Screen *screen) : QLabel(parent)
@@ -80,7 +80,7 @@ void CorrelLabel::mouseMoveEvent(QMouseEvent *e)
 
 	int dir = (file > _startFile) ? 1 : -1;
 	
-	Averager *ave = _image->getAverager();
+	Group *ave = _image->getGroup();
 	bool sele = (_ctrl ? false : _shift);
 
 	if (dir > 0 && file > _lastFile)
@@ -136,7 +136,7 @@ void CorrelLabel::mousePressEvent(QMouseEvent *e)
 
 	bool sele = (_ctrl ? false : _shift);
 
-	Averager *ave = _image->getAverager();
+	Group *ave = _image->getGroup();
 	ave->setMtzSelection(f, sele);
 
 	_screen->refreshSelection();
@@ -144,7 +144,7 @@ void CorrelLabel::mousePressEvent(QMouseEvent *e)
 
 int CorrelLabel::findMtzForXY(int x, int y)
 {
-	Averager *ave = _image->getAverager();
+	Group *ave = _image->getGroup();
 	int mtzs = ave->mtzCount();
 
 	float ty = mtzs * y / (float)height();

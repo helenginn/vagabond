@@ -10,7 +10,7 @@
 
 class QTreeWidget;
 class MtzFile;
-class Averager;
+class Group;
 class QKeyEvent;
 class Screen;
 
@@ -26,8 +26,8 @@ public:
 	bool loadFiles();
 	void load(std::vector<DatasetPath> paths);
 
-	void average(Averager *item);
-	void cluster(Averager *item);
+	void average(Group *item);
+	void cluster(Group *item);
 	void getFromDatabase();
 	void setScreen(Screen *scr)
 	{
@@ -38,8 +38,8 @@ public:
 	
 	void setFiles(std::vector<std::string> files);
 	
-	Averager *topCluster();
-	void removeCluster(Averager *ave);
+	Group *topCluster();
+	void removeCluster(Group *ave);
 	void clearSelection();
 	void invertSelection();
 signals:
@@ -54,8 +54,11 @@ public slots:
 	void handleResults();
 	void handleError();
 	void displayResults();
-	void resetAverage();
+	void originalAverage();
 	void topAverage();
+	void myAverage();
+
+	void recipAverage();
 	void pdbAverage();
 protected:
 	virtual void keyPressEvent(QKeyEvent *event);
@@ -65,12 +68,12 @@ private:
 	Screen *_screen;
 	QTreeWidget *_widget;
 	QThread *_worker;
-	Averager *_lastAverage;
+	Group *_lastAverage;
 	bool _selectMode;
 	bool _removeMode;
 
 	std::vector<DatasetPath> _paths;
-	std::vector<Averager *> _clusters;
+	std::vector<Group *> _clusters;
 	std::vector<MtzFile *> _files;
 	std::vector<std::string> _commands;
 	double _res;

@@ -16,7 +16,7 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#include "Averager.h"
+#include "Group.h"
 #include "KeeperGL.h"
 #include "GLAxis.h"
 #include "GLPoint.h"
@@ -191,12 +191,12 @@ void KeeperGL::addAxes()
 	update();
 }
 
-void KeeperGL::addSVDPoints(Averager *ave)
+void KeeperGL::addSVDPoints(Group *ave)
 {
 	_ave = ave;
 	_points = new GLPoint();
 	_points->setKeeper(this);
-	_points->setAverager(ave);
+	_points->setGroup(ave);
 	_renderMe.push_back(_points);
 }
 
@@ -216,9 +216,9 @@ void KeeperGL::finishCAlphaView()
 	update();
 }
 
-void KeeperGL::addCAlphaView(Averager *ave, vec3 centre)
+void KeeperGL::addCAlphaView(Group *ave)
 {
-	_cAlphaView = new CAlphaView(ave, centre);
+	_cAlphaView = new CAlphaView(ave);
 	finishCAlphaView();
 }
 
@@ -326,10 +326,10 @@ void KeeperGL::paintGL()
 	}
 }
 
-void KeeperGL::setAverager(Averager *ave)
+void KeeperGL::setGroup(Group *ave)
 {
 	_ave = ave;
-	_points->setAverager(ave);
+	_points->setGroup(ave);
 }
 
 void KeeperGL::saveImage(std::string filename)

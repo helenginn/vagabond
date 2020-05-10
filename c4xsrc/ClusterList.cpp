@@ -25,13 +25,13 @@
 #include <iostream>
 #include <fstream>
 
+#include "Group.h"
 #include "FileReader.h"
 #include "ClusterList.h"
 #include "Output.h"
 #include <libsrc/PDBReader.h>
 #include "MtzFile.h"
 #include "MtzFFT.h"
-#include "Averager.h"
 #include "Screen.h"
 
 #include <libsrc/FFT.h>
@@ -88,7 +88,7 @@ bool ClusterList::loadFiles()
 		return true;
 	}
 
-	Averager *ave = new Averager(_widget);
+	Group *ave = new Group(_widget);
 	_clusters.push_back(ave);
 	ave->setMaxResolution(_res);
 
@@ -151,7 +151,7 @@ bool ClusterList::loadFiles()
 	return true;
 }
 
-void ClusterList::removeCluster(Averager *ave)
+void ClusterList::removeCluster(Group *ave)
 {
 	if (ave->isMarked())
 	{
@@ -176,7 +176,7 @@ void ClusterList::removeCluster(Averager *ave)
 	_widget->takeTopLevelItem(index);
 }
 
-void ClusterList::average(Averager *item)
+void ClusterList::average(Group *item)
 {
 	if (_worker && _worker->isRunning())
 	{
@@ -201,7 +201,7 @@ void ClusterList::average(Averager *item)
 	emit average();
 }
 
-void ClusterList::cluster(Averager *item)
+void ClusterList::cluster(Group *item)
 {
 	if (_worker && _worker->isRunning())
 	{
@@ -226,16 +226,16 @@ void ClusterList::cluster(Averager *item)
 	emit cluster();
 }
 
-Averager *ClusterList::topCluster()
+Group *ClusterList::topCluster()
 {
 	QTreeWidgetItem *item = _widget->topLevelItem(0);
 
-	if (!Averager::isAverager(item))
+	if (!Group::isGroup(item))
 	{
 		return NULL;
 	}
 
-	Averager *obj = static_cast<Averager *>(item);
+	Group *obj = static_cast<Group *>(item);
 	return obj;
 }
 
@@ -253,12 +253,12 @@ void ClusterList::exportAll()
 	{
 		QTreeWidgetItem *item = _widget->topLevelItem(i);
 		
-		if (!Averager::isAverager(item))
+		if (!Group::isGroup(item))
 		{
 			continue;
 		}
 		
-		Averager *obj = static_cast<Averager *>(item);
+		Group *obj = static_cast<Group *>(item);
 		obj->writeToStream(fall, false);
 		obj->writeToStream(fmarked, true);
 	}
@@ -320,9 +320,9 @@ void ClusterList::displayResults()
 		return;
 	}
 	
-	if (Averager::isAverager(item))
+	if (Group::isGroup(item))
 	{
-		Averager *obj = static_cast<Averager *>(item);
+		Group *obj = static_cast<Group *>(item);
 		_lastAverage = obj;
 		_screen->displayResults(obj);
 	}
@@ -340,15 +340,18 @@ void ClusterList::handleResults()
 	_worker = NULL;
 	
 	clearSelection();
-	Averager *obj = static_cast<Averager *>(QObject::sender());
+	Group *obj = static_cast<Group *>(QObject::sender());
 	_screen->displayResults(obj);
 	disconnect(this, SIGNAL(average()), nullptr, nullptr);
 	disconnect(this, SIGNAL(cluster()), nullptr, nullptr);
+
+	disconnect(obj, SIGNAL(resultReady()), this, SLOT(handleResults()));
+	disconnect(obj, SIGNAL(failed()), this, SLOT(handleError()));
 }
 
 void ClusterList::handleError()
 {
-	Averager *obj = static_cast<Averager *>(QObject::sender());
+	Group *obj = static_cast<Group *>(QObject::sender());
 	std::string e = obj->getError();
 
 	QMessageBox msgBox;
@@ -415,7 +418,7 @@ void ClusterList::updateColours()
 {
 	for (size_t i = 0; i < _clusters.size(); i++)
 	{
-		Averager *ave = _clusters[i];
+		Group *ave = _clusters[i];
 		
 		for (size_t j = 0; j < ave->mtzCount(); j++)
 		{
@@ -427,26 +430,32 @@ void ClusterList::updateColours()
 
 void ClusterList::topAverage()
 {
-	QTreeWidgetItem *item = _widget->topLevelItem(0);
-
-	if (!item || !Averager::isAverager(item))
-	{
-		return;
-	}
-
-	Averager *ave = static_cast<Averager *>(item);
-	_lastAverage->copyFromAverage(ave);
+	_lastAverage->useAverageGroup(GroupTop);
+	_screen->updateToolbar(_lastAverage);
 }
 
-void ClusterList::resetAverage()
+void ClusterList::originalAverage()
 {
-	_lastAverage->useOriginalAverage();
+	_lastAverage->useAverageGroup(GroupOriginal);
+	_screen->updateToolbar(_lastAverage);
+}
+
+void ClusterList::myAverage()
+{
+	_lastAverage->useAverageGroup(GroupMe);
+	_screen->updateToolbar(_lastAverage);
 }
 
 void ClusterList::pdbAverage()
 {
-	_lastAverage->setType(AveCAlpha);
-	average(_lastAverage);
+	_lastAverage->useAverageType(AveCA);
+	_screen->updateToolbar(_lastAverage);
+}
+
+void ClusterList::recipAverage()
+{
+	_lastAverage->useAverageType(AveDiff);
+	_screen->updateToolbar(_lastAverage);
 }
 
 void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs, bool withAve)
@@ -459,11 +468,12 @@ void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs, bool withAve)
 		return;
 	}
 
-	Averager *ave = new Averager(_widget);
+	Group *ave = new Group(_widget);
 	
-	if (withAve && _lastAverage)
+	if (_lastAverage)
 	{
-		ave->copyFromAverage(_lastAverage);
+		ave->copyFromOriginal(_lastAverage);
+		ave->useAverageGroup(GroupOriginal);
 	}
 	
 	_clusters.push_back(ave);
@@ -503,12 +513,12 @@ void ClusterList::prepDirs()
 	for (int i = 0; i < _widget->topLevelItemCount(); i++)
 	{
 		QTreeWidgetItem *item = _widget->topLevelItem(i);
-		if (!Averager::isAverager(item))
+		if (!Group::isGroup(item))
 		{
 			continue;
 		}
 
-		Averager *obj = static_cast<Averager *>(item);
+		Group *obj = static_cast<Group *>(item);
 		count += o.prepCluster(obj);
 	}
 

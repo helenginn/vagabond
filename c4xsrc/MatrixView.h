@@ -22,12 +22,12 @@
 #include <QImage>
 #include <map>
 
-class Averager;
+class Group;
 
 class MatrixView : public QImage
 {
 public:
-	MatrixView(Averager *ave, int width = 500, int height = 500);
+	MatrixView(Group *ave, int width = 500, int height = 500);
 
 	void populate();
 	
@@ -38,13 +38,13 @@ public:
 	
 	void updateSelection();
 	
-	Averager *getAverager()
+	Group *getGroup()
 	{
 		return _ave;
 	}
 private:
 	double _contrast;
-	Averager *_ave;
+	Group *_ave;
 
 };
 

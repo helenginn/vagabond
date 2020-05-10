@@ -1,4 +1,4 @@
-// 
+// cluster4x
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,46 +16,36 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster__calphaview__
-#define __cluster__calphaview__
+#include "Average.h"
+#include "Group.h"
+#include <iostream>
 
-#include <libsrc/vec3.h>
-#include "GLObject.h"
-
-class Group;
-class MtzFile;
-
-class CAlphaView : public QObject, public GLObject
+Average::Average(Group *group)
 {
-Q_OBJECT
-public:
-	CAlphaView(MtzFile *mtz, vec3 centre = empty_vec3());
-	CAlphaView(Group *ave);
+	_group = group;
+	_mtzs = group->mtzs();
+}
 
-	void setKeeper(KeeperGL *gl)
+void Average::findIntercorrelations(Group *other, double **svd)
+{
+	for (size_t i = 1; i < other->mtzCount(); i++)
 	{
-		_keeper = gl;
+		for (size_t j = 0; j < i; j++)
+		{
+			double cc = 0;
+			
+			MtzFFTPtr one = other->getMtz(i);
+			MtzFFTPtr two = other->getMtz(j);
+
+			cc = findCorrelation(one, two);
+			
+			svd[i][j] = cc;
+			svd[j][i] = cc;
+		}
+
+		std::cout << "." << std::flush;
 	}
 
-	virtual void initialisePrograms();
-	void repopulate();
-	void recolour();
-	
-	std::string getRworkRfree();
-	void addCAlpha(vec3 point);
-private:
-	void updateRs();
+	std::cout << std::endl;
 
-	double _mean_rwork;
-	double _mean_rfree;
-	double _stdev_rwork;
-	double _stdev_rfree;
-	std::map<MtzFile *, size_t> _starts;
-	std::map<MtzFile *, size_t> _ends;
-	std::vector<MtzFile *> _mtzs;
-	vec3 _centre;
-	KeeperGL *_keeper;
-
-};
-
-#endif
+}

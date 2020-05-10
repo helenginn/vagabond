@@ -31,10 +31,19 @@ class QGraphicsScene;
 class SelectionWindow;
 class QLabel;
 class ClusterList;
-class Averager;
+class Group;
 class AxisScroll;
 class MatrixView;
 class KeeperGL;
+
+typedef struct
+{
+	QAction *amp;
+	QAction *ca;
+	QAction *top;
+	QAction *orig;
+	QAction *self;
+} GroupUses;
 
 class Screen : public QMainWindow
 {
@@ -48,14 +57,14 @@ public:
 	}
 
 	virtual void resizeEvent(QResizeEvent *e);
-	void displayResults(Averager *ave);
+	void displayResults(Group *ave);
 	void displaySingle(MtzFFTPtr fft);
+	void updateToolbar(Group *grp);
 	
 public slots:
 	void refocus(int index);
 	void changeIndex(int index);
 	void saveImages();
-	void averageGroup();
 	void clusterGroup();
 	void newSelection();
 	void markSelection();
@@ -66,8 +75,8 @@ private:
 	void relinkPixmap();
 	void addToolBar();
 	void binTab();
-	void addCorrelImage(Averager *ave);
-	void addAxisExplorer(Averager *ave);
+	void addCorrelImage(Group *ave);
+	void addAxisExplorer(Group *ave);
 	void addCAlphaView();
 	void addHKLView(VagFFTPtr fft, std::string filename = "");
 
@@ -100,6 +109,8 @@ private:
 	QPlainTextEdit *_ucLabel;
 	QAction *_cluster;
 	ClusterList *_list;
+	
+	GroupUses uses;
 
 	mat4x4 _storeHKL;
 	mat4x4 _storeCAlpha;

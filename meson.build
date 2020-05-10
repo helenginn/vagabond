@@ -189,7 +189,7 @@ cpp_args: ['-std=c++11'], dependencies : [ dep_vag, png_dep, dep_ica, dep_ccp4  
 if qt5_dep.found() and dep_gl.found()
 
 headers = [
-'c4xsrc/Averager.h', 
+'c4xsrc/Group.h', 
 'c4xsrc/AxisScroll.h', 
 'c4xsrc/CAlphaView.h', 
 'c4xsrc/HKLView.h', 
@@ -203,22 +203,26 @@ headers = [
 
 c4xsrc = [
 'c4xsrc/main.cpp', 
-'c4xsrc/Averager.cpp', 
+'c4xsrc/AveCAlpha.cpp', 
+'c4xsrc/AveDiffraction.cpp', 
+'c4xsrc/Average.cpp', 
 'c4xsrc/AxisScroll.cpp', 
 'c4xsrc/CAlphaView.cpp', 
 'c4xsrc/ClusterList.cpp', 
 'c4xsrc/CorrelLabel.cpp', 
-'c4xsrc/MatrixView.cpp', 
-'c4xsrc/MtzFile.cpp', 
-'c4xsrc/MtzFFT.cpp', 
-'c4xsrc/Screen.cpp', 
-'c4xsrc/KeeperGL.cpp', 
-'c4xsrc/HKLView.cpp', 
 'c4xsrc/GLAxis.cpp', 
 'c4xsrc/GLPoint.cpp', 
 'c4xsrc/GLObject.cpp', 
-'c4xsrc/SelectionWindow.cpp',
-'c4xsrc/Output.cpp'
+'c4xsrc/Group.cpp', 
+'c4xsrc/HKLView.cpp', 
+'c4xsrc/KeeperGL.cpp', 
+'c4xsrc/MatrixView.cpp', 
+'c4xsrc/MtzFile.cpp', 
+'c4xsrc/MtzFFT.cpp', 
+'c4xsrc/QuickAtoms.cpp',
+'c4xsrc/Output.cpp',
+'c4xsrc/Screen.cpp', 
+'c4xsrc/SelectionWindow.cpp'
 ]
 
 

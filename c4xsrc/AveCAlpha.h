@@ -1,4 +1,4 @@
-// 
+// cluster4x
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,45 +16,26 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster__calphaview__
-#define __cluster__calphaview__
+#ifndef __cluster4x__AveCAlpha__
+#define __cluster4x__AveCAlpha__
 
+#include "Average.h"
 #include <libsrc/vec3.h>
-#include "GLObject.h"
 
-class Group;
-class MtzFile;
+class QuickAtoms;
 
-class CAlphaView : public QObject, public GLObject
+class AveCAlpha : public Average
 {
-Q_OBJECT
 public:
-	CAlphaView(MtzFile *mtz, vec3 centre = empty_vec3());
-	CAlphaView(Group *ave);
+	AveCAlpha(Group *group);
 
-	void setKeeper(KeeperGL *gl)
-	{
-		_keeper = gl;
-	}
-
-	virtual void initialisePrograms();
-	void repopulate();
-	void recolour();
+	virtual void calculate();
 	
-	std::string getRworkRfree();
-	void addCAlpha(vec3 point);
+	vec3 getCentre();
 private:
-	void updateRs();
+	virtual double findCorrelation(MtzFFTPtr one, MtzFFTPtr two);
 
-	double _mean_rwork;
-	double _mean_rfree;
-	double _stdev_rwork;
-	double _stdev_rfree;
-	std::map<MtzFile *, size_t> _starts;
-	std::map<MtzFile *, size_t> _ends;
-	std::vector<MtzFile *> _mtzs;
-	vec3 _centre;
-	KeeperGL *_keeper;
+	QuickAtoms *_quick;
 
 };
 

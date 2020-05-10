@@ -18,8 +18,9 @@
 
 #include "CAlphaView.h"
 #include "MtzFile.h"
-#include "Averager.h"
+#include "Group.h"
 #include "KeeperGL.h"
+#include "QuickAtoms.h"
 #include <iostream>
 #include <libsrc/FileReader.h>
 
@@ -30,16 +31,15 @@ CAlphaView::CAlphaView(MtzFile *mtz, vec3 centre)
 	_renderType = GL_LINES;
 }
 
-CAlphaView::CAlphaView(Averager *ave, vec3 centre)
+CAlphaView::CAlphaView(Group *ave)
 {
-
 	for (size_t i = 0; i < ave->mtzCount(); i++)
 	{
 		MtzFile *file = ave->getMtzFile(i);
 		_mtzs.push_back(file);
 	}
 
-	_centre = centre;
+	_centre = ave->getCentre();
 	_renderType = GL_LINES;
 }
 
@@ -72,21 +72,11 @@ void CAlphaView::repopulate()
 	_vertices.clear();
 	_ends.clear();
 	_starts.clear();
-	vec3 nanVec = make_vec3(std::nan(""), std::nan(""), std::nan(""));
 
 	for (size_t j = 0; j < _mtzs.size(); j++)
 	{
 		size_t begin = _vertices.size();
-		std::vector<vec3> pos = _mtzs[j]->getAtomPositions();
-
-		for (size_t i = 0; i < pos.size(); i++)
-		{
-			vec3 move = vec3_subtract_vec3(pos[i], _centre);
-			addCAlpha(move);
-		}
-		
-		addCAlpha(nanVec);
-
+		_mtzs[j]->getQuickAtoms()->populateCAlphaView(this);
 		size_t posSize = _vertices.size();
 		
 		_starts[_mtzs[j]] = begin;
@@ -133,11 +123,12 @@ void CAlphaView::addCAlpha(vec3 point)
 
 	Vertex v;
 	memset(v.pos, 0, sizeof(Vertex));
+	vec3 move = vec3_subtract_vec3(point, _centre);
 	
 	v.color[3] = 1;
-	v.pos[0] = point.x;
-	v.pos[1] = point.y;
-	v.pos[2] = point.z;
+	v.pos[0] = move.x;
+	v.pos[1] = move.y;
+	v.pos[2] = move.z;
 
 	_vertices.push_back(v);
 }

@@ -19,11 +19,11 @@
 #include "MatrixView.h"
 #include "MtzFFT.h"
 #include "MtzFile.h"
-#include "Averager.h"
+#include "Group.h"
 #include <QPainter>
 #include <iostream>
 
-MatrixView::MatrixView(Averager *ave, int w, int h) : QImage(w, h, QImage::Format_RGB32)
+MatrixView::MatrixView(Group *ave, int w, int h) : QImage(w, h, QImage::Format_RGB32)
 {
 	_ave = ave;
 	_contrast = 1;

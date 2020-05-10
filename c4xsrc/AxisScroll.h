@@ -21,7 +21,7 @@
 
 #include <QScrollArea>
 
-class Averager;
+class Group;
 class GLPoint;
 class QPushButton;
 class QWidget;
@@ -32,7 +32,7 @@ Q_OBJECT
 public:
 	AxisScroll(QWidget *parent);
 
-	void setAverager(Averager *ave)
+	void setGroup(Group *ave)
 	{
 		_ave = ave;
 	}
@@ -48,7 +48,7 @@ public slots:
 
 private:
 	std::vector<QPushButton *> _axes;
-	Averager *_ave;
+	Group *_ave;
 	GLPoint *_points;
 	QWidget *_viewport;
 

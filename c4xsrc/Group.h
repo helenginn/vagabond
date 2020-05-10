@@ -1,5 +1,23 @@
-#ifndef __fuck_cov__Averager__
-#define __fuck_cov__Averager__
+// cluster4x
+// Copyright (C) 2019 Helen Ginn
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// Please email: vagabond @ hginn.co.uk for more details.
+
+#ifndef __fuck_cov__Group
+#define __fuck_cov__Group
 
 #include <libsrc/FFT.h>
 #include <QTreeWidgetItem>
@@ -11,9 +29,16 @@
 
 typedef enum
 {
-	AveDiffraction,
-	AveCAlpha,
-} AveragerType;
+	AveDiff,
+	AveCA,
+} GroupType;
+
+typedef enum
+{
+	GroupTop,
+	GroupOriginal,
+	GroupMe,
+} WhichGroup;
 
 typedef struct
 {
@@ -42,43 +67,45 @@ inline bool operator<(const Pair &p, const Pair &q)
 
 class MatrixView;
 class MtzFile;
+class AveDiffraction;
+class AveCAlpha;
 
-class Averager : public QObject, public QTreeWidgetItem
+typedef struct
+{
+	AveDiffraction *recip;
+	AveCAlpha *ca;
+} AverageSet;
+
+
+class Group : public QObject, public QTreeWidgetItem
 {
 Q_OBJECT
 public:
-	Averager(QTreeWidget *parent);
+	Group(QTreeWidget *parent);
 
 	void addMtz(DiffractionMtzPtr mtz, MtzFile *file, CrystalPtr c);
 	void addMtz(MtzFFTPtr mtz);
 	
-	static bool isAverager(QTreeWidgetItem *item)
+	static bool isGroup(QTreeWidgetItem *item)
 	{
-		return (dynamic_cast<Averager *>(item) != NULL);
+		return (dynamic_cast<Group *>(item) != NULL);
 	}
 	
 	void setMaxResolution(double res)
 	{
 		_res = res;
 	}
-	
-	void setType(AveragerType ave)
-	{
-		_type = ave;
-	}
 
-	AveragerType getType()
+	GroupType getType()
 	{
 		return _type;
 	}
 
-	double findPDBCorrelation(int i, int j);
-	
-	vec3 getCentre()
+	WhichGroup getWhichGroup()
 	{
-		return _centre;
+		return _which;
 	}
-	
+
 	MtzFile *getMtzFile(int i);
 	void setMtzSelection(size_t i, bool val);
 	void flipMtzSelection(int i);
@@ -93,20 +120,21 @@ public:
 		return _mtzs;
 	}
 	
+	void setExported(bool exp)
+	{
+		_exported = true;
+	}
+	
+	bool isExported()
+	{
+		return _exported;
+	}
 	size_t mtzCount()
 	{
 		return _mtzs.size();
 	}
 	
-	VagFFTPtr getAverageFFT()
-	{
-		return _fft;
-	}
-	
-	void setAverageFFT(VagFFTPtr fft)
-	{
-		_fft = fft;
-	}
+	VagFFTPtr getAverageFFT();
 	
 	bool isMarked()
 	{
@@ -116,12 +144,9 @@ public:
 	void setMarked(bool marked);
 	void setDead(bool dead);
 	
-	void scaleIndividuals();
-	
 	void findIntercorrelations();
 	void svd();
 	void drawAxes();
-	void exhaustiveCorrelations();
 	void updateText();
 	vec3 getPoint(int num, int a1, int a2, int a3);
 	
@@ -135,8 +160,7 @@ public:
 		return _w[i];
 	}
 	
-	void useOriginalAverage();
-	void copyFromAverage(Averager *ave);
+	void copyFromOriginal(Group *ave);
 	
 	double **getRawPtr()
 	{
@@ -150,14 +174,17 @@ public:
 		return _message;
 	}
 	
-	void setExported(bool exp)
+	vec3 getCentre();
+	AverageSet *getWorkingSet();
+	
+	void useAverageGroup(WhichGroup which)
 	{
-		_exported = true;
+		_which = which;
 	}
 	
-	bool isExported()
+	void useAverageType(GroupType type)
 	{
-		return _exported;
+		_type = type;
 	}
 
 public slots:
@@ -168,23 +195,18 @@ signals:
 	void failed();
 private:
 	void makeAverage(bool force = false);
-	void makeCAlphaAverage(bool force);
-	double findCorrelation(int i, int j);
-	double comparePairwise(int i, int j);
-	VagFFTPtr makeDifference(VagFFTPtr one, VagFFTPtr two);
-	double pairwiseValue(VagFFTPtr oneTwoDiff, VagFFTPtr three, 
-	                     VagFFTPtr four);
-	void pairwiseValues(VagFFTPtr one, VagFFTPtr two, VagFFTPtr three, 
-	                    VagFFTPtr oneTwoDiff, size_t maxVag);
-	void scaleIndividualMtz(int i);
+	void calculateAllAverages(bool force = false);
 	void svdAlloc();
 	void drawResults(double **data, std::string filename);
 	void populatePolymer(MtzFFTPtr mtz, PolymerPtr p);
 
 	std::vector<MtzFFTPtr> _mtzs;
 	std::vector<std::string> _names;
-	VagFFTPtr _fft;
-	VagFFTPtr _origAve;
+	
+	AverageSet _mySet;
+	AverageSet _origSet;
+
+
 	
 	std::map<Pair, VagScore> _vagVals;
 	std::vector<vec3> _atomPos;
@@ -219,8 +241,10 @@ private:
 	
 	vec3 _centre;
 	
-	AveragerType _type;
-	AveragerType _origType;
+	GroupType _type;
+	WhichGroup _which;
+	
+	static Group *_topGroup;
 };
 
 #endif

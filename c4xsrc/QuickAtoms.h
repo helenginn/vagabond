@@ -1,4 +1,4 @@
-// 
+// cluster4x
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,46 +16,48 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster__calphaview__
-#define __cluster__calphaview__
+#ifndef __cluster4x__QuickAtoms__
+#define __cluster4x__QuickAtoms__
 
+#include <map>
+#include <string>
+#include <vector>
 #include <libsrc/vec3.h>
-#include "GLObject.h"
+#include <libsrc/maths.h>
+#include <libsrc/shared_ptrs.h>
 
-class Group;
+typedef std::vector<vec3> Vec3Vec;
+typedef std::vector<size_t> Counts;
+
 class MtzFile;
+class CAlphaView;
 
-class CAlphaView : public QObject, public GLObject
+class QuickAtoms
 {
-Q_OBJECT
 public:
-	CAlphaView(MtzFile *mtz, vec3 centre = empty_vec3());
-	CAlphaView(Group *ave);
+	QuickAtoms(MtzFile *file);
+	
+	static double compare(QuickAtoms *one, QuickAtoms *two, QuickAtoms *ave);
 
-	void setKeeper(KeeperGL *gl)
+	void fetchAtoms();
+	void addAtomsFrom(QuickAtoms *other);
+	void divideThrough();
+	
+	vec3 getCentre()
 	{
-		_keeper = gl;
+		return _centre;
 	}
 
-	virtual void initialisePrograms();
-	void repopulate();
-	void recolour();
-	
-	std::string getRworkRfree();
-	void addCAlpha(vec3 point);
+	void populateCAlphaView(CAlphaView *view);
 private:
-	void updateRs();
+	void addFromChain(QuickAtoms *other, std::string chain);
+	void populatePolymer(PolymerPtr p);
+	MtzFile *_file;
 
-	double _mean_rwork;
-	double _mean_rfree;
-	double _stdev_rwork;
-	double _stdev_rfree;
-	std::map<MtzFile *, size_t> _starts;
-	std::map<MtzFile *, size_t> _ends;
-	std::vector<MtzFile *> _mtzs;
+	std::map<std::string, Vec3Vec> _chainMap;
+	std::map<std::string, Counts> _countMap;
+	
 	vec3 _centre;
-	KeeperGL *_keeper;
-
 };
 
 #endif

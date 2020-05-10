@@ -3,7 +3,7 @@
 #include <QtWidgets/qapplication.h>
 #include <libsrc/Shouter.h>
 #include "Screen.h"
-#include "Averager.h"
+#include "Group.h"
 #include "commit.h"
 #include "ClusterList.h"
 

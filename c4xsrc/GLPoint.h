@@ -22,7 +22,7 @@
 #include "GLObject.h"
 #include "vec3.h"
 
-class Averager;
+class Group;
 class KeeperGL;
 
 class GLPoint : public QObject, public GLObject
@@ -31,7 +31,7 @@ Q_OBJECT
 public:
 	GLPoint();
 	
-	void setAverager(Averager *ave);
+	void setGroup(Group *ave);
 	void addPoint(vec3 point);
 	virtual void initialisePrograms();
 	
@@ -56,7 +56,7 @@ public:
 signals:
 	void updateSelection();
 private:
-	Averager *_ave;
+	Group *_ave;
 	KeeperGL *_keeper;
 	void recolour();
 	

@@ -17,7 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "AxisScroll.h"
-#include "Averager.h"
+#include "Group.h"
 #include "GLPoint.h"
 #include <QLabel>
 #include <libsrc/FileReader.h>

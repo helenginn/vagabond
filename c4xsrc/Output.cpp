@@ -17,7 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Output.h"
-#include "Averager.h"
+#include "Group.h"
 #include "MtzFile.h"
 #include <libsrc/FileReader.h>
 #include <unistd.h>
@@ -29,12 +29,13 @@ Output::Output()
 
 }
 
-bool Output::prepCluster(Averager *ave)
+bool Output::prepCluster(Group *ave)
 {
 	if (!ave->isMarked() || ave->isExported())
 	{
 		return false;
 	}
+
 	std::string folder = findNewFolder("cluster4x_");
 	std::string cwd = getcwd(NULL, 0);
 	std::string path = cwd + "/" + folder;
@@ -95,7 +96,7 @@ bool Output::prepCluster(Averager *ave)
 	return true;
 }
 
-void Output::createNotes(Averager *ave, std::string file)
+void Output::createNotes(Group *ave, std::string file)
 {
 	std::ofstream f;
 	f.open(file);

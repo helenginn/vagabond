@@ -18,6 +18,7 @@
 
 #include "MtzFile.h"
 #include <QFont>
+#include "QuickAtoms.h"
 
 MtzFile::MtzFile(std::string filename)
 {
@@ -25,8 +26,8 @@ MtzFile::MtzFile(std::string filename)
 	_mark = false;
 	_sele = false;
 	_dead = false;
+	_quickAtoms = new QuickAtoms(this);
 }
-
 
 void MtzFile::recolourVertex(Vertex *v, bool fullDead)
 {

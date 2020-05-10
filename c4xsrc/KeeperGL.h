@@ -24,7 +24,7 @@
 #include <QtGui/qopengl.h>
 #include <QtGui/qopenglfunctions.h>
 #include "MtzFFT.h"
-#include "Averager.h"
+#include "Group.h"
 
 #include <libsrc/mat4x4.h>
 
@@ -34,7 +34,7 @@ class HKLView;
 class CAlphaView;
 class GLPoint;
 class GLObject;
-class Averager;
+class Group;
 
 class KeeperGL : public QOpenGLWidget, QOpenGLFunctions
 {
@@ -45,10 +45,10 @@ public:
 	
 	void preparePanels(int n);
 	void addAxes();
-	void addSVDPoints(Averager *ave);
+	void addSVDPoints(Group *ave);
 	void addHKLView(VagFFTPtr fft, double scale);
 	void addCAlphaView(MtzFile *file, vec3 centre);
-	void addCAlphaView(Averager *ave, vec3 centre);
+	void addCAlphaView(Group *ave);
 	void setupCamera(void);
 	
 	void panned(double x, double y);
@@ -65,10 +65,10 @@ public:
 		return _model;
 	}
 	
-	void setAverager(Averager *ave);
+	void setGroup(Group *ave);
 	void saveImage(std::string filename);
 	
-	Averager *getAverager()
+	Group *getGroup()
 	{
 		return _ave;
 	}
@@ -112,7 +112,7 @@ private:
 	void updateCamera();
 	void finishCAlphaView();
 	
-	Averager *_ave;
+	Group *_ave;
 	Qt::MouseButton _mouseButton;
 	mat4x4 _model;
 	mat4x4 *_store;

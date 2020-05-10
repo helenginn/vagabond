@@ -16,24 +16,43 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster4x__Output__
-#define __cluster4x__Output__
+#include "AveCAlpha.h"
+#include "MtzFile.h"
+#include "MtzFFT.h"
+#include <libsrc/maths.h>
+#include "QuickAtoms.h"
+#include <iostream>
 
-#include <string>
-
-class Group;
-
-class Output
+AveCAlpha::AveCAlpha(Group *group) : Average(group)
 {
-public:
-	Output();
+
+}
+
+void AveCAlpha::calculate()
+{
+	_quick = new QuickAtoms(NULL);
+
+	for (size_t i = 0; i < _mtzs.size(); i++)
+	{
+		QuickAtoms *quick = _mtzs[i]->getMtzFile()->getQuickAtoms();
+		quick->fetchAtoms();
+		_quick->addAtomsFrom(quick);
+	}
+
+	_quick->divideThrough();
+}
+
+double AveCAlpha::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
+{
+	QuickAtoms *qOne = one->getMtzFile()->getQuickAtoms();
+	QuickAtoms *qTwo = two->getMtzFile()->getQuickAtoms();
 	
-	bool prepCluster(Group *ave);
+	double cc = 0;
+	cc = QuickAtoms::compare(qOne, qTwo, _quick);
+	return cc;
+}
 
-private:
-	void createPanDDAFile(std::string file);
-	void createNotes(Group *ave, std::string file);
-
-};
-
-#endif
+vec3 AveCAlpha::getCentre()
+{
+	return _quick->getCentre();
+}

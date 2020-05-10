@@ -24,6 +24,8 @@
 #include <string>
 #include "GLObject.h"
 
+class QuickAtoms;
+
 class MtzFile
 {
 public:
@@ -129,6 +131,11 @@ public:
 		_positions = positions;
 	}
 	
+	QuickAtoms *getQuickAtoms()
+	{
+		return _quickAtoms;
+	}
+	
 	void setRWork(double rw)
 	{
 		_rWork = rw;
@@ -155,6 +162,7 @@ private:
 	std::string _refinementID;
 	CrystalPtr _crystal;
 	std::vector<vec3> _positions;
+	QuickAtoms *_quickAtoms;
 
 	bool _mark;
 	bool _sele;

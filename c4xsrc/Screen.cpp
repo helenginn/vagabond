@@ -38,7 +38,7 @@
 #include "MtzFile.h"
 #include "KeeperGL.h"
 #include "GLPoint.h"
-#include "Averager.h"
+#include "Group.h"
 #include "AxisScroll.h"
 #include "MatrixView.h"
 #include "MtzFFTPtr.h"
@@ -188,6 +188,47 @@ void Screen::resizeEvent(QResizeEvent *e)
 	}
 }
 
+void Screen::updateToolbar(Group *grp)
+{
+	uses.amp->setChecked(false);
+	uses.ca->setChecked(false);
+
+	switch (grp->getType())
+	{
+		case AveDiff:
+		uses.amp->setChecked(true);
+		break;
+		
+		case AveCA:
+		uses.ca->setChecked(true);
+		break;
+		
+		default:
+		break;
+	}
+
+	uses.top->setChecked(false);
+	uses.orig->setChecked(false);
+	uses.self->setChecked(false);
+
+	switch (grp->getWhichGroup())
+	{
+		case GroupTop:
+		uses.top->setChecked(true);
+		break;
+		
+		case GroupOriginal:
+		uses.orig->setChecked(true);
+		break;
+		
+		case GroupMe:
+		uses.self->setChecked(true);
+		
+		default:
+		break;
+	}
+}
+
 void Screen::addToolBar()
 {
 	_toolBar = new QToolBar(this);
@@ -196,14 +237,29 @@ void Screen::addToolBar()
 	QPushButton *a = new QPushButton("Set average");
 	
 	QMenu *m = new QMenu(a);
-	QAction *a1 = m->addAction("Recalculate, diffraction");
-	connect(a1, &QAction::triggered, this, &Screen::averageGroup);
-	QAction *a4 = m->addAction("Recalculate, C-alphas");
-	connect(a4, &QAction::triggered, _list, &ClusterList::pdbAverage);
-	QAction *a2 = m->addAction("Use original");
-	connect(a2, &QAction::triggered, _list, &ClusterList::resetAverage);
-	QAction *a3 = m->addAction("Use top level");
-	connect(a3, &QAction::triggered, _list, &ClusterList::topAverage);
+	uses.amp = m->addAction("Use amplitudes");
+	uses.amp->setCheckable(true);
+	connect(uses.amp, &QAction::triggered, _list, &ClusterList::recipAverage);
+
+	uses.ca = m->addAction("Use C-alphas");
+	uses.ca->setCheckable(true);
+	connect(uses.ca, &QAction::triggered, _list, &ClusterList::pdbAverage);
+
+	m->addSeparator();
+
+	uses.top = m->addAction("Use top level");
+	uses.top->setCheckable(true);
+	connect(uses.top, &QAction::triggered, _list, &ClusterList::topAverage);
+
+	uses.orig = m->addAction("Use original");
+	uses.orig->setCheckable(true);
+	connect(uses.orig, &QAction::triggered, _list, 
+	        &ClusterList::originalAverage);
+
+	uses.self = m->addAction("Use this group");
+	uses.self->setCheckable(true);
+	connect(uses.self, &QAction::triggered, _list, &ClusterList::myAverage);
+
 	a->setMenu(m);
 	_toolBar->addWidget(a);
 
@@ -219,7 +275,7 @@ void Screen::removeCluster()
 {
 	QTreeWidgetItem *item = _inputTree->currentItem();
 
-	if (!Averager::isAverager(item))
+	if (!Group::isGroup(item))
 	{
 		QMessageBox msgBox;
 		msgBox.setText("You can only delete clusters.");
@@ -227,31 +283,14 @@ void Screen::removeCluster()
 		return;
 	}
 	
-	_list->removeCluster(static_cast<Averager *>(item));
-}
-
-void Screen::averageGroup()
-{
-	QTreeWidgetItem *item = _inputTree->currentItem();
-
-	if (!Averager::isAverager(item))
-	{
-		QMessageBox msgBox;
-		msgBox.setText("Please choose the data set group for averaging.");
-		msgBox.exec();
-		return;
-	}
-	
-	Averager *ave = static_cast<Averager*>(item);
-	ave->setType(AveDiffraction);
-	_list->average(ave);
+	_list->removeCluster(static_cast<Group *>(item));
 }
 
 void Screen::clusterGroup()
 {
 	QTreeWidgetItem *item = _inputTree->currentItem();
 
-	if (!Averager::isAverager(item))
+	if (!Group::isGroup(item))
 	{
 		QMessageBox msgBox;
 		msgBox.setText("Please choose the data set group for clustering.");
@@ -259,7 +298,7 @@ void Screen::clusterGroup()
 		return;
 	}
 	
-	_list->cluster(static_cast<Averager *>(item));
+	_list->cluster(static_cast<Group *>(item));
 }
 
 void Screen::binTab()
@@ -276,7 +315,7 @@ void Screen::binTab()
 	_tabs = NULL;
 }
 
-void Screen::addCorrelImage(Averager *ave)
+void Screen::addCorrelImage(Group *ave)
 {
 	if (!ave->getCorrelMatrix())
 	{
@@ -293,7 +332,7 @@ void Screen::addCorrelImage(Averager *ave)
 	_bin.push_back((QWidget **)&_correlLabel);
 }
 
-void Screen::addAxisExplorer(Averager *ave)
+void Screen::addAxisExplorer(Group *ave)
 {
 	if (!ave->getCorrelMatrix())
 	{
@@ -318,7 +357,7 @@ void Screen::addAxisExplorer(Averager *ave)
 	_selection->setFocusPolicy(Qt::StrongFocus);
 
 	_scroll = new AxisScroll(_graph);
-	_scroll->setAverager(ave);
+	_scroll->setGroup(ave);
 	_scroll->setPoints(points);
 	_scroll->makeLayout();
 
@@ -424,7 +463,7 @@ void Screen::displaySingle(MtzFFTPtr fft)
 	resizeEvent(NULL);
 }
 
-void Screen::displayResults(Averager *ave)
+void Screen::displayResults(Group *ave)
 {
 	if (_tabs != NULL)
 	{
@@ -432,11 +471,13 @@ void Screen::displayResults(Averager *ave)
 		           this, &Screen::changeIndex);
 	}
 
+	updateToolbar(ave);
 	binTab();
 	if (!ave->getCorrelMatrix())
 	{
 		return;
 	}
+
 	_tabs = new QTabWidget(this);
 
 	resizeEvent(NULL);
@@ -447,8 +488,7 @@ void Screen::displayResults(Averager *ave)
 	addHKLView(ave->getAverageFFT(), average);
 
 	addCAlphaView();
-	vec3 centre = _list->topCluster()->getCentre();
-	_cAlphaKeeper->addCAlphaView(ave, centre);
+	_cAlphaKeeper->addCAlphaView(ave);
 
 	int top = 10;
 
@@ -553,7 +593,7 @@ void Screen::displayResults(Averager *ave)
 void Screen::markSelection()
 {
 	bool mark = (QObject::sender() == _markSele);
-	Averager *ave = _keeper->getAverager();
+	Group *ave = _keeper->getGroup();
 	ave->setMarked(mark);
 	refreshSelection();
 }
@@ -561,7 +601,7 @@ void Screen::markSelection()
 void Screen::killSelection()
 {
 	bool dead = (QObject::sender() == _deadSele);
-	Averager *ave = _keeper->getAverager();
+	Group *ave = _keeper->getGroup();
 	ave->setDead(dead);
 	refreshSelection();
 }
