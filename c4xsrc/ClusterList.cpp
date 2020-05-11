@@ -145,6 +145,7 @@ bool ClusterList::loadFiles()
 	if (ave->mtzCount() == 0)
 	{
 		getFromFolders();
+		_widget->clear();
 		
 		return true;
 		QMessageBox msgBox;

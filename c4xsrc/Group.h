@@ -82,6 +82,8 @@ class Group : public QObject, public QTreeWidgetItem
 Q_OBJECT
 public:
 	Group(QTreeWidget *parent);
+	
+	~Group();
 
 	void addMtz(DiffractionMtzPtr mtz, MtzFile *file, CrystalPtr c);
 	void addMtz(MtzFFTPtr mtz);

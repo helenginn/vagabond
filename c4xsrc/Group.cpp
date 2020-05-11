@@ -458,3 +458,11 @@ vec3 Group::getCentre()
 {
 	return _topGroup->_mySet.ca->getCentre();
 }
+
+Group::~Group()
+{
+	if (this == _topGroup)
+	{
+		_topGroup = NULL;
+	}
+}
