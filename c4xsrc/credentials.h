@@ -16,7 +16,7 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#define DEFAULT_DATABASE ("SARS_COV_2_v2")
-#define DEFAULT_HOSTNAME ("127.0.0.1")
-#define DEFAULT_USERNAME ("reader")
-#define DEFAULT_PASSWORD ("sarsCovRead99!")
+#define DEFAULT_DATABASE ("")
+#define DEFAULT_HOSTNAME ("")
+#define DEFAULT_USERNAME ("")
+#define DEFAULT_PASSWORD ("")
