@@ -34,6 +34,11 @@ void AveCAlpha::calculate()
 
 	for (size_t i = 0; i < _mtzs.size(); i++)
 	{
+		if (_mtzs[i]->getMtzFile()->isDead())
+		{
+			continue;
+		}
+
 		QuickAtoms *quick = _mtzs[i]->getMtzFile()->getQuickAtoms();
 		quick->fetchAtoms();
 		_quick->addAtomsFrom(quick);
