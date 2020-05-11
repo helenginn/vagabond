@@ -264,6 +264,10 @@ void KeeperGL::draggedLeftMouse(double x, double y)
 void KeeperGL::draggedRightMouse(double x, double y)
 {
 	_scale *= (1 - y / MOUSE_SENSITIVITY);
+	if (_scale < 0)
+	{
+		_scale = 1;
+	}
 	updateCamera();
 	update();
 }

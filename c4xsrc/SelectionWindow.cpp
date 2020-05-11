@@ -34,8 +34,8 @@ SelectionWindow::SelectionWindow(QWidget *parent, KeeperGL *keeper)
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	_selectMode = false;
 	_removeMode = false;
-	_startX = 0;
-	_startY = 0;
+	_startX = -1;
+	_startY = -1;
 	QGraphicsScene *scene = new QGraphicsScene(this);
 	scene->setSceneRect(0, 0, width(), height());
 	setScene(scene);
@@ -90,6 +90,11 @@ void SelectionWindow::mouseReleaseEvent(QMouseEvent *e)
 	_points->selectInWindow(x1, y1, x2, y2, add);
 
 	scene()->clear();
+
+	_startX = -1;
+	_startY = -1;
+	_selectMode = false;
+	_removeMode = false;
 }
 
 void SelectionWindow::mouseMoveEvent(QMouseEvent *e)
@@ -137,7 +142,7 @@ void SelectionWindow::keyPressEvent(QKeyEvent *event)
 	{
 		_selectMode = true;
 	}
-	if (event->key() == Qt::Key_Control)
+	else if (event->key() == Qt::Key_Control)
 	{
 		_removeMode = true;
 	}
@@ -145,6 +150,12 @@ void SelectionWindow::keyPressEvent(QKeyEvent *event)
 
 void SelectionWindow::keyReleaseEvent(QKeyEvent *event)
 {
+	/* don't change mode while dragging mouse */
+	if (_startX >= 0 || _startY >= 0)
+	{
+		return;
+	}
+
 	if (event->key() == Qt::Key_Shift)
 	{
 		_selectMode = false;
