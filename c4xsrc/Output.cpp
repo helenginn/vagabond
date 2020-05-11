@@ -90,7 +90,7 @@ bool Output::prepCluster(Group *ave)
 	std::string pandda = path + "/pandda.sh";
 	createPanDDAFile(pandda);
 	
-	createNotes(ave, "notes.txt");
+	createNotes(ave, path + "/notes.txt");
 	
 	ave->setExported(true);
 	return true;
@@ -151,7 +151,7 @@ void Output::createPanDDAFile(std::string file)
 	<< "pdb_style='final.pdb' mtz_style='final.mtz' "
 	<< "cpus=$cpus "
 	<< "high_res_increment=0.3 min_build_datasets=20 "
-	<< "check.all_data_are_valid_values=None";
+	<< "checks.all_data_are_valid_values=None";
 	
 	f << std::endl;
 
