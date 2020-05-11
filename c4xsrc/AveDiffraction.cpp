@@ -101,7 +101,7 @@ void AveDiffraction::calculate()
 		_fft->setReal(i, real);
 	}
 	
-	scaleIndividuals(_origGroup);
+//	scaleIndividuals(_origGroup);
 }
 
 double AveDiffraction::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
