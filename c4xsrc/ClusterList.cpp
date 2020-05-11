@@ -33,6 +33,7 @@
 #include "MtzFile.h"
 #include "MtzFFT.h"
 #include "Screen.h"
+#include "FolderInput.h"
 
 #include <libsrc/FFT.h>
 
@@ -78,6 +79,12 @@ void ClusterList::setFiles(std::vector<std::string> files)
 
 		_paths.push_back(path);
 	}
+}
+
+void ClusterList::getFromFolders()
+{
+	FolderInput *input = new FolderInput(NULL);
+	input->setList(this);
 }
 
 bool ClusterList::loadFiles()
@@ -137,6 +144,9 @@ bool ClusterList::loadFiles()
 
 	if (ave->mtzCount() == 0)
 	{
+		getFromFolders();
+		
+		return true;
 		QMessageBox msgBox;
 		msgBox.setText(tr("No data sets have been successfully loaded.\n"
 		                  "Please pass MTZ files in on the command"

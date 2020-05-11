@@ -29,6 +29,7 @@ public:
 	void average(Group *item);
 	void cluster(Group *item);
 	void getFromDatabase();
+	void getFromFolders();
 	void setScreen(Screen *scr)
 	{
 		_screen = scr;
