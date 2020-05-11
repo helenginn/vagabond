@@ -38,6 +38,8 @@ public:
 	{
 		return _fft;
 	}
+	
+	static std::string unitCellDesc(VagFFTPtr fft);
 private:
 	virtual double findCorrelation(MtzFFTPtr one, MtzFFTPtr two);
 	void scaleIndividualMtz(MtzFFTPtr mtz);

@@ -21,6 +21,7 @@
 #include "MtzFile.h"
 #include "MtzFFT.h"
 #include <libsrc/Crystal.h>
+#include <libsrc/FileReader.h>
 
 AveDiffraction::AveDiffraction(Group *group, double maxRes) : Average(group)
 {
@@ -208,4 +209,24 @@ void AveDiffraction::scaleIndividuals(Group *other)
 	std::cout << " ... done." << std::endl;
 }
 
+
+std::string AveDiffraction::unitCellDesc(VagFFTPtr fft)
+{
+	std::vector<double> uc = fft->getUnitCell();
+	std::string ucInfo;
+	ucInfo += fft->getSpaceGroup()->symbol_Hall;
+	ucInfo += "; a, b, c =  ";
+	for (int i = 0; i < 3; i++)
+	{
+		ucInfo += f_to_str(uc[i], 2) + "   ";
+	}
+	ucInfo += " Å; a, b, g =  ";
+	for (int i = 3; i < 6; i++)
+	{
+		ucInfo += f_to_str(uc[i], 2) + "   ";
+	}
+	ucInfo += "°.";
+
+	return ucInfo;
+}
 
