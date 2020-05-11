@@ -41,6 +41,7 @@
 #include "Group.h"
 #include "AxisScroll.h"
 #include "MatrixView.h"
+#include "AveDiffraction.h"
 #include "MtzFFTPtr.h"
 
 #define TOOL_BAR_HEIGHT 50
@@ -400,21 +401,8 @@ void Screen::addHKLView(VagFFTPtr fft, std::string filename)
 	_hklKeeper->setStoreMatrix(&_storeHKL);
 	_hklKeeper->addHKLView(fft, _scale);
 	
-	std::vector<double> uc = fft->getUnitCell();
-	std::string ucInfo;
-	ucInfo += filename + ": ";
-	ucInfo += fft->getSpaceGroup()->symbol_Hall;
-	ucInfo += "; a, b, c =  ";
-	for (int i = 0; i < 3; i++)
-	{
-		ucInfo += f_to_str(uc[i], 2) + "   ";
-	}
-	ucInfo += " Å; a, b, g =  ";
-	for (int i = 3; i < 6; i++)
-	{
-		ucInfo += f_to_str(uc[i], 2) + "   ";
-	}
-	ucInfo += "°.";
+	std::string ucInfo = filename + ": ";
+	ucInfo += AveDiffraction::unitCellDesc(fft);
 	
 	_ucLabel = new QPlainTextEdit(QString::fromStdString(ucInfo), _hkl);
 	_ucLabel->setReadOnly(true);

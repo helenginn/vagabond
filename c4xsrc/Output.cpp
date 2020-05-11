@@ -18,6 +18,7 @@
 
 #include "Output.h"
 #include "Group.h"
+#include "AveDiffraction.h"
 #include "MtzFile.h"
 #include <libsrc/FileReader.h>
 #include <unistd.h>
@@ -130,6 +131,10 @@ void Output::createNotes(Group *ave, std::string file)
 	<< stdev_rwork << ")" << std::endl;
 	f << "\tAverage Rfree: " << mean_rfree << " (s="
 	<< stdev_rfree << ")" << std::endl;
+	
+	std::string ucInfo = AveDiffraction::unitCellDesc(ave->getAverageFFT());
+
+	f << "\tAverage unit cell: " << ucInfo << std::endl;
 
 	f.close();
 }
