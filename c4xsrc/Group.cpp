@@ -466,3 +466,23 @@ Group::~Group()
 		_topGroup = NULL;
 	}
 }
+
+void Group::averageRs(double *rwork, double *rfree, 
+                      double *swork, double *sfree)
+{
+	CorrelData cd = empty_CD();
+
+	for (size_t i = 0; i < mtzCount(); i++)
+	{
+		MtzFile *file = getMtzFile(i);
+		
+		if (file->isDead())
+		{
+			continue;
+		}
+		
+		add_to_CD(&cd, file->getRWork(), file->getRFree());
+	}
+	
+	means_stdevs_CD(cd, rwork, rfree, swork, sfree);
+}

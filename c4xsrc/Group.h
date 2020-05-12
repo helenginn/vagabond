@@ -178,6 +178,8 @@ public:
 	
 	vec3 getCentre();
 	AverageSet *getWorkingSet();
+	void averageRs(double *rwork, double *rfree,
+	               double *swork, double *sfree);
 	
 	void useAverageGroup(WhichGroup which)
 	{
