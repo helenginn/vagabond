@@ -92,6 +92,7 @@ bool Output::prepCluster(Group *ave)
 	createPanDDAFile(pandda);
 	
 	createNotes(ave, path + "/notes.txt");
+	createSQL(ave, path);
 	
 	ave->setExported(true);
 	return true;

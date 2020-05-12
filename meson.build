@@ -240,6 +240,7 @@ if (maria_dep.found())
 c4xsrc += ['c4xsrc/ClusterListSQL.cpp',
 'c4xsrc/SQLCredentials.cpp', 
 'c4xsrc/SQLInput.cpp', 
+'c4xsrc/OutputSQL.cpp', 
 'c4xsrc/Query.cpp' ]
 
 headers += [
@@ -252,6 +253,7 @@ c4xdeps += maria_dep
 else
 
 c4xsrc += 'c4xsrc/ClusterListNoSQL.cpp'
+c4xsrc += 'c4xsrc/OutputNoSQL.cpp'
 endif
 
 moc_cluster4x = qt5.preprocess(moc_headers : headers,

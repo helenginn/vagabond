@@ -16,25 +16,8 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster4x__Output__
-#define __cluster4x__Output__
+#include "Output.h"
 
-#include <string>
-
-class Group;
-
-class Output
+void Output::createSQL(Group *ave, std::string path)
 {
-public:
-	Output();
-	
-	bool prepCluster(Group *ave);
-
-private:
-	void createPanDDAFile(std::string file);
-	void createNotes(Group *ave, std::string file);
-	void createSQL(Group *ave, std::string file);
-
-};
-
-#endif
+}
