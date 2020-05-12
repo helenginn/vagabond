@@ -65,7 +65,7 @@ void Output::createSQL(Group *ave, std::string path)
 		f << "SELECT cluster_id, " << r_id << " FROM Clusters WHERE ";
 		f << "(folder_path = '" << path << "')" << std::endl;
 		f << "AND NOT EXISTS" << std::endl;
-		f << "SELECT 1 FROM Clusters JOIN Cluster_Members ON" << std::endl;
+		f << "(SELECT 1 FROM Clusters JOIN Cluster_Members ON" << std::endl;
 		f << "Clusters.cluster_id = Cluster_Members.cluster_id" << std::endl;
 		f << "WHERE folder_path = '" << path << "' AND refinement_id = ";
 		f << r_id << ");" << std::endl;
