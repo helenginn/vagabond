@@ -59,5 +59,9 @@ double AveCAlpha::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 
 vec3 AveCAlpha::getCentre()
 {
+	if (!_quick)
+	{
+		return empty_vec3();
+	}
 	return _quick->getCentre();
 }
