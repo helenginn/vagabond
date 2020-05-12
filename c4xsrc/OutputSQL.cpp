@@ -36,11 +36,40 @@ void Output::createSQL(Group *ave, std::string path)
 	
 	time_t t;
 	time(&t);
+	
+	double rwork, rfree, swork, sfree;
+	ave->averageRs(&rwork, &rfree, &swork, &sfree);
+	
+	VagFFTPtr fft = ave->getAverageFFT();
+	
+	std::vector<double> uc = fft->getUnitCell();
 
 	f << "INSERT INTO Clusters" << std::endl;
-	f << "(analysis_time, folder_path)" << std::endl;
+	f << "(analysis_time, folder_path, average_rwork, average_rfree, "\
+	"average_a, average_b, average_c, "\
+	"average_alpha, average_beta, average_gamma) " << std::endl;
+
+	/* analysis time */
 	f << "SELECT FROM_UNIXTIME(" << i_to_str(t) << "), ";
-	f << "'" << path << "'" << std::endl;
+	/* folder path */
+	f << "'" << path << "', ";
+	/* average Rwork */
+	f << f_to_str(rwork, 3) + ", ";
+	/* average Rfree */
+	f << f_to_str(rfree, 3) + ", ";
+	/* average uc-a */
+	f << f_to_str(uc[0], 3) + ", ";
+	/* average uc-b */
+	f << f_to_str(uc[1], 3) + ", ";
+	/* average uc-c */
+	f << f_to_str(uc[2], 3) + ", ";
+	/* average uc-alpha */
+	f << f_to_str(uc[3], 3) + ", ";
+	/* average uc-beta */
+	f << f_to_str(uc[4], 3) + ", ";
+	/* average uc-gamma */
+	f << f_to_str(uc[5], 3) << std::endl;
+
 	f << "WHERE NOT EXISTS" << std::endl;
 	f << "(SELECT 1 FROM Clusters WHERE folder_path = '" << path << "');";
 	f << std::endl;
