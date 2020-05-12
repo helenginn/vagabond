@@ -119,6 +119,7 @@ void Output::createNotes(Group *ave, std::string file)
 	}
 	
 	double mean_rwork, mean_rfree, stdev_rwork, stdev_rfree;
+	ave->averageRs(&mean_rwork, &mean_rfree, &stdev_rwork, &stdev_rfree);
 
 	f << "Notes for cluster:" << std::endl;
 	f << "\tNo. datasets: " << total << std::endl;
