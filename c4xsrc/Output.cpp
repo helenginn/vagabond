@@ -104,7 +104,6 @@ void Output::createNotes(Group *ave, std::string file)
 	f.open(file);
 	int dead = 0;
 	int total = 0;
-	CorrelData cd = empty_CD();
 
 	for (size_t i = 0; i < ave->mtzCount(); i++)
 	{
@@ -116,15 +115,11 @@ void Output::createNotes(Group *ave, std::string file)
 			continue;
 		}
 		
-		add_to_CD(&cd, file->getRWork(), file->getRFree());
 		total++;
 	}
 	
 	double mean_rwork, mean_rfree, stdev_rwork, stdev_rfree;
 
-	means_stdevs_CD(cd, &mean_rwork, &mean_rfree, 
-	                &stdev_rwork, &stdev_rfree);
-	
 	f << "Notes for cluster:" << std::endl;
 	f << "\tNo. datasets: " << total << std::endl;
 	f << "\tNo. discarded dead sets: " << dead << std::endl;
