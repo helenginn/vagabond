@@ -29,6 +29,7 @@
 #include <QIcon>
 #include <iostream>
 
+#include "PlotView.h"
 #include "FileReader.h"
 #include "Screen.h"
 #include "SelectionWindow.h"
@@ -61,9 +62,9 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 	_tabs = NULL;
 	_correlLabel = NULL;
 	_correlImage = NULL;
-	_graph = NULL;
-	_keeper = NULL;
-	_scroll = NULL;
+	_svdView = NULL;
+	_ucView = NULL;
+	_group = NULL;
 	_newSel = NULL;
 	_toggleDead = NULL;
 	_markSele = NULL;
@@ -128,56 +129,44 @@ void Screen::resizeEvent(QResizeEvent *e)
 			                           _tabs->height());
 		}
 
-		if (_graph)
+		if (_svdView)
 		{
-			int axh = 60;
-			
-			if (_keeper)
-			{
-				_keeper->setGeometry(0, axh, _tabs->width(), 
-				                     _tabs->height() - axh);
-			}
-			
-			if (_selection)
-			{
-				_selection->setGeometry(-2, axh - 2, _tabs->width() + 2, 
-				                        _tabs->height() - axh);
-			}
-			
-			if (_scroll)
-			{
-				_scroll->setGeometry(0, 0, _tabs->width(), axh);
-			}
+			_svdView->resizeEvent(e);
+		}
 
-			if (_newSel)
-			{
-				_newSel->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
-				                     _newSel->y(), RIGHT_VIEW_WIDTH - 20, 40);
+		if (_ucView)
+		{
+			_ucView->resizeEvent(e);
+		}
 
-				_markSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-				                       _markSele->y(), RIGHT_VIEW_WIDTH - 20,
-				                       40);
-				_unmarkSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-										 _unmarkSele->y(), RIGHT_VIEW_WIDTH -
-										                   20, 40);
+		if (_newSel)
+		{
+			_newSel->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
+			                     _newSel->y(), RIGHT_VIEW_WIDTH - 20, 40);
 
-				_invertSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-				                         _invertSele->y(), RIGHT_VIEW_WIDTH -
-				                         20, 40);
+			_markSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+			                       _markSele->y(), RIGHT_VIEW_WIDTH - 20,
+			                       40);
+			_unmarkSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+			                         _unmarkSele->y(), RIGHT_VIEW_WIDTH -
+			                         20, 40);
 
-				_deadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
-				                       _deadSele->y(), RIGHT_VIEW_WIDTH - 20,
-				                       40);
-				_undeadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-				                         _undeadSele->y(), RIGHT_VIEW_WIDTH -
-				                         20, 40);
+			_invertSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+			                         _invertSele->y(), RIGHT_VIEW_WIDTH -
+			                         20, 40);
 
-				_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-				                     h - 50, RIGHT_VIEW_WIDTH - 20, 40);
+			_deadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
+			                       _deadSele->y(), RIGHT_VIEW_WIDTH - 20,
+			                       40);
+			_undeadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+			                         _undeadSele->y(), RIGHT_VIEW_WIDTH -
+			                         20, 40);
 
-				_images->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-				                     h - 100, RIGHT_VIEW_WIDTH - 20, 40);
-			}
+			_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+			                     h - 50, RIGHT_VIEW_WIDTH - 20, 40);
+
+			_images->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+			                     h - 100, RIGHT_VIEW_WIDTH - 20, 40);
 		}
 
 		if (_toggleDead)
@@ -343,6 +332,17 @@ void Screen::addCorrelImage(Group *ave)
 	_bin.push_back((QWidget **)&_correlLabel);
 }
 
+void Screen::addUnitCellExplorer(Group *ave)
+{
+	_ucView = new PlotView(PlotUnitCell, this);
+	_tabs->addTab(_ucView, "Unit cell explorer");
+
+	_ucView->setScreen(this);
+	_ucView->setup(ave);
+
+	_bin.push_back((QWidget **)&_ucView);
+}
+
 void Screen::addAxisExplorer(Group *ave)
 {
 	if (!ave->getCorrelMatrix())
@@ -350,32 +350,13 @@ void Screen::addAxisExplorer(Group *ave)
 		return;
 	}
 
-	_graph = new QWidget(this);
-	_tabs->addTab(_graph, "Axis explorer");
+	_svdView = new PlotView(PlotSVD, this);
+	_tabs->addTab(_svdView, "Axis explorer");
 
-	_keeper = new KeeperGL(_graph);
-	_keeper->addAxes();
-	_keeper->addSVDPoints(ave);
+	_svdView->setScreen(this);
+	_svdView->setup(ave);
 
-	GLPoint *points = _keeper->getPoints();
-
-	connect(points, &GLPoint::updateSelection,
-	        this, &Screen::refreshSelection);
-
-	_selection = new SelectionWindow(_graph, _keeper);
-	_selection->setPoints(points);
-	_selection->show();
-	_selection->setFocusPolicy(Qt::StrongFocus);
-
-	_scroll = new AxisScroll(_graph);
-	_scroll->setGroup(ave);
-	_scroll->setPoints(points);
-	_scroll->makeLayout();
-
-	_bin.push_back((QWidget **)&_graph);
-	_bin.push_back((QWidget **)&_scroll);
-	_bin.push_back((QWidget **)&_selection);
-	_bin.push_back((QWidget **)&_keeper);
+	_bin.push_back((QWidget **)&_svdView);
 }
 
 void Screen::addCAlphaView()
@@ -463,6 +444,8 @@ void Screen::displaySingle(MtzFFTPtr fft)
 
 void Screen::displayResults(Group *ave)
 {
+	_group = ave;
+
 	if (_tabs != NULL)
 	{
 		disconnect(_tabs, &QTabWidget::currentChanged, 
@@ -487,6 +470,8 @@ void Screen::displayResults(Group *ave)
 
 	addCAlphaView();
 	_cAlphaKeeper->addCAlphaView(ave);
+
+	addUnitCellExplorer(ave);
 
 	int top = 10;
 
@@ -591,22 +576,20 @@ void Screen::displayResults(Group *ave)
 void Screen::markSelection()
 {
 	bool mark = (QObject::sender() == _markSele);
-	Group *ave = _keeper->getGroup();
-	ave->setMarked(mark);
+	_group->setMarked(mark);
 	refreshSelection();
 }
 
 void Screen::killSelection()
 {
 	bool dead = (QObject::sender() == _deadSele);
-	Group *ave = _keeper->getGroup();
-	ave->setDead(dead);
+	_group->setDead(dead);
 	refreshSelection();
 }
 
 void Screen::newSelection()
 {
-	std::vector<MtzFFTPtr> mtzs = _keeper->getMtzsFromSelection();
+	std::vector<MtzFFTPtr> mtzs = _group->getMtzsFromSelection();
 	_list->makeGroup(mtzs, true);
 }
 
@@ -634,9 +617,14 @@ void Screen::refreshSelection()
 		relinkPixmap();
 	}
 	
-	if (_keeper)
+	if (_svdView)
 	{
-		_keeper->getPoints()->repopulate();
+		_svdView->keeper()->getPlot()->repopulate();
+	}
+	
+	if (_ucView)
+	{
+		_ucView->keeper()->getPlot()->repopulate();
 	}
 	
 	if (_cAlphaKeeper)

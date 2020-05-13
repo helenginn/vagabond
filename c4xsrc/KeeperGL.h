@@ -32,7 +32,7 @@ class GLAxis;
 class QLabel;
 class HKLView;
 class CAlphaView;
-class GLPoint;
+class Plot3D;
 class GLObject;
 class Group;
 
@@ -46,6 +46,7 @@ public:
 	void preparePanels(int n);
 	void addAxes();
 	void addSVDPoints(Group *ave);
+	void addUCPlot(Group *ave);
 	void addHKLView(VagFFTPtr fft, double scale);
 	void addCAlphaView(MtzFile *file, vec3 centre);
 	void addCAlphaView(Group *ave);
@@ -73,9 +74,9 @@ public:
 		return _ave;
 	}
 	
-	GLPoint *getPoints()
+	Plot3D *getPlot()
 	{
-		return _points;
+		return _plot;
 	}
 	
 	CAlphaView *getCAlphaView()
@@ -94,9 +95,6 @@ public:
 		_model = mat;
 		std::cout << mat4x4_desc(mat) << std::endl;
 	}
-
-	std::vector<MtzFFTPtr> getMtzsFromSelection();
-	std::vector<MtzFFTPtr> getMtzs();
 
 	virtual void mouseMoveEvent(QMouseEvent *e);
 	virtual void mousePressEvent(QMouseEvent *e);
@@ -117,7 +115,7 @@ private:
 	mat4x4 _model;
 	mat4x4 *_store;
 	std::vector<GLAxis *> _axes;
-	GLPoint *_points;
+	Plot3D *_plot;
 	HKLView *_hklView;
 	CAlphaView *_cAlphaView;
 	QLabel *_rValues;

@@ -1,4 +1,4 @@
-// clusterxxxx
+// cluster4x
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,44 +16,22 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#include "MtzFile.h"
-#include <QFont>
-#include "QuickAtoms.h"
+#ifndef __cluster4x__UCPlot__
+#define __cluster4x__UCPlot__
 
-MtzFile::MtzFile(std::string filename)
+#include "Plot3D.h"
+
+class UCPlot : public Plot3D
 {
-	_filename = filename;
-	_mark = false;
-	_sele = false;
-	_dead = false;
-	_quickAtoms = new QuickAtoms(this);
-}
+public:
+	UCPlot();
+	
+	virtual void populate();
+	virtual size_t axisCount();
+	virtual std::string axisLabel(int i);
+protected:
 
-void MtzFile::recolourVertex(Vertex *v, bool fullDead)
-{
-	v->color[0] = 0;
-	v->color[1] = 0;
-	v->color[2] = 0;
+};
 
-	if (isDead())
-	{
-		v->color[0] = 200. / 255.;
-		v->color[1] = 200. / 255.;
-		v->color[2] = 200. / 255.;
-		
-		if (fullDead)
-		{
-			v->color[3] = 0.;
-		}
-	}
-	if (isSelected())
-	{
-		v->color[0] = 200. / 255.;
-		v->color[1] = 200. / 255.;
-	}
-	if (isMarked())
-	{
-		v->color[0] = 255 / 255;
-		v->color[1] = 0;
-	}
-}
+
+#endif

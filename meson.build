@@ -194,7 +194,8 @@ headers = [
 'c4xsrc/CAlphaView.h', 
 'c4xsrc/HKLView.h', 
 'c4xsrc/FolderInput.h', 
-'c4xsrc/GLPoint.h', 
+'c4xsrc/Plot3D.h', 
+'c4xsrc/PlotView.h', 
 'c4xsrc/Screen.h', 
 'c4xsrc/SelectionWindow.h', 
 'c4xsrc/KeeperGL.h', 
@@ -222,10 +223,13 @@ c4xsrc = [
 'c4xsrc/MatrixView.cpp', 
 'c4xsrc/MtzFile.cpp', 
 'c4xsrc/MtzFFT.cpp', 
+'c4xsrc/Plot3D.cpp', 
+'c4xsrc/PlotView.cpp', 
 'c4xsrc/QuickAtoms.cpp',
 'c4xsrc/Output.cpp',
 'c4xsrc/Screen.cpp', 
-'c4xsrc/SelectionWindow.cpp'
+'c4xsrc/SelectionWindow.cpp',
+'c4xsrc/UCPlot.cpp'
 ]
 
 
@@ -261,7 +265,7 @@ moc_cluster4x = qt5.preprocess(moc_headers : headers,
 		moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'])
 
 executable('cluster4x', c4xsrc, moc_cluster4x,
-cpp_args: ['-std=c++11'], dependencies : c4xdeps, install: true)
+cpp_args: ['-std=c++11', '-Wall'], dependencies : c4xdeps, install: true)
 else
 	message('QT5 not found, so not building cluster4x.')
 endif

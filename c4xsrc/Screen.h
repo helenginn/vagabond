@@ -32,9 +32,9 @@ class SelectionWindow;
 class QLabel;
 class ClusterList;
 class Group;
-class AxisScroll;
 class MatrixView;
 class KeeperGL;
+class PlotView;
 
 typedef struct
 {
@@ -78,6 +78,7 @@ private:
 	void binTab();
 	void addCorrelImage(Group *ave);
 	void addAxisExplorer(Group *ave);
+	void addUnitCellExplorer(Group *ave);
 	void addCAlphaView();
 	void addHKLView(VagFFTPtr fft, std::string filename = "");
 
@@ -87,15 +88,15 @@ private:
 	QGraphicsScene *_scene;
 	SelectionWindow *_selection;
 	MatrixView *_correlImage;
-	KeeperGL *_keeper;
+	PlotView *_svdView;
+	PlotView *_ucView;
+	Group *_group;
 	KeeperGL *_hklKeeper;
 	KeeperGL *_cAlphaKeeper;
 	CorrelLabel *_correlLabel;
 	QTabWidget *_tabs;
-	QWidget *_graph;
 	QWidget *_hkl;
 	QWidget *_cAlpha;
-	AxisScroll *_scroll;
 	QTreeWidget *_inputTree;
 	QToolBar *_toolBar;
 	QPushButton *_newSel;

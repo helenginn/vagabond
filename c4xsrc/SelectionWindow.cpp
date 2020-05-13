@@ -19,23 +19,25 @@
 #include <QKeyEvent>
 #include <iostream>
 #include "SelectionWindow.h"
-#include "GLPoint.h"
+#include "Plot3D.h"
 #include "KeeperGL.h"
 
 SelectionWindow::SelectionWindow(QWidget *parent, KeeperGL *keeper)
 : QGraphicsView(parent)
 {
 	_keeper = keeper;
+	_plot = NULL;
+	_selectMode = false;
+	_removeMode = false;
+	_startX = -1;
+	_startY = -1;
+
 	setGeometry(0, 0, parent->width(), parent->height());
 	QBrush brush(Qt::transparent);
 	setBackgroundBrush(brush);
 	setStyleSheet("background-color: transparent;");
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-	_selectMode = false;
-	_removeMode = false;
-	_startX = -1;
-	_startY = -1;
 	QGraphicsScene *scene = new QGraphicsScene(this);
 	scene->setSceneRect(0, 0, width(), height());
 	setScene(scene);
@@ -87,7 +89,7 @@ void SelectionWindow::mouseReleaseEvent(QMouseEvent *e)
 		add = -1;
 	}
 
-	_points->selectInWindow(x1, y1, x2, y2, add);
+	_plot->selectInWindow(x1, y1, x2, y2, add);
 
 	scene()->clear();
 

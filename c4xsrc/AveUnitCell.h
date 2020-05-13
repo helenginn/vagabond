@@ -29,6 +29,11 @@ public:
 	AveUnitCell(Group *group);
 
 	virtual void calculate();
+	
+	std::vector<double> getUnitCell()
+	{
+		return _ucs;
+	}
 private:
 	virtual double findCorrelation(MtzFFTPtr one, MtzFFTPtr two);
 

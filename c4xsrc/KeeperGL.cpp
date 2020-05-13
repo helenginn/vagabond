@@ -20,6 +20,7 @@
 #include "KeeperGL.h"
 #include "GLAxis.h"
 #include "GLPoint.h"
+#include "UCPlot.h"
 #include "HKLView.h"
 #include "CAlphaView.h"
 #include "MtzFFT.h"
@@ -150,29 +151,9 @@ KeeperGL::KeeperGL(QWidget *p) : QOpenGLWidget(p)
 	_model = make_mat4x4();
 	_rotMat = make_mat4x4();
 	setGeometry(0, 0, p->width(), p->height());
-	_points = NULL;
+	_plot = NULL;
 	_hklView = NULL;
 	setupCamera();
-}
-
-std::vector<MtzFFTPtr> KeeperGL::getMtzs()
-{
-	return _ave->mtzs();
-}
-
-std::vector<MtzFFTPtr> KeeperGL::getMtzsFromSelection()
-{
-	std::vector<MtzFFTPtr> mtzs;
-	for (size_t i = 0; i < _ave->mtzCount(); i++)
-	{
-		MtzFile *file = _ave->getMtz(i)->getMtzFile();
-		if (file->isSelected())
-		{
-			mtzs.push_back(_ave->getMtz(i));
-		}
-	}
-	
-	return mtzs;
 }
 
 void KeeperGL::addAxes()
@@ -194,10 +175,21 @@ void KeeperGL::addAxes()
 void KeeperGL::addSVDPoints(Group *ave)
 {
 	_ave = ave;
-	_points = new GLPoint();
-	_points->setKeeper(this);
-	_points->setGroup(ave);
-	_renderMe.push_back(_points);
+	delete _plot;
+	_plot = new GLPoint();
+	_plot->setKeeper(this);
+	_plot->setGroup(ave);
+	_renderMe.push_back(_plot);
+}
+
+void KeeperGL::addUCPlot(Group *ave)
+{
+	_ave = ave;
+	delete _plot;
+	_plot = new UCPlot();
+	_plot->setKeeper(this);
+	_plot->setGroup(ave);
+	_renderMe.push_back(_plot);
 }
 
 void KeeperGL::finishCAlphaView()
@@ -333,7 +325,7 @@ void KeeperGL::paintGL()
 void KeeperGL::setGroup(Group *ave)
 {
 	_ave = ave;
-	_points->setGroup(ave);
+	_plot->setGroup(ave);
 }
 
 void KeeperGL::saveImage(std::string filename)

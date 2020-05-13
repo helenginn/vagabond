@@ -22,7 +22,7 @@
 #include <QScrollArea>
 
 class Group;
-class GLPoint;
+class Plot3D;
 class QPushButton;
 class QWidget;
 
@@ -32,14 +32,9 @@ Q_OBJECT
 public:
 	AxisScroll(QWidget *parent);
 
-	void setGroup(Group *ave)
+	void setPlot(Plot3D *plot)
 	{
-		_ave = ave;
-	}
-
-	void setPoints(GLPoint *points)
-	{
-		_points = points;
+		_plot = plot;
 	}
 	
 	void makeLayout();
@@ -48,8 +43,7 @@ public slots:
 
 private:
 	std::vector<QPushButton *> _axes;
-	Group *_ave;
-	GLPoint *_points;
+	Plot3D *_plot;
 	QWidget *_viewport;
 
 };

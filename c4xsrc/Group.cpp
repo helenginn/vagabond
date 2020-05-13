@@ -499,3 +499,23 @@ void Group::averageRs(double *rwork, double *rfree,
 	
 	means_stdevs_CD(cd, rwork, rfree, swork, sfree);
 }
+
+std::vector<MtzFFTPtr> Group::getMtzsFromSelection()
+{
+	std::vector<MtzFFTPtr> mtzs;
+	for (size_t i = 0; i < mtzCount(); i++)
+	{
+		MtzFile *file = getMtz(i)->getMtzFile();
+		if (file->isSelected())
+		{
+			mtzs.push_back(getMtz(i));
+		}
+	}
+	
+	return mtzs;
+}
+
+std::vector<double> Group::getUnitCell()
+{
+	return getWorkingSet()->unitCell->getUnitCell();
+}

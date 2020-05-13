@@ -1,4 +1,4 @@
-// clusterxxxx
+// cluster4x
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,44 +16,65 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#include <string>
+#include "UCPlot.h"
+#include "Group.h"
+#include "MtzFFT.h"
 #include "MtzFile.h"
-#include <QFont>
-#include "QuickAtoms.h"
+#include "KeeperGL.h"
+#include <libsrc/FileReader.h>
 
-MtzFile::MtzFile(std::string filename)
+UCPlot::UCPlot() : Plot3D()
 {
-	_filename = filename;
-	_mark = false;
-	_sele = false;
-	_dead = false;
-	_quickAtoms = new QuickAtoms(this);
+
 }
 
-void MtzFile::recolourVertex(Vertex *v, bool fullDead)
+void UCPlot::populate()
 {
-	v->color[0] = 0;
-	v->color[1] = 0;
-	v->color[2] = 0;
+	std::vector<double> ucs = _ave->getUnitCell();
 
-	if (isDead())
+	for (size_t i = 0; i < _ave->mtzCount(); i++)
 	{
-		v->color[0] = 200. / 255.;
-		v->color[1] = 200. / 255.;
-		v->color[2] = 200. / 255.;
+		std::vector<double> uc = _ave->getMtz(i)->getUnitCell();
 		
-		if (fullDead)
+		for (int j = 0; j < 6; j++)
 		{
-			v->color[3] = 0.;
+			uc[j] -= ucs[j];
 		}
+
+		vec3 point = make_vec3(uc[_a], uc[_b], uc[_c]);
+		addPoint(point);
 	}
-	if (isSelected())
+}
+
+size_t UCPlot::axisCount()
+{
+	return 6;
+}
+
+std::string UCPlot::axisLabel(int i)
+{
+	switch (i)
 	{
-		v->color[0] = 200. / 255.;
-		v->color[1] = 200. / 255.;
-	}
-	if (isMarked())
-	{
-		v->color[0] = 255 / 255;
-		v->color[1] = 0;
+		case 0:
+		return "a";
+
+		case 1:
+		return "b";
+
+		case 2:
+		return "c";
+
+		case 3:
+		return "alpha";
+
+		case 4:
+		return "beta";
+
+		case 5:
+		return "gamma";
+		
+		default:
+		return "?";
 	}
 }

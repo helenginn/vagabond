@@ -20,14 +20,13 @@
 #include "Group.h"
 #include "GLPoint.h"
 #include <QLabel>
-#include <libsrc/FileReader.h>
 #include <QPushButton>
 #include <iostream>
 
 AxisScroll::AxisScroll(QWidget *parent) : QScrollArea(parent)
 {
-	_points = NULL;
-	_ave = NULL;
+	_plot = NULL;
+	_viewport = NULL;
 
 	setGeometry(0, 0, parent->width(), 60);
 	setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
@@ -35,26 +34,28 @@ AxisScroll::AxisScroll(QWidget *parent) : QScrollArea(parent)
 
 void AxisScroll::makeLayout()
 {
-	if (_ave == NULL)
-	{
-		std::cout << "!!!" << std::endl;
-		return;
-	}
-	
 	_viewport = new QWidget(this);
-	_viewport->setGeometry(0, 0, 40 * (_ave->mtzCount() + 1), 60);
+	int w = 60 * (_plot->axisCount() + 1);
+	
+	if (width() > w)
+	{
+		w = width();
+	}
+
+	_viewport->setGeometry(0, 0, 60 * (_plot->axisCount() + 1), 60);
+	
 	
 	QLabel *l = new QLabel("Axes:", _viewport);
 	l->setGeometry(0, 0, 60, 40);
 	l->show();
 
 	int left = 60;
-	for (size_t i = 0; i < _ave->mtzCount(); i++)
+	for (size_t i = 0; i < _plot->axisCount(); i++)
 	{
 		QPushButton *b = new QPushButton(_viewport);
-		double w = _ave->getDiagW(i);
+		std::string str = _plot->axisLabel(i);
 
-		b->setText(QString::fromStdString(f_to_str(w, 1)));
+		b->setText(QString::fromStdString(str));
 		b->setCheckable(true);
 		b->setGeometry(left, 0, 60, 40);
 		b->show();
@@ -93,6 +94,6 @@ void AxisScroll::pressed()
 		return;
 	}
 	
-	_points->setAxes(checked[0], checked[1], checked[2]);
-	_points->repopulate();
+	_plot->setAxes(checked[0], checked[1], checked[2]);
+	_plot->repopulate();
 }

@@ -1,4 +1,4 @@
-// clusterxxxx
+// cluster4x
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,44 +16,52 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#include "MtzFile.h"
-#include <QFont>
-#include "QuickAtoms.h"
+#ifndef __cluster4x__PlotView__
+#define __cluster4x__PlotView__
 
-MtzFile::MtzFile(std::string filename)
+#include <QWidget>
+
+typedef enum
 {
-	_filename = filename;
-	_mark = false;
-	_sele = false;
-	_dead = false;
-	_quickAtoms = new QuickAtoms(this);
-}
+	PlotSVD,
+	PlotUnitCell,
+} PlotType;
 
-void MtzFile::recolourVertex(Vertex *v, bool fullDead)
+class Screen;
+class Group;
+class KeeperGL;
+class AxisScroll;
+class SelectionWindow;
+
+class PlotView : public QWidget
 {
-	v->color[0] = 0;
-	v->color[1] = 0;
-	v->color[2] = 0;
+Q_OBJECT
+public:
+	PlotView(PlotType type, QWidget *parent);
+	
+	~PlotView();
 
-	if (isDead())
+	KeeperGL *keeper()
 	{
-		v->color[0] = 200. / 255.;
-		v->color[1] = 200. / 255.;
-		v->color[2] = 200. / 255.;
-		
-		if (fullDead)
-		{
-			v->color[3] = 0.;
-		}
+		return _keeper;
 	}
-	if (isSelected())
+	
+	void setScreen(Screen *scr)
 	{
-		v->color[0] = 200. / 255.;
-		v->color[1] = 200. / 255.;
+		_scr = scr;
 	}
-	if (isMarked())
-	{
-		v->color[0] = 255 / 255;
-		v->color[1] = 0;
-	}
-}
+
+	void setup(Group *grp);
+	virtual void resizeEvent(QResizeEvent *e);
+private:
+	KeeperGL *_keeper;
+	Screen *_scr;
+	PlotType _type;
+	AxisScroll *_scroll;
+	SelectionWindow *_selection;
+	
+	std::vector<QWidget *> _bin;
+
+};
+
+#endif

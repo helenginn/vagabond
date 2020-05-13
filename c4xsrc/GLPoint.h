@@ -19,50 +19,18 @@
 #ifndef __fuck_cov__GLPoint__
 #define __fuck_cov__GLPoint__
 
-#include "GLObject.h"
-#include "vec3.h"
+#include "Plot3D.h"
 
-class Group;
-class KeeperGL;
-
-class GLPoint : public QObject, public GLObject
+class GLPoint : public Plot3D
 {
-Q_OBJECT
 public:
 	GLPoint();
 	
-	void setGroup(Group *ave);
-	void addPoint(vec3 point);
-	virtual void initialisePrograms();
-	
-	void setAxes(int a, int b, int c)
-	{
-		_a = a;
-		_b = b;
-		_c = c;
-	}
-	
-	void setKeeper(KeeperGL *gl)
-	{
-		_keeper = gl;
-	}
+	virtual void populate();
+	virtual size_t axisCount();
+	virtual std::string axisLabel(int i);
+protected:
 
-	/* add 1 = add to selection
-	 * add 0 = replace selection
-	 * add -1 = remove from selection */
-	void selectInWindow(float x1, float y1, float x2, float y2,
-	                    int add);
-	void repopulate();
-signals:
-	void updateSelection();
-private:
-	Group *_ave;
-	KeeperGL *_keeper;
-	void recolour();
-	
-	int _a;
-	int _b;
-	int _c;
 };
 
 #endif

@@ -115,6 +115,8 @@ public:
 	void setMtzSelection(size_t i, bool val);
 	void flipMtzSelection(int i);
 	
+	std::vector<double> getUnitCell();
+	
 	MtzFFTPtr getMtz(int i)
 	{
 		return _mtzs[i];
@@ -154,6 +156,7 @@ public:
 	void drawAxes();
 	void updateText();
 	vec3 getPoint(int num, int a1, int a2, int a3);
+	std::vector<MtzFFTPtr> getMtzsFromSelection();
 	
 	MatrixView *getCorrelMatrix()
 	{

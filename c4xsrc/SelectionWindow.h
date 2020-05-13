@@ -22,7 +22,7 @@
 #include <QGraphicsView>
 
 class KeeperGL;
-class GLPoint;
+class Plot3D;
 
 class SelectionWindow : public QGraphicsView
 {
@@ -30,9 +30,9 @@ Q_OBJECT
 public:
 	SelectionWindow(QWidget *widget, KeeperGL *keeper);
 	
-	void setPoints(GLPoint *points)
+	void setPlot(Plot3D *plot)
 	{
-		_points = points;
+		_plot = plot;
 	}
 	
 	virtual void mouseMoveEvent(QMouseEvent *e);
@@ -44,7 +44,7 @@ public:
 	virtual void resizeEvent(QResizeEvent *e);
 private:
 	KeeperGL *_keeper;
-	GLPoint *_points;
+	Plot3D *_plot;
 
 	bool _selectMode;
 	bool _removeMode;
