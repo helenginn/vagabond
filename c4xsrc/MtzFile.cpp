@@ -79,11 +79,6 @@ void MtzFile::setColour(double r, double g, double b, double a)
 		return;
 	}
 	
-	if (!isSelected())
-	{
-		return;
-	}
-
 	_red = r;
 	_green = g;
 	_blue = b;

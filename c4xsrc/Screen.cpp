@@ -483,7 +483,7 @@ void Screen::displayResults(Group *ave)
 	connect(_deadSele, &QPushButton::clicked,
 	        this, &Screen::killSelection);
 
-	addSideButton((QWidget **)&_changeColour, "Recolour selected", &top);
+	addSideButton((QWidget **)&_changeColour, "Recolour all", &top);
 	{
 		QMenu *m = new QMenu(_changeColour);
 
