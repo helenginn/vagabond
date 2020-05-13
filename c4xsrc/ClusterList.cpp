@@ -469,6 +469,12 @@ void ClusterList::recipAverage()
 	_screen->updateToolbar(_lastAverage);
 }
 
+void ClusterList::unitCellAverage()
+{
+	_lastAverage->useAverageType(AveUC);
+	_screen->updateToolbar(_lastAverage);
+}
+
 void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs, bool withAve)
 {
 	if (mtzs.size() == 0)

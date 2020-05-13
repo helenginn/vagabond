@@ -59,6 +59,7 @@ public slots:
 	void topAverage();
 	void myAverage();
 
+	void unitCellAverage();
 	void recipAverage();
 	void pdbAverage();
 protected:

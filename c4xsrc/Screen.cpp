@@ -193,6 +193,7 @@ void Screen::updateToolbar(Group *grp)
 {
 	uses.amp->setChecked(false);
 	uses.ca->setChecked(false);
+	uses.uc->setChecked(false);
 
 	switch (grp->getType())
 	{
@@ -202,6 +203,10 @@ void Screen::updateToolbar(Group *grp)
 		
 		case AveCA:
 		uses.ca->setChecked(true);
+		break;
+		
+		case AveUC:
+		uses.uc->setChecked(true);
 		break;
 		
 		default:
@@ -245,6 +250,11 @@ void Screen::addToolBar()
 	uses.ca = m->addAction("Use C-alphas");
 	uses.ca->setCheckable(true);
 	connect(uses.ca, &QAction::triggered, _list, &ClusterList::pdbAverage);
+
+	uses.uc = m->addAction("Use unit cell");
+	uses.uc->setCheckable(true);
+	connect(uses.uc, &QAction::triggered, 
+	        _list, &ClusterList::unitCellAverage);
 
 	m->addSeparator();
 

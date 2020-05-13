@@ -40,6 +40,7 @@ typedef struct
 {
 	QAction *amp;
 	QAction *ca;
+	QAction *uc;
 	QAction *top;
 	QAction *orig;
 	QAction *self;

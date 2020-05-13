@@ -206,6 +206,7 @@ c4xsrc = [
 'c4xsrc/main.cpp', 
 'c4xsrc/AveCAlpha.cpp', 
 'c4xsrc/AveDiffraction.cpp', 
+'c4xsrc/AveUnitCell.cpp', 
 'c4xsrc/Average.cpp', 
 'c4xsrc/AxisScroll.cpp', 
 'c4xsrc/CAlphaView.cpp', 

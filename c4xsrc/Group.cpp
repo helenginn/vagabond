@@ -12,6 +12,7 @@
 #include "MatrixView.h"
 #include "AveDiffraction.h"
 #include "AveCAlpha.h"
+#include "AveUnitCell.h"
 
 Group *Group::_topGroup = NULL;
 
@@ -33,6 +34,7 @@ Group::Group(QTreeWidget *parent) : QTreeWidgetItem(parent)
 	_marked = false;
 	_mySet.recip = NULL;
 	_mySet.ca = NULL;
+	_mySet.unitCell = NULL;
 	
 	if (_topGroup == NULL)
 	{
@@ -72,6 +74,13 @@ void Group::calculateAllAverages(bool force)
 		delete _mySet.ca;
 		_mySet.ca = new AveCAlpha(this);
 		_mySet.ca->calculate();
+	}
+
+	if (force || _mySet.unitCell == NULL)
+	{
+		delete _mySet.unitCell;
+		_mySet.unitCell = new AveUnitCell(this);
+		_mySet.unitCell->calculate();
 	}
 }
 
@@ -244,6 +253,10 @@ void Group::findIntercorrelations()
 	else if (_type == AveCA)
 	{
 		working->ca->findIntercorrelations(this, _svdPtrs);
+	}
+	else if (_type == AveUC)
+	{
+		working->unitCell->findIntercorrelations(this, _svdPtrs);
 	}
 
 	size_t dims = _mtzs.size();

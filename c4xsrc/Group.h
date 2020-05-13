@@ -31,6 +31,7 @@ typedef enum
 {
 	AveDiff,
 	AveCA,
+	AveUC,
 } GroupType;
 
 typedef enum
@@ -69,11 +70,13 @@ class MatrixView;
 class MtzFile;
 class AveDiffraction;
 class AveCAlpha;
+class AveUnitCell;
 
 typedef struct
 {
 	AveDiffraction *recip;
 	AveCAlpha *ca;
+	AveUnitCell *unitCell;
 } AverageSet;
 
 
