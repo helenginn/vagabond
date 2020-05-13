@@ -45,8 +45,7 @@ public:
 	
 	void preparePanels(int n);
 	void addAxes();
-	void addSVDPoints(Group *ave);
-	void addUCPlot(Group *ave);
+	void addPlot(Group *ave, Plot3D *plot);
 	void addHKLView(VagFFTPtr fft, double scale);
 	void addCAlphaView(MtzFile *file, vec3 centre);
 	void addCAlphaView(Group *ave);

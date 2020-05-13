@@ -224,6 +224,7 @@ c4xsrc = [
 'c4xsrc/MtzFile.cpp', 
 'c4xsrc/MtzFFT.cpp', 
 'c4xsrc/Plot3D.cpp', 
+'c4xsrc/PlotR.cpp',
 'c4xsrc/PlotView.cpp', 
 'c4xsrc/QuickAtoms.cpp',
 'c4xsrc/Output.cpp',

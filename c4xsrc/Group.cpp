@@ -14,6 +14,9 @@
 #include "AveCAlpha.h"
 #include "AveUnitCell.h"
 
+#include <QObject>
+#include <QColor>
+
 Group *Group::_topGroup = NULL;
 
 Group::Group(QTreeWidget *parent) : QTreeWidgetItem(parent)
@@ -400,6 +403,11 @@ void Group::setMarked(bool marked)
 
 void Group::setDead(bool dead)
 {
+	if (_topGroup == this)
+	{
+		return;
+	}
+
 	for (size_t i = 0; i < _mtzs.size(); i++)
 	{
 		MtzFile *file = _mtzs[i]->getMtzFile();
@@ -518,4 +526,13 @@ std::vector<MtzFFTPtr> Group::getMtzsFromSelection()
 std::vector<double> Group::getUnitCell()
 {
 	return getWorkingSet()->unitCell->getUnitCell();
+}
+
+void Group::changeColour(double r, double b, double g, double a)
+{
+	for (size_t i = 0; i < mtzCount(); i++)
+	{
+		MtzFile *file = getMtz(i)->getMtzFile();
+		file->setColour(r, g, b, a);
+	}
 }

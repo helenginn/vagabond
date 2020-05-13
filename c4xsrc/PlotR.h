@@ -16,53 +16,19 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster4x__PlotView__
-#define __cluster4x__PlotView__
+#ifndef __cluster4x__PlotR__
+#define __cluster4x__PlotR__
 
-#include <QWidget>
+#include "Plot3D.h"
 
-typedef enum
+class PlotR : public Plot3D
 {
-	PlotSVD,
-	PlotUnitCell,
-	PlotRFactors,
-} PlotType;
-
-class Screen;
-class Group;
-class KeeperGL;
-class AxisScroll;
-class SelectionWindow;
-
-class PlotView : public QWidget
-{
-Q_OBJECT
 public:
-	PlotView(PlotType type, QWidget *parent);
+	PlotR();
 	
-	~PlotView();
-
-	KeeperGL *keeper()
-	{
-		return _keeper;
-	}
-	
-	void setScreen(Screen *scr)
-	{
-		_scr = scr;
-	}
-
-	void setup(Group *grp);
-	virtual void resizeEvent(QResizeEvent *e);
-private:
-	Screen *_scr;
-	PlotType _type;
-
-	KeeperGL *_keeper;
-	AxisScroll *_scroll;
-	SelectionWindow *_selection;
-	
-	std::vector<QWidget *> _bin;
+	virtual void populate();
+	virtual size_t axisCount();
+	virtual std::string axisLabel(int i);
 
 };
 

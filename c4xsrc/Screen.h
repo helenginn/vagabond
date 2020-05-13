@@ -20,6 +20,7 @@
 #include <libsrc/mat4x4.h>
 #include <libsrc/FFT.h>
 #include "MtzFFTPtr.h"
+#include "PlotView.h"
 
 class CorrelLabel;
 class MtzFile;
@@ -71,16 +72,20 @@ public slots:
 	void markSelection();
 	void removeCluster();
 	void refreshSelection();
+	void changeColour();
 	void killSelection();
 private:
 	void relinkPixmap();
 	void addToolBar();
 	void binTab();
 	void addCorrelImage(Group *ave);
-	void addAxisExplorer(Group *ave);
-	void addUnitCellExplorer(Group *ave);
+	void addPlotView(PlotView **view, Group *ave,
+                         std::string title, PlotType type);
+
 	void addCAlphaView();
 	void addHKLView(VagFFTPtr fft, std::string filename = "");
+
+	void addSideButton(QWidget **buttPtr, std::string title, int *top);
 
 	int _currIndex;
 	double _scale;
@@ -89,6 +94,7 @@ private:
 	MatrixView *_correlImage;
 	PlotView *_svdView;
 	PlotView *_ucView;
+	PlotView *_rView;
 	Group *_group;
 	KeeperGL *_hklKeeper;
 	KeeperGL *_cAlphaKeeper;
@@ -99,11 +105,10 @@ private:
 	QTreeWidget *_inputTree;
 	QToolBar *_toolBar;
 	QPushButton *_newSel;
-	QPushButton *_markSele;
-	QPushButton *_unmarkSele;
-	QPushButton *_deadSele;
-	QPushButton *_undeadSele;
 	QPushButton *_invertSele;
+	QPushButton *_markSele;
+	QPushButton *_deadSele;
+	QPushButton *_changeColour;
 	QPushButton *_export;
 	QPushButton *_images;
 	QPushButton *_toggleDead;

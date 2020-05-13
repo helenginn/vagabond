@@ -147,6 +147,16 @@ public:
 	{
 		return _marked;
 	}
+	
+	bool isDead()
+	{
+		return _dead;
+	}
+	
+	bool isTopGroup()
+	{
+		return (this == _topGroup);
+	}
 
 	void setMarked(bool marked);
 	void setDead(bool dead);
@@ -197,6 +207,7 @@ public:
 		_type = type;
 	}
 
+	void changeColour(double r, double b, double g, double a);
 public slots:
 	void performAverage();
 	void performCluster();

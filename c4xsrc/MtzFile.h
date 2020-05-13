@@ -155,6 +155,8 @@ public:
 	{
 		return _rFree;
 	}
+	
+	void setColour(double r, double g, double b, double a);
 private:
 	std::string _filename;
 	std::string _pdbPath;
@@ -170,6 +172,11 @@ private:
 	
 	double _rWork;
 	double _rFree;
+	
+	double _red;
+	double _green;
+	double _blue;
+	double _alpha;
 };
 
 #endif

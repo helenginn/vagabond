@@ -27,6 +27,10 @@ MtzFile::MtzFile(std::string filename)
 	_sele = false;
 	_dead = false;
 	_quickAtoms = new QuickAtoms(this);
+	_red = 0;
+	_green = 0;
+	_blue = 0;
+	_alpha = -1;
 }
 
 void MtzFile::recolourVertex(Vertex *v, bool fullDead)
@@ -45,15 +49,43 @@ void MtzFile::recolourVertex(Vertex *v, bool fullDead)
 		{
 			v->color[3] = 0.;
 		}
+
+		return;
 	}
 	if (isSelected())
 	{
 		v->color[0] = 200. / 255.;
 		v->color[1] = 200. / 255.;
+		return;
 	}
-	if (isMarked())
+	if (_alpha > 0)
+	{
+		v->color[0] = _red;
+		v->color[1] = _green;
+		v->color[2] = _blue;
+		v->color[3] = 1;
+	}
+	else if (isMarked())
 	{
 		v->color[0] = 255 / 255;
 		v->color[1] = 0;
 	}
+}
+
+void MtzFile::setColour(double r, double g, double b, double a)
+{
+	if (isDead())
+	{
+		return;
+	}
+	
+	if (!isSelected())
+	{
+		return;
+	}
+
+	_red = r;
+	_green = g;
+	_blue = b;
+	_alpha = a;
 }

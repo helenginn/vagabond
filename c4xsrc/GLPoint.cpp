@@ -19,9 +19,6 @@
 #include <string>
 #include "GLPoint.h"
 #include "Group.h"
-#include "MtzFFT.h"
-#include "MtzFile.h"
-#include "KeeperGL.h"
 #include <libsrc/FileReader.h>
 
 GLPoint::GLPoint() : Plot3D()

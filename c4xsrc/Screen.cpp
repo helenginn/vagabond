@@ -24,12 +24,14 @@
 #include <QPushButton>
 #include <QMessageBox>
 #include <QMenu>
+#include <QVariant>
+#include <QColor>
 #include <QLabel>
 #include <QPlainTextEdit>
 #include <QIcon>
 #include <iostream>
+#include <iomanip>
 
-#include "PlotView.h"
 #include "FileReader.h"
 #include "Screen.h"
 #include "SelectionWindow.h"
@@ -64,11 +66,11 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 	_correlImage = NULL;
 	_svdView = NULL;
 	_ucView = NULL;
+	_rView = NULL;
 	_group = NULL;
 	_newSel = NULL;
 	_toggleDead = NULL;
 	_markSele = NULL;
-	_unmarkSele = NULL;
 	_invertSele = NULL;
 	_hkl = NULL;
 	_hklKeeper = NULL;
@@ -139,6 +141,11 @@ void Screen::resizeEvent(QResizeEvent *e)
 			_ucView->resizeEvent(e);
 		}
 
+		if (_rView)
+		{
+			_ucView->resizeEvent(e);
+		}
+
 		if (_newSel)
 		{
 			_newSel->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
@@ -147,9 +154,6 @@ void Screen::resizeEvent(QResizeEvent *e)
 			_markSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                       _markSele->y(), RIGHT_VIEW_WIDTH - 20,
 			                       40);
-			_unmarkSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                         _unmarkSele->y(), RIGHT_VIEW_WIDTH -
-			                         20, 40);
 
 			_invertSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                         _invertSele->y(), RIGHT_VIEW_WIDTH -
@@ -158,9 +162,6 @@ void Screen::resizeEvent(QResizeEvent *e)
 			_deadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
 			                       _deadSele->y(), RIGHT_VIEW_WIDTH - 20,
 			                       40);
-			_undeadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                         _undeadSele->y(), RIGHT_VIEW_WIDTH -
-			                         20, 40);
 
 			_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                     h - 50, RIGHT_VIEW_WIDTH - 20, 40);
@@ -332,31 +333,16 @@ void Screen::addCorrelImage(Group *ave)
 	_bin.push_back((QWidget **)&_correlLabel);
 }
 
-void Screen::addUnitCellExplorer(Group *ave)
+void Screen::addPlotView(PlotView **view, Group *ave, 
+                         std::string title, PlotType type)
 {
-	_ucView = new PlotView(PlotUnitCell, this);
-	_tabs->addTab(_ucView, "Unit cell explorer");
+	(*view) = new PlotView(type, this);
+	_tabs->addTab((*view), QString::fromStdString(title));
 
-	_ucView->setScreen(this);
-	_ucView->setup(ave);
+	(*view)->setScreen(this);
+	(*view)->setup(ave);
 
-	_bin.push_back((QWidget **)&_ucView);
-}
-
-void Screen::addAxisExplorer(Group *ave)
-{
-	if (!ave->getCorrelMatrix())
-	{
-		return;
-	}
-
-	_svdView = new PlotView(PlotSVD, this);
-	_tabs->addTab(_svdView, "Axis explorer");
-
-	_svdView->setScreen(this);
-	_svdView->setup(ave);
-
-	_bin.push_back((QWidget **)&_svdView);
+	_bin.push_back((QWidget **)&(*view));
 }
 
 void Screen::addCAlphaView()
@@ -432,6 +418,7 @@ void Screen::displaySingle(MtzFFTPtr fft)
 	_toggleDead = new QPushButton("Toggle dead", this);
 	_toggleDead ->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
 	                          RIGHT_VIEW_WIDTH - 20, 40);
+
 	connect(_toggleDead, &QPushButton::clicked,
 	        _list, &ClusterList::toggleDead);
 	_toggleDead->show();
@@ -456,6 +443,7 @@ void Screen::displayResults(Group *ave)
 
 	updateToolbar(ave);
 	binTab();
+
 	if (!ave->getCorrelMatrix())
 	{
 		return;
@@ -466,68 +454,68 @@ void Screen::displayResults(Group *ave)
 	resizeEvent(NULL);
 
 	addCorrelImage(ave);
-	addAxisExplorer(ave);
+	addPlotView(&_svdView, ave, "SVD explorer", PlotSVD);
 	std::string average = "Average";
 	addHKLView(ave->getAverageFFT(), average);
 
 	addCAlphaView();
 	_cAlphaKeeper->addCAlphaView(ave);
 
-	addUnitCellExplorer(ave);
+	addPlotView(&_ucView, ave, "Unit cells", PlotUnitCell);
+	addPlotView(&_rView, ave, "R factors", PlotRFactors);
 
 	int top = 10;
 
-	_newSel = new QPushButton("New group", this);
-	_newSel->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
-	                     RIGHT_VIEW_WIDTH - 20, 40);
+	addSideButton((QWidget **)&_newSel, "New group", &top);
 	connect(_newSel, &QPushButton::clicked,
 	        this, &Screen::newSelection);
-	_newSel->show();
 
-	top += 50;
-
-	_invertSele = new QPushButton("Invert selection", this);
-	_invertSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
-	                         RIGHT_VIEW_WIDTH - 20, 40);
-	_invertSele->show();
+	addSideButton((QWidget **)&_invertSele, "Invert selection", &top);
 	connect(_invertSele, &QPushButton::clicked,
 	        _list, &ClusterList::invertSelection);
 
-	top += 50;
-
-	_markSele = new QPushButton("Mark all in cluster", this);
-	_markSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
-	                       RIGHT_VIEW_WIDTH - 20, 40);
-	_markSele->show();
+	addSideButton((QWidget **)&_markSele, "Toggle marked cluster", &top);
 	connect(_markSele, &QPushButton::clicked,
 	        this, &Screen::markSelection);
 
-	top += 50;
-
-	_unmarkSele = new QPushButton("Unmark datasets", this);
-	_unmarkSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
-	                         RIGHT_VIEW_WIDTH - 20, 40);
-	_unmarkSele->show();
-	connect(_unmarkSele, &QPushButton::clicked,
-	        this, &Screen::markSelection);
-
-	top += 50;
-
-	_deadSele = new QPushButton("Mark all dead/rubbish", this);
-	_deadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
-	                       RIGHT_VIEW_WIDTH - 20, 40);
-	_deadSele->show();
+	addSideButton((QWidget **)&_deadSele, "Toggle all dead", &top);
+	_deadSele->setDisabled(_group->isTopGroup());
 	connect(_deadSele, &QPushButton::clicked,
 	        this, &Screen::killSelection);
 
-	top += 50;
+	addSideButton((QWidget **)&_changeColour, "Recolour selected", &top);
+	{
+		QMenu *m = new QMenu(_changeColour);
 
-	_undeadSele = new QPushButton("Unmark dead/rubbish", this);
-	_undeadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
-	                         RIGHT_VIEW_WIDTH - 20, 40);
-	_undeadSele->show();
-	connect(_undeadSele, &QPushButton::clicked,
-	        this, &Screen::killSelection);
+		QAction *col = m->addAction("None");
+		col->setProperty("colour", QColor(Qt::transparent));
+
+		col = m->addAction("Aqua");
+		col->setProperty("colour", QColor("aqua"));
+		connect(col, &QAction::triggered, this, &Screen::changeColour);
+
+		col = m->addAction("Sky blue");
+		col->setProperty("colour", QColor("skyblue"));
+		connect(col, &QAction::triggered, this, &Screen::changeColour);
+
+		col = m->addAction("Blue violet");
+		col->setProperty("colour", QColor("blueviolet"));
+		connect(col, &QAction::triggered, this, &Screen::changeColour);
+
+		col = m->addAction("Medium purple");
+		col->setProperty("colour", QColor("mediumpurple"));
+		connect(col, &QAction::triggered, this, &Screen::changeColour);
+
+		col = m->addAction("Forest green");
+		col->setProperty("colour", QColor("forestgreen"));
+		connect(col, &QAction::triggered, this, &Screen::changeColour);
+
+		col = m->addAction("Orchid");
+		col->setProperty("colour", QColor("orchid"));
+		connect(col, &QAction::triggered, this, &Screen::changeColour);
+		
+		_changeColour->setMenu(m);
+	}
 
 	int bottom = height() - 50;
 
@@ -556,12 +544,6 @@ void Screen::displayResults(Group *ave)
 	bottom -= 50;
 
 	_bin.push_back((QWidget **)&_export);
-	_bin.push_back((QWidget **)&_invertSele);
-	_bin.push_back((QWidget **)&_markSele);
-	_bin.push_back((QWidget **)&_unmarkSele);
-	_bin.push_back((QWidget **)&_deadSele);
-	_bin.push_back((QWidget **)&_undeadSele);
-	_bin.push_back((QWidget **)&_newSel);
 	_bin.push_back((QWidget **)&_images);
 
 	_tabs->setCurrentIndex(_currIndex);
@@ -575,16 +557,53 @@ void Screen::displayResults(Group *ave)
 	resizeEvent(NULL);
 }
 
+void Screen::addSideButton(QWidget **buttPtr, std::string title, 
+                           int *top)
+{
+	(*buttPtr) = new QPushButton(QString::fromStdString(title), this);
+	(*buttPtr)->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, *top,
+	               RIGHT_VIEW_WIDTH - 20, 40);
+	(*buttPtr)->show();
+	_bin.push_back(buttPtr);
+
+	*top += 50;
+}
+
+void Screen::changeColour()
+{
+	if (!_group)
+	{
+		return;
+	}
+
+	QObject *obj = QObject::sender();
+	QVariant v = obj->property("colour");
+	QColor c = v.value<QColor>();
+
+	double r = c.red() / 255.;
+	double b = c.green() / 255.;
+	double g = c.blue() / 255.;
+	double a = c.alpha() / 255.;
+	
+	if (c == Qt::transparent)
+	{
+		a = -1;
+	}
+
+	_group->changeColour(r, g, b, a);
+	refreshSelection();
+}
+
 void Screen::markSelection()
 {
-	bool mark = (QObject::sender() == _markSele);
+	bool mark = !(_group->isMarked());
 	_group->setMarked(mark);
 	refreshSelection();
 }
 
 void Screen::killSelection()
 {
-	bool dead = (QObject::sender() == _deadSele);
+	bool dead = !(_group->isDead());
 	_group->setDead(dead);
 	refreshSelection();
 }
@@ -627,6 +646,11 @@ void Screen::refreshSelection()
 	if (_ucView)
 	{
 		_ucView->keeper()->getPlot()->repopulate();
+	}
+	
+	if (_rView)
+	{
+		_rView->keeper()->getPlot()->repopulate();
 	}
 	
 	if (_cAlphaKeeper)

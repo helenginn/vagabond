@@ -16,62 +16,45 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#include <string>
-#include "UCPlot.h"
-#include "Group.h"
-#include "MtzFFT.h"
+#include "PlotR.h"
 #include "MtzFile.h"
-#include <libsrc/FileReader.h>
+#include "Group.h"
 
-UCPlot::UCPlot() : Plot3D()
+PlotR::PlotR() : Plot3D()
 {
 
 }
 
-void UCPlot::populate()
+void PlotR::populate()
 {
-	std::vector<double> ucs = _ave->getUnitCell();
-
 	for (size_t i = 0; i < _ave->mtzCount(); i++)
 	{
-		std::vector<double> uc = _ave->getMtz(i)->getUnitCell();
-		
-		for (int j = 0; j < 6; j++)
-		{
-			uc[j] -= ucs[j];
-		}
+		MtzFile *f = _ave->getMtzFile(i);
+		vec3 point = empty_vec3();
+		point.x = f->getRWork();
+		point.y = f->getRFree();
 
-		vec3 point = make_vec3(uc[_a], uc[_b], uc[_c]);
 		addPoint(point);
 	}
 }
 
-size_t UCPlot::axisCount()
+size_t PlotR::axisCount()
 {
-	return 6;
+	return 2;
 }
 
-std::string UCPlot::axisLabel(int i)
+std::string PlotR::axisLabel(int i)
 {
 	switch (i)
 	{
 		case 0:
-		return "a";
+		return "r_work";
 
 		case 1:
-		return "b";
+		return "r_free";
 
 		case 2:
-		return "c";
-
-		case 3:
-		return "alpha";
-
-		case 4:
-		return "beta";
-
-		case 5:
-		return "gamma";
+		return "[none]";
 		
 		default:
 		return "?";

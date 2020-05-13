@@ -17,7 +17,9 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "PlotView.h"
-#include "Plot3D.h"
+#include "GLPoint.h"
+#include "UCPlot.h"
+#include "PlotR.h"
 #include "AxisScroll.h"
 #include "SelectionWindow.h"
 #include "KeeperGL.h"
@@ -73,13 +75,17 @@ void PlotView::setup(Group *grp)
 	_keeper = new KeeperGL(this);
 	_keeper->addAxes();
 	
-	if (_type == PlotSVD)
+	if (_type == PlotUnitCell)
 	{
-		_keeper->addSVDPoints(grp);
+		_keeper->addPlot(grp, new UCPlot());
+	}
+	else if (_type == PlotRFactors)
+	{
+		_keeper->addPlot(grp, new PlotR());
 	}
 	else
 	{
-		_keeper->addUCPlot(grp);
+		_keeper->addPlot(grp, new GLPoint());
 	}
 
 	Plot3D *plot = _keeper->getPlot();
@@ -98,3 +104,4 @@ void PlotView::setup(Group *grp)
 	_scroll->makeLayout();
 	_scroll->show();
 }
+

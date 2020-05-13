@@ -19,8 +19,7 @@
 #include "Group.h"
 #include "KeeperGL.h"
 #include "GLAxis.h"
-#include "GLPoint.h"
-#include "UCPlot.h"
+#include "Plot3D.h"
 #include "HKLView.h"
 #include "CAlphaView.h"
 #include "MtzFFT.h"
@@ -172,19 +171,10 @@ void KeeperGL::addAxes()
 	update();
 }
 
-void KeeperGL::addSVDPoints(Group *ave)
+void KeeperGL::addPlot(Group *ave, Plot3D *plot)
 {
 	delete _plot;
-	_plot = new GLPoint();
-	_plot->setKeeper(this);
-	_plot->setGroup(ave);
-	_renderMe.push_back(_plot);
-}
-
-void KeeperGL::addUCPlot(Group *ave)
-{
-	delete _plot;
-	_plot = new UCPlot();
+	_plot = plot;
 	_plot->setKeeper(this);
 	_plot->setGroup(ave);
 	_renderMe.push_back(_plot);
