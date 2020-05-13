@@ -41,6 +41,7 @@
 
 void KeeperGL::initializeGL()
 {
+	_plot = NULL;
 	_controlPressed = false;
 	_lastX = 0;
 	_lastY = 0;
@@ -174,7 +175,6 @@ void KeeperGL::addAxes()
 
 void KeeperGL::addSVDPoints(Group *ave)
 {
-	_ave = ave;
 	delete _plot;
 	_plot = new GLPoint();
 	_plot->setKeeper(this);
@@ -184,7 +184,6 @@ void KeeperGL::addSVDPoints(Group *ave)
 
 void KeeperGL::addUCPlot(Group *ave)
 {
-	_ave = ave;
 	delete _plot;
 	_plot = new UCPlot();
 	_plot->setKeeper(this);
@@ -320,12 +319,6 @@ void KeeperGL::paintGL()
 	{
 		_renderMe[i]->render(this);
 	}
-}
-
-void KeeperGL::setGroup(Group *ave)
-{
-	_ave = ave;
-	_plot->setGroup(ave);
 }
 
 void KeeperGL::saveImage(std::string filename)

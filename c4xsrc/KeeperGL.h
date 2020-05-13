@@ -66,13 +66,7 @@ public:
 		return _model;
 	}
 	
-	void setGroup(Group *ave);
 	void saveImage(std::string filename);
-	
-	Group *getGroup()
-	{
-		return _ave;
-	}
 	
 	Plot3D *getPlot()
 	{
@@ -110,7 +104,6 @@ private:
 	void updateCamera();
 	void finishCAlphaView();
 	
-	Group *_ave;
 	Qt::MouseButton _mouseButton;
 	mat4x4 _model;
 	mat4x4 *_store;

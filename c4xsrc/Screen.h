@@ -86,7 +86,6 @@ private:
 	double _scale;
 	std::vector<QWidget **> _bin;
 	QGraphicsScene *_scene;
-	SelectionWindow *_selection;
 	MatrixView *_correlImage;
 	PlotView *_svdView;
 	PlotView *_ucView;

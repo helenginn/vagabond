@@ -407,6 +407,8 @@ void Screen::addHKLView(VagFFTPtr fft, std::string filename)
 
 void Screen::displaySingle(MtzFFTPtr fft)
 {
+	_group = NULL;
+
 	if (_tabs != NULL)
 	{
 		disconnect(_tabs, &QTabWidget::currentChanged, 
@@ -645,9 +647,9 @@ void Screen::changeIndex(int index)
 
 void Screen::refocus(int index)
 {
-	if (index == 1 && _selection != NULL)
+	if (index == 1 && _svdView != NULL)
 	{
-		_selection->setFocus();
+		_svdView->setFocus();
 	}
 	else if (index <= 0 && _correlLabel != NULL)
 	{

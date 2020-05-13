@@ -54,9 +54,10 @@ public:
 	void setup(Group *grp);
 	virtual void resizeEvent(QResizeEvent *e);
 private:
-	KeeperGL *_keeper;
 	Screen *_scr;
 	PlotType _type;
+
+	KeeperGL *_keeper;
 	AxisScroll *_scroll;
 	SelectionWindow *_selection;
 	
