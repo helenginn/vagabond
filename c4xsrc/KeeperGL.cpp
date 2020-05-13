@@ -41,7 +41,6 @@
 
 void KeeperGL::initializeGL()
 {
-	_plot = NULL;
 	_controlPressed = false;
 	_lastX = 0;
 	_lastY = 0;
