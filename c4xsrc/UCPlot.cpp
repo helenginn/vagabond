@@ -31,15 +31,22 @@ UCPlot::UCPlot() : Plot3D()
 void UCPlot::populate()
 {
 	std::vector<double> ucs = _ave->getUnitCell();
+	double mrw, mrf, srw, srf;
+	_ave->averageRs(&mrw, &mrf, &srw, &srf);
 
 	for (size_t i = 0; i < _ave->mtzCount(); i++)
 	{
 		std::vector<double> uc = _ave->getMtz(i)->getUnitCell();
+		double rwork = _ave->getMtzFile(i)->getRWork() - mrw;
+		double rfree = _ave->getMtzFile(i)->getRFree() - mrf;
 		
 		for (int j = 0; j < 6; j++)
 		{
 			uc[j] -= ucs[j];
 		}
+		
+		uc.push_back(rwork);
+		uc.push_back(rfree);
 
 		vec3 point = make_vec3(uc[_a], uc[_b], uc[_c]);
 		addPoint(point);
@@ -48,7 +55,7 @@ void UCPlot::populate()
 
 size_t UCPlot::axisCount()
 {
-	return 6;
+	return 8;
 }
 
 std::string UCPlot::axisLabel(int i)
@@ -72,6 +79,12 @@ std::string UCPlot::axisLabel(int i)
 
 		case 5:
 		return "gamma";
+		
+		case 6:
+		return "rwork";
+
+		case 7:
+		return "rfree";
 		
 		default:
 		return "?";

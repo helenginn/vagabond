@@ -461,8 +461,8 @@ void Screen::displayResults(Group *ave)
 	addCAlphaView();
 	_cAlphaKeeper->addCAlphaView(ave);
 
-	addPlotView(&_ucView, ave, "Unit cells", PlotUnitCell);
-	addPlotView(&_rView, ave, "R factors", PlotRFactors);
+	addPlotView(&_ucView, ave, "Misc properties", PlotUnitCell);
+//	addPlotView(&_rView, ave, "R factors", PlotRFactors);
 
 	int top = 10;
 
