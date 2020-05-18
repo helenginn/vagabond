@@ -158,10 +158,10 @@ void MonomerExplorer::makeRefinementButtons()
 
 	updateCorrelation();
 
-	makeSlider(ParamOptionTorsion, 0, "Torsion", 0, 200, 100, 10, "º");
-	makeSlider(ParamOptionKick, 1, "Kick", 0, 100, 100, 50, "");
-	makeSlider(ParamOptionMagicAngles, 2, "Phi/psi", 0, 90, 1, 20, "º");
-	makeSlider(ParamOptionNumBonds, 3, "Bonds", 0, 16, 1, 3, "");
+	makeSlider(ParamOptionTorsion, 0, "Torsion", 0, 200, 100, 20, "º");
+	makeSlider(ParamOptionKick, 1, "Kick", 0, 100, 100, 00, "");
+	makeSlider(ParamOptionMagicAngles, 2, "Phi/psi", 0, 90, 1, 00, "º");
+	makeSlider(ParamOptionNumBonds, 3, "Bonds", 0, 16, 1, 8, "");
 
 }
 
