@@ -397,8 +397,7 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 				vec3 ijk = make_vec3(i, j, k);
 				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_i, &_j, &_k);
 
-				mat3x3_mult_vec(_real2frac, &ijk);
-				double length = vec3_length(ijk);
+				double length = _fft->resolution(i, j, k);
 
 				double data = fftData->getReal(_i, _j, _k);
 				double calc = model->getAmplitude(i, j, k);
@@ -411,7 +410,7 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 				
 				for (int b = 0; b < bins.size() - 1; b++)
 				{
-					if (length > 1 / bins[b] && length < 1 / bins[b + 1])
+					if (length < bins[b] && length > bins[b + 1])
 					{
 						binRatios[b].push_back(pair);
 					}
@@ -508,7 +507,6 @@ void Crystal::applyShellFactors(DiffractionPtr data)
 {
 	VagFFTPtr fftData = data->getFFT();	
 	vec3 nLimits = getNLimits(fftData, _fft);
-	mat3x3 tmp = mat3x3_transpose(_real2frac);
 
 	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
@@ -520,16 +518,14 @@ void Crystal::applyShellFactors(DiffractionPtr data)
 				vec3 ijk = make_vec3(i, j, k);
 				long element = _fft->element(i, j, k);
 
-				mat3x3_mult_vec(tmp, &ijk);
-				double length = vec3_length(ijk);
-				double real_space = 1 / length;
+				double length = _fft->resolution(i, j, k);
 
 				int index = -1;
 				
 				for (int l = 0; l < _shells.size(); l++)
 				{
-					if (real_space <= _shells[l].minRes &&
-					    real_space > _shells[l].maxRes)
+					if (length <= _shells[l].minRes &&
+					    length > _shells[l].maxRes)
 					{
 						index = l;
 						break;
@@ -570,7 +566,6 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 
 	VagFFTPtr fftData = data->getFFT();	
 	vec3 nLimits = getNLimits(fftData, _fft);
-	mat3x3 tmp = mat3x3_transpose(_real2frac);
 	
 	double maxRes = 0;
 	double minRes = Options::minRes();
@@ -590,11 +585,9 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 				vec3 ijk = make_vec3(i, j, k);
 				CSym::ccp4spg_put_in_asu(_spaceGroup, i, j, k, &_i, &_j, &_k);
 				
-				mat3x3_mult_vec(tmp, &ijk);
-				double length = vec3_length(ijk);
-				double real = 1 / length;
+				double length = _fft->resolution(i, j, k);
 				
-				if (real < maxRes || real > minRes)
+				if (length < maxRes || length > minRes)
 				{
 					continue;
 				}
@@ -603,7 +596,7 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 				
 				if (!allShells)
 				{
-					index = findShell(_shells, real);
+					index = findShell(_shells, length);
 				}
 
 				if (index < 0 && !allShells)
@@ -739,8 +732,6 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 	double minRes = (lowRes <= 0 ? 0 : 1 / lowRes);
 	double maxRes = (highRes <= 0 ? FLT_MAX : 1 / highRes);
 
-	mat3x3 tmp = mat3x3_transpose(_real2frac);
-
 	/* symmetry issues */
 	for (int i = -xLimit; i < xLimit; i++)
 	{
@@ -749,8 +740,8 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 			for (int k = -zLimit; k < zLimit; k++)
 			{
 				vec3 ijk = make_vec3(i, j, k);
-				mat3x3_mult_vec(tmp, &ijk);
-				double length = vec3_length(ijk);
+
+				double length = _fft->resolution(i, j, k);
 				long element = _fft->element(i, j, k);
 
 				if (length < minRes || length > maxRes)
