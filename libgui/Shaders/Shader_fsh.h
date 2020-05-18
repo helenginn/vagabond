@@ -20,6 +20,10 @@ inline std::string Shader_fsh()
 	"   float transparency = (vPos[2] - min_distance) / (max_distance - min_distance);\n"\
 	"	transparency = max(transparency, 0.0);\n"\
 	"	transparency = min(transparency, 1.0);\n"\
+	"	if (focus[2] < -120.)\n"\
+	"	{\n"\
+	"		transparency = 0.;\n"\
+	"	}\n"\
 	"	vec4 tmpColor = vColor;\n"\
 	"   for (int i = 0; i < 3; i++)\n"\
 	"   {\n"\
