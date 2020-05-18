@@ -219,7 +219,6 @@ private:
 	void calculateAllAverages(bool force = false);
 	void svdAlloc();
 	void drawResults(double **data, std::string filename);
-	void populatePolymer(MtzFFTPtr mtz, PolymerPtr p);
 
 	std::vector<MtzFFTPtr> _mtzs;
 	std::vector<std::string> _names;

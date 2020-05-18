@@ -118,52 +118,6 @@ void Group::copyFromOriginal(Group *ave)
 	_type = ave->_type;
 }
 
-void Group::populatePolymer(MtzFFTPtr mtz, PolymerPtr p)
-{
-	std::vector<vec3> locals = mtz->getMtzFile()->getAtomPositions();
-	size_t old = locals.size();
-	locals.resize(_atomPos.size());
-	
-	for (size_t i = old; i < locals.size(); i++)
-	{
-		locals[i].x = std::nan("");
-		locals[i].y = std::nan("");
-		locals[i].z = std::nan("");
-	}
-
-	for (int i = p->monomerBegin(); i < p->monomerEnd(); i++)
-	{
-		MonomerPtr m = p->getMonomer(i);
-		
-		if (!m)
-		{
-			continue;
-		}
-		
-		AtomPtr a = m->findAtom("CA");
-
-		if (!a)
-		{
-			continue;
-		}
-
-		int id = a->getResidueNum();
-		if (id < 0 || (int)_atomPos.size() <= id)
-		{
-			continue;
-		}
-
-		vec3 pos = a->getPDBPosition();
-		locals[id] = pos;
-
-		vec3_add_to_vec3(&pos, _atomPos[id]);
-		_atomPos[id] = pos;
-		_atomNum[id]++;
-	}
-
-	mtz->getMtzFile()->setAtomPositions(locals);
-}
-
 void Group::updateText()
 {
 	std::string str = "Group of " + i_to_str(_mtzs.size()) + " data sets";
@@ -360,7 +314,6 @@ void Group::drawAxes()
 	{
 		for (size_t j = 0; j < _mtzs.size(); j++)
 		{
-			_clusterPtrs[i][j] = _w[j] * (_svdPtrs[i][j] * _origPtrs[i][j]);
 			_clusterPtrs[i][j] = _w[j] * (_svdPtrs[i][j]);
 		}
 	}
