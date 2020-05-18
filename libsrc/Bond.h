@@ -41,7 +41,8 @@
 typedef struct
 {
        BondPtr bond;
-       int num;
+       int bondNum;
+       int atomNum;
 } BondInt;
 
 /** \endcond */

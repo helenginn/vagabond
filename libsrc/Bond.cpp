@@ -1060,7 +1060,7 @@ void Bond::propagateChange(int depth, bool refresh)
 	std::vector<BondInt> propagateBonds;
 	BondInt pair;
 	pair.bond = shared_from_this();
-	pair.num = depth;
+	pair.bondNum = depth;
 	propagateBonds.push_back(pair);
 	
 	/* Propagate down sisters */
@@ -1081,7 +1081,7 @@ void Bond::propagateChange(int depth, bool refresh)
 				
 				BondInt pair;
 				pair.bond = downBond;
-				pair.num = depth;
+				pair.bondNum = depth;
 				propagateBonds.push_back(pair);
 			}
 		}
@@ -1090,7 +1090,7 @@ void Bond::propagateChange(int depth, bool refresh)
 	for (size_t k = 0; k < propagateBonds.size(); k++)
 	{
 		BondPtr bond = propagateBonds[k].bond;
-		int curr_depth = propagateBonds[k].num;
+		int curr_depth = propagateBonds[k].bondNum;
 
 		if ((curr_depth >= 0 && depth >= 0) || depth < 0)
 		{
@@ -1101,7 +1101,7 @@ void Bond::propagateChange(int depth, bool refresh)
 					BondPtr newBond = bond->downstreamBond(j, i);
 					BondInt pair;
 					pair.bond = newBond;
-					pair.num = curr_depth - 1;
+					pair.bondNum = curr_depth - 1;
 
 					propagateBonds.push_back(pair);
 				}
