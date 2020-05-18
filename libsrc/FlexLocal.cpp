@@ -74,7 +74,7 @@ void FlexLocal::svd()
 		_svd = NULL;
 	}
 
-	_svd = new SVDBond(_bondEffects, _bonds, _atoms);
+	_svd = new SVDBond(_bonds, _atoms);
 	_svd->performSVD();
 	
 	std::cout << _svd->numClusters() << " clusters.";

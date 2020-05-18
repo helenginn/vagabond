@@ -11,6 +11,7 @@
 #include "RefinementNelderMead.h"
 #include "RefinementStepSearch.h"
 #include "Bond.h"
+#include "SVDBond.h"
 #include "Atom.h"
 #include "Crystal.h"
 #include "Element.h"
@@ -29,6 +30,7 @@
 
 Sampler::Sampler()
 {
+	_svd = NULL;
 	_shouldSave = false;
 	_begin = 0;
 	_cycles = 0;
@@ -114,14 +116,11 @@ int Sampler::hasParameter(ParamOptionType type)
 void Sampler::addParamsForBond(BondPtr bond, bool even)
 {
 	int mult = (even ? 1 : -1);
+
 	for (ParamMap::iterator it = _params.begin(); it != _params.end(); it++)
 	{
 		ParamOptionType option = it->first;
 		double range = it->second;
-		
-		if (option == ParamOptionTwist)
-		{
-		}
 		
 		if (fabs(range) < 1e-6)
 		{
@@ -185,6 +184,12 @@ BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 	}
 	
 	int bondNum = _params[ParamOptionNumBonds] + 0.2;
+	int atomNum = bondNum;
+	if (addBranches)
+	{
+		int extraNum = _params[ParamOptionExtraAtoms];
+		atomNum = _params[ParamOptionNumBonds] + extraNum;
+	}
 
 	/* Logic: bond add map keeps remaining bonds (and remaining
  * 	additions) in memory for adding (allowing branches). When a
@@ -194,7 +199,8 @@ BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 	std::vector<BondInt> remaining;
 	BondInt entry;
 	entry.bond = fbond;
-	entry.num = bondNum;
+	entry.bondNum = bondNum;
+	entry.atomNum = atomNum;
 	remaining.push_back(entry);
 	addSampled(fbond->getMajor());
 
@@ -202,11 +208,12 @@ BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 	{
 		BondInt first = remaining[0];
 		BondPtr bond = first.bond;
-		int num = first.num;
+		int aNum = first.atomNum;
+		int bNum = first.atomNum;
 
 		remaining.erase(remaining.begin());
 
-		if (num <= 0)
+		if (aNum <= 0)
 		{
 			continue;	
 		}
@@ -222,9 +229,9 @@ BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 			continue;
 		}
 
-		if (bond->isRefinable())
+		if (bond->isRefinable() && entry.bondNum >= 0)
 		{
-			addParamsForBond(bond, (num % 2));
+			addParamsForBond(bond, (bNum % 2));
 		}
 
 		for (int j = 0; j < bond->downstreamBondGroupCount(); j++)
@@ -242,9 +249,10 @@ BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 
 				BondInt entry;
 				entry.bond = nextBond;
-				entry.num = num - 1;
+				entry.bondNum = bNum - 1;
+				entry.atomNum = aNum - 1;
 				
-				/* exception: carbonyl oxygen */
+				/* exception: carbonyl oxygen we add branch anyway */
 				bool isCarbonyl = bond->getMinor()->getAtomName() == "C";
 				
 				if (addBranches || (!addBranches && i == 0) || isCarbonyl)
@@ -363,7 +371,16 @@ void Sampler::addTorsion(BondPtr bond, double range, double interval)
 
 	if (!bond->isRefinable() | !bond->isUsingTorsion())
 	{
+		if (!_silent)
+		{
+			std::cout << "Can't refine torsion for " << bond->shortDesc() << std::endl;
+		}
 		return;
+	}
+	
+	if (!_silent)
+	{
+		std::cout << "Adding torsion for " << bond->shortDesc() << std::endl;
 	}
 	
 	_strategy->addParameter(&*bond, Bond::getTorsion, 
@@ -530,8 +547,8 @@ void Sampler::addSampled(AtomPtr atom)
 		return;
 	}
 	
-	if (atom->getElectronCount() == 1 && _scoreType == RefinementSavedPos
-	|| atom->getElectronCount() == 1 && _scoreType == RefinementModelPos)
+	if (atom->getElectronCount() == 1 && _scoreType == ScoreTypeSavedPos
+	|| atom->getElectronCount() == 1 && _scoreType == ScoreTypeModelPos)
 	{
 		return;
 	}
@@ -599,9 +616,28 @@ bool Sampler::sample(bool clear)
 	{
 		int paramCount = _strategy->parameterCount();
 		int cycles = paramCount / 2;
-		if (cycles < 10) cycles = 10;
-
+		if (cycles < 30) cycles = 30;
 		_strategy->setCycles(cycles);
+	}
+	
+	if (_params.count(ParamOptionCycles) > 0)
+	{
+		_strategy->setCycles(_params[ParamOptionCycles]);
+	}
+
+	if (_params.count(ParamOptionSVD) > 0)
+	{
+		_strategy->clearParameters();
+		_svd = new SVDBond(_bonds, _sampled);
+		_svd->setDoTorsion(true);
+		_svd->setSilent(_silent);
+		_svd->performSVD();
+		double t = 0.2;
+		if (_params.count(ParamOptionTorsion))
+		{
+			t = _params[ParamOptionTorsion];
+		}
+		_svd->addToStrategy(_strategy, t, false);
 	}
 
 	int paramCount = _strategy->parameterCount();
@@ -631,8 +667,13 @@ bool Sampler::sample(bool clear)
 			cycles = _cycles;
 		}
 
+		if (_params.count(ParamOptionSVD) > 0)
+		{
+			cycles *= 5;
+		}
+
 		_strategy->setCycles(cycles);
-		setupCloseAtoms();
+//		setupCloseAtoms();
 		setupScoreWithMap();
 	}
 	
@@ -672,6 +713,8 @@ bool Sampler::sample(bool clear)
 	_bonds.clear();
 	_sampled.clear();
 	_crystal->clearCloseCache();
+	delete _svd;
+	_svd = NULL;
 
 	return _changed;
 }
@@ -688,12 +731,18 @@ double Sampler::getScore()
 		return 0;
 	}
 	
+	if (_svd != NULL)
+	{
+		_svd->applyParameters();
+	}
+
 	for (int i = 0; i < _sampled.size(); i++)
 	{
 		AtomPtr s = _sampled[i];
 		s->getModel()->propagateChange(0);
 		s->getModel()->refreshPositions();
 	}
+
 	
 	for (int i = 0; i < _balances.size(); i++)
 	{

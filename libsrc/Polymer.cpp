@@ -362,11 +362,11 @@ void Polymer::refineBackboneFrom(int position)
 	
 	RefinementType rType = RefinementFine;
 	
-	std::cout << "Refining magic angles using correlation with density."
-	 << std::endl;
-
-	addParamType(ParamOptionMagicAngles, 36.0);
-	addParamType(ParamOptionNumBonds, 4);
+	addParamType(ParamOptionMaxTries, 1.0);
+	addParamType(ParamOptionTorsion, 0.5);
+	addParamType(ParamOptionNumBonds, 12);
+	addParamType(ParamOptionExtraAtoms, 2);
+	addParamType(ParamOptionSVD, 1);
 
 	refineToEnd(position, crystal, rType);
 }
@@ -374,9 +374,10 @@ void Polymer::refineBackboneFrom(int position)
 void Polymer::refineBackbone()
 {
 	int anchor = getAnchor();
+	clearParams();
 
-	refineBackboneFrom(anchor - 5);
-	refineBackboneFrom(anchor + 5);
+	refineBackboneFrom(anchor - 3);
+	refineBackboneFrom(anchor + 3);
 }
 
 void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
@@ -537,7 +538,7 @@ void Polymer::refineFromFarRegion(int coreStart, int coreEnd,
 void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
 {
 	int start = monNum;
-	int end = (monNum < _anchorNum) ? monomerBegin() : monomerEnd();
+	int end = (monNum < _anchorNum) ? monomerBegin() - 1: monomerEnd() + 1;
 	
 	refineRange(start, end, target, rType);
 }

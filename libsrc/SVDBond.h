@@ -27,6 +27,7 @@ typedef struct
 	Param *pWhack;
 	Param *pKick;
 	Param *pPhi;
+	Param *pTorsion;
 	double *rowPtr;
 } ParamSVDSet;
 
@@ -34,6 +35,7 @@ typedef struct
 {
 	double kick; /* Baseline kick, minus adjustments */
 	double whack; /* Baseline whack, minus adjustments */
+	double torsion; /* Baseline torsion, minus adjustments */
 	double phi; /* Baseline phi, minus adjustments */
 } BondParamPair;
 
@@ -42,8 +44,7 @@ typedef std::map<BondPtr, BondParamPair> BondBase;
 class SVDBond
 {
 public:
-	SVDBond(BondEffects &effects, std::vector<BondPtr> &bonds,
-	        std::vector<AtomPtr> &atoms);
+	SVDBond(std::vector<BondPtr> &bonds, std::vector<AtomPtr> &atoms);
 	
 	~SVDBond();
 
@@ -51,29 +52,49 @@ public:
 	{
 		return _num;
 	}
+	
+	void setSilent(bool s)
+	{
+		_silent = s;
+	}
+	
+	void setDoTorsion(bool t)
+	{
+		_doTorsion = t;
+	}
+	
+	void setDoAngles(bool a)
+	{
+		_doAngles = a;
+	}
 
-	void addToStrategy(RefinementStrategyPtr strategy, int dir, 
+	void addToStrategy(RefinementStrategyPtr strategy, double mult,
 	                   bool phi = false);
 	void applyParameters();
-	void performSVD(BondBondCC *ccs = NULL);
+	void performSVD();
 private:
 	void prepareMatrix(double ***ptr);
 	void prepareVector(double **ptr);
-	void populateMatrix();
 	void svdMagic();
 	void report();
 	void cleanupSVD(double ***ptr);
 	void copyMatrix(double **from, double **to);
 	void compareBonds();
+	double compareTorsionWithAngle(BondPtr a, BondPtr b);
 	double compareTorsions(BondPtr a, BondPtr b);
-	double compareBonds(BondPtr a, BondPtr b);
+	double compareForKicks(BondPtr a, BondPtr b);
 	double compareKicks(BondPtr a, BondPtr b);
 	void writeMatrix();
+	void determineInteractions();
+	void interactionsForBond(BondPtr bond);
 	
 	std::vector<ParamSVDSet> _params;
 	
-	BondEffects _effects;
+	/* basic parameters before refinement additions */
 	BondBase _bondBase;
+
+	std::map<AtomPtr, std::map<BondPtr, int> > _interactions;
+
 	std::vector<BondPtr> _bonds;
 	std::vector<AtomPtr> _atoms;
 
@@ -84,6 +105,9 @@ private:
 	
 	int _num;
 	double _wTotal;
+	bool _doTorsion;
+	bool _doAngles;
+	bool _silent;
 };
 
 vec3 bond_effect_on_pos(vec3 atom_pos, mat3x3 &bond_basis, vec3 &bond_pos);

@@ -30,6 +30,10 @@ class Options
 	friend class StartScreen;
 public:
 	Options(int argc, const char **argv);
+	virtual ~Options()
+	{
+
+	}
 	void run();
 	void clear();
 	void makeCout();

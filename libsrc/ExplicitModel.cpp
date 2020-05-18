@@ -61,6 +61,11 @@ vec3 ExplicitModel::meanOfManyPositions(std::vector<BondSample> *positions)
 
 void ExplicitModel::sanityCheck()
 {
+	if (_storedSamples.size() == 0)
+	{
+		std::cout << "No stored samples!" << std::endl;
+	}
+
 	for (int i = 0; i < _storedSamples.size(); i++)
 	{
 		vec3 start = _storedSamples[i].start;
@@ -69,8 +74,9 @@ void ExplicitModel::sanityCheck()
 		
 		if (start.x != start.x) 
 		{
-//			std::cout << "Start position is nan for " << shortDesc() <<
-//			std::endl;
+			std::cout << "Start position is nan for " << shortDesc() <<
+			std::endl;
+			exit(0);
 			return;
 		}
 		if (old_start.x != old_start.x)
@@ -383,6 +389,13 @@ std::vector<vec3> ExplicitModel::makeCloud(double totalPoints,
 	fib.generateLattice(layers, 1);
 	std::vector<vec3> directions = fib.getPoints();
 	std::vector<vec3> sphereAngles;
+	
+	if (totalPoints < 2)
+	{
+		sphereAngles.push_back(empty_vec3());
+		return sphereAngles;
+	}
+
 	sphereAngles.reserve(totalPoints);
 	vec3 yAxis = make_vec3(0, 1, 0);
 
@@ -408,6 +421,7 @@ std::vector<vec3> ExplicitModel::makeCloud(double totalPoints,
 			addTotal += add;
 			
 			mat3x3_mult_vec(mat, &points[i]);
+
 			sphereAngles.push_back(points[i]);
 		}
 	}

@@ -41,6 +41,8 @@ typedef enum
 
 typedef std::map<ParamOptionType, double> ParamMap;
 
+class SVDBond;
+
 class Sampler
 {
 public:
@@ -253,6 +255,8 @@ private:
 	bool _shouldSave;
 	bool _verbose;
 	int _cycles;
+
+	SVDBond *_svd;
 
 	std::string _jobName;
 	ScoreType _scoreType;

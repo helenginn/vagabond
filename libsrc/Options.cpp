@@ -45,7 +45,7 @@ double Options::_probeRadius = -0.2;
 double Options::_shrink = -0.2;
 bool Options::_useRFree = true;
 bool Options::_lowResMode = false;
-int Options::_bondAngles = 2;
+int Options::_bondAngles = 0;
 int Options::_map = 1;
 int Options::_active = 0;
 int Options::_maxRot = 3;
@@ -273,12 +273,20 @@ void Options::executeProtocol()
 		return;
 	}
 	
-	for (int i = 0; i < 5 && _rPosition; i++)
+	int tmp = crystal->getSampleNum();
+	_nSamples = 1;
+	crystal->whack();
+	crystal->refreshAnchors();
+
+	for (int i = 0; i < 10 && _rPosition; i++)
 	{
 		std::cout << "Refining positions to PDB (" << 
-		i + 1 << " / 5)" << std::endl;
+		i + 1 << " / 10)" << std::endl;
 		crystal->refinePositions();
 	}
+
+	_nSamples = tmp;
+	crystal->refreshPositions();
 
 	if (_bStart == -1 && _rPosition)
 	{
@@ -1060,12 +1068,14 @@ void Options::changeSamplesAndFit(void *, double n)
 
 	std::cout << "Called setting N samples" << std::endl;
 
-	getActiveCrystal()->savePositions();
+//	getActiveCrystal()->savePositions();
 	setNSamples(NULL, n);
+	getActiveCrystal()->refreshAnchors();
+	getActiveCrystal()->refreshPositions();
 	
 	if (old < 80 || n < 80)
 	{
-		getActiveCrystal()->refitToSavedPositions();
+//		getActiveCrystal()->refitToSavedPositions();
 	}
 
 	std::cout << "Done" << std::endl;

@@ -28,13 +28,33 @@
 #include "Whack.h"
 #include "CSV.h"
 
-SVDBond::SVDBond(BondEffects &effects, std::vector<BondPtr> &bonds,
-                 std::vector<AtomPtr> &atoms)
+SVDBond::SVDBond(std::vector<BondPtr> &bonds, std::vector<AtomPtr> &atoms)
 {
-	_effects = effects;
+	_silent = true;
+	_doTorsion = false;
 	_bonds = bonds;
 	_atoms = atoms;
 	_svd = NULL;
+}
+
+vec3 angle_effect_on_pos(vec3 atom_pos, mat3x3 &bond_basis, vec3 &bond_pos)
+{
+	mat3x3 trans = mat3x3_transpose(bond_basis);
+	/* Remove translation component due to bond's location */
+	vec3_subtract_from_vec3(&atom_pos, bond_pos);
+	
+	/* Multiply position by transpose of bond basis to get location in
+	 * 'identity' coordinates */
+	mat3x3_mult_vec(trans, &atom_pos);
+	
+	/* Set the component in the direction of the bond to zero */
+	atom_pos.z = 0;
+	
+	/* Multiply this by bond basis to get the important vector into
+	 * crystal coordinates again */
+	mat3x3_mult_vec(bond_basis, &atom_pos);
+	
+	return atom_pos;
 }
 
 vec3 bond_effect_on_pos(vec3 atom_pos, mat3x3 &bond_basis, vec3 &bond_pos)
@@ -66,7 +86,7 @@ double SVDBond::compareKicks(BondPtr a, BondPtr b)
 
 	double total = 0;
 
-	for (int i = 0; i < as.size(); i++)
+	for (size_t i = 0; i < as.size(); i++)
 	{
 		double mult = as[i].kickValue * bs[i].kickValue;
 		total += mult;
@@ -76,17 +96,28 @@ double SVDBond::compareKicks(BondPtr a, BondPtr b)
 	return total;
 }
 
-double SVDBond::compareTorsions(BondPtr a, BondPtr b)
+mat3x3 bond_angle_basis(mat3x3 parent, mat3x3 child)
 {
-	mat3x3 aBasis, bBasis;
-	vec3 aPos, bPos;
+	vec3 childDir = mat3x3_axis(child, 2);
+	vec3 parentDir = mat3x3_axis(parent, 2);
+
+}
+
+double SVDBond::compareTorsionWithAngle(BondPtr a, BondPtr b)
+{
+	mat3x3 aBasis, bBasis, upBBasis;
+	vec3 aPos, bPos, upBPos;
 
 	a->getAverageBasisPos(&aBasis, &aPos);
+
+	ExplicitModelPtr mod = b->getParentModel();
+
+	mod->getAverageBasisPos(&upBBasis, &upBPos);
 	b->getAverageBasisPos(&bBasis, &bPos);
 	
 	CorrelData cd = empty_CD();
 	
-	for (int i = 0; i < _atoms.size(); i++)
+	for (size_t i = 0; i < _atoms.size(); i++)
 	{
 		/* Exclude self, nan-potential */
 		if (a->getMinor() == _atoms[i] || b->getMinor() == _atoms[i])
@@ -100,6 +131,58 @@ double SVDBond::compareTorsions(BondPtr a, BondPtr b)
 		 * really matter because we're comparing them */
 		vec3 aDir = bond_effect_on_pos(pos, aBasis, aPos);
 		vec3 bDir = bond_effect_on_pos(pos, bBasis, bPos);
+		
+		double dir = _interactions[_atoms[i]][a];
+		vec3_mult(&aDir, dir);
+		
+		dir = _interactions[_atoms[i]][b];
+		vec3_mult(&bDir, dir);
+		
+		for (int j = 0; j < 3; j++)
+		{
+			double *aVal = &aDir.x + j;
+			double *bVal = &bDir.x + j;
+			
+			add_to_CD(&cd, *aVal, *bVal);
+		}
+	}
+	
+	double total = evaluate_CD(cd);
+
+	return total;
+
+}
+
+double SVDBond::compareTorsions(BondPtr a, BondPtr b)
+{
+	mat3x3 aBasis, bBasis;
+	vec3 aPos, bPos;
+
+	a->getAverageBasisPos(&aBasis, &aPos);
+	b->getAverageBasisPos(&bBasis, &bPos);
+	
+	CorrelData cd = empty_CD();
+	
+	for (size_t i = 0; i < _atoms.size(); i++)
+	{
+		/* Exclude self, nan-potential */
+		if (a->getMinor() == _atoms[i] || b->getMinor() == _atoms[i])
+		{
+			continue;
+		}
+		
+		vec3 pos = _atoms[i]->getAbsolutePosition();
+		
+		/* The real important directions are rotated 90° but it doesn't
+		 * really matter because we're comparing them */
+		vec3 aDir = bond_effect_on_pos(pos, aBasis, aPos);
+		vec3 bDir = bond_effect_on_pos(pos, bBasis, bPos);
+		
+		double dir = _interactions[_atoms[i]][a];
+		vec3_mult(&aDir, dir);
+		
+		dir = _interactions[_atoms[i]][b];
+		vec3_mult(&bDir, dir);
 		
 		for (int j = 0; j < 3; j++)
 		{
@@ -115,7 +198,7 @@ double SVDBond::compareTorsions(BondPtr a, BondPtr b)
 	return total;
 }
 
-double SVDBond::compareBonds(BondPtr a, BondPtr b)
+double SVDBond::compareForKicks(BondPtr a, BondPtr b)
 {
 	/* Get all the bond directions and positions */
 	mat3x3 aBasis, bBasis;
@@ -168,11 +251,20 @@ double SVDBond::compareBonds(BondPtr a, BondPtr b)
 	}
 	
 	total /= count;
+
+	double kicks = compareKicks(a, b);
+	total *= kicks;
+
 	return total;
 }
 
 void SVDBond::compareBonds()
 {
+	if (_doTorsion)
+	{
+		determineInteractions();
+	}
+
 	for (int i = 1; i < _bonds.size(); i++)
 	{
 		BondPtr b1 = _bonds[i];
@@ -180,11 +272,18 @@ void SVDBond::compareBonds()
 		for (int j = 0; j < i; j++)
 		{
 			BondPtr b2 = _bonds[j];
+			double agreement = 0;
+			if (_doTorsion)
+			{
+				agreement = compareTorsions(b1, b2);
+			}
+			else
+			{
+				agreement = compareForKicks(b1, b2);
+			}
 
-			double agreement = compareBonds(b1, b2);
-			double kicks = compareKicks(b1, b2);
-			_svd[i][j] = agreement * kicks;
-			_svd[j][i] = agreement * kicks;
+			_svd[i][j] = agreement;
+			_svd[j][i] = agreement;
 		}
 	}
 	
@@ -194,7 +293,7 @@ void SVDBond::compareBonds()
 	}
 }
 
-void SVDBond::performSVD(BondBondCC *ccs)
+void SVDBond::performSVD()
 {
 	prepareMatrix(&_svd);
 	prepareMatrix(&_original);
@@ -235,30 +334,6 @@ void SVDBond::copyMatrix(double **from, double **to)
 	for (int i = 0; i < svd_dims; i++)
 	{
 		memcpy(to[i], from[i], sizeof(double) * svd_dims);
-	}
-}
-
-void SVDBond::populateMatrix()
-{
-	for (int i = 0; i < _bonds.size(); i++)
-	{
-		BondPtr bi = _bonds[i];
-		AtomTarget ai = _effects[bi];
-
-		for (int j = 0; j < _bonds.size(); j++)
-		{
-			BondPtr bj = _bonds[j];
-			AtomTarget aj = _effects[bj];
-			
-			double total = 0;
-			for (int k = 0; k < _atoms.size(); k++)
-			{
-				double add = ai[_atoms[k]] * aj[_atoms[k]];
-				total += add;
-			}
-			
-			_svd[i][j] = total;
-		}
 	}
 }
 
@@ -322,9 +397,13 @@ void SVDBond::report()
 		Param *pph = new Param();
 		Param::setValue(pph, 0);
 		
+		Param *t = new Param();
+		Param::setValue(t, 0);
+		
 		set.pWhack = pw;
 		set.pKick = pk;
 		set.pPhi = pph;
+		set.pTorsion = t;
 		set.rowPtr = _svd[i];
 
 		_params.push_back(set);
@@ -335,35 +414,50 @@ void SVDBond::report()
 	for (int i = 0; i < _bonds.size(); i++)
 	{
 		BondPtr bond = _bonds[i];
-		WhackPtr whack = bond->getWhack();
-		if (!whack) continue;
+		double w = 0;
+		double k = 0;
+
+		if (bond->hasWhack())
+		{
+			WhackPtr whack = bond->getWhack();
+			k = Whack::getKick(&*whack);
+			w = Whack::getWhack(&*whack);
+		}
 		
-		double w = Whack::getWhack(&*whack);
-		double k = Whack::getKick(&*whack);
-		double phi = Bond::getMagicPhi(&*bond->downstreamBond(0, 0));
+//		double phi = Bond::getMagicPhi(&*bond->downstreamBond(0, 0));
+		double t = Bond::getTorsion(&*bond);
 		
 		BondParamPair pair;
 		pair.whack = w;
 		pair.kick = k;
-		pair.phi = phi;
+		pair.phi = 0;
+		pair.torsion = t;
 		_bondBase[bond] = pair;
 	}
 }
 
-void SVDBond::addToStrategy(RefinementStrategyPtr strategy, int dir,
+void SVDBond::addToStrategy(RefinementStrategyPtr strategy, double mult,
                             bool phi)
 {
 	double inv = 1.0 / _wTotal;
+	inv = deg2rad(1.0);
 	double tol = inv / 100;
 	
-	inv *= (double)dir;
+	inv *= mult;
 	
-	for (int i = 0; i < _params.size() && !phi; i++)
+	for (int i = 0; i < _params.size() && !_doTorsion; i++)
 	{
 		strategy->addParameter(_params[i].pWhack, Param::getValue,
 		                       Param::setValue, inv, tol);
 		strategy->addParameter(_params[i].pKick, Param::getValue,
 		                       Param::setValue, inv, tol);
+	}
+	
+	for (int i = 0; i < _params.size() && _doTorsion; i++)
+	{
+		strategy->addParameter(_params[i].pTorsion, Param::getValue,
+		                       Param::setValue, 
+		                       deg2rad(mult), deg2rad(mult / 1000));
 	}
 	
 	double phi_step = deg2rad(180.);
@@ -397,11 +491,13 @@ void SVDBond::applyParameters()
 		double w = _bondBase[bi].whack;
 		double k = _bondBase[bi].kick;
 		double ph = _bondBase[bi].phi;
+		double t = _bondBase[bi].torsion;
 		
 		/* to store the total contributions to add to whack/kick */
 		double w_more = 0;
 		double k_more = 0;
 		double ph_more = 0;
+		double t_more = 0;
 
 		/* loop round each cluster... */
 		for (int j = 0; j < _params.size(); j++)
@@ -411,25 +507,44 @@ void SVDBond::applyParameters()
 			
 			double total = 0;
 
+			/*
 			for (int k = 0; k < _bonds.size(); k++)
 			{
 				BondPtr bk = _bonds[k];
 				double add = _original[i][k] * _params[j].rowPtr[k];
 				total += add;
 			}
+			*/
+			
+			total = _svd[j][i];
 			
 			/* get value of the whack/kick */
-			double wVal = Param::getValue(_params[j].pWhack);
-			double kVal = Param::getValue(_params[j].pKick);
-			double phVal = Param::getValue(_params[j].pPhi);
+			if (!_doTorsion)
+			{
+				double wVal = Param::getValue(_params[j].pWhack);
+				double kVal = Param::getValue(_params[j].pKick);
+				double phVal = Param::getValue(_params[j].pPhi);
 
-			wVal *= total;
-			kVal *= total;
-			phVal *= total;
+				wVal *= total;
+				kVal *= total;
+				phVal *= total;
 
-			w_more += wVal;
-			k_more += kVal;
-			ph_more += phVal;
+				w_more += wVal;
+				k_more += kVal;
+				ph_more += phVal;
+			}
+			else
+			{
+				double tVal = Param::getValue(_params[j].pTorsion);
+
+				if (!_silent)
+				{
+					std::cout << tVal << " " << total << std::endl;
+				}
+
+				tVal *= total;
+				t_more += tVal;
+			}
 
 			if (k_more != k_more)
 			{
@@ -445,6 +560,11 @@ void SVDBond::applyParameters()
 			{
 				ph_more = 0;
 			}
+			
+			if (t_more != t_more)
+			{
+				t_more = 0;
+			}
 		}
 
 		if (w != w)
@@ -455,12 +575,20 @@ void SVDBond::applyParameters()
 		w += w_more;
 		k += k_more;
 		ph += ph_more;
+		t += t_more;
 
-		WhackPtr whack = bi->getWhack();
-		Whack::setWhack(&*whack, w);
-		Whack::setKick(&*whack, k);
+		if (!_doTorsion)
+		{
+			WhackPtr whack = bi->getWhack();
+			Whack::setWhack(&*whack, w);
+			Whack::setKick(&*whack, k);
+		}
+		else
+		{
+			Bond::setTorsion(&*bi, t);
+		}
 		
-		Bond::setMagicPhi(&*bi->downstreamBond(0, 0), ph);
+//		Bond::setMagicPhi(&*bi->downstreamBond(0, 0), ph);
 	}
 }
 
@@ -495,11 +623,16 @@ SVDBond::~SVDBond()
 		delete _params[i].pWhack;
 		delete _params[i].pPhi;
 		delete _params[i].pKick;
+		delete _params[i].pTorsion;
 	}
 }
 
 void SVDBond::writeMatrix()
 {
+	if (_silent)
+	{
+		return;
+	}
 	CSV csv(3, "bi", "bj", "cc");
 
 	for (int i = 0; i < _bonds.size(); i++)
@@ -529,4 +662,70 @@ void SVDBond::writeMatrix()
 	
 	csv.setSubDirectory("local_flex");
 	csv.plotPNG(plotMap);
+}
+
+void SVDBond::interactionsForBond(BondPtr bond)
+{
+	AtomGroupPtr downstream = bond->makeAtomGroup();
+	
+	for (size_t i = 0; i < downstream->atomCount(); i++)
+	{
+		AtomPtr a = downstream->atom(i);
+		if (a->getElectronCount() <= 1)
+		{
+			continue;
+		}
+		
+		if (std::find(_atoms.begin(), _atoms.end(), a) == _atoms.end())
+		{
+			if (!_silent)
+			{
+				std::cout << "Don't have " << a->shortDesc() << std::endl;
+			}
+
+			continue;
+		}
+
+		if (!_silent && false)
+		{
+			std::cout << bond->shortDesc() << " interacts with " << a->shortDesc() << std::endl;
+		}
+
+		_interactions[a][bond] = 1;
+	}
+	
+	if (!bond->hasTwist())
+	{
+		return;
+	}
+	
+	for (size_t i = 0; i < _atoms.size(); i++)
+	{
+		if (downstream->hasAtom(_atoms[i]))
+		{
+			continue;
+		}
+
+		AtomPtr a = _atoms[i];
+
+		if (a->getElectronCount() <= 1)
+		{
+			continue;
+		}
+		
+		if (bond->getMajor() == a || bond->getMinor() == a)
+		{
+			continue;
+		}
+		
+		_interactions[a][bond] = -1;
+	}
+}
+
+void SVDBond::determineInteractions()
+{
+	for (size_t i = 0; i < _bonds.size(); i++)
+	{
+		interactionsForBond(_bonds[i]);
+	}
 }

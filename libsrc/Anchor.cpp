@@ -34,7 +34,7 @@ void Anchor::initialise()
 	_cDir = empty_vec3();
 	_cDir2 = empty_vec3();
 	_disableWhacks = false;
-	_lastCount = 0;
+	_lastCount = -1;
 }
 
 Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
@@ -117,11 +117,18 @@ void Anchor::createLayeredSpherePositions()
 	{
 		return;
 	}
-	
+
 	/* B factor isotropic only atm, get mean square displacement in
 	 * each dimension. */
+	double b = getBFactor();
+	
+	if (b != b)
+	{
+		_bFactor = 20;
+	}
+
 	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
-	meanSqDisp = sqrt(meanSqDisp);
+	meanSqDisp = sqrt(fabs(meanSqDisp));
 	_occupancies.clear();
 	
 	/* Make Fibonacci lattice for each layer */
@@ -155,10 +162,6 @@ void Anchor::createStartPositions(Atom *callAtom)
 	for (size_t i = 0; i < _sphereAngles.size(); i++)
 	{
 		vec3 usedPoint = _sphereAngles[i];
-		if (totalPoints == 0)
-		{
-			usedPoint = empty;
-		}
 
 		vec3 full = vec3_add_vec3(usedPoint, _position);
 		vec3 next = vec3_add_vec3(full, direction);
@@ -189,6 +192,8 @@ void Anchor::createStartPositions(Atom *callAtom)
 			_storedSamples[i].occupancy /= occTotal;
 		}
 	}
+
+	fixCentroid();
 }
 
 void Anchor::atLeastOneMotion()
@@ -273,6 +278,7 @@ std::string Anchor::shortDesc()
 
 void Anchor::fixCentroid()
 {
+	return;
 	vec3 sum = empty_vec3();
 
 	for (int i = 0; i < _storedSamples.size(); i++)
@@ -292,6 +298,11 @@ void Anchor::fixCentroid()
 
 void Anchor::recalculateWhacks()
 {
+	if (whackCount() == 0)
+	{
+		return;
+	}
+
 	/* Disable all the whacks, then reinstate each whack with a new
 	 * base set, then re-enable all whacks. */
 	
@@ -358,7 +369,7 @@ void Anchor::forceRefresh()
 		getMotion(i)->absorbScale();
 	}
 
-	_lastCount = 0;
+	_lastCount = -1;
 	getManyPositions(&*_nAtom.lock(), true);
 	getManyPositions(&*_cAtom.lock(), true);
 }
@@ -374,18 +385,28 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 		_samples[callAtom] = pair;
 	}
 	
-	if (!_samples[callAtom].changed && !force)
+	if (!force)
 	{
-		return &_samples[callAtom].samples;
+		int totalPoints = Options::getActiveCrystal()->getSampleNum();
+
+		if (!_samples[callAtom].changed && 
+		    _samples[callAtom].samples.size() > 0)
+		{
+			if (_lastCount == totalPoints)
+			{
+				return &_samples[callAtom].samples;
+			}
+		}
 	}
 	
 	createLayeredSpherePositions();
 	createStartPositions(callAtom);
+	sanityCheck();
 
 	/* Check if number of samples has changed for any reason - if so,
 	 * initiate re-caching of initial atom positions for each Whack. */
 
-	if (force)
+	if (force && !_disableWhacks)
 	{
 		recalculateWhacks();
 	}
@@ -405,7 +426,6 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 	
 	if (!_disableWhacks)
 	{
-		fixCentroid();
 		applyWholeMotions();
 
 		/* Apply whacks as normal, if we are not re-caching Whacks. */
@@ -416,15 +436,6 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 		}
 	}
 	
-	_lowestZ = FLT_MAX;
-	for (int i = 0; i < _storedSamples.size(); i++)
-	{
-		if (_storedSamples[i].start.z < _lowestZ)
-		{
-			_lowestZ = _storedSamples[i].start.z;
-		}
-	}
-
 	sanityCheck();
 	
 	_samples[callAtom].samples = _storedSamples;

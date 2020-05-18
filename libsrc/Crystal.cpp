@@ -116,8 +116,19 @@ void Crystal::refinePolymers(RefinementType type)
 		{
 			continue;
 		}
+		
+		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		
+		if (type == RefinementCrude)
+		{
+			pol->refineBackbone();
+			continue;
+		}
 
-		ToPolymerPtr(molecule(i))->refine(shared_from_this(), type);
+		std::cout << std::endl;
+		pol->refine(shared_from_this(), type);
+		pol->closenessSummary();
+		std::cout << std::endl;
 	}
 
 }
@@ -238,7 +249,6 @@ void Crystal::realSpaceClutter()
 	}
 
 	refreshAnchors();
-	refreshPositions();
 	
 	addToMap(_fft);
 }
@@ -1757,7 +1767,7 @@ int Crystal::getSampleNum()
 		_sampleNum = 120;
 	}
 
-	double totalPoints = _sampleNum - 1;
+	double totalPoints = _sampleNum;
 	
 	if (totalPoints < 0)
 	{
@@ -2076,6 +2086,8 @@ void Crystal::refreshAnchors()
 			}
 		}
 	}
+
+	refreshPositions();
 }
 
 void Crystal::updatePDBContents(std::string pdbName)
@@ -2343,7 +2355,6 @@ void Crystal::pruneWaters()
 void Crystal::addMissingAtoms(std::vector<AtomPtr> atoms)
 {
 	refreshAnchors();
-	refreshPositions();
 
 	std::map<PolymerPtr, bool> toWipe;
 	for (int i = 0; i < atoms.size(); i++)

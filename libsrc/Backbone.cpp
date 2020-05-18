@@ -37,22 +37,22 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 	if (!paramCount())
 	{
 		double range = 2.;
-
-		if (_timesRefined >= 3)
-		{
-			range = 0.2;
-		}
 		
 		if (rType == RefinementCrude)
 		{
 			range /= 2;
 		}
 
+		if (_timesRefined >= 8)
+		{
+			range = 0.5;
+		}
+
 		switch (rType)
 		{
 			case RefinementModelPos:
 			addParamType(ParamOptionTorsion, range);
-//			addParamType(ParamOptionBondAngle, range / 1);
+			addParamType(ParamOptionMaxTries, 60);
 			addParamType(ParamOptionNumBonds, 3);
 			break;
 			
@@ -77,13 +77,17 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			break;
 		}
 		
-		if (_timesRefined >= 3)
+		if (_timesRefined >= 5)
 		{
 			switch (rType)
 			{
 				case RefinementModelPos:
 				/* warning - bond angle will release too much carbonyl */
-				addParamType(ParamOptionCirclePortion, range / 1);
+				addParamType(ParamOptionNumBonds, 8);
+				addParamType(ParamOptionCycles, 100);
+				addParamType(ParamOptionMaxTries, 6);
+				addParamType(ParamOptionThorough, 1);
+				addParamType(ParamOptionSVD, 1);
 				break;
 
 				case RefinementFine:

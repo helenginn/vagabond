@@ -614,7 +614,7 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 	switch (rType) {
 		case RefinementModelPos:
 		scoreType = ScoreTypeModelPos;
-		maxTries = 60;
+		maxTries = 4;
 		break;
 
 		case RefinementSavedPos:
@@ -663,8 +663,21 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		{
 			setupNelderMead();
 			setCrystal(target);
-			setCycles(16);
 			setScoreType(scoreType);
+
+			if (rType == RefinementModelPos 
+			    || rType == RefinementSavedPos 
+			    || rType == RefinementFine 
+			    || rType == RefinementCrude 
+			    || rType == RefinementMouse)
+			{
+				setSilent();
+				if (!(getClassName() == "Sidechain" &&
+				     hasParameter(ParamOptionSVD)))
+				{
+					setSilent();
+				}
+			}
 
 			for (int i = 0; i < topAtoms.size(); i++)
 			{
@@ -682,30 +695,25 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 					setJobName("torsion_" +  bond->shortDesc());
 				}
 
+				bool thorough = true;
 				if (rType != RefinementFine && 
 				    rType != RefinementMouse &&
 				    rType != RefinementCrude)
 				{
-					topBond = setupThoroughSet(bond, false);
+					thorough = false;
 				}
-				else
+
+				if (hasParameter(ParamOptionThorough))
 				{
-					topBond = setupThoroughSet(bond);
+					thorough = (getParameter(ParamOptionThorough) > 0);
 				}
+
+				topBond = setupThoroughSet(bond, thorough);
 			}
 
 			for (size_t l = 0; l < _includeForRefine.size(); l++)
 			{
 				addSampledAtoms(_includeForRefine[l]);
-			}
-
-			if (rType == RefinementModelPos 
-			    || rType == RefinementSavedPos 
-			    || rType == RefinementFine 
-			    || rType == RefinementCrude 
-			    || rType == RefinementMouse)
-			{
-				setSilent();
 			}
 			
 			changed = sample();
