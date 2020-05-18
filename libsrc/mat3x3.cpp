@@ -653,3 +653,16 @@ void mat3x3_vectors_to_unity(mat3x3 *mat)
 		}
 	}
 }
+
+bool mat3x3_is_sane(mat3x3 &m)
+{
+	for (int i = 0; i < 9; i++)
+	{
+		if (m.vals[i] != m.vals[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
