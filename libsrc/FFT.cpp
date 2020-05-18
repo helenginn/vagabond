@@ -65,6 +65,7 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	_origin = fft._origin;
 	_toReal = fft._toReal;
 	_toRecip = fft._toRecip;
+	_recipTrans = fft._recipTrans;
 	_recipBasis = fft._recipBasis;
 	_realBasis = fft._realBasis;
 	_setMatrices = fft._setMatrices;
@@ -141,6 +142,7 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
 	_origin = empty_vec3();
 	_toReal = make_mat3x3();
 	_toRecip = make_mat3x3();
+	_recipTrans = make_mat3x3();
 	_realBasis = make_mat3x3();
 	_recipBasis = make_mat3x3();
 	_setMatrices = false;
@@ -479,6 +481,7 @@ void VagFFT::setUnitCell(std::vector<double> dims)
 	_toReal = mat3x3_from_unit_cell(dims[0], dims[1], dims[2], dims[3],
 	                                dims[4], dims[5]);
 	_toRecip = mat3x3_inverse(_toReal);
+	_recipTrans = mat3x3_transpose(_toRecip);
 
 	_realBasis = _toReal;
 	mat3x3_scale(&_realBasis, 1 / (double)_nx, 1 / (double)_ny, 
@@ -1124,6 +1127,7 @@ void VagFFT::setScale(double cubeDim)
 	mat3x3_scale(&_toReal, _nx, _ny, _nz);
 
 	_toRecip = mat3x3_inverse(_toReal);
+	_recipTrans = mat3x3_transpose(_toRecip);
 	_setMatrices = true;
 }
 
@@ -2102,9 +2106,8 @@ void VagFFT::convertMaskToSolvent(int expTotal)
 
 double VagFFT::resolution(int i, int j, int k)
 {
-	mat3x3 transpose = mat3x3_transpose(_toRecip);
 	vec3 ijk = make_vec3(i, j, k);
-	mat3x3_mult_vec(transpose, &ijk);
+	mat3x3_mult_vec(_recipTrans, &ijk);
 	return 1 / vec3_length(ijk);
 }
 

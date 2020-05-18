@@ -475,6 +475,7 @@ private:
 	mat3x3 _toReal;
 	/* _recipBasis accounting for unit cell size. Small numbers */
 	mat3x3 _toRecip;
+	mat3x3 _recipTrans;
 
 	/* small numbers; apply to convert voxel dimension to Angstroms */
 	mat3x3 _realBasis;
