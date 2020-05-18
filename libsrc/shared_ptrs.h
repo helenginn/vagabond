@@ -246,7 +246,11 @@ typedef enum
 	ParamOptionOccupancy,
 	ParamOptionMagicAngles,
 	ParamOptionNumBonds,
+	ParamOptionThorough,
+	ParamOptionCycles,
+	ParamOptionExtraAtoms,
 	ParamOptionMaxTries,
+	ParamOptionSVD,
 } ParamOptionType;
 
 typedef enum
