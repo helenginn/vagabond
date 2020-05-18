@@ -152,5 +152,6 @@ inline void vec3_set_length(vec3 *vec, double length)
 
 bool vec3_near_vec3_box(vec3 &pos1, vec3 &pos2, double tol);
 
+bool vec3_is_sane(vec3 &v);
 
 #endif /* defined(__vagabond__vec3__) */

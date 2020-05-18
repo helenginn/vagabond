@@ -148,4 +148,7 @@ bool vec3_near_vec3_box(vec3 &pos1, vec3 &pos2, double tol)
 	return true;
 }
 
-
+bool vec3_is_sane(vec3 &v)
+{
+	return !(v.x != v.x || v.y != v.y || v.z != v.z);
+}
