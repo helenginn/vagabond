@@ -145,7 +145,6 @@ double PartialStructure::scaleOrScore(bool score)
 	VagFFTPtr fftData = _data->getFFT();
 	VagFFTPtr fft = getCrystal()->getFFT();
 	CSym::CCP4SPG *spg = getCrystal()->getSpaceGroup();
-	mat3x3 toRecip = _partial->toRecip();
 	
 	vec3 nLimits = getNLimits(fft, _partial);
 
@@ -201,11 +200,8 @@ double PartialStructure::scaleOrScore(bool score)
 					continue;
 				}
 
-				vec3 ijk = make_vec3(i, j, k);
-				mat3x3_mult_vec(toRecip, &ijk);
+				double d = _partial->resolution(i, j, k);
 
-				double length = vec3_length(ijk);
-				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
 				double bFacMod = exp(-adjB / four_d_sq);
 
