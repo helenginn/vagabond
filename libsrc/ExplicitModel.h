@@ -113,7 +113,10 @@ public:
 	}
 	
 	void clearTwists();
-	
+
+	void getAverageBasisPos(mat3x3 *aveBasis, vec3 *aveStart, 
+	                        std::vector<BondSample> *vals = NULL);
+
 	size_t positionCount()
 	{
 		return _storedSamples.size();

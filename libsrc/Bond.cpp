@@ -657,30 +657,6 @@ AnchorPtr Bond::getAnchor()
 	return anch;
 }
 
-void Bond::getAverageBasisPos(mat3x3 *aveBasis, vec3 *aveStart, 
-                              std::vector<BondSample> *vals)
-{
-	if (vals == NULL)
-	{
-		vals = &_storedSamples;
-	}
-
-	*aveBasis = make_mat3x3();
-	*aveStart = make_vec3(0, 0, 0);
-
-	/* This loop gets average positions for the basis of the bond
-	 * and the average start position */
-	for (size_t i = 0; i < vals->size(); i++)
-	{
-		mat3x3_add_mat3x3(aveBasis, vals->at(i).basis);
-		*aveStart = vec3_add_vec3(*aveStart, vals->at(i).start);
-	}
-
-	double samples = vals->size();
-	vec3_mult(aveStart, 1 / samples);
-	mat3x3_vectors_to_unity(aveBasis);
-}
-
 void Bond::correctTorsionAngles()
 {
 	correctTorsionAngles(&_storedSamples, false);
