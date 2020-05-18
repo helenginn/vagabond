@@ -356,7 +356,7 @@ public:
 	}
 	
 	static void pauseGUIFishing(bool on);
-	void focusOnPosition(vec3 pos);
+	virtual void focusOnPosition(vec3 pos, double dist = 13);
 	void refitBackbone(int start, int end);
 	void omitScan();
 	void chelate();

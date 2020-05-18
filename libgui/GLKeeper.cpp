@@ -99,12 +99,12 @@ void GLKeeper::setFocalPoint(vec3 pos)
 	}
 }
 
-void GLKeeper::focusOnPosition(vec3 pos)
+void GLKeeper::focusOnPosition(vec3 pos, double dist)
 {
 	vec3 newPos = transformPosByModel(pos);
 	_centre = vec3_add_vec3(_translation, newPos);
 	vec3_mult(&newPos, -1);
-	newPos.z -= 13;
+	newPos.z -= dist;
 
 	vec3 diff = vec3_subtract_vec3(newPos, _translation);
 	_translation = vec3_add_vec3(_translation, newPos);

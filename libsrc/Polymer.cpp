@@ -662,11 +662,12 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		
 		BackbonePtr bone = monomer->getBackbone();
 		SidechainPtr side = monomer->getSidechain();
-
-		if (rType == RefinementCrude)
+		
+		if (rType == RefinementFine && getMonomer(i + skip))
 		{
-			vec3 centre = monomer->centroid();
-			Options::getRuntimeOptions()->focusOnPosition(centre);
+			BackbonePtr second = getMonomer(i + skip)->getBackbone();
+			vec3 centre = bone->centroid();
+			Options::getRuntimeOptions()->focusOnPosition(centre, 24);
 		}
 
 		changed = true;
@@ -1144,7 +1145,7 @@ void Polymer::refitBackbone(int start_, int end_)
 	AtomPtr stAtom = getMonomer(start_)->findAtom("N");
 
 	vec3 pos = stAtom->getAbsolutePosition();
-	Options::getRuntimeOptions()->focusOnPosition(pos);
+	Options::getRuntimeOptions()->focusOnPosition(pos, 24);
 	
 	/* Get new map for this */
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();

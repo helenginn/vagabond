@@ -154,7 +154,7 @@ public:
 		_atomGroup = group;
 	}
 	
-	virtual void focusOnPosition(vec3 pos)
+	virtual void focusOnPosition(vec3 pos, double dist = 13)
 	{
 
 	}

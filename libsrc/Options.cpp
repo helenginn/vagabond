@@ -1014,11 +1014,11 @@ void Options::adjustBFactor()
 	              + " to " + f_to_str(newB, 2) + ".");
 }
 
-void Options::focusOnPosition(vec3 pos)
+void Options::focusOnPosition(vec3 pos, double dist)
 {
 	if (_notify)
 	{
-		_notify->focusOnPosition(pos);
+		_notify->focusOnPosition(pos, dist);
 	}
 }
 

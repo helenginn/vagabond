@@ -829,9 +829,9 @@ void VagWindow::setRenderDensity()
 	display->renderDensity(crystal);
 }
 
-void VagWindow::focusOnPosition(vec3 pos)
+void VagWindow::focusOnPosition(vec3 pos, double dist)
 {
-	display->getKeeper()->focusOnPosition(pos);
+	display->getKeeper()->focusOnPosition(pos, dist);
 }
 
 void VagWindow::adjustBFactor()

@@ -29,7 +29,7 @@ public:
 	void manualRefine();
 	virtual void render(void);
 	void cleanup(void);
-	void focusOnPosition(vec3 pos);    
+	void focusOnPosition(vec3 pos, double dist = 13);   
 	void pause(bool on);
 
 	void rotateAngles(float alpha, float beta, float gamma);
