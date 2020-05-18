@@ -160,7 +160,6 @@ void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	if (!recip)
 	{
 		target.setAtomGroup(_allBackbone);
-		target.setAtomGroup(_allAtoms);
 	}
 	else
 	{
@@ -229,6 +228,8 @@ void Motion::refine(bool reciprocal)
 			}
 
 			list->refine();
+			_allAtoms->refreshPositions();
+			target.recalculateConstant();
 			
 			if (!list->didChange())
 			{
