@@ -937,7 +937,7 @@ double VagFFT::cubic_interpolate(vec3 vox000, size_t im)
  */
 double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
                       MapScoreType mapScoreType, std::vector<CoordVal> *vals,
-                      bool sameScale, bool fcOnly)
+                      bool sameScale, bool fcOnly, int step)
 {
 	/* I rarely comment something so heavily but I will get confused if
 	 * I don't, this time, as I can't soak the protocol into the variable
@@ -1009,11 +1009,11 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	long count = 0;
 
 	/* min/maxAtoms are in crystal coordinates.*/
-	for (double k = minAtom.z; k < maxAtom.z; k += 1)
+	for (double k = minAtom.z; k < maxAtom.z; k += step)
 	{
-		for (double j = minAtom.y; j < maxAtom.y; j += 1)
+		for (double j = minAtom.y; j < maxAtom.y; j += step)
 		{
-			for (double i = minAtom.x; i < maxAtom.x; i += 1)
+			for (double i = minAtom.x; i < maxAtom.x; i += step)
 			{
 				/* Position currently in crystal coords - change to atom. */
 				vec3 crystalPos = make_vec3(i, j, k);

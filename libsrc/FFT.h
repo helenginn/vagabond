@@ -132,10 +132,11 @@ public:
 	void printSlice(double zVal = -1, double scale = 1);
 
 	static double operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
-                      MapScoreType mapScoreType, 
-                      std::vector<CoordVal> *vals = NULL,
-                      bool sameScale = false,
-                         bool fcOnly = false);
+	                        MapScoreType mapScoreType, 
+	                        std::vector<CoordVal> *vals = NULL,
+	                        bool sameScale = false,
+	                        bool fcOnly = false,
+	                        int step = 1);
 
 	/* simple pair-wise addition of final index reals of two FFTs */
 	void addSimple(VagFFTPtr v2);
