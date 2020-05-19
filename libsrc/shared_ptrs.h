@@ -242,6 +242,7 @@ typedef enum
 	ParamOptionShift,
 	ParamOptionBondAngle,
 	ParamOptionCirclePortion,
+	ParamOptionProteinSampling,
 	ParamOptionKick,
 	ParamOptionOccupancy,
 	ParamOptionMagicAngles,
@@ -250,6 +251,7 @@ typedef enum
 	ParamOptionCycles,
 	ParamOptionExtraAtoms,
 	ParamOptionMaxTries,
+	ParamOptionStep,
 	ParamOptionSVD,
 } ParamOptionType;
 

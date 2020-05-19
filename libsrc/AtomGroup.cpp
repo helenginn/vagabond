@@ -652,6 +652,9 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		maxTries = getParameter(ParamOptionMaxTries);
 	}
 	
+	addParamType(ParamOptionMaxTries, maxTries);
+	maxTries = 1;
+	
 	while (topAtoms.size() > 0)
 	{
 		BondPtr topBond;
@@ -822,6 +825,11 @@ void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max,
                                 bool addScratch)
 {
 	double cubeDim = Options::getProteinSampling();
+	
+	if (hasParameter(ParamOptionProteinSampling))
+	{
+		cubeDim = getParameter(ParamOptionProteinSampling);
+	}
 	
 	/* 2 Angstroms buffer region on either side of the protein */
 	double buff = BUFFER_REGION;
@@ -1070,7 +1078,15 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot,
 		ws->vals.clear();
 	}
 
-	VagFFT::operation(map, ws->segment, mapType, &ws->vals, false, !first);
+	int step = 1;
+	
+	if (ws->selectAtoms->hasParameter(ParamOptionStep))
+	{
+		step = ws->selectAtoms->getParameter(ParamOptionStep);
+	}
+
+	VagFFT::operation(map, ws->segment, mapType, &ws->vals, 
+	                  false, !first, step);
 
 	/* Debugging ... writes cc_score.csv and cc_score.png, csv can be
 	* looked at with gnuplot quite nicely.*/

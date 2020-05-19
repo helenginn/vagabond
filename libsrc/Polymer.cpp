@@ -361,10 +361,15 @@ void Polymer::refineBackboneFrom(int position)
 	CrystalPtr crystal = options->getActiveCrystal();
 	
 	RefinementType rType = RefinementFine;
+	double cubeDim = crystal->getProteinSampling();
+	cubeDim * 2;
 	
 	addParamType(ParamOptionMaxTries, 1.0);
 	addParamType(ParamOptionTorsion, 0.5);
 	addParamType(ParamOptionNumBonds, 12);
+	addParamType(ParamOptionCycles, 16);
+	addParamType(ParamOptionStep, 2);
+	addParamType(ParamOptionProteinSampling, cubeDim);
 	addParamType(ParamOptionExtraAtoms, 2);
 	addParamType(ParamOptionSVD, 1);
 
@@ -626,6 +631,7 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		{
 			continue;
 		}
+		copyParams(monomer);
 
 		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);
 		startCCAve += score;
@@ -675,9 +681,8 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		
 		copyParams(side);
 		copyParams(bone);
+		copyParams(monomer);
 		refineMonomer(monomer, target, rType);
-		side->clearParams();
-		bone->clearParams();
 
 		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);	
 		double backScore = bone->scoreWithMap(ScoreTypeCorrel, target);	
@@ -685,6 +690,9 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		double pre = preScores[monomer].x;
 		double preBack = preScores[monomer].y;
 		double preSide = preScores[monomer].z;
+		side->clearParams();
+		bone->clearParams();
+		monomer->clearParams();
 
 		/* Scores are negative by default */
 		double diff = (score - pre) * 100.;

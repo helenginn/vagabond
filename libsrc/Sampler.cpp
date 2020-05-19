@@ -127,10 +127,8 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 			continue;
 		}
 
-		double tol = range / 10.;
-		
 		double degrange = deg2rad(range);
-		double degtol = degrange / 10.;
+		double tol = degrange / 100.;
 		
 		if (tol < deg2rad(0.005))
 		{
@@ -140,19 +138,19 @@ void Sampler::addParamsForBond(BondPtr bond, bool even)
 		switch (option)
 		{
 			case ParamOptionTorsion:
-			addTorsion(bond, degrange * mult, degtol);
+			addTorsion(bond, degrange * mult, tol);
 			break;
 
 			case ParamOptionTwist:
-			addTwist(bond, degrange * mult, degtol);
+			addTwist(bond, degrange * mult, tol);
 			break;
 
 			case ParamOptionBondAngle:
-			addBendAngle(bond, degrange * mult, degtol);
+			addBendAngle(bond, degrange * mult, tol);
 			break;
 
 			case ParamOptionCirclePortion:
-			addBendAngle(bond, degrange * mult, degtol, true);
+			addBendAngle(bond, degrange * mult, tol, true);
 			break;
 
 			case ParamOptionKick:
@@ -596,6 +594,10 @@ void Sampler::setupScoreWithMap()
 		sampled->addAtomsFrom(_includeForRefine[i]);
 	}
 	
+	double sampling = getParameter(ParamOptionProteinSampling);
+	sampled->addParamType(ParamOptionProteinSampling, sampling);
+	copyParams(sampled);
+	
 	setup_space(&_workspace);
 	_workspace.scoreType = _scoreType;
 	_workspace.crystal = _crystal;
@@ -691,7 +693,16 @@ bool Sampler::sample(bool clear)
 	if (sampleSize() && _strategy->parameterCount())
 	{
 		_strategy->setJobName(_jobName);
-		_strategy->refine();
+
+		int maxTries = getParameter(ParamOptionMaxTries);
+		for (int i = 0; i < maxTries; i++)
+		{
+			_strategy->refine();
+			if (!_strategy->didChange())
+			{
+				break;
+			}
+		}
 	}
 
 	double end = getScore();
