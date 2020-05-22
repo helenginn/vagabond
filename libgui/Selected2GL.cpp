@@ -688,14 +688,7 @@ void Selected2GL::manualRefine()
 		}
 		else if (!terminal)
 		{
-			PolymerPtr pol = ToPolymerPtr(mol);
-			pol->refineFromFarRegion(begin, end, crystal);
-			
-			if (!pol->didChange())
-			{
-				std::cout << "No change from previous refinement."
-				<< std::endl;
-			}
+
 		}
 	}
 
