@@ -504,7 +504,6 @@ public:
 	* 	\param translation if true, will refine translation parameters
 	* 	\param rotation if true, will refine rotation parameters. */
 	void fitWholeMolecules(bool recip = false);
-	bool calibrateAllMolecules();
 	void refinePolymers(RefinementType type);
 	void refinePositions();
 	bool refineIntraMovements(bool magic = false);
