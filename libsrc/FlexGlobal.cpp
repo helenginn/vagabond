@@ -14,6 +14,7 @@
 #include "Anisotropicator.h"
 #include "Shouter.h"
 #include "FFT.h"
+#include "Crystal.h"
 
 FlexGlobal::FlexGlobal()
 {
@@ -35,6 +36,8 @@ void FlexGlobal::prepareWorkspace()
 
 	_workspace.crystal = _crystal;
 	_workspace.selectAtoms = _atomGroup;
+
+	_workspace.selectAtoms->addParamType(ParamOptionStep, 2);
 	
 	_prepared = true;
 }

@@ -179,6 +179,7 @@ double FlexLocal::getScore(void *object)
 		setup_space(&local->_workspace);
 		local->_workspace.crystal = Options::getActiveCrystal();
 		local->_workspace.selectAtoms = bb;
+		local->_workspace.selectAtoms->addParamType(ParamOptionStep, 2);
 		local->_prepared = true;
 		AtomGroup::scoreWithMapGeneral(&local->_workspace);
 	}
