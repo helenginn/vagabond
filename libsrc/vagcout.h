@@ -40,7 +40,8 @@ public:
 	{
 		this->_notify = NULL;
 		this->original_cout = buf;
-		outfile.open(FileReader::addOutputDirectory("vagabond.log").c_str());
+		std::string dir = FileReader::addOutputDirectory("vagabond.log");
+		outfile.open(findNextFilename(dir).c_str());
 		this->setp(out_buf_, out_buf_ + BUFF_SIZE - 1);
 	}
 	
