@@ -680,13 +680,28 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 	 * at the end */
 	double averageModulation = 0;
 	double baseKick = getBaseKick();
+
+	ExplicitModelPtr model = getParentModel();
+	int myGroup = -1;
+	int torsionNumber = model->downstreamBondNum(this, &myGroup);
+
+	/* May be myself */
+	BondPtr sisBond;
+	std::vector<BondSample> *sis = NULL;
+
+	if (torsionNumber > 0 && model->isBond())
+	{
+		BondPtr parent = ToBondPtr(model);
+		sisBond = parent->downstreamBond(myGroup, 0);
+		sis = sisBond->getManyPositions();
+	}
 	
 	/* Assume torsion of 0, as real torsion added later */
 	for (size_t i = 0; i < prevs->size(); i++)
 	{
 		double kickValue = prevs->at(i).kickValue;
 
-		if (!quick)
+		if (!quick && !sisBond)
 		{
 			mat3x3 thisBasis = (*prevs)[i].basis;
 			vec3 thisPos = prevs->at(i).start;
@@ -713,13 +728,16 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 				kickValue = 0;
 			}
 		}
+		else if (!quick && sisBond)
+		{
+			kickValue = sis->at(i).kickValue;
+		}
 
 		/* Baseline kick multiplied by kickValue */
 		double addBlur = baseKick * kickValue;
 
 		prevs->at(i).torsion = addBlur;	
 		prevs->at(i).kickValue = kickValue;
-
 		
 		averageModulation += addBlur;
 	}
@@ -735,7 +753,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 
 double Bond::getBaseKick()
 {
-	if (isFixed() || getAnchor()->whacksDisabled())
+	if (getAnchor()->whacksDisabled())
 	{
 		return 0;
 	}
@@ -756,6 +774,8 @@ double Bond::getBaseKick()
 		if (sisBond)
 		{
 			baseKick = sisBond->_kick;
+			_refineFlexibility = false;
+			_kick = 0;
 		}
 	}
 	
@@ -768,11 +788,6 @@ double Bond::getBaseKick()
 	}
 
 	baseKick += extraKick;
-
-	if (sisBond && sisBond->hasWhack() && sisBond->getWhack()->isDisabled())
-	{
-		baseKick = 0;
-	}
 
 	return baseKick;
 }
@@ -878,8 +893,7 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 	ExplicitModelPtr model = getParentModel();
 	BondPtr prevBond = boost::static_pointer_cast<Bond>(model);
 	int myGroup = -1;
-	double torsionNumber = prevBond->downstreamBondNum(this,
-	                                                   &myGroup);
+	double torsionNumber = prevBond->downstreamBondNum(this, &myGroup);
 
 	bool nextBondExists = false;
 	if (downstreamBondGroupCount())
@@ -938,11 +952,8 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 
 	std::vector<BondSample> myTorsions;
 
-	if (!isFixed())
-	{
-		bool whacked = hasWhack();
-		correctTorsionAngles(&_storedSamples, whacked);
-	}
+	bool whacked = hasWhack();
+	correctTorsionAngles(&_storedSamples, whacked);
 
 	double occTotal = 0;
 	/* vec3 to be ignored */

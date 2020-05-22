@@ -443,7 +443,7 @@ public:
 	/* Returns true if the phi/psi/kick angles should be refined. */
 	bool getRefineFlexibility()
 	{
-		return _refineFlexibility && !isFixed();
+		return (_refineFlexibility && !isFixed());
 	}
 
 	void setRefineBondAngle(bool value = true)
