@@ -479,6 +479,17 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		end++;
 	}
 	
+	AtomGroupPtr full;
+
+	if (skip > 0)
+	{
+		full = monomerRange(start, end);
+	}
+	else
+	{
+		full = monomerRange(end, start);
+	}
+	
 	Timer timer("refine range", true);
 
 	int count = 0;
@@ -490,6 +501,7 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 	std::cout << (skip > 0 ? "C" : "N");
 	std::cout <<  "-terminus (residue " << end << ") ..." << std::endl;
 
+	double fullScore = full->scoreWithMap(ScoreTypeCorrel, target);
 
 	for (int i = start; i != end; i += skip)
 	{
@@ -576,10 +588,16 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 	}
 
 	endCCAve /= (double)count;
+	double change = full->scoreWithMap(ScoreTypeCorrel, target);
 
 	std::cout << "Average CC of monomers went ";
 	std::cout << ((endCCAve < startCCAve) ? "up " : "down ");
 	std::cout << "from " << -startCCAve * 100 << " to " << -endCCAve * 100;
+	std::cout << "." << std::endl;
+
+	std::cout << "CC across whole range ";
+	std::cout << ((change < fullScore) ? "up " : "down ");
+	std::cout << "from " << -fullScore * 100 << " to " << -change * 100;
 	std::cout << "." << std::endl;
 	
 	timer.report();
