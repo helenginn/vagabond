@@ -112,12 +112,13 @@ std::string getBaseFilename(std::string filename)
 
 std::string findNextFilename(std::string file)
 {
-	std::string trial = file;
+	std::string path = getPath(file);
+	std::string trial = getFilename(file);
 	int count = 0;
 
 	while (true)
 	{
-		std::string test = i_to_str(count) + "_" + trial;
+		std::string test = path + "/" + i_to_str(count) + "_" + trial;
 
 		if (!file_exists(test))
 		{
