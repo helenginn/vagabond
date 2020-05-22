@@ -523,6 +523,9 @@ void Knotter::makeArginine()
 	BondPtr ce2nh2 = BondPtr(new Bond(cOmega, nOmega2));
 	ce2nh1->activate();
 	ce2nh2->activate();
+
+	Bond::setTorsion(&*ce2nh1, deg2rad(0));
+	ce2nh1->setFixed(true);
 }
 
 void Knotter::makeLysine()
@@ -763,6 +766,7 @@ void Knotter::makeTyrosine()
 
 	/* not fixed */
 	BondPtr cg2cd2 = BondPtr(new Bond(cGamma, cDelta2));
+	cg2cd2->setRefineFlexibility(false);
 	cg2cd2->activate();
 
 	BondPtr cd22ce2 = BondPtr(new Bond(cDelta2, cEpsilon2));
@@ -823,6 +827,7 @@ void Knotter::makePhenylalanine()
 	cg2cd1->addExtraTorsionSample(cOmega);
 
 	BondPtr cg2cd2 = BondPtr(new Bond(cGamma, cDelta2));
+	cg2cd1->setRefineFlexibility(false);
 	cg2cd2->activate();
 
 	BondPtr cd22ce2 = BondPtr(new Bond(cDelta2, cEpsilon2));
