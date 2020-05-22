@@ -273,20 +273,22 @@ void Options::executeProtocol()
 		return;
 	}
 	
-	int tmp = crystal->getSampleNum();
-	_nSamples = 1;
-	crystal->whack();
-	crystal->refreshAnchors();
-
-	for (int i = 0; i < 10 && _rPosition; i++)
+	if (_rPosition)
 	{
-		std::cout << "Refining positions to PDB (" << 
-		i + 1 << " / 10)" << std::endl;
-		crystal->refinePositions();
-	}
+		int tmp = crystal->getSampleNum();
+		_nSamples = 1;
+		crystal->refreshAnchors();
 
-	_nSamples = tmp;
-	crystal->refreshPositions();
+		for (int i = 0; i < 20 && _rPosition; i++)
+		{
+			std::cout << "Refining positions to PDB (" << 
+			i + 1 << " / 20)" << std::endl;
+			crystal->refinePositions();
+		}
+
+		_nSamples = tmp;
+		crystal->refreshPositions();
+	}
 
 	if (_bStart == -1 && _rPosition)
 	{
@@ -323,7 +325,7 @@ void Options::executeProtocol()
 		std::cout << "Refining positions to density (" << 
 		i + 1 << " / 2)" << std::endl;
 		crystal->refineCrude();
-		crystal->refineSidechainPositions();
+//		crystal->refineSidechainPositions();
 	}
 	
 	recalculateFFT();
