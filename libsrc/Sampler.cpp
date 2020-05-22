@@ -594,8 +594,6 @@ void Sampler::setupScoreWithMap()
 		sampled->addAtomsFrom(_includeForRefine[i]);
 	}
 	
-	double sampling = getParameter(ParamOptionProteinSampling);
-	sampled->addParamType(ParamOptionProteinSampling, sampling);
 	copyParams(sampled);
 	
 	setup_space(&_workspace);
