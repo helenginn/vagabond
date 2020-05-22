@@ -632,14 +632,14 @@ std::string Atom::getPDBContribution(int ensembleNum)
 	}
 	
 	std::ostringstream stream;
-	std::vector<BondSample> positions;
-	positions = getExplicitModel()->getFinalPositions();
+	std::vector<BondSample> samples = getExplicitModel()->getFinalPositions();
+	std::vector<vec3> positions = getExplicitModel()->fishPositions(NULL);
 
 	int i = ensembleNum;
 	int count = 0;
 
-	vec3 placement = positions[i].start;
-	double occupancy = positions[i].occupancy * positions.size();
+	vec3 placement = positions[i];
+	double occupancy = samples[i].occupancy * positions.size();
 	stream << PDBReader::writeLine(shared_from_this(), placement, 
 	                               count, occupancy, bFac);
 
