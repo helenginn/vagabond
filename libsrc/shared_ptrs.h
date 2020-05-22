@@ -248,6 +248,7 @@ typedef enum
 	ParamOptionMagicAngles,
 	ParamOptionNumBonds,
 	ParamOptionThorough,
+	ParamOptionTopLevelOnly,
 	ParamOptionCycles,
 	ParamOptionExtraAtoms,
 	ParamOptionMaxTries,

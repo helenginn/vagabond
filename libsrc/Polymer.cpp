@@ -365,15 +365,18 @@ void Polymer::refineBackboneFrom(int position)
 	cubeDim * 2;
 	
 	addParamType(ParamOptionMaxTries, 1.0);
-	addParamType(ParamOptionTorsion, 0.5);
+	addParamType(ParamOptionTorsion, 1.0);
 	addParamType(ParamOptionNumBonds, 12);
-	addParamType(ParamOptionCycles, 16);
+	addParamType(ParamOptionTopLevelOnly, 1);
+	addParamType(ParamOptionCycles, 32);
 	addParamType(ParamOptionStep, 2);
 	addParamType(ParamOptionProteinSampling, cubeDim);
 	addParamType(ParamOptionExtraAtoms, 2);
 	addParamType(ParamOptionSVD, 1);
 
 	refineToEnd(position, crystal, rType);
+	
+	clearParams();
 }
 
 void Polymer::refineBackbone()

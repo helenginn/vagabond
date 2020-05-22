@@ -741,6 +741,11 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 		{
 			return;
 		}
+		
+		if (hasParameter(ParamOptionTopLevelOnly))
+		{
+			return;
+		}
 	}
 
 	_includeForRefine.clear();
