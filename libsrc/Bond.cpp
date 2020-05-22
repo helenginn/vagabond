@@ -572,6 +572,7 @@ void Bond::activate()
 	getMinor()->setModel(shared_from_this());
 }
 
+/* start = major */
 vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
                                double ratio, vec3 start)
 {
@@ -958,7 +959,7 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 		/* Deviation from correction */
 		currentTorsion += _storedSamples[i].torsion;
 
-		vec3 prevHeavyPos = _storedSamples[i].old_start;
+		vec3 prevMajorPos = _storedSamples[i].old_start;
 		vec3 prevMinorPos = _storedSamples[i].start;
 		mat3x3 oldBasis = _storedSamples[i].basis;
 
@@ -966,7 +967,7 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 		                                        ratio, prevMinorPos);
 
 		/* New basis for the next bond */
-		mat3x3 newBasis = makeTorsionBasis(prevHeavyPos, prevMinorPos,
+		mat3x3 newBasis = makeTorsionBasis(prevMajorPos, prevMinorPos,
 		                                   myCurrentPos, none);
 
 		_storedSamples[i].basis = newBasis;
