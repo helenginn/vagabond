@@ -916,18 +916,11 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 	}
 	else
 	{
-		_lowestZ = FLT_MAX;
-
 		for (int i = 0; i < tmp.size(); i++)
 		{
 			double kick = _storedSamples[i].kickValue;
 			memcpy(&_storedSamples[i], &tmp[i], sizeof(BondSample));
 			_storedSamples[i].kickValue = kick;
-			
-			if (_storedSamples[i].start.z < _lowestZ)
-			{
-				_lowestZ = _storedSamples[i].start.z;
-			}
 		}
 	}
 	
