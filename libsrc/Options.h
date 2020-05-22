@@ -234,7 +234,7 @@ public:
 		return _rIntra;
 	}
 	
-	static void setProteinSampling(double sampling)
+	static void setProteinSampling(void *object, double sampling)
 	{
 		_sampling = sampling;	
 	}
