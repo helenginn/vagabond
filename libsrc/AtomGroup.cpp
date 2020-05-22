@@ -829,7 +829,7 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
 void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max, 
                                 bool addScratch)
 {
-	double cubeDim = Options::getProteinSampling();
+	double cubeDim = Options::getActiveCrystal()->getProteinSampling();
 	
 	if (hasParameter(ParamOptionProteinSampling))
 	{
@@ -1088,6 +1088,8 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot,
 	if (ws->selectAtoms->hasParameter(ParamOptionStep))
 	{
 		step = ws->selectAtoms->getParameter(ParamOptionStep);
+		
+		if (step <= 0) step = 1;
 	}
 
 	VagFFT::operation(map, ws->segment, mapType, &ws->vals, 
