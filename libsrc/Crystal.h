@@ -655,6 +655,7 @@ private:
 	
 	double _realBFactor;
 	double _probeRadius;
+	double _sampling;
 
 	int _sinceBestNum;
 	int _bestState;

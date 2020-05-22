@@ -170,30 +170,6 @@ bool Crystal::refineIntraMovements(bool magic)
 	return changed;
 }
 
-double Crystal::getProteinSampling()
-{
-	double sampling = Options::getProteinSampling();
-	double maxRes = getMaxResolution(_data);
-	
-	if (sampling < 0)
-	{
-		sampling = maxRes / 4.;
-
-		if (sampling >= 0.7)
-		{
-			sampling = 0.7;
-		}
-
-		Options::setProteinSampling(sampling);
-	}
-	else if (sampling == 0)
-	{
-		std::cout << "Protein sampling set to zero?" << std::endl;
-	}
-
-	return sampling;
-}
-
 void Crystal::realSpaceClutter()
 {
 	if (!_fft)
@@ -1157,6 +1133,7 @@ Crystal::Crystal()
 	_lastLocalCC = 0;
 	_bestState = 0;
 	_probeRadius = 0.;
+	_sampling = -1;
 	_silent = false;
 	_largestNum = -INT_MAX;
 	_realBFactor = -1;
@@ -1868,6 +1845,15 @@ double Crystal::updateVariable(double *local, option_getter get, Setter set,
 	}
 	
 	return *local;
+}
+
+double Crystal::getProteinSampling()
+{
+	double maxRes = getMaxResolution(_data);
+	double sampling = std::min(0.7, maxRes / 4);
+
+	return updateVariable(&_sampling, Options::getProteinSampling,
+	               Options::setProteinSampling, "sampling", "Å", sampling);
 }
 
 double Crystal::getProbeRadius()
