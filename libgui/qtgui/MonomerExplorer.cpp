@@ -351,7 +351,8 @@ void MonomerExplorer::applyParamOptions(SamplerPtr sampled)
 		
 		if (param.optionType == ParamOptionTorsion)
 		{
-			sampled->addParamType(ParamOptionBondAngle, param.value);
+//			sampled->addParamType(ParamOptionBondAngle, param.value);
+
 		}
 	}
 }
@@ -413,6 +414,8 @@ void MonomerExplorer::pushRefineToEnd()
 		return;	
 	}
 
+	PolymerPtr polymer = _monomer->getPolymer();
+	polymer->addParamType(ParamOptionSVD, 1);
 	Notifiable *notify = preparePolymer();
 	notify->setInstruction(InstructionTypeRefineToEnd);
 }
