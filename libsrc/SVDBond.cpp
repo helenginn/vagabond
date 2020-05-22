@@ -457,7 +457,7 @@ void SVDBond::addToStrategy(RefinementStrategyPtr strategy, double mult,
 	{
 		strategy->addParameter(_params[i].pTorsion, Param::getValue,
 		                       Param::setValue, 
-		                       deg2rad(mult), deg2rad(mult / 1000));
+		                       deg2rad(mult), deg2rad(mult / 100));
 	}
 	
 	double phi_step = deg2rad(180.);
