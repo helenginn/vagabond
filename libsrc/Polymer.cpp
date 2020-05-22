@@ -549,10 +549,10 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		BackbonePtr bone = monomer->getBackbone();
 		SidechainPtr side = monomer->getSidechain();
 		
-		if (rType == RefinementFine && getMonomer(i + skip))
+		if (rType == RefinementFine && getMonomer(i + skip * 2))
 		{
-			BackbonePtr second = getMonomer(i + skip)->getBackbone();
-			vec3 centre = bone->centroid();
+			BackbonePtr second = getMonomer(i + skip * 2)->getBackbone();
+			vec3 centre = second->centroid();
 			Options::getRuntimeOptions()->focusOnPosition(centre, 24);
 		}
 
