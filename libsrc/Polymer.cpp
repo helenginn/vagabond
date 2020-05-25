@@ -374,6 +374,17 @@ void Polymer::refineBackboneFrom(int position)
 	addParamType(ParamOptionExtraAtoms, 2);
 	addParamType(ParamOptionSVD, 1);
 
+	bool lowRes = (crystal->getMaxResolution() > 3.5);
+	if (lowRes)
+	{
+		addParamType(ParamOptionMaxTries, 2.0);
+		addParamType(ParamOptionCycles, 48);
+		addParamType(ParamOptionTorsion, 0.5);
+		addParamType(ParamOptionExtraAtoms, 8);
+		addParamType(ParamOptionNumBonds, 14);
+		addParamType(ParamOptionPadding, 5);
+	}
+
 	refineToEnd(position, crystal, rType);
 	
 	clearParams();
@@ -559,10 +570,10 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		changed = true;
 		
 		copyParams(side);
+		side->addParamType(ParamOptionTorsion, 0.1);
 		copyParams(bone);
 		copyParams(monomer);
-		refineMonomer(monomer, target, rType);
-
+		refineMonomer(monomer, target, rType); 
 		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);	
 		double backScore = bone->scoreWithMap(ScoreTypeCorrel, target);	
 		double sideScore = side->scoreWithMap(ScoreTypeCorrel, target);	

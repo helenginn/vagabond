@@ -22,77 +22,86 @@
 void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
 	if (!canRefine()) return;
-	
-	bool lowRes = (target->getMaxResolution() > 2.5);
-	
-	if (!paramCount())
-	{
-		double range = 2.;
 
-		if (_timesRefined >= 5)
+	bool medRes = (target->getMaxResolution() > 2.5);
+	bool lowRes = (target->getMaxResolution() > 3.5);
+
+	ParamMap tmp = getParams();
+
+	double range = 2.;
+
+	if (_timesRefined >= 5)
+	{
+		range = 0.2;
+	}
+
+	switch (rType)
+	{
+		case RefinementModelPos:
+		addParamType(ParamOptionTorsion, range);
+		addParamType(ParamOptionNumBonds, 3);
+		addParamType(ParamOptionMaxTries, 60);
+		break;
+
+		case RefinementSavedPos:
+		addParamType(ParamOptionTorsion, range);
+		addParamType(ParamOptionNumBonds, 3);
+		break;
+
+		case RefinementSidePos:
+		addParamType(ParamOptionTorsion, 0.1);
+		addParamType(ParamOptionNumBonds, 3);
+		break;
+
+		case RefinementSidechain:
+		addParamType(ParamOptionTorsion, 0.1);
+		addParamType(ParamOptionKick, 0.5);
+		addParamType(ParamOptionNumBonds, 3);
+
+		if (!medRes)
 		{
-			range = 0.2;
+			addParamType(ParamOptionMagicAngles, 30.0);
 		}
 
+		break;
+
+		case RefinementFine:
+		if (lowRes)
+		{
+			addParamType(ParamOptionTorsion, 0.1);
+		}
+		break;
+
+		default:
+		break;
+	}
+
+	if (_timesRefined >= 5)
+	{
 		switch (rType)
 		{
 			case RefinementModelPos:
-			addParamType(ParamOptionTorsion, range);
-			addParamType(ParamOptionNumBonds, 3);
-			addParamType(ParamOptionMaxTries, 60);
+			addParamType(ParamOptionTorsion, 5);
+			addParamType(ParamOptionSVD, 1);
+			addParamType(ParamOptionCycles, 30);
+			addParamType(ParamOptionMaxTries, 10);
 			break;
 
 			case RefinementSavedPos:
-			addParamType(ParamOptionTorsion, range);
-			addParamType(ParamOptionNumBonds, 3);
-			break;
-
-			case RefinementSidePos:
-			addParamType(ParamOptionTorsion, 0.1);
-			addParamType(ParamOptionNumBonds, 3);
+			addParamType(ParamOptionBondAngle, range / 1);
 			break;
 
 			case RefinementSidechain:
-			addParamType(ParamOptionTorsion, 0.1);
-			addParamType(ParamOptionKick, 0.5);
-			
-			if (!lowRes)
-			{
-				addParamType(ParamOptionMagicAngles, 30.0);
-			}
-
-			addParamType(ParamOptionNumBonds, 3);
 			break;
 
 			default:
 			break;
 		}
-		
-		if (_timesRefined >= 5)
-		{
-			switch (rType)
-			{
-				case RefinementModelPos:
-				addParamType(ParamOptionTorsion, 5);
-				addParamType(ParamOptionSVD, 1);
-				addParamType(ParamOptionCycles, 30);
-				addParamType(ParamOptionMaxTries, 10);
-				break;
+	}
 
-				case RefinementSavedPos:
-				addParamType(ParamOptionBondAngle, range / 1);
-				break;
-
-				case RefinementSidechain:
-				if (!lowRes)
-				{
-//					addParamType(ParamOptionBondAngle, 0.1);
-				}
-
-				default:
-				break;
-			}
-		}
+	for (ParamMap::iterator it = tmp.begin(); it != tmp.end(); it++)
+	{
+		addParamType(it->first, it->second);
 	}
 
 	if (rType == RefinementSidechain || rType == RefinementSidePos)
@@ -100,7 +109,6 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		std::cout << getMonomer()->getResCode() << std::flush;
 		rType = RefinementFine;
 	}
-
 	
 	MonomerPtr monomer = getMonomer();
 	BackbonePtr backbone = monomer->getBackbone();

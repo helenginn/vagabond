@@ -251,6 +251,7 @@ typedef enum
 	ParamOptionTopLevelOnly,
 	ParamOptionCycles,
 	ParamOptionExtraAtoms,
+	ParamOptionPadding,
 	ParamOptionMaxTries,
 	ParamOptionStep,
 	ParamOptionSVD,
