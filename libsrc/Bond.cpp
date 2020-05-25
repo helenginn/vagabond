@@ -109,7 +109,6 @@ Bond::Bond(AtomPtr major, AtomPtr minor, int group)
 
 	deriveBondLength();
 	deriveBondAngle();
-	deriveCirclePortion();
 	deriveTorsionAngle();
 	
 	postParseTidy();
@@ -341,7 +340,7 @@ void Bond::deriveBondAngle(bool assign)
 	}
 }
 
-double Bond::empiricalCirclePortion(Bond *lastBond)
+double Bond::empiricalCirclePortion(BondPtr lastBond)
 {
 	vec3 hPos;
 
@@ -372,16 +371,17 @@ double Bond::empiricalCirclePortion(Bond *lastBond)
 	return increment;
 }
 
-void Bond::deriveCirclePortion()
+void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b)
 {
-	if (!getParentModel() || !getParentModel()->isBond())
+	if (getParentModel() && getParentModel()->isAnchor())
 	{
-		if (getParentModel()->isAnchor())
-		{
-			setUsingTorsion(true);
-			_circlePortion = 0;
-		}
-
+		setUsingTorsion(true);
+		_circlePortion = 0;
+		return;
+	}
+	
+	if (getMinor()->getElectronCount() == 1)
+	{
 		return;
 	}
 	
@@ -390,14 +390,8 @@ void Bond::deriveCirclePortion()
 	/* We'll be in the same group as the last group */
 	int groups = parent->downstreamBondGroupCount();
 
-	/* First we check to see if there is a sister bond, given that
-	 * 	we have not yet been added to the parent */
+	/* First we check to see if there is a sister bond */
 	int count = parent->downstreamBondCount(groups - 1);
-	
-	if (getMinor()->getElectronCount() == 1)
-	{
-		return;
-	}
 	
 	if (count == 1)
 	{
@@ -407,28 +401,12 @@ void Bond::deriveCirclePortion()
 		return;
 	}
 	
-	/* First bond should not have a circle portion */
-	int num = parent->downstreamBondNum(this, NULL);
-	
-	if (num == 0)
+	/* We have a sister bond and must get a circle portion */
+	BondPtr lastBond = getClosestSister();
+	if (!lastBond)
 	{
 		return;
 	}
-	
-	/* We can't calculate and compare a circle portion if our grandparent
-	 * is an Absolute model and the heavy alignment atom is not set.
-	 * This function will be called again when it is set, for now we just
-	 * exit. */
-	if (!parent->getParentModel()->isBond())
-	{	
-		if (_heavyAlign.expired())
-		{
-			return;
-		}
-	}
-	
-	/* We have a sister bond and must get a circle portion */
-	Bond *lastBond = parent->nakedDownstreamBond(groups - 1, count - 2);
 
 	AtomType central = parent->getMinor()->getGeomType();
 	AtomType preceding = parent->getMajor()->getGeomType();
@@ -439,8 +417,26 @@ void Bond::deriveCirclePortion()
 	/* Which means that angle_a should match x axis */
 	GeomTable table = GeomTable::getGeomTable();
 	double angle_c = table.getBondAngle(preceding, central, lastAtom);
-	double angle_b = table.getBondAngle(preceding, central, newDownAtom);
-	double angle_a = table.getBondAngle(lastAtom, central, newDownAtom);
+	double angle_b = 0;
+	double angle_a = 0;
+	
+	if (custom_angle_a > 0)
+	{
+		angle_a = deg2rad(custom_angle_a);
+	}
+	else
+	{
+		angle_a = table.getBondAngle(lastAtom, central, newDownAtom);
+	}
+	
+	if (custom_angle_b > 0)
+	{
+		angle_b = deg2rad(custom_angle_b);
+	}
+	else
+	{
+		angle_b = table.getBondAngle(preceding, central, newDownAtom);
+	}
 	
 	bool ok = true;
 
@@ -570,6 +566,7 @@ void Bond::activate()
 	return;
 
 	getMinor()->setModel(shared_from_this());
+	deriveCirclePortion();
 }
 
 /* start = major */
@@ -656,6 +653,27 @@ AnchorPtr Bond::getAnchor()
 	AnchorPtr anch = poly->getAnchorModel();
 	
 	return anch;
+}
+
+BondPtr Bond::getClosestSister()
+{
+	ExplicitModelPtr model = getParentModel();
+	if (!model)
+	{
+		return BondPtr();
+	}
+
+	int myGroup = -1;
+	double torsionNumber = model->downstreamBondNum(this, &myGroup);
+
+	if (torsionNumber > 0 && model->isBond())
+	{
+		BondPtr parent = ToBondPtr(model);
+		BondPtr sisBond = parent->downstreamBond(myGroup, torsionNumber - 1);
+		return sisBond;
+	}
+	
+	return BondPtr();
 }
 
 void Bond::correctTorsionAngles()

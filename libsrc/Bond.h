@@ -473,6 +473,8 @@ public:
 		
 		return nakedDownstreamBond(group, i)->shared_from_this();
 	}
+	
+	BondPtr getClosestSister();
 
 	void setTwist(TwistPtr twist)
 	{
@@ -633,9 +635,12 @@ private:
 	/* Grab bond length from the atom types of major/minor */
 	void deriveBondLength();
 	void deriveBondAngle(bool assign = true);
-	void deriveCirclePortion();
+
+	/** custom sister angle in degrees */
+	void deriveCirclePortion(double customSisterAngle = -1,
+	                         double customMainAngle = -1);
 	void deriveTorsionAngle();
-	double empiricalCirclePortion(Bond *lastBond);
+	double empiricalCirclePortion(BondPtr lastBond);
 
 	void addDownstreamBond(Bond *bond, int group);
 
