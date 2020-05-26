@@ -11,7 +11,11 @@ maria_dep = dependency('libmariadb', required: false)
 
 # Geometry and/or rotamer lookup madness
 
-lib_vgeom = library('vgeom', 'libinfo/GeomTable.cpp', 'libinfo/RotamerTable.cpp', cpp_args: ['-w'], install: true)
+lib_vgeom = library('vgeom', 
+'libinfo/GeomTable.cpp', 
+'libinfo/RotamerTable.cpp', 
+'libinfo/GeomVariant.cpp', 
+cpp_args: ['-w'], install: true)
 inc_vgeom = include_directories('libinfo')
 dep_vgeom = declare_dependency(link_with: lib_vgeom, include_directories: inc_vgeom)
 
@@ -49,6 +53,7 @@ gen_src = custom_target('commit-output',
 
 base_files = files('libsrc/Absolute.cpp', 
 'libsrc/Anchor.cpp', 
+'libsrc/Angler.cpp', 
 'libsrc/Anisotropicator.cpp', 
 'libsrc/Atom.cpp', 
 'libsrc/AtomGroup.cpp', 

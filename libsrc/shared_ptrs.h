@@ -54,6 +54,7 @@
 #define ToMonomerPtr(a) (boost::static_pointer_cast<Monomer>((a)))
 #define ToParserPtr(a) (boost::static_pointer_cast<Parser>((a)))
 #define ToGridPtr(a) (boost::static_pointer_cast<RefinementGridSearch>(a))
+#define ToAnglerPtr(a) (boost::static_pointer_cast<Angler>((a)))
 
 #define ToThingPtr(a) (boost::static_pointer_cast<Thing>((a)))
 
@@ -154,6 +155,9 @@ typedef boost::shared_ptr<Bond> BondPtr;
 typedef boost::weak_ptr<Bond> BondWkr;
 typedef boost::shared_ptr<BondGroup> BondGroupPtr;
 typedef boost::shared_ptr<GhostBond> GhostBondPtr;
+
+class Angler;
+typedef boost::shared_ptr<Angler> AnglerPtr;
 
 class Whack;
 class Twist;
