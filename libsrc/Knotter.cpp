@@ -18,6 +18,7 @@
 #include "GhostBond.h"
 #include "Polymer.h"
 #include "Options.h"
+#include "Angler.h"
 
 #define DEFAULT_PEPTIDE_BLUR 0
 #define DEFAULT_RAMACHANDRAN_BLUR 0
@@ -75,8 +76,75 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
 	{
 		ca2cb->setRefineBondAngle();
 	}
-
+	
 	return ca2cb;
+}
+
+void Knotter::makeAngler(BondPtr phi, BondPtr psi, MonomerPtr mon,
+                         std::string atomName)
+{
+	if (mon->findAtom(atomName))
+	{
+		ModelPtr mn = (mon->findAtom(atomName)->getModel());
+		
+		if (!mn || !mn->isBond())
+		{
+			return;
+		}
+
+		BondPtr n = ToBondPtr(mn);
+
+		AnglerPtr angler = setupAngler(mon);
+		angler->setBonds(n, phi, psi);
+		angler->setupTable();
+	}
+}
+
+void Knotter::betaAngler(bool onRight)
+{
+	bool isGlycine = (_backbone->getMonomer()->getIdentifier() == "gly");
+	if (isGlycine)
+	{
+		return;
+	}
+
+	ModelPtr ca = (_backbone->findAtom("CA")->getModel());
+	BondPtr phi, psi;
+	ToBondPtr(ca)->getTorsionBonds(&phi, &psi);
+	if (!psi || !phi)
+	{
+		return;
+	}
+
+	MonomerPtr mon = _backbone->getMonomer();
+
+	AnglerPtr angler = setupAngler(mon);
+
+	makeAngler(phi, psi, mon, "N");
+	makeAngler(phi, psi, mon, "C");
+	makeAngler(phi, psi, mon, "CA");
+	makeAngler(phi, psi, mon, "CB");
+	makeAngler(phi, psi, mon, "O");
+}
+
+AnglerPtr Knotter::setupAngler(MonomerPtr mon)
+{
+	std::string id = mon->getIdentifier();
+	int resNum = mon->getResidueNum();
+	bool pro = false;
+
+	PolymerPtr polymer = _backbone->getPolymer();
+	MonomerPtr next = polymer->getMonomer(resNum + 1);
+
+	if (next && next->getIdentifier() == "pro")
+	{
+		pro = true;
+	}
+	
+	AnglerPtr angler = AnglerPtr(new Angler());
+	angler->setNextIsProline(pro);
+	
+	return angler;
 }
 
 void Knotter::tieTowardsNTerminus()
@@ -129,11 +197,13 @@ void Knotter::tieTowardsNTerminus()
 
 	bool isProline = (_backbone->getMonomer()->getIdentifier() == "pro");
 	AtomPtr carbonylCarbon = _backbone->findAtom("C");
+	
+	BondPtr nitro2Carbon;
 
 	/* already tied up to C terminus */
 	if (prevCAlpha->getModel()->isBond())
 	{
-		BondPtr nitro2Carbon = BondPtr(new Bond(prevNitrogen, carbonylCarbon));
+		nitro2Carbon = BondPtr(new Bond(prevNitrogen, carbonylCarbon));
 		nitro2Carbon->setRefineFlexibility(false);
 		nitro2Carbon->activate();
 	}
@@ -179,7 +249,7 @@ void Knotter::tieTowardsNTerminus()
 		BondPtr nSpine2hydrogen = BondPtr(new Bond(nSpine, nHydrogen));
 		nSpine2hydrogen->activate();
 	}
-	
+
 }
 
 void Knotter::tieTowardsCTerminus()
@@ -270,9 +340,10 @@ void Knotter::tieTowardsCTerminus()
 		nSpine2hydrogen->activate();
 	}
 
+	BondPtr carbonyl2nextN;
 	if (nextBackbone)
 	{
-		BondPtr carbonyl2nextN = BondPtr(new Bond(carbonylCarbon, nextNSpine));
+		carbonyl2nextN = BondPtr(new Bond(carbonylCarbon, nextNSpine));
 		carbonyl2nextN->setRefineFlexibility(false);
 		carbonyl2nextN->activate();
 

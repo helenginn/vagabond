@@ -39,8 +39,9 @@ public:
 	void removeFromPolymer(PolymerPtr pol);
 	void updateAtoms();
 
-	void translateStartPositions(std::vector<BondSample> &stored);
+	void applyTranslations(std::vector<BondSample> &stored);
 	void applyRotations(std::vector<BondSample> &stored);
+	void applyMotions(std::vector<BondSample> &stored);
 
 	void addTranslationParameters(RefinementStrategyPtr strategy);
 	void refine(bool reciprocal = false);

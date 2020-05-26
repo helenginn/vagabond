@@ -486,6 +486,13 @@ public:
 		return (!_twist.expired());
 	}
 	
+	void reangle();
+
+	void setAngler(AnglerPtr ang)
+	{
+		_angler = ang;
+	}
+	
 	TwistPtr getTwist()
 	{
 		if (_twist.expired())
@@ -538,6 +545,8 @@ public:
 	void correctTorsionAngles();
 
 	virtual bool canFish();
+
+	void getTorsionBonds(BondPtr *phi, BondPtr *psi);
 
 protected:
 	virtual std::string getParserIdentifier()
@@ -637,8 +646,11 @@ private:
 	void deriveBondAngle(bool assign = true);
 
 	/** custom sister angle in degrees */
-	void deriveCirclePortion(double customSisterAngle = -1,
-	                         double customMainAngle = -1);
+	void deriveCirclePortion(double custom_angle_a = -1,
+	                         double custom_angle_b = -1,
+	                         double custom_angle_c = -1,
+	                         double chiralmult = 1);
+	bool quickCirclePortion(double ang_a, double ang_b, double ang_c);
 	void deriveTorsionAngle();
 	double empiricalCirclePortion(BondPtr lastBond);
 
@@ -659,6 +671,7 @@ private:
 	mat3x3 _baseMagic;
 	
 	KeyPointsWkr _keyPoints;
+	AnglerPtr _angler;
 	
 	bool _fish;
 };

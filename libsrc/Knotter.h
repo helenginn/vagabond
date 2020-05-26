@@ -35,7 +35,12 @@ public:
 	void tie();
 	void tieTowardsCTerminus();
 	void tieTowardsNTerminus();
+	void betaAngler(bool onRight);
 private:
+	void makeAngler(BondPtr phi, BondPtr psi, MonomerPtr mon,
+                         std::string atomName);
+
+	AnglerPtr setupAngler(MonomerPtr mon);
 	SidechainPtr _sidechain;
 	BackbonePtr _backbone;
 

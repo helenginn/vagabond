@@ -118,6 +118,7 @@ void Crystal::refinePolymers(RefinementType type)
 		}
 		
 		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		pol->clearParams();
 		
 		if (type == RefinementCrude)
 		{
@@ -756,6 +757,13 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 	}
 }
 
+void Crystal::undo()
+{
+	restoreState(-1);
+	_sinceBestNum = 0;
+	std::cout << "Gone back one state." << std::endl;
+}
+
 bool Crystal::undoIfWorse()
 {
 	if (_lastMetric > _ccWork)
@@ -765,8 +773,7 @@ bool Crystal::undoIfWorse()
 		<< _ccWork * 100 << "%) "
 		"due to CCwork rise since." << std::endl;
 
-		restoreState(-1);
-		_sinceBestNum = 0;
+		undo();
 		return true;
 	}
 	else
@@ -1452,6 +1459,7 @@ void Crystal::addProperties()
 	addDoubleProperty("probe_radius", &_probeRadius);
 	addIntProperty("cycles_since_best", &_sinceBestNum);
 	addIntProperty("sample_num", &_sampleNum);
+	addDoubleProperty("grid_size", &_sampling);
 
 	_spgNum = 0;
 	_spgString = "";

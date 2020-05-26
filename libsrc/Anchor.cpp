@@ -234,8 +234,7 @@ void Anchor::applyWholeMotions()
 {
 	for (int i = 0; i < _motions.size(); i++)
 	{
-		_motions[i]->translateStartPositions(_storedSamples);
-		_motions[i]->applyRotations(_storedSamples);
+		_motions[i]->applyMotions(_storedSamples);
 	}
 }
 

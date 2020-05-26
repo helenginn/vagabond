@@ -110,7 +110,7 @@ void Motion::removeFromPolymer(PolymerPtr pol)
 	updateAtoms();
 }
 
-void Motion::translateStartPositions(std::vector<BondSample> &stored)
+void Motion::applyTranslations(std::vector<BondSample> &stored)
 {
 	mat3x3 translation = _trans->getMat3x3();
 	Anisotropicator tropicator;
@@ -289,6 +289,35 @@ void Motion::refine(bool reciprocal)
 
 }
 
+void Motion::applyMotions(std::vector<BondSample> &stored)
+{
+	vec3 before = empty_vec3();
+	for (int i = 0; i < stored.size(); i++)
+	{
+		vec3_add_to_vec3(&before, stored[i].start);
+	}
+	vec3_mult(&before, 1 / (double)stored.size());
+
+	applyTranslations(stored);
+	applyRotations(stored);
+
+	vec3 after = empty_vec3();
+	for (int i = 0; i < stored.size(); i++)
+	{
+		vec3_add_to_vec3(&after, stored[i].start);
+	}
+	vec3_mult(&after, 1 / (double)stored.size());
+	
+	vec3_subtract_from_vec3(&after, before);
+	vec3_mult(&after, -1);
+
+	for (int i = 0; i < stored.size(); i++)
+	{
+		vec3_subtract_from_vec3(&stored[i].start, after);
+		vec3_subtract_from_vec3(&stored[i].old_start, after);
+	}
+}
+
 void Motion::applyRotations(std::vector<BondSample> &stored)
 {
 	vec3 position = empty_vec3();
@@ -308,6 +337,8 @@ void Motion::applyRotations(std::vector<BondSample> &stored)
 
 	vec3 displacement = _displacement->getVec3();
 	vec3_add_to_vec3(&displacement, rot_disp);
+	
+	vec3 tot_disp = empty_vec3();
 
 	for (int i = 0; i < stored.size(); i++)
 	{

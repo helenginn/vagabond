@@ -48,6 +48,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			range = 0.5;
 		}
 
+		if (_timesRefined >= 16)
+		{
+			range = 0.2;
+		}
+
 		switch (rType)
 		{
 			case RefinementModelPos:
@@ -82,7 +87,6 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			switch (rType)
 			{
 				case RefinementModelPos:
-				/* warning - bond angle will release too much carbonyl */
 				addParamType(ParamOptionNumBonds, 8);
 				addParamType(ParamOptionCycles, 100);
 				addParamType(ParamOptionMaxTries, 6);
@@ -97,6 +101,21 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				default:
 				break;
 			}
+		}
+		
+		if (_timesRefined >= 15)
+		{
+			/*
+			switch (rType)
+			{
+				case RefinementModelPos:
+				addParamType(ParamOptionNumBonds, 10);
+				addParamType(ParamOptionCycles, 200);
+				break;
+				default:
+				break;
+			}
+			*/
 		}
 	}
 

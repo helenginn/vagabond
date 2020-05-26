@@ -319,16 +319,6 @@ void Options::executeProtocol()
 	}
 
 	
-	for (int i = 0; i < 2 && _far; i++)
-	{
-		recalculateFFT();
-
-		std::cout << "Refining positions to density (" << 
-		i + 1 << " / 2)" << std::endl;
-		crystal->refineCrude();
-//		crystal->refineSidechainPositions();
-	}
-	
 	recalculateFFT();
 	
 	/* If we should have a flexible number of cycles which continues
@@ -369,6 +359,14 @@ void Options::executeProtocol()
 						break;
 					}
 				}
+			}
+
+			for (int j = 0; i == 3 && j < 2 && _far; j++)
+			{
+				std::cout << "Refining positions to density (" << 
+				j + 1 << " / 2)" << std::endl;
+				crystal->refineCrude();
+				recalculateFFT();
 			}
 		}
 

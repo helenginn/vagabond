@@ -375,6 +375,7 @@ public:
 	void applyShellFactors(DiffractionPtr data);
 	double getAdjustBFactor();
 	
+	void undo();
 	bool undoIfWorse();
 	bool returnToBestState();
 

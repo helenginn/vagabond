@@ -18,6 +18,7 @@
 
 #include "Polymer.h"
 #include "KeyPoints.h"
+#include "Knotter.h"
 #include "Fibonacci.h"
 #include "Timer.h"
 #include "Twist.h"
@@ -285,6 +286,19 @@ void Polymer::tieAtomsUp()
 		}
 	}
 	
+	for (int i = monomerBegin(); i <= monomerEnd(); i++)
+	{
+		if (!getMonomer(i))
+		{
+			continue;
+		}
+
+		KnotterPtr knotter = KnotterPtr(new Knotter());
+		knotter->setBackbone(getMonomer(i)->getBackbone());
+		knotter->setSidechain(getMonomer(i)->getSidechain());
+		knotter->betaAngler(i >= _anchorNum);
+	}
+
 	BondPtr n2ca = ToBondPtr(ca->getModel());
 	BondPtr ca2c = ToBondPtr(c->getModel());
 	BondPtr n2c = ToBondPtr(prev_c->getModel());
@@ -362,7 +376,7 @@ void Polymer::refineBackboneFrom(int position)
 	
 	RefinementType rType = RefinementFine;
 	double cubeDim = crystal->getProteinSampling();
-	cubeDim * 2;
+//	cubeDim * 2;
 	
 	addParamType(ParamOptionMaxTries, 1.0);
 	addParamType(ParamOptionTorsion, 1.0);
@@ -934,8 +948,6 @@ void Polymer::ramachandranPlot()
 			continue;
 		}
 		
-		bool forwards = (i > getAnchor());
-
 		AtomList phiAtoms = getMonomer(i)->findAtoms("N");
 		AtomList psiAtoms = getMonomer(i)->findAtoms("C");
 		AtomList caAtoms = getMonomer(i)->findAtoms("CA");

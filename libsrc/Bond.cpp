@@ -12,6 +12,7 @@
 
 #include "Bond.h"
 #include "KeyPoints.h"
+#include "Angler.h"
 #include "Atom.h"
 #include "Shouter.h"
 #include "AtomGroup.h"
@@ -371,7 +372,8 @@ double Bond::empiricalCirclePortion(BondPtr lastBond)
 	return increment;
 }
 
-void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b)
+void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b,
+                               double custom_angle_c, double chiralmult)
 {
 	if (getParentModel() && getParentModel()->isAnchor())
 	{
@@ -416,7 +418,7 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b)
 	/* Organise angles to rotate y/z around x */
 	/* Which means that angle_a should match x axis */
 	GeomTable table = GeomTable::getGeomTable();
-	double angle_c = table.getBondAngle(preceding, central, lastAtom);
+	double angle_c = 0;
 	double angle_b = 0;
 	double angle_a = 0;
 	
@@ -438,6 +440,15 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b)
 		angle_b = table.getBondAngle(preceding, central, newDownAtom);
 	}
 	
+	if (custom_angle_c > 0)
+	{
+		angle_c = deg2rad(custom_angle_c);
+	}
+	else
+	{
+		angle_c = table.getBondAngle(preceding, central, lastAtom);
+	}
+	
 	bool ok = true;
 
 	if (angle_a < 0 || angle_b < 0 || angle_c < 0)
@@ -445,7 +456,7 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b)
 		/* We can't do this - we must derive from the model */
 		ok = false;
 	}
-	
+
 	if (ok)
 	{
 		mat3x3 bondcell = mat3x3_from_unit_cell(1, 1, 1, rad2deg(angle_a),
@@ -457,12 +468,22 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b)
 		vec3 lastAtomAxis = mat3x3_axis(bondcell, 2);
 		double increment = 0;
 		mat3x3_closest_rot_mat(lastAtomAxis, newAtomAxis, xAxis, &increment);
+
 		double theoretical = increment / (2 * M_PI);
 		
 		int chiral = table.getChiralCentre(preceding, lastAtom, newDownAtom);
+		chiral *= chiralmult;
 
 		if (chiral != 0)
 		{
+			if (custom_angle_a > 0 && false)
+			{
+				std::cout << "Executing that ";
+				std::cout << parent->getMajor()->shortDesc() << " ";
+				std::cout << lastBond->getMinor()->shortDesc() << " ";
+				std::cout << getMinor()->shortDesc() << std::endl;
+			}
+			
 			if (theoretical > 0.5) theoretical -= 1;
 			if (theoretical < -0.5) theoretical += 1;
 			theoretical *= (double)chiral;
@@ -471,10 +492,19 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b)
 			if (theoretical == theoretical)
 			{
 				_circlePortion = lastBond->_circlePortion + theoretical;
+				return;
 			}
 		}
 		else
 		{
+			if (custom_angle_a > 0)
+			{
+				std::cout << "Executing this ";
+				std::cout << parent->getMajor()->shortDesc() << " ";
+				std::cout << lastBond->getMinor()->shortDesc() << " ";
+				std::cout << getMinor()->shortDesc() << std::endl;
+			}
+
 			/* This angle will always come out positive, so we must compare
 			 * to the original placement as well to maintain chirality */
 			double empirical = empiricalCirclePortion(lastBond);
@@ -901,6 +931,34 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 	
 	return samples;
 }
+
+void Bond::reangle()
+{
+	if (_angler)
+	{
+		double old = getBendAngle(this);
+		double ang = _angler->getMainAngle();
+		double angle = rad2deg(ang);
+		setBendAngle(this, ang);
+
+		double sis = rad2deg(_angler->getSisterAngle());
+		double other = rad2deg(_angler->getOtherAngle());
+		
+		if (sis > 0)
+		{
+			double mult = 1;
+			if (angle + sis + other > 360.)
+			{
+				angle = 240 - angle;
+				sis = 240 - sis;
+				other = 240 - other;
+				mult = -1;
+			}
+
+			deriveCirclePortion(sis, angle, other, mult);
+		}
+	}
+}
 	
 std::vector<BondSample> *Bond::getManyPositionsPrivate()
 {
@@ -908,6 +966,8 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 	{
 		return &_storedSamples;
 	}
+	
+	reangle();
 
 	ExplicitModelPtr model = getParentModel();
 	BondPtr prevBond = boost::static_pointer_cast<Bond>(model);
@@ -1835,3 +1895,39 @@ void Bond::reset()
 	deriveBondAngle();
 }
 
+void Bond::getTorsionBonds(BondPtr *phi, BondPtr *psi)
+{
+	*phi = NULL;
+	*psi = NULL;
+
+	if (downstreamBondGroupCount() == 0)
+	{
+		return;
+	}
+
+	AtomPtr atom = downstreamAtom(0, 0);
+
+	if (!atom || !atom->getModel()->isBond() ||
+	    ToBondPtr(atom->getModel())->downstreamBondGroupCount() == 0)
+	{
+		return;
+	}
+	
+	*phi = ToBondPtr(atom->getModel());
+
+	AtomPtr a2 = ToBondPtr(atom->getModel())->downstreamAtom(0, 0);
+
+	if (!a2 || !a2->getModel()->isBond())
+	{
+		return;
+	}
+	
+	*psi = ToBondPtr(a2->getModel());
+	
+	if (_leftOfAnchor)
+	{
+		BondPtr tmp = *phi;
+		*phi = *psi;
+		*psi = tmp;
+	}
+}
