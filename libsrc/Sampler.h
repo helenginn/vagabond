@@ -226,6 +226,11 @@ protected:
 		return _params[type];
 	}
 	
+	ParamMap getParams()
+	{
+		return _params;
+	}
+	
 	RefinementStrategyPtr getStrategy()
 	{
 		return _strategy;
