@@ -671,8 +671,10 @@ void Selected2GL::manualRefine()
 			bool changed = group->didChange();
 
 			group->addParamType(ParamOptionMaxTries, 1.0);
-			group->addParamType(ParamOptionNumBonds, 0.0);
+			group->addParamType(ParamOptionNumBonds, 10.0);
 			group->addParamType(ParamOptionOccupancy, 1.0);
+			group->addParamType(ParamOptionTorsion, 0.5);
+			group->addParamType(ParamOptionSVD, 1);
 
 			group->refine(crystal, RefinementFine);
 			changed &= group->didChange();

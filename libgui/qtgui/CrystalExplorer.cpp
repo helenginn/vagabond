@@ -180,6 +180,14 @@ void CrystalExplorer::clickedMoleListItem()
 		_widgets.push_back(b);
 
 		height += TEXT_HEIGHT;
+		b = new QPushButton("Fit backbone", this);
+		b->setGeometry(160, height, 160, TEXT_HEIGHT);
+		b->show();
+		connect(b, &QPushButton::clicked,
+		        [=]{ pushBackbone(); });
+		_widgets.push_back(b);
+
+		height += TEXT_HEIGHT;
 
 		PolymerPtr p= ToPolymerPtr(molecule);
 		AnchorPtr a = p->getAnchorModel();
@@ -294,6 +302,10 @@ void CrystalExplorer::pushRigidBody()
 	sendObject(InstructionTypeRigidBody);
 }
 
+void CrystalExplorer::pushBackbone()
+{
+	sendObject(InstructionTypeRefinePosToDensity);
+}
 
 void CrystalExplorer::pushSequence()
 {

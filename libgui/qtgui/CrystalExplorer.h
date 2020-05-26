@@ -53,6 +53,7 @@ private slots:
 	void pushSequence();
 	void pushFitSides();
 	void pushFitIntra();
+	void pushBackbone();
 	void refineSponges();
 	void pushFitMotion();
 	void pushRigidBody();

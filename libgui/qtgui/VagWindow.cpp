@@ -89,6 +89,11 @@ void VagWindow::makeMenu()
 	QMenu *model = menuBar()->addMenu(tr("&Model"));
 	menus.push_back(model);
 	
+	QAction *undo = model->addAction(tr("Undo"));
+	connect(undo, &QAction::triggered, this, 
+	        &VagWindow::restorePreviousState);
+	actions.push_back(undo);
+	
 	QAction *samples = model->addAction(tr("Change model sampling..."));
 	connect(samples, &QAction::triggered,
 			[=]{ dialogueModify(Options::changeSamplesAndFit, 
@@ -115,6 +120,13 @@ void VagWindow::makeMenu()
 			                    "Set solvent probe radius (Å)",
 		                     0.0); });
 	actions.push_back(bprobe);
+	
+	QAction *bsampling = model->addAction(tr("Grid sampling..."));
+	connect(bsampling, &QAction::triggered,
+			[=]{ dialogueModify(Options::setProteinSampling, 
+			                    "Set grid sampling (Å)",
+		                     0.7); });
+	actions.push_back(bsampling);
 
 	sep = model->addSeparator();
 	actions.push_back(sep);
@@ -370,8 +382,7 @@ int VagWindow::waitForInstructions()
 				
 				case InstructionTypeRefinePosToDensity:
 				disable();
-				crystal->refineCrude();
-				options->recalculateFFT();
+				refineBackbone();
 				enable();
 				break;
 
@@ -486,9 +497,9 @@ int VagWindow::waitForInstructions()
 				enable();
 				break;
 
-//				case InstructionTypePreviousState:
-//				options->previousState();
-//				break;
+				case InstructionTypePreviousState:
+				crystal->undo();
+				break;
 				
 				case InstructionTypeSplitBond:
 				splitBond();
@@ -980,6 +991,21 @@ void VagWindow::fitWholeMolecules()
 	p->refineMotions();
 	
 	setMessage("Refined whole motions for chain " + p->getChainID());
+}
+
+void VagWindow::refineBackbone()
+{
+	if (getObject() == NULL)
+	{
+		Options::getActiveCrystal()->refineCrude();
+		Options::getRuntimeOptions()->recalculateFFT();
+		return;
+	}
+
+	Polymer *p = static_cast<Polymer *>(getObject());
+	p->refineBackbone();
+	
+	setMessage("Refined backbone for chain " + p->getChainID());
 }
 
 void VagWindow::fitRigidBody()
