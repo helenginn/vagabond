@@ -887,6 +887,7 @@ void Crystal::reportScaling()
 	{
 		return;
 	}
+
 	std::cout << std::setw(18) << "Resolution bin  " << std::flush;
 	std::cout << std::setw(10) << "R work" << std::flush;
 	std::cout << std::setw(13) << "Scale factor" << std::flush;

@@ -1341,12 +1341,16 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 	colout[3] = MtzAddColumn(mtzout, set, "FREE", "I");
 	colout[4] = MtzAddColumn(mtzout, set, "FP", "F");
 	colout[5] = MtzAddColumn(mtzout, set, "SIGFP", "Q");
-	colout[6] = MtzAddColumn(mtzout, set, "FC", "F");
-	colout[7] = MtzAddColumn(mtzout, set, "FWT", "F");
-	colout[8] = MtzAddColumn(mtzout, set, "PHIC", "P");
-	colout[9] = MtzAddColumn(mtzout, set, "PHWT", "P");
-	colout[10] = MtzAddColumn(mtzout, set, "DELFWT", "F");
-	colout[11] = MtzAddColumn(mtzout, set, "PHDELWT", "P");
+	
+	if (&*data != this)
+	{
+		colout[6] = MtzAddColumn(mtzout, set, "FC", "F");
+		colout[7] = MtzAddColumn(mtzout, set, "FWT", "F");
+		colout[8] = MtzAddColumn(mtzout, set, "PHIC", "P");
+		colout[9] = MtzAddColumn(mtzout, set, "PHWT", "P");
+		colout[10] = MtzAddColumn(mtzout, set, "DELFWT", "F");
+		colout[11] = MtzAddColumn(mtzout, set, "PHDELWT", "P");
+	}
 
 	int num = 0;
 	
@@ -1431,12 +1435,16 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 				fdata[3] = free - 0.1;
 				fdata[4] = foAmp;
 				fdata[5] = sigma;
-				fdata[6] = calcAmp;
-				fdata[7] = fwt;
-				fdata[8] = phic;
-				fdata[9] = phwt;
-				fdata[10] = diffAmp;
-				fdata[11] = diffPhwt;
+
+				if (&*data != this)
+				{
+					fdata[6] = calcAmp;
+					fdata[7] = fwt;
+					fdata[8] = phic;
+					fdata[9] = phwt;
+					fdata[10] = diffAmp;
+					fdata[11] = diffPhwt;
+				}
 
 				num++;
 				ccp4_lwrefl(mtzout, fdata, colout, columns, num);
@@ -1451,7 +1459,7 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 
 }
 
-void VagFFT::applySymmetry(bool silent, double topRes)
+void VagFFT::applySymmetry(bool silent, double topRes, bool average)
 {
 	fftwf_complex *tempData;
 	tempData = (fftwf_complex *)fftwf_malloc(_nn * sizeof(FFTW_DATA_TYPE));
@@ -1501,6 +1509,16 @@ void VagFFT::applySymmetry(bool silent, double topRes)
 			{
 				int abs = CSym::ccp4spg_is_sysabs(_spg, i, j, k);
 				long pre_index = element(i, j, k);
+				int sym = 0;
+				
+				if (!average)
+				{
+					int _h, _k, _l;
+					sym = CSym::ccp4spg_put_in_asu(_spg, i, j, k, 
+					                                   &_h, &_k, &_l);
+					pre_index = element(_h, _k, _l);
+				}
+
 				long index = finalIndex(pre_index);
 
 				if (abs)
@@ -1526,8 +1544,10 @@ void VagFFT::applySymmetry(bool silent, double topRes)
 				double myAmp = _data[index][0];
 				double myPhase = _data[index][1];
 
-				/* loop through all symops this index applies to */
-				for (int l = 0; l < _spg->nsymop; l++)
+				/* if averaging, loop through all symops 
+				 * this index applies to */
+
+				for (int l = 0; l < _spg->nsymop && average; l++)
 				{
 					float *rot = &_spg->invsymop[l].rot[0][0];
 
@@ -1555,6 +1575,31 @@ void VagFFT::applySymmetry(bool silent, double topRes)
 
 					tempData[sym_index][0] += x;
 					tempData[sym_index][1] += y;
+				}
+				
+				/* otherwise, grab symops and apply to oneself */
+				if (!average)
+				{
+					int symop = (sym - 1) / 2;
+
+					float *trn = _spg->symop[symop].trn;
+
+					/* translation */
+					double shift = (float)i * trn[0];
+					shift += (float)j * trn[1];
+					shift += (float)k * trn[2];
+					shift = shift - floor(shift);
+					
+					double deg = myPhase + shift * 360.;
+					double newPhase = deg2rad(deg);
+					
+					/* add to temporary data array */
+					double x = myAmp * cos(newPhase);
+					double y = myAmp * sin(newPhase);
+
+					long tmp_index = element(i, j, k);
+					tempData[tmp_index][0] = x;
+					tempData[tmp_index][1] = y;
 				}
 			}
 		}

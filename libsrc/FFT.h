@@ -98,7 +98,8 @@ public:
 	/** Applies symmetry operations. If topRes > 0 then resolution is
 	 * cut and symmetry application only applies to asymmetric unit,
 	 * for speed */
-	void applySymmetry(bool silent = true, double topRes = -1);
+	void applySymmetry(bool silent = true, double topRes = -1,
+	                   bool average = true);
 	void writeToFile(std::string filename, double maxResolution,
 	                 VagFFTPtr data = VagFFTPtr(), 
 	                 VagFFTPtr diff = VagFFTPtr(), 

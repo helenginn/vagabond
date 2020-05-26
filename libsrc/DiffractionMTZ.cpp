@@ -351,7 +351,6 @@ void DiffractionMtz::load()
 		_original->multiplyAll(0);
 		_original->setUnitCell(unitCell);
 		_original->setSpaceGroup(spg);
-//		_original->makePlans();
 		_original->setStatus(FFTReciprocalSpace);
 	}
 
@@ -446,8 +445,18 @@ void DiffractionMtz::load()
 	" memory from " << _filename << "." << std::endl;
 	std::cout << "Counted " << maskCount << " free reflections." << std::endl << std::endl;
 
+	if (_fft)
+	{
+		_fft->applySymmetry(true, -1, false);
+	}
+
+	free(refldata);
+	MtzFree(mtz);
+	
+	return;
+
 	/* Apply all symmetry relations */ 
-	vec3 nLimits = getNLimits(_fft, _fft);
+	vec3 nLimits = getNLimits(_original, _original);
 
 	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
@@ -459,11 +468,11 @@ void DiffractionMtz::load()
 				int sym = CSym::ccp4spg_put_in_asu(spg, i, j, k, 
 				                                   &_h, &_k, &_l);
 
-				long index = _fft->element(i, j, k);
-				long asuIndex = _fft->element(_h, _k, _l);
+				long index = _original->element(i, j, k);
+				long asuIndex = _original->element(_h, _k, _l);
 
-				double x = _fft->getReal(asuIndex);
-				double y = _fft->getImag(asuIndex);
+				double x = _original->getReal(asuIndex);
+				double y = _original->getImag(asuIndex);
 
 				/* establish amp & phase */
 				double amp = sqrt(x * x + y * y);
@@ -492,17 +501,14 @@ void DiffractionMtz::load()
 				x = amp * cos(newPhase);
 				y = amp * sin(newPhase);
 
-				if (_fft)
+				if (_original)
 				{
-					_fft->setComponent(index, 0, x);
-					_fft->setComponent(index, 1, y);
+					_original->setComponent(index, 0, x);
+					_original->setComponent(index, 1, y);
 				}
 			}
 		}
 	}
-
-	free(refldata);
-	MtzFree(mtz);
 }
 
 void DiffractionMtz::syminfoCheck()

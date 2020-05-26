@@ -191,6 +191,11 @@ executable('force_down', gen_src,
 'force_down/Wilson.cpp', 
 cpp_args: ['-std=c++11'], dependencies : [ boost_dep, dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
 
+
+executable('shell_scale', gen_src, 
+'shell_scale/main.cpp', 
+cpp_args: ['-std=c++11'], dependencies : [ boost_dep, dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
+
 if qt5_dep.found() and dep_gl.found()
 
 headers = [

@@ -373,7 +373,7 @@ void SVDBond::report()
 		}
 	}
 	
-	const int min = 10;
+	const int min = 20;
 	if (_num < min)
 	{
 		_num = min;
