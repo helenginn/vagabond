@@ -13,7 +13,6 @@
 #define C_CH1E_LENGTH    (1.525) // // 1.525 - Engh&Huber, 1.523 - ref1.
 #define CH1E_NH1_LENGTH  (1.458) // 1.458 - Engh&Huber, 1.455 - ref1.
 #define C_NH1_LENGTH     (1.329) // 1.329 - E&H91, 1.332 - ref1.
-#define C_O_LENGTH       (1.231) // 1.229 - E&H91, 1.231 - ref1.
 
 #define CH1E_C_NH1_ANGLE     116.2 
 #define CH1E_C_O_ANGLE       120.8 // 120.1 - Engh&Huber, 120.7 - CCP4
@@ -188,25 +187,46 @@ GeomTable::GeomTable()
     _three2OneCode["gly"] = "G";
 
 	addChiralCentre(AtomNH1, AtomProCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomProCB, 1);
 	addChiralCentre(AtomNH1, AtomMetCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomMetCB, 1);
 	addChiralCentre(AtomNH1, AtomTyrCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomTyrCB, 1);
 	addChiralCentre(AtomNH1, AtomTrpCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomTrpCB, 1);
 	addChiralCentre(AtomNH1, AtomPheCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomPheCB, 1);
 	addChiralCentre(AtomNH1, AtomHisCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomHisCB, 1);
 	addChiralCentre(AtomNH1, AtomIleCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomIleCB, 1);
 	addChiralCentre(AtomNH1, AtomLeuCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomLeuCB, 1);
 	addChiralCentre(AtomNH1, AtomValCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomValCB, 1);
 	addChiralCentre(AtomNH1, AtomThrCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomThrCB, 1);
 	addChiralCentre(AtomNH1, AtomSerCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomSerCB, 1);
 	addChiralCentre(AtomNH1, AtomAspCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomAspCB, 1);
 	addChiralCentre(AtomNH1, AtomAsnCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomAsnCB, 1);
 	addChiralCentre(AtomNH1, AtomGluCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomGluCB, 1);
 	addChiralCentre(AtomNH1, AtomGlnCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomGlnCB, 1);
 	addChiralCentre(AtomNH1, AtomLysCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomLysCB, 1);
 	addChiralCentre(AtomNH1, AtomArgCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomArgCB, 1);
 	addChiralCentre(AtomNH1, AtomAlaCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomAlaCB, 1);
+	addChiralCentre(AtomNH1, AtomCysCA, AtomO, 1);
+	addChiralCentre(AtomNH1, AtomC, AtomCysCB, 1);
 	addChiralCentre(AtomNH1, AtomGlyCA, AtomO, -1);
 	addChiralCentre(AtomProNH1, AtomLeuCA, AtomO, 1);
+
 
     addBondLength(AtomNH1, AtomC, 1.336);
     addBondLength(AtomProNH1, AtomC, 1.338);
@@ -273,6 +293,8 @@ GeomTable::GeomTable()
     addIdentityToType("val", "CB", AtomValCB);
     addIdentityToType("val", "CG1", AtomValCG1);
     addIdentityToType("val", "CG2", AtomValCG2);
+
+	addChiralCentre(AtomValCA, AtomValCG1, AtomValCG2, -1);
 
     addIdentityToType("lys", "C", AtomC);
     addIdentityToType("lys", "O", AtomO);
@@ -714,10 +736,12 @@ GeomTable::GeomTable()
     addBondAngle(AtomNH1, AtomIleCA, AtomIleCB, 110.8);
     addBondAngle(AtomProNH1, AtomIleCA, AtomIleCB, 110.8);
     addBondAngle(AtomIleCB, AtomIleCA, AtomC, 111.6);
-    addBondAngle(AtomIleCA, AtomIleCB, AtomIleCG1, 110.0);
+    addBondAngle(AtomIleCA, AtomIleCB, AtomIleCG1, 111.0);
     addBondAngle(AtomIleCA, AtomIleCB, AtomIleCG2, 110.9);
     addBondAngle(AtomIleCG1, AtomIleCB, AtomIleCG2, 111.4);
     addBondAngle(AtomIleCB, AtomIleCG1, AtomIleCD1, 113.9);
+
+	addChiralCentre(AtomIleCA, AtomIleCG1, AtomIleCG2, 1);
 
     addBondLength(AtomC, AtomAlaCA, 1.525);
     addBondLength(AtomNH1, AtomAlaCA, 1.459);
@@ -755,6 +779,8 @@ GeomTable::GeomTable()
     addBondAngle(AtomLeuCB, AtomLeuCG, AtomLeuCD1, 111.0);
     addBondAngle(AtomLeuCB, AtomLeuCG, AtomLeuCD2, 111.0);
     addBondAngle(AtomLeuCD1, AtomLeuCG, AtomLeuCD2, 110.5);
+
+	addChiralCentre(AtomLeuCB, AtomLeuCD1, AtomLeuCD2, -1);
 
     addBondLength(AtomC, AtomTrpCA, 1.525);
     addBondLength(AtomNH1, AtomTrpCA, 1.459);
@@ -865,7 +891,9 @@ GeomTable::GeomTable()
     addBondAngle(AtomThrCB, AtomThrCA, AtomC, 111.6);
     addBondAngle(AtomThrCA, AtomThrCB, AtomThrCG2, 112.4);
     addBondAngle(AtomThrCA, AtomThrCB, AtomThrOG1, 109.0);
-    addBondAngle(AtomThrCG2, AtomThrCB, AtomThrOG1, 109.3);
+    addBondAngle(AtomThrCG2, AtomThrCB, AtomThrOG1, 110.0);
+
+	addChiralCentre(AtomThrCA, AtomThrOG1, AtomThrCG2, 1);
 
     addBondLength(AtomC, AtomValCA, 1.525);
     addBondLength(AtomNH1, AtomValCA, 1.459);
