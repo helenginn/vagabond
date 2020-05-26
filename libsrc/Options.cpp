@@ -46,6 +46,7 @@ double Options::_shrink = -0.2;
 bool Options::_useRFree = true;
 bool Options::_lowResMode = false;
 int Options::_bondAngles = 0;
+bool Options::_angling = false;
 int Options::_map = 1;
 int Options::_active = 0;
 int Options::_maxRot = 3;
@@ -673,6 +674,7 @@ void Options::parse()
 
 		understood |= parseParameter(arg, "tie", &_tie);
 		understood |= parseParameter(arg, "refine", &_refine);
+		understood |= parseParameter(arg, "smart-angles", &_angling);
 		understood |= parseParameter(arg, "screw", &_screw);
 		understood |= parseParameter(arg, "far", &_far);
 		understood |= parseParameter(arg, "position", &_rPosition);

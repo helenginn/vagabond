@@ -234,6 +234,11 @@ public:
 		return _rIntra;
 	}
 	
+	static bool isAngling()
+	{
+		return _angling;
+	}
+	
 	static void setProteinSampling(void *object, double sampling)
 	{
 		_sampling = sampling;	
@@ -452,6 +457,7 @@ private:
 	static bool _rIntra;
 	static bool _hydrogens;
 	static bool _screw;
+	static bool _angling;
 
 	/*crystal*/
 	static int _active;
