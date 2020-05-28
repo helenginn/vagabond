@@ -37,6 +37,9 @@ typedef struct
 	double whack; /* Baseline whack, minus adjustments */
 	double torsion; /* Baseline torsion, minus adjustments */
 	double phi; /* Baseline phi, minus adjustments */
+	double tr_x; /* translation x */
+	double tr_y; /* translation y */
+	double tr_z; /* translation z */
 } BondParamPair;
 
 typedef std::map<BondPtr, BondParamPair> BondBase;
@@ -45,6 +48,7 @@ class SVDBond
 {
 public:
 	SVDBond(std::vector<BondPtr> &bonds, std::vector<AtomPtr> &atoms);
+	SVDBond(std::vector<AtomPtr> &atoms);
 	
 	~SVDBond();
 
@@ -62,12 +66,9 @@ public:
 	{
 		_doTorsion = t;
 	}
-	
-	void setDoAngles(bool a)
-	{
-		_doAngles = a;
-	}
 
+	void bondsFromStrategy(RefinementStrategyPtr strategy);
+	void convertStrategyTorsions(RefinementStrategyPtr strategy, double t);
 	void addToStrategy(RefinementStrategyPtr strategy, double mult,
 	                   bool phi = false);
 	void applyParameters();
@@ -80,7 +81,6 @@ private:
 	void cleanupSVD(double ***ptr);
 	void copyMatrix(double **from, double **to);
 	void compareBonds();
-	double compareTorsionWithAngle(BondPtr a, BondPtr b);
 	double compareTorsions(BondPtr a, BondPtr b);
 	double compareForKicks(BondPtr a, BondPtr b);
 	double compareKicks(BondPtr a, BondPtr b);
@@ -95,6 +95,7 @@ private:
 
 	std::map<AtomPtr, std::map<BondPtr, int> > _interactions;
 
+	std::vector<AnchorPtr> _anchors;
 	std::vector<BondPtr> _bonds;
 	std::vector<AtomPtr> _atoms;
 
@@ -106,7 +107,6 @@ private:
 	int _num;
 	double _wTotal;
 	bool _doTorsion;
-	bool _doAngles;
 	bool _silent;
 };
 

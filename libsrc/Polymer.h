@@ -78,7 +78,7 @@ public:
 	int _whacked;
 	void whack();
 	void whackMonomer(MonomerPtr mon);
-	void refineAnchorPosition(CrystalPtr target);
+	void refineAnchorPosition();
 	AtomGroupPtr monomerRange(int start, int end, bool side = false);
 	void ramachandranPlot();
 	virtual void removeAtom(AtomPtr atom);
@@ -188,6 +188,7 @@ protected:
 	}
 
 private:
+	void scoreMonomers();
 	void setupKeyPoints();
 	void refineMonomer(MonomerPtr monomer, CrystalPtr target,
 	                   RefinementType rType);
@@ -204,6 +205,9 @@ private:
 	int _flexibilityParams;
 	int _positionalParams;
 	std::string _graphName;
+
+	std::map<MonomerPtr, vec3> _scores;
+	double _fullScore;
 	KeyPointsPtr _keyPoints;
 
 	AtomGroupPtr _allBackbones;

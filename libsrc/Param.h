@@ -19,6 +19,8 @@
 #ifndef __vagabond__param__
 #define __vagabond__param__
 
+#include <cstddef>
+
 class Param
 {
 public:
@@ -29,6 +31,10 @@ public:
 	
 	static double getValue(void *object)
 	{
+		if (object == NULL)
+		{
+			 return 0;
+		}
 		return static_cast<Param *>(object)->_value;
 	}
 	

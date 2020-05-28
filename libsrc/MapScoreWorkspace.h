@@ -79,6 +79,13 @@ typedef struct
 inline void setup_space(MapScoreWorkspace *w)
 {
 	w->scoreType = ScoreTypeCorrel;
+	w->crystal = CrystalPtr();
+	w->selectAtoms = AtomGroupPtr();
+	w->extra = AtomGroupPtr();
+	w->segment = VagFFTPtr();
+	w->recip = VagFFTPtr();
+	w->vals.clear();
+	w->filename = "";
 	w->flag = MapScoreFlagNone;
 	w->recalc = false;
 }

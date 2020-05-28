@@ -514,7 +514,6 @@ public:
 	void pruneWaters();
 	void resetMotions();
 	void savePositions();
-	void refitToSavedPositions();
 	void refreshAnchors();
 	void makeOverallMotion();
 	MotionPtr getOverallMotion();

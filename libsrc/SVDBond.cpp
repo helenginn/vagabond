@@ -37,6 +37,14 @@ SVDBond::SVDBond(std::vector<BondPtr> &bonds, std::vector<AtomPtr> &atoms)
 	_svd = NULL;
 }
 
+SVDBond::SVDBond(std::vector<AtomPtr> &atoms)
+{
+	_silent = true;
+	_doTorsion = false;
+	_atoms = atoms;
+	_svd = NULL;
+}
+
 vec3 angle_effect_on_pos(vec3 atom_pos, mat3x3 &bond_basis, vec3 &bond_pos)
 {
 	mat3x3 trans = mat3x3_transpose(bond_basis);
@@ -100,56 +108,6 @@ mat3x3 bond_angle_basis(mat3x3 parent, mat3x3 child)
 {
 	vec3 childDir = mat3x3_axis(child, 2);
 	vec3 parentDir = mat3x3_axis(parent, 2);
-
-}
-
-double SVDBond::compareTorsionWithAngle(BondPtr a, BondPtr b)
-{
-	mat3x3 aBasis, bBasis, upBBasis;
-	vec3 aPos, bPos, upBPos;
-
-	a->getAverageBasisPos(&aBasis, &aPos);
-
-	ExplicitModelPtr mod = b->getParentModel();
-
-	mod->getAverageBasisPos(&upBBasis, &upBPos);
-	b->getAverageBasisPos(&bBasis, &bPos);
-	
-	CorrelData cd = empty_CD();
-	
-	for (size_t i = 0; i < _atoms.size(); i++)
-	{
-		/* Exclude self, nan-potential */
-		if (a->getMinor() == _atoms[i] || b->getMinor() == _atoms[i])
-		{
-			continue;
-		}
-		
-		vec3 pos = _atoms[i]->getAbsolutePosition();
-		
-		/* The real important directions are rotated 90° but it doesn't
-		 * really matter because we're comparing them */
-		vec3 aDir = bond_effect_on_pos(pos, aBasis, aPos);
-		vec3 bDir = bond_effect_on_pos(pos, bBasis, bPos);
-		
-		double dir = _interactions[_atoms[i]][a];
-		vec3_mult(&aDir, dir);
-		
-		dir = _interactions[_atoms[i]][b];
-		vec3_mult(&bDir, dir);
-		
-		for (int j = 0; j < 3; j++)
-		{
-			double *aVal = &aDir.x + j;
-			double *bVal = &bDir.x + j;
-			
-			add_to_CD(&cd, *aVal, *bVal);
-		}
-	}
-	
-	double total = evaluate_CD(cd);
-
-	return total;
 
 }
 
@@ -373,7 +331,7 @@ void SVDBond::report()
 		}
 	}
 	
-	const int min = 20;
+	const int min = 10;
 	if (_num < min)
 	{
 		_num = min;
@@ -387,26 +345,43 @@ void SVDBond::report()
 	/* Set up parameters for the top clusters from SVD */
 	for (int i = 0; i < _num; i++)
 	{
-		ParamSVDSet set;
-		Param *pw = new Param();
-		Param::setValue(pw, 0);
+		for (int j = 0; j < 2; j++)
+		{
+			ParamSVDSet set;
+			Param *pw = NULL;
+			Param *pk = NULL;
 
-		Param *pk = new Param();
-		Param::setValue(pk, 0);
-		
-		Param *pph = new Param();
-		Param::setValue(pph, 0);
-		
-		Param *t = new Param();
-		Param::setValue(t, 0);
-		
-		set.pWhack = pw;
-		set.pKick = pk;
-		set.pPhi = pph;
-		set.pTorsion = t;
-		set.rowPtr = _svd[i];
+			if (j == 0)
+			{
+				pw = new Param();
+				Param::setValue(pw, 0);
+			}
 
-		_params.push_back(set);
+			if (j == 1)
+			{
+				pk = new Param();
+				Param::setValue(pk, 0);
+			}
+
+			Param *pph = new Param();
+			Param::setValue(pph, 0);
+
+			Param *t = new Param();
+			Param::setValue(t, 0);
+
+			set.pWhack = pw;
+			set.pKick = pk;
+			set.pPhi = pph;
+			set.pTorsion = t;
+			set.rowPtr = _svd[i];
+
+			_params.push_back(set);
+			
+			if (j == 1 && _doTorsion)
+			{
+				break;
+			}
+		}
 	}
 	
 	/* Get the baseline values for kicks and whacks */
@@ -424,7 +399,6 @@ void SVDBond::report()
 			w = Whack::getWhack(&*whack);
 		}
 		
-//		double phi = Bond::getMagicPhi(&*bond->downstreamBond(0, 0));
 		double t = Bond::getTorsion(&*bond);
 		
 		BondParamPair pair;
@@ -432,6 +406,9 @@ void SVDBond::report()
 		pair.kick = k;
 		pair.phi = 0;
 		pair.torsion = t;
+		pair.tr_x = t;
+		pair.tr_y = t;
+		pair.tr_z = t;
 		_bondBase[bond] = pair;
 	}
 }
@@ -466,6 +443,52 @@ void SVDBond::addToStrategy(RefinementStrategyPtr strategy, double mult,
 	{
 		strategy->addParameter(_params[i].pPhi, Param::getValue,
 		                       Param::setValue, phi_step, deg2rad(5.));
+	}
+}
+
+void SVDBond::bondsFromStrategy(RefinementStrategyPtr strategy)
+{
+	for (int i = 0; i < strategy->parameterCount(); i++)
+	{
+		Parameter obj = strategy->getParamObject(i);
+		
+		if (obj.getter == Bond::getTorsion)
+		{
+			BondPtr b = ((Bond *)(obj.object))->shared_from_this();
+			_bonds.push_back(b);
+		}
+		
+		if (obj.getter == Anchor::getPosX)
+		{
+			ModelPtr m = ((Model *)(obj.object))->shared_from_this();
+			AnchorPtr a = ToAnchorPtr(m);
+			_anchors.push_back(a);
+		}
+	}
+}
+
+void SVDBond::convertStrategyTorsions(RefinementStrategyPtr strategy,
+                                      double torsion)
+{
+	for (int i = 0; i < strategy->parameterCount(); i++)
+	{
+		Parameter obj = strategy->getParamObject(i);
+		
+		if (obj.getter == Bond::getTorsion ||
+		obj.getter == Anchor::getPosX ||
+		obj.getter == Anchor::getPosY ||
+		obj.getter == Anchor::getPosZ)
+		{
+			strategy->removeParameter(i);
+			i--;
+		}
+	}
+
+	for (int i = 0; i < _params.size(); i++)
+	{
+		strategy->addParameter(_params[i].pTorsion, Param::getValue,
+		                       Param::setValue, 
+		                       deg2rad(torsion), deg2rad(torsion / 20));
 	}
 }
 
@@ -516,7 +539,7 @@ void SVDBond::applyParameters()
 			}
 			*/
 			
-			total = _svd[j][i];
+			total = _params[j].rowPtr[i];
 			
 			/* get value of the whack/kick */
 			if (!_doTorsion)
@@ -587,8 +610,6 @@ void SVDBond::applyParameters()
 		{
 			Bond::setTorsion(&*bi, t);
 		}
-		
-//		Bond::setMagicPhi(&*bi->downstreamBond(0, 0), ph);
 	}
 }
 

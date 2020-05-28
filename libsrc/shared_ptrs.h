@@ -259,6 +259,7 @@ typedef enum
 	ParamOptionMaxTries,
 	ParamOptionStep,
 	ParamOptionSVD,
+	ParamOptionRigidBody,
 } ParamOptionType;
 
 typedef enum

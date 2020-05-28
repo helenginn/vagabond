@@ -374,9 +374,7 @@ void Polymer::refineBackboneFrom(int position)
 	OptionsPtr options = Options::getRuntimeOptions();
 	CrystalPtr crystal = options->getActiveCrystal();
 	
-	RefinementType rType = RefinementFine;
-	double cubeDim = crystal->getProteinSampling();
-//	cubeDim * 2;
+	RefinementType rType = RefinementCrude;
 	
 	addParamType(ParamOptionMaxTries, 1.0);
 	addParamType(ParamOptionTorsion, 1.0);
@@ -384,8 +382,8 @@ void Polymer::refineBackboneFrom(int position)
 	addParamType(ParamOptionTopLevelOnly, 1);
 	addParamType(ParamOptionCycles, 32);
 	addParamType(ParamOptionStep, 2);
-	addParamType(ParamOptionProteinSampling, cubeDim);
 	addParamType(ParamOptionExtraAtoms, 2);
+	addParamType(ParamOptionThorough, 1);
 	addParamType(ParamOptionSVD, 1);
 
 	bool lowRes = (crystal->getMaxResolution() > 3.5);
@@ -409,8 +407,15 @@ void Polymer::refineBackbone()
 	int anchor = getAnchor();
 	clearParams();
 
+	scoreMonomers();
 	refineBackboneFrom(anchor - 3);
 	refineBackboneFrom(anchor + 3);
+
+	double change = scoreWithMap(ScoreTypeCorrel, Options::getActiveCrystal());
+	std::cout << "CC across whole polymer ";
+	std::cout << ((change < _fullScore) ? "up " : "down ");
+	std::cout << "from " << -_fullScore * 100 << " to " << -change * 100;
+	std::cout << "." << std::endl;
 }
 
 void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
@@ -517,47 +522,25 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 	
 	Timer timer("refine range", true);
 
-	int count = 0;
-	double startCCAve = 0;
-	std::map<MonomerPtr, vec3> preScores;
+//	scorehere
 
 	std::cout << "Refining chain " << getChainID();
 	std::cout  << " from residue " << start << " towards ";
 	std::cout << (skip > 0 ? "C" : "N");
 	std::cout <<  "-terminus (residue " << end << ") ..." << std::endl;
 
-	double fullScore = full->scoreWithMap(ScoreTypeCorrel, target);
-
-	for (int i = start; i != end; i += skip)
-	{
-		MonomerPtr monomer = getMonomer(i);
-		if (!monomer)
-		{
-			continue;
-		}
-		copyParams(monomer);
-
-		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);
-		startCCAve += score;
-		
-		BackbonePtr bone = monomer->getBackbone();
-		double backScore = bone->scoreWithMap(ScoreTypeCorrel, target);
-		SidechainPtr side = monomer->getSidechain();
-		double sideScore = side->scoreWithMap(ScoreTypeCorrel, target);
-
-		vec3 scores = make_vec3(score, backScore, sideScore);
-		preScores[monomer] = scores;
-		count++;
-	}
-
-	startCCAve /= (double)count;
-	count = 0;
-
 	double endCCAve = 0;
+	double ccAve = 0;
+	
+	if (rType == RefinementCrude)
+	{
+		refineAnchorPosition();
+	}
 	
 	std::cout << "\t  Backbone             | Sidechain" << std::endl;
 	bool changed = true;
 
+	int count = 0;
 	for (int i = start; i != end; i += skip)
 	{
 		if (i % 10 == 0 && changed == true)
@@ -574,7 +557,7 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		BackbonePtr bone = monomer->getBackbone();
 		SidechainPtr side = monomer->getSidechain();
 		
-		if (rType == RefinementFine && getMonomer(i + skip * 2))
+		if (rType == RefinementCrude && getMonomer(i + skip * 2))
 		{
 			BackbonePtr second = getMonomer(i + skip * 2)->getBackbone();
 			vec3 centre = second->centroid();
@@ -582,18 +565,18 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		}
 
 		changed = true;
-		
+
 		copyParams(side);
-		side->addParamType(ParamOptionTorsion, 0.1);
 		copyParams(bone);
 		copyParams(monomer);
-		refineMonomer(monomer, target, rType); 
+		side->refine(target, rType); 
+		bone->refine(target, rType); 
 		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);	
 		double backScore = bone->scoreWithMap(ScoreTypeCorrel, target);	
 		double sideScore = side->scoreWithMap(ScoreTypeCorrel, target);	
-		double pre = preScores[monomer].x;
-		double preBack = preScores[monomer].y;
-		double preSide = preScores[monomer].z;
+		double pre = _scores[monomer].x;
+		double preBack = _scores[monomer].y;
+		double preSide = _scores[monomer].z;
 		side->clearParams();
 		bone->clearParams();
 		monomer->clearParams();
@@ -608,28 +591,24 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		print_cc_diff(sidediff, -1);
 		std::cout << std::endl;
 
+		ccAve += pre;
 		endCCAve += score;
 		count++;
 	}
 
 	endCCAve /= (double)count;
-	double change = full->scoreWithMap(ScoreTypeCorrel, target);
+	ccAve /= (double)count;
 
 	std::cout << "Average CC of monomers went ";
-	std::cout << ((endCCAve < startCCAve) ? "up " : "down ");
-	std::cout << "from " << -startCCAve * 100 << " to " << -endCCAve * 100;
-	std::cout << "." << std::endl;
-
-	std::cout << "CC across whole range ";
-	std::cout << ((change < fullScore) ? "up " : "down ");
-	std::cout << "from " << -fullScore * 100 << " to " << -change * 100;
+	std::cout << ((endCCAve < ccAve) ? "up " : "down ");
+	std::cout << "from " << -ccAve * 100 << " to " << -endCCAve * 100;
 	std::cout << "." << std::endl;
 	
 	timer.report();
 
 	clearParams();
 	
-	return -endCCAve + startCCAve;
+	return -endCCAve + ccAve;
 }
 
 void Polymer::refineShiftModel(CrystalPtr target, ExplicitModelPtr e,
@@ -654,40 +633,72 @@ void Polymer::refineShiftModel(CrystalPtr target, ExplicitModelPtr e,
 	sample();
 }
 
-void Polymer::refineAnchorPosition(CrystalPtr target)
+void Polymer::scoreMonomers()
 {
-	bool changed = true;
 	int count = 0;
-	saveAtomPositions();
-	
-	AtomGroupPtr surround = monomerRange(_anchorNum - 2, _anchorNum + 2,
-	                                     false);
+	_scores.clear();
+
+	CrystalPtr target = Options::getActiveCrystal();
+	_fullScore = scoreWithMap(ScoreTypeCorrel, target);
+
+	for (int i = monomerBegin(); i < monomerEnd(); i++)
+	{
+		MonomerPtr monomer = getMonomer(i);
+		if (!monomer)
+		{
+			continue;
+		}
+		copyParams(monomer);
+
+		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);
+		
+		BackbonePtr bone = monomer->getBackbone();
+		copyParams(bone);
+		double backScore = bone->scoreWithMap(ScoreTypeCorrel, target);
+		SidechainPtr side = monomer->getSidechain();
+		copyParams(side);
+		double sideScore = side->scoreWithMap(ScoreTypeCorrel, target);
+
+		vec3 scores = make_vec3(score, backScore, sideScore);
+		_scores[monomer] = scores;
+		count++;
+	}
+}
+
+void Polymer::refineAnchorPosition()
+{
+	return;
+	CrystalPtr target = Options::getActiveCrystal();
 	
 	AtomPtr n = getAnchorModel()->getNAtom();
 	AtomPtr c = getAnchorModel()->getCAtom();
 	
 	BondPtr n_next = ToBondPtr(n->getModel());
 	BondPtr c_next = ToBondPtr(c->getModel());
+
+	vec3 centre = getAnchorModel()->getAbsolutePosition();
+	Options::getRuntimeOptions()->focusOnPosition(centre, 24);
+
+	setupNelderMead();
+	setCrystal(target);
+	setScoreType(ScoreTypeCorrel);
+
+	setSilent(true);
+	addParamType(ParamOptionMaxTries, 1.0);
+	addParamType(ParamOptionTorsion, 1.0);
+	addParamType(ParamOptionNumBonds, 6);
+	addParamType(ParamOptionTopLevelOnly, 1);
+	addParamType(ParamOptionCycles, 32);
+	addParamType(ParamOptionStep, 2);
+	addParamType(ParamOptionExtraAtoms, 2);
+	addParamType(ParamOptionSVD, 1);
+	addParamType(ParamOptionThorough, 1);
+
+	addAnchorParams(getAnchorModel());
+	setupThoroughSet(n_next, true);
+	setupThoroughSet(c_next, true);
 	
-	while (changed && count < 1)
-	{
-		count++;
-		setupNelderMead();
-		setCrystal(target);
-		setCycles(200);
-		setScoreType(ScoreTypeCorrel);
-
-		setSilent(true);
-		addParamType(ParamOptionNumBonds, 8);
-		
-		setupThoroughSet(n_next, false);
-		setupThoroughSet(c_next, false);
-		addAnchorParams(getAnchorModel());
-
-		changed = sample();
-	}
-
-	surround->saveAtomPositions();
+	sample();
 }
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
@@ -700,8 +711,9 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 	
 	target->addComment("Refining against " + Options::rTypeString(rType));
 
-	if (rType == RefinementSidechain)
+	if (rType == RefinementSidechain || rType == RefinementSidePos)
 	{
+		scoreMonomers();
 		refineToEnd(getAnchor() - 1, target, rType);
 		refineToEnd(getAnchor(), target, rType);
 		return;

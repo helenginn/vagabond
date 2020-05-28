@@ -477,6 +477,7 @@ void Sampler::addAnchorParams(AnchorPtr anch)
 {
 	double range = 0.02;
 	double interval = 0.002;
+
 	_strategy->addParameter(&*anch, Anchor::getPosX, Anchor::setPosX,
 	                        range, interval, "pos_x");
 	_strategy->addParameter(&*anch, Anchor::getPosY, Anchor::setPosY,
@@ -484,14 +485,16 @@ void Sampler::addAnchorParams(AnchorPtr anch)
 	_strategy->addParameter(&*anch, Anchor::getPosZ, Anchor::setPosZ,
 	                        range, interval, "pos_z");
 	
-	range = deg2rad(1.0);
+	range = deg2rad(0.5);
 	interval = deg2rad(0.005);
+	/*
 	_strategy->addParameter(&*anch, Anchor::getAlpha, Anchor::setAlpha,
 	                        range, interval, "alpha");
 	_strategy->addParameter(&*anch, Anchor::getBeta, Anchor::setBeta,
 	                        range, interval, "beta");
 	_strategy->addParameter(&*anch, Anchor::getGamma, Anchor::setGamma,
 	                        range, interval, "gamma");
+	*/
 
 	BondPtr nBond = ToBondPtr(anch->getNAtom()->getModel());
 	BondPtr cBond = ToBondPtr(anch->getCAtom()->getModel());
@@ -627,8 +630,9 @@ bool Sampler::sample(bool clear)
 
 	if (_params.count(ParamOptionSVD) > 0)
 	{
-		_strategy->clearParameters();
-		_svd = new SVDBond(_bonds, _sampled);
+//		_strategy->clearParameters();
+		_svd = new SVDBond(_sampled);
+		_svd->bondsFromStrategy(_strategy);
 		_svd->setDoTorsion(true);
 		_svd->setSilent(_silent);
 		_svd->performSVD();
@@ -637,7 +641,7 @@ bool Sampler::sample(bool clear)
 		{
 			t = _params[ParamOptionTorsion];
 		}
-		_svd->addToStrategy(_strategy, t, false);
+		_svd->convertStrategyTorsions(_strategy, t);
 	}
 
 	int paramCount = _strategy->parameterCount();

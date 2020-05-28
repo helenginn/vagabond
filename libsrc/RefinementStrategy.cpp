@@ -52,6 +52,11 @@ RefinementStrategyPtr RefinementStrategy::userChosenStrategy()
 
 void RefinementStrategy::addParameter(void *object, Getter getter, Setter setter, double stepSize, double otherValue, std::string tag, Getter gradient)
 {
+	if (object == NULL)
+	{
+		return;
+	}
+
 	Parameter param;
 	param.object = object;
 	param.getter = getter;
@@ -295,12 +300,14 @@ void RefinementStrategy::reportResult()
 void RefinementStrategy::findIfSignificant()
 {
 	_enough = false;
+
 	for (int i = 0; i < parameterCount(); i++)
 	{
 		Parameter p = getParamObject(i);
-		double change = fabs(p.other_value - p.start_value);
+		double now = (*p.getter)(p.object);
+		double change = fabs(now - p.start_value);
 		
-		if (change > p.step_size * 2)
+		if (change > p.other_value * 2)
 		{
 			_enough = true;
 		}

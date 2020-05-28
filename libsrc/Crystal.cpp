@@ -110,6 +110,8 @@ void Crystal::setHKL2Real(mat3x3 mat)
 
 void Crystal::refinePolymers(RefinementType type)
 {
+	std::cout << "Beginning refinement..." << std::endl;
+	std::cout << std::endl;
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		if (!molecule(i)->isPolymer())
@@ -1968,24 +1970,6 @@ void Crystal::savePositions()
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		molecule(i)->saveAtomPositions();
-	}
-}
-
-void Crystal::refitToSavedPositions()
-{
-	std::cout << "Refitting positions." << std::endl;
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (molecule(i)->isPolymer())
-		{
-			PolymerPtr pol = ToPolymerPtr(molecule(i));
-			for (int j = 0; j < 1; j++)
-			{
-				pol->getAnchorModel()->propagateChange(-1, true);
-				pol->refineAnchorPosition(shared_from_this());
-				pol->refine(shared_from_this(), RefinementSavedPos);
-			}
-		}
 	}
 }
 

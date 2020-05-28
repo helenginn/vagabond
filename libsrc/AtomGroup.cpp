@@ -675,11 +675,6 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 			    || rType == RefinementMouse)
 			{
 				setSilent();
-				if (!(getClassName() == "Sidechain" &&
-				     hasParameter(ParamOptionSVD)))
-				{
-					setSilent();
-				}
 			}
 
 			for (int i = 0; i < topAtoms.size(); i++)

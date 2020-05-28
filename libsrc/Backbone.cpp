@@ -25,23 +25,17 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 	{
 		return;
 	}
-	
-	if (rType == RefinementSidechain || rType == RefinementCrude ||
-	    rType == RefinementSidePos)
+
+	if (rType == RefinementSidechain || rType == RefinementSidePos)
 	{
 		return;
 	}
 
 	std::cout << getMonomer()->getResCode() << std::flush;
-
+	
 	if (!paramCount())
 	{
 		double range = 2.;
-		
-		if (rType == RefinementCrude)
-		{
-			range /= 2;
-		}
 
 		if (_timesRefined >= 8)
 		{

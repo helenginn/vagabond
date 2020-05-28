@@ -23,6 +23,11 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 {
 	if (!canRefine()) return;
 
+	if (rType == RefinementCrude)
+	{
+		return;
+	}
+
 	bool medRes = (target->getMaxResolution() > 2.5);
 	bool lowRes = (target->getMaxResolution() > 3.5);
 

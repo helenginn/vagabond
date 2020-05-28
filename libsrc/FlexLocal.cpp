@@ -104,7 +104,7 @@ void FlexLocal::refineClusters()
 
 	timer.quickReport();
 	std::cout << std::endl;
-	_changed = nelder->didChange();
+	_changed = nelder->changedSignificantly();
 }
 
 void FlexLocal::refine()
