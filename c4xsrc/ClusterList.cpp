@@ -95,8 +95,7 @@ bool ClusterList::loadFiles()
 		return true;
 	}
 
-	Group *ave = new Group(_widget);
-	_clusters.push_back(ave);
+	Group *ave = new Group(NULL);
 	ave->setMaxResolution(_res);
 
 	for (size_t i = 0; i < _paths.size(); i++)
@@ -145,20 +144,14 @@ bool ClusterList::loadFiles()
 	if (ave->mtzCount() == 0)
 	{
 		getFromFolders();
-		_widget->clear();
-		
 		return true;
-		QMessageBox msgBox;
-		msgBox.setText(tr("No data sets have been successfully loaded.\n"
-		                  "Please pass MTZ files in on the command"
-		                  " line."));
-		QPushButton quit("Quit");
-		msgBox.setDefaultButton(&quit);
-		msgBox.exec();
-		return false;
 	}
 
+	ave->setTopGroup();
+	_widget->addTopLevelItem(ave);
+	_clusters.push_back(ave);
 	_widget->setCurrentItem(ave);
+
 	return true;
 }
 

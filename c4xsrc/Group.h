@@ -157,6 +157,11 @@ public:
 	{
 		return (this == _topGroup);
 	}
+	
+	void setTopGroup()
+	{
+		_topGroup = this;
+	}
 
 	void setMarked(bool marked);
 	void setDead(bool dead);
