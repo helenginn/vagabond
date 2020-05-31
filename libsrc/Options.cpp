@@ -282,13 +282,17 @@ void Options::executeProtocol()
 
 		for (int i = 0; i < 20 && _rPosition; i++)
 		{
+			if (i == 18)
+			{
+				_nSamples = tmp;
+				crystal->refreshPositions();
+			}
+
 			std::cout << "Refining positions to PDB (" << 
 			i + 1 << " / 20)" << std::endl;
 			crystal->refinePositions();
 		}
 
-		_nSamples = tmp;
-		crystal->refreshPositions();
 	}
 
 	if (_bStart == -1 && _rPosition)
