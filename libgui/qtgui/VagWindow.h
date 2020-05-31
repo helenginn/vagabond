@@ -136,6 +136,7 @@ private:
 	void refineSidechains();
 	void fitWholeMolecules();
 	void resetIntramolecule();
+	void drawDistanceMatrix();
 	void refineIntramolecule();
 	void getPolymerMonomerCrystal(PolymerPtr *poly, CrystalPtr *cryst, 
 	                              MonomerPtr *monomer);

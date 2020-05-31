@@ -20,6 +20,7 @@ typedef enum
 	InstructionTypeRefinePosToDensity,
 	InstructionTypeRefineFlexibility,
 	InstructionTypeRefineDensity,
+	InstructionTypeDistanceMatrix,
 	InstructionTypeSidechainsToEnd,
 	InstructionTypeRefineToEnd,
 	InstructionTypeModelPosToEnd,

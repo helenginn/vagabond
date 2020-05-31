@@ -23,6 +23,7 @@
 #include <QtWidgets/qmessagebox.h>
 #include <iostream>
 #include "InstructionThread.h"
+#include "../../libsrc/DistanceMatrix.h"
 #include "Dialogue.h"
 #include "ChainMenuAction.h"
 #include "../../libsrc/Options.h"
@@ -400,6 +401,10 @@ int VagWindow::waitForInstructions()
 				
 				case InstructionTypeSidechainsToEnd: 
 				sidechainsToEnd();
+				break;
+				
+				case InstructionTypeDistanceMatrix: 
+				drawDistanceMatrix();
 				break;
 
 				case InstructionTypeModelPosToEnd: 
@@ -991,6 +996,21 @@ void VagWindow::fitWholeMolecules()
 	p->refineMotions();
 	
 	setMessage("Refined whole motions for chain " + p->getChainID());
+}
+
+void VagWindow::drawDistanceMatrix()
+{
+	if (getObject() == NULL)
+	{
+		return;
+	}
+
+	Polymer *p = static_cast<Polymer *>(getObject());
+	
+	DistanceMatrix mtx(p->shared_from_this());
+	mtx.draw();
+	
+	std::cout << "Drawn distance matrix for " << p->getChainID() << std::endl;
 }
 
 void VagWindow::refineBackbone()

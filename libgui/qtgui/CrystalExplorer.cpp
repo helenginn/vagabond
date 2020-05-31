@@ -187,6 +187,13 @@ void CrystalExplorer::clickedMoleListItem()
 		        [=]{ pushBackbone(); });
 		_widgets.push_back(b);
 
+		b = new QPushButton("Distance matrix", this);
+		b->setGeometry(380, height, 160, TEXT_HEIGHT);
+		b->show();
+		connect(b, &QPushButton::clicked,
+		        [=]{ pushDistanceMatrix(); });
+		_widgets.push_back(b);
+
 		height += TEXT_HEIGHT;
 
 		PolymerPtr p= ToPolymerPtr(molecule);
@@ -290,6 +297,11 @@ void CrystalExplorer::pushFitMotion()
 void CrystalExplorer::pushFitSides()
 {
 	sendObject(InstructionTypeRefineDensity);
+}
+
+void CrystalExplorer::pushDistanceMatrix()
+{
+	sendObject(InstructionTypeDistanceMatrix);
 }
 
 void CrystalExplorer::pushFitIntra()

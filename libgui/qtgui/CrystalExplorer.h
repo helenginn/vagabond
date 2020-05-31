@@ -60,6 +60,7 @@ private slots:
 	void pushResetSides();
 	void pushResetIntra();
 	void pushResetMotion();
+	void pushDistanceMatrix();
 
 private:
 	void sendObject(InstructionType type);
