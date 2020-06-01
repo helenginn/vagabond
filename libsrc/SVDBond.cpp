@@ -241,7 +241,7 @@ void SVDBond::compareBonds()
 			double agreement = 0;
 			if (_doTorsion)
 			{
-				agreement = compareTorsions(b1, b2);
+				agreement = compareForKicks(b1, b2, false);
 			}
 			else
 			{
