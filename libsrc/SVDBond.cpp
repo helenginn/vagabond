@@ -325,6 +325,11 @@ void SVDBond::report()
 	_wTotal = cuml; 
 	
 	double pc50 = cuml * 0.45;
+	
+	if (_doTorsion)
+	{
+		pc50 = cuml * 0.9;
+	}
 
 	cuml = 0;
 	_num = 0;
@@ -385,7 +390,7 @@ void SVDBond::report()
 
 			_params.push_back(set);
 			
-			if (j == 1 && _doTorsion)
+			if (j == 0 && _doTorsion)
 			{
 				break;
 			}
