@@ -286,6 +286,7 @@ void Options::executeProtocol()
 			{
 				_nSamples = tmp;
 				crystal->refreshPositions();
+				crystal->refreshAnchors();
 			}
 
 			std::cout << "Refining positions to PDB (" << 
