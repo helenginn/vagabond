@@ -133,7 +133,7 @@ bool Polymer::refineLocalFlexibility(bool magic)
 		return ch;
 	}
 	
-	if (ch)
+	if (ch && !magic)
 	{
 		return ch;
 	}
