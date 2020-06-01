@@ -182,7 +182,7 @@ bool KeyPoints::refineKeyPoints()
 
 	{
 		NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
-		nelder->setCycles(60);
+		nelder->setCycles(30);
 		nelder->setVerbose(true);	
 		nelder->setSilent(true);
 
