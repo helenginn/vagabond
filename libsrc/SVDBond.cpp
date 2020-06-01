@@ -111,7 +111,7 @@ mat3x3 bond_angle_basis(mat3x3 parent, mat3x3 child)
 
 }
 
-double SVDBond::compareTorsions(BondPtr a, BondPtr b)
+double SVDBond::compareTorsions(BondPtr a, BondPtr b, bool ignore_intn)
 {
 	mat3x3 aBasis, bBasis;
 	vec3 aPos, bPos;
@@ -136,11 +136,14 @@ double SVDBond::compareTorsions(BondPtr a, BondPtr b)
 		vec3 aDir = bond_effect_on_pos(pos, aBasis, aPos);
 		vec3 bDir = bond_effect_on_pos(pos, bBasis, bPos);
 		
-		double dir = _interactions[_atoms[i]][a];
-		vec3_mult(&aDir, dir);
-		
-		dir = _interactions[_atoms[i]][b];
-		vec3_mult(&bDir, dir);
+		if (!ignore_intn)
+		{
+			double dir = _interactions[_atoms[i]][a];
+			vec3_mult(&aDir, dir);
+
+			dir = _interactions[_atoms[i]][b];
+			vec3_mult(&bDir, dir);
+		}
 		
 		for (int j = 0; j < 3; j++)
 		{
@@ -156,7 +159,7 @@ double SVDBond::compareTorsions(BondPtr a, BondPtr b)
 	return total;
 }
 
-double SVDBond::compareForKicks(BondPtr a, BondPtr b)
+double SVDBond::compareForKicks(BondPtr a, BondPtr b, bool kickmod)
 {
 	/* Get all the bond directions and positions */
 	mat3x3 aBasis, bBasis;
@@ -209,6 +212,11 @@ double SVDBond::compareForKicks(BondPtr a, BondPtr b)
 	}
 	
 	total /= count;
+	
+	if (!kickmod)
+	{
+		return total;
+	}
 
 	double kicks = compareKicks(a, b);
 	total *= kicks;

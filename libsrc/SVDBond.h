@@ -81,8 +81,8 @@ private:
 	void cleanupSVD(double ***ptr);
 	void copyMatrix(double **from, double **to);
 	void compareBonds();
-	double compareTorsions(BondPtr a, BondPtr b);
-	double compareForKicks(BondPtr a, BondPtr b);
+	double compareTorsions(BondPtr a, BondPtr b, bool ignore_intn = false);
+	double compareForKicks(BondPtr a, BondPtr b, bool kickmod = true);
 	double compareKicks(BondPtr a, BondPtr b);
 	void writeMatrix();
 	void determineInteractions();
