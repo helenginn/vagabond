@@ -430,6 +430,11 @@ VagFFTPtr Group::getAverageFFT()
 
 vec3 Group::getCentre()
 {
+	if (_topGroup == NULL || _topGroup->_mySet.ca == NULL)
+	{
+		return empty_vec3();
+	}
+
 	return _topGroup->_mySet.ca->getCentre();
 }
 
