@@ -398,6 +398,7 @@ void SQLInput::queryAltered()
 		item->setText(7, q.qValue(i, 6));
 		item->setText(8, q.qValue(i, 7));
 		item->setText(9, q.qValue(i, 8));
+		item->setText(10, q.qValue(i, 9));
 	}
 
 	updateSlider();
