@@ -36,6 +36,11 @@ public:
 		_refinementID = id;
 	}
 	
+	void setPanddaName(std::string file)
+	{
+		_panddaName = file;
+	}
+	
 	std::string refinementID()
 	{
 		return _refinementID;
@@ -44,6 +49,11 @@ public:
 	std::string getFilename()
 	{
 		return _filename;
+	}
+
+	std::string getPanddaName()
+	{
+		return _panddaName;
 	}
 
 	std::string metadata()
@@ -162,6 +172,7 @@ private:
 	std::string _pdbPath;
 	std::string _metadata;
 	std::string _refinementID;
+	std::string _panddaName;
 	CrystalPtr _crystal;
 	std::vector<vec3> _positions;
 	QuickAtoms *_quickAtoms;

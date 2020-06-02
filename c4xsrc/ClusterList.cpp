@@ -72,6 +72,7 @@ void ClusterList::setFiles(std::vector<std::string> files)
 		DatasetPath path;
 		path.refinement_id = -1;
 		path.mtz_path = files[i];
+		path.pandda_mtz = files[i];
 		path.metadata = getBaseFilename(files[i]);
 		std::string base = getBaseFilenameWithPath(files[i]);
 		std::string pdb = base + ".pdb";
@@ -108,6 +109,7 @@ bool ClusterList::loadFiles()
 		mtz->setResLimit(_res);
 		mtz->setFilename(_paths[i].mtz_path);
 
+		file->setPanddaName(_paths[i].pandda_mtz);
 		file->setPdbPath(_paths[i].pdb_path);
 		file->setMetadata(_paths[i].metadata);
 		file->setRefinementID(_paths[i].refinement_id);

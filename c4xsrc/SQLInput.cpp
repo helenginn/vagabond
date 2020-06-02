@@ -307,7 +307,7 @@ std::string SQLInput::constructRowQuery(bool distinctCrystals)
 		query += "SARS_COV_2_Analysis_v2.Data_Reduction.method";
 		query += " as reduction_method, ";
 		query += "resolution_cut, rwork, rfree, ";
-		query += "refinement_mtz_path, final_pdb_path, ";
+		query += "refinement_mtz_path, mtz_path, final_pdb_path, ";
 		query += "SARS_COV_2_v2.Diffractions.metadata";
 	}
 	else
@@ -455,9 +455,10 @@ void SQLInput::load()
 
 		DatasetPath path;
 		path.refinement_id = item->text(1).toStdString();
-		path.mtz_path = item->text(7).toStdString();
-		path.pdb_path = item->text(8).toStdString();
-		path.metadata = item->text(9).toStdString();
+		path.pandda_mtz = item->text(7).toStdString();
+		path.mtz_path = item->text(8).toStdString();
+		path.pdb_path = item->text(9).toStdString();
+		path.metadata = item->text(10).toStdString();
 		_datasets.push_back(path);
 	}
 

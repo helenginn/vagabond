@@ -24,6 +24,7 @@
 typedef struct
 {
 	std::string mtz_path;
+	std::string pandda_mtz;
 	std::string pdb_path;
 	std::string refinement_id;
 	std::string metadata;

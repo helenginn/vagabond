@@ -70,10 +70,10 @@ bool Output::prepCluster(Group *ave)
 		std::string pdbpath = subpath + "/final.pdb";
 		std::string mtzpath = subpath + "/final.mtz";
 		
-		std::string mtzlink = file->getFilename();
+		std::string mtzlink = file->getPanddaName();
 		if (mtzlink[0] != '/')
 		{
-			mtzlink = cwd + "/" + file->getFilename();
+			mtzlink = cwd + "/" + file->getPanddaName();
 		}
 		
 		std::string pdblink = file->getPdbPath();

@@ -212,6 +212,7 @@ void FolderInput::load()
 			found++;
 			DatasetPath path;
 			path.mtz_path = findMtz[0];
+			path.pandda_mtz = findMtz[0];
 			path.pdb_path = findPdb[0];
 			path.metadata = findMutable(results[i], folderGlob);
 			path.refinement_id = path.metadata;
