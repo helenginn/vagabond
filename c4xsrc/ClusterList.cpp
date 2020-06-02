@@ -151,6 +151,7 @@ bool ClusterList::loadFiles()
 	_widget->addTopLevelItem(ave);
 	_clusters.push_back(ave);
 	_widget->setCurrentItem(ave);
+	ave->performAverage();
 
 	return true;
 }
