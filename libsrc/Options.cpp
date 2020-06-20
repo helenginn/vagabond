@@ -280,20 +280,16 @@ void Options::executeProtocol()
 		_nSamples = 1;
 		crystal->refreshAnchors();
 
-		for (int i = 0; i < 20 && _rPosition; i++)
+		for (int i = 0; i < 10 && _rPosition; i++)
 		{
-			if (i == 18)
-			{
-				_nSamples = tmp;
-				crystal->refreshPositions();
-				crystal->refreshAnchors();
-			}
-
 			std::cout << "Refining positions to PDB (" << 
-			i + 1 << " / 20)" << std::endl;
+			i + 1 << " / 10)" << std::endl;
 			crystal->refinePositions();
+			crystal->refreshAnchors();
 		}
 
+		_nSamples = tmp;
+		crystal->refreshPositions();
 	}
 
 	if (_bStart == -1 && _rPosition)
