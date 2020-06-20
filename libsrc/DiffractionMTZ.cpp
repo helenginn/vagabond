@@ -249,6 +249,8 @@ void DiffractionMtz::load()
 	{
 		_maxRes = _limit;
 	}
+	
+	bool uniform_cutoff = false;
 
 	int indexLimitH = 0; int indexLimitK = 0; int indexLimitL = 0;
 
@@ -265,17 +267,17 @@ void DiffractionMtz::load()
 	}
 		
 		double hres = xtals[0]->cell[0] / indexLimitH;
-		if (_limit > 0 && 1 / hres < _limit)
+		if (!uniform_cutoff && 1 / hres < _limit)
 		{
 			indexLimitH = xtals[0]->cell[0] / _limit + 1;
 		}
 		double kres = xtals[0]->cell[1] / indexLimitK;
-		if (_limit > 0 && 1 / kres < _limit)
+		if (!uniform_cutoff && 1 / kres < _limit)
 		{
 			indexLimitK = xtals[0]->cell[1] / _limit + 1;
 		}
 		double lres = xtals[0]->cell[2] / indexLimitL;
-		if (_limit > 0 && 1 / lres < _limit)
+		if (!uniform_cutoff && 1 / lres < _limit)
 		{
 			indexLimitL = xtals[0]->cell[2] / _limit + 1;
 		}
@@ -298,12 +300,16 @@ void DiffractionMtz::load()
 		unitCell.push_back(xtals[0]->cell[i]);
 	}
 
-	if (_limit < 0)
+	if (uniform_cutoff)
 	{
 		_fft = VagFFTPtr(new VagFFT(largest, largest, largest, 0, 1));
 	}
 	else
 	{
+		indexLimitH *= 2;
+		indexLimitK *= 2;
+		indexLimitL *= 2;
+
 		_fft = VagFFTPtr(new VagFFT(indexLimitH, indexLimitK, 
 		                            indexLimitL, 0, 1));
 	}
