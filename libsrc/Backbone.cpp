@@ -83,8 +83,9 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				case RefinementModelPos:
 				addParamType(ParamOptionNumBonds, 8);
 				addParamType(ParamOptionCycles, 100);
-				addParamType(ParamOptionMaxTries, 6);
+				addParamType(ParamOptionMaxTries, 15);
 				addParamType(ParamOptionThorough, 1);
+				addParamType(ParamOptionTopLevelOnly, 1);
 				addParamType(ParamOptionSVD, 1);
 				break;
 
