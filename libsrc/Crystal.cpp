@@ -133,7 +133,19 @@ void Crystal::refinePolymers(RefinementType type)
 		pol->closenessSummary();
 		std::cout << std::endl;
 	}
+}
 
+void Crystal::closenessSummary()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+		
+		ToPolymerPtr(molecule(i))->closenessSummary();
+	}
 }
 
 void Crystal::refineCrude()

@@ -515,6 +515,7 @@ public:
 	void resetMotions();
 	void savePositions();
 	void refreshAnchors();
+	void closenessSummary();
 	void makeOverallMotion();
 	MotionPtr getOverallMotion();
 
