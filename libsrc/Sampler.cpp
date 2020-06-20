@@ -641,6 +641,7 @@ bool Sampler::sample(bool clear)
 		{
 			t = _params[ParamOptionTorsion];
 		}
+//		_svd->addToStrategy(_strategy, t, false);
 		_svd->convertStrategyTorsions(_strategy, t);
 	}
 
