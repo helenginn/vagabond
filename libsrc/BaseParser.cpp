@@ -586,6 +586,7 @@ void BaseParser::privateSaveState(int aim)
 void BaseParser::clearContents()
 {
 	_setup = false;
+	_allParsers.clear();
 	_stringProperties.clear();
 	_doubleProperties.clear();
 	_intProperties.clear();
