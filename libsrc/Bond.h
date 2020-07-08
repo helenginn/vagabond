@@ -122,10 +122,7 @@ public:
 	*  calculated.
 	*  \return heavy alignment atom.	
 	*/
-	AtomPtr getHeavyAlign()
-	{
-		return _heavyAlign.lock();
-	}
+	AtomPtr getHeavyAlign();
 	
 	void setHeavyAlign(AtomPtr atom, bool from_sister = false);
 	

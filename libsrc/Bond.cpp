@@ -196,33 +196,19 @@ void Bond::setTorsionAngleFrom(AtomPtr one, AtomPtr two, AtomPtr three,
 	                 &_torsion);
 }
 
+/* only for around the anchor point */
 void Bond::setHeavyAlign(AtomPtr atom, bool from_sister)
 {
 	_heavyAlign = atom;
 
-	if (!getParentModel()->isBond())
+	if (getParentModel()->isAnchor())
 	{
+		deriveCirclePortion();
 		deriveTorsionAngle();
 		return;
 	}
 	
 	BondPtr parent = ToBondPtr(getParentModel());
-	
-	if (!parent->getParentModel()->isBond())
-	{	
-		/* Grandparent is absolute - we can generate a torsion angle
-		 * from this heavy atom */
-
-		AtomPtr one = atom;
-		AtomPtr two = parent->getMajor();
-		AtomPtr three = getMajor();
-		AtomPtr four = getMinor();
-
-		setTorsionAngleFrom(one, two, three, four);
-		
-		/* Rederive circle portion */
-		deriveCirclePortion();
-	}
 	
 	if (from_sister)
 	{
@@ -368,6 +354,11 @@ double Bond::empiricalCirclePortion(BondPtr lastBond)
 	double increment = newAngle - oldAngle;
 
 	increment /= (2 * M_PI);
+	
+	if (increment != increment)
+	{
+		increment = 0;
+	}
 
 	return increment;
 }
@@ -1929,5 +1920,32 @@ void Bond::getTorsionBonds(BondPtr *phi, BondPtr *psi)
 		BondPtr tmp = *phi;
 		*phi = *psi;
 		*psi = tmp;
+	}
+}
+
+AtomPtr Bond::getHeavyAlign()
+{
+	if (!_heavyAlign.expired())
+	{
+		return _heavyAlign.lock();
+	}
+	else
+	{
+		ModelPtr parent = getParentModel();
+		AtomPtr atm;
+		
+		if (parent->isBond())
+		{
+			ExplicitModelPtr grandparent;
+			grandparent = ToBondPtr(parent)->getParentModel();
+			atm = grandparent->getAtom();
+		}
+		else if (parent->isAnchor())
+		{
+			atm = ToAnchorPtr(parent)->getOtherAtom(getMinor());
+		}
+
+		_heavyAlign = atm;
+		return atm;
 	}
 }
