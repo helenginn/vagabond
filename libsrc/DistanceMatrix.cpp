@@ -21,6 +21,7 @@
 #include "Polymer.h"
 #include "Monomer.h"
 #include "CSV.h"
+#include "maths.h"
 
 DistanceMatrix::DistanceMatrix(PolymerPtr pol)
 {
@@ -93,17 +94,17 @@ double DistanceMatrix::compareAtoms(AtomPtr a, AtomPtr b)
 	std::vector<BondSample> aPos = a->getExplicitModel()->getFinalPositions();
 	std::vector<BondSample> bPos = b->getExplicitModel()->getFinalPositions();
 	
-	double min = FLT_MAX;
-	double max = -FLT_MAX;
-
+	CorrelData cd = empty_CD();
+	
 	for (int i = 0; i < aPos.size(); i++)
 	{
 		double al = vec3_length(aPos.at(i).start);
 		double bl = vec3_length(bPos.at(i).start);
 		double dist = fabs(al - bl);
-		min = std::min(dist, min);
-		max = std::max(dist, max);
+		add_to_CD(&cd, dist, 0.);
 	}
+	double xm, ym, xs, ys;
+	means_stdevs_CD(cd, &xm, &ym, &xs, &ys);
 
-	return max - min;
+	return xs;
 }
