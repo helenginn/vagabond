@@ -318,20 +318,11 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 				
 				bool f000 = (i == 0 && j == 0 && k == 0);
 
-				bool missing = false;
 				if (!f000 && ((length < minRes || length > maxRes)
 				    || (fobs != fobs || isFree) || sigfobs != sigfobs))
 				{	
-					if (length > 0.1 || isFree)
-					{
-						/* only exclude under 0.1 Ang */
-						scratch->setElement(index, 0, 0);
-						continue;
-					}
-					else
-					{
-						missing = true;
-					}
+					scratch->setElement(index, 0, 0);
+					continue;
 				}
 
 				vec2 complex;
@@ -345,12 +336,6 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 				{
 					double stdev = stdevForReflection(fobs, fcalc, sigfobs,
 					                                  1 / length);
-					
-					if (stdev != stdev)
-					{
-						stdev = 0;
-					}
-
 					double downweight = exp(-(stdev * stdev));
 					phaseDev = stdev;
 
@@ -389,8 +374,9 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 				}
 				
 				double fused = 2 * fobs - fcalc;
+//				fused = fobs * exp(-(phaseDev * phaseDev));
 				
-				if (missing || f000)
+				if (f000)
 				{
 					fused = fcalc;
 				}
@@ -398,7 +384,7 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 				if (diff)
 				{
 					fused = fobs - fcalc;
-					if (f000 || missing) fused = 0;
+					if (f000) fused = 0;
 				}
 
 				complex.x = fused * cos(phi);
