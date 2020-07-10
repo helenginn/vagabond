@@ -452,8 +452,14 @@ void BaseParser::postRestoreState()
 
 void BaseParser::privateRestoreState(int num)
 {
-	if (stateCount() < num || _restored)
+	if (stateCount() <= num || _restored)
 	{
+		if (stateCount() <= num)
+		{
+			std::cout << "Warning: " << getAbsolutePath() << 
+			" state count " << stateCount() << " doesn't match "
+			"desired state " << num << std::endl;
+		}
 		return;
 	}
 	
@@ -467,7 +473,7 @@ void BaseParser::privateRestoreState(int num)
 	_restored = true;
 	
 	/* Remove all the states after the one just restored */
-	for (int i = num; i < _states.size(); i++)
+	for (int i = num; i < _states.size(); )
 	{
 		_states.erase(_states.begin() + i);
 	}
@@ -487,7 +493,6 @@ void BaseParser::saveState()
 		}
 
 		it->second.lock()->privateSaveState(aim);	
-		count = it->second.lock()->stateCount();
 	}
 
 	if (count > 100)
@@ -503,7 +508,22 @@ void BaseParser::saveState()
 			BaseParserPtr parser = it->second.lock();
 			parser->_states.erase(parser->_states.begin());
 		}
+	}
 
+	for (ParserMap::iterator it = _allParsers.begin();
+	     it != _allParsers.end(); it++) 
+	{
+		if (it->second.expired())
+		{
+			continue;
+		}
+
+		BaseParserPtr parser = it->second.lock();
+		if (aim != parser->stateCount())
+		{
+			std::cout << "Parser " << parser->getAbsolutePath() << 
+			" has differing state count!" << std::endl;
+		}
 	}
 }
 
@@ -511,7 +531,9 @@ void BaseParser::privateSaveState(int aim)
 {
 	if (stateCount() >= aim)
 	{
-		return;
+		std::cout << "Warning: " << stateCount() << " is larger or equal to "
+		"aim of " << aim << " states for " << getAbsolutePath() << "!" 
+		<< std::endl;
 	}
 
 	StateValueList list;
@@ -587,6 +609,7 @@ void BaseParser::clearContents()
 {
 	_setup = false;
 	_allParsers.clear();
+	_allClasses.clear();
 	_stringProperties.clear();
 	_doubleProperties.clear();
 	_intProperties.clear();
@@ -1314,6 +1337,14 @@ void BaseParser::setupKnownClasses()
 
 void BaseParser::addToAllParsers(std::string key, BaseParserPtr parser)
 {
+	if (_allParsers.count(key))
+	{
+		if (_allParsers[key].expired() || _allParsers[key].lock() != parser)
+		{
+			std::cout << "Warning - overwriting key in parser list: " << 
+			key << std::endl;
+		}
+	}
 	_allParsers[key] = parser;
 	std::string name = parser->getClassName();
 
