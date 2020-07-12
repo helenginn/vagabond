@@ -554,4 +554,7 @@ void Group::collapseDatasets(Group *other)
 		QuickAtoms *atoms = file->getQuickAtoms();
 		atoms->collapseOnTarget(centre);
 	}
+	
+	_topGroup->_mySet.ca = new AveCAlpha(this);
+	_topGroup->_mySet.ca->calculate();
 }

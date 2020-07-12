@@ -63,5 +63,6 @@ vec3 AveCAlpha::getCentre()
 	{
 		return empty_vec3();
 	}
+
 	return _quick->getCentre();
 }
