@@ -73,6 +73,7 @@ public slots:
 	void markSelection();
 	void removeCluster();
 	void refreshSelection();
+	void collapsePositions();
 	void changeColour();
 	void killSelection();
 private:
@@ -113,6 +114,7 @@ private:
 	QPushButton *_export;
 	QPushButton *_images;
 	QPushButton *_toggleDead;
+	QPushButton *_collapse;
 	QPlainTextEdit *_ucLabel;
 	QAction *_cluster;
 	ClusterList *_list;

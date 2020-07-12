@@ -528,6 +528,12 @@ void Screen::displayResults(Group *ave)
 		_changeColour->setMenu(m);
 	}
 
+
+	addSideButton((QWidget **)&_collapse, "Collapse positions here", &top);
+	_collapse->setDisabled(_group->isTopGroup());
+	connect(_collapse, &QPushButton::clicked,
+	        this, &Screen::collapsePositions);
+
 	int bottom = height() - 50;
 
 	_export = new QPushButton("Export", this);
@@ -701,4 +707,11 @@ void Screen::saveImages()
 		_cAlphaKeeper->saveImage(fnAlpha);
 	}
 
+}
+
+void Screen::collapsePositions()
+{
+	Group *topGroup = _list->topCluster();
+	_group->collapseDatasets(topGroup);
+	refreshSelection();
 }

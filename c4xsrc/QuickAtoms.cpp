@@ -122,7 +122,7 @@ void QuickAtoms::fetchAtoms()
 	{
 		return;
 	}
-	
+
 	vec3 v = empty_vec3();
 	SymMate mate(c);
 	mate.findSymop(v);

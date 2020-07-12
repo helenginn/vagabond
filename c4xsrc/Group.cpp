@@ -11,6 +11,7 @@
 #include "FileReader.h"
 #include "MatrixView.h"
 #include "AveDiffraction.h"
+#include "QuickAtoms.h"
 #include "AveCAlpha.h"
 #include "AveCSV.h"
 #include "AveUnitCell.h"
@@ -528,5 +529,16 @@ void Group::useAverageType(GroupType type)
 		throw std::string("No CSV file loaded.");
 	}
 	_type = type;
+}
 
+void Group::collapseDatasets(Group *other)
+{
+	vec3 centre = getCentre();
+
+	for (int i = 0; i < other->mtzCount(); i++)
+	{
+		MtzFile *file = other->getMtzFile(i);
+		QuickAtoms *atoms = file->getQuickAtoms();
+		atoms->collapseOnTarget(centre);
+	}
 }
