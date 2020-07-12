@@ -548,9 +548,9 @@ void Group::collapseDatasets(Group *other)
 	
 	vec3_mult(&centre, 1 / count);
 
-	for (size_t i = 0; i < other->mtzCount(); i++)
+	for (size_t i = 0; i < mtzCount(); i++)
 	{
-		MtzFile *file = other->getMtzFile(i);
+		MtzFile *file = getMtzFile(i);
 		QuickAtoms *atoms = file->getQuickAtoms();
 		atoms->collapseOnTarget(centre);
 	}
