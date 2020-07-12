@@ -101,6 +101,11 @@ void QuickAtoms::divideThrough()
 	}
 	
 	vec3_mult(&_centre, 1 / (double)total);
+	
+	if (_centre.x != _centre.x)
+	{
+		_centre = empty_vec3();
+	}
 }
 
 void QuickAtoms::fetchAtoms()
