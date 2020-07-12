@@ -79,6 +79,7 @@ void SymMate::findSymop(vec3 target)
 
 void SymMate::applySymops(AtomGroupPtr group)
 {
+	vec3 oldcentre = group->centroid();
 	for (int i = 0; i < group->atomCount(); i++)
 	{
 		ModelPtr model = group->atom(i)->getModel();
@@ -92,15 +93,19 @@ void SymMate::applySymops(AtomGroupPtr group)
 		{
 			AbsolutePtr abs = ToAbsolutePtr(model);
 			vec3 pos = abs->getAbsolutePosition();
+			vec3 init = group->atom(i)->getPDBPosition();
 			
 			mat3x3_mult_vec(_rot, &pos);
 			vec3_subtract_from_vec3(&pos, _offset);
+			mat3x3_mult_vec(_rot, &init);
+			vec3_subtract_from_vec3(&init, _offset);
 			
 			mat3x3 tensor = abs->getRealSpaceTensor();
 			tensor = mat3x3_mult_mat3x3(_rot, tensor);
 			abs->setTensor(tensor);
 
 			abs->setPosition(pos);
+			group->atom(i)->setPDBPosition(init);
 		}
 
 		if (model->isAnchor())
@@ -111,4 +116,7 @@ void SymMate::applySymops(AtomGroupPtr group)
 		}
 	}
 
+	vec3 newcentre = group->centroid();
+	std::cout << "Centre from " << vec3_desc(oldcentre) << " to " 
+	<< vec3_desc(newcentre) << std::endl;
 }
