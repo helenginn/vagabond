@@ -123,11 +123,6 @@ void QuickAtoms::fetchAtoms()
 		return;
 	}
 
-	vec3 v = empty_vec3();
-	SymMate mate(c);
-//	mate.findSymop(v);
-	mate.applySymops(c);
-
 	for (size_t j = 0; j < c->moleculeCount(); j++)
 	{
 		MoleculePtr mol = c->molecule(j);
