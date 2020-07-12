@@ -32,7 +32,9 @@ public:
 	void applySymops(AtomGroupPtr group);
 private:
 	CrystalPtr _cryst;
+	vec3 _realcentre;
 	vec3 _centre;
+	vec3 _target;
 
 	mat3x3 _rot;
 	vec3 _offset1;

@@ -25,12 +25,14 @@ SymMate::SymMate(CrystalPtr cryst)
 {
 	_cryst = cryst;
 	_centre = cryst->centroid();
+	_realcentre = cryst->centroid();
+	std::cout << "Centroid: " << vec3_desc(_centre) <<  std::endl;
 	_rot = make_mat3x3();
 	_offset1 = empty_vec3();
+	_target = empty_vec3();
 	_offset2 = empty_vec3();
 
 	mat3x3 recip = _cryst->getReal2Frac();
-	std::cout << "Centroid: " << vec3_desc(_centre) <<  std::endl;
 	mat3x3_mult_vec(recip, &_centre);
 }
 
@@ -58,7 +60,7 @@ void rotateVec3(vec3 *v, mat3x3 rot, vec3 offset1, vec3 offset2)
 
 void SymMate::findSymop(vec3 target)
 {
-	std::cout << "Target: " << vec3_desc(target) << std::endl;
+	_target = target;
 	mat3x3 recip = _cryst->getReal2Frac();
 	mat3x3 real = _cryst->getHKL2Frac();
 	mat3x3_mult_vec(recip, &target);
@@ -75,20 +77,22 @@ void SymMate::findSymop(vec3 target)
 		mat3x3 rot = mat3x3_from_ccp4(spg->symop[i]);
 
 		vec3 trial = _centre;
-		vec3_subtract_from_vec3(&trial, target);
 
+		std::cout << "Pre-rot: " << vec3_desc(trial) << std::endl;
 		vec3 original = trial;
 		closestToCentre(&trial);
 		vec3 running_offset = vec3_subtract_vec3(original, trial);
 
 		mat3x3_mult_vec(rot, &trial);
 		vec3_add_to_vec3(&trial, running_offset);
+		std::cout << "Post-rot: " << vec3_desc(trial) << std::endl;
 
 		original = trial;
+		vec3_subtract_from_vec3(&trial, target);
 		closestToCentre(&trial);
-		vec3 toreal = trial;
-		mat3x3_mult_vec(real, &toreal);
-		double length = vec3_length(toreal);
+		vec3_add_to_vec3(&trial, target);
+		vec3 diff = vec3_subtract_vec3(trial, target);
+		double length = vec3_length(diff);
 		
 		if (length < min)
 		{
@@ -109,6 +113,8 @@ void SymMate::findSymop(vec3 target)
 	_rot = mat3x3_from_ccp4(spg->symop[chosen]);
 	_offset1 = first_offset;
 	_offset2 = second_offset;
+	std::cout << "Centre: " << vec3_desc(_realcentre) << std::endl;
+	std::cout << "Target: " << vec3_desc(_target) << std::endl;
 	std::cout << "First Offset: " << vec3_desc(_offset1) <<  std::endl;
 	std::cout << "Rotation: " << std::endl;
 	std::cout << mat3x3_desc(_rot) << std::endl;
@@ -166,4 +172,8 @@ void SymMate::applySymops(AtomGroupPtr group)
 	std::cout << "Centre from " << vec3_desc(oldcentre) << " to " 
 	<< vec3_desc(newcentre) << std::endl;
 	std::cout << std::endl;
+	vec3_subtract_from_vec3(&newcentre, _target);
+	vec3_subtract_from_vec3(&oldcentre, _target);
+	std::cout << "Distance :"  << vec3_length(oldcentre) << " ";
+	std::cout << "to "  << vec3_length(newcentre) << std::endl;
 }
