@@ -29,6 +29,7 @@
 #include "FileReader.h"
 #include "ClusterList.h"
 #include "Output.h"
+#include "AveCSV.h"
 #include <libsrc/PDBReader.h>
 #include "MtzFile.h"
 #include "MtzFFT.h"
@@ -40,6 +41,7 @@
 ClusterList::ClusterList(QTreeWidget *widget)
 {
 	_sqlInput = false;
+	_csvInput = false;
 	_selectMode = false;
 	_removeMode = false;
 	_lastAverage = NULL;
@@ -61,6 +63,7 @@ ClusterList::~ClusterList()
 void ClusterList::load(std::vector<DatasetPath> paths)
 {
 	_sqlInput = false;
+	_csvInput = false;
 	_paths = paths;
 	loadFiles();
 }
@@ -88,6 +91,13 @@ void ClusterList::getFromFolders()
 	input->setList(this);
 }
 
+void ClusterList::getFromCSV(std::string csv)
+{
+	AveCSV *input = new AveCSV(NULL, csv);
+	input->setList(this);
+	input->load();
+}
+
 bool ClusterList::loadFiles()
 {
 	if (_sqlInput)
@@ -95,9 +105,14 @@ bool ClusterList::loadFiles()
 		getFromDatabase();
 		return true;
 	}
+	else if (_csvInput)
+	{
+		getFromCSV(_csv);
+		return true;
+	}
 
-	Group *ave = new Group(NULL);
-	ave->setMaxResolution(_res);
+	Group *grp = new Group(NULL);
+	grp->setMaxResolution(_res);
 
 	for (size_t i = 0; i < _paths.size(); i++)
 	{
@@ -116,7 +131,10 @@ bool ClusterList::loadFiles()
 
 		try
 		{
-			mtz->load();
+			if (_paths[i].mtz_path.length())
+			{
+				mtz->load();
+			}
 		}
 		catch (Shouter *s)
 		{
@@ -136,24 +154,25 @@ bool ClusterList::loadFiles()
 			reader.ignoreAtomsExcept("CA");
 			crystal = reader.getCrystal();
 			
+			file->setCrystal(crystal);
 			file->setRWork(reader.getRWork());
 			file->setRFree(reader.getRFree());
 		}
 
-		ave->addMtz(mtz, file, crystal);
+		grp->addMtz(mtz, file);
 	}
 
-	if (ave->mtzCount() == 0)
+	if (grp->mtzCount() == 0)
 	{
 		getFromFolders();
 		return true;
 	}
 
-	ave->setTopGroup();
-	_widget->addTopLevelItem(ave);
-	_clusters.push_back(ave);
-	_widget->setCurrentItem(ave);
-	ave->performAverage();
+	grp->setTopGroup();
+	_widget->addTopLevelItem(grp);
+	_clusters.push_back(grp);
+	_widget->setCurrentItem(grp);
+	grp->performAverage();
 
 	return true;
 }
@@ -395,6 +414,14 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 			std::cout << "Using SQL Input" << std::endl;
 			_sqlInput = true;
 		}
+
+		value = isCommand(_commands[i], "--csv=");
+		if (value.length() > 0)
+		{
+			std::cout << "Using CSV Input" << std::endl;
+			_csvInput = true;
+			_csv = value;
+		}
 	}
 }
 
@@ -462,6 +489,12 @@ void ClusterList::pdbAverage()
 void ClusterList::recipAverage()
 {
 	_lastAverage->useAverageType(AveDiff);
+	_screen->updateToolbar(_lastAverage);
+}
+
+void ClusterList::csvAverage()
+{
+	_lastAverage->useAverageType(AveComma);
 	_screen->updateToolbar(_lastAverage);
 }
 

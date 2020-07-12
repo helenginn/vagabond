@@ -61,11 +61,13 @@ public slots:
 
 	void unitCellAverage();
 	void recipAverage();
+	void csvAverage();
 	void pdbAverage();
 protected:
 	virtual void keyPressEvent(QKeyEvent *event);
 	virtual void keyReleaseEvent(QKeyEvent *event);
 private:
+	void getFromCSV(std::string csv);
 
 	Screen *_screen;
 	QTreeWidget *_widget;
@@ -80,6 +82,8 @@ private:
 	std::vector<std::string> _commands;
 	double _res;
 	bool _sqlInput;
+	bool _csvInput;
+	std::string _csv;
 };
 
 

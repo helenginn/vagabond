@@ -13,6 +13,7 @@ class MtzFFT : public VagFFT, public QTreeWidgetItem
 public:
 	MtzFFT(QTreeWidgetItem *parent, VagFFT &vag);
 	MtzFFT(QTreeWidgetItem *parent, MtzFFT &vag);
+	MtzFFT(QTreeWidgetItem *parent);
 
 	MtzFFTPtr shared_from_this()
 	{

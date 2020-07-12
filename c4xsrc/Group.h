@@ -32,6 +32,7 @@ typedef enum
 	AveDiff,
 	AveCA,
 	AveUC,
+	AveComma,
 } GroupType;
 
 typedef enum
@@ -71,12 +72,14 @@ class MtzFile;
 class AveDiffraction;
 class AveCAlpha;
 class AveUnitCell;
+class AveCSV;
 
 typedef struct
 {
 	AveDiffraction *recip;
 	AveCAlpha *ca;
 	AveUnitCell *unitCell;
+	AveCSV *csv;
 } AverageSet;
 
 
@@ -88,7 +91,7 @@ public:
 	
 	~Group();
 
-	void addMtz(DiffractionMtzPtr mtz, MtzFile *file, CrystalPtr c);
+	void addMtz(DiffractionMtzPtr mtz, MtzFile *file);
 	void addMtz(MtzFFTPtr mtz);
 	
 	static bool isGroup(QTreeWidgetItem *item)
@@ -206,12 +209,8 @@ public:
 	{
 		_which = which;
 	}
-	
-	void useAverageType(GroupType type)
-	{
-		_type = type;
-	}
 
+	void useAverageType(GroupType type);
 	void changeColour(double r, double b, double g, double a);
 public slots:
 	void performAverage();

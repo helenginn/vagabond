@@ -42,6 +42,7 @@ typedef struct
 	QAction *amp;
 	QAction *ca;
 	QAction *uc;
+	QAction *csv;
 	QAction *top;
 	QAction *orig;
 	QAction *self;

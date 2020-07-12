@@ -12,6 +12,7 @@
 #include "MatrixView.h"
 #include "AveDiffraction.h"
 #include "AveCAlpha.h"
+#include "AveCSV.h"
 #include "AveUnitCell.h"
 
 #include <QObject>
@@ -36,6 +37,7 @@ Group::Group(QTreeWidget *parent) : QTreeWidgetItem(parent)
 	_correlMatrix = NULL;
 	_marked = false;
 	_mySet.recip = NULL;
+	_mySet.csv = NULL;
 	_mySet.ca = NULL;
 	_mySet.unitCell = NULL;
 	
@@ -85,6 +87,16 @@ void Group::calculateAllAverages(bool force)
 		_mySet.unitCell = new AveUnitCell(this);
 		_mySet.unitCell->calculate();
 	}
+	
+	if (force || _mySet.csv == NULL)
+	{
+		if (AveCSV::usingCSV())
+		{
+			delete _mySet.csv;
+			_mySet.csv = new AveCSV(this, "");
+			_type = AveComma;
+		}
+	}
 }
 
 void Group::performCluster()
@@ -131,12 +143,21 @@ void Group::addMtz(MtzFFTPtr mtz)
 	_mtzs.push_back(tmp);
 }
 
-void Group::addMtz(DiffractionMtzPtr mtzDiff, MtzFile *file,
-                      CrystalPtr crystal)
+void Group::addMtz(DiffractionMtzPtr mtzDiff, MtzFile *file)
 {
-//	_names.push_back(mtzDiff->getFilename());
-
 	VagFFTPtr ref = mtzDiff->getFFT();
+
+	if (!ref)
+	{
+		MtzFFTPtr tmp = MtzFFTPtr(new MtzFFT(this));
+		tmp->setMtzFile(file);
+		tmp->updateText();
+		std::vector<double> uc = std::vector<double>(6, 0.);
+		tmp->setUnitCell(uc);
+		_mtzs.push_back(tmp);
+		updateText();
+		return;
+	}
 
 	if (_mtzs.size() > 0)
 	{
@@ -151,8 +172,6 @@ void Group::addMtz(DiffractionMtzPtr mtzDiff, MtzFile *file,
 	tmp->setMtzFile(file);
 	tmp->wipe();
 	tmp->updateText();
-	
-	file->setCrystal(crystal);
 	
 	VagFFTPtr mtz = mtzDiff->getFFT();
 
@@ -214,6 +233,13 @@ void Group::findIntercorrelations()
 	else if (_type == AveUC)
 	{
 		working->unitCell->findIntercorrelations(this, _svdPtrs);
+	}
+	else if (_type == AveComma)
+	{
+		if (working->csv != NULL)
+		{
+			working->csv->findIntercorrelations(this, _svdPtrs);
+		}
 	}
 
 	size_t dims = _mtzs.size();
@@ -385,7 +411,7 @@ void Group::writeToStream(std::ofstream &f, bool complete)
 	{
 		MtzFile *file = _mtzs[i]->getMtzFile();
 
-		f << file->getFilename();
+		f << file->metadata();
 
 		if (i < _mtzs.size() - 1)
 		{
@@ -493,4 +519,14 @@ void Group::changeColour(double r, double b, double g, double a)
 		MtzFile *file = getMtz(i)->getMtzFile();
 		file->setColour(r, g, b, a);
 	}
+}
+
+void Group::useAverageType(GroupType type)
+{
+	if (type == AveComma && _mySet.csv == NULL)
+	{
+		throw std::string("No CSV file loaded.");
+	}
+	_type = type;
+
 }

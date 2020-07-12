@@ -24,6 +24,11 @@ MtzFFT::MtzFFT(QTreeWidgetItem *parent, VagFFT &vag) : VagFFT(vag, -1), QTreeWid
 	
 }
 
+MtzFFT::MtzFFT(QTreeWidgetItem *parent) : VagFFT(0, 0, 0, 0, 0), QTreeWidgetItem(parent)
+{
+	
+}
+
 MtzFFT::MtzFFT(QTreeWidgetItem *parent, MtzFFT &vag) : VagFFT(vag, -1), QTreeWidgetItem(parent)
 {
 	_file = vag._file;

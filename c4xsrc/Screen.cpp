@@ -45,6 +45,7 @@
 #include "AxisScroll.h"
 #include "MatrixView.h"
 #include "AveDiffraction.h"
+#include "AveCSV.h"
 #include "MtzFFTPtr.h"
 
 #define TOOL_BAR_HEIGHT 50
@@ -184,6 +185,7 @@ void Screen::updateToolbar(Group *grp)
 	uses.amp->setChecked(false);
 	uses.ca->setChecked(false);
 	uses.uc->setChecked(false);
+	uses.csv->setChecked(false);
 
 	switch (grp->getType())
 	{
@@ -197,6 +199,10 @@ void Screen::updateToolbar(Group *grp)
 		
 		case AveUC:
 		uses.uc->setChecked(true);
+		break;
+		
+		case AveComma:
+		uses.csv->setChecked(true);
 		break;
 		
 		default:
@@ -245,6 +251,11 @@ void Screen::addToolBar()
 	uses.uc->setCheckable(true);
 	connect(uses.uc, &QAction::triggered, 
 	        _list, &ClusterList::unitCellAverage);
+	
+	uses.csv = m->addAction("Use CSV file");
+	uses.csv->setCheckable(true);
+	connect(uses.csv, &QAction::triggered, 
+	        _list, &ClusterList::csvAverage);
 
 	m->addSeparator();
 
