@@ -37,6 +37,7 @@ private:
 	vec3 _target;
 
 	mat3x3 _rot;
+	vec3 _screw;
 	vec3 _offset1;
 	vec3 _offset2;
 };

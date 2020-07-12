@@ -23,6 +23,7 @@
 
 SymMate::SymMate(CrystalPtr cryst)
 {
+	_screw = empty_vec3();
 	_cryst = cryst;
 	_centre = cryst->centroid();
 	_realcentre = cryst->centroid();
@@ -48,12 +49,13 @@ void closestToCentre(vec3 *v)
 	while (v->z >= 0.5) v->z -= 1;
 }
 
-void rotateVec3(vec3 *v, mat3x3 rot, vec3 offset1, vec3 offset2)
+void rotateVec3(vec3 *v, mat3x3 rot, vec3 offset1, vec3 offset2, vec3 screw)
 {
 	vec3 trial = *v;
 	vec3_subtract_from_vec3(&trial, offset1);
 	mat3x3_mult_vec(rot, &trial);
 	vec3_add_to_vec3(&trial, offset1);
+	vec3_add_to_vec3(&trial, screw);
 	vec3_subtract_from_vec3(&trial, offset2);
 	*v = trial;
 }
@@ -75,6 +77,8 @@ void SymMate::findSymop(vec3 target)
 	for (int i = 0; i < spg->nsymop; i++)
 	{
 		mat3x3 rot = mat3x3_from_ccp4(spg->symop[i]);
+		float *trn = spg->symop[i].trn;
+		vec3 screw = make_vec3(trn[0], trn[1], trn[2]);
 
 		vec3 trial = _centre;
 
@@ -85,6 +89,7 @@ void SymMate::findSymop(vec3 target)
 
 		mat3x3_mult_vec(rot, &trial);
 		vec3_add_to_vec3(&trial, running_offset);
+		vec3_add_to_vec3(&trial, screw);
 		std::cout << "Post-rot: " << vec3_desc(trial) << std::endl;
 
 		original = trial;
@@ -100,12 +105,14 @@ void SymMate::findSymop(vec3 target)
 			chosen = i;
 			first_offset = running_offset;
 			second_offset = vec3_subtract_vec3(original, trial);
+			_screw = screw;
 			std::cout << "New length: " << min << std::endl;
 		}
 	}
 
 	if (chosen < 0)
 	{
+		_screw = empty_vec3();
 		std::cout << "Finding closest symop failed." << std::endl;
 		return;
 	}
@@ -116,6 +123,7 @@ void SymMate::findSymop(vec3 target)
 	std::cout << "Centre: " << vec3_desc(_realcentre) << std::endl;
 	std::cout << "Target: " << vec3_desc(_target) << std::endl;
 	std::cout << "First Offset: " << vec3_desc(_offset1) <<  std::endl;
+	std::cout << "Screw: " << vec3_desc(_screw) <<  std::endl;
 	std::cout << "Rotation: " << std::endl;
 	std::cout << mat3x3_desc(_rot) << std::endl;
 	std::cout << "Second Offset: " << vec3_desc(_offset2) <<  std::endl;
@@ -130,7 +138,7 @@ void SymMate::applySymops(AtomGroupPtr group)
 	vec3 copy = oldcentre;
 	mat3x3_mult_vec(recip, &copy);
 	std::cout << "Copy: " << vec3_desc(copy) << std::endl;
-	rotateVec3(&copy, _rot, _offset1, _offset2);
+	rotateVec3(&copy, _rot, _offset1, _offset2, _screw);
 	std::cout << "After: " << vec3_desc(copy) << std::endl;
 	mat3x3_mult_vec(real, &copy);
 
@@ -150,11 +158,11 @@ void SymMate::applySymops(AtomGroupPtr group)
 			vec3 init = group->atom(i)->getPDBPosition();
 			
 			mat3x3_mult_vec(recip, &pos);
-			rotateVec3(&pos, _rot, _offset1, _offset2);
+			rotateVec3(&pos, _rot, _offset1, _offset2, _screw);
 			mat3x3_mult_vec(real, &pos);
 
 			mat3x3_mult_vec(recip, &init);
-			rotateVec3(&init, _rot, _offset1, _offset2);
+			rotateVec3(&init, _rot, _offset1, _offset2, _screw);
 			mat3x3_mult_vec(real, &init);
 			
 			mat3x3 tensor = abs->getRealSpaceTensor();
