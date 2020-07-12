@@ -163,12 +163,18 @@ void Screen::resizeEvent(QResizeEvent *e)
 			_deadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
 			                       _deadSele->y(), RIGHT_VIEW_WIDTH - 20,
 			                       40);
+			_collapse->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+			                     h - 100, RIGHT_VIEW_WIDTH - 20, 40);
+
+			_changeColour->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+			                     h - 100, RIGHT_VIEW_WIDTH - 20, 40);
 
 			_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                     h - 50, RIGHT_VIEW_WIDTH - 20, 40);
 
 			_images->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                     h - 100, RIGHT_VIEW_WIDTH - 20, 40);
+
 		}
 
 		if (_toggleDead)
