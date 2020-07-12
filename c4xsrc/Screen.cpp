@@ -164,10 +164,12 @@ void Screen::resizeEvent(QResizeEvent *e)
 			                       _deadSele->y(), RIGHT_VIEW_WIDTH - 20,
 			                       40);
 			_collapse->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                     h - 100, RIGHT_VIEW_WIDTH - 20, 40);
+			                       _collapse->y(), RIGHT_VIEW_WIDTH - 20,
+			                       40);
 
 			_changeColour->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                     h - 100, RIGHT_VIEW_WIDTH - 20, 40);
+			                       _changeColour->y(), RIGHT_VIEW_WIDTH - 20,
+			                           40);
 
 			_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                     h - 50, RIGHT_VIEW_WIDTH - 20, 40);
