@@ -80,6 +80,9 @@ void SymMate::findSymop(vec3 target)
 void SymMate::applySymops(AtomGroupPtr group)
 {
 	vec3 oldcentre = group->centroid();
+	mat3x3 recip = _cryst->getReal2Frac();
+	mat3x3 real = _cryst->getHKL2Frac();
+
 	for (int i = 0; i < group->atomCount(); i++)
 	{
 		ModelPtr model = group->atom(i)->getModel();
@@ -95,10 +98,14 @@ void SymMate::applySymops(AtomGroupPtr group)
 			vec3 pos = abs->getAbsolutePosition();
 			vec3 init = group->atom(i)->getPDBPosition();
 			
+			mat3x3_mult_vec(recip, &pos);
 			mat3x3_mult_vec(_rot, &pos);
 			vec3_subtract_from_vec3(&pos, _offset);
+			mat3x3_mult_vec(real, &pos);
+			mat3x3_mult_vec(recip, &init);
 			mat3x3_mult_vec(_rot, &init);
 			vec3_subtract_from_vec3(&init, _offset);
+			mat3x3_mult_vec(real, &init);
 			
 			mat3x3 tensor = abs->getRealSpaceTensor();
 			tensor = mat3x3_mult_mat3x3(_rot, tensor);
