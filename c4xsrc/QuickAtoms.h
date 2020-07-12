@@ -42,6 +42,7 @@ public:
 	void fetchAtoms();
 	void addAtomsFrom(QuickAtoms *other);
 	void divideThrough();
+	void collapseOnTarget(vec3 target);
 	
 	vec3 getCentre()
 	{

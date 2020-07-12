@@ -112,7 +112,8 @@ void QuickAtoms::fetchAtoms()
 
 	if (_chainMap.size() > 0)
 	{
-		return;
+		_chainMap.clear();
+		_countMap.clear();
 	}
 
 	CrystalPtr c = _file->getCrystal();
@@ -140,6 +141,22 @@ void QuickAtoms::fetchAtoms()
 
 		populatePolymer(p);
 	}
+}
+
+void QuickAtoms::collapseOnTarget(vec3 target)
+{
+	CrystalPtr c = _file->getCrystal();
+	
+	if (!c)
+	{
+		return;
+	}
+	
+	SymMate mate(c);
+	mate.findSymop(target);
+	mate.applySymops(c);
+
+	fetchAtoms();
 }
 
 void QuickAtoms::populatePolymer(PolymerPtr p)

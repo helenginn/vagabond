@@ -35,7 +35,8 @@ private:
 	vec3 _centre;
 
 	mat3x3 _rot;
-	vec3 _offset;
+	vec3 _offset1;
+	vec3 _offset2;
 };
 
 
