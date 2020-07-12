@@ -125,7 +125,7 @@ void QuickAtoms::fetchAtoms()
 
 	vec3 v = empty_vec3();
 	SymMate mate(c);
-	mate.findSymop(v);
+//	mate.findSymop(v);
 	mate.applySymops(c);
 
 	for (size_t j = 0; j < c->moleculeCount(); j++)
