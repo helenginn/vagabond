@@ -60,6 +60,7 @@ void SymMate::findSymop(vec3 target)
 {
 	std::cout << "Target: " << vec3_desc(target) << std::endl;
 	mat3x3 recip = _cryst->getReal2Frac();
+	mat3x3 real = _cryst->getHKL2Frac();
 	mat3x3_mult_vec(recip, &target);
 
 	CSym::CCP4SPG *spg = _cryst->getSpaceGroup();
@@ -85,8 +86,9 @@ void SymMate::findSymop(vec3 target)
 
 		original = trial;
 		closestToCentre(&trial);
-
-		double length = vec3_length(trial);
+		vec3 toreal = trial;
+		mat3x3_mult_vec(real, &toreal);
+		double length = vec3_length(toreal);
 		
 		if (length < min)
 		{
