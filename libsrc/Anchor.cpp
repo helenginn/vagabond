@@ -597,3 +597,14 @@ void Anchor::removeWhack(WhackPtr whack)
 		_whacks.erase(it);
 	}
 }
+
+void Anchor::applyRotation(mat3x3 rot)
+{
+	mat3x3 tmp = mat3x3_mult_mat3x3(rot, _rotation);
+	_rotation = tmp;
+}
+
+void Anchor::applyOffset(vec3 offset)
+{
+	vec3_subtract_from_vec3(&_position, offset);
+}

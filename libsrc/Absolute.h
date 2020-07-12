@@ -193,6 +193,11 @@ public:
 	}
 	
 	vec3 getRandomPosition();
+	
+	void setPosition(vec3 pos)
+	{
+		_position = pos;
+	}
 
 	static void setPosX(void *object, double x)
 	{

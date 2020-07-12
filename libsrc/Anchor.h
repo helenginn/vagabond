@@ -140,6 +140,8 @@ public:
 //		static_cast<Anchor *>(object)->propagateChange(-1, true);
 	}
 
+	void applyRotation(mat3x3 rot);
+	void applyOffset(vec3 offset);
 	void recalculateWhacks();
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 	virtual std::string shortDesc();
