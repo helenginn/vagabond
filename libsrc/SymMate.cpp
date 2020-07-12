@@ -83,6 +83,7 @@ void SymMate::findSymop(vec3 target)
 		vec3 trial = _centre;
 
 		std::cout << "Pre-rot: " << vec3_desc(trial) << std::endl;
+		std::cout << "+screw: " << vec3_desc(screw) << std::endl;
 		vec3 original = trial;
 		closestToCentre(&trial);
 		vec3 running_offset = vec3_subtract_vec3(original, trial);
