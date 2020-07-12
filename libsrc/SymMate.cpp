@@ -70,7 +70,6 @@ void SymMate::findSymop(vec3 target)
 	CSym::CCP4SPG *spg = _cryst->getSpaceGroup();
 	double min = FLT_MAX;
 	int chosen = -1;
-	vec3 first_offset = empty_vec3();
 	vec3 second_offset = empty_vec3();
 	vec3 empty = empty_vec3();
 	
@@ -85,11 +84,8 @@ void SymMate::findSymop(vec3 target)
 		std::cout << "Pre-rot: " << vec3_desc(trial) << std::endl;
 		std::cout << "+screw: " << vec3_desc(screw) << std::endl;
 		vec3 original = trial;
-		closestToCentre(&trial);
-		vec3 running_offset = vec3_subtract_vec3(original, trial);
 
 		mat3x3_mult_vec(rot, &trial);
-		vec3_add_to_vec3(&trial, running_offset);
 		vec3_add_to_vec3(&trial, screw);
 		std::cout << "Post-rot: " << vec3_desc(trial) << std::endl;
 
@@ -104,7 +100,6 @@ void SymMate::findSymop(vec3 target)
 		{
 			min = length;
 			chosen = i;
-			first_offset = running_offset;
 			second_offset = vec3_subtract_vec3(original, trial);
 			_screw = screw;
 			std::cout << "New length: " << min << std::endl;
@@ -119,11 +114,9 @@ void SymMate::findSymop(vec3 target)
 	}
 
 	_rot = mat3x3_from_ccp4(spg->symop[chosen]);
-	_offset1 = first_offset;
 	_offset2 = second_offset;
 	std::cout << "Centre: " << vec3_desc(_realcentre) << std::endl;
 	std::cout << "Target: " << vec3_desc(_target) << std::endl;
-	std::cout << "First Offset: " << vec3_desc(_offset1) <<  std::endl;
 	std::cout << "Screw: " << vec3_desc(_screw) <<  std::endl;
 	std::cout << "Rotation: " << std::endl;
 	std::cout << mat3x3_desc(_rot) << std::endl;
