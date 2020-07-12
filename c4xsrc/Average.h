@@ -38,6 +38,7 @@ public:
 	virtual void findIntercorrelations(Group *other, double **svd);
 protected:
 	std::vector<MtzFFTPtr> _mtzs;
+	bool _symmetric;
 private:
 	virtual double findCorrelation(MtzFFTPtr one, MtzFFTPtr two) = 0;
 	Group *_group;
