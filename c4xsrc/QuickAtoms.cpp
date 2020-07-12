@@ -23,6 +23,7 @@
 #include <libsrc/Atom.h>
 #include <libsrc/Monomer.h>
 #include <libsrc/Polymer.h>
+#include <libsrc/SymMate.h>
 
 QuickAtoms::QuickAtoms(MtzFile *file)
 {
@@ -115,6 +116,16 @@ void QuickAtoms::fetchAtoms()
 	}
 
 	CrystalPtr c = _file->getCrystal();
+	
+	if (!c)
+	{
+		return;
+	}
+	
+	vec3 v = empty_vec3();
+	SymMate mate(c);
+	mate.findSymop(v);
+	mate.applySymops(c);
 
 	for (size_t j = 0; j < c->moleculeCount(); j++)
 	{
