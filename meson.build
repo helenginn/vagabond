@@ -224,6 +224,7 @@ c4xsrc = [
 'c4xsrc/CAlphaView.cpp', 
 'c4xsrc/ClusterList.cpp', 
 'c4xsrc/CorrelLabel.cpp', 
+'c4xsrc/AveCSV.cpp', 
 'c4xsrc/FolderInput.cpp', 
 'c4xsrc/GLAxis.cpp', 
 'c4xsrc/GLPoint.cpp', 
