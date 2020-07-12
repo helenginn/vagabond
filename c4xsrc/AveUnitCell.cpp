@@ -40,12 +40,22 @@ void AveUnitCell::calculate()
 
 		std::vector<double> uc = _mtzs[i]->getUnitCell();
 		
+		if (uc.size() < 6)
+		{
+			continue;
+		}
+		
 		for (int j = 0; j < 6; j++)
 		{
 			_ucs[j] += uc[j];
 		}
 		
 		count++;
+	}
+	
+	if (count == 0)
+	{
+		count = 1;
 	}
 
 	for (int j = 0; j < 6; j++)
