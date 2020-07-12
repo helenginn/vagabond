@@ -529,8 +529,7 @@ void Screen::displayResults(Group *ave)
 	}
 
 
-	addSideButton((QWidget **)&_collapse, "Collapse positions here", &top);
-	_collapse->setDisabled(_group->isTopGroup());
+	addSideButton((QWidget **)&_collapse, "Collapse positions", &top);
 	connect(_collapse, &QPushButton::clicked,
 	        this, &Screen::collapsePositions);
 

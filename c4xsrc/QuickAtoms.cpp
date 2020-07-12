@@ -141,6 +141,8 @@ void QuickAtoms::fetchAtoms()
 
 		populatePolymer(p);
 	}
+	
+	_centre = c->centroid();
 }
 
 void QuickAtoms::collapseOnTarget(vec3 target)

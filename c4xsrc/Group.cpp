@@ -533,7 +533,20 @@ void Group::useAverageType(GroupType type)
 
 void Group::collapseDatasets(Group *other)
 {
-	vec3 centre = getCentre();
+	vec3 centre = empty_vec3();
+	double count = 0;
+	
+	for (int i = 0; i < mtzCount(); i++)
+	{
+		if (getMtzFile(i)->isSelected())
+		{
+			vec3 c = getMtzFile(i)->getQuickAtoms()->getCentre();
+			vec3_add_to_vec3(&centre, c);
+			count++;
+		}
+	}
+	
+	vec3_mult(&centre, 1 / count);
 
 	for (size_t i = 0; i < other->mtzCount(); i++)
 	{
