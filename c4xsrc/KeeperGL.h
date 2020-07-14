@@ -77,6 +77,11 @@ public:
 		return _cAlphaView;
 	}
 	
+	HKLView *getHKLView()
+	{
+		return _hklView;
+	}
+	
 	void setStoreMatrix(mat4x4 *store)
 	{
 		_model = *store;

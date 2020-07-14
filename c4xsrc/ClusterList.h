@@ -26,7 +26,7 @@ public:
 	bool loadFiles();
 	void load(std::vector<DatasetPath> paths);
 	
-	void setReindexMatrix(mat3x3 reindex);
+	void setReindexMatrix(mat3x3 reindex, vec3 translate);
 
 	void average(Group *item);
 	void cluster(Group *item);

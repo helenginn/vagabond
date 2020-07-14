@@ -25,16 +25,18 @@
 #include <iostream>
 #include <fstream>
 
+#include <libsrc/PDBReader.h>
+#include <libsrc/Crystal.h>
 #include "Group.h"
 #include "FileReader.h"
 #include "ClusterList.h"
 #include "Output.h"
 #include "AveCSV.h"
-#include <libsrc/PDBReader.h>
 #include "MtzFile.h"
 #include "MtzFFT.h"
 #include "Screen.h"
 #include "FolderInput.h"
+#include "QuickAtoms.h"
 
 #include <libsrc/FFT.h>
 
@@ -607,16 +609,21 @@ void ClusterList::reorderMTZs()
 	makeGroup(newList);
 }
 
-void ClusterList::setReindexMatrix(mat3x3 reindex)
+void ClusterList::setReindexMatrix(mat3x3 reindex, vec3 trans)
 {
-	for (size_t i = 0; i < _files.size(); i++)
+	Group *top = Group::topGroup();
+	for (size_t i = 0; i < top->mtzCount(); i++)
 	{
-		if (!_files[i]->isSelected())
+		if (!top->getMtz(i)->getMtzFile()->isSelected())
 		{
-			return;
+			continue;
 		}
 		
-		_files[i]->reindex(reindex);
+		top->getMtz(i)->reindex(reindex);
+		top->getMtzFile(i)->getCrystal()->reindexAtoms(reindex, trans);
+		top->getMtzFile(i)->getQuickAtoms()->fetchAtoms();
 	}
 
+	std::cout << "Here..." << std::endl;
+	_screen->refreshSelection();
 }

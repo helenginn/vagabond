@@ -45,6 +45,7 @@
 #include "SelectMatrix.h"
 #include "AxisScroll.h"
 #include "MatrixView.h"
+#include "HKLView.h"
 #include "AveDiffraction.h"
 #include "AveCSV.h"
 #include "MtzFFTPtr.h"
@@ -691,6 +692,11 @@ void Screen::refreshSelection()
 	if (_ucView)
 	{
 		_ucView->keeper()->getPlot()->repopulate();
+	}
+	
+	if (_hklKeeper)
+	{
+		_hklKeeper->getHKLView()->repopulate();
 	}
 	
 	if (_rView)

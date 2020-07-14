@@ -23,6 +23,7 @@
 #include <libsrc/vec3.h>
 #include <string>
 #include "GLObject.h"
+#include <libsrc/mat3x3.h>
 
 class QuickAtoms;
 
@@ -177,7 +178,6 @@ public:
 	}
 	
 	void setColour(double r, double g, double b, double a);
-	void reindex(mat3x3 reindex);
 private:
 	std::string _filename;
 	std::string _pdbPath;
