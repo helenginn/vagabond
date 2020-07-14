@@ -606,3 +606,17 @@ void ClusterList::reorderMTZs()
 	
 	makeGroup(newList);
 }
+
+void ClusterList::setReindexMatrix(mat3x3 reindex)
+{
+	for (size_t i = 0; i < _files.size(); i++)
+	{
+		if (!_files[i]->isSelected())
+		{
+			return;
+		}
+		
+		_files[i]->reindex(reindex);
+	}
+
+}

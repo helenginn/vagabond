@@ -84,3 +84,8 @@ void MtzFile::setColour(double r, double g, double b, double a)
 	_blue = b;
 	_alpha = a;
 }
+
+void MtzFile::reindex(mat3x3 reindex)
+{
+
+}

@@ -177,6 +177,7 @@ public:
 	}
 	
 	void setColour(double r, double g, double b, double a);
+	void reindex(mat3x3 reindex);
 private:
 	std::string _filename;
 	std::string _pdbPath;

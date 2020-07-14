@@ -25,6 +25,8 @@ public:
 	void setCommands(std::vector<std::string> commands);
 	bool loadFiles();
 	void load(std::vector<DatasetPath> paths);
+	
+	void setReindexMatrix(mat3x3 reindex);
 
 	void average(Group *item);
 	void cluster(Group *item);

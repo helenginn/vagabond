@@ -42,6 +42,7 @@
 #include "KeeperGL.h"
 #include "GLPoint.h"
 #include "Group.h"
+#include "SelectMatrix.h"
 #include "AxisScroll.h"
 #include "MatrixView.h"
 #include "AveDiffraction.h"
@@ -165,6 +166,9 @@ void Screen::resizeEvent(QResizeEvent *e)
 			                       40);
 			_collapse->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                       _collapse->y(), RIGHT_VIEW_WIDTH - 20,
+			                       40);
+			_reindex->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+			                       _reindex->y(), RIGHT_VIEW_WIDTH - 20,
 			                       40);
 			_coverage->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                       _coverage->y(), RIGHT_VIEW_WIDTH - 20,
@@ -546,6 +550,10 @@ void Screen::displayResults(Group *ave)
 	connect(_collapse, &QPushButton::clicked,
 	        this, &Screen::collapsePositions);
 
+	addSideButton((QWidget **)&_reindex, "Reindex selection", &top);
+	connect(_reindex, &QPushButton::clicked,
+	        this, &Screen::reindex);
+
 	addSideButton((QWidget **)&_coverage, "Coverage order", &top);
 	connect(_coverage, &QPushButton::clicked,
 	        this, &Screen::coverage);
@@ -746,4 +754,11 @@ void Screen::reorder()
 {
 	_list->reorderMTZs();
 
+}
+
+void Screen::reindex()
+{
+	SelectMatrix *matrix = new SelectMatrix(NULL);
+	matrix->setList(_list);
+	matrix->show();
 }

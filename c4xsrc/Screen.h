@@ -75,6 +75,7 @@ public slots:
 	void refreshSelection();
 	void collapsePositions();
 	void reorder();
+	void reindex();
 	void coverage();
 	void changeColour();
 	void killSelection();
@@ -119,6 +120,7 @@ private:
 	QPushButton *_collapse;
 	QPushButton *_coverage;
 	QPushButton *_reorder;
+	QPushButton *_reindex;
 	QPlainTextEdit *_ucLabel;
 	QAction *_cluster;
 	ClusterList *_list;
