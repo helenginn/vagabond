@@ -576,3 +576,33 @@ void ClusterList::prepDirs()
 	msgBox.setText(QString::fromStdString(str));
 	msgBox.exec();
 }
+
+void ClusterList::reorderMTZs()
+{
+	std::vector<MtzFFTPtr> newList;
+	std::vector<MtzFFTPtr> mtzs = Group::topGroup()->mtzs();
+
+	for (int i = 0; i < _widget->topLevelItemCount(); i++)
+	{
+		QTreeWidgetItem *item = _widget->topLevelItem(i);
+		if (!Group::isGroup(item))
+		{
+			continue;
+		}
+
+		Group *obj = static_cast<Group *>(item);
+		if (!obj->isMarked())
+		{
+			continue;
+		}
+		
+		std::vector<MtzFFTPtr> marked = obj->mtzs();
+		
+		for (size_t j = 0; j < marked.size(); j++)
+		{
+			newList.push_back(marked[j]);
+		}
+	}
+	
+	makeGroup(newList);
+}

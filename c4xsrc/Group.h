@@ -131,6 +131,11 @@ public:
 		return _mtzs;
 	}
 	
+	void setMtzs(std::vector<MtzFFTPtr> mtzs)
+	{
+		_mtzs = mtzs;
+	}
+	
 	void setExported(bool exp)
 	{
 		_exported = true;

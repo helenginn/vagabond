@@ -40,6 +40,7 @@ public:
 	void setFiles(std::vector<std::string> files);
 	
 	Group *topCluster();
+	void reorderMTZs();
 	void removeCluster(Group *ave);
 	void clearSelection();
 	void invertSelection();
