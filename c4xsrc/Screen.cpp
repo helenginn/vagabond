@@ -736,6 +736,12 @@ void Screen::collapsePositions()
 	refreshSelection();
 }
 
+void Screen::coverage()
+{
+	std::vector<MtzFFTPtr> results = _group->orderByCoverage();
+	_list->makeGroup(results);
+}
+
 void Screen::reorder()
 {
 	_list->reorderMTZs();
