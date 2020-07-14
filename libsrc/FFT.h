@@ -86,6 +86,8 @@ public:
 		return _spg;
 	}
 	
+	void reindex(mat3x3 reindex);
+	
 	void fft(FFTTransform transform);
 	void multiplyFinal(float val);
 	void multiplyDotty(float val);

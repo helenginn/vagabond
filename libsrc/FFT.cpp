@@ -2154,6 +2154,34 @@ void VagFFT::convertMaskToSolvent(int expTotal)
 	}
 }
 
+void VagFFT::reindex(mat3x3 reindex)
+{
+	for (int k = -_nz / 2; k < _nz / 2; k++)
+	{
+		for (int j = -_ny / 2; j < _ny / 2; j++)
+		{
+			for (int i = -_nx / 2; i < _nx / 2; i++)
+			{
+				vec3 ijk = make_vec3(i, j, k);
+				mat3x3_mult_vec(reindex, &ijk);
+				
+				long pre_index = element(ijk.x, ijk.y, ijk.z);
+				long end = finalIndex(pre_index);
+
+				pre_index = element(i, j, k);
+				long start = finalIndex(pre_index);
+				
+				for (int j = 0; j < 2; j++)
+				{
+					float tmp = _data[start][j];
+					_data[start][j] = _data[end][j];
+					_data[end][j] = tmp;
+				}
+			}
+		}
+	}
+}
+
 double VagFFT::resolution(int i, int j, int k)
 {
 	vec3 ijk = make_vec3(i, j, k);
