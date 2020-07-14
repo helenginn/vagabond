@@ -72,7 +72,7 @@ void AveCSV::load()
 			continue;
 		}
 		
-		val = 1 - val;
+//		val = 1 - val;
 		
 		for (size_t j = 0; j < components.size(); j++)
 		{
