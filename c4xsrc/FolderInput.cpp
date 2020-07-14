@@ -50,7 +50,7 @@ std::string findMutable(std::string path, std::string glob)
 FolderInput::FolderInput(QWidget *widget) : QMainWindow(widget)
 {
 	setWindowTitle("Load datasets");
-	setGeometry(300, 300, 500, 500);
+	setGeometry(300, 300, 500, 540);
 	show();
 	
 	int top = 40;
@@ -95,6 +95,20 @@ FolderInput::FolderInput(QWidget *widget) : QMainWindow(widget)
 	_pdbLine = line;
 	_bin.push_back(line);
 	
+	top += 40;
+	
+	l = new QLabel("Ligand style", this);
+	l->setGeometry(40, top, 150, 40);
+	l->show();
+	_bin.push_back(l);
+
+	line = new QLineEdit(this);
+	line->setPlaceholderText("optional.cif");
+	line->setGeometry(150, top, 260, 40);
+	line->show();
+	_cifLine = line;
+	_bin.push_back(line);
+	
 	top += 80;
 	
 	QPushButton *p = new QPushButton("Load", this);
@@ -121,6 +135,7 @@ void FolderInput::load()
 	std::string folderGlob = _folderLine->text().toStdString();
 	std::string mtzGlob = _mtzLine->text().toStdString();
 	std::string pdbGlob = _pdbLine->text().toStdString();
+	std::string cifGlob = _cifLine->text().toStdString();
 	
 	size_t found = 0;
 	size_t missing = 0;
@@ -152,6 +167,7 @@ void FolderInput::load()
 	{
 		std::vector<std::string> findMtz;
 		std::vector<std::string> findPdb;
+		std::vector<std::string> findCif;
 		DIR *dir = opendir(results[i].c_str());
 
 		if (dir)
@@ -195,6 +211,16 @@ void FolderInput::load()
 			std::cout << err.what();
 		}
 
+		try
+		{
+			std::string search = results[i] + "/" + cifGlob;
+			findCif = glob(search);
+		}
+		catch (std::runtime_error &err)
+		{
+			std::cout << err.what();
+		}
+
 		if (findPdb.size() > 1)
 		{
 			QMessageBox msgBox;
@@ -207,6 +233,12 @@ void FolderInput::load()
 			return;
 		}
 		
+		if (findCif.size() > 1)
+		{
+			std::cout << "Warning: CIF file has multiple matches" 
+			<< " in " << results[i] << std::endl;
+		}
+		
 		if (findPdb.size() > 0 && findMtz.size() > 0)
 		{
 			found++;
@@ -214,6 +246,12 @@ void FolderInput::load()
 			path.mtz_path = findMtz[0];
 			path.pandda_mtz = findMtz[0];
 			path.pdb_path = findPdb[0];
+			
+			if (findCif.size() == 1)
+			{
+				path.cif_path = findCif[0];
+			}
+
 			path.metadata = findMutable(results[i], folderGlob);
 			path.refinement_id = path.metadata;
 			paths.push_back(path);

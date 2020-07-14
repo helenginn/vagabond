@@ -69,6 +69,7 @@ bool Output::prepCluster(Group *ave)
 		
 		std::string pdbpath = subpath + "/final.pdb";
 		std::string mtzpath = subpath + "/final.mtz";
+		std::string cifpath = subpath + "/ligand.cif";
 		
 		std::string mtzlink = file->getPanddaName();
 		if (mtzlink[0] != '/')
@@ -81,9 +82,16 @@ bool Output::prepCluster(Group *ave)
 		{
 			pdblink = cwd + "/" + file->getPdbPath();
 		}
+
+		std::string ciflink = file->getPdbPath();
+		if (ciflink[0] != '/')
+		{
+			ciflink = cwd + "/" + file->getCifPath();
+		}
 		
 		symlink(pdblink.c_str(), pdbpath.c_str());
 		symlink(mtzlink.c_str(), mtzpath.c_str());
+		symlink(ciflink.c_str(), cifpath.c_str());
 		
 		std::cout << "Created soft links for " << metadata << std::endl;
 	}

@@ -41,6 +41,16 @@ public:
 		_panddaName = file;
 	}
 	
+	void setCifPath(std::string file)
+	{
+		_cifPath = file;
+	}
+	
+	std::string getCifPath()
+	{
+		return _cifPath;
+	}
+	
 	std::string refinementID()
 	{
 		return _refinementID;
@@ -170,6 +180,7 @@ public:
 private:
 	std::string _filename;
 	std::string _pdbPath;
+	std::string _cifPath;
 	std::string _metadata;
 	std::string _refinementID;
 	std::string _panddaName;

@@ -45,6 +45,7 @@ private:
 	QLineEdit *_folderLine;
 	QLineEdit *_mtzLine;
 	QLineEdit *_pdbLine;
+	QLineEdit *_cifLine;
 };
 
 #endif

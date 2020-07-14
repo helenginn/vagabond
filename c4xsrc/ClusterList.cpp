@@ -128,6 +128,7 @@ bool ClusterList::loadFiles()
 		file->setPdbPath(_paths[i].pdb_path);
 		file->setMetadata(_paths[i].metadata);
 		file->setRefinementID(_paths[i].refinement_id);
+		file->setCifPath(_paths[i].cif_path);
 
 		try
 		{
