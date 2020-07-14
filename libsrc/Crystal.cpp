@@ -36,6 +36,7 @@
 #include "FileReader.h"
 #include "PDBReader.h"
 #include "Atom.h"
+#include "Absolute.h"
 #include "Anchor.h"
 #include "FlexGlobal.h"
 #include "RefinementGridSearch.h"
@@ -2453,4 +2454,31 @@ void Crystal::applyWilsonToAnchors()
 	}
 	
 	refreshPositions();
+}
+
+void Crystal::reindexAtoms(mat3x3 reindex, vec3 trans)
+{
+	mat3x3 recip = getReal2Frac();
+	mat3x3 real = getHKL2Frac();
+	mat3x3 inv = mat3x3_inverse(reindex);
+
+	for (int i = 0; i < atomCount(); i++)
+	{
+		vec3 init = atom(i)->getPDBPosition();
+		mat3x3_mult_vec(recip, &init);
+		mat3x3_mult_vec(inv, &init);
+		vec3_add_to_vec3(&init, trans);
+		mat3x3_mult_vec(real, &init);
+		atom(i)->setPDBPosition(init);
+
+		if (atom(i)->getModel()->isAbsolute())
+		{
+			init = atom(i)->getModel()->getAbsolutePosition();
+			mat3x3_mult_vec(recip, &init);
+			mat3x3_mult_vec(inv, &init);
+			vec3_add_to_vec3(&init, trans);
+			mat3x3_mult_vec(real, &init);
+			ToAbsolutePtr(atom(i)->getModel())->setPosition(init);
+		}
+	}
 }

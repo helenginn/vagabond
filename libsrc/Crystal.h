@@ -518,6 +518,7 @@ public:
 	void closenessSummary();
 	void makeOverallMotion();
 	MotionPtr getOverallMotion();
+	void reindexAtoms(mat3x3 reindex, vec3 trans);
 
 	void addPDBContents(std::string pdb);
 	void updatePDBContents(std::string pdbName);
