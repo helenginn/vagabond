@@ -171,6 +171,11 @@ public:
 	{
 		_topGroup = this;
 	}
+	
+	static Group *topGroup()
+	{
+		return _topGroup;
+	}
 
 	void setMarked(bool marked);
 	void setDead(bool dead);
@@ -218,6 +223,7 @@ public:
 
 	void useAverageType(GroupType type);
 	void changeColour(double r, double b, double g, double a);
+	std::vector<MtzFFTPtr> orderByCoverage();
 public slots:
 	void performAverage();
 	void performCluster();

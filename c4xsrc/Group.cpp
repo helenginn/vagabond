@@ -558,3 +558,114 @@ void Group::collapseDatasets(Group *other)
 	_topGroup->_mySet.ca = new AveCAlpha(this);
 	_topGroup->_mySet.ca->calculate();
 }
+
+std::vector<MtzFFTPtr> Group::orderByCoverage()
+{
+	/* clusterPtrs(d, c); d = dataset, c = cluster */
+	std::vector<MtzFFTPtr> reordered;
+	double percentage = 0;
+	
+	size_t svd_dims = _mtzs.size();
+	double *goals = (double *)malloc(sizeof(double) * svd_dims);
+	memset(goals, '\0', sizeof(double) * svd_dims);
+
+	double total = 0;
+	for (size_t i = 0; i < mtzCount(); i++)
+	{
+		double max = 0;
+		for (size_t j = 0; j < mtzCount(); j++)
+		{
+			max = std::max(max, _clusterPtrs[j][i]);
+		}
+
+		goals[i] = max;
+		total += max;
+	}
+	
+	double *covered = (double *)malloc(sizeof(double) * svd_dims);
+	memset(covered, '\0', sizeof(double) * svd_dims);
+	double *wip = (double *)malloc(sizeof(double) * svd_dims);
+	memset(wip, '\0', sizeof(double) * svd_dims);
+
+	std::cout << "Total coverage goals: " << total << std::endl;
+
+	while (true)
+	{
+		int nextBest = -1;
+		double bestContrib = 0;
+
+		for (size_t i = 0; i < mtzCount(); i++)
+		{
+			std::vector<MtzFFTPtr>::iterator it;
+			it = std::find(reordered.begin(), reordered.end(), _mtzs[i]);
+			if (it != reordered.end())
+			{
+				continue;
+			}
+
+			double portion = 0;
+			for (size_t j = 0; j < mtzCount(); j++)
+			{
+				wip[j] = std::max(covered[j], _clusterPtrs[i][j]);
+				portion += wip[j];
+			}
+
+			double newpct = (portion / total) * 100;
+			double thispct = newpct - percentage;
+
+			if (thispct > bestContrib)
+			{
+				bestContrib = thispct;
+				nextBest = i;
+			}
+		}
+		
+		if (nextBest == -1)
+		{
+			break;
+		}
+
+		double portion = 0;
+		for (size_t i = 0; i < mtzCount(); i++)
+		{
+			covered[i] = std::max(covered[i], _clusterPtrs[nextBest][i]);
+			portion += covered[i];
+		}
+		
+		double newpct = (portion / total) * 100;
+		double thispct = newpct - percentage;
+		percentage = newpct;
+		std::cout << "Next best contribution: " << 
+		getMtzFile(nextBest)->metadata() << " with extra " << 
+		thispct << "% (cumulative: " <<
+		percentage << "%)." <<
+		std::endl;
+
+		reordered.push_back(_mtzs[nextBest]);
+
+		if (_mtzs.size() == reordered.size())
+		{
+			break;
+		}
+	}
+
+	std::cout << "Goals: " << std::endl;
+	for (size_t i = 0; i < mtzCount(); i++)
+	{
+		std::cout << goals[i] << ", ";
+	}
+	std::cout << std::endl;
+
+	std::cout << "Covered: " << std::endl;
+	for (size_t i = 0; i < mtzCount(); i++)
+	{
+		std::cout << covered[i] << ", ";
+	}
+	std::cout << std::endl;
+
+	free(wip);
+	free(covered);
+	
+	return reordered;
+}
+

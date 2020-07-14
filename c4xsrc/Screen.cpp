@@ -166,6 +166,9 @@ void Screen::resizeEvent(QResizeEvent *e)
 			_collapse->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                       _collapse->y(), RIGHT_VIEW_WIDTH - 20,
 			                       40);
+			_coverage->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+			                       _coverage->y(), RIGHT_VIEW_WIDTH - 20,
+			                       40);
 			_reorder->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                       _reorder->y(), RIGHT_VIEW_WIDTH - 20,
 			                       40);
@@ -542,6 +545,10 @@ void Screen::displayResults(Group *ave)
 	addSideButton((QWidget **)&_collapse, "Collapse positions", &top);
 	connect(_collapse, &QPushButton::clicked,
 	        this, &Screen::collapsePositions);
+
+	addSideButton((QWidget **)&_coverage, "Coverage order", &top);
+	connect(_coverage, &QPushButton::clicked,
+	        this, &Screen::coverage);
 
 	addSideButton((QWidget **)&_reorder, "Reorder by marked", &top);
 	connect(_reorder, &QPushButton::clicked,
