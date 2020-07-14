@@ -635,7 +635,7 @@ void Screen::killSelection()
 void Screen::newSelection()
 {
 	std::vector<MtzFFTPtr> mtzs = _group->getMtzsFromSelection();
-	_list->makeGroup(mtzs, true);
+	_list->makeGroup(mtzs);
 }
 
 void Screen::relinkPixmap()

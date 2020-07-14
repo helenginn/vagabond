@@ -35,7 +35,7 @@ public:
 		_screen = scr;
 	}
 	
-	void makeGroup(std::vector<MtzFFTPtr> mtzs, bool useAve);
+	void makeGroup(std::vector<MtzFFTPtr> mtzs);
 	
 	void setFiles(std::vector<std::string> files);
 	

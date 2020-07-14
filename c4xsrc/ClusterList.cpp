@@ -504,7 +504,7 @@ void ClusterList::unitCellAverage()
 	_screen->updateToolbar(_lastAverage);
 }
 
-void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs, bool withAve)
+void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs)
 {
 	if (mtzs.size() == 0)
 	{
