@@ -188,7 +188,7 @@ void CrystalExplorer::clickedMoleListItem()
 		_widgets.push_back(b);
 
 		b = new QPushButton("Distance matrix", this);
-		b->setGeometry(380, height, 160, TEXT_HEIGHT);
+		b->setGeometry(380, height, 200, TEXT_HEIGHT);
 		b->show();
 		connect(b, &QPushButton::clicked,
 		        [=]{ pushDistanceMatrix(); });
