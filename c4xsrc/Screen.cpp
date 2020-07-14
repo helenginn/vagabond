@@ -166,6 +166,9 @@ void Screen::resizeEvent(QResizeEvent *e)
 			_collapse->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                       _collapse->y(), RIGHT_VIEW_WIDTH - 20,
 			                       40);
+			_reorder->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+			                       _reorder->y(), RIGHT_VIEW_WIDTH - 20,
+			                       40);
 
 			_changeColour->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                       _changeColour->y(), RIGHT_VIEW_WIDTH - 20,
@@ -536,10 +539,13 @@ void Screen::displayResults(Group *ave)
 		_changeColour->setMenu(m);
 	}
 
-
 	addSideButton((QWidget **)&_collapse, "Collapse positions", &top);
 	connect(_collapse, &QPushButton::clicked,
 	        this, &Screen::collapsePositions);
+
+	addSideButton((QWidget **)&_reorder, "Reorder by marked", &top);
+	connect(_reorder, &QPushButton::clicked,
+	        this, &Screen::reorder);
 
 	int bottom = height() - 50;
 
@@ -721,4 +727,10 @@ void Screen::collapsePositions()
 	Group *topGroup = _list->topCluster();
 	_group->collapseDatasets(topGroup);
 	refreshSelection();
+}
+
+void Screen::reorder()
+{
+	_list->reorderMTZs();
+
 }
