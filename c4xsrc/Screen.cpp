@@ -739,8 +739,7 @@ void Screen::saveImages()
 
 void Screen::collapsePositions()
 {
-	Group *topGroup = _list->topCluster();
-	_group->collapseDatasets(topGroup);
+	_group->collapseDatasets();
 	refreshSelection();
 }
 

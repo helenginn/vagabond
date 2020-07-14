@@ -531,7 +531,7 @@ void Group::useAverageType(GroupType type)
 	_type = type;
 }
 
-void Group::collapseDatasets(Group *other)
+void Group::collapseDatasets()
 {
 	vec3 centre = empty_vec3();
 	double count = 0;

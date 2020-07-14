@@ -117,7 +117,7 @@ public:
 	MtzFile *getMtzFile(int i);
 	void setMtzSelection(size_t i, bool val);
 	void flipMtzSelection(int i);
-	void collapseDatasets(Group *other);
+	void collapseDatasets();
 	
 	std::vector<double> getUnitCell();
 	
