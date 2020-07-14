@@ -210,6 +210,7 @@ headers = [
 'c4xsrc/PlotView.h', 
 'c4xsrc/Screen.h', 
 'c4xsrc/SelectionWindow.h', 
+'c4xsrc/SelectMatrix.h', 
 'c4xsrc/KeeperGL.h', 
 'c4xsrc/ClusterList.h', 
 'c4xsrc/CorrelLabel.h'
@@ -243,6 +244,7 @@ c4xsrc = [
 'c4xsrc/Output.cpp',
 'c4xsrc/Screen.cpp', 
 'c4xsrc/SelectionWindow.cpp',
+'c4xsrc/SelectMatrix.cpp', 
 'c4xsrc/UCPlot.cpp'
 ]
 
