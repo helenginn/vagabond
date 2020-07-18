@@ -24,6 +24,7 @@ public:
 
 	void setCommands(std::vector<std::string> commands);
 	bool loadFiles();
+	void loadClusters(std::string contents);
 	void load(std::vector<DatasetPath> paths);
 	
 	void setReindexMatrix(mat3x3 reindex, vec3 translate);

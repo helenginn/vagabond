@@ -627,3 +627,33 @@ void ClusterList::setReindexMatrix(mat3x3 reindex, vec3 trans)
 	std::cout << "Here..." << std::endl;
 	_screen->refreshSelection();
 }
+
+void ClusterList::loadClusters(std::string contents)
+{
+	std::vector<std::string> lines = split(contents, '\n');
+	Group *top = Group::topGroup();
+
+	for (size_t i = 0; i < lines.size(); i++)
+	{
+		std::string line = lines[i];
+		std::vector<std::string> labels = split(line, ',');
+		
+		std::vector<MtzFFTPtr> files;
+		for (size_t j = 0; j < labels.size(); j++)
+		{
+			std::string label = labels[j];
+			
+			for (size_t k = 0; k < top->mtzCount(); k++)
+			{
+				if (top->getMtzFile(k)->metadata() == label)
+				{
+					files.push_back(top->getMtz(k));
+					break;
+				}
+			}
+		}
+		
+		makeGroup(files);
+	}
+}
+
