@@ -103,7 +103,7 @@ FolderInput::FolderInput(QWidget *widget) : QMainWindow(widget)
 	_bin.push_back(l);
 
 	line = new QLineEdit(this);
-	line->setPlaceholderText("optional.cif");
+	line->setPlaceholderText("ligand.cif (optional)");
 	line->setGeometry(150, top, 260, 40);
 	line->show();
 	_cifLine = line;
