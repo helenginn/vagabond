@@ -111,6 +111,21 @@ FolderInput::FolderInput(QWidget *widget) : QMainWindow(widget)
 	
 	top += 80;
 	
+	l = new QLabel("Pre-make from:", this);
+	l->setGeometry(40, top, 150, 40);
+	l->show();
+	_bin.push_back(l);
+
+	line = new QLineEdit(this);
+	line->setPlaceholderText("0_all_clusters.txt (optional)");
+	line->setGeometry(150, top, 260, 40);
+	line->show();
+	_premake = line;
+	_bin.push_back(line);
+
+	top += 80;
+	
+	
 	QPushButton *p = new QPushButton("Load", this);
 	p->setGeometry(330, top, 80, 40);
 	p->show();
@@ -273,6 +288,14 @@ void FolderInput::load()
 
 	_list->load(paths);
 	hide();
+	
+	if (_premake->text().length())
+	{
+		std::string file = _premake->text().toStdString();
+		std::string contents = get_file_contents(file);
+		_list->loadClusters(contents);
+	}
+
 	msgBox.exec();
 	deleteLater();
 }
