@@ -52,6 +52,16 @@ public:
 		return _cifPath;
 	}
 	
+	void setLigPath(std::string file)
+	{
+		_ligPath = file;
+	}
+	
+	std::string getLigPath()
+	{
+		return _ligPath;
+	}
+	
 	std::string refinementID()
 	{
 		return _refinementID;
@@ -182,6 +192,7 @@ private:
 	std::string _filename;
 	std::string _pdbPath;
 	std::string _cifPath;
+	std::string _ligPath;
 	std::string _metadata;
 	std::string _refinementID;
 	std::string _panddaName;

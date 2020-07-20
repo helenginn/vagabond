@@ -131,6 +131,7 @@ bool ClusterList::loadFiles()
 		file->setMetadata(_paths[i].metadata);
 		file->setRefinementID(_paths[i].refinement_id);
 		file->setCifPath(_paths[i].cif_path);
+		file->setLigPath(_paths[i].lig_path);
 
 		try
 		{

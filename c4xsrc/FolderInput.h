@@ -46,6 +46,7 @@ private:
 	QLineEdit *_mtzLine;
 	QLineEdit *_pdbLine;
 	QLineEdit *_cifLine;
+	QLineEdit *_ligLine;
 	QLineEdit *_premake;
 };
 
