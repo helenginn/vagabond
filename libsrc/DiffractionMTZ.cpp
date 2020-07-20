@@ -250,7 +250,7 @@ void DiffractionMtz::load()
 		_maxRes = _limit;
 	}
 	
-	bool uniform_cutoff = false;
+	bool uniform_cutoff = (_limit < 0);
 
 	int indexLimitH = 0; int indexLimitK = 0; int indexLimitL = 0;
 
