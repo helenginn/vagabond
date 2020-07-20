@@ -611,6 +611,9 @@ void ClusterList::reorderMTZs()
 
 void ClusterList::setReindexMatrix(mat3x3 reindex, vec3 trans)
 {
+	mat3x3 inv = mat3x3_inverse(reindex);
+	std::cout << mat3x3_desc(inv) << std::endl;
+
 	Group *top = Group::topGroup();
 	for (size_t i = 0; i < top->mtzCount(); i++)
 	{
@@ -620,7 +623,8 @@ void ClusterList::setReindexMatrix(mat3x3 reindex, vec3 trans)
 		}
 		
 		top->getMtz(i)->reindex(reindex);
-		top->getMtzFile(i)->getCrystal()->reindexAtoms(reindex, trans);
+		
+		top->getMtzFile(i)->getCrystal()->reindexAtoms(inv, trans);
 		top->getMtzFile(i)->getQuickAtoms()->fetchAtoms();
 	}
 
