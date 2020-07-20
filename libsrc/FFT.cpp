@@ -2156,6 +2156,10 @@ void VagFFT::convertMaskToSolvent(int expTotal)
 
 void VagFFT::reindex(mat3x3 reindex)
 {
+	fftwf_complex *tempData;
+	tempData = (fftwf_complex *)fftwf_malloc(_nn * sizeof(FFTW_DATA_TYPE));
+	memset(tempData, 0, sizeof(FFTW_DATA_TYPE) * _nn);
+
 	for (int k = -_nz / 2; k < _nz / 2; k++)
 	{
 		for (int j = -_ny / 2; j < _ny / 2; j++)
@@ -2165,21 +2169,31 @@ void VagFFT::reindex(mat3x3 reindex)
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(reindex, &ijk);
 				
-				long pre_index = element(ijk.x, ijk.y, ijk.z);
-				long end = finalIndex(pre_index);
-
-				pre_index = element(i, j, k);
-				long start = finalIndex(pre_index);
-				
-				for (int j = 0; j < 2; j++)
+				if (!withinBounds(ijk.x, ijk.y, ijk.z))
 				{
-					float tmp = _data[start][j];
-					_data[start][j] = _data[end][j];
-					_data[end][j] = tmp;
+					continue;
 				}
+				
+				long end = element(ijk.x, ijk.y, ijk.z);
+
+				long ijk_index = element(i, j, k);
+				long start = finalIndex(ijk_index);
+				
+				tempData[end][0] = _data[start][0];
+				tempData[end][1] = _data[start][1];
 			}
 		}
 	}
+
+	/* Loop through and convert data into amplitude and phase */
+	for (int n = 0; n < _nn; n++)
+	{
+		long m = finalIndex(n);
+		_data[m][0] = tempData[n][0];
+		_data[m][1] = tempData[n][1];
+	}
+
+	free(tempData);
 }
 
 double VagFFT::resolution(int i, int j, int k)
