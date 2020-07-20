@@ -89,6 +89,12 @@ void SelectMatrix::load()
 		*(&vec.x + i) = num;
 	}
 	
+	if (reindex.vals[0] != reindex.vals[0] ||
+	    mat3x3_determinant(reindex) < 1e-6)
+	{
+		reindex = make_mat3x3();
+	}
+	
 	std::cout << mat3x3_desc(reindex) << std::endl;
 	std::cout << vec3_desc(vec) << std::endl;
 	
