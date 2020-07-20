@@ -1598,8 +1598,8 @@ void VagFFT::applySymmetry(bool silent, double topRes, bool average)
 					double y = myAmp * sin(newPhase);
 
 					long tmp_index = element(i, j, k);
-					tempData[tmp_index][0] = x;
-					tempData[tmp_index][1] = y;
+					tempData[tmp_index][0] = myAmp;
+					tempData[tmp_index][1] = 0;
 				}
 			}
 		}
