@@ -78,16 +78,15 @@ void SymMate::findSymop(vec3 target)
 		mat3x3 rot = mat3x3_from_ccp4(spg->symop[i]);
 		float *trn = spg->symop[i].trn;
 		vec3 screw = make_vec3(trn[0], trn[1], trn[2]);
+		vec3_mult(&screw, -1);
 
 		vec3 trial = _centre;
 
-		std::cout << "Pre-rot: " << vec3_desc(trial) << std::endl;
 		std::cout << "+screw: " << vec3_desc(screw) << std::endl;
 		vec3 original = trial;
 
 		mat3x3_mult_vec(rot, &trial);
 		vec3_add_to_vec3(&trial, screw);
-		std::cout << "Post-rot: " << vec3_desc(trial) << std::endl;
 
 		original = trial;
 		vec3_subtract_from_vec3(&trial, target);
