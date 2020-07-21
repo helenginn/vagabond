@@ -105,7 +105,7 @@ void Group::performCluster()
 	_message = "";
 	std::cout << "Calculating averages from " << mtzCount() <<
 	" datasets..." << std::endl;
-	calculateAllAverages(false);
+	calculateAllAverages(true);
 	std::cout << "Inter-correlations against average..." << std::endl;
 	findIntercorrelations();
 	std::cout << "Calculating SVD..." << std::endl;
