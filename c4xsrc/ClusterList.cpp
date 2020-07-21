@@ -615,18 +615,26 @@ void ClusterList::setReindexMatrix(mat3x3 reindex, vec3 trans)
 	mat3x3 inv = mat3x3_inverse(reindex);
 	std::cout << mat3x3_desc(inv) << std::endl;
 
-	Group *top = Group::topGroup();
-	for (size_t i = 0; i < top->mtzCount(); i++)
+	QTreeWidgetItem *item = _widget->currentItem();
+
+	if (!item || !Group::isGroup(item))
 	{
-		if (!top->getMtz(i)->getMtzFile()->isSelected())
+		return;
+	}
+
+	Group *grp = static_cast<Group *>(item);
+	for (size_t i = 0; i < grp->mtzCount(); i++)
+	{
+		if (!grp->getMtz(i)->getMtzFile()->isSelected())
 		{
 			continue;
 		}
-		
-		top->getMtz(i)->reindex(reindex);
-		
-		top->getMtzFile(i)->getCrystal()->reindexAtoms(inv, trans);
-		top->getMtzFile(i)->getQuickAtoms()->fetchAtoms();
+
+		grp->getMtz(i)->reindex(reindex);
+
+		std::cout << "Reindexing " << i << std::endl;
+		grp->getMtzFile(i)->getCrystal()->reindexAtoms(inv, trans);
+		grp->getMtzFile(i)->getQuickAtoms()->fetchAtoms();
 	}
 
 	std::cout << "Here..." << std::endl;
