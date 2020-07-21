@@ -120,7 +120,7 @@ FolderInput::FolderInput(QWidget *widget) : QMainWindow(widget)
 	
 	top += 80;
 	
-	l = new QLabel("Pre-make from:", this);
+	l = new QLabel("Get clusters:", this);
 	l->setGeometry(40, top, 150, 40);
 	l->show();
 	_bin.push_back(l);
