@@ -330,7 +330,16 @@ void Options::executeProtocol()
 	{
 		_nCycles = 5;
 	}
-	
+
+
+	for (int j = 0; j < 1 && _far; j++)
+	{
+		std::cout << "Refining positions to density (" << 
+		j + 1 << " / 1)" << std::endl;
+		crystal->refineCrude();
+		recalculateFFT();
+	}
+
 	for (int i = 0; i < _nCycles; i++)
 	{
 		double startWork = crystal->getWorkValue();
@@ -360,14 +369,6 @@ void Options::executeProtocol()
 						break;
 					}
 				}
-			}
-
-			for (int j = 0; i == 1 && j < 1 && _far; j++)
-			{
-				std::cout << "Refining positions to density (" << 
-				j + 1 << " / 1)" << std::endl;
-				crystal->refineCrude();
-				recalculateFFT();
 			}
 		}
 
