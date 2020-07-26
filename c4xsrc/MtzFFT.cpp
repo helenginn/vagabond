@@ -40,7 +40,7 @@ void MtzFFT::updateText()
 	std::string metadata = _file->metadata();
 	setText(0, QString::fromStdString(metadata));
 
-	QColor c = QColor(255, 255, 255, 255);
+	QColor c = QColor(255, 255, 255, 0);
 	if (getMtzFile()->isMarked())
 	{
 		c = QColor(255, 50, 50, 255);
