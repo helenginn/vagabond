@@ -81,6 +81,7 @@ public slots:
 	void killSelection();
 private:
 	void relinkPixmap();
+	void addColour(QString colour, QString display, QMenu *m);
 	void addToolBar();
 	void binTab();
 	void addCorrelImage(Group *ave);

@@ -461,6 +461,13 @@ void Screen::displaySingle(MtzFFTPtr fft)
 	resizeEvent(NULL);
 }
 
+void Screen::addColour(QString colour, QString display, QMenu *m)
+{
+	QAction *col = m->addAction(display);
+	col->setProperty("colour", QColor(colour));
+	connect(col, &QAction::triggered, this, &Screen::changeColour);
+}
+
 void Screen::displayResults(Group *ave)
 {
 	_group = ave;
@@ -520,30 +527,16 @@ void Screen::displayResults(Group *ave)
 		QAction *col = m->addAction("None");
 		col->setProperty("colour", QColor(Qt::transparent));
 
-		col = m->addAction("Aqua");
-		col->setProperty("colour", QColor("aqua"));
-		connect(col, &QAction::triggered, this, &Screen::changeColour);
+		addColour("aqua", "Aqua", m);
+		addColour("skyblue", "Sky blue", m);
+		addColour("blueviolet", "Blue violet", m);
+		addColour("mediumpurple", "Medium purple", m);
+		addColour("forestgreen", "Forest green", m);
+		addColour("orange", "Orange", m);
+		addColour("orchid", "Orchid", m);
+		addColour("darkred", "Dark red", m);
+		addColour("springgreen", "Spring green", m);
 
-		col = m->addAction("Sky blue");
-		col->setProperty("colour", QColor("skyblue"));
-		connect(col, &QAction::triggered, this, &Screen::changeColour);
-
-		col = m->addAction("Blue violet");
-		col->setProperty("colour", QColor("blueviolet"));
-		connect(col, &QAction::triggered, this, &Screen::changeColour);
-
-		col = m->addAction("Medium purple");
-		col->setProperty("colour", QColor("mediumpurple"));
-		connect(col, &QAction::triggered, this, &Screen::changeColour);
-
-		col = m->addAction("Forest green");
-		col->setProperty("colour", QColor("forestgreen"));
-		connect(col, &QAction::triggered, this, &Screen::changeColour);
-
-		col = m->addAction("Orchid");
-		col->setProperty("colour", QColor("orchid"));
-		connect(col, &QAction::triggered, this, &Screen::changeColour);
-		
 		_changeColour->setMenu(m);
 	}
 
