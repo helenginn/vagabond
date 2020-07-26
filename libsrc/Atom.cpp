@@ -9,7 +9,7 @@
 #include "Atom.h"
 #include "Absolute.h"
 #include "mat3x3.h"
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include "Bond.h"
 #include "Whack.h"

@@ -13,7 +13,7 @@
 #include <string.h>
 #include <sstream>
 #include "vec3.h"
-#include <math.h>
+#include <cmath>
 #include <vector>
 #include <iostream>
 

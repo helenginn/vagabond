@@ -19,7 +19,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
-#include <math.h>
+#include <cmath>
 #include <fstream>
 #include <cstdlib>
 #include <time.h>

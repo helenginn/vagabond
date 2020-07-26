@@ -27,7 +27,7 @@
 #include <algorithm>
 #include "FileReader.h"
 #include "PNGFile.h"
-#include <math.h>
+#include <cmath>
 #include "vec3.h"
 
 int CSV::findHeader(std::string whichHeader)

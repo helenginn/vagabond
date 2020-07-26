@@ -19,7 +19,7 @@
 #include "Absolute.h"
 #include "shared_ptrs.h"
 #include "Atom.h"
-#include <math.h>
+#include <cmath>
 #include "Element.h"
 #include <iostream>
 #include "Monomer.h"

@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <stdlib.h>
 #include <float.h>
 #include "MapScoreWorkspace.h"

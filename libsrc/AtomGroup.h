@@ -66,6 +66,7 @@ public:
 		return _monomer.lock();
 	}
 
+	
 	virtual void addAtom(AtomPtr atom);
 	
 	virtual void removeAtom(AtomPtr atom);

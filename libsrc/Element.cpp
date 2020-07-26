@@ -8,7 +8,7 @@
 
 #include "Element.h"
 #include "Atom.h"
-#include <math.h>
+#include <cmath>
 #include "Shouter.h"
 #include <stdlib.h>
 #include <iostream>
