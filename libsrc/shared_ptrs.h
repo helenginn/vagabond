@@ -15,6 +15,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <math.h>
 #include <vector>
+#include <string>
 
 #define ANGLE_SAMPLING deg2rad(4.0)
 #define SOLVENT_BITS (8 * sizeof(MaskType) / 2)
