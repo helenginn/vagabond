@@ -541,18 +541,7 @@ void SVDBond::applyParameters()
 			/* get the relative portion of this bond's identification
 			 * with this cluster */
 			
-			double total = 0;
-
-			/*
-			for (int k = 0; k < _bonds.size(); k++)
-			{
-				BondPtr bk = _bonds[k];
-				double add = _original[i][k] * _params[j].rowPtr[k];
-				total += add;
-			}
-			*/
-			
-			total = _params[j].rowPtr[i];
+			double total = _params[j].rowPtr[i];
 			
 			/* get value of the whack/kick */
 			if (!_doTorsion)
