@@ -271,6 +271,7 @@ typedef enum
 } ScalingType;
 
 typedef double (*Getter)(void *);
+typedef double (*PartialScore)(void *, void *);
 typedef void (*Setter)(void *, double newValue);
 
 typedef int MaskType;
