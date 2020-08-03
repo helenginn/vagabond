@@ -102,6 +102,11 @@ public:
 		evaluateObject = evaluatedObject;
 	}
 
+	void setPartialEvaluation(PartialScore function)
+	{
+		_partial = function;
+	}
+
 	void setFinishFunction(Getter finishFunc)
 	{
 		finishFunction = finishFunc;
@@ -192,6 +197,7 @@ protected:
 	
 	Getter evaluationFunction;
 	Getter finishFunction;
+	PartialScore _partial;
 	int maxCycles;
 	void *evaluateObject;
 	std::string jobName;

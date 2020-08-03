@@ -90,11 +90,28 @@ double RefinementStrategy::estimateGradientForParam(int i)
 	double step = _params[i].other_value;
 	double right = curr + step / 2;
 	setValueForParam(i, right);
-	double right_val = (*evaluationFunction)(evaluateObject);
+	double right_val;
+	
+	if (_partial == NULL)
+	{
+		right_val = (*evaluationFunction)(evaluateObject);
+	}
+	else
+	{
+		right_val = (*_partial)(evaluateObject, _params[i].object);
+	}
 
 	double left = curr - step / 2;
 	setValueForParam(i, left);
-	double left_val = (*evaluationFunction)(evaluateObject);
+	double left_val;
+	if (_partial == NULL)
+	{
+		left_val = (*evaluationFunction)(evaluateObject);
+	}
+	else
+	{
+		left_val = (*_partial)(evaluateObject, _params[i].object);
+	}
 	
 	double diff = right_val - left_val;
 	diff /= step;
