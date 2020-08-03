@@ -181,7 +181,7 @@ public:
 	void setDead(bool dead);
 	
 	void findIntercorrelations();
-	void svd();
+	void naughtyNooNoo();
 	void drawAxes();
 	void updateText();
 	vec3 getPoint(int num, int a1, int a2, int a3);
