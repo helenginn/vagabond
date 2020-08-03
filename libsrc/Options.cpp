@@ -280,7 +280,7 @@ void Options::executeProtocol()
 		_nSamples = 1;
 		crystal->refreshAnchors();
 
-		for (int i = 0; i < 10 && _rPosition; i++)
+		for (int i = 0; i < 15 && _rPosition; i++)
 		{
 			std::cout << "Refining positions to PDB (" << 
 			i + 1 << " / 10)" << std::endl;
