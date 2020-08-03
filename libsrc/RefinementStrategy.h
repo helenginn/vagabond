@@ -61,6 +61,7 @@ public:
 	{
 		_enough = false;
 		evaluationFunction = NULL;
+		_partial = NULL;
 		maxCycles = 30;
 		cycleNum = 0;
 		startingScore = 0;
