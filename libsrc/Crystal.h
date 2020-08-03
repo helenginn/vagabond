@@ -687,6 +687,7 @@ private:
 	
 	void scaleSolvent(DiffractionPtr data);
 	void scaleToDiffraction(DiffractionPtr data, bool full = true);
+
 };
 
 #endif /* defined(__vagabond__Crystal__) */
