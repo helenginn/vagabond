@@ -31,7 +31,8 @@ DistanceMatrix::DistanceMatrix(PolymerPtr pol)
 
 void DistanceMatrix::draw()
 {
-	CSVPtr csv = CSVPtr(new CSV(3, "resi", "resj", "dist"));
+	CSVPtr csv = CSVPtr(new CSV(6, "resi", "resj", "dist", "x_dev",
+	                            "y_dev", "z_dev"));
 	
 	for (int i = _pol->monomerBegin(); i < _pol->monomerEnd(); i++)
 	{
@@ -65,8 +66,10 @@ void DistanceMatrix::draw()
 				continue;
 			}
 
-			double dist = compareAtoms(cai, caj);
-			csv->addEntry(3, (double)i, (double)j, dist);
+			vec3 diff;
+			double dist = compareAtoms(cai, caj, &diff);
+			csv->addEntry(5, (double)i, (double)j, dist,
+			              diff.x, diff.y, diff.z);
 		}
 	}
 	
@@ -89,22 +92,36 @@ void DistanceMatrix::draw()
 	csv->plotPNG(plotMap);
 }
 
-double DistanceMatrix::compareAtoms(AtomPtr a, AtomPtr b)
+double DistanceMatrix::compareAtoms(AtomPtr a, AtomPtr b, vec3 *difference)
 {
 	std::vector<BondSample> aPos = a->getExplicitModel()->getFinalPositions();
 	std::vector<BondSample> bPos = b->getExplicitModel()->getFinalPositions();
 	
+	vec3 aAve = a->getModel()->getAbsolutePosition();
+	vec3 bAve = b->getModel()->getAbsolutePosition();
+	
 	CorrelData cd = empty_CD();
+	CorrelData cd2 = empty_CD();
 	
 	for (int i = 0; i < aPos.size(); i++)
 	{
-		double al = vec3_length(aPos.at(i).start);
-		double bl = vec3_length(bPos.at(i).start);
-		double dist = fabs(al - bl);
-		add_to_CD(&cd, dist, 0.);
+		vec3 aDiff = vec3_subtract_vec3(aPos.at(i).start, aAve);
+		vec3 bDiff = vec3_subtract_vec3(bPos.at(i).start, bAve);
+		vec3 diff = vec3_subtract_vec3(aDiff, bDiff);
+		double len = vec3_length(diff);
+		add_to_CD(&cd, diff.x, diff.y);
+		add_to_CD(&cd2, diff.z, len);
 	}
-	double xm, ym, xs, ys;
-	means_stdevs_CD(cd, &xm, &ym, &xs, &ys);
 
-	return xs;
+	double xm, ym, zm, xs, ys, zs, ss, mm;
+	means_stdevs_CD(cd, &xm, &ym, &xs, &ys);
+	means_stdevs_CD(cd2, &zm, &mm, &zs, &ss);
+
+	if (difference != NULL)
+	{
+		*difference = make_vec3(xs, ys, zs);
+		std::cout << vec3_desc(*difference) << std::endl;
+	}
+
+	return ss;
 }

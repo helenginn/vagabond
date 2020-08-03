@@ -20,6 +20,7 @@
 #define __vagabond__DistanceMatrix__
 
 #include "shared_ptrs.h"
+#include "vec3.h"
 
 class DistanceMatrix
 {
@@ -28,7 +29,7 @@ public:
 
 	void draw();
 private:
-	double compareAtoms(AtomPtr a, AtomPtr b);
+	double compareAtoms(AtomPtr a, AtomPtr b, vec3 *difference = NULL);
 	PolymerPtr _pol;
 };
 
