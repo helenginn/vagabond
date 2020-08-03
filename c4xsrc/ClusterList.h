@@ -88,6 +88,7 @@ private:
 	bool _sqlInput;
 	bool _csvInput;
 	std::string _csv;
+	std::string _preload;
 };
 
 

@@ -177,6 +177,12 @@ bool ClusterList::loadFiles()
 	_clusters.push_back(grp);
 	_widget->setCurrentItem(grp);
 	grp->performAverage();
+	
+	if (_preload.length())
+	{
+		std::string contents = get_file_contents(_preload);
+		loadClusters(contents);
+	}
 
 	return true;
 }
@@ -425,6 +431,13 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 			std::cout << "Using CSV Input" << std::endl;
 			_csvInput = true;
 			_csv = value;
+		}
+
+		value = isCommand(_commands[i], "--preload=");
+		if (value.length() > 0)
+		{
+			std::cout << "Using preloaded groups" << std::endl;
+			_preload = value;
 		}
 	}
 }
