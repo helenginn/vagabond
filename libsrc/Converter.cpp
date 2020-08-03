@@ -87,6 +87,7 @@ void Converter::addColumn(Parameter param)
 	double default_val = (*g)(o);
 	col.start = default_val;
 	col.oldParam.start_value = default_val;
+	col.inactive = false;
 	Param p;
 	p.set_value(0);
 	col.param = p;
@@ -132,7 +133,7 @@ void Converter::compareColumns()
 	double score = 0;
 	int n = _columns.size();
 	
-	std::cout << "Comparing columns: " << std::endl;
+//	std::cout << "Comparing columns: " << std::endl;
 	
 	for (int i = 0; i < n; i++)
 	{
@@ -179,6 +180,7 @@ void Converter::performSVD()
 	
 	compareColumns();
 	
+	/*
 	std::cout << "Pre-SVD results: " << std::endl;
 	for (int i = 0; i < _nParam; i++)
 	{
@@ -189,6 +191,7 @@ void Converter::performSVD()
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
+	*/
 	
 	size_t dim = _columns.size();
 	int success = svdcmp((mat)_matPtrs, dim, dim, (vect)_w, (mat)_vPtrs);
@@ -199,6 +202,7 @@ void Converter::performSVD()
 		return;
 	}
 
+	/*
 	std::cout << "Post-SVD results: " << std::endl;
 	for (int i = 0; i < _nParam; i++)
 	{
@@ -215,6 +219,7 @@ void Converter::performSVD()
 		std::cout << std::endl;
 	}
 	std::cout << std::endl;
+	*/
 
 	addParamsToStrategy();
 }
@@ -231,17 +236,20 @@ double Converter::myScore()
 	/** run nested evaluation function */
 	for (int i = 0; i < _columns.size(); i++)
 	{
-		double val = _columns[i].param.value();
-
 		for (int j = 0; j < _columns.size(); j++)
 		{
+			if (_columns[j].inactive)
+			{
+				continue;
+			}
+
+			double val = _columns[j].param.value();
 			double step = _columns[j].oldParam.step_size;
 			double mod = _matPtrs[i][j];
-			step *= mod;
-			step *= 1/_w[i];
-			double add = step * val;
+			step *= mod * val;
+			double add = step;
 
-			_columns[j].scratch += add;
+			_columns[i].scratch += add;
 		}
 	}
 
@@ -275,6 +283,7 @@ void Converter::addParamsToStrategy()
 	{
 		if (_w[i] < 0.2)
 		{
+			_columns[i].inactive = true;
 			continue;
 		}
 

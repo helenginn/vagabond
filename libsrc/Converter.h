@@ -30,6 +30,7 @@ typedef struct
 	Param param;    	/** new parameter to assign SVD version */
 	double start;
 	double scratch;
+	bool inactive;
 } SVDCol;
 
 typedef double (*CompareParams)(void *obj, Parameter &p1, Parameter &p2);
