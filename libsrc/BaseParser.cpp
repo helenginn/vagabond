@@ -535,6 +535,14 @@ void BaseParser::privateSaveState(int aim)
 		"aim of " << aim << " states for " << getAbsolutePath() << "!" 
 		<< std::endl;
 	}
+	else if (stateCount() == 0 && aim > 1) /* e.g. newly introduced object */
+	{
+		for (int i = 0; i < aim - 1; i++)
+		{
+			StateValueList list;
+			_states.push_back(list);
+		}
+	}
 
 	StateValueList list;
 
@@ -1341,8 +1349,8 @@ void BaseParser::addToAllParsers(std::string key, BaseParserPtr parser)
 	{
 		if (_allParsers[key].expired() || _allParsers[key].lock() != parser)
 		{
-			std::cout << "Warning - overwriting key in parser list: " << 
-			key << std::endl;
+//			std::cout << "Warning - overwriting key in parser list: " << 
+//			key << std::endl;
 		}
 	}
 	_allParsers[key] = parser;
