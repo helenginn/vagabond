@@ -288,12 +288,19 @@ endif
 
 
 pkg = import('pkgconfig')
-libs = [lib_vag, lib_ica]
+libs = [lib_vag]
 h = ['libsrc'] # subdirectories of ${prefix}/${includedir} to add to header path
 pkg.generate(libraries : libs,
              subdirs : h,
              version : '1.0',
              name : 'libvag',
-             filebase : 'simple',
+             filebase : 'vag',
              description : 'Library for vagabond')
+pkg.generate(libraries : [lib_ica],
+             subdirs : h,
+             version : '1.0',
+             name : 'libica',
+             filebase : 'libica',
+             description : 'Library for ica and lbfgs')
+
 
