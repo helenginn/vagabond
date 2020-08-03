@@ -324,7 +324,7 @@ void SVDBond::report()
 	
 	_wTotal = cuml; 
 	
-	double pc50 = cuml * 0.45;
+	double pc50 = cuml * 0.6;
 	
 	if (_doTorsion)
 	{
@@ -344,7 +344,7 @@ void SVDBond::report()
 		}
 	}
 	
-	const int min = 10;
+	const int min = 15;
 	if (_num < min)
 	{
 		_num = min;
@@ -430,7 +430,7 @@ void SVDBond::addToStrategy(RefinementStrategyPtr strategy, double mult,
                             bool phi)
 {
 	double inv = 1.0 / _wTotal;
-	inv = deg2rad(1.0);
+	inv = deg2rad(0.5);
 	double tol = inv / 100;
 	
 	inv *= mult;
