@@ -69,8 +69,19 @@ void Average::findIntercorrelations(Group *other, double **svd)
 
 				double cc1 = findCorrelation(one, two);
 				double cc2 = findCorrelation(two, one);
-
-				svd[i][j] = std::max(cc1, cc2);
+				
+				if (fabs(cc1) < 1e-6)
+				{
+					svd[i][j] = cc2;
+				}
+				else if (fabs(cc2) < 1e-6)
+				{
+					svd[i][j] = cc1;
+				}
+				else
+				{
+					svd[i][j] = std::min(cc1, cc2);
+				}
 			}
 
 			std::cout << "." << std::flush;

@@ -72,17 +72,14 @@ void AveCSV::load()
 			continue;
 		}
 		
-//		val = 1 - val;
-		
-		for (size_t j = 0; j < components.size(); j++)
-		{
-			std::string id0 = components[0];
-			_ids[id0]++;
-			std::string id1 = components[1];
-			_ids[id1]++;
-			
-			_relationships[id0][id1] = val;
-		}
+		//		val = 1 - val;
+
+		std::string id0 = components[0];
+		_ids[id0]++;
+		std::string id1 = components[1];
+		_ids[id1]++;
+
+		_relationships[id0][id1] = val;
 	}
 	
 	std::vector<DatasetPath> paths;
@@ -112,8 +109,9 @@ double AveCSV::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 {
 	std::string met1 = one->getMtzFile()->metadata();
 	std::string met2 = two->getMtzFile()->metadata();
-	
-	if (_relationships.count(met1))
+
+	if (_relationships.count(met1) > 0 && 
+	    _relationships[met1].count(met2))
 	{
 		return _relationships[met1][met2];
 	}
