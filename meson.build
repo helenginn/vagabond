@@ -414,7 +414,7 @@ pkg.generate(libraries : [lib_vag],
              subdirs : ['libsrc'],
              version : '1.0',
              name : 'libvag',
-             filebase : 'vag',
+             filebase : 'libvag',
              description : 'Library for vagabond')
 pkg.generate(libraries : [lib_ica],
              subdirs : ['libsrc'],
