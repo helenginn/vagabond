@@ -51,6 +51,80 @@ gen_src = custom_target('commit-output',
 
 # Meat of the vagabond library, minus command line-specific or GUI-specific source files.
 
+install_headers([
+'libsrc/Absolute.h', 
+'libsrc/Anchor.h', 
+'libsrc/Angler.h', 
+'libsrc/Anisotropicator.h', 
+'libsrc/Atom.h', 
+'libsrc/AtomGroup.h', 
+'libsrc/Backbone.h', 
+'libsrc/Balance.h', 
+'libsrc/BaseParser.h', 
+'libsrc/Bond.h', 
+'libsrc/BondGroup.h', 
+'libsrc/BucketBulkSolvent.h', 
+'libsrc/BucketPerStrand.h', 
+'libsrc/Bucket.h', 
+'libsrc/Chelate.h', 
+'libsrc/Converter.h', 
+'libsrc/Crystal.h', 
+'libsrc/CSV.h', 
+'libsrc/Diffraction.h', 
+'libsrc/DiffractionMTZ.h', 
+'libsrc/DistanceMatrix.h', 
+'libsrc/Element.h', 
+'libsrc/ExplicitModel.h', 
+'libsrc/FFT.h', 
+'libsrc/Fibonacci.h', 
+'libsrc/FileReader.h', 
+'libsrc/FlexGlobal.h', 
+'libsrc/FlexLocal.h', 
+'libsrc/GhostBond.h',
+'libsrc/Hydrogenator.h', 
+'libsrc/KeyPoints.h', 
+'libsrc/Knotter.h', 
+'libsrc/mat3x3.h', 
+'libsrc/mat4x4.h', 
+'libsrc/maths.h', 
+'libsrc/Model.h', 
+'libsrc/Molecule.h', 
+'libsrc/Motion.h', 
+'libsrc/Monomer.h', 
+'libsrc/Novalent.h', 
+'libsrc/Options.h', 
+'libsrc/ParamBand.h', 
+'libsrc/Parser.h', 
+'libsrc/PartialStructure.h', 
+'libsrc/PDBReader.h', 
+'libsrc/PNGFile.h', 
+'libsrc/Polymer.h', 
+'libsrc/Refitter.h', 
+'libsrc/RefinementGridSearch.h', 
+'libsrc/RefinementLBFGS.h', 
+'libsrc/RefinementList.h', 
+'libsrc/RefinementNelderMead.h', 
+'libsrc/RefinementStepSearch.h', 
+'libsrc/RefinementStrategy.h', 
+'libsrc/Sampler.h', 
+'libsrc/Shouter.h', 
+'libsrc/Sidechain.h', 
+'libsrc/SpaceWarp.h', 
+'libsrc/Sponge.h', 
+'libsrc/SSRigger.h', 
+'libsrc/StateValue.h', 
+'libsrc/SymMate.h', 
+'libsrc/SVDBond.h', 
+'libsrc/TextManager.h', 
+'libsrc/Timer.h', 
+'libsrc/Twist.h', 
+'libsrc/VBondReader.h', 
+'libsrc/vec3.h', 
+'libsrc/WaterNetwork.h', 
+'libsrc/WeightedMap.h', 
+'libsrc/Whack.h'],
+ subdir : 'c4xsrc/shaders')
+
 base_files = files('libsrc/Absolute.cpp', 
 'libsrc/Anchor.cpp', 
 'libsrc/Angler.cpp', 
@@ -216,8 +290,45 @@ headers = [
 'c4xsrc/CorrelLabel.h'
 ]
 
+install_headers([
+'c4xsrc/AveCAlpha.h', 
+'c4xsrc/AveDiffraction.h', 
+'c4xsrc/AveUnitCell.h', 
+'c4xsrc/Average.h', 
+'c4xsrc/AxisScroll.h', 
+'c4xsrc/CAlphaView.h', 
+'c4xsrc/ClusterList.h', 
+'c4xsrc/CorrelLabel.h', 
+'c4xsrc/DatasetPath.h',
+'c4xsrc/AveCSV.h', 
+'c4xsrc/FolderInput.h', 
+'c4xsrc/GLAxis.h', 
+'c4xsrc/GLPoint.h', 
+'c4xsrc/GLObject.h', 
+'c4xsrc/Group.h', 
+'c4xsrc/HKLView.h', 
+'c4xsrc/KeeperGL.h', 
+'c4xsrc/MatrixView.h', 
+'c4xsrc/MtzFile.h', 
+'c4xsrc/MtzFFT.h', 
+'c4xsrc/MtzFFTPtr.h', 
+'c4xsrc/Plot3D.h', 
+'c4xsrc/PlotR.h',
+'c4xsrc/PlotView.h', 
+'c4xsrc/QuickAtoms.h',
+'c4xsrc/Output.h',
+'c4xsrc/Screen.h', 
+'c4xsrc/SelectionWindow.h',
+'c4xsrc/SelectMatrix.h', 
+'c4xsrc/UCPlot.h'],
+ subdir : 'c4xsrc')
+
+install_headers([
+'c4xsrc/shaders/Blob_vsh.h', 
+'c4xsrc/shaders/Blob_fsh.h'],
+ subdir : 'c4xsrc/shaders')
+
 c4xsrc = [
-'c4xsrc/main.cpp', 
 'c4xsrc/AveCAlpha.cpp', 
 'c4xsrc/AveDiffraction.cpp', 
 'c4xsrc/AveUnitCell.cpp', 
@@ -280,27 +391,38 @@ endif
 moc_cluster4x = qt5.preprocess(moc_headers : headers,
 		moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'])
 
-executable('cluster4x', c4xsrc, moc_cluster4x,
-cpp_args: ['-std=c++11', '-Wall'], dependencies : c4xdeps, install: true)
+lib_c4x = library('cluster4x', c4xsrc, moc_cluster4x, 
+dependencies: c4xdeps, cpp_args: ['-Wall', '-std=c++11'], install: true)
+inc_c4x = include_directories('c4xsrc')
+dep_c4x = declare_dependency(link_with: lib_c4x, include_directories: inc_c4x)
+
+
+executable('cluster4x', ['c4xsrc/main.cpp'], 
+cpp_args: ['-std=c++11', '-Wall'], dependencies : [c4xdeps, dep_c4x], install: true)
 else
 	message('QT5 not found, so not building cluster4x.')
 endif
 
 
 pkg = import('pkgconfig')
-libs = [lib_vag]
-h = ['libsrc'] # subdirectories of ${prefix}/${includedir} to add to header path
-pkg.generate(libraries : libs,
-             subdirs : h,
+h = ['libsrc', 'c4xsrc'] # subdirectories of ${prefix}/${includedir} to add to header path
+pkg.generate(libraries : [lib_vag],
+             subdirs : ['libsrc'],
              version : '1.0',
              name : 'libvag',
              filebase : 'vag',
              description : 'Library for vagabond')
 pkg.generate(libraries : [lib_ica],
-             subdirs : h,
+             subdirs : ['libsrc'],
              version : '1.0',
              name : 'libica',
              filebase : 'libica',
              description : 'Library for ica and lbfgs')
+pkg.generate(libraries : [lib_c4x],
+             subdirs : ['c4xsrc'],
+             version : '1.0',
+             name : 'libcluster4x',
+             filebase : 'libcluster4x',
+             description : 'Library for cluster4x')
 
 
