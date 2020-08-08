@@ -257,7 +257,6 @@ install_headers([
 'libsrc/Molecule.h',
 'libsrc/Monomer.h',
 'libsrc/Motion.h',
-'libsrc/NMRReader.h',
 'libsrc/Notifiable.h',
 'libsrc/Novalent.h',
 'libsrc/Object.h',
