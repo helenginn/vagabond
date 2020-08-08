@@ -17,8 +17,8 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include <QMainWindow>
-#include <libsrc/mat4x4.h>
-#include <libsrc/FFT.h>
+#include <mat4x4.h>
+#include <FFT.h>
 #include "MtzFFTPtr.h"
 #include "PlotView.h"
 

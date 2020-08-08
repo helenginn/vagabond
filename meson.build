@@ -353,7 +353,10 @@ install_headers([
 'libccp4/cmtzlib.h', 
 'libccp4/csymlib.h',
 'libccp4/ccp4_spg.h',
-'libccp4/ccp4_general.h'],
+'libccp4/ccp4_general.h',
+'libccp4/ccp4_utils.h',
+'libccp4/ccp4_general.h',
+'libccp4/ccp4_parser.h'],
  subdir : 'libccp4')
 
 install_headers([
