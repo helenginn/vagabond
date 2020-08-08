@@ -272,6 +272,7 @@ install_headers([
 'libsrc/RefinementStepSearch.h', 
 'libsrc/RefinementStrategy.h', 
 'libsrc/Sampler.h', 
+'libsrc/shared_ptrs.h', 
 'libsrc/Shouter.h', 
 'libsrc/Sidechain.h', 
 'libsrc/SpaceWarp.h', 
@@ -331,6 +332,13 @@ install_headers([
 'c4xsrc/shaders/Blob_vsh.h', 
 'c4xsrc/shaders/Blob_fsh.h'],
  subdir : 'c4xsrc/shaders')
+
+install_headers([
+'libccp4/cmtzlib.h', 
+'libccp4/csymlib.h',
+'libccp4/ccp4_spg.h',
+'libccp4/ccp4_general.h'],
+ subdir : 'libccp4')
 
 c4xsrc = [
 'c4xsrc/AveCAlpha.cpp', 

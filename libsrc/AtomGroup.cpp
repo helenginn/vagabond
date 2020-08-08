@@ -25,7 +25,7 @@
 #include "Bucket.h"
 #include "Diffraction.h"
 #include "Shouter.h"
-#include "../libccp4/ccp4_spg.h"
+#include "libccp4/ccp4_spg.h"
 #include "Options.h"
 #include "FFT.h"
 #include <time.h>

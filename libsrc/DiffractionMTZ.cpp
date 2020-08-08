@@ -9,7 +9,7 @@
 #include "DiffractionMTZ.h"
 #include <iostream>
 #include "Shouter.h"
-#include "../libccp4/csymlib.h"
+#include "libccp4/csymlib.h"
 #include <vector>
 #include "Options.h"
 #include "FileReader.h"

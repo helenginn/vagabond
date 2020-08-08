@@ -47,10 +47,10 @@
 #include "WaterNetwork.h"
 #include "SpaceWarp.h"
 
-#include "../libccp4/cmtzlib.h"
-#include "../libccp4/csymlib.h"
-#include "../libccp4/ccp4_spg.h"
-#include "../libccp4/ccp4_general.h"
+#include "libccp4/cmtzlib.h"
+#include "libccp4/csymlib.h"
+#include "libccp4/ccp4_spg.h"
+#include "libccp4/ccp4_general.h"
 
 void Crystal::summary()
 {
