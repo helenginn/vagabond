@@ -19,13 +19,13 @@
 #ifndef __fuck_cov__Group
 #define __fuck_cov__Group
 
-#include <libsrc/FFT.h>
+#include <FFT.h>
 #include <QTreeWidgetItem>
 #include <fstream>
 
 #include "MtzFFTPtr.h"
-#include <libsrc/DiffractionMTZ.h>
-#include <libsrc/maths.h>
+#include <DiffractionMTZ.h>
+#include <maths.h>
 
 typedef enum
 {

@@ -4,7 +4,8 @@
 #include <vector>
 #include <string>
 #include <QObject>
-#include <libsrc/DiffractionMTZ.h>
+#include <vec3.h>
+#include <mat3x3.h>
 #include "MtzFFTPtr.h"
 #include "DatasetPath.h"
 

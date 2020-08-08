@@ -1,8 +1,8 @@
 #ifndef __fuck_cov__MtzFFT__
 #define __fuck_cov__MtzFFT__
 
-#include <libsrc/DiffractionMTZ.h>
-#include <libsrc/FFT.h>
+#include <DiffractionMTZ.h>
+#include <FFT.h>
 #include <QTreeWidgetItem>
 #include "MtzFFTPtr.h"
 
