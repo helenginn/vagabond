@@ -19,11 +19,11 @@
 #ifndef __clusterxxxx__MtzFile__
 #define __clusterxxxx__MtzFile__
 
-#include <libsrc/shared_ptrs.h>
-#include <libsrc/vec3.h>
+#include <shared_ptrs.h>
+#include <vec3.h>
 #include <string>
 #include "GLObject.h"
-#include <libsrc/mat3x3.h>
+#include <mat3x3.h>
 
 class QuickAtoms;
 
