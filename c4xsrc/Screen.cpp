@@ -28,6 +28,7 @@
 #include <QColor>
 #include <QLabel>
 #include <QPlainTextEdit>
+#include <QFileDialog>
 #include <QIcon>
 #include <iostream>
 #include <iomanip>
@@ -165,11 +166,8 @@ void Screen::resizeEvent(QResizeEvent *e)
 			_deadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
 			                       _deadSele->y(), RIGHT_VIEW_WIDTH - 20,
 			                       40);
-			_collapse->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                       _collapse->y(), RIGHT_VIEW_WIDTH - 20,
-			                       40);
-			_reindex->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                       _reindex->y(), RIGHT_VIEW_WIDTH - 20,
+			_changeData->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
+			                       _changeData->y(), RIGHT_VIEW_WIDTH - 20,
 			                       40);
 			_coverage->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
 			                       _coverage->y(), RIGHT_VIEW_WIDTH - 20,
@@ -499,7 +497,6 @@ void Screen::displayResults(Group *ave)
 	_cAlphaKeeper->addCAlphaView(ave);
 
 	addPlotView(&_ucView, ave, "Misc properties", PlotUnitCell);
-//	addPlotView(&_rView, ave, "R factors", PlotRFactors);
 
 	int top = 10;
 
@@ -540,21 +537,32 @@ void Screen::displayResults(Group *ave)
 		_changeColour->setMenu(m);
 	}
 
-	addSideButton((QWidget **)&_collapse, "Collapse positions", &top);
-	connect(_collapse, &QPushButton::clicked,
-	        this, &Screen::collapsePositions);
+	addSideButton((QWidget **)&_changeData, "Change data", &top);
+	QMenu *m = new QMenu(_changeData);
 
-	addSideButton((QWidget **)&_reindex, "Reindex selection", &top);
-	connect(_reindex, &QPushButton::clicked,
-	        this, &Screen::reindex);
+	QAction *act = m->addAction("Collapse positions to selection");
+	connect(act, &QAction::triggered, this, &Screen::collapsePositions);
+
+	act = m->addAction("Reindex selection");
+	connect(act, &QAction::triggered,this, &Screen::reindex);
+
+	_changeData->setMenu(m);
+	_changeData->show();
 
 	addSideButton((QWidget **)&_coverage, "Coverage order", &top);
 	connect(_coverage, &QPushButton::clicked,
 	        this, &Screen::coverage);
 
-	addSideButton((QWidget **)&_reorder, "Reorder by marked", &top);
-	connect(_reorder, &QPushButton::clicked,
-	        this, &Screen::reorder);
+	addSideButton((QWidget **)&_reorder, "Reorder datasets", &top);
+	m = new QMenu(_reorder);
+
+	act = m->addAction("... by marked");
+	connect(act, &QAction::triggered, this, &Screen::reorder);
+	act = m->addAction("... by file");
+	connect(act, &QAction::triggered, this, &Screen::reorderByFile);
+
+	_reorder->setMenu(m);
+	_reorder->show();
 
 	int bottom = height() - 50;
 
@@ -562,7 +570,7 @@ void Screen::displayResults(Group *ave)
 	_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, bottom,
 	                     RIGHT_VIEW_WIDTH - 20, 40);
 
-	QMenu *m = new QMenu(_export);
+	m = new QMenu(_export);
 	QAction *a1 = m->addAction("Text files only");
 	connect(a1, &QAction::triggered, _list, &ClusterList::exportAll);
 	QAction *a2 = m->addAction("Prepare directories");
@@ -682,19 +690,9 @@ void Screen::refreshSelection()
 		_svdView->keeper()->getPlot()->repopulate();
 	}
 	
-	if (_ucView)
-	{
-		_ucView->keeper()->getPlot()->repopulate();
-	}
-	
 	if (_hklKeeper)
 	{
 		_hklKeeper->getHKLView()->repopulate();
-	}
-	
-	if (_rView)
-	{
-		_rView->keeper()->getPlot()->repopulate();
 	}
 	
 	if (_cAlphaKeeper)
@@ -702,7 +700,18 @@ void Screen::refreshSelection()
 		_cAlphaKeeper->getCAlphaView()->repopulate();
 	}
 	
+	if (_rView)
+	{
+		_rView->keeper()->getPlot()->repopulate();
+	}
+	
+	if (_ucView)
+	{
+		_ucView->keeper()->getPlot()->repopulate();
+	}
+	
 	_list->updateColours();
+	emit refreshed();
 }
 
 void Screen::changeIndex(int index)
@@ -759,4 +768,31 @@ void Screen::reindex()
 	SelectMatrix *matrix = new SelectMatrix(NULL);
 	matrix->setList(_list);
 	matrix->show();
+}
+
+void Screen::reorderByFile()
+{
+	QFileDialog *f = new QFileDialog(this, "Choose reordering file", 
+	                                 "Text file (*.txt)");
+	f->setFileMode(QFileDialog::AnyFile);
+	f->setOptions(QFileDialog::DontUseNativeDialog);
+	f->show();
+
+    QStringList fileNames;
+
+    if (f->exec())
+    {
+        fileNames = f->selectedFiles();
+    }
+    
+    if (fileNames.size() < 1)
+    {
+		return;
+    }
+
+	f->deleteLater();
+	std::string filename = fileNames[0].toStdString();
+	std::string contents = get_file_contents(filename);
+	_list->loadClusters(contents);
+
 }

@@ -9,6 +9,7 @@
 #include "DatasetPath.h"
 
 class QTreeWidget;
+class AveCSV;
 class MtzFile;
 class Group;
 class QKeyEvent;
@@ -33,6 +34,7 @@ public:
 	void cluster(Group *item);
 	void getFromDatabase();
 	void getFromFolders();
+	void getFromCSV(AveCSV *csv);
 	void setScreen(Screen *scr)
 	{
 		_screen = scr;
@@ -42,6 +44,26 @@ public:
 	
 	void setFiles(std::vector<std::string> files);
 	
+	size_t groupCount()
+	{
+		return _clusters.size();
+	}
+	
+	Group *group(int i)
+	{
+		return _clusters[i];
+	}
+	
+	size_t fileCount()
+	{
+		return _files.size();
+	}
+	
+	MtzFile *mtzFile(int i)
+	{
+		return _files[i];
+	}
+
 	Group *topCluster();
 	void reorderMTZs();
 	void removeCluster(Group *ave);

@@ -511,7 +511,14 @@ std::vector<MtzFFTPtr> Group::getMtzsFromSelection()
 
 std::vector<double> Group::getUnitCell()
 {
-	return getWorkingSet()->unitCell->getUnitCell();
+	if (getWorkingSet() != NULL && getWorkingSet()->unitCell != NULL)
+	{
+		return getWorkingSet()->unitCell->getUnitCell();
+	}
+	else 
+	{
+		return std::vector<double>(6, 0.);
+	}
 }
 
 void Group::changeColour(double r, double b, double g, double a)

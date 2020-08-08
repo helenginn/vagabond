@@ -23,7 +23,7 @@
 
 AveUnitCell::AveUnitCell(Group *group) : Average(group)
 {
-
+	_ucs = std::vector<double>(6, 0.);
 }
 
 void AveUnitCell::calculate()

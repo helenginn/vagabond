@@ -152,6 +152,11 @@ public:
 	
 	VagFFTPtr getAverageFFT();
 	
+	AveCSV *getAveCSV()
+	{
+		return _mySet.csv;
+	}
+	
 	bool isMarked()
 	{
 		return _marked;

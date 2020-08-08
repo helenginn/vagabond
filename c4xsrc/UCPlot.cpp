@@ -31,6 +31,7 @@ UCPlot::UCPlot() : Plot3D()
 void UCPlot::populate()
 {
 	std::vector<double> ucs = _ave->getUnitCell();
+
 	double mrw, mrf, srw, srf;
 	_ave->averageRs(&mrw, &mrf, &srw, &srf);
 
@@ -39,8 +40,8 @@ void UCPlot::populate()
 		std::vector<double> uc = _ave->getMtz(i)->getUnitCell();
 		double rwork = _ave->getMtzFile(i)->getRWork() - mrw;
 		double rfree = _ave->getMtzFile(i)->getRFree() - mrf;
-		
-		for (int j = 0; j < 6; j++)
+
+		for (size_t j = 0; j < 6 && j < uc.size() && j < ucs.size(); j++)
 		{
 			uc[j] -= ucs[j];
 		}

@@ -44,6 +44,8 @@ public:
 	void divideThrough();
 	void collapseOnTarget(vec3 target);
 	
+	void addSequentialAtom(std::string chain, vec3 pos);
+	
 	vec3 getCentre()
 	{
 		return _centre;

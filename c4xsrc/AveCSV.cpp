@@ -36,50 +36,60 @@ AveCSV::AveCSV(Group *group, std::string csv) : Average(group)
 	_usingCSV = true;
 }
 
+void AveCSV::addValue(std::string id0, std::string id1, double val)
+{
+	_ids[id0]++;
+	_ids[id1]++;
+	_relationships[id0][id1] = val;
+}
+
 void AveCSV::load()
 {
-	std::string contents = get_file_contents(_csv);
-	
-	std::vector<std::string> lines = split(contents, '\n');
-	
-	for (size_t i = 0; i < lines.size(); i++)
+	if (_csv.length())
 	{
-		std::cout << "Processing: " << lines[i] << std::endl;
-		
-		std::vector<std::string> components = split(lines[i], ',');
-		
-		if (components.size() != 3)
-		{
-			std::cout << "Wrong number of terms, skipping. " << std::endl;
-			continue;
-		}
+		std::string contents = get_file_contents(_csv);
+		std::vector<std::string> lines = split(contents, '\n');
 
-		char *pos = NULL;
-		double val = strtod(&components[2][0], &pos);
-
-		if (pos == &(components[2][0]))
+		for (size_t i = 0; i < lines.size(); i++)
 		{
-			if (i == 0)
+			std::cout << "Processing: " << lines[i] << std::endl;
+
+			std::vector<std::string> components = split(lines[i], ',');
+
+			if (components.size() != 3)
 			{
-				std::cout << "First line appears to be header." << std::endl;
-			}
-			else
-			{
-				std::cout << "Final value of line " << i << " is not "
-				"a number?" << std::endl;
+				std::cout << "Wrong number of terms, skipping. " << std::endl;
+				continue;
 			}
 
-			continue;
+			char *pos = NULL;
+			double val = strtod(&components[2][0], &pos);
+
+			if (pos == &(components[2][0]))
+			{
+				if (i == 0)
+				{
+					std::cout << "First line appears to be header." 
+					<< std::endl;
+				}
+				else
+				{
+					std::cout << "Final value of line " << i << " is not "
+					"a number?" << std::endl;
+				}
+
+				continue;
+			}
+
+			//		val = 1 - val;
+
+			std::string id0 = components[0];
+			_ids[id0]++;
+			std::string id1 = components[1];
+			_ids[id1]++;
+
+			_relationships[id0][id1] = val;
 		}
-		
-		//		val = 1 - val;
-
-		std::string id0 = components[0];
-		_ids[id0]++;
-		std::string id1 = components[1];
-		_ids[id1]++;
-
-		_relationships[id0][id1] = val;
 	}
 	
 	std::vector<DatasetPath> paths;

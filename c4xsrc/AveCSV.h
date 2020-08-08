@@ -36,6 +36,11 @@ public:
 	{
 		return _usingCSV;
 	}
+	
+	static void setUsingCSV(bool csv)
+	{
+		_usingCSV = csv;
+	}
 
 	void setList(ClusterList *list)
 	{
@@ -44,6 +49,7 @@ public:
 	void load();
 	virtual void calculate();
 	virtual double findCorrelation(MtzFFTPtr one, MtzFFTPtr two);
+	void addValue(std::string id0, std::string id1, double val);
 private:
 	std::string _csv;
 	static bool _usingCSV;

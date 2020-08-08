@@ -80,7 +80,7 @@ void Average::findIntercorrelations(Group *other, double **svd)
 				}
 				else
 				{
-					svd[i][j] = std::min(cc1, cc2);
+					svd[i][j] = (cc1 + cc2) / 2;
 				}
 			}
 

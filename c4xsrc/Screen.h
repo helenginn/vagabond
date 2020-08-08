@@ -64,6 +64,8 @@ public:
 	void displaySingle(MtzFFTPtr fft);
 	void updateToolbar(Group *grp);
 	
+signals:
+	void refreshed();
 public slots:
 	void refocus(int index);
 	void changeIndex(int index);
@@ -79,6 +81,7 @@ public slots:
 	void coverage();
 	void changeColour();
 	void killSelection();
+	void reorderByFile();
 private:
 	void relinkPixmap();
 	void addColour(QString colour, QString display, QMenu *m);
@@ -118,10 +121,9 @@ private:
 	QPushButton *_export;
 	QPushButton *_images;
 	QPushButton *_toggleDead;
-	QPushButton *_collapse;
+	QPushButton *_changeData;
 	QPushButton *_coverage;
 	QPushButton *_reorder;
-	QPushButton *_reindex;
 	QPlainTextEdit *_ucLabel;
 	QAction *_cluster;
 	ClusterList *_list;

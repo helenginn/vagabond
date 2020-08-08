@@ -115,17 +115,17 @@ void QuickAtoms::fetchAtoms()
 		return;
 	}
 
-	if (_chainMap.size() > 0)
-	{
-		_chainMap.clear();
-		_countMap.clear();
-	}
-
 	CrystalPtr c = _file->getCrystal();
 	
 	if (!c)
 	{
 		return;
+	}
+
+	if (_chainMap.size() > 0)
+	{
+		_chainMap.clear();
+		_countMap.clear();
 	}
 
 	for (size_t j = 0; j < c->moleculeCount(); j++)
@@ -159,6 +159,11 @@ void QuickAtoms::collapseOnTarget(vec3 target)
 	mate.applySymops(c);
 
 	fetchAtoms();
+}
+
+void QuickAtoms::addSequentialAtom(std::string chain, vec3 pos)
+{
+	_chainMap[chain].push_back(pos);
 }
 
 void QuickAtoms::populatePolymer(PolymerPtr p)

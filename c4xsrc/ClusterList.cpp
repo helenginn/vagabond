@@ -93,6 +93,12 @@ void ClusterList::getFromFolders()
 	input->setList(this);
 }
 
+void ClusterList::getFromCSV(AveCSV *csv)
+{
+	csv->setList(this);
+	csv->load();
+}
+
 void ClusterList::getFromCSV(std::string csv)
 {
 	AveCSV *input = new AveCSV(NULL, csv);
@@ -373,11 +379,15 @@ void ClusterList::displayResults()
 void ClusterList::handleResults()
 {
 	std::cout << "Job complete." << std::endl;
-	_worker = NULL;
 	
-	clearSelection();
 	Group *obj = static_cast<Group *>(QObject::sender());
+	obj->moveToThread(QThread::currentThread());
+
+	_worker = NULL;
+
 	_screen->displayResults(obj);
+	clearSelection();
+
 	disconnect(this, SIGNAL(average()), nullptr, nullptr);
 	disconnect(this, SIGNAL(cluster()), nullptr, nullptr);
 
