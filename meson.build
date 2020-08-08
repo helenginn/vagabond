@@ -324,7 +324,7 @@ install_headers([
  subdir : 'c4xsrc')
 
 install_headers([
-'liblbfgs/lbfgs.h', 
+'liblbfgs/lbfgs.h'], 
  subdir : 'liblbfgs')
 
 install_headers([

@@ -20,7 +20,7 @@
 #ifndef __vagabond__RefinementLBFGS__
 #define __vagabond__RefinementLBFGS__
 
-#include "lbfgs.h"
+#include "liblbfgs/lbfgs.h"
 #include "RefinementStrategy.h"
 
 typedef std::vector<lbfgsfloatval_t> LbfgsVector;
