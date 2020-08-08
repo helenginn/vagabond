@@ -275,6 +275,7 @@ void Converter::addParamsToStrategy()
 	_evalFunc = _strategy->getEvaluationFunction();
 	
 	_strategy->setEvaluationFunction(Converter::score, this);
+	_strategy->setPartialEvaluation(NULL);
 	_strategy->clearParameters();
 
 	double step = 1.0;
