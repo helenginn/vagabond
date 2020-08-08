@@ -356,6 +356,15 @@ install_headers([
 'libccp4/ccp4_general.h'],
  subdir : 'libccp4')
 
+install_headers([
+'libinfo/CentroidToPhase.h',
+'libinfo/GeomTable.h',
+'libinfo/GeomVariant.h',
+'libinfo/GeomVariantDefs.h',
+'libinfo/RotamerTable.h',
+'libinfo/ScatterFactors.h'],
+ subdir : 'libinfo')
+
 c4xsrc = [
 'c4xsrc/AveCAlpha.cpp', 
 'c4xsrc/AveDiffraction.cpp', 
