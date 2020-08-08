@@ -22,9 +22,9 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <libsrc/vec3.h>
-#include <libsrc/maths.h>
-#include <libsrc/shared_ptrs.h>
+#include <vec3.h>
+#include <maths.h>
+#include <shared_ptrs.h>
 
 typedef std::vector<vec3> Vec3Vec;
 typedef std::vector<size_t> Counts;
