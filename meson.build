@@ -324,6 +324,10 @@ install_headers([
  subdir : 'c4xsrc')
 
 install_headers([
+'liblbfgs/lbfgs.h', 
+ subdir : 'liblbfgs')
+
+install_headers([
 'c4xsrc/shaders/Blob_vsh.h', 
 'c4xsrc/shaders/Blob_fsh.h'],
  subdir : 'c4xsrc/shaders')
