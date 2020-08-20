@@ -334,9 +334,10 @@ mat3x3 mat3x3_rotate(double alpha, double beta, double gamma)
 mat3x3 mat3x3_ortho_axes(vec3 cVec)
 {
 	vec3_set_length(&cVec, 1);
-	vec3 bVec = make_vec3(1, 0, cVec.x / cVec.z);
-	vec3_set_length(&bVec, 1);
+	vec3 bVec = make_vec3(0.5, 0.5, 0.5);
 	vec3 aVec = vec3_cross_vec3(bVec, cVec);
+	vec3_set_length(&aVec, 1);
+	bVec = vec3_cross_vec3(cVec, aVec);
 
 	mat3x3 mat;
 	memcpy(&mat.vals[0], &aVec, 3 * sizeof(double));
