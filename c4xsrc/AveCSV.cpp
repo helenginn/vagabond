@@ -126,5 +126,5 @@ double AveCSV::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 		return _relationships[met1][met2];
 	}
 
-	return 0;
+	return std::nan(" ");
 }

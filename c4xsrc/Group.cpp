@@ -314,6 +314,17 @@ void Group::matAlloc(double **raw, double ***ptrs)
 void Group::naughtyNooNoo()
 {
 	size_t dims = _mtzs.size();
+	
+	for (size_t i = 0; i < dims; i++)
+	{
+		for (size_t j = 0; j < dims; j++)
+		{
+			if (_svdPtrs[i][j] != _svdPtrs[i][j])
+			{
+				_svdPtrs[i][j] = 0;
+			}
+		}
+	}
 
 	int success = svdcmp((mat)_svdPtrs, dims, dims, (vect)_w, (mat)_vPtrs);
 

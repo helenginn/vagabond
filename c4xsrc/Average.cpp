@@ -70,11 +70,15 @@ void Average::findIntercorrelations(Group *other, double **svd)
 				double cc1 = findCorrelation(one, two);
 				double cc2 = findCorrelation(two, one);
 				
-				if (fabs(cc1) < 1e-6)
+				if (cc1 != cc1 && cc2 != cc2)
+				{
+					svd[i][j] = nan(" ");
+				}
+				else if (fabs(cc1) < 1e-6 || cc1 != cc1)
 				{
 					svd[i][j] = cc2;
 				}
-				else if (fabs(cc2) < 1e-6)
+				else if (fabs(cc2) < 1e-6 || cc2 != cc2)
 				{
 					svd[i][j] = cc1;
 				}
