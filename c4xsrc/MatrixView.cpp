@@ -53,7 +53,13 @@ void MatrixView::populate()
 			
 			if (val > 2) val = 2;
 
-			if (val != val || val <= 0) /* we go black */
+			if (val != val) /* we go grey */
+			{
+				red = 100;
+				green = 100;
+				blue = 100;
+			}
+			else if (val <= 0) /* we go black */
 			{
 				val = std::min(-val, 1.);
 				red = 0;
