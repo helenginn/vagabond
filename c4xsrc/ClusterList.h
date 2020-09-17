@@ -7,6 +7,7 @@
 #include <vec3.h>
 #include <mat3x3.h>
 #include "MtzFFTPtr.h"
+#include "ExportType.h"
 #include "DatasetPath.h"
 
 class QTreeWidget;
@@ -70,6 +71,7 @@ public:
 	void removeCluster(Group *ave);
 	void clearSelection();
 	void invertSelection();
+	void exportAll(ExportType type);
 signals:
 	void average();
 	void cluster();
@@ -77,7 +79,6 @@ signals:
 public slots:
 	void toggleDead();
 	void updateColours();
-	void exportAll();
 	void prepDirs();
 	void handleResults();
 	void handleError();

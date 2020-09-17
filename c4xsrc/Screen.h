@@ -82,6 +82,7 @@ public slots:
 	void changeColour();
 	void killSelection();
 	void reorderByFile();
+	void exportText();
 private:
 	void relinkPixmap();
 	void addColour(QString colour, QString display, QMenu *m);

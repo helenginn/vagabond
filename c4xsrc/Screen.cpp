@@ -572,7 +572,7 @@ void Screen::displayResults(Group *ave)
 
 	m = new QMenu(_export);
 	QAction *a1 = m->addAction("Text files only");
-	connect(a1, &QAction::triggered, _list, &ClusterList::exportAll);
+	connect(a1, &QAction::triggered, this, &Screen::exportText);
 	QAction *a2 = m->addAction("Prepare directories");
 	connect(a2, &QAction::triggered, _list, &ClusterList::prepDirs);
 
@@ -602,6 +602,35 @@ void Screen::displayResults(Group *ave)
 	refocus(_currIndex);
 	relinkPixmap();
 	resizeEvent(NULL);
+}
+
+void Screen::exportText()
+{
+	QMessageBox msgBox;
+	msgBox.setText("How would you like the dataset names represented "\
+	               "in the text file?");
+	QAbstractButton *fullpath, *fullnames, *nicknames;
+	fullpath = msgBox.addButton("Full file path", QMessageBox::ActionRole);
+	fullnames = msgBox.addButton("Full file name", QMessageBox::ActionRole);
+	nicknames = msgBox.addButton("Wildcard nickname", QMessageBox::ActionRole);
+	msgBox.addButton("Cancel", QMessageBox::RejectRole);
+
+	msgBox.exec();
+	
+	QAbstractButton *chosen = msgBox.clickedButton();
+	
+	if (chosen == fullpath)
+	{
+		_list->exportAll(ExportFullPath);
+	}
+	else if (chosen == fullnames)
+	{
+		_list->exportAll(ExportFilename);
+	}
+	else if (chosen == nicknames)
+	{
+		_list->exportAll(ExportNickname);
+	}
 }
 
 void Screen::addSideButton(QWidget **buttPtr, std::string title, 

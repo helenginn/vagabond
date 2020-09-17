@@ -22,6 +22,7 @@
 #include <FFT.h>
 #include <QTreeWidgetItem>
 #include <fstream>
+#include "ExportType.h"
 
 #include "MtzFFTPtr.h"
 #include <DiffractionMTZ.h>
@@ -209,7 +210,7 @@ public:
 		return _origPtrs;
 	}
 	
-	void writeToStream(std::ofstream &f, bool complete);
+	void writeToStream(std::ofstream &f, ExportType type, bool complete);
 	
 	std::string getError()
 	{

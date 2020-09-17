@@ -281,7 +281,7 @@ Group *ClusterList::topCluster()
 	return obj;
 }
 
-void ClusterList::exportAll()
+void ClusterList::exportAll(ExportType type)
 {
 	std::string fnall = findNextFilename("all_clusters.txt");
 	std::string fnmarked = findNextFilename("marked_clusters.txt");
@@ -301,8 +301,8 @@ void ClusterList::exportAll()
 		}
 		
 		Group *obj = static_cast<Group *>(item);
-		obj->writeToStream(fall, false);
-		obj->writeToStream(fmarked, true);
+		obj->writeToStream(fall, type, false);
+		obj->writeToStream(fmarked, type, true);
 	}
 
 	fall.close();
@@ -323,6 +323,9 @@ void ClusterList::exportAll()
 	std::string m = "Written all clusters to " + fnall + "\n";
 	m += "Written marked clusters only to " + fnmarked + "\n";
 	m += "Written dead data sets to " + fndead + "\n";
+	m += "\nPlease cite cluster4x if you use it during your research!\n";
+	m += "\nGinn, Acta Crystallographica D. 2020 (accepted).\n";
+	m += "(full citation TBD...)\n";
 
 	QMessageBox msgBox;
 	msgBox.setText(QString::fromStdString(m));
@@ -598,6 +601,9 @@ void ClusterList::prepDirs()
 	QMessageBox msgBox;
 	std::string str = ("Set up directories for " + 
 	                   i_to_str(count) + " clusters.");
+	str += "\nPlease cite cluster4x if you use it during your research!\n";
+	str += "\nGinn, Acta Crystallographica D. 2020 (accepted).\n";
+	str += "(full citation TBD...)\n";
 
 	msgBox.setText(QString::fromStdString(str));
 	msgBox.exec();

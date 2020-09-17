@@ -413,7 +413,7 @@ void Group::setDead(bool dead)
 	setFont(0, curr);
 }
 
-void Group::writeToStream(std::ofstream &f, bool complete)
+void Group::writeToStream(std::ofstream &f, ExportType type, bool complete)
 {
 	if (complete && !_marked)
 	{
@@ -424,7 +424,20 @@ void Group::writeToStream(std::ofstream &f, bool complete)
 	{
 		MtzFile *file = _mtzs[i]->getMtzFile();
 
-		f << file->metadata();
+		if (type == ExportNickname)
+		{
+			f << file->metadata();
+		}
+		else if (type == ExportFilename)
+		{
+			std::string fn = file->getFilename();
+			f << getFilename(fn);
+		}
+		else /* full path */
+		{
+			std::string fn = file->getFilename();
+			f << fn;
+		}
 
 		if (i < _mtzs.size() - 1)
 		{
