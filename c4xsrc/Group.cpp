@@ -431,12 +431,12 @@ void Group::writeToStream(std::ofstream &f, ExportType type, bool complete)
 		else if (type == ExportFilename)
 		{
 			std::string fn = file->getFilename();
-			f << getFilename(fn);
+			f << getBaseFilename(fn);
 		}
 		else /* full path */
 		{
 			std::string fn = file->getFilename();
-			f << fn;
+			f << getBaseFilenameWithPath(fn);
 		}
 
 		if (i < _mtzs.size() - 1)
