@@ -25,6 +25,8 @@
 #include <time.h>
 
 #include "Crystal.h"
+using namespace Vagabond;
+
 #include "FFT.h"
 #include "Bond.h"
 #include "vec3.h"

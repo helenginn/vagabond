@@ -201,6 +201,8 @@ inline void makeShells(std::vector<ShellInfo> *shells, double min, double max,
 }
 
 
+namespace Vagabond
+{
 class Crystal : public Object, public AtomGroup
 {
 public:
@@ -689,5 +691,6 @@ private:
 	void scaleToDiffraction(DiffractionPtr data, bool full = true);
 
 };
+}
 
 #endif /* defined(__vagabond__Crystal__) */

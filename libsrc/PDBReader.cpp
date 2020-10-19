@@ -403,7 +403,7 @@ CrystalPtr PDBReader::getCrystal()
 
 	std::cout << "Loading a crystal from PDB file " << filename << ".\n" << std::endl;
 
-	_myCrystal = CrystalPtr(new Crystal());
+	_myCrystal = CrystalPtr(new Vagabond::Crystal());
 	_myCrystal->setFilename(getBaseFilename(filename));
 	Options::getRuntimeOptions()->addCrystal(_myCrystal);
 	int count = Options::getRuntimeOptions()->crystalCount();

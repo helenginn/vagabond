@@ -1260,7 +1260,7 @@ ParserPtr BaseParser::objectOfType(char *className)
 
 	if (strcmp(className, "Crystal") == 0) 
 	{
-		object = ParserPtr(static_cast<Crystal *>(new Crystal()));
+		object = ParserPtr(static_cast<Vagabond::Crystal *>(new Vagabond::Crystal()));
 		Options::getRuntimeOptions()->addCrystal(ToParserPtr(object));
 	}
 	else if (strcmp(className, "Polymer") == 0)
