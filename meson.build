@@ -8,6 +8,7 @@ png_dep = dependency('libpng')
 boost_dep = dependency('boost')
 fftw_dep = dependency('fftw3f')
 maria_dep = dependency('libmariadb', required: false)
+crystfel_dep = dependency('crystfel', required: false)
 
 # Geometry and/or rotamer lookup madness
 
@@ -429,8 +430,19 @@ qt5_dep,
 dep_gl,
 dep_vag,
 dep_ica,
-png_dep
+png_dep,
+dep_ccp4
 ]
+
+if (crystfel_dep.found())
+c4xsrc += ['c4xsrc/CrystFELInput.cpp', ]
+c4xsrc += ['c4xsrc/ClusterListCrystFEL.cpp', ]
+c4xdeps += crystfel_dep
+
+else
+c4xsrc += ['c4xsrc/ClusterListNoCrystFEL.cpp', ]
+
+endif
 
 if (maria_dep.found())
 c4xsrc += ['c4xsrc/ClusterListSQL.cpp',

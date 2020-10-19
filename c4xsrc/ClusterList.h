@@ -36,6 +36,7 @@ public:
 	void cluster(Group *item);
 	void getFromDatabase();
 	void getFromFolders();
+	void getFromStream();
 	void getFromCSV(AveCSV *csv);
 	void setScreen(Screen *scr)
 	{
@@ -110,9 +111,14 @@ private:
 	std::vector<std::string> _commands;
 	double _res;
 	bool _sqlInput;
+	bool _streamInput;
 	bool _csvInput;
+	int _max;
 	std::string _csv;
 	std::string _preload;
+	std::string _stream;
+	std::string _geom;
+	std::string _spg;
 };
 
 

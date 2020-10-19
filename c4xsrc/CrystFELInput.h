@@ -16,46 +16,39 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster4x__AveDiffraction__
-#define __cluster4x__AveDiffraction__
+#ifndef __cluster4x__crystfel__
+#define __cluster4x__crystfel__
 
-#include <libsrc/shared_ptrs.h>
-#include "Average.h"
-#include "MtzFFTPtr.h"
+#include <string>
+#include <vector>
 
 class Group;
+struct detector;
 
-class AveDiffraction : public Average
+class CrystFELInput
 {
 public:
-	AveDiffraction(Group *group, double maxRes);
-	virtual ~AveDiffraction();
+	CrystFELInput(std::string stream, std::string geom, 
+	              std::string spg, double res, int max)
+{
+	_max = max;
+	_stream = stream;
+	_geom = geom;
+	_spg = spg;
+	_res = res;
+}
 
-	virtual void calculate();
-	virtual void findIntercorrelations(Group *other, double **svd);
-	
-	VagFFTPtr getFFT()
-	{
-		return _fft;
-	}
-	
-	static void setShouldScale(bool scale)
-	{
-		_shouldScale = scale;
-	}
-	
-	static std::string unitCellDesc(VagFFTPtr fft);
+	Group *process();
 private:
-	virtual double findCorrelation(MtzFFTPtr one, MtzFFTPtr two);
-	void scaleIndividualMtz(MtzFFTPtr mtz);
-	void scaleIndividuals(Group *other);
+	std::vector<struct image> loadStream();
 
-	double _maxRes;
-	Group *_origGroup;
-	
-	static bool _shouldScale;
+	std::string _stream;
+	std::string _geom;
+	std::string _spg;
+	double _res;
+	int _max;
 
-	VagFFTPtr _fft;
+	struct detector *_detector;
 };
 
 #endif

@@ -42,6 +42,7 @@
 
 ClusterList::ClusterList(QTreeWidget *widget)
 {
+	_max = 0;
 	_sqlInput = false;
 	_csvInput = false;
 	_selectMode = false;
@@ -111,6 +112,11 @@ bool ClusterList::loadFiles()
 	if (_sqlInput)
 	{
 		getFromDatabase();
+		return true;
+	}
+	if (_streamInput)
+	{
+		getFromStream();
 		return true;
 	}
 	else if (_csvInput)
@@ -428,6 +434,31 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 		if (value.length())
 		{
 			_res = atof(value.c_str());
+		}
+
+		value = isCommand(_commands[i], "--max-sets=");
+		if (value.length())
+		{
+			_max = atoi(value.c_str());
+		}
+
+		value = isCommand(_commands[i], "--geom=");
+		if (value.length() > 0)
+		{
+			_geom = value;
+		}
+
+		value = isCommand(_commands[i], "--spg=");
+		if (value.length() > 0)
+		{
+			_spg = value;
+		}
+
+		value = isCommand(_commands[i], "--stream=");
+		if (value.length() > 0)
+		{
+			_streamInput = true;
+			_stream = value;
 		}
 
 		value = isCommand(_commands[i], "--sql=");

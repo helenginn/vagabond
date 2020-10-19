@@ -23,6 +23,8 @@
 #include <libsrc/Crystal.h>
 #include <libsrc/FileReader.h>
 
+bool AveDiffraction::_shouldScale = true;
+
 AveDiffraction::AveDiffraction(Group *group, double maxRes) : Average(group)
 {
 	_maxRes = maxRes;
@@ -200,6 +202,11 @@ void AveDiffraction::scaleIndividualMtz(MtzFFTPtr mtz)
 
 void AveDiffraction::scaleIndividuals(Group *other)
 {
+	if (!_shouldScale)
+	{
+		return;
+	}
+
 	std::cout << "Scaling individual data sets..." << std::flush;
 	for (size_t i = 0; i < other->mtzCount(); i++)
 	{
