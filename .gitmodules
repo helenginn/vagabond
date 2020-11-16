@@ -1,0 +1,3 @@
+[submodule "helen3d"]
+	path = helen3d
+	url = https://github.com/helenginn/helen3d/
