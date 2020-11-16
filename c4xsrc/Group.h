@@ -94,6 +94,7 @@ public:
 
 	void addMtz(DiffractionMtzPtr mtz, MtzFile *file);
 	void addMtz(MtzFFTPtr mtz);
+	void writeHKL(std::string filename);
 	
 	static bool isGroup(QTreeWidgetItem *item)
 	{

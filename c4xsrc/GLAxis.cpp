@@ -18,9 +18,9 @@
 
 #include <iostream>
 #include "GLAxis.h"
-#include "GLObject.h"
+#include <helen3d/SlipObject.h>
 
-GLAxis::GLAxis(vec3 dir) : GLObject()
+GLAxis::GLAxis(vec3 dir) : SlipObject()
 {
 	_renderType = GL_LINES;
 	setupVertices(dir);
@@ -34,8 +34,8 @@ void GLAxis::setupVertices(vec3 dir)
 	_indices.push_back(0);
 	_indices.push_back(1);
 	
-	Vertex v;
-	memset(v.pos, 0, sizeof(Vertex));
+	Helen3D::Vertex v;
+	memset(v.pos, 0, sizeof(Helen3D::Vertex));
 
 	v.color[3] = 1;
 	

@@ -19,10 +19,10 @@
 #ifndef __fuck_cov__GLAxis__
 #define __fuck_cov__GLAxis__
 
-#include "GLObject.h"
+#include "SlipObject.h"
 #include "vec3.h"
 
-class GLAxis : public GLObject
+class GLAxis : public SlipObject
 {
 public:
 	GLAxis(vec3 dir);

@@ -19,9 +19,9 @@
 #ifndef __fuck_cov__GLPoint__
 #define __fuck_cov__GLPoint__
 
-#include "Plot3D.h"
+#include "ClusterPlot.h"
 
-class GLPoint : public Plot3D
+class GLPoint : public ClusterPlot
 {
 public:
 	GLPoint();

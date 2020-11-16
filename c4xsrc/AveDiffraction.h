@@ -33,6 +33,7 @@ public:
 
 	virtual void calculate();
 	virtual void findIntercorrelations(Group *other, double **svd);
+	void writeHKL(std::string filename);
 	
 	VagFFTPtr getFFT()
 	{

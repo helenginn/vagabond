@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Motion.h"
+#include "Converter.h"
 #include "Anchor.h"
 #include "Options.h"
 #include "Polymer.h"
@@ -145,7 +146,6 @@ void Motion::applyTranslations(std::vector<BondSample> &stored)
 
 void Motion::addTranslationParameters(RefinementStrategyPtr strategy)
 {
-	_refined = true;
 	_trans->addTensorToStrategy(strategy, 0.1, 0.0001, "tr");
 }
 
@@ -263,6 +263,13 @@ void Motion::refine(bool reciprocal)
 		target.recalculateConstant();
 		neld->setJobName("translation");
 		addTranslationParameters(neld);
+		
+		Converter conv;
+		if (false && _refined)
+		{
+			conv.setCompareFunction(&target, FlexGlobal::compareParams);
+			conv.setStrategy(neld);
+		}
 
 		neld->refine();
 		_allAtoms->refreshPositions();
@@ -283,10 +290,24 @@ void Motion::refine(bool reciprocal)
 			neld->setJobName("rots_screws");
 		}
 		
+		if (_refined && false)
+		{
+			neld->setJobName("rots_screws_trans");
+			_trans->addTensorToStrategy(neld, 0.05, 0.00001, "tr");
+		}
+		
+		Converter conv;
+		if (_refined)
+		{
+			conv.setCompareFunction(&target, FlexGlobal::compareParams);
+			conv.setStrategy(neld);
+		}
+		
 		neld->refine();
 		_allAtoms->refreshPositions();
 	}
 
+	_refined = true;
 }
 
 void Motion::applyMotions(std::vector<BondSample> &stored)

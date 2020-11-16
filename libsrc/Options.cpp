@@ -279,11 +279,12 @@ void Options::executeProtocol()
 		int tmp = crystal->getSampleNum();
 		_nSamples = 1;
 		crystal->refreshAnchors();
+		const int total = 15;
 
-		for (int i = 0; i < 15 && _rPosition; i++)
+		for (int i = 0; i < total && _rPosition; i++)
 		{
 			std::cout << "Refining positions to PDB (" << 
-			i + 1 << " / 10)" << std::endl;
+			i + 1 << " / " << total << ")" << std::endl;
 			crystal->refinePositions();
 			crystal->refreshAnchors();
 		}
@@ -1093,4 +1094,14 @@ void Options::clear()
 	diffractions.clear();
 	
 	std::cout << "Removed loaded objects." << std::endl;
+}
+
+OptionsPtr Options::getRuntimeOptions(bool make)
+{
+	if (!options && make)
+	{
+		options = OptionsPtr(new Options(0, NULL));
+	}
+
+	return options;
 }

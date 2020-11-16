@@ -234,6 +234,11 @@ public:
 	{
 		return _disableWhacks;
 	}
+	
+	static size_t sampleSize()
+	{
+		return _sampleNum;
+	}
 protected:
 	
 	virtual std::string getParserIdentifier();
@@ -281,6 +286,7 @@ private:
 	std::vector<vec3> _tmpScrews;
 	std::vector<MotionPtr> _motions;
 	
+	static int _sampleNum;
 	int _lastCount;
 	bool _disableWhacks;
 };

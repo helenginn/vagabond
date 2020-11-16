@@ -16,6 +16,9 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+struct _Vertex;
+typedef _Vertex Vertex;
+
 #include "CAlphaView.h"
 #include "MtzFile.h"
 #include "Group.h"
@@ -63,7 +66,7 @@ void CAlphaView::updateRs()
 
 void CAlphaView::initialisePrograms()
 {
-	GLObject::initialisePrograms(NULL, NULL);
+	SlipObject::initialisePrograms(NULL, NULL);
 }
 
 void CAlphaView::repopulate()
@@ -101,7 +104,7 @@ void CAlphaView::recolour()
 		}
 	}
 	
-	_keeper->update();
+	_c4xKeeper->update();
 }
 
 
@@ -111,7 +114,7 @@ void CAlphaView::addCAlpha(vec3 point)
 	
 	if (lastOK)
 	{
-		Vertex last = _vertices.back();
+		Helen3D::Vertex last = _vertices.back();
 		lastOK = (last.pos[0] == last.pos[0]);
 	}
 	
@@ -121,8 +124,8 @@ void CAlphaView::addCAlpha(vec3 point)
 		_indices.push_back(_vertices.size());
 	}
 
-	Vertex v;
-	memset(v.pos, 0, sizeof(Vertex));
+	Helen3D::Vertex v;
+	memset(v.pos, 0, sizeof(Helen3D::Vertex));
 	vec3 move = vec3_subtract_vec3(point, _centre);
 	
 	v.color[3] = 1;

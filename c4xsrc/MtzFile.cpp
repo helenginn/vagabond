@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "MtzFile.h"
+#include "GLObject.h"
 #include <QFont>
 #include "QuickAtoms.h"
 
@@ -33,7 +34,7 @@ MtzFile::MtzFile(std::string filename)
 	_alpha = -1;
 }
 
-void MtzFile::recolourVertex(Vertex *v, bool fullDead)
+void MtzFile::recolourVertex(Helen3D::Vertex *v, bool fullDead)
 {
 	v->color[0] = 0;
 	v->color[1] = 0;

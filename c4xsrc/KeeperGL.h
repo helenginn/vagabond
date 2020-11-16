@@ -16,8 +16,8 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __Slip__KeeperGL
-#define __Slip__KeeperGL
+#ifndef __cluster4x__KeeperGL__
+#define __cluster4x__KeeperGL__
 
 #include <QtWidgets/qopenglwidget.h>
 #include <iostream>
@@ -25,6 +25,7 @@
 #include <QtGui/qopenglfunctions.h>
 #include "MtzFFT.h"
 #include "Group.h"
+#include <helen3d/SlipGL.h>
 
 #include <libsrc/mat4x4.h>
 
@@ -32,11 +33,11 @@ class GLAxis;
 class QLabel;
 class HKLView;
 class CAlphaView;
-class Plot3D;
-class GLObject;
+class ClusterPlot;
+class SlipObject;
 class Group;
 
-class KeeperGL : public QOpenGLWidget, QOpenGLFunctions
+class KeeperGL : public SlipGL
 {
 	Q_OBJECT
 	
@@ -45,29 +46,14 @@ public:
 	
 	void preparePanels(int n);
 	void addAxes();
-	void addPlot(Group *ave, Plot3D *plot);
+	void addPlot(Group *ave, ClusterPlot *plot);
 	void addHKLView(VagFFTPtr fft, double scale);
 	void addCAlphaView(MtzFile *file, vec3 centre);
 	void addCAlphaView(Group *ave);
-	void setupCamera(void);
-	
-	void panned(double x, double y);
-	void draggedLeftMouse(double x, double y);
-	void draggedRightMouse(double x, double y);
-	
-	mat4x4 getProjMat()
-	{
-		return _projMat;
-	}
-	
-	mat4x4 getModel()
-	{
-		return _model;
-	}
 	
 	void saveImage(std::string filename);
 	
-	Plot3D *getPlot()
+	ClusterPlot *getPlot()
 	{
 		return _plot;
 	}
@@ -94,46 +80,30 @@ public:
 		std::cout << mat4x4_desc(mat) << std::endl;
 	}
 
+	virtual void mouseReleaseEvent(QMouseEvent *e);
 	virtual void mouseMoveEvent(QMouseEvent *e);
 	virtual void mousePressEvent(QMouseEvent *e);
 public slots:
 	
 protected:
-	virtual void initializeGL();
-	virtual void paintGL();
 
 private:
-	void initialisePrograms();
-	void updateProjection();
-	void updateCamera();
 	void finishCAlphaView();
 	
 	Qt::MouseButton _mouseButton;
 	mat4x4 _model;
 	mat4x4 *_store;
 	std::vector<GLAxis *> _axes;
-	Plot3D *_plot;
+	ClusterPlot *_plot;
 	HKLView *_hklView;
 	CAlphaView *_cAlphaView;
 	QLabel *_rValues;
 	bool _autoCorrect;
-	
-	std::vector<GLObject *> _renderMe;
 
 	bool _controlPressed;
+	bool _shiftPressed;
+	double _lastX; double _lastY;
 	bool _moving;
-	double _lastX;
-	double _lastY;
-	double _scale = 1;
-
-	mat4x4 _rotMat;
-	mat4x4 _projMat;
-	float camAlpha, camBeta, camGamma;
-	float zNear, zFar;
-	vec3 _centre;
-	vec3 _translation;
-	vec3 _transOnly;
-	vec3 _totalCentroid;
 };
 
 

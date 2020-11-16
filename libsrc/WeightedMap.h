@@ -44,7 +44,8 @@ private:
 	VagFFTPtr _fft;
 	VagFFTPtr _difft;
 	std::vector<ShellInfo> _shells;
-	double _aveFo;
+	double _overallStdev;
+	double _overallFo;
 	double _allWeights;
 	double _minZ;
 	double _maxZ;
@@ -54,6 +55,7 @@ private:
 	void createVagaCoefficients();
 	void create2FoFcCoefficients(VagFFTPtr copy = VagFFTPtr(),
 	                             bool patt = false);
+	void createSimmishCoefficients();
 	void writeFile(VagFFTPtr chosen);
 };
 

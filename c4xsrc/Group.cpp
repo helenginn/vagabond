@@ -201,17 +201,15 @@ AverageSet *Group::getWorkingSet()
 	
 	if (_which == GroupTop)
 	{
-		std::cout << "Using top group average" << std::endl;
 		working = &_topGroup->_mySet;
 	}
 	else if (_which == GroupOriginal)
 	{
-		std::cout << "Using original group average" << std::endl;
 		working = &_origSet;
 	}
 	else
 	{
-		std::cout << "Using my group average" << std::endl;
+
 	}
 
 	return working;
@@ -701,3 +699,7 @@ std::vector<MtzFFTPtr> Group::orderByCoverage()
 	return reordered;
 }
 
+void Group::writeHKL(std::string filename)
+{
+	_mySet.recip->writeHKL(filename);
+}

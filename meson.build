@@ -4,6 +4,7 @@ qt5 = import('qt5')
 qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets', 'Sql'], required : false)
 dep_gl = dependency('gl', required : false)
 
+helen3d_dep = dependency('helen3d')
 png_dep = dependency('libpng')
 boost_dep = dependency('boost')
 fftw_dep = dependency('fftw3f')
@@ -207,7 +208,7 @@ headers = [
 'c4xsrc/CAlphaView.h', 
 'c4xsrc/HKLView.h', 
 'c4xsrc/FolderInput.h', 
-'c4xsrc/Plot3D.h', 
+'c4xsrc/ClusterPlot.h', 
 'c4xsrc/PlotView.h', 
 'c4xsrc/Screen.h', 
 'c4xsrc/SelectionWindow.h', 
@@ -321,6 +322,7 @@ install_headers([
 'c4xsrc/DatasetPath.h',
 'c4xsrc/AveCSV.h', 
 'c4xsrc/FolderInput.h', 
+'c4xsrc/ExportType.h', 
 'c4xsrc/GLAxis.h', 
 'c4xsrc/GLPoint.h', 
 'c4xsrc/GLObject.h', 
@@ -331,7 +333,7 @@ install_headers([
 'c4xsrc/MtzFile.h', 
 'c4xsrc/MtzFFT.h', 
 'c4xsrc/MtzFFTPtr.h', 
-'c4xsrc/Plot3D.h', 
+'c4xsrc/ClusterPlot.h', 
 'c4xsrc/PlotR.h',
 'c4xsrc/PlotView.h', 
 'c4xsrc/QuickAtoms.h',
@@ -339,6 +341,7 @@ install_headers([
 'c4xsrc/Screen.h', 
 'c4xsrc/SelectionWindow.h',
 'c4xsrc/SelectMatrix.h', 
+'c4xsrc/Vertex.h', 
 'c4xsrc/UCPlot.h'],
  subdir : 'c4xsrc')
 
@@ -401,6 +404,7 @@ c4xsrc = [
 'c4xsrc/AxisScroll.cpp', 
 'c4xsrc/CAlphaView.cpp', 
 'c4xsrc/ClusterList.cpp', 
+'c4xsrc/ClusterPlot.cpp', 
 'c4xsrc/CorrelLabel.cpp', 
 'c4xsrc/AveCSV.cpp', 
 'c4xsrc/FolderInput.cpp', 
@@ -413,7 +417,6 @@ c4xsrc = [
 'c4xsrc/MatrixView.cpp', 
 'c4xsrc/MtzFile.cpp', 
 'c4xsrc/MtzFFT.cpp', 
-'c4xsrc/Plot3D.cpp', 
 'c4xsrc/PlotR.cpp',
 'c4xsrc/PlotView.cpp', 
 'c4xsrc/QuickAtoms.cpp',
@@ -431,7 +434,8 @@ dep_gl,
 dep_vag,
 dep_ica,
 png_dep,
-dep_ccp4
+dep_ccp4,
+helen3d_dep
 ]
 
 if (crystfel_dep.found())
@@ -494,6 +498,12 @@ pkg.generate(libraries : [lib_ica],
              name : 'libica',
              filebase : 'libica',
              description : 'Library for ica and lbfgs')
+pkg.generate(libraries : [lib_ccp4],
+             subdirs : ['libsrc'],
+             version : '1.0',
+             name : 'libccp4',
+             filebase : 'libccp4',
+             description : 'Library for ccp4 (compiled using Vagabond)')
 pkg.generate(libraries : [lib_c4x],
              subdirs : ['c4xsrc'],
              version : '1.0',

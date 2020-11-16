@@ -26,6 +26,7 @@
 #include <iomanip>
 #include "Shouter.h"
 #include "CSV.h"
+#include "SimXW.h"
 #include "Fibonacci.h"
 #include "../libinfo/CentroidToPhase.h"
 
@@ -60,6 +61,7 @@ void WeightedMap::writeCalculatedSlice()
 	/* Back to real space */
 	BucketPtr solv = _crystal->getBucket();
 	VagFFTPtr mask;
+	std::string cycle = "_" + i_to_str(_crystal->getCycleNum());
 	
 	if (solv)
 	{
@@ -69,10 +71,8 @@ void WeightedMap::writeCalculatedSlice()
 	if (mask)
 	{
 		mask->fft(FFTReciprocalToReal);
+		mask->drawSlice(0, "solvent_slice" + cycle);
 	}
-
-	std::string cycle = "_" + i_to_str(_crystal->getCycleNum());
-	mask->drawSlice(0, "solvent_slice" + cycle);
 
 	_fft->fft(FFTReciprocalToReal);
 	_fft->drawSlice(0, "calculated_slice" + cycle);
@@ -103,7 +103,21 @@ void WeightedMap::createWeightedMaps()
 
 	int map = Options::getMapType();
 
-	if (map > 0)
+	bool ignoreRfree = Options::ignoreRFree();
+
+	if (ignoreRfree)
+	{
+		warn_user("You should not be ignoring Rfree.\n"\
+		          "All your results and any future \n"\
+		          "results derived from this are INVALID for\n"\
+		          "structure determination.");
+	}
+
+	if (map == 0)
+	{
+		create2FoFcCoefficients();
+	}
+	else if (map == 1)
 	{
 		VagFFTPtr copy = VagFFTPtr(new VagFFT(*_fft));
 		create2FoFcCoefficients(copy, true);
@@ -120,9 +134,9 @@ void WeightedMap::createWeightedMaps()
 
 		createVagaCoefficients();
 	}
-	else
+	else if (map >= 2)
 	{
-		create2FoFcCoefficients();
+		createSimmishCoefficients();
 	}
 	
 	/* Back to real space */
@@ -135,6 +149,9 @@ void WeightedMap::createWeightedMaps()
 void WeightedMap::calculateFiguresOfMerit()
 {
 	_shells = _crystal->getShells();
+	_overallStdev = 0;
+	_overallFo = 0;
+	int count = 0;
 	
 	for (int i = 0; i < _shells.size(); i++)
 	{
@@ -145,11 +162,13 @@ void WeightedMap::calculateFiguresOfMerit()
 		{
 			double fo = _shells[i].work1[j];
 			double fc = _shells[i].work2[j];
+			count++;
 
 			sumFo += fo;
 			sumFc += fc;
 		}
 
+		_overallFo += sumFo;
 		double aveFo = sumFo / (double)_shells[i].work1.size();
 		double aveFc = sumFc / (double)_shells[i].work1.size();
 		double scale = aveFo / aveFc;
@@ -169,7 +188,11 @@ void WeightedMap::calculateFiguresOfMerit()
 		double stDiff = sqrt(sumDiff / _shells[i].work1.size());
 		stDiff /= aveFo;
 		_shells[i].std_err = stDiff;
+		_overallStdev += stDiff;
 	}
+	
+	_overallFo /= count;
+	_overallStdev /= (double)_shells.size();
 }
 
 int WeightedMap::shellForResolution(double res)
@@ -261,14 +284,6 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 	bool ignoreRfree = Options::ignoreRFree();
 	double prop = -2 + (4 / MAX_SLICES) * slice;
 	double weight = exp(-(prop*prop)/(2));
-
-	if (ignoreRfree)
-	{
-		warn_user("You should not be ignoring Rfree.\n"\
-		          "All your results and any future \n"\
-		          "results derived from this are INVALID for\n"\
-		          "structure determination.");
-	}
 
 	vec3 nLimits = getNLimits(_fft);
 	CSym::CCP4SPG *spg = _crystal->getSpaceGroup();
@@ -401,6 +416,133 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 	}
 	
 	return weight;
+}
+
+void WeightedMap::createSimmishCoefficients()
+{
+	_difft->setStatus(FFTReciprocalSpace);
+	VagFFTPtr fftData = _data->getFFT();
+	double lowRes = Options::minRes();
+	double minRes = (lowRes == 0 ? 0 : 1 / lowRes);
+	double maxRes = _crystal->getMaxResolution(_data);
+	bool ignoreRfree = Options::ignoreRFree();
+	maxRes = 1 / maxRes;
+
+	vec3 nLimits = getNLimits(_fft);
+	CSym::CCP4SPG *spg = _crystal->getSpaceGroup();
+	mat3x3 real2frac = _crystal->getReal2Frac();
+
+	for (int k = -nLimits.z; k < nLimits.z; k++)
+	{
+		for (int j = -nLimits.y; j < nLimits.y; j++)
+		{
+			for (int i = -nLimits.x; i < nLimits.x; i++)
+			{
+				long index = _fft->element(i, j, k);
+
+				/* if no recorded observation then set element to 0 */
+				if (!fftData->withinBounds(i, j, k))
+				{
+					_fft->setElement(index, 0, 0);
+					continue;
+				}
+				
+				int _h, _k, _l;
+				CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
+
+				long dataidx = fftData->element(_h, _k, _l);
+				double fobs = fftData->getReal(dataidx);
+				double sigfobs = fftData->getImag(dataidx);
+
+				int isAbs = CSym::ccp4spg_is_sysabs(spg, i, j, k);
+				
+				if (isAbs)
+				{
+					_fft->setElement(index, 0, 0);
+					continue;
+				}
+				
+				vec3 ijk = make_vec3(i, j, k);    
+				mat3x3_mult_vec(real2frac, &ijk);
+				double length = vec3_length(ijk);
+
+				bool isFree;
+				isFree = (fftData->getScratchComponent(dataidx, 0, 0) < 0.5);
+
+				if (ignoreRfree)
+				{
+					isFree = 0;
+				}
+				
+				bool f000 = (i == 0 && j == 0 && k == 0);
+
+				if (!f000 && ((length < minRes || length > maxRes)
+				    || (fobs != fobs || isFree) || sigfobs != sigfobs))
+				{	
+					_fft->setElement(index, 0, 0);
+					continue;
+				}
+
+				vec2 complex;
+				complex.x = _fft->getReal(index);
+				complex.y = _fft->getImag(index);
+				double fcalc = sqrt(complex.x * complex.x +
+				                      complex.y * complex.y);
+				
+				int centric = ccp4spg_is_centric(spg, i, j, k);
+				
+				double phase = _fft->getPhase(i, j, k);
+				phase = deg2rad(phase);
+				
+				int shx = shellForResolution(1 / length);
+				double std_err = _overallStdev;
+				double sigf_err = (fobs - sigfobs) / fobs;
+				
+				double X = 2 * fobs * fcalc * sigf_err / 
+				(std_err * _overallFo);
+				if (X < 0)
+				{
+					X = 0;
+				}
+
+				double w = Vagabond::getW(X);
+
+				double stdev = stdevForReflection(fobs, fcalc, sigfobs,
+				                                  1 / length);
+				double downweight = exp(-(stdev * stdev));
+
+				double fused = downweight * (2 * fobs - fcalc);
+				
+				if (f000)
+				{
+					fused = fcalc;
+				}
+
+				double fdiff = fobs - fcalc;
+				if (f000) 
+				{
+					fdiff = 0;
+				}
+
+				complex.x = fused * cos(phase);
+				complex.y = fused * sin(phase);
+				
+				if (complex.x != complex.x || complex.y != complex.y)
+				{
+					continue;
+				}
+
+				_fft->setElement(index, complex.x, complex.y);
+
+				complex.x = fdiff * cos(phase);
+				complex.y = fdiff * sin(phase);
+
+				_difft->setElement(index, complex.x, complex.y);
+			}
+		}
+	}
+
+	writeFile(_fft);
 }
 
 void WeightedMap::createVagaCoefficients()
@@ -601,5 +743,6 @@ void WeightedMap::create2FoFcCoefficients(VagFFTPtr copy, bool patt)
 		}
 	}
 	
+	_difft->setStatus(FFTReciprocalSpace);
 	writeFile(copy);
 }

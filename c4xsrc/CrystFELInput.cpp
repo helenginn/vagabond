@@ -28,6 +28,18 @@
 #include <crystfel/symmetry.h>
 #include <crystfel/reflist-utils.h>
 
+CrystFELInput::CrystFELInput(std::string streams, std::string geom, 
+                             std::string spg, double res)
+{
+	_max = 0;
+	_skip = 0;
+	_geom = geom;
+	_spg = spg;
+	_res = res;
+	
+	_streams = split(streams, ',');
+}
+
 static RefList *apply_max_adu(RefList *list, double max_adu)
 {
 	RefList *nlist;
@@ -52,16 +64,15 @@ static RefList *apply_max_adu(RefList *list, double max_adu)
 	return nlist;
 }
 
-std::vector<struct image> CrystFELInput::loadStream()
+std::vector<struct image> CrystFELInput::loadStream(std::string str)
 {
-	Stream *stream = open_stream_for_read(_stream.c_str());
-	_detector = get_detector_geometry(_geom.c_str(), NULL);
+	Stream *stream = open_stream_for_read(str.c_str());
 
-	std::vector<struct image> _images;
+	std::vector<struct image> some;
 	struct image *next;
 	
-	_images.resize(_images.size() + 1);
-	next = &_images[_images.size() - 1];
+	some.resize(some.size() + 1);
+	next = &some[some.size() - 1];
 	next->det = _detector;
 
 	int n_crystals = 0;
@@ -71,6 +82,13 @@ std::vector<struct image> CrystFELInput::loadStream()
 
 	char *sym_str = NULL;
 	SymOpList *sym;
+	
+	std::vector<std::string> contents;
+	
+	if (_preload.length())
+	{
+		contents = split(get_file_contents(_preload), ',');
+	}
 
 	if ( sym_str == NULL ) sym_str = strdup("1");
 	pointgroup_warning(sym_str);
@@ -84,19 +102,23 @@ std::vector<struct image> CrystFELInput::loadStream()
 			break;
 		}
 
-		struct image *cur = &_images[_images.size() - 1];
+		struct image *cur = &some[some.size() - 1];
 		RefList *as;
 
 		for (int i = 0; i<cur->n_crystals; i++)
 		{
-
+			n_crystals_seen++;
+			
+			if (n_crystals_seen < _skip)
+			{
+				continue;
+			}
+			
 			Crystal *cr;
 			Crystal **crystals_new;
 			RefList *cr_refl;
 			struct image *image;
 
-			n_crystals_seen++;
-			
 			crystals_new = (Crystal **)realloc(crystals,
 			                      (n_crystals+1)*sizeof(Crystal *));
 			if ( crystals_new == NULL ) {
@@ -130,10 +152,33 @@ std::vector<struct image> CrystFELInput::loadStream()
 			reflist_free(cr_refl);
 
 			n_crystals++;
+
+			if (n_crystals % 1000 == 0)
+			{
+				std::cout << "." << std::flush;
+			}
 		}
 
-		_images.resize(_images.size() + 1);
-		next = &_images[_images.size() - 1];
+		if (n_crystals_seen < _skip)
+		{
+			continue;
+		}
+		
+		if (contents.size() > 0)
+		{
+			std::string fn = next->filename;
+			std::string bn = getBaseFilename(fn);
+
+			/* not found */
+			if (std::find(contents.begin(), contents.end(), bn)
+			    == contents.end())
+			{
+				some.pop_back();
+			}
+		}
+
+		some.resize(some.size() + 1);
+		next = &some[some.size() - 1];
 		next->det = _detector;
 		next->div = NAN;
 		next->bw = NAN;
@@ -144,11 +189,14 @@ std::vector<struct image> CrystFELInput::loadStream()
 		}
 	}
 	
-	_images.pop_back();
+	std::cout << "Looked through " << n_crystals << " crystals from " <<
+	"stream: " << str << std::endl;
+	
+	some.pop_back();
 	
 	close_stream(stream);
 	
-	return _images;
+	return some;
 }
 
 std::vector<double> unitCellFor(Crystal *c)
@@ -174,7 +222,16 @@ Group *CrystFELInput::process()
 	Group *g = new Group(NULL);
 	int count = 0;
 	
-	std::vector<struct image> images = loadStream();
+	std::vector<struct image> images;
+	_detector = get_detector_geometry(_geom.c_str(), NULL);
+
+	for (size_t i = 0; i < _streams.size(); i++)
+	{
+		std::cout << "Loading " << _streams[i] << std::endl;
+		std::vector<struct image> some = loadStream(_streams[i]);
+		images.reserve(some.size() + images.size());
+		images.insert(images.end(), some.begin(), some.end());
+	}
 	
 	int mh = 0; int mk = 0; int ml = 0;
 	/* find maximum vals for h,k,l */
@@ -237,7 +294,7 @@ Group *CrystFELInput::process()
 
 	CSym::CCP4SPG *spg = CSym::ccp4spg_load_by_ccp4_num(num);
 	
-	for (size_t i = 0; i < images.size() && (_max <= 0 || count < _max); i++)
+	for (size_t i = 0; i < images.size(); i++)
 	{
 		struct image *im = &images[i];
 		std::string name = std::string(im->filename) + "_" + i_to_str(i);

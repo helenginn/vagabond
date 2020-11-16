@@ -1,4 +1,4 @@
-// cluster4x
+// Vagabond
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,45 +16,36 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster4x__crystfel__
-#define __cluster4x__crystfel__
+#ifndef __vagabond__SimXW__
+#define __vagabond__SimXW__
 
-#include <string>
-#include <vector>
+// relationship between X and W from Sim 1959
 
-class Group;
-struct detector;
-
-class CrystFELInput
+namespace Vagabond
 {
-public:
-	CrystFELInput(std::string streams, std::string geom, 
-	              std::string spg, double res);
+	static int simXs[] = {0, 0.25, 0.50, 0.75, 1.0, 1.5, 2.0, 3.0, 4.0, 5.0,
+	10.0};
+	static int simWs[] = {0, 0.157, 0.308, 0.443, 0.561, 0.738, 0.850,
+	0.952, 0.982, 0.992, 1.0};
+	static size_t xwSize = 11;
 	
-	void setSkipAndMax(int skip, int max)
+	double getW(double x)
 	{
-		_max = max;
-		_skip = skip;
+		double w = 1.;
+		for (size_t i = 0; i < xwSize - 1; i++)
+		{
+			if (x >= simXs[i] && x < simXs[i + 1])
+			{
+				double width = (simXs[i + 1] - simXs[i]);
+				double prop  = (x - simXs[i]) / width;
+				
+				w = simWs[i] + prop * (simWs[i + 1] - simWs[i]);
+				break;
+			}
+		}
+
+		return w;
 	}
-	
-	void onlyLoad(std::string preload)
-	{
-		_preload = preload;
-	}
-
-	Group *process();
-private:
-	std::vector<struct image> loadStream(std::string str);
-
-	std::vector<std::string> _streams;
-	std::string _geom;
-	std::string _preload;
-	std::string _spg;
-	double _res;
-	int _max;
-	int _skip;
-
-	struct detector *_detector;
 };
 
 #endif

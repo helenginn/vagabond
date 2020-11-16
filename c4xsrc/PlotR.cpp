@@ -20,16 +20,16 @@
 #include "MtzFile.h"
 #include "Group.h"
 
-PlotR::PlotR() : Plot3D()
+PlotR::PlotR() : ClusterPlot()
 {
 
 }
 
 void PlotR::populate()
 {
-	for (size_t i = 0; i < _ave->mtzCount(); i++)
+	for (size_t i = 0; i < _grp->mtzCount(); i++)
 	{
-		MtzFile *f = _ave->getMtzFile(i);
+		MtzFile *f = _grp->getMtzFile(i);
 		vec3 point = empty_vec3();
 		point.x = f->getRWork();
 		point.y = f->getRFree();

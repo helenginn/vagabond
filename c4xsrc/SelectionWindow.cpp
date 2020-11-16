@@ -19,7 +19,7 @@
 #include <QKeyEvent>
 #include <iostream>
 #include "SelectionWindow.h"
-#include "Plot3D.h"
+#include <helen3d/Plot3D.h>
 #include "KeeperGL.h"
 
 SelectionWindow::SelectionWindow(QWidget *parent, KeeperGL *keeper)
@@ -52,9 +52,12 @@ void SelectionWindow::mouseReleaseEvent(QMouseEvent *e)
 {
 	if (_selectMode == false && _removeMode == false)
 	{
+		std::cout << "Just releasing" << std::endl;
+		_keeper->mouseReleaseEvent(e);
 		return;
 	}
 
+	std::cout << "Not releasing" << std::endl;
 	QPoint p = mapFromGlobal(e->globalPos());
 	int endX = p.x();
 	int endY = p.y();
@@ -110,6 +113,11 @@ void SelectionWindow::mouseMoveEvent(QMouseEvent *e)
 	QRectF r;
 
 	QPoint p = mapFromGlobal(e->globalPos());
+	
+	if (_startX < 0 || _startY < 0)
+	{
+		return;
+	}
 	
 	int left = std::min(_startX, p.x());
 	int right = std::max(_startX, p.x());

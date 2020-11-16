@@ -42,7 +42,10 @@
 
 ClusterList::ClusterList(QTreeWidget *widget)
 {
+	_onlyLoad = false;
 	_max = 0;
+	_skip = 0;
+	_streamInput = false;
 	_sqlInput = false;
 	_csvInput = false;
 	_selectMode = false;
@@ -436,6 +439,12 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 			_res = atof(value.c_str());
 		}
 
+		value = isCommand(_commands[i], "--skip=");
+		if (value.length())
+		{
+			_skip = atoi(value.c_str());
+		}
+
 		value = isCommand(_commands[i], "--max-sets=");
 		if (value.length())
 		{
@@ -482,6 +491,14 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 		{
 			std::cout << "Using preloaded groups" << std::endl;
 			_preload = value;
+		}
+
+		value = isCommand(_commands[i], "--only-load=");
+		if (value.length() > 0)
+		{
+			std::cout << "Using preloaded groups" << std::endl;
+			_preload = value;
+			_onlyLoad = true;
 		}
 	}
 }

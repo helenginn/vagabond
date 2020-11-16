@@ -70,6 +70,7 @@ public slots:
 	void refocus(int index);
 	void changeIndex(int index);
 	void saveImages();
+	void writeAverageMTZ();
 	void clusterGroup();
 	void newSelection();
 	void markSelection();

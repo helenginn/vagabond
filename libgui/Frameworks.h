@@ -23,7 +23,9 @@ typedef struct
 	GLfloat color[4];
 	GLfloat extra[4];
 	GLfloat tex[2];
-} Vertex;
+} _Vertex;
+
+typedef _Vertex Vertex;
 
 inline void vec3ToVertex(Vertex &v, vec3 &vec)
 {

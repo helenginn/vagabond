@@ -1,5 +1,5 @@
-#ifndef __vagabond_Blob_vsh__
-#define __vagabond_Blob_vsh__
+#ifndef __vagabond_blobvsh__
+#define __vagabond_blobvsh__
 
 inline std::string Blob_vsh()
 {

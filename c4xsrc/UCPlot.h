@@ -19,9 +19,9 @@
 #ifndef __cluster4x__UCPlot__
 #define __cluster4x__UCPlot__
 
-#include "Plot3D.h"
+#include "ClusterPlot.h"
 
-class UCPlot : public Plot3D
+class UCPlot : public ClusterPlot
 {
 public:
 	UCPlot();

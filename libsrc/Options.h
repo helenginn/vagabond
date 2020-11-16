@@ -44,10 +44,7 @@ public:
 		pointer->setManual(true);
 	}
 
-	static OptionsPtr getRuntimeOptions()
-	{
-		return options;
-	}
+	static OptionsPtr getRuntimeOptions(bool make = true);
 
 	void setNotify(Notifiable *notifiable)
 	{

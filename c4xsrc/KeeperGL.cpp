@@ -19,7 +19,7 @@
 #include "Group.h"
 #include "KeeperGL.h"
 #include "GLAxis.h"
-#include "Plot3D.h"
+#include "ClusterPlot.h"
 #include "HKLView.h"
 #include "CAlphaView.h"
 #include "MtzFFT.h"
@@ -36,42 +36,8 @@
 
 #define MOUSE_SENSITIVITY 500
 #define PAN_SENSITIVITY 30
-#define START_Z 0
 
-void KeeperGL::initializeGL()
-{
-	_controlPressed = false;
-	_lastX = 0;
-	_lastY = 0;
-	_moving = false;
-	initializeOpenGLFunctions();
-
-	glClearColor(1.0, 1.0, 1.0, 1.0);
-
-//	glEnable(GL_DEPTH_TEST);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glEnable(GL_BLEND);
-	glEnable(GL_PROGRAM_POINT_SIZE);
-	glEnable(GL_POINT_SPRITE);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	setupCamera();
-
-	initialisePrograms();
-}
-
-void KeeperGL::updateProjection()
-{
-	zNear = 0.1;
-	zFar = 50;
-
-	double side = 0.5;
-	float aspect = height() / width();
-	_projMat = mat4x4_ortho(side, -side, side * aspect, -side * aspect,
-	                       zNear, zFar);
-}
-
+/*
 void KeeperGL::updateCamera(void)
 {
 	vec3 alteration = empty_vec3();
@@ -125,64 +91,48 @@ void KeeperGL::updateCamera(void)
 		}
 	}
 }
+*/
 
-void KeeperGL::setupCamera(void)
+KeeperGL::KeeperGL(QWidget *p) : SlipGL(p)
 {
-	_translation = make_vec3(0, 0, START_Z);
-	_transOnly = make_vec3(0, 0, 0);
-	_totalCentroid = make_vec3(0, 0, 0);
-	_centre = make_vec3(0, 0, 0);
-	camAlpha = 0;
-	camBeta = 0;
-	camGamma = 0;
-	_scale = 1;
-
-	updateProjection();
-
-	updateCamera();
-}
-
-KeeperGL::KeeperGL(QWidget *p) : QOpenGLWidget(p)
-{
+	setBackground(1, 1, 1, 1);
 	_rValues = NULL;
 	_autoCorrect = false;
 	_store = NULL;
-	_model = make_mat4x4();
-	_rotMat = make_mat4x4();
 	setGeometry(0, 0, p->width(), p->height());
 	_plot = NULL;
 	_hklView = NULL;
-	setupCamera();
+	_controlPressed = false;
+	_shiftPressed = false;
 }
 
 void KeeperGL::addAxes()
 {
 	GLAxis *axis = new GLAxis(make_vec3(1, 0, 0));
 	_axes.push_back(axis);
-	_renderMe.push_back(axis);
+	addObject(axis, false);
 	axis = new GLAxis(make_vec3(0, 1, 0));
 	_axes.push_back(axis);
-	_renderMe.push_back(axis);
+	addObject(axis, false);
 	axis = new GLAxis(make_vec3(0, 0, 1));
 	_axes.push_back(axis);
-	_renderMe.push_back(axis);
-	
+	addObject(axis, false);
 	
 	update();
 }
 
-void KeeperGL::addPlot(Group *ave, Plot3D *plot)
+void KeeperGL::addPlot(Group *ave, ClusterPlot *plot)
 {
 	delete _plot;
 	_plot = plot;
 	_plot->setKeeper(this);
 	_plot->setGroup(ave);
-	_renderMe.push_back(_plot);
+	addObject(plot, false);
 }
 
 void KeeperGL::finishCAlphaView()
 {
-	_renderMe.push_back(_cAlphaView);
+	addObject(_cAlphaView, false);
 	_cAlphaView->setKeeper(this);
 	_cAlphaView->repopulate();
 	std::string str = _cAlphaView->getRworkRfree();
@@ -211,7 +161,7 @@ void KeeperGL::addCAlphaView(MtzFile *file, vec3 centre)
 void KeeperGL::addHKLView(VagFFTPtr fft, double scale)
 {
 	_hklView = new HKLView(fft, scale);
-	_renderMe.push_back(_hklView);
+	addObject(_hklView, false);
 	_hklView->setKeeper(this);
 	_hklView->repopulate();
 	_autoCorrect = true;
@@ -224,33 +174,6 @@ void KeeperGL::preparePanels(int n)
 	_axes.reserve(n);
 }
 
-void KeeperGL::panned(double x, double y)
-{
-
-}
-
-void KeeperGL::draggedLeftMouse(double x, double y)
-{
-	x /= MOUSE_SENSITIVITY;
-	y /= MOUSE_SENSITIVITY;
-
-	camAlpha += y;
-	camBeta += x;
-
-	updateCamera();
-	update();
-}
-
-void KeeperGL::draggedRightMouse(double x, double y)
-{
-	_scale *= (1 - y / MOUSE_SENSITIVITY);
-	if (_scale < 0)
-	{
-		_scale = 1;
-	}
-	updateCamera();
-	update();
-}
 
 void KeeperGL::mousePressEvent(QMouseEvent *e)
 {
@@ -258,6 +181,12 @@ void KeeperGL::mousePressEvent(QMouseEvent *e)
 	_lastY = e->y();
 	_mouseButton = e->button();
 	_moving = false;
+}
+
+void KeeperGL::mouseReleaseEvent(QMouseEvent *e)
+{
+	_moving = false;
+	_mouseButton = Qt::NoButton;
 }
 
 void KeeperGL::mouseMoveEvent(QMouseEvent *e)
@@ -280,7 +209,7 @@ void KeeperGL::mouseMoveEvent(QMouseEvent *e)
 	{
 		if (_controlPressed)
 		{
-			panned(xDiff * 2, yDiff * 2);
+
 		}
 		else
 		{
@@ -290,23 +219,6 @@ void KeeperGL::mouseMoveEvent(QMouseEvent *e)
 	else if (_mouseButton == Qt::RightButton)
 	{
 		draggedRightMouse(xDiff * PAN_SENSITIVITY, yDiff * PAN_SENSITIVITY);
-	}
-}
-void KeeperGL::initialisePrograms()
-{
-	for (unsigned int i = 0; i < _renderMe.size(); i++)
-	{
-		_renderMe[i]->initialisePrograms();
-	}
-}
-
-void KeeperGL::paintGL()
-{
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	for (unsigned int i = 0; i < _renderMe.size(); i++)
-	{
-		_renderMe[i]->render(this);
 	}
 }
 

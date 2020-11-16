@@ -324,7 +324,7 @@ void SVDBond::report()
 	
 	_wTotal = cuml; 
 	
-	double pc50 = cuml * 0.6;
+	double pc50 = cuml * 0.45;
 	
 	if (_doTorsion)
 	{
@@ -344,7 +344,7 @@ void SVDBond::report()
 		}
 	}
 	
-	const int min = 15;
+	const int min = 10;
 	if (_num < min)
 	{
 		_num = min;

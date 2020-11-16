@@ -39,8 +39,9 @@ AveDiffraction::~AveDiffraction()
 void AveDiffraction::calculate()
 {
 	VagFFTPtr first = _mtzs[0];
-	_fft = VagFFTPtr(new VagFFT(*first));
+	_fft = VagFFTPtr(new VagFFT(*first, 1));
 	_fft->wipe();
+	_fft->setStatus(FFTReciprocalSpace);
 	std::vector<double> ucs = std::vector<double>(6, 0);
 	int count = 0;
 
@@ -77,10 +78,14 @@ void AveDiffraction::calculate()
 
 					double amp = current->getReal(i, j, k);
 					long ele = _fft->element(i, j, k);
+					double sq = _fft->getScratchComponent(ele, 0, 0);
+
 					if (amp == amp)
 					{
+						sq += amp * amp;
 						_fft->addToReal(ele, amp);
 						_fft->addToImag(ele, 1);
+						_fft->setScratchComponent(ele, 0, 0, sq);
 					}
 				}
 			}
@@ -98,13 +103,15 @@ void AveDiffraction::calculate()
 	{
 		double imag = _fft->getImag(i);
 		double real = _fft->getReal(i);
+		double sq = _fft->getScratchComponent(i, 0, 0);
 
 		real /= imag;
+		sq = sqrt((sq - real * real) / imag);
 
 		_fft->setReal(i, real);
+		_fft->setComponent(i, 1, 0);
+		_fft->setScratchComponent(i, 0, 0, sq);
 	}
-	
-//	scaleIndividuals(_origGroup);
 }
 
 double AveDiffraction::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
@@ -237,3 +244,8 @@ std::string AveDiffraction::unitCellDesc(VagFFTPtr fft)
 	return ucInfo;
 }
 
+
+void AveDiffraction::writeHKL(std::string filename)
+{
+	_fft->writeToFile(filename, -1);
+}

@@ -549,9 +549,15 @@ void Screen::displayResults(Group *ave)
 	_changeData->setMenu(m);
 	_changeData->show();
 
+	/*
 	addSideButton((QWidget **)&_coverage, "Coverage order", &top);
 	connect(_coverage, &QPushButton::clicked,
 	        this, &Screen::coverage);
+	*/
+
+	addSideButton((QWidget **)&_coverage, "Write average MTZ", &top);
+	connect(_coverage, &QPushButton::clicked,
+	        this, &Screen::writeAverageMTZ);
 
 	addSideButton((QWidget **)&_reorder, "Reorder datasets", &top);
 	m = new QMenu(_reorder);
@@ -643,6 +649,31 @@ void Screen::addSideButton(QWidget **buttPtr, std::string title,
 	_bin.push_back(buttPtr);
 
 	*top += 50;
+}
+
+void Screen::writeAverageMTZ()
+{
+	QFileDialog *f = new QFileDialog(this, "Write MTZ", 
+	                                 "Reflection file (*.mtz)");
+	f->setAcceptMode(QFileDialog::AcceptSave);
+	f->setFileMode(QFileDialog::AnyFile);
+	f->setOptions(QFileDialog::DontUseNativeDialog);
+	f->show();
+
+    QStringList fileNames;
+
+    if (f->exec())
+    {
+        fileNames = f->selectedFiles();
+    }
+    
+    if (fileNames.size() < 1)
+    {
+		return;
+    }
+
+	_group->writeHKL(fileNames[0].toStdString());
+
 }
 
 void Screen::changeColour()

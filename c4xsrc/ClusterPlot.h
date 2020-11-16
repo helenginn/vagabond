@@ -1,4 +1,4 @@
-// cluster4x
+// Cluster4x
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,45 +16,33 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster4x__crystfel__
-#define __cluster4x__crystfel__
+#ifndef __cluster4x__ClusterPlot__
+#define __cluster4x__ClusterPlot__
 
-#include <string>
-#include <vector>
+#include <helen3d/Plot3D.h>
+#include <QObject>
 
 class Group;
-struct detector;
+class KeeperGL;
 
-class CrystFELInput
+class ClusterPlot : public Plot3D
 {
+Q_OBJECT
 public:
-	CrystFELInput(std::string streams, std::string geom, 
-	              std::string spg, double res);
+	ClusterPlot();
 	
-	void setSkipAndMax(int skip, int max)
+	void setGroup(Group *grp)
 	{
-		_max = max;
-		_skip = skip;
+		_grp = grp;
 	}
 	
-	void onlyLoad(std::string preload)
-	{
-		_preload = preload;
-	}
+	virtual void selectInWindow(float x1, float y1, float x2, float y2,
+	                            int add);
 
-	Group *process();
-private:
-	std::vector<struct image> loadStream(std::string str);
+protected:
+	virtual void recolour();
+	Group *_grp;
 
-	std::vector<std::string> _streams;
-	std::string _geom;
-	std::string _preload;
-	std::string _spg;
-	double _res;
-	int _max;
-	int _skip;
-
-	struct detector *_detector;
 };
 
 #endif

@@ -23,23 +23,23 @@
 #include "MtzFile.h"
 #include <libsrc/FileReader.h>
 
-UCPlot::UCPlot() : Plot3D()
+UCPlot::UCPlot() : ClusterPlot()
 {
 
 }
 
 void UCPlot::populate()
 {
-	std::vector<double> ucs = _ave->getUnitCell();
+	std::vector<double> ucs = _grp->getUnitCell();
 
 	double mrw, mrf, srw, srf;
-	_ave->averageRs(&mrw, &mrf, &srw, &srf);
+	_grp->averageRs(&mrw, &mrf, &srw, &srf);
 
-	for (size_t i = 0; i < _ave->mtzCount(); i++)
+	for (size_t i = 0; i < _grp->mtzCount(); i++)
 	{
-		std::vector<double> uc = _ave->getMtz(i)->getUnitCell();
-		double rwork = _ave->getMtzFile(i)->getRWork() - mrw;
-		double rfree = _ave->getMtzFile(i)->getRFree() - mrf;
+		std::vector<double> uc = _grp->getMtz(i)->getUnitCell();
+		double rwork = _grp->getMtzFile(i)->getRWork() - mrw;
+		double rfree = _grp->getMtzFile(i)->getRFree() - mrf;
 
 		for (size_t j = 0; j < 6 && j < uc.size() && j < ucs.size(); j++)
 		{

@@ -22,8 +22,11 @@
 #include <shared_ptrs.h>
 #include <vec3.h>
 #include <string>
-#include "GLObject.h"
 #include <mat3x3.h>
+#include <helen3d/Frameworks.h>
+
+struct _Vertex;
+typedef _Vertex Vertex;
 
 class QuickAtoms;
 
@@ -140,7 +143,7 @@ public:
 		}
 	}
 	
-	void recolourVertex(Vertex *v, bool fullDead = false);
+	void recolourVertex(Helen3D::Vertex *v, bool fullDead = false);
 	
 	void setCrystal(CrystalPtr crystal)
 	{

@@ -20,12 +20,13 @@
 #define __cluster__calphaview__
 
 #include <libsrc/vec3.h>
-#include "GLObject.h"
+#include "SlipObject.h"
 
 class Group;
 class MtzFile;
+class KeeperGL;
 
-class CAlphaView : public QObject, public GLObject
+class CAlphaView : public QObject, public SlipObject
 {
 Q_OBJECT
 public:
@@ -34,7 +35,7 @@ public:
 
 	void setKeeper(KeeperGL *gl)
 	{
-		_keeper = gl;
+		_c4xKeeper = gl;
 	}
 
 	virtual void initialisePrograms();
@@ -54,7 +55,7 @@ private:
 	std::map<MtzFile *, size_t> _ends;
 	std::vector<MtzFile *> _mtzs;
 	vec3 _centre;
-	KeeperGL *_keeper;
+	KeeperGL *_c4xKeeper;
 
 };
 

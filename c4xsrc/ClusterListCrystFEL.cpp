@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include <QTreeWidget>
+#include <FileReader.h>
 #include <iostream>
 #include "ClusterList.h"
 #include "Group.h"
@@ -30,7 +31,12 @@ void ClusterList::getFromStream()
 		exit(1);
 	}
 	
-	CrystFELInput input(_stream, _geom, _spg, _res, _max);
+	CrystFELInput input(_stream, _geom, _spg, _res);
+	input.setSkipAndMax(_skip, _max);
+	if (_onlyLoad)
+	{
+		input.onlyLoad(_preload);
+	}
 	Group *grp = input.process();
 
 	if (grp != NULL)
@@ -42,4 +48,11 @@ void ClusterList::getFromStream()
 		_widget->setCurrentItem(grp);
 		grp->performAverage();
 	}
+
+	if (_preload.length())
+	{
+		std::string contents = get_file_contents(_preload);
+		loadClusters(contents);
+	}
 }
+

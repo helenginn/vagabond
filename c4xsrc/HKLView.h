@@ -21,11 +21,11 @@
 
 #include <libsrc/mat3x3.h>
 #include <libsrc/FFT.h>
-#include "GLObject.h"
+#include "SlipObject.h"
 
 class KeeperGL;
 
-class HKLView : public QObject, public GLObject
+class HKLView : public QObject, public SlipObject
 {
 Q_OBJECT
 public:
@@ -34,14 +34,14 @@ public:
 
 	void setKeeper(KeeperGL *gl)
 	{
-		_keeper = gl;
+		_c4xKeeper = gl;
 	}
 
 	void repopulate();
 private:
-	void addPoint(vec3 point, double value);
+	void addPoint(vec3 point, double value, double colour);
 	VagFFTPtr _fft;
-	KeeperGL *_keeper;
+	KeeperGL *_c4xKeeper;
 	double _scale;
 };
 

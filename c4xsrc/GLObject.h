@@ -19,19 +19,9 @@
 #ifndef __Slip_GLObject__
 #define __Slip_GLObject__
 
-#include <QtGui/qopengl.h>
-#include <QtGui/qopenglfunctions.h>
+#include "Vertex.h"
 #include "shaders/Blob_vsh.h"
 #include "shaders/Blob_fsh.h"
-
-typedef struct
-{
-	GLfloat pos[3];
-	GLfloat normal[3];
-	GLfloat color[4];
-	GLfloat extra[4];
-	GLfloat tex[2];
-} Vertex;
 
 class KeeperGL;
 

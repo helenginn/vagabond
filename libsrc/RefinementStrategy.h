@@ -169,6 +169,11 @@ public:
 		return _params[i];
 	}
 	
+	Parameter *getParamPtr(int i)
+	{
+		return &_params[i];
+	}
+	
 	void removeParameter(int i)
 	{
 		_params.erase(_params.begin() + i);

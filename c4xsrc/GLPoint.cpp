@@ -21,28 +21,30 @@
 #include "Group.h"
 #include <libsrc/FileReader.h>
 
-GLPoint::GLPoint() : Plot3D()
+GLPoint::GLPoint() : ClusterPlot()
 {
 
 }
 
 void GLPoint::populate()
 {
-	for (size_t i = 0; i < _ave->mtzCount(); i++)
+	for (size_t i = 0; i < _grp->mtzCount(); i++)
 	{
-		vec3 point = _ave->getPoint(i, _a, _b, _c);
+		vec3 point = _grp->getPoint(i, _a, _b, _c);
 		addPoint(point);
 	}
+	
+	recolour();
 }
 
 size_t GLPoint::axisCount()
 {
-	return _ave->mtzCount();
+	return _grp->mtzCount();
 }
 
 std::string GLPoint::axisLabel(int i)
 {
-	double w = _ave->getDiagW(i);
+	double w = _grp->getDiagW(i);
 
 	std::string str = f_to_str(w, 1);
 	return str;

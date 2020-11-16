@@ -22,6 +22,8 @@
 #include "mat4x4.h"
 #include <sstream>
 
+int Anchor::_sampleNum = 0;
+
 void Anchor::initialise()
 {
 	_bFactor = 0;
@@ -440,6 +442,7 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 	_samples[callAtom].samples = _storedSamples;
 	_samples[callAtom].changed = false;
 	
+	_sampleNum = _samples[callAtom].samples.size();
 	return &_samples[callAtom].samples;
 }
 

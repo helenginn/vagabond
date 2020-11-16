@@ -19,9 +19,9 @@
 #ifndef __cluster4x__PlotR__
 #define __cluster4x__PlotR__
 
-#include "Plot3D.h"
+#include "ClusterPlot.h"
 
-class PlotR : public Plot3D
+class PlotR : public ClusterPlot
 {
 public:
 	PlotR();

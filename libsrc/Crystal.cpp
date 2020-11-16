@@ -823,6 +823,8 @@ bool Crystal::returnToBestState()
 
 void Crystal::scaleSolvent(DiffractionPtr data)
 {
+	Timer t("Adding solvent", true);
+
 	if (!Options::getAddSolvent())
 	{
 		return;
@@ -837,12 +839,7 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 
 	_bucket->setCrystal(shared_from_this());
 	_bucket->addSolvent();
-
-	/*
-	std::cout << "Sum partial density before: " << 
-	_bucket->getSolvent()->sumReal() << 
-	" electrons/A^(-3)" << std::endl;
-	*/
+	
 
 	scaleToDiffraction(data, false);
 
@@ -1043,7 +1040,9 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
                                    double partsFc, std::string prefix)
 {
+	Timer t1("Real space clutter", true);
 	realSpaceClutter();
+	t1.report();
 
 	_calcElec = _fft->sumReal();
 	double density = _calcElec / mat3x3_volume(_hkl2real);
@@ -1055,16 +1054,17 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	*/
 	
 	fourierTransform(1);
-	
 	scaleComponents(data); /* change name of function to write solvent only */
 	
 	writeMillersToFile(data, prefix);
 
 	double rFac = rFactorWithDiffraction(data, true);
 	
+	Timer t2("Creating real-space maps", true);
 	WeightedMap wMap;
 	wMap.setCrystalAndData(shared_from_this(), _data);
 	wMap.createWeightedMaps();
+	t2.report();
 
 	if (_bucket)
 	{
@@ -1305,7 +1305,6 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 		std::cout << std::setprecision(4);
 		realSpaceClutter();
 		_fft->fft(FFTRealToReciprocal);
-//		_fft->writeReciprocalToFile("calc_" + i_to_str(cycleNum) + ".mtz", 1.8);
 		_fft->writeToFile("calc_" + i_to_str(cycleNum) + ".mtz", 1.8);
 		Options::flagDensityChanged();
 	}

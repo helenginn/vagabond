@@ -1401,7 +1401,7 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 				 * ideally available */
 				double foInt = fwt * fwt;
 				double foAmp = fwt;
-				double sigma = 0;
+				double sigma = 1;
 
 				if (data)
 				{

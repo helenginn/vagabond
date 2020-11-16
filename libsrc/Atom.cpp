@@ -357,6 +357,12 @@ void Atom::addManyToMask(VagFFTPtr fft, int conf, int total)
 
 	for (int i = 0; i < total; i++)
 	{
+		if (getModel()->hasExplicitPositions() && 
+		    i + conf > getExplicitModel()->getFinalPositions().size())
+		{
+			break;
+		}
+
 		size_t max = symOpCount();
 		for (int j = 0; j < max; j++)
 		{
@@ -368,7 +374,7 @@ void Atom::addManyToMask(VagFFTPtr fft, int conf, int total)
 			}
 			else
 			{
-				pos = getSymRelatedPosition(j, i);
+				pos = getSymRelatedPosition(j, i + conf);
 			}
 
 			fft->addToValueAroundPoint(pos, radius, 1, i);

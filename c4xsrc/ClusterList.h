@@ -110,10 +110,12 @@ private:
 	std::vector<MtzFile *> _files;
 	std::vector<std::string> _commands;
 	double _res;
+	bool _onlyLoad;
 	bool _sqlInput;
 	bool _streamInput;
 	bool _csvInput;
 	int _max;
+	int _skip;
 	std::string _csv;
 	std::string _preload;
 	std::string _stream;

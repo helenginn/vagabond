@@ -51,6 +51,8 @@ public:
 	}
 	
 	void recalculateConstant();
+	void prepareComparisons(RefinementStrategyPtr str);
+	static double compareParams(void *object, Parameter &p1, Parameter &p2);
 private:
 	bool _prepared;
 	bool _recip;
@@ -60,6 +62,9 @@ private:
 	CrystalPtr _crystal;
 
 	MapScoreWorkspace _workspace;
+	std::map<int, std::map<int, double> > _paramCorrel;
+	std::vector<Parameter> _paramList;
+	std::vector<VagFFTPtr> _mapList;
 };
 
 #endif /* FlexGlobal_hpp */

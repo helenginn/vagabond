@@ -16,6 +16,9 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+struct _Vertex;
+typedef _Vertex Vertex;
+
 #include "KeeperGL.h"
 #include "Plot3D.h"
 #include "shaders/Blob_fsh.h"

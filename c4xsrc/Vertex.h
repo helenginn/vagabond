@@ -1,4 +1,4 @@
-// cluster4x
+// Cluster4x
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,45 +16,19 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster4x__crystfel__
-#define __cluster4x__crystfel__
+#ifndef __Vertex__
+#define __Vertex__
 
-#include <string>
-#include <vector>
+#include <QtGui/qopengl.h>
+#include <QtGui/qopenglfunctions.h>
 
-class Group;
-struct detector;
-
-class CrystFELInput
+typedef struct _Vertex
 {
-public:
-	CrystFELInput(std::string streams, std::string geom, 
-	              std::string spg, double res);
-	
-	void setSkipAndMax(int skip, int max)
-	{
-		_max = max;
-		_skip = skip;
-	}
-	
-	void onlyLoad(std::string preload)
-	{
-		_preload = preload;
-	}
-
-	Group *process();
-private:
-	std::vector<struct image> loadStream(std::string str);
-
-	std::vector<std::string> _streams;
-	std::string _geom;
-	std::string _preload;
-	std::string _spg;
-	double _res;
-	int _max;
-	int _skip;
-
-	struct detector *_detector;
-};
+	GLfloat pos[3];
+	GLfloat normal[3];
+	GLfloat color[4];
+	GLfloat extra[4];
+	GLfloat tex[2];
+} Vertex;
 
 #endif

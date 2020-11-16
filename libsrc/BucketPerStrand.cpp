@@ -19,6 +19,7 @@
 #include "BucketPerStrand.h"
 #include "Crystal.h"
 #include "Options.h"
+#include "Anchor.h"
 #include "shared_ptrs.h"
 
 void BucketPerStrand::addSolvent()
@@ -34,11 +35,12 @@ void BucketPerStrand::addSolvent()
 	_solvent->makePlans();
 	_solvent->setStatus(FFTRealSpace);
 
-	int confs = crystal->getSampleNum();
+	int confs = Anchor::sampleSize();
 	double count = 0;
 
 	std::cout << "Adding solvent for conformer " << std::flush;
 
+	Timer t = Timer("adding solvent for conformers", true);
 	for (int i = 0; i < crystal->getSampleNum(); i += SOLVENT_BITS)
 	{
 		std::cout << i << " ... " << std::flush;
@@ -66,6 +68,7 @@ void BucketPerStrand::addSolvent()
 	}
 	
 	std::cout << std::endl;
+	t.report();
 
 	/* But overwrite the solvent afterwards with the new one we 
 	 * have calculated */

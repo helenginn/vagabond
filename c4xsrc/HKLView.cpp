@@ -25,7 +25,6 @@
 HKLView::HKLView(VagFFTPtr fft, double scale)
 {
 	_fft = fft;
-	_renderType = GL_POINTS;
 	_scale = fft->nanlessAverage() * 5;
 }
 
@@ -33,18 +32,20 @@ void HKLView::initialisePrograms()
 {
 	std::string fsh = hklFsh();
 	std::string vsh = hklVsh();
-	GLObject::initialisePrograms(&vsh, &fsh);
+	
+	SlipObject::initialisePrograms(&fsh, &vsh);
 }
 
-void HKLView::addPoint(vec3 point, double value)
+void HKLView::addPoint(vec3 point, double value, double colour)
 {
 	_indices.push_back(_vertices.size());
 
-	Vertex v;
-	memset(v.pos, 0, sizeof(Vertex));
+	Helen3D::Vertex v;
+	memset(v.pos, 0, sizeof(Helen3D::Vertex));
 
 	double slide = value / _scale;
 	slide = std::min(1., slide);
+	v.color[0] = colour / 2;
 	v.color[3] = std::max(0., slide);
 	
 	v.pos[0] = point.x;
@@ -59,6 +60,7 @@ void HKLView::repopulate()
 	_indices.clear();
 	_vertices.clear();
 	mat3x3 uc = _fft->toRecip();
+	uc = mat3x3_transpose(uc);
 	
 	vec3 nLimits = getNLimits(_fft, _fft);
 
@@ -68,7 +70,10 @@ void HKLView::repopulate()
 		{
 			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
-				double real = _fft->getReal(i, j, k);
+				long ele = _fft->element(i, j, k);
+				double real = _fft->getReal(ele);
+				double stdev = _fft->getScratchComponent(ele, 0, 0);
+				stdev /= real;
 				
 				if (real != real)
 				{
@@ -78,7 +83,7 @@ void HKLView::repopulate()
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(uc, &ijk);
 				
-				addPoint(ijk, real);
+				addPoint(ijk, real, stdev);
 			}
 		}
 	}

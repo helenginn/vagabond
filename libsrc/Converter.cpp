@@ -289,6 +289,6 @@ void Converter::addParamsToStrategy()
 		}
 
 		_strategy->addParameter(&_columns[i].param, Param::getValue,
-		                       Param::setValue, step, step / 200);
+		                       Param::setValue, step, step / 1000);
 	}
 }
