@@ -7,7 +7,6 @@ helen3d_dep = sp_helen3d.get_variable('helen3d_dep')
 qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets', 'Sql'], required : false)
 dep_gl = dependency('gl', required : false)
 
-helen3d_dep = dependency('helen3d')
 png_dep = dependency('libpng')
 boost_dep = dependency('boost')
 fftw_dep = dependency('fftw3f')
