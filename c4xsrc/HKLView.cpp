@@ -22,18 +22,13 @@
 #include "shaders/HKL_fsh.h"
 #include "shaders/HKL_vsh.h"
 
-HKLView::HKLView(VagFFTPtr fft, double scale)
+HKLView::HKLView(VagFFTPtr fft, double scale) : ClusterPlot()
 {
 	_fft = fft;
 	_scale = fft->nanlessAverage() * 5;
-}
-
-void HKLView::initialisePrograms()
-{
-	std::string fsh = hklFsh();
-	std::string vsh = hklVsh();
 	
-	SlipObject::initialisePrograms(&fsh, &vsh);
+	_fString = hklFsh();
+	_vString = hklVsh();
 }
 
 void HKLView::addPoint(vec3 point, double value, double colour)
@@ -55,10 +50,13 @@ void HKLView::addPoint(vec3 point, double value, double colour)
 	_vertices.push_back(v);
 }
 
-void HKLView::repopulate()
+void HKLView::recolour()
 {
-	_indices.clear();
-	_vertices.clear();
+	return;
+}
+
+void HKLView::populate()
+{
 	mat3x3 uc = _fft->toRecip();
 	uc = mat3x3_transpose(uc);
 	
@@ -82,6 +80,7 @@ void HKLView::repopulate()
 
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(uc, &ijk);
+				vec3_mult(&ijk, 10.);
 				
 				addPoint(ijk, real, stdev);
 			}

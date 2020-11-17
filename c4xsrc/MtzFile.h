@@ -23,7 +23,7 @@
 #include <vec3.h>
 #include <string>
 #include <mat3x3.h>
-#include <helen3d/Frameworks.h>
+#include <Frameworks.h>
 
 struct _Vertex;
 typedef _Vertex Vertex;

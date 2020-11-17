@@ -19,7 +19,7 @@
 #ifndef __cluster4x__ClusterPlot__
 #define __cluster4x__ClusterPlot__
 
-#include <helen3d/Plot3D.h>
+#include <Plot3D.h>
 #include <QObject>
 
 class Group;

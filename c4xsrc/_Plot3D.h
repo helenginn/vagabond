@@ -1,4 +1,4 @@
-// 
+// cluster4x
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,48 +16,60 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster__calphaview__
-#define __cluster__calphaview__
+#ifndef __cluster4x__Plot3D__
+#define __cluster4x__Plot3D__
 
-#include <libsrc/vec3.h>
-#include "SlipObject.h"
+#include "GLObject.h"
+#include <QObject>
+#include "vec3.h"
 
 class Group;
-class MtzFile;
 class KeeperGL;
-class QKeyEvent;
 
-class CAlphaView : public QObject, public SlipObject
+class Plot3D : public QObject, public GLObject
 {
 Q_OBJECT
 public:
-	CAlphaView(MtzFile *mtz, vec3 centre = empty_vec3());
-	CAlphaView(Group *ave);
+	Plot3D();
 
+	
 	void setKeeper(KeeperGL *gl)
 	{
-		_c4xKeeper = gl;
+		_keeper = gl;
+	}
+	
+	void setAxes(int a, int b, int c)
+	{
+		_a = a;
+		_b = b;
+		_c = c;
 	}
 
 	virtual void initialisePrograms();
-	void repopulate();
-	void recolour();
+	void addPoint(vec3 point);
+
+	/* add 1 = add to selection
+	 * add 0 = replace selection
+	 * add -1 = remove from selection */
+	void selectInWindow(float x1, float y1, float x2, float y2,
+	                    int add);
+	void setGroup(Group *ave);
 	
-	std::string getRworkRfree();
-	void addCAlpha(vec3 point);
-private:
-	void updateRs();
+	virtual size_t axisCount() = 0;
+	virtual std::string axisLabel(int i) = 0;
+	
+	virtual void populate() = 0;
+	virtual void repopulate();
+signals:
+	void updateSelection();
+protected:
+	KeeperGL *_keeper;
+	virtual void recolour();
+	Group *_ave;
 
-	double _mean_rwork;
-	double _mean_rfree;
-	double _stdev_rwork;
-	double _stdev_rfree;
-	std::map<MtzFile *, size_t> _starts;
-	std::map<MtzFile *, size_t> _ends;
-	std::vector<MtzFile *> _mtzs;
-	vec3 _centre;
-	KeeperGL *_c4xKeeper;
-
+	int _a;
+	int _b;
+	int _c;
 };
 
 #endif

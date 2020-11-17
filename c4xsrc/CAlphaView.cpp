@@ -73,6 +73,7 @@ void CAlphaView::repopulate()
 {
 	_indices.clear();
 	_vertices.clear();
+
 	_ends.clear();
 	_starts.clear();
 

@@ -36,6 +36,7 @@ class Group;
 class MatrixView;
 class KeeperGL;
 class PlotView;
+class QKeyEvent;
 
 typedef struct
 {
@@ -84,6 +85,10 @@ public slots:
 	void killSelection();
 	void reorderByFile();
 	void exportText();
+protected:
+
+	virtual void keyPressEvent(QKeyEvent *e);
+	virtual void keyReleaseEvent(QKeyEvent *e);
 private:
 	void relinkPixmap();
 	void addColour(QString colour, QString display, QMenu *m);
@@ -133,5 +138,4 @@ private:
 	GroupUses uses;
 
 	mat4x4 _storeHKL;
-	mat4x4 _storeCAlpha;
 };

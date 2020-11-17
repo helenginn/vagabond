@@ -89,6 +89,7 @@ void PlotView::setup(Group *grp)
 	}
 
 	Plot3D *plot = _keeper->getPlot();
+	plot->repopulate();
 
 	connect(plot, &Plot3D::updateSelection,
 	        _scr, &Screen::refreshSelection);
@@ -104,4 +105,3 @@ void PlotView::setup(Group *grp)
 	_scroll->makeLayout();
 	_scroll->show();
 }
-

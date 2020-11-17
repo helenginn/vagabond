@@ -25,7 +25,7 @@
 #include <QtGui/qopenglfunctions.h>
 #include "MtzFFT.h"
 #include "Group.h"
-#include <helen3d/SlipGL.h>
+#include <SlipGL.h>
 
 #include <libsrc/mat4x4.h>
 
@@ -67,22 +67,17 @@ public:
 	{
 		return _hklView;
 	}
-	
-	void setStoreMatrix(mat4x4 *store)
-	{
-		_model = *store;
-		_store = store;
-	}
-	
+
 	void setModelMatrix(mat4x4 mat)
 	{
 		_model = mat;
-		std::cout << mat4x4_desc(mat) << std::endl;
 	}
 
 	virtual void mouseReleaseEvent(QMouseEvent *e);
 	virtual void mouseMoveEvent(QMouseEvent *e);
 	virtual void mousePressEvent(QMouseEvent *e);
+	virtual void keyPressEvent(QKeyEvent *e);
+	virtual void keyReleaseEvent(QKeyEvent *e);
 public slots:
 	
 protected:
@@ -91,8 +86,6 @@ private:
 	void finishCAlphaView();
 	
 	Qt::MouseButton _mouseButton;
-	mat4x4 _model;
-	mat4x4 *_store;
 	std::vector<GLAxis *> _axes;
 	ClusterPlot *_plot;
 	HKLView *_hklView;

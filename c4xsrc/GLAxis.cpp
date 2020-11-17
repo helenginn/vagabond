@@ -18,7 +18,7 @@
 
 #include <iostream>
 #include "GLAxis.h"
-#include <helen3d/SlipObject.h>
+#include <SlipObject.h>
 
 GLAxis::GLAxis(vec3 dir) : SlipObject()
 {

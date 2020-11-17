@@ -62,9 +62,6 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 
 	_scale = -1;
 	_storeHKL = make_mat4x4();
-	_storeCAlpha = make_mat4x4();
-	mat4x4_mult_scalar(&_storeHKL, 5);
-	mat4x4_mult_scalar(&_storeCAlpha, 0.1);
 	_tabs = NULL;
 	_correlLabel = NULL;
 	_correlImage = NULL;
@@ -379,7 +376,6 @@ void Screen::addCAlphaView()
 	_tabs->addTab(_cAlpha, "C-alpha explorer");
 	
 	_cAlphaKeeper = new KeeperGL(_cAlpha);
-	_cAlphaKeeper->setStoreMatrix(&_storeCAlpha);
 
 	_bin.push_back((QWidget **)&_cAlphaKeeper);
 	_bin.push_back((QWidget **)&_cAlpha);
@@ -403,8 +399,8 @@ void Screen::addHKLView(VagFFTPtr fft, std::string filename)
 
 	_hklKeeper = new KeeperGL(_hkl);
 	_hklKeeper->addAxes();
-	_hklKeeper->setStoreMatrix(&_storeHKL);
 	_hklKeeper->addHKLView(fft, _scale);
+	_hklKeeper->setModelMatrix(_storeHKL);
 	
 	std::string ucInfo = filename + ": ";
 	ucInfo += AveDiffraction::unitCellDesc(fft);
@@ -469,6 +465,24 @@ void Screen::addColour(QString colour, QString display, QMenu *m)
 void Screen::displayResults(Group *ave)
 {
 	_group = ave;
+	
+	vec3 hklc = empty_vec3();
+	if (_hklKeeper != NULL)
+	{
+		_storeHKL = _hklKeeper->getModel();
+		hklc = _hklKeeper->getCentre();
+	}
+	
+	bool stored = false;
+	mat4x4 storeCAlpha = make_mat4x4();
+	vec3 c = empty_vec3();
+
+	if (_cAlphaKeeper != NULL)
+	{
+		stored = true;
+		storeCAlpha = _cAlphaKeeper->getModel();
+		c = _cAlphaKeeper->getCentre();
+	}
 
 	if (_tabs != NULL)
 	{
@@ -492,9 +506,17 @@ void Screen::displayResults(Group *ave)
 	addPlotView(&_svdView, ave, "SVD explorer", PlotSVD);
 	std::string average = "Average";
 	addHKLView(ave->getAverageFFT(), average);
+	std::cout << vec3_desc(hklc) << std::endl;
+	_hklKeeper->changeCentre(hklc);
+	std::cout << START_Z << std::endl;
 
 	addCAlphaView();
 	_cAlphaKeeper->addCAlphaView(ave);
+	if (stored)
+	{
+		_cAlphaKeeper->setModelMatrix(storeCAlpha);
+		_cAlphaKeeper->changeCentre(c);
+	}
 
 	addPlotView(&_ucView, ave, "Misc properties", PlotUnitCell);
 
@@ -745,8 +767,11 @@ void Screen::refreshSelection()
 		relinkPixmap();
 	}
 	
+	std::cout << "Refreshing." << std::endl;
+	
 	if (_svdView)
 	{
+		std::cout << "Repopulating the SVD" << std::endl;
 		_svdView->keeper()->getPlot()->repopulate();
 	}
 	
@@ -793,7 +818,12 @@ void Screen::refocus(int index)
 		_correlLabel->setFocus();
 		resizeEvent(NULL);
 	}
+	else
+	{
+		setFocus();
+	}
 }
+
 
 void Screen::saveImages()
 {
@@ -855,4 +885,14 @@ void Screen::reorderByFile()
 	std::string contents = get_file_contents(filename);
 	_list->loadClusters(contents);
 
+}
+
+void Screen::keyReleaseEvent(QKeyEvent *e)
+{
+	_cAlphaKeeper->keyReleaseEvent(e);
+}
+
+void Screen::keyPressEvent(QKeyEvent *e)
+{
+	_cAlphaKeeper->keyPressEvent(e);
 }

@@ -21,27 +21,31 @@
 
 #include <libsrc/mat3x3.h>
 #include <libsrc/FFT.h>
-#include "SlipObject.h"
+#include "ClusterPlot.h"
 
 class KeeperGL;
 
-class HKLView : public QObject, public SlipObject
+class HKLView : public ClusterPlot
 {
 Q_OBJECT
 public:
 	HKLView(VagFFTPtr fft, double scale);
-	virtual void initialisePrograms();
 
-	void setKeeper(KeeperGL *gl)
+	virtual void populate();
+	virtual void recolour();
+	
+	virtual std::string axisLabel(int i)
 	{
-		_c4xKeeper = gl;
+		return "";
 	}
-
-	void repopulate();
+	
+	virtual size_t axisCount()
+	{
+		return 3;
+	}
 private:
 	void addPoint(vec3 point, double value, double colour);
 	VagFFTPtr _fft;
-	KeeperGL *_c4xKeeper;
 	double _scale;
 };
 

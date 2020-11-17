@@ -37,68 +37,11 @@
 #define MOUSE_SENSITIVITY 500
 #define PAN_SENSITIVITY 30
 
-/*
-void KeeperGL::updateCamera(void)
-{
-	vec3 alteration = empty_vec3();
-	_totalCentroid = empty_vec3();
-	
-	vec3 centre = _centre;
-	centre.x = 0;
-	centre.y = 0;
-	
-	vec3 negCentre = centre;
-	vec3_mult(&centre, -1);
-
-	mat4x4 change = make_mat4x4();
-	mat4x4_translate(&change, negCentre);
-	mat4x4_rotate(&change, camAlpha, camBeta, camGamma);
-	mat4x4_translate(&change, centre);
-
-	mat4x4 transMat = make_mat4x4();
-	_centre = vec3_add_vec3(_centre, _translation);
-	_translation = vec3_add_vec3(_translation, alteration);
-	mat4x4_translate(&transMat, _translation);
-
-	mat4x4 tmp = mat4x4_mult_mat4x4(change, transMat);
-	_model = mat4x4_mult_mat4x4(_model, tmp);
-	
-	mat3x3 rot = mat4x4_get_rot(_model);
-	double det = mat3x3_determinant(rot);
-	
-	mat4x4_mult_scalar(&_model, _scale);
-	_scale = 1;
-	
-	if (det < 0.01 && _autoCorrect)
-	{
-		_model = make_mat4x4();
-	}
-
-	camAlpha = 0; camBeta = 0; camGamma = 0;
-	_translation = make_vec3(0, 0, 0);
-	
-	if (_store != NULL)
-	{
-		*_store = _model;
-	}
-	
-	for (int i = 0; i < 16; i++)
-	{
-		if (_model.vals[i] != _model.vals[i])
-		{
-			_model = make_mat4x4();
-			std::cout << "Resetting model matrix" << std::endl;
-		}
-	}
-}
-*/
-
 KeeperGL::KeeperGL(QWidget *p) : SlipGL(p)
 {
 	setBackground(1, 1, 1, 1);
 	_rValues = NULL;
 	_autoCorrect = false;
-	_store = NULL;
 	setGeometry(0, 0, p->width(), p->height());
 	_plot = NULL;
 	_hklView = NULL;
@@ -132,9 +75,9 @@ void KeeperGL::addPlot(Group *ave, ClusterPlot *plot)
 
 void KeeperGL::finishCAlphaView()
 {
-	addObject(_cAlphaView, false);
 	_cAlphaView->setKeeper(this);
 	_cAlphaView->repopulate();
+	addObject(_cAlphaView, true);
 	std::string str = _cAlphaView->getRworkRfree();
 	
 	delete _rValues;
@@ -207,8 +150,10 @@ void KeeperGL::mouseMoveEvent(QMouseEvent *e)
 
 	if (_mouseButton == Qt::LeftButton)
 	{
-		if (_controlPressed)
+		if (_controlPressed && _cAlphaView != NULL)
 		{
+			panned(xDiff / PAN_SENSITIVITY, 
+			       yDiff / PAN_SENSITIVITY);
 
 		}
 		else
@@ -219,6 +164,22 @@ void KeeperGL::mouseMoveEvent(QMouseEvent *e)
 	else if (_mouseButton == Qt::RightButton)
 	{
 		draggedRightMouse(xDiff * PAN_SENSITIVITY, yDiff * PAN_SENSITIVITY);
+	}
+}
+
+void KeeperGL::keyPressEvent(QKeyEvent *e)
+{
+	if (e->key() == Qt::Key_Control)
+	{
+		_controlPressed = true;
+	}
+}
+
+void KeeperGL::keyReleaseEvent(QKeyEvent *e)
+{
+	if (e->key() == Qt::Key_Control)
+	{
+		_controlPressed = false;
 	}
 }
 
