@@ -1,6 +1,9 @@
 project('vagabond', 'cpp', 'c')
 qt5 = import('qt5')
 
+sp_helen3d = subproject('helen3d')
+helen3d_dep = sp_helen3d.get_variable('helen3d_dep')
+
 qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets', 'Sql'], required : false)
 dep_gl = dependency('gl', required : false)
 

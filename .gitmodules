@@ -1,6 +1,3 @@
-[submodule "helen3d"]
-	path = helen3d
-	url = https://github.com/helenginn/helen3d/
 [submodule "subprojects/helen3d"]
 	path = subprojects/helen3d
 	url = https://github.com/helenginn/helen3d
