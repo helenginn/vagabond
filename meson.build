@@ -1,9 +1,6 @@
 project('vagabond', 'cpp', 'c')
 qt5 = import('qt5')
 
-sp_helen3d = subproject('helen3d')
-helen3d_dep = sp_helen3d.get_variable('helen3d_dep')
-
 qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets', 'Sql'], required : false)
 dep_gl = dependency('gl', required : false)
 
@@ -12,6 +9,9 @@ boost_dep = dependency('boost')
 fftw_dep = dependency('fftw3f')
 maria_dep = dependency('libmariadb', required: false)
 crystfel_dep = dependency('crystfel', required: false)
+
+sp_helen3d = subproject('helen3d')
+helen3d_dep = sp_helen3d.get_variable('helen3d_dep')
 
 # Geometry and/or rotamer lookup madness
 
@@ -488,25 +488,25 @@ endif
 
 pkg = import('pkgconfig')
 h = ['libsrc', 'c4xsrc'] # subdirectories of ${prefix}/${includedir} to add to header path
-pkg.generate(libraries : [lib_vag],
+pkg.generate([lib_vag],
              subdirs : ['libsrc'],
              version : '1.0',
              name : 'libvag',
              filebase : 'libvag',
              description : 'Library for vagabond')
-pkg.generate(libraries : [lib_ica],
+pkg.generate([lib_ica],
              subdirs : ['libsrc'],
              version : '1.0',
              name : 'libica',
              filebase : 'libica',
              description : 'Library for ica and lbfgs')
-pkg.generate(libraries : [lib_ccp4],
+pkg.generate([lib_ccp4],
              subdirs : ['libsrc'],
              version : '1.0',
              name : 'libccp4',
              filebase : 'libccp4',
              description : 'Library for ccp4 (compiled using Vagabond)')
-pkg.generate(libraries : [lib_c4x],
+pkg.generate([lib_c4x],
              subdirs : ['c4xsrc'],
              version : '1.0',
              name : 'libcluster4x',
