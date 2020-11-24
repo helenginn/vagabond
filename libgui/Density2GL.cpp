@@ -1012,8 +1012,8 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 
 					double change = second - value;
 					
-					_flips[bit][i] += (change > 0) ? 1 : -1;
-					_allBits[bit][i] += 1;
+//					_flips[bit][i] += (change > 0) ? 1 : -1;
+//					_allBits[bit][i] += 1;
 				}
 				
 				if (_renderType == GL_TRIANGLES)
