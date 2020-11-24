@@ -130,7 +130,7 @@ void Anchor::createLayeredSpherePositions()
 	}
 
 	double meanSqDisp = getBFactor() / (8 * M_PI * M_PI);
-	meanSqDisp = sqrt(fabs(meanSqDisp));
+	meanSqDisp = fabs(meanSqDisp);
 	_occupancies.clear();
 	
 	/* Make Fibonacci lattice for each layer */

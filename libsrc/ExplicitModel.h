@@ -53,7 +53,7 @@ public:
 	/** Positions and associated data including whole-molecule deviations.
 	* 	Will return from cache if not flagged to recalculate. */
 	virtual std::vector<BondSample> getFinalPositions();
-	
+
 	vec3 *samplePointer(int i)
 	{
 		return &_storedSamples[i].start;

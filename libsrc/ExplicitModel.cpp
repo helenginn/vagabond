@@ -405,7 +405,7 @@ std::vector<vec3> ExplicitModel::makeCloud(double totalPoints,
 		
 		mat3x3 mat = mat3x3_closest_rot_mat(yAxis, directions[j], cross);
 
-		double m = b * (double)(j + 1) / (double)layers;
+		double m = sqrt(b) * (double)(j + 1) / (double)layers;
 
 		int samples = layerSurfaces[j] * scale + 1;
 		double offset = 2. / (double)samples;
