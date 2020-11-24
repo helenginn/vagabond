@@ -73,6 +73,10 @@ public:
 	void copyActiveToFinalPos();
 	void addRestraintsToStrategy(RefinementStrategyPtr strategy);
 
+	void addLengthsToMap(std::map<AtomPtr,Restraint> &r);
+	void addAnglesToMap(std::map<AtomPtr,Restraint> &orig, 
+	                    std::map<AtomPtr,Restraint> &r);
+
 	void recalculated()
 	{
 		_changedSamples = false;

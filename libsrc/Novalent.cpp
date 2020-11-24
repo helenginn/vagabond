@@ -17,6 +17,8 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Novalent.h"
+#include "Bond.h"
+#include "Anchor.h"
 #include "Options.h"
 #include "Crystal.h"
 #include "Atom.h"
@@ -59,9 +61,9 @@ std::vector<BondSample> *Novalent::getManyPositions(void *object)
 	std::vector<double> occs;
 	std::vector<vec3> points;
 	double msq = _b / (8 * M_PI * M_PI) * 3;
+	msq *= sqrt(2);
 	points = ExplicitModel::makeCloud(totalPoints, msq, occs);
 	_storedSamples.clear();
-	_lowestZ = FLT_MAX;
 	
 	for (int i = 0; i < points.size(); i++)
 	{
@@ -73,16 +75,40 @@ std::vector<BondSample> *Novalent::getManyPositions(void *object)
 		vec3_add_to_vec3(&finished, points[i]);
 		sample.start = finished;
 		
-		if (_lowestZ > finished.z)
-		{
-			_lowestZ = finished.z;
-		}
-
 		_storedSamples.push_back(sample);
+	}
+	
+	AnchorPtr anch = getAnchor();
+	if (anch && anch->motionCount() > 0)
+	{
+		MotionPtr mot = anch->getMotion(0);
+		mot->applyTranslations(_storedSamples, true);
 	}
 	
 	_changedSamples = false;
 	return &_storedSamples;
+}
+
+AnchorPtr Novalent::getAnchor()
+{
+	if (_anch)
+	{
+		return _anch;
+	}
+
+	CrystalPtr crystal = Options::getActiveCrystal();
+	std::vector<AtomPtr> chosen = crystal->getCloseAtoms(getAtom(), 5, false);
+
+	for (size_t i = 0; i < chosen.size(); i++)
+	{
+		if (chosen[i]->getModel()->isBond())
+		{
+			_anch = ToBondPtr(chosen[i]->getModel())->getAnchor();
+			return _anch;
+		}
+	}
+	
+	return AnchorPtr();
 }
 
 void Novalent::propagateChange(int depth, bool refresh)

@@ -27,6 +27,7 @@ class BucketBulkSolvent : public Bucket
 public:
 	virtual void addSolvent();
 	
+	virtual void convertToWater();
 	virtual ~BucketBulkSolvent() {}
 protected:
 	void adjustForVoxelVolume();

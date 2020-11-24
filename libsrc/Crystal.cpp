@@ -217,7 +217,9 @@ void Crystal::realSpaceClutter()
 
 		/* Now create the FFTs */
 		_fft = VagFFTPtr(new VagFFT(fft_dims.x, fft_dims.y, fft_dims.z));
+		_fft->adjustNs();
 		_difft = VagFFTPtr(new VagFFT(fft_dims.x, fft_dims.y, fft_dims.z));
+		_difft->adjustNs();
 
 //		_fft->setupMask();
 
@@ -1040,7 +1042,7 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
                                    double partsFc, std::string prefix)
 {
-	Timer t1("Real space clutter", true);
+	Timer t1("real space clutter", true);
 	realSpaceClutter();
 	t1.report();
 
@@ -1054,13 +1056,16 @@ double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
 	*/
 	
 	fourierTransform(1);
+	
+	Timer t3("scaling model to data", true);
 	scaleComponents(data); /* change name of function to write solvent only */
+	t3.report();
 	
 	writeMillersToFile(data, prefix);
 
 	double rFac = rFactorWithDiffraction(data, true);
 	
-	Timer t2("Creating real-space maps", true);
+	Timer t2("creating real-space maps", true);
 	WeightedMap wMap;
 	wMap.setCrystalAndData(shared_from_this(), _data);
 	wMap.createWeightedMaps();
@@ -1312,12 +1317,15 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	{
 		rFac = getDataInformation(data, 2, 1, refineCount);
 		Options::flagDensityChanged();
+		std::cout << "Got to density re-render without errors" << std::endl;
 	}
 	
 	if (!_silent)
 	{
 		writeVagabondFile(cycleNum);
 	}
+
+	std::cout << "Rewritten vagabond file" << std::endl;
 	
 	if (_silent)
 	{

@@ -39,7 +39,8 @@ public:
 	void removeFromPolymer(PolymerPtr pol);
 	void updateAtoms();
 
-	void applyTranslations(std::vector<BondSample> &stored);
+	void applyTranslations(std::vector<BondSample> &stored,
+	                       bool isomorphous = false);
 	void applyRotations(std::vector<BondSample> &stored);
 	void applyMotions(std::vector<BondSample> &stored);
 

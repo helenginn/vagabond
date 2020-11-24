@@ -111,12 +111,23 @@ void Motion::removeFromPolymer(PolymerPtr pol)
 	updateAtoms();
 }
 
-void Motion::applyTranslations(std::vector<BondSample> &stored)
+void Motion::applyTranslations(std::vector<BondSample> &stored,
+                               bool isomorphous)
 {
 	mat3x3 translation = _trans->getMat3x3();
 	Anisotropicator tropicator;
 	tropicator.setTensor(translation);
 	mat3x3 trans = tropicator.basis();
+	
+	if (isomorphous)
+	{
+		for (int i = 0; i < 3; i++)
+		{
+			vec3 col = mat3x3_axis(trans, i);
+			vec3_set_length(&col, 1);
+			mat3x3_set_axis(&trans, i, col);
+		}
+	}
 
 	vec3 sum_start = empty_vec3();
 	vec3 sum_old = empty_vec3();
@@ -281,6 +292,7 @@ void Motion::refine(bool reciprocal)
 		neld->setJobName("rots_only");
 		attachTargetToRefinement(neld, target, reciprocal);
 		target.recalculateConstant();
+		neld->setCycles((i + 1) * 50);
 
 		addLibrationParameters(neld, -1);
 		
@@ -297,7 +309,7 @@ void Motion::refine(bool reciprocal)
 		}
 		
 		Converter conv;
-		if (_refined)
+		if (false && _refined)
 		{
 			conv.setCompareFunction(&target, FlexGlobal::compareParams);
 			conv.setStrategy(neld);
@@ -306,6 +318,8 @@ void Motion::refine(bool reciprocal)
 		neld->refine();
 		_allAtoms->refreshPositions();
 	}
+	
+	target.reportTimings();
 
 	_refined = true;
 }

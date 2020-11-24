@@ -11,6 +11,7 @@
 
 #include <time.h>
 #include <string>
+#include <chrono>
 
 /**
  * \class Timer
@@ -27,12 +28,22 @@ public:
 	void start();
 	void stop(bool quick = false);
 
+	void setFine(bool fine)
+	{
+		_fine = fine;
+	}
 	
 	void quickReport();
 	void report();
 private:
 	time_t wall;
 	time_t accumulative;
+	
+	std::chrono::high_resolution_clock::time_point _tStart;
+	std::chrono::high_resolution_clock::time_point _tEnd;
+	size_t _milliseconds;
+	bool _fine;
+
 	std::string _name;
 };
 

@@ -279,7 +279,7 @@ void Options::executeProtocol()
 		int tmp = crystal->getSampleNum();
 		_nSamples = 1;
 		crystal->refreshAnchors();
-		const int total = 15;
+		const int total = 25;
 
 		for (int i = 0; i < total && _rPosition; i++)
 		{

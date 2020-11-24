@@ -196,6 +196,7 @@ public:
 
 	void boundingMonomers(int *begin, int *end);
 	
+
 	void setName(std::string name)
 	{
 		_name = name;

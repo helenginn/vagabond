@@ -1051,7 +1051,6 @@ void AtomGroup::addToMap(VagFFTPtr fft)
 	vec3 min, max;
 	xyzLimits(&min, &max);
 	prepareCubicMap(&scratchFull, min, max);
-//	sort();
 	addToCubicMap(scratchFull);
 
 	VagFFT::operation(fft, scratchFull, MapScoreTypeNone, NULL, false);

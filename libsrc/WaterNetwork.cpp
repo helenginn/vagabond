@@ -6,6 +6,7 @@
 //  Copyright (c) 2018 Helen Ginn. All rights reserved.
 //
 
+#include <fstream>
 #include "WaterNetwork.h"
 #include "MapScoreWorkspace.h"
 #include "Crystal.h"
@@ -441,4 +442,145 @@ void WaterNetwork::prune()
 	<< std::endl;
 }
 
+void normalise(std::map<AtomPtr,Restraint> &master)
+{
+	CorrelData cd = empty_CD();
 
+	std::map<AtomPtr, Restraint>::iterator it1;
+	for (it1 = master.begin(); it1 != master.end(); it1++)
+	{
+		Restraint agreements = it1->second;
+
+		Restraint::iterator it2;
+		for (it2 = agreements.begin(); it2 != agreements.end(); it2++)
+		{
+			double agree1 = it2->second;
+			add_to_CD(&cd, agree1, agree1);
+		}
+	}
+
+	double xm, ym, xs, ys;
+	means_stdevs_CD(cd, &xm, &ym, &xs, &ys);
+	xs /= 2;
+	
+	for (it1 = master.begin(); it1 != master.end(); it1++)
+	{
+		Restraint agreements = it1->second;
+
+		Restraint::iterator it2;
+		for (it2 = agreements.begin(); it2 != agreements.end(); it2++)
+		{
+			double agree = it2->second;
+			agree /= xs;
+			master[it1->first][it2->first] = agree;
+		}
+	}
+}
+
+int fillGaps(std::map<AtomPtr,Restraint> &master)
+{
+	std::map<AtomPtr,Restraint> edit = master;
+	std::map<AtomPtr, Restraint>::iterator it1;
+	int count = 0;
+
+	for (it1 = master.begin(); it1 != master.end(); it1++)
+	{
+		AtomPtr a = it1->first;
+		
+		Restraint agreements = it1->second;
+
+		Restraint::iterator it2;
+		for (it2 = agreements.begin(); it2 != agreements.end(); it2++)
+		{
+			AtomPtr b = it2->first.lock();
+
+			Restraint::iterator it3;
+			double agree1 = it2->second;
+
+			for (it3 = it2; it3 != agreements.end(); it3++)
+			{
+				AtomPtr c = it3->first.lock();
+				double agree2 = it3->second;
+
+				if (b == c || master[b].count(c) > 0)
+				{
+					continue;
+				}
+
+				double val = 1.0 * sqrt(agree1 * agree2);
+				edit[b][c] = val;
+				edit[c][b] = val;
+				count++;
+			}
+		}
+	}
+
+	master = edit;
+	return count;
+}
+
+void WaterNetwork::findNetworks(std::string filename)
+{
+	std::map<AtomPtr,Restraint> master;
+	std::cout << atomCount() << " atoms in water network" << std::endl;
+
+	for (size_t i = 0; i < atomCount(); i++)
+	{
+		AtomPtr a = atom(i);
+		if (!a->getModel()->isSponge())
+		{
+			continue;
+		}
+		
+		SpongePtr sponge = ToSpongePtr(a->getModel());
+		sponge->addLengthsToMap(master);
+	}
+	
+	std::map<AtomPtr,Restraint> original = master;
+
+	for (size_t i = 0; i < atomCount(); i++)
+	{
+		AtomPtr a = atom(i);
+		if (!a->getModel()->isSponge())
+		{
+			continue;
+		}
+		
+		SpongePtr sponge = ToSpongePtr(a->getModel());
+		sponge->addAnglesToMap(original, master);
+	}
+	
+	int count = 1;
+	int num = 0;
+
+	while (num < 5 && count > 0)
+	{
+		std::cout << "Count: " << count << std::endl;
+	    count = fillGaps(master);
+		num++;
+	}
+	
+	normalise(master);
+	
+	std::ofstream file;
+	file.open(filename);
+
+	std::map<AtomPtr, Restraint>::iterator it1;
+	for (it1 = master.begin(); it1 != master.end(); it1++)
+	{
+		AtomPtr a = it1->first;
+		
+		Restraint agreements = it1->second;
+
+		Restraint::iterator it2;
+		for (it2 = agreements.begin(); it2 != agreements.end(); it2++)
+		{
+			AtomPtr b = it2->first.lock();
+			double agree = it2->second;
+			file << a->shortDesc() << "," << b->shortDesc() <<
+			"," << agree / 10 << std::endl;
+		}
+	}
+	
+	file.close();
+}

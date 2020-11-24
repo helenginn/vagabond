@@ -27,17 +27,20 @@
 void Sponge::findConnections()
 {
 	CrystalPtr crystal = Options::getActiveCrystal();
-	std::vector<AtomPtr> chosen = crystal->getCloseAtoms(getAtom(), 5, false);
+	vec3 target = getAtom()->getAbsolutePosition();
+
+	AtomGroupPtr chosen;
+	chosen = crystal->getAtomsInBox(target, 5, 5, 5, true);
 	_candidates.clear();
 
-	for (int i = 0; i < chosen.size(); i++)
+	for (int i = 0; i < chosen->atomCount(); i++)
 	{
-		if (chosen[i]->getElementSymbol() == "H")
+		if (chosen->atom(i)->getElementSymbol() == "H")
 		{
 			continue;
 		}
 		
-		_candidates.push_back(chosen[i]);
+		_candidates.push_back(chosen->atom(i));
 	}
 	
 	if (_candidates.size() <= 3)
@@ -239,3 +242,124 @@ bool Sponge::hasConnectedAtom(AtomPtr atom)
 	return _close->hasAtom(atom);
 }
 
+void Sponge::addAnglesToMap(std::map<AtomPtr,Restraint> &orig, 
+                            std::map<AtomPtr,Restraint> &r)
+{
+	AtomPtr me = getAtom();
+	double mean_angle = deg2rad(109.5);
+	double stdev_angle = deg2rad(60);
+
+	for (size_t i = 0; i < _candidates.size(); i++)
+	{
+		AtomPtr a = _candidates[i];
+		double agree = orig[me][a];
+		std::string symbol = a->getElementSymbol();
+		
+		if (symbol != "O" && symbol != "N")
+		{
+			continue;
+		}
+
+
+		vec3 apos = a->getInitialPosition();
+		vec3_subtract_from_vec3(&apos, _abs);
+
+		for (size_t j = 0; j < i; j++)
+		{
+			AtomPtr b = _candidates[j];
+			symbol = b->getElementSymbol();
+
+			if (symbol != "O" && symbol != "N")
+			{
+				continue;
+			}
+
+			double bgree = orig[me][b];
+
+			vec3 bpos = b->getInitialPosition();
+			vec3_subtract_from_vec3(&bpos, _abs);
+
+			double angle = vec3_angle_with_vec3(apos, bpos);
+			angle -= mean_angle;
+			angle *= stdev_angle;
+
+			double angree = exp(-(angle * angle));
+			angree *= agree * bgree;
+
+			angree = pow(angree, 1 / 3.);
+			
+//			std::cout << agree << " " << bgree << " " << angree << std::endl;
+			
+			if ((bgree < 0 && agree < 0) || angree != angree)
+			{
+				continue;
+			}
+			
+			r[me][a] += angree;
+			r[me][b] += angree;
+			r[a][me] += angree;
+			r[b][me] += angree;
+			
+			if (a->isHeteroAtom() || b->isHeteroAtom())
+			{
+				r[a][b] += angree;
+				r[b][a] += angree;
+			}
+		}
+	}
+}
+
+void Sponge::addLengthsToMap(std::map<AtomPtr,Restraint> &r)
+{
+	AtomPtr me = getAtom();
+
+	double mean_length = 3.0;
+	double stdev_length = 0.4;
+	double penalty_length = 2.6;
+	
+	for (size_t i = 0; i < _candidates.size(); i++)
+	{
+		AtomPtr a = _candidates[i];
+		
+		if (me == a)
+		{
+			continue;
+		}
+		
+		if (r.count(me) && r[me].count(a))
+		{
+			continue;
+		}
+		
+		std::string symbol = a->getElementSymbol();
+		
+		if (symbol != "O" && symbol != "N")
+		{
+			continue;
+		}
+
+		vec3 apos = a->getInitialPosition();
+		vec3_subtract_from_vec3(&apos, _abs);
+
+		double length = vec3_length(apos);
+		double orig = length;
+		length -= mean_length;
+		length *= stdev_length;
+		
+		double agree = exp(-length * length);
+		
+		if (orig < penalty_length)
+		{
+			double squash = orig * stdev_length;
+			agree = exp(-squash * squash);
+		}
+		
+		if (agree != agree)
+		{
+			continue;
+		}
+		
+		r[me][a] = agree;
+		r[a][me] = agree;
+	}
+}

@@ -33,6 +33,7 @@ public:
 	virtual std::vector<BondSample> *getManyPositions(void *object = NULL);
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 	virtual std::string shortDesc();
+	AnchorPtr getAnchor();
 
 	virtual std::string getClassName()
 	{
@@ -58,6 +59,7 @@ protected:
 
 	vec3 _abs;
 private:
+	AnchorPtr _anch;
 	AtomWkr _atom;
 	double _b;
 };

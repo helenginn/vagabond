@@ -29,6 +29,7 @@ typedef enum
 	InstructionTypeOpenInCoot,
 	InstructionTypeSetObjectValue,
 	InstructionTypeGetObjectValue,
+	InstructionTypeWaterEverything,
 	InstructionTypePreviousState,
 	InstructionTypeRefineSidePos,
 	InstructionTypeRigidBody,

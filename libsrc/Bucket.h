@@ -58,6 +58,8 @@ public:
 	bool isSolvent(int index);
 	Atom *nearbyAtom(int index);
 	
+	virtual void convertToWater() {};
+	
 	VagFFTPtr getSolvent()
 	{
 		return _solvent;

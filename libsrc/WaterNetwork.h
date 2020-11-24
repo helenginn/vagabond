@@ -66,6 +66,7 @@ public:
 	virtual void postParseTidy();
 	void macroRefineSponges();
 	
+	void findNetworks(std::string filename);
 	void prune();
 	
 	void setMonomer(MonomerPtr _monomer);
