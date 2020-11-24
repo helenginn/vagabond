@@ -74,6 +74,7 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	_spg = fft._spg;
 	_lowResMode = fft._lowResMode;
 	_unitCell = fft._unitCell;
+	_data = NULL;
 	
 	if (scratch >= 0 && scratch != fft._nscratch)
 	{
@@ -96,7 +97,12 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 		_lastData = &_data[start];
 		memcpy(_data, fft._data, _total);
 	}
+}
 
+void VagFFT::prepareShortScratch()
+{
+	_shortScratch = (float *)fftwf_malloc(_nn * sizeof(float));
+	memset(_shortScratch, '\0', _nn * sizeof(float));
 }
 
 VagFFT::~VagFFT()
@@ -112,16 +118,18 @@ VagFFT::~VagFFT()
 VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
 {
 	_bFactor = 0;
+	_shortScratch = NULL;
 	_nx = nx;
 	_ny = ny;
 	_nz = nz;
+	
+	if (_nx % 2 == 1) _nx -= 1;
+	if (_ny % 2 == 1) _ny -= 1;
+	if (_nz % 2 == 1) _nz -= 1;
+
 	_myDims = NULL;
 	_spg = CSym::ccp4spg_load_by_ccp4_num(1);
 	_lowResMode = Options::getLowResMode();
-
-	if (_nx % 2 == 1 && _nx != 1) _nx -= 1;
-	if (_ny % 2 == 1 && _ny != 1) _ny -= 1;
-	if (_nz % 2 == 1 && _nz != 1) _nz -= 1;
 
 	_nele = nele;
 	_nscratch = scratches;
@@ -223,6 +231,68 @@ void VagFFT::wipe()
 	_status = FFTEmpty;
 }
 
+int scoreN(int n)
+{
+	int total = 0;
+	for (int i = 3; i < n / 2; i++)
+	{
+		total += (n % i == 0 ? 1 : 0);
+	}
+	
+	return total;
+}
+
+void adjustN(int *n)
+{
+	int nMin = *n;
+	int nMax = *n * 1.1;
+	int best = scoreN(*n);
+
+	for (int i = nMin; i < nMax; i++)
+	{
+		if (i % 2 == 1)
+		{
+			continue;
+		}
+
+		int score = scoreN(i);
+		if (score > best)
+		{
+			best = score;
+			*n = i;
+		}
+	}
+}
+
+void VagFFT::adjustNs()
+{
+
+	double xtmp = _nx;
+	double ytmp = _ny;
+	double ztmp = _nz;
+	adjustN(&_nx);
+	adjustN(&_ny);
+	adjustN(&_nz);
+	
+	_nn = _nx * _ny * _nz;
+	
+	_total = _nn * _stride * sizeof(fftwf_complex);
+	
+	if (_data != NULL)
+	{
+		fftwf_free(_data);
+		_data = (fftwf_complex *)fftwf_malloc(_total);
+		checkDataPtr(_data, _nn);
+		memset(_data, 0, _total);
+		int start = finalIndex(0);
+		_lastData = &_data[start];
+	}
+
+	_realBasis.vals[0] *= _nx / xtmp;
+	_realBasis.vals[4] *= _ny / ytmp;
+	_realBasis.vals[8] *= _nz / ztmp;
+}
+
 void VagFFT::makePlans()
 {
 	if (!sanityCheck())
@@ -254,29 +324,31 @@ void VagFFT::makePlans()
 	_myDims = _dimensions.back();
 	
 	int ns[3] = {_nz, _ny, _nx};
-	unsigned fftw_flags = FFTW_MEASURE;
+
+	/* destroying input should do nothing though */
+	unsigned many_flags = FFTW_MEASURE;
 
 	fftwf_plan plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, 
 	                                      _stride, 2, _data, 
 	                                      NULL, _stride, 2, 
-	                                      1, fftw_flags); 
+	                                      1, many_flags); 
 	_myDims->atom_real_to_recip = plan;
 
 	plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, _stride, 
 	                                      2, _data, 
 	                                      NULL, _stride, 2, 
-	                                      -1, fftw_flags); 
+	                                      -1, many_flags); 
 	_myDims->atom_recip_to_real = plan;
 
 	plan = fftwf_plan_many_dft(3, ns, 1, _lastData, NULL, /*null=embed*/
 	                           _stride, 2, _lastData, NULL, 
-	                           _stride, 2, 1, fftw_flags); 
+	                           _stride, 2, 1, many_flags); 
 
 	_myDims->real_to_recip = plan;
 
 	plan = fftwf_plan_many_dft(3, ns, 1, _lastData, NULL, 
 	                           _stride, 2, _lastData, NULL,
-	                           _stride, 2, -1, fftw_flags); 
+	                           _stride, 2, -1, many_flags); 
 
 	_myDims->recip_to_real = plan;
 }
@@ -354,24 +426,24 @@ void VagFFT::setupElements(bool wipe)
 	}
 }
 
+void VagFFT::copyScratchElementToPosition(ElementPtr ele)
+{
+	int column = whichColumn(ele);
+
+	for (int i = 0; i < _nn; i++)
+	{
+		_data[i * _stride + column][0] = _shortScratch[i]; 
+	}
+
+	memset(_shortScratch, '\0', _nn * sizeof(float));
+}
+
 void VagFFT::prepareAtomSpace()
 {
 	if (_status == FFTEmpty)
 	{
 		setupElements();
-	}
-	else
-	{
-		for (int i = 0; i < _nn; i++)
-		{
-			// elements should be hoovered up straight after last
-
-			// transform.
-
-			long final_index = finalIndex(i);
-			_data[final_index][0] = 0; 
-			_data[final_index][1] = 0;
-		}
+		prepareShortScratch();
 	}
 
 	_status = FFTSeparateAtoms;
@@ -384,32 +456,20 @@ void VagFFT::separateAtomTransform()
 	/* go through and multiply transform of atoms by element factor */
 	for (int i = 0; i < _nn; i++)
 	{
-		for (int j = 0; j < _nele; j++)
-		{
-			long dotty_index = dottyIndex(i, j);
-			long ele_index = dotty_index + 1;
-
-			_data[dotty_index][0] *= _data[ele_index][0];
-			_data[dotty_index][1] *= _data[ele_index][0];
-		}
-	}
-
-	/* add up final indices as sum of individual atom types */
-	for (int i = 0; i < _nn; i++)
-	{
-		long final_index = finalIndex(i);
-		_data[final_index][0] = 0;
-		_data[final_index][1] = 0;
+		long final_idx = finalIndex(i);
+		_data[final_idx][0] = 0;
+		_data[final_idx][1] = 0;
 
 		for (int j = 0; j < _nele; j++)
 		{
-			long dotty_index = dottyIndex(i, j);
+			long dotty_idx = dottyIndex(i, j);
+			long ele_idx = dotty_idx + 1;
 
-			_data[final_index][0] += _data[dotty_index][0];
-			_data[final_index][1] += _data[dotty_index][1];
+			_data[final_idx][0] += _data[dotty_idx][0] * _data[ele_idx][0];
+			_data[final_idx][1] += _data[dotty_idx][1] * _data[ele_idx][0];
 			
-			_data[dotty_index][0] = 0;
-			_data[dotty_index][1] = 0;
+			_data[dotty_idx][0] = 0;
+			_data[dotty_idx][1] = 0;
 		}
 	}
 
@@ -537,13 +597,12 @@ void VagFFT::addImplicitAtom(AtomPtr atom)
 	int column = whichColumn(ele);
 	
 	double occ = atom->getModel()->getEffectiveOccupancy();
-	double total = populateImplicit(column, centre, maxVals, tensor,
-	                                ellipsoid, occ, true);
+	populateImplicit(centre, maxVals, tensor, ellipsoid, occ);
 }
 
-double VagFFT::populateImplicit(int ele, vec3 centre, vec3 maxVals,
+double VagFFT::populateImplicit(vec3 centre, vec3 maxVals,
                                 mat3x3 tensor, mat3x3 ellipsoid, 
-                                double scale, bool add)
+                                double scale)
 {
 	double total = 0;
 	double count = 0;
@@ -594,19 +653,8 @@ double VagFFT::populateImplicit(int ele, vec3 centre, vec3 maxVals,
 				double dens = exp(-mult / 2.0);
 				dens *= squash * scale * vol;
 
-				if (add)
-				{
-					/*
-					vec3 inPlace = vec3_add_vec3(pos, whole);
-					long voxel = element(inPlace.x, inPlace.y, inPlace.z);
-					long index = dottyIndex(voxel, ele);
-					*/
-//					_data[index][0] += dens;
-					addInterpolatedToReal(ele, x + centre.x, 
-					                      y + centre.y, z + centre.z, dens);
-				}
-				
-				total += dens;
+				addInterpolatedToReal(x + centre.x, y + centre.y, 
+				                      z + centre.z, dens);
 			}
 		}
 	}
@@ -624,26 +672,60 @@ int VagFFT::whichColumn(ElementPtr ele)
 	return -1;
 }
 
-void VagFFT::addInterpolatedToReal(int column, double sx, double sy, 
+void VagFFT::calculateAdjustmentVolumes()
+{
+	double total = 0;
+	std::vector<double> ord;
+	ord.push_back(_realBasis.vals[0]);
+	ord.push_back(_realBasis.vals[4]);
+	ord.push_back(_realBasis.vals[8]);
+	std::sort(ord.begin(), ord.end(), std::greater<double>());
+
+	_vols[0] = _realBasis.vals[0] / ord[2];
+	_vols[1] = _realBasis.vals[4] / ord[2];
+	_vols[2] = _realBasis.vals[8] / ord[2];
+}
+
+void VagFFT::addInterpolatedToReal(double sx, double sy, 
                                    double sz, double val)
 {
 	collapse(&sx, &sy, &sz);
 
-	int lx = (int)floor(sx);
-	int ly = (int)floor(sy);
-	int lz = (int)floor(sz);
+	double ss[3] = {sx, sy, sz};
 
+	double ls[3], rs[3];
+	
+	for (int i = 0; i < 3; i++)
+	{
+		ls[i] = (int)floor(ss[i]);
+		rs[i] = ss[i] - ls[i];
+		
+		if (rs[i] < 0.5)
+		{
+			rs[i] *= _vols[i];
+		}
+		else
+		{
+			rs[i] = 1 - (1 - rs[i]) * _vols[i];
+		}
+	}
+	
+	sx = ls[0] + rs[0];
+	sy = ls[1] + rs[1];
+	sz = ls[2] + rs[2];
+	
 	double xProps[2];
 	double yProps[2];
 	double zProps[2];
 
-	xProps[1] = sx - (double)lx;
-	yProps[1] = sy - (double)ly;
-	zProps[1] = sz - (double)lz;
+	xProps[0] = std::max(1 + ls[0] - sx, 0.);
+	xProps[1] = std::max(sx - ls[0], 0.);
 
-	xProps[0] = 1 - xProps[1];
-	yProps[0] = 1 - yProps[1];
-	zProps[0] = 1 - zProps[1];
+	yProps[0] = std::max(1 + ls[1] - sy, 0.);
+	yProps[1] = std::max(sy - ls[1], 0.);
+
+	zProps[0] = std::max(1 + ls[2] - sz, 0.);
+	zProps[1] = std::max(sz - ls[2], 0.);
 	
 	for (int r = 0; r < 2; r++)
 	{
@@ -651,13 +733,14 @@ void VagFFT::addInterpolatedToReal(int column, double sx, double sy,
 		{
 			for (int p = 0; p < 2; p++)
 			{
-				int sx1 = lx + p;
-				int sy1 = ly + q;
-				int sz1 = lz + r;
+				int sx1 = ls[0] + p;
+				int sy1 = ls[1] + q;
+				int sz1 = ls[2] + r;
 
 				long index = element(sx1, sy1, sz1);
 				double prop = xProps[p] * yProps[q] * zProps[r];
-				_data[index * _stride + column][0] += prop * val;
+				
+				_shortScratch[index] += prop * val;
 			}	
 		}
 	}
@@ -784,39 +867,18 @@ void VagFFT::addExplicitAtom(AtomPtr atom)
 {
 	std::vector<BondSample> positions;
 	positions = atom->getExplicitModel()->getFinalPositions();
-	ElementPtr ele = atom->getElement();
-	int column = whichColumn(ele);
-	double low = atom->getExplicitModel()->getLowestZ();
-	double vol = mat3x3_volume(_realBasis);
-	double total = 0;
-	double spread = 0.5;
-	vec3 maxVals = make_vec3(2*spread, 2*spread, 2*spread);
-	/* spread should become actual B factor required for this.
-	 * assumes cubic !! */
-	spread = 0.5;
-	double stdev = sqrt(spread);
-	mat3x3 tensor = make_mat3x3(spread, spread, spread);
-	mat3x3 ellipsoid = make_mat3x3(stdev, stdev, stdev);
 
 	for (int i = 0; i < positions.size(); i++)
 	{
-		vec3 pos = positions[i].start;
-
-		vec3_subtract_from_vec3(&pos, _origin);
-		mat3x3_mult_vec(_recipBasis, &pos);
+		vec3_subtract_from_vec3(&positions[i].start, _origin);
+		/* orthogonal simplification */
+		mat3x3_mult_vec(_recipBasis, &positions[i].start);
 
 		double occ = positions[i].occupancy;
-		double dens = occ;
-		total += dens;
 
-		if (_lowResMode)
-		{
-			populateImplicit(column, pos, maxVals, tensor, ellipsoid, occ, true);
-		}
-		else
-		{
-			addInterpolatedToReal(column, pos.x, pos.y, pos.z, occ);
-		}
+		addInterpolatedToReal(positions[i].start.x, 
+		                      positions[i].start.y, 
+		                      positions[i].start.z, occ);
 	}
 }
 
@@ -1126,6 +1188,8 @@ void VagFFT::setScale(double cubeDim)
 	mat3x3 real = make_mat3x3();
 	mat3x3_scale(&real, cubeDim, cubeDim, cubeDim);
 	_realBasis = real;
+	adjustNs();
+
 	_recipBasis = mat3x3_inverse(real);
 	
 	_toReal = _realBasis;
@@ -1133,6 +1197,8 @@ void VagFFT::setScale(double cubeDim)
 
 	_toRecip = mat3x3_inverse(_toReal);
 	_recipTrans = mat3x3_transpose(_toRecip);
+
+	calculateAdjustmentVolumes();
 	_setMatrices = true;
 }
 

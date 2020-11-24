@@ -62,13 +62,14 @@ class VagFFT : public boost::enable_shared_from_this<VagFFT>
 {
 public:
 	friend class FFT;
-	
 
 	VagFFT(int nx, int ny, int nz, int nele = 0, int scratches = 0);
 	VagFFT(VagFFT &fft, int scratch = -1);
 	~VagFFT();
 	
+	void prepareShortScratch();
 	void addElement(ElementPtr ele);
+	void copyScratchElementToPosition(ElementPtr ele);
 	
 	void wipe();
 	void makePlans();
@@ -329,6 +330,8 @@ public:
 	{
 		return _toReal.vals[0];
 	}
+
+	void adjustNs();
 	
 	int nx()
 	{
@@ -433,8 +436,9 @@ private:
 
 	double getAmplitude(ElementPtr ele, int i, int j, int k);
 	int whichColumn(ElementPtr ele);
-	void addInterpolatedToReal(int column, double sx, double sy, 
-	                           double sz, double val); 
+	void calculateAdjustmentVolumes();
+	void addInterpolatedToReal(double sx, double sy, 
+	                           double sz, double val);
 	void addExplicitAtom(AtomPtr atom);
 	void addImplicitAtom(AtomPtr atom);
 	/** returns true if sane */
@@ -442,9 +446,8 @@ private:
 
 	void addLessSimple(VagFFTPtr v2);
 
-	double populateImplicit(int ele, vec3 centre, vec3 maxVals,
-	                        mat3x3 tensor, mat3x3 ellipsoid, double scale, 
-	                        bool add);
+	double populateImplicit(vec3 centre, vec3 maxVals,
+	                        mat3x3 tensor, mat3x3 ellipsoid, double scale);
 
 	/** pre-loaded atom distributions converted to real space in final
 	 *  column */
@@ -462,6 +465,10 @@ private:
 	int _nx, _ny, _nz;
 	long _nn;
 	
+	/* individual adjustment volumes for the eight voxel segments when
+	 * interpolating */
+	double _vols[3];
+	
 	/** number of elements */
 	int _nele;
 	int _nscratch;
@@ -471,6 +478,7 @@ private:
 	long _total;
 	fftwf_complex *_data;
 	fftwf_complex *_lastData;
+	float *_shortScratch;
 	
 	static std::vector<FFTDim *> _dimensions;
 	FFTDim *_myDims;

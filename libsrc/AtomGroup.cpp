@@ -948,14 +948,34 @@ void AtomGroup::xyzLimits(vec3 *min, vec3 *max)
 
 void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
 {
+	size_t nElements = totalElements();
 	scratchFull->prepareAtomSpace();
 
+	/*
 	for (int i = 0; i < atomCount(); i++)
 	{
 		AtomPtr a = atom(i);
 		scratchFull->addAtom(a);
 	}
+	*/
 	
+	for (size_t i = 0; i < nElements; i++)
+	{
+		for (size_t j = 0; j < atomCount(); j++)
+		{
+			AtomPtr a = atom(j);
+			
+			if (a->getElement() != _elements[i])
+			{
+				continue;
+			}
+
+			scratchFull->addAtom(a);
+		}
+		
+		scratchFull->copyScratchElementToPosition(_elements[i]);
+	}
+
 	scratchFull->fft(FFTAtomsToReal);
 }
 
