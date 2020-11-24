@@ -126,7 +126,7 @@ void CAlphaView::addCAlpha(vec3 point)
 	}
 
 	Helen3D::Vertex v;
-	memset(v.pos, 0, sizeof(Helen3D::Vertex));
+	memset(v.pos, 0, sizeof(GLfloat) * 3);
 	vec3 move = vec3_subtract_vec3(point, _centre);
 	
 	v.color[3] = 1;
