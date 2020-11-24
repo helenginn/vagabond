@@ -444,6 +444,13 @@ mat3x3 mat3x3_closest_rot_mat(vec3 vec1, vec3 vec2, vec3 axis,
 	}
 }
 
+void mat3x3_set_axis(mat3x3 *me, int i, vec3 axis)
+{
+	me->vals[0 + i] = axis.x;
+	me->vals[3 + i] = axis.y;
+	me->vals[6 + i] = axis.z;
+}
+
 vec3 mat3x3_axis(mat3x3 &me, int i)
 {
 	vec3 axis;
