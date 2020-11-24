@@ -33,6 +33,7 @@
 #include "../../libsrc/Polymer.h"
 #include "../../libsrc/FileReader.h"
 #include <../../libsrc/Motion.h>
+#include "../../libsrc/Bucket.h"
 #include "../../libsrc/WaterNetwork.h"
 #include <../../libsrc/Anchor.h>
 #include "../libsrc/Sponge.h"
@@ -403,6 +404,10 @@ int VagWindow::waitForInstructions()
 				sidechainsToEnd();
 				break;
 				
+				case InstructionTypeWaterEverything: 
+				waterAll();
+				break;
+				
 				case InstructionTypeDistanceMatrix: 
 				drawDistanceMatrix();
 				break;
@@ -641,6 +646,12 @@ void VagWindow::pushSendInstruction(InstructionType inst)
 void VagWindow::restorePreviousState()
 {
 	_instructionType = InstructionTypePreviousState;
+	wait.wakeAll();
+}
+
+void VagWindow::waterEverything()
+{
+	_instructionType = InstructionTypeWaterEverything;
 	wait.wakeAll();
 }
 
@@ -1161,8 +1172,47 @@ void VagWindow::sponge()
 
 	water->setModel(nov);
 	nov->singleRefine();
-	nov->initialConnections();
 	nov->getFinalPositions();
+	enable();
+}
+
+void VagWindow::waterAll()
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr crystal = options->getActiveCrystal();
+	Options::statusMessage("Watering all heteroatoms.");
+
+	disable();
+
+//	crystal->getBucket()->convertToWater();
+
+	for (int i = 0; i < crystal->atomCount(); i++)
+	{
+		AtomPtr tmp = crystal->atom(i);
+		if (tmp->isHeteroAtom()
+		    && tmp->getModel()->isAbsolute())
+		{
+			SpongePtr nov = SpongePtr(new Sponge(tmp));
+			tmp->setModel(nov);
+			nov->singleRefine();
+			nov->getFinalPositions();
+		}
+	}
+	
+	for (size_t i = 0; i < crystal->moleculeCount(); i++)
+	{
+		if (crystal->molecule(i)->isWaterNetwork())
+		{
+			WaterNetworkPtr wn = ToWaterNetworkPtr(crystal->molecule(i));
+			std::cout << "CSVing" << std::endl;
+			std::string file = "water.csv";
+			std::string outputFile;
+			outputFile = FileReader::addOutputDirectory(file, 
+			"water_network");
+			wn->findNetworks(outputFile);
+		}
+	}
+
 	enable();
 }
 

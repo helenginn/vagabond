@@ -60,6 +60,7 @@ public:
 	virtual void focusOnPosition(vec3 pos, double dist);
 	virtual void pause(bool on);
 	virtual void appendToLog(char *msg);
+	void waterEverything();
 	void pushSendInstruction(InstructionType inst);
 	
 	void toggleLog();
@@ -123,6 +124,7 @@ private:
 	                    double _default = 100);
 
 	void sponge();
+	void waterAll();
 	void writePNG();
 	void splitBond();
 	void resetSides();

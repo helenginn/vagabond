@@ -92,6 +92,10 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	{
 		keeper->novalentSelected();
 	}
+	else if (event->key() == Qt::Key_W && _shiftPressed)
+	{
+		_vag->waterEverything();
+	}
 	else if (event->key() == Qt::Key_K)
 	{
 		keeper->toggleKicks();
