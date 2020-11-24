@@ -3,6 +3,7 @@
 
 #include "shared_ptrs.h"
 #include "mat3x3.h"
+#include "Timer.h"
 #include <vector>
 #include <map>
 
@@ -74,6 +75,9 @@ typedef struct
 	std::string filename;
 	unsigned int flag;
 	bool recalc;
+	Timer tBonds;
+	Timer tMap;
+	Timer tScore;
 } MapScoreWorkspace;
 
 inline void setup_space(MapScoreWorkspace *w)
@@ -88,6 +92,9 @@ inline void setup_space(MapScoreWorkspace *w)
 	w->filename = "";
 	w->flag = MapScoreFlagNone;
 	w->recalc = false;
+	w->tBonds = Timer("updating bonds", false);
+	w->tMap = Timer("populating map", false);
+	w->tScore = Timer("scoring function", false);
 }
 
 #endif

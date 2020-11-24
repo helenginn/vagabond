@@ -50,6 +50,7 @@ public:
 		return _workspace;
 	}
 	
+	void reportTimings();
 	void recalculateConstant();
 	void prepareComparisons(RefinementStrategyPtr str);
 	static double compareParams(void *object, Parameter &p1, Parameter &p2);
