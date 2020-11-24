@@ -209,17 +209,10 @@ void Atom::setModel(ModelPtr model)
 	_model = model;
 }
 
-vec3 Atom::getSymRelatedPosition(int i, int conf)
+vec3 Atom::getSymRelatedPosition(int i, vec3 pos)
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
-	
-	vec3 pos = getAbsolutePosition();
-	
-	if (conf >= 0 && getModel()->hasExplicitPositions())
-	{
-		pos = getExplicitModel()->getFinalPositions()[conf].start;
-	}
 	
 	mat3x3 real2Frac = crystal->getReal2Frac();
 	mat3x3_mult_vec(real2Frac, &pos);
@@ -243,6 +236,18 @@ vec3 Atom::getSymRelatedPosition(int i, int conf)
 	mat3x3_mult_vec(frac2Real, &mod);
 	
 	return mod;
+}
+
+vec3 Atom::getSymRelatedPosition(int i, int conf)
+{
+	vec3 pos = getAbsolutePosition();
+	
+	if (conf >= 0 && getModel()->hasExplicitPositions())
+	{
+		pos = getExplicitModel()->getFinalPositions()[conf].start;
+	}
+	
+	return getSymRelatedPosition(i, pos);
 }
 
 vec3 Atom::getPositionInUnitCell()

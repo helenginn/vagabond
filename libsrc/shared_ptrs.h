@@ -49,6 +49,7 @@
 #define ToCrystalPtr(a) (boost::static_pointer_cast<Vagabond::Crystal>((a)))
 #define ToKeyGroupPtr(a) (boost::static_pointer_cast<KeyPoints>((a)))
 #define ToAtomPtr(a) (boost::static_pointer_cast<Atom>((a)))
+#define ToSymAtomPtr(a) (boost::static_pointer_cast<SymAtom>((a)))
 #define ToWhackPtr(a) (boost::static_pointer_cast<Whack>((a)))
 #define ToTwistPtr(a) (boost::static_pointer_cast<Twist>((a)))
 #define ToAtomGroupPtr(a) (boost::static_pointer_cast<AtomGroup>((a)))
@@ -126,7 +127,9 @@ typedef boost::shared_ptr<KeyPoints> KeyPointsPtr;
 typedef boost::weak_ptr<KeyPoints> KeyPointsWkr;
 
 class Atom;
+class SymAtom;
 typedef boost::shared_ptr<Atom> AtomPtr;
+typedef boost::shared_ptr<SymAtom> SymAtomPtr;
 typedef boost::weak_ptr<Atom> AtomWkr;
 
 class Element;

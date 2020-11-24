@@ -15,6 +15,7 @@
 #include <climits>
 #include <algorithm>
 #include "Atom.h"
+#include "SymAtom.h"
 #include "Anchor.h"
 #include "Bond.h"
 #include <sstream>

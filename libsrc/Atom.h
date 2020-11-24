@@ -58,7 +58,7 @@ public:
 	}
 
 	/** Get the average absolute position from the atom's Model */
-	vec3 getAbsolutePosition();
+	virtual vec3 getAbsolutePosition();
 	
 	/** Positional displacement between average ensemble position and
 	* reference position (usually from PDB). */
@@ -163,7 +163,7 @@ public:
 		_initialPosition = pos;
 	}
 
-	vec3 getInitialPosition()
+	virtual vec3 getInitialPosition()
 	{
 		return _initialPosition;
 	}
@@ -365,7 +365,10 @@ public:
 	double fishWhackMagnitude();
 	
 	static bool greater(AtomPtr a1, AtomPtr a2);
+	vec3 getSymRelatedPosition(int i, vec3 pos);
 protected:
+	vec3 getSymRelatedPosition(int i, int conf = -1);
+
 	virtual std::string getClassName()
 	{
 		return "Atom";
@@ -380,7 +383,6 @@ protected:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void postParseTidy();
 private:
-	vec3 getSymRelatedPosition(int i, int conf = -1);
 	size_t symOpCount();
 	ModelPtr _model;
 	ModelPtr _distModelOnly;
