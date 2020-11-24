@@ -11,7 +11,11 @@ maria_dep = dependency('libmariadb', required: false)
 crystfel_dep = dependency('crystfel', required: false)
 
 sp_helen3d = subproject('helen3d')
-helen3d_dep = sp_helen3d.get_variable('helen3d_dep')
+helen3d_dep = dependency('', required: false)
+
+if (sp_helen3d.get_variable('helen3d_scs'))
+	helen3d_dep = sp_helen3d.get_variable('helen3d_subdep')
+endif
 
 # Geometry and/or rotamer lookup madness
 
@@ -508,6 +512,8 @@ pkg.generate([lib_ccp4],
              name : 'libccp4',
              filebase : 'libccp4',
              description : 'Library for ccp4 (compiled using Vagabond)')
+
+if (sp_helen3d.get_variable('helen3d_scs'))
 pkg.generate([lib_c4x],
              subdirs : ['c4xsrc'],
              version : '1.0',
@@ -515,4 +521,5 @@ pkg.generate([lib_c4x],
              filebase : 'libcluster4x',
              description : 'Library for cluster4x')
 
+endif
 
