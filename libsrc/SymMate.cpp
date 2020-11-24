@@ -64,7 +64,7 @@ void SymMate::findSymop(vec3 target)
 {
 	_target = target;
 	mat3x3 recip = _cryst->getReal2Frac();
-	mat3x3 real = _cryst->getHKL2Frac();
+	mat3x3 real = _cryst->getFrac2Real();
 	mat3x3_mult_vec(recip, &target);
 
 	CSym::CCP4SPG *spg = _cryst->getSpaceGroup();
@@ -126,7 +126,7 @@ void SymMate::applySymops(AtomGroupPtr group)
 {
 	vec3 oldcentre = group->centroid();
 	mat3x3 recip = _cryst->getReal2Frac();
-	mat3x3 real = _cryst->getHKL2Frac();
+	mat3x3 real = _cryst->getFrac2Real();
 
 	vec3 copy = oldcentre;
 	mat3x3_mult_vec(recip, &copy);

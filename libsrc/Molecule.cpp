@@ -164,58 +164,6 @@ void Molecule::postParseTidy()
 	}
 }
 
-std::vector<AtomPtr> Molecule::getCloseAtoms(AtomPtr one, double tol, bool cache)
-{
-	std::vector<AtomPtr> atoms;
-	std::vector<AtomPtr> *searchAtoms = &_atoms;
-	std::vector<AtomPtr> *atomListPtr = &atoms;
-	
-	if (cache)
-	{
-		atomListPtr = &_closeishAtoms;	
-	}
-	
-	if (!cache && _closeishAtoms.size())
-	{
-		searchAtoms = &_closeishAtoms;
-	}
-
-	for (int i = 0; i < searchAtoms->size(); i++)
-	{
-		AtomPtr search = searchAtoms->at(i);
-		if (one == search)
-		{
-			continue;
-		}
-		
-		if (search->getMonomer())
-		{
-			SidechainPtr side = search->getMonomer()->getSidechain();
-			if (side->isRotamerised())
-			{
-				continue;	
-			}
-		}
-
-		if (!one->closeToAtom(search, tol))
-		{
-			continue;
-		}
-		
-		std::vector<AtomPtr>::iterator it;
-		it = std::find(atomListPtr->begin(), atomListPtr->end(), search);
-
-		if (it != atomListPtr->end())
-		{
-			continue;	
-		}
-		
-		atomListPtr->push_back(search);
-	}
-	
-	return atoms;
-}
-
 
 void Molecule::setAbsoluteBFacSubtract(void *object, double subtract)
 {

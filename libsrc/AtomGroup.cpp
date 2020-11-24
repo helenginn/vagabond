@@ -567,6 +567,144 @@ void AtomGroup::addAtom(AtomPtr atom)
 	}
 }
 
+std::vector<AtomPtr> AtomGroup::getCloseAtoms(std::vector<AtomPtr> atoms, 
+                                              double tol)
+{
+	std::vector<AtomPtr> extra;
+	
+	for (size_t i = 0; i < atoms.size(); i++)
+	{
+		std::vector<AtomPtr> clAtoms = getCloseAtoms(atoms[i], tol);
+		
+		for (int j = 0; j < clAtoms.size(); j++)
+		{
+			if (std::find(atoms.begin(), atoms.end(), clAtoms[j]) !=
+			    atoms.end())
+			{
+				continue;
+			}
+
+			if (std::find(extra.begin(), extra.end(), clAtoms[j]) !=
+			    extra.end())
+			{
+				continue;
+			}
+
+			extra.push_back(clAtoms[j]);
+		}
+	}
+	
+	return extra;
+}
+
+AtomGroupPtr AtomGroup::getAtomsInBox(vec3 target, double tolx,
+                                      double toly, double tolz,
+                                      bool addSyms)
+{
+	AtomGroupPtr atoms = AtomGroupPtr(new AtomGroup());
+	
+	int symopTry = 1;
+	CrystalPtr crystal = Options::getActiveCrystal();
+	mat3x3 real2Frac = crystal->getReal2Frac();
+	mat3x3 frac2Real = crystal->getFrac2Real();
+	vec3 frac = mat3x3_mult_vec(real2Frac, target);
+
+	if (addSyms)
+	{
+		symopTry = crystal->symOpCount();
+	}
+
+	for (int j = 0; j < atomCount(); j++)
+	{
+		for (int i = 0; i < symopTry; i++)
+		{
+			AtomPtr anAtom = atom(j);
+			vec3 pos = anAtom->getAbsolutePosition();
+			vec3 next = anAtom->getSymRelatedPosition(i, pos);
+			mat3x3_mult_vec(real2Frac, &next);
+			vec3 copy_next = next;
+			
+			while (frac.x - next.x > 1) { next.x += 1; }
+			while (frac.x - next.x <= -1) { next.x -= 1; }
+
+			while (frac.y - next.y > 1)   { next.y += 1; }
+			while (frac.y - next.y <= -1) { next.y -= 1; }
+
+			while (frac.z - next.z > 1)   { next.z += 1; }
+			while (frac.z - next.z <= -1) { next.z -= 1; }
+			
+			vec3 shift = vec3_subtract_vec3(next, copy_next);
+			pos = mat3x3_mult_vec(frac2Real, next);
+
+			vec3 diff = vec3_subtract_vec3(pos, target);
+
+			if (fabs(diff.x) > tolx || fabs(diff.y) > toly
+			    || fabs(diff.z) > tolz)
+			{
+				continue;
+			}
+
+			if (i == 0)
+			{
+				atoms->addAtom(anAtom);
+			}
+			else
+			{
+				SymAtomPtr satom = SymAtomPtr(new SymAtom(*anAtom));
+				satom->setUnitCellShift(shift);
+				satom->setSymop(i);
+				atoms->addAtom(satom);
+			}
+		}
+	}
+
+	return atoms;
+}
+
+std::vector<AtomPtr> AtomGroup::getCloseAtoms(AtomPtr one, double tol, 
+                                              bool cache)
+{
+	std::vector<AtomPtr> atoms;
+	std::vector<AtomPtr> *searchAtoms = &_atoms;
+	std::vector<AtomPtr> *atomListPtr = &atoms;
+	
+	if (cache)
+	{
+		atomListPtr = &_closeishAtoms;	
+	}
+	
+	if (!cache && _closeishAtoms.size())
+	{
+		searchAtoms = &_closeishAtoms;
+	}
+
+	for (int i = 0; i < searchAtoms->size(); i++)
+	{
+		AtomPtr search = searchAtoms->at(i);
+		if (one == search)
+		{
+			continue;
+		}
+
+		if (!one->closeToAtom(search, tol))
+		{
+			continue;
+		}
+		
+		std::vector<AtomPtr>::iterator it;
+		it = std::find(atomListPtr->begin(), atomListPtr->end(), search);
+
+		if (it != atomListPtr->end())
+		{
+			continue;	
+		}
+		
+		atomListPtr->push_back(search);
+	}
+	
+	return atoms;
+}
+
 
 AtomPtr AtomGroup::getClosestAtom(CrystalPtr crystal, vec3 pos)
 {

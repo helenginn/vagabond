@@ -102,13 +102,6 @@ public:
 		AtomGroupPtr groupPtr = AtomGroup::shared_from_this();
 		return ToMoleculePtr(groupPtr);
 	}
-
-	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol, bool cache = false);
-	
-	void clearCloseCache()
-	{
-		_closeishAtoms.clear();
-	}
 	
 	virtual void addParamCounts(int *pos, int *flex)
 	{
@@ -134,7 +127,6 @@ private:
 
 	bool _changedRotations;
 	std::string _chainID;
-	std::vector<AtomPtr> _closeishAtoms;
 };
 
 #endif /* defined(__vagabond__Molecule__) */

@@ -155,6 +155,31 @@ public:
 
 	void printList();
 	virtual void empty();
+
+	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol, 
+	                                   bool cache = false);
+	
+	/**
+	* Find all close atoms within this atom group to a chosen atom. Including
+	* the chosen atom.
+	* \param one chosen atom.
+	* \param tol tolerance in Angstroms - furthest point from a given atom.
+	* \param cache if true, instead of returning atoms, cache given atoms for
+	* quicker checking routine. Until cache is cleared, this subset will be
+	* searched in the future.
+	*/
+	std::vector<AtomPtr> getCloseAtoms(std::vector<AtomPtr> atoms, 
+	                                   double tol = 2);
+
+	AtomGroupPtr getAtomsInBox(vec3 target, double tolx,
+	                           double toly, double tolz,
+	                           bool addSyms = false);
+
+	void clearCloseCache()
+	{
+		_closeishAtoms.clear();
+	}
+
 	AtomPtr getClosestAtom(CrystalPtr crystal, vec3 pos);
 	std::vector<AtomPtr> getHydrogenBonders();
 
@@ -228,6 +253,8 @@ private:
 
 	std::vector<ElementPtr> _elements;
 	size_t _scratchDims[3];
+
+	std::vector<AtomPtr> _closeishAtoms;
 };
 
 #endif /* defined(__vagabond__AtomGroup__) */

@@ -1563,85 +1563,6 @@ AtomPtr Crystal::getClosestAtom(vec3 pos)
 	return atom;
 }
 
-std::vector<AtomPtr> Crystal::getCloseAtoms(std::vector<AtomPtr> atoms, 
-                                            double tol)
-{
-	std::vector<AtomPtr> extra;
-	
-	for (size_t i = 0; i < atoms.size(); i++)
-	{
-		std::vector<AtomPtr> clAtoms = getCloseAtoms(atoms[i], tol);
-		
-		for (int j = 0; j < clAtoms.size(); j++)
-		{
-			if (std::find(atoms.begin(), atoms.end(), clAtoms[j]) !=
-			    atoms.end())
-			{
-				continue;
-			}
-
-			if (std::find(extra.begin(), extra.end(), clAtoms[j]) !=
-			    extra.end())
-			{
-				continue;
-			}
-
-			extra.push_back(clAtoms[j]);
-		}
-	}
-	
-	return extra;
-}
-
-std::vector<AtomPtr> Crystal::getCloseAtoms(AtomPtr one, double tol, bool cache)
-{
-	std::vector<AtomPtr> atoms;
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		std::vector<AtomPtr> someAtoms = molecule(i)->getCloseAtoms(one, tol, cache);
-		atoms.reserve(atoms.size() + someAtoms.size());
-		atoms.insert(atoms.end(), someAtoms.begin(), someAtoms.end());
-	}
-
-	return atoms;
-}
-
-AtomGroupPtr Crystal::getAtomsInBox(vec3 target, double tolx,
-                                    double toly, double tolz)
-{
-	AtomGroupPtr atoms = AtomGroupPtr(new AtomGroup());
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		for (int j = 0; j < molecule(i)->atomCount(); j++)
-		{
-			AtomPtr anAtom = molecule(i)->atom(j);
-			vec3 pos = anAtom->getAbsolutePosition();
-			
-			vec3 diff = vec3_subtract_vec3(pos, target);
-			
-			if (fabs(diff.x) > tolx || fabs(diff.y) > toly
-			    || fabs(diff.z) > tolz)
-			{
-				continue;
-			}
-			
-			atoms->addAtom(anAtom);
-		}
-	}
-
-	return atoms;
-}
-
-void Crystal::clearCloseCache()
-{
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		molecule(i)->clearCloseCache();
-	}	
-}
-
 void Crystal::silentConcludeRefinement()
 {
 	OptionsPtr options = Options::getRuntimeOptions();
@@ -2460,7 +2381,7 @@ void Crystal::applyWilsonToAnchors()
 void Crystal::reindexAtoms(mat3x3 reindex, vec3 trans)
 {
 	mat3x3 recip = getReal2Frac();
-	mat3x3 real = getHKL2Frac();
+	mat3x3 real = getFrac2Real();
 	mat3x3 inv = mat3x3_inverse(reindex);
 
 	for (int i = 0; i < atomCount(); i++)

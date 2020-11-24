@@ -288,7 +288,7 @@ public:
 	/**
 	* 	Returns matrix turning Miller index coordinates to fractional
 	* 	coordinates of the reciprocal cell. */
-	mat3x3 getHKL2Frac()
+	mat3x3 getFrac2Real()
 	{
 		return _hkl2real;
 	}
@@ -399,33 +399,9 @@ public:
 	void hydrogenateContents();
 	
 	/**
-	* Find all close atoms within this crystal to a chosen atom. Including
-	* the chosen atom.
-	* \param one chosen atom.
-	* \param tol tolerance in Angstroms - furthest point from a given atom.
-	* \param cache if true, instead of returning atoms, cache given atoms for
-	* quicker checking routine. Until cache is cleared, this subset will be
-	* searched in the future.
-	*/
-	std::vector<AtomPtr> getCloseAtoms(AtomPtr one, double tol = 2, 
-	                                   bool cache = false);
-	
-	AtomGroupPtr getAtomsInBox(vec3 target, double tolx,
-	                           double toly, double tolz);
-
-	
-	std::vector<AtomPtr> getCloseAtoms(std::vector<AtomPtr> atoms,
-	                                   double tol = 2); 
-
-	/**
 	* 	
 	*/
 	AtomPtr getClosestAtom(vec3 pos);
-	
-	/**
-	* 	Clear close atom cache and research the entire Crystal next time
-	* 	getCloseAtoms is called. */
-	void clearCloseCache();
 
 	void setFilename(std::string file)
 	{
