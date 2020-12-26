@@ -67,11 +67,16 @@ void Molecule::summary()
 		}
 	}
 	
-	std::cout << "| Atoms: " << atomCount() - hydrogen;
+	std::cout << "| Atoms: " << atomCount()  << " ( "
+	<< atomCount() - hydrogen << " non-hydrogen";
 	
 	if (hydrogen > 0)
 	{
-		std::cout << " (+ " << hydrogen << " hydrogens)";
+		std::cout << " + " << hydrogen << " hydrogen atoms)";
+	}
+	else
+	{
+		std::cout << " atoms)" << std::endl;
 	}
 	
 	std::cout << std::endl;
