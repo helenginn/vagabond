@@ -63,8 +63,9 @@ typedef enum
 	MapScoreAddNoWrap,
 } MapScoreType;
 
-typedef struct 
+class MapScoreWorkspace
 {
+public:
 	ScoreType scoreType;
 	CrystalPtr crystal;
 	AtomGroupPtr selectAtoms;
@@ -75,10 +76,10 @@ typedef struct
 	std::string filename;
 	unsigned int flag;
 	bool recalc;
-	Timer tBonds;
-	Timer tMap;
-	Timer tScore;
-} MapScoreWorkspace;
+	Timer *tBonds;
+	Timer *tMap;
+	Timer *tScore;
+};
 
 inline void setup_space(MapScoreWorkspace *w)
 {
@@ -92,9 +93,9 @@ inline void setup_space(MapScoreWorkspace *w)
 	w->filename = "";
 	w->flag = MapScoreFlagNone;
 	w->recalc = false;
-	w->tBonds = Timer("updating bonds", false);
-	w->tMap = Timer("populating map", false);
-	w->tScore = Timer("scoring function", false);
+	w->tBonds = new Timer("updating bonds", false);
+	w->tMap = new Timer("populating map", false);
+	w->tScore = new Timer("scoring function", false);
 }
 
 #endif

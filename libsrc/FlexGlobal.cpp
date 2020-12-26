@@ -46,13 +46,13 @@ double FlexGlobal::score(void *object)
 {
 	FlexGlobal *flexer = static_cast<FlexGlobal *>(object);
 	flexer->prepareWorkspace();
-	flexer->_workspace.tBonds.setFine(true);
-	flexer->_workspace.tMap.setFine(true);
-	flexer->_workspace.tScore.setFine(true);
+	flexer->_workspace.tBonds->setFine(true);
+	flexer->_workspace.tMap->setFine(true);
+	flexer->_workspace.tScore->setFine(true);
 
-	flexer->_workspace.tBonds.start();
+	flexer->_workspace.tBonds->start();
 	flexer->_atomGroup->refreshPositions();
-	flexer->_workspace.tBonds.stop();
+	flexer->_workspace.tBonds->stop();
 	
 	double score = 0;
 	if (flexer->_recip)
@@ -254,8 +254,8 @@ double FlexGlobal::compareParams(void *object, Parameter &p1, Parameter &p2)
 void FlexGlobal::reportTimings()
 {
 	std::cout << std::endl;
-	_workspace.tBonds.report();
-	_workspace.tMap.report();
-	_workspace.tScore.report();
+	_workspace.tBonds->report();
+	_workspace.tMap->report();
+	_workspace.tScore->report();
 
 }

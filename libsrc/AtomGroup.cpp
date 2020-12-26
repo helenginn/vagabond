@@ -1165,7 +1165,7 @@ double AtomGroup::scoreWithReciprocal(MapScoreWorkspace *ws)
 double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
                                       bool plot)
 {
-	workspace->tMap.start();
+	workspace->tMap->start();
 
 	if (plot && workspace->filename == "")
 	{
@@ -1208,11 +1208,11 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	
 	/* add our moving fraction, updated elsewhere */
 	workspace->selectAtoms->addToCubicMap(workspace->segment);
-	workspace->tMap.stop();
+	workspace->tMap->stop();
 	
-	workspace->tScore.start();
+	workspace->tScore->start();
 	double score = scoreFinalMap(workspace, plot, first);
-	workspace->tScore.stop();
+	workspace->tScore->stop();
 
 	return score;
 }
