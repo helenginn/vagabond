@@ -101,6 +101,7 @@ private slots:
 	void adjustBFactor();
 	void refitBackbone();
 	void fixErroneousZones();
+	void addWater();
 	void append();
 	void openInCoot();
 	void addPDBFile();

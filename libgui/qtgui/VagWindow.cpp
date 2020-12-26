@@ -153,6 +153,10 @@ void VagWindow::makeMenu()
 	        SLOT(addUpdateFile()));
 	actions.push_back(updatePDB);
 	*/
+	
+	QAction *addWater = model->addAction("Add water...");
+	connect(addWater, SIGNAL(triggered()), this, SLOT(addWater()));
+	actions.push_back(addWater);
 
 	QMenu *mRefine = menuBar()->addMenu(tr("&Refine"));
 	menus.push_back(mRefine);
@@ -971,6 +975,12 @@ std::string VagWindow::getFile(QString types, QString title)
 
 	f->deleteLater();
 	return fileNames[0].toStdString();
+}
+
+void VagWindow::addWater()
+{
+	_display->setAddingWater();
+
 }
 
 void VagWindow::addPDBFile()

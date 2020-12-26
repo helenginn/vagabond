@@ -43,6 +43,8 @@ public:
 	void renderWarp();
 	void renderDensity(CrystalPtr crystal);
 	void manualRefine();
+
+	void setAddingWater();
 	
 	void setVagWindow(VagWindow *vag)
 	{
@@ -69,6 +71,7 @@ private:
 	bool _shiftPressed;
 	double _lastX; double _lastY;
 	bool _moving;
+	bool _addingWater;
 	
 	VagWindow *_vag;
 };

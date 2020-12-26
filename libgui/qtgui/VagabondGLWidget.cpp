@@ -9,12 +9,14 @@
 #include "VagabondGLWidget.h"
 #include "../Density2GL.h"
 #include "../../libsrc/shared_ptrs.h"
+#include <QCursor>
 #include "../WarpGL.h"
 
 #define PAN_SENSITIVITY 30
 
 VagabondGLWidget::VagabondGLWidget(QWidget *obj) : QOpenGLWidget(obj)
 {
+	_addingWater = false;
 	keeper = NULL;
 	timer = NULL;
 	_mouseButton = Qt::NoButton;
@@ -267,4 +269,10 @@ VagabondGLWidget::~VagabondGLWidget()
 void VagabondGLWidget::manualRefine()
 {
 	keeper->manualRefine();
+}
+
+void VagabondGLWidget::setAddingWater()
+{
+	_addingWater = true;
+	setCursor(Qt::CrossCursor);
 }
