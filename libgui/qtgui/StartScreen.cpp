@@ -100,8 +100,9 @@ void StartScreen::makeButtons()
 	connect(_bOptionals, SIGNAL(clicked()), this, SLOT(toggleOptionals()));
 	_widgets.push_back(_bOptionals);
 	
+	const int jump = 30;
 	int top = height;
-	height += 40;
+	height += jump;
 
 	q = new QLabel("Min resolution (Å):", this);
 	q->setGeometry(indent, height, LABEL_WIDTH, 20);
@@ -109,7 +110,7 @@ void StartScreen::makeButtons()
 	_widgets.push_back(q);
 	_optWidgets.push_back(q);
 
-	height += 40;
+	height += jump;
 
 	q = new QLabel("Max resolution (Å):", this);
 	q->setGeometry(indent, height, LABEL_WIDTH, 20);
@@ -118,7 +119,7 @@ void StartScreen::makeButtons()
 	_optWidgets.push_back(q);
 	
 	indent += 150;
-	height -= 40;
+	height -= jump;
 
 	_tMinRes = new QLineEdit("", this);
 	_tMinRes->setGeometry(indent, height, 120, 25);
@@ -132,7 +133,7 @@ void StartScreen::makeButtons()
 		_tMinRes->setText(QString::fromStdString(text));
 	}
 
-	height += 40;
+	height += jump;
 	_tMaxRes = new QLineEdit("", this);
 	_tMaxRes->setGeometry(indent, height, 120, 25);
 	_tMaxRes->hide();
@@ -145,7 +146,7 @@ void StartScreen::makeButtons()
 		_tMaxRes->setText(QString::fromStdString(text));
 	}
 
-	height += 40;
+	height += jump;
 	indent -= 150;
 
 	q = new QLabel("Solvent add radius (Å):", this);
@@ -168,10 +169,10 @@ void StartScreen::makeButtons()
 		_tRadius->setText(QString::fromStdString(text));
 	}
 
-	height += 40;
+	height += jump;
 	indent -= 150;
 
-	q = new QLabel("Relative flex (AU):", this);
+	q = new QLabel("Ensemble spread (AU):", this);
 	q->setGeometry(indent, height, LABEL_WIDTH, 20);
 	q->hide();
 	_widgets.push_back(q);
@@ -184,11 +185,36 @@ void StartScreen::makeButtons()
 	_tRelFlex->hide();
 	_optWidgets.push_back(_tRelFlex);
 
+
 	if (Options::getBStart() >= 0)
 	{
 		double flex = Options::getBStart();
 		std::string text = f_to_str(flex, 2);
 		_tRelFlex->setText(QString::fromStdString(text));
+	}
+
+	height += jump;
+	indent -= 150;
+
+	q = new QLabel("Global B factor (Å^2):", this);
+	q->setGeometry(indent, height, LABEL_WIDTH, 20);
+	q->hide();
+	_widgets.push_back(q);
+	_optWidgets.push_back(q);
+
+	indent += 150;
+	
+	_tGlobalB = new QLineEdit("", this);
+	_tGlobalB->setGeometry(indent, height, 120, 25);
+	_tGlobalB->hide();
+	_optWidgets.push_back(_tGlobalB);
+
+
+	if (Options::getGlobalBFactor() >= 0)
+	{
+		double b = Options::getGlobalBFactor();
+		std::string text = f_to_str(b, 1);
+		_tGlobalB->setText(QString::fromStdString(text));
 	}
 
 	/** Refinement options **/
@@ -369,6 +395,11 @@ void StartScreen::pushRun()
 	if (_tRelFlex->text().length())
 	{
 		Options::_bStart = _tRelFlex->text().toDouble();
+	}
+	
+	if (_tGlobalB->text().length())
+	{
+		Options::_bReal = _tGlobalB->text().toDouble();
 	}
 	
 	if (_tMinRes->text().length())
