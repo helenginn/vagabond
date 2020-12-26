@@ -64,6 +64,7 @@ public:
 	void displayResults(Group *ave);
 	void displaySingle(MtzFFTPtr fft);
 	void updateToolbar(Group *grp);
+	void addCSVSwitcher();
 	
 signals:
 	void refreshed();
@@ -105,6 +106,7 @@ private:
 
 	int _currIndex;
 	double _scale;
+	QMenu *_menu;
 	std::vector<QWidget **> _bin;
 	QGraphicsScene *_scene;
 	MatrixView *_correlImage;

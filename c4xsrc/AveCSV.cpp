@@ -24,7 +24,9 @@
 #include <iostream>
 #include <libsrc/FileReader.h>
 
-std::map<std::string, MapStringDouble> AveCSV::_relationships;
+std::vector<Relationships> AveCSV::_relationships;
+std::vector<std::string> AveCSV::_filenames;
+int AveCSV::_chosen = -1;
 bool AveCSV::_usingCSV = false;
 
 
@@ -40,13 +42,17 @@ void AveCSV::addValue(std::string id0, std::string id1, double val)
 {
 	_ids[id0]++;
 	_ids[id1]++;
-	_relationships[id0][id1] = val;
+	_relationships[_chosen][id0][id1] = val;
 }
 
 void AveCSV::load()
 {
 	if (_csv.length())
 	{
+		_chosen++;
+		_relationships.resize(_chosen+1);
+		_filenames.push_back(_csv);
+
 		std::string contents = get_file_contents(_csv);
 		std::vector<std::string> lines = split(contents, '\n');
 
@@ -88,10 +94,13 @@ void AveCSV::load()
 			std::string id1 = components[1];
 			_ids[id1]++;
 
-			_relationships[id0][id1] = val;
+			_relationships[_chosen][id0][id1] = val;
 		}
 	}
-	
+}
+
+void AveCSV::preparePaths()
+{
 	std::vector<DatasetPath> paths;
 	for (std::map<std::string, int>::iterator it = _ids.begin(); 
 	     it != _ids.end(); it++)
@@ -120,10 +129,10 @@ double AveCSV::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 	std::string met1 = one->getMtzFile()->metadata();
 	std::string met2 = two->getMtzFile()->metadata();
 
-	if (_relationships.count(met1) > 0 && 
-	    _relationships[met1].count(met2))
+	if (_relationships[_chosen].count(met1) > 0 && 
+	    _relationships[_chosen][met1].count(met2))
 	{
-		return _relationships[met1][met2];
+		return _relationships[_chosen][met1][met2];
 	}
 
 	return nan(" ");

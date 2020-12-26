@@ -97,17 +97,37 @@ void ClusterList::getFromFolders()
 	input->setList(this);
 }
 
-void ClusterList::getFromCSV(AveCSV *csv)
-{
-	csv->setList(this);
-	csv->load();
-}
-
 void ClusterList::getFromCSV(std::string csv)
 {
-	AveCSV *input = new AveCSV(NULL, csv);
+	std::vector<std::string> csvs = split(csv, ',');
+	AveCSV *input = new AveCSV(NULL);
 	input->setList(this);
-	input->load();
+
+	for (size_t i = 0; i < csvs.size(); i++)
+	{
+		input->setFilename(csvs[i]);
+		input->load();
+	}
+
+	input->preparePaths();
+	_csvGroup = input;
+	_screen->addCSVSwitcher();
+}
+
+void ClusterList::cycleCSV(bool forward)
+{
+	int current = AveCSV::currentChoice();
+	current = (current + (forward ? 1 : -1)) % AveCSV::csvCount();
+	
+	AveCSV::setChosen(current);
+	csvAverage();
+	_screen->clusterGroup();
+}
+
+void ClusterList::switchCSV(int c)
+{
+	AveCSV::setChosen(c);
+	csvAverage();
 }
 
 bool ClusterList::loadFiles()

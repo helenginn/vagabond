@@ -79,6 +79,8 @@ signals:
 	void updateSelections();
 public slots:
 	void toggleDead();
+	void switchCSV(int c);
+	void cycleCSV(bool forward);
 	void updateColours();
 	void prepDirs();
 	void handleResults();
@@ -107,6 +109,7 @@ private:
 
 	std::vector<DatasetPath> _paths;
 	std::vector<Group *> _clusters;
+	AveCSV *_csvGroup;
 	std::vector<MtzFile *> _files;
 	std::vector<std::string> _commands;
 	double _res;

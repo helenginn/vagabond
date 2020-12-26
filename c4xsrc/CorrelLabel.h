@@ -22,6 +22,7 @@
 #include <QLabel>
 
 class Screen;
+class ClusterList;
 class MatrixView;
 
 class CorrelLabel : public QLabel
@@ -40,6 +41,7 @@ protected:
 
 	MatrixView *_image;
 	Screen *_screen;
+	ClusterList *_list;
 	bool _shift;
 	bool _ctrl;
 	int _startFile;

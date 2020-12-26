@@ -245,6 +245,25 @@ void Screen::updateToolbar(Group *grp)
 	}
 }
 
+void Screen::addCSVSwitcher()
+{
+	if (AveCSV::csvCount() <= 1)
+	{
+		return;
+	}
+
+	_menu->addSeparator();
+	QMenu *choice = _menu->addMenu("Which CSV?");
+
+	for (size_t i = 0; i < AveCSV::csvCount(); i++)
+	{
+		std::string file = AveCSV::csvName(i);
+		QAction *csv = choice->addAction(QString::fromStdString(file));
+		connect(csv, &QAction::triggered, _list, 
+		        [=]() { _list->switchCSV(i); });
+	}
+}
+
 void Screen::addToolBar()
 {
 	_toolBar = new QToolBar(this);
@@ -253,6 +272,7 @@ void Screen::addToolBar()
 	QPushButton *a = new QPushButton("Set average");
 	
 	QMenu *m = new QMenu(a);
+	_menu = m;
 	uses.amp = m->addAction("Use amplitudes");
 	uses.amp->setCheckable(true);
 	connect(uses.amp, &QAction::triggered, _list, &ClusterList::recipAverage);

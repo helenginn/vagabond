@@ -26,11 +26,17 @@
 class ClusterList;
 
 typedef std::map<std::string, double> MapStringDouble;
+typedef std::map<std::string, MapStringDouble> Relationships;
 
 class AveCSV : public Average
 {
 public:
-	AveCSV(Group *group, std::string csv);
+	AveCSV(Group *group, std::string csv = "");
+	
+	void setFilename(std::string file)
+	{
+		_csv = file;
+	}
 
 	static bool usingCSV()	
 	{
@@ -46,17 +52,41 @@ public:
 	{
 		_list = list;
 	}
+	
+	static size_t csvCount()
+	{
+		return _relationships.size();
+	}
+	
+	static std::string csvName(int i)
+	{
+		return _filenames[i];
+	}
+	
+	static int currentChoice()
+	{
+		return _chosen;
+	}
+	
+	static void setChosen(int chosen)
+	{
+		_chosen = chosen;
+	}
+
 	void load();
 	virtual void calculate();
 	virtual double findCorrelation(MtzFFTPtr one, MtzFFTPtr two);
 	void addValue(std::string id0, std::string id1, double val);
+	void preparePaths();
 private:
 	std::string _csv;
 	static bool _usingCSV;
 
 	ClusterList *_list;
 	std::map<std::string, int> _ids;
-	static std::map<std::string, MapStringDouble> _relationships;
+	static std::vector<std::string> _filenames;
+	static std::vector<Relationships> _relationships;
+	static int _chosen;
 };
 
 #endif

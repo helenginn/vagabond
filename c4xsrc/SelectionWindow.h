@@ -23,6 +23,7 @@
 
 class KeeperGL;
 class Plot3D;
+class ClusterList;
 
 class SelectionWindow : public QGraphicsView
 {

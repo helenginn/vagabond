@@ -23,12 +23,14 @@
 #include "MtzFile.h"
 #include "MatrixView.h"
 #include "Group.h"
+#include "ClusterList.h"
 
 CorrelLabel::CorrelLabel(QWidget *parent, MatrixView *image,
 Screen *screen) : QLabel(parent)
 {
 	_image = image;
 	_screen = screen;
+	_list = _screen->getList();
 	_shift = false;
 	_ctrl = false;
 	_lastFile = -1;
@@ -56,6 +58,16 @@ void CorrelLabel::keyReleaseEvent(QKeyEvent *e)
 	if (e->key() == Qt::Key_Control)
 	{
 		_ctrl = false;
+	}
+	
+	if (e->key() == Qt::Key_M)
+	{
+		_list->cycleCSV(true);
+	}
+	
+	if (e->key() == Qt::Key_N)
+	{
+		_list->cycleCSV(false);
 	}
 }
 
