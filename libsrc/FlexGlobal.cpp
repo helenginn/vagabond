@@ -16,6 +16,8 @@
 #include "FFT.h"
 #include "Crystal.h"
 
+int FlexGlobal::_plotCycle = 0;
+
 FlexGlobal::FlexGlobal()
 {
 	_prepared = false;
@@ -69,6 +71,12 @@ double FlexGlobal::score(void *object)
 
 void FlexGlobal::plot(std::string filename)
 {
+	if (filename.length() == 0)
+	{
+		filename = "density_comp_" + i_to_str(_plotCycle);
+		_plotCycle++;
+
+	}
 	_workspace.filename = filename;
 	AtomGroup::scoreWithMapGeneral(&_workspace, true);
 }

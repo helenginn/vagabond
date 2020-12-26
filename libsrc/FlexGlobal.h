@@ -38,7 +38,7 @@ public:
 		_crystal = crystal;	
 	}
 	
-	void plot(std::string filename);
+	void plot(std::string filename = "");
 	
 	void setReciprocalRefinement(bool recip = true)
 	{
@@ -58,6 +58,7 @@ private:
 	bool _prepared;
 	bool _recip;
 	void prepareWorkspace();
+	static int _plotCycle;
 
 	AtomGroupPtr _atomGroup;
 	CrystalPtr _crystal;
