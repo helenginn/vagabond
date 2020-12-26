@@ -199,7 +199,20 @@ double weighted_r_factor(std::vector<CoordVal> &vals)
 {
 	double num = 0;
 	double den = 0;
-	double sum_w = 0;
+	
+	double min_fo = 0;
+
+	for (int i = 0; i < vals.size(); i++)
+	{
+		double fo = vals[i].fo;
+		
+		if (min_fo > fo)
+		{
+			min_fo = fo;
+		}
+	}
+	
+	min_fo *= 0.75;
 
 	for (int i = 0; i < vals.size(); i++)
 	{
@@ -208,13 +221,13 @@ double weighted_r_factor(std::vector<CoordVal> &vals)
 			continue;
 		}
 
+		double fo = vals[i].fo - min_fo;
+		double fc = vals[i].fc;
 		double weight = vals[i].weight;
-		double x = vals[i].fo;
-		double y = vals[i].fc;
 		
-		num += fabs(y - x) * weight;
-		den += fabs(x) * weight;
-		sum_w += weight;
+		double add = fabs(fc - fo);
+		num += add * weight;
+		den += fabs(fo) * weight;
 	}
 	
 	double r = num / den;
