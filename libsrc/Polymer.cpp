@@ -74,7 +74,7 @@ void Polymer::addMonomer(MonomerPtr monomer)
 		int resNum = monomer->getResidueNum();
 		_monomers[resNum] = monomer;
 		monomer->setPolymer(shared_from_this());
-
+		
 		if (monomer->getResidueNum() + 1 > _totalMonomers)
 		{
 			_totalMonomers = monomer->getResidueNum() + 1;
@@ -365,7 +365,7 @@ void Polymer::summary()
 {
 	Molecule::summary();
 
-	std::cout << "| I am a polymer with " << _monomers.size() << " monomers."
+	std::cout << "| I am a polymer with " << monomerCount() << " monomers."
 	<< std::endl;
 }
 
