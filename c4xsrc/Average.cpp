@@ -33,6 +33,9 @@ Average::Average(Group *group)
 
 void Average::findIntercorrelations(Group *other, double **svd)
 {
+	int total = 0;
+	int missing = 0;
+
 	if (_symmetric)
 	{
 		for (size_t i = 1; i < other->mtzCount(); i++)
@@ -40,11 +43,17 @@ void Average::findIntercorrelations(Group *other, double **svd)
 			for (size_t j = 0; j < i; j++)
 			{
 				double cc = 0;
+				total += 2;
 
 				MtzFFTPtr one = other->getMtz(i);
 				MtzFFTPtr two = other->getMtz(j);
 
 				cc = findCorrelation(one, two);
+				
+				if (cc != cc)
+				{
+					missing += 2;
+				}
 
 				svd[i][j] = cc;
 				svd[j][i] = cc;
@@ -63,6 +72,8 @@ void Average::findIntercorrelations(Group *other, double **svd)
 				{
 					continue;
 				}
+				
+				total++;
 
 				MtzFFTPtr one = other->getMtz(i);
 				MtzFFTPtr two = other->getMtz(j);
@@ -73,6 +84,7 @@ void Average::findIntercorrelations(Group *other, double **svd)
 				if (cc1 != cc1 && cc2 != cc2)
 				{
 					svd[i][j] = nan(" ");
+					missing++;
 				}
 				else if (fabs(cc1) < 1e-6 || cc1 != cc1)
 				{
@@ -90,6 +102,12 @@ void Average::findIntercorrelations(Group *other, double **svd)
 
 			std::cout << "." << std::flush;
 		}
+	}
+
+	if (missing > 0)
+	{
+		std::cout << "Total " << total << " matrix pairs, " <<
+		missing << " missing entries." << std::endl;
 	}
 
 	std::cout << std::endl;
