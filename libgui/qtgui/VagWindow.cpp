@@ -142,6 +142,7 @@ void VagWindow::makeMenu()
 	connect(coot, SIGNAL(triggered()), this, 
 	        SLOT(openInCoot()));
 
+	/*
 	QAction *addPDB = model->addAction("Add atoms from PDB...");
 	connect(addPDB, SIGNAL(triggered()), this, 
 	        SLOT(addPDBFile()));
@@ -151,6 +152,7 @@ void VagWindow::makeMenu()
 	connect(updatePDB, SIGNAL(triggered()), this, 
 	        SLOT(addUpdateFile()));
 	actions.push_back(updatePDB);
+	*/
 
 	QMenu *mRefine = menuBar()->addMenu(tr("&Refine"));
 	menus.push_back(mRefine);
