@@ -115,6 +115,54 @@ private:
 	static double _ileval_nxpro_acn[];
 	static double _ileval_nxpro_aco[];
 	static double _ileval_nxpro_ocn[];
+
+	static double _gly_nxpro_cna[];
+	static double _gly_nxpro_nab[];
+	static double _gly_nxpro_nac[];
+	static double _gly_nxpro_bac[];
+	static double _gly_nxpro_acn[];
+	static double _gly_nxpro_aco[];
+	static double _gly_nxpro_ocn[];
+
+	static double _pro_nxpro_cna[];
+	static double _pro_nxpro_nab[];
+	static double _pro_nxpro_nac[];
+	static double _pro_nxpro_bac[];
+	static double _pro_nxpro_acn[];
+	static double _pro_nxpro_aco[];
+	static double _pro_nxpro_ocn[];
+
+  static double _npgiv_xpro_cna[];
+  static double _npgiv_xpro_nab[];
+  static double _npgiv_xpro_nac[];
+  static double _npgiv_xpro_bac[];
+  static double _npgiv_xpro_aco[];
+  static double _npgiv_xpro_acn[];
+  static double _npgiv_xpro_ocn[];
+
+  static double _ileval_xpro_cna[];
+  static double _ileval_xpro_nab[];
+  static double _ileval_xpro_nac[];
+  static double _ileval_xpro_bac[];
+  static double _ileval_xpro_aco[];
+  static double _ileval_xpro_acn[];
+  static double _ileval_xpro_ocn[];
+
+  static double _gly_xpro_cna[];
+  static double _gly_xpro_nab[];
+  static double _gly_xpro_nac[];
+  static double _gly_xpro_bac[];
+  static double _gly_xpro_aco[];
+  static double _gly_xpro_acn[];
+  static double _gly_xpro_ocn[];
+
+  static double _pro_xpro_cna[];
+  static double _pro_xpro_nab[];
+  static double _pro_xpro_nac[];
+  static double _pro_xpro_bac[];
+  static double _pro_xpro_aco[];
+  static double _pro_xpro_acn[];
+  static double _pro_xpro_ocn[];
 };
 
 #endif
