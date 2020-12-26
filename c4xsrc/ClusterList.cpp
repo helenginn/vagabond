@@ -55,10 +55,30 @@ ClusterList::ClusterList(QTreeWidget *widget)
 	_worker = NULL;
 	_widget = widget;
 	_widget->setHeaderLabel("Dataset groups");
-	connect(_widget, &QTreeWidget::currentItemChanged,
+	connect(_widget, &QTreeWidget::itemClicked,
 	        this, &ClusterList::displayResults);
+	connect(_widget, &QTreeWidget::currentItemChanged,
+	        this, &ClusterList::selectedResults);
 	connect(this, &ClusterList::updateSelections,
 	        this, &ClusterList::updateColours);
+
+	_widget->setContextMenuPolicy(Qt::CustomContextMenu);
+	connect(_widget, &QTreeWidget::customContextMenuRequested,
+	        this, &ClusterList::prepareMenu);
+}
+
+void ClusterList::prepareMenu(const QPoint &p)
+{
+	QTreeWidgetItem *item = _widget->itemAt(p);
+
+	if (item && !Group::isGroup(item))
+	{
+		MtzFFT *fft = static_cast<MtzFFT *>(item);
+		MtzFile *file = fft->getMtzFile();
+		file->flipSelected();
+	}
+	
+	updateSelections();
 }
 
 ClusterList::~ClusterList()
@@ -385,7 +405,7 @@ void ClusterList::keyReleaseEvent(QKeyEvent *event)
 	}
 }
 
-void ClusterList::displayResults()
+void ClusterList::selectedResults()
 {
 	QTreeWidgetItem *item = _widget->currentItem();
 
@@ -398,6 +418,21 @@ void ClusterList::displayResults()
 	{
 		Group *obj = static_cast<Group *>(item);
 		_lastAverage = obj;
+	}
+}
+
+void ClusterList::displayResults()
+{
+	QTreeWidgetItem *item = _widget->currentItem();
+
+	if (!item)
+	{
+		return;
+	}
+	
+	if (Group::isGroup(item))
+	{
+		Group *obj = static_cast<Group *>(item);
 		_screen->displayResults(obj);
 	}
 	else if (MtzFFT::isMtzFFT(item))

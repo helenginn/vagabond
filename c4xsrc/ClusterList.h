@@ -11,6 +11,7 @@
 #include "DatasetPath.h"
 
 class QTreeWidget;
+class QTreeWidgetItem;
 class AveCSV;
 class MtzFile;
 class Group;
@@ -82,10 +83,12 @@ public slots:
 	void switchCSV(int c);
 	void cycleCSV(bool forward);
 	void updateColours();
+	void prepareMenu(const QPoint &p);
 	void prepDirs();
 	void handleResults();
 	void handleError();
 	void displayResults();
+	void selectedResults();
 	void originalAverage();
 	void topAverage();
 	void myAverage();
@@ -117,6 +120,7 @@ private:
 	bool _sqlInput;
 	bool _streamInput;
 	bool _csvInput;
+	bool _contextMenu;
 	int _max;
 	int _skip;
 	std::string _csv;
