@@ -606,9 +606,9 @@ void Selected2GL::manualRefine()
 		group->clearParams();
 		group->addParamType(ParamOptionMaxTries, 1.0);
 		group->addParamType(ParamOptionNumBonds, 4.0);
-		group->addParamType(ParamOptionTorsion, 0.5);
-		group->addParamType(ParamOptionBondAngle, 0.1);
-		
+		group->addParamType(ParamOptionTorsion, 2.0);
+		group->convertToSVD(true);
+
 		if (kicking && !mousey)
 		{
 			group->addParamType(ParamOptionKick, 0.2);
@@ -671,10 +671,9 @@ void Selected2GL::manualRefine()
 			bool changed = group->didChange();
 
 			group->addParamType(ParamOptionMaxTries, 1.0);
-			group->addParamType(ParamOptionNumBonds, 10.0);
+			group->addParamType(ParamOptionNumBonds, 8.0);
 			group->addParamType(ParamOptionOccupancy, 1.0);
-			group->addParamType(ParamOptionTorsion, 0.5);
-			group->addParamType(ParamOptionSVD, 1);
+			group->addParamType(ParamOptionTorsion, 1.0);
 
 			group->refine(crystal, RefinementFine);
 			changed &= group->didChange();
