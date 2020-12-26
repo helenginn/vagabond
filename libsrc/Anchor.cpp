@@ -136,7 +136,7 @@ void Anchor::createLayeredSpherePositions()
 	/* Make Fibonacci lattice for each layer */
 
 	_sphereAngles = ExplicitModel::makeCloud(totalPoints, meanSqDisp,
-	                                         _occupancies);
+	                                         0, _occupancies);
 
 	_lastCount = totalPoints;
 }

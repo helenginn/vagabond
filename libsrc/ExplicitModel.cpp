@@ -355,7 +355,7 @@ double ExplicitModel::propagate(void *obj)
 }
 
 std::vector<vec3> ExplicitModel::makeCloud(double totalPoints,
-                                           double b, 
+                                           double b, double fallOff,
                                            std::vector<double> &occs)
 {
 	double totalSurfaces = 0;
@@ -405,7 +405,9 @@ std::vector<vec3> ExplicitModel::makeCloud(double totalPoints,
 		
 		mat3x3 mat = mat3x3_closest_rot_mat(yAxis, directions[j], cross);
 
-		double m = sqrt(b) * (double)(j + 1) / (double)layers;
+		double frac = (double)(j + 1) / (double)layers;
+		double m = sqrt(b) * frac;
+		frac *= fallOff;
 
 		int samples = layerSurfaces[j] * scale + 1;
 		double offset = 2. / (double)samples;
@@ -415,8 +417,7 @@ std::vector<vec3> ExplicitModel::makeCloud(double totalPoints,
 		
 		for (int i = 0; i < points.size(); i++)
 		{
-//			double add = exp(-m);
-			double add = 1;
+			double add = exp(-frac * frac);
 			occs.push_back(add);
 			addTotal += add;
 			

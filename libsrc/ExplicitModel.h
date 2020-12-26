@@ -152,7 +152,7 @@ public:
 
 	static double propagate(void *obj);
 	static std::vector<vec3> makeCloud(double totalPoints, 
-	                                   double b,
+	                                   double b, double fallOff,
 	                                   std::vector<double> &occs);
 protected:
 	bool _changedSamples;
