@@ -244,9 +244,9 @@ void VagWindow::resizeEvent(QResizeEvent *)
 	}
 	double displWidth = (!_showingLog ? w : w - logWidth);
 
-	display->setGeometry(0, menuHeight, displWidth, 
+	_display->setGeometry(0, menuHeight, displWidth, 
 	                     h - STATUS_HEIGHT - menuHeight);
-	display->resizeGL();
+	_display->resizeGL();
 
 	_lStatus->setGeometry(10, h - STATUS_HEIGHT, w - BUTTON_WIDTH, 
 	                      STATUS_HEIGHT);
@@ -276,9 +276,9 @@ VagWindow::VagWindow(QWidget *parent,
 
 	this->setWindowTitle("Vagabond");
 	
-	display = new VagabondGLWidget(this);
-	display->setVagWindow(this);
-	display->setGeometry(0, 0, DEFAULT_WIDTH - BUTTON_WIDTH, 
+	_display = new VagabondGLWidget(this);
+	_display->setVagWindow(this);
+	_display->setGeometry(0, 0, DEFAULT_WIDTH - BUTTON_WIDTH, 
 	                     DEFAULT_HEIGHT - STATUS_HEIGHT);
 
 	makeMenu();
@@ -303,8 +303,8 @@ VagWindow::VagWindow(QWidget *parent,
 	_argc = argc;
 	_argv = argv;
 	_showingLog = false;
-	display->setFocus();
-	display->setFocusPolicy(Qt::StrongFocus);
+	_display->setFocus();
+	_display->setFocusPolicy(Qt::StrongFocus);
 	_fileDialogue = NULL;
 
 	_instructionType = InstructionTypeNone;
@@ -530,7 +530,7 @@ int VagWindow::waitForInstructions()
 				break;
 
 				case InstructionTypeManualRefine:
-				display->manualRefine();
+				_display->manualRefine();
 				break;
 
 				default:
@@ -552,7 +552,7 @@ int VagWindow::waitForInstructions()
 			return 0;
 		}
 
-		display->setFocus();
+		_display->setFocus();
 		mutex.unlock();
 	}
 	
@@ -669,14 +669,14 @@ void VagWindow::pushExploreCrystal()
 	{
 		_xtalExplorer = new CrystalExplorer(this, crystal);
 		_xtalExplorer->setVagWindow(this);
-		_xtalExplorer->setKeeper(display->getKeeper());
+		_xtalExplorer->setKeeper(_display->getKeeper());
 		_xtalExplorer->show();
 	}
 }
 
 void VagWindow::pause(bool on)
 {
-	display->getKeeper()->pause(on);
+	_display->getKeeper()->pause(on);
 }
 
 void VagWindow::splitBond()
@@ -745,7 +745,7 @@ void VagWindow::receiveGotoResidue(std::string diagString)
 		resNum = atoi(start);
 	}
 	
-	display->getKeeper()->selectResidue(chain, resNum);
+	_display->getKeeper()->selectResidue(chain, resNum);
 
 	_myDialogue->hide();
 	_myDialogue->deleteLater();
@@ -849,18 +849,18 @@ void VagWindow::setMessage(std::string message)
 
 void VagWindow::renderWarp()
 {
-	display->renderWarp();
+	_display->renderWarp();
 }
 
 void VagWindow::setRenderDensity()
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	display->renderDensity(crystal);
+	_display->renderDensity(crystal);
 }
 
 void VagWindow::focusOnPosition(vec3 pos, double dist)
 {
-	display->getKeeper()->focusOnPosition(pos, dist);
+	_display->getKeeper()->focusOnPosition(pos, dist);
 }
 
 void VagWindow::adjustBFactor()
@@ -940,7 +940,7 @@ VagWindow::~VagWindow()
 {
 	delete bRefinePos;
 	delete bRecalculate;
-	delete display;
+	delete _display;
 	delete _myDialogue;
 	delete _fileDialogue;
 }

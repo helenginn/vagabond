@@ -82,7 +82,7 @@ public:
 	
 	VagabondGLWidget *getDisplay()
 	{
-		return display;
+		return _display;
 	}
 	
 	int attemptLoadAndRun();
@@ -108,7 +108,7 @@ private slots:
 
 	void displayMessage(Shouter *shout);
 private:
-	VagabondGLWidget *display;
+	VagabondGLWidget *_display;
 	void fixLabelChoice(LabelChoice &choice);
 	QWaitCondition wait;
 	QMutex mutex;
