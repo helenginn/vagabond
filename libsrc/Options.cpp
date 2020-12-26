@@ -110,13 +110,17 @@ void Options::makeCout()
 		FileReader::setOutputDirectory(_outputDir);
 	}
 
+	redirectToStream();
+	_couted = true;
+}
+
+void Options::redirectToStream()
+{
 	std::cout << "Redirecting to stream..." << std::endl;
 	/* Setup stream redirect */
 	_filter = new vagcout<char>(std::cout.rdbuf());
 	_filter->setNotify(_notify);
 	std::cout.rdbuf(_filter);
-
-	_couted = true;
 }
 
 void Options::run()
@@ -127,8 +131,6 @@ void Options::run()
 	{
 		parse();
 	}
-
-	makeCout();
 
 	/* ASCII art */
 	std::cout << "   _______                                _______\n";
@@ -149,6 +151,7 @@ void Options::run()
 		return;
 	}
 	
+	makeCout();
 	writeCommandLine();
 	
 	/* Load reflection file */
@@ -722,7 +725,6 @@ void Options::parse()
 	}
 	
 	_parsed = true;
-	makeCout();
 }
 
 void Options::outputCrystalInfo()

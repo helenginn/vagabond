@@ -377,6 +377,7 @@ public:
 	void openInCoot();
 	void findDisulphides();
 	void adjustBFactor();
+	void redirectToStream();
 
 	static std::string rTypeString(RefinementType type);
 private:

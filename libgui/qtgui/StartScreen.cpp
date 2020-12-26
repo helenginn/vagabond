@@ -344,7 +344,6 @@ StartScreen::StartScreen(QWidget *parent,
 	_options->setManual(true);
     Options::setRuntimeOptions(_options);
 	_options->parse();
-	_options->makeCout();
 
 	_fileDialogue = NULL;
 
@@ -407,6 +406,8 @@ void StartScreen::pushRun()
 		Options::_minRes = _tMinRes->text().toDouble();
 	}
 	
+	_options->makeCout();
+
 	VagWindow *window = new VagWindow(NULL, _argc, _argv);
 	window->setStartScreen(this);
 	finishUp();
