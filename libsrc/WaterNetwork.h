@@ -69,6 +69,8 @@ public:
 	void findNetworks(std::string filename);
 	void prune();
 	
+	AtomPtr addWaterAt(vec3 pos);
+	
 	void setMonomer(MonomerPtr _monomer);
 private:	
 	static double macroScore(void *object)

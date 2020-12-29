@@ -25,7 +25,7 @@ Density2GL::Density2GL()
 	_renderType = GL_TRIANGLES;
 	_resolution = 0.5;
 	_cubeIndices = std::vector<std::vector<GLuint> >();
-	_offset = make_vec3(-12, 3, -20);
+	_offset = empty_vec3();
 	_visible = true;
 	_threshold = 1.4;
 	_backToFront = true;
@@ -1136,14 +1136,13 @@ void Density2GL::render()
 	
 	GLObject::render();
 
-	vec3 centre = _keeper->getCentre();
-	vec3 pan = _keeper->getTranslation();
-	pan.z = 0;
-	vec3_mult(&pan, -1);
-	vec3_add_to_vec3(&centre, pan);
+	vec3 centre = getFocus();
 	centre.x = 0;
 	centre.y = 0;
+	centre.z = -centre.z;
 	vec3 newPos = mat4x4_mult_vec(inv, centre);
+//	std::cout << mat4x4_desc(inv) << std::endl;
+//	std::cout << vec3_desc(centre) << " " << vec3_desc(newPos) << std::endl;
 
 	vec3 movement = vec3_subtract_vec3(newPos, _offset);
 	_renderLock.unlock();

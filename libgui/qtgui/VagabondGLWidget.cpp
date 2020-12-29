@@ -8,6 +8,7 @@
 
 #include "VagabondGLWidget.h"
 #include "../Density2GL.h"
+#include "../Selected2GL.h"
 #include "../../libsrc/shared_ptrs.h"
 #include <QCursor>
 #include "../WarpGL.h"
@@ -130,6 +131,18 @@ void VagabondGLWidget::mousePressEvent(QMouseEvent *e)
 	_mouseButton = e->button();
 	_moving = false;
 	
+	if (_addingWater && e->button() == Qt::LeftButton)
+	{
+		double x = e->x(); double y = e->y();
+		convertCoords(&x, &y);
+		keeper->setModelRay(x, y);
+		bool diff = (keeper->getDensityState() == 2);
+		std::cout << "Adding water on " << diff << std::endl;
+		keeper->getSelectedGL()->addWater(diff);
+		_addingWater = false;
+		setCursor(Qt::ArrowCursor);
+	}
+	
 	if (keeper->isRefiningManually() && e->button() == Qt::RightButton)
 	{
 		double x = e->x(); double y = e->y();
@@ -206,7 +219,7 @@ void VagabondGLWidget::mouseMoveEvent(QMouseEvent *e)
 		}
 		else
 		{
-			keeper->draggedLeftMouse(-xDiff * 4, -yDiff * 4);
+			keeper->draggedLeftMouse(xDiff * 4, yDiff * 4);
 		}
 	}
 	else if (_mouseButton == Qt::RightButton &&

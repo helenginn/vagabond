@@ -23,8 +23,8 @@ inline std::string Blob_vsh()
 	"   vec4 pos = vec4(position[0], position[1], position[2], 1.0);\n"\
 	"   gl_Position = projection * model * pos;\n"\
 	"   vec4 model4 = model * pos;\n"\
-	"	vPos = model4;\n"\
-	"	gl_PointSize = -800. / model4[2];\n"\
+	"	vPos = gl_Position;\n"\
+	"	gl_PointSize = -4000. / model4[2];\n"\
 	"	gl_PointSize *= normal[0];\n"\
 	"	vColor = color;\n"\
 	"}";

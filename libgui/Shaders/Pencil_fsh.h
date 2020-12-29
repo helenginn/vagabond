@@ -38,15 +38,15 @@ inline std::string Pencil_fsh()
 "	gl_FragColor[1] *= vColor[1];\n"\
 "	gl_FragColor[2] *= vColor[2];\n"\
 "	gl_FragColor[3] = 0.9 * diff;\n"\
-"	float min_distance = -20.;\n"\
-"	float max_distance = -100.;\n"\
+"	float min_distance = 20.;\n"\
+"	float max_distance = 200.;\n"\
 "	if (focus[2] > -15.)\n"\
 "	{\n"\
-"		min_distance = focus[2] + 0.;\n"\
-"		max_distance = focus[2] - 4.;\n"\
+"//		min_distance = focus[2] + 0.;\n"\
+"//		max_distance = focus[2] - 4.;\n"\
 "		if (tPos[2] > -2.)\n"\
 "		{\n"\
-"			discard;\n"\
+"//			discard;\n"\
 "		}\n"\
 "	}\n"\
 "	float transparency = (tPos[2] - min_distance) / (max_distance - min_distance);\n"\

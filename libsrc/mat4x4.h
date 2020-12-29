@@ -23,11 +23,16 @@ std::string mat4x4_desc(mat4x4 mat);
 mat4x4 make_mat4x4();
 mat4x4 mat4x4_frustum(float left, float right, float top,
                       float bottom, float near, float far);
+mat4x4 mat4x4_unfrustum(float left, float right, float top,
+                        float bottom, float near, float far);
 mat4x4 mat4x4_ortho(float left, float right, float top,
                     float bottom, float near, float far);
+mat4x4 mat4x4_unortho(float left, float right, float top,
+                     float bottom, float near, float far);
 
 void mat4x4_rotate(mat4x4 *mat, double alpha, double beta, double gamma);
 void mat4x4_translate(mat4x4 *mat, vec3 centre);
+void mat4x4_set_translation(mat4x4 *mat, vec3 trans);
 mat4x4 mat4x4_from_rot_trans(mat3x3 rot, vec3 trans);
 mat3x3 mat4x4_get_rot(mat4x4 &mat);
 mat4x4 mat4x4_mult_mat4x4(mat4x4 l, mat4x4 r);

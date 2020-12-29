@@ -28,20 +28,20 @@ bool GLKeeper::everMovedMouse = false;
 
 void GLKeeper::updateProjection()
 {
-	zNear = 4;
-	zFar = 100;
+	zNear = 5;
+	zFar = 400;
 
 	double side = 0.5;
 	float aspect = height / width;
-	projMat = mat4x4_ortho(side, -side, side * aspect, -side * aspect,
+	projMat = mat4x4_frustum(-side, side, side * aspect, -side * aspect,
+	                       zNear, zFar);
+	_unprojMat = mat4x4_unfrustum(-side, side, side * aspect, -side * aspect,
 	                       zNear, zFar);
 }
 
 void GLKeeper::setupCamera(void)
 {
 	_translation = make_vec3(0, 0, START_Z);
-	_transOnly = make_vec3(0, 0, 0);
-	_totalCentroid = make_vec3(0, 0, 0);
 	_centre = make_vec3(0, 0, 0);
 	camAlpha = 0;
 	camBeta = 0;
@@ -61,16 +61,9 @@ GLObjectPtr GLKeeper::activeObject()
 
 void GLKeeper::updateCamera(void)
 {
-	vec3 alteration = activeObject()->fixCentroid(_totalCentroid);
-	alteration = empty_vec3();
-	_totalCentroid = activeObject()->getCentroid();
-	
 	vec3 centre = _centre;
-	centre.x = 0;
-	centre.y = 0;
-	
-	vec3 negCentre = centre;
-	vec3_mult(&centre, -1);
+	vec3 negCentre = _centre;
+	vec3_mult(&negCentre, -1);
 
 	mat4x4 change = make_mat4x4();
 	mat4x4_translate(&change, negCentre);
@@ -79,15 +72,16 @@ void GLKeeper::updateCamera(void)
 
 	mat4x4 transMat = make_mat4x4();
 	_centre = vec3_add_vec3(_centre, _translation);
-	_translation = vec3_add_vec3(_translation, alteration);
 	mat4x4_translate(&transMat, _translation);
 
 	mat4x4 tmp = mat4x4_mult_mat4x4(change, transMat);
-	modelMat = mat4x4_mult_mat4x4(modelMat, tmp);
+	modelMat = mat4x4_mult_mat4x4(tmp, modelMat);
 
 	camAlpha = 0; camBeta = 0; camGamma = 0;
 	_translation = make_vec3(0, 0, 0);
 	
+	_centre.x = 0;
+	_centre.y = 0;
 	setFocalPoint(negCentre);
 }
 
@@ -102,13 +96,11 @@ void GLKeeper::setFocalPoint(vec3 pos)
 void GLKeeper::focusOnPosition(vec3 pos, double dist)
 {
 	vec3 newPos = transformPosByModel(pos);
-	_centre = vec3_add_vec3(_translation, newPos);
+	_centre = newPos;
 	vec3_mult(&newPos, -1);
 	newPos.z -= dist;
 
-	vec3 diff = vec3_subtract_vec3(newPos, _translation);
 	_translation = vec3_add_vec3(_translation, newPos);
-
 }
 
 GLKeeper::GLKeeper(int newWidth, int newHeight)
@@ -126,7 +118,6 @@ GLKeeper::GLKeeper(int newWidth, int newHeight)
 
 	/* Bond model render */
 	_allBond2GL = Bonds2GLPtr(new Bonds2GL(false));
-	_totalCentroid = _allBond2GL->getCentroid();
 	
 	/* Average pos render */
 	_aveBond2GL = Bonds2GLPtr(new Bonds2GL(true));
@@ -240,6 +231,7 @@ void GLKeeper::render(void)
 	for (int i = 0; i < _objects.size(); i++)
 	{
 		_objects[i]->setProjMat(projMat);
+		_objects[i]->setUnprojMat(_unprojMat);
 		_objects[i]->setModelMat(modelMat);
 		_objects[i]->render();
 	}
@@ -297,11 +289,6 @@ void GLKeeper::zoom(float x, float y, float z)
 	_translation.x += x;
 	_translation.y += y;
 	_translation.z += z;
-	
-	_transOnly.x += x;
-	_transOnly.y += y;
-	_transOnly.z += z;
-
 }
 
 void GLKeeper::rotateAngles(float alpha, float beta, float gamma)
@@ -313,7 +300,7 @@ void GLKeeper::rotateAngles(float alpha, float beta, float gamma)
 
 void GLKeeper::panned(float x, float y)
 {
-	zoom(x / MOUSE_SENSITIVITY * 4, y / MOUSE_SENSITIVITY * 4, 0);
+	zoom(-x / MOUSE_SENSITIVITY * 4, y / MOUSE_SENSITIVITY * 4, 0);
 }
 
 void GLKeeper::draggedLeftMouse(float x, float y)
@@ -324,7 +311,7 @@ void GLKeeper::draggedLeftMouse(float x, float y)
 		return;
 	}
 
-	rotateAngles(y / MOUSE_SENSITIVITY, x / MOUSE_SENSITIVITY, 0);
+	rotateAngles(y / MOUSE_SENSITIVITY, -x / MOUSE_SENSITIVITY, 0);
 }
 
 void GLKeeper::draggedRightMouse(float x, float y)

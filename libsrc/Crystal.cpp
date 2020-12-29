@@ -1805,9 +1805,11 @@ double Crystal::getProteinSampling()
 {
 	double maxRes = getMaxResolution(_data);
 	double sampling = std::min(0.7, maxRes / 4);
-
-	return updateVariable(&_sampling, Options::getProteinSampling,
+	
+	updateVariable(&_sampling, Options::getProteinSampling,
 	               Options::setProteinSampling, "sampling", "Å", sampling);
+	
+	return _sampling;
 }
 
 double Crystal::getProbeRadius()
@@ -2411,4 +2413,20 @@ void Crystal::reindexAtoms(mat3x3 reindex, vec3 trans)
 			ToAbsolutePtr(atom(i)->getModel())->setPosition(init);
 		}
 	}
+}
+
+WaterNetworkPtr Crystal::getWaterNetwork()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isWaterNetwork())
+		{
+			continue;
+		}
+		
+		WaterNetworkPtr wat = ToWaterNetworkPtr(molecule(i));
+		return wat;
+	}
+
+	return WaterNetworkPtr();
 }

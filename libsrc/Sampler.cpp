@@ -14,6 +14,7 @@
 #include "SVDBond.h"
 #include "Atom.h"
 #include "Crystal.h"
+#include "Converter.h"
 #include "Element.h"
 #include "FileReader.h"
 #include "Absolute.h"
@@ -30,6 +31,7 @@
 
 Sampler::Sampler()
 {
+	_convert = false;
 	_svd = NULL;
 	_shouldSave = false;
 	_begin = 0;
@@ -695,6 +697,12 @@ bool Sampler::sample(bool clear)
 
 	if (sampleSize() && _strategy->parameterCount())
 	{
+		Converter conv;
+		if (_convert)
+		{
+			conv.setStrategy(_strategy);
+		}
+
 		_strategy->setJobName(_jobName);
 
 		int maxTries = getParameter(ParamOptionMaxTries);

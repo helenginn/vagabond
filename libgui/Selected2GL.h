@@ -42,6 +42,7 @@ public:
 	void resetSelection();
 	void novalentSelected(GLKeeper *k);
 	void toggleKicks();
+	void addWater(bool diff);
 	void advanceMonomer(int dir);
 	void addPicked(AtomPtr atom, bool preserveType);
 	void selectResidue(std::string chain, int number);

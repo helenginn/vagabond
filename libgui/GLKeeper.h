@@ -70,6 +70,11 @@ public:
 		return _origDiff2GL;
 	}
 	
+	int getDensityState()
+	{
+		return _densityState;
+	}
+	
 	WarpGLPtr getWarpGL()
 	{
 		return _warpGL;
@@ -83,6 +88,11 @@ public:
 	vec3 getTranslation()
 	{
 		return _transOnly;
+	}
+	
+	Selected2GLPtr getSelectedGL()
+	{
+		return _selected2GL;
 	}
 	
 	bool isRefiningManually();
@@ -117,7 +127,7 @@ private:
 	void setupCamera(void);
 	void updateCamera(void);
 	void updateProjection();
-	void setFocalPoint(vec3 pos);
+	virtual void setFocalPoint(vec3 pos);
 	void subtractFromFocalPoint(vec3 subtract);
     
 	mat4x4 rotMat;

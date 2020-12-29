@@ -584,3 +584,18 @@ void WaterNetwork::findNetworks(std::string filename)
 	
 	file.close();
 }
+
+AtomPtr WaterNetwork::addWaterAt(vec3 pos)
+{
+	CrystalPtr crystal = Options::getActiveCrystal();
+	AtomPtr atom = getClosestAtom(crystal, pos);
+	double b = atom->getBFactor() + 10;
+	AbsolutePtr abs = AbsolutePtr(new Absolute(pos, b, "O", 1.));
+	int num = crystal->issueAtomNumber();
+	abs->setIdentity(num, "HOH", "hoh", "O", num);
+	abs->setHeteroAtom(true);
+	abs->addToMolecule(shared_from_this());
+	abs->getAtom()->setWater(true);
+	
+	return abs->getAtom();
+}

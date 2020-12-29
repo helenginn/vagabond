@@ -14,7 +14,7 @@
 #include "../libsrc/vec3.h"
 
 #define MAX_LIGHTS 20
-#define START_Z -64
+#define START_Z 0
 
 typedef struct
 {

@@ -16,13 +16,17 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#include <iomanip>
 #include "Selected.h"
 #include "GLKeeper.h"
 #include "Selected2GL.h"
 #include "../libsrc/Monomer.h"
+#include "../libsrc/Absolute.h"
 #include "../libsrc/Options.h"
 #include "../libsrc/Polymer.h"
+#include "../libsrc/FlexGlobal.h"
 #include "../libsrc/WaterNetwork.h"
+#include "../libsrc/RefinementNelderMead.h"
 
 Selected2GL::Selected2GL()
 {
@@ -539,6 +543,82 @@ void Selected2GL::cancelRefine()
 //	_kicking = false;
 	_refining = false;
 	_switch.unlock();
+}
+
+/* find highest peak in displayed density */
+void Selected2GL::addWater(bool diff)
+{
+	mat4x4 inv = mat4x4_inverse(modelMat);
+	CrystalPtr crystal = Options::getActiveCrystal();
+	VagFFTPtr fft = crystal->getFFT();
+	if (diff)
+	{
+		fft = crystal->getDiFFT();
+	}
+
+	mat3x3 recip = crystal->getReal2Frac();
+	double sampling = crystal->getProteinSampling();
+	
+	vec3 best_ray = empty_vec3();
+	double best_density = -FLT_MAX;
+
+	std::cout << mat4x4_desc(projMat) << std::endl;
+	std::cout << mat4x4_desc(_unprojMat) << std::endl;
+	
+	mat4x4 unity = mat4x4_mult_mat4x4(projMat, _unprojMat);
+	std::cout << mat4x4_desc(unity) << std::endl;
+	
+	for (double d = 0.55; d < 0.95; d += 0.002)
+	{
+		double last = 1;
+		vec3 ray = _ray;
+		ray.x = -ray.x;
+		ray.z = d;
+		vec3 tmp = mat4x4_mult_vec3(_unprojMat, ray, &last);
+		vec3_mult(&tmp, 1 / last);
+		last = 1;
+		ray = mat4x4_mult_vec3(inv, tmp, &last);
+//		vec3_mult(&ray, 1 / last);
+		vec3 realpos = ray;
+		mat3x3_mult_vec(recip, &ray);
+		
+		double density = fft->getCompFromFrac(ray, 0);
+
+		if (density > best_density)
+		{
+			best_density = density;
+			best_ray = realpos;
+		}
+	}
+	
+	vec3 ray = best_ray;
+	std::cout << "Adding water at " << vec3_desc(ray) << std::endl;
+	AtomPtr a = crystal->getWaterNetwork()->addWaterAt(ray);
+
+	AbsolutePtr abs = ToAbsolutePtr(a->getModel());
+	std::cout << "New water with B = " << a->getBFactor() << std::endl;
+	
+	AtomGroupPtr atoms = AtomGroupPtr(new AtomGroup());
+	atoms->addAtom(a);
+
+	double range = 0.1;
+	double interval = 0.002;
+	
+	FlexGlobal target;
+	target.setCrystal(crystal);
+	target.setAtomGroup(atoms);
+	NelderMeadPtr mead = NelderMeadPtr(new RefinementNelderMead());
+	mead->addParameter(&*abs, Absolute::getPosX, Absolute::setPosX,
+	                        range, interval, "pos_x");
+	mead->addParameter(&*abs, Absolute::getPosY, Absolute::setPosY,
+	                        range, interval, "pos_y");
+	mead->addParameter(&*abs, Absolute::getPosZ, Absolute::setPosZ,
+	                        range, interval, "pos_z");
+	mead->setVerbose(true);
+	mead->setEvaluationFunction(FlexGlobal::score, &target);
+	mead->setCycles(30);
+	mead->refine();
+
 }
 
 void Selected2GL::manualRefine()

@@ -1261,25 +1261,25 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot,
 
 	/* Debugging ... writes cc_score.csv and cc_score.png, csv can be
 	* looked at with gnuplot quite nicely.*/
+	
+//	ws->scoreType = ScoreTypeRFactor;
+	double score = 0;
+	
+	if (ws->scoreType == ScoreTypeCorrel)
+	{
+		score = -correlation(ws->vals);
+	}
+	
+	if (ws->scoreType == ScoreTypeRFactor)
+	{
+		score = weighted_r_factor(ws->vals);
+	}
 
 	if (plot)
 	{
 		plotCoordVals(ws->vals, difference, cutoff, ws->filename);
 	}
-	
-	if (ws->scoreType == ScoreTypeCorrel)
-	{
-		double correl = correlation(ws->vals);
-		return -correl;
-	}
-	
-	if (ws->scoreType == ScoreTypeRFactor)
-	{
-		double rfactor = weighted_r_factor(ws->vals);
-		return rfactor;
-	}
 
-	double score = 0;
 	return score;
 }
 

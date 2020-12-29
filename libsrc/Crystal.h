@@ -535,6 +535,8 @@ public:
 		_comments += "\n";
 	}
 	
+	WaterNetworkPtr getWaterNetwork();
+	
 	void openInCoot();
 	
 	/** Obtain the current number of samples, i.e. number of conformers

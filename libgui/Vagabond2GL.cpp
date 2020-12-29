@@ -237,7 +237,7 @@ AtomPtr Vagabond2GL::findAtomAtXY(double x, double y, double *z)
 			continue;
 		}
 		
-		if (model.z > 0)
+		if (proj.z < -1 || proj.z > 1)
 		{
 			continue;
 		}

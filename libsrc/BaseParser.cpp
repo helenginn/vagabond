@@ -19,6 +19,7 @@
 #include "GhostBond.h"
 #include "Anchor.h"
 #include "Sidechain.h"
+#include "Sponge.h"
 #include "Backbone.h"
 #include "Shouter.h"
 #include "charmanip.h"
@@ -1310,6 +1311,10 @@ ParserPtr BaseParser::objectOfType(char *className)
 	else if (strcmp(className, "WaterNetwork") == 0)
 	{
 		object = ParserPtr(static_cast<WaterNetwork *>(new WaterNetwork()));        
+	}
+	else if (strcmp(className, "Sponge") == 0)
+	{
+		object = ParserPtr(static_cast<Sponge *>(new Sponge()));        
 	}
 	else if (strcmp(className, "Monomer") == 0)
 	{

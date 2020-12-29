@@ -125,6 +125,11 @@ public:
 	{
 		return _jobName;
 	}
+	
+	void convertToSVD(bool conv)
+	{
+		_convert = conv;
+	}
 
 	void setSilent(bool silent = true)
 	{
@@ -255,6 +260,7 @@ private:
 	bool _mock;
 	bool _silent;
 	bool _changed;
+	bool _convert;
 	double _improv;
 	double _begin;
 	bool _shouldSave;

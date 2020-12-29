@@ -39,13 +39,13 @@ inline std::string InkBond_vsh()
 	"    mat2 bondMat = mat2(axis[0], axis[1],\n"\
 	"	     	 			axis[1], -axis[0]);\n"\
 	"    vec2 shifted = bondMat * clean_shift;\n"\
-	"    shifted[0] *= 32.;\n"\
-	"    shifted[1] *= 32.;\n"\
+	"    shifted[0] *= 128.;\n"\
+	"    shifted[1] *= 128.;\n"\
 	"    model4[0] += shifted[0];\n"\
 	"    model4[1] += shifted[1];\n"\
 	"    gl_Position = model4;\n"\
 	"    vTex = tex;\n"\
-	"    vPos = model * pos;\n"\
+	"    vPos = gl_Position;\n"\
 	"}";
 	return str;
 }

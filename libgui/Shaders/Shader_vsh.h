@@ -34,7 +34,7 @@ inline std::string Shader_vsh()
 	"   complete *= complete;\n"\
 	"   complete *= 0.3;\n"\
 	"	vColor = color + complete * lightColor;\n"\
-	"	vPos = modelPos;\n"\
+	"	vPos = gl_Position;\n"\
 	"}";
 	return str;
 }

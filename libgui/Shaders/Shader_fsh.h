@@ -7,23 +7,19 @@ inline std::string Shader_fsh()
 	"\n"\
 	"void main()\n"\
 	"{\n"\
-	"	float min_distance = -20.;\n"\
-	"	float max_distance = -100.;\n"\
-	"	if (focus[2] > -25.)\n"\
+	"	float min_distance = 200.;\n"\
+	"	float max_distance = 400.;\n"\
+	"	if (focus[2] < 100.)\n"\
 	"	{\n"\
-	"		min_distance = focus[2] + 0.;\n"\
-	"		max_distance = focus[2] - 8.;\n"\
-	"		if (vPos[2] > -2.) {\n"\
-	"			discard;\n"\
-	"		}\n"\
+	"		min_distance = 70.;\n"\
+	"		max_distance = 110.;\n"\
+	"	}\n"\
+	"	if (vPos[2] > max_distance) {\n"\
+	"		discard;\n"\
 	"	}\n"\
 	"   float transparency = (vPos[2] - min_distance) / (max_distance - min_distance);\n"\
 	"	transparency = max(transparency, 0.0);\n"\
 	"	transparency = min(transparency, 1.0);\n"\
-	"	if (focus[2] < -120.)\n"\
-	"	{\n"\
-	"		transparency = 0.;\n"\
-	"	}\n"\
 	"	vec4 tmpColor = vColor;\n"\
 	"   for (int i = 0; i < 3; i++)\n"\
 	"   {\n"\

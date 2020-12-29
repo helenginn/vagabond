@@ -91,12 +91,15 @@ void GLObject::render()
 
 	const char *uniform_name = "projection";
 	_projectionUniform = glGetUniformLocation(_program, uniform_name);
-	glUniformMatrix4fv(_projectionUniform, 1, GL_FALSE, &projMat.vals[0]);
+	_glProj = mat4x4_transpose(projMat);
+	glUniformMatrix4fv(_projectionUniform, 1, GL_FALSE, 
+	                   &_glProj.vals[0]);
 	checkErrors();
 
 	const char *model_name = "model";
 	_modelUniform = glGetUniformLocation(_program, model_name);
-	glUniformMatrix4fv(_modelUniform, 1, GL_FALSE, &modelMat.vals[0]);
+	_glModel = mat4x4_transpose(modelMat);
+	glUniformMatrix4fv(_modelUniform, 1, GL_FALSE, &_glModel.vals[0]);
 	checkErrors();
 
 	if (_usesLighting)

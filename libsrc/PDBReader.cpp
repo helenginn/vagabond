@@ -278,6 +278,7 @@ void PDBReader::addAtomToMolecule(std::string line)
 		if (abs->getResName() == "hoh")
 		{
 			abs->addToMolecule(_myHOH);
+			abs->getAtom()->setWater(true);
 		}
 		else
 		{

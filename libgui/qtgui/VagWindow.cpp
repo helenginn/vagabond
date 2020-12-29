@@ -980,7 +980,6 @@ std::string VagWindow::getFile(QString types, QString title)
 void VagWindow::addWater()
 {
 	_display->setAddingWater();
-
 }
 
 void VagWindow::addPDBFile()
@@ -1196,8 +1195,6 @@ void VagWindow::waterAll()
 
 	disable();
 
-//	crystal->getBucket()->convertToWater();
-
 	for (int i = 0; i < crystal->atomCount(); i++)
 	{
 		AtomPtr tmp = crystal->atom(i);
@@ -1210,6 +1207,8 @@ void VagWindow::waterAll()
 			nov->getFinalPositions();
 		}
 	}
+	
+	return;
 	
 	for (size_t i = 0; i < crystal->moleculeCount(); i++)
 	{

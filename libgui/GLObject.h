@@ -65,6 +65,11 @@ public:
 	{
 		projMat = proj;
 	}
+	
+	void setUnprojMat(mat4x4 unproj)
+	{
+		_unprojMat = unproj;
+	}
 
 	void setModelMat(mat4x4 model)
 	{
@@ -81,7 +86,7 @@ public:
 
 	vec3 fixCentroid(vec3 newCentroid);
 
-	void setFocalPoint(vec3 vec);
+	virtual void setFocalPoint(vec3 vec);
 
 	vec3 transformPosByModel(vec3 pos)
 	{
@@ -95,7 +100,10 @@ public:
 	}
 protected:
 	mat4x4 projMat;
+	mat4x4 _unprojMat;
 	mat4x4 modelMat;
+	mat4x4 _glProj;
+	mat4x4 _glModel;
 
 	std::vector<Vertex> _vertices;
 	std::vector<GLuint> _indices;
@@ -104,6 +112,11 @@ protected:
 	virtual void bindTextures() {};
 	
 	void bindOneTexture(Picture &pic);
+	
+	vec3 getFocus()
+	{
+		return _focus;
+	}
 	
 	void clearVertices()
 	{
