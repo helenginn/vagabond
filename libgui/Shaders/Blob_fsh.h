@@ -24,10 +24,10 @@ inline std::string Blob_fsh()
 	"	}\n"\
 	"	float min_distance = 200.;\n"\
 	"	float max_distance = 400.;\n"\
-	"	if (focus[2] < 10.)\n"\
+	"	if (focus[2] < 100.)\n"\
 	"	{\n"\
 	"		min_distance = focus[2];\n"\
-	"		max_distance = focus[2] + 10.;\n"\
+	"		max_distance = focus[2] + 5.;\n"\
 	"	}\n"\
 	"	if (vPos[2] > max_distance) {\n"\
 	"		discard;\n"\
