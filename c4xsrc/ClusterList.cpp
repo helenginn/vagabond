@@ -117,6 +117,12 @@ void ClusterList::getFromFolders()
 	input->setList(this);
 }
 
+void ClusterList::getFromCSV(AveCSV *csv)
+{
+	csv->setList(this);
+	csv->load();
+}
+
 void ClusterList::getFromCSV(std::string csv)
 {
 	std::vector<std::string> csvs = split(csv, ',');
