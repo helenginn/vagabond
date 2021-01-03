@@ -42,6 +42,7 @@ public:
 	}
 
 	void renderDensity(CrystalPtr crystal);
+	void setDisableDensityUpdate();
 
 	void setAddingWater();
 	

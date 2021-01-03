@@ -1011,6 +1011,16 @@ void Options::renderWarp()
 
 }
 
+void Options::disableDensityUpdate()
+{
+	if (!_notify)
+	{
+		return;
+	}
+	
+	_notify->setDisableDensityUpdate();
+}
+
 void Options::renderDensity()
 {
 	if (!_notify)

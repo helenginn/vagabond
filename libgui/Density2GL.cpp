@@ -1142,7 +1142,7 @@ void Density2GL::render(SlipGL *sender)
 	vec3 movement = vec3_subtract_vec3(newPos, _offset);
 	_renderLock.unlock();
 	
-	if (vec3_length(movement) > 1)
+	if (vec3_length(movement) > 1 && !isDisabled())
 	{
 		_offset = newPos;
 		_recalculate = true;
@@ -1210,6 +1210,7 @@ void Density2GL::makeNewDensity(CrystalPtr crystal)
 	reorderIndices();
 	recalculate();
 
+	setDisabled(false);
 	_renderLock.unlock();
 }
 

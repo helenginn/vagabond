@@ -1308,6 +1308,7 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 		std::cout << "No reflection file has been specified.\n"\
 		"Cannot perform map recalculation." << std::endl;
 		std::cout << std::setprecision(4);
+		Options::getRuntimeOptions()->disableDensityUpdate();
 		realSpaceClutter();
 		_fft->fft(FFTRealToReciprocal);
 		_fft->writeToFile("calc_" + i_to_str(cycleNum) + ".mtz", 1.8);
@@ -1315,6 +1316,7 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 	}
 	else
 	{
+		Options::getRuntimeOptions()->disableDensityUpdate();
 		rFac = getDataInformation(data, 2, 1, refineCount);
 		Options::flagDensityChanged();
 		std::cout << "Got to density re-render without errors" << std::endl;

@@ -274,8 +274,14 @@ void VagabondGLWidget::mouseMoveEvent(QMouseEvent *e)
 	         !isRefiningManually())
 	{
 		draggedRightMouse(xDiff * PAN_SENSITIVITY,
-		                          yDiff * PAN_SENSITIVITY);
+		                  yDiff * PAN_SENSITIVITY);
 	}
+}
+
+void VagabondGLWidget::setDisableDensityUpdate()
+{
+	getDensity2GL()->setDisabled(true);
+	getDiffDens2GL()->setDisabled(true);
 }
 
 void VagabondGLWidget::renderDensity(CrystalPtr crystal)

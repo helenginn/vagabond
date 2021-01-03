@@ -857,6 +857,11 @@ void VagWindow::setMessage(std::string message)
 	_lStatus->setText(QString::fromStdString(message));
 }
 
+void VagWindow::setDisableDensityUpdate()
+{
+	_display->setDisableDensityUpdate();
+}
+
 void VagWindow::setRenderDensity()
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();

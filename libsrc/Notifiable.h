@@ -174,6 +174,7 @@ public:
 		_cancel = false;
 	}
 
+	virtual void setDisableDensityUpdate() = 0;
 	virtual void setRenderDensity() = 0;
 	virtual void renderWarp() {};
 

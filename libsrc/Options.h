@@ -368,6 +368,7 @@ public:
 	void chelate();
 	void renderWarp();
 	void renderDensity();
+	void disableDensityUpdate();
 	static void statusMessage(std::string message, bool std_out = true);
 	void agreementSummary();
 	void applyBMultiplier();

@@ -56,6 +56,7 @@ public:
 	virtual void setMessage(std::string message);
 	virtual void wakeup();
 	virtual void setRenderDensity();
+	virtual void setDisableDensityUpdate();
 	virtual void focusOnPosition(vec3 pos, double dist);
 	virtual void pause(bool on);
 	virtual void appendToLog(char *msg);
