@@ -25,7 +25,7 @@ inline std::string SlimBond_fsh()
 	"   {\n"\
 	"       tmpColor[i] = tmpColor[i] + (1. - tmpColor[i]) * transparency;\n"\
 	"   }\n"\
-	"   tmpColor[3] = 1.;\n"\
+	"   tmpColor[3] = 0.85.;\n"\
 	"	gl_FragColor = tmpColor;\n"\
 	"}\n";
 	return str;
