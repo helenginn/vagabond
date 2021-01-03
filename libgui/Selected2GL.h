@@ -18,6 +18,8 @@
 
 #include "Atoms2GL.h"
 
+class VagabondGLWidget;
+
 typedef enum
 {
 	SelectAtom,
@@ -40,7 +42,7 @@ public:
 	void splitSelected();
 	void deleteSelected();
 	void resetSelection();
-	void novalentSelected(GLKeeper *k);
+	void novalentSelected(VagabondGLWidget *k);
 	void toggleKicks();
 	void addWater(bool diff);
 	void advanceMonomer(int dir);

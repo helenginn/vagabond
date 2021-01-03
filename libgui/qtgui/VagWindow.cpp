@@ -250,7 +250,6 @@ void VagWindow::resizeEvent(QResizeEvent *)
 
 	_display->setGeometry(0, menuHeight, displWidth, 
 	                     h - STATUS_HEIGHT - menuHeight);
-	_display->resizeGL();
 
 	_lStatus->setGeometry(10, h - STATUS_HEIGHT, w - BUTTON_WIDTH, 
 	                      STATUS_HEIGHT);
@@ -673,14 +672,21 @@ void VagWindow::pushExploreCrystal()
 	{
 		_xtalExplorer = new CrystalExplorer(this, crystal);
 		_xtalExplorer->setVagWindow(this);
-		_xtalExplorer->setKeeper(_display->getKeeper());
+		_xtalExplorer->setKeeper(_display);
 		_xtalExplorer->show();
 	}
 }
 
 void VagWindow::pause(bool on)
 {
-	_display->getKeeper()->pause(on);
+	if (on)
+	{
+		_display->pause();
+	}
+	else
+	{
+		_display->restartTimer();
+	}
 }
 
 void VagWindow::splitBond()
@@ -749,7 +755,7 @@ void VagWindow::receiveGotoResidue(std::string diagString)
 		resNum = atoi(start);
 	}
 	
-	_display->getKeeper()->selectResidue(chain, resNum);
+	_display->selectResidue(chain, resNum);
 
 	_myDialogue->hide();
 	_myDialogue->deleteLater();
@@ -851,11 +857,6 @@ void VagWindow::setMessage(std::string message)
 	_lStatus->setText(QString::fromStdString(message));
 }
 
-void VagWindow::renderWarp()
-{
-	_display->renderWarp();
-}
-
 void VagWindow::setRenderDensity()
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
@@ -864,7 +865,7 @@ void VagWindow::setRenderDensity()
 
 void VagWindow::focusOnPosition(vec3 pos, double dist)
 {
-	_display->getKeeper()->focusOnPosition(pos, dist);
+	_display->focusOnPosition(pos, dist);
 }
 
 void VagWindow::adjustBFactor()

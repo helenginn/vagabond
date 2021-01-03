@@ -21,13 +21,20 @@
 #include "../libsrc/ExplicitModel.h"
 #include "../libsrc/GhostBond.h"
 #include "Bonds2GL.h"
+#include "Picture.h"
 #include "Shaders/InkBond_vsh.h"
 #include "Shaders/InkBond_fsh.h"
+#include "Shaders/SlimBond_vsh.h"
+#include "Shaders/SlimBond_fsh.h"
+
+using namespace Helen3D;
 
 Bonds2GL::Bonds2GL(int average) : Vagabond2GL()
 {
 	_average = average;
-	_usesFocalDepth = true;
+	_renderType = GL_LINES;
+	_vString = SlimBond_vsh();
+	_fString = SlimBond_fsh();
 	setupAverage();
 }
 
@@ -39,9 +46,9 @@ void Bonds2GL::setupAverage()
 	}
 
 	_renderType = GL_TRIANGLES;
-	_vertShader = InkBond_vsh();
-	_fragShader = InkBond_fsh();
-	_extra = true;
+	_vString = InkBond_vsh();
+	_fString = InkBond_fsh();
+	setNeedsExtra(true);
 }
 
 bool Bonds2GL::acceptablePositions(AtomPtr minAtom)
@@ -186,6 +193,7 @@ bool Bonds2GL::addToModel(AtomPtr minor, AtomPtr major, GLuint *count)
 		glNorm[2] = normal.z;
 
 		Vertex vertex;
+		memset(&vertex, 0, sizeof(Vertex));
 		vertex.pos[0] = majStart.x;
 		vertex.pos[1] = majStart.y;
 		vertex.pos[2] = majStart.z;
@@ -360,25 +368,25 @@ void Bonds2GL::bindTextures()
 		return;
 	}
 
-	Vagabond2GL::bindTextures();
+	SlipObject::bindTextures();
 	bindOneTexture(pic_bond);
 }
 
-void Bonds2GL::render()
+void Bonds2GL::render(SlipGL *sender)
 {
 	if (!_enabled)
 	{
 		return;
 	}
 
-	Vagabond2GL::render();
+	Vagabond2GL::render(sender);
 
 	if (_average)
 	{
 		reorderIndices();
 	}
 
-	GLObject::render();
+	SlipObject::render(sender);
 
 
 }

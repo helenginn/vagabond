@@ -24,7 +24,7 @@ MoleculeExplorer::MoleculeExplorer(QWidget *parent, MoleculePtr molecule)
 	_scrollArea->show();
 }
 
-void MoleculeExplorer::setGLKeeper(GLKeeper *keeper)
+void MoleculeExplorer::setGLKeeper(VagabondGLWidget *keeper)
 {
 	_keeper = keeper;
 }       

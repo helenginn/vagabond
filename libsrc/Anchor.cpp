@@ -19,7 +19,6 @@
 #include "Crystal.h"
 #include "Whack.h"
 #include "Twist.h"
-#include "mat4x4.h"
 #include <sstream>
 
 int Anchor::_sampleNum = 0;

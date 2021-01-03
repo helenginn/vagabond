@@ -13,6 +13,23 @@
 #include "../libsrc/Bond.h"
 #include "../libsrc/Atom.h"
 #include "../libsrc/Element.h"
+#include "../subprojects/helen3d/libsrc/Frameworks.h"
+
+using namespace Helen3D;
+
+Vagabond2GL::Vagabond2GL() : SlipObject()
+{
+	_renders = 0;
+	_lastEnsembleCount = 0;
+	_shouldGetBonds = true;
+	_centroid = empty_vec3();
+	_colourByFlex = false;
+	_usesFocalDepth = true;
+	_usesLighting = false;
+
+	_pause = false;
+	_enabled = true;
+}
 
 bool Vagabond2GL::isAcceptableAtom(Atom *atom)
 {
@@ -192,7 +209,7 @@ void Vagabond2GL::findAtoms()
 	}
 }
 
-void Vagabond2GL::render()
+void Vagabond2GL::render(SlipGL *sender)
 {
 	if (shouldGetBonds() && !_pause)
 	{
@@ -202,8 +219,6 @@ void Vagabond2GL::render()
 	{
 		updateAtoms();
 	}
-
-	rebindProgram();
 }
 
 AtomPtr Vagabond2GL::findAtomAtXY(double x, double y, double *z)
@@ -222,8 +237,8 @@ AtomPtr Vagabond2GL::findAtomAtXY(double x, double y, double *z)
 		vec3 pos = atom->getAbsolutePosition();
 		
 		double last = 1;
-		vec3 model = mat4x4_mult_vec3(modelMat, pos, &last);
-		vec3 proj = mat4x4_mult_vec3(projMat, model, &last);
+		vec3 model = mat4x4_mult_vec3(_model, pos, &last);
+		vec3 proj = mat4x4_mult_vec3(_proj, model, &last);
 		
 		vec3_mult(&proj, 1 / last);
 
@@ -257,12 +272,18 @@ AtomPtr Vagabond2GL::findAtomAtXY(double x, double y, double *z)
 	return chosen;
 }
 
-void Vagabond2GL::bindTextures()
+void Vagabond2GL::extraUniforms()
 {
-	int num = 1;
-	_textures.resize(num);
+	if (_usesFocalDepth)
+	{
+		vec3 focus = getFocus();
 
-	glGenTextures(num, &_textures[0]);
-	glBindTexture(GL_TEXTURE_2D, _textures[0]);
-	checkErrors();
+		_focalPos[0] = focus.x;
+		_focalPos[1] = focus.y;
+		_focalPos[2] = focus.z;
+		
+		const char *focal_name = "focus";
+		_uFocus = glGetUniformLocation(_program, focal_name);
+		glUniform3fv(_uFocus, 1, &_focalPos[0]);
+	}
 }

@@ -22,11 +22,13 @@
 #include "Shaders/Blob_vsh.h"
 #include "Shaders/Blob_fsh.h"
 
-Atoms2GL::Atoms2GL()
+using namespace Helen3D;
+
+Atoms2GL::Atoms2GL() : Vagabond2GL()
 {
 	_renderType = GL_POINTS;
-	_vertShader = Blob_vsh();
-	_fragShader = Blob_fsh();
+	_vString = Blob_vsh();
+	_fString = Blob_fsh();
 	_usesFocalDepth = true;
 }
 
@@ -103,7 +105,7 @@ bool Atoms2GL::getPositions(AtomPtr minor, AtomPtr major,
 
 void Atoms2GL::bindTextures()
 {
-	Vagabond2GL::bindTextures();
+	SlipObject::bindTextures();
 	bindOneTexture(pic_atom_blob);
 }
 
@@ -113,14 +115,14 @@ void Atoms2GL::updateAtoms()
 
 }
 
-void Atoms2GL::render()
+void Atoms2GL::render(SlipGL *sender)
 {
 	if (!_enabled)
 	{
 		return;
 	}
 	
-	Vagabond2GL::render();
-	GLObject::render();
+	Vagabond2GL::render(sender);
+	SlipObject::render(sender);
 }
 

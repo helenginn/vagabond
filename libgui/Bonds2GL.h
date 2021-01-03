@@ -16,6 +16,9 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#ifndef __vagabond__Bonds2GL__
+#define __vagabond__Bonds2GL__
+
 #include "Vagabond2GL.h"
 
 class Bonds2GL : public Vagabond2GL
@@ -23,7 +26,7 @@ class Bonds2GL : public Vagabond2GL
 public:
 	Bonds2GL(int average = false);
 
-	virtual void render();
+	virtual void render(SlipGL *sender);
 
 protected:
 	virtual void updateAtoms();
@@ -45,3 +48,5 @@ private:
 
 	int _average;
 };
+
+#endif

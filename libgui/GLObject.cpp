@@ -75,30 +75,20 @@ void GLObject::rebindProgram()
 	}
 }
 
-void GLObject::setFocalPoint(vec3 vec)
-{
-	if (!_usesFocalDepth)
-	{
-		return;
-	}
-	
-	_focus = vec;
-}
-
 void GLObject::render()
 {
 	glUseProgram(_program);
 
 	const char *uniform_name = "projection";
 	_projectionUniform = glGetUniformLocation(_program, uniform_name);
-	_glProj = mat4x4_transpose(projMat);
+	_glProj = mat4x4_transpose(_proj);
 	glUniformMatrix4fv(_projectionUniform, 1, GL_FALSE, 
 	                   &_glProj.vals[0]);
 	checkErrors();
 
 	const char *model_name = "model";
 	_modelUniform = glGetUniformLocation(_program, model_name);
-	_glModel = mat4x4_transpose(modelMat);
+	_glModel = mat4x4_transpose(_model);
 	glUniformMatrix4fv(_modelUniform, 1, GL_FALSE, &_glModel.vals[0]);
 	checkErrors();
 
@@ -224,18 +214,6 @@ vec3 GLObject::fixCentroid(vec3 newCentroid)
     vec3 addition = vec3_subtract_vec3(newCentroid, oldCentroid);
 
     return addition;
-}
-
-void GLObject::bindOneTexture(Picture &pic)
-{
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pic.width, pic.height, 
-	             0, GL_RGBA, GL_UNSIGNED_BYTE, pic.data);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-	glGenerateMipmap(GL_TEXTURE_2D);
-	checkErrors();
 }
 
 bool GLObject::index_behind_index(IndexTrio one, IndexTrio two)

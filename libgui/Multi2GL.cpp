@@ -26,11 +26,13 @@
 #include "../../libsrc/Atom.h"
 #include "../../libsrc/Sponge.h"
 
+using namespace Helen3D;
+
 Multi2GL::Multi2GL()
 {
 	_renderType = GL_POINTS;
-	_vertShader = Blob_vsh();
-	_fragShader = Blob_fsh();
+	_vString = Blob_vsh();
+	_fString = Blob_fsh();
 	_usesFocalDepth = true;
 	
 	_connected = Connect2GLPtr(new Connect2GL());
@@ -179,7 +181,7 @@ void Multi2GL::updateAtoms()
 	}
 }
 
-void Multi2GL::render()
+void Multi2GL::render(SlipGL *sender)
 {
-	Atoms2GL::render();
+	Atoms2GL::render(sender);
 }

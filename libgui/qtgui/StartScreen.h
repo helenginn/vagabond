@@ -1,5 +1,5 @@
-#ifndef __Vagabond__MonomerExplorer__
-#define __Vagabond__MonomerExplorer__
+#ifndef __Vagabond__StartScreen__
+#define __Vagabond__StartScreen__
 
 #include <QtWidgets/qpushbutton.h>
 #include <QtWidgets/qlabel.h>

@@ -1,3 +1,21 @@
+// Vagabond
+// Copyright (C) 2019 Helen Ginn
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+// 
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <https://www.gnu.org/licenses/>.
+// 
+// Please email: vagabond @ hginn.co.uk for more details.
+
 #ifndef __Vagabond__MonomerExplorer__
 #define __Vagabond__MonomerExplorer__
 
@@ -9,7 +27,7 @@
 #include "SetterEdit.h"
 #include <QtWidgets/qpushbutton.h>
 #include <QtWidgets/qslider.h>
-#include "../GLKeeper.h"
+#include "VagabondGLWidget.h"
 #include <map>
 
 typedef struct
@@ -40,13 +58,13 @@ public:
 	{
 		return _monomer;
 	}
-	GLKeeper *getKeeper()
+	VagabondGLWidget *getKeeper()
 	{
 		return _keeper;
 	}
 
 	void updateCorrelation(bool force = false);
-	void setKeeper(GLKeeper *keeper);
+	void setKeeper(VagabondGLWidget *keeper);
 	~MonomerExplorer();
 private slots:
 	void clickedAtomListItem();
@@ -66,7 +84,7 @@ private:
 	Notifiable *preparePolymer();
 
 	MonomerPtr _monomer;
-	GLKeeper *_keeper;
+	VagabondGLWidget *_keeper;
 
 	QListWidget *_atomList;
 

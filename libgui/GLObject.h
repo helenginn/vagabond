@@ -10,7 +10,7 @@
 #define GLObject_hpp
 
 #include <stdio.h>
-#include "Frameworks.h"
+#include "../subprojects/helen3d/libsrc/Frameworks.h"
 #include "Picture.h"
 #include <vector>
 #include "../libsrc/mat4x4.h"
@@ -86,14 +86,6 @@ public:
 
 	vec3 fixCentroid(vec3 newCentroid);
 
-	virtual void setFocalPoint(vec3 vec);
-
-	vec3 transformPosByModel(vec3 pos)
-	{
-		vec3 newPos = mat4x4_mult_vec(modelMat, pos);
-		return newPos;
-	}
-
 	virtual bool isVagabond2GL()
 	{
 		return false;
@@ -113,23 +105,9 @@ protected:
 	
 	void bindOneTexture(Picture &pic);
 	
-	vec3 getFocus()
-	{
-		return _focus;
-	}
-	
-	void clearVertices()
-	{
-		_vertices.clear();
-		_indices.clear();
-	}
-	
 	bool _extra;
 	bool _usesLighting;
 	bool _usesFocalDepth;
-	GLfloat _lightPos[3];
-	GLfloat _xAxis[3];
-	GLfloat _focalPos[3];
 
 	bool _backToFront;
 	GLenum _renderType;
@@ -147,8 +125,6 @@ private:
 
 	GLint _projectionUniform;
 	GLint _modelUniform;
-	GLint _lightUniform;
-	GLint _focalUniform;
 	GLint _xUniform;
 	GLuint _colorRenderBuffer;
 	GLuint _depthRenderBuffer;
@@ -158,7 +134,6 @@ private:
 	GLuint _colorSlot;
 	GLuint _program;
 	vec3 _centroid;
-	vec3 _focus;
 };
 
 #endif /* GLObject_hpp */

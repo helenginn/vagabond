@@ -7,7 +7,7 @@
 //
 
 #include <mutex>
-#include "GLObject.h"
+#include "../subprojects/helen3d/libsrc/SlipObject.h"
 #include <vector>
 #include "../libsrc/shared_ptrs.h"
 
@@ -28,14 +28,14 @@ typedef enum
 
 typedef std::map<int, std::map<int, int> > IntMap;
 
-class GLKeeper;
+class VagabondGLWidget;
 
-class Density2GL : public GLObject
+class Density2GL : public SlipObject
 {
 public:
 	Density2GL();
 	
-	virtual void render();
+	virtual void render(SlipGL *sender);
 	
 	void makeNewDensity(CrystalPtr crystal = CrystalPtr());
 	void nudgeDensity(int dir);
@@ -73,12 +73,13 @@ public:
 		_renderType = type;
 	}
 	
-	void setKeeper(GLKeeper *keeper)
+	void setKeeper(VagabondGLWidget *keeper)
 	{
 		_keeper = keeper;
 	}
 protected:
 	virtual void bindTextures();
+	virtual void extraUniforms();
 private:
 	DensityType _dType;
 	
@@ -86,7 +87,7 @@ private:
 	
 	VagFFTPtr getFFT();
 	CrystalPtr _crystal;
-	GLKeeper *_keeper;
+	VagabondGLWidget *_keeper;
 	void calculateContouring(CrystalPtr crystal);
 	void makeUniformGrid();
 	void setupIndexTable();

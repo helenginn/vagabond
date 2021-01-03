@@ -26,7 +26,7 @@ class Atoms2GL : public Vagabond2GL
 public:
 	Atoms2GL();
 
-	virtual void render();
+	virtual void render(SlipGL *sender);
 protected:
 	virtual int processMolecule(MoleculePtr molecule);
 	virtual void updateAtoms();

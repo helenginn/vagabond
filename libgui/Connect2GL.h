@@ -27,7 +27,7 @@ public:
 	Connect2GL();
 
 	void clear();
-	void render();
+	void render(SlipGL *sender);
 	void addAtoms(AtomPtr major, AtomPtr minor);
 protected:
 	virtual void findAtoms()

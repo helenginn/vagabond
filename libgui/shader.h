@@ -9,7 +9,7 @@
 #ifndef shader_hpp
 #define shader_hpp
 
-#include "Frameworks.h"
+#include "../subprojects/helen3d/libsrc/Frameworks.h"
 
 
 class Shader : public QObject, public QOpenGLFunctions

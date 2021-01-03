@@ -195,11 +195,11 @@ void MonomerExplorer::populateList()
 
 }
 
-void MonomerExplorer::setKeeper(GLKeeper *keeper)
+void MonomerExplorer::setKeeper(VagabondGLWidget *keeper)
 {
 	_keeper = keeper;
 
-	/* GLKeeper focus on the atom at hand */
+	/* VagabondGLWidget focus on the atom at hand */
 	AtomPtr atom = _monomer->atom(0);
 	vec3 pos = atom->getAbsolutePosition();
 	_keeper->focusOnPosition(pos);

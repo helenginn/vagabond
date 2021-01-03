@@ -18,8 +18,8 @@
 
 #include <iomanip>
 #include "Selected.h"
-#include "GLKeeper.h"
 #include "Selected2GL.h"
+#include "qtgui/VagabondGLWidget.h"
 #include "../libsrc/Monomer.h"
 #include "../libsrc/Absolute.h"
 #include "../libsrc/Options.h"
@@ -436,7 +436,7 @@ vec3 Selected2GL::averageModelPos()
 		double last = 1;
 		AtomPtr atom = selected->atom(i);
 		vec3 pos = atom->getAbsolutePosition();
-		vec3 model = mat4x4_mult_vec3(modelMat, pos, &last);
+		vec3 model = mat4x4_mult_vec3(_model, pos, &last);
 		
 		vec3_add_to_vec3(&sum, model);
 		count++;
@@ -548,7 +548,7 @@ void Selected2GL::cancelRefine()
 /* find highest peak in displayed density */
 void Selected2GL::addWater(bool diff)
 {
-	mat4x4 inv = mat4x4_inverse(modelMat);
+	mat4x4 inv = mat4x4_inverse(_model);
 	CrystalPtr crystal = Options::getActiveCrystal();
 	VagFFTPtr fft = crystal->getFFT();
 	if (diff)
@@ -562,19 +562,13 @@ void Selected2GL::addWater(bool diff)
 	vec3 best_ray = empty_vec3();
 	double best_density = -FLT_MAX;
 
-	std::cout << mat4x4_desc(projMat) << std::endl;
-	std::cout << mat4x4_desc(_unprojMat) << std::endl;
-	
-	mat4x4 unity = mat4x4_mult_mat4x4(projMat, _unprojMat);
-	std::cout << mat4x4_desc(unity) << std::endl;
-	
 	for (double d = 0.55; d < 0.95; d += 0.002)
 	{
 		double last = 1;
 		vec3 ray = _ray;
 		ray.x = -ray.x;
 		ray.z = d;
-		vec3 tmp = mat4x4_mult_vec3(_unprojMat, ray, &last);
+		vec3 tmp = mat4x4_mult_vec3(_unproj, ray, &last);
 		vec3_mult(&tmp, 1 / last);
 		last = 1;
 		ray = mat4x4_mult_vec3(inv, tmp, &last);
@@ -616,7 +610,7 @@ void Selected2GL::addWater(bool diff)
 	                        range, interval, "pos_z");
 	mead->setVerbose(true);
 	mead->setEvaluationFunction(FlexGlobal::score, &target);
-	mead->setCycles(30);
+	mead->setCycles(300);
 	mead->refine();
 
 }
@@ -681,13 +675,13 @@ void Selected2GL::manualRefine()
 		_switch.unlock();
 
 		vec3 ave = averageModelPos();
-		mat4x4 inv = mat4x4_inverse(modelMat);
+		mat4x4 inv = mat4x4_inverse(_model);
 
 		group->clearParams();
 		group->addParamType(ParamOptionMaxTries, 1.0);
 		group->addParamType(ParamOptionNumBonds, 4.0);
 		group->addParamType(ParamOptionTorsion, 2.0);
-		group->convertToSVD(true);
+//		group->convertToSVD(true);
 
 		if (kicking && !mousey)
 		{
@@ -721,7 +715,7 @@ void Selected2GL::manualRefine()
 			{
 				AtomPtr atom = group->atom(i);
 				vec3 pos = atom->getAbsolutePosition();
-				vec3 model = mat4x4_mult_vec(modelMat, pos);
+				vec3 model = mat4x4_mult_vec(_model, pos);
 				vec3 diff = vec3_subtract_vec3(model, ray);
 				double weight = 1 / vec3_length(diff);
 				atom->setTargetPosition(ray, weight);
@@ -955,7 +949,7 @@ void Selected2GL::selectResidue(std::string chain, int resNum)
 	std::cout << "Did not find residue " << chain << " " << resNum << std::endl;
 }
 
-void Selected2GL::novalentSelected(GLKeeper *k)
+void Selected2GL::novalentSelected(VagabondGLWidget *k)
 {
 	if (!getPicked())
 	{

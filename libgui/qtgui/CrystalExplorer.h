@@ -22,7 +22,7 @@
 #include "../../libsrc/shared_ptrs.h"
 
 class MoleculeExplorer;
-class GLKeeper;
+class VagabondGLWidget;
 class VagWindow;
 
 class CrystalExplorer : public QMainWindow
@@ -35,7 +35,7 @@ public:
 	
 	~CrystalExplorer();
 	
-	void setKeeper(GLKeeper *keeper)
+	void setKeeper(VagabondGLWidget *keeper)
 	{
 		_keeper = keeper;
 	}
@@ -68,7 +68,7 @@ private:
 	MoleculePtr _currMole;
 	MoleculeExplorer *_moleExplorer;
 	
-	GLKeeper *_keeper;
+	VagabondGLWidget *_keeper;
 
 	CrystalPtr _crystal;
 	QListWidget *_moleList;

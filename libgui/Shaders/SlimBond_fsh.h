@@ -1,4 +1,4 @@
-inline std::string Shader_fsh()
+inline std::string SlimBond_fsh()
 {
 	std::string str =
 	"varying vec4 vColor;\n"\
@@ -11,8 +11,8 @@ inline std::string Shader_fsh()
 	"	float max_distance = 400.;\n"\
 	"	if (focus[2] < 100.)\n"\
 	"	{\n"\
-	"		min_distance = 70.;\n"\
-	"		max_distance = 110.;\n"\
+	"		min_distance = focus[2];\n"\
+	"		max_distance = focus[2] + 10.;\n"\
 	"	}\n"\
 	"	if (vPos[2] > max_distance) {\n"\
 	"		discard;\n"\
@@ -25,7 +25,7 @@ inline std::string Shader_fsh()
 	"   {\n"\
 	"       tmpColor[i] = tmpColor[i] + (1. - tmpColor[i]) * transparency;\n"\
 	"   }\n"\
-	"   tmpColor[3] = 0.85;\n"\
+	"   tmpColor[3] = 1.;\n"\
 	"	gl_FragColor = tmpColor;\n"\
 	"}\n";
 	return str;

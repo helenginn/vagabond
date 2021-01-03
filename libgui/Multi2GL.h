@@ -29,7 +29,7 @@ class Multi2GL : public Atoms2GL
 public:
 	Multi2GL();
 
-	virtual void render();
+	virtual void render(SlipGL *sender);
 	
 	Connect2GLPtr getConnected2GL()
 	{

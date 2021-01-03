@@ -861,6 +861,8 @@ CrystalPtr Options::openModel(std::string pdbName)
 		crystal = reader.getCrystal();
 	}
 	
+	vec3 init = crystal->initialCentroid();
+	focusOnPosition(init, 200);
 	crystal->summary();
 	notifyGUI(true);
 	

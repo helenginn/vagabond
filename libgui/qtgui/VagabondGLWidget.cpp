@@ -8,28 +8,79 @@
 
 #include "VagabondGLWidget.h"
 #include "../Density2GL.h"
+#include "../Connect2GL.h"
 #include "../Selected2GL.h"
 #include "../../libsrc/shared_ptrs.h"
 #include <QCursor>
-#include "../WarpGL.h"
+#include <cfloat>
 
 #define PAN_SENSITIVITY 30
 
-VagabondGLWidget::VagabondGLWidget(QWidget *obj) : QOpenGLWidget(obj)
+VagabondGLWidget::VagabondGLWidget(QWidget *obj) : SlipGL(obj)
 {
 	_addingWater = false;
-	keeper = NULL;
 	timer = NULL;
 	_mouseButton = Qt::NoButton;
 	_lastX = 0; _lastY = 0;
 	_controlPressed = false;
 	_shiftPressed = false;
-	setFocus();
+	_r = 1,
+	_g = 1;
+	_b = 1;
+
+	_setup.lock();
+
+	_centre = empty_vec3();
+	_densityState = 1;
+
+	#ifdef SETUP_BUFFERS
+	setupBuffers();
+	#endif // SETUP_BUFFERS
+
+	/* Bond model render */
+	_allBond2GL = Bonds2GLPtr(new Bonds2GL(false));
+	
+	/* Average pos render */
+	_aveBond2GL = Bonds2GLPtr(new Bonds2GL(true));
+	_aveBond2GL->setEnabled(false);
+	
+	/* Atom pos render */
+	_atoms2GL = Atoms2GLPtr(new Atoms2GL());
+	
+	/* Atom pos render for multiple positions */
+	Multi2GLPtr multi2GL = Multi2GLPtr(new Multi2GL());
+	_multi2GL = multi2GL;
+
+	/* Selected atoms render */
+	_selected2GL = Selected2GLPtr(new Selected2GL());
+
+	/* Density render */
+	_density2GL = Density2GLPtr(new Density2GL());
+	_density2GL->setKeeper(this);
+	_density2GL->recalculate();
+
+	/* Difference density render */
+	_diffDens2GL = Density2GLPtr(new Density2GL());
+	_diffDens2GL->setKeeper(this);
+	_diffDens2GL->setDiffDensity(true);
+	_diffDens2GL->setVisible(false);
+	_diffDens2GL->recalculate();
+	
+	_objects.push_back(&*_allBond2GL);
+	_objects.push_back(&*_aveBond2GL);
+	_objects.push_back(&*_selected2GL);
+	_objects.push_back(&*_atoms2GL);
+	_objects.push_back(&*_multi2GL);
+	_objects.push_back(&*(multi2GL->getConnected2GL()));
+	_objects.push_back(&*_density2GL);
+	_objects.push_back(&*_diffDens2GL);
+	
+	_setup.unlock();
 }
 
 void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 {
-	Density2GLPtr active = keeper->activeDensity();
+	Density2GLPtr active = activeDensity();
 	
 	if (event->key() == Qt::Key_Alt || event->key() == Qt::Key_Control)
 	{
@@ -38,11 +89,11 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	else if (event->key() == Qt::Key_Shift)
 	{
 		_shiftPressed = true;
-		keeper->setAdding(true);
+		setAdding(true);
 	}
 	else if (event->key() == Qt::Key_D)
 	{
-		keeper->toggleVisibleDensity();
+		toggleVisibleDensity();
 	}
 	else if (active && (event->key() == Qt::Key_Plus ||
 	                    event->key() == Qt::Key_Equal))
@@ -55,7 +106,7 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	}
 	else if (event->key() == Qt::Key_B)
 	{
-		keeper->toggleBondView();
+		toggleBondView();
 	}
 	else if (event->key() == Qt::Key_L)
 	{
@@ -63,7 +114,7 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	}
 	else if (event->key() == Qt::Key_R && !_shiftPressed)
 	{
-		if (!keeper->isRefiningManually())
+		if (!isRefiningManually())
 		{
 			/* start it */
 			_vag->setInstructionType(InstructionTypeManualRefine);
@@ -72,28 +123,28 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 		else
 		{
 			/* send instruction to stop asap */
-			keeper->cancelRefine();
+			cancelRefine();
 		}
 	}
 	else if (event->key() == Qt::Key_R && _shiftPressed)
 	{
-		keeper->resetSelection();
+		resetSelection();
 	}
 	else if (event->key() == Qt::Key_Space)
 	{
-		keeper->focusOnSelected();
+		focusOnSelected();
 	}
 	else if (event->key() == Qt::Key_S)
 	{
-		keeper->splitSelected();
+		splitSelected();
 	}
 	else if (event->key() == Qt::Key_X)
 	{
-		keeper->deleteSelected();
+		deleteSelected();
 	}
 	else if (event->key() == Qt::Key_W && !_shiftPressed)
 	{
-		keeper->novalentSelected();
+		novalentSelected();
 	}
 	else if (event->key() == Qt::Key_W && _shiftPressed)
 	{
@@ -101,7 +152,7 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	}
 	else if (event->key() == Qt::Key_K)
 	{
-		keeper->toggleKicks();
+		toggleKicks();
 	}
 	else if (event->key() == Qt::Key_G)
 	{
@@ -109,11 +160,11 @@ void VagabondGLWidget::keyPressEvent(QKeyEvent *event)
 	}
 	else if (event->key() == Qt::Key_Comma)
 	{
-		keeper->advanceMonomer(-1);
+		advanceMonomer(-1);
 	}
 	else if (event->key() == Qt::Key_Period)
 	{
-		keeper->advanceMonomer(1);
+		advanceMonomer(1);
 	}
 }
 
@@ -121,7 +172,7 @@ void VagabondGLWidget::keyReleaseEvent(QKeyEvent *event)
 {
 	_controlPressed = false;
 	_shiftPressed = false;
-	keeper->setAdding(false);
+	setAdding(false);
 }
 
 void VagabondGLWidget::mousePressEvent(QMouseEvent *e)
@@ -135,20 +186,20 @@ void VagabondGLWidget::mousePressEvent(QMouseEvent *e)
 	{
 		double x = e->x(); double y = e->y();
 		convertCoords(&x, &y);
-		keeper->setModelRay(x, y);
-		bool diff = (keeper->getDensityState() == 2);
+		setModelRay(x, y);
+		bool diff = (getDensityState() == 2);
 		std::cout << "Adding water on " << diff << std::endl;
-		keeper->getSelectedGL()->addWater(diff);
+		getSelectedGL()->addWater(diff);
 		_addingWater = false;
 		setCursor(Qt::ArrowCursor);
 	}
 	
-	if (keeper->isRefiningManually() && e->button() == Qt::RightButton)
+	if (isRefiningManually() && e->button() == Qt::RightButton)
 	{
 		double x = e->x(); double y = e->y();
 		convertCoords(&x, &y);
-		keeper->setModelRay(x, y);
-		keeper->setMouseRefine(true);
+		setModelRay(x, y);
+		setMouseRefine(true);
 	}
 }
 
@@ -163,9 +214,9 @@ void VagabondGLWidget::convertCoords(double *x, double *y)
 
 void VagabondGLWidget::mouseReleaseEvent(QMouseEvent *e)
 {
-	if (keeper->isRefiningManually() && e->button() == Qt::RightButton)
+	if (isRefiningManually() && e->button() == Qt::RightButton)
 	{
-		keeper->setMouseRefine(false);
+		setMouseRefine(false);
 		return;
 	}
 	
@@ -176,10 +227,7 @@ void VagabondGLWidget::mouseReleaseEvent(QMouseEvent *e)
 		double prop_y = _lastY;
 		convertCoords(&prop_x, &prop_y);
 		
-		if (keeper)
-		{
-			keeper->findAtomAtXY(prop_x, prop_y);
-		}
+		findAtomAtXY(prop_x, prop_y);
 	}
 	
 	_mouseButton = Qt::NoButton;
@@ -194,13 +242,13 @@ void VagabondGLWidget::mouseMoveEvent(QMouseEvent *e)
 
 	_moving = true;
 	
-	if (keeper->isRefiningManually() && e->button() == Qt::RightButton)
+	if (isRefiningManually() && e->button() == Qt::RightButton)
 	{
 		double prop_x = e->x();
 		double prop_y = e->y();
 
 		convertCoords(&prop_x, &prop_y);
-		keeper->setModelRay(prop_x, prop_y);
+		setModelRay(prop_x, prop_y);
 		return;
 	}
 	
@@ -215,73 +263,30 @@ void VagabondGLWidget::mouseMoveEvent(QMouseEvent *e)
 	{
 		if (_controlPressed)
 		{
-			keeper->panned(xDiff * 2, yDiff * 2);
+			panned(xDiff / 100, yDiff / 100);
 		}
 		else
 		{
-			keeper->draggedLeftMouse(xDiff * 4, yDiff * 4);
+			draggedLeftMouse(xDiff * 4, yDiff * 4);
 		}
 	}
 	else if (_mouseButton == Qt::RightButton &&
-	         !keeper->isRefiningManually())
+	         !isRefiningManually())
 	{
-		keeper->draggedRightMouse(xDiff * PAN_SENSITIVITY,
+		draggedRightMouse(xDiff * PAN_SENSITIVITY,
 		                          yDiff * PAN_SENSITIVITY);
 	}
 }
 
-void VagabondGLWidget::initializeGL()
-{
-	keeper = new GLKeeper(width(), height());
-
-	if (timer == NULL)
-	{
-		timer = new QTimer();
-		timer->setInterval(30);
-		connect(timer, SIGNAL(timeout()), this, SLOT(update()));
-		timer->start();
-	}
-}
-
-void VagabondGLWidget::resizeGL()
-{
-	int w = width();
-	int h = height();
-	if (keeper)
-	{
-		keeper->changeSize(w, h);
-	}
-}
-
-void VagabondGLWidget::paintGL()
-{
-	keeper->render();
-}
-
 void VagabondGLWidget::renderDensity(CrystalPtr crystal)
 {
-	if (keeper)
-	{
-		keeper->getDensity2GL()->makeNewDensity(crystal);
-		keeper->getDiffDens2GL()->makeNewDensity(crystal);
-	}
-}
-
-void VagabondGLWidget::renderWarp()
-{
-	keeper->getWarpGL()->refresh();
+	getDensity2GL()->makeNewDensity(crystal);
+	getDiffDens2GL()->makeNewDensity(crystal);
 }
 
 VagabondGLWidget::~VagabondGLWidget()
 {
-	keeper->cleanup();
-	delete keeper;
-	delete timer;
-}
 
-void VagabondGLWidget::manualRefine()
-{
-	keeper->manualRefine();
 }
 
 void VagabondGLWidget::setAddingWater()
@@ -289,3 +294,156 @@ void VagabondGLWidget::setAddingWater()
 	_addingWater = true;
 	setCursor(Qt::CrossCursor);
 }
+
+Density2GLPtr VagabondGLWidget::activeDensity()
+{
+	if (_densityState == 0)
+	{
+		return Density2GLPtr();
+	}
+	else if (_densityState == 1)
+	{
+		return getDensity2GL();
+	}
+	else if (_densityState == 2)
+	{
+		return getDiffDens2GL();
+	}
+	
+	return getDiffDens2GL();
+}
+
+void VagabondGLWidget::toggleVisibleDensity()
+{
+	if (_densityState == 0)
+	{
+		_densityState++;
+		getDensity2GL()->setVisible(true);
+		getDiffDens2GL()->setVisible(false);
+	}
+	else if (_densityState == 1)
+	{
+		_densityState++;
+		getDensity2GL()->setVisible(true);
+		getDiffDens2GL()->setVisible(true);
+	}
+	else
+	{
+		_densityState = 0;	
+		getDensity2GL()->setVisible(false);
+		getDiffDens2GL()->setVisible(false);
+	}
+}
+
+
+void VagabondGLWidget::toggleBondView()
+{
+	bool enabled = _allBond2GL->isEnabled();
+	_aveBond2GL->setEnabled(enabled);
+	_allBond2GL->setEnabled(!enabled);
+}
+
+AtomPtr VagabondGLWidget::findAtomAtXY(double x, double y)
+{
+	double z = -FLT_MAX;
+	AtomPtr chosen = AtomPtr();
+
+	for (int i = 0; i < _objects.size(); i++)
+	{
+		SlipObject *obj = _objects[i];
+
+		if (dynamic_cast<Vagabond2GL *>(obj) == NULL)
+		{
+			continue;
+		}
+		
+		Vagabond2GL *ptr = static_cast<Vagabond2GL *>(obj);
+		AtomPtr atom = ptr->findAtomAtXY(x, y, &z);
+		
+		if (atom)
+		{
+			chosen = atom;
+		}
+	}
+	
+	_selected2GL->setPicked(chosen);
+
+	return chosen;
+}
+
+void VagabondGLWidget::manualRefine()
+{
+	_selected2GL->manualRefine();
+}
+
+void VagabondGLWidget::cancelRefine()
+{
+	_selected2GL->cancelRefine();
+}
+
+bool VagabondGLWidget::isRefiningManually()
+{
+	return _selected2GL->isRefining();
+}
+
+void VagabondGLWidget::setModelRay(double x, double y)
+{
+	/* assume a z position of -1 */
+	/*
+	float aspect = height / width;
+	y *= aspect;
+	*/
+	vec3 ray = make_vec3(-x, y, -1);
+	_selected2GL->setMouseRay(ray);
+}
+
+void VagabondGLWidget::setMouseRefine(bool val)
+{
+	_selected2GL->setMouseRefinement(val);
+}
+
+void VagabondGLWidget::focusOnSelected()
+{
+	_selected2GL->focusOnGroup();
+}
+
+void VagabondGLWidget::splitSelected()
+{
+	_selected2GL->splitSelected();
+}
+
+void VagabondGLWidget::deleteSelected()
+{
+	_selected2GL->deleteSelected();
+}
+
+void VagabondGLWidget::toggleKicks()
+{
+	_selected2GL->toggleKicks();
+}
+
+void VagabondGLWidget::advanceMonomer(int dir)
+{
+	_selected2GL->advanceMonomer(dir);
+}
+
+void VagabondGLWidget::setAdding(bool val)
+{
+	_selected2GL->setAdding(val);
+}
+
+void VagabondGLWidget::selectResidue(std::string chain, int number)
+{
+	_selected2GL->selectResidue(chain, number);	
+}
+
+void VagabondGLWidget::novalentSelected()
+{
+	_selected2GL->novalentSelected(this);
+}
+
+void VagabondGLWidget::resetSelection()
+{
+	_selected2GL->resetSelection();
+}
+

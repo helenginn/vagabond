@@ -20,12 +20,10 @@
 #include "Multi2GL.h"
 #include "Bonds2GL.h"
 #include "Selected2GL.h"
-#include "WarpGL.h"
 #include <float.h>
 #include "../libsrc/vec3.h"
 
-bool GLKeeper::everMovedMouse = false;
-
+/*
 void GLKeeper::updateProjection()
 {
 	zNear = 5;
@@ -33,9 +31,9 @@ void GLKeeper::updateProjection()
 
 	double side = 0.5;
 	float aspect = height / width;
-	projMat = mat4x4_frustum(-side, side, side * aspect, -side * aspect,
+	_proj = mat4x4_frustum(-side, side, side * aspect, -side * aspect,
 	                       zNear, zFar);
-	_unprojMat = mat4x4_unfrustum(-side, side, side * aspect, -side * aspect,
+	_unproj = mat4x4_unfrustum(-side, side, side * aspect, -side * aspect,
 	                       zNear, zFar);
 }
 
@@ -46,19 +44,16 @@ void GLKeeper::setupCamera(void)
 	camAlpha = 0;
 	camBeta = 0;
 	camGamma = 0;
-	modelMat = make_mat4x4();
+	_model = make_mat4x4();
 	rotMat = make_mat4x4();
 
 	updateProjection();
 
 	updateCamera();
 }
+*/
 
-GLObjectPtr GLKeeper::activeObject()
-{
-	return _allBond2GL;
-}
-
+/*
 void GLKeeper::updateCamera(void)
 {
 	vec3 centre = _centre;
@@ -75,7 +70,7 @@ void GLKeeper::updateCamera(void)
 	mat4x4_translate(&transMat, _translation);
 
 	mat4x4 tmp = mat4x4_mult_mat4x4(change, transMat);
-	modelMat = mat4x4_mult_mat4x4(tmp, modelMat);
+	_model = mat4x4_mult_mat4x4(tmp, _model);
 
 	camAlpha = 0; camBeta = 0; camGamma = 0;
 	_translation = make_vec3(0, 0, 0);
@@ -84,126 +79,13 @@ void GLKeeper::updateCamera(void)
 	_centre.y = 0;
 	setFocalPoint(negCentre);
 }
+*/
 
-void GLKeeper::setFocalPoint(vec3 pos)
+GLKeeper::GLKeeper(QWidget *parent) : SlipGL(parent)
 {
-	for (int i = 0; i < _objects.size(); i++)
-	{
-		_objects[i]->setFocalPoint(pos);
-	}
 }
 
-void GLKeeper::focusOnPosition(vec3 pos, double dist)
-{
-	vec3 newPos = transformPosByModel(pos);
-	_centre = newPos;
-	vec3_mult(&newPos, -1);
-	newPos.z -= dist;
-
-	_translation = vec3_add_vec3(_translation, newPos);
-}
-
-GLKeeper::GLKeeper(int newWidth, int newHeight)
-{
-	_setup.lock();
-
-	width = newWidth;
-	height = newHeight;
-	_centre = empty_vec3();
-	_densityState = 1;
-
-	#ifdef SETUP_BUFFERS
-	setupBuffers();
-	#endif // SETUP_BUFFERS
-
-	/* Bond model render */
-	_allBond2GL = Bonds2GLPtr(new Bonds2GL(false));
-	
-	/* Average pos render */
-	_aveBond2GL = Bonds2GLPtr(new Bonds2GL(true));
-	_aveBond2GL->setEnabled(false);
-	
-	/* Atom pos render */
-	_atoms2GL = Atoms2GLPtr(new Atoms2GL());
-	
-	/* Atom pos render for multiple positions */
-	Multi2GLPtr multi2GL = Multi2GLPtr(new Multi2GL());
-	_multi2GL = multi2GL;
-
-	/* Selected atoms render */
-	_selected2GL = Selected2GLPtr(new Selected2GL());
-
-	/* Density render */
-	_density2GL = Density2GLPtr(new Density2GL());
-	_density2GL->setKeeper(this);
-	_density2GL->recalculate();
-
-	/* Difference density render */
-	_diffDens2GL = Density2GLPtr(new Density2GL());
-	_diffDens2GL->setKeeper(this);
-	_diffDens2GL->setDiffDensity(true);
-	_diffDens2GL->setVisible(false);
-	_diffDens2GL->recalculate();
-	
-	_warpGL = WarpGLPtr(new WarpGL());
-
-	_objects.push_back(_allBond2GL);
-	_objects.push_back(_aveBond2GL);
-	_objects.push_back(_selected2GL);
-	_objects.push_back(_atoms2GL);
-	_objects.push_back(_multi2GL);
-	_objects.push_back(multi2GL->getConnected2GL());
-	_objects.push_back(_warpGL);
-	_objects.push_back(_density2GL);
-	_objects.push_back(_diffDens2GL);
-
-	setupCamera();
-
-	initialisePrograms();
-	
-	_setup.unlock();
-}
-
-Density2GLPtr GLKeeper::activeDensity()
-{
-	if (_densityState == 0)
-	{
-		return Density2GLPtr();
-	}
-	else if (_densityState == 1)
-	{
-		return getDensity2GL();
-	}
-	else if (_densityState == 2)
-	{
-		return getDiffDens2GL();
-	}
-	
-	return getDiffDens2GL();
-}
-
-void GLKeeper::toggleVisibleDensity()
-{
-	if (_densityState == 0)
-	{
-		_densityState++;
-		getDensity2GL()->setVisible(true);
-		getDiffDens2GL()->setVisible(false);
-	}
-	else if (_densityState == 1)
-	{
-		_densityState++;
-		getDensity2GL()->setVisible(true);
-		getDiffDens2GL()->setVisible(true);
-	}
-	else
-	{
-		_densityState = 0;	
-		getDensity2GL()->setVisible(false);
-		getDiffDens2GL()->setVisible(false);
-	}
-}
-
+/*
 void GLKeeper::pause(bool on)
 {
 	for (int i = 0; i < _objects.size(); i++)
@@ -230,55 +112,17 @@ void GLKeeper::render(void)
 
 	for (int i = 0; i < _objects.size(); i++)
 	{
-		_objects[i]->setProjMat(projMat);
-		_objects[i]->setUnprojMat(_unprojMat);
-		_objects[i]->setModelMat(modelMat);
+		_objects[i]->setProjMat(_proj);
+		_objects[i]->setUnprojMat(_unproj);
+		_objects[i]->setModelMat(_model);
 		_objects[i]->render();
 	}
 	
 	_setup.unlock();
 }
+*/
 
-void GLKeeper::toggleBondView()
-{
-	bool enabled = _allBond2GL->isEnabled();
-	_aveBond2GL->setEnabled(enabled);
-	_allBond2GL->setEnabled(!enabled);
-}
-
-AtomPtr GLKeeper::findAtomAtXY(double x, double y)
-{
-	double z = -FLT_MAX;
-	AtomPtr chosen = AtomPtr();
-
-	for (int i = 0; i < _objects.size(); i++)
-	{
-		GLObjectPtr obj = _objects[i];
-
-		if (!obj->isVagabond2GL())
-		{
-			continue;
-		}
-		
-		Vagabond2GLPtr ptr = ToVagabond2GLPtr(obj);
-		AtomPtr atom = ptr->findAtomAtXY(x, y, &z);
-		
-		if (atom)
-		{
-			chosen = atom;
-		}
-	}
-	
-	_selected2GL->setPicked(chosen);
-
-	return chosen;
-}
-
-void GLKeeper::cleanup(void)
-{
-
-}
-
+/*
 void GLKeeper::keyPressed(char key)
 {
 
@@ -319,14 +163,6 @@ void GLKeeper::draggedRightMouse(float x, float y)
 	zoom(0, 0, -y / MOUSE_SENSITIVITY * 10);
 }
 
-void GLKeeper::changeSize(int newWidth, int newHeight)
-{
-	width = newWidth;
-	height = newHeight;
-
-	updateProjection();
-}
-
 void GLKeeper::initialisePrograms()
 {
 	for (int i = 0; i < _objects.size(); i++)
@@ -334,77 +170,5 @@ void GLKeeper::initialisePrograms()
 		_objects[i]->initialisePrograms();
 	}
 }
+*/
 
-void GLKeeper::manualRefine()
-{
-	_selected2GL->manualRefine();
-}
-
-void GLKeeper::cancelRefine()
-{
-	_selected2GL->cancelRefine();
-}
-
-bool GLKeeper::isRefiningManually()
-{
-	return _selected2GL->isRefining();
-}
-
-void GLKeeper::setModelRay(double x, double y)
-{
-	/* assume a z position of -1 */
-	float aspect = height / width;
-	y *= aspect;
-	vec3 ray = make_vec3(-x, y, -1);
-	_selected2GL->setMouseRay(ray);
-}
-
-void GLKeeper::setMouseRefine(bool val)
-{
-	_selected2GL->setMouseRefinement(val);
-}
-
-void GLKeeper::focusOnSelected()
-{
-	_selected2GL->focusOnGroup();
-}
-
-void GLKeeper::splitSelected()
-{
-	_selected2GL->splitSelected();
-}
-
-void GLKeeper::deleteSelected()
-{
-	_selected2GL->deleteSelected();
-}
-
-void GLKeeper::toggleKicks()
-{
-	_selected2GL->toggleKicks();
-}
-
-void GLKeeper::advanceMonomer(int dir)
-{
-	_selected2GL->advanceMonomer(dir);
-}
-
-void GLKeeper::setAdding(bool val)
-{
-	_selected2GL->setAdding(val);
-}
-
-void GLKeeper::selectResidue(std::string chain, int number)
-{
-	_selected2GL->selectResidue(chain, number);	
-}
-
-void GLKeeper::novalentSelected()
-{
-	_selected2GL->novalentSelected(this);
-}
-
-void GLKeeper::resetSelection()
-{
-	_selected2GL->resetSelection();
-}

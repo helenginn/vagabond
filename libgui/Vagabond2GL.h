@@ -10,7 +10,7 @@
 #define Vagabond2GL_hpp
 
 #include <stdio.h>
-#include "GLObject.h"
+#include "../subprojects/helen3d/libsrc/SlipObject.h"
 #include "../libsrc/shared_ptrs.h"
 #include <map>
 #include "../libsrc/Bond.h"
@@ -25,22 +25,12 @@ typedef struct
 
 typedef std::map<MoleculePtr, int> GLMoleculeMap;
 
-class Vagabond2GL : public GLObject
+class Vagabond2GL : public SlipObject
 {
 public:
-	Vagabond2GL() : GLObject()
-	{
-		_renders = 0;
-		_lastEnsembleCount = 0;
-		_shouldGetBonds = true;
-		_centroid = empty_vec3();
-		_colourByFlex = false;
-		
-		_pause = false;
-		_enabled = true;
-	}
+	Vagabond2GL();
 
-	virtual void render();
+	virtual void render(SlipGL *sender);
 	
 	bool isEnabled()
 	{
@@ -78,9 +68,9 @@ protected:
 	virtual void findAtoms();
 	bool isAcceptableAtom(Atom *atom);
 
-	virtual void bindTextures();
+	virtual void extraUniforms();
 	virtual void updateAtoms() = 0;
-	void updateColour(AtomPtr atom, Vertex *vertex);
+	void updateColour(AtomPtr atom, Helen3D::Vertex *vertex);
 	virtual bool acceptablePositions(AtomPtr minAtom)
 	{
 		return true;
@@ -91,7 +81,7 @@ protected:
 	                          std::vector<vec3> *maj) = 0;
 	virtual int processMolecule(MoleculePtr molecule) = 0;
 
-	void setVertexColour(AtomPtr atom, Vertex *vertex);
+	void setVertexColour(AtomPtr atom, Helen3D::Vertex *vertex);
 	int _lastEnsembleCount;
 	bool _shouldGetBonds;
 	bool _enabled;
@@ -107,7 +97,6 @@ private:
 
 	int _renders;
 	bool _pause;
-
 };
 
 #endif /* Vagabond2GL_hpp */

@@ -21,16 +21,18 @@
 #include "../../libsrc/Atom.h"
 #include "Shaders/InkBond_vsh.h"
 #include "Shaders/InkBond_fsh.h"
-#include "Shaders/Shader_fsh.h"
-#include "Shaders/Shader_vsh.h"
+#include "Shaders/SlimBond_fsh.h"
+#include "Shaders/SlimBond_vsh.h"
 #include "Dotted.h"
+
+using namespace Helen3D;
 
 Connect2GL::Connect2GL() : Vagabond2GL()
 {
 	_renderType = GL_TRIANGLES;
-	_vertShader = InkBond_vsh();
-	_fragShader = InkBond_fsh();
-	_extra = true;
+	_vString = InkBond_vsh();
+	_fString = InkBond_fsh();
+	setNeedsExtra(true);
 	_shouldGetBonds = false;
 	_usesFocalDepth = true;
 }
@@ -169,14 +171,14 @@ void Connect2GL::clear()
 	_indices.clear();
 }
 
-void Connect2GL::render()
+void Connect2GL::render(SlipGL *sender)
 {
 	if (!_enabled)
 	{
 		return;
 	}
 	
-	Vagabond2GL::render();
+	Vagabond2GL::render(sender);
 	reorderIndices();
-	GLObject::render();
+	SlipObject::render(sender);
 }

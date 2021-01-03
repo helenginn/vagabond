@@ -7,7 +7,7 @@
 //
 
 #include "Density2GL.h"
-#include "GLKeeper.h"
+#include "qtgui/VagabondGLWidget.h"
 #include "Pencil.h"
 #include "Picture.h"
 #include "Shaders/Pencil_vsh.h"
@@ -17,7 +17,9 @@
 #include <cstdarg>
 #include <algorithm>
 
-Density2GL::Density2GL()
+using namespace Helen3D;
+
+Density2GL::Density2GL() : SlipObject()
 {
 	_imag = 0;
 	_dType = DensityWeighted;
@@ -31,11 +33,11 @@ Density2GL::Density2GL()
 	_backToFront = true;
 	_usesLighting = true;
 	_usesFocalDepth = true;
-	_extra = true;
+	setNeedsExtra(true);
 	_crystal = Options::getActiveCrystal();
 	
-	_vertShader = Pencil_vsh();
-	_fragShader = Pencil_fsh();
+	_vString = Pencil_vsh();
+	_fString = Pencil_fsh();
 }
 
 std::vector<GLuint> makeList(int count, ...)
@@ -870,12 +872,7 @@ void Density2GL::makeUniformGrid()
 
 void Density2GL::bindTextures()
 {
-	int num = 1;
-	_textures.resize(num);
-
-	glGenTextures(num, &_textures[0]);
-	glBindTexture(GL_TEXTURE_2D, _textures[0]);
-	checkErrors();
+	SlipObject::bindTextures();
 	bindOneTexture(pic_pencil);
 }
 
@@ -1105,7 +1102,7 @@ void Density2GL::nudgeDensity(int dir)
 	makeNewDensity();
 }
 
-void Density2GL::render()
+void Density2GL::render(SlipGL *sender)
 {
 	if (!_visible)
 	{
@@ -1119,14 +1116,14 @@ void Density2GL::render()
 		return;
 	}
 	
-	mat4x4 inv = mat4x4_inverse(modelMat);
+	mat4x4 inv = mat4x4_inverse(_model);
+	mat4x4 unity = mat4x4_mult_mat4x4(_model, inv);
 	vec3 light = make_vec3(0, 0, 0);
 	vec3 lightPos = mat4x4_mult_vec(inv, light);
 	_lightPos[0] = lightPos.x;
 	_lightPos[1] = lightPos.y;
 	_lightPos[2] = lightPos.z;
 	
-	rebindProgram();
 	reorderIndices();
 	
 	if (isDifferenceDensity())
@@ -1134,15 +1131,13 @@ void Density2GL::render()
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
 	
-	GLObject::render();
+	SlipObject::render(sender);
 
 	vec3 centre = getFocus();
 	centre.x = 0;
 	centre.y = 0;
 	centre.z = -centre.z;
 	vec3 newPos = mat4x4_mult_vec(inv, centre);
-//	std::cout << mat4x4_desc(inv) << std::endl;
-//	std::cout << vec3_desc(centre) << " " << vec3_desc(newPos) << std::endl;
 
 	vec3 movement = vec3_subtract_vec3(newPos, _offset);
 	_renderLock.unlock();
@@ -1167,6 +1162,16 @@ void Density2GL::getSigma(VagFFTPtr fft)
 
 	_mean = mean(vals);
 	_sigma = standard_deviation(vals);
+}
+
+void Density2GL::extraUniforms()
+{
+	if (_usesLighting)
+	{
+		const char *light_name = "light_pos";
+		_uLight = glGetUniformLocation(_program, light_name);
+		glUniform3fv(_uLight, 1, &_lightPos[0]);
+	}
 }
 
 void Density2GL::makeNewDensity(CrystalPtr crystal)
