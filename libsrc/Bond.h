@@ -130,6 +130,8 @@ public:
 	* 	If an atom of a given name is part of this bond.
 	* \return If the minor or major atom contains this atom name (e.g. "CA").*/
 	bool connectsAtom(std::string testName);
+	
+	void forceAnglers();
 
 	static double getBondLength(void *object)
 	{
@@ -190,6 +192,8 @@ public:
 			bond->_torsion = value;
 //			static_cast<Bond *>(object)->propagateChange(16);
 		}
+		
+		bond->forceAnglers();
 	}
 
 	static double getMagicPsi(void *object)
@@ -492,6 +496,11 @@ public:
 		_angler = ang;
 	}
 	
+	void addIndirectAngler(AnglerPtr ang)
+	{
+		_otherAnglers.push_back(ang);
+	}
+	
 	TwistPtr getTwist()
 	{
 		if (_twist.expired())
@@ -669,6 +678,7 @@ private:
 	
 	KeyPointsWkr _keyPoints;
 	AnglerPtr _angler;
+	std::vector<AnglerPtr> _otherAnglers;
 	
 	bool _fish;
 };

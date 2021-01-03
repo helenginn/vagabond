@@ -66,6 +66,8 @@ public:
 		_nextIsPro = pro;
 	}
 	
+	void forcePropagation();
+	
 	void setBonds(BondPtr angle, BondPtr phi, BondPtr psi)
 	{
 		_angledBond = angle;
@@ -99,11 +101,11 @@ protected:
 	virtual void postParseTidy();
 
 private:
-	AngleType mainAngleType(AtomPtr earlier, AtomPtr major,
-	                        AtomPtr sister, AtomPtr minor);
+	AngleType mainAngleType(AtomPtr earlier, AtomPtr major, AtomPtr minor);
 	void assignTable(ResiType res, AngleType ang, double **where);
 	double getAngle(bool report = false, double *which = NULL);
 	
+	ResiType _resi;
 	bool _nextIsPro;
 	BondPtr _angledBond;
 	BondPtr _phiBond;

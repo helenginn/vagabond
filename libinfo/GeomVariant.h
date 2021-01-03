@@ -92,6 +92,216 @@ public:
 		return &_ileval_nxpro_ocn[0];
 	}
 
+	static double *pointerToGlyNonXProCNA()
+	{
+		return &_gly_nxpro_cna[0];
+	}
+
+	static double *pointerToGlyNonXProNAB()
+	{
+		return &_gly_nxpro_nab[0];
+	}
+
+	static double *pointerToGlyNonXProBAC()
+	{
+		return &_gly_nxpro_bac[0];
+	}
+
+	static double *pointerToGlyNonXProNAC()
+	{
+		return &_gly_nxpro_nac[0];
+	}
+
+	static double *pointerToGlyNonXProACN()
+	{
+		return &_gly_nxpro_acn[0];
+	}
+
+	static double *pointerToGlyNonXProACO()
+	{
+		return &_gly_nxpro_aco[0];
+	}
+
+	static double *pointerToGlyNonXProOCN()
+	{
+		return &_gly_nxpro_ocn[0];
+	}
+
+	static double *pointerToProNonXProCNA()
+	{
+		return &_pro_nxpro_cna[0];
+	}
+
+	static double *pointerToProNonXProNAB()
+	{
+		return &_pro_nxpro_nab[0];
+	}
+
+	static double *pointerToProNonXProBAC()
+	{
+		return &_pro_nxpro_bac[0];
+	}
+
+	static double *pointerToProNonXProNAC()
+	{
+		return &_pro_nxpro_nac[0];
+	}
+
+	static double *pointerToProNonXProACN()
+	{
+		return &_pro_nxpro_acn[0];
+	}
+
+	static double *pointerToProNonXProACO()
+	{
+		return &_pro_nxpro_aco[0];
+	}
+
+	static double *pointerToProNonXProOCN()
+	{
+		return &_pro_nxpro_ocn[0];
+	}
+
+	static double *pointerToNonPGIVXProCNA()
+	{
+		return &_npgiv_xpro_cna[0];
+	}
+
+	static double *pointerToNonPGIVXProNAB()
+	{
+		return &_npgiv_xpro_nab[0];
+	}
+
+	static double *pointerToNonPGIVXProBAC()
+	{
+		return &_npgiv_xpro_bac[0];
+	}
+
+	static double *pointerToNonPGIVXProNAC()
+	{
+		return &_npgiv_xpro_nac[0];
+	}
+
+	static double *pointerToNonPGIVXProACN()
+	{
+		return &_npgiv_xpro_acn[0];
+	}
+
+	static double *pointerToNonPGIVXProACO()
+	{
+		return &_npgiv_xpro_aco[0];
+	}
+
+	static double *pointerToNonPGIVXProOCN()
+	{
+		return &_npgiv_xpro_ocn[0];
+	}
+
+	static double *pointerToIleValXProCNA()
+	{
+		return &_ileval_xpro_cna[0];
+	}
+
+	static double *pointerToIleValXProNAB()
+	{
+		return &_ileval_xpro_nab[0];
+	}
+
+	static double *pointerToIleValXProBAC()
+	{
+		return &_ileval_xpro_bac[0];
+	}
+
+	static double *pointerToIleValXProNAC()
+	{
+		return &_ileval_xpro_nac[0];
+	}
+
+	static double *pointerToIleValXProACN()
+	{
+		return &_ileval_xpro_acn[0];
+	}
+
+	static double *pointerToIleValXProACO()
+	{
+		return &_ileval_xpro_aco[0];
+	}
+
+	static double *pointerToIleValXProOCN()
+	{
+		return &_ileval_xpro_ocn[0];
+	}
+
+	static double *pointerToGlyXProCNA()
+	{
+		return &_gly_xpro_cna[0];
+	}
+
+	static double *pointerToGlyXProNAB()
+	{
+		return &_gly_xpro_nab[0];
+	}
+
+	static double *pointerToGlyXProBAC()
+	{
+		return &_gly_xpro_bac[0];
+	}
+
+	static double *pointerToGlyXProNAC()
+	{
+		return &_gly_xpro_nac[0];
+	}
+
+	static double *pointerToGlyXProACN()
+	{
+		return &_gly_xpro_acn[0];
+	}
+
+	static double *pointerToGlyXProACO()
+	{
+		return &_gly_xpro_aco[0];
+	}
+
+	static double *pointerToGlyXProOCN()
+	{
+		return &_gly_xpro_ocn[0];
+	}
+
+	static double *pointerToProXProCNA()
+	{
+		return &_pro_xpro_cna[0];
+	}
+
+	static double *pointerToProXProNAB()
+	{
+		return &_pro_xpro_nab[0];
+	}
+
+	static double *pointerToProXProBAC()
+	{
+		return &_pro_xpro_bac[0];
+	}
+
+	static double *pointerToProXProNAC()
+	{
+		return &_pro_xpro_nac[0];
+	}
+
+	static double *pointerToProXProACN()
+	{
+		return &_pro_xpro_acn[0];
+	}
+
+	static double *pointerToProXProACO()
+	{
+		return &_pro_xpro_aco[0];
+	}
+
+	static double *pointerToProXProOCN()
+	{
+		return &_pro_xpro_ocn[0];
+	}
+
 	/* for a given pointer, get phi and psi-dependent angle */
 	static double getAngle(double *table, double phi, double psi);
 
@@ -132,37 +342,37 @@ private:
 	static double _pro_nxpro_aco[];
 	static double _pro_nxpro_ocn[];
 
-  static double _npgiv_xpro_cna[];
-  static double _npgiv_xpro_nab[];
-  static double _npgiv_xpro_nac[];
-  static double _npgiv_xpro_bac[];
-  static double _npgiv_xpro_aco[];
-  static double _npgiv_xpro_acn[];
-  static double _npgiv_xpro_ocn[];
+	static double _npgiv_xpro_cna[];
+	static double _npgiv_xpro_nab[];
+	static double _npgiv_xpro_nac[];
+	static double _npgiv_xpro_bac[];
+	static double _npgiv_xpro_aco[];
+	static double _npgiv_xpro_acn[];
+	static double _npgiv_xpro_ocn[];
 
-  static double _ileval_xpro_cna[];
-  static double _ileval_xpro_nab[];
-  static double _ileval_xpro_nac[];
-  static double _ileval_xpro_bac[];
-  static double _ileval_xpro_aco[];
-  static double _ileval_xpro_acn[];
-  static double _ileval_xpro_ocn[];
+	static double _ileval_xpro_cna[];
+	static double _ileval_xpro_nab[];
+	static double _ileval_xpro_nac[];
+	static double _ileval_xpro_bac[];
+	static double _ileval_xpro_aco[];
+	static double _ileval_xpro_acn[];
+	static double _ileval_xpro_ocn[];
 
-  static double _gly_xpro_cna[];
-  static double _gly_xpro_nab[];
-  static double _gly_xpro_nac[];
-  static double _gly_xpro_bac[];
-  static double _gly_xpro_aco[];
-  static double _gly_xpro_acn[];
-  static double _gly_xpro_ocn[];
+	static double _gly_xpro_cna[];
+	static double _gly_xpro_nab[];
+	static double _gly_xpro_nac[];
+	static double _gly_xpro_bac[];
+	static double _gly_xpro_aco[];
+	static double _gly_xpro_acn[];
+	static double _gly_xpro_ocn[];
 
-  static double _pro_xpro_cna[];
-  static double _pro_xpro_nab[];
-  static double _pro_xpro_nac[];
-  static double _pro_xpro_bac[];
-  static double _pro_xpro_aco[];
-  static double _pro_xpro_acn[];
-  static double _pro_xpro_ocn[];
+	static double _pro_xpro_cna[];
+	static double _pro_xpro_nab[];
+	static double _pro_xpro_nac[];
+	static double _pro_xpro_bac[];
+	static double _pro_xpro_aco[];
+	static double _pro_xpro_acn[];
+	static double _pro_xpro_ocn[];
 };
 
 #endif

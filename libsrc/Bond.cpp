@@ -474,6 +474,12 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b,
 				std::cout << lastBond->getMinor()->shortDesc() << " ";
 				std::cout << getMinor()->shortDesc() << std::endl;
 			}
+		
+			if (getMajor()->getAtomName() == "C" &&
+			    !_leftOfAnchor)
+			{
+				chiral *= -1;
+			}
 			
 			if (theoretical > 0.5) theoretical -= 1;
 			if (theoretical < -0.5) theoretical += 1;
@@ -488,7 +494,7 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b,
 		}
 		else
 		{
-			if (custom_angle_a > 0)
+			if (false && custom_angle_a > 0)
 			{
 				std::cout << "Executing this ";
 				std::cout << parent->getMajor()->shortDesc() << " ";
@@ -1947,5 +1953,13 @@ AtomPtr Bond::getHeavyAlign()
 
 		_heavyAlign = atm;
 		return atm;
+	}
+}
+
+void Bond::forceAnglers()
+{
+	for (size_t i = 0; i < _otherAnglers.size(); i++)
+	{
+		_otherAnglers[i]->forcePropagation();
 	}
 }

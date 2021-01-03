@@ -40,7 +40,7 @@ private:
 	void makeAngler(BondPtr phi, BondPtr psi, MonomerPtr mon,
                          std::string atomName);
 
-	AnglerPtr setupAngler(MonomerPtr mon);
+	AnglerPtr setupAngler(MonomerPtr mon, int resi);
 	SidechainPtr _sidechain;
 	BackbonePtr _backbone;
 

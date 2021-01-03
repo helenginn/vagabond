@@ -31,8 +31,7 @@ Angler::Angler()
 	_otherTable = NULL;
 }
 
-std::string identifier(AtomPtr earlier, AtomPtr major,
-                       AtomPtr sister, AtomPtr minor)
+std::string identifier(AtomPtr earlier, AtomPtr major, AtomPtr minor)
 {
 	std::string e = " ";
 	if (earlier)
@@ -45,12 +44,6 @@ std::string identifier(AtomPtr earlier, AtomPtr major,
 	{
 		M = major->getAtomName();
 	}
-
-	std::string s = " ";
-	if (sister)
-	{
-		s = sister->getAtomName();
-	}
 	
 	std::string m = " ";
 	if (minor)
@@ -58,40 +51,44 @@ std::string identifier(AtomPtr earlier, AtomPtr major,
 		m = minor->getAtomName();
 	}
 
-	return e + M + m + s;
+	return e + M + m;
 }
 
-AngleType Angler::mainAngleType(AtomPtr earlier, AtomPtr major,
-                                AtomPtr sister, AtomPtr minor)
+AngleType Angler::mainAngleType(AtomPtr earlier, AtomPtr major, AtomPtr minor)
 {
 	AngleType type = AngleNone;
-	std::string id = identifier(earlier, major, AtomPtr(), minor);
+	std::string id = identifier(earlier, major, minor);
 
-	if (id == "CCAN " || id == "NCAC ")
+	if (false && _phiBond->getMajor()->getResidueNum() == 468)
+	{
+		std::cout << id << std::endl;
+	}
+
+	if (id == "CCAN" || id == "NCAC")
 	{
 		type = AngleNAC; 
 	}
-	else if (id == "CNCA " || id == "CANC ")
+	else if (id == "CNCA" || id == "CANC")
 	{
 		type = AngleCNA;
 	}
-	else if (id == "CACN " || id == "NCCA ")
+	else if (id == "CACN" || id == "NCCA")
 	{
 		type = AngleACN;
 	}
-	else if (id == "NCACB " || id == "CBCAN ")
+	else if (id == "NCACB" || id == "CBCAN")
 	{
 		type = AngleNAB;
 	}
-	else if (id == "CCACB " || id == "CBCAC ")
+	else if (id == "CCACB" || id == "CBCAC")
 	{
 		type = AngleBAC;
 	}
-	else if (id == "NCO " || id == "OCN ")
+	else if (id == "NCO" || id == "OCN")
 	{
 		type = AngleOCN;
 	}
-	else if (id == "CACO " || id == "OCCA ")
+	else if (id == "CACO" || id == "OCCA")
 	{
 		type = AngleACO;
 	}
@@ -108,7 +105,114 @@ void Angler::assignTable(ResiType res, AngleType ang, double **where)
 
 	if (_nextIsPro)
 	{
-
+		if (res == ResiNonPGIV)
+		{
+			if (ang == AngleNAC)
+			{
+				*where = GeomVariant::pointerToNonPGIVXProNAC();
+			}
+			if (ang == AngleCNA)
+			{
+				*where = GeomVariant::pointerToNonPGIVXProCNA();
+			}
+			if (ang == AngleNAB)
+			{
+				*where = GeomVariant::pointerToNonPGIVXProNAB();
+			}
+			if (ang == AngleBAC)
+			{
+				*where = GeomVariant::pointerToNonPGIVXProBAC();
+			}
+			if (ang == AngleOCN)
+			{
+				*where = GeomVariant::pointerToNonPGIVXProOCN();
+			}
+			if (ang == AngleACO)
+			{
+				*where = GeomVariant::pointerToNonPGIVXProACO();
+			}
+		}
+		else if (res == ResiIleVal)
+		{
+			if (ang == AngleNAC)
+			{
+				*where = GeomVariant::pointerToIleValXProNAC();
+			}
+			if (ang == AngleCNA)
+			{
+				*where = GeomVariant::pointerToIleValXProCNA();
+			}
+			if (ang == AngleNAB)
+			{
+				*where = GeomVariant::pointerToIleValXProNAB();
+			}
+			if (ang == AngleBAC)
+			{
+				*where = GeomVariant::pointerToIleValXProBAC();
+			}
+			if (ang == AngleOCN)
+			{
+				*where = GeomVariant::pointerToIleValXProOCN();
+			}
+			if (ang == AngleACO)
+			{
+				*where = GeomVariant::pointerToIleValXProACO();
+			}
+		}
+		else if (res == ResiGlycine)
+		{
+			if (ang == AngleNAC)
+			{
+				*where = GeomVariant::pointerToGlyXProNAC();
+			}
+			if (ang == AngleCNA)
+			{
+				*where = GeomVariant::pointerToGlyXProCNA();
+			}
+			if (ang == AngleNAB)
+			{
+				*where = GeomVariant::pointerToGlyXProNAB();
+			}
+			if (ang == AngleBAC)
+			{
+				*where = GeomVariant::pointerToGlyXProBAC();
+			}
+			if (ang == AngleOCN)
+			{
+				*where = GeomVariant::pointerToGlyXProOCN();
+			}
+			if (ang == AngleACO)
+			{
+				*where = GeomVariant::pointerToGlyXProACO();
+			}
+		}
+		else if (res == ResiProline)
+		{
+			if (ang == AngleNAC)
+			{
+				*where = GeomVariant::pointerToProXProNAC();
+			}
+			if (ang == AngleCNA)
+			{
+				*where = GeomVariant::pointerToProXProCNA();
+			}
+			if (ang == AngleNAB)
+			{
+				*where = GeomVariant::pointerToProXProNAB();
+			}
+			if (ang == AngleBAC)
+			{
+				*where = GeomVariant::pointerToProXProBAC();
+			}
+			if (ang == AngleOCN)
+			{
+				*where = GeomVariant::pointerToProXProOCN();
+			}
+			if (ang == AngleACO)
+			{
+				*where = GeomVariant::pointerToProXProACO();
+			}
+		}
 	}
 	else
 	{
@@ -166,6 +270,60 @@ void Angler::assignTable(ResiType res, AngleType ang, double **where)
 				*where = GeomVariant::pointerToIleValNonXProACO();
 			}
 		}
+		else if (res == ResiGlycine)
+		{
+			if (ang == AngleNAC)
+			{
+				*where = GeomVariant::pointerToGlyNonXProNAC();
+			}
+			if (ang == AngleCNA)
+			{
+				*where = GeomVariant::pointerToGlyNonXProCNA();
+			}
+			if (ang == AngleNAB)
+			{
+				*where = GeomVariant::pointerToGlyNonXProNAB();
+			}
+			if (ang == AngleBAC)
+			{
+				*where = GeomVariant::pointerToGlyNonXProBAC();
+			}
+			if (ang == AngleOCN)
+			{
+				*where = GeomVariant::pointerToGlyNonXProOCN();
+			}
+			if (ang == AngleACO)
+			{
+				*where = GeomVariant::pointerToGlyNonXProACO();
+			}
+		}
+		else if (res == ResiProline)
+		{
+			if (ang == AngleNAC)
+			{
+				*where = GeomVariant::pointerToProNonXProNAC();
+			}
+			if (ang == AngleCNA)
+			{
+				*where = GeomVariant::pointerToProNonXProCNA();
+			}
+			if (ang == AngleNAB)
+			{
+				*where = GeomVariant::pointerToProNonXProNAB();
+			}
+			if (ang == AngleBAC)
+			{
+				*where = GeomVariant::pointerToProNonXProBAC();
+			}
+			if (ang == AngleOCN)
+			{
+				*where = GeomVariant::pointerToProNonXProOCN();
+			}
+			if (ang == AngleACO)
+			{
+				*where = GeomVariant::pointerToProNonXProACO();
+			}
+		}
 	}
 }
 
@@ -189,18 +347,24 @@ bool Angler::setupTable()
 		return false;
 	}
 
-	std::string res = minor->getMonomer()->getIdentifier();
+	AtomPtr central = _phiBond->getMajor();
+	std::string res = central->getMonomer()->getIdentifier();
 	
-	ResiType resi = ResiNonPGIV;
+	_resi = ResiNonPGIV;
 
-	if (res == "gly" || res == "pro")
+	if (res == "gly")
 	{
-		return false;
+		_resi = ResiGlycine;
+	}
+	
+	if (res == "pro")
+	{
+		_resi = ResiProline;
 	}
 	
 	if (res == "ile" || res == "val")
 	{
-		resi = ResiIleVal;
+		_resi = ResiIleVal;
 	}
 
 	ModelPtr upstream = _angledBond->getParentModel();
@@ -219,16 +383,26 @@ bool Angler::setupTable()
 		sister = sisterBond->getMinor();
 	}
 	
-	AngleType main = mainAngleType(earlier, major, sister, minor);
-	assignTable(resi, main, &_table);
-	AngleType sis = mainAngleType(minor, major, sister, minor);
-	assignTable(resi, sis, &_sisterTable);
-	AngleType other = mainAngleType(earlier, major, minor, sister);
-	assignTable(resi, other, &_otherTable);
+	AngleType main = mainAngleType(earlier, major, minor);
+	assignTable(_resi, main, &_table);
+	AngleType sis = mainAngleType(earlier, major, sister);
+	assignTable(_resi, sis, &_sisterTable);
+	AngleType other = mainAngleType(minor, major, sister);
+	assignTable(_resi, other, &_otherTable);
+
+	if (false && _phiBond->getMajor()->getResidueNum() == 468)
+	{
+		std::cout << "Sister: " << sister << std::endl;
+		std::cout << "main is " << main << std::endl;
+		std::cout << "sis is " << sis << std::endl;
+		std::cout << "other is " << other << std::endl;
+	}
 	
 	if (_table != NULL)
 	{
 		_angledBond->setAngler(shared_from_this());
+		_phiBond->addIndirectAngler(shared_from_this());
+		_psiBond->addIndirectAngler(shared_from_this());
 	}
 	
 	return (_table != NULL);
@@ -236,8 +410,30 @@ bool Angler::setupTable()
 
 std::string Angler::getParserIdentifier()
 {
-	return getClassName() + "_" + _angledBond->shortDesc() + 
-	"_" + (_nextIsPro ? "_pro" : "_xpro");
+	std::string result = getClassName() + "_" + _angledBond->shortDesc();
+	result += "_";
+	
+	switch (_resi)
+	{
+		case ResiNonPGIV:
+		result += "npgiv";
+		break;
+		case ResiIleVal:
+		result += "npgiv";
+		break;
+		case ResiProline:
+		result += "npgiv";
+		break;
+		case ResiGlycine:
+		result += "npgiv";
+		break;
+		default:
+		break;
+	}
+
+	result += "_";
+	result += (_nextIsPro ? "pro" : "xpro");
+	return result;
 }
 
 void Angler::addProperties()
@@ -289,7 +485,16 @@ double Angler::getAngle(bool report, double *which)
 	
 	if (report)
 	{
-		std::cout << tPhi << " " << tPsi << " " << angle << std::endl;
+		if (_phiBond->getMajor()->getResidueNum() == 468)
+		{
+//			if (_angledBond->getMinor()->getAtomName() == "CB")
+			{
+				std::cout << _angledBond->shortDesc() << " ";
+				std::cout << tPhi << " " << tPsi << " " << 
+				" chosen " << angle << std::endl;
+				std::cout << getParserIdentifier() << std::endl;
+			}
+		}
 	}
 
 	return deg2rad(angle);
@@ -308,4 +513,11 @@ double Angler::getSisterAngle()
 double Angler::getOtherAngle()
 {
 	return getAngle(false, _otherTable);
+}
+
+void Angler::forcePropagation()
+{
+	_angledBond->propagateChange(2);
+	_phiBond->propagateChange(2);
+	_psiBond->propagateChange(2);
 }

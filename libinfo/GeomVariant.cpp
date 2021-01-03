@@ -35,8 +35,8 @@ double GeomVariant::getAngle(double *table, double phi, double psi)
 double GeomVariant::interpolateAngle(double *table, double phi, double psi)
 {
 	/* get these -180 to 170 values to vary between 0 and 35 */
-	phi = (phi + 185) / 10;
-	psi = (psi + 185) / 10;
+	phi = (phi + 180) / 10;
+	psi = (psi + 180) / 10;
 	
 	double phi1 = phi + 1;
 	double psi1 = psi + 1;
@@ -51,8 +51,6 @@ double GeomVariant::interpolateAngle(double *table, double phi, double psi)
 	int lookup01 = (int)phi * 36 + (int)psi1;
 	int lookup10 = (int)phi1 * 36 + (int)psi;
 	int lookup11 = (int)phi1 * 36 + (int)psi1;
-	
-//	std::cout << phi << " " << phi1 << " " << psi << " " << psi1 << std::endl;
 	
 	double rphi = phi - lrint(phi);
 	double rpsi = psi - lrint(psi);

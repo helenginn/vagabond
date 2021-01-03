@@ -762,7 +762,11 @@ double Sampler::getScore()
 	{
 		AtomPtr s = _sampled[i];
 		s->getModel()->propagateChange(0);
-		s->getModel()->refreshPositions();
+	}
+
+	for (int i = 0; i < _sampled.size(); i++)
+	{
+		_sampled[i]->getModel()->refreshPositions();
 	}
 
 	

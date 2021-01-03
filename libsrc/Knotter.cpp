@@ -83,7 +83,7 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
 void Knotter::makeAngler(BondPtr phi, BondPtr psi, MonomerPtr mon,
                          std::string atomName)
 {
-	if (mon->findAtom(atomName))
+	if (mon && mon->findAtom(atomName))
 	{
 		ModelPtr mn = (mon->findAtom(atomName)->getModel());
 		
@@ -93,8 +93,10 @@ void Knotter::makeAngler(BondPtr phi, BondPtr psi, MonomerPtr mon,
 		}
 
 		BondPtr n = ToBondPtr(mn);
+		
+		int resi = phi->getAtom()->getResidueNum();
 
-		AnglerPtr angler = setupAngler(mon);
+		AnglerPtr angler = setupAngler(mon, resi);
 		angler->setBonds(n, phi, psi);
 		angler->setupTable();
 	}
@@ -118,23 +120,33 @@ void Knotter::betaAngler(bool onRight)
 
 	MonomerPtr mon = _backbone->getMonomer();
 
-	AnglerPtr angler = setupAngler(mon);
-
-	makeAngler(phi, psi, mon, "N");
-	makeAngler(phi, psi, mon, "C");
 	makeAngler(phi, psi, mon, "CA");
 	makeAngler(phi, psi, mon, "CB");
 	makeAngler(phi, psi, mon, "O");
+
+	int resi = mon->getResidueNum();
+
+	if (onRight)
+	{
+		MonomerPtr next = _backbone->getPolymer()->getMonomer(resi + 1);
+		makeAngler(phi, psi, next, "N");
+		makeAngler(phi, psi, mon, "C");
+	}
+	else
+	{
+		MonomerPtr prev = _backbone->getPolymer()->getMonomer(resi - 1);
+		makeAngler(phi, psi, prev, "C");
+		makeAngler(phi, psi, mon, "N");
+	}
 }
 
-AnglerPtr Knotter::setupAngler(MonomerPtr mon)
+AnglerPtr Knotter::setupAngler(MonomerPtr mon, int resi)
 {
 	std::string id = mon->getIdentifier();
-	int resNum = mon->getResidueNum();
 	bool pro = false;
 
 	PolymerPtr polymer = _backbone->getPolymer();
-	MonomerPtr next = polymer->getMonomer(resNum + 1);
+	MonomerPtr next = polymer->getMonomer(resi + 1);
 
 	if (next && next->getIdentifier() == "pro")
 	{

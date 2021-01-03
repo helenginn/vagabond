@@ -8,6 +8,7 @@
 
 #include "Backbone.h"
 #include "Monomer.h"
+#include "Options.h"
 #include "Bond.h"
 #include "Atom.h"
 #include "Absolute.h"
@@ -37,14 +38,14 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 	{
 		double range = 2.;
 
-		if (_timesRefined >= 8)
+		if (_timesRefined >= 6)
 		{
 			range = 0.5;
 		}
 
 		if (_timesRefined >= 16)
 		{
-			range = 0.2;
+			range = 0.5;
 		}
 
 		switch (rType)
@@ -85,7 +86,6 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 				addParamType(ParamOptionCycles, 100);
 				addParamType(ParamOptionMaxTries, 15);
 				addParamType(ParamOptionThorough, 1);
-				addParamType(ParamOptionTopLevelOnly, 1);
 				addParamType(ParamOptionSVD, 1);
 				break;
 
@@ -116,12 +116,6 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 	MonomerPtr monomer = getMonomer();
 	_includeForRefine = monomer->includingInRefinement();
-	
-	SidechainPtr sidechain = monomer->getSidechain();
-	if (sidechain && rType == RefinementFine)
-	{
-//		addIncludeForRefinement(sidechain);
-	}
 
 	AtomGroup::refine(target, rType);
 	clearParams();

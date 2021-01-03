@@ -224,7 +224,7 @@ GeomTable::GeomTable()
 	addChiralCentre(AtomNH1, AtomC, AtomAlaCB, 1);
 	addChiralCentre(AtomNH1, AtomCysCA, AtomO, 1);
 	addChiralCentre(AtomNH1, AtomC, AtomCysCB, 1);
-	addChiralCentre(AtomNH1, AtomGlyCA, AtomO, -1);
+	addChiralCentre(AtomNH1, AtomGlyCA, AtomO, 1);
 	addChiralCentre(AtomProNH1, AtomLeuCA, AtomO, 1);
 
 

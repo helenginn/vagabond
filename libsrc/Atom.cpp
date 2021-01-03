@@ -535,7 +535,7 @@ void Atom::saveInitialPosition()
 	_initialPosition = pos;
 }
 
-double Atom::posDisplacement(bool fromSaved, bool refresh)
+double Atom::posDisplacement(bool fromSaved, bool refresh, bool sq)
 {
 	if (!isFromPDB() && !fromSaved)
 	{
@@ -562,6 +562,11 @@ double Atom::posDisplacement(bool fromSaved, bool refresh)
 
 	vec3 diff = vec3_subtract_vec3(bestPos, initialPos);
 	double score = vec3_length(diff);
+	
+	if (sq)
+	{
+		score *= score;
+	}
 
 	return score;
 }

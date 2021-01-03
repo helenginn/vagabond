@@ -296,6 +296,12 @@ void Polymer::tieAtomsUp()
 		KnotterPtr knotter = KnotterPtr(new Knotter());
 		knotter->setBackbone(getMonomer(i)->getBackbone());
 		knotter->setSidechain(getMonomer(i)->getSidechain());
+		
+		if (i == _anchorNum)
+		{
+			continue;
+		}
+
 		knotter->betaAngler(i >= _anchorNum);
 	}
 
