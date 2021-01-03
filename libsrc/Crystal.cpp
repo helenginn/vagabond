@@ -1319,7 +1319,6 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 		Options::getRuntimeOptions()->disableDensityUpdate();
 		rFac = getDataInformation(data, 2, 1, refineCount);
 		Options::flagDensityChanged();
-		std::cout << "Got to density re-render without errors" << std::endl;
 	}
 	
 	if (!_silent)
