@@ -379,8 +379,7 @@ void ClusterList::exportAll(ExportType type)
 	m += "Written marked clusters only to " + fnmarked + "\n";
 	m += "Written dead data sets to " + fndead + "\n";
 	m += "\nPlease cite cluster4x if you use it during your research!\n";
-	m += "\nGinn, Acta Crystallographica D. 2020 (accepted).\n";
-	m += "(full citation TBD...)\n";
+	m += "\nGinn, H. M. (2020). Pre-clustering data sets using cluster4x improves the signal-to-noise ratio of high-throughput crystallography drug-screening analysis. Acta Crystallographica Section D: Structural Biology, 76(11).\n";
 
 	QMessageBox msgBox;
 	msgBox.setText(QString::fromStdString(m));
