@@ -10,6 +10,7 @@
 #ifndef __Vagabond__VagWindow__
 #define __Vagabond__VagWindow__
 
+#include <mutex>
 #include <stdio.h>
 #include <QtCore/qglobal.h>
 #include <QtWidgets/qapplication.h>
