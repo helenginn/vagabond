@@ -31,6 +31,7 @@
 
 Sampler::Sampler()
 {
+	_excludeO = true;
 	_convert = false;
 	_svd = NULL;
 	_shouldSave = false;
@@ -552,6 +553,11 @@ void Sampler::addSampled(AtomPtr atom)
 	
 	if (atom->getElectronCount() == 1 && _scoreType == ScoreTypeSavedPos
 	|| atom->getElectronCount() == 1 && _scoreType == ScoreTypeModelPos)
+	{
+		return;
+	}
+	
+	if (_excludeO && atom->getAtomName() == "O")
 	{
 		return;
 	}

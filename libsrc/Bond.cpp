@@ -474,12 +474,6 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b,
 				std::cout << lastBond->getMinor()->shortDesc() << " ";
 				std::cout << getMinor()->shortDesc() << std::endl;
 			}
-		
-			if (getMajor()->getAtomName() == "C" &&
-			    !_leftOfAnchor)
-			{
-				chiral *= -1;
-			}
 			
 			if (theoretical > 0.5) theoretical -= 1;
 			if (theoretical < -0.5) theoretical += 1;
@@ -1962,4 +1956,11 @@ void Bond::forceAnglers()
 	{
 		_otherAnglers[i]->forcePropagation();
 	}
+}
+
+void Bond::flipPyramid()
+{
+	_circlePortion = 1 - _circlePortion;
+	propagateChange(0);
+	getManyPositions();
 }

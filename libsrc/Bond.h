@@ -551,6 +551,8 @@ public:
 
 	/* Public call to correct deviations and store as kickValues */
 	void correctTorsionAngles();
+	
+	void flipPyramid();
 
 	virtual bool canFish();
 

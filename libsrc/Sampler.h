@@ -218,6 +218,7 @@ protected:
 	 * 	appropriate bond parameters and the sensitive atoms. */	
 	BondPtr setupThoroughSet(BondPtr bond, bool addBranches = true);
 	mat3x3 _real2Frac;
+	bool _excludeO;
 
 	void addTwistShift(ExplicitModelPtr eModel, AtomGroupPtr clearGroup);
 	int _refinedMagicAxisCount;
