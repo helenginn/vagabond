@@ -16,5 +16,5 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#define VAGABOND_VERSION_NUMBER 0.2
+#define VAGABOND_VERSION_NUMBER 0.3
 #define VAGABOND_VERSION_COMMIT_ID "_version_commit_"
