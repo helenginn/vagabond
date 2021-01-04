@@ -909,10 +909,16 @@ void Screen::reorderByFile()
 
 void Screen::keyReleaseEvent(QKeyEvent *e)
 {
-	_cAlphaKeeper->keyReleaseEvent(e);
+	if (_cAlphaKeeper)
+	{
+		_cAlphaKeeper->keyReleaseEvent(e);
+	}
 }
 
 void Screen::keyPressEvent(QKeyEvent *e)
 {
-	_cAlphaKeeper->keyPressEvent(e);
+	if (_cAlphaKeeper)
+	{
+		_cAlphaKeeper->keyPressEvent(e);
+	}
 }
