@@ -17,7 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include <QMainWindow>
-#include <mat4x4.h>
+#include "../subprojects/helen3d/libsrc/mat4x4.h"
 #include <FFT.h>
 #include "MtzFFTPtr.h"
 #include "PlotView.h"
