@@ -231,6 +231,7 @@ public:
 	void useAverageType(GroupType type);
 	void changeColour(double r, double b, double g, double a);
 	std::vector<MtzFFTPtr> orderByCoverage();
+	virtual void setData(int column, int role, const QVariant &value);
 public slots:
 	void performAverage();
 	void performCluster();
@@ -287,6 +288,7 @@ private:
 	GroupType _type;
 	WhichGroup _which;
 	
+	std::string _customName;
 	static Group *_topGroup;
 };
 

@@ -41,11 +41,33 @@ Group::Group(QTreeWidget *parent) : QTreeWidgetItem(parent)
 	_mySet.csv = NULL;
 	_mySet.ca = NULL;
 	_mySet.unitCell = NULL;
+	Qt::ItemFlags fl = flags();
+	setFlags(fl | Qt::ItemIsEditable);
 	
 	if (_topGroup == NULL)
 	{
 		_topGroup = this;
 	}
+}
+
+void Group::setData(int column, int role, const QVariant &value)
+{
+	if (role == Qt::EditRole)
+	{
+		_customName = value.toString().toStdString();
+	}
+	
+	if (_customName.length() == 0)
+	{
+		std::string str = "Group of " + i_to_str(_mtzs.size()) + " data sets";
+		QVariant val = QVariant(QString::fromStdString(str));
+		QTreeWidgetItem::setData(column, role, val);
+		return;
+	}
+
+	QTreeWidgetItem::setData(column, role, value);
+
+	return;
 }
 
 void Group::performAverage()
@@ -133,6 +155,11 @@ void Group::copyFromOriginal(Group *ave)
 
 void Group::updateText()
 {
+	if (_customName.length())
+	{
+		setText(0, QString::fromStdString(_customName));
+	}
+
 	std::string str = "Group of " + i_to_str(_mtzs.size()) + " data sets";
 	setText(0, QString::fromStdString(str));
 }
