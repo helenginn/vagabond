@@ -364,7 +364,7 @@ void PDBReader::parseLine(std::string line)
 
 void PDBReader::parse()
 {
-	if (!file_exists(filename))
+	if (_contents.length() == 0 && !file_exists(filename))
 	{
 		Shouter *shout;
 		shout = new Shouter("PDB file " + filename + " does not exist.");
@@ -375,7 +375,11 @@ void PDBReader::parse()
 	_myHOH = WaterNetworkPtr(new WaterNetwork());
 	_myHOH->setChainID("HOH");
 
-	std::string pdbContents = get_file_contents(filename);
+	std::string pdbContents = _contents;
+	if (_contents.length() == 0)
+	{
+		pdbContents = get_file_contents(filename);
+	}
 
 	std::vector<std::string> lines = split(pdbContents, '\n');
 
