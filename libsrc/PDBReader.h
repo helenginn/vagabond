@@ -27,6 +27,11 @@ public:
 	PDBReader();
 	void setFilename(std::string);
 	CrystalPtr getCrystal();
+	
+	void setContents(std::string contents)
+	{
+		_contents = contents;
+	}
 
 	void ignoreAtomsExcept(std::string type)
 	{
@@ -48,6 +53,7 @@ public:
 	}
 private:
 	std::string filename;
+	std::string _contents;
 
 	/* Keep track of what we're dealing with */
 	MoleculePtr _myMolecule;
