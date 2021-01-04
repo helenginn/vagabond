@@ -108,8 +108,6 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			o->getExplicitModel()->getFinalPositions();
 			double new_disp = o->posDisplacement();
 			bool change = new_disp < disp;
-			std::cout << "From " << disp << " " << " to " 
-			<< new_disp << "   " << (change ? "***" : "") << std::endl;
 			
 			if (new_disp > disp)
 			{
