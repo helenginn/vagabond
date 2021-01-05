@@ -32,7 +32,6 @@
 #include <QTimer>
 #include <iostream>
 #include <QImageWriter>
-#include "../subprojects/helen3d/libsrc/mat4x4.h"
 
 #define MOUSE_SENSITIVITY 500
 #define PAN_SENSITIVITY 30

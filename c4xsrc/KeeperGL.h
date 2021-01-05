@@ -26,8 +26,7 @@
 #include "MtzFFT.h"
 #include "Group.h"
 #include <SlipGL.h>
-
-#include "../subprojects/helen3d/libsrc/mat4x4.h"
+#include <mat4x4.h>
 
 class GLAxis;
 class QLabel;

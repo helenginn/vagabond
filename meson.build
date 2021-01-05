@@ -17,6 +17,9 @@ if (sp_helen3d.get_variable('helen3d_scs'))
 	helen3d_dep = sp_helen3d.get_variable('helen3d_subdep')
 endif
 
+dir_base = meson.current_source_dir()
+helen3d_include = join_paths(dir_base, 'subprojects/helen3d/libsrc')
+
 # Geometry and/or rotamer lookup madness
 
 lib_vgeom = library('vgeom', 
@@ -481,8 +484,8 @@ moc_cluster4x = qt5.preprocess(moc_headers : headers,
 
 lib_c4x = library('cluster4x', c4xsrc, moc_cluster4x, 
 dependencies: c4xdeps, cpp_args: ['-Wall', '-std=c++11'], install: true)
-inc_c4x = include_directories('c4xsrc')
-dep_c4x = declare_dependency(link_with: lib_c4x, include_directories: inc_c4x)
+inc_c4x = include_directories('c4xsrc', 'subprojects/helen3d/libsrc')
+dep_c4x = declare_dependency(link_with: lib_c4x, include_directories: [inc_c4x])
 
 
 executable('cluster4x', ['c4xsrc/main.cpp'], 
