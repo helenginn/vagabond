@@ -8,7 +8,7 @@
 
 #include "BucketBulkSolvent.h"
 #include "Crystal.h"
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 #include "Molecule.h"
 #include "Atom.h"
 #include "Absolute.h"

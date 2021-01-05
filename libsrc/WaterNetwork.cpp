@@ -14,7 +14,7 @@
 #include "Atom.h"
 #include "AtomGroup.h"
 #include "Absolute.h"
-#include "RefinementNelderMead.h"
+#include <hcsrc/RefinementNelderMead.h>
 
 #define MAX_HBOND_DISTANCE 3.4
 

@@ -2,8 +2,8 @@
 #define __vagabond__MapScoreWorkspace__
 
 #include "shared_ptrs.h"
-#include "mat3x3.h"
-#include "Timer.h"
+#include <hcsrc/mat3x3.h>
+#include <hcsrc/Timer.h>
 #include <vector>
 #include <map>
 

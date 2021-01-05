@@ -25,10 +25,10 @@
 #include <iostream>
 #include <string.h>
 #include <algorithm>
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "PNGFile.h"
 #include <cmath>
-#include "vec3.h"
+#include <hcsrc/vec3.h>
 
 int CSV::findHeader(std::string whichHeader)
 {

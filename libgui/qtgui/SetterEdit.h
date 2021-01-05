@@ -3,7 +3,7 @@
 
 #include "../../libsrc/shared_ptrs.h"
 #include <QtWidgets/qlineedit.h>
-#include "../../libsrc/RefinementStrategy.h"
+#include <hcsrc/RefinementStrategy.h>
 #include "../../libsrc/Monomer.h"
 
 class SetterEdit : public QLineEdit

@@ -18,7 +18,7 @@
 
 #include "ExplicitModel.h"
 #include "Twist.h"
-#include "Fibonacci.h"
+#include <hcsrc/Fibonacci.h>
 #include "Options.h"
 #include "CSV.h"
 #include "Anisotropicator.h"

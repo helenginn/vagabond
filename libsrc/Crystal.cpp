@@ -29,25 +29,26 @@ using namespace Vagabond;
 
 #include "FFT.h"
 #include "Bond.h"
-#include "vec3.h"
+#include <hcsrc/vec3.h>
 #include "Shouter.h"
 #include "Diffraction.h"
 #include "Polymer.h"
 #include "Monomer.h"
 #include "CSV.h"
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "PDBReader.h"
 #include "Atom.h"
 #include "Absolute.h"
 #include "Anchor.h"
 #include "FlexGlobal.h"
-#include "RefinementGridSearch.h"
-#include "RefinementNelderMead.h"
+#include <hcsrc/RefinementGridSearch.h>
+#include <hcsrc/RefinementNelderMead.h>
 #include "Bucket.h"
 #include "Options.h"
 #include "WeightedMap.h"
 #include "WaterNetwork.h"
 #include "SpaceWarp.h"
+#include "ccp4_mat.h"
 
 #include "libccp4/cmtzlib.h"
 #include "libccp4/csymlib.h"

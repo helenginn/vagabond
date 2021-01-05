@@ -16,6 +16,7 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#include "ccp4_mat.h"
 #include "SymAtom.h"
 #include "Options.h"
 

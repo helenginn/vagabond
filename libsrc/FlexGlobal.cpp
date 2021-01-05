@@ -10,7 +10,7 @@
 #include "AtomGroup.h"
 #include "Atom.h"
 #include "Bond.h"
-#include "maths.h"
+#include <hcsrc/maths.h>
 #include "Anisotropicator.h"
 #include "Shouter.h"
 #include "FFT.h"

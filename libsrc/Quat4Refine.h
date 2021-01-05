@@ -20,7 +20,7 @@
 #define __Vagabond__Quat4Refine__
 
 #include "quat4.h"
-#include "RefinementStrategy.h"
+#include <hcsrc/RefinementStrategy.h>
 
 class Quat4Refine
 {

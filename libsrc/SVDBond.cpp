@@ -21,7 +21,7 @@
 #include "SVDBond.h"
 #include "../libica/svdcmp.h"
 #include "Atom.h"
-#include "RefinementStrategy.h"
+#include <hcsrc/RefinementStrategy.h>
 #include "Bond.h"
 #include "Polymer.h"
 #include "Anchor.h"

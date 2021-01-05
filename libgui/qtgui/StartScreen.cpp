@@ -28,7 +28,7 @@
 #include "../../libsrc/Shouter.h"
 #include "VagWindow.h"
 #include <QtWidgets/qmessagebox.h>
-#include "../../libsrc/FileReader.h"
+#include <hcsrc/FileReader.h>
 
 void StartScreen::makeButtons()
 {

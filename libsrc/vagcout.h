@@ -22,7 +22,7 @@
 #include <fstream>
 #include <iostream>
 #include <streambuf>
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "Notifiable.h"
 #include "shared_ptrs.h"
 

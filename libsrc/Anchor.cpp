@@ -6,9 +6,9 @@
 //  Copyright (c) 2018 Helen Ginn. All rights reserved.
 //
 
-#include "RefineMat3x3.h"
+#include <hcsrc/RefineMat3x3.h>
 #include "Quat4Refine.h"
-#include "RefinementNelderMead.h"
+#include <hcsrc/RefinementNelderMead.h>
 #include "Anchor.h"
 #include "Motion.h"
 #include "FlexGlobal.h"

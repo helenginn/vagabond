@@ -11,7 +11,7 @@
 
 class FlexLocal;
 #include "shared_ptrs.h"
-#include "RefinementStrategy.h"
+#include <hcsrc/RefinementStrategy.h>
 #include "MapScoreWorkspace.h"
 #include <map>
 

@@ -20,7 +20,7 @@
 #define __vagabond__DistanceMatrix__
 
 #include "shared_ptrs.h"
-#include "vec3.h"
+#include <hcsrc/vec3.h>
 
 class DistanceMatrix
 {

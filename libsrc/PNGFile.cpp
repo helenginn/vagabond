@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include <iomanip>
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include <cmath>
 #include "TextManager.h"
 

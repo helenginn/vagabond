@@ -15,7 +15,7 @@
 #include <vector>
 #include "Sidechain.h"
 #include "AtomGroup.h"
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 
 /**
  * \class Monomer

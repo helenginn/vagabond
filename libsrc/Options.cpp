@@ -24,9 +24,9 @@
 #include "Shouter.h"
 #include <iomanip>
 #include "Polymer.h"
-#include "Timer.h"
+#include <hcsrc/Timer.h>
 #include "WaterNetwork.h"
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "VBondReader.h"
 #include "../commit.h"
 

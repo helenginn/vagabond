@@ -26,7 +26,7 @@
 #include <QPushButton>
 #include <QTreeWidget>
 
-#include "../libsrc/FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "ClusterList.h"
 #include "SQLInput.h"
 #include "SQLCredentials.h"

@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include "AtomGroup.h"
 #include "Sampler.h"
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 
 /**
  * \class Backbone

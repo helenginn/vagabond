@@ -9,7 +9,7 @@
 #ifndef Anisotropicator_hpp
 #define Anisotropicator_hpp
 
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 #include <vector>
 #include <stdio.h>
 

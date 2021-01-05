@@ -7,16 +7,16 @@
 //
 
 #include "Sampler.h"
-#include "RefinementGridSearch.h"
-#include "RefinementNelderMead.h"
-#include "RefinementStepSearch.h"
+#include <hcsrc/RefinementGridSearch.h>
+#include <hcsrc/RefinementNelderMead.h>
+#include <hcsrc/RefinementStepSearch.h>
 #include "Bond.h"
 #include "SVDBond.h"
 #include "Atom.h"
 #include "Crystal.h"
-#include "Converter.h"
+#include <hcsrc/Converter.h>
 #include "Element.h"
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "Absolute.h"
 #include "Anchor.h"
 #include "Polymer.h"

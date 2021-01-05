@@ -14,7 +14,7 @@
 #include "PartialStructure.h"
 #include <vector>
 #include <map>
-#include "vec3.h"
+#include <hcsrc/vec3.h>
 #include "../libccp4/csymlib.h"
 #include "../libccp4/ccp4_spg.h"
 

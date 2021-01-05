@@ -14,11 +14,11 @@
 #include "Monomer.h"
 #include "Anchor.h"
 #include "Whack.h"
-#include "RefinementGridSearch.h"
-#include "RefinementNelderMead.h"
+#include <hcsrc/RefinementGridSearch.h>
+#include <hcsrc/RefinementNelderMead.h>
 #include "ParamBand.h"
 #include "FlexGlobal.h"
-#include "Timer.h"
+#include <hcsrc/Timer.h>
 #include <map>
 #include <iomanip>
 

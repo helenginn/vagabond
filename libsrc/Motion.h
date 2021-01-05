@@ -19,7 +19,7 @@
 #ifndef __vagabond__Motion__
 #define __vagabond__Motion__
 
-#include "RefineMat3x3.h"
+#include <hcsrc/RefineMat3x3.h>
 #include "ExplicitModel.h"
 
 class FlexGlobal;

@@ -11,9 +11,9 @@
 
 #include <stdio.h>
 #include "Model.h"
-#include "vec3.h"
+#include <hcsrc/vec3.h>
 #include <string>
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "Bond.h"
 #include "Parser.h"
 

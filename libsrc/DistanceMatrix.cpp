@@ -21,7 +21,7 @@
 #include "Polymer.h"
 #include "Monomer.h"
 #include "CSV.h"
-#include "maths.h"
+#include <hcsrc/maths.h>
 
 DistanceMatrix::DistanceMatrix(PolymerPtr pol)
 {

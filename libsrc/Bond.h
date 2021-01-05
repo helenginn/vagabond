@@ -25,7 +25,7 @@
 #include <stdio.h>
 #include <string>
 #include <vector>
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 #include <iostream>
 #include "Atom.h"
 #include "BondGroup.h"

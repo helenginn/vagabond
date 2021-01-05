@@ -26,7 +26,7 @@
 #include "../libsrc/Polymer.h"
 #include "../libsrc/FlexGlobal.h"
 #include "../libsrc/WaterNetwork.h"
-#include "../libsrc/RefinementNelderMead.h"
+#include <hcsrc/RefinementNelderMead.h>
 
 Selected2GL::Selected2GL()
 {

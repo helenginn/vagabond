@@ -9,7 +9,7 @@
 #include "Bucket.h"
 #include "BucketBulkSolvent.h"
 #include "BucketPerStrand.h"
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "Atom.h"
 #include <iostream>
 #include <iomanip>

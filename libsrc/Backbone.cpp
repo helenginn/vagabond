@@ -12,7 +12,7 @@
 #include "Bond.h"
 #include "Atom.h"
 #include "Absolute.h"
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "Sidechain.h"
 
 bool Backbone::shouldRefineAtom(AtomPtr atom)

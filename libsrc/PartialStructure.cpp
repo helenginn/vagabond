@@ -17,10 +17,10 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "PartialStructure.h"
-#include "maths.h"
+#include <hcsrc/maths.h>
 #include "Diffraction.h"
 #include "CSV.h"
-#include "RefinementNelderMead.h"
+#include <hcsrc/RefinementNelderMead.h>
 #include "Options.h"
 #include "Crystal.h"
 #include "Shouter.h"

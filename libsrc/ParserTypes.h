@@ -7,8 +7,8 @@
 #define __vagabond__ParserTypes__
 
 #include <string>
-#include "vec3.h"
-#include "mat3x3.h"
+#include <hcsrc/vec3.h>
+#include <hcsrc/mat3x3.h>
 
 /** \cond SHOW_PARSER_PROPERTY_STRUCTS */
 

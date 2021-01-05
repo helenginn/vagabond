@@ -13,7 +13,7 @@
 #include "Atom.h"
 #include <iostream>
 #include "Monomer.h"
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "Absolute.h"
 #include "Crystal.h"
 #include "Backbone.h"

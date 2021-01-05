@@ -19,7 +19,7 @@
 #ifndef __Vagabond__quat4__
 #define __Vagabond__quat4__
 
-#include "vec3.h"
+#include <hcsrc/vec3.h>
 
 struct quat4
 {

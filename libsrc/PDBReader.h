@@ -12,7 +12,12 @@
 #include <stdio.h>
 #include <iostream>
 #include "shared_ptrs.h"
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
+
+#include "libccp4/cmtzlib.h"
+#include "libccp4/csymlib.h"
+#include "libccp4/ccp4_spg.h"
+#include "libccp4/ccp4_general.h"
 
 /**
  * \class PDBReader

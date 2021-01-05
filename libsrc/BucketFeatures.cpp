@@ -17,7 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "BucketFeatures.h"
-#include "Fibonacci.h"
+#include <hcsrc/Fibonacci.h>
 #include "Crystal.h"
 
 void BucketFeatures::addSolvent()

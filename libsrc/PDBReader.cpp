@@ -7,12 +7,12 @@
 //
 
 #include "PDBReader.h"
-#include "FileReader.h"
-#include "vec3.h"
+#include <hcsrc/FileReader.h>
+#include <hcsrc/vec3.h>
 #include "shared_ptrs.h"
 #include <vector>
 #include "Shouter.h"
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 #include "Crystal.h"
 #include "Polymer.h"
 #include "WaterNetwork.h"

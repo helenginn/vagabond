@@ -17,14 +17,14 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Motion.h"
-#include "Converter.h"
+#include <hcsrc/Converter.h>
 #include "Anchor.h"
 #include "Options.h"
 #include "Polymer.h"
-#include "Fibonacci.h"
+#include <hcsrc/Fibonacci.h>
 #include "Anisotropicator.h"
-#include "RefinementNelderMead.h"
-#include "RefinementList.h"
+#include <hcsrc/RefinementNelderMead.h>
+#include <hcsrc/RefinementList.h>
 #include "FlexGlobal.h"
 
 Motion::Motion()

@@ -10,7 +10,7 @@
 #include "../../libsrc/Shouter.h"
 #include "MoleListItem.h"
 #include "MoleculeExplorer.h"
-#include "../../libsrc/FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "SetterEdit.h"
 #include "VagWindow.h"
 #include "../../libsrc/Polymer.h"

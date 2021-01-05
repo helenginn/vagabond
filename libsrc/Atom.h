@@ -12,14 +12,14 @@
 #include <stdio.h>
 #include "shared_ptrs.h"
 #include <vector>
-#include "vec3.h"
-#include "mat3x3.h"
+#include <hcsrc/vec3.h>
+#include <hcsrc/mat3x3.h>
 #include "Element.h"
 #include <string>
 #include <mutex>
 #include "../libinfo/GeomTable.h"
 #include "Parser.h"
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 
 /**
  * \class Atom

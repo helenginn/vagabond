@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include "shared_ptrs.h"
 #include "MapScoreWorkspace.h"
-#include "RefinementStrategy.h"
+#include <hcsrc/RefinementStrategy.h>
 
 /**
  * \class FlexGlobal

@@ -12,7 +12,7 @@
 #include "libccp4/csymlib.h"
 #include <vector>
 #include "Options.h"
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 
 void getCol(std::vector<std::string> names, CMtz::MTZ *mtz,
             CMtz::MTZCOL **column)

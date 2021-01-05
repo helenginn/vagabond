@@ -12,9 +12,9 @@
 #include <stdio.h>
 #include <vector>
 #include "MapScoreWorkspace.h"
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 #include "shared_ptrs.h"
-#include "RefinementStrategy.h"
+#include <hcsrc/RefinementStrategy.h>
 #include <string>
 #include <map>
 

@@ -21,7 +21,7 @@
 #include "CSV.h"
 #include "Element.h"
 #include "Atom.h"
-#include "Timer.h"
+#include <hcsrc/Timer.h>
 #include "Anisotropicator.h"
 #include "ExplicitModel.h"
 #include <cstring>

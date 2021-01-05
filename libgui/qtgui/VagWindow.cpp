@@ -31,7 +31,7 @@
 #include "../../libsrc/Crystal.h"
 #include "../../libsrc/Monomer.h"
 #include "../../libsrc/Polymer.h"
-#include "../../libsrc/FileReader.h"
+#include <hcsrc/FileReader.h>
 #include <../../libsrc/Motion.h>
 #include "../../libsrc/Bucket.h"
 #include "../../libsrc/WaterNetwork.h"

@@ -23,8 +23,8 @@
 #include "Atom.h"
 #include "Anchor.h"
 #include "Shouter.h"
-#include "mat3x3.h"
-#include "vec3.h"
+#include <hcsrc/mat3x3.h>
+#include <hcsrc/vec3.h>
 
 Whack::Whack()
 {

@@ -18,7 +18,7 @@
 
 #include "SpaceWarp.h"
 #include "WeightedMap.h"
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 #include "Diffraction.h"
 #include "Bucket.h"
 #include "Atom.h"
@@ -26,8 +26,7 @@
 #include <iomanip>
 #include "Shouter.h"
 #include "CSV.h"
-//#include "SimXW.h"
-#include "Fibonacci.h"
+#include <hcsrc/Fibonacci.h>
 #include "../libinfo/CentroidToPhase.h"
 
 #define MAX_SLICES (25.)

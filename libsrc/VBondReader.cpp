@@ -4,7 +4,7 @@
 // Copyright (c) 2018 Helen Ginn. All rights reserved.
 
 #include "VBondReader.h"
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "Crystal.h"
 #include "Shouter.h"
 

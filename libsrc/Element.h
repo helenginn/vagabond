@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 #include "shared_ptrs.h"
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 
 /**
  * \class Element

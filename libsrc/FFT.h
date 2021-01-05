@@ -25,7 +25,7 @@
 #include <fftw3.h>
 #include "MapScoreWorkspace.h"
 #include "shared_ptrs.h"
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 
 class FFT;
 

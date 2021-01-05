@@ -23,13 +23,13 @@
 #include <stdio.h>
 #include <vector>
 #include "shared_ptrs.h"
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 #include "Object.h"
 #include "FFT.h"
 #include "Motion.h"
 #include <string>
 #include <map>
-#include "maths.h"
+#include <hcsrc/maths.h>
 #include "Molecule.h"
 #include "../libccp4/csymlib.h"
 #include <iostream>

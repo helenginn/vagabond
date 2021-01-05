@@ -19,8 +19,8 @@
 #include "Polymer.h"
 #include "KeyPoints.h"
 #include "Knotter.h"
-#include "Fibonacci.h"
-#include "Timer.h"
+#include <hcsrc/Fibonacci.h>
+#include <hcsrc/Timer.h>
 #include "Twist.h"
 #include "Crystal.h"
 #include "Sidechain.h"
@@ -37,16 +37,16 @@
 #include "CSV.h"
 #include <sstream>
 #include <iomanip>
-#include "maths.h"
+#include <hcsrc/maths.h>
 #include <float.h>
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include "Options.h"
 #include "FlexGlobal.h"
 #include "FlexLocal.h"
 #include "Refitter.h"
-#include "RefinementNelderMead.h"
-#include "RefinementLBFGS.h"
-#include "RefinementGridSearch.h"
+#include <hcsrc/RefinementNelderMead.h>
+#include <hcsrc/RefinementLBFGS.h>
+#include <hcsrc/RefinementGridSearch.h>
 #include "Hydrogenator.h"
 
 Polymer::Polymer()

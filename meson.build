@@ -75,7 +75,7 @@ base_files = files('libsrc/Absolute.cpp',
 'libsrc/BucketPerStrand.cpp', 
 'libsrc/Bucket.cpp', 
 'libsrc/Chelate.cpp', 
-'libsrc/Converter.cpp', 
+#'libsrc/Converter.cpp', 
 'libsrc/Crystal.cpp', 
 'libsrc/CSV.cpp', 
 'libsrc/Diffraction.cpp', 
@@ -84,17 +84,16 @@ base_files = files('libsrc/Absolute.cpp',
 'libsrc/Element.cpp', 
 'libsrc/ExplicitModel.cpp', 
 'libsrc/FFT.cpp', 
-'libsrc/Fibonacci.cpp', 
-'libsrc/FileReader.cpp', 
+#'libsrc/Fibonacci.cpp', 
+#'libsrc/FileReader.cpp', 
 'libsrc/FlexGlobal.cpp', 
 'libsrc/FlexLocal.cpp', 
 'libsrc/GhostBond.cpp',
 'libsrc/Hydrogenator.cpp', 
 'libsrc/KeyPoints.cpp', 
 'libsrc/Knotter.cpp', 
-'libsrc/mat3x3.cpp', 
+#'libsrc/mat3x3.cpp', 
 #'libsrc/mat4x4.cpp', 
-'libsrc/maths.cpp', 
 'libsrc/Model.cpp', 
 'libsrc/Molecule.cpp', 
 'libsrc/Motion.cpp', 
@@ -108,12 +107,12 @@ base_files = files('libsrc/Absolute.cpp',
 'libsrc/PNGFile.cpp', 
 'libsrc/Polymer.cpp', 
 'libsrc/Refitter.cpp', 
-'libsrc/RefinementGridSearch.cpp', 
-'libsrc/RefinementLBFGS.cpp', 
-'libsrc/RefinementList.cpp', 
-'libsrc/RefinementNelderMead.cpp', 
-'libsrc/RefinementStepSearch.cpp', 
-'libsrc/RefinementStrategy.cpp', 
+#'libsrc/RefinementGridSearch.cpp', 
+#'libsrc/RefinementLBFGS.cpp', 
+#'libsrc/RefinementList.cpp', 
+#'libsrc/RefinementNelderMead.cpp', 
+#'libsrc/RefinementStepSearch.cpp', 
+#'libsrc/RefinementStrategy.cpp', 
 'libsrc/Sampler.cpp', 
 'libsrc/Shouter.cpp', 
 'libsrc/Sidechain.cpp', 
@@ -125,22 +124,25 @@ base_files = files('libsrc/Absolute.cpp',
 'libsrc/SymMate.cpp', 
 'libsrc/SVDBond.cpp', 
 'libsrc/TextManager.cpp', 
-'libsrc/Timer.cpp', 
+#'libsrc/Timer.cpp', 
 'libsrc/Twist.cpp', 
 'libsrc/VBondReader.cpp', 
-'libsrc/vec3.cpp', 
+#'libsrc/vec3.cpp', 
+'libsrc/vagmaths.cpp', 
 'libsrc/WaterNetwork.cpp', 
 'libsrc/WeightedMap.cpp', 
 'libsrc/Whack.cpp')
 
 lib_vag = library('vag', gen_src, base_files,
-dependencies: [png_dep, fftw_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep], cpp_args: ['-w', '-std=c++11'], install: true)
+include_directories: 'subprojects/helencore',
+dependencies: [png_dep, fftw_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep,
+helencore_dep], cpp_args: ['-w', '-std=c++11'], install: true)
 inc_vag = include_directories('libsrc')
 dep_vag = declare_dependency(link_with: lib_vag, include_directories: inc_vag)
 
 # Command line interface
 
-executable('vagabond', 'libsrc/main.cpp', dependencies: [dep_vag, boost_dep], cpp_args: ['-std=c++11'], install: true)
+executable('vagabond', 'libsrc/main.cpp', include_directories: 'subprojects/helencore', dependencies: [dep_vag, boost_dep], cpp_args: ['-std=c++11'], install: true)
 #executable('vagabond', 'libsrc/main.cpp', base_files, dependencies: [boost_dep, dep_ica, png_dep, fftw_dep, dep_vgeom, dep_ccp4], cpp_args: ['-std=c++11', '-pg'], link_args: ['-pg'], install: true)
 
 # Graphical user interface
@@ -201,12 +203,16 @@ endif
 executable('force_down', gen_src, 
 'force_down/main.cpp', 
 'force_down/Wilson.cpp', 
-cpp_args: ['-std=c++11'], dependencies : [ boost_dep, dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
+cpp_args: ['-std=c++11'], 
+include_directories: 'subprojects/helencore',
+dependencies : [ helencore_dep, boost_dep, dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
 
 
 executable('shell_scale', gen_src, 
 'shell_scale/main.cpp', 
-cpp_args: ['-std=c++11'], dependencies : [ boost_dep, dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
+cpp_args: ['-std=c++11'],
+include_directories: 'subprojects/helencore',
+dependencies : [ helencore_dep, boost_dep, dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
 
 if qt5_dep.found() and dep_gl.found()
 
@@ -231,7 +237,7 @@ install_headers([
 'libsrc/Anchor.h',
 'libsrc/Angler.h',
 'libsrc/Anisotropicator.h',
-'libsrc/Any.h',
+#'libsrc/Any.h',
 'libsrc/Atom.h',
 'libsrc/AtomGroup.h',
 'libsrc/Backbone.h',
@@ -245,7 +251,7 @@ install_headers([
 'libsrc/BucketPerStrand.h',
 'libsrc/CSV.h',
 'libsrc/Chelate.h',
-'libsrc/Converter.h',
+#'libsrc/Converter.h',
 'libsrc/Crystal.h',
 'libsrc/Dataset.h',
 'libsrc/Diffraction.h',
@@ -254,8 +260,8 @@ install_headers([
 'libsrc/Element.h',
 'libsrc/ExplicitModel.h',
 'libsrc/FFT.h',
-'libsrc/Fibonacci.h',
-'libsrc/FileReader.h',
+#'libsrc/Fibonacci.h',
+#'libsrc/FileReader.h',
 'libsrc/FlexGlobal.h',
 'libsrc/FlexLocal.h',
 'libsrc/GhostBond.h',
@@ -274,7 +280,7 @@ install_headers([
 'libsrc/Options.h',
 'libsrc/PDBReader.h',
 'libsrc/PNGFile.h',
-'libsrc/Param.h',
+#'libsrc/Param.h',
 'libsrc/ParamBand.h',
 'libsrc/Parser.h',
 'libsrc/ParserTypes.h',
@@ -282,13 +288,13 @@ install_headers([
 'libsrc/Polymer.h',
 'libsrc/Protocol.h',
 'libsrc/Quat4Refine.h',
-'libsrc/RefineMat3x3.h',
-'libsrc/RefinementGridSearch.h',
-'libsrc/RefinementLBFGS.h',
-'libsrc/RefinementList.h',
-'libsrc/RefinementNelderMead.h',
-'libsrc/RefinementStepSearch.h',
-'libsrc/RefinementStrategy.h',
+#'libsrc/RefineMat3x3.h',
+#'libsrc/RefinementGridSearch.h',
+#'libsrc/RefinementLBFGS.h',
+#'libsrc/RefinementList.h',
+#'libsrc/RefinementNelderMead.h',
+#'libsrc/RefinementStepSearch.h',
+#'libsrc/RefinementStrategy.h',
 'libsrc/Refitter.h',
 'libsrc/SSRigger.h',
 'libsrc/SVDBond.h',
@@ -301,7 +307,7 @@ install_headers([
 'libsrc/SymAtom.h',
 'libsrc/SymMate.h',
 'libsrc/TextManager.h',
-'libsrc/Timer.h',
+#'libsrc/Timer.h',
 'libsrc/Twist.h',
 'libsrc/VBondReader.h',
 'libsrc/WaterNetwork.h',
@@ -309,14 +315,14 @@ install_headers([
 'libsrc/Whack.h',
 'libsrc/charmanip.h',
 'libsrc/font.h',
-'libsrc/mat3x3.h',
+#'libsrc/mat3x3.h',
 #'libsrc/mat4x4.h',
-'libsrc/maths.h',
+'libsrc/vagmaths.h',
 'libsrc/polyfit.h',
 'libsrc/quat4.h',
 'libsrc/shared_ptrs.h',
-'libsrc/vagcout.h',
-'libsrc/vec3.h'],
+'libsrc/vagcout.h'],
+#'libsrc/vec3.h'],
  subdir : 'libsrc')
 
 install_headers([
@@ -488,7 +494,9 @@ inc_c4x = include_directories('c4xsrc')
 dep_c4x = declare_dependency(link_with: lib_c4x, include_directories: [inc_c4x])
 
 executable('cluster4x', ['c4xsrc/main.cpp'], 
-cpp_args: ['-std=c++11', '-Wall'], dependencies : [c4xdeps, dep_c4x], install: true)
+cpp_args: ['-std=c++11', '-Wall'], 
+include_directories : 'subprojects/helencore',
+dependencies : [helencore_dep, c4xdeps, dep_c4x], install: true)
 else
 	message('QT5 not found, so not building cluster4x.')
 endif

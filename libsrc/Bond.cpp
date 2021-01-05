@@ -19,7 +19,7 @@
 #include "Whack.h"
 #include "Twist.h"
 #include "Anchor.h"
-#include "maths.h"
+#include <hcsrc/maths.h>
 #include "Monomer.h"
 #include "Polymer.h"
 #include "Options.h"

@@ -19,7 +19,8 @@
 #ifndef __vagabond__ParamBand_h__
 #define __vagabond__ParamBand_h__
 
-#include "RefinementStrategy.h"
+#include "shared_ptrs.h"
+#include <hcsrc/RefinementStrategy.h>
 #include <float.h>
 
 typedef struct

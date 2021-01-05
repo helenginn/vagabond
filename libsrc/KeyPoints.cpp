@@ -18,9 +18,9 @@
 
 #include "KeyPoints.h"
 #include "Param.h"
-#include "Timer.h"
+#include <hcsrc/Timer.h>
 #include "Atom.h"
-#include "RefinementNelderMead.h"
+#include <hcsrc/RefinementNelderMead.h>
 #include "Options.h"
 #include "FlexGlobal.h"
 #include "Anchor.h"

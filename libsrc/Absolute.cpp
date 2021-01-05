@@ -24,7 +24,7 @@
 #include <iostream>
 #include "Monomer.h"
 #include "Polymer.h"
-#include "maths.h"
+#include <hcsrc/maths.h>
 #include "Crystal.h"
 #include "Anisotropicator.h"
 #include <iomanip>

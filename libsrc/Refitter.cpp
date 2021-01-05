@@ -7,7 +7,7 @@
 //
 
 #include "Refitter.h"
-#include "RefinementGridSearch.h"
+#include <hcsrc/RefinementGridSearch.h>
 #include "Bond.h"
 #include "Monomer.h"
 #include "Polymer.h"
@@ -16,7 +16,7 @@
 #include "Options.h"
 #include "ParamBand.h"
 #include "Shouter.h"
-#include "Timer.h"
+#include <hcsrc/Timer.h>
 
 double ramachandran_angles[] = {
 	-180, 180,

@@ -8,7 +8,7 @@
 
 #include "Atom.h"
 #include "Absolute.h"
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 #include <cmath>
 #include <stdlib.h>
 #include "Bond.h"
@@ -18,7 +18,7 @@
 #include "Monomer.h"
 #include "Polymer.h"
 #include <iomanip>
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 #include <sstream>
 #include "Shouter.h"
 #include "Crystal.h"

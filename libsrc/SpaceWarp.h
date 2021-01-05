@@ -17,8 +17,8 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "shared_ptrs.h"
-#include "vec3.h"
-#include "Any.h"
+#include <hcsrc/vec3.h>
+#include <hcsrc/Any.h>
 #include <map>
 
 typedef std::vector<BondPtr> BondList;

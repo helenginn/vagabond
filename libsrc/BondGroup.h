@@ -21,7 +21,7 @@
 #include <string>
 #include <vector>
 #include "Parser.h"
-#include "FileReader.h"
+#include <hcsrc/FileReader.h>
 
 class BondGroup : public Parser
 {

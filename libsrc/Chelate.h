@@ -20,7 +20,7 @@
 #define __vagabond__Chelate__
 
 #include "Model.h"
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 
 class Chelate : public Model
 {

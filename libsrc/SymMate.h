@@ -20,8 +20,8 @@
 #define __vagabond__SymMate__
 
 #include "shared_ptrs.h"
-#include "vec3.h"
-#include "mat3x3.h"
+#include <hcsrc/vec3.h>
+#include <hcsrc/mat3x3.h>
 
 class SymMate
 {

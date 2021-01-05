@@ -12,7 +12,7 @@
 #include <fstream>
 #include <iostream>
 #include "StateValue.h"
-#include "RefinementStrategy.h"
+#include <hcsrc/RefinementStrategy.h>
 
 /**
  * \class Parser

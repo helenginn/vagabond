@@ -20,7 +20,7 @@
 #define __Vagabond__Balance__h
 
 #include "shared_ptrs.h"
-#include "RefinementStrategy.h"
+#include <hcsrc/RefinementStrategy.h>
 
 /**
  * \class Balance

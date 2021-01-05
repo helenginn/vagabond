@@ -8,7 +8,8 @@
 
 #define MAP_VALUE_CUTOFF (0.005)
 
-#include "Timer.h"
+#include <hcsrc/Timer.h>
+#include "vagmaths.h"
 #include "Twist.h"
 #include "ExplicitModel.h"
 #include "AtomGroup.h"
@@ -22,7 +23,6 @@
 #include "Crystal.h"
 #include <iomanip>
 #include "CSV.h"
-#include "maths.h"
 #include "Bucket.h"
 #include "Diffraction.h"
 #include "Shouter.h"

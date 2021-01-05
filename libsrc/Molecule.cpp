@@ -15,7 +15,7 @@
 #include <float.h>
 #include <iostream>
 #include <fstream>
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 #include "Options.h"
 #include "CSV.h"
 #include "Chelate.h"

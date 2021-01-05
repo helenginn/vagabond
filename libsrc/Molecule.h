@@ -11,7 +11,7 @@
 
 #include <stdio.h>
 #include <vector>
-#include "mat3x3.h"
+#include <hcsrc/mat3x3.h>
 #include "shared_ptrs.h"
 #include "Sampler.h"
 #include "AtomGroup.h"

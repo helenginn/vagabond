@@ -19,17 +19,17 @@
 #include "../libica/svdcmp.h"
 #include "SpaceWarp.h"
 #include "SVDBond.h"
-#include "RefinementNelderMead.h"
+#include <hcsrc/RefinementNelderMead.h>
 #include "FFT.h"
 #include "CSV.h"
-#include "Timer.h"
+#include <hcsrc/Timer.h>
 #include "Twist.h"
 #include "Atom.h"
 #include "AtomGroup.h"
 #include "FlexGlobal.h"
 #include "Options.h"
 #include "Bond.h"
-#include "maths.h"
+#include <hcsrc/maths.h>
 #include <map>
 
 SpaceWarp::SpaceWarp(VagFFTPtr fft)
