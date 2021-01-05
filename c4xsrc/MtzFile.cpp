@@ -17,7 +17,6 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "MtzFile.h"
-#include "GLObject.h"
 #include <QFont>
 #include "QuickAtoms.h"
 
