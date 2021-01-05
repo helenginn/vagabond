@@ -13,7 +13,7 @@
 #include "../libsrc/Bond.h"
 #include "../libsrc/Atom.h"
 #include "../libsrc/Element.h"
-#include "../subprojects/helen3d/libsrc/Frameworks.h"
+#include <h3dsrc/Frameworks.h>
 
 using namespace Helen3D;
 

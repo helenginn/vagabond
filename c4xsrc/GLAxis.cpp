@@ -18,7 +18,6 @@
 
 #include <iostream>
 #include "GLAxis.h"
-#include <SlipObject.h>
 
 GLAxis::GLAxis(vec3 dir) : SlipObject()
 {

@@ -5,6 +5,9 @@ throwaway*/
 libtool
 .DS_Store
 
+# dummy subprojects
+subprojects/helencore
+
 # Cloc
 
 cloc.txt

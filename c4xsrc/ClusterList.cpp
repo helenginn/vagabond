@@ -156,6 +156,43 @@ void ClusterList::switchCSV(int c)
 	csvAverage();
 }
 
+void ClusterList::loadFromMultistate(std::string pdb)
+{
+	if (!file_exists(pdb))
+	{
+		std::cout << "File does not exist: " << pdb << std::endl;
+	}
+
+	Group *grp = new Group(NULL);
+	std::string contents = get_file_contents(pdb);
+	int state;
+	
+	{
+		std::string name = pdb + "_state_" + i_to_str(state);
+		MtzFile *file = new MtzFile(name);
+		file->setPanddaName(name);
+		file->setPdbPath(name);
+		file->setMetadata(name);
+		file->setRefinementID(name);
+		_files.push_back(file);
+
+		DiffractionMtzPtr mtz = DiffractionMtzPtr(new DiffractionMtz());
+		mtz->setFilename(name);
+
+		CrystalPtr crystal;
+
+		std::string contents = "";
+		PDBReader reader;
+		reader.setContents(contents);
+		reader.ignoreAtomsExcept("CA");
+		crystal = reader.getCrystal();
+			
+		file->setCrystal(crystal);
+		grp->addMtz(mtz, file);
+	}
+
+}
+
 bool ClusterList::loadFiles()
 {
 	if (_sqlInput)

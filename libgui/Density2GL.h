@@ -7,7 +7,7 @@
 //
 
 #include <mutex>
-#include "../subprojects/helen3d/libsrc/SlipObject.h"
+#include <h3dsrc/SlipObject.h>
 #include <vector>
 #include "../libsrc/shared_ptrs.h"
 

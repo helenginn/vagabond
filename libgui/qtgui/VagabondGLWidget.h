@@ -9,7 +9,7 @@
 #ifndef __Vagabond__VagabondGLWidget_h__
 #define __Vagabond__VagabondGLWidget_h__
 
-#include "../../subprojects/helen3d/libsrc/SlipGL.h"
+#include <h3dsrc/SlipGL.h>
 #include <QtCore/qtimer.h>
 #include <QtWidgets/qopenglwidget.h>
 #include <QMouseEvent>

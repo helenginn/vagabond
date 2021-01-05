@@ -15,10 +15,8 @@ helen3d_dep = dependency('', required: false)
 
 if (sp_helen3d.get_variable('helen3d_scs'))
 	helen3d_dep = sp_helen3d.get_variable('helen3d_subdep')
+	helencore_dep = sp_helen3d.get_variable('helencore_dep')
 endif
-
-dir_base = meson.current_source_dir()
-helen3d_include = join_paths(dir_base, 'subprojects/helen3d/libsrc')
 
 # Geometry and/or rotamer lookup madness
 
@@ -167,18 +165,16 @@ if qt5_dep.found() and dep_gl.found()
 # Non-Qt5 GUI elements (mostly OpenGL stuff)
 # Uses Qt5-supplied OpenGL
 
+subincludes = ['subprojects/helen3d', 'subprojects/helencore']
+
 executable('vagabond-gui', base_files,
 'libgui/Atoms2GL.cpp', 
 'libgui/Bonds2GL.cpp', 
 'libgui/Connect2GL.cpp', 
 'libgui/Density2GL.cpp',
-#'libgui/GLKeeper.cpp',
-#'libgui/GLObject.cpp',
 'libgui/Multi2GL.cpp', 
-'libgui/shader.cpp',
 'libgui/Selected2GL.cpp',
 'libgui/Vagabond2GL.cpp', 
-#'libgui/WarpGL.cpp', 
 'libgui/qtgui/gui_main.cpp',
 'libgui/qtgui/CrystalExplorer.cpp',
 'libgui/qtgui/Dialogue.cpp',
@@ -194,8 +190,10 @@ executable('vagabond-gui', base_files,
 'libgui/qtgui/StartScreen.cpp',
 'libgui/qtgui/VagabondGLWidget.cpp',
 'libgui/qtgui/VagWindow.cpp', 
-moc_files, dependencies: [qt5_dep, dep_ica, helen3d_dep, dep_ccp4, dep_vgeom, png_dep, fftw_dep, boost_dep], install: true, cpp_args: ['-w',
-'-std=c++11'])
+moc_files, dependencies: [qt5_dep, dep_ica, helen3d_dep, helencore_dep,
+dep_ccp4, dep_vgeom, png_dep, fftw_dep, boost_dep], 
+include_directories: subincludes,
+install: true, cpp_args: ['-w', '-std=c++11'])
 else
 	message('QT5 not found, so not building vagabond-gui.')
 endif
@@ -446,6 +444,7 @@ dep_vag,
 dep_ica,
 png_dep,
 dep_ccp4,
+helencore_dep,
 helen3d_dep
 ]
 
@@ -482,11 +481,11 @@ endif
 moc_cluster4x = qt5.preprocess(moc_headers : headers,
 		moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'])
 
-lib_c4x = library('cluster4x', c4xsrc, moc_cluster4x, 
+lib_c4x = library('cluster4x', c4xsrc, moc_cluster4x,
+include_directories: subincludes,
 dependencies: c4xdeps, cpp_args: ['-Wall', '-std=c++11'], install: true)
-inc_c4x = include_directories('c4xsrc', 'subprojects/helen3d/libsrc')
+inc_c4x = include_directories('c4xsrc')
 dep_c4x = declare_dependency(link_with: lib_c4x, include_directories: [inc_c4x])
-
 
 executable('cluster4x', ['c4xsrc/main.cpp'], 
 cpp_args: ['-std=c++11', '-Wall'], dependencies : [c4xdeps, dep_c4x], install: true)

@@ -39,6 +39,7 @@ public:
 	void getFromFolders();
 	void getFromStream();
 	void getFromCSV(AveCSV *csv);
+	void loadFromMultistate(std::string pdb);
 	void setScreen(Screen *scr)
 	{
 		_screen = scr;

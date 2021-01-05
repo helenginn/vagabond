@@ -19,8 +19,7 @@
 #ifndef __fuck_cov__GLAxis__
 #define __fuck_cov__GLAxis__
 
-#include "SlipObject.h"
-#include "vec3.h"
+#include <h3dsrc/SlipObject.h>
 
 class GLAxis : public SlipObject
 {

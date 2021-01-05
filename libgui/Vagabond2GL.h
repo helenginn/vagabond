@@ -10,7 +10,7 @@
 #define Vagabond2GL_hpp
 
 #include <stdio.h>
-#include "../subprojects/helen3d/libsrc/SlipObject.h"
+#include <h3dsrc/SlipObject.h>
 #include "../libsrc/shared_ptrs.h"
 #include <map>
 #include "../libsrc/Bond.h"
