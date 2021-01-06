@@ -321,9 +321,9 @@ std::string SQLInput::constructRowQuery(bool distinctCrystals)
 	"SARS_COV_2_Analysis_v2.Refinement.data_reduction_id = "
 	"SARS_COV_2_Analysis_v2.Data_Reduction.data_reduction_id";
 	
-	query += " JOIN SARS_COV_2_Analysis_v2.Crystals ON "
+	query += " JOIN SARS_COV_2_v2.Crystals ON "
 	"SARS_COV_2_Analysis_v2.Data_Reduction.crystal_id = "
-	"SARS_COV_2_Analysis_v2.Crystals.crystal_id";
+	"SARS_COV_2_v2.Crystals.crystal_id";
 
 	if (!distinctCrystals)
 	{
@@ -356,7 +356,7 @@ std::string SQLInput::constructRowQuery(bool distinctCrystals)
 	if (_targetID.length() > 0)
 	{
 		changed = true;
-		query += " SARS_COV_2_Analysis_v2.Crystals.target_id = '";
+		query += " SARS_COV_2_v2.Crystals.target_id = '";
 		query += _targetID + "' AND";
 	}
 
