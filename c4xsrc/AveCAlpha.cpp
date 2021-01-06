@@ -19,7 +19,7 @@
 #include "AveCAlpha.h"
 #include "MtzFile.h"
 #include "MtzFFT.h"
-#include <libsrc/maths.h>
+#include <hcsrc/maths.h>
 #include "QuickAtoms.h"
 #include <iostream>
 

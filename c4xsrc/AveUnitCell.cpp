@@ -19,7 +19,7 @@
 #include "AveUnitCell.h"
 #include "MtzFFT.h"
 #include "MtzFile.h"
-#include <libsrc/maths.h>
+#include <hcsrc/maths.h>
 
 AveUnitCell::AveUnitCell(Group *group) : Average(group)
 {
