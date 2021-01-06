@@ -44,6 +44,11 @@ public:
 	{
 		_list = list;
 	}
+	
+	void setTargetID(std::string target)
+	{
+		_targetID = target;
+	}
 
 	void connectDb(QString hostname, QString database, 
 	               QString username, QString password);
@@ -71,6 +76,7 @@ private:
 	QTreeWidget *_results;
 	std::vector<QWidget *> _bin;
 	std::vector<DatasetPath> _datasets;
+	std::string _targetID;
 	
 	size_t _chunkSize;
 };

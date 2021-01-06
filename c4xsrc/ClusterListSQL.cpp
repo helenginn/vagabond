@@ -23,5 +23,6 @@ void ClusterList::getFromDatabase()
 {
 	SQLInput *input = new SQLInput(NULL);
 	input->setList(this);
+	input->setTargetID(_targetID);
 }
 

@@ -590,6 +590,22 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 			_preload = value;
 		}
 
+		value = isCommand(_commands[i], "--target-id=");
+		if (value.length() > 0)
+		{
+			if (value.find("'") != std::string::npos)
+			{
+				std::cout << "Remove that quotation mark "
+				"from your target-id - danger - not using" << std::endl;
+			}
+			else
+			{
+				std::cout << "Setting cluster target ID for SQL" << std::endl;
+				_targetID = value;
+			}
+		}
+
+
 		value = isCommand(_commands[i], "--only-load=");
 		if (value.length() > 0)
 		{

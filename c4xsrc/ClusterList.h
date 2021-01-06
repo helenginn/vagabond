@@ -129,6 +129,7 @@ private:
 	std::string _stream;
 	std::string _geom;
 	std::string _spg;
+	std::string _targetID;
 };
 
 
