@@ -18,9 +18,9 @@
 
 #include "Wilson.h"
 #include <libsrc/Crystal.h>
-#include <libsrc/FileReader.h>
+#include <hcsrc/FileReader.h>
 #include <libsrc/CSV.h>
-#include <libsrc/maths.h>
+#include <hcsrc/maths.h>
 
 Wilson::Wilson(VagFFTPtr vag)
 {

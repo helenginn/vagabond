@@ -21,7 +21,7 @@
 #include "Group.h"
 #include "MtzFFT.h"
 #include "MtzFile.h"
-#include <libsrc/FileReader.h>
+#include <hcsrc/FileReader.h>
 
 UCPlot::UCPlot() : ClusterPlot()
 {
