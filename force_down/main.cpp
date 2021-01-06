@@ -2,7 +2,7 @@
 #include <libsrc/shared_ptrs.h>
 #include <libsrc/DiffractionMTZ.h>
 #include <libsrc/Shouter.h>
-#include <libsrc/FileReader.h>
+#include <hcsrc/FileReader.h>
 #include "Wilson.h"
 
 int main(int argc, char * argv[])

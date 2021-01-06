@@ -19,7 +19,7 @@
 #ifndef __cluster__calphaview__
 #define __cluster__calphaview__
 
-#include <libsrc/vec3.h>
+#include <hcsrc/vec3.h>
 #include "SlipObject.h"
 
 class Group;

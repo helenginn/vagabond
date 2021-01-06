@@ -25,7 +25,7 @@ typedef _Vertex Vertex;
 #include "KeeperGL.h"
 #include "QuickAtoms.h"
 #include <iostream>
-#include <libsrc/FileReader.h>
+#include <hcsrc/FileReader.h>
 
 CAlphaView::CAlphaView(MtzFile *mtz, vec3 centre)
 {
