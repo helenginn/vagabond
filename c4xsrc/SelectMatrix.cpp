@@ -20,7 +20,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <iostream>
-#include <libsrc/mat3x3.h>
+#include <hcsrc/mat3x3.h>
 #include "ClusterList.h"
 
 SelectMatrix::SelectMatrix(QWidget *widget) : QMainWindow(widget)

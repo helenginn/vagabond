@@ -21,7 +21,7 @@
 #include "MtzFile.h"
 #include "MtzFFT.h"
 #include <libsrc/Crystal.h>
-#include <libsrc/FileReader.h>
+#include <hcsrc/FileReader.h>
 
 bool AveDiffraction::_shouldScale = true;
 

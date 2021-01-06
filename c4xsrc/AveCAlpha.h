@@ -20,7 +20,7 @@
 #define __cluster4x__AveCAlpha__
 
 #include "Average.h"
-#include <libsrc/vec3.h>
+#include <hcsrc/vec3.h>
 
 class QuickAtoms;
 

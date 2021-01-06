@@ -19,7 +19,7 @@
 #include <string>
 #include "GLPoint.h"
 #include "Group.h"
-#include <libsrc/FileReader.h>
+#include <hcsrc/FileReader.h>
 
 GLPoint::GLPoint() : ClusterPlot()
 {

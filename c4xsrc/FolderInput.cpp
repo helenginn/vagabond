@@ -23,7 +23,7 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QMessageBox>
-#include <libsrc/FileReader.h>
+#include <hcsrc/FileReader.h>
 
 std::string findMutable(std::string path, std::string glob)
 {

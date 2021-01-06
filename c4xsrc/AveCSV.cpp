@@ -22,7 +22,7 @@
 #include "MtzFile.h"
 #include "MtzFFT.h"
 #include <iostream>
-#include <libsrc/FileReader.h>
+#include <hcsrc/FileReader.h>
 
 std::vector<Relationships> AveCSV::_relationships;
 std::vector<std::string> AveCSV::_filenames;

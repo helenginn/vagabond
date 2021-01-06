@@ -19,7 +19,7 @@
 #include "Output.h"
 #include <fstream>
 #include <time.h>
-#include <libsrc/FileReader.h>
+#include <hcsrc/FileReader.h>
 #include "MtzFile.h"
 #include "Group.h"
 

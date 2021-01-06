@@ -20,7 +20,7 @@
 #include "Group.h"
 #include "AveDiffraction.h"
 #include "MtzFile.h"
-#include <libsrc/FileReader.h>
+#include <hcsrc/FileReader.h>
 #include <unistd.h>
 #include <iostream>
 #include <fstream>
