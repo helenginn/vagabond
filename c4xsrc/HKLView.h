@@ -19,7 +19,7 @@
 #ifndef __cluster4x__hklview__
 #define __cluster4x__hklview__
 
-#include <libsrc/mat3x3.h>
+#include <hcsrc/mat3x3.h>
 #include <libsrc/FFT.h>
 #include "ClusterPlot.h"
 
