@@ -1546,19 +1546,23 @@ void VagFFT::applySymmetry(bool silent, double topRes, bool average)
 		std::cout << " (" << _spg->spg_num << ")"  << ": " << std::flush;
 	}
 
-	/* Loop through and convert data into amplitude and phase */
-	for (int pre_n = 0; pre_n < _nn; pre_n++)
+	/* Loop through and convert data into amplitude and phase, so long
+	 * as we are taking the averages and not a copy-over */
+	if (average)
 	{
-		long n = finalIndex(pre_n);
-		double xOrig = _data[n][0];
-		double yOrig = _data[n][1];
-		double myAmp = sqrt(xOrig * xOrig + yOrig * yOrig);
-		double myPhase = atan2(yOrig, xOrig) * 180 / M_PI;
-		while (myPhase >= 360) myPhase -= 360;
-		while (myPhase < 0) myPhase += 360;
+		for (int pre_n = 0; pre_n < _nn; pre_n++)
+		{
+			long n = finalIndex(pre_n);
+			double xOrig = _data[n][0];
+			double yOrig = _data[n][1];
+			double myAmp = sqrt(xOrig * xOrig + yOrig * yOrig);
+			double myPhase = atan2(yOrig, xOrig) * 180 / M_PI;
+			while (myPhase >= 360) myPhase -= 360;
+			while (myPhase < 0) myPhase += 360;
 
-		_data[n][0] = myAmp;
-		_data[n][1] = myPhase;
+			_data[n][0] = myAmp;
+			_data[n][1] = myPhase;
+		}
 	}
 	
 	double dMax = FLT_MAX;
@@ -1665,7 +1669,7 @@ void VagFFT::applySymmetry(bool silent, double topRes, bool average)
 
 					long tmp_index = element(i, j, k);
 					tempData[tmp_index][0] = myAmp;
-					tempData[tmp_index][1] = 0;
+					tempData[tmp_index][1] = myPhase;
 				}
 			}
 		}
