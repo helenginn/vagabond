@@ -118,15 +118,23 @@ void Motion::applyTranslations(std::vector<BondSample> &stored,
 	Anisotropicator tropicator;
 	tropicator.setTensor(translation);
 	mat3x3 trans = tropicator.basis();
+	mat3x3 iso = trans;
 	
+	for (int i = 0; i < 3; i++)
+	{
+		vec3 col = mat3x3_axis(iso, i);
+		vec3_set_length(&col, 1);
+		mat3x3_set_axis(&iso, i, col);
+	}
+
 	if (isomorphous)
 	{
-		for (int i = 0; i < 3; i++)
-		{
-			vec3 col = mat3x3_axis(trans, i);
-			vec3_set_length(&col, 1);
-			mat3x3_set_axis(&trans, i, col);
-		}
+		trans = iso;
+	}
+	else
+	{
+		iso = mat3x3_transpose(iso);
+		trans = mat3x3_mult_mat3x3(trans, iso);
 	}
 
 	vec3 sum_start = empty_vec3();
