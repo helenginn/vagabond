@@ -60,7 +60,8 @@ std::vector<BondSample> *Novalent::getManyPositions(void *object)
 
 	std::vector<double> occs;
 	std::vector<vec3> points;
-	double msq = _b / (8 * M_PI * M_PI) * 3;
+	double b = _b - getAtom()->getMolecule()->getAbsoluteBFacSubt();
+	double msq = b / (8 * M_PI * M_PI) * 3;
 	msq *= sqrt(2);
 	points = ExplicitModel::makeCloud(totalPoints, msq, 0, occs);
 	_storedSamples.clear();
