@@ -889,8 +889,8 @@ void VagWindow::fixErroneousZones()
 	
 	if (crystal)
 	{
-		_errorExplorer = new ErroneousZone(this, crystal);
-		_errorExplorer->show();
+//		_errorExplorer = new ErroneousZone(this, crystal);
+//		_errorExplorer->show();
 	}
 }
 
