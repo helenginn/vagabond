@@ -52,6 +52,8 @@ Element::Element(std::string symbol, std::string name, double electrons, const f
 
 ElementPtr Element::getElement(std::string symbol)
 {
+	to_upper(symbol);
+
 	if (!elements.size())
 	{
 		setupElements();
