@@ -14,7 +14,6 @@
 #include <vector>
 #include <hcsrc/vec3.h>
 #include <hcsrc/mat3x3.h>
-#include "Element.h"
 #include <string>
 #include <mutex>
 #include "../libinfo/GeomTable.h"
@@ -70,11 +69,7 @@ public:
 	vec3 getPositionInUnitCell();
 
 	/** Change the periodic table element of the atom */
-	void setElement(ElementPtr element)
-	{
-		_element = element;
-		_elementSymbol = element->getSymbol();
-	}
+	void setElement(ElementPtr element);
 	
 	/** Set the monomer for this atom with no other connections. Do not use if
 	* you've made a new atom to assign to a monomer. Use Monomer::addAtom()

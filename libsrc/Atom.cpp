@@ -922,3 +922,9 @@ std::string Atom::getChainID()
 	
 	return getMolecule()->getChainID();
 }
+
+void Atom::setElement(ElementPtr element)
+{
+	_element = element;
+	_elementSymbol = element->getSymbol();
+}
