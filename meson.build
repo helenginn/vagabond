@@ -12,6 +12,7 @@ crystfel_dep = dependency('crystfel', required: false)
 
 sp_helen3d = subproject('helen3d')
 helen3d_dep = dependency('', required: false)
+helencore_dep = dependency('', required: false)
 
 if (sp_helen3d.get_variable('helen3d_scs'))
 	helen3d_dep = sp_helen3d.get_variable('helen3d_subdep')
