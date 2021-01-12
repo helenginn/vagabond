@@ -2358,6 +2358,11 @@ void Crystal::fusePolymers()
 void Crystal::applyWilsonToAnchors()
 {
 	double b = getDataWilsonB();
+	if (b < 40)
+	{
+		return;
+	}
+
 	std::cout << "Expanding ensemble in response to "
 	<< "Wilson B of data." << std::endl;
 	
