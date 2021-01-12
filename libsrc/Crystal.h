@@ -476,7 +476,7 @@ public:
 		return _dataWilsonB;
 	}
 
-	void applyWilsonToAnchors();
+	bool applyWilsonToAnchors();
 
 	void rigidBodyRefinement();
 	/** Fit whole molecules to electron density as a refinement protocol.

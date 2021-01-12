@@ -2355,12 +2355,12 @@ void Crystal::fusePolymers()
 	}
 }
 
-void Crystal::applyWilsonToAnchors()
+bool Crystal::applyWilsonToAnchors()
 {
 	double b = getDataWilsonB();
 	if (b < 40)
 	{
-		return;
+		return false;
 	}
 
 	std::cout << "Expanding ensemble in response to "
@@ -2386,6 +2386,7 @@ void Crystal::applyWilsonToAnchors()
 	}
 	
 	refreshPositions();
+	return true;
 }
 
 void Crystal::reindexAtoms(mat3x3 reindex, vec3 trans)

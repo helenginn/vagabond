@@ -296,10 +296,11 @@ void Options::executeProtocol()
 		crystal->refreshPositions();
 	}
 
+	bool wilson = false;
 	if (_bStart == -1 && _rPosition)
 	{
 		recalculateFFT();
-		crystal->applyWilsonToAnchors();
+		wilson = crystal->applyWilsonToAnchors();
 	}
 
 	if (_addPDB.length() > 0)
@@ -323,8 +324,10 @@ void Options::executeProtocol()
 		}
 	}
 
-	
-	recalculateFFT();
+	if (wilson)
+	{
+		recalculateFFT();
+	}
 	
 	/* If we should have a flexible number of cycles which continues
 	 * until convergence beyond 5. */
