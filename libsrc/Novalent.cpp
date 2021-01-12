@@ -83,7 +83,7 @@ std::vector<BondSample> *Novalent::getManyPositions(void *object)
 	if (anch && anch->motionCount() > 0)
 	{
 		MotionPtr mot = anch->getMotion(0);
-		mot->applyTranslations(_storedSamples, true);
+//		mot->applyTranslations(_storedSamples, true);
 	}
 	
 	_changedSamples = false;
