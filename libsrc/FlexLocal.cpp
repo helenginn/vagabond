@@ -16,6 +16,8 @@
 #include "Whack.h"
 #include <hcsrc/RefinementGridSearch.h>
 #include <hcsrc/RefinementNelderMead.h>
+#include <hcsrc/RefinementLBFGS.h>
+#include <hcsrc/Converter.h>
 #include "ParamBand.h"
 #include "FlexGlobal.h"
 #include <hcsrc/Timer.h>
@@ -129,6 +131,88 @@ void FlexLocal::refine()
 		clear();
 		_run++;
 	}
+}
+
+double FlexLocal::correlPositions(int m, int n)
+{
+	_bb->refreshPositions();
+	CorrelData cd = empty_CD();
+
+	for (size_t i = 0; i < _bb->atomCount(); i++)
+	{
+		AtomPtr a = _bb->atom(i);
+		if (!a->getModel()->isBond())
+		{
+			continue;
+		}
+		
+		std::vector<BondSample> *samplePtr;
+		ExplicitModelPtr e = a->getExplicitModel();
+		samplePtr = e->getManyPositions(NULL);
+		vec3 ave = e->getAbsolutePosition();
+		
+		vec3 v = samplePtr->at(m).start;
+		vec3_subtract_from_vec3(&v, ave);
+		vec3 w = samplePtr->at(n).start;
+		vec3_subtract_from_vec3(&w, ave);
+		
+		add_to_CD(&cd, v.x, w.x);
+		add_to_CD(&cd, v.y, w.y);
+		add_to_CD(&cd, v.z, w.z);
+	}
+	
+	double correl = evaluate_CD(cd);
+	return correl;
+}
+
+double FlexLocal::compareChainMults(void *obj, Parameter &p1, Parameter &p2)
+{
+	FlexLocal *local = static_cast<FlexLocal *>(obj);
+
+	void *obj1 = p1.object;
+	void *obj2 = p2.object;
+	double start1 = p1.start_value;
+	double start2 = p2.start_value;
+	double inc1 = p1.step_size / 10.;
+	double inc2 = p2.step_size / 10.;
+	int m = atoi(p1.tag.c_str());
+	int n = atoi(p2.tag.c_str());
+
+	(*p1.setter)(obj1, start1 + inc1); 
+	(*p2.setter)(obj2, start2 + inc2); 
+	
+	double correl = local->correlPositions(m, n);
+
+	(*p1.setter)(obj1, start1); 
+	(*p2.setter)(obj2, start2); 
+	
+	return correl;
+}
+
+void FlexLocal::refineChainMults(AnchorPtr anch)
+{
+	Timer timer;
+	std::cout << "| 1a. Refining kick spread... " 
+	<< std::flush;
+	NelderMeadPtr ref = NelderMeadPtr(new RefinementNelderMead());
+	ref->setCycles(200);
+	ref->setEvaluationFunction(getScore, this);
+	ref->setVerbose(true);	
+	ref->setSilent(true);
+	anch->addChainMultsToStrategy(ref);
+	
+	/*
+	Converter conv;
+	conv.setCompareFunction(this, compareChainMults);
+	conv.setStrategy(ref);
+	*/
+
+	ref->refine();
+	ref->reportResult();
+
+
+	timer.quickReport();
+	std::cout << std::endl;
 }
 
 void FlexLocal::clear()

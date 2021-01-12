@@ -32,6 +32,7 @@ typedef struct
 	double torsion;   /**< To be filled in by next bond temporarily */
 	double kickValue; /**< Contains number between 0 and 1, kick multiplier */
 	double occupancy; /**< Relative occupancy (usually 1) */
+	double *mult;     /**< Pointer to chain-dependent multiplier */
 } BondSample;
 
 class ExplicitModel : public Model

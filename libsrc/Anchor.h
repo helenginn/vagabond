@@ -239,6 +239,8 @@ public:
 	{
 		return _sampleNum;
 	}
+
+	void addChainMultsToStrategy(RefinementStrategyPtr str, int n = -1);
 protected:
 	
 	virtual std::string getParserIdentifier();
@@ -272,6 +274,8 @@ private:
 	void applyWholeMotions();
 	void fixCentroid();
 	void deleteQuats();
+	void calculateDistanceMultipliers();
+
 	mat3x3 getAnchorRotation();
 	
 	vec3 _nDir, _nDir2;
@@ -285,10 +289,13 @@ private:
 	std::vector<vec3> _tmpQuats;
 	std::vector<vec3> _tmpScrews;
 	std::vector<MotionPtr> _motions;
+	std::vector<double> _chainMults;
 	
 	static int _sampleNum;
 	int _lastCount;
 	bool _disableWhacks;
+	double _distMut;
+	std::vector<AnyPtr> _tmpAnys;
 };
 
 #endif

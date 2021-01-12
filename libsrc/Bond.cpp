@@ -760,8 +760,11 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 
 			if (thisDeviation.z < 0) sinAlpha *= -1;
 			if (_leftOfAnchor && hasWhack()) sinAlpha *= -1;
+			
+			double mult = *(prevs->at(i).mult);
 
 			kickValue = sinAlpha;
+			kickValue *= mult;
 
 			if (kickValue != kickValue)
 			{

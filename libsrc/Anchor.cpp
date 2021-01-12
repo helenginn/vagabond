@@ -10,9 +10,11 @@
 #include "Quat4Refine.h"
 #include <hcsrc/RefinementNelderMead.h>
 #include "Anchor.h"
+#include <hcsrc/Any.h>
 #include "Motion.h"
 #include "FlexGlobal.h"
 #include "Absolute.h"
+#include "Atom.h"
 #include "Anisotropicator.h"
 #include "Options.h"
 #include "Polymer.h"
@@ -25,6 +27,7 @@ int Anchor::_sampleNum = 0;
 
 void Anchor::initialise()
 {
+	_distMut = 0;
 	_bFactor = 0;
 	_alpha = 0;
 	_beta = 0;
@@ -159,6 +162,11 @@ void Anchor::createStartPositions(Atom *callAtom)
 	
 	vec3 empty = empty_vec3();
 	double occTotal = 0;
+	
+	if (_chainMults.size() == 0)
+	{
+		_chainMults.resize(_sphereAngles.size(), 1);
+	}
 
 	for (size_t i = 0; i < _sphereAngles.size(); i++)
 	{
@@ -178,9 +186,12 @@ void Anchor::createStartPositions(Atom *callAtom)
 		sample.torsion = 0;
 		sample.old_start = prev; // used instead of atom
 		sample.start = full;
+		sample.mult = &_chainMults[i];
 
 		_storedSamples.push_back(sample);
 	}
+
+	calculateDistanceMultipliers();
 
 	for (size_t i = 0; i < _storedSamples.size(); i++)
 	{
@@ -451,6 +462,7 @@ void Anchor::addProperties()
 	addDoubleProperty("alpha", &_alpha);
 	addDoubleProperty("beta", &_beta);
 	addDoubleProperty("gamma", &_gamma);
+	addDoubleProperty("distmut", &_distMut);
 	addVec3Property("position", &_position);
 	addReference("atom", _atom.lock());
 	addReference("n_atom", _nAtom.lock());
@@ -609,4 +621,48 @@ void Anchor::applyRotation(mat3x3 rot)
 void Anchor::applyOffset(vec3 offset)
 {
 	vec3_subtract_from_vec3(&_position, offset);
+}
+
+void Anchor::addChainMultsToStrategy(RefinementStrategyPtr str, int n)
+{
+	_tmpAnys.clear();
+
+	AnyPtr any = AnyPtr(new Any(&_distMut));
+	str->addParameter(&*any, Any::get, Any::set, 2.5, 0.02, 
+	                  i_to_str(n));
+	_tmpAnys.push_back(any);
+	
+	return;
+	/* important that tag is the way it is */
+	if (n >= 0)
+	{
+		AnyPtr any = AnyPtr(new Any(&_chainMults[n]));
+		_tmpAnys.push_back(any);
+		str->addParameter(&*any, Any::get, Any::set, 0.5, 0.005, 
+		                  i_to_str(n));
+
+		return;
+	}
+
+	for (size_t i = 0; i < _chainMults.size(); i++)
+	{
+		AnyPtr any = AnyPtr(new Any(&_chainMults[i]));
+		_tmpAnys.push_back(any);
+		
+		str->addParameter(&*any, Any::get, Any::set, 0.5, 0.005, 
+		                  i_to_str(i));
+	}
+}
+
+void Anchor::calculateDistanceMultipliers()
+{
+	for (size_t i = 0; i < _storedSamples.size(); i++)
+	{
+		vec3 v = _storedSamples[i].start;
+		vec3_subtract_from_vec3(&v, _position);
+		
+		double l = vec3_sqlength(v);
+		double mult = exp(_distMut * l);
+		_chainMults[i] = mult;
+	}
 }

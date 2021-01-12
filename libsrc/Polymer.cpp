@@ -123,6 +123,7 @@ bool Polymer::refineLocalFlexibility(bool magic)
 	whack();
 	local.setPolymer(shared_from_this(), _kickShift);
 	local.refine();
+//	local.refineChainMults(getAnchorModel());
 	_kickShift = local.getShift();
 	timer.report();
 	

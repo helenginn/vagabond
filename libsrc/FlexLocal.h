@@ -54,6 +54,11 @@ public:
 	/** Go button. Performs preliminary work and refinement */
 	void refine();
 	
+	/** Refines chain-dependent multipliers */
+	void refineChainMults(AnchorPtr anch);
+
+	static double compareChainMults(void *obj, Parameter &p1, Parameter &p2);
+
 	/** Get current value of the magnitude of trial kick set */
 	double getShift()
 	{
@@ -89,6 +94,7 @@ private:
 	void scanBondParams();
 	void clear();
 	void propagateWhack();
+	double correlPositions(int m, int n);
 	void setBondParam(BondPtr b, double w, double k);
 	
 	PolymerPtr _polymer;
