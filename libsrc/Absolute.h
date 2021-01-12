@@ -10,12 +10,13 @@
 #define __vagabond__Absolute__
 
 #include <stdio.h>
+#include "Atom.h"
 #include "Model.h"
 #include <hcsrc/vec3.h>
 #include <string>
 #include <hcsrc/FileReader.h>
-#include "Bond.h"
 #include "Parser.h"
+#include "Bond.h"
 
 /**
  * \class Absolute
