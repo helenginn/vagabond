@@ -529,15 +529,7 @@ void Crystal::applyShellFactors(DiffractionPtr data)
 
 				int index = -1;
 				
-				for (int l = 0; l < _shells.size(); l++)
-				{
-					if (length <= _shells[l].minRes &&
-					    length > _shells[l].maxRes)
-					{
-						index = l;
-						break;
-					}
-				}
+				index = findShell(_shells, length);
 
 				if (index < 0)
 				{
