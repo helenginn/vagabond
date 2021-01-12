@@ -263,7 +263,6 @@ private:
 	bool _restored;
 	
 	void privateSaveState(int aim);
-	void setupKnownClasses();
 	
 	BaseParser *getParent()
 	{

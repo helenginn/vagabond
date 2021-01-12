@@ -25,14 +25,12 @@
 #include "charmanip.h"
 
 ParserMap BaseParser::_allParsers;
-ClassMap BaseParser::_allClasses;
 
 BaseParser::BaseParser()
 {
 	_restored = false;
 	_setup = false;
 	_parent = NULL;
-	setupKnownClasses();
 }
 
 void BaseParser::setup(bool isNew)
@@ -617,8 +615,6 @@ void BaseParser::privateSaveState(int aim)
 void BaseParser::clearContents()
 {
 	_setup = false;
-	_allParsers.clear();
-	_allClasses.clear();
 	_stringProperties.clear();
 	_doubleProperties.clear();
 	_intProperties.clear();
@@ -1342,31 +1338,9 @@ ParserPtr BaseParser::objectOfType(char *className)
 	return object;
 }
 
-void BaseParser::setupKnownClasses()
-{
-	_allClasses["Molecule"] = 1;
-	_allClasses["Model"] = 1;
-}
-
 void BaseParser::addToAllParsers(std::string key, BaseParserPtr parser)
 {
-	if (_allParsers.count(key))
-	{
-		if (_allParsers[key].expired() || _allParsers[key].lock() != parser)
-		{
-//			std::cout << "Warning - overwriting key in parser list: " << 
-//			key << std::endl;
-		}
-	}
 	_allParsers[key] = parser;
-	std::string name = parser->getClassName();
-
-	if (_allClasses.count(name) == 0)
-	{
-		_allClasses[name] = 0;
-	}
-	
-	_allClasses[name]++;
 }
 
 BaseParserPtr BaseParser::processBlock(char *block)
@@ -1401,7 +1375,10 @@ BaseParserPtr BaseParser::processBlock(char *block)
 	     it != _allParsers.end(); it++)
 	{
 		BaseParserPtr aParser = it->second.lock();
-		aParser->postParseTidy();
+		if (aParser)
+		{
+			aParser->postParseTidy();
+		}
 	}
 
 
