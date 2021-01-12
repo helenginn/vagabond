@@ -372,7 +372,8 @@ void Polymer::summary()
 {
 	Molecule::summary();
 
-	std::cout << "| I am a polymer with " << monomerCount() << " monomers."
+	std::cout << "| I am a polymer with " << monomerEnd() - monomerBegin() 
+	<< " monomers."
 	<< std::endl;
 }
 
