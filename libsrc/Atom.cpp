@@ -25,6 +25,7 @@
 #include "PDBReader.h"
 #include "Anisotropicator.h"
 #include "GhostBond.h"
+#include "WaterNetwork.h"
 
 Atom::Atom()
 {
@@ -197,6 +198,11 @@ void Atom::inheritParents()
 {
 	getMonomer()->addAtom(shared_from_this());
 	getMonomer()->getPolymer()->addAtom(shared_from_this());
+}
+
+bool Atom::isWater()
+{
+	return (getMolecule() && getMolecule()->isWaterNetwork());
 }
 
 void Atom::setModel(ModelPtr model)
@@ -729,6 +735,7 @@ void Atom::addProperties()
 	addBoolProperty("from_pdb", &_fromPDB);
 	addIntProperty("hetatm", &_hetatm);
 	addBoolProperty("hbonding", &_hBondage);
+	addBoolProperty("water", &_isWater);
 	addDoubleProperty("weighting", &_weighting);
 
 	if (_element)

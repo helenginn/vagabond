@@ -289,7 +289,7 @@ public:
 	
 	std::string getChainID();
 	
-	void setWater(int set = 1)
+	void setWater(bool set = true)
 	{
 		_isWater = set;
 	}
@@ -309,10 +309,12 @@ public:
 		return _targetWeight;
 	}
 	
-	bool isWater()
+	bool isWater();
+	/*
 	{
 		return _isWater;
 	}
+	*/
 	
 	bool canBeHydrogenBonder()
 	{
@@ -404,7 +406,7 @@ private:
 	std::string _conformer;
 	std::string _elementSymbol;
 	bool _fromPDB;
-	int _isWater;
+	bool _isWater;
 	int _hetatm;
 	mat3x3 _tensor;
 	bool _hBondage;

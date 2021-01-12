@@ -1204,8 +1204,7 @@ void VagWindow::waterAll()
 	for (int i = 0; i < crystal->atomCount(); i++)
 	{
 		AtomPtr tmp = crystal->atom(i);
-		if (tmp->isHeteroAtom()
-		    && tmp->getModel()->isAbsolute())
+		if (tmp->isWater() && tmp->getModel()->isAbsolute())
 		{
 			SpongePtr nov = SpongePtr(new Sponge(tmp));
 			tmp->setModel(nov);
@@ -1214,6 +1213,7 @@ void VagWindow::waterAll()
 		}
 	}
 	
+	enable();
 	return;
 	
 	for (size_t i = 0; i < crystal->moleculeCount(); i++)
