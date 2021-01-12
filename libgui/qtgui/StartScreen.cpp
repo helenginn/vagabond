@@ -245,7 +245,15 @@ void StartScreen::makeButtons()
 	_cInter->setChecked(Options::_rInter);
 	_cInter->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
 	_allToggle.push_back(_cInter);
+	
+	indent += 10;
+	height += 20;
+	_cScrew = new QCheckBox("also using screw motions", this);
+	_cScrew->setChecked(Options::_screw);
+	_cScrew->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
+	_allToggle.push_back(_cScrew);
 
+	indent -= 10;
 	height += 20;
 	_cIntra = new QCheckBox("intramolecular flex", this);
 	_cIntra->setChecked(Options::_rIntra);
@@ -253,33 +261,13 @@ void StartScreen::makeButtons()
 	_allToggle.push_back(_cIntra);
 
 	height += 20;
-	_cCbAngles = new QCheckBox("variable Cb angles (from PDB)", this);
-	_cCbAngles->setChecked(Options::_bondAngles > 0);
+	_cCbAngles = new QCheckBox("smart Cb angles (beta)", this);
+	_cCbAngles->setChecked(Options::_angling);
 	_cCbAngles->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
 	_allToggle.push_back(_cCbAngles);
 	connect(_cCbAngles, SIGNAL(stateChanged(int)), 
 	        this, SLOT(toggleDisableOptions(int)));
 
-	indent += 10;
-	height += 20;
-	_cCgAngles = new QCheckBox("... and Cg angles for aromatics", this);
-	_cCgAngles->setChecked(Options::_bondAngles > 1);
-	_cCgAngles->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
-	_allToggle.push_back(_cCgAngles);
-	_angleToggle.push_back(_cCgAngles);
-	connect(_cCgAngles, SIGNAL(stateChanged(int)), 
-	        this, SLOT(toggleDisableOptions(int)));
-
-	indent += 10;
-	height += 20;
-	_cGlyAngles = new QCheckBox("... and glycine backbone angles", this);
-	_cGlyAngles->setChecked(Options::_bondAngles > 2);
-	_cGlyAngles->setGeometry(indent, height, CHECKBOX_WIDTH, 20);
-	_allToggle.push_back(_cGlyAngles);
-	_angleToggle.push_back(_cGlyAngles);
-	_angle2Toggle.push_back(_cGlyAngles);
-
-	indent -= 20;
 	height += 20;
 	_cSidechains = new QCheckBox("refine sidechains to density", this);
 	_cSidechains->setChecked(Options::_rSidechains);
@@ -310,24 +298,6 @@ void StartScreen::toggleDisableOptions(int)
 	{
 		return;
 	}
-	
-	state = _cCbAngles->isChecked();
-	
-	for (int i = 0; i < _angleToggle.size(); i++)
-	{
-		_angleToggle[i]->setEnabled(state);
-	}
-	
-	if (state)	
-	{
-		state = _cCgAngles->isChecked();
-
-		for (int i = 0; i < _angle2Toggle.size(); i++)
-		{
-			_angle2Toggle[i]->setEnabled(state);
-		}
-	}
-
 }
 
 StartScreen::StartScreen(QWidget *parent,
@@ -358,28 +328,19 @@ void StartScreen::pushRun()
 	_options->_peptideMovement = _cPeptide->isChecked();
 	_options->_rSidechains = _cSidechains->isChecked();
 	
-	int angles = 0;
+	bool angles = false;
 	if (_cCbAngles->isChecked())
 	{
-		angles = 1;
+		angles = true;
 	}
 	
-	if (angles == 1 && _cCgAngles->isChecked())
-	{
-		angles = 2;
-	}
-	
-	if (angles == 2 && _cGlyAngles->isChecked())
-	{
-		angles = 3;
-	}
-	
-	_options->_bondAngles = angles;
+	_options->_angling = angles;
 	
 	_options->_rPosition = _cPosition->isChecked();
 	_options->_rInter = _cInter->isChecked();
 	_options->_rIntra = _cIntra->isChecked();
 	_options->_refine = _cRefine->isChecked();
+	_options->_screw = _cScrew->isChecked();
 	
 	if (_tMaxRes->text().length())
 	{

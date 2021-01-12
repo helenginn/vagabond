@@ -40,9 +40,8 @@ private:
 	QCheckBox *_cPosition;
 	QCheckBox *_cInter;
 	QCheckBox *_cIntra;
+	QCheckBox *_cScrew;
 	QCheckBox *_cCbAngles;
-	QCheckBox *_cCgAngles;
-	QCheckBox *_cGlyAngles;
 	QCheckBox *_cPeptide;
 	QCheckBox *_cSidechains;
 	
