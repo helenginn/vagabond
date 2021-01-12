@@ -583,7 +583,7 @@ void Group::useAverageType(GroupType type)
 {
 	if (type == AveComma && _mySet.csv == NULL)
 	{
-		throw std::string("No CSV file loaded.");
+		return;
 	}
 	_type = type;
 }

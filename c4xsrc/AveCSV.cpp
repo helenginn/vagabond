@@ -45,10 +45,23 @@ void AveCSV::addValue(std::string id0, std::string id1, double val)
 		_relationships.resize(1);
 	}
 
-	_chosen = 0;
 	_ids[id0]++;
 	_ids[id1]++;
 	_relationships[_chosen][id0][id1] = val;
+}
+
+void AveCSV::startNewCSV(std::string name)
+{
+	if (std::find(_filenames.begin(), _filenames.end(), name)
+	    != _filenames.end())
+	{
+		setChosen(name);
+		return;
+	}
+
+	_relationships.resize(_relationships.size() + 1);
+	_chosen++;
+	_filenames.push_back(name);
 }
 
 void AveCSV::load()
@@ -142,4 +155,16 @@ double AveCSV::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 	}
 
 	return nan(" ");
+}
+
+void AveCSV::setChosen(std::string file)
+{
+	for (size_t i = 0; i < _filenames.size(); i++)
+	{
+		if (_filenames[i] == file)
+		{
+			_chosen = i;
+			break;
+		}
+	}
 }

@@ -72,6 +72,10 @@ public:
 	{
 		_chosen = chosen;
 	}
+	
+	static void setChosen(std::string);
+	
+	void startNewCSV(std::string name);
 
 	void load();
 	virtual void calculate();

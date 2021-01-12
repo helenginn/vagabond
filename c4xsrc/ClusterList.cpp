@@ -123,6 +123,11 @@ void ClusterList::getFromCSV(AveCSV *csv)
 	csv->load();
 }
 
+void ClusterList::addCSVSwitcher()
+{
+	_screen->addCSVSwitcher();
+}
+
 void ClusterList::getFromCSV(std::string csv)
 {
 	std::vector<std::string> csvs = split(csv, ',');

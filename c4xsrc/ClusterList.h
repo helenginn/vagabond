@@ -33,6 +33,8 @@ public:
 	
 	void setReindexMatrix(mat3x3 reindex, vec3 translate);
 
+	void addCSVSwitcher();
+
 	void average(Group *item);
 	void cluster(Group *item);
 	void getFromDatabase();
@@ -45,7 +47,7 @@ public:
 		_screen = scr;
 	}
 	
-	void makeGroup(std::vector<MtzFFTPtr> mtzs);
+	Group *makeGroup(std::vector<MtzFFTPtr> mtzs);
 	
 	void setFiles(std::vector<std::string> files);
 	
