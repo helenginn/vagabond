@@ -296,7 +296,7 @@ void Options::executeProtocol()
 		crystal->refreshPositions();
 	}
 
-	bool wilson = false;
+	bool wilson = true;
 	if (_bStart == -1 && _rPosition)
 	{
 		recalculateFFT();
