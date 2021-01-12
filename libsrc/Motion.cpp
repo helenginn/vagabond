@@ -304,18 +304,6 @@ void Motion::refine(bool reciprocal)
 
 		addLibrationParameters(neld, -1);
 		
-		if (i == 1 && Options::getScrew())
-		{
-			addScrewParameters(neld, -1);
-			neld->setJobName("rots_screws");
-		}
-		
-		if (_refined && false)
-		{
-			neld->setJobName("rots_screws_trans");
-			_trans->addTensorToStrategy(neld, 0.05, 0.00001, "tr");
-		}
-		
 		Converter conv;
 		if (false && _refined)
 		{
@@ -325,6 +313,18 @@ void Motion::refine(bool reciprocal)
 		
 		neld->refine();
 		_allAtoms->refreshPositions();
+
+		if (Options::getScrew())
+		{
+			NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
+			neld->setJobName("screws_only");
+			attachTargetToRefinement(neld, target, reciprocal);
+			target.recalculateConstant();
+			neld->setCycles((i + 1) * 50);
+			addScrewParameters(neld, -1);
+			neld->refine();
+			_allAtoms->refreshPositions();
+		}
 	}
 	
 	target.reportTimings();
