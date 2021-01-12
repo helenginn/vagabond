@@ -1248,6 +1248,7 @@ void Crystal::makePDBs(std::string suffix)
 	_lastEnsemblePDB = path;
 	std::ofstream ensemble;
 	ensemble.open(path);
+	ensemble << PDBReader::writeCryst(_hkl2real, _spaceGroup);
 
 	for (int j = 0; j < numConf; j++)
 	{
