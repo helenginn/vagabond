@@ -34,6 +34,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 
 	std::cout << getMonomer()->getResCode() << std::flush;
 	
+	if (_timesRefined == 0)
+	{
+		_excludeO = true;
+	}
+	
 	if (!paramCount())
 	{
 		double range = 2.;

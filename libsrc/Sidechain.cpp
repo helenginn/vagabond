@@ -87,9 +87,10 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		{
 			case RefinementModelPos:
 			addParamType(ParamOptionTorsion, range);
+			addParamType(ParamOptionNumBonds, 4);
 			addParamType(ParamOptionSVD, 1);
 			addParamType(ParamOptionCycles, 100);
-			addParamType(ParamOptionMaxTries, 15);
+			addParamType(ParamOptionMaxTries, 60);
 			addParamType(ParamOptionThorough, 1);
 			break;
 

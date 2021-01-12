@@ -31,7 +31,7 @@
 
 Sampler::Sampler()
 {
-	_excludeO = true;
+	_excludeO = false;
 	_convert = false;
 	_svd = NULL;
 	_shouldSave = false;
