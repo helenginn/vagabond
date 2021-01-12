@@ -849,6 +849,7 @@ void Knotter::makeTyrosine()
 
 	/* not fixed */
 	BondPtr cg2cd2 = BondPtr(new Bond(cGamma, cDelta2));
+	cg2cd2->setFixed(true);
 	cg2cd2->setRefineFlexibility(false);
 	cg2cd2->activate();
 
