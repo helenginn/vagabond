@@ -700,14 +700,14 @@ void ClusterList::unitCellAverage()
 	_screen->updateToolbar(_lastAverage);
 }
 
-void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs)
+Group *ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs)
 {
 	if (mtzs.size() == 0)
 	{
 		QMessageBox msgBox;
 		msgBox.setText(tr("No data sets have been selected."));
 		msgBox.exec();
-		return;
+		return NULL;
 	}
 
 	Group *ave = new Group(_widget);
@@ -729,6 +729,7 @@ void ClusterList::makeGroup(std::vector<MtzFFTPtr> mtzs)
 	ave->updateText();
 	
 	_widget->addTopLevelItem(ave);
+	return ave;
 }
 
 void ClusterList::toggleDead()
