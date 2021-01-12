@@ -30,6 +30,7 @@
 #include "Group.h"
 #include "FileReader.h"
 #include "ClusterList.h"
+#include <libsrc/Multistate.h>
 #include "Output.h"
 #include "AveCSV.h"
 #include "MtzFile.h"
@@ -163,17 +164,15 @@ void ClusterList::switchCSV(int c)
 
 void ClusterList::loadFromMultistate(std::string pdb)
 {
-	if (!file_exists(pdb))
-	{
-		std::cout << "File does not exist: " << pdb << std::endl;
-	}
-
+	std::cout << "Loading from multi-state: " << pdb << std::endl;
 	Group *grp = new Group(NULL);
-	std::string contents = get_file_contents(pdb);
-	int state;
+	Multistate ms(pdb);
+	ms.ignoreAtomsExcept("CA");
+	ms.process();
 	
+	for (size_t i = 0; i < ms.crystalCount(); i++)
 	{
-		std::string name = pdb + "_state_" + i_to_str(state);
+		std::string name = pdb + "_state_" + i_to_str(i);
 		MtzFile *file = new MtzFile(name);
 		file->setPanddaName(name);
 		file->setPdbPath(name);
@@ -184,18 +183,17 @@ void ClusterList::loadFromMultistate(std::string pdb)
 		DiffractionMtzPtr mtz = DiffractionMtzPtr(new DiffractionMtz());
 		mtz->setFilename(name);
 
-		CrystalPtr crystal;
-
-		std::string contents = "";
-		PDBReader reader;
-		reader.setContents(contents);
-		reader.ignoreAtomsExcept("CA");
-		crystal = reader.getCrystal();
-			
+		CrystalPtr crystal = ms.crystal(i);
 		file->setCrystal(crystal);
 		grp->addMtz(mtz, file);
 	}
 
+	grp->setTopGroup();
+	_widget->addTopLevelItem(grp);
+	_clusters.push_back(grp);
+	_widget->setCurrentItem(grp);
+	grp->useAverageType(AveCA);
+	grp->performAverage();
 }
 
 bool ClusterList::loadFiles()
@@ -213,6 +211,11 @@ bool ClusterList::loadFiles()
 	else if (_csvInput)
 	{
 		getFromCSV(_csv);
+		return true;
+	}
+	else if (_pdb.length() > 0)
+	{
+		loadFromMultistate(_pdb);
 		return true;
 	}
 
@@ -563,6 +566,12 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 		if (value.length() > 0)
 		{
 			_spg = value;
+		}
+
+		value = isCommand(_commands[i], "--multi-pdb=");
+		if (value.length() > 0)
+		{
+			_pdb = value;
 		}
 
 		value = isCommand(_commands[i], "--stream=");

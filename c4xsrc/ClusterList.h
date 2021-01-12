@@ -127,6 +127,7 @@ private:
 	int _max;
 	int _skip;
 	std::string _csv;
+	std::string _pdb;
 	std::string _preload;
 	std::string _stream;
 	std::string _geom;
