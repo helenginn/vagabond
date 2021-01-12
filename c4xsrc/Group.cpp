@@ -158,6 +158,7 @@ void Group::updateText()
 	if (_customName.length())
 	{
 		setText(0, QString::fromStdString(_customName));
+		return;
 	}
 
 	std::string str = "Group of " + i_to_str(_mtzs.size()) + " data sets";

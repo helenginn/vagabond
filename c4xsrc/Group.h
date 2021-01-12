@@ -159,6 +159,11 @@ public:
 		return _mySet.csv;
 	}
 	
+	void setCustomName(std::string cust)
+	{
+		_customName = cust;
+	}
+	
 	bool isMarked()
 	{
 		return _marked;
