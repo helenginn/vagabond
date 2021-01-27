@@ -74,6 +74,7 @@ void PlotView::setup(Group *grp)
 {
 	_keeper = new KeeperGL(this);
 	_keeper->addAxes();
+	_keeper->focusOnPosition(empty_vec3(), 20);
 	
 	if (_type == PlotUnitCell)
 	{
