@@ -161,6 +161,11 @@ public:
 		return _mySet.csv;
 	}
 	
+	std::string getCustomName()
+	{
+		return _customName;
+	}
+	
 	void setCustomName(std::string cust)
 	{
 		_customName = cust;
