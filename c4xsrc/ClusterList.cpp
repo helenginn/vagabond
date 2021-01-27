@@ -149,7 +149,13 @@ void ClusterList::getFromCSV(std::string csv)
 void ClusterList::cycleCSV(bool forward)
 {
 	int current = AveCSV::currentChoice();
-	current = (current + (forward ? 1 : -1)) % AveCSV::csvCount();
+	current = (current + (forward ? 1 : -1));
+	if (current < 0)
+	{
+		current += AveCSV::csvCount();
+	}
+	
+	current = current % AveCSV::csvCount();
 	
 	AveCSV::setChosen(current);
 	csvAverage();
