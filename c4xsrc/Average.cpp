@@ -86,11 +86,11 @@ void Average::findIntercorrelations(Group *other, double **svd)
 					svd[i][j] = nan(" ");
 					missing++;
 				}
-				else if (fabs(cc1) < 1e-6 || cc1 != cc1)
+				else if (cc1 != cc1)
 				{
 					svd[i][j] = cc2;
 				}
-				else if (fabs(cc2) < 1e-6 || cc2 != cc2)
+				else if (cc2 != cc2)
 				{
 					svd[i][j] = cc1;
 				}

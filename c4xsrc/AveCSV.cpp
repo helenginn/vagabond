@@ -106,8 +106,6 @@ void AveCSV::load()
 				continue;
 			}
 
-			//		val = 1 - val;
-
 			std::string id0 = components[0];
 			_ids[id0]++;
 			std::string id1 = components[1];
