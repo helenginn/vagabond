@@ -16,6 +16,9 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#ifndef __c4xsrc__screen__
+#define __c4xsrc__screen__
+
 #include <QMainWindow>
 #include <mat4x4.h>
 #include <FFT.h>
@@ -49,6 +52,14 @@ typedef struct
 	QAction *self;
 } GroupUses;
 
+class C4XAcceptor
+{
+public:
+	virtual void finished() = 0;
+	virtual ~C4XAcceptor() {}
+
+};
+
 class Screen : public QMainWindow
 {
 Q_OBJECT
@@ -65,6 +76,11 @@ public:
 	void displaySingle(MtzFFTPtr fft);
 	void updateToolbar(Group *grp);
 	void addCSVSwitcher();
+	
+	void setReturnJourney(C4XAcceptor *ptr)
+	{
+		_returnJourney = ptr;
+	}
 	
 signals:
 	void refreshed();
@@ -85,6 +101,7 @@ public slots:
 	void changeColour();
 	void killSelection();
 	void reorderByFile();
+	void returnToSender();
 	void exportText();
 protected:
 
@@ -138,6 +155,11 @@ private:
 	ClusterList *_list;
 	
 	GroupUses uses;
+	
+	C4XAcceptor *_returnJourney;
 
 	mat4x4 _storeHKL;
 };
+
+
+#endif

@@ -58,6 +58,7 @@
 
 Screen::Screen(QWidget *widget) : QMainWindow(widget)
 {
+	_returnJourney = NULL;
 	setGeometry(0, 0, 1200, 800);
 
 	_scale = -1;
@@ -619,10 +620,18 @@ void Screen::displayResults(Group *ave)
 	                     RIGHT_VIEW_WIDTH - 20, 40);
 
 	m = new QMenu(_export);
-	QAction *a1 = m->addAction("Text files only");
-	connect(a1, &QAction::triggered, this, &Screen::exportText);
-	QAction *a2 = m->addAction("Prepare directories");
-	connect(a2, &QAction::triggered, _list, &ClusterList::prepDirs);
+	if (_returnJourney == NULL)
+	{
+		QAction *a1 = m->addAction("Text files only");
+		connect(a1, &QAction::triggered, this, &Screen::exportText);
+		QAction *a2 = m->addAction("Prepare directories");
+		connect(a2, &QAction::triggered, _list, &ClusterList::prepDirs);
+	}
+	else
+	{
+		QAction *a1 = m->addAction("Return to sender");
+		connect(a1, &QAction::triggered, this, &Screen::returnToSender);
+	}
 
 	_export->setMenu(m);
 	_export->show();
@@ -921,4 +930,9 @@ void Screen::keyPressEvent(QKeyEvent *e)
 	{
 		_cAlphaKeeper->keyPressEvent(e);
 	}
+}
+
+void Screen::returnToSender()
+{
+	_returnJourney->finished();
 }
