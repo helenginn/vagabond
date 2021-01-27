@@ -479,6 +479,11 @@ MtzFile *Group::getMtzFile(int i)
 	return _mtzs[i]->getMtzFile();
 }
 
+std::string Group::getMetadata(int i)
+{
+	return getMtzFile(i)->metadata();
+}
+
 void Group::flipMtzSelection(int i)
 {
 	MtzFile *file = _mtzs[i]->getMtzFile();

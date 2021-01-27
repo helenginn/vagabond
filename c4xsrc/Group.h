@@ -115,6 +115,8 @@ public:
 	{
 		return _which;
 	}
+	
+	std::string getMetadata(int i);
 
 	MtzFile *getMtzFile(int i);
 	void setMtzSelection(size_t i, bool val);
