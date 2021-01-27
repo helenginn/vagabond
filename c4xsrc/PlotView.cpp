@@ -91,8 +91,11 @@ void PlotView::setup(Group *grp)
 	Plot3D *plot = _keeper->getPlot();
 	plot->repopulate();
 
-	connect(plot, &Plot3D::updateSelection,
-	        _scr, &Screen::refreshSelection);
+	if (_scr)
+	{
+		connect(plot, &Plot3D::updateSelection,
+		        _scr, &Screen::refreshSelection);
+	}
 
 	_selection = new SelectionWindow(this, _keeper);
 	_selection->setPlot(plot);
