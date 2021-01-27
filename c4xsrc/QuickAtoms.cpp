@@ -17,7 +17,6 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "QuickAtoms.h"
-#include "MtzFile.h"
 #include "CAlphaView.h"
 #include <libsrc/Crystal.h>
 #include <libsrc/Atom.h>
@@ -25,13 +24,17 @@
 #include <libsrc/Polymer.h>
 #include <libsrc/SymMate.h>
 
-QuickAtoms::QuickAtoms(MtzFile *file)
+QuickAtoms::QuickAtoms(CrystalPtr crystal)
 {
-	_file = file;
+	_crystal = crystal;
 }
 
 void QuickAtoms::addFromChain(QuickAtoms *other, std::string chain)
 {
+	if (_chainMap.count(chain) == 0)
+	{
+		_chains.push_back(chain);
+	}
 	Vec3Vec theirs = other->_chainMap[chain];
 	Vec3Vec mine = _chainMap[chain];
 	Counts counts = _countMap[chain];
@@ -110,12 +113,12 @@ void QuickAtoms::divideThrough()
 
 void QuickAtoms::fetchAtoms()
 {
-	if (_file == NULL)
+	if (_crystal == NULL)
 	{
 		return;
 	}
 
-	CrystalPtr c = _file->getCrystal();
+	CrystalPtr c = _crystal;
 	
 	if (!c)
 	{
@@ -124,6 +127,7 @@ void QuickAtoms::fetchAtoms()
 
 	if (_chainMap.size() > 0)
 	{
+		_chains.clear();
 		_chainMap.clear();
 		_countMap.clear();
 	}
@@ -147,7 +151,7 @@ void QuickAtoms::fetchAtoms()
 
 void QuickAtoms::collapseOnTarget(vec3 target)
 {
-	CrystalPtr c = _file->getCrystal();
+	CrystalPtr c = _crystal;
 	
 	if (!c)
 	{
@@ -175,6 +179,10 @@ void QuickAtoms::populatePolymer(PolymerPtr p)
 	if (_chainMap.count(myChain))
 	{
 		positions = _chainMap[myChain];
+	}
+	else
+	{
+		_chains.push_back(myChain);
 	}
 
 	size_t ending = positions.size();

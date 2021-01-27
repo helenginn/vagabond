@@ -29,13 +29,12 @@
 typedef std::vector<vec3> Vec3Vec;
 typedef std::vector<size_t> Counts;
 
-class MtzFile;
 class CAlphaView;
 
 class QuickAtoms
 {
 public:
-	QuickAtoms(MtzFile *file);
+	QuickAtoms(CrystalPtr file);
 	
 	static double compare(QuickAtoms *one, QuickAtoms *two, QuickAtoms *ave);
 
@@ -46,6 +45,21 @@ public:
 	
 	void addSequentialAtom(std::string chain, vec3 pos);
 	
+	std::string chain(int i)
+	{
+		return _chains[i];
+	}
+	
+	size_t chainCount()
+	{
+		return _chains.size();
+	}
+	
+	Vec3Vec posForChain(std::string chain)
+	{
+		return _chainMap[chain];
+	}
+	
 	vec3 getCentre()
 	{
 		return _centre;
@@ -55,10 +69,12 @@ public:
 private:
 	void addFromChain(QuickAtoms *other, std::string chain);
 	void populatePolymer(PolymerPtr p);
-	MtzFile *_file;
+	CrystalPtr _crystal;
 
 	std::map<std::string, Vec3Vec> _chainMap;
 	std::map<std::string, Counts> _countMap;
+	
+	std::vector<std::string> _chains;
 	
 	vec3 _centre;
 };

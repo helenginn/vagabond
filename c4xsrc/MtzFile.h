@@ -145,10 +145,7 @@ public:
 	
 	void recolourVertex(Helen3D::Vertex *v, bool fullDead = false);
 	
-	void setCrystal(CrystalPtr crystal)
-	{
-		_crystal = crystal;
-	}
+	void setCrystal(CrystalPtr crystal);
 	
 	CrystalPtr getCrystal()
 	{

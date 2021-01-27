@@ -26,7 +26,7 @@ MtzFile::MtzFile(std::string filename)
 	_mark = false;
 	_sele = false;
 	_dead = false;
-	_quickAtoms = new QuickAtoms(this);
+	_quickAtoms = new QuickAtoms(CrystalPtr());
 	_red = 0;
 	_green = 0;
 	_blue = 0;
@@ -85,3 +85,9 @@ void MtzFile::setColour(double r, double g, double b, double a)
 	_alpha = a;
 }
 
+
+void MtzFile::setCrystal(CrystalPtr crystal)
+{
+	_crystal = crystal;
+	_quickAtoms = new QuickAtoms(_crystal);
+}
