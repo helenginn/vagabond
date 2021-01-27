@@ -131,7 +131,7 @@ void Group::performCluster()
 	std::cout << "Inter-correlations against average..." << std::endl;
 	findIntercorrelations();
 	std::cout << "Calculating SVD..." << std::endl;
-	naughtyNooNoo();
+	svd();
 	drawAxes();
 
 	if (_message.length() > 0)
@@ -337,7 +337,7 @@ void Group::matAlloc(double **raw, double ***ptrs)
 }
 
 /* formally known as void Group::svd() */
-void Group::naughtyNooNoo()
+void Group::svd()
 {
 	size_t dims = _mtzs.size();
 	
