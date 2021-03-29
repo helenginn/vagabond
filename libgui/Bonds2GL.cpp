@@ -32,6 +32,11 @@ using namespace Helen3D;
 Bonds2GL::Bonds2GL(int average) : Vagabond2GL()
 {
 	_average = average;
+	
+	if (_average)
+	{
+		_textured = true;
+	}
 	_renderType = GL_LINES;
 	_vString = SlimBond_vsh();
 	_fString = SlimBond_fsh();
@@ -368,7 +373,6 @@ void Bonds2GL::bindTextures()
 		return;
 	}
 
-	SlipObject::bindTextures();
 	bindOneTexture(pic_bond);
 }
 

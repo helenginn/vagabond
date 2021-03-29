@@ -38,6 +38,11 @@ AveDiffraction::~AveDiffraction()
 
 void AveDiffraction::calculate()
 {
+	if (_mtzs.size() == 0)
+	{
+		return;
+	}
+
 	VagFFTPtr first = _mtzs[0];
 	_fft = VagFFTPtr(new VagFFT(*first, 1));
 	_fft->wipe();

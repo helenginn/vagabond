@@ -16,9 +16,15 @@
 #include "VagWindow.h"
 #include "../Bonds2GL.h"
 #include "../Multi2GL.h"
+#include "../BlobMesh.h"
+
+class Mesh;
+class Blob;
+class QThread;
 
 class VagabondGLWidget : public SlipGL
 {
+Q_OBJECT
 public:
 	VagabondGLWidget(QWidget *obj = NULL);
 	~VagabondGLWidget();
@@ -31,18 +37,19 @@ public:
 
 	void startTimer()
 	{
-		if (!timer) return;
-		timer->start();
+		if (!_timer) return;
+		_timer->start();
 	}
 
 	void stopTimer()
 	{
-		if (!timer) return;
-		timer->start(100);
+		if (!_timer) return;
+		_timer->start(100);
 	}
 
 	void renderDensity(CrystalPtr crystal);
 	void setDisableDensityUpdate();
+	void makeMeshRightClickMenu(QPoint p);
 
 	void setAddingWater();
 	
@@ -96,6 +103,8 @@ public:
 	void resetSelection();
 	void setMouseRefine(bool val);
 	
+	void addMesh(BlobMesh *m);
+	
 	void toggleKicks();
 	void novalentSelected();
 	void deleteSelected();
@@ -105,6 +114,19 @@ public:
 	void advanceMonomer(int dir);
 	void setAdding(bool val);
 	void setModelRay(double x, double y);
+signals:
+	void refine();
+
+public slots:
+	void removeBlob();
+	void refineMesh();
+	void smoothMesh();
+	void triangulateMesh();
+	void addMeshToCrystal();
+	void loadBlob(Blob *b);
+	void meshDensityScale(double mult);
+
+	void meshDone();
 protected:
 	virtual void keyPressEvent(QKeyEvent *event);
 	virtual void keyReleaseEvent(QKeyEvent *event);
@@ -115,8 +137,9 @@ protected:
 	void convertCoords(double *x, double *y);
 
 private:
-	QTimer *timer;
+	bool prepareWorkForObject(QObject *object);
 
+	QThread *_worker;
 	Qt::MouseButton _mouseButton;
 	bool _controlPressed;
 	bool _shiftPressed;
@@ -139,6 +162,8 @@ private:
 	Vagabond2GLPtr _multi2GL;
 	Selected2GLPtr _selected2GL;
 	
+	std::vector<BlobMesh *> _meshes;
+	BlobMesh *_activeBm;
 	VagWindow *_vag;
 };
 

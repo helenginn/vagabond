@@ -34,6 +34,7 @@ using namespace Vagabond;
 #include "Diffraction.h"
 #include "Polymer.h"
 #include "Monomer.h"
+#include "Blob.h"
 #include "CSV.h"
 #include <hcsrc/FileReader.h>
 #include "PDBReader.h"
@@ -835,7 +836,6 @@ void Crystal::scaleSolvent(DiffractionPtr data)
 	_bucket->setCrystal(shared_from_this());
 	_bucket->addSolvent();
 	
-
 	scaleToDiffraction(data, false);
 
 	_bucket->fourierTransform(1);
@@ -1502,6 +1502,11 @@ void Crystal::addProperties()
 	{
 		addChild("motion", _motions[i]);
 	}
+	
+	for (size_t i = 0; i < _blobs.size(); i++)
+	{
+		addChild("blob", _blobs[i]);
+	}
 }
 
 void Crystal::vsRestoreState(void *object, double val)
@@ -1524,6 +1529,12 @@ void Crystal::addObject(ParserPtr object, std::string category)
 	{
 		MotionPtr motion = ToMotionPtr(object);
 		addMotion(motion);
+	}
+
+	if (category == "blob")
+	{
+		BlobPtr blob = ToBlobPtr(object);
+		_blobs.push_back(blob);
 	}
 }
 
@@ -2431,3 +2442,23 @@ WaterNetworkPtr Crystal::getWaterNetwork()
 
 	return WaterNetworkPtr();
 }
+
+void Crystal::addBlob(BlobPtr blob)
+{
+	_blobs.push_back(blob);
+	blob->setAdded(true);
+//	blob->estimateScale(_fft);
+}
+
+void Crystal::removeBlob(BlobPtr blob)
+{
+	std::vector<BlobPtr>::iterator it;
+	it = std::find(_blobs.begin(), _blobs.end(), blob);
+	
+	if (it != _blobs.end())
+	{
+		_blobs.erase(it);
+	}
+}
+
+

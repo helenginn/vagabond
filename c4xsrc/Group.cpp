@@ -17,7 +17,7 @@
 #include "AveUnitCell.h"
 
 #include <QObject>
-#include <QColor>
+#include <QFontDatabase>
 
 Group *Group::_topGroup = NULL;
 
@@ -48,6 +48,7 @@ Group::Group(QTreeWidget *parent) : QTreeWidgetItem(parent)
 	{
 		_topGroup = this;
 	}
+	
 }
 
 void Group::setData(int column, int role, const QVariant &value)
@@ -155,13 +156,23 @@ void Group::copyFromOriginal(Group *ave)
 
 void Group::updateText()
 {
-	if (_customName.length())
+	std::string str;
+	
+	if (isMarked())
 	{
-		setText(0, QString::fromStdString(_customName));
-		return;
+		str += "* ";
 	}
 
-	std::string str = "Group of " + i_to_str(_mtzs.size()) + " data sets";
+	if (_customName.length())
+	{
+		str = _customName;
+		return;
+	}
+	else
+	{
+		str += "Group of " + i_to_str(_mtzs.size()) + " data sets";
+	}
+
 	setText(0, QString::fromStdString(str));
 }
 
@@ -415,8 +426,12 @@ void Group::setMarked(bool marked)
 	_marked = marked;
 
 	QFont curr = font(0);
+	std::cout << curr.toString().toStdString() << std::endl;
 	curr.setBold(marked);
+	std::cout << curr.toString().toStdString() << std::endl;
 	setFont(0, curr);
+	
+	updateText();
 }
 
 void Group::setDead(bool dead)

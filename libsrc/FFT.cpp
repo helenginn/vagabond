@@ -426,6 +426,16 @@ void VagFFT::setupElements(bool wipe)
 	}
 }
 
+void VagFFT::addScratchElementToFinal()
+{
+	for (int i = 0; i < _nn; i++)
+	{
+		_data[finalIndex(i)][0] += _shortScratch[i]; 
+	}
+
+	memset(_shortScratch, '\0', _nn * sizeof(float));
+}
+
 void VagFFT::copyScratchElementToPosition(ElementPtr ele)
 {
 	int column = whichColumn(ele);
@@ -865,20 +875,19 @@ void VagFFT::printSlice(double zVal, double scale)
 
 void VagFFT::addExplicitAtom(AtomPtr atom)
 {
-	std::vector<BondSample> positions;
-	positions = atom->getExplicitModel()->getFinalPositions();
+	const std::vector<BondSample> &positions = 
+	atom->getExplicitModel()->getFinalPositions();
 
 	for (int i = 0; i < positions.size(); i++)
 	{
-		vec3_subtract_from_vec3(&positions[i].start, _origin);
+		vec3 start = positions[i].start;
+		vec3_subtract_from_vec3(&start, _origin);
 		/* orthogonal simplification */
-		mat3x3_mult_vec(_recipBasis, &positions[i].start);
+		mat3x3_mult_vec(_recipBasis, &start);
 
 		double occ = positions[i].occupancy;
 
-		addInterpolatedToReal(positions[i].start.x, 
-		                      positions[i].start.y, 
-		                      positions[i].start.z, occ);
+		addInterpolatedToReal(start.x, start.y, start.z, occ);
 	}
 }
 

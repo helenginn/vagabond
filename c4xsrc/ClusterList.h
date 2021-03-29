@@ -27,7 +27,7 @@ public:
 	~ClusterList();
 
 	void setCommands(std::vector<std::string> commands);
-	bool loadFiles();
+	bool loadFiles(bool force = false);
 	void loadClusters(std::string contents);
 	void load(std::vector<DatasetPath> paths);
 	

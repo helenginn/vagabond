@@ -92,7 +92,7 @@ void ClusterList::load(std::vector<DatasetPath> paths)
 	_sqlInput = false;
 	_csvInput = false;
 	_paths = paths;
-	loadFiles();
+	loadFiles(true);
 }
 
 void ClusterList::setFiles(std::vector<std::string> files)
@@ -202,7 +202,7 @@ void ClusterList::loadFromMultistate(std::string pdb)
 	grp->performAverage();
 }
 
-bool ClusterList::loadFiles()
+bool ClusterList::loadFiles(bool force)
 {
 	if (_sqlInput)
 	{
@@ -278,7 +278,7 @@ bool ClusterList::loadFiles()
 		grp->addMtz(mtz, file);
 	}
 
-	if (grp->mtzCount() == 0)
+	if (!force && grp->mtzCount() == 0)
 	{
 		getFromFolders();
 		return true;
@@ -288,8 +288,9 @@ bool ClusterList::loadFiles()
 	_widget->addTopLevelItem(grp);
 	_clusters.push_back(grp);
 	_widget->setCurrentItem(grp);
+
 	grp->performAverage();
-	
+
 	if (_preload.length())
 	{
 		std::string contents = get_file_contents(_preload);

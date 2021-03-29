@@ -39,6 +39,13 @@ typedef struct
 
 typedef struct
 {
+	std::vector<unsigned long> *intArrayPtr;
+	std::string ptrName;
+	bool receiveOnly;
+} IntArrayProperty;
+
+typedef struct
+{
 	std::vector<vec3> *vec3ArrayPtr;
 	std::string ptrName;
 	bool receiveOnly;

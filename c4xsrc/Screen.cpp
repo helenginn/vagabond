@@ -254,7 +254,16 @@ void Screen::addCSVSwitcher()
 	}
 
 	_menu->addSeparator();
-	QMenu *choice = _menu->addMenu("Which CSV?");
+	
+	QMenu *choice = _menu->findChild<QMenu *>("which_csv");
+	
+	if (choice == NULL)
+	{
+		choice = _menu->addMenu("Which CSV?");
+		choice->setObjectName("which_csv");
+	}
+
+	choice->clear();
 
 	for (size_t i = 0; i < AveCSV::csvCount(); i++)
 	{

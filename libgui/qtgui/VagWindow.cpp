@@ -14,6 +14,8 @@
 
 #include "../../libsrc/shared_ptrs.h"
 #include "VagWindow.h"
+#include "VagabondGLWidget.h"
+#include "../libsrc/Blob.h"
 #include "DropDown.h"
 #include <QtCore/qdebug.h>
 #include <QtCore/qalgorithms.h>
@@ -26,6 +28,7 @@
 #include "../../libsrc/DistanceMatrix.h"
 #include "Dialogue.h"
 #include "ChainMenuAction.h"
+#include "../Selected2GL.h"
 #include "../../libsrc/Options.h"
 #include "../../libsrc/charmanip.h"
 #include "../../libsrc/Crystal.h"
@@ -157,6 +160,10 @@ void VagWindow::makeMenu()
 	QAction *addWater = model->addAction("Add water...");
 	connect(addWater, SIGNAL(triggered()), this, SLOT(addWater()));
 	actions.push_back(addWater);
+	
+	QAction *addBlob = model->addAction("Add blob...");
+	connect(addBlob, SIGNAL(triggered()), this, SLOT(addBlob()));
+	actions.push_back(addBlob);
 
 	QMenu *mRefine = menuBar()->addMenu(tr("&Refine"));
 	menus.push_back(mRefine);
@@ -983,6 +990,11 @@ std::string VagWindow::getFile(QString types, QString title)
 	return fileNames[0].toStdString();
 }
 
+void VagWindow::addBlob()
+{
+	_display->getSelectedGL()->addBlob();
+}
+
 void VagWindow::addWater()
 {
 	_display->setAddingWater();
@@ -1244,4 +1256,14 @@ void VagWindow::refineSponges()
 	Options::statusMessage("Refining sponges.");
 
 //	w->macroRefineSponges();
+}
+
+void VagWindow::loadBlob(Blob *blob)
+{
+	connect(this, &VagWindow::sendBlob, _display, 
+	        [=]() {_display->loadBlob(blob);}, Qt::BlockingQueuedConnection);
+	
+	emit sendBlob(blob);
+	
+	disconnect(this, &VagWindow::sendBlob, NULL, NULL);
 }

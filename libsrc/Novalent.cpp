@@ -114,8 +114,9 @@ AnchorPtr Novalent::getAnchor()
 
 void Novalent::propagateChange(int depth, bool refresh)
 {
+	_recalcFinal = true;
 	_changedSamples = true;
-	ExplicitModel::propagateChange(depth, refresh);
+	Model::propagateChange(depth, refresh);
 }
 
 std::string Novalent::shortDesc()
@@ -146,6 +147,7 @@ void Novalent::postParseTidy()
 {
 	ExplicitModel::postParseTidy();
 
+	getAnchor();
 }
 
 void Novalent::linkReference(BaseParserPtr object, std::string category)
@@ -160,7 +162,7 @@ void Novalent::linkReference(BaseParserPtr object, std::string category)
 
 void Novalent::addObject(ParserPtr object, std::string category)
 {
-
+	ExplicitModel::addObject(object, category);
 }
 
 

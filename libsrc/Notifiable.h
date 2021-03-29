@@ -173,6 +173,8 @@ public:
 	{
 		_cancel = false;
 	}
+	
+	virtual void loadBlob(Blob *blob) = 0;
 
 	virtual void setDisableDensityUpdate() = 0;
 	virtual void setRenderDensity() = 0;

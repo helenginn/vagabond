@@ -9,6 +9,7 @@
 #include "Crystal.h"
 #include "Polymer.h"
 #include "KeyPoints.h"
+#include "Blob.h"
 #include "Twist.h"
 #include "WaterNetwork.h"
 #include "Atom.h"
@@ -172,6 +173,17 @@ void BaseParser::addMat3x3ArrayProperty(std::string className, std::vector<mat3x
 	property.ptrName = className;
 	property.mat3x3ArrayPtr = ptr;
 	_mat3x3ArrayProperties.push_back(property);
+}
+
+void BaseParser::addIntArrayProperty(std::string className, 
+                                     std::vector<unsigned long> *ptr, 
+                                     bool receiveOnly)
+{
+	IntArrayProperty property;
+	property.ptrName = className;
+	property.intArrayPtr = ptr;
+	property.receiveOnly = receiveOnly;
+	_intArrayProperties.push_back(property);
 }
 
 void BaseParser::addVec3ArrayProperty(std::string className, std::vector<vec3> *ptr, bool receiveOnly)
@@ -364,6 +376,25 @@ void BaseParser::outputContents(std::ofstream &stream, int in)
 			vec3 vec = property.vec3ArrayPtr->at(j);
 			stream << indent(in) << vec3_desc(vec) << std::endl;
 		}
+
+		in--;
+		stream << indent(in) << "}" << std::endl;
+	}
+
+	for (int i = 0; i < _intArrayProperties.size(); i++)
+	{
+		IntArrayProperty property = _intArrayProperties[i];
+		stream << indent(in) << "array " << property.ptrName << std::endl;
+		stream << indent(in) << "{" << std::endl;
+		stream << indent(in) << "  (";
+		in++;
+
+		for (int j = 0; j < property.intArrayPtr->size(); j++)
+		{
+			unsigned long val = property.intArrayPtr->at(j);
+			stream << val << ", ";
+		}
+		stream << ")" << std::endl;
 
 		in--;
 		stream << indent(in) << "}" << std::endl;
@@ -585,6 +616,14 @@ void BaseParser::privateSaveState(int aim)
 		list.push_back(value);
 	}
 
+	for (int i = 0; i < _intArrayProperties.size(); i++)
+	{
+		StateValue value;
+		value.addIntArrayValue(_intArrayProperties[i].ptrName,
+		                        *_intArrayProperties[i].intArrayPtr);	
+		list.push_back(value);
+	}
+
 	for (int i = 0; i < _mat3x3ArrayProperties.size(); i++)
 	{
 		StateValue value;
@@ -622,6 +661,7 @@ void BaseParser::clearContents()
 	_boolProperties.clear();
 	_referenceList.clear();
 	_vec3ArrayProperties.clear();
+	_intArrayProperties.clear();
 	_mat3x3ArrayProperties.clear();
 	_mat3x3Properties.clear();
 
@@ -730,6 +770,7 @@ char *BaseParser::parseNextArray(char *block)
 	// we will start by loading them in as a contiguous array.
 	// we shall cast them to the appropriate variable later.
 	std::vector<double> stream;
+	std::vector<unsigned long> intstream;
 
 	while (true)
 	{
@@ -739,8 +780,6 @@ char *BaseParser::parseNextArray(char *block)
 			incrementIndent(&block);
 			break;
 		}
-
-		std::vector<double> values;
 
 		// check that we start with a (.
 		if (block[0] == '(')
@@ -774,7 +813,9 @@ char *BaseParser::parseNextArray(char *block)
 			// we add this to our contiguous stream.  
 
 			double anotherNum = strtod(block, NULL);
+			unsigned long intNum = strtol(block, NULL, 10);
 			stream.push_back(anotherNum);
+			intstream.push_back(intNum);
 
 			// bring block to the next 'thing'.
 			block = comma + 1;
@@ -807,6 +848,19 @@ char *BaseParser::parseNextArray(char *block)
 			property.vec3ArrayPtr->resize(size);
 			vec3 *start = &((*property.vec3ArrayPtr)[0]);
 			memcpy(start, &stream[0], stream.size() * sizeof(double));
+		}
+	}
+
+	for (int i = 0; i < _intArrayProperties.size(); i++)
+	{
+		IntArrayProperty property = _intArrayProperties[i];
+		if (property.ptrName == categoryName)
+		{
+			property.intArrayPtr->clear();
+			property.intArrayPtr->resize(intstream.size() - 1);
+			unsigned long *start = &((*property.intArrayPtr)[0]);
+			memcpy(start, &intstream[0], (intstream.size() - 1) * 
+			       sizeof(unsigned long));
 		}
 	}
 
@@ -1268,6 +1322,10 @@ ParserPtr BaseParser::objectOfType(char *className)
 	{
 		object = ParserPtr(static_cast<Atom *>(new Atom()));
 	}
+	else if (strcmp(className, "Blob") == 0)
+	{
+		object = ParserPtr(static_cast<Blob *>(new Blob()));
+	}
 	else if (strcmp(className, "Absolute") == 0)
 	{
 		object = ParserPtr(static_cast<Absolute *>(new Absolute()));        
@@ -1382,7 +1440,7 @@ BaseParserPtr BaseParser::processBlock(char *block)
 	}
 
 
-	object->postParseTidy();
+//	object->postParseTidy();
 
 	std::cout << "Post-parse object tidy done..." << std::endl;
 

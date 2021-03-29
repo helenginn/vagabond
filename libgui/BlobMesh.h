@@ -1,6 +1,5 @@
-// Vagabond
-
-// Copyright (C) 2017-2018 Helen Ginn
+// vagabond
+// Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,13 +16,37 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#include "Parser.h"
+#ifndef __vagabond__BlobMesh__
+#define __vagabond__BlobMesh__
 
-ParserPtr Parser::processBlock(char *block)
+#include <h3dsrc/Mesh.h>
+#include "../libsrc/shared_ptrs.h"
+
+class Blob;
+
+class BlobMesh : public Mesh
 {
-	BaseParserPtr base = BaseParser::processBlock(block);
-//	base->postParseTidy();
+public:
+	BlobMesh(SlipObject *p, int tri);
+	BlobPtr toBlob();
 	
-	return ToParserPtr(base);
-}
+	void setBlob(Blob *b);
+	
+	void multiplyScale(double mult);
+	
+	void deleteBlob(CrystalPtr cryst);
+	void blobToCrystal(CrystalPtr cryst);
+	
+	static BlobMesh *meshFromBlob(SlipObject *parent, Blob *b);
+	
+	bool hasBlob()
+	{
+		return (_blob != NULL);
+	}
 
+private:
+	BlobPtr _blob;
+
+};
+
+#endif

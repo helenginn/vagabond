@@ -558,6 +558,9 @@ public:
 
 	double getProteinSampling();
 	
+	void addBlob(BlobPtr blob);
+	void removeBlob(BlobPtr blob);
+	
 	void updateLargestNum(AtomPtr atom);
 	void whack();
 	void chelate();
@@ -667,7 +670,6 @@ private:
 	
 	void scaleSolvent(DiffractionPtr data);
 	void scaleToDiffraction(DiffractionPtr data, bool full = true);
-
 };
 }
 

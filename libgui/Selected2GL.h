@@ -76,6 +76,12 @@ public:
 	AtomGroupPtr getSelected();
 	
 	void setMouseRay(vec3 ray);
+	void addBlob();
+	
+	void setWidget(VagabondGLWidget *widge)
+	{
+		_widget = widge;
+	}
 protected:
 	virtual int processMolecule(MoleculePtr molecule);
 	virtual void bindTextures();
@@ -87,6 +93,7 @@ private:
 		return (_picked.size() > 1);
 	}
 	
+	VagabondGLWidget *_widget;
 	vec3 averageModelPos();
 	std::vector<AtomPtr> _picked;
 	SelectionType _sType;

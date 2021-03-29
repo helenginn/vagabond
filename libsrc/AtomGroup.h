@@ -27,6 +27,8 @@
  * and is often (but does not need to be) subclassed.
  */
 
+class Timer;
+
 class AtomGroup : public Sampler, public Parser
 {
 public:
@@ -71,6 +73,7 @@ public:
 	
 	virtual void removeAtom(AtomPtr atom);
 
+	void addAtomsFrom(AtomGroup *group);
 	void addAtomsFrom(AtomGroupPtr group);
 	void addAtomsFrom(std::vector<AtomPtr> group);
 
@@ -214,6 +217,10 @@ public:
 
 	void reset();
 	bool isFullyTied();
+
+	Timer *_t1;
+	Timer *_t2;
+	Timer *_t3;
 protected:
 	virtual bool shouldRefineAtom(AtomPtr atom) { return true; };
 	int _timesRefined;
@@ -232,6 +239,7 @@ protected:
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void linkReference(BaseParserPtr object, std::string category);
 	std::vector<AtomPtr> _atoms;
+	std::vector<BlobPtr> _blobs;
 	std::string _name;
 private:
 	static void plotCoordVals(std::vector<CoordVal> &vals, bool difference,

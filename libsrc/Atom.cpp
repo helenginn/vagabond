@@ -491,6 +491,12 @@ std::string Atom::pdbLineBeginning(std::string start)
 	{
 		chainID = getMolecule()->getChainID()[0];
 	}
+	
+	if (getModel()->isAbsolute())
+	{
+		chainID = ToAbsolutePtr(getModel())->getChainID()[0];
+		resNum = ToAbsolutePtr(getModel())->getResNum();
+	}
 
 	to_upper(residueName);
 	std::ostringstream line;

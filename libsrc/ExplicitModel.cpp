@@ -108,7 +108,7 @@ inline vec3 get_rotated_vec(vec3 orig, vec3 centre, mat3x3 rot, vec3 shift)
 	return orig;
 }
 
-std::vector<BondSample> ExplicitModel::getFinalPositions()
+const std::vector<BondSample> &ExplicitModel::getFinalPositions()
 {
 	if (!_recalcFinal && _storedSamples.size())
 	{

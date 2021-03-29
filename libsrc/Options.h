@@ -24,6 +24,7 @@ typedef enum
 } ModelFile;
 
 class StartScreen;
+class Blob;
 
 class Options
 {
@@ -76,6 +77,8 @@ public:
 		CrystalPtr crystal = ToCrystalPtr(cryst);
 		crystals.push_back(crystal);
 	}
+
+	static void loadBlobInGUI(Blob *b);
 
 	static CrystalPtr getActiveCrystal()
 	{

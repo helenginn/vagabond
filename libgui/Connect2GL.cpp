@@ -52,7 +52,6 @@ bool Connect2GL::getPositions(AtomPtr minor, AtomPtr major,
 
 void Connect2GL::bindTextures()
 {
-	Vagabond2GL::bindTextures();
 	bindOneTexture(pic_dotted_line);
 }
 

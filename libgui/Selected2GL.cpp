@@ -19,6 +19,7 @@
 #include <iomanip>
 #include "Selected.h"
 #include "Selected2GL.h"
+#include "Density2GL.h"
 #include "qtgui/VagabondGLWidget.h"
 #include "../libsrc/Monomer.h"
 #include "../libsrc/Absolute.h"
@@ -27,6 +28,7 @@
 #include "../libsrc/FlexGlobal.h"
 #include "../libsrc/WaterNetwork.h"
 #include <hcsrc/RefinementNelderMead.h>
+#include "BlobMesh.h"
 
 Selected2GL::Selected2GL()
 {
@@ -966,4 +968,23 @@ void Selected2GL::novalentSelected(VagabondGLWidget *k)
 	}
 	
 	k->getMulti2GL()->setShouldGetBonds();
+}
+
+void Selected2GL::addBlob()
+{
+	Density2GLPtr dens = _widget->getDensity2GL();
+//	dens->removeUnusedVertices();
+
+	BlobMesh *m = new BlobMesh(&*dens, 1);
+	dens->setCustomMesh(m);
+	double rad = m->averageRadius();
+	m->resize(5 / rad);
+	vec3 ave = m->centroid();
+	std::cout << "Placed initial mesh at " << vec3_desc(ave) << " ";
+	std::cout << "with " << m->vertexCount() << " vertices." << std::endl;
+	m->setColour(0., 0., 0.);
+	m->changeSelectionResize(1);
+	m->setSelectable(true);
+
+	_widget->addMesh(m);
 }

@@ -33,6 +33,7 @@
 
 #define ToBondPtr(a) (boost::static_pointer_cast<Bond>((a)))
 #define ToBondGroupPtr(a) (boost::static_pointer_cast<BondGroup>((a)))
+#define ToBlobPtr(a) (boost::static_pointer_cast<Blob>((a)))
 #define ToGhostBondPtr(a) (boost::static_pointer_cast<GhostBond>((a)))
 #define ToAbsolutePtr(a) (boost::static_pointer_cast<Absolute>((a)))
 #define ToAnchorPtr(a) (boost::static_pointer_cast<Anchor>((a)))
@@ -238,6 +239,9 @@ class Thing;
 typedef boost::shared_ptr<VScope> VScopePtr;
 typedef boost::shared_ptr<LeftThing> LeftThingPtr;
 typedef boost::shared_ptr<Thing> ThingPtr;
+
+class Blob;
+typedef boost::shared_ptr<Blob> BlobPtr;
 
 typedef enum
 {

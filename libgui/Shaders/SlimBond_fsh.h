@@ -18,7 +18,7 @@ inline std::string SlimBond_fsh()
 	"		discard;\n"\
 	"	}\n"\
 	"   float transparency = (vPos[2] - min_distance) / (max_distance - min_distance);\n"\
-	"	transparency = max(transparency, 0.0);\n"\
+	"	transparency = max(transparency, 0.3);\n"\
 	"	transparency = min(transparency, 1.0);\n"\
 	"	vec4 tmpColor = vColor;\n"\
 	"   for (int i = 0; i < 3; i++)\n"\

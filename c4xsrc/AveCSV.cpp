@@ -60,8 +60,9 @@ void AveCSV::startNewCSV(std::string name)
 	}
 
 	_relationships.resize(_relationships.size() + 1);
-	_chosen++;
 	_filenames.push_back(name);
+	_list->addCSVSwitcher();
+	_chosen = _relationships.size() - 1;
 }
 
 void AveCSV::load()

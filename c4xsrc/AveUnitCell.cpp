@@ -31,6 +31,11 @@ void AveUnitCell::calculate()
 	_ucs = std::vector<double>(6, 0.);
 	int count = 0;
 
+	if (_mtzs.size() == 0)
+	{
+		return;
+	}
+
 	for (size_t i = 0; i < _mtzs.size(); i++)
 	{
 		if (_mtzs[i]->getMtzFile()->isDead())

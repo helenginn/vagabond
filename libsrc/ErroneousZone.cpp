@@ -1,6 +1,5 @@
 // Vagabond
-
-// Copyright (C) 2017-2018 Helen Ginn
+// Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,13 +16,35 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#include "Parser.h"
+#include "ErroneousZone.h"
+#include "Polymer.h"
+#include "Monomer.h"
+#include "Backbone.h"
+#include "Sidechain.h"
 
-ParserPtr Parser::processBlock(char *block)
+ErroneousZone::ErroneousZone(PolymerPtr pol, int start, int end)
 {
-	BaseParserPtr base = BaseParser::processBlock(block);
-//	base->postParseTidy();
-	
-	return ToParserPtr(base);
+	_polymer = pol;
+	_start = start;
+	_end = end;
 }
 
+void ErroneousZone::calcDifferenceDensities()
+{
+	CrystalPtr target = Options::getActiveCrystal();
+
+	for (int i = _start; i < _end; i++)
+	{
+		MonomerPtr mon = _polymer->getMonomer(i);
+		
+		if (!mon)
+		{
+			continue;
+		}
+
+		BackbonePtr backbone = mon->getBackbone();
+		SidechainPtr sidechain = mon->getSidechain();
+		double cc = -sidechain->scoreWithMap(ScoreTypeCorrel, target);
+	}
+
+}

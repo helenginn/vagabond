@@ -62,6 +62,16 @@ void StateValue::applyToParser(BaseParser *parser)
 		}
 	}
 
+	for (int i = 0; i < parser->_intArrayProperties.size(); i++)
+	{
+		if (parser->_intArrayProperties[i].ptrName == _ptrName)
+		{
+			*parser->_intArrayProperties[i].intArrayPtr = _intArray;
+
+			found = true;
+		}
+	}
+
 	for (int i = 0; i < parser->_mat3x3ArrayProperties.size(); i++)
 	{
 		if (parser->_mat3x3ArrayProperties[i].ptrName == _ptrName)

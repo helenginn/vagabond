@@ -385,7 +385,7 @@ void Polymer::refineBackboneFrom(int position)
 	RefinementType rType = RefinementCrude;
 	
 	addParamType(ParamOptionMaxTries, 1.0);
-	addParamType(ParamOptionTorsion, 1.0);
+	addParamType(ParamOptionTorsion, 0.5);
 	addParamType(ParamOptionNumBonds, 12);
 	addParamType(ParamOptionTopLevelOnly, 1);
 	addParamType(ParamOptionCycles, 32);
@@ -397,7 +397,7 @@ void Polymer::refineBackboneFrom(int position)
 	bool lowRes = (crystal->getMaxResolution() > 3.5);
 	if (lowRes)
 	{
-		addParamType(ParamOptionMaxTries, 2.0);
+		addParamType(ParamOptionMaxTries, 1.0);
 		addParamType(ParamOptionCycles, 48);
 		addParamType(ParamOptionTorsion, 0.5);
 		addParamType(ParamOptionExtraAtoms, 8);

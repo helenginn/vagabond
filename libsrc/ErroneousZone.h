@@ -1,6 +1,5 @@
 // Vagabond
-
-// Copyright (C) 2017-2018 Helen Ginn
+// Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,13 +16,22 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#include "Parser.h"
+#ifndef __vagabond__Erroneous_Zone__
+#define __vagabond__Erroneous_Zone__
 
-ParserPtr Parser::processBlock(char *block)
+#include "shared_ptrs.h"
+
+class ErroneousZone
 {
-	BaseParserPtr base = BaseParser::processBlock(block);
-//	base->postParseTidy();
-	
-	return ToParserPtr(base);
-}
+public:
+	ErroneousZone(PolymerPtr pol, int start, int end);
 
+	void calcDifferenceDensities();
+
+private:
+	PolymerPtr _polymer;
+	int _start;
+	int _end;
+};
+
+#endif

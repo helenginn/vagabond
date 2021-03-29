@@ -70,6 +70,7 @@ base_files = files('libsrc/Absolute.cpp',
 'libsrc/Backbone.cpp', 
 'libsrc/Balance.cpp', 
 'libsrc/BaseParser.cpp', 
+'libsrc/Blob.cpp', 
 'libsrc/Bond.cpp', 
 'libsrc/BondGroup.cpp', 
 'libsrc/BucketBulkSolvent.cpp', 
@@ -159,6 +160,7 @@ if qt5_dep.found() and dep_gl.found()
 'libgui/qtgui/SequenceView.h',
 'libgui/qtgui/SetterEdit.h',
 'libgui/qtgui/StartScreen.h',
+'libgui/qtgui/VagabondGLWidget.h',
 'libgui/qtgui/VagWindow.h'],
 			moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'])
 
@@ -169,6 +171,7 @@ subincludes = ['subprojects/helen3d', 'subprojects/helencore']
 
 executable('vagabond-gui', base_files,
 'libgui/Atoms2GL.cpp', 
+'libgui/BlobMesh.cpp', 
 'libgui/Bonds2GL.cpp', 
 'libgui/Connect2GL.cpp', 
 'libgui/Density2GL.cpp',
@@ -515,6 +518,12 @@ pkg.generate([lib_ica],
              name : 'libica',
              filebase : 'libica',
              description : 'Library for ica and lbfgs')
+pkg.generate([lib_vgeom],
+             subdirs : ['libsrc'],
+             version : '1.0',
+             name : 'libvgeom',
+             filebase : 'libvgeom',
+             description : 'Library for vagabond residue info')
 pkg.generate([lib_ccp4],
              subdirs : ['libsrc'],
              version : '1.0',

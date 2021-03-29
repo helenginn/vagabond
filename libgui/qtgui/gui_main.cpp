@@ -10,7 +10,8 @@
 #include <execinfo.h>
 #include <signal.h>
 #include "StartScreen.h"
-#include <QtWidgets/qapplication.h>
+#include <QApplication>
+#include <QOpenGLContext>
 
 void handler(int sig) {
 	void *array[10];
@@ -33,6 +34,23 @@ int main(int argc, char * argv[])
 	signal(SIGABRT, handler);
 
 	std::cout << "Qt version: " << qVersion() << std::endl;
+
+	QSurfaceFormat fmt;
+	if (QOpenGLContext::openGLModuleType() == QOpenGLContext::LibGL) 
+	{
+		std::cout << "OpenGL 4.0 context" << std::endl;
+		fmt.setVersion(4, 0);
+		fmt.setProfile(QSurfaceFormat::CoreProfile);
+	}
+	else 
+	{
+		std::cout << "OpenGL 3.0 context" << std::endl;
+		fmt.setVersion(3, 3);
+	}
+
+	std::cout << "OpenGL Version: " << fmt.version().first << "." <<
+	fmt.version().second << std::endl;
+	QSurfaceFormat::setDefaultFormat(fmt);
 
 	QApplication app(argc, argv);
 	setlocale(LC_NUMERIC, "C");

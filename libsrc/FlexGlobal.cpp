@@ -266,4 +266,7 @@ void FlexGlobal::reportTimings()
 	_workspace.tMap->report();
 	_workspace.tScore->report();
 
+	_workspace.selectAtoms->_t1->report();
+	_workspace.selectAtoms->_t2->report();
+	_workspace.selectAtoms->_t3->report();
 }

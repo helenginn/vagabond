@@ -15,6 +15,7 @@
 #include "AtomGroup.h"
 #include <climits>
 #include <algorithm>
+#include "Blob.h"
 #include "Atom.h"
 #include "SymAtom.h"
 #include "Anchor.h"
@@ -52,12 +53,17 @@ AtomList AtomGroup::findAtoms(std::string atomType, int resNum,
 	for (size_t i = 0; i < atomCount(); i++)
 	{
 		if ((atom(i)->getAtomName() == atomType)
-		 && (atom(i)->getResidueNum() == resNum))
+		 && ((atom(i)->getResidueNum() == resNum) || resNum == INT_MAX))
 		{
-			if (chainID.length() && 
-			    atom(i)->getMolecule()->getChainID() != chainID)
+			if (chainID.length())
 			{
-				continue;
+				std::string chain = atom(i)->getMolecule()->getChainID();
+				
+				if (chain.substr(0, chainID.length()) != chainID)
+				{
+					continue;
+				}
+
 			}
 
 			list.push_back(atom(i));
@@ -124,6 +130,11 @@ void AtomGroup::addAtomsFrom(std::vector<AtomPtr> group)
 }
 
 void AtomGroup::addAtomsFrom(AtomGroupPtr group)
+{
+	addAtomsFrom(&*group);
+}
+
+void AtomGroup::addAtomsFrom(AtomGroup *group)
 {
 	for (size_t i = 0; i < group->atomCount(); i++)
 	{
@@ -315,6 +326,9 @@ double AtomGroup::getAverageBFactor(bool initial)
 
 AtomGroup::AtomGroup()
 {
+	_t1 = new Timer("adding atoms");
+	_t2 = new Timer("internal FFT addition");
+	_t3 = new Timer("FFT transformation");
 	_beenTied = false;
 	_timesRefined = 0;
 }
@@ -951,17 +965,13 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
 {
 	size_t nElements = totalElements();
 	scratchFull->prepareAtomSpace();
-
-	/*
-	for (int i = 0; i < atomCount(); i++)
-	{
-		AtomPtr a = atom(i);
-		scratchFull->addAtom(a);
-	}
-	*/
 	
 	for (size_t i = 0; i < nElements; i++)
 	{
+		int count = 0;
+
+		_t1->start();
+
 		for (size_t j = 0; j < atomCount(); j++)
 		{
 			AtomPtr a = atom(j);
@@ -971,13 +981,33 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
 				continue;
 			}
 
+			count++;
 			scratchFull->addAtom(a);
 		}
+
+		_t1->stop();
 		
-		scratchFull->copyScratchElementToPosition(_elements[i]);
+		if (count > 0)
+		{
+			_t2->start();
+			scratchFull->copyScratchElementToPosition(_elements[i]);
+			_t2->stop();
+		}
 	}
 
+	_t3->start();
 	scratchFull->fft(FFTAtomsToReal);
+	_t3->stop();
+	
+	for (size_t i = 0; i < _blobs.size(); i++)
+	{
+		_blobs[i]->addToCubicMap(scratchFull);
+	}
+	
+	if (_blobs.size() > 0)
+	{
+		scratchFull->addScratchElementToFinal();
+	}
 }
 
 void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max, 
@@ -1050,7 +1080,14 @@ void AtomGroup::addToMap(VagFFTPtr fft)
 	double buffer = BUFFER_REGION;
 	vec3 min, max;
 	xyzLimits(&min, &max);
+	
+	for (size_t i = 0; i < _blobs.size(); i++)
+	{
+		_blobs[i]->getLoopBoundaries(&min, &max);
+	}
+
 	prepareCubicMap(&scratchFull, min, max);
+
 	addToCubicMap(scratchFull);
 
 	VagFFT::operation(fft, scratchFull, MapScoreTypeNone, NULL, false);

@@ -35,7 +35,7 @@
 #include "../../libsrc/Notifiable.h"
 
 class VagabondGLWidget;
-#include "VagabondGLWidget.h"
+class Blob;
 
 class VagWindow : public QMainWindow, public Notifiable
 {
@@ -54,6 +54,7 @@ public:
 	void gotoResidueDialogue();
 	void receiveGotoResidue(std::string diagString);
 
+	virtual void loadBlob(Blob *blob);
 	virtual void setMessage(std::string message);
 	virtual void wakeup();
 	virtual void setRenderDensity();
@@ -91,6 +92,7 @@ public:
 signals:
 	void errorReceived(Shouter *shout);
 	void appendSignal();
+	void sendBlob(Blob *b);
 protected:
 	virtual void resizeEvent(QResizeEvent *);
 private slots:
@@ -103,6 +105,7 @@ private slots:
 	void refitBackbone();
 	void fixErroneousZones();
 	void addWater();
+	void addBlob();
 	void append();
 	void openInCoot();
 	void addPDBFile();

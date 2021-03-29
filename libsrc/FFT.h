@@ -156,6 +156,11 @@ public:
 		_origin = orig;
 	}
 	
+	vec3 origin()
+	{
+		return _origin;
+	}
+	
 	void setScratchComponent(int index, int scratch, int comp, double val);
 	
 	double getScratchComponent(int index, int si, int comp)
@@ -393,6 +398,10 @@ public:
 	vec3 fracFromElement(long int element);
 	void printStatus();
 
+	void addScratchElementToFinal();
+	void addInterpolatedToReal(double sx, double sy, 
+	                           double sz, double val);
+
 	void findLimitingValues(double xMin, double xMax, double yMin,
 	                        double yMax, double zMin, double zMax,
 	                        vec3 *minVals, vec3 *maxVals);
@@ -437,8 +446,6 @@ private:
 	double getAmplitude(ElementPtr ele, int i, int j, int k);
 	int whichColumn(ElementPtr ele);
 	void calculateAdjustmentVolumes();
-	void addInterpolatedToReal(double sx, double sy, 
-	                           double sz, double val);
 	void addExplicitAtom(AtomPtr atom);
 	void addImplicitAtom(AtomPtr atom);
 	/** returns true if sane */

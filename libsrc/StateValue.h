@@ -42,6 +42,13 @@ public:
 		_vec3Array = value;
 	}
 
+	void addIntArrayValue(std::string ptrName, 
+	                      std::vector<unsigned long> value)
+	{
+		_ptrName = ptrName;
+		_intArray = value;
+	}
+
 	void addMat3x3ArrayValue(std::string ptrName, std::vector<mat3x3> value)
 	{
 		_ptrName = ptrName;
@@ -74,6 +81,7 @@ private:
 	vec3 _vec3;
 	std::vector<vec3> _vec3Array;
 	std::vector<mat3x3> _mat3x3Array;
+	std::vector<unsigned long> _intArray;
 	bool _bool;
 	int _int;
 };

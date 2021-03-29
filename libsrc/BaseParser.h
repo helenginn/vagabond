@@ -116,6 +116,13 @@ public:
 		
 		return _allClasses[name];
 	}
+	
+	/**
+	*  Once all the cross-references to Parsers have been completed and all
+	*  Parsers exist in memory, this function is called. Here it may be
+	*  appropriate to perform some final tidying functions.	
+	*/
+	virtual void postParseTidy() {};
 protected:
 	/**
 	* 	Implementation of the parser identifier should return a name of the
@@ -143,13 +150,6 @@ protected:
 	* 	initialised, and now the cross-references to Parsers have to be added.
 	*/
 	virtual void linkReference(BaseParserPtr, std::string) {};
-	
-	/**
-	*  Once all the cross-references to Parsers have been completed and all
-	*  Parsers exist in memory, this function is called. Here it may be
-	*  appropriate to perform some final tidying functions.	
-	*/
-	virtual void postParseTidy() {};
 	
 	/** \name Adding property functions */
 	/**@{*/
@@ -181,6 +181,9 @@ protected:
 	void addChild(std::string category, ParserPtr child);
 	void addReference(std::string category, ParserPtr cousin);
 	void addVec3ArrayProperty(std::string className, std::vector<vec3> *ptr,
+	                          bool receiveOnly = false);
+	void addIntArrayProperty(std::string className, 
+	                         std::vector<unsigned long> *ptr,
 	                          bool receiveOnly = false);
 	void addMat3x3ArrayProperty(std::string className, std::vector<mat3x3> *ptr);
 	void exposeFunction(std::string funcName, Getter func);
@@ -249,6 +252,7 @@ private:
 	std::vector<Mat3x3Property> _mat3x3Properties;
 	std::vector<BoolProperty> _boolProperties;
 	std::vector<Vec3ArrayProperty> _vec3ArrayProperties;
+	std::vector<IntArrayProperty> _intArrayProperties;
 	std::vector<Mat3x3ArrayProperty> _mat3x3ArrayProperties;
 	ResolveList _resolveList;
 	ParserList _parserList;

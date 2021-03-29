@@ -1044,6 +1044,15 @@ void Options::adjustBFactor()
 	              + " to " + f_to_str(newB, 2) + ".");
 }
 
+void Options::loadBlobInGUI(Blob *b)
+{
+	if (getRuntimeOptions()->_notify)
+	{
+		getRuntimeOptions()->_notify->loadBlob(b);
+	}
+
+}
+
 void Options::focusOnPosition(vec3 pos, double dist)
 {
 	if (_notify)

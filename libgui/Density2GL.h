@@ -29,6 +29,7 @@ typedef enum
 typedef std::map<int, std::map<int, int> > IntMap;
 
 class VagabondGLWidget;
+class BlobMesh;
 
 class Density2GL : public SlipObject
 {
@@ -77,6 +78,13 @@ public:
 	{
 		_keeper = keeper;
 	}
+
+	void hideUnusedVertices(BlobMesh *m);
+	
+	void allowRecalculation(bool recalc)
+	{
+		_recalcable = recalc;
+	}
 protected:
 	virtual void bindTextures();
 	virtual void extraUniforms();
@@ -104,6 +112,7 @@ private:
 	double _threshold;
 	double _sigma;
 	double _mean;
+	bool _recalcable;
 	ivec _dims;
 	bool _visible;
 	std::vector<std::vector<GLuint> > _cubeIndices;

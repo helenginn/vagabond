@@ -10,6 +10,7 @@
 #include "qtgui/VagabondGLWidget.h"
 #include "Pencil.h"
 #include "Picture.h"
+#include "BlobMesh.h"
 #include "Shaders/Pencil_vsh.h"
 #include "Shaders/Pencil_fsh.h"
 #include "../libsrc/Crystal.h"
@@ -21,6 +22,7 @@ using namespace Helen3D;
 
 Density2GL::Density2GL() : SlipObject()
 {
+	_recalcable = true;
 	_imag = 0;
 	_dType = DensityWeighted;
 	_recalculate = 0;
@@ -790,9 +792,9 @@ vec3 Density2GL::getCentreOffset()
 void Density2GL::makeUniformGrid()
 {
 	/* Find sensible dimensions eventually */
-	_dims.x = 27;
-	_dims.y = 27;
-	_dims.z = 27;
+	_dims.x = 64;
+	_dims.y = 64;
+	_dims.z = 64;
 	
 	/* Make a series of vertices which are three times more
 	 * numerous than the number of voxels. */
@@ -872,7 +874,6 @@ void Density2GL::makeUniformGrid()
 
 void Density2GL::bindTextures()
 {
-	SlipObject::bindTextures();
 	bindOneTexture(pic_pencil);
 }
 
@@ -1176,6 +1177,11 @@ void Density2GL::extraUniforms()
 
 void Density2GL::makeNewDensity(CrystalPtr crystal)
 {
+	if (!_recalcable)
+	{
+		return;
+	}
+
 	if (!crystal && !_crystal)
 	{
 		return;
@@ -1212,6 +1218,47 @@ void Density2GL::makeNewDensity(CrystalPtr crystal)
 
 	setDisabled(false);
 	_renderLock.unlock();
+}
+
+void Density2GL::hideUnusedVertices(BlobMesh *m)
+{
+	m->changeToTriangles();
+
+	std::vector<bool> flags = std::vector<bool>(_vertices.size(), false);
+
+	for (size_t i = 0; i < _indices.size(); i++)
+	{
+		if (_indices[i] >= flags.size())
+		{
+			std::cout << "Flag " << i << " out of bounds!" << std::endl;
+		}
+
+		if (flags[_indices[i]] == false)
+		{
+			flags[_indices[i]] = true;
+		}
+	}
+
+	for (size_t i = 0; i < vertexCount(); i++)
+	{
+		if (!flags[i])
+		{
+			_vertices[i].pos[0] = FLT_MAX;
+			_vertices[i].pos[1] = FLT_MAX;
+			_vertices[i].pos[2] = FLT_MAX;
+		}
+		
+		vec3 v = vec_from_pos(_vertices[i].pos);
+		if (!m->pointInside(v))
+		{
+			_vertices[i].pos[0] = FLT_MAX;
+			_vertices[i].pos[1] = FLT_MAX;
+			_vertices[i].pos[2] = FLT_MAX;
+			_vertices[i].color[3] = 0;
+		}
+	}
+	
+	m->changeToLines();
 }
 
 bool Density2GL::isDifferenceDensity()
