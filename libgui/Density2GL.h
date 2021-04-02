@@ -28,7 +28,6 @@ typedef enum
 
 typedef std::map<int, std::map<int, int> > IntMap;
 
-class VagabondGLWidget;
 class BlobMesh;
 
 class Density2GL : public SlipObject
@@ -38,7 +37,7 @@ public:
 	
 	virtual void render(SlipGL *sender);
 	
-	void makeNewDensity(CrystalPtr crystal = CrystalPtr());
+	void makeNewDensity(VagFFTPtr fft = VagFFTPtr());
 	void nudgeDensity(int dir);
 	
 	void setOrigDensity()
@@ -73,17 +72,39 @@ public:
 	{
 		_renderType = type;
 	}
-	
-	void setKeeper(VagabondGLWidget *keeper)
-	{
-		_keeper = keeper;
-	}
 
 	void hideUnusedVertices(BlobMesh *m);
 	
 	void allowRecalculation(bool recalc)
 	{
 		_recalcable = recalc;
+	}
+	
+	void setDims(int dx, int dy, int dz)
+	{
+		_dims.x = dx;
+		_dims.y = dy;
+		_dims.z = dz;
+	}
+	
+	void setResolution(double resol)
+	{
+		_resolution = resol;
+	}
+	
+	void setDensity(VagFFTPtr fft)
+	{
+		_fft = fft;
+	}
+	
+	double getMean()
+	{
+		return _mean;
+	}
+	
+	double getSigma()
+	{
+		return _sigma;
 	}
 protected:
 	virtual void bindTextures();
@@ -94,9 +115,8 @@ private:
 	bool isDifferenceDensity();
 	
 	VagFFTPtr getFFT();
-	CrystalPtr _crystal;
-	VagabondGLWidget *_keeper;
-	void calculateContouring(CrystalPtr crystal);
+	VagFFTPtr _fft;
+	void calculateContouring(VagFFTPtr fft);
 	void makeUniformGrid();
 	void setupIndexTable();
 	void getSigma(VagFFTPtr fft);

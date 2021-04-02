@@ -75,6 +75,7 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	_lowResMode = fft._lowResMode;
 	_unitCell = fft._unitCell;
 	_data = NULL;
+	fftwf_init_threads();
 	
 	if (scratch >= 0 && scratch != fft._nscratch)
 	{
@@ -327,6 +328,9 @@ void VagFFT::makePlans()
 
 	/* destroying input should do nothing though */
 	unsigned many_flags = FFTW_MEASURE;
+
+	fftwf_set_timelimit(16);
+	fftwf_plan_with_nthreads(4);
 
 	fftwf_plan plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, 
 	                                      _stride, 2, _data, 
@@ -2285,4 +2289,43 @@ double VagFFT::resolution(int i, int j, int k)
 double VagFFT::voxelVolume()
 {
 	return mat3x3_volume(_realBasis);
+}
+
+VagFFTPtr VagFFT::subFFT(int x0, int x1, int y0, int y1, int z0, int z1)
+{
+	if (x1 - x0 < 0 || y1 - y0 < 0 || z1 - z0 < 0)
+	{
+		return VagFFTPtr();
+	}
+	
+	if ((x1 - x0) % 2 != 0) x1++;
+	if ((y1 - y0) % 2 != 0) y1++;
+	if ((z1 - z0) % 2 != 0) z1++;
+	
+	int x = x1 - x0;
+	int y = y1 - y0;
+	int z = z1 - z0;
+
+	VagFFTPtr fft = VagFFTPtr(new VagFFT(x, y, z));
+	std::vector<double> uc = _unitCell;
+	_unitCell[0] *= x / (float)_nx;
+	_unitCell[1] *= y / (float)_ny;
+	_unitCell[2] *= z / (float)_nz;
+	fft->setSpaceGroup(_spg);
+	fft->setUnitCell(uc);
+	
+	for (int k = z0; k < z1; k++)
+	{
+		for (size_t j = y0; j < y1; j++)
+		{
+			for (size_t i = x0; i < x1; i++)
+			{
+				long int ele = element(i, j, k);
+				long int nele = fft->element(i, j, k);
+				fft->setElement(nele, _data[ele][0], _data[ele][1]);
+			}
+		}
+	}
+	
+	return fft;
 }

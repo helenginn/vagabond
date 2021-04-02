@@ -63,12 +63,10 @@ VagabondGLWidget::VagabondGLWidget(QWidget *obj) : SlipGL(obj)
 
 	/* Density render */
 	_density2GL = Density2GLPtr(new Density2GL());
-	_density2GL->setKeeper(this);
 	_density2GL->recalculate();
 
 	/* Difference density render */
 	_diffDens2GL = Density2GLPtr(new Density2GL());
-	_diffDens2GL->setKeeper(this);
 	_diffDens2GL->setDiffDensity(true);
 	_diffDens2GL->setVisible(false);
 	_diffDens2GL->recalculate();
@@ -433,8 +431,8 @@ void VagabondGLWidget::setDisableDensityUpdate()
 
 void VagabondGLWidget::renderDensity(CrystalPtr crystal)
 {
-	getDensity2GL()->makeNewDensity(crystal);
-	getDiffDens2GL()->makeNewDensity(crystal);
+	getDensity2GL()->makeNewDensity(crystal->getFFT());
+	getDiffDens2GL()->makeNewDensity(crystal->getDiFFT());
 }
 
 VagabondGLWidget::~VagabondGLWidget()

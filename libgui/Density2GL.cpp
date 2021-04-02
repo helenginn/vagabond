@@ -7,14 +7,12 @@
 //
 
 #include "Density2GL.h"
-#include "qtgui/VagabondGLWidget.h"
 #include "Pencil.h"
 #include "Picture.h"
 #include "BlobMesh.h"
 #include "Shaders/Pencil_vsh.h"
 #include "Shaders/Pencil_fsh.h"
 #include "../libsrc/Crystal.h"
-#include "../libsrc/Options.h"
 #include <cstdarg>
 #include <algorithm>
 
@@ -36,10 +34,14 @@ Density2GL::Density2GL() : SlipObject()
 	_usesLighting = true;
 	_usesFocalDepth = true;
 	setNeedsExtra(true);
-	_crystal = Options::getActiveCrystal();
 	
 	_vString = Pencil_vsh();
 	_fString = Pencil_fsh();
+
+	/* Find sensible dimensions eventually */
+	_dims.x = 64;
+	_dims.y = 64;
+	_dims.z = 64;
 }
 
 std::vector<GLuint> makeList(int count, ...)
@@ -791,11 +793,6 @@ vec3 Density2GL::getCentreOffset()
 
 void Density2GL::makeUniformGrid()
 {
-	/* Find sensible dimensions eventually */
-	_dims.x = 64;
-	_dims.y = 64;
-	_dims.z = 64;
-	
 	/* Make a series of vertices which are three times more
 	 * numerous than the number of voxels. */
 	
@@ -805,7 +802,7 @@ void Density2GL::makeUniformGrid()
 	long c = 0;
 	vec3 central = getCentreOffset();
 	VagFFTPtr fft = getFFT();
-	mat3x3 real2frac = _crystal->getReal2Frac();
+	mat3x3 real2frac = fft->toRecip();
 	
 	for (int z = 0; z < _dims.z; z++)
 	{
@@ -877,14 +874,13 @@ void Density2GL::bindTextures()
 	bindOneTexture(pic_pencil);
 }
 
-void Density2GL::calculateContouring(CrystalPtr crystal)
+void Density2GL::calculateContouring(VagFFTPtr fft)
 {
 	const int shiftCount = 8;
 	vec3 shifts[] = {{0, 0, 0}, {1, 0, 0}, {0, 1, 0}, {0, 0, 1},
 	                 {1, 1, 0}, {1, 0, 1}, {0, 1, 1}, {1, 1, 1}};
 
-	VagFFTPtr fft = getFFT();
-	mat3x3 real2frac = crystal->getReal2Frac();
+	mat3x3 real2frac = fft->toRecip();
 	
 	long count = -3;
 	size_t unhandled = 0;
@@ -1074,18 +1070,7 @@ void Density2GL::calculateContouring(CrystalPtr crystal)
 
 VagFFTPtr Density2GL::getFFT()
 {
-	if (_dType == DensityWeighted)
-	{
-		return _crystal->getFFT();
-	}
-	else if (_dType == DensityDifference)
-	{
-		return _crystal->getDiFFT();
-	}
-	else
-	{
-		return _crystal->getFFT();
-	}
+	return _fft;
 }
 
 void Density2GL::nudgeDensity(int dir)
@@ -1175,23 +1160,23 @@ void Density2GL::extraUniforms()
 	}
 }
 
-void Density2GL::makeNewDensity(CrystalPtr crystal)
+void Density2GL::makeNewDensity(VagFFTPtr fft)
 {
 	if (!_recalcable)
 	{
 		return;
 	}
 
-	if (!crystal && !_crystal)
+	if (!fft && !_fft)
 	{
 		return;
 	}
-	else if (!crystal)
+	else if (!fft)
 	{
-		crystal = _crystal;
+		fft = _fft;
 	}
 	
-	_crystal = crystal;
+	_fft = fft;
 	
 	if (!getFFT() || getFFT()->nn() == 0)
 	{
@@ -1209,10 +1194,9 @@ void Density2GL::makeNewDensity(CrystalPtr crystal)
 		setupIndexTable();
 	}
 	
-	VagFFTPtr fft = getFFT();
 	getSigma(fft);
 
-	calculateContouring(crystal);
+	calculateContouring(fft);
 	reorderIndices();
 	recalculate();
 

@@ -965,6 +965,9 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
 {
 	size_t nElements = totalElements();
 	scratchFull->prepareAtomSpace();
+	_t1->clear();
+	_t2->clear();
+	_t3->clear();
 	
 	for (size_t i = 0; i < nElements; i++)
 	{

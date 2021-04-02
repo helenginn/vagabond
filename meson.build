@@ -1,5 +1,6 @@
 project('vagabond', 'cpp', 'c')
 qt5 = import('qt5')
+cxx = meson.get_compiler('cpp')
 
 qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets', 'Sql'], required : false)
 dep_gl = dependency('gl', required : false)
@@ -7,8 +8,21 @@ dep_gl = dependency('gl', required : false)
 png_dep = dependency('libpng')
 boost_dep = dependency('boost')
 fftw_dep = dependency('fftw3f')
+thread_fft_dep = dependency('fftw3f')
 maria_dep = dependency('libmariadb', required: false)
 crystfel_dep = dependency('crystfel', required: false)
+
+test_fftwf_threads = '''
+#include <fftw3.h>
+int main() {
+    fftwf_init_threads();
+    return 0;
+}
+'''
+if not cxx.links(test_fftwf_threads, dependencies: fftw_dep)
+  thread_fft_dep = cxx.find_library('fftw3f_threads')
+  message('find_library')
+endif
 
 sp_helen3d = subproject('helen3d')
 helen3d_dep = dependency('', required: false)
@@ -134,7 +148,7 @@ base_files = files('libsrc/Absolute.cpp',
 
 lib_vag = library('vag', gen_src, base_files,
 include_directories: 'subprojects/helencore',
-dependencies: [png_dep, fftw_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep,
+dependencies: [png_dep, fftw_dep, thread_fft_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep,
 helencore_dep], cpp_args: ['-w', '-std=c++11'], install: true)
 inc_vag = include_directories('libsrc')
 dep_vag = declare_dependency(link_with: lib_vag, include_directories: inc_vag)
@@ -169,7 +183,7 @@ if qt5_dep.found() and dep_gl.found()
 
 subincludes = ['subprojects/helen3d', 'subprojects/helencore']
 
-executable('vagabond-gui', base_files,
+files = [
 'libgui/Atoms2GL.cpp', 
 'libgui/BlobMesh.cpp', 
 'libgui/Bonds2GL.cpp', 
@@ -182,7 +196,6 @@ executable('vagabond-gui', base_files,
 'libgui/qtgui/CrystalExplorer.cpp',
 'libgui/qtgui/Dialogue.cpp',
 'libgui/qtgui/DropDown.cpp',
-#'libgui/qtgui/ErroneousZone.cpp',
 'libgui/qtgui/gui_main.cpp',
 'libgui/qtgui/InstructionThread.cpp',
 'libgui/qtgui/MoleculeExplorer.cpp',
@@ -192,14 +205,24 @@ executable('vagabond-gui', base_files,
 'libgui/qtgui/SetterEdit.cpp',
 'libgui/qtgui/StartScreen.cpp',
 'libgui/qtgui/VagabondGLWidget.cpp',
-'libgui/qtgui/VagWindow.cpp', 
+'libgui/qtgui/VagWindow.cpp'
+]
+
+executable('vagabond-gui', base_files, files,
 moc_files, dependencies: [qt5_dep, dep_ica, helen3d_dep, helencore_dep,
-dep_ccp4, dep_vgeom, png_dep, fftw_dep, boost_dep], 
+dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_fft_dep, boost_dep], 
 include_directories: subincludes,
 install: true, cpp_args: ['-w', '-std=c++11'])
+
+lib_vgui = library('vgui', base_files, files, moc_files,
+dependencies: [qt5_dep, dep_ica, helen3d_dep, helencore_dep,
+dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_fft_dep, boost_dep], 
+include_directories: subincludes,
+cpp_args: ['-w', '-std=c++11'], install: true)
 else
 	message('QT5 not found, so not building vagabond-gui.')
 endif
+
 
 executable('force_down', gen_src, 
 'force_down/main.cpp', 
@@ -327,6 +350,11 @@ install_headers([
 'libsrc/vagcout.h'],
 #'libsrc/vec3.h'],
  subdir : 'libsrc')
+
+install_headers([
+'libgui/Density2GL.h',
+],
+ subdir : 'vaggui')
 
 install_headers([
 'c4xsrc/AveCAlpha.h', 
@@ -512,6 +540,12 @@ pkg.generate([lib_vag],
              name : 'libvag',
              filebase : 'libvag',
              description : 'Library for vagabond')
+pkg.generate([lib_vgui],
+             subdirs : ['libgui'],
+             version : '1.0',
+             name : 'libvgui',
+             filebase : 'libvgui',
+             description : 'Library for vagabond GUI')
 pkg.generate([lib_ica],
              subdirs : ['libsrc'],
              version : '1.0',
