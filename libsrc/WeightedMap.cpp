@@ -26,7 +26,7 @@
 #include <iomanip>
 #include "Shouter.h"
 #include "CSV.h"
-#include "SimXW.h"
+//#include "SimXW.h"
 #include "Fibonacci.h"
 #include "../libinfo/CentroidToPhase.h"
 
@@ -505,7 +505,7 @@ void WeightedMap::createSimmishCoefficients()
 					X = 0;
 				}
 
-				double w = Vagabond::getW(X);
+//				double w = Vagabond::getW(X);
 
 				double stdev = stdevForReflection(fobs, fcalc, sigfobs,
 				                                  1 / length);
