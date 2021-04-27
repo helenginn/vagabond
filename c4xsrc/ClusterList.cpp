@@ -30,6 +30,7 @@
 #include <libsrc/Options.h>
 #include "Group.h"
 #include "FileReader.h"
+#include "AveDiffraction.h"
 #include "ClusterList.h"
 #include <libsrc/Multistate.h>
 #include "Output.h"
@@ -245,6 +246,11 @@ bool ClusterList::loadFiles(bool force)
 	std::string minus = valueForKey("column-");
 	
 	bool do_diff = (plus.length() > 0 && minus.length() > 0);
+	
+	if (do_diff)
+	{
+		AveDiffraction::setShouldScale(false);
+	}
 
 	for (size_t i = 0; i < _paths.size(); i++)
 	{

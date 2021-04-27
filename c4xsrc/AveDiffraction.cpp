@@ -50,9 +50,9 @@ void AveDiffraction::calculate()
 	std::vector<double> ucs = std::vector<double>(6, 0);
 	int count = 0;
 
-	for (size_t i = 0; i < _mtzs.size(); i++)
+	for (size_t l = 0; l < _mtzs.size(); l++)
 	{
-		MtzFFTPtr current = _mtzs[i];
+		MtzFFTPtr current = _mtzs[l];
 		if (current->getMtzFile()->isDead())
 		{
 			continue;
@@ -128,6 +128,7 @@ double AveDiffraction::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 	double dots = 0;
 	double xs = 0;
 	double ys = 0;
+	
 
 	for (int i = 0; i < one->nn(); i++)
 	{
