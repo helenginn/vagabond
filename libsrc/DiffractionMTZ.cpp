@@ -212,7 +212,7 @@ void DiffractionMtz::load()
 
 	getCol(errNames, mtz, &col_sigf);
 
-	if (!col_sigf)
+	if (!col_sigf && !do_diff)
 	{
 		choice.original = "SIGFP";
 		choice.wanted = "sigma values on amplitudes";
