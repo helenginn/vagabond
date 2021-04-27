@@ -250,6 +250,7 @@ bool ClusterList::loadFiles(bool force)
 	if (do_diff)
 	{
 		AveDiffraction::setShouldScale(false);
+		AveDiffraction::setZeroAve(true);
 	}
 
 	for (size_t i = 0; i < _paths.size(); i++)

@@ -24,6 +24,7 @@
 #include <hcsrc/FileReader.h>
 
 bool AveDiffraction::_shouldScale = true;
+bool AveDiffraction::_allZero = false;
 
 AveDiffraction::AveDiffraction(Group *group, double maxRes) : Average(group)
 {
@@ -116,6 +117,11 @@ void AveDiffraction::calculate()
 		real /= n;
 		imag /= n;
 		sq = sqrt((sq - real * real) / n);
+		
+		if (_allZero)
+		{
+			real = 0; imag = 0;
+		}
 
 		_fft->setReal(i, real);
 		_fft->setImag(i, imag);

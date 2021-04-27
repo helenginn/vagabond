@@ -40,6 +40,11 @@ public:
 		return _fft;
 	}
 	
+	static void setZeroAve(bool zero)
+	{
+		_allZero = zero;
+	}
+	
 	static void setShouldScale(bool scale)
 	{
 		_shouldScale = scale;
@@ -55,6 +60,7 @@ private:
 	Group *_origGroup;
 	
 	static bool _shouldScale;
+	static bool _allZero;
 
 	VagFFTPtr _fft;
 };
