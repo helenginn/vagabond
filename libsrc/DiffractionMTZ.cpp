@@ -168,17 +168,6 @@ void DiffractionMtz::load()
 
 	getCol(ampNames, mtz, &col_f);
 	LabelChoice choice = prepareChoice(mtz);
-
-	if (!col_f)
-	{
-		choice.original = "FP";
-		choice.wanted = "observed amplitudes";
-		Shouter *shout;
-		shout = new Shouter("I could not find your amplitude column in\n"
-		              + _filename + " - please label as F or FP.");
-		shout->setChoice(choice);
-		throw shout;
-	}
 	
 	bool do_diff = false;
 	if (_plus.length() && _minus.length())
@@ -195,6 +184,17 @@ void DiffractionMtz::load()
 		}
 		
 		do_diff = true;
+	}
+
+	if (!col_f && !do_diff)
+	{
+		choice.original = "FP";
+		choice.wanted = "observed amplitudes";
+		Shouter *shout;
+		shout = new Shouter("I could not find your amplitude column in\n"
+		              + _filename + " - please label as F or FP.");
+		shout->setChoice(choice);
+		throw shout;
 	}
 
 	std::vector<std::string> errNames;
