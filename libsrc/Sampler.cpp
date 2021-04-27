@@ -285,7 +285,7 @@ void Sampler::setupNelderMead()
 {
 	_strategy = RefinementStrategyPtr(new RefinementNelderMead());
 	_strategy->setEvaluationFunction(Sampler::score, this);
-	_strategy->setCycles(20);
+	_strategy->setCycles(50);
 }
 
 void Sampler::setupStepSearch()
@@ -626,7 +626,7 @@ bool Sampler::sample(bool clear)
 	if (_scoreType == ScoreTypeModelPos)
 	{
 		int paramCount = _strategy->parameterCount();
-		int cycles = paramCount / 2;
+		int cycles = paramCount * 2;
 		if (cycles < 30) cycles = 30;
 		_strategy->setCycles(cycles);
 	}

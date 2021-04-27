@@ -25,8 +25,23 @@ public:
 	virtual void load();
 
 	void syminfoCheck();
+	
+	void setDifference(std::string lp, std::string lm)
+	{
+		_plus = lp;
+		_minus = lm;
+	}
+	
+	void avoidPhases(bool t)
+	{
+		_avoidPhases = t;
+	}
 private:
 	LabelChoice prepareChoice(CMtz::MTZ *mtz);
+
+	bool _avoidPhases = false;
+	std::string _plus;
+	std::string _minus;
 };
 
 #endif /* defined(__vagabond__DiffractionMTZ__) */

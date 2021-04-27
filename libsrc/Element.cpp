@@ -38,6 +38,7 @@ void Element::setupElements()
 	elements.push_back(ElementPtr(new Element("ZN", "zinc", 30,  ScatterFactors::znScatter)));
 	elements.push_back(ElementPtr(new Element("SE", "selenium", 34,  ScatterFactors::seScatter)));
 	elements.push_back(ElementPtr(new Element("BR", "bromine", 35,  ScatterFactors::brScatter)));
+	elements.push_back(ElementPtr(new Element("I", "iodine", 53,  ScatterFactors::iScatter)));
 	elements.push_back(ElementPtr(new Element("TB", "terbium", 65,  ScatterFactors::tbScatter)));
 	elements.push_back(ElementPtr(new Element("HG", "mercury", 80,  ScatterFactors::hgScatter)));
 }

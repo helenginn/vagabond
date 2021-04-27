@@ -29,6 +29,7 @@
 #include <iostream>
 #include <iomanip>
 #include <stdlib.h>
+#include <hcsrc/maths.h>
 
 #include "libccp4/cmtzlib.h"
 #include "libccp4/csymlib.h"
@@ -36,6 +37,8 @@
 #include "libccp4/ccp4_general.h"
 
 std::vector<FFTDim *> VagFFT::_dimensions;
+unsigned VagFFT::_many_flags = FFTW_MEASURE;
+int VagFFT::_num_threads = 4;
 
 void checkDataPtr(fftwf_complex *data, long nn)
 {
@@ -68,6 +71,7 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	_recipTrans = fft._recipTrans;
 	_recipBasis = fft._recipBasis;
 	_realBasis = fft._realBasis;
+	_voxelToFrac = fft._voxelToFrac;
 	_setMatrices = fft._setMatrices;
 	_elements = fft._elements;
 	_elementMap = fft._elementMap;
@@ -153,6 +157,7 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
 	_toRecip = make_mat3x3();
 	_recipTrans = make_mat3x3();
 	_realBasis = make_mat3x3();
+	_voxelToFrac = make_mat3x3();
 	_recipBasis = make_mat3x3();
 	_setMatrices = false;
 }
@@ -195,6 +200,27 @@ void VagFFT::printStatus()
 	{
 		std::cout << "Amplitude for scratch " << i <<
 		" " << std::setprecision(6) << sumAmp(i) << std::endl;
+	}
+	
+	std::cout << "Real basis: " << std::endl;
+	std::cout << mat3x3_desc(getRealBasis()) << std::endl;
+
+	std::cout << "Reciprocal basis: " << std::endl;
+	std::cout << mat3x3_desc(getRecipBasis()) << std::endl;
+	
+	if (_unitCell.size())
+	{
+		std::cout << "Unit cell: " << " ";
+
+		for (size_t i = 0; i < 6; i++)
+		{
+			std::cout << _unitCell[i] << " ";
+		}
+		std::cout << std::endl;
+	}
+	else
+	{
+		std::cout << "Unit cell not set." << std::endl;
 	}
 	
 	std::cout << std::endl;
@@ -267,7 +293,6 @@ void adjustN(int *n)
 
 void VagFFT::adjustNs()
 {
-
 	double xtmp = _nx;
 	double ytmp = _ny;
 	double ztmp = _nz;
@@ -327,32 +352,31 @@ void VagFFT::makePlans()
 	int ns[3] = {_nz, _ny, _nx};
 
 	/* destroying input should do nothing though */
-	unsigned many_flags = FFTW_MEASURE;
 
 	fftwf_set_timelimit(16);
-	fftwf_plan_with_nthreads(4);
+	fftwf_plan_with_nthreads(_num_threads);
 
 	fftwf_plan plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, 
 	                                      _stride, 2, _data, 
 	                                      NULL, _stride, 2, 
-	                                      1, many_flags); 
+	                                      1, _many_flags); 
 	_myDims->atom_real_to_recip = plan;
 
 	plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, _stride, 
 	                                      2, _data, 
 	                                      NULL, _stride, 2, 
-	                                      -1, many_flags); 
+	                                      -1, _many_flags); 
 	_myDims->atom_recip_to_real = plan;
 
 	plan = fftwf_plan_many_dft(3, ns, 1, _lastData, NULL, /*null=embed*/
 	                           _stride, 2, _lastData, NULL, 
-	                           _stride, 2, 1, many_flags); 
+	                           _stride, 2, 1, _many_flags); 
 
 	_myDims->real_to_recip = plan;
 
 	plan = fftwf_plan_many_dft(3, ns, 1, _lastData, NULL, 
 	                           _stride, 2, _lastData, NULL,
-	                           _stride, 2, -1, many_flags); 
+	                           _stride, 2, -1, _many_flags); 
 
 	_myDims->recip_to_real = plan;
 }
@@ -561,6 +585,11 @@ void VagFFT::setUnitCell(std::vector<double> dims)
 	mat3x3_scale(&_realBasis, 1 / (double)_nx, 1 / (double)_ny, 
 	             1 / (double)_nz);
 	_recipBasis = mat3x3_inverse(_realBasis);
+	
+	mat3x3 fracToVoxel = make_mat3x3();
+	mat3x3_scale(&fracToVoxel, _nx, _ny, _nz);
+	_voxelToFrac = mat3x3_inverse(fracToVoxel);
+
 	_setMatrices = true;
 	_unitCell = dims;
 }
@@ -816,8 +845,20 @@ void VagFFT::drawSlice(int zVal, std::string filename)
 					continue;
 				}
 			}
+			
 			int index = element(i, j, zVal);
 			double s = getAmplitude(index);
+
+			if (zVal < 0)
+			{
+				s = 0;
+				for (int z = 0; z < nz(); z++)
+				{
+					vec3 ijk = make_vec3(i, j, z);
+					s += cubic_interpolate(ijk, 0);
+				}
+			}
+
 			
 			csv->addEntry(4, (double)i, (double)j, (double)zVal, s);
 		}
@@ -2237,11 +2278,13 @@ void VagFFT::convertMaskToSolvent(int expTotal)
 	}
 }
 
-void VagFFT::reindex(mat3x3 reindex)
+void VagFFT::reindex(mat3x3 reindex, vec3 v)
 {
 	fftwf_complex *tempData;
 	tempData = (fftwf_complex *)fftwf_malloc(_nn * sizeof(FFTW_DATA_TYPE));
 	memset(tempData, 0, sizeof(FFTW_DATA_TYPE) * _nn);
+	mat3x3 transpose = mat3x3_transpose(reindex);
+	mat3x3_mult_vec(_recipBasis, &v);
 
 	for (int k = -_nz / 2; k < _nz / 2; k++)
 	{
@@ -2250,20 +2293,18 @@ void VagFFT::reindex(mat3x3 reindex)
 			for (int i = -_nx / 2; i < _nx / 2; i++)
 			{
 				vec3 ijk = make_vec3(i, j, k);
-				mat3x3_mult_vec(reindex, &ijk);
+				mat3x3_mult_vec(transpose, &ijk);
+				vec3_subtract_from_vec3(&ijk, v);
 				
 				if (!withinBounds(ijk.x, ijk.y, ijk.z))
 				{
 					continue;
 				}
 				
-				long end = element(ijk.x, ijk.y, ijk.z);
-
-				long ijk_index = element(i, j, k);
-				long start = finalIndex(ijk_index);
+				long end = element(i, j, k);
 				
-				tempData[end][0] = _data[start][0];
-				tempData[end][1] = _data[start][1];
+				tempData[end][0] = cubic_interpolate(ijk, 0);
+				tempData[end][1] = cubic_interpolate(ijk, 1);
 			}
 		}
 	}
@@ -2308,24 +2349,219 @@ VagFFTPtr VagFFT::subFFT(int x0, int x1, int y0, int y1, int z0, int z1)
 
 	VagFFTPtr fft = VagFFTPtr(new VagFFT(x, y, z));
 	std::vector<double> uc = _unitCell;
-	_unitCell[0] *= x / (float)_nx;
-	_unitCell[1] *= y / (float)_ny;
-	_unitCell[2] *= z / (float)_nz;
+	uc[0] *= x / (float)_nx;
+	uc[1] *= y / (float)_ny;
+	uc[2] *= z / (float)_nz;
 	fft->setSpaceGroup(_spg);
+	
 	fft->setUnitCell(uc);
+	fft->makePlans();
+	
+	vec3 ori = make_vec3(x0, y0, z0);
+	mat3x3_mult_vec(_realBasis, &ori);
+	vec3_add_to_vec3(&ori, _origin);
+	fft->setOrigin(ori);
 	
 	for (int k = z0; k < z1; k++)
 	{
-		for (size_t j = y0; j < y1; j++)
+		for (int j = y0; j < y1; j++)
 		{
-			for (size_t i = x0; i < x1; i++)
+			for (int i = x0; i < x1; i++)
 			{
 				long int ele = element(i, j, k);
-				long int nele = fft->element(i, j, k);
-				fft->setElement(nele, _data[ele][0], _data[ele][1]);
+				long int nele = fft->element(i - x0, j - y0, k - z0);
+				fft->setElement(nele, _data[finalIndex(ele)][0], 
+				                _data[finalIndex(ele)][1]);
 			}
 		}
 	}
 	
+	
 	return fft;
+}
+
+void VagFFT::flipCentre()
+{
+	fftwf_complex *tempData;
+	tempData = (fftwf_complex *)fftwf_malloc(_nn * sizeof(FFTW_DATA_TYPE));
+	memset(tempData, 0, sizeof(FFTW_DATA_TYPE) * _nn);
+
+	for (int k = 0; k < _nz; k++)
+	{
+		for (int j = 0; j < _ny; j++)
+		{
+			for (int i = 0; i < _nx; i++)
+			{
+				long end = element(i, j, k);
+				long start = element(i + _nx/2, j + _ny/2, k + _nz/2);
+
+				tempData[end][0] = _data[start][0];
+				tempData[end][1] = _data[start][1];
+			}
+		}
+	}
+
+	/* Loop through and convert data into amplitude and phase */
+	for (int n = 0; n < _nn; n++)
+	{
+		long m = finalIndex(n);
+		_data[m][0] = tempData[n][0];
+		_data[m][1] = tempData[n][1];
+	}
+
+	free(tempData);
+}
+
+double VagFFT::compareReciprocal(VagFFTPtr other, mat3x3 rotation, 
+                                 vec3 translation, double maxRes,
+                                 bool adjustCentre)
+{
+	CorrelData cd = empty_CD();
+	mat3x3_mult_vec(_toRecip, &translation);
+	
+	vec3 centre = empty_vec3();
+	if (adjustCentre)
+	{
+		centre = fractionalCentroid();
+	}
+	
+	double sum = 0;
+
+	for (int z = -_nz / 2; z < _nz / 2; z++)
+	{
+		for (int y = -_ny / 2; y < _ny / 2; y++)
+		{
+			for (int x = -_nx / 2; x < _nx / 2; x++)
+			{
+				if (x == 0 && y == 0 && z == 0)
+				{
+					continue;
+				}
+
+				double r = resolution(x, y, z);
+				
+				if (r < maxRes)
+				{
+					continue;
+				}
+
+				int e1 = other->element(x, y, z);
+
+				vec3 v = make_vec3(x, y, z);
+				v.x /= _nx;
+				v.y /= _ny;
+				v.z /= _nz;
+				vec3_subtract_from_vec3(&v, centre);
+				mat3x3_mult_vec(rotation, &v);
+				vec3_add_to_vec3(&v, centre);
+
+				collapseFrac(&v.x, &v.y, &v.z);
+				vec3_add_to_vec3(&v, translation);
+				expandToVoxel(&v);
+
+				float r0 = cubic_interpolate(v, 0);
+				
+				float r1 = other->_data[finalIndex(e1)][0];
+				
+				add_to_CD(&cd, r0, r1);
+				if (adjustCentre)
+				{
+					sum += r0 * r1;
+				}
+			}
+		}
+	}
+
+	double correl = evaluate_CD(cd);
+	
+	if (adjustCentre)
+	{
+		return sum;
+	}
+
+	return correl;
+}
+
+void VagFFT::switchToAmplitudePhase()
+{
+	for (size_t i = 0; i < nn(); i++)
+	{
+		float a = getAmplitude(i);
+		float p = getPhase(i);
+
+		_data[finalIndex(i)][0] = a;
+		_data[finalIndex(i)][1] = p;
+	}
+
+}
+
+void VagFFT::switchToComplex()
+{
+	for (size_t i = 0; i < nn(); i++)
+	{
+		float a = _data[finalIndex(i)][0];
+		float p = _data[finalIndex(i)][1];
+
+		double x = a * cos(p);
+		double y = a * sin(p);
+	}
+
+}
+
+vec3 VagFFT::densityCentroid()
+{
+	vec3 fr = fractionalCentroid();
+	
+	mat3x3_mult_vec(toReal(), &fr); 
+	vec3_add_to_vec3(&fr, _origin);
+
+	return fr;
+}
+
+vec3 VagFFT::fractionalCentroid()
+{
+	vec3 sum = empty_vec3();
+	double weights = 0;
+
+	for (int k = 0; k < _nz; k++)
+	{
+		for (int j = 0; j < _ny; j++)
+		{
+			for (int i = 0; i < _nx; i++)
+			{
+				double real = getReal(i, j, k);
+				if (real < 0)
+				{
+//					continue;
+				}
+
+				vec3 ijk = make_vec3(i, j, k);
+				ijk.x /= _nx;
+				ijk.y /= _ny;
+				ijk.z /= _nz;
+				vec3_mult(&ijk, real);
+				vec3_add_to_vec3(&sum, ijk);
+				weights += (real);
+			}
+		}
+	}
+	
+	vec3_mult(&sum, 1 / weights);
+	return sum;
+}
+
+void VagFFT::meanSigma(double *mean, double *sigma)
+{
+	CorrelData cd = empty_CD();
+	
+	for (long i = 0; i < nn(); i++)
+	{
+		add_to_CD(&cd, getReal(i), getImag(i));
+	}
+	
+	double xs, xm, ys, ym;
+	means_stdevs_CD(cd, &xm, &ym, &xs, &ys);
+
+	*mean = xm;
+	*sigma = xs;
 }

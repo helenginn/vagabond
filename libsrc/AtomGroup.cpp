@@ -238,26 +238,27 @@ std::string AtomGroup::getPDBContribution(PDBType pdbType, CrystalPtr crystal,
 	if (pdbType == PDBTypeEnsemble)
 	{
 		/* Give up if not explicit */
-		if (!atom(0)->getModel()->hasExplicitPositions())
-		{
-			stream << atom(0)->averagePDBContribution(false, false);
-			return stream.str();
-		}
-
-		/* Get the total number of conformers to worry about */
-		std::vector<BondSample> *samples;
-		samples = atom(0)->getExplicitModel()->getManyPositions();
-
-		numConf = samples->size();
-
 		for (size_t i = 0; i < atomCount(); i++)
 		{
+			if (!atom(i)->getModel()->hasExplicitPositions())
+			{
+				stream << atom(i)->averagePDBContribution(false, false);
+				continue;
+			}
+
 			if (atom(i)->getWeighting() <= 0)
 			{
 				continue;
 			}
 
-			stream << atom(i)->getPDBContribution(conformer);
+			if (conformer >= 0)
+			{
+				stream << atom(i)->getPDBContribution(conformer);
+			}
+			else
+			{
+				stream << atom(i)->averagePDBContribution(false, false);
+			}
 		}
 
 		return stream.str();

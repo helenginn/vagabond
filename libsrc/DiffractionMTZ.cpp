@@ -54,9 +54,12 @@ LabelChoice DiffractionMtz::prepareChoice(CMtz::MTZ *mtz)
 
 				choice.availabels.push_back(label);
 				choice.types.push_back(type);
+				std::cout << label << ", ";
 			}
 		}
 	}
+	
+	std::cout << std::endl;
 	
 	return choice;
 }
@@ -124,6 +127,8 @@ void DiffractionMtz::load()
 	CMtz::MTZCOL *col_fpart = NULL;
 	CMtz::MTZCOL *col_phase = NULL;
 	CMtz::MTZCOL *col_phipart = NULL;
+	CMtz::MTZCOL *col_plus = NULL;
+	CMtz::MTZCOL *col_minus = NULL;
 
 	std::vector<std::string> ampNames;
 	std::string optAmp = Options::getLabF();
@@ -144,7 +149,11 @@ void DiffractionMtz::load()
 		phNames.push_back(optPh);
 	}
 	phNames.push_back("PHWT");
-	getCol(phNames, mtz, &col_phase);
+	
+	if (!_avoidPhases)
+	{
+		getCol(phNames, mtz, &col_phase);
+	}
 
 	if (optFwt.length())
 	{
@@ -169,6 +178,23 @@ void DiffractionMtz::load()
 		              + _filename + " - please label as F or FP.");
 		shout->setChoice(choice);
 		throw shout;
+	}
+	
+	bool do_diff = false;
+	if (_plus.length() && _minus.length())
+	{
+		col_plus = MtzColLookup(mtz, _plus.c_str());
+		col_minus = MtzColLookup(mtz, _minus.c_str());
+		
+		if (col_plus == NULL || col_minus == NULL)
+		{
+			Shouter *shout;
+			shout = new Shouter("I could not find your plus/minus columns in\n"
+			                    + _filename + " - please check your labels.");
+			throw shout;
+		}
+		
+		do_diff = true;
 	}
 
 	std::vector<std::string> errNames;
@@ -353,12 +379,13 @@ void DiffractionMtz::load()
 	{
 		std::cout << std::endl << "Found original phases from MTZ." 
 		<< std::endl;
-		_original = VagFFTPtr(new VagFFT(largest, largest, largest));
-		_original->multiplyAll(0);
-		_original->setUnitCell(unitCell);
-		_original->setSpaceGroup(spg);
-		_original->setStatus(FFTReciprocalSpace);
 	}
+
+	_original = VagFFTPtr(new VagFFT(largest, largest, largest));
+	_original->multiplyAll(0);
+	_original->setUnitCell(unitCell);
+	_original->setSpaceGroup(spg);
+	_original->setStatus(FFTReciprocalSpace);
 
 	for (int i = 0; i < mtz->nref_filein * mtz->ncol_read; i += mtz->ncol_read)
 	{
@@ -380,6 +407,11 @@ void DiffractionMtz::load()
 		float phase = 0;
 		float fwt = 0;
 
+		if (do_diff)
+		{
+			amplitude = (adata[col_plus->source - 1] - 
+			             adata[col_minus->source - 1]);
+		}
 		
 		if (col_phase != NULL)
 		{
@@ -437,6 +469,8 @@ void DiffractionMtz::load()
 			_partial->setComponent(element, 1, y);
 		}
 
+		_original->setComponent(element, 0, amplitude);
+
 		if (col_phase != NULL)
 		{
 			double ph = deg2rad(phase);
@@ -454,6 +488,11 @@ void DiffractionMtz::load()
 	if (_fft)
 	{
 		_fft->applySymmetry(true, -1, false);
+	}
+
+	if (_original)
+	{
+		_original->applySymmetry(true, -1, false);
 	}
 
 	free(refldata);

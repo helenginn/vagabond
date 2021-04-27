@@ -187,6 +187,10 @@ void Sponge::singleRefine(bool others)
 
 size_t Sponge::connectedCount()
 {
+	if (!_close)
+	{
+		return 0;
+	}
 	return _close->atomCount();
 }
 
@@ -215,11 +219,12 @@ void Sponge::copyActiveToFinalPos()
 
 std::vector<BondSample> *Sponge::getManyPositions(void *object)
 {
-	if (!_changedSamples)
+	if (!_changedSamples && _storedSamples.size() > 0)
 	{
 		return &_storedSamples;
 	}
 
+	Novalent::getManyPositions();
 	/* should switch _changedSamples to false */
 	getNetwork()->calculateSingle(shared_from_this());
 	

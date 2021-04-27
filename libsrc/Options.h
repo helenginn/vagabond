@@ -309,6 +309,11 @@ public:
 		return _labFP;
 	}
 	
+	static void setLabPhase(std::string phase)
+	{
+		_labPHI = phase;
+	}
+	
 	static std::string getLabPhase()
 	{
 		return _labPHI;

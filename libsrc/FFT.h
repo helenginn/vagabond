@@ -65,7 +65,7 @@ public:
 
 	VagFFT(int nx, int ny, int nz, int nele = 0, int scratches = 0);
 	VagFFT(VagFFT &fft, int scratch = -1);
-	~VagFFT();
+	virtual ~VagFFT();
 	
 	VagFFTPtr subFFT(int x0, int x1, int y0, int y1, int z0, int z1);
 	void prepareShortScratch();
@@ -88,7 +88,7 @@ public:
 		return _spg;
 	}
 	
-	void reindex(mat3x3 reindex);
+	void reindex(mat3x3 reindex, vec3 v = empty_vec3());
 	
 	void fft(FFTTransform transform);
 	void multiplyFinal(float val);
@@ -117,7 +117,14 @@ public:
 		return sumReal() / (double)nn();
 	}
 	
+	double sigma();
+	void meanSigma(double *mean, double *sigma);
+	
 	double voxelVolume();
+	
+	double compareReciprocal(VagFFTPtr other, mat3x3 rotation, 
+	                         vec3 translation = empty_vec3(), 
+	                         double maxRes = -1, bool adjustCentre = false);
 
 	void setAllReal(double val);
 	
@@ -151,6 +158,11 @@ public:
 	void copyRealToImaginary();
 
 	double compareReciprocalToScratch(int scratch);
+	
+	void addToOrigin(vec3 orig)
+	{
+		vec3_add_to_vec3(&_origin, orig);
+	}
 
 	void setOrigin(vec3 orig)
 	{
@@ -403,6 +415,12 @@ public:
 	void addInterpolatedToReal(double sx, double sy, 
 	                           double sz, double val);
 
+	void switchToComplex();
+	void switchToAmplitudePhase();
+	void flipCentre();
+	vec3 fractionalCentroid();
+	vec3 densityCentroid();
+
 	void findLimitingValues(double xMin, double xMax, double yMin,
 	                        double yMax, double zMin, double zMax,
 	                        vec3 *minVals, vec3 *maxVals);
@@ -428,9 +446,23 @@ public:
 		while (*zfrac >= 1) *zfrac -= 1;
 	}
 
-	double cubic_interpolate(vec3 vox000, size_t im = false);
-private:
+	virtual double cubic_interpolate(vec3 vox000, size_t im = false);
 
+	static void setThreads(int num)
+	{
+		_num_threads = num;
+	}
+
+	static void quickFFTs()
+	{
+		_many_flags = FFTW_ESTIMATE;
+	}
+
+	static void patientFFTs()
+	{
+		_many_flags = FFTW_PATIENT;
+	}
+protected:
 	template <typename T>
 	void collapse(T *x, T *y, T *z)
 	{
@@ -502,11 +534,15 @@ private:
 	/* big numbers; apply to convert Angstrom dimensions to voxel */
 	mat3x3 _recipBasis;
 	
+	mat3x3 _voxelToFrac;
+	
 	/* denoting where the origin is, e.g. 0,0,0 or atom central pos */
 	vec3 _origin;
 	
 	CSym::CCP4SPG *_spg;
 
+	static int _num_threads;
+	static unsigned _many_flags;
 	bool _lowResMode;
 	bool _setMatrices;
 };

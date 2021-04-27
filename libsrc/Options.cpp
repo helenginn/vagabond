@@ -335,7 +335,7 @@ void Options::executeProtocol()
 	
 	if (flexCycle)
 	{
-		_nCycles = 5;
+		_nCycles = 3;
 	}
 
 

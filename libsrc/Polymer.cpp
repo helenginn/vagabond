@@ -387,8 +387,7 @@ void Polymer::refineBackboneFrom(int position)
 	addParamType(ParamOptionMaxTries, 1.0);
 	addParamType(ParamOptionTorsion, 0.5);
 	addParamType(ParamOptionNumBonds, 12);
-	addParamType(ParamOptionTopLevelOnly, 1);
-	addParamType(ParamOptionCycles, 32);
+	addParamType(ParamOptionCycles, 60);
 	addParamType(ParamOptionStep, 2);
 	addParamType(ParamOptionExtraAtoms, 2);
 	addParamType(ParamOptionThorough, 1);
@@ -398,7 +397,8 @@ void Polymer::refineBackboneFrom(int position)
 	if (lowRes)
 	{
 		addParamType(ParamOptionMaxTries, 1.0);
-		addParamType(ParamOptionCycles, 48);
+		addParamType(ParamOptionCycles, 80);
+		addParamType(ParamOptionTopLevelOnly, 1);
 		addParamType(ParamOptionTorsion, 0.5);
 		addParamType(ParamOptionExtraAtoms, 8);
 		addParamType(ParamOptionNumBonds, 14);
@@ -685,7 +685,7 @@ void Polymer::refineAnchorPosition()
 	BondPtr c_next = ToBondPtr(c->getModel());
 
 	vec3 centre = getAnchorModel()->getAbsolutePosition();
-	Options::getRuntimeOptions()->focusOnPosition(centre, 24);
+	Options::getRuntimeOptions()->focusOnPosition(centre, 36);
 
 	setupNelderMead();
 	setCrystal(target);

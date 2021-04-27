@@ -50,7 +50,7 @@ Novalent::~Novalent()
 
 std::vector<BondSample> *Novalent::getManyPositions(void *object)
 {
-	if (!_changedSamples)
+	if (!_changedSamples && _storedSamples.size() > 0)
 	{
 		return &_storedSamples;
 	}
@@ -83,7 +83,6 @@ std::vector<BondSample> *Novalent::getManyPositions(void *object)
 	if (anch && anch->motionCount() > 0)
 	{
 		MotionPtr mot = anch->getMotion(0);
-//		mot->applyTranslations(_storedSamples, true);
 	}
 	
 	_changedSamples = false;
@@ -148,6 +147,8 @@ void Novalent::postParseTidy()
 	ExplicitModel::postParseTidy();
 
 	getAnchor();
+	propagateChange();
+	Novalent::getManyPositions();
 }
 
 void Novalent::linkReference(BaseParserPtr object, std::string category)
