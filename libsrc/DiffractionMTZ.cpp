@@ -473,6 +473,7 @@ void DiffractionMtz::load()
 			_partial->setComponent(element, 1, y);
 		}
 
+		element = _original->element(h, k, l);
 		_original->setComponent(element, 0, amplitude);
 
 		if (col_phase != NULL)
