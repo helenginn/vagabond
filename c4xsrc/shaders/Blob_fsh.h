@@ -8,11 +8,11 @@ inline std::string& pointFsh()
 	"in vec4 vColor;\n"\
 	"in vec4 vPos;\n"\
 	"\n"\
-	"out vec4 FragColor;\n"\
+	"out vec4 fragColor;\n"\
 	"\n"\
 	"void main()\n"\
 	"{\n"\
-	"	FragColor = vColor;\n"\
+	"	fragColor = vColor;\n"\
 	"\n"\
 	"\n"\
 	"\n"\

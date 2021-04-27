@@ -24,6 +24,7 @@ typedef _Vertex Vertex;
 #include "Group.h"
 #include "KeeperGL.h"
 #include "QuickAtoms.h"
+
 #include <iostream>
 #include <hcsrc/FileReader.h>
 

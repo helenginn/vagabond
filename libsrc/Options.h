@@ -318,7 +318,7 @@ public:
 	{
 		return _labPHI;
 	}
-	
+
 	static std::string getLabFWT()
 	{
 		return _labFWT;

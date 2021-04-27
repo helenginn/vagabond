@@ -82,15 +82,17 @@ void AveDiffraction::calculate()
 					}
 
 					double amp = current->getReal(i, j, k);
+					double imag = current->getImag(i, j, k);
 					long ele = _fft->element(i, j, k);
 					double sq = _fft->getScratchComponent(ele, 0, 0);
 
 					if (amp == amp)
 					{
-						sq += amp * amp;
+						sq += amp * amp + imag * imag;
 						_fft->addToReal(ele, amp);
-						_fft->addToImag(ele, 1);
-						_fft->setScratchComponent(ele, 0, 0, sq);
+						_fft->addToImag(ele, imag);
+						_fft->addScratchComponent(ele, 0, 0, sq);
+						_fft->addScratchComponent(ele, 0, 1, 1);
 					}
 				}
 			}
@@ -106,37 +108,49 @@ void AveDiffraction::calculate()
 	
 	for (long i = 0; i < _fft->nn(); i++)
 	{
-		double imag = _fft->getImag(i);
 		double real = _fft->getReal(i);
+		double imag = _fft->getImag(i);
 		double sq = _fft->getScratchComponent(i, 0, 0);
+		double n = _fft->getScratchComponent(i, 0, 1);
 
-		real /= imag;
-		sq = sqrt((sq - real * real) / imag);
+		real /= n;
+		imag /= n;
+		sq = sqrt((sq - real * real) / n);
 
 		_fft->setReal(i, real);
-		_fft->setComponent(i, 1, 0);
+		_fft->setImag(i, imag);
 		_fft->setScratchComponent(i, 0, 0, sq);
 	}
 }
 
 double AveDiffraction::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 {
-	CorrelData cd = empty_CD();
+	double dots = 0;
+	double xs = 0;
+	double ys = 0;
 
 	for (int i = 0; i < one->nn(); i++)
 	{
-		double ave = _fft->getReal(i);
-		double mine = one->getReal(i);
-		double yours = two->getReal(i);
+		double ave_real = _fft->getReal(i);
+		double ave_imag = _fft->getImag(i);
+		double x0 = one->getReal(i) - ave_real;
+		double x1 = one->getImag(i) - ave_imag;
+		double y0 = two->getReal(i) - ave_real;
+		double y1 = two->getImag(i) - ave_imag;
 
-		double x = mine - ave;
-		double y = yours - ave;
+		double dot = x0 * y0 + x1 * y1;
+		
+		if (dot != dot)
+		{
+			continue;
+		}
 
-		add_to_CD(&cd, x, y);
+		dots += dot;
+		xs += x0 * x0 + x1 * x1;
+		ys += y0 * y0 + y1 * y1;
 	}
 
-	double cc = evaluate_CD(cd);
-	if (cc < 0) return 0;
+	double cc = dots / (sqrt(xs) * sqrt(ys));
 	return cc;
 }
 

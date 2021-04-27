@@ -213,7 +213,7 @@ void Group::addMtz(DiffractionMtzPtr mtzDiff, MtzFile *file)
 	tmp->wipe();
 	tmp->updateText();
 	
-	VagFFTPtr mtz = mtzDiff->getFFT();
+	VagFFTPtr mtz = mtzDiff->getOriginal();
 
 	vec3 nLimits = getNLimits(tmp, mtz);
 
@@ -224,8 +224,10 @@ void Group::addMtz(DiffractionMtzPtr mtzDiff, MtzFile *file)
 			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
 				double amp = mtz->getReal(i, j, k);
+				double imag = mtz->getImag(i, j, k);
 				long ele = tmp->element(i, j, k);
 				tmp->addToReal(ele, amp);
+				tmp->addToImag(ele, imag);
 			}
 		}
 	}

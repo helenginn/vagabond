@@ -43,9 +43,9 @@ void HKLView::addPoint(vec3 point, double value, double colour)
 	v.color[0] = colour / 2;
 	v.color[3] = std::max(0., slide);
 	
-	v.pos[0] = point.x;
-	v.pos[1] = point.y;
-	v.pos[2] = point.z;
+	v.pos[0] = point.x * 10;
+	v.pos[1] = point.y * 10;
+	v.pos[2] = point.z * 10;
 
 	_vertices.push_back(v);
 }
@@ -80,7 +80,6 @@ void HKLView::populate()
 
 				vec3 ijk = make_vec3(i, j, k);
 				mat3x3_mult_vec(uc, &ijk);
-				vec3_mult(&ijk, 10.);
 				
 				addPoint(ijk, real, stdev);
 			}

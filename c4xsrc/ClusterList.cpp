@@ -230,9 +230,15 @@ bool ClusterList::loadFiles(bool force)
 	grp->setMaxResolution(_res);
 	
 	std::string phase = valueForKey("phase");
+	std::string fp = valueForKey("column");
 	if (phase.length())
 	{
 		Options::setLabPhase(phase);
+	}
+
+	if (fp.length())
+	{
+		Options::setLabF(fp);
 	}
 
 	std::string plus = valueForKey("column+");

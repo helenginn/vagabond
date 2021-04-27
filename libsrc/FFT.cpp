@@ -1977,6 +1977,11 @@ bool VagFFT::withinBounds(int i, int j, int k)
 	return true;
 }
 
+void VagFFT::addScratchComponent(int index, int scratch, int comp, double val)
+{
+	long si = scratchIndex(index, scratch);
+	_data[si][comp] += val;
+}
 
 void VagFFT::setScratchComponent(int index, int scratch, int comp, double val)
 {

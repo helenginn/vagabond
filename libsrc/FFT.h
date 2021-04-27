@@ -175,6 +175,8 @@ public:
 	}
 	
 	void setScratchComponent(int index, int scratch, int comp, double val);
+
+	void addScratchComponent(int index, int scratch, int comp, double val);
 	
 	double getScratchComponent(int index, int si, int comp)
 	{
@@ -272,6 +274,13 @@ public:
 	{
 		long index = finalIndex(i);
 		_data[index][0] = val;
+	}
+
+	/* retrieves out of final column */
+	void setImag(long i, double val)
+	{
+		long index = finalIndex(i);
+		_data[index][1] = val;
 	}
 
 	/* retrieves out of final column */

@@ -381,7 +381,7 @@ void DiffractionMtz::load()
 		<< std::endl;
 	}
 
-	_original = VagFFTPtr(new VagFFT(largest, largest, largest));
+	_original = VagFFTPtr(new VagFFT(indexLimitH, indexLimitK, indexLimitL, 0, 1));
 	_original->multiplyAll(0);
 	_original->setUnitCell(unitCell);
 	_original->setSpaceGroup(spg);
@@ -474,10 +474,11 @@ void DiffractionMtz::load()
 		if (col_phase != NULL)
 		{
 			double ph = deg2rad(phase);
-			float x = fwt * cos(ph);
-			float y = fwt * sin(ph);
-			_original->setComponent(element, 0, x);
-			_original->setComponent(element, 1, y);
+			float x = amplitude * cos(ph);
+			float y = amplitude * sin(ph);
+
+			_original->setReal(element, x);
+			_original->setImag(element, y);
 		}
 	}
 
@@ -497,63 +498,6 @@ void DiffractionMtz::load()
 
 	free(refldata);
 	MtzFree(mtz);
-	
-	return;
-
-	/* Apply all symmetry relations */ 
-	vec3 nLimits = getNLimits(_original, _original);
-
-	for (int k = -nLimits.z; k < nLimits.z; k++)
-	{
-		for (int j = -nLimits.y; j < nLimits.y; j++)
-		{
-			for (int i = -nLimits.x; i < nLimits.x; i++)
-			{
-				int _h, _k, _l;
-				int sym = CSym::ccp4spg_put_in_asu(spg, i, j, k, 
-				                                   &_h, &_k, &_l);
-
-				long index = _original->element(i, j, k);
-				long asuIndex = _original->element(_h, _k, _l);
-
-				double x = _original->getReal(asuIndex);
-				double y = _original->getImag(asuIndex);
-
-				/* establish amp & phase */
-				double amp = sqrt(x * x + y * y);
-				double myPhase = atan2(y, x);
-
-				if (sym % 2 == 0)
-				{
-					myPhase *= -1;
-				}
-
-				int symop = (sym - 1) / 2;
-
-				/* calculate phase shift for symmetry operator */
-				float *trn = spg->symop[symop].trn;
-
-				/* rotation */
-				double shift = (float)i * trn[0];
-				shift += (float)j * trn[1];
-				shift += (float)k * trn[2];
-
-				shift = fmod(shift, 1.);
-
-				/*  apply shift when filling in other sym units */
-				double newPhase = myPhase + shift * 2 * M_PI;
-
-				x = amp * cos(newPhase);
-				y = amp * sin(newPhase);
-
-				if (_original)
-				{
-					_original->setComponent(index, 0, x);
-					_original->setComponent(index, 1, y);
-				}
-			}
-		}
-	}
 }
 
 void DiffractionMtz::syminfoCheck()
