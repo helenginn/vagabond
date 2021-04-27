@@ -1,9 +1,13 @@
 inline std::string SlimBond_fsh()
 {
 	std::string str =
-	"varying vec4 vColor;\n"\
-	"varying vec4 vPos;\n"\
+	"#version 330 core\n"\
+	"in vec4 vColor;\n"\
+	"in vec4 vPos;\n"\
+	"\n"\
 	"uniform vec3 focus;\n"\
+	"\n"\
+	"out vec4 fragColor;\n"\
 	"\n"\
 	"void main()\n"\
 	"{\n"\
@@ -26,7 +30,7 @@ inline std::string SlimBond_fsh()
 	"       tmpColor[i] = tmpColor[i] + (1. - tmpColor[i]) * transparency;\n"\
 	"   }\n"\
 	"   tmpColor[3] = 0.85;\n"\
-	"	gl_FragColor = tmpColor;\n"\
+	"	fragColor = tmpColor;\n"\
 	"}\n";
 	return str;
 }

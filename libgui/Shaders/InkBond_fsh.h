@@ -4,23 +4,26 @@
 inline std::string InkBond_fsh()
 {
 	std::string str = 
-	"varying vec4 vColor;\n"\
-	"varying vec2 vTex;\n"\
-	"varying vec4 vPos;\n"\
+	"#version 330 core\n"\
+	"in vec4 vColor;\n"\
+	"in vec2 vTex;\n"\
+	"in vec4 vPos;\n"\
 	"\n"\
 	"uniform sampler2D bondTexture;\n"\
 	"uniform vec3 focus;\n"\
 	"\n"\
+	"out vec4 fragColor;\n"\
+	"\n"\
 	"void main()\n"\
 	"{\n"\
-	"	gl_FragColor = vColor;\n"\
-	"	vec4 temp = texture2D(bondTexture, vTex);\n"\
-	"	gl_FragColor = temp * vColor * 2.0;\n"\
+	"	fragColor = vColor;\n"\
+	"	vec4 temp = texture(bondTexture, vTex);\n"\
+	"	fragColor = temp * vColor * 2.0;\n"\
 	"	\n"\
 	"	if (vColor[0] < 0.7 && vColor[1] < 0.7 && vColor[2] < 0.7) {\n"\
-	"		gl_FragColor /= 2.0;\n"\
+	"		fragColor /= 2.0;\n"\
 	"   }\n"\
-	"	if (gl_FragColor[3] < 0.5) {\n"\
+	"	if (fragColor[3] < 0.5) {\n"\
 	"		discard;\n"\
 	"	}\n"\
 	"	float min_distance = 200.;\n"\
@@ -43,7 +46,7 @@ inline std::string InkBond_fsh()
 	"		tmpColor[i] *= 0.8;\n"\
 	"   }\n"\
 	"   tmpColor[3] = 1.;\n"\
-	"	gl_FragColor = tmpColor;\n"\
+	"	fragColor = tmpColor;\n"\
 	"\n"\
 	"\n"\
 	"\n"\

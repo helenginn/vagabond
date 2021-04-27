@@ -5,16 +5,20 @@ inline std::string Pencil_fsh()
 {
 	std::string str = 
 "\n"\
-"varying vec4 vColor;\n"\
-"varying vec2 vTex;\n"\
-"varying vec3 vNormal;\n"\
-"varying vec4 vExtra;\n"\
-"varying vec4 vPos;\n"\
-"varying vec4 tPos;\n"\
+"#version 330 core\n"\
+"in vec4 vColor;\n"\
+"in vec2 vTex;\n"\
+"in vec3 vNormal;\n"\
+"in vec4 vExtra;\n"\
+"in vec4 vPos;\n"\
+"in vec4 tPos;\n"\
 "\n"\
 "uniform sampler2D pencilTexture;\n"\
 "uniform vec3 light_pos;\n"\
 "uniform vec3 focus;\n"\
+"\n"\
+"out vec4 fragColor;\n"\
+"\n"\
 "\n"\
 "void main()\n"\
 "{\n"\
@@ -32,31 +36,21 @@ inline std::string Pencil_fsh()
 "	    diff -= cutoff; diff /= 1. - cutoff;\n"\
 "	}\n"\
 "	vec2 tex = vec2(tPos[0], tPos[1]);\n"\
-"	vec4 temp = texture2D(pencilTexture, tex);\n"\
-"	gl_FragColor = temp;\n"\
-"	gl_FragColor[0] *= vColor[0];\n"\
-"	gl_FragColor[1] *= vColor[1];\n"\
-"	gl_FragColor[2] *= vColor[2];\n"\
-"	gl_FragColor[3] = 0.9 * diff;\n"\
-"	float min_distance = 20.;\n"\
-"	float max_distance = 200.;\n"\
-"	if (focus[2] > -15.)\n"\
+"	vec4 temp = texture(pencilTexture, tex);\n"\
+"	fragColor = temp;\n"\
+"	fragColor[0] *= vColor[0];\n"\
+"	fragColor[1] *= vColor[1];\n"\
+"	fragColor[2] *= vColor[2];\n"\
+"	fragColor[3] = 0.9 * diff;\n"\
+"	float min_distance = -focus[2] + 5.;\n"\
+"	float max_distance = -focus[2] - 5.;\n"\
+"	if (focus[2] < +15.)\n"\
 "	{\n"\
-"//		min_distance = focus[2] + 0.;\n"\
-"//		max_distance = focus[2] - 4.;\n"\
-"		if (tPos[2] > -2.)\n"\
-"		{\n"\
-"//			discard;\n"\
-"		}\n"\
+"		min_distance = -focus[2] + 2.;\n"\
+"		max_distance = -focus[2] - 3.;\n"\
 "	}\n"\
-"	float transparency = (tPos[2] - min_distance) / (max_distance - min_distance);\n"\
-"	transparency = max(transparency, 0.0);\n"\
-"	transparency = min(transparency, 1.0);\n"\
-"	gl_FragColor[3] *= 1. - transparency;\n"\
-"	if (vExtra[0] >= 1.)\n"\
-"	{\n"\
-"		gl_FragColor = vec4(0., 0., 0., 1.);\n"\
-"	}\n"\
+"	if ((tPos[2] < max_distance || tPos[2] > min_distance)) \n"\
+"	{ discard; } \n"\
 "\n"\
 "\n"\
 "\n"\

@@ -4,15 +4,16 @@
 inline std::string InkBond_vsh()
 {
 	std::string str =
-	"attribute vec3 normal;\n"\
-	"attribute vec3 position;\n"\
-	"attribute vec4 color;\n"\
-	"attribute vec4 extra;\n"\
-	"attribute vec2 tex;\n"\
+	"#version 330 core\n"\
+	"in vec3 normal;\n"\
+	"in vec3 position;\n"\
+	"in vec4 color;\n"\
+	"in vec4 extra;\n"\
+	"in vec2 tex;\n"\
 	"\n"\
-	"varying vec4 vColor;\n"\
-	"varying vec2 vTex;\n"\
-	"varying vec4 vPos;\n"\
+	"out vec4 vColor;\n"\
+	"out vec2 vTex;\n"\
+	"out vec4 vPos;\n"\
 	"\n"\
 	"uniform mat4 projection;\n"\
 	"uniform mat4 model;\n"\

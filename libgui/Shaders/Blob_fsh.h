@@ -4,21 +4,23 @@
 inline std::string Blob_fsh()
 {
 	std::string str =
-	"#version 120\n"\
-	"varying vec4 vColor;\n"\
-	"varying vec2 vTex;\n"\
-	"varying vec4 vPos;\n"\
+	"#version 330 core\n"\
+	"in vec4 vColor;\n"\
+	"in vec2 vTex;\n"\
+	"in vec4 vPos;\n"\
 	"\n"\
 	"uniform vec3 light_pos;\n"\
 	"uniform vec3 focus;\n"\
 	"\n"\
 	"uniform sampler2D blobTexture;\n"\
 	"\n"\
+	"out vec4 fragColor;\n"\
+	"\n"\
 	"void main()\n"\
 	"{\n"\
 	"	vec2 frag = gl_PointCoord;\n"\
 	"	vec2 xy = vec2(frag[0], frag[1]);\n"\
-	"	vec4 temp = texture2D(blobTexture, xy);\n"\
+	"	vec4 temp = texture(blobTexture, xy);\n"\
 	"	if (temp[3] < 0.05) {\n"\
 	"		discard;\n"\
 	"	}\n"\
@@ -41,7 +43,7 @@ inline std::string Blob_fsh()
 	"       tmpColor[i] = tmpColor[i] + (1. - tmpColor[i]) * transparency;\n"\
 	"   }\n"\
 	"   tmpColor[3] = 0.85;\n"\
-	"	gl_FragColor = tmpColor;\n"\
+	"	fragColor = tmpColor;\n"\
 	"\n"\
 	"\n"\
 	"\n"\
