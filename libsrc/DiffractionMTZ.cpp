@@ -403,16 +403,20 @@ void DiffractionMtz::load()
 			continue;
 		}
 		
-		float amplitude = adata[col_f->source - 1];
 		float phase = 0;
 		float fwt = 0;
+		float amplitude = 0;
 
 		if (do_diff)
 		{
 			amplitude = (adata[col_plus->source - 1] - 
 			             adata[col_minus->source - 1]);
 		}
-		
+		else
+		{
+			amplitude = adata[col_f->source - 1];
+		}
+
 		if (col_phase != NULL)
 		{
 			phase = adata[col_phase->source - 1];
