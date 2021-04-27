@@ -54,7 +54,7 @@ public:
 	
 	void setDiffDensity(bool val = true)
 	{
-		_dType = DensityDifference;
+		_dType = val ? DensityDifference : DensityWeighted;
 		_threshold = 3;
 	}
 	
@@ -106,6 +106,13 @@ public:
 	{
 		return _sigma;
 	}
+	
+	void setDefaultColour(double red, double green, double blue)
+	{
+		_red = red;
+		_green = green;
+		_blue = blue;
+	}
 protected:
 	virtual void bindTextures();
 	virtual void extraUniforms();
@@ -125,6 +132,7 @@ private:
 	std::mutex _renderLock;
 	IntMap _flips;
 	IntMap _allBits;
+	double _red, _blue, _green;
 	
 	vec3 _offset;
 	vec3 getCentreOffset();

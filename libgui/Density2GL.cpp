@@ -34,6 +34,11 @@ Density2GL::Density2GL() : SlipObject()
 	_usesLighting = true;
 	_usesFocalDepth = true;
 	setNeedsExtra(true);
+	setName("Density");
+	
+	_red = 1;
+	_blue = 1;
+	_green = 1;
 	
 	_vString = Pencil_vsh();
 	_fString = Pencil_fsh();
@@ -861,7 +866,6 @@ void Density2GL::makeUniformGrid()
 						}
 					}
 
-
 					c++;
 				}
 			}
@@ -920,6 +924,8 @@ void Density2GL::calculateContouring(VagFFTPtr fft)
 					vec3_add_to_vec3(&xyz, shifts[i]);
 					vec3_mult(&xyz, _resolution);
 					vec3_add_to_vec3(&xyz, central);
+					vec3 o = fft->origin();
+					vec3_subtract_from_vec3(&xyz, o);
 
 					mat3x3_mult_vec(real2frac, &xyz);
 
@@ -1112,7 +1118,7 @@ void Density2GL::render(SlipGL *sender)
 	
 	reorderIndices();
 	
-	if (isDifferenceDensity())
+	if (_program > 0 && isDifferenceDensity())
 	{
 		glClear(GL_DEPTH_BUFFER_BIT);
 	}
@@ -1128,7 +1134,7 @@ void Density2GL::render(SlipGL *sender)
 	vec3 movement = vec3_subtract_vec3(newPos, _offset);
 	_renderLock.unlock();
 	
-	if (vec3_length(movement) > 1 && !isDisabled())
+	if (vec3_length(movement) > 3 && !isDisabled())
 	{
 		_offset = newPos;
 		_recalculate = true;
@@ -1157,6 +1163,15 @@ void Density2GL::extraUniforms()
 		const char *light_name = "light_pos";
 		_uLight = glGetUniformLocation(_program, light_name);
 		glUniform3fv(_uLight, 1, &_lightPos[0]);
+	}
+
+	{
+		vec3 centre = getFocus();
+		float c[3];
+		c[0] = centre.x; c[1] = centre.y; c[2] = centre.z; 
+		const char *light_name = "focus";
+		GLuint uCentre = glGetUniformLocation(_program, light_name);
+		glUniform3fv(uCentre, 1, c);
 	}
 }
 
