@@ -253,7 +253,8 @@ headers = [
 'c4xsrc/SelectMatrix.h', 
 'c4xsrc/KeeperGL.h', 
 'c4xsrc/ClusterList.h', 
-'c4xsrc/CorrelLabel.h'
+'c4xsrc/CorrelLabel.h',
+'c4xsrc/MtzOptions.h', 
 ]
 
 install_headers([
@@ -364,6 +365,7 @@ install_headers([
 'c4xsrc/AxisScroll.h', 
 'c4xsrc/CAlphaView.h', 
 'c4xsrc/ClusterList.h', 
+'c4xsrc/MtzOptions.h', 
 'c4xsrc/CorrelLabel.h', 
 'c4xsrc/DatasetPath.h',
 'c4xsrc/AveCSV.h', 
@@ -462,6 +464,7 @@ c4xsrc = [
 'c4xsrc/MatrixView.cpp', 
 'c4xsrc/MtzFile.cpp', 
 'c4xsrc/MtzFFT.cpp', 
+'c4xsrc/MtzOptions.cpp', 
 'c4xsrc/PlotR.cpp',
 'c4xsrc/PlotView.cpp', 
 'c4xsrc/QuickAtoms.cpp',
