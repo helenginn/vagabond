@@ -26,7 +26,7 @@
 
 #include "MtzFFTPtr.h"
 #include <DiffractionMTZ.h>
-#include <maths.h>
+#include <hcsrc/maths.h>
 
 typedef enum
 {

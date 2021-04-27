@@ -4,13 +4,15 @@
 inline std::string& pointFsh()
 {
 	static std::string Blob_fsh =
-	"#version 120\n"\
-	"varying vec4 vColor;\n"\
-	"varying vec4 vPos;\n"\
+	"#version 330 core\n"\
+	"in vec4 vColor;\n"\
+	"in vec4 vPos;\n"\
+	"\n"\
+	"out vec4 FragColor;\n"\
 	"\n"\
 	"void main()\n"\
 	"{\n"\
-	"	gl_FragColor = vColor;\n"\
+	"	FragColor = vColor;\n"\
 	"\n"\
 	"\n"\
 	"\n"\

@@ -4,8 +4,9 @@
 #include <vector>
 #include <string>
 #include <QObject>
-#include <vec3.h>
-#include <mat3x3.h>
+#include <hcsrc/vec3.h>
+#include <hcsrc/mat3x3.h>
+#include <iostream>
 #include "MtzFFTPtr.h"
 #include "ExportType.h"
 #include "DatasetPath.h"
@@ -77,6 +78,28 @@ public:
 	void clearSelection();
 	void invertSelection();
 	void exportAll(ExportType type);
+	
+	std::string valueForKey(std::string key)
+	{
+		if (_options.count(key) == 0)
+		{
+			return "";
+		}
+
+		return _options[key];
+	}
+	
+	void addOption(std::string key, std::string value)
+	{
+		_options[key] = value;
+		std::cout << "Setting " << key << " as " << value << std::endl;
+	}
+	
+	void clearOptions()
+	{
+		_options.clear();
+	}
+
 signals:
 	void average();
 	void cluster();
@@ -112,6 +135,7 @@ private:
 	Group *_lastAverage;
 	bool _selectMode;
 	bool _removeMode;
+	std::map<std::string, std::string> _options;
 
 	std::vector<DatasetPath> _paths;
 	std::vector<Group *> _clusters;

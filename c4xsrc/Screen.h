@@ -20,7 +20,7 @@
 #define __c4xsrc__screen__
 
 #include <QMainWindow>
-#include <mat4x4.h>
+#include <hcsrc/mat4x4.h>
 #include <FFT.h>
 #include "MtzFFTPtr.h"
 #include "PlotView.h"

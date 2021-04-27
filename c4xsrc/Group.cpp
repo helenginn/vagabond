@@ -185,7 +185,7 @@ void Group::addMtz(MtzFFTPtr mtz)
 
 void Group::addMtz(DiffractionMtzPtr mtzDiff, MtzFile *file)
 {
-	VagFFTPtr ref = mtzDiff->getFFT();
+	VagFFTPtr ref = mtzDiff->getOriginal();
 
 	if (!ref)
 	{

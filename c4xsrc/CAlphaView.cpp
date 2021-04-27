@@ -64,11 +64,6 @@ void CAlphaView::updateRs()
 	                &_stdev_rwork, &_stdev_rfree);
 }
 
-void CAlphaView::initialisePrograms()
-{
-	SlipObject::initialisePrograms(NULL, NULL);
-}
-
 void CAlphaView::repopulate()
 {
 	_indices.clear();

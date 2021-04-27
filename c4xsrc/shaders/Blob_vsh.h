@@ -4,12 +4,13 @@
 inline std::string& pointVsh()
 {
 	static std::string Blob_vsh =
-	"attribute vec3 normal;\n"\
-	"attribute vec3 position;\n"\
-	"attribute vec4 color;\n"\
+	"#version 330 core\n"\
+	"in vec3 normal;\n"\
+	"in vec3 position;\n"\
+	"in vec4 color;\n"\
 	"\n"\
-	"varying vec4 vColor;\n"\
-	"varying vec4 vPos;\n"\
+	"out vec4 vColor;\n"\
+	"out vec4 vPos;\n"\
 	"\n"\
 	"uniform mat4 model;\n"\
 	"uniform mat4 projection;\n"\

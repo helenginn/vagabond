@@ -1,4 +1,4 @@
-// 
+// cluster4x
 // Copyright (C) 2019 Helen Ginn
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,46 +16,32 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster__calphaview__
-#define __cluster__calphaview__
+#ifndef __cluster4x__MtzOptions__
+#define __cluster4x__MtzOptions__
 
-#include <hcsrc/vec3.h>
-#include "SlipObject.h"
+#include <QMainWindow>
 
-class Group;
-class MtzFile;
-class KeeperGL;
-class QKeyEvent;
+class ClusterList;
 
-class CAlphaView : public QObject, public SlipObject
+class MtzOptions : public QMainWindow
 {
 Q_OBJECT
 public:
-	CAlphaView(MtzFile *mtz, vec3 centre = empty_vec3());
-	CAlphaView(Group *ave);
+	MtzOptions(QWidget *widget);
 
-	void setKeeper(KeeperGL *gl)
+	void setList(ClusterList *list)
 	{
-		_c4xKeeper = gl;
+		_list = list;
+		optsToScreen();
 	}
-
-	void repopulate();
-	void recolour();
-	
-	std::string getRworkRfree();
-	void addCAlpha(vec3 point);
+public slots:
+	void save();
 private:
-	void updateRs();
+	std::string lineText(std::string lineName);
+	void optsToScreen();
 
-	double _mean_rwork;
-	double _mean_rfree;
-	double _stdev_rwork;
-	double _stdev_rfree;
-	std::map<MtzFile *, size_t> _starts;
-	std::map<MtzFile *, size_t> _ends;
-	std::vector<MtzFile *> _mtzs;
-	vec3 _centre;
-	KeeperGL *_c4xKeeper;
+	void sortPhase();
+	ClusterList *_list;
 
 };
 

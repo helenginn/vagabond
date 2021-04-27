@@ -18,10 +18,12 @@
 
 #include "FolderInput.h"
 #include "ClusterList.h"
+#include "MtzOptions.h"
 #include <QLabel>
-#include <stdexcept>
 #include <QLineEdit>
 #include <QPushButton>
+#include <stdexcept>
+#include <QHBoxLayout>
 #include <QMessageBox>
 #include <hcsrc/FileReader.h>
 
@@ -49,109 +51,125 @@ std::string findMutable(std::string path, std::string glob)
 
 FolderInput::FolderInput(QWidget *widget) : QMainWindow(widget)
 {
+	QWidget *window = new QWidget();
+	QVBoxLayout *vout = new QVBoxLayout();
+	window->setLayout(vout);
+	window->setMinimumSize(400, 0);
+	_sub = NULL;
+
 	setWindowTitle("Load datasets");
-	setGeometry(300, 300, 500, 540);
+	
+	{
+		QHBoxLayout *hout = new QHBoxLayout();
+		QLabel *l = new QLabel("Folder pattern", NULL);
+		hout->addWidget(l);
+
+		QLineEdit *e = new QLineEdit(NULL);
+		e->setPlaceholderText("relative/path/to/dataset-x000");
+		_folderLine = e;
+		hout->addWidget(e);
+		
+		vout->addLayout(hout);
+	}
+	
+	{
+		QHBoxLayout *hout = new QHBoxLayout();
+		QLabel *l = new QLabel("MTZ style", NULL);
+		hout->addWidget(l);
+
+		QLineEdit *e = new QLineEdit(this);
+		e->setPlaceholderText("placeholder.mtz");
+		_mtzLine = e;
+		hout->addWidget(e);
+		
+		QPushButton *p = new QPushButton("Options...", NULL);
+		connect(p, &QPushButton::clicked, this, &FolderInput::mtzOpts);
+		hout->addWidget(p);
+		
+		vout->addLayout(hout);
+	}
+	
+	{
+		QHBoxLayout *hout = new QHBoxLayout();
+		QLabel *l = new QLabel("PDB style", NULL);
+		hout->addWidget(l);
+
+		QLineEdit *e = new QLineEdit(this);
+		e->setPlaceholderText("placeholder.pdb");
+		_pdbLine = e;
+		hout->addWidget(e);
+		
+		vout->addLayout(hout);
+	}
+	
+	{
+		QHBoxLayout *hout = new QHBoxLayout();
+		QLabel *l = new QLabel("Ligand style", NULL);
+		hout->addWidget(l);
+
+		QVBoxLayout *v2out = new QVBoxLayout();
+		{
+			QLineEdit *e = new QLineEdit(this);
+			e->setPlaceholderText("ligand.cif (optional)");
+			_cifLine = e;
+			v2out->addWidget(e);
+		}
+
+		{
+			QLineEdit *e = new QLineEdit(this);
+			e->setPlaceholderText("ligand.pdb (optional)");
+			_ligLine = e;
+			v2out->addWidget(e);
+		}
+		
+		hout->addLayout(v2out);
+		vout->addLayout(hout);
+	}
+
+	{
+		QHBoxLayout *hout = new QHBoxLayout();
+		QLabel *l = new QLabel("Get clusters" , NULL);
+		hout->addWidget(l);
+
+		QLineEdit *e = new QLineEdit(this);
+		e->setPlaceholderText("0_all_clusters.txt (optional)");
+		_premake = e;
+		hout->addWidget(e);
+		
+		vout->addLayout(hout);
+	}
+	
+	{
+		QPushButton *p = new QPushButton("Load", NULL);
+		connect(p, &QPushButton::clicked, this, &FolderInput::load);
+		vout->addWidget(p);
+	}
+	
+	setCentralWidget(window);
 	show();
-	
-	int top = 40;
-	
-	QLabel *l = new QLabel("Folder pattern", this);
-	l->setGeometry(40, top, 150, 40);
-	l->show();
-	_bin.push_back(l);
-
-	QLineEdit *line = new QLineEdit(this);
-	line->setPlaceholderText("relative/path/to/dataset-x000");
-	line->setGeometry(150, top, 260, 40);
-	line->show();
-	_folderLine = line;
-	_bin.push_back(line);
-
-	top += 40;
-	
-	l = new QLabel("MTZ style", this);
-	l->setGeometry(40, top, 150, 40);
-	l->show();
-	_bin.push_back(l);
-
-	line = new QLineEdit(this);
-	line->setPlaceholderText("placeholder.mtz");
-	line->setGeometry(150, top, 260, 40);
-	line->show();
-	_mtzLine = line;
-	_bin.push_back(line);
-	
-	top += 40;
-	
-	l = new QLabel("PDB style", this);
-	l->setGeometry(40, top, 150, 40);
-	l->show();
-	_bin.push_back(l);
-
-	line = new QLineEdit(this);
-	line->setPlaceholderText("placeholder.pdb");
-	line->setGeometry(150, top, 260, 40);
-	line->show();
-	_pdbLine = line;
-	_bin.push_back(line);
-	
-	top += 40;
-	
-	l = new QLabel("Ligand style", this);
-	l->setGeometry(40, top, 150, 40);
-	l->show();
-	_bin.push_back(l);
-
-	line = new QLineEdit(this);
-	line->setPlaceholderText("ligand.cif (optional)");
-	line->setGeometry(150, top, 260, 40);
-	line->show();
-	_cifLine = line;
-	_bin.push_back(line);
-	
-	top += 40;
-
-	line = new QLineEdit(this);
-	line->setPlaceholderText("ligand.pdb (optional)");
-	line->setGeometry(150, top, 260, 40);
-	line->show();
-	_ligLine = line;
-	_bin.push_back(line);
-	
-	top += 80;
-	
-	l = new QLabel("Get clusters:", this);
-	l->setGeometry(40, top, 150, 40);
-	l->show();
-	_bin.push_back(l);
-
-	line = new QLineEdit(this);
-	line->setPlaceholderText("0_all_clusters.txt (optional)");
-	line->setGeometry(150, top, 260, 40);
-	line->show();
-	_premake = line;
-	_bin.push_back(line);
-
-	top += 80;
-	
-	
-	QPushButton *p = new QPushButton("Load", this);
-	p->setGeometry(330, top, 80, 40);
-	p->show();
-	_bin.push_back(p);
-	
-	connect(p, &QPushButton::clicked, this, &FolderInput::load);
-
-	top += 80;
-	setGeometry(300, 300, 500, top);
 }
 
 FolderInput::~FolderInput() 
 {
-	for (size_t i = 0; i < _bin.size(); i++)
+	if (_sub != NULL)
 	{
-		_bin[i]->deleteLater();
+		delete _sub;
+		_sub = NULL;
 	}
+
+}
+
+void FolderInput::mtzOpts()
+{
+	if (_sub != NULL)
+	{
+		delete _sub;
+		_sub = NULL;
+	}
+
+	MtzOptions *sub = new MtzOptions(NULL);
+	sub->setList(_list);
+	_sub = sub;
 }
 
 void FolderInput::load()

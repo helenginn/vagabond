@@ -20,10 +20,10 @@
 #define __clusterxxxx__MtzFile__
 
 #include <shared_ptrs.h>
-#include <vec3.h>
+#include <hcsrc/vec3.h>
 #include <string>
-#include <mat3x3.h>
-#include <Frameworks.h>
+#include <hcsrc/mat3x3.h>
+#include <h3dsrc/Frameworks.h>
 
 struct _Vertex;
 typedef _Vertex Vertex;

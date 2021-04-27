@@ -27,6 +27,7 @@
 
 #include <libsrc/PDBReader.h>
 #include <libsrc/Crystal.h>
+#include <libsrc/Options.h>
 #include "Group.h"
 #include "FileReader.h"
 #include "ClusterList.h"
@@ -227,6 +228,17 @@ bool ClusterList::loadFiles(bool force)
 
 	Group *grp = new Group(NULL);
 	grp->setMaxResolution(_res);
+	
+	std::string phase = valueForKey("phase");
+	if (phase.length())
+	{
+		Options::setLabPhase(phase);
+	}
+
+	std::string plus = valueForKey("column+");
+	std::string minus = valueForKey("column-");
+	
+	bool do_diff = (plus.length() > 0 && minus.length() > 0);
 
 	for (size_t i = 0; i < _paths.size(); i++)
 	{
@@ -249,6 +261,13 @@ bool ClusterList::loadFiles(bool force)
 		{
 			if (_paths[i].mtz_path.length())
 			{
+				mtz->avoidPhases(phase.length() == 0);
+				
+				if (do_diff)
+				{
+					mtz->setDifference(plus, minus);
+				}
+
 				mtz->load();
 			}
 		}

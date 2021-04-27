@@ -29,6 +29,7 @@ ClusterPlot::ClusterPlot() : Plot3D()
 	_renderType = GL_POINTS;
 	_grp = NULL;
 	_keeper = NULL;
+	setName("ClusterPlot");
 	_fString = pointFsh();
 	_vString = pointVsh();
 }

@@ -18,11 +18,16 @@
 
 #include <iostream>
 #include "GLAxis.h"
+#include "shaders/Blob_fsh.h"
+#include "shaders/Blob_vsh.h"
 
 GLAxis::GLAxis(vec3 dir) : SlipObject()
 {
 	_renderType = GL_LINES;
 	setupVertices(dir);
+	_fString = pointFsh();
+	_vString = pointVsh();
+	setName("Axis");
 }
 
 void GLAxis::setupVertices(vec3 dir)

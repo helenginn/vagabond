@@ -22,8 +22,8 @@
 #include <map>
 #include <string>
 #include <vector>
-#include <vec3.h>
-#include <maths.h>
+#include <hcsrc/vec3.h>
+#include <hcsrc/maths.h>
 #include <shared_ptrs.h>
 
 typedef std::vector<vec3> Vec3Vec;

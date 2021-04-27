@@ -38,9 +38,11 @@ public:
 	}
 private slots:
 	void load();
+	void mtzOpts();
 private:
 	ClusterList *_list;
-	std::vector<QWidget *> _bin;
+	
+	QMainWindow *_sub;
 
 	QLineEdit *_folderLine;
 	QLineEdit *_mtzLine;

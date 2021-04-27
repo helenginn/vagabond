@@ -9,7 +9,7 @@ std::string fImage()
 	"\n"\
 	"void main()\n"\
 	"{\n"\
-	"	gl_FragColor = vColor;\n"\
+	"	FragColor = vColor;\n"\
 	"\n"\
 	"\n"\
 	"\n"\
