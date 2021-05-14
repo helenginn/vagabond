@@ -424,6 +424,13 @@ void Knotter::tie()
 		makeMethionine();
 	}
 
+	if (residue == "mse")
+	{
+		convertible = true;
+		makeSelenoMet();
+	}
+
+
 	if (residue == "leu")
 	{
 		convertible = true;
@@ -527,6 +534,46 @@ void Knotter::makeGlycine()
 	_sidechain->setCanRefine(true);
 
 	tieBetaCarbon(AtomPtr());
+}
+
+void Knotter::makeSelenoMet()
+{
+	MonomerPtr monomer = _sidechain->getMonomer();
+	BackbonePtr backbone = monomer->getBackbone();
+	std::string residue = monomer->getIdentifier();
+	_sidechain->setCanRefine(true);
+
+	AtomPtr spineAtom = backbone->betaCarbonTorsionAtom();
+	AtomPtr nAtom = backbone->findAtom("N");
+	AtomPtr cAlpha = _sidechain->findAtom("CA");
+	AtomPtr hBackbone = _sidechain->findAtom("HA");
+	AtomPtr cBeta = _sidechain->findAtom("CB");
+	AtomPtr cGamma = _sidechain->findAtom("CG");
+	AtomPtr hGamma2 = _sidechain->findAtom("HG2");
+	AtomPtr hGamma3 = _sidechain->findAtom("HG3");
+	AtomPtr sDelta = _sidechain->findAtom("SE");
+	AtomPtr cEpsilon = _sidechain->findAtom("CE");
+	AtomPtr hEpsilon1 = _sidechain->findAtom("HE1");
+	AtomPtr hEpsilon2 = _sidechain->findAtom("HE2");
+	AtomPtr hEpsilon3 = _sidechain->findAtom("HE3");
+
+	tieBetaCarbon(cGamma);
+
+	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
+	cb2cg->activate();
+
+	BondPtr cg2sd = BondPtr(new Bond(cGamma, sDelta));
+	cg2sd->activate();
+
+	if (_bondAngles >= 2)
+	{
+		cb2cg->setRefineBondAngle();
+		cg2sd->setRefineBondAngle();
+	}
+
+	BondPtr sd2ce = BondPtr(new Bond(sDelta, cEpsilon));
+	sd2ce->activate();
+
 }
 
 void Knotter::makeMethionine()

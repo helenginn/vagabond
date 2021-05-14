@@ -168,6 +168,7 @@ GeomTable::GeomTable()
     _three2OneCode["pro"] = "P";
     _three2OneCode["cys"] = "C";
     _three2OneCode["met"] = "M";
+    _three2OneCode["mse"] = "m";
     _three2OneCode["tyr"] = "Y";
     _three2OneCode["trp"] = "W";
     _three2OneCode["phe"] = "F";
@@ -318,6 +319,16 @@ GeomTable::GeomTable()
     addIdentityToType("his", "CD2", AtomHisCD2);
     addIdentityToType("his", "ND1", AtomHisND1);
     addIdentityToType("his", "NE2", AtomHisNE2);
+
+    addIdentityToType("mse", "C", AtomC);
+    addIdentityToType("mse", "O", AtomO);
+    addIdentityToType("mse", "OXT", AtomOXT);
+    addIdentityToType("mse", "N", AtomNH1);
+    addIdentityToType("mse", "CA", AtomMseCA);
+    addIdentityToType("mse", "CB", AtomMseCB);
+    addIdentityToType("mse", "CG", AtomMseCG);
+    addIdentityToType("mse", "SE", AtomMseSE);
+    addIdentityToType("mse", "CE", AtomMseCE);
 
     addIdentityToType("met", "C", AtomC);
     addIdentityToType("met", "O", AtomO);
@@ -587,6 +598,27 @@ GeomTable::GeomTable()
     addBondAngle(AtomMetCA, AtomMetCB, AtomMetCG, 113.3);
     addBondAngle(AtomMetCB, AtomMetCG, AtomMetSD, 112.4);
     addBondAngle(AtomMetCG, AtomMetSD, AtomMetCE, 100.2);
+
+    addBondLength(AtomC, AtomMseCA, 1.525);
+    addBondLength(AtomNH1, AtomMseCA, 1.459);
+    addBondLength(AtomMseCA, AtomMseCB, 1.535);
+    addBondLength(AtomMseCB, AtomMseCG, 1.520);
+    addBondLength(AtomMseCG, AtomMseSE, 1.950);
+    addBondLength(AtomMseSE, AtomMseCE, 1.950);
+
+    addBondAngle(AtomNH1, AtomMseCA, AtomC, C_CH1E_NH1_ANGLE);
+    addBondAngle(AtomProNH1, AtomMseCA, AtomC, C_CH1E_NH1_ANGLE);
+    addBondAngle(AtomMseCA, AtomC, AtomO, CH1E_C_O_ANGLE);
+    addBondAngle(AtomC, AtomNH1, AtomMseCA, C_NH1_CH1E_ANGLE);
+    addBondAngle(AtomProC, AtomNH1, AtomMseCA, 122.0);
+    addBondAngle(AtomMseCA, AtomC, AtomNH1, CH1E_C_NH1_ANGLE);
+    addBondAngle(AtomMseCA, AtomC, AtomProNH1, 117.2);
+    addBondAngle(AtomNH1, AtomMseCA, AtomMseCB, 110.6);
+    addBondAngle(AtomProNH1, AtomMseCA, AtomMseCB, 110.6);
+    addBondAngle(AtomC, AtomMseCA, AtomMseCB, 110.4);
+    addBondAngle(AtomMseCA, AtomMseCB, AtomMseCG, 113.3);
+    addBondAngle(AtomMseCB, AtomMseCG, AtomMseSE, 112.7);
+    addBondAngle(AtomMseCG, AtomMseSE, AtomMseCE, 98.9);
 
     addBondLength(AtomC, AtomGlyCA, 1.514);
     addBondLength(AtomNH1, AtomGlyCA, 1.456);

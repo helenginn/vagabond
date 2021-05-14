@@ -63,6 +63,7 @@ private:
 	void makePhenylalanine();
 	void makeTryptophan();
 	void makeMethionine();
+	void makeSelenoMet();
 	void makeProline();
 	void makeArginine();
 	void makeAsparagine();
