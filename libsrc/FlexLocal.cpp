@@ -87,12 +87,11 @@ void FlexLocal::svd()
 
 void FlexLocal::refineClusters()
 {
-	std::cout << "| 1. Refining bond clusters... " 
-	<< std::flush;
+	std::cout << "| 1. Refining bond clusters... " << std::endl;
 	Timer timer;
 
 	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
-	nelder->setCycles(120);
+	nelder->setCycles(100);
 	nelder->setVerbose(true);	
 	nelder->setSilent(true);
 

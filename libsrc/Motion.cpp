@@ -186,7 +186,7 @@ void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
 	}
 
 	strategy->setVerbose(true);
-	strategy->setCycles(100);
+	strategy->setCycles(60);
 	target.getWorkspace().filename = "pre_motion";
 
 	strategy->setEvaluationFunction(FlexGlobal::score, &target);
@@ -283,6 +283,16 @@ void Motion::refine(bool reciprocal)
 		neld->setJobName("translation");
 		addTranslationParameters(neld);
 		
+		if (_refined || true)
+		{
+			addLibrationParameters(neld, -1);
+			if (Options::getScrew())
+			{
+				addScrewParameters(neld, -1);
+			}
+			neld->setCycles(120);
+		}
+		
 		Converter conv;
 		if (false && _refined)
 		{
@@ -291,10 +301,11 @@ void Motion::refine(bool reciprocal)
 		}
 
 		neld->refine();
+		neld->refine();
 		_allAtoms->refreshPositions();
 	}
 
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 1 && false && !_refined; i++)
 	{
 		NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 		neld->setJobName("rots_only");

@@ -554,6 +554,7 @@ protected:
 	static unsigned _many_flags;
 	bool _lowResMode;
 	bool _setMatrices;
+	bool _isCubic;
 };
 
 #endif

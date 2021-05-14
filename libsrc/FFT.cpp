@@ -60,6 +60,7 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	_nscratch = fft._nscratch;
 	_activeScratch = fft._activeScratch;
 
+	_isCubic = fft._isCubic;
 	_bFactor = fft._bFactor;
 	_nn = fft._nn;
 	_status = fft._status;
@@ -122,6 +123,7 @@ VagFFT::~VagFFT()
 
 VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
 {
+	_isCubic = false;
 	_bFactor = 0;
 	_shortScratch = NULL;
 	_nx = nx;
@@ -927,8 +929,15 @@ void VagFFT::addExplicitAtom(AtomPtr atom)
 	{
 		vec3 start = positions[i].start;
 		vec3_subtract_from_vec3(&start, _origin);
-		/* orthogonal simplification */
-		mat3x3_mult_vec(_recipBasis, &start);
+
+		if (!_isCubic)
+		{
+			mat3x3_mult_vec(_recipBasis, &start);
+		}
+		else
+		{
+			vec3_mult(&start, _recipBasis.vals[0]);
+		}
 
 		double occ = positions[i].occupancy;
 
@@ -1241,6 +1250,7 @@ void VagFFT::setScale(double cubeDim)
 {
 	mat3x3 real = make_mat3x3();
 	mat3x3_scale(&real, cubeDim, cubeDim, cubeDim);
+	_isCubic = true;
 	_realBasis = real;
 	adjustNs();
 
@@ -2527,6 +2537,10 @@ vec3 VagFFT::fractionalCentroid()
 {
 	vec3 sum = empty_vec3();
 	double weights = 0;
+	double mean, sigma;
+	meanSigma(&mean, &sigma);
+	double missed = 0;
+	double hit = 0;
 
 	for (int k = 0; k < _nz; k++)
 	{
@@ -2535,21 +2549,26 @@ vec3 VagFFT::fractionalCentroid()
 			for (int i = 0; i < _nx; i++)
 			{
 				double real = getReal(i, j, k);
+				real = (real - mean) / sigma;
 				if (real < 0)
 				{
-//					continue;
+					missed++;
+					continue;
 				}
 
+				hit++;
 				vec3 ijk = make_vec3(i, j, k);
 				ijk.x /= _nx;
 				ijk.y /= _ny;
 				ijk.z /= _nz;
 				vec3_mult(&ijk, real);
-				vec3_add_to_vec3(&sum, ijk);
+				sum += ijk;
 				weights += (real);
 			}
 		}
 	}
+	
+//	std::cout << 100 * missed / (hit + missed) << "% skipped" <<  std::endl;
 	
 	vec3_mult(&sum, 1 / weights);
 	return sum;

@@ -183,8 +183,10 @@ bool Crystal::refineIntraMovements(bool magic)
 		{
 			continue;
 		}
+		
+		PolymerPtr pol = ToPolymerPtr(molecule(i));
 
-		changed |= ToPolymerPtr(molecule(i))->refineLocalFlexibility(magic);
+		changed |= pol->refineLocalFlexibility(magic);
 	}
 	
 	return changed;
@@ -1810,7 +1812,8 @@ double Crystal::updateVariable(double *local, option_getter get, Setter set,
 double Crystal::getProteinSampling()
 {
 	double maxRes = getMaxResolution(_data);
-	double sampling = std::min(0.7, maxRes / 4);
+//	double sampling = std::min(0.7, maxRes / 4);
+	double sampling = std::min(1.0, maxRes / 3);
 	
 	updateVariable(&_sampling, Options::getProteinSampling,
 	               Options::setProteinSampling, "sampling", "Å", sampling);

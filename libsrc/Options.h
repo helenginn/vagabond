@@ -432,6 +432,7 @@ private:
 	static int _solvent;
 	static int _bondAngles;
 	static int _nCycles;
+	static int _pCycles;
 	static bool _peptideMovement;
 	static double _unmodelled;
 	static double _bMult;

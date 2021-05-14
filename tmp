@@ -101,7 +101,7 @@ double SVDBond::compareKicks(BondPtr a, BondPtr b)
 	}
 	
 	total /= (double)as.size();
-	return total;
+	return (total > 0 ? 1 : -1);
 }
 
 mat3x3 bond_angle_basis(mat3x3 parent, mat3x3 child)
@@ -170,8 +170,6 @@ double SVDBond::compareForKicks(BondPtr a, BondPtr b, bool kickmod)
 	
 	double total = 0;
 	double count = 0;
-	
-	double dots = 0;
 	double asq = 0;
 	double bsq = 0;
 	
@@ -193,25 +191,6 @@ double SVDBond::compareForKicks(BondPtr a, BondPtr b, bool kickmod)
 		double aLength = vec3_length(aDir);
 		double bLength = vec3_length(bDir);
 		
-		/* Get ratio of the lengths as one component of agreement */
-		double ratio = aLength / bLength;
-		if (ratio > 1)
-		{
-			ratio = 1 / ratio;
-		}
-		
-		/* Get cosine of angle as another component of agreement */
-		double cosine = vec3_cosine_with_vec3(aDir, bDir);
-		
-		double add = cosine * ratio;
-		
-		if (add != add)
-		{
-			continue;
-		}
-		
-		total += add;
-		
 		double dot = vec3_dot_vec3(aDir, bDir);
 		
 		if (dot != dot)
@@ -221,13 +200,10 @@ double SVDBond::compareForKicks(BondPtr a, BondPtr b, bool kickmod)
 		
 		asq += vec3_sqlength(aDir);
 		bsq += vec3_sqlength(bDir);
-		
-		count++;
-		dots += dot;
+		total += dot;
 	}
 	
-	total /= count;
-	double cc = dots / (sqrt(asq * bsq));
+	double cc = total / (sqrt(asq * bsq));
 	
 	if (!kickmod)
 	{
@@ -235,10 +211,9 @@ double SVDBond::compareForKicks(BondPtr a, BondPtr b, bool kickmod)
 	}
 
 	double kicks = compareKicks(a, b);
-	total *= kicks;
-	cc *= kicks;
+//	cc *= kicks;
 
-	return total;
+	return cc;
 }
 
 void SVDBond::compareBonds()
@@ -361,7 +336,7 @@ void SVDBond::report()
 		}
 	}
 	
-	const int min = 16;
+	const int min = 10;
 	if (_num < min)
 	{
 		_num = min;
@@ -671,7 +646,7 @@ void SVDBond::writeMatrix()
 {
 	if (_silent)
 	{
-		return;
+//		return;
 	}
 	CSV csv(3, "bi", "bj", "cc");
 

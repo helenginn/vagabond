@@ -311,6 +311,11 @@ void PDBReader::getSymmetry(std::string line)
 	betaData = line.substr(40, 7);
 	gammaData = line.substr(47, 7);
 	spaceGroup = line.substr(55, 10);
+	
+	while (spaceGroup.length() < 10)
+	{
+		spaceGroup.push_back(' ');
+	}
 
 	double a = atof(aData.c_str());
 	double b = atof(bData.c_str());

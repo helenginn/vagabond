@@ -269,6 +269,7 @@ typedef enum
 	ParamOptionExtraAtoms,
 	ParamOptionPadding,
 	ParamOptionMaxTries,
+	ParamOptionFlip,
 	ParamOptionStep,
 	ParamOptionSVD,
 	ParamOptionRigidBody,

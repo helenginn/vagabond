@@ -59,7 +59,7 @@ public:
 	virtual void wakeup();
 	virtual void setRenderDensity();
 	virtual void setDisableDensityUpdate();
-	virtual void focusOnPosition(vec3 pos, double dist);
+	virtual void focusOnPosition(vec3 pos, double dist = 13);
 	virtual void pause(bool on);
 	virtual void appendToLog(char *msg);
 	void waterEverything();

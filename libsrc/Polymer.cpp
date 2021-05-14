@@ -129,17 +129,10 @@ bool Polymer::refineLocalFlexibility(bool magic)
 	
 	bool ch = local.didChange();
 	
-	if (!_keyPoints)
+	if (magic)
 	{
-		return ch;
+		ch |= _keyPoints->refineKeyPoints();
 	}
-	
-	if (ch && !magic)
-	{
-		return ch;
-	}
-
-	ch |= _keyPoints->refineKeyPoints();
 
 	return ch;
 }
@@ -386,12 +379,13 @@ void Polymer::refineBackboneFrom(int position)
 	
 	addParamType(ParamOptionMaxTries, 1.0);
 	addParamType(ParamOptionTorsion, 0.5);
-	addParamType(ParamOptionNumBonds, 12);
-	addParamType(ParamOptionCycles, 60);
+	addParamType(ParamOptionNumBonds, 30);
+	addParamType(ParamOptionCycles, 80);
 	addParamType(ParamOptionStep, 2);
-	addParamType(ParamOptionExtraAtoms, 2);
-	addParamType(ParamOptionThorough, 1);
+	addParamType(ParamOptionExtraAtoms, 5);
+//	addParamType(ParamOptionThorough, 1);
 	addParamType(ParamOptionSVD, 1);
+//	addParamType(ParamOptionFlip, 1);
 
 	bool lowRes = (crystal->getMaxResolution() > 3.5);
 	if (lowRes)
@@ -416,6 +410,8 @@ void Polymer::refineBackbone()
 	clearParams();
 
 	scoreMonomers();
+	
+	refineAnchorPosition();
 	refineBackboneFrom(anchor - 3);
 	refineBackboneFrom(anchor + 3);
 
@@ -539,11 +535,6 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 
 	double endCCAve = 0;
 	double ccAve = 0;
-	
-	if (rType == RefinementCrude)
-	{
-		refineAnchorPosition();
-	}
 	
 	std::cout << "\t  Backbone             | Sidechain" << std::endl;
 	bool changed = true;
@@ -675,7 +666,6 @@ void Polymer::scoreMonomers()
 
 void Polymer::refineAnchorPosition()
 {
-	return;
 	CrystalPtr target = Options::getActiveCrystal();
 	
 	AtomPtr n = getAnchorModel()->getNAtom();
@@ -694,9 +684,9 @@ void Polymer::refineAnchorPosition()
 	setSilent(true);
 	addParamType(ParamOptionMaxTries, 1.0);
 	addParamType(ParamOptionTorsion, 1.0);
-	addParamType(ParamOptionNumBonds, 6);
+	addParamType(ParamOptionNumBonds, 10);
 	addParamType(ParamOptionTopLevelOnly, 1);
-	addParamType(ParamOptionCycles, 32);
+	addParamType(ParamOptionCycles, 80);
 	addParamType(ParamOptionStep, 2);
 	addParamType(ParamOptionExtraAtoms, 2);
 	addParamType(ParamOptionSVD, 1);

@@ -283,8 +283,16 @@ void Sampler::setupGrid()
 
 void Sampler::setupNelderMead()
 {
-	_strategy = RefinementStrategyPtr(new RefinementNelderMead());
+	NelderMeadPtr mead;
+	mead = NelderMeadPtr(new RefinementNelderMead());
+	_strategy = mead;
 	_strategy->setEvaluationFunction(Sampler::score, this);
+	
+	if (getParameter(ParamOptionFlip) > 0.5)
+	{
+		mead->setFlip();
+	}
+
 	_strategy->setCycles(50);
 }
 
@@ -490,14 +498,12 @@ void Sampler::addAnchorParams(AnchorPtr anch)
 	
 	range = deg2rad(0.5);
 	interval = deg2rad(0.005);
-	/*
 	_strategy->addParameter(&*anch, Anchor::getAlpha, Anchor::setAlpha,
 	                        range, interval, "alpha");
 	_strategy->addParameter(&*anch, Anchor::getBeta, Anchor::setBeta,
 	                        range, interval, "beta");
 	_strategy->addParameter(&*anch, Anchor::getGamma, Anchor::setGamma,
 	                        range, interval, "gamma");
-	*/
 
 	BondPtr nBond = ToBondPtr(anch->getNAtom()->getModel());
 	BondPtr cBond = ToBondPtr(anch->getCAtom()->getModel());
