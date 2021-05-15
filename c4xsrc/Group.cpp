@@ -58,9 +58,9 @@ void Group::setData(int column, int role, const QVariant &value)
 		_customName = value.toString().toStdString();
 	}
 	
-	if (_customName.length() == 0)
+	if (_customName.length() == 0 && (int)value.type() == (int)QMetaType::QString)
 	{
-		std::string str = "Group of " + i_to_str(_mtzs.size()) + " data sets";
+		std::string str = generateText();
 		QVariant val = QVariant(QString::fromStdString(str));
 		QTreeWidgetItem::setData(column, role, val);
 		return;
@@ -154,26 +154,30 @@ void Group::copyFromOriginal(Group *ave)
 	_type = ave->_type;
 }
 
-void Group::updateText()
+std::string Group::generateText()
 {
 	std::string str;
 	
-	if (isMarked())
-	{
-		str += "* ";
-	}
-
 	if (_customName.length())
 	{
-		str = _customName;
-		return;
+		str += _customName;
 	}
 	else
 	{
 		str += "Group of " + i_to_str(_mtzs.size()) + " data sets";
 	}
 
+	return str;
+}
+
+void Group::updateText()
+{
+	std::string str = generateText();
 	setText(0, QString::fromStdString(str));
+
+	QFont curr = font(0);
+	curr.setBold(_marked);
+	setFont(0, curr);
 }
 
 void Group::addMtz(MtzFFTPtr mtz)
@@ -426,12 +430,6 @@ void Group::setMarked(bool marked)
 	}
 
 	_marked = marked;
-
-	QFont curr = font(0);
-	std::cout << curr.toString().toStdString() << std::endl;
-	curr.setBold(marked);
-	std::cout << curr.toString().toStdString() << std::endl;
-	setFont(0, curr);
 	
 	updateText();
 }

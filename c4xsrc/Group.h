@@ -203,6 +203,8 @@ public:
 	void svd();
 	void drawAxes();
 	void updateText();
+	std::string generateText();
+ 
 	vec3 getPoint(int num, int a1, int a2, int a3);
 	std::vector<MtzFFTPtr> getMtzsFromSelection();
 	
