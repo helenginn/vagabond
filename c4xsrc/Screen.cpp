@@ -763,15 +763,15 @@ void Screen::changeColour()
 
 void Screen::markSelection()
 {
-	bool mark = !(_group->isMarked());
-	_group->setMarked(mark);
+	bool mark = !(_list->getLastAverage()->isMarked());
+	_list->getLastAverage()->setMarked(mark);
 	refreshSelection();
 }
 
 void Screen::killSelection()
 {
-	bool dead = !(_group->isDead());
-	_group->setDead(dead);
+	bool dead = !(_list->getLastAverage()->isDead());
+	_list->getLastAverage()->setDead(dead);
 	refreshSelection();
 }
 

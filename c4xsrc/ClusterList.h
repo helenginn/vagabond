@@ -99,6 +99,11 @@ public:
 	{
 		_options.clear();
 	}
+	
+	Group *getLastAverage()
+	{
+		return _lastAverage;
+	}
 
 signals:
 	void average();

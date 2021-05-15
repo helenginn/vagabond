@@ -19,6 +19,7 @@
 #include <QTreeWidget>
 #include <QApplication>
 #include <QMessageBox>
+#include <QMenu>
 #include <QThread>
 #include <QKeyEvent>
 #include <QPushButton>
@@ -79,9 +80,25 @@ void ClusterList::prepareMenu(const QPoint &p)
 		MtzFFT *fft = static_cast<MtzFFT *>(item);
 		MtzFile *file = fft->getMtzFile();
 		file->flipSelected();
+
+		updateSelections();
 	}
-	
-	updateSelections();
+	else if (Group::isGroup(item))
+	{
+		_widget->setCurrentItem(item);
+		QMenu *m = new QMenu();
+		if (!static_cast<Group *>(item)->isTopGroup())
+		{
+			QAction *act = m->addAction("Toggle marked cluster");
+			connect(act, &QAction::triggered, _screen, &Screen::markSelection);
+			act = m->addAction("Toggle all dead");
+			connect(act, &QAction::triggered, _screen, &Screen::killSelection);
+			act = m->addAction("Remove cluster");
+			connect(act, &QAction::triggered, _screen, &Screen::removeCluster);
+			QPoint pos = _screen->mapToGlobal(p);
+			m->exec(pos);
+		}
+	}
 }
 
 ClusterList::~ClusterList()
