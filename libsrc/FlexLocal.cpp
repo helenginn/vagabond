@@ -100,6 +100,23 @@ void FlexLocal::refineClusters()
 	CrystalPtr crystal = Options::getActiveCrystal();
 
 	_svd->addToStrategy(nelder, _negMult, _magic);
+	AnchorPtr anch = _polymer->getAnchorModel();
+	anch->addChainMultsToStrategy(nelder);
+	
+	/*
+	if (_polymer->getAnchorModel()->motionCount() > 0)
+	{
+		AnchorPtr anch = _polymer->getAnchorModel();
+		MotionPtr mot = anch->getMotion(0);
+		
+		if (mot->moleculeCount() == 1)
+		{
+			mot->addLibrationParameters(nelder, -1);
+		}
+
+	}
+	*/
+
 	nelder->refine();
 	nelder->reportResult();
 
