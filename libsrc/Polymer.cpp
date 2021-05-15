@@ -380,7 +380,7 @@ void Polymer::refineBackboneFrom(int position)
 	addParamType(ParamOptionMaxTries, 1.0);
 	addParamType(ParamOptionTorsion, 0.5);
 	addParamType(ParamOptionNumBonds, 30);
-	addParamType(ParamOptionCycles, 80);
+	addParamType(ParamOptionCycles, 3 * monomerCount());
 	addParamType(ParamOptionStep, 2);
 	addParamType(ParamOptionExtraAtoms, 5);
 //	addParamType(ParamOptionThorough, 1);
@@ -409,11 +409,11 @@ void Polymer::refineBackbone()
 	int anchor = getAnchor();
 	clearParams();
 
-	scoreMonomers();
+//	scoreMonomers();
 	
 	refineAnchorPosition();
-	refineBackboneFrom(anchor - 3);
-	refineBackboneFrom(anchor + 3);
+//	refineBackboneFrom(anchor - 3);
+//	refineBackboneFrom(anchor + 3);
 
 	double change = scoreWithMap(ScoreTypeCorrel, Options::getActiveCrystal());
 	std::cout << "CC across whole polymer ";
@@ -570,6 +570,7 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		copyParams(monomer);
 		side->refine(target, rType); 
 		bone->refine(target, rType); 
+
 		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);	
 		double backScore = bone->scoreWithMap(ScoreTypeCorrel, target);	
 		double sideScore = side->scoreWithMap(ScoreTypeCorrel, target);	
@@ -667,6 +668,7 @@ void Polymer::scoreMonomers()
 void Polymer::refineAnchorPosition()
 {
 	CrystalPtr target = Options::getActiveCrystal();
+	_fullScore = scoreWithMap(ScoreTypeCorrel, target);
 	
 	AtomPtr n = getAnchorModel()->getNAtom();
 	AtomPtr c = getAnchorModel()->getCAtom();
@@ -675,28 +677,30 @@ void Polymer::refineAnchorPosition()
 	BondPtr c_next = ToBondPtr(c->getModel());
 
 	vec3 centre = getAnchorModel()->getAbsolutePosition();
-	Options::getRuntimeOptions()->focusOnPosition(centre, 36);
+	Options::getRuntimeOptions()->focusOnPosition(centre, 100);
 
 	setupNelderMead();
 	setCrystal(target);
 	setScoreType(ScoreTypeCorrel);
+	
+	int num = monomerCount() * 3;
 
 	setSilent(true);
 	addParamType(ParamOptionMaxTries, 1.0);
-	addParamType(ParamOptionTorsion, 1.0);
-	addParamType(ParamOptionNumBonds, 10);
-	addParamType(ParamOptionTopLevelOnly, 1);
+	addParamType(ParamOptionTorsion, 0.5);
+	addParamType(ParamOptionNumBonds, num);
 	addParamType(ParamOptionCycles, 80);
 	addParamType(ParamOptionStep, 2);
-	addParamType(ParamOptionExtraAtoms, 2);
 	addParamType(ParamOptionSVD, 1);
-	addParamType(ParamOptionThorough, 1);
+	addParamType(ParamOptionThorough, 0);
 
 	addAnchorParams(getAnchorModel());
-	setupThoroughSet(n_next, true);
-	setupThoroughSet(c_next, true);
+	setupThoroughSet(n_next, false);
+	setupThoroughSet(c_next, false);
 	
+	setVerbose();
 	sample();
+
 }
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)

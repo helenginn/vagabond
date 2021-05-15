@@ -175,8 +175,14 @@ double SVDBond::compareForKicks(BondPtr a, BondPtr b, bool kickmod)
 	double asq = 0;
 	double bsq = 0;
 	
-	for (int i = 0; i < _atoms.size(); i++)
+	int skip = _atoms.size() / (float)100 + 1;
+	
+	for (int i = 0; i < _atoms.size(); i += skip)
 	{
+		if (!_silent)
+		{
+//			std::cout << "." << std::flush;
+		}
 		/* Exclude self, nan-potential */
 		if (a->getMinor() == _atoms[i] || b->getMinor() == _atoms[i])
 		{
@@ -228,6 +234,11 @@ double SVDBond::compareForKicks(BondPtr a, BondPtr b, bool kickmod)
 	
 	total /= count;
 	double cc = dots / (sqrt(asq * bsq));
+	
+	if (cc != cc)
+	{
+		cc = 0;
+	}
 	
 	if (!kickmod)
 	{
@@ -354,7 +365,7 @@ void SVDBond::report()
 	{
 		cuml += _w[i];
 		
-		if (cuml > pc50)
+		if (_w[i] < 1e-6 || cuml > pc50)
 		{
 			_num = i;
 			break;
@@ -370,6 +381,11 @@ void SVDBond::report()
 		{
 			_num = _bonds.size();
 		}
+	}
+	
+	if (_num > 50)
+	{
+		_num = 50;
 	}
 	
 	/* Set up parameters for the top clusters from SVD */

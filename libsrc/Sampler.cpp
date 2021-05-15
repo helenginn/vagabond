@@ -644,7 +644,12 @@ bool Sampler::sample(bool clear)
 
 	if (_params.count(ParamOptionSVD) > 0)
 	{
-//		_strategy->clearParameters();
+		if (_verbose)
+		{
+			std::cout << "Performing SVD, on " << _strategy->parameterCount() << 
+			" parameters ..." << std::flush;
+		}
+
 		_svd = new SVDBond(_sampled);
 		_svd->bondsFromStrategy(_strategy);
 		_svd->setDoTorsion(true);
@@ -655,8 +660,13 @@ bool Sampler::sample(bool clear)
 		{
 			t = _params[ParamOptionTorsion];
 		}
-//		_svd->addToStrategy(_strategy, t, false);
 		_svd->convertStrategyTorsions(_strategy, t);
+		
+		if (_verbose)
+		{
+			std::cout << " " << _svd->numClusters() << 
+			" clusters." << std::endl;
+		}
 	}
 
 	int paramCount = _strategy->parameterCount();
