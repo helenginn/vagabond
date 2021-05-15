@@ -19,6 +19,7 @@
 #include "Atom.h"
 #include "SymAtom.h"
 #include "Anchor.h"
+#include "Sponge.h"
 #include "Bond.h"
 #include <sstream>
 #include "Crystal.h"
@@ -1595,4 +1596,21 @@ void AtomGroup::reset()
 	}
 
 	refreshPositions();
+}
+
+void AtomGroup::convertWaters()
+{
+	for (int i = 0; i < atomCount(); i++)
+	{
+		AtomPtr tmp = atom(i);
+		if (tmp->isWater() && tmp->getModel()->isAbsolute())
+		{
+			SpongePtr nov = SpongePtr(new Sponge(tmp));
+			tmp->setModel(nov);
+			nov->singleRefine();
+			nov->getFinalPositions();
+		}
+	}
+	
+	std::cout << "Converted waters." << std::endl;
 }

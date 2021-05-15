@@ -463,6 +463,7 @@ private:
 	static bool _far;
 	static bool _rInter;
 	static bool _rIntra;
+	static bool _convertWaters;
 	static bool _hydrogens;
 	static bool _screw;
 	static bool _angling;

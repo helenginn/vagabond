@@ -53,6 +53,7 @@ int Options::_active = 0;
 int Options::_maxRot = 3;
 bool Options::_diagnostics = false;
 bool Options::_usePartial = false;
+bool Options::_convertWaters = false;
 
 bool Options::_refine = false;
 bool Options::_screw = false;
@@ -334,7 +335,12 @@ void Options::executeProtocol()
 	{
 		recalculateFFT();
 	}
-	
+
+	if (_convertWaters)
+	{
+		crystal->convertWaters();
+	}
+
 	/* If we should have a flexible number of cycles which continues
 	 * until convergence beyond 5. */
 	bool flexCycle = (_nCycles < 0);
@@ -344,12 +350,12 @@ void Options::executeProtocol()
 		_nCycles = 3;
 	}
 
-
 	for (int j = 0; j < 1 && _far; j++)
 	{
 		std::cout << "Refining positions to density (" << 
 		j + 1 << " / 1)" << std::endl;
 		crystal->refineCrude();
+
 		recalculateFFT();
 	}
 
@@ -699,6 +705,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "sidechain", &_rSidechains);
 		understood |= parseParameter(arg, "rfree", &_useRFree);
 		understood |= parseParameter(arg, "diagnostics", &_diagnostics);
+		understood |= parseParameter(arg, "convert-waters", &_convertWaters);
 		understood |= parseParameter(arg, "partial", &_usePartial);
 		understood |= parseParameter(arg, "fit-solvent", &_fitBucket);
 		understood |= parseParameter(arg, "hydrogens", &_hydrogens);

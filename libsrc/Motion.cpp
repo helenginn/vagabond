@@ -301,7 +301,11 @@ void Motion::refine(bool reciprocal)
 		}
 
 		neld->refine();
-		neld->refine();
+		
+		if (!_refined)
+		{
+			neld->refine();
+		}
 		_allAtoms->refreshPositions();
 	}
 

@@ -115,6 +115,8 @@ public:
 	}
 
 	int totalElectrons(int *fcWeighted);
+	
+	void convertWaters();
 
 	static double refine(void *object)
 	{
