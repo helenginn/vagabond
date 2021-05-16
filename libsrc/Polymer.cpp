@@ -131,7 +131,7 @@ bool Polymer::refineLocalFlexibility(bool magic)
 	if (magic)
 	{
 		ch |= _keyPoints->refineKeyPoints();
-		local.refineChainMults(getAnchorModel());
+//		local.refineChainMults(getAnchorModel());
 	}
 
 	return ch;

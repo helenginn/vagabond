@@ -350,15 +350,6 @@ void Options::executeProtocol()
 		_nCycles = 3;
 	}
 
-	for (int j = 0; j < 1 && _far; j++)
-	{
-		std::cout << "Refining positions to density (" << 
-		j + 1 << " / 1)" << std::endl;
-		crystal->refineCrude();
-
-		recalculateFFT();
-	}
-
 	for (int i = 0; i < _nCycles; i++)
 	{
 		double startWork = crystal->getWorkValue();
@@ -391,10 +382,24 @@ void Options::executeProtocol()
 			}
 		}
 
+		for (int j = 0; j < 1 && _far && i >= 1; j++)
+		{
+			std::cout << "Refining positions to density (" << 
+			j + 1 << " / 1)" << std::endl;
+			crystal->refineCrude();
+
+			recalculateFFT();
+		}
+
 		/* In case we need to do remedial work */
 		double oldWork = crystal->getWorkValue();
 		
-		const int maxIntra = 3;
+		int maxIntra = 3;
+		if (i >= 1 && _far)
+		{
+			maxIntra = 1;
+		}
+
 		for (int i = 0; i < maxIntra && _rIntra; i++)
 		{
 			bool last = (i == maxIntra - 1);
@@ -425,6 +430,19 @@ void Options::executeProtocol()
 
 		double endWork = crystal->getWorkValue();
 
+		if (i >= 1)
+		{
+			if (_rSidechains)
+			{
+				std::cout << "Refining sidechains to density (" << 
+				1 << " / 1)" << std::endl;
+				getActiveCrystal()->refineSidechains();
+				recalculateFFT();
+			}
+
+			crystal->undoIfWorse();
+		}
+
 		if (i == _nCycles - 1 && flexCycle && (endWork < startWork))
 		{
 //			_nCycles++;
@@ -432,16 +450,6 @@ void Options::executeProtocol()
 	}
 	
 	crystal->returnToBestState();
-	
-	if (_rSidechains)
-	{
-		std::cout << "Refining sidechains to density (" << 
-		1 << " / 1)" << std::endl;
-		getActiveCrystal()->refineSidechains();
-		recalculateFFT();
-	}
-
-	crystal->undoIfWorse();
 	
 	statusMessage("Finished.");
 
