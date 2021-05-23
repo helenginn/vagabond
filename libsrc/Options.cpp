@@ -76,6 +76,7 @@ std::string Options::_labFree = "";
 
 ScalingType Options::_scaleType = ScalingTypeShell;
 double Options::_sampling = -1;
+double Options::_samplingFraction = 3;
 int Options::_nSamples = -1;
 std::string Options::_solventFile;
 
@@ -671,6 +672,8 @@ void Options::parse()
 		understood |= parseParameter(arg, "--pcycles=", &_pCycles);
 		understood |= parseParameter(arg, "--global-b=", &_bReal);
 		understood |= parseParameter(arg, "--sampling=", &_sampling);
+		understood |= parseParameter(arg, "--sampling-fraction=", 
+		                             &_samplingFraction);
 		understood |= parseParameter(arg, "--kick=", &_kick);
 		understood |= parseParameter(arg, "--unmodelled-fraction=", 
 		                             &_unmodelled);

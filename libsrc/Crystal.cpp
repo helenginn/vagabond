@@ -1813,7 +1813,9 @@ double Crystal::getProteinSampling()
 {
 	double maxRes = getMaxResolution(_data);
 //	double sampling = std::min(0.7, maxRes / 4);
-	double sampling = std::min(1.0, maxRes / 3);
+	double frac = Options::getSamplingFraction();
+
+	double sampling = std::min(1.0, maxRes / frac);
 	
 	updateVariable(&_sampling, Options::getProteinSampling,
 	               Options::setProteinSampling, "sampling", "Å", sampling);

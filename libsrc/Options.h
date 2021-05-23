@@ -244,6 +244,11 @@ public:
 		_sampling = sampling;	
 	}
 
+	static double getSamplingFraction()
+	{
+		return _samplingFraction;
+	}
+	
 	static double getProteinSampling()
 	{
 		return _sampling;
@@ -440,6 +445,7 @@ private:
 	static double _bReal;
 	static double _bStart;
 	static double _sampling;
+	static double _samplingFraction;
 	static int _nSamples;
 	static int _map;
 	static int _maxRot;
