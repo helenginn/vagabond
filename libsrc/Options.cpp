@@ -396,10 +396,6 @@ void Options::executeProtocol()
 		double oldWork = crystal->getWorkValue();
 		
 		int maxIntra = 3;
-		if (i >= 1 && _far)
-		{
-			maxIntra = 1;
-		}
 
 		for (int i = 0; i < maxIntra && _rIntra; i++)
 		{
