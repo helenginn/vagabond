@@ -406,6 +406,7 @@ void Polymer::refineBackboneFrom(int position)
 
 void Polymer::refineBackbone()
 {
+	std::cout << "Refining backbone of " << getChainID() << std::endl;
 	int anchor = getAnchor();
 	clearParams();
 
@@ -416,7 +417,7 @@ void Polymer::refineBackbone()
 //	refineBackboneFrom(anchor + 3);
 
 	double change = scoreWithMap(ScoreTypeCorrel, Options::getActiveCrystal());
-	std::cout << "CC across whole polymer ";
+	std::cout << " CC across whole polymer ";
 	std::cout << ((change < _fullScore) ? "up " : "down ");
 	std::cout << "from " << -_fullScore * 100 << " to " << -change * 100;
 	std::cout << "." << std::endl;
