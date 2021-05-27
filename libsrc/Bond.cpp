@@ -885,6 +885,12 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 	 * which does not have _changedSamples == true */
 	while (true)
 	{
+		if (model->isAnchor())
+		{
+			parents.push_back(model);
+			break;
+		}
+
 		if (model->changedSamples())
 		{
 			parents.push_back(model);
@@ -893,12 +899,8 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 		{
 			break;
 		}
-		
-		if (model->isAnchor())
-		{
-			break;
-		}
-		else if (model->isBond())
+
+		if (model->isBond())
 		{
 			model = ToBondPtr(model)->getParentModel();
 		}
@@ -914,6 +916,15 @@ std::vector<BondSample> *Bond::getManyPositions(void *)
 		if (parents[i]->isBond())
 		{
 			ToBondPtr(parents[i])->getManyPositionsPrivate();
+		}
+		else if (parents[i]->isAnchor())
+		{
+			AnchorPtr anch = ToAnchorPtr(parents[i]);
+			anch->setPolymerChanged();
+			anch->getManyPositions(&*anch->getNAtom(), false);
+			anch->getManyPositions(&*anch->getCAtom(), false);
+			anch->getFinalPositions();
+			
 		}
 	}
 	

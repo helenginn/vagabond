@@ -676,6 +676,7 @@ void Polymer::refineAnchorPosition()
 	
 	BondPtr n_next = ToBondPtr(n->getModel());
 	BondPtr c_next = ToBondPtr(c->getModel());
+	makeBackboneTwists(getAnchorModel());
 
 	vec3 centre = getAnchorModel()->getAbsolutePosition();
 	Options::getRuntimeOptions()->focusOnPosition(centre, 100);

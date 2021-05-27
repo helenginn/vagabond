@@ -121,7 +121,7 @@ const std::vector<BondSample> &ExplicitModel::getFinalPositions()
 	_storedSamples = *positions;
 	
 	/* Apply twists to each bond. */
-	for (int i = 0; i < twistCount(); i++)
+	for (int i = 0; i < twistCount() && !isAnchor(); i++)
 	{
 		TwistPtr twist = _twists[i];
 		twist->applyToAnchorSamples(_storedSamples);

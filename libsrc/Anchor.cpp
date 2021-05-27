@@ -446,6 +446,12 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 			whack->applyToAnchorSamples(_storedSamples);
 		}
 	}
+
+	for (int i = 0; i < twistCount(); i++)
+	{
+		TwistPtr twist = _twists[i];
+		twist->applyToAnchorSamples(_storedSamples);
+	}
 	
 	sanityCheck();
 	

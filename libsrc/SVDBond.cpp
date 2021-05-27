@@ -26,6 +26,7 @@
 #include "Polymer.h"
 #include "Anchor.h"
 #include "Whack.h"
+#include "Twist.h"
 #include "CSV.h"
 
 SVDBond::SVDBond(std::vector<BondPtr> &bonds, std::vector<AtomPtr> &atoms)
@@ -643,7 +644,12 @@ void SVDBond::applyParameters()
 		}
 		else
 		{
+			TwistPtr twist = bi->getTwist();
 			Bond::setTorsion(&*bi, t);
+			if (twist)
+			{
+				Twist::setTwist(&*twist, t_more);
+			}
 		}
 	}
 }
