@@ -348,7 +348,7 @@ void Options::executeProtocol()
 	
 	if (flexCycle)
 	{
-		_nCycles = 3;
+		_nCycles = 5;
 	}
 
 	for (int i = 0; i < _nCycles; i++)
@@ -427,27 +427,24 @@ void Options::executeProtocol()
 
 		double endWork = crystal->getWorkValue();
 
-		if (i >= 1)
-		{
-			if (_rSidechains)
-			{
-				std::cout << "Refining sidechains to density (" << 
-				1 << " / 1)" << std::endl;
-				getActiveCrystal()->refineSidechains();
-				recalculateFFT();
-			}
-
-			crystal->undoIfWorse();
-		}
-
 		if (i == _nCycles - 1 && flexCycle && (endWork < startWork))
 		{
-//			_nCycles++;
+			_nCycles++;
 		}
 	}
-	
+
+	if (_rSidechains)
+	{
+		std::cout << "Refining sidechains to density (" << 
+		1 << " / 1)" << std::endl;
+		getActiveCrystal()->refineSidechains();
+		recalculateFFT();
+	}
+
+	crystal->undoIfWorse();
+
 	crystal->returnToBestState();
-	
+
 	statusMessage("Finished.");
 
 	std::cout << std::endl;
