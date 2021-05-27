@@ -370,51 +370,13 @@ void Polymer::summary()
 	<< std::endl;
 }
 
-void Polymer::refineBackboneFrom(int position)
-{
-	OptionsPtr options = Options::getRuntimeOptions();
-	CrystalPtr crystal = options->getActiveCrystal();
-	
-	RefinementType rType = RefinementCrude;
-	
-	addParamType(ParamOptionMaxTries, 1.0);
-	addParamType(ParamOptionTorsion, 0.5);
-	addParamType(ParamOptionNumBonds, 30);
-	addParamType(ParamOptionCycles, 3 * monomerCount());
-	addParamType(ParamOptionStep, 2);
-	addParamType(ParamOptionExtraAtoms, 5);
-//	addParamType(ParamOptionThorough, 1);
-	addParamType(ParamOptionSVD, 1);
-//	addParamType(ParamOptionFlip, 1);
-
-	bool lowRes = (crystal->getMaxResolution() > 3.5);
-	if (lowRes)
-	{
-		addParamType(ParamOptionMaxTries, 1.0);
-		addParamType(ParamOptionCycles, 80);
-		addParamType(ParamOptionTopLevelOnly, 1);
-		addParamType(ParamOptionTorsion, 0.5);
-		addParamType(ParamOptionExtraAtoms, 8);
-		addParamType(ParamOptionNumBonds, 14);
-		addParamType(ParamOptionPadding, 5);
-	}
-
-	refineToEnd(position, crystal, rType);
-	
-	clearParams();
-}
-
 void Polymer::refineBackbone()
 {
 	std::cout << "Refining backbone of " << getChainID() << std::endl;
 	int anchor = getAnchor();
 	clearParams();
-
-//	scoreMonomers();
 	
 	refineAnchorPosition();
-//	refineBackboneFrom(anchor - 3);
-//	refineBackboneFrom(anchor + 3);
 
 	double change = scoreWithMap(ScoreTypeCorrel, Options::getActiveCrystal());
 	std::cout << " CC across whole polymer ";
@@ -688,19 +650,19 @@ void Polymer::refineAnchorPosition()
 	int num = monomerCount() * 3;
 
 	setSilent(true);
+	setVerbose();
 	addParamType(ParamOptionMaxTries, 1.0);
 	addParamType(ParamOptionTorsion, 0.5);
 	addParamType(ParamOptionNumBonds, num);
-	addParamType(ParamOptionCycles, 80);
+	addParamType(ParamOptionCycles, 200);
 	addParamType(ParamOptionStep, 2);
 	addParamType(ParamOptionSVD, 1);
 	addParamType(ParamOptionThorough, 0);
 
-	addAnchorParams(getAnchorModel());
+//	addAnchorParams(getAnchorModel());
 	setupThoroughSet(n_next, false);
 	setupThoroughSet(c_next, false);
 	
-	setVerbose();
 	sample();
 
 }

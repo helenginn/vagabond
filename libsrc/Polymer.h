@@ -52,7 +52,6 @@ public:
 
 	void scaleSidechainsToBFactor();
 	void refineBackbone();
-	void refineBackboneFrom(int position);
 	
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,
 	                              FlexGlobal &target, bool isotropy = false);
