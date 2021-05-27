@@ -702,7 +702,12 @@ bool Sampler::sample(bool clear)
 		}
 
 		_strategy->setCycles(cycles);
-//		setupCloseAtoms();
+		if (_params.count(ParamOptionCycles) > 0)
+		{
+			_strategy->setCycles(_params[ParamOptionCycles]);
+		}
+
+		//		setupCloseAtoms();
 		setupScoreWithMap();
 	}
 	
