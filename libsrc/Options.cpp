@@ -435,6 +435,7 @@ void Options::executeProtocol()
 
 	if (_rSidechains)
 	{
+		crystal->returnToBestState();
 		std::cout << "Refining sidechains to density (" << 
 		1 << " / 1)" << std::endl;
 		getActiveCrystal()->refineSidechains();
