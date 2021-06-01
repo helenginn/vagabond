@@ -1955,15 +1955,20 @@ void VagFFT::findLimitingValues(double xMin, double xMax, double yMin,
 			{
 				vec3 angCorner = make_vec3(i, j, k);
 				vec3 toCrystal = mat3x3_mult_vec(toCrystBasis, angCorner);
-				toCrystal.x = lrint(toCrystal.x);
-				toCrystal.y = lrint(toCrystal.y);
-				toCrystal.z = lrint(toCrystal.z);
 
 				vec3_min_each(minVals, toCrystal);
 				vec3_max_each(maxVals, toCrystal);
 			}
 		}
 	}
+
+	minVals->x = lrint(minVals->x);
+	minVals->y = lrint(minVals->y);
+	minVals->z = lrint(minVals->z);
+
+	maxVals->x = lrint(maxVals->x) + 1;
+	maxVals->y = lrint(maxVals->y) + 1;
+	maxVals->z = lrint(maxVals->z) + 1;
 }
 
 /* is a given ijk within -n/2 < ijk <= n/2 */
@@ -2214,9 +2219,9 @@ void VagFFT::addToValueAroundPoint(vec3 pos, double radius, double value,
 					continue;
 				}
 
-				double x = lrint(i + pos.x);
-				double y = lrint(j + pos.y);
-				double z = lrint(k + pos.z);
+				long x = lrint(i + pos.x);
+				long y = lrint(j + pos.y);
+				long z = lrint(k + pos.z);
 				
 				long index = element(x, y, z);
 				long ii = finalIndex(index);
