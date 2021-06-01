@@ -128,8 +128,6 @@ void Options::redirectToStream()
 
 void Options::run()
 {
-	Timer timer;
-
 	if (!_parsed)
 	{
 		parse();
@@ -249,20 +247,11 @@ void Options::run()
 	}
 	
 	notifyGUI(true);
-
-	finished:
-
-	if (!_manual)
-	{
-		
-		std::cout << std::endl << "**** Finished. ****" << std::endl;
-		timer.report();
-		std::cout << std::endl;
-	}
 }
 
 void Options::executeProtocol()
 {
+	Timer timer;
 	CrystalPtr crystal = getActiveCrystal();
 	crystal->makeOverallMotion();
 
@@ -447,6 +436,7 @@ void Options::executeProtocol()
 	crystal->returnToBestState();
 
 	statusMessage("Finished.");
+	timer.report();
 
 	std::cout << std::endl;
 	std::cout << "******************************" << std::endl;
