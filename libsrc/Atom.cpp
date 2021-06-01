@@ -311,7 +311,7 @@ void Atom::addPointerToLocalArea(VagFFTPtr fft, vec3 pos,
 	/* Limiting case must be far enough away to merge 'nicely' into the
 	 * constant-1 solvent mask area */
 
-	double b = this->getBFactor();
+//	double b = this->getBFactor();
 	mat3x3 unit_cell = fft->getRecipBasis();
 	mat3x3_mult_vec(unit_cell, &pos);
 	
@@ -330,9 +330,9 @@ void Atom::addPointerToLocalArea(VagFFTPtr fft, vec3 pos,
 				long ele = fft->element(pos.x+i, pos.y+j, pos.z+k);
 				Atom *current = ptrs->at(ele);
 				
-				if (current && current->getBFactor() > b)
+//				if (current && current->getBFactor() > b)
 				{
-					continue;
+//					continue;
 				}
 				
 				vec3 ijk = make_vec3(i, j, k);
