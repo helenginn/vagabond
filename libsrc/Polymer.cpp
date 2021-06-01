@@ -652,7 +652,7 @@ void Polymer::refineAnchorPosition()
 	setSilent(true);
 	setVerbose();
 	addParamType(ParamOptionMaxTries, 1.0);
-	addParamType(ParamOptionTorsion, 0.5);
+	addParamType(ParamOptionTorsion, 0.2);
 	addParamType(ParamOptionNumBonds, num);
 	addParamType(ParamOptionCycles, 200);
 	addParamType(ParamOptionStep, 2);
