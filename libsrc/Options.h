@@ -239,6 +239,11 @@ public:
 		return _angling;
 	}
 	
+	static void setSamplingFraction(void *object, double f)
+	{
+		_samplingFraction = f;	
+	}
+	
 	static void setProteinSampling(void *object, double sampling)
 	{
 		_sampling = sampling;	

@@ -40,6 +40,7 @@ using namespace Vagabond;
 #include "PDBReader.h"
 #include "Atom.h"
 #include "Absolute.h"
+#include "Scaler.h"
 #include "Anchor.h"
 #include "FlexGlobal.h"
 #include <hcsrc/RefinementGridSearch.h>
@@ -350,7 +351,7 @@ void Crystal::omitScan()
 		for (int i = start; i < end; i += half)
 		{
 			pol->downWeightResidues(i, i + window, 0);
-			concludeRefinement(_cycleNum + 1, data);
+//			concludeRefinement(_cycleNum + 1, data);
 			pol->downWeightResidues(i, i + window, 1);
 		}
 
@@ -819,6 +820,11 @@ bool Crystal::returnToBestState()
 	}
 }
 
+void Crystal::makeBucket()
+{
+	_bucket = Bucket::chosenBucket();
+}
+
 void Crystal::scaleSolvent(DiffractionPtr data)
 {
 	Timer t("Adding solvent", true);
@@ -1023,7 +1029,7 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 		std::cout << "*******************************" << std::endl;
 	}
 
-	double rFactor = valueWithDiffraction(data, &r_factor, true, true);
+	double rFactor = valueWithDiffraction(data, &r_factor, verbose, verbose);
 
 
 	if (verbose && !_silent)
@@ -1273,6 +1279,7 @@ void Crystal::writeVagabondFile(int cycleNum)
 	std::cout << "Written Vagabond model to " << _vbondFile << std::endl;
 }
 
+/*
 double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 {
 	_data = data;
@@ -1344,6 +1351,7 @@ double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
 
 	return rFac;
 }
+*/
 
 void Crystal::setupSymmetry()
 {
@@ -1586,7 +1594,11 @@ void Crystal::silentConcludeRefinement()
 
 	int num = _cycleNum;
 	_silent = true;
-	concludeRefinement(num, data);
+	Scaler scaler(shared_from_this(), data);
+	scaler.setCycleNumber(_cycleNum);
+	scaler.setSilent(true);
+	scaler.run();
+//	concludeRefinement(num, data);
 	_silent = false;
 }
 
@@ -1597,10 +1609,15 @@ void Crystal::wrapUpRefinement()
 	
 	_lastMetric = _ccWork;
 	_cycleNum++;
-	concludeRefinement(_cycleNum, data);
+	_data = data;
+	
+	Scaler scaler(shared_from_this(), data);
+	scaler.setCycleNumber(_cycleNum);
+	scaler.run();
+
+//	concludeRefinement(_cycleNum, data);
 	saveState();
 
-	//if (_rWork <= _bestMetric)
 	if (_ccWork > _bestMetric)
 	{
 		_bestMetric = _ccWork;
@@ -2466,4 +2483,10 @@ void Crystal::removeBlob(BlobPtr blob)
 	}
 }
 
-
+void Crystal::bestGlobalParameters()
+{
+	Scaler scaler(shared_from_this(), _data);
+	scaler.setCycleNumber(_cycleNum);
+	scaler.findBestProbeRadius();
+	scaler.findProteinSampling();
+}

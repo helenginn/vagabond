@@ -221,7 +221,7 @@ public:
 	* 	\param cycleNum cycle number to output filenames appropriately
 	* 	\param data diffraction data against which statistics should be generated.
 	*/
-	double concludeRefinement(int cycleNum, DiffractionPtr data);
+//	double concludeRefinement(int cycleNum, DiffractionPtr data);
 	
 	/** Should be folded into previous concludeRefinement(...) soon */
 	void wrapUpRefinement();
@@ -233,9 +233,16 @@ public:
 	/** Move back to an earlier saved version of the model */
 	static void vsRestoreState(void *object, double val);
 
+	void scaleToDiffraction(DiffractionPtr data, bool full = true);
+
 	bool isSilent()
 	{
 		return _silent;
+	}
+	
+	void setSilent(bool silent)
+	{
+		_silent = silent;
 	}
 	
 	/**
@@ -303,6 +310,12 @@ public:
 	VagFFTPtr getFFT()
 	{
 		return _fft;
+	}
+	
+	void clearFFT()
+	{
+		_fft = VagFFTPtr();
+		_sampling = -1;
 	}
 
 	VagFFTPtr getDiFFT()
@@ -466,6 +479,8 @@ public:
 		return "Crystal";
 	}
 	
+	void makeBucket();
+	
 	BucketPtr getBucket()
 	{
 		return _bucket;
@@ -582,6 +597,9 @@ public:
 	/** Scale any data set that has been provided as FPART/PHIPART in
 	 *  the input file */
 	void scaleAnyPartialSet();
+
+	void bestGlobalParameters();
+	void writeVagabondFile(int cycleNum);
 protected:
 	virtual void postRestoreState();
 	virtual void addObject(ParserPtr object, std::string category);
@@ -615,7 +633,6 @@ private:
 
 	void reportScaling();
 	void makePDBs(std::string suffix);
-	void writeVagabondFile(int cycleNum);
 	void applySymOps();
 	void setupOriginalMap();
 	
@@ -669,7 +686,6 @@ private:
 	                      double default_val);
 	
 	void scaleSolvent(DiffractionPtr data);
-	void scaleToDiffraction(DiffractionPtr data, bool full = true);
 };
 }
 

@@ -354,7 +354,7 @@ void Options::executeProtocol()
 		if (_rInter)
 		{
 			int total = (i == 0 ? 2 : 1);
-			
+				
 			for (int j = 0; j < total; j++)
 			{
 				crystal->fitWholeMolecules(false);
@@ -368,6 +368,11 @@ void Options::executeProtocol()
 					{
 						break;
 					}
+				}
+				
+				if (i == 0 && j == 0)
+				{
+					crystal->bestGlobalParameters();
 				}
 			}
 		}
