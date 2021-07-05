@@ -548,12 +548,14 @@ pkg.generate([lib_vag],
              name : 'libvag',
              filebase : 'libvag',
              description : 'Library for vagabond')
+if qt5_dep.found() and dep_gl.found()
 pkg.generate([lib_vgui],
              subdirs : ['libgui'],
              version : '1.0',
              name : 'libvgui',
              filebase : 'libvgui',
              description : 'Library for vagabond GUI')
+endif
 pkg.generate([lib_ica],
              subdirs : ['libsrc'],
              version : '1.0',
