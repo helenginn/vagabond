@@ -201,7 +201,7 @@ void VagabondGLWidget::mousePressEvent(QMouseEvent *e)
 	
 	if (isRefiningManually() && e->button() == Qt::RightButton)
 	{
-		double x = e->x(); double y = e->y();
+		double x = e->x(); double y = -e->y();
 		convertCoords(&x, &y);
 		setModelRay(x, y);
 		setMouseRefine(true);

@@ -8,6 +8,7 @@
 
 #include "Density2GL.h"
 #include "Pencil.h"
+#include "../libsrc/FFT.h"
 #include "Picture.h"
 #include "BlobMesh.h"
 #include "Shaders/Pencil_vsh.h"

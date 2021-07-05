@@ -500,10 +500,6 @@ int VagWindow::waitForInstructions()
 				options->chelate();
 				break;
 
-				case InstructionTypeOmitScan:
-				options->omitScan();
-				break;
-
 				case InstructionTypeSetObjectValue:
 				Notifiable::performObjectSet();
 				break;

@@ -26,6 +26,7 @@
 #include "../libsrc/Options.h"
 #include "../libsrc/Polymer.h"
 #include "../libsrc/FlexGlobal.h"
+#include "../libsrc/FFT.h"
 #include "../libsrc/WaterNetwork.h"
 #include <hcsrc/RefinementNelderMead.h>
 #include "BlobMesh.h"
@@ -682,7 +683,7 @@ void Selected2GL::manualRefine()
 		group->clearParams();
 		group->addParamType(ParamOptionMaxTries, 1.0);
 		group->addParamType(ParamOptionNumBonds, 4.0);
-		group->addParamType(ParamOptionTorsion, 2.0);
+		group->addParamType(ParamOptionTorsion, 0.3);
 //		group->convertToSVD(true);
 
 		if (kicking && !mousey)

@@ -8,6 +8,7 @@
 #include "CrystalExplorer.h"
 #include "../../libsrc/Crystal.h"
 #include "../../libsrc/Shouter.h"
+#include "../../libsrc/Motion.h"
 #include "MoleListItem.h"
 #include "MoleculeExplorer.h"
 #include <hcsrc/FileReader.h>
