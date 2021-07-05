@@ -16,12 +16,13 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#include "FFT.h"
 #include "Scaler.h"
 #include "Crystal.h"
 #include "Options.h"
 #include "Bucket.h"
+#include "Polymer.h"
 #include "WeightedMap.h"
-
 
 Scaler::Scaler(CrystalPtr c, DiffractionPtr d)
 {
@@ -144,6 +145,15 @@ void Scaler::tidyUp()
 
 void Scaler::analyse()
 {
+	for (size_t i = 0; i < _crystal->moleculeCount(); i++)
+	{
+		MoleculePtr m = _crystal->molecule(i);
+		
+		if (m->isPolymer())
+		{
+			ToPolymerPtr(m)->ramachandranPlot();
+		}
+	}
 
 }
 
@@ -211,6 +221,43 @@ void Scaler::findProteinSampling()
 	Options::setSamplingFraction(NULL, best_fraction);
 	std::cout << std::endl;
 	std::cout << "Chosen sampling fraction: 1 / " << best_fraction 
+	<< "." << std::endl;
+	_crystal->clearFFT();
+	run();
+}
+
+void Scaler::findHetatmBSub()
+{
+	double bestR = FLT_MAX;
+	double best_subtract = 0;
+
+	if (Options::getBSubt() >= 0)
+	{
+		std::cout << "Hetatm B subtract already established." << std::endl;
+		return;
+	}
+
+	for (double f = 0; f <= 20; f += 5)
+	{
+		Options::setBSubt(NULL, f);
+		prepareExplicitFFT();
+		fullSolventCalculation();
+		scaleToData();
+
+		double new_R = _crystal->rFactorWithDiffraction(_data, true);
+		std::cout << "Hetatm B subtract " << f << " Ang^2; " << new_R*100
+		<< "%" << std::endl;
+		
+		if (bestR > new_R)
+		{
+			bestR = new_R;
+			best_subtract = f;
+		}
+	}
+
+	Options::setBSubt(NULL, best_subtract);
+	std::cout << std::endl;
+	std::cout << "Chosen best B subtract: " << best_subtract 
 	<< "." << std::endl;
 	_crystal->clearFFT();
 	run();

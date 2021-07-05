@@ -33,6 +33,7 @@ using namespace Vagabond;
 #include "Shouter.h"
 #include "Diffraction.h"
 #include "Polymer.h"
+#include "Motion.h"
 #include "Monomer.h"
 #include "Blob.h"
 #include "CSV.h"
@@ -49,7 +50,6 @@ using namespace Vagabond;
 #include "Options.h"
 #include "WeightedMap.h"
 #include "WaterNetwork.h"
-#include "SpaceWarp.h"
 #include "ccp4_mat.h"
 
 #include "libccp4/cmtzlib.h"
@@ -166,12 +166,16 @@ void Crystal::refinePositions()
 
 void Crystal::refineSidechains()
 {
+	VagFFT::quickFFTs();
 	refinePolymers(RefinementSidechain);
+	VagFFT::patientFFTs();
 }
 
 void Crystal::refineSidechainPositions()
 {
+	VagFFT::quickFFTs();
 	refinePolymers(RefinementSidePos);
+	VagFFT::patientFFTs();
 }
 
 bool Crystal::refineIntraMovements(bool magic)
@@ -238,8 +242,6 @@ void Crystal::realSpaceClutter()
 
 		prepareFFT(_fft);
 		prepareFFT(_difft);
-		
-		_sw = SpaceWarpPtr(new SpaceWarp(_fft));
 	}
 	else
 	{
@@ -325,56 +327,6 @@ double Crystal::totalToScale()
 	}
 
 	return (sqrt((double)sum / (double)weighted)) * extra;
-}
-
-void Crystal::omitScan()
-{
-	int window = 20;
-	int half = window / 2;
-	
-	DiffractionPtr data = Options::getRuntimeOptions()->getActiveData();
-	
-	for (int j = 0; j < moleculeCount(); j++)
-	{
-		if (!molecule(j)->isPolymer())
-		{
-			continue;
-		}
-		
-		PolymerPtr pol = ToPolymerPtr(molecule(j));
-
-		int start = pol->monomerBegin();
-		int end = pol->monomerEnd();
-
-		std::cout << "Omit scan starting." << std::endl;
-
-		for (int i = start; i < end; i += half)
-		{
-			pol->downWeightResidues(i, i + window, 0);
-//			concludeRefinement(_cycleNum + 1, data);
-			pol->downWeightResidues(i, i + window, 1);
-		}
-
-		std::cout << "Omit scan complete." << std::endl;
-	}
-}
-
-void Crystal::writeMillersToFile(DiffractionPtr data, std::string prefix)
-{
-	if (_silent)
-	{
-		return;
-	}
-
-	std::string outputFileOnly = prefix + "_" + _filename + "_vbond.mtz";
-	std::string outputFile = FileReader::addOutputDirectory(outputFileOnly);
-	
-	_lastMtz = outputFile;
-	
-	if (_bucket)
-	{
-		_bucket->writeMillersToFile(prefix, _maxResolution);	
-	}
 }
 
 typedef struct
@@ -825,34 +777,6 @@ void Crystal::makeBucket()
 	_bucket = Bucket::chosenBucket();
 }
 
-void Crystal::scaleSolvent(DiffractionPtr data)
-{
-	Timer t("Adding solvent", true);
-
-	if (!Options::getAddSolvent())
-	{
-		return;
-	}
-
-	_bucket = Bucket::chosenBucket();
-		
-	if (!_bucket)
-	{
-		return;
-	}
-
-	_bucket->setCrystal(shared_from_this());
-	_bucket->addSolvent();
-	
-	scaleToDiffraction(data, false);
-
-	_bucket->fourierTransform(1);
-	_bucket->setData(data);
-	_bucket->scalePartialStructure();
-	_bucket->reportScale();
-	_bucket->postScaleWork();
-}
-
 double Crystal::getMaxResolution(DiffractionPtr data)
 {
 	if (!data)
@@ -1009,16 +933,6 @@ void Crystal::scaleAnyPartialSet()
 	structure->reportScale();
 }
 
-void Crystal::scaleComponents(DiffractionPtr data)
-{
-	std::cout << "Scaling model to data..." << std::endl;
-	/* Just scale using an absolute value only */
-	scaleSolvent(data);
-	scaleAnyPartialSet();
-	/* Scale using the favoured mechanism (e.g. per-shell) */
-	scaleToDiffraction(data);
-}
-
 double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 {
 	double highRes = _maxResolution;
@@ -1038,46 +952,6 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 	}
 
 	return rFactor;
-}
-
-double Crystal::getDataInformation(DiffractionPtr data, double partsFo,
-                                   double partsFc, std::string prefix)
-{
-	Timer t1("real space clutter", true);
-	realSpaceClutter();
-	t1.report();
-
-	_calcElec = _fft->sumReal();
-	double density = _calcElec / mat3x3_volume(_hkl2real);
-	/*
-	std::cout << "Sum calculated density before: " << 
-	std::setprecision(4) << _calcElec << std::endl;
-	std::cout << "Concentration of electron density: " << 
-	std::setprecision(4) << density << " electrons/Å³" << std::endl;
-	*/
-	
-	fourierTransform(1);
-	
-	Timer t3("scaling model to data", true);
-	scaleComponents(data); /* change name of function to write solvent only */
-	t3.report();
-	
-	writeMillersToFile(data, prefix);
-
-	double rFac = rFactorWithDiffraction(data, true);
-	
-	Timer t2("creating real-space maps", true);
-	WeightedMap wMap;
-	wMap.setCrystalAndData(shared_from_this(), _data);
-	wMap.createWeightedMaps();
-	t2.report();
-
-	if (_bucket)
-	{
-		_bucket->abandonCalculations();
-	}
-
-	return rFac;
 }
 
 void Crystal::tiedUpScattering()
@@ -1209,17 +1083,23 @@ void Crystal::fourierTransform(int dir, double res)
 
 void Crystal::makePDBs(std::string suffix)
 {
+	if (suffix.length() == 0)
+	{
+		suffix = i_to_str(_cycleNum);
+	}
 	std::vector<std::string> prefices; std::vector<PDBType> pdbTypes;
 	prefices.push_back("ensemble_"); pdbTypes.push_back(PDBTypeEnsemble);
 	prefices.push_back("average_"); pdbTypes.push_back(PDBTypeAverage);
 
-	std::string path;
+	std::string path, bfacpath;
 	path = FileReader::addOutputDirectory("average_" + suffix + ".pdb");
+	bfacpath = FileReader::addOutputDirectory("bfactor_" + suffix + ".pdb");
 
 	_lastAveragePDB = path;
 
-	std::ofstream file;
+	std::ofstream file, bfac;
 	file.open(path);
+	bfac.open(bfacpath);
 	
 	file << PDBReader::writeCryst(_hkl2real, _spaceGroup);
 
@@ -1227,9 +1107,11 @@ void Crystal::makePDBs(std::string suffix)
 	{
 		CrystalPtr crystal = shared_from_this();
 		file << molecule(j)->makePDB(PDBTypeAverage, crystal); 
+		bfac << molecule(j)->makePDB(PDBTypeSameBFactor, crystal); 
 	}
 
 	file.close();
+	bfac.close();
 	int numConf = 0;
 	
 	if (moleculeCount() && molecule(0)->atomCount())
@@ -1278,80 +1160,6 @@ void Crystal::writeVagabondFile(int cycleNum)
 	file.close();
 	std::cout << "Written Vagabond model to " << _vbondFile << std::endl;
 }
-
-/*
-double Crystal::concludeRefinement(int cycleNum, DiffractionPtr data)
-{
-	_data = data;
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (molecule(i)->isPolymer())
-		{
-			PolymerPtr polymer = ToPolymerPtr(molecule(i));
-			polymer->test();
-		}
-	}
-
-	_cycleNum = cycleNum;
-	
-	if (!_silent)
-	{
-		std::cout << "*******************************" << std::endl;
-		std::cout << "\tCycle " << cycleNum << std::endl;
-	}
-
-	std::string refineCount = "cycle_" + i_to_str(cycleNum);
-	double rFac = 0;
-
-	makePDBs(i_to_str(cycleNum));
-
-	if (!data)
-	{
-		std::cout << "No reflection file has been specified.\n"\
-		"Cannot perform map recalculation." << std::endl;
-		std::cout << std::setprecision(4);
-		Options::getRuntimeOptions()->disableDensityUpdate();
-		realSpaceClutter();
-		_fft->fft(FFTRealToReciprocal);
-		_fft->writeToFile("calc_" + i_to_str(cycleNum) + ".mtz", 1.8);
-		Options::flagDensityChanged();
-	}
-	else
-	{
-		Options::getRuntimeOptions()->disableDensityUpdate();
-		rFac = getDataInformation(data, 2, 1, refineCount);
-		Options::flagDensityChanged();
-	}
-	
-	if (!_silent)
-	{
-		writeVagabondFile(cycleNum);
-	}
-
-	std::cout << "Rewritten vagabond file" << std::endl;
-	
-	if (_silent)
-	{
-		return 0;
-	}
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (molecule(i)->isPolymer())
-		{
-			PolymerPtr polymer = ToPolymerPtr(molecule(i));
-			polymer->graph("bfactor_" + polymer->getChainID() +
-			               "_" + i_to_str(cycleNum));
-			polymer->closenessSummary();
-		}
-	}
-	
-	differenceAttribution();
-
-	return rFac;
-}
-*/
 
 void Crystal::setupSymmetry()
 {
@@ -1587,21 +1395,6 @@ AtomPtr Crystal::getClosestAtom(vec3 pos)
 	return atom;
 }
 
-void Crystal::silentConcludeRefinement()
-{
-	OptionsPtr options = Options::getRuntimeOptions();
-	DiffractionPtr data = options->getActiveData();
-
-	int num = _cycleNum;
-	_silent = true;
-	Scaler scaler(shared_from_this(), data);
-	scaler.setCycleNumber(_cycleNum);
-	scaler.setSilent(true);
-	scaler.run();
-//	concludeRefinement(num, data);
-	_silent = false;
-}
-
 void Crystal::wrapUpRefinement()
 {
 	OptionsPtr options = Options::getRuntimeOptions();
@@ -1625,6 +1418,7 @@ void Crystal::wrapUpRefinement()
 	}
 
 	Options::getRuntimeOptions()->agreementSummary();
+	Options::getRuntimeOptions()->flagDensityChanged();
 }
 
 void Crystal::postRestoreState()
@@ -2223,27 +2017,6 @@ void Crystal::addMotion(MotionPtr mot, PolymerPtr origPol)
 	}
 }
 
-void Crystal::spaceWarp()
-{
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isPolymer())
-		{
-			continue;
-		}
-
-		PolymerPtr pol = ToPolymerPtr(molecule(i));
-		AtomGroupPtr backbone = pol->getAllBackbone();
-		ExplicitModelPtr anch = pol->getAnchorModel();
-		pol->makeBackboneTwists(anch);
-
-		_sw->setActiveAtoms(backbone);
-		_sw->recalculate(_fft);
-	}
-
-	Options::getRuntimeOptions()->recalculateFFT(true);
-}
-
 void Crystal::pruneWaters()
 {
 	for (int i = 0; i < moleculeCount(); i++)
@@ -2487,6 +2260,7 @@ void Crystal::bestGlobalParameters()
 {
 	Scaler scaler(shared_from_this(), _data);
 	scaler.setCycleNumber(_cycleNum);
+	scaler.findHetatmBSub();
 	scaler.findBestProbeRadius();
 	scaler.findProteinSampling();
 }

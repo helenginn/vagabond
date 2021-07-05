@@ -67,9 +67,12 @@ mat3x3 Absolute::getRealSpaceTensor()
 	subtract = b2var(subtract);
 	mat3x3 copy = _realSpaceTensor;
 	mat3x3_mult_scalar(&copy, mult);
-	copy.vals[0] -= subtract;
-	copy.vals[4] -= subtract;
-	copy.vals[8] -= subtract;
+	
+	for (size_t i = 0; i <= 8; i += 4)
+	{
+		copy.vals[i] -= subtract;
+		copy.vals[i] = fabs(copy.vals[i]);
+	}
 
 	return copy;
 }

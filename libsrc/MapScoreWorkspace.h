@@ -70,6 +70,7 @@ public:
 	CrystalPtr crystal;
 	AtomGroupPtr selectAtoms;
 	AtomGroupPtr extra;
+	VagFFTPtr comparison;
 	VagFFTPtr segment;
 	VagFFTPtr recip;
 	std::vector<CoordVal> vals;
@@ -87,6 +88,7 @@ inline void setup_space(MapScoreWorkspace *w)
 	w->crystal = CrystalPtr();
 	w->selectAtoms = AtomGroupPtr();
 	w->extra = AtomGroupPtr();
+	w->comparison = VagFFTPtr();
 	w->segment = VagFFTPtr();
 	w->recip = VagFFTPtr();
 	w->vals.clear();

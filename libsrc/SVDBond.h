@@ -57,6 +57,11 @@ public:
 		return _num;
 	}
 	
+	void setMatrix(bool m)
+	{
+		_matrix = m;
+	}
+	
 	void setSilent(bool s)
 	{
 		_silent = s;
@@ -66,6 +71,11 @@ public:
 	{
 		_doTorsion = t;
 	}
+	
+	void setRamachandran(bool rama)
+	{
+		_rama = rama;
+	}
 
 	void bondsFromStrategy(RefinementStrategyPtr strategy);
 	void convertStrategyTorsions(RefinementStrategyPtr strategy, double t);
@@ -73,6 +83,8 @@ public:
 	                   bool phi = false);
 	void applyParameters();
 	void performSVD();
+	std::vector<double> getVectorForBond(BondPtr b);
+	double getValueForPair(BondPtr b, BondPtr c);
 private:
 	void prepareMatrix(double ***ptr);
 	void prepareVector(double **ptr);
@@ -81,7 +93,6 @@ private:
 	void cleanupSVD(double ***ptr);
 	void copyMatrix(double **from, double **to);
 	void compareBonds();
-	double compareTorsions(BondPtr a, BondPtr b, bool ignore_intn = false);
 	double compareForKicks(BondPtr a, BondPtr b, bool kickmod = true);
 	double compareKicks(BondPtr a, BondPtr b);
 	void writeMatrix();
@@ -108,6 +119,8 @@ private:
 	double _wTotal;
 	bool _doTorsion;
 	bool _silent;
+	bool _matrix;
+	bool _rama;
 };
 
 vec3 bond_effect_on_pos(vec3 atom_pos, mat3x3 &bond_basis, vec3 &bond_pos);

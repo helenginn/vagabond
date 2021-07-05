@@ -382,7 +382,6 @@ public:
 	static void pauseGUIFishing(bool on);
 	virtual void focusOnPosition(vec3 pos, double dist = 25);
 	void refitBackbone(int start, int end);
-	void omitScan();
 	void chelate();
 	void renderWarp();
 	void renderDensity();
@@ -478,6 +477,7 @@ private:
 	static bool _hydrogens;
 	static bool _screw;
 	static bool _angling;
+	static bool _refineGlobalParams;
 
 	/*crystal*/
 	static int _active;

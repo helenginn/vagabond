@@ -29,6 +29,24 @@ Bond::~Bond()
 
 }
 
+
+BondPtr Bond::getRamachandranBond(BondPtr bond, bool swap)
+{
+	if (bond->isLeftOfAnchor() == swap)
+	{
+		if (bond->getParentModel()->isAnchor())
+		{
+			return bond;
+		}
+		return ToBondPtr(bond->getParentModel());
+	}
+	else
+	{
+		return bond->downstreamBond(0, 0);
+	}
+
+}
+
 void Bond::initialize()
 {
 	_fish = true;

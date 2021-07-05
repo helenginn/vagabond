@@ -8,6 +8,7 @@
 
 #include "Atom.h"
 #include "Absolute.h"
+#include "FFT.h"
 #include <hcsrc/mat3x3.h>
 #include <cmath>
 #include <stdlib.h>
@@ -629,6 +630,26 @@ std::string Atom::averagePDBContribution(bool samePos, bool sameB)
 	if (sameB)
 	{
 		bFactor = getInitialBFactor();
+		bFactor = 0;
+		
+		if (getModel()->isBond() && (isBackbone() || isBackboneAndSidechain()))
+		{
+			BondPtr b = ToBondPtr(getModel());
+			if (b->downstreamBondGroupCount() > 0)
+			{
+				double kick = Bond::getKick(&*b);
+				kick *= kick;
+
+				if (b->hasWhack())
+				{
+					double whack = Whack::getWhack(&*b->getWhack());
+					kick += whack * whack;
+				}
+
+				kick = sqrt(kick) * 1000;
+				bFactor = kick;
+			}
+		}
 	}
 
 	return PDBReader::writeLine(shared_from_this(),

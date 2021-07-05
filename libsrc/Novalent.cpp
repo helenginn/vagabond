@@ -61,6 +61,7 @@ std::vector<BondSample> *Novalent::getManyPositions(void *object)
 	std::vector<double> occs;
 	std::vector<vec3> points;
 	double b = _b - getAtom()->getMolecule()->getAbsoluteBFacSubt();
+	b = fabs(b);
 	double msq = b / (8 * M_PI * M_PI) * 3;
 	msq *= sqrt(2);
 	points = ExplicitModel::makeCloud(totalPoints, msq, 0, occs);
@@ -138,6 +139,7 @@ void Novalent::addProperties()
 	addReference("atom", _atom.lock());
 	addVec3Property("position", &_abs);
 	addDoubleProperty("bfactor", &_b);
+	addReference("anchor", _anch);
 	
 	ExplicitModel::addProperties();
 }
@@ -153,11 +155,16 @@ void Novalent::postParseTidy()
 
 void Novalent::linkReference(BaseParserPtr object, std::string category)
 {
-	AtomPtr atom = ToAtomPtr(object);
-
 	if (category == "atom")
 	{
+		AtomPtr atom = ToAtomPtr(object);
 		_atom = atom;
+	}
+
+	if (category == "anchor")
+	{
+		AnchorPtr anch = ToAnchorPtr(object);
+		_anch = anch;
 	}
 }
 

@@ -46,6 +46,7 @@ public:
 	AtomList findAtoms(std::string atomType, int resNum,
 	                       std::string chainID = "");
 	AtomList findAtomByNum(std::string atomType, int atomNum);
+	AtomList atomsSimilarTo(AtomPtr atom);
 
 	double scoreWithMap(ScoreType scoreType, CrystalPtr crystal, 
 	                    std::string plot = "", unsigned int flags = 0);
@@ -145,6 +146,8 @@ public:
 	 *  AtomGroup::addToCubicMap */
 	void prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max, 
 	                     bool cc = false);
+	
+	void prepareComparisonMap(MapScoreWorkspace *ws, vec3 min, vec3 max);
 
 	void setTargetRefinement(CrystalPtr target, RefinementType rType);
 	virtual void refine(CrystalPtr target, RefinementType rType);
@@ -243,6 +246,7 @@ protected:
 	std::vector<AtomPtr> _atoms;
 	std::vector<BlobPtr> _blobs;
 	std::string _name;
+	double _padding;
 private:
 	static void plotCoordVals(std::vector<CoordVal> &vals, bool difference,
 	                          double cutoff, std::string filename);

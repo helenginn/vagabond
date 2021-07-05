@@ -28,6 +28,7 @@ public:
 	
 	void findBestProbeRadius();
 	void findProteinSampling();
+	void findHetatmBSub();
 	
 	void setSilent(bool silent)
 	{

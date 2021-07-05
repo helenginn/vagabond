@@ -87,10 +87,16 @@ public:
 	{
 		_magic = magic;
 	}
-private:
+
 	void findAtomsAndBonds();
-	void refineClusters();
 	void svd();
+	
+	SVDBond *getSVD()
+	{
+		return _svd;
+	}
+private:
+	void refineClusters();
 	void scanBondParams();
 	void clear();
 	void propagateWhack();
@@ -103,7 +109,7 @@ private:
 	BondEffects _bondEffects;
 	
 	std::vector<AtomPtr> _atoms;
-	std::vector<BondPtr> _bonds;
+	std::vector<BondPtr> _bonds, _ramas;
 	SVDBond *_svd;
 	
 	FlexGlobal *_flexGlobal;

@@ -82,6 +82,8 @@ public:
 	* */
 	bool test();
 	double getEffectiveOccupancy();
+
+	static BondPtr getRamachandranBond(BondPtr bond, bool swap);
 	
 	void setResetOccupancy(bool val)
 	{
@@ -518,6 +520,11 @@ public:
 
 	mat3x3 getRotatedMagicMat();
 	void calculateMagicMat();
+	
+	bool isLeftOfAnchor()
+	{
+		return _leftOfAnchor;
+	}
 	
 	bool hasWhack()
 	{

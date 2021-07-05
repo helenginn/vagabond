@@ -13,6 +13,7 @@
 #include "Twist.h"
 #include "WaterNetwork.h"
 #include "Atom.h"
+#include "Motion.h"
 #include "Bond.h"
 #include "BondGroup.h"
 #include "Monomer.h"
@@ -1428,19 +1429,8 @@ BaseParserPtr BaseParser::processBlock(char *block)
 	// Add parent to complete parser list
 	addToAllParsers(object->getAbsolutePath(), object);
 
-	// Loop through all objects to allow them to finish up.
-	for (ParserMap::iterator it = _allParsers.begin();
-	     it != _allParsers.end(); it++)
-	{
-		BaseParserPtr aParser = it->second.lock();
-		if (aParser)
-		{
-			aParser->postParseTidy();
-		}
-	}
-
-
-//	object->postParseTidy();
+	object->postParse();
+	object->postParseTidy();
 
 	std::cout << "Post-parse object tidy done..." << std::endl;
 
@@ -1450,6 +1440,24 @@ BaseParserPtr BaseParser::processBlock(char *block)
 	}
 
 	return BaseParserPtr();
+}
+
+void BaseParser::postParse()
+{
+	// Loop through all objects to allow them to finish up.
+	for (ParserList::iterator it = _parserList.begin();
+	     it != _parserList.end(); it++) 
+	{
+		for (size_t j = 0; j < it->second.size(); j++)
+		{
+			ParserPtr aParser = it->second[j];
+			if (aParser)
+			{
+				aParser->postParseTidy();
+				aParser->postParse();
+			}
+		}
+	}
 }
 
 BaseParserPtr BaseParser::resolveReference(std::string reference)

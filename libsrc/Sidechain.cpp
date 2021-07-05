@@ -30,6 +30,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 	bool medRes = (target->getMaxResolution() > 2.5);
 	bool lowRes = (target->getMaxResolution() > 3.5);
+	_padding = 3;
 
 	ParamMap tmp = getParams();
 
@@ -55,7 +56,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 		case RefinementSidePos:
 		addParamType(ParamOptionTorsion, 0.1);
-		addParamType(ParamOptionNumBonds, 3);
+		addParamType(ParamOptionNumBonds, 5);
 		break;
 
 		case RefinementSidechain:

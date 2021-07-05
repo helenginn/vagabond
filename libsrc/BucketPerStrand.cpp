@@ -18,6 +18,7 @@
 
 #include "BucketPerStrand.h"
 #include "Crystal.h"
+#include "FFT.h"
 #include "Options.h"
 #include "Anchor.h"
 #include "shared_ptrs.h"

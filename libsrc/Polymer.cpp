@@ -25,6 +25,7 @@
 #include "Crystal.h"
 #include "Sidechain.h"
 #include "Monomer.h"
+#include "Motion.h"
 #include "Sampler.h"
 #include <iostream>
 #include "Backbone.h"
@@ -652,19 +653,51 @@ void Polymer::refineAnchorPosition()
 	setSilent(true);
 	setVerbose();
 	addParamType(ParamOptionMaxTries, 1.0);
-	addParamType(ParamOptionTorsion, 0.2);
+	addParamType(ParamOptionTorsion, 0.5);
 	addParamType(ParamOptionNumBonds, num);
 	addParamType(ParamOptionCycles, 200);
-	addParamType(ParamOptionStep, 2);
+	addParamType(ParamOptionStep, 1);
 	addParamType(ParamOptionSVD, 1);
 	addParamType(ParamOptionThorough, 0);
 
 //	addAnchorParams(getAnchorModel());
-	setupThoroughSet(n_next, false);
-	setupThoroughSet(c_next, false);
+	setupThoroughSet(n_next, true);
+	setupThoroughSet(c_next, true);
 	
 	sample();
+	return;
 
+	setupNelderMead();
+	setCrystal(target);
+	setScoreType(ScoreTypeCorrel);
+	setSilent(true);
+	setVerbose();
+
+	addParamType(ParamOptionMaxTries, 1.0);
+	addParamType(ParamOptionTorsion, 5.0);
+	addParamType(ParamOptionNumBonds, num);
+	addParamType(ParamOptionCycles, 20);
+	addParamType(ParamOptionStep, 2);
+	addParamType(ParamOptionSVD, 1);
+	addParamType(ParamOptionThorough, 0);
+
+	for (int i = monomerBegin(); i < monomerEnd(); i++)
+	{
+		if (!getMonomer(i))
+		{
+			continue;
+		}
+		
+		SidechainPtr sd = getMonomer(i)->getSidechain();
+		
+		AtomPtr cb = sd->findAtom("CB");
+		if (cb != NULL)
+		{
+			setupThoroughSet(ToBondPtr(cb->getModel()), false);
+		}
+	}
+	
+	sample();
 }
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)

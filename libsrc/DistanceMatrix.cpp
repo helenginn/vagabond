@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "DistanceMatrix.h"
+#include "Motion.h"
 #include "Atom.h"
 #include "Polymer.h"
 #include "Monomer.h"

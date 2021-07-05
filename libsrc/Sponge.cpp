@@ -213,6 +213,11 @@ Sponge::~Sponge()
 void Sponge::copyActiveToFinalPos()
 {
 	std::lock_guard<std::mutex> lock(guiLock);
+	
+	if (_finalPositions.size() < _storedSamples.size())
+	{
+		_finalPositions.resize(_storedSamples.size());
+	}
 
 	_finalPositions[_n] = _storedSamples[_n].start;
 }

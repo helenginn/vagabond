@@ -328,6 +328,7 @@ double AtomGroup::getAverageBFactor(bool initial)
 
 AtomGroup::AtomGroup()
 {
+	_padding = 0;
 	_t1 = new Timer("adding atoms");
 	_t2 = new Timer("internal FFT addition");
 	_t3 = new Timer("FFT transformation");
@@ -963,6 +964,19 @@ void AtomGroup::xyzLimits(vec3 *min, vec3 *max)
 	}
 }
 
+void AtomGroup::prepareComparisonMap(MapScoreWorkspace *ws, vec3 min, vec3 max)
+{
+	VagFFTPtr obs = ws->crystal->getFFT();
+	mat3x3 m = obs->getRecipBasis();
+	mat3x3_mult_vec(m, &min);
+	mat3x3_mult_vec(m, &max);
+	min -= make_vec3(1, 1, 1);
+	max += make_vec3(1, 1, 1);
+
+	VagFFTPtr vag = obs->subFFT(min.x, max.x, min.y, max.y, min.z, max.z);
+	ws->comparison = vag;
+}
+
 void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
 {
 	size_t nElements = totalElements();
@@ -1033,7 +1047,7 @@ void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max,
 		buff = getParameter(ParamOptionPadding);
 	}
 
-	buff += cubeDim * 3;
+	buff += _padding + cubeDim * 3;
 	vec3 buffer = make_vec3(buff, buff, buff);
 	vec3_subtract_from_vec3(&min, buffer);
 
@@ -1235,6 +1249,9 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 
 		/* find all the non-moving atoms */
 		createConstantFraction(workspace, min, max);
+
+		/* prepare the selection to be compared */
+		selected->prepareComparisonMap(workspace, min, max);
 	}
 			
 	/* in the case where we wish to recalculate constant atom positions */
@@ -1298,7 +1315,7 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot,
 		if (step <= 0) step = 1;
 	}
 
-	VagFFT::operation(map, ws->segment, mapType, &ws->vals, 
+	VagFFT::operation(ws->comparison, ws->segment, mapType, &ws->vals, 
 	                  false, !first, step);
 
 	/* Debugging ... writes cc_score.csv and cc_score.png, csv can be
@@ -1433,7 +1450,7 @@ vec3 AtomGroup::centroid()
 	{
 		vec3 abs = atom(i)->getAbsolutePosition();
 		
-		if (abs.x != abs.x)
+		if (!vec3_is_sane(abs))
 		{
 			continue;
 		}
@@ -1613,4 +1630,13 @@ void AtomGroup::convertWaters()
 	}
 	
 	std::cout << "Converted waters." << std::endl;
+}
+
+AtomList AtomGroup::atomsSimilarTo(AtomPtr a)
+{
+	std::string type = a->getAtomName();
+	std::string id = a->getChainID();
+	int resnum = a->getResidueNum();
+
+	return findAtoms(type, resnum, id);
 }

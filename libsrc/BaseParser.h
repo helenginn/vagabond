@@ -123,6 +123,7 @@ public:
 	*  appropriate to perform some final tidying functions.	
 	*/
 	virtual void postParseTidy() {};
+	void postParse();
 protected:
 	/**
 	* 	Implementation of the parser identifier should return a name of the

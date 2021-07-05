@@ -586,9 +586,6 @@ void WeightedMap::createVagaCoefficients()
 	_difft->multiplyAll(normalise);
 	duplicate->multiplyAll(normalise);
 	
-	SpaceWarpPtr sw = Options::getActiveCrystal()->getWarp();
-	sw->setCalculated(_fft);
-
 	duplicate->fft(FFTRealToReciprocal);
 	_difft->fft(FFTRealToReciprocal);
 

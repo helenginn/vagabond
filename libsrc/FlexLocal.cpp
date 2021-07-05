@@ -77,6 +77,8 @@ void FlexLocal::svd()
 	}
 
 	_svd = new SVDBond(_bonds, _atoms);
+	_svd->setRamachandran(true);
+	_svd->setMatrix(true);
 	_svd->performSVD();
 	
 	std::cout << _svd->numClusters() << " clusters.";
@@ -264,6 +266,7 @@ void FlexLocal::findAtomsAndBonds()
 			continue;
 		}
 
+		_ramas.push_back(Bond::getRamachandranBond(b, true));
 		_bonds.push_back(b);
 		_atoms.push_back(a);
 	}

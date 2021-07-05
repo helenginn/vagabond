@@ -86,7 +86,6 @@ void Twist::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 		vec3 start = anchSamp[i].start;
 		vec3 old_start = anchSamp[i].old_start;
 		vec3 centre = _samples[i].start;
-		
 	
 		anchSamp[i].start = rotate_round_bond(start, centre, rot);
 		anchSamp[i].old_start = rotate_round_bond(old_start, centre, rot);

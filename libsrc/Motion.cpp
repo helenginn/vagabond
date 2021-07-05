@@ -69,7 +69,7 @@ void Motion::updateAtoms()
 	}
 	else
 	{
-		_centre = _allAtoms->centroid();
+//		_centre = _allAtoms->centroid();
 	}
 }
 

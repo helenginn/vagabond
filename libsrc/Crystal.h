@@ -25,8 +25,6 @@
 #include "shared_ptrs.h"
 #include <hcsrc/mat3x3.h>
 #include "Object.h"
-#include "FFT.h"
-#include "Motion.h"
 #include <string>
 #include <map>
 #include <hcsrc/maths.h>
@@ -115,69 +113,6 @@ inline int findShell(std::vector<ShellInfo> &shells, double res)
 	}
 }
 
-inline double getNLimit(VagFFTPtr fftData, int axis = 0)
-{
-	double nLimit = 0;
-	if (axis == 0)
-	{
-		nLimit = fftData->nx();
-	}
-	else if (axis == 1)
-	{
-		nLimit = fftData->ny();
-	}
-	else if (axis == 2)
-	{
-		nLimit = fftData->nz();
-	}
-
-	nLimit = nLimit - ((int)nLimit % 2);
-	nLimit /= 2;
-
-	return nLimit;	
-	
-}
-
-inline vec3 getNLimits(VagFFTPtr data)
-{
-	vec3 lims;
-	lims.x = getNLimit(data, 0);
-	lims.y = getNLimit(data, 1);
-	lims.z = getNLimit(data, 2);
-	return lims;
-}
-
-inline double getNLimit(VagFFTPtr fftData, VagFFTPtr fftModel, int axis = 0)
-{
-	double nLimit = 0;
-	if (axis == 0)
-	{
-		nLimit = std::min((int)fftData->nx(), fftModel->nx());
-	}
-	else if (axis == 1)
-	{
-		nLimit = std::min((int)fftData->ny(), fftModel->ny());
-	}
-	else if (axis == 2)
-	{
-		nLimit = std::min((int)fftData->nz(), fftModel->nz());
-	}
-
-	nLimit = nLimit - ((int)nLimit % 2);
-	nLimit /= 2;
-
-	return nLimit;	
-}
-
-inline vec3 getNLimits(VagFFTPtr data, VagFFTPtr fftModel)
-{
-	vec3 lims;
-	lims.x = getNLimit(data, fftModel, 0);
-	lims.y = getNLimit(data, fftModel, 1);
-	lims.z = getNLimit(data, fftModel, 2);
-	return lims;
-}
-
 inline void makeShells(std::vector<ShellInfo> *shells, double min, double max,
                        int number = 20)
 {
@@ -225,10 +160,6 @@ public:
 	
 	/** Should be folded into previous concludeRefinement(...) soon */
 	void wrapUpRefinement();
-	
-	/** Calculate new observed/calculated density but don't write out
-	 * 	R factors to the screen */
-	void silentConcludeRefinement();
 	
 	/** Move back to an earlier saved version of the model */
 	static void vsRestoreState(void *object, double val);
@@ -299,13 +230,6 @@ public:
 	{
 		return _hkl2real;
 	}
-	
-	SpaceWarpPtr getWarp()
-	{
-		return _sw;
-	}
-
-	void spaceWarp();
 
 	VagFFTPtr getFFT()
 	{
@@ -333,8 +257,6 @@ public:
 		return _spaceGroup->nsymop;
 	}
 	
-	void omitScan();
-	
 	void prepareFFT(VagFFTPtr ft);
 	/** Write out the % contribution of elements in the crystal to the
 	 *  total difference density */
@@ -359,22 +281,9 @@ public:
 	* 	not yet been determined, in Angstroms. */
 	void realSpaceClutter();
 	
-	/** Creates an MTZ file to open in Coot.
-	* 	\param data diffraction data to get F-obs from.
-	* 	\param prefix for choosing a filename */
-	void writeMillersToFile(DiffractionPtr data, std::string prefix = "");
-
-	void fourierTransform(int dir, double res = FLT_MAX);
-	
-	/** Finds appropriate scale factor for the solvent contribution by means
-	 * of a grid search. Starts with a global scale factor, then scales
-	 * the solvent, then a full scale by resolution bin. */
-	void scaleComponents(DiffractionPtr data);
 	double rFactorWithDiffraction(DiffractionPtr data, bool verbose = false);
 	double valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 	                            bool allShells = false, bool verbose = false);
-	double getDataInformation(DiffractionPtr data, double partsFo = 2,
-	                          double partsFc = 1, std::string prefix = "");
 	
 	void scaleAndBFactor(DiffractionPtr data, double *scale, 
                               double *bFactor, VagFFTPtr model = VagFFTPtr());
@@ -600,6 +509,10 @@ public:
 
 	void bestGlobalParameters();
 	void writeVagabondFile(int cycleNum);
+	void makePDBs(std::string suffix);
+
+	void applySymOps();
+	void fourierTransform(int dir, double res = -1);
 protected:
 	virtual void postRestoreState();
 	virtual void addObject(ParserPtr object, std::string category);
@@ -632,8 +545,6 @@ private:
 	double _calcElec;
 
 	void reportScaling();
-	void makePDBs(std::string suffix);
-	void applySymOps();
 	void setupOriginalMap();
 	
 	std::string _lastEnsemblePDB;
@@ -672,8 +583,6 @@ private:
 	VagFFTPtr _fft;
 	VagFFTPtr _difft;
 	
-	SpaceWarpPtr _sw;
-	
 	/* imag component may contain (weighted map - original) */
 	VagFFTPtr _original;
 
@@ -684,8 +593,6 @@ private:
 	double updateVariable(double *local, option_getter get, Setter set,
 	                      std::string name, std::string unit, 
 	                      double default_val);
-	
-	void scaleSolvent(DiffractionPtr data);
 };
 }
 

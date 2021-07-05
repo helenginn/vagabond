@@ -44,6 +44,7 @@ double Options::_minRes = HUGE_VAL;
 double Options::_maxRes = -1.0;
 double Options::_probeRadius = -0.2;
 double Options::_shrink = -0.2;
+bool Options::_refineGlobalParams = true;
 bool Options::_useRFree = true;
 bool Options::_lowResMode = false;
 int Options::_bondAngles = 0;
@@ -260,7 +261,6 @@ void Options::executeProtocol()
 		crystal->updatePDBContents(_updatePDB);
 		return;
 	}
-	
 
 	if (!_refine)
 	{
@@ -268,12 +268,13 @@ void Options::executeProtocol()
 		recalculateFFT();
 		return;
 	}
+
+	crystal->refreshAnchors();
 	
 	if (_rPosition)
 	{
 		int tmp = crystal->getSampleNum();
 		_nSamples = 1;
-		crystal->refreshAnchors();
 		int total = 15;
 		
 		if (_pCycles >= 0)
@@ -369,12 +370,12 @@ void Options::executeProtocol()
 						break;
 					}
 				}
-				
-				if (i == 0 && j == 0)
-				{
-					crystal->bestGlobalParameters();
-				}
 			}
+		}
+
+		if (i == 0 && _refineGlobalParams && _rInter)
+		{
+			crystal->bestGlobalParameters();
 		}
 
 		for (int j = 0; j < 1 && _far && i >= 1; j++)
@@ -406,6 +407,8 @@ void Options::executeProtocol()
 				break;
 			}
 		}
+		
+		crystal->makePDBs("");
 		
 		double newWork = crystal->getWorkValue();
 		
@@ -710,6 +713,8 @@ void Options::parse()
 		understood |= parseParameter(arg, "fit-solvent", &_fitBucket);
 		understood |= parseParameter(arg, "hydrogens", &_hydrogens);
 		understood |= parseParameter(arg, "low-res-mode", &_lowResMode);
+		understood |= parseParameter(arg, "global-parameters", 
+		                             &_refineGlobalParams);
 		
 		int shellNum = 0;
 		bool shellstood = parseParameter(arg, "--shell-scale=", &shellNum);
@@ -972,6 +977,9 @@ void Options::recalculateFFT(bool saveState)
 			throw -1;
 		}
 	}
+
+	CrystalPtr crystal = getActiveCrystal();
+	crystal->makePDBs("");
 	
 	t.report();
 }
@@ -1087,11 +1095,6 @@ void Options::pauseGUIFishing(bool on)
 void Options::chelate()
 {
 	getActiveCrystal()->chelate();
-}
-
-void Options::omitScan()
-{
-	getActiveCrystal()->omitScan();
 }
 
 void Options::refitBackbone(int start, int end)

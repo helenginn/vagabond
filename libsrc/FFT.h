@@ -58,6 +58,7 @@ typedef struct
 	fftwf_plan recip_to_real;
 } FFTDim;
 
+
 class VagFFT : public boost::enable_shared_from_this<VagFFT>
 {
 public:
@@ -556,5 +557,69 @@ protected:
 	bool _setMatrices;
 	bool _isCubic;
 };
+
+
+inline double getNLimit(VagFFTPtr fftData, int axis = 0)
+{
+	double nLimit = 0;
+	if (axis == 0)
+	{
+		nLimit = fftData->nx();
+	}
+	else if (axis == 1)
+	{
+		nLimit = fftData->ny();
+	}
+	else if (axis == 2)
+	{
+		nLimit = fftData->nz();
+	}
+
+	nLimit = nLimit - ((int)nLimit % 2);
+	nLimit /= 2;
+
+	return nLimit;	
+	
+}
+
+inline vec3 getNLimits(VagFFTPtr data)
+{
+	vec3 lims;
+	lims.x = getNLimit(data, 0);
+	lims.y = getNLimit(data, 1);
+	lims.z = getNLimit(data, 2);
+	return lims;
+}
+
+inline double getNLimit(VagFFTPtr fftData, VagFFTPtr fftModel, int axis = 0)
+{
+	double nLimit = 0;
+	if (axis == 0)
+	{
+		nLimit = std::min((int)fftData->nx(), fftModel->nx());
+	}
+	else if (axis == 1)
+	{
+		nLimit = std::min((int)fftData->ny(), fftModel->ny());
+	}
+	else if (axis == 2)
+	{
+		nLimit = std::min((int)fftData->nz(), fftModel->nz());
+	}
+
+	nLimit = nLimit - ((int)nLimit % 2);
+	nLimit /= 2;
+
+	return nLimit;	
+}
+
+inline vec3 getNLimits(VagFFTPtr data, VagFFTPtr fftModel)
+{
+	vec3 lims;
+	lims.x = getNLimit(data, fftModel, 0);
+	lims.y = getNLimit(data, fftModel, 1);
+	lims.z = getNLimit(data, fftModel, 2);
+	return lims;
+}
 
 #endif
