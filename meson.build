@@ -97,7 +97,6 @@ base_files = files('libsrc/Absolute.cpp',
 'libsrc/DiffractionMTZ.cpp', 
 'libsrc/DistanceMatrix.cpp', 
 'libsrc/Element.cpp', 
-#'libsrc/ErroneousZone.cpp',
 'libsrc/ExplicitModel.cpp', 
 'libsrc/FFT.cpp', 
 'libsrc/FlexGlobal.cpp', 
@@ -120,12 +119,6 @@ base_files = files('libsrc/Absolute.cpp',
 'libsrc/PNGFile.cpp', 
 'libsrc/Polymer.cpp', 
 'libsrc/Refitter.cpp', 
-#'libsrc/RefinementGridSearch.cpp', 
-#'libsrc/RefinementLBFGS.cpp', 
-#'libsrc/RefinementList.cpp', 
-#'libsrc/RefinementNelderMead.cpp', 
-#'libsrc/RefinementStepSearch.cpp', 
-#'libsrc/RefinementStrategy.cpp', 
 'libsrc/Sampler.cpp', 
 'libsrc/Scaler.cpp', 
 'libsrc/Shouter.cpp', 
@@ -138,10 +131,8 @@ base_files = files('libsrc/Absolute.cpp',
 'libsrc/SymMate.cpp', 
 'libsrc/SVDBond.cpp', 
 'libsrc/TextManager.cpp', 
-#'libsrc/Timer.cpp', 
 'libsrc/Twist.cpp', 
 'libsrc/VBondReader.cpp', 
-#'libsrc/vec3.cpp', 
 'libsrc/vagmaths.cpp', 
 'libsrc/WaterNetwork.cpp', 
 'libsrc/WeightedMap.cpp', 
@@ -308,7 +299,7 @@ install_headers([
 'libsrc/Options.h',
 'libsrc/PDBReader.h',
 'libsrc/PNGFile.h',
-#'libsrc/Param.h',
+'libsrc/Param.h',
 'libsrc/ParamBand.h',
 'libsrc/Parser.h',
 'libsrc/ParserTypes.h',
@@ -359,6 +350,12 @@ install_headers([
  subdir : 'vaggui')
 
 install_headers([
+'libica/svdcmp.h',
+'libica/matrix.h',
+],
+ subdir : 'libica')
+
+install_headers([
 'c4xsrc/AveCAlpha.h', 
 'c4xsrc/AveDiffraction.h', 
 'c4xsrc/AveUnitCell.h', 
@@ -393,6 +390,11 @@ install_headers([
 'c4xsrc/Vertex.h', 
 'c4xsrc/UCPlot.h'],
  subdir : 'c4xsrc')
+
+install_headers([
+'c4xsrc/shaders/Blob_vsh.h', 
+'c4xsrc/shaders/Blob_fsh.h'],
+ subdir : 'c4xsrc/shaders')
 
 install_headers([
 'liblbfgs/lbfgs.h'], 
