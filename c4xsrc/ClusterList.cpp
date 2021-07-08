@@ -313,14 +313,21 @@ bool ClusterList::loadFiles(bool force)
 
 		if (file_exists(pdb))
 		{
-			PDBReader reader;
-			reader.setFilename(pdb);
-			reader.ignoreAtomsExcept("CA");
-			crystal = reader.getCrystal();
-			
-			file->setCrystal(crystal);
-			file->setRWork(reader.getRWork());
-			file->setRFree(reader.getRFree());
+			try
+			{
+				PDBReader reader;
+				reader.setFilename(pdb);
+				reader.ignoreAtomsExcept("CA");
+				crystal = reader.getCrystal();
+
+				file->setCrystal(crystal);
+				file->setRWork(reader.getRWork());
+				file->setRFree(reader.getRFree());
+			}
+			catch (Shouter s)
+			{
+
+			}
 		}
 
 		grp->addMtz(mtz, file);
