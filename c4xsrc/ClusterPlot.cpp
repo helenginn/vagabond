@@ -74,7 +74,19 @@ void ClusterPlot::recolour()
 		Helen3D::Vertex *v = &_vertices[i];
 		MtzFile *file = _grp->getMtz(i)->getMtzFile();
 		file->recolourVertex(v);
+		
+		if (_texts.size() > i)
+		{
+			_texts[i]->setColour(v->color[0], v->color[1], 
+			                     v->color[2], v->color[3]);
+			_texts[i]->prepare();
+		}
 	}
 
 	_keeper->update();
+}
+
+void ClusterPlot::extraUniforms()
+{
+	Plot3D::extraUniforms();
 }

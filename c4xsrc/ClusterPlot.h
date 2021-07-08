@@ -39,6 +39,7 @@ public:
 	virtual void selectInWindow(float x1, float y1, float x2, float y2,
 	                            int add);
 
+	virtual void extraUniforms();
 protected:
 	virtual void recolour();
 	Group *_grp;

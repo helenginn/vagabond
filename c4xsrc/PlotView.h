@@ -52,6 +52,7 @@ public:
 		_scr = scr;
 	}
 
+	void rotate(double deg = 6);
 	void setup(Group *grp);
 	virtual void resizeEvent(QResizeEvent *e);
 private:

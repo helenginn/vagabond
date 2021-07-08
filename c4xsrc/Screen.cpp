@@ -30,6 +30,7 @@
 #include <QPlainTextEdit>
 #include <QFileDialog>
 #include <QIcon>
+#include <h3dsrc/Dialogue.h>
 #include <iostream>
 #include <iomanip>
 
@@ -37,6 +38,7 @@
 #include "Screen.h"
 #include "SelectionWindow.h"
 #include "CAlphaView.h"
+#include "DisplaySettings.h"
 #include "ClusterList.h"
 #include "CorrelLabel.h"
 #include "MtzFile.h"
@@ -578,13 +580,18 @@ void Screen::displayResults(Group *ave)
 
 		addColour("aqua", "Aqua", m);
 		addColour("skyblue", "Sky blue", m);
+		addColour("cornflowerblue", "Cornflower blue", m);
 		addColour("blueviolet", "Blue violet", m);
 		addColour("mediumpurple", "Medium purple", m);
+		addColour("purple", "Purple", m);
 		addColour("forestgreen", "Forest green", m);
 		addColour("orange", "Orange", m);
+		addColour("darkorange", "Dark orange", m);
+		addColour("grey", "Grey", m);
 		addColour("orchid", "Orchid", m);
 		addColour("darkred", "Dark red", m);
 		addColour("springgreen", "Spring green", m);
+		addColour("limegreen", "Lime green", m);
 
 		_changeColour->setMenu(m);
 	}
@@ -647,12 +654,24 @@ void Screen::displayResults(Group *ave)
 	
 	bottom -= 50;
 
-	_images = new QPushButton("Export images", this);
+	_images = new QPushButton("Image view", this);
 	_images->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, bottom,
 	                     RIGHT_VIEW_WIDTH - 20, 40);
+
+	m = new QMenu(_images);
+	{
+		QAction *a3 = m->addAction("Display settings");
+		connect(a3, &QAction::triggered, this, &Screen::displaySettings);
+		QAction *a2 = m->addAction("Rotate plot");
+		connect(a2, &QAction::triggered, this, &Screen::rotateDegrees);
+		QAction *a1 = m->addAction("Plot spin movie");
+		connect(a1, &QAction::triggered, this, &Screen::plotSpin);
+		QAction *a4 = m->addAction("Export C-alpha image");
+		connect(a4, &QAction::triggered, this, &Screen::saveImages);
+	}
+
+	_images->setMenu(m);
 	_images->show();
-	connect(_images, &QPushButton::clicked,
-	        this, &Screen::saveImages);
 
 	bottom -= 50;
 
@@ -944,4 +963,50 @@ void Screen::keyPressEvent(QKeyEvent *e)
 void Screen::returnToSender()
 {
 	_returnJourney->finished();
+}
+
+void Screen::rotateDegrees()
+{
+	_svdView->rotate();
+}
+
+void Screen::displaySettings()
+{
+	DisplaySettings *ds = new DisplaySettings(NULL);
+	ds->setList(_list);
+	ds->show();
+
+}
+
+void Screen::plotSpin()
+{
+	std::string folder = openDialogue(this, "Image folder", "", true, true);
+
+	if (folder == "")
+	{
+		return;
+	}
+
+	std::string pattern = folder + "/fr*.png";
+	std::vector<std::string> files = glob(pattern);
+
+	for (size_t i = 0; i < files.size(); i++)
+	{
+		remove(files[i].c_str());
+	}
+
+	FileReader::setOutputDirectory(folder);
+	int count = 0;
+
+	for (size_t i = 0; i < 360; i++)
+	{
+		std::string number = i_to_str(i);
+		std::string zeros = std::string(5 - number.length(), '0');
+		std::string filename = "fr_" + zeros + number + ".png";
+		std::string path = FileReader::addOutputDirectory(filename);
+		std::cout << path << std::endl;
+
+		_svdView->rotate(-1);
+		_svdView->keeper()->saveImage(path);
+	}
 }

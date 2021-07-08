@@ -76,6 +76,7 @@ public:
 	void displaySingle(MtzFFTPtr fft);
 	void updateToolbar(Group *grp);
 	void addCSVSwitcher();
+	void displaySettings();
 	
 	void setReturnJourney(C4XAcceptor *ptr)
 	{
@@ -93,6 +94,7 @@ public slots:
 	void newSelection();
 	void markSelection();
 	void removeCluster();
+	void rotateDegrees();
 	void refreshSelection();
 	void collapsePositions();
 	void reorder();
@@ -103,6 +105,7 @@ public slots:
 	void reorderByFile();
 	void returnToSender();
 	void exportText();
+	void plotSpin();
 protected:
 
 	virtual void keyPressEvent(QKeyEvent *e);

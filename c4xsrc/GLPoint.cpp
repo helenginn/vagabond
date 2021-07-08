@@ -19,6 +19,7 @@
 #include <string>
 #include "GLPoint.h"
 #include "Group.h"
+#include "MtzFile.h"
 #include <hcsrc/FileReader.h>
 
 GLPoint::GLPoint() : ClusterPlot()
@@ -30,8 +31,16 @@ void GLPoint::populate()
 {
 	for (size_t i = 0; i < _grp->mtzCount(); i++)
 	{
+		MtzFile *file = _grp->getMtzFile(i);
 		vec3 point = _grp->getPoint(i, _a, _b, _c);
-		addPoint(point);
+		std::string text = file->metadata();
+		
+		if (file->isDead())
+		{
+			text = "";
+		}
+
+		addPoint(point, text);
 	}
 	
 	recolour();

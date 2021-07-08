@@ -109,3 +109,9 @@ void PlotView::setup(Group *grp)
 	_scroll->makeLayout();
 	_scroll->show();
 }
+
+void PlotView::rotate(double deg)
+{
+	_keeper->rotate(0, deg2rad(deg), 0);
+
+}

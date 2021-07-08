@@ -21,13 +21,18 @@
 
 #include <h3dsrc/SlipObject.h>
 
+class Text;
+
 class GLAxis : public SlipObject
 {
 public:
 	GLAxis(vec3 dir);
 	
 	void setupVertices(vec3 dir);
+	void addText(std::string text);
+	virtual void render(SlipGL *gl);
 private:
+	Text *_text;
 
 };
 
