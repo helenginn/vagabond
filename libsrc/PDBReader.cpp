@@ -426,9 +426,9 @@ CrystalPtr PDBReader::getCrystal()
 
 	if (!_foundCrystal)
 	{
-		shout_at_user("PDB file does not contain the CRYST1\n" \
+		throw Shouter("PDB file does not contain the CRYST1\n" \
 		              "entry line which has details about the\n" \
-		"unit cell dimensions and space group.");
+		              "unit cell dimensions and space group.");
 	}
 
 	return _myCrystal;
