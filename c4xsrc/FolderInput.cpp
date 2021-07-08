@@ -21,6 +21,7 @@
 #include "MtzOptions.h"
 #include <QLabel>
 #include <QLineEdit>
+#include <QCheckBox>
 #include <QPushButton>
 #include <stdexcept>
 #include <QHBoxLayout>
@@ -98,6 +99,10 @@ FolderInput::FolderInput(QWidget *widget) : QMainWindow(widget)
 		e->setPlaceholderText("placeholder.pdb");
 		_pdbLine = e;
 		hout->addWidget(e);
+
+		QCheckBox *c = new QCheckBox("Optional", this);
+		c->setObjectName("optional_pdb");
+		hout->addWidget(c);
 		
 		vout->addLayout(hout);
 	}
@@ -205,6 +210,7 @@ void FolderInput::load()
 	}
 	
 	std::vector<DatasetPath> paths;
+	bool optional = findChild<QCheckBox *>("optional_pdb")->isChecked();
 	
 	for (size_t i = 0; i < results.size(); i++)
 	{
@@ -294,13 +300,16 @@ void FolderInput::load()
 			<< " in " << results[i] << std::endl;
 		}
 		
-		if (findPdb.size() > 0 && findMtz.size() > 0)
+		if ((findPdb.size() > 0 || optional) && findMtz.size() > 0)
 		{
 			found++;
 			DatasetPath path;
 			path.mtz_path = findMtz[0];
 			path.pandda_mtz = findMtz[0];
-			path.pdb_path = findPdb[0];
+			if (findPdb.size() > 0)
+			{
+				path.pdb_path = findPdb[0];
+			}
 			
 			if (findCif.size() == 1)
 			{
@@ -330,7 +339,7 @@ void FolderInput::load()
 	                  "found " + i_to_str(found) + " usable folders, and "
 	                  + i_to_str(missing) + " with at least one missing "
 	                  "MTZ or PDB file."));
-
+	
 	_list->load(paths);
 	hide();
 	
