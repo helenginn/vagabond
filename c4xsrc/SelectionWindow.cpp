@@ -29,6 +29,7 @@ SelectionWindow::SelectionWindow(QWidget *parent, KeeperGL *keeper)
 	_plot = NULL;
 	_selectMode = false;
 	_removeMode = false;
+	_altMode = false;
 	_startX = -1;
 	_startY = -1;
 
@@ -102,7 +103,7 @@ void SelectionWindow::mouseReleaseEvent(QMouseEvent *e)
 
 void SelectionWindow::mouseMoveEvent(QMouseEvent *e)
 {
-	if (_selectMode == false && _removeMode == false)
+	if (_selectMode == false && _removeMode == false && _altMode == false)
 	{
 		_keeper->mouseMoveEvent(e);
 		return;
@@ -114,6 +115,18 @@ void SelectionWindow::mouseMoveEvent(QMouseEvent *e)
 	
 	if (_startX < 0 || _startY < 0)
 	{
+		return;
+	}
+
+	if (_altMode)
+	{
+		double x = p.x() - _startX;
+		double y = p.y() - _startY;
+		
+		_keeper->panned(-x / 100, -y / 100);
+
+		_startX = p.x();
+		_startY = p.y();
 		return;
 	}
 	
@@ -133,7 +146,7 @@ void SelectionWindow::mouseMoveEvent(QMouseEvent *e)
 
 void SelectionWindow::mousePressEvent(QMouseEvent *e)
 {
-	if (_selectMode == false && _removeMode == false)
+	if (_selectMode == false && _removeMode == false && _altMode == false)
 	{
 		_keeper->mousePressEvent(e);
 		return;
@@ -154,12 +167,16 @@ void SelectionWindow::keyPressEvent(QKeyEvent *event)
 	{
 		_removeMode = true;
 	}
+	else if (event->key() == Qt::Key_Alt)
+	{
+		_altMode = true;
+	}
 }
 
 void SelectionWindow::keyReleaseEvent(QKeyEvent *event)
 {
 	/* don't change mode while dragging mouse */
-	if (_startX >= 0 || _startY >= 0)
+	if ((_startX >= 0 || _startY >= 0) && _altMode == false)
 	{
 		return;
 	}
@@ -171,6 +188,10 @@ void SelectionWindow::keyReleaseEvent(QKeyEvent *event)
 	if (event->key() == Qt::Key_Control)
 	{
 		_removeMode = false;
+	}
+	if (event->key() == Qt::Key_Alt)
+	{
+		_altMode = false;
 	}
 }
 

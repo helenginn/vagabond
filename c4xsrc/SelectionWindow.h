@@ -49,6 +49,7 @@ private:
 
 	bool _selectMode;
 	bool _removeMode;
+	bool _altMode;
 	int _startX;
 	int _startY;
 };
