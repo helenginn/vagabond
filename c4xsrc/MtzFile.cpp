@@ -50,6 +50,7 @@ void MtzFile::recolourVertex(Helen3D::Vertex *v, bool fullDead)
 			v->color[3] = 0.;
 		}
 
+		v->color[3] = 0.;
 		return;
 	}
 	if (isSelected())
