@@ -30,6 +30,15 @@ public:
 	MatrixView(Group *ave, int width = 500, int height = 500);
 
 	void populate();
+	void populate(int width, int height, double **raw);
+	void populateFromGroup();
+
+	std::string getName(int x, int y);
+
+	void setNames(char ***names)
+	{
+		_names = names;
+	}
 	
 	void setContrast(double cont)
 	{
@@ -45,6 +54,8 @@ public:
 private:
 	double _contrast;
 	Group *_ave;
+	char ***_names;
+	int _w, _h;
 
 };
 

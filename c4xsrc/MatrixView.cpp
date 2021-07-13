@@ -20,36 +20,113 @@
 #include "MtzFFT.h"
 #include "MtzFile.h"
 #include "Group.h"
+#include <hcsrc/maths.h>
 #include <QPainter>
 #include <iostream>
 
 MatrixView::MatrixView(Group *ave, int w, int h) : QImage(w + 1, h, QImage::Format_RGB32)
 {
 	_ave = ave;
+	_names = NULL;
 	_contrast = 1;
 	fill(Qt::white);
 }
 
 void MatrixView::populate()
 {
+	populateFromGroup();
+}
+
+std::string MatrixView::getName(int x, int y)
+{
+	if (x < 0 || y < 0 || x >= width() || y >= height())
+	{
+		return "";
+	}
+
+	double box_width = ((double)width() / (double)(_w));
+	double box_height = ((double)height() / (double)(_h));
+
+	int nx = x / box_width;
+	int ny = y / box_height;
+
+	return std::string(_names[nx][ny]);
+}
+
+void MatrixView::populateFromGroup()
+{
 	int num = _ave->mtzCount();
 	double **raw = _ave->getRawPtr();
-
 	QPainter painter(this);
-
 	double box_size = ((double)width() / (double)(num));
 	
 	int red = 255;
 	int green = 0;
 	int blue = 0;
 
-	for (int j = 0; j < num; j++)
+	for (int i = 0; i < num; i++)
 	{
-		MtzFile *file = _ave->getMtz(j)->getMtzFile();
-		for (int i = 0; i < num; i++)
+		MtzFile *file = _ave->getMtz(i)->getMtzFile();
+		for (int j = 0; j < num; j++)
 		{
 			double val = raw[i][j];
 			val /= _contrast;
+			
+			val_to_cluster4x_colour(val, &red, &green, &blue);
+			
+			if (file->isDead())
+			{
+				red = 0;
+				green = 0;
+				blue = 0;
+			}
+			else if (file->isMarked())
+			{
+				red *= 0.5;
+				green *= 0.5;
+				blue *= 0.5;
+			}
+			else if (file->isSelected())
+			{
+				red = 255 - (255 - red) / 2;
+				green = 255 - (255 - green) / 2;
+				blue = 0;
+			}
+
+			QColor c = QColor(red, green, blue, 255);
+			QPen p = QPen(c);
+			QBrush b = QBrush(c, Qt::SolidPattern);
+			painter.setPen(p);
+			painter.setBrush(b);
+			
+			painter.drawRect(box_size * j, box_size * i,
+			                 box_size + 1, box_size + 1);
+		}
+	}
+}
+
+void MatrixView::populate(int w, int h, double **raw)
+{
+	_w = w;
+	_h = h;
+
+	QPainter painter(this);
+
+	double box_width = ((double)width() / (double)(w));
+	double box_height = ((double)height() / (double)(h));
+	
+	int red = 255;
+	int green = 0;
+	int blue = 0;
+
+	for (int j = 0; j < h; j++)
+	{
+		for (int i = 0; i < w; i++)
+		{
+			double val = raw[i][j];
+			val /= _contrast;
+			
+			val_to_cluster4x_colour(val, &red, &green, &blue);
 			
 			if (val > 2) val = 2;
 
@@ -88,26 +165,6 @@ void MatrixView::populate()
 				green = 255 - val * 255;
 				blue = 255 - val * 255;
 			}
-			
-			
-			if (file->isDead())
-			{
-				red = 0;
-				green = 0;
-				blue = 0;
-			}
-			else if (file->isMarked())
-			{
-				red *= 0.5;
-				green *= 0.5;
-				blue *= 0.5;
-			}
-			else if (file->isSelected())
-			{
-				red = 255 - (255 - red) / 2;
-				green = 255 - (255 - green) / 2;
-				blue = 0;
-			}
 
 			QColor c = QColor(red, green, blue, 255);
 			QPen p = QPen(c);
@@ -115,8 +172,8 @@ void MatrixView::populate()
 			painter.setPen(p);
 			painter.setBrush(b);
 			
-			painter.drawRect(box_size * i, box_size * j,
-			                 box_size + 1, box_size + 1);
+			painter.drawRect(box_width * i, box_height * j,
+			                 box_width + 1, box_height + 1);
 		}
 	}
 }
