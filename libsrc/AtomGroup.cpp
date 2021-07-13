@@ -53,8 +53,8 @@ AtomList AtomGroup::findAtoms(std::string atomType, int resNum,
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		if ((atom(i)->getAtomName() == atomType)
-		 && ((atom(i)->getResidueNum() == resNum) || resNum == INT_MAX))
+		if ((atom(i)->getAtomName() == atomType
+		 && (atom(i)->getResidueNum() == resNum) || resNum == INT_MAX))
 		{
 			if (chainID.length())
 			{
