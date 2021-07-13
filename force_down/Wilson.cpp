@@ -18,6 +18,7 @@
 
 #include "Wilson.h"
 #include <libsrc/Crystal.h>
+#include <libsrc/FFT.h>
 #include <hcsrc/FileReader.h>
 #include <libsrc/CSV.h>
 #include <hcsrc/maths.h>
