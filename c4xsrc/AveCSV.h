@@ -53,6 +53,8 @@ public:
 		_list = list;
 	}
 	
+	void prepareFromVectors(std::string filename);
+	
 	static size_t csvCount()
 	{
 		return _relationships.size();
@@ -73,6 +75,11 @@ public:
 		_chosen = chosen;
 	}
 	
+	void setComparisonType(int type)
+	{
+		_compType = type;
+	}
+	
 	static void setChosen(std::string);
 	
 	void startNewCSV(std::string name);
@@ -88,9 +95,11 @@ private:
 
 	ClusterList *_list;
 	std::map<std::string, int> _ids;
+	std::map<std::string, std::vector<double> > _vectors;
 	static std::vector<std::string> _filenames;
 	static std::vector<Relationships> _relationships;
 	static int _chosen;
+	int _compType;
 };
 
 #endif

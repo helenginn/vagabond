@@ -20,10 +20,13 @@
 #include "Group.h"
 #include <iostream>
 
+bool Average::_vectorList = false;
+
 Average::Average(Group *group)
 {
 	_group = group;
 	_symmetric = true;
+	std::cout << "Average vector list = " << _vectorList << std::endl;
 	
 	if (_group)
 	{
@@ -35,6 +38,31 @@ void Average::findIntercorrelations(Group *other, double **svd)
 {
 	int total = 0;
 	int missing = 0;
+
+	std::cout << "find intercorrel Vectorlist: " << _vectorList << std::endl;
+	
+	if (_vectorList)
+	{
+		for (size_t i = 0; i < other->mtzCount(); i++)
+		{
+			for (size_t j = 0; j < other->mtzCount(); j++)
+			{
+				if (i == j)
+				{
+//					continue;
+				}
+
+				MtzFFTPtr one = other->getMtz(i);
+				MtzFFTPtr two = other->getMtz(j);
+
+				double cc = findCorrelation(one, two);
+
+				svd[i][j] = cc;
+			}
+		}
+
+		return;
+	}
 
 	if (_symmetric)
 	{
@@ -68,11 +96,6 @@ void Average::findIntercorrelations(Group *other, double **svd)
 		{
 			for (size_t j = 0; j < other->mtzCount(); j++)
 			{
-				if (i == j)
-				{
-					continue;
-				}
-				
 				total++;
 
 				MtzFFTPtr one = other->getMtz(i);
@@ -85,6 +108,10 @@ void Average::findIntercorrelations(Group *other, double **svd)
 				{
 					svd[i][j] = nan(" ");
 					missing++;
+				}
+				else if (cc1 == cc1)
+				{
+					svd[i][j] = cc1;
 				}
 				else if (cc1 != cc1)
 				{

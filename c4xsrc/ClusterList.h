@@ -43,6 +43,8 @@ public:
 	void getFromStream();
 	void getFromCSV(AveCSV *csv);
 	void loadFromMultistate(std::string pdb);
+	void loadFromVectorList(std::string filename);
+
 	void setScreen(Screen *scr)
 	{
 		_screen = scr;
@@ -157,6 +159,8 @@ private:
 	int _skip;
 	std::string _csv;
 	std::string _pdb;
+	std::string _vectors;
+	std::string _compType;
 	std::string _preload;
 	std::string _stream;
 	std::string _geom;

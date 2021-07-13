@@ -110,6 +110,7 @@ void ClusterList::load(std::vector<DatasetPath> paths)
 {
 	_sqlInput = false;
 	_csvInput = false;
+	_vectors = "";
 	_paths = paths;
 	loadFiles(true);
 }
@@ -187,6 +188,24 @@ void ClusterList::switchCSV(int c)
 	csvAverage();
 }
 
+void ClusterList::loadFromVectorList(std::string filename)
+{
+	std::cout << "Loading from vector list: " << filename << std::endl;
+	AveCSV *input = new AveCSV(NULL);
+	input->setList(this);
+	
+	if (_compType == "distance")
+	{
+		input->setComparisonType(1);
+	}
+
+	input->prepareFromVectors(filename);
+	input->preparePaths();
+
+	_csvGroup = input;
+	_screen->addCSVSwitcher();
+}
+
 void ClusterList::loadFromMultistate(std::string pdb)
 {
 	std::cout << "Loading from multi-state: " << pdb << std::endl;
@@ -241,6 +260,11 @@ bool ClusterList::loadFiles(bool force)
 	else if (_pdb.length() > 0)
 	{
 		loadFromMultistate(_pdb);
+		return true;
+	}
+	else if (_vectors.length() > 0)
+	{
+		loadFromVectorList(_vectors);
 		return true;
 	}
 
@@ -628,6 +652,19 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 		if (value.length() > 0)
 		{
 			_spg = value;
+		}
+
+		value = isCommand(_commands[i], "--vector-list=");
+		if (value.length() > 0)
+		{
+			_vectors = value;
+		}
+
+		value = isCommand(_commands[i], "--comparison-type=");
+		if (value.length() > 0)
+		{
+			_compType = value;
+			to_lower(_compType);
 		}
 
 		value = isCommand(_commands[i], "--multi-pdb=");
