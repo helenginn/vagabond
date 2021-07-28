@@ -839,8 +839,8 @@ double Atom::getDistanceFrom(Atom *other, int nSample, bool quick)
 	
 	if (!quick)
 	{
-		me = getPositionInAsu();
-		you = other->getPositionInAsu();
+		me = getAbsolutePosition();
+		you = other->getAbsolutePosition();
 	}
 	
 	vec3 apart = vec3_subtract_vec3(me, you);
