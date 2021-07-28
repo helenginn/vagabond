@@ -48,6 +48,7 @@
 #define ToSidechainPtr(a) (boost::static_pointer_cast<Sidechain>((a)))
 #define ToBackbonePtr(a) (boost::static_pointer_cast<Backbone>((a)))
 #define ToCrystalPtr(a) (boost::static_pointer_cast<Vagabond::Crystal>((a)))
+#define DynCrystalPtr(a) (boost::dynamic_pointer_cast<Vagabond::Crystal>((a)))
 #define ToKeyGroupPtr(a) (boost::static_pointer_cast<KeyPoints>((a)))
 #define ToAtomPtr(a) (boost::static_pointer_cast<Atom>((a)))
 #define ToSymAtomPtr(a) (boost::static_pointer_cast<SymAtom>((a)))

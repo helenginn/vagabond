@@ -619,7 +619,10 @@ AtomGroupPtr AtomGroup::getAtomsInBox(vec3 target, double tolx,
 	AtomGroupPtr atoms = AtomGroupPtr(new AtomGroup());
 	
 	int symopTry = 1;
-	CrystalPtr crystal = Options::getActiveCrystal();
+	CrystalPtr crystal = DynCrystalPtr(getTopParser());
+	
+	if (!crystal) addSyms = false;
+
 	mat3x3 real2Frac = crystal->getReal2Frac();
 	mat3x3 frac2Real = crystal->getFrac2Real();
 	vec3 frac = mat3x3_mult_vec(real2Frac, target);
@@ -1400,8 +1403,6 @@ void AtomGroup::addObject(ParserPtr object, std::string category)
 	{
 		AtomPtr atom = ToAtomPtr(object);
 		addAtom(atom);
-		
-		Options::getActiveCrystal()->addAtom(atom);
 	} 
 }
 
@@ -1556,9 +1557,13 @@ size_t AtomGroup::totalElements()
 	return _elements.size();
 }
 
+void AtomGroup::postParseTidy()
+{
+	sort();
+}
+
 void AtomGroup::sort()
 {
-	return;
 	std::sort(_atoms.begin(), _atoms.end(), Atom::greater);
 }
 

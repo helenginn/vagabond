@@ -218,7 +218,7 @@ void Atom::setModel(ModelPtr model)
 
 vec3 Atom::getSymRelatedPosition(int i, vec3 pos)
 {
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	CrystalPtr crystal = DynCrystalPtr(getTopParser());
 	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
 	
 	mat3x3 real2Frac = crystal->getReal2Frac();
@@ -274,13 +274,14 @@ vec3 Atom::getPositionInUnitCell()
 
 vec3 Atom::getPositionInAsu(int conf)
 {
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	CrystalPtr crystal = DynCrystalPtr(getTopParser());
 	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
 	mat3x3 f2rt = crystal->getReal2Frac();
 	mat3x3 f2r = mat3x3_transpose(f2rt);
 	mat3x3 r2f = mat3x3_inverse(f2r);
+	int nsymop = spg->nsymop;
 	
-	for (int i = 0; i < symOpCount(); i++)
+	for (int i = 0; i < nsymop; i++)
 	{
 		vec3 pos = getSymRelatedPosition(i, conf);
 		vec3 tmp = pos;
@@ -301,7 +302,7 @@ vec3 Atom::getPositionInAsu(int conf)
 
 size_t Atom::symOpCount()
 {
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	CrystalPtr crystal = DynCrystalPtr(getTopParser());
 	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
 	return spg->nsymop;
 }

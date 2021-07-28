@@ -1368,6 +1368,7 @@ void Crystal::postParseTidy()
 	}
 
 	setupSymmetry();
+	recalculateAtoms();
 	_tied = true;
 }
 

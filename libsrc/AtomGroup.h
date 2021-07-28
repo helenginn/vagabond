@@ -240,6 +240,7 @@ protected:
 		return "AtomGroup_" + _name;
 	}
 	
+	virtual void postParseTidy();
 	virtual void addProperties();
 	virtual void addObject(ParserPtr object, std::string category);
 	virtual void linkReference(BaseParserPtr object, std::string category);

@@ -24,7 +24,7 @@ SymAtom::SymAtom(Atom &parent) : Atom(parent)
 {
 	_parent = parent.shared_from_this();
 	_symop = 0;
-	_crystal = Options::getActiveCrystal();
+	_crystal = DynCrystalPtr(parent.getTopParser());
 	_ucShift = make_vec3(1, 1, 1);
 	mat3x3 hkl2real = _crystal->getFrac2Real();
 	mat3x3_mult_vec(hkl2real, &_ucShift);
