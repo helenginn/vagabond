@@ -636,14 +636,11 @@ void Screen::displayResults(Group *ave)
 	                     RIGHT_VIEW_WIDTH - 20, 40);
 
 	m = new QMenu(_export);
-	if (_returnJourney == NULL)
-	{
-		QAction *a1 = m->addAction("Text files only");
-		connect(a1, &QAction::triggered, this, &Screen::exportText);
-		QAction *a2 = m->addAction("Prepare directories");
-		connect(a2, &QAction::triggered, _list, &ClusterList::prepDirs);
-	}
-	else
+	QAction *a1 = m->addAction("Text files only");
+	connect(a1, &QAction::triggered, this, &Screen::exportText);
+	QAction *a2 = m->addAction("Prepare directories");
+	connect(a2, &QAction::triggered, _list, &ClusterList::prepDirs);
+	if (_returnJourney != NULL)
 	{
 		QAction *a1 = m->addAction("Return to sender");
 		connect(a1, &QAction::triggered, this, &Screen::returnToSender);
