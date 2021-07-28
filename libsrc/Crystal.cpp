@@ -2005,6 +2005,11 @@ void Crystal::addMotion(MotionPtr mot, PolymerPtr origPol)
 			continue;
 		}
 		
+		if (!ToPolymerPtr(molecule(i))->isFullyTied())
+		{
+			continue;
+		}
+		
 		if (molecule(i)->getChainID()[0] == first)
 		{
 			mot->addToPolymer(ToPolymerPtr(molecule(i)));
