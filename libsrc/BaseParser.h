@@ -107,9 +107,9 @@ public:
 
 	/** Number of classes in the current structure, to be called on a top
 	 * level Crystal BaseParserPtr. */
-	static int classCount(std::string name)
+	int classCount(std::string name)
 	{
-		if (_allClasses.count(name) == 0)
+		if (_top->_allClasses.count(name) == 0)
 		{
 			return 0;
 		}
@@ -124,6 +124,16 @@ public:
 	*/
 	virtual void postParseTidy() {};
 	void postParse();
+	
+	void setTop(BaseParserPtr top)
+	{
+		_top = &*top;
+	}
+	
+	BaseParserPtr getTopParser()
+	{
+		return _top->shared_from_this();
+	}
 protected:
 	/**
 	* 	Implementation of the parser identifier should return a name of the
@@ -235,7 +245,7 @@ friend class Thing;
 	*/
 	void writeToFile(std::ofstream &stream, int indent);
 
-	static BaseParserPtr resolveReference(std::string reference);
+	BaseParserPtr resolveReference(std::string reference);
 	
 	void privateRestoreState(int num);
 	virtual void postRestoreState();
@@ -244,6 +254,7 @@ private:
 	std::string _identifier;
 	std::string _absolutePath;    
 	BaseParser *_parent;
+	BaseParser *_top;
 	std::vector<StateValueList> _states;
 
 	std::vector<StringProperty> _stringProperties;
@@ -274,7 +285,7 @@ private:
 		return _parent;	
 	}
 
-	static void addToAllParsers(std::string key, BaseParserPtr parser);
+	void addToAllParsers(std::string key, BaseParserPtr parser);
 	void outputContents(std::ofstream &stream, int in);
 	void clearContents();
 	void setParent(BaseParser *parent);
@@ -289,8 +300,8 @@ private:
 	void setProperty(std::string property, std::string value);
 	void resolveReferences();
 
-	static ParserMap _allParsers;
-	static ClassMap _allClasses;
+	ParserMap _allParsers;
+	ClassMap _allClasses;
 };
 
 

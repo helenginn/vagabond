@@ -26,10 +26,9 @@
 #include "Shouter.h"
 #include "charmanip.h"
 
-ParserMap BaseParser::_allParsers;
-
 BaseParser::BaseParser()
 {
+	_top = NULL;
 	_restored = false;
 	_setup = false;
 	_parent = NULL;
@@ -45,6 +44,14 @@ void BaseParser::setup(bool isNew)
 	 * not loaded from a file... */
 	if (!isNew)
 	{
+		if (_top == NULL && _parent == NULL)
+		{
+			_top = this;
+		}
+		else if (_top == NULL)
+		{
+			_top = _parent->_top;
+		}
 		_identifier = getParserIdentifier(); 
 
 		makePath();
@@ -209,6 +216,7 @@ void BaseParser::addChild(std::string category, ParserPtr child)
 	if (!child) return;
 	
 	child->setParent(this);
+	child->_top = _top;
 	_parserList[category].push_back(child);
 	child->setup();
 }
@@ -431,7 +439,7 @@ void BaseParser::outputContents(std::ofstream &stream, int in)
 
 void BaseParser::restoreState(int num)
 {
-	int count = _allParsers.size();
+	int count = _top->_allParsers.size();
 	
 	if (count == 0) return;
 	
@@ -958,6 +966,7 @@ char *BaseParser::parseNextObject(char *block)
 			return NULL;
 		}
 
+		object->_top = _top;
 		block = comma + 1;
 
 		// Comes back incremented.
@@ -1399,13 +1408,11 @@ ParserPtr BaseParser::objectOfType(char *className)
 
 void BaseParser::addToAllParsers(std::string key, BaseParserPtr parser)
 {
-	_allParsers[key] = parser;
+	_top->_allParsers[key] = parser;
 }
 
 BaseParserPtr BaseParser::processBlock(char *block)
 {
-	_allParsers.clear();
-
 	char *comma = strchr(block, ',');
 	*comma = '\0';
 
@@ -1415,6 +1422,7 @@ BaseParserPtr BaseParser::processBlock(char *block)
 	{
 		return BaseParserPtr();
 	}
+	object->_top = &*object;
 
 	block = comma + 1;
 
@@ -1427,7 +1435,7 @@ BaseParserPtr BaseParser::processBlock(char *block)
 
 	std::cout << "Object references resolved..." << std::endl;
 	// Add parent to complete parser list
-	addToAllParsers(object->getAbsolutePath(), object);
+	object->addToAllParsers(object->getAbsolutePath(), object);
 
 	object->postParse();
 	object->postParseTidy();
@@ -1462,15 +1470,12 @@ void BaseParser::postParse()
 
 BaseParserPtr BaseParser::resolveReference(std::string reference)
 {
-	ParserMap::iterator it;
-	it = _allParsers.find(reference);
-	
-	if (it == _allParsers.end())
+	if (_top->_allParsers.count(reference) == 0)
 	{
 		return BaseParserPtr();
 	}
 	
-	return it->second.lock();
+	return _top->_allParsers[reference].lock();
 }
 
 void BaseParser::resolveReferences()
