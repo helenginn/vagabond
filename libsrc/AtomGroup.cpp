@@ -574,9 +574,8 @@ void AtomGroup::addAtom(AtomPtr atom)
 	std::vector<AtomPtr>::iterator it;
 	it = std::find(_atoms.begin(), _atoms.end(), atom);
 
-	if (*it != atom || it == _atoms.end())
+	if (it == _atoms.end())
 	{
-//		_atoms.insert(it, atom);
 		_atoms.push_back(atom);
 		crystal->updateLargestNum(atom);
 	}
