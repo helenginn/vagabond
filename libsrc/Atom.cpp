@@ -905,20 +905,7 @@ double Atom::fishWhackMagnitude()
 
 bool Atom::greater(AtomPtr a1, AtomPtr a2)
 {
-	double z1 = a1->getAbsolutePosition().z;
-	double z2 = a2->getAbsolutePosition().z;
-
-	if (a1->getExplicitModel()->hasExplicitPositions())
-	{
-		z1 = a1->getExplicitModel()->getLowestZ();
-	}
-
-	if (a2->getExplicitModel()->hasExplicitPositions())
-	{
-		z2 = a2->getExplicitModel()->getLowestZ();
-	}
-	
-	return (z2 > z1);
+	return (a1->_atomNum > a2->_atomNum);
 }
 
 std::string Atom::getChainID()

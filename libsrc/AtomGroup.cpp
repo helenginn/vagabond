@@ -1242,7 +1242,6 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	{
 		vec3 min, max; 
 		selected->xyzLimits(&min, &max);
-		selected->sort();
 
 		/* prepare the size of the maps */
 		selected->prepareCubicMap(&workspace->segment, min, max, true);
