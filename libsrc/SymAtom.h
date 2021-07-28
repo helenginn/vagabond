@@ -32,6 +32,11 @@ public:
 	
 	SymAtom(Atom &parent);
 	
+	virtual std::string shortDesc()
+	{
+		return Atom::shortDesc() + "sym";
+	}
+	
 	void setSymop(int symop)
 	{
 		_symop = symop;
