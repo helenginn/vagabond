@@ -107,19 +107,22 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 		{
 			AtomPtr c = findAtom("C");
 			AtomPtr o = findAtom("O");
-			double disp = o->posDisplacement();
-			BondPtr b = ToBondPtr(o->getModel());
-			b->flipPyramid();
-			o->getExplicitModel()->getFinalPositions();
-			double new_disp = o->posDisplacement();
-			bool change = new_disp < disp;
-			
-			if (new_disp > disp)
+			if (c && o)
 			{
+				double disp = o->posDisplacement();
+				BondPtr b = ToBondPtr(o->getModel());
 				b->flipPyramid();
+				o->getExplicitModel()->getFinalPositions();
+				double new_disp = o->posDisplacement();
+				bool change = new_disp < disp;
+
+				if (new_disp > disp)
+				{
+					b->flipPyramid();
+				}
+
+				_excludeO = false;
 			}
-			
-			_excludeO = false;
 		}
 	}
 
