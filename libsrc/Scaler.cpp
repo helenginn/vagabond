@@ -48,6 +48,7 @@ void Scaler::run()
 	{
 		_fft->writeToFile("calc_" + i_to_str(0) + ".mtz", 1.8);
 		Options::flagDensityChanged();
+		_crystal->writeVagabondFile(_cycleNum);
 		return;
 	}
 
