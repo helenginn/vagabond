@@ -498,6 +498,11 @@ public:
 		return _largestNum + 1;
 	}
 	
+	void setSampleNum(int num)
+	{
+		_sampleNum = num;
+	}
+	
 	std::vector<ShellInfo> getShells()
 	{
 		return _shells;
