@@ -564,6 +564,11 @@ public:
 	virtual bool canFish();
 
 	void getTorsionBonds(BondPtr *phi, BondPtr *psi);
+	
+	double getInitialTorsion()
+	{
+		return _initialTorsion;
+	}
 
 protected:
 	virtual std::string getParserIdentifier()
