@@ -63,7 +63,7 @@ typedef std::pair<std::string, std::string> AtomIdentity;
 class GeomTable
 {
 public:
-	static GeomTable getGeomTable()
+	static GeomTable *getGeomTable()
 	{
 		return _geomTable;
 	}
@@ -87,7 +87,7 @@ private:
 	void addSingleChiral(AtomType atom1, AtomType atom2, 
 	                     AtomType atom3, int sign);
 
-	static GeomTable _geomTable;
+	static GeomTable *_geomTable;
 	std::map<std::string, std::string> _three2OneCode;
 
 	std::map<AtomPair, double> _bondLengths;

@@ -465,7 +465,7 @@ bool Atom::isBackboneAndSidechain()
 /* Convert to lookup table */
 void Atom::findAtomType(std::string resName)
 {
-	_geomType = GeomTable::getGeomTable().getType(resName, _atomName);
+	_geomType = GeomTable::getGeomTable()->getType(resName, _atomName);
 }
 
 std::string Atom::pdbLineBeginning(std::string start)
@@ -742,8 +742,8 @@ double Atom::getAngle(AtomPtr atom1, AtomPtr atom2, AtomPtr atom3)
 	AtomType type2 = atom2->getGeomType();
 	AtomType type3 = atom3->getGeomType();
 
-	GeomTable table = GeomTable::getGeomTable();
-	double angle = table.getBondAngle(type1, type2, type3);
+	GeomTable *table = GeomTable::getGeomTable();
+	double angle = table->getBondAngle(type1, type2, type3);
 
 	return angle;
 }

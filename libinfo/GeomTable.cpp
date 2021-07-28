@@ -28,7 +28,7 @@
 #include <math.h>
 #include <iostream>
 
-GeomTable GeomTable::_geomTable;
+GeomTable *GeomTable::_geomTable = new GeomTable();
 
 AtomType GeomTable::getType(std::string res, std::string atomName)
 {
@@ -951,11 +951,11 @@ GeomTable::GeomTable()
 
 std::string GeomTable::getResCode(std::string three)
 {
-    GeomTable table = getGeomTable();
+    GeomTable *table = getGeomTable();
 
-    if (table._three2OneCode.count(three))
+    if (table->_three2OneCode.count(three))
     {
-        return table._three2OneCode[three];
+        return table->_three2OneCode[three];
     }
 
     return "?";

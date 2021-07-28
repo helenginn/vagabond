@@ -179,8 +179,8 @@ void Bond::deriveBondLength()
 	AtomType type1 = getMajor()->getGeomType();
 	AtomType type2 = getMinor()->getGeomType();
 
-	GeomTable table = GeomTable::getGeomTable();
-	double length = table.getBondLength(type1, type2);
+	GeomTable *table = GeomTable::getGeomTable();
+	double length = table->getBondLength(type1, type2);
 
 	if (length > 0)
 	{
@@ -426,7 +426,7 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b,
 
 	/* Organise angles to rotate y/z around x */
 	/* Which means that angle_a should match x axis */
-	GeomTable table = GeomTable::getGeomTable();
+	GeomTable *table = GeomTable::getGeomTable();
 	double angle_c = 0;
 	double angle_b = 0;
 	double angle_a = 0;
@@ -437,7 +437,7 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b,
 	}
 	else
 	{
-		angle_a = table.getBondAngle(lastAtom, central, newDownAtom);
+		angle_a = table->getBondAngle(lastAtom, central, newDownAtom);
 	}
 	
 	if (custom_angle_b > 0)
@@ -446,7 +446,7 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b,
 	}
 	else
 	{
-		angle_b = table.getBondAngle(preceding, central, newDownAtom);
+		angle_b = table->getBondAngle(preceding, central, newDownAtom);
 	}
 	
 	if (custom_angle_c > 0)
@@ -455,7 +455,7 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b,
 	}
 	else
 	{
-		angle_c = table.getBondAngle(preceding, central, lastAtom);
+		angle_c = table->getBondAngle(preceding, central, lastAtom);
 	}
 	
 	bool ok = true;
@@ -480,7 +480,7 @@ void Bond::deriveCirclePortion(double custom_angle_a, double custom_angle_b,
 
 		double theoretical = increment / (2 * M_PI);
 		
-		int chiral = table.getChiralCentre(preceding, lastAtom, newDownAtom);
+		int chiral = table->getChiralCentre(preceding, lastAtom, newDownAtom);
 		chiral *= chiralmult;
 
 		if (chiral != 0)
