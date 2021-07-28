@@ -258,18 +258,12 @@ void Crystal::realSpaceClutter()
 
 void Crystal::recalculateAtoms()
 {
-	std::cout << "Atoms in crystal before recalculation: "
-	<< atomCount() << std::endl;
-
 	empty();
 	
 	for (int i = 0; i < moleculeCount(); i++)
 	{
 		addAtomsFrom(molecule(i));
 	}
-
-	std::cout << "Atoms in crystal after recalculation: "
-	<< atomCount() << std::endl;
 }
 
 void Crystal::prepareFFT(VagFFTPtr ft)
