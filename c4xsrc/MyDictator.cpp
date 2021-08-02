@@ -34,7 +34,7 @@ bool MyDictator::processRequest(std::string first, std::string last)
 	{
 		_list->getFromCSV(last);
 	}
-	else if (first == "max-res")
+	else if (first == "max-res" || first == "--max-res")
 	{
 		double res = atof(last.c_str());
 		_list->setResolution(res);
