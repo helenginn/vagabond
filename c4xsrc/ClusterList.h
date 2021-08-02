@@ -42,6 +42,7 @@ public:
 	void getFromFolders();
 	void getFromStream();
 	void getFromCSV(AveCSV *csv);
+	void getFromCSV(std::string csv);
 	void loadFromMultistate(std::string pdb);
 	void loadFromVectorList(std::string filename);
 
@@ -107,6 +108,10 @@ public:
 		return _lastAverage;
 	}
 
+	void setResolution(double res)
+	{
+		_res = res;
+	}
 signals:
 	void average();
 	void cluster();
@@ -134,7 +139,6 @@ protected:
 	virtual void keyPressEvent(QKeyEvent *event);
 	virtual void keyReleaseEvent(QKeyEvent *event);
 private:
-	void getFromCSV(std::string csv);
 
 	Screen *_screen;
 	QTreeWidget *_widget;
@@ -157,9 +161,7 @@ private:
 	bool _contextMenu;
 	int _max;
 	int _skip;
-	std::string _csv;
 	std::string _pdb;
-	std::string _vectors;
 	std::string _compType;
 	std::string _preload;
 	std::string _stream;

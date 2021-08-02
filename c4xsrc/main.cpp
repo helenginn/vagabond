@@ -7,6 +7,7 @@
 #include "Group.h"
 #include "commit.h"
 #include "ClusterList.h"
+#include "MyDictator.h"
 
 #include <libsrc/DiffractionMTZ.h>
 #include <libsrc/Options.h>
@@ -54,35 +55,14 @@ int main(int argc, char * argv[])
 	
 	for (int i = 1; i < argc; i++)
 	{
-		if (strlen(argv[i]) < 2)
-		{
-			continue;
-		}
-
-		if (strncmp(argv[i], "--", 2) == 0)
-		{
-			commands.push_back(argv[i]);
-		}
-		else
-		{
-			files.push_back(argv[i]);
-		}
-
+		commands.push_back(argv[i]);
 	}
-
-	Screen scr(NULL);
-	scr.show();
 	
-	ClusterList *list = scr.getList();
-	list->setCommands(commands);
-	list->setFiles(files);
-	bool success = list->loadFiles();
-	int status = 0;
+	MyDictator dict;
+	dict.setArgs(commands);
+	dict.run();
 
-	if (success)
-	{
-		status = app.exec();
-	}
+	int status = app.exec();
 	
 	return status;
 }

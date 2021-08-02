@@ -51,7 +51,6 @@ ClusterList::ClusterList(QTreeWidget *widget)
 	_skip = 0;
 	_streamInput = false;
 	_sqlInput = false;
-	_csvInput = false;
 	_selectMode = false;
 	_removeMode = false;
 	_lastAverage = NULL;
@@ -109,8 +108,6 @@ ClusterList::~ClusterList()
 void ClusterList::load(std::vector<DatasetPath> paths)
 {
 	_sqlInput = false;
-	_csvInput = false;
-	_vectors = "";
 	_paths = paths;
 	loadFiles(true);
 }
@@ -154,6 +151,7 @@ void ClusterList::getFromCSV(std::string csv)
 	std::vector<std::string> csvs = split(csv, ',');
 	AveCSV *input = new AveCSV(NULL);
 	input->setList(this);
+	std::cout << "Loading " << csv << std::endl;
 
 	for (size_t i = 0; i < csvs.size(); i++)
 	{
@@ -252,19 +250,9 @@ bool ClusterList::loadFiles(bool force)
 		getFromStream();
 		return true;
 	}
-	else if (_csvInput)
-	{
-		getFromCSV(_csv);
-		return true;
-	}
 	else if (_pdb.length() > 0)
 	{
 		loadFromMultistate(_pdb);
-		return true;
-	}
-	else if (_vectors.length() > 0)
-	{
-		loadFromVectorList(_vectors);
 		return true;
 	}
 
@@ -624,13 +612,7 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 	
 	for (size_t i = 0; i < _commands.size(); i++)
 	{
-		std::string value = isCommand(_commands[i], "--max-res=");
-		if (value.length())
-		{
-			_res = atof(value.c_str());
-		}
-
-		value = isCommand(_commands[i], "--skip=");
+		std::string value = isCommand(_commands[i], "--skip=");
 		if (value.length())
 		{
 			_skip = atoi(value.c_str());
@@ -652,12 +634,6 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 		if (value.length() > 0)
 		{
 			_spg = value;
-		}
-
-		value = isCommand(_commands[i], "--vector-list=");
-		if (value.length() > 0)
-		{
-			_vectors = value;
 		}
 
 		value = isCommand(_commands[i], "--comparison-type=");
@@ -686,14 +662,6 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 		{
 			std::cout << "Using SQL Input" << std::endl;
 			_sqlInput = true;
-		}
-
-		value = isCommand(_commands[i], "--csv=");
-		if (value.length() > 0)
-		{
-			std::cout << "Using CSV Input" << std::endl;
-			_csvInput = true;
-			_csv = value;
 		}
 
 		value = isCommand(_commands[i], "--preload=");
