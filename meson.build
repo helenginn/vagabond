@@ -537,7 +537,7 @@ dep_c4x = declare_dependency(link_with: lib_c4x, include_directories: [inc_c4x])
 
 executable('cluster4x', ['c4xsrc/main.cpp'], 
 cpp_args: ['-std=c++11', '-Wall'], 
-include_directories : 'subprojects/helencore',
+include_directories : ['subprojects/helencore', 'subprojects/helen3d'],
 dependencies : [helencore_dep, c4xdeps, dep_c4x], install: true)
 else
 	message('QT5 not found, so not building cluster4x.')
