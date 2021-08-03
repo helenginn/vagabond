@@ -589,4 +589,4 @@ pkg.generate([lib_c4x],
 
 endif
 
-subdir('install-scripts')
+#subdir('install-scripts')
