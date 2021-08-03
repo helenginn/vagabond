@@ -76,6 +76,11 @@ void CAlphaView::repopulate()
 	for (size_t j = 0; j < _mtzs.size(); j++)
 	{
 		size_t begin = _vertices.size();
+		if (!_mtzs[j]->getQuickAtoms()->crystal())
+		{
+			continue;
+		}
+
 		_mtzs[j]->getQuickAtoms()->populateCAlphaView(this);
 		size_t posSize = _vertices.size();
 		
@@ -83,9 +88,12 @@ void CAlphaView::repopulate()
 		_ends[_mtzs[j]] = posSize;
 	}
 	
-	_indices.pop_back();
-	recolour();
-	updateRs();
+	if (_indices.size() > 0)
+	{
+		_indices.pop_back();
+		recolour();
+		updateRs();
+	}
 }
 
 void CAlphaView::recolour()

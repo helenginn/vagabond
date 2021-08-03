@@ -16,43 +16,31 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster4x__Average__
-#define __cluster4x__Average__
+#ifndef __cluster4x__Input__
+#define __cluster4x__Input__
 
-#include "MtzFFTPtr.h"
-#include <vector>
+#include <QMainWindow>
 
-class Group;
+class ClusterList;
 
-class Average
+class Input : public QMainWindow
 {
+Q_OBJECT
 public:
-	Average(Group *group);
+	Input(QWidget *parent);
 
-	virtual ~Average()
+	void setList(ClusterList *list)
 	{
-
+		_list = list;
 	}
-	
-	void setGroup(Group *grp)
-	{
-		_group = grp;
-	}
-
-	virtual void calculate() = 0;
-	virtual void findIntercorrelations(Group *other, double **svd);
-protected:
-	std::vector<MtzFFTPtr> _mtzs;
-	bool _symmetric;
-	static bool _vectorList;
-	
-	Group *group()
-	{
-		return _group;
-	}
+public slots:
+	void loadCrystals();
+	void loadCrystalList();
+	void loadArbitrary();
+	void loadCSV();
 private:
-	virtual double findCorrelation(MtzFFTPtr one, MtzFFTPtr two) = 0;
-	Group *_group;
+	ClusterList *_list;
+
 };
 
 #endif

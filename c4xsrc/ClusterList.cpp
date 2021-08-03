@@ -36,16 +36,19 @@
 #include <libsrc/Multistate.h>
 #include "Output.h"
 #include "AveCSV.h"
+#include "AveVectors.h"
 #include "MtzFile.h"
 #include "MtzFFT.h"
 #include "Screen.h"
 #include "FolderInput.h"
+#include "Input.h"
 #include "QuickAtoms.h"
 
 #include <libsrc/FFT.h>
 
 ClusterList::ClusterList(QTreeWidget *widget)
 {
+	_vectorList = NULL;
 	_onlyLoad = false;
 	_max = 0;
 	_skip = 0;
@@ -129,9 +132,9 @@ void ClusterList::setFiles(std::vector<std::string> files)
 	}
 }
 
-void ClusterList::getFromFolders()
+void ClusterList::getFromUser()
 {
-	FolderInput *input = new FolderInput(NULL);
+	Input *input = new Input(NULL);
 	input->setList(this);
 }
 
@@ -162,6 +165,7 @@ void ClusterList::getFromCSV(std::string csv)
 	input->preparePaths();
 	_csvGroup = input;
 	_screen->addCSVSwitcher();
+	Group::topGroup()->useAverageType(AveComma);
 }
 
 void ClusterList::cycleCSV(bool forward)
@@ -189,19 +193,12 @@ void ClusterList::switchCSV(int c)
 void ClusterList::loadFromVectorList(std::string filename)
 {
 	std::cout << "Loading from vector list: " << filename << std::endl;
-	AveCSV *input = new AveCSV(NULL);
+	AveVectors *input = new AveVectors(NULL);
 	input->setList(this);
-	
-	if (_compType == "distance")
-	{
-		input->setComparisonType(1);
-	}
-
-	input->prepareFromVectors(filename);
+	input->setFilename(filename);
+	input->load();
+	_vectorList = input;
 	input->preparePaths();
-
-	_csvGroup = input;
-	_screen->addCSVSwitcher();
 }
 
 void ClusterList::loadFromMultistate(std::string pdb)
@@ -258,6 +255,7 @@ bool ClusterList::loadFiles(bool force)
 
 	Group *grp = new Group(NULL);
 	grp->setMaxResolution(_res);
+	grp->setVectors(_vectorList);
 	
 	std::string phase = valueForKey("phase");
 	std::string fp = valueForKey("column");
@@ -347,7 +345,7 @@ bool ClusterList::loadFiles(bool force)
 
 	if (!force && grp->mtzCount() == 0)
 	{
-		getFromFolders();
+		getFromUser();
 		return true;
 	}
 

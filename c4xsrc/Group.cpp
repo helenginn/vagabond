@@ -15,6 +15,7 @@
 #include "AveCAlpha.h"
 #include "AveCSV.h"
 #include "AveUnitCell.h"
+#include "AveVectors.h"
 
 #include <QObject>
 #include <QFontDatabase>
@@ -41,6 +42,7 @@ Group::Group(QTreeWidget *parent) : QTreeWidgetItem(parent)
 	_mySet.csv = NULL;
 	_mySet.ca = NULL;
 	_mySet.unitCell = NULL;
+	_mySet.vectors = NULL;
 	Qt::ItemFlags fl = flags();
 	setFlags(fl | Qt::ItemIsEditable);
 	
@@ -111,15 +113,17 @@ void Group::calculateAllAverages(bool force)
 		_mySet.unitCell = new AveUnitCell(this);
 		_mySet.unitCell->calculate();
 	}
-	
+
 	if (force || _mySet.csv == NULL)
 	{
-		if (AveCSV::usingCSV())
-		{
-			delete _mySet.csv;
-			_mySet.csv = new AveCSV(this, "");
-			_type = AveComma;
-		}
+		_mySet.csv = new AveCSV(this);
+		_mySet.csv->calculate();
+	}
+
+	if (force || _mySet.vectors == NULL)
+	{
+		_mySet.vectors = new AveVectors(this);
+		_mySet.vectors->calculate();
 	}
 }
 
@@ -248,7 +252,7 @@ AverageSet *Group::getWorkingSet()
 	{
 		working = &_topGroup->_mySet;
 	}
-	else if (_which == GroupOriginal)
+	else if (_which == GroupOriginal && this != _topGroup)
 	{
 		working = &_origSet;
 	}
@@ -283,6 +287,13 @@ void Group::findIntercorrelations()
 		if (working->csv != NULL)
 		{
 			working->csv->findIntercorrelations(this, _svdPtrs);
+		}
+	}
+	else if (_type == AveVec)
+	{
+		if (working->vectors != NULL)
+		{
+			working->vectors->findIntercorrelations(this, _svdPtrs);
 		}
 	}
 
@@ -603,6 +614,10 @@ void Group::changeColour(double r, double b, double g, double a)
 void Group::useAverageType(GroupType type)
 {
 	if (type == AveComma && _mySet.csv == NULL)
+	{
+		return;
+	}
+	if (type == AveVec && _mySet.vectors == NULL)
 	{
 		return;
 	}

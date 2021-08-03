@@ -64,6 +64,11 @@ public:
 	{
 		return _centre;
 	}
+	
+	CrystalPtr crystal()
+	{
+		return _crystal;
+	}
 
 	void populateCAlphaView(CAlphaView *view);
 private:

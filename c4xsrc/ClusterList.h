@@ -14,6 +14,7 @@
 class QTreeWidget;
 class QTreeWidgetItem;
 class AveCSV;
+class AveVectors;
 class MtzFile;
 class Group;
 class QKeyEvent;
@@ -39,7 +40,7 @@ public:
 	void average(Group *item);
 	void cluster(Group *item);
 	void getFromDatabase();
-	void getFromFolders();
+	void getFromUser();
 	void getFromStream();
 	void getFromCSV(AveCSV *csv);
 	void getFromCSV(std::string csv);
@@ -151,6 +152,7 @@ private:
 	std::vector<DatasetPath> _paths;
 	std::vector<Group *> _clusters;
 	AveCSV *_csvGroup;
+	AveVectors *_vectorList;
 	std::vector<MtzFile *> _files;
 	std::vector<std::string> _commands;
 	double _res;

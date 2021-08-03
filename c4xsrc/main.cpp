@@ -60,6 +60,7 @@ int main(int argc, char * argv[])
 	
 	MyDictator dict;
 	dict.setArgs(commands);
+	dict.addArg("");
 	dict.run();
 
 	int status = app.exec();

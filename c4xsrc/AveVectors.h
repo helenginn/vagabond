@@ -16,43 +16,43 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#ifndef __cluster4x__Average__
-#define __cluster4x__Average__
+#ifndef __cluster4x__AveVectors__
+#define __cluster4x__AveVectors__
 
-#include "MtzFFTPtr.h"
-#include <vector>
+#include "Average.h"
 
-class Group;
+#include <string>
+#include <map>
 
-class Average
+class ClusterList;
+
+class AveVectors : public Average
 {
 public:
-	Average(Group *group);
-
-	virtual ~Average()
+	AveVectors(Group *group, std::string csv = "");
+	
+	void setFilename(std::string file)
 	{
-
+		_csv = file;
 	}
 	
-	void setGroup(Group *grp)
+	void setList(ClusterList *list)
 	{
-		_group = grp;
+		_list = list;
 	}
 
-	virtual void calculate() = 0;
-	virtual void findIntercorrelations(Group *other, double **svd);
-protected:
-	std::vector<MtzFFTPtr> _mtzs;
-	bool _symmetric;
-	static bool _vectorList;
-	
-	Group *group()
-	{
-		return _group;
-	}
+	void load();
+	void preparePaths();
+	virtual double findCorrelation(MtzFFTPtr one, MtzFFTPtr two);
+	virtual void calculate();
 private:
-	virtual double findCorrelation(MtzFFTPtr one, MtzFFTPtr two) = 0;
-	Group *_group;
+	std::string _csv;
+
+	static std::vector<std::string> _names;
+	static std::map<std::string, int> _ids;
+	static std::map<std::string, std::vector<double> > _vectors;
+	std::vector<double> _averageVec;
+	ClusterList *_list;
 };
 
 #endif

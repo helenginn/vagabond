@@ -34,6 +34,7 @@ typedef enum
 	AveCA,
 	AveUC,
 	AveComma,
+	AveVec,
 } GroupType;
 
 typedef enum
@@ -74,6 +75,7 @@ class AveDiffraction;
 class AveCAlpha;
 class AveUnitCell;
 class AveCSV;
+class AveVectors;
 
 typedef struct
 {
@@ -81,6 +83,7 @@ typedef struct
 	AveCAlpha *ca;
 	AveUnitCell *unitCell;
 	AveCSV *csv;
+	AveVectors *vectors;
 } AverageSet;
 
 
@@ -159,6 +162,15 @@ public:
 	AveCSV *getAveCSV()
 	{
 		return _mySet.csv;
+	}
+	
+	void setVectors(AveVectors *vect)
+	{
+		_mySet.vectors = vect;
+		if (vect != NULL)
+		{
+			_type = AveVec;
+		}
 	}
 	
 	std::string getCustomName()
@@ -263,8 +275,6 @@ private:
 	
 	AverageSet _mySet;
 	AverageSet _origSet;
-
-
 	
 	std::map<Pair, VagScore> _vagVals;
 	std::vector<vec3> _atomPos;

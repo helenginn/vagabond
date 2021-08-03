@@ -53,8 +53,6 @@ public:
 		_list = list;
 	}
 	
-	void prepareFromVectors(std::string filename);
-	
 	static size_t csvCount()
 	{
 		return _relationships.size();

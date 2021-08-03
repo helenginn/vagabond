@@ -26,7 +26,6 @@ Average::Average(Group *group)
 {
 	_group = group;
 	_symmetric = true;
-	std::cout << "Average vector list = " << _vectorList << std::endl;
 	
 	if (_group)
 	{

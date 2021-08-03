@@ -1007,3 +1007,4 @@ void Screen::plotSpin()
 		_svdView->keeper()->saveImage(path);
 	}
 }
+

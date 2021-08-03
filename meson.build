@@ -238,6 +238,7 @@ headers = [
 'c4xsrc/CAlphaView.h', 
 'c4xsrc/HKLView.h', 
 'c4xsrc/FolderInput.h', 
+'c4xsrc/Input.h', 
 'c4xsrc/ClusterPlot.h', 
 'c4xsrc/DisplaySettings.h', 
 'c4xsrc/PlotView.h', 
@@ -460,11 +461,13 @@ c4xsrc = [
 'c4xsrc/CorrelLabel.cpp', 
 'c4xsrc/DisplaySettings.cpp', 
 'c4xsrc/AveCSV.cpp', 
+'c4xsrc/AveVectors.cpp', 
 'c4xsrc/FolderInput.cpp', 
 'c4xsrc/GLAxis.cpp', 
 'c4xsrc/GLPoint.cpp', 
 'c4xsrc/Group.cpp', 
 'c4xsrc/HKLView.cpp', 
+'c4xsrc/Input.cpp', 
 'c4xsrc/KeeperGL.cpp', 
 'c4xsrc/MatrixView.cpp', 
 'c4xsrc/MtzFile.cpp', 
@@ -586,3 +589,4 @@ pkg.generate([lib_c4x],
 
 endif
 
+subdir('install-scripts')

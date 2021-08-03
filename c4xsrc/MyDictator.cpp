@@ -54,9 +54,10 @@ void MyDictator::help()
 
 void MyDictator::finished()
 {
+	std::cout << "Come to end of arguments" << std::endl;
 	if (_list->fileCount() == 0)
 	{
-		_list->getFromFolders();
+		_list->getFromUser();
 	}
 
 }
