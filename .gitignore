@@ -32,6 +32,9 @@ get_hash.dep
 *.Plo
 *.Po
 
+# zips
+*.zip
+
 sites
 *.d
 
