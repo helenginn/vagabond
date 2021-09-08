@@ -42,6 +42,7 @@ lib_vgeom = library('vgeom',
 'libinfo/RotamerTable.cpp', 
 'libinfo/GeomVariant.cpp', 
 cpp_args: ['-w', '-mmacosx-version-min=10.14'], link_args: ['-mmacosx-version-min=10.14'], install: true)
+install_rpath: '$ORIGIN/.',
 inc_vgeom = include_directories('libinfo')
 dep_vgeom = declare_dependency(link_with: lib_vgeom, include_directories: inc_vgeom)
 
@@ -49,6 +50,7 @@ dep_vgeom = declare_dependency(link_with: lib_vgeom, include_directories: inc_vg
 
 lib_ica = library('ica', 'libica/matrix.cpp', 'libica/svdcmp.cpp', 'liblbfgs/lbfgs.c', 
 cpp_args: ['-w', '-mmacosx-version-min=10.14'], link_args: ['-mmacosx-version-min=10.14'], install: true)
+install_rpath: '$ORIGIN/.',
 inc_ica = include_directories('libica')
 dep_ica = declare_dependency(link_with: lib_ica, include_directories: inc_ica)
 
@@ -146,6 +148,7 @@ lib_vag = library('vag', gen_src, base_files,
 include_directories: 'subprojects/helencore',
 dependencies: [png_dep, fftw_dep, thread_fft_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep,
 helencore_dep], cpp_args: ['-w', '-std=c++11'], link_args: ['-mmacosx-version-min=10.14'], install: true)
+install_rpath: '$ORIGIN/.',
 inc_vag = include_directories('libsrc')
 dep_vag = declare_dependency(link_with: lib_vag, include_directories: inc_vag)
 
@@ -214,6 +217,7 @@ dependencies: [qt5_dep, dep_ica, helen3d_dep, helencore_dep,
 dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_fft_dep, boost_dep], 
 include_directories: subincludes,
 cpp_args: ['-w', '-std=c++11'], install: true)
+install_rpath: '$ORIGIN/.',
 else
 	message('QT5 not found, so not building vagabond-gui.')
 endif
@@ -539,6 +543,7 @@ moc_cluster4x = qt5.preprocess(moc_headers : headers,
 lib_c4x = library('cluster4x', c4xsrc, moc_cluster4x,
 include_directories: subincludes,
 dependencies: c4xdeps, cpp_args: ['-Wall', '-std=c++11'], link_args: ['-mmacosx-version-min=10.14'], install: true)
+install_rpath: '$ORIGIN/.',
 inc_c4x = include_directories('c4xsrc')
 dep_c4x = declare_dependency(link_with: lib_c4x, include_directories: [inc_c4x])
 
