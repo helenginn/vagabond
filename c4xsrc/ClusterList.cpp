@@ -697,6 +697,11 @@ void ClusterList::setCommands(std::vector<std::string> commands)
 
 void ClusterList::invertSelection()
 {
+	if (_lastAverage == NULL)
+	{
+		return;
+	}
+
 	for (size_t i = 0; i < _lastAverage->mtzCount(); i++)
 	{
 		MtzFile *file = _lastAverage->getMtz(i)->getMtzFile();
@@ -759,6 +764,12 @@ void ClusterList::pdbAverage()
 void ClusterList::recipAverage()
 {
 	_lastAverage->useAverageType(AveDiff);
+	_screen->updateToolbar(_lastAverage);
+}
+
+void ClusterList::vecAverage()
+{
+	_lastAverage->useAverageType(AveVec);
 	_screen->updateToolbar(_lastAverage);
 }
 

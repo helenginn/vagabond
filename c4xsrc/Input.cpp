@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Input.h"
+#include "Arbitrary.h"
 #include "DatasetPath.h"
 #include "FolderInput.h"
 #include "ClusterList.h"
@@ -144,6 +145,7 @@ void Input::loadCSV()
 	{
 		_list->getFromCSV(filename);
 		hide();
+		deleteLater();
 	}
 	catch (int e)
 	{
@@ -160,17 +162,17 @@ void Input::loadArbitrary()
 	filename = openDialogue(this, "Load data", 
 	                        "Comma-separated values (*.csv)",
 	                        false);
-
-	try
+	
+	if (!file_exists(filename))
 	{
-		_list->loadFromVectorList(filename);
-		hide();
-	}
-	catch (int e)
-	{
-		QMessageBox msg;
-		msg.setText("Could not open file.");
-		msg.exec();
+		std::cout << "Could not open file." << std::endl;
 		return;
 	}
+
+	Arbitrary *arb = new Arbitrary();
+	arb->setList(_list);
+	arb->setFilename(filename);
+	arb->show();
+	hide();
+	deleteLater();
 }

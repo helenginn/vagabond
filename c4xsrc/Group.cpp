@@ -116,12 +116,14 @@ void Group::calculateAllAverages(bool force)
 
 	if (force || _mySet.csv == NULL)
 	{
+		delete _mySet.csv;
 		_mySet.csv = new AveCSV(this);
 		_mySet.csv->calculate();
 	}
 
 	if (force || _mySet.vectors == NULL)
 	{
+		delete _mySet.vectors;
 		_mySet.vectors = new AveVectors(this);
 		_mySet.vectors->calculate();
 	}

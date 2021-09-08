@@ -43,6 +43,11 @@ void AveUnitCell::calculate()
 			continue;
 		}
 
+		if (_mtzs[i]->getMtzFile()->getFilename().length() == 0)
+		{
+			continue;
+		}
+
 		std::vector<double> uc = _mtzs[i]->getUnitCell();
 		
 		if (uc.size() < 6)

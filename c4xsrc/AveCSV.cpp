@@ -147,7 +147,6 @@ void AveCSV::calculate()
 
 double AveCSV::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 {
-	std::cout << "yeah" << std::endl;
 	std::string met1 = one->getMtzFile()->metadata();
 	std::string met2 = two->getMtzFile()->metadata();
 
@@ -170,4 +169,11 @@ void AveCSV::setChosen(std::string file)
 			break;
 		}
 	}
+}
+
+void AveCSV::clear()
+{
+	_relationships.clear();
+	_filenames.clear();
+	_chosen = 0;
 }

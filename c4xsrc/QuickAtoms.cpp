@@ -24,6 +24,8 @@
 #include <libsrc/Polymer.h>
 #include <libsrc/SymMate.h>
 
+bool QuickAtoms::_loadedAtoms = false;
+
 QuickAtoms::QuickAtoms(CrystalPtr crystal)
 {
 	_crystal = crystal;
@@ -221,6 +223,7 @@ void QuickAtoms::populatePolymer(PolymerPtr p)
 
 		vec3 pos = a->getPDBPosition();
 		positions[id] = pos;
+		_loadedAtoms = true;
 	}
 	
 	_chainMap[myChain] = positions;
@@ -264,10 +267,6 @@ double QuickAtoms::compare(QuickAtoms *one, QuickAtoms *two, QuickAtoms *ave)
 	}
 
 	double cc = evaluate_CD(cd);
-	if (cc < 0)
-	{
-		cc = 0;
-	}
 
 	return cc;
 }

@@ -25,6 +25,7 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QVariant>
+#include <QVBoxLayout>
 #include <QColor>
 #include <QLabel>
 #include <QPlainTextEdit>
@@ -41,6 +42,7 @@
 #include "DisplaySettings.h"
 #include "ClusterList.h"
 #include "CorrelLabel.h"
+#include "QuickAtoms.h"
 #include "MtzFile.h"
 #include "KeeperGL.h"
 #include "GLPoint.h"
@@ -52,6 +54,8 @@
 #include "AveDiffraction.h"
 #include "AveCSV.h"
 #include "MtzFFTPtr.h"
+#include "ColumnView.h"
+#include "AveVectors.h"
 
 #define TOOL_BAR_HEIGHT 50
 #define TREE_VIEW_WIDTH 300
@@ -61,7 +65,7 @@
 Screen::Screen(QWidget *widget) : QMainWindow(widget)
 {
 	_returnJourney = NULL;
-	setGeometry(0, 0, 1200, 800);
+	setGeometry(0, 0, 900, 600);
 
 	_scale = -1;
 	_storeHKL = make_mat4x4();
@@ -81,120 +85,46 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 	_cAlphaKeeper = NULL;
 	_currIndex = 0;
 
-	_inputTree = new QTreeWidget(this);
-	_inputTree->show();
+	QWidget *window = new QWidget();
+	QHBoxLayout *hout = new QHBoxLayout();
+	window->setLayout(hout);
+	QVBoxLayout *vout = new QVBoxLayout();
+
+	_inputTree = new QTreeWidget(NULL);
+	_inputTree->setMinimumSize(250, 0);
+	_inputTree->setMaximumSize(300, 10000);
+	vout->addWidget(_inputTree);
 
 	_list = new ClusterList(_inputTree);
 	_list->setScreen(this);
+
+	_toolBar = new QToolBar(NULL);
+	_toolBar->setMinimumSize(250, 0);
+	_toolBar->setMaximumSize(300, 10000);
+	vout->addWidget(_toolBar);
 	addToolBar();
+
+	hout->addLayout(vout);
+
+	_tabs = new QTabWidget(NULL);
+	_tabs->setMinimumSize(500, 500);
+	hout->addWidget(_tabs);
+	
+	_side = new QWidget(NULL);
+	_side->setMinimumSize(200, 0);
+	_side->setMaximumSize(300, 10000);
+	{
+		QVBoxLayout *vout = new QVBoxLayout();
+		_side->setLayout(vout);
+	}
+	hout->addWidget(_side);
+	
+	addSideButtons();
 	
 	connect(_list, &ClusterList::updateSelections,
 	        this, &Screen::refreshSelection);
 
-	resizeEvent(NULL);
-}
-
-void Screen::resizeEvent(QResizeEvent *e)
-{
-	int w = width();
-	int h = height();
-	int tool_h = TOOL_BAR_HEIGHT;
-
-	int tree_w = std::max((int)(w * 0.2), TREE_VIEW_WIDTH);
-	_inputTree->setGeometry(0,0, tree_w, h - tool_h);
-
-	_toolBar->setGeometry(0, height() - TOOL_BAR_HEIGHT, 
-	                      TREE_VIEW_WIDTH, TOOL_BAR_HEIGHT);
-	
-	if (_tabs)
-	{
-		_tabs->setGeometry(tree_w, 0, width() - tree_w 
-		                   - RIGHT_VIEW_WIDTH, height());
-		if (_correlLabel)
-		{
-			_correlLabel->setGeometry(0, tool_h, _tabs->width(), 
-			                          _tabs->height() - tool_h);
-
-			relinkPixmap();
-		}
-
-		if (_hklKeeper)
-		{
-			_hklKeeper->setGeometry(0, 0, _tabs->width(), 
-			                        _tabs->height());
-			
-			if (_ucLabel)
-			{
-				_ucLabel->setGeometry(0, 0, _tabs->width(), 40);
-			}
-		}
-
-		if (_cAlphaKeeper)
-		{
-			_cAlphaKeeper->setGeometry(0, 0, _tabs->width(), 
-			                           _tabs->height());
-		}
-
-		if (_svdView)
-		{
-			_svdView->resizeEvent(e);
-		}
-
-		if (_ucView)
-		{
-			_ucView->resizeEvent(e);
-		}
-
-		if (_rView)
-		{
-			_ucView->resizeEvent(e);
-		}
-
-		if (_newSel)
-		{
-			_newSel->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
-			                     _newSel->y(), RIGHT_VIEW_WIDTH - 20, 40);
-
-			_markSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                       _markSele->y(), RIGHT_VIEW_WIDTH - 20,
-			                       40);
-
-			_invertSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                         _invertSele->y(), RIGHT_VIEW_WIDTH -
-			                         20, 40);
-
-			_deadSele->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
-			                       _deadSele->y(), RIGHT_VIEW_WIDTH - 20,
-			                       40);
-			_changeData->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                       _changeData->y(), RIGHT_VIEW_WIDTH - 20,
-			                       40);
-			_coverage->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                       _coverage->y(), RIGHT_VIEW_WIDTH - 20,
-			                       40);
-			_reorder->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                       _reorder->y(), RIGHT_VIEW_WIDTH - 20,
-			                       40);
-
-			_changeColour->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                       _changeColour->y(), RIGHT_VIEW_WIDTH - 20,
-			                           40);
-
-			_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                     h - 50, RIGHT_VIEW_WIDTH - 20, 40);
-
-			_images->setGeometry(width() - RIGHT_VIEW_WIDTH + 10,
-			                     h - 100, RIGHT_VIEW_WIDTH - 20, 40);
-
-		}
-
-		if (_toggleDead)
-		{
-			_toggleDead->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, 
-			                         _toggleDead->y(), RIGHT_VIEW_WIDTH - 20,
-			                         60);
-		}
-	}
+	setCentralWidget(window);
 }
 
 void Screen::updateToolbar(Group *grp)
@@ -203,6 +133,7 @@ void Screen::updateToolbar(Group *grp)
 	uses.ca->setChecked(false);
 	uses.uc->setChecked(false);
 	uses.csv->setChecked(false);
+	uses.vec->setChecked(false);
 
 	switch (grp->getType())
 	{
@@ -216,6 +147,10 @@ void Screen::updateToolbar(Group *grp)
 		
 		case AveUC:
 		uses.uc->setChecked(true);
+		break;
+		
+		case AveVec:
+		uses.vec->setChecked(true);
 		break;
 		
 		case AveComma:
@@ -278,9 +213,6 @@ void Screen::addCSVSwitcher()
 
 void Screen::addToolBar()
 {
-	_toolBar = new QToolBar(this);
-	_toolBar->show();
-	
 	QPushButton *a = new QPushButton("Set average");
 	
 	QMenu *m = new QMenu(a);
@@ -298,10 +230,15 @@ void Screen::addToolBar()
 	connect(uses.uc, &QAction::triggered, 
 	        _list, &ClusterList::unitCellAverage);
 	
-	uses.csv = m->addAction("Use CSV file");
+	uses.csv = m->addAction("Use pair-wise comparisons");
 	uses.csv->setCheckable(true);
 	connect(uses.csv, &QAction::triggered, 
 	        _list, &ClusterList::csvAverage);
+	
+	uses.vec = m->addAction("Use vectors");
+	uses.vec->setCheckable(true);
+	connect(uses.vec, &QAction::triggered, 
+	        _list, &ClusterList::vecAverage);
 
 	m->addSeparator();
 
@@ -369,8 +306,6 @@ void Screen::binTab()
 	}
 
 	_bin.clear();
-	delete _tabs;
-	_tabs = NULL;
 }
 
 void Screen::addCorrelImage(Group *ave)
@@ -385,6 +320,7 @@ void Screen::addCorrelImage(Group *ave)
 
 	CorrelLabel *l = new CorrelLabel(NULL, _correlImage, this);
 	_correlLabel = l;
+	_correlLabel->setScaledContents(true);
 	_correlLabel->setFocusPolicy(Qt::StrongFocus);
 	_tabs->addTab(l, "Correlation matrix");
 	_bin.push_back((QWidget **)&_correlLabel);
@@ -402,6 +338,15 @@ void Screen::addPlotView(PlotView **view, Group *ave,
 	_bin.push_back((QWidget **)&(*view));
 }
 
+void Screen::addColumnView(Group *ave)
+{
+	_columnView = new ColumnView(this, ave);
+	_columnView->setList(_list);
+	_tabs->addTab(_columnView, "Column explorer");
+	_bin.push_back((QWidget **)&_columnView);
+
+}
+
 void Screen::addCAlphaView()
 {
 	_cAlpha = new QWidget(this);
@@ -415,7 +360,7 @@ void Screen::addCAlphaView()
 
 void Screen::addHKLView(VagFFTPtr fft, std::string filename)
 {
-	if (!fft)
+	if (!fft || fft->nn() == 0)
 	{
 		return;
 	}
@@ -458,8 +403,6 @@ void Screen::displaySingle(MtzFFTPtr fft)
 	}
 
 	binTab();
-	_tabs = new QTabWidget(this);
-	resizeEvent(NULL);
 
 
 	addHKLView(fft, fft->getMtzFile()->getFilename());
@@ -467,6 +410,7 @@ void Screen::displaySingle(MtzFFTPtr fft)
 	vec3 centre = _list->topCluster()->getCentre();
 	_cAlphaKeeper->addCAlphaView(fft->getMtzFile(), centre);
 
+	/*
 	_tabs->show();
 
 	int top = 10;
@@ -480,11 +424,11 @@ void Screen::displaySingle(MtzFFTPtr fft)
 	_toggleDead->show();
 	
 	_bin.push_back((QWidget **)&_toggleDead);
+	*/
 
 	_tabs->setCurrentIndex(_currIndex);
 	connect(_tabs, &QTabWidget::currentChanged, 
 	        this, &Screen::changeIndex);
-	resizeEvent(NULL);
 }
 
 void Screen::addColour(QString colour, QString display, QMenu *m)
@@ -530,150 +474,36 @@ void Screen::displayResults(Group *ave)
 		return;
 	}
 
-	_tabs = new QTabWidget(this);
-
-	resizeEvent(NULL);
-
 	addCorrelImage(ave);
 	addPlotView(&_svdView, ave, "SVD explorer", PlotSVD);
 	std::string average = "Average";
 	addHKLView(ave->getAverageFFT(), average);
-	std::cout << vec3_desc(hklc) << std::endl;
-	_hklKeeper->changeCentre(hklc);
-	std::cout << START_Z << std::endl;
-
-	addCAlphaView();
-	_cAlphaKeeper->addCAlphaView(ave);
-	if (stored)
-	{
-		_cAlphaKeeper->setModelMatrix(storeCAlpha);
-		_cAlphaKeeper->changeCentre(c);
-	}
-
-	addPlotView(&_ucView, ave, "Misc properties", PlotUnitCell);
-
-	int top = 10;
-
-	addSideButton((QWidget **)&_newSel, "New group", &top);
-	connect(_newSel, &QPushButton::clicked,
-	        this, &Screen::newSelection);
-
-	addSideButton((QWidget **)&_invertSele, "Invert selection", &top);
-	connect(_invertSele, &QPushButton::clicked,
-	        _list, &ClusterList::invertSelection);
-
-	addSideButton((QWidget **)&_markSele, "Toggle marked cluster", &top);
-	connect(_markSele, &QPushButton::clicked,
-	        this, &Screen::markSelection);
-
-	addSideButton((QWidget **)&_deadSele, "Toggle all dead", &top);
-	_deadSele->setDisabled(_group->isTopGroup());
-	connect(_deadSele, &QPushButton::clicked,
-	        this, &Screen::killSelection);
-
-	addSideButton((QWidget **)&_changeColour, "Recolour all", &top);
-	{
-		QMenu *m = new QMenu(_changeColour);
-
-		QAction *col = m->addAction("None");
-		col->setProperty("colour", QColor(Qt::transparent));
-
-		addColour("aqua", "Aqua", m);
-		addColour("skyblue", "Sky blue", m);
-		addColour("cornflowerblue", "Cornflower blue", m);
-		addColour("blueviolet", "Blue violet", m);
-		addColour("mediumpurple", "Medium purple", m);
-		addColour("purple", "Purple", m);
-		addColour("forestgreen", "Forest green", m);
-		addColour("orange", "Orange", m);
-		addColour("darkorange", "Dark orange", m);
-		addColour("grey", "Grey", m);
-		addColour("orchid", "Orchid", m);
-		addColour("darkred", "Dark red", m);
-		addColour("springgreen", "Spring green", m);
-		addColour("limegreen", "Lime green", m);
-
-		_changeColour->setMenu(m);
-	}
-
-	addSideButton((QWidget **)&_changeData, "Change data", &top);
-	QMenu *m = new QMenu(_changeData);
-
-	QAction *act = m->addAction("Collapse positions to selection");
-	connect(act, &QAction::triggered, this, &Screen::collapsePositions);
-
-	act = m->addAction("Reindex selection");
-	connect(act, &QAction::triggered,this, &Screen::reindex);
-
-	_changeData->setMenu(m);
-	_changeData->show();
-
-	/*
-	addSideButton((QWidget **)&_coverage, "Coverage order", &top);
-	connect(_coverage, &QPushButton::clicked,
-	        this, &Screen::coverage);
-	*/
-
-	addSideButton((QWidget **)&_coverage, "Write average MTZ", &top);
-	connect(_coverage, &QPushButton::clicked,
-	        this, &Screen::writeAverageMTZ);
-
-	addSideButton((QWidget **)&_reorder, "Reorder datasets", &top);
-	m = new QMenu(_reorder);
-
-	act = m->addAction("... by marked");
-	connect(act, &QAction::triggered, this, &Screen::reorder);
-	act = m->addAction("... by file");
-	connect(act, &QAction::triggered, this, &Screen::reorderByFile);
-
-	_reorder->setMenu(m);
-	_reorder->show();
-
-	int bottom = height() - 50;
-
-	_export = new QPushButton("Export", this);
-	_export->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, bottom,
-	                     RIGHT_VIEW_WIDTH - 20, 40);
-
-	m = new QMenu(_export);
-	QAction *a1 = m->addAction("Text files only");
-	connect(a1, &QAction::triggered, this, &Screen::exportText);
-	QAction *a2 = m->addAction("Prepare directories");
-	connect(a2, &QAction::triggered, _list, &ClusterList::prepDirs);
-	if (_returnJourney != NULL)
-	{
-		QAction *a1 = m->addAction("Return to sender");
-		connect(a1, &QAction::triggered, this, &Screen::returnToSender);
-	}
-
-	_export->setMenu(m);
-	_export->show();
 	
-	bottom -= 50;
-
-	_images = new QPushButton("Image view", this);
-	_images->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, bottom,
-	                     RIGHT_VIEW_WIDTH - 20, 40);
-
-	m = new QMenu(_images);
+	if (_hklKeeper != NULL)
 	{
-		QAction *a3 = m->addAction("Display settings");
-		connect(a3, &QAction::triggered, this, &Screen::displaySettings);
-		QAction *a2 = m->addAction("Rotate plot");
-		connect(a2, &QAction::triggered, this, &Screen::rotateDegrees);
-		QAction *a1 = m->addAction("Plot spin movie");
-		connect(a1, &QAction::triggered, this, &Screen::plotSpin);
-		QAction *a4 = m->addAction("Export C-alpha image");
-		connect(a4, &QAction::triggered, this, &Screen::saveImages);
+		_hklKeeper->changeCentre(hklc);
 	}
 
-	_images->setMenu(m);
-	_images->show();
+	if (QuickAtoms::loadedAtoms())
+	{
+		addCAlphaView();
+		_cAlphaKeeper->addCAlphaView(ave);
+		if (stored)
+		{
+			_cAlphaKeeper->setModelMatrix(storeCAlpha);
+			_cAlphaKeeper->changeCentre(c);
+		}
+	}
 
-	bottom -= 50;
-
-	_bin.push_back((QWidget **)&_export);
-	_bin.push_back((QWidget **)&_images);
+	if (_hklKeeper)
+	{
+		addPlotView(&_ucView, ave, "Misc properties", PlotUnitCell);
+	}
+	
+	if (AveVectors::hasVectorData())
+	{
+		addColumnView(ave);
+	}
 
 	_tabs->setCurrentIndex(_currIndex);
 	_tabs->show();
@@ -683,7 +513,6 @@ void Screen::displayResults(Group *ave)
 	        this, &Screen::changeIndex);
 	refocus(_currIndex);
 	relinkPixmap();
-	resizeEvent(NULL);
 }
 
 void Screen::exportText()
@@ -718,17 +547,20 @@ void Screen::exportText()
 void Screen::addSideButton(QWidget **buttPtr, std::string title, 
                            int *top)
 {
-	(*buttPtr) = new QPushButton(QString::fromStdString(title), this);
-	(*buttPtr)->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, *top,
-	               RIGHT_VIEW_WIDTH - 20, 40);
-	(*buttPtr)->show();
-	_bin.push_back(buttPtr);
+	QLayout *l = _side->layout();
+	(*buttPtr) = new QPushButton(QString::fromStdString(title), NULL);
+	l->addWidget(*buttPtr);
 
 	*top += 50;
 }
 
 void Screen::writeAverageMTZ()
 {
+	if (_group == NULL)
+	{
+		return;
+	}
+
 	QFileDialog *f = new QFileDialog(this, "Write MTZ", 
 	                                 "Reflection file (*.mtz)");
 	f->setAcceptMode(QFileDialog::AcceptSave);
@@ -779,6 +611,11 @@ void Screen::changeColour()
 
 void Screen::markSelection()
 {
+	if (_group == NULL)
+	{
+		return;
+	}
+
 	bool mark = !(_list->getLastAverage()->isMarked());
 	_list->getLastAverage()->setMarked(mark);
 	refreshSelection();
@@ -786,6 +623,11 @@ void Screen::markSelection()
 
 void Screen::killSelection()
 {
+	if (_group == NULL)
+	{
+		return;
+	}
+
 	bool dead = !(_list->getLastAverage()->isDead());
 	_list->getLastAverage()->setDead(dead);
 	refreshSelection();
@@ -793,6 +635,11 @@ void Screen::killSelection()
 
 void Screen::newSelection()
 {
+	if (_group == NULL)
+	{
+		return;
+	}
+
 	std::vector<MtzFFTPtr> mtzs = _group->getMtzsFromSelection();
 	_list->makeGroup(mtzs);
 }
@@ -817,7 +664,6 @@ void Screen::refreshSelection()
 	if (_correlImage && _correlLabel)
 	{
 		_correlImage->updateSelection();
-		resizeEvent(NULL);
 		relinkPixmap();
 	}
 	
@@ -870,7 +716,6 @@ void Screen::refocus(int index)
 	else if (index <= 0 && _correlLabel != NULL)
 	{
 		_correlLabel->setFocus();
-		resizeEvent(NULL);
 	}
 	else
 	{
@@ -1008,3 +853,128 @@ void Screen::plotSpin()
 	}
 }
 
+
+void Screen::addSideButtons()
+{
+	int top = 10;
+
+	addSideButton((QWidget **)&_newSel, "New group", &top);
+	connect(_newSel, &QPushButton::clicked,
+	        this, &Screen::newSelection);
+
+	addSideButton((QWidget **)&_invertSele, "Invert selection", &top);
+	connect(_invertSele, &QPushButton::clicked,
+	        _list, &ClusterList::invertSelection);
+
+	addSideButton((QWidget **)&_markSele, "Toggle marked cluster", &top);
+	connect(_markSele, &QPushButton::clicked,
+	        this, &Screen::markSelection);
+
+	addSideButton((QWidget **)&_deadSele, "Toggle all dead", &top);
+	connect(_deadSele, &QPushButton::clicked,
+	        this, &Screen::killSelection);
+
+	addSideButton((QWidget **)&_changeColour, "Recolour all", &top);
+	{
+		QMenu *m = new QMenu(_changeColour);
+
+		QAction *col = m->addAction("None");
+		col->setProperty("colour", QColor(Qt::transparent));
+
+		addColour("aqua", "Aqua", m);
+		addColour("skyblue", "Sky blue", m);
+		addColour("cornflowerblue", "Cornflower blue", m);
+		addColour("blueviolet", "Blue violet", m);
+		addColour("mediumpurple", "Medium purple", m);
+		addColour("purple", "Purple", m);
+		addColour("forestgreen", "Forest green", m);
+		addColour("orange", "Orange", m);
+		addColour("darkorange", "Dark orange", m);
+		addColour("grey", "Grey", m);
+		addColour("orchid", "Orchid", m);
+		addColour("darkred", "Dark red", m);
+		addColour("springgreen", "Spring green", m);
+		addColour("limegreen", "Lime green", m);
+
+		_changeColour->setMenu(m);
+	}
+
+	/*
+	addSideButton((QWidget **)&_changeData, "Change data", &top);
+	QMenu *m = new QMenu(_changeData);
+
+	QAction *act = m->addAction("Collapse molecules to selection");
+	connect(act, &QAction::triggered, this, &Screen::collapsePositions);
+
+	act = m->addAction("Reindex selection");
+	connect(act, &QAction::triggered,this, &Screen::reindex);
+
+	_changeData->setMenu(m);
+	_changeData->show();
+
+	addSideButton((QWidget **)&_coverage, "Coverage order", &top);
+	connect(_coverage, &QPushButton::clicked,
+	        this, &Screen::coverage);
+	*/
+
+	addSideButton((QWidget **)&_coverage, "Write average MTZ", &top);
+	connect(_coverage, &QPushButton::clicked,
+	        this, &Screen::writeAverageMTZ);
+
+	addSideButton((QWidget **)&_reorder, "Reorder datasets", &top);
+	QMenu *m = new QMenu(_reorder);
+
+	QAction *act = m->addAction("... by marked");
+	connect(act, &QAction::triggered, this, &Screen::reorder);
+	act = m->addAction("... by file");
+	connect(act, &QAction::triggered, this, &Screen::reorderByFile);
+
+	_reorder->setMenu(m);
+	_reorder->show();
+
+	int bottom = height() - 50;
+
+	QLayout *l = _side->layout();
+	
+	static_cast<QBoxLayout *>(l)->addStretch(1);
+
+	_export = new QPushButton("Export", NULL);
+
+	m = new QMenu(_export);
+	QAction *a1 = m->addAction("Text files only");
+	connect(a1, &QAction::triggered, this, &Screen::exportText);
+	QAction *a2 = m->addAction("Prepare directories");
+	connect(a2, &QAction::triggered, _list, &ClusterList::prepDirs);
+	if (_returnJourney != NULL)
+	{
+		QAction *a1 = m->addAction("Return to sender");
+		connect(a1, &QAction::triggered, this, &Screen::returnToSender);
+	}
+
+	_export->setMenu(m);
+	
+	bottom -= 50;
+
+	_images = new QPushButton("Image view", NULL);
+
+	m = new QMenu(_images);
+	{
+		QAction *a3 = m->addAction("Display settings");
+		connect(a3, &QAction::triggered, this, &Screen::displaySettings);
+		QAction *a2 = m->addAction("Rotate plot");
+		connect(a2, &QAction::triggered, this, &Screen::rotateDegrees);
+		QAction *a1 = m->addAction("Plot spin movie");
+		connect(a1, &QAction::triggered, this, &Screen::plotSpin);
+		QAction *a4 = m->addAction("Export C-alpha image");
+		connect(a4, &QAction::triggered, this, &Screen::saveImages);
+	}
+
+	_images->setMenu(m);
+	_images->show();
+
+	l->addWidget(_images);
+	l->addWidget(_export);
+
+	bottom -= 50;
+
+}

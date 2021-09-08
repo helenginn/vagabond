@@ -24,7 +24,7 @@
 #include <QPainter>
 #include <iostream>
 
-MatrixView::MatrixView(Group *ave, int w, int h) : QImage(w + 1, h, QImage::Format_RGB32)
+MatrixView::MatrixView(Group *ave, int w, int h) : QImage(w, h, QImage::Format_RGB32)
 {
 	_ave = ave;
 	_names = NULL;

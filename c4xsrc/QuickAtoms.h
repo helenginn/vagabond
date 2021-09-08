@@ -69,6 +69,11 @@ public:
 	{
 		return _crystal;
 	}
+	
+	static bool loadedAtoms()
+	{
+		return _loadedAtoms;
+	}
 
 	void populateCAlphaView(CAlphaView *view);
 private:
@@ -81,6 +86,7 @@ private:
 	
 	std::vector<std::string> _chains;
 	
+	static bool _loadedAtoms;
 	vec3 _centre;
 };
 

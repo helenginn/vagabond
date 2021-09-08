@@ -13,6 +13,7 @@
 
 class QTreeWidget;
 class QTreeWidgetItem;
+class MyDictator;
 class AveCSV;
 class AveVectors;
 class MtzFile;
@@ -113,6 +114,21 @@ public:
 	{
 		_res = res;
 	}
+	
+	void setVectorList(AveVectors *v)
+	{
+		_vectorList = v;
+	}
+	
+	void setDictator(MyDictator *d)
+	{
+		_dictator = d;
+	}
+	
+	MyDictator *dictator()
+	{
+		return _dictator;
+	}
 signals:
 	void average();
 	void cluster();
@@ -135,6 +151,7 @@ public slots:
 	void unitCellAverage();
 	void recipAverage();
 	void csvAverage();
+	void vecAverage();
 	void pdbAverage();
 protected:
 	virtual void keyPressEvent(QKeyEvent *event);
@@ -148,6 +165,7 @@ private:
 	bool _selectMode;
 	bool _removeMode;
 	std::map<std::string, std::string> _options;
+	MyDictator *_dictator;
 
 	std::vector<DatasetPath> _paths;
 	std::vector<Group *> _clusters;

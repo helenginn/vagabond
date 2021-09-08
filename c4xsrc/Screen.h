@@ -40,12 +40,14 @@ class MatrixView;
 class KeeperGL;
 class PlotView;
 class QKeyEvent;
+class ColumnView;
 
 typedef struct
 {
 	QAction *amp;
 	QAction *ca;
 	QAction *uc;
+	QAction *vec;
 	QAction *csv;
 	QAction *top;
 	QAction *orig;
@@ -71,7 +73,6 @@ public:
 		return _list;
 	}
 
-	virtual void resizeEvent(QResizeEvent *e);
 	void displayResults(Group *ave);
 	void displaySingle(MtzFFTPtr fft);
 	void updateToolbar(Group *grp);
@@ -111,6 +112,7 @@ protected:
 	virtual void keyPressEvent(QKeyEvent *e);
 	virtual void keyReleaseEvent(QKeyEvent *e);
 private:
+	void addSideButtons();
 	void relinkPixmap();
 	void addColour(QString colour, QString display, QMenu *m);
 	void addToolBar();
@@ -120,6 +122,7 @@ private:
                          std::string title, PlotType type);
 
 	void addCAlphaView();
+	void addColumnView(Group *ave);
 	void addHKLView(VagFFTPtr fft, std::string filename = "");
 
 	void addSideButton(QWidget **buttPtr, std::string title, int *top);
@@ -140,6 +143,7 @@ private:
 	QTabWidget *_tabs;
 	QWidget *_hkl;
 	QWidget *_cAlpha;
+	QWidget *_side;
 	QTreeWidget *_inputTree;
 	QToolBar *_toolBar;
 	QPushButton *_newSel;
@@ -156,6 +160,7 @@ private:
 	QPlainTextEdit *_ucLabel;
 	QAction *_cluster;
 	ClusterList *_list;
+	ColumnView *_columnView;
 	
 	GroupUses uses;
 	

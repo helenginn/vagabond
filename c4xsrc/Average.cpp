@@ -38,31 +38,6 @@ void Average::findIntercorrelations(Group *other, double **svd)
 	int total = 0;
 	int missing = 0;
 
-	std::cout << "find intercorrel Vectorlist: " << _vectorList << std::endl;
-	
-	if (_vectorList)
-	{
-		for (size_t i = 0; i < other->mtzCount(); i++)
-		{
-			for (size_t j = 0; j < other->mtzCount(); j++)
-			{
-				if (i == j)
-				{
-//					continue;
-				}
-
-				MtzFFTPtr one = other->getMtz(i);
-				MtzFFTPtr two = other->getMtz(j);
-
-				double cc = findCorrelation(one, two);
-
-				svd[i][j] = cc;
-			}
-		}
-
-		return;
-	}
-
 	if (_symmetric)
 	{
 		for (size_t i = 1; i < other->mtzCount(); i++)

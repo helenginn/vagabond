@@ -18,6 +18,7 @@
 
 #include <hcsrc/FileReader.h>
 #include <hcsrc/maths.h>
+#include "MyDictator.h"
 #include "Group.h"
 #include "MtzFFT.h"
 #include "MtzFile.h"
@@ -25,7 +26,9 @@
 #include "DatasetPath.h"
 #include "ClusterList.h"
 
+std::map<int, bool> AveVectors::_enabled;
 std::vector<std::string> AveVectors::_names;
+std::vector<std::string> AveVectors::_titles;
 std::map<std::string, int> AveVectors::_ids;
 std::map<std::string, std::vector<double> > AveVectors::_vectors;
 
@@ -33,6 +36,17 @@ AveVectors::AveVectors(Group *group, std::string csv) : Average(group)
 {
 	_csv = csv;
 	_list = NULL;
+	_vectorList = true;
+}
+
+void AveVectors::loadTitles(std::string line)
+{
+	std::vector<std::string> components = split(line, ',');
+	
+	for (size_t i = 1; i < components.size(); i++)
+	{
+		_titles.push_back(components[i]);
+	}
 }
 
 void AveVectors::load()
@@ -64,6 +78,7 @@ void AveVectors::load()
 			{
 				std::cout << "First line appears to be header." 
 				<< std::endl;
+				loadTitles(lines[0]);
 			}
 			else
 			{
@@ -84,6 +99,11 @@ void AveVectors::load()
 			{
 				max = j;
 			}
+			
+			if (max > _titles.size())
+			{
+				_titles.resize(max);
+			}
 		}
 		
 		if (_ids[name] >= 1)
@@ -92,11 +112,21 @@ void AveVectors::load()
 			std::cout << "Overwriting!!" << std::endl;
 			std::cout << std::endl;
 		}
-
-		_ids[name]++;
-		_vectors[name] = vec;
-		_names.push_back(name);
+		
+		setVector(name, vec);
 	}
+	
+	for (size_t i = 0; i < _titles.size(); i++)
+	{
+		_enabled[i] = true;
+	}
+}
+
+void AveVectors::setVector(std::string name, std::vector<double> vec)
+{
+	_ids[name]++;
+	_vectors[name] = vec;
+	_names.push_back(name);
 }
 
 void AveVectors::preparePaths()
@@ -128,6 +158,7 @@ void AveVectors::calculate()
 
 	std::vector<double> counts;
 	_averageVec.clear();
+	_sigVec.clear();
 	
 	for (size_t i = 0; i < group()->mtzCount(); i++)
 	{
@@ -140,12 +171,20 @@ void AveVectors::calculate()
 		}
 
 		std::vector<double> vec = _vectors[name];
-		std::cout << i << " " << vec.size() << std::endl;
 		
 		if (vec.size() > _averageVec.size())
 		{
+			int start = _averageVec.size();
 			_averageVec.resize(vec.size());
+			_sigVec.resize(vec.size());
 			counts.resize(vec.size());
+
+			for (size_t j = start; j < _averageVec.size(); j++)
+			{
+				_sigVec[j] = 0;
+				_averageVec[j] = 0;
+				counts[j] = 0;
+			}
 		}
 
 		for (size_t j = 0; j < vec.size(); j++)
@@ -156,17 +195,19 @@ void AveVectors::calculate()
 				continue;
 			}
 			_averageVec[j] += val;
+			_sigVec[j] += val * val;
 			counts[j]++;
 		}
 	}
 	
-	std::cout << "Average vec: ";
 	for (size_t j = 0; j < _averageVec.size(); j++)
 	{
+		double sq = _sigVec[j];
+		double sum = _averageVec[j];
+
+		_sigVec[j] = sq - sum * sum / counts[j];
 		_averageVec[j] /= counts[j];
-		std::cout << _averageVec[j] << ", ";
 	}
-	std::cout << std::endl;
 }
 
 double AveVectors::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
@@ -180,8 +221,26 @@ double AveVectors::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 	CorrelData cd = empty_CD();
 	for (size_t i = 0; i < vec1.size(); i++)
 	{
-		double x = vec1[i] - _averageVec[i];
-		double y = vec2[i] - _averageVec[i];
+		if (!_enabled[i])
+		{
+			continue;
+		}
+
+		double mean = _averageVec[i];
+		double stdev = _sigVec[i];
+
+		if (MyDictator::valueForKey("average") == "false")
+		{
+			mean = 0;
+		}
+
+		if (MyDictator::valueForKey("stdev") == "false")
+		{
+			stdev = 1;
+		}
+
+		double x = (vec1[i] - mean) / stdev;
+		double y = (vec2[i] - mean) / stdev;
 		if (x != x || y != y)
 		{
 			continue;

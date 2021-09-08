@@ -20,12 +20,14 @@
 #include "Screen.h"
 #include "ClusterList.h"
 #include <iostream>
+#include <hcsrc/FileReader.h>
 
 MyDictator::MyDictator() : Dictator()
 {
 	_screen = new Screen(NULL);
 	_screen->show();
 	_list = _screen->getList();
+	_list->setDictator(this);
 }
 
 bool MyDictator::processRequest(std::string first, std::string last)
@@ -38,6 +40,11 @@ bool MyDictator::processRequest(std::string first, std::string last)
 	{
 		double res = atof(last.c_str());
 		_list->setResolution(res);
+	}
+	else if (first == "average")
+	{
+		to_lower(last);
+		_properties["average"] = last;
 	}
 	else if (first == "load-vectors")
 	{

@@ -53,6 +53,8 @@ public:
 		_list = list;
 	}
 	
+	static void clear();
+	
 	static size_t csvCount()
 	{
 		return _relationships.size();
