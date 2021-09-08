@@ -41,16 +41,16 @@ lib_vgeom = library('vgeom',
 'libinfo/GeomTable.cpp', 
 'libinfo/RotamerTable.cpp', 
 'libinfo/GeomVariant.cpp', 
-cpp_args: ['-w', '-mmacosx-version-min=10.14'], link_args: ['-mmacosx-version-min=10.14'], install: true)
 install_rpath: '$ORIGIN/.',
+cpp_args: ['-w', '-mmacosx-version-min=10.14'], link_args: ['-mmacosx-version-min=10.14'], install: true)
 inc_vgeom = include_directories('libinfo')
 dep_vgeom = declare_dependency(link_with: lib_vgeom, include_directories: inc_vgeom)
 
 # numerical recipes, single value decomposition
 
 lib_ica = library('ica', 'libica/matrix.cpp', 'libica/svdcmp.cpp', 'liblbfgs/lbfgs.c', 
-cpp_args: ['-w', '-mmacosx-version-min=10.14'], link_args: ['-mmacosx-version-min=10.14'], install: true)
 install_rpath: '$ORIGIN/.',
+cpp_args: ['-w', '-mmacosx-version-min=10.14'], link_args: ['-mmacosx-version-min=10.14'], install: true)
 inc_ica = include_directories('libica')
 dep_ica = declare_dependency(link_with: lib_ica, include_directories: inc_ica)
 
@@ -146,9 +146,9 @@ base_files = files('libsrc/Absolute.cpp',
 
 lib_vag = library('vag', gen_src, base_files,
 include_directories: 'subprojects/helencore',
+install_rpath: '$ORIGIN/.',
 dependencies: [png_dep, fftw_dep, thread_fft_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep,
 helencore_dep], cpp_args: ['-w', '-std=c++11'], link_args: ['-mmacosx-version-min=10.14'], install: true)
-install_rpath: '$ORIGIN/.',
 inc_vag = include_directories('libsrc')
 dep_vag = declare_dependency(link_with: lib_vag, include_directories: inc_vag)
 
@@ -215,9 +215,9 @@ install: true, cpp_args: ['-w', '-std=c++11'])
 lib_vgui = library('vgui', base_files, files, moc_files,
 dependencies: [qt5_dep, dep_ica, helen3d_dep, helencore_dep,
 dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_fft_dep, boost_dep], 
+install_rpath: '$ORIGIN/.',
 include_directories: subincludes,
 cpp_args: ['-w', '-std=c++11'], install: true)
-install_rpath: '$ORIGIN/.',
 else
 	message('QT5 not found, so not building vagabond-gui.')
 endif
@@ -542,8 +542,8 @@ moc_cluster4x = qt5.preprocess(moc_headers : headers,
 
 lib_c4x = library('cluster4x', c4xsrc, moc_cluster4x,
 include_directories: subincludes,
-dependencies: c4xdeps, cpp_args: ['-Wall', '-std=c++11'], link_args: ['-mmacosx-version-min=10.14'], install: true)
 install_rpath: '$ORIGIN/.',
+dependencies: c4xdeps, cpp_args: ['-Wall', '-std=c++11'], link_args: ['-mmacosx-version-min=10.14'], install: true)
 inc_c4x = include_directories('c4xsrc')
 dep_c4x = declare_dependency(link_with: lib_c4x, include_directories: [inc_c4x])
 
