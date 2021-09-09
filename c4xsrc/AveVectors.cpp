@@ -205,7 +205,7 @@ void AveVectors::calculate()
 		double sq = _sigVec[j];
 		double sum = _averageVec[j];
 
-		_sigVec[j] = sq - sum * sum / counts[j];
+		_sigVec[j] = sqrt(sq - sum * sum / counts[j]);
 		_averageVec[j] /= counts[j];
 	}
 }
