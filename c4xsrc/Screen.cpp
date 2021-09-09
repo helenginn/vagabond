@@ -945,11 +945,6 @@ void Screen::addSideButtons()
 	connect(a1, &QAction::triggered, this, &Screen::exportText);
 	QAction *a2 = m->addAction("Prepare directories");
 	connect(a2, &QAction::triggered, _list, &ClusterList::prepDirs);
-	if (_returnJourney != NULL)
-	{
-		QAction *a1 = m->addAction("Return to sender");
-		connect(a1, &QAction::triggered, this, &Screen::returnToSender);
-	}
 
 	_export->setMenu(m);
 	
@@ -976,5 +971,13 @@ void Screen::addSideButtons()
 	l->addWidget(_export);
 
 	bottom -= 50;
+}
 
+void Screen::setReturnJourney(C4XAcceptor *ptr)
+{
+	_returnJourney = ptr;
+
+	QAction *a1 = _export->menu()->addAction("Return to sender");
+	connect(a1, &QAction::triggered, this, &Screen::returnToSender);
+	std::cout << "Adding return journey" << std::endl;
 }

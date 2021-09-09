@@ -79,10 +79,7 @@ public:
 	void addCSVSwitcher();
 	void displaySettings();
 	
-	void setReturnJourney(C4XAcceptor *ptr)
-	{
-		_returnJourney = ptr;
-	}
+	void setReturnJourney(C4XAcceptor *ptr);
 	
 signals:
 	void refreshed();
