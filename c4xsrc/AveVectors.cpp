@@ -221,7 +221,7 @@ double AveVectors::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 	CorrelData cd = empty_CD();
 	for (size_t i = 0; i < vec1.size(); i++)
 	{
-		if (!_enabled[i])
+		if (_enabled.count(i) && !_enabled[i])
 		{
 			continue;
 		}
