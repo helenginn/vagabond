@@ -51,6 +51,11 @@ public:
 		return _titles.size();
 	}
 	
+	void addTitle(std::string title)
+	{
+		_titles.push_back(title);
+	}
+	
 	std::string title(int i)
 	{
 		return _titles[i];
