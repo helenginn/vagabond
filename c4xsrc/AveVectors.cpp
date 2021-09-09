@@ -234,7 +234,7 @@ double AveVectors::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 			mean = 0;
 		}
 
-		if (MyDictator::valueForKey("stdev") == "false")
+		if (MyDictator::valueForKey("stdev") != "true")
 		{
 			stdev = 1;
 		}
