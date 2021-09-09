@@ -73,6 +73,11 @@ public:
 	
 	bool enabled(int i)
 	{
+		if (_enabled.count(i) == 0)
+		{
+			return true;
+		}
+
 		return _enabled[i];
 	}
 	
