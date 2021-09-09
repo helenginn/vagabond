@@ -8,6 +8,7 @@ if (host_machine.system() == 'darwin')
 endif
 
 add_global_arguments(arg_list, language : ['cpp', 'c', 'cxx', 'clang'])
+add_global_arguments('-std=c++11', language : ['cpp', 'cxx', 'clang'])
 
 
 qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets', 'Sql'], required : false)
