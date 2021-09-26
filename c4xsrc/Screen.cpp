@@ -37,7 +37,6 @@
 
 #include "FileReader.h"
 #include "Screen.h"
-#include "SelectionWindow.h"
 #include "CAlphaView.h"
 #include "DisplaySettings.h"
 #include "ClusterList.h"
