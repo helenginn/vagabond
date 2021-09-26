@@ -7,8 +7,8 @@ if (host_machine.system() == 'darwin')
   arg_list += '-mmacosx-version-min=10.14'
 endif
 
-add_global_arguments(arg_list, language : ['cpp', 'c', 'cxx', 'clang'])
-add_global_arguments('-std=c++11', language : ['cpp', 'cxx', 'clang'])
+add_global_arguments(arg_list, language : ['cpp', 'c'])
+add_global_arguments('-std=c++11', language : ['cpp'])
 
 
 qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets', 'Sql'], required : false)
