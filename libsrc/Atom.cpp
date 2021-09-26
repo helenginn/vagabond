@@ -823,7 +823,7 @@ double Atom::getDistanceFrom(Atom *other, int nSample, bool quick)
 	vec3 me = getAbsolutePosition();
 	vec3 you = other->getAbsolutePosition();
 
-	if (!getModel()->hasExplicitPositions())
+	if (nSample >= 0 && !getModel()->hasExplicitPositions())
 	{
 		return -1;
 	}
