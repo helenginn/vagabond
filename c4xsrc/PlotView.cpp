@@ -49,7 +49,7 @@ void PlotView::resizeEvent(QResizeEvent *e)
 	int axh = 60;
 	int pad = 2;
 
-	setGeometry(0, 0, parentWidget()->width(), parentWidget()->height());
+//	setGeometry(0, 0, parentWidget()->width(), parentWidget()->height());
 
 	if (_selection)
 	{
