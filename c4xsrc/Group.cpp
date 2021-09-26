@@ -393,6 +393,10 @@ void Group::svd()
 
 vec3 Group::getPoint(int num, int a1, int a2, int a3)
 {
+	if (_clusterPtrs == NULL)
+	{
+		return empty_vec3();
+	}
 	vec3 v;
 	v.x = _clusterPtrs[num][a1];
 	v.y = _clusterPtrs[num][a2];
@@ -536,7 +540,12 @@ void Group::setMtzSelection(size_t i, bool val)
 
 VagFFTPtr Group::getAverageFFT()
 {
-	return _mySet.recip->getFFT();
+	if (_mySet.recip != NULL)
+	{
+		return _mySet.recip->getFFT();
+	}
+	
+	return VagFFTPtr();
 }
 
 vec3 Group::getCentre()

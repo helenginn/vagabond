@@ -74,7 +74,7 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 	_correlImage = NULL;
 	_svdView = NULL;
 	_ucView = NULL;
-	_rView = NULL;
+	_ucLabel = NULL;
 	_group = NULL;
 	_newSel = NULL;
 	_toggleDead = NULL;
@@ -83,6 +83,7 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 	_hkl = NULL;
 	_hklKeeper = NULL;
 	_cAlphaKeeper = NULL;
+	_cAlpha = NULL;
 	_currIndex = 0;
 
 	QWidget *window = new QWidget();
@@ -296,20 +297,15 @@ void Screen::clusterGroup()
 	_list->cluster(static_cast<Group *>(item));
 }
 
-void Screen::binTab()
-{
-	for (size_t i = 0; i < _bin.size(); i++)
-	{
-		(*_bin[i])->hide();
-		(*_bin[i])->deleteLater();
-		*_bin[i] = 0;
-	}
-
-	_bin.clear();
-}
-
 void Screen::addCorrelImage(Group *ave)
 {
+	if (_correlLabel != NULL)
+	{
+		_tabs->removeTab(_tabs->indexOf(_correlLabel));
+		_correlLabel->deleteLater();
+		_correlLabel = NULL;
+	}
+
 	if (!ave->getCorrelMatrix())
 	{
 		return;
@@ -322,113 +318,153 @@ void Screen::addCorrelImage(Group *ave)
 	_correlLabel = l;
 	_correlLabel->setScaledContents(true);
 	_correlLabel->setFocusPolicy(Qt::StrongFocus);
-	_tabs->addTab(l, "Correlation matrix");
-	_bin.push_back((QWidget **)&_correlLabel);
+	_tabs->insertTab(0, l, "Correlation matrix");
 }
 
 void Screen::addPlotView(PlotView **view, Group *ave, 
                          std::string title, PlotType type)
 {
-	(*view) = new PlotView(type, this);
-	_tabs->addTab((*view), QString::fromStdString(title));
+	if (*view == NULL)
+	{
+		(*view) = new PlotView(type, this);
+
+		if (type != PlotSVD)
+		{
+			_tabs->addTab((*view), QString::fromStdString(title));
+		}
+		else
+		{
+			int index = 1;
+			if (_tabs->count() < 1)
+			{
+				index = 0;
+			}
+			_tabs->insertTab(index, (*view), QString::fromStdString(title));
+		}
+	}
 
 	(*view)->setScreen(this);
 	(*view)->setup(ave);
-
-	_bin.push_back((QWidget **)&(*view));
 }
 
 void Screen::addColumnView(Group *ave)
 {
+	if (_columnView != NULL)
+	{
+		return;
+	}
+
 	_columnView = new ColumnView(this, ave);
 	_columnView->setList(_list);
 	_tabs->addTab(_columnView, "Column explorer");
-	_bin.push_back((QWidget **)&_columnView);
-
 }
 
 void Screen::addCAlphaView()
 {
-	_cAlpha = new QWidget(this);
-	_tabs->addTab(_cAlpha, "C-alpha explorer");
-	
-	_cAlphaKeeper = new KeeperGL(_cAlpha);
+	if (_cAlphaKeeper != NULL)
+	{
+		return;
+	}
 
-	_bin.push_back((QWidget **)&_cAlphaKeeper);
-	_bin.push_back((QWidget **)&_cAlpha);
+	_cAlpha = new QWidget(this);
+	
+	QVBoxLayout *vbox = new QVBoxLayout();
+	vbox->setContentsMargins(0, 0, 0, 0);
+	_cAlpha->setLayout(vbox);
+	
+	_cAlphaKeeper = new KeeperGL(NULL);
+	vbox->addWidget(_cAlphaKeeper);
+
+	_tabs->addTab(_cAlpha, "C-alpha explorer");
 }
 
 void Screen::addHKLView(VagFFTPtr fft, std::string filename)
 {
 	if (!fft || fft->nn() == 0)
 	{
+		if (_hkl)
+		{
+			_tabs->removeTab(_tabs->indexOf(_hkl));
+			_hkl->deleteLater();
+			_hklKeeper->deleteLater();
+			_hkl = NULL;
+			_hklKeeper = NULL;
+			_ucLabel->deleteLater();
+			_ucLabel = NULL;
+		}
+
 		return;
 	}
-
-	_hkl = new QWidget(this);
-	_tabs->addTab(_hkl, "HKL explorer");
 	
 	if (_scale < 0 || _scale != _scale)
 	{
 		double average = fft->averageAll();
 		_scale = average * 5;
 	}
-
-	_hklKeeper = new KeeperGL(_hkl);
-	_hklKeeper->addAxes();
-	_hklKeeper->addHKLView(fft, _scale);
-	_hklKeeper->setModelMatrix(_storeHKL);
 	
-	std::string ucInfo = filename + ": ";
-	ucInfo += AveDiffraction::unitCellDesc(fft);
-	
-	_ucLabel = new QPlainTextEdit(QString::fromStdString(ucInfo), _hkl);
-	_ucLabel->setReadOnly(true);
-	_ucLabel->setGeometry(0, 0, 600, 60);
-	_ucLabel->show();
+	if (_hklKeeper == NULL)
+	{
+		_hkl = new QWidget(this);
+		_tabs->addTab(_hkl, "HKL explorer");
 
-	_bin.push_back((QWidget **)&_hklKeeper);
-	_bin.push_back((QWidget **)&_ucLabel);
-	_bin.push_back((QWidget **)&_hkl);
+		_hklKeeper = new KeeperGL(_hkl);
+		_hklKeeper->focusOnPosition(empty_vec3(), 20);
+
+		QVBoxLayout *vbox = new QVBoxLayout();
+		vbox->setContentsMargins(0, 0, 0, 0);
+		_hkl->setLayout(vbox);
+		vbox->addWidget(_hklKeeper);
+	}
+
+	if (fft)
+	{
+		_hklKeeper->clearObjects();
+		_hklKeeper->addAxes("h", "k", "l");
+		_hklKeeper->addHKLView(fft, _scale);
+
+		std::string ucInfo = filename + ": ";
+		ucInfo += AveDiffraction::unitCellDesc(fft);
+
+		if (_ucLabel == NULL)
+		{
+			_ucLabel = new QPlainTextEdit(NULL, _hkl);
+			_ucLabel->setReadOnly(true);
+			_ucLabel->setGeometry(0, 0, 600, 60);
+			_ucLabel->show();
+		}
+
+		_ucLabel->setPlainText(QString::fromStdString(ucInfo));
+	}
+}
+
+void Screen::removeGroupTabs()
+{
+	_tabs->removeTab(_tabs->indexOf(_ucView));
+	_ucView->deleteLater();
+	_ucView = NULL;
+
+	_tabs->removeTab(_tabs->indexOf(_svdView));
+	_svdView->deleteLater();
+	_svdView = NULL;
+
+	_tabs->removeTab(_tabs->indexOf(_correlLabel));
+	_correlLabel->deleteLater();
+	_correlLabel = NULL;
 }
 
 void Screen::displaySingle(MtzFFTPtr fft)
 {
 	_group = NULL;
 
-	if (_tabs != NULL)
-	{
-		disconnect(_tabs, &QTabWidget::currentChanged, 
-		           this, &Screen::changeIndex);
-	}
-
-	binTab();
-
+	removeGroupTabs();
 
 	addHKLView(fft, fft->getMtzFile()->getFilename());
 	addCAlphaView();
+
 	vec3 centre = _list->topCluster()->getCentre();
 	_cAlphaKeeper->addCAlphaView(fft->getMtzFile(), centre);
 
-	/*
-	_tabs->show();
-
-	int top = 10;
-
-	_toggleDead = new QPushButton("Toggle dead", this);
-	_toggleDead ->setGeometry(width() - RIGHT_VIEW_WIDTH + 10, top,
-	                          RIGHT_VIEW_WIDTH - 20, 40);
-
-	connect(_toggleDead, &QPushButton::clicked,
-	        _list, &ClusterList::toggleDead);
-	_toggleDead->show();
-	
-	_bin.push_back((QWidget **)&_toggleDead);
-	*/
-
 	_tabs->setCurrentIndex(_currIndex);
-	connect(_tabs, &QTabWidget::currentChanged, 
-	        this, &Screen::changeIndex);
 }
 
 void Screen::addColour(QString colour, QString display, QMenu *m)
@@ -441,63 +477,40 @@ void Screen::addColour(QString colour, QString display, QMenu *m)
 void Screen::displayResults(Group *ave)
 {
 	_group = ave;
-	
-	vec3 hklc = empty_vec3();
-	if (_hklKeeper != NULL)
-	{
-		_storeHKL = _hklKeeper->getModel();
-		hklc = _hklKeeper->getCentre();
-	}
-	
-	bool stored = false;
-	mat4x4 storeCAlpha = make_mat4x4();
-	vec3 c = empty_vec3();
-
-	if (_cAlphaKeeper != NULL)
-	{
-		stored = true;
-		storeCAlpha = _cAlphaKeeper->getModel();
-		c = _cAlphaKeeper->getCentre();
-	}
-
-	if (_tabs != NULL)
-	{
-		disconnect(_tabs, &QTabWidget::currentChanged, 
-		           this, &Screen::changeIndex);
-	}
 
 	updateToolbar(ave);
-	binTab();
-
-	if (!ave->getCorrelMatrix())
-	{
-		return;
-	}
 
 	addCorrelImage(ave);
-	addPlotView(&_svdView, ave, "SVD explorer", PlotSVD);
+	if (ave->getCorrelMatrix())
+	{
+		addPlotView(&_svdView, ave, "SVD explorer", PlotSVD);
+		relinkPixmap();
+	}
+	else
+	{
+		_tabs->removeTab(_tabs->indexOf(_svdView));
+		_svdView->deleteLater();
+		_svdView = NULL;
+	}
+
 	std::string average = "Average";
 	addHKLView(ave->getAverageFFT(), average);
-	
-	if (_hklKeeper != NULL)
-	{
-		_hklKeeper->changeCentre(hklc);
-	}
 
 	if (QuickAtoms::loadedAtoms())
 	{
 		addCAlphaView();
 		_cAlphaKeeper->addCAlphaView(ave);
-		if (stored)
-		{
-			_cAlphaKeeper->setModelMatrix(storeCAlpha);
-			_cAlphaKeeper->changeCentre(c);
-		}
 	}
 
-	if (_hklKeeper)
+	if (ave->getAverageFFT())
 	{
 		addPlotView(&_ucView, ave, "Misc properties", PlotUnitCell);
+	}
+	else
+	{
+		_tabs->removeTab(_tabs->indexOf(_ucView));
+		_ucView->deleteLater();
+		_ucView = NULL;
 	}
 	
 	if (AveVectors::hasVectorData())
@@ -505,14 +518,8 @@ void Screen::displayResults(Group *ave)
 		addColumnView(ave);
 	}
 
-	_tabs->setCurrentIndex(_currIndex);
-	_tabs->show();
 	connect(_tabs, &QTabWidget::tabBarClicked, 
 	        this, &Screen::refocus);
-	connect(_tabs, &QTabWidget::currentChanged, 
-	        this, &Screen::changeIndex);
-	refocus(_currIndex);
-	relinkPixmap();
 }
 
 void Screen::exportText()
@@ -683,11 +690,6 @@ void Screen::refreshSelection()
 	if (_cAlphaKeeper)
 	{
 		_cAlphaKeeper->getCAlphaView()->repopulate();
-	}
-	
-	if (_rView)
-	{
-		_rView->keeper()->getPlot()->repopulate();
 	}
 	
 	if (_ucView)

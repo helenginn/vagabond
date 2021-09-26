@@ -41,22 +41,26 @@ KeeperGL::KeeperGL(QWidget *p) : SlipGL(p)
 	setBackground(1, 1, 1, 1);
 	_rValues = NULL;
 	_autoCorrect = false;
-	setGeometry(0, 0, p->width(), p->height());
 	_plot = NULL;
 	_hklView = NULL;
 	_controlPressed = false;
 	_shiftPressed = false;
+	_cAlphaView = NULL;
+	setZFar(1000);
 }
 
-void KeeperGL::addAxes()
+void KeeperGL::addAxes(std::string a, std::string b, std::string c)
 {
 	GLAxis *axis = new GLAxis(make_vec3(1, 0, 0));
+	axis->addText(a);
 	_axes.push_back(axis);
 	addObject(axis, false);
 	axis = new GLAxis(make_vec3(0, 1, 0));
+	axis->addText(b);
 	_axes.push_back(axis);
 	addObject(axis, false);
 	axis = new GLAxis(make_vec3(0, 0, 1));
+	axis->addText(c);
 	_axes.push_back(axis);
 	addObject(axis, false);
 	
@@ -84,18 +88,29 @@ void KeeperGL::finishCAlphaView()
 	_rValues->setGeometry(10, 10, 200, 100);
 	_rValues->show();
 
-	updateCamera();
 	update();
 }
 
 void KeeperGL::addCAlphaView(Group *ave)
 {
+	if (_cAlphaView != NULL)
+	{
+		clearObjects();
+		_cAlphaView->deleteLater();
+	}
+
 	_cAlphaView = new CAlphaView(ave);
 	finishCAlphaView();
 }
 
 void KeeperGL::addCAlphaView(MtzFile *file, vec3 centre)
 {
+	if (_cAlphaView != NULL)
+	{
+		clearObjects();
+		_cAlphaView->deleteLater();
+	}
+
 	_cAlphaView = new CAlphaView(file, centre);
 	finishCAlphaView();
 }

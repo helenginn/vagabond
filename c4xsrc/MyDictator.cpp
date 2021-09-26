@@ -50,6 +50,16 @@ bool MyDictator::processRequest(std::string first, std::string last)
 	{
 		_list->loadFromVectorList(last);
 	}
+	else if (first == "load-clusters")
+	{
+		if (!file_exists(last))
+		{
+			return true;
+		}
+
+		std::string contents = get_file_contents(last);
+		_list->loadClusters(contents);
+	}
 
 	return true;
 }

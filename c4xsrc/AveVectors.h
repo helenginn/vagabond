@@ -46,17 +46,17 @@ public:
 		return _vectors.size() > 0;
 	}
 	
-	size_t titleCount()
+	static size_t titleCount()
 	{
 		return _titles.size();
 	}
 	
-	void addTitle(std::string title)
+	static void addTitle(std::string title)
 	{
 		_titles.push_back(title);
 	}
 	
-	std::string title(int i)
+	static std::string title(int i)
 	{
 		return _titles[i];
 	}
@@ -66,12 +66,22 @@ public:
 		return _vectors.size();
 	}
 	
-	void setEnabled(int i, bool e)
+	static void setEnabled(int i, bool e)
 	{
 		_enabled[i] = e;
 	}
 	
-	bool enabled(int i)
+	static std::map<int, bool> &copyEnabled()
+	{
+		return _enabled;
+	}
+	
+	static void setEnabledSet(std::map<int, bool> enabled)
+	{
+		_enabled = enabled;
+	}
+	
+	static bool enabled(int i)
 	{
 		if (_enabled.count(i) == 0)
 		{

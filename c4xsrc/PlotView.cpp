@@ -72,10 +72,15 @@ void PlotView::resizeEvent(QResizeEvent *e)
 
 void PlotView::setup(Group *grp)
 {
-	_keeper = new KeeperGL(this);
-	_keeper->addAxes();
-	_keeper->focusOnPosition(empty_vec3(), 20);
+	if (_keeper == NULL)
+	{
+		_keeper = new KeeperGL(this);
+		_keeper->focusOnPosition(empty_vec3(), 20);
+	}
 	
+	_keeper->clearObjects();
+	_keeper->addAxes();
+
 	if (_type == PlotUnitCell)
 	{
 		_keeper->addPlot(grp, new UCPlot());

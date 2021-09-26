@@ -75,6 +75,8 @@ public:
 
 	void displayResults(Group *ave);
 	void displaySingle(MtzFFTPtr fft);
+	void updateInstantViews(Group *ave);
+
 	void updateToolbar(Group *grp);
 	void addCSVSwitcher();
 	void displaySettings();
@@ -111,9 +113,10 @@ protected:
 private:
 	void addSideButtons();
 	void relinkPixmap();
+	void deleteTab(QWidget **tab);
 	void addColour(QString colour, QString display, QMenu *m);
+	void removeGroupTabs();
 	void addToolBar();
-	void binTab();
 	void addCorrelImage(Group *ave);
 	void addPlotView(PlotView **view, Group *ave,
                          std::string title, PlotType type);
@@ -127,12 +130,10 @@ private:
 	int _currIndex;
 	double _scale;
 	QMenu *_menu;
-	std::vector<QWidget **> _bin;
-	QGraphicsScene *_scene;
+
 	MatrixView *_correlImage;
 	PlotView *_svdView;
 	PlotView *_ucView;
-	PlotView *_rView;
 	Group *_group;
 	KeeperGL *_hklKeeper;
 	KeeperGL *_cAlphaKeeper;

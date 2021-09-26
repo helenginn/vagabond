@@ -44,7 +44,8 @@ public:
 	KeeperGL(QWidget *parent);
 	
 	void preparePanels(int n);
-	void addAxes();
+	void addAxes(std::string a = "", std::string b = "",
+	             std::string c = "");
 	void addPlot(Group *ave, ClusterPlot *plot);
 	void addHKLView(VagFFTPtr fft, double scale);
 	void addCAlphaView(MtzFile *file, vec3 centre);

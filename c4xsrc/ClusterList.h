@@ -148,6 +148,9 @@ public slots:
 	void topAverage();
 	void myAverage();
 
+	void chooseColumns();
+	void enableAllColumns();
+
 	void unitCellAverage();
 	void recipAverage();
 	void csvAverage();

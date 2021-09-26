@@ -16,20 +16,8 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#include <QTreeWidget>
-#include <QApplication>
-#include <QMessageBox>
-#include <QMenu>
-#include <QThread>
-#include <QKeyEvent>
-#include <QPushButton>
-#include <iostream>
-#include <fstream>
-
-#include <libsrc/PDBReader.h>
-#include <libsrc/Crystal.h>
-#include <libsrc/Options.h>
 #include "Group.h"
+#include "ColumnChooser.h"
 #include "FileReader.h"
 #include "AveDiffraction.h"
 #include "ClusterList.h"
@@ -43,6 +31,20 @@
 #include "FolderInput.h"
 #include "Input.h"
 #include "QuickAtoms.h"
+
+#include <QTreeWidget>
+#include <QApplication>
+#include <QMessageBox>
+#include <QMenu>
+#include <QThread>
+#include <QKeyEvent>
+#include <QPushButton>
+#include <iostream>
+#include <fstream>
+
+#include <libsrc/PDBReader.h>
+#include <libsrc/Crystal.h>
+#include <libsrc/Options.h>
 
 #include <libsrc/FFT.h>
 
@@ -89,6 +91,7 @@ void ClusterList::prepareMenu(const QPoint &p)
 	{
 		_widget->setCurrentItem(item);
 		QMenu *m = new QMenu();
+		bool altered = false;
 		if (!static_cast<Group *>(item)->isTopGroup())
 		{
 			QAction *act = m->addAction("Toggle marked cluster");
@@ -97,8 +100,29 @@ void ClusterList::prepareMenu(const QPoint &p)
 			connect(act, &QAction::triggered, _screen, &Screen::killSelection);
 			act = m->addAction("Remove cluster");
 			connect(act, &QAction::triggered, _screen, &Screen::removeCluster);
+			altered = true;
+		}
+
+		if (AveVectors::hasVectorData())
+		{
+			QMenu *n = m->addMenu("Columns");
+			QAction *act = n->addAction("Choose best columns");
+			connect(act, &QAction::triggered, this, 
+			        &ClusterList::chooseColumns);
+			act = n->addAction("Enable all columns");
+			connect(act, &QAction::triggered, this, 
+			        &ClusterList::enableAllColumns);
+			altered = true;
+		}
+
+		if (altered)
+		{
 			QPoint pos = _screen->mapToGlobal(p);
 			m->exec(pos);
+		}
+		else
+		{
+			m->deleteLater();
 		}
 	}
 }
@@ -540,6 +564,12 @@ void ClusterList::selectedResults()
 	{
 		Group *obj = static_cast<Group *>(item);
 		_lastAverage = obj;
+		_screen->displayResults(obj);
+	}
+	else if (MtzFFT::isMtzFFT(item))
+	{
+		MtzFFT *fft = static_cast<MtzFFT *>(item);
+		_screen->displaySingle(fft->shared_from_this());
 	}
 }
 
@@ -577,8 +607,8 @@ void ClusterList::handleResults()
 	_screen->displayResults(obj);
 	clearSelection();
 
-	disconnect(this, SIGNAL(average()), nullptr, nullptr);
-	disconnect(this, SIGNAL(cluster()), nullptr, nullptr);
+	disconnect(this, SIGNAL(average()), obj, SLOT(performAverage()));
+	disconnect(this, SIGNAL(cluster()), obj, SLOT(performCluster()));
 
 	disconnect(obj, SIGNAL(resultReady()), this, SLOT(handleResults()));
 	disconnect(obj, SIGNAL(failed()), this, SLOT(handleError()));
@@ -951,3 +981,32 @@ void ClusterList::loadClusters(std::string contents)
 	}
 }
 
+void ClusterList::chooseColumns()
+{
+	ColumnChooser *chooser = new ColumnChooser();
+	
+	for (size_t i = 0; i < groupCount(); i++)
+	{
+		if (!group(i)->isMarked())
+		{
+			continue;
+		}
+		
+		chooser->addTargetGroup(group(i));
+	}
+
+	chooser->prune();
+	
+	cluster(_lastAverage);
+	
+	delete chooser;
+}
+
+void ClusterList::enableAllColumns()
+{
+	for (size_t i = 0; i < AveVectors::titleCount(); i++)
+	{
+		AveVectors::setEnabled(i, true);
+	}
+
+}

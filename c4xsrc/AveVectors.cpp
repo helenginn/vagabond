@@ -79,21 +79,19 @@ void AveVectors::load()
 				std::cout << "First line appears to be header." 
 				<< std::endl;
 				loadTitles(lines[0]);
+				continue;
 			}
 			else
 			{
 				std::cout << "Second value of line " << i << " is not "
 				"a number?" << std::endl;
 			}
-
-			continue;
 		}
 		
 		std::vector<double> vec;
 		for (size_t j = 1; j < components.size(); j++)
 		{
 			double val = strtod(&components[j][0], &pos);
-			std::cout << val << std::endl;
 			vec.push_back(val);
 			if (max < j)
 			{
@@ -212,6 +210,11 @@ void AveVectors::calculate()
 
 double AveVectors::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 {
+	if (_averageVec.size() == 0)
+	{
+		calculate();
+	}
+
 	std::string f1 = one->getMtzFile()->metadata();
 	std::string f2 = two->getMtzFile()->metadata();
 	

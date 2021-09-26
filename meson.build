@@ -477,6 +477,7 @@ c4xsrc = [
 'c4xsrc/ClusterList.cpp', 
 'c4xsrc/ClusterPlot.cpp', 
 'c4xsrc/ColumnView.cpp', 
+'c4xsrc/ColumnChooser.cpp', 
 'c4xsrc/CorrelLabel.cpp', 
 'c4xsrc/DisplaySettings.cpp', 
 'c4xsrc/AveCSV.cpp', 
