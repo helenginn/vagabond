@@ -47,11 +47,13 @@ void BaseParser::setup(bool isNew)
 		if (_top == NULL && _parent == NULL)
 		{
 			_top = this;
+			_parent = this;
 		}
 		else if (_top == NULL)
 		{
 			_top = _parent->_top;
 		}
+
 		_identifier = getParserIdentifier(); 
 
 		makePath();
@@ -68,7 +70,7 @@ void BaseParser::makePath()
 {
 	std::string path;
 
-	if (_parent)
+	if (_parent && _parent != _top)
 	{
 		path = _parent->getAbsolutePath();
 	}
@@ -1504,3 +1506,9 @@ void BaseParser::resolveReferences()
 	}
 }
 
+void BaseParser::prepare()
+{
+	_top = this;
+	_parent = this;
+	setup(false);
+}

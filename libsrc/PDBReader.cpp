@@ -431,6 +431,7 @@ CrystalPtr PDBReader::getCrystal()
 		              "unit cell dimensions and space group.");
 	}
 
+	_myCrystal->prepare();
 	return _myCrystal;
 }
 

@@ -63,6 +63,8 @@ public:
 	friend class StateValue;
 	BaseParser();
 	virtual ~BaseParser() {};
+	
+	void prepare();
 
 	std::string getAbsolutePath()
 	{
