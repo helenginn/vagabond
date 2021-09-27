@@ -1403,7 +1403,6 @@ void Crystal::wrapUpRefinement()
 	scaler.setCycleNumber(_cycleNum);
 	scaler.run();
 
-//	concludeRefinement(_cycleNum, data);
 	saveState();
 
 	if (_ccWork > _bestMetric)
