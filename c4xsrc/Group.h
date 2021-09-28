@@ -274,7 +274,7 @@ private:
 	std::vector<std::string> _names;
 	
 	AverageSet _mySet;
-	AverageSet _origSet;
+	AverageSet *_origSet;
 	
 	std::map<Pair, VagScore> _vagVals;
 	std::vector<vec3> _atomPos;

@@ -38,11 +38,9 @@ Group::Group(QTreeWidget *parent) : QTreeWidgetItem(parent)
 	_w = NULL;
 	_correlMatrix = NULL;
 	_marked = false;
-	_mySet.recip = NULL;
-	_mySet.csv = NULL;
-	_mySet.ca = NULL;
-	_mySet.unitCell = NULL;
-	_mySet.vectors = NULL;
+	std::cout << "Size: " << sizeof(AverageSet) << std::endl;
+	memset(&_mySet, '\0', sizeof(AverageSet));
+	_origSet = NULL;
 	Qt::ItemFlags fl = flags();
 	setFlags(fl | Qt::ItemIsEditable);
 	
@@ -156,7 +154,7 @@ void Group::performCluster()
 void Group::copyFromOriginal(Group *ave)
 {
 	std::cout << "Copying from original..." << std::endl;
-	_origSet = *(ave->getWorkingSet());
+	_origSet = ave->getWorkingSet();
 	_type = ave->_type;
 }
 
@@ -256,7 +254,7 @@ AverageSet *Group::getWorkingSet()
 	}
 	else if (_which == GroupOriginal && this != _topGroup)
 	{
-		working = &_origSet;
+		working = _origSet;
 	}
 	else
 	{
