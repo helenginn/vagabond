@@ -182,6 +182,7 @@ private:
 	bool _streamInput;
 	bool _csvInput;
 	bool _contextMenu;
+	bool _mustClearSelection;
 	int _max;
 	int _skip;
 	std::string _pdb;

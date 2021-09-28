@@ -50,6 +50,7 @@
 
 ClusterList::ClusterList(QTreeWidget *widget)
 {
+	_mustClearSelection = true;
 	_vectorList = NULL;
 	_onlyLoad = false;
 	_max = 0;
@@ -203,6 +204,7 @@ void ClusterList::cycleCSV(bool forward)
 	
 	current = current % AveCSV::csvCount();
 	
+	_mustClearSelection = false;
 	AveCSV::setChosen(current);
 	csvAverage();
 	_screen->clusterGroup();
@@ -210,6 +212,7 @@ void ClusterList::cycleCSV(bool forward)
 
 void ClusterList::switchCSV(int c)
 {
+	_mustClearSelection = false;
 	AveCSV::setChosen(c);
 	csvAverage();
 }
@@ -569,7 +572,7 @@ void ClusterList::selectedResults()
 	else if (MtzFFT::isMtzFFT(item))
 	{
 		MtzFFT *fft = static_cast<MtzFFT *>(item);
-		_screen->displaySingle(fft->shared_from_this());
+//		_screen->displaySingle(fft->shared_from_this());
 	}
 }
 
@@ -605,7 +608,13 @@ void ClusterList::handleResults()
 	_worker = NULL;
 
 	_screen->displayResults(obj);
-	clearSelection();
+
+	if (_mustClearSelection)
+	{
+		clearSelection();
+	}
+
+	_mustClearSelection = true;
 
 	disconnect(this, SIGNAL(average()), obj, SLOT(performAverage()));
 	disconnect(this, SIGNAL(cluster()), obj, SLOT(performCluster()));
