@@ -109,6 +109,8 @@ Screen::Screen(QWidget *widget) : QMainWindow(widget)
 	_tabs = new QTabWidget(NULL);
 	_tabs->setMinimumSize(500, 500);
 	hout->addWidget(_tabs);
+	connect(_tabs, &QTabWidget::tabBarClicked, 
+	        this, &Screen::refocus);
 	
 	_side = new QWidget(NULL);
 	_side->setMinimumSize(200, 0);
@@ -298,26 +300,28 @@ void Screen::clusterGroup()
 
 void Screen::addCorrelImage(Group *ave)
 {
-	if (_correlLabel != NULL)
+
+	if (!ave->getCorrelMatrix())
 	{
 		_tabs->removeTab(_tabs->indexOf(_correlLabel));
 		_correlLabel->deleteLater();
 		_correlLabel = NULL;
-	}
-
-	if (!ave->getCorrelMatrix())
-	{
 		return;
 	}
 
 	_correlImage = ave->getCorrelMatrix();
 	_correlImage->updateSelection();
 
-	CorrelLabel *l = new CorrelLabel(NULL, _correlImage, this);
-	_correlLabel = l;
-	_correlLabel->setScaledContents(true);
-	_correlLabel->setFocusPolicy(Qt::StrongFocus);
-	_tabs->insertTab(0, l, "Correlation matrix");
+	if (_correlLabel == NULL)
+	{
+		CorrelLabel *l = new CorrelLabel(NULL, _correlImage, this);
+		_correlLabel = l;
+		_correlLabel->setScaledContents(true);
+		_correlLabel->setFocusPolicy(Qt::StrongFocus);
+		_tabs->insertTab(0, l, "Correlation matrix");
+	}
+	
+	relinkPixmap();
 }
 
 void Screen::addPlotView(PlotView **view, Group *ave, 
@@ -483,7 +487,6 @@ void Screen::displayResults(Group *ave)
 	if (ave->getCorrelMatrix())
 	{
 		addPlotView(&_svdView, ave, "SVD explorer", PlotSVD);
-		relinkPixmap();
 	}
 	else
 	{
@@ -516,9 +519,6 @@ void Screen::displayResults(Group *ave)
 	{
 		addColumnView(ave);
 	}
-
-	connect(_tabs, &QTabWidget::tabBarClicked, 
-	        this, &Screen::refocus);
 }
 
 void Screen::exportText()
