@@ -323,7 +323,6 @@ install_headers([
 'libsrc/Sampler.h',
 'libsrc/Shouter.h',
 'libsrc/Sidechain.h',
-'libsrc/SpaceWarp.h',
 'libsrc/Sponge.h',
 'libsrc/StateValue.h',
 'libsrc/SymAtom.h',
