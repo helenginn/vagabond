@@ -25,8 +25,8 @@
 #include "../libsrc/Absolute.h"
 #include "../libsrc/Options.h"
 #include "../libsrc/Polymer.h"
-#include "../libsrc/FlexGlobal.h"
 #include "../libsrc/FFT.h"
+#include "../libsrc/FlexLocal.h"
 #include "../libsrc/WaterNetwork.h"
 #include <hcsrc/RefinementNelderMead.h>
 #include "BlobMesh.h"
@@ -601,7 +601,7 @@ void Selected2GL::addWater(bool diff)
 	double range = 0.1;
 	double interval = 0.002;
 	
-	FlexGlobal target;
+	FlexLocal target;
 	target.setCrystal(crystal);
 	target.setAtomGroup(atoms);
 	NelderMeadPtr mead = NelderMeadPtr(new RefinementNelderMead());
@@ -612,7 +612,7 @@ void Selected2GL::addWater(bool diff)
 	mead->addParameter(&*abs, Absolute::getPosZ, Absolute::setPosZ,
 	                        range, interval, "pos_z");
 	mead->setVerbose(true);
-	mead->setEvaluationFunction(FlexGlobal::score, &target);
+	mead->setEvaluationFunction(FlexLocal::getScore, &target);
 	mead->setCycles(300);
 	mead->refine();
 
