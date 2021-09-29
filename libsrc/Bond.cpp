@@ -1084,6 +1084,10 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 		for (size_t i = 0; i < _storedSamples.size(); i++)
 		{
 			_storedSamples[i].occupancy /= occTotal;
+			if (occTotal < 0.005)
+			{
+				_storedSamples[i].occupancy = 1 / (double)_storedSamples.size();
+			}
 		}
 	}
 
@@ -1582,9 +1586,13 @@ BondPtr Bond::duplicateDownstream(BondPtr newParent, int groupNum,
 
 void Bond::setOccupancy(void *object, double value)
 {
+	if (value < 0.005)
+	{
+		return;
+	}
 	Bond *bond = static_cast<Bond *>(object);
 	bond->_occupancy = value;
-
+	
 	static_cast<Bond *>(object)->propagateChange();
 }
 
