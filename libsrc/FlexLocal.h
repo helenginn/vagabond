@@ -34,7 +34,12 @@ public:
 	/** Sets polymer for which this FlexLocal object is responsible for,
 	 * and the applicable magnitude of trial kick to worry about (not too
 	 * much, not too small */
-	void setPolymer(PolymerPtr pol, double shift);
+	void setPolymer(PolymerPtr pol);
+	
+	void setShift(double shift)
+	{
+		_shift = shift;
+	}
 	
 	void setCrystal(CrystalPtr crystal)
 	{
@@ -81,6 +86,11 @@ public:
 	{
 		return &_workspace;
 	}
+	
+	void setTorsionMode(bool mode)
+	{
+		_torsionMode = mode;
+	}
 
 	void recalculateConstant();
 	void reportTimings();
@@ -108,6 +118,7 @@ private:
 
 	bool _prepared;
 	bool _changed;
+	bool _torsionMode;
 	MapScoreWorkspace _workspace;
 };
 

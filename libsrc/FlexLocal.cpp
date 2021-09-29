@@ -27,6 +27,7 @@ FlexLocal::FlexLocal()
 	_run = 0;
 	_svd = NULL;
 	_changed = false;
+	_torsionMode = false;
 }
 
 FlexLocal::~FlexLocal()
@@ -38,10 +39,9 @@ FlexLocal::~FlexLocal()
 	}
 }
 
-void FlexLocal::setPolymer(PolymerPtr pol, double shift)
+void FlexLocal::setPolymer(PolymerPtr pol)
 {
 	_polymer = pol;
-	_shift = shift;
 	_bb = _polymer->getAllBackbone();
 }
 
@@ -57,8 +57,13 @@ void FlexLocal::svd()
 	}
 
 	_svd = new SVDBond(_bonds, _atoms);
-	_svd->setRamachandran(true);
-	_svd->setMatrix(true);
+	_svd->setWriteMatrix(true);
+	
+	if (_torsionMode)
+	{
+		_svd->setDoTorsion(true);
+	}
+
 	_svd->performSVD();
 	
 	std::cout << _svd->numClusters() << " clusters.";
@@ -81,9 +86,9 @@ void FlexLocal::refineClusters()
 
 	CrystalPtr crystal = Options::getActiveCrystal();
 
-	_svd->addToStrategy(nelder, 1, false);
+	_svd->addToStrategy(nelder, _shift, false);
 	AnchorPtr anch = _polymer->getAnchorModel();
-	anch->addChainMultsToStrategy(nelder);
+//	anch->addChainMultsToStrategy(nelder);
 	
 	nelder->refine();
 	nelder->reportResult();
@@ -147,9 +152,16 @@ void FlexLocal::clear()
 
 void FlexLocal::findAtomsAndBonds()
 {
-	for (int i = 0; i < _polymer->atomCount(); i++)
+	AtomGroupPtr chosen = _polymer;
+	
+	if (_bb)
 	{
-		AtomPtr a = _polymer->atom(i);
+		chosen = _bb;
+	}
+
+	for (int i = 0; i < chosen->atomCount(); i++)
+	{
+		AtomPtr a = chosen->atom(i);
 
 		ModelPtr m = a->getModel();
 		
@@ -186,6 +198,7 @@ double FlexLocal::getScore(void *object)
 		{
 			bb = local->_polymer->getAllBackbone();
 		}
+
 		setup_space(&local->_workspace);
 		local->_workspace.crystal = Options::getActiveCrystal();
 		local->_workspace.selectAtoms = bb;

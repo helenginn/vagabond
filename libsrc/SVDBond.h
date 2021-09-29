@@ -57,9 +57,9 @@ public:
 		return _num;
 	}
 	
-	void setMatrix(bool m)
+	void setWriteMatrix(bool m)
 	{
-		_matrix = m;
+		_writeMatrix = m;
 	}
 	
 	void setSilent(bool s)
@@ -119,7 +119,7 @@ private:
 	double _wTotal;
 	bool _doTorsion;
 	bool _silent;
-	bool _matrix;
+	bool _writeMatrix;
 	bool _rama;
 };
 

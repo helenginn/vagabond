@@ -31,7 +31,7 @@
 
 SVDBond::SVDBond(std::vector<BondPtr> &bonds, std::vector<AtomPtr> &atoms)
 {
-	_matrix = false;
+	_writeMatrix = false;
 	_silent = true;
 	_doTorsion = false;
 	_bonds = bonds;
@@ -42,7 +42,7 @@ SVDBond::SVDBond(std::vector<BondPtr> &bonds, std::vector<AtomPtr> &atoms)
 
 SVDBond::SVDBond(std::vector<AtomPtr> &atoms)
 {
-	_matrix = false;
+	_writeMatrix = false;
 	_silent = true;
 	_doTorsion = false;
 	_atoms = atoms;
@@ -719,10 +719,11 @@ std::vector<double> SVDBond::getVectorForBond(BondPtr b)
 
 void SVDBond::writeMatrix()
 {
-	if (!_matrix)
+	if (!_writeMatrix)
 	{
 		return;
 	}
+
 	CSV csv(3, "bi", "bj", "cc");
 
 	for (int i = 0; i < _bonds.size(); i++)

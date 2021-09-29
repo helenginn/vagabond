@@ -120,7 +120,8 @@ bool Polymer::refineLocalFlexibility(bool magic)
 	Timer timer("flexibility refinement", true);
 	FlexLocal local;
 	whack();
-	local.setPolymer(shared_from_this(), _kickShift);
+	local.setPolymer(shared_from_this());
+	local.setShift(_kickShift);
 	local.refine();
 	_kickShift = local.getShift();
 	timer.report();
