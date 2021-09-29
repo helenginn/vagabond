@@ -432,6 +432,7 @@ CrystalPtr PDBReader::getCrystal()
 	}
 
 	_myCrystal->prepare();
+	_myCrystal->recalculateAtoms();
 	return _myCrystal;
 }
 

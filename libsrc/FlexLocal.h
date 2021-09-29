@@ -24,12 +24,6 @@ typedef std::map<BondPtr, BondCorrel> BondBondCC;
 
 class FlexGlobal;
 
-typedef struct
-{
-	int index;
-	int degree;
-} BondDegree;
-
 /**
  * \class FlexLocal
  * \brief Determines effect of each bond on all atom B factors, clusters them
@@ -57,20 +51,10 @@ public:
 	/** Refines chain-dependent multipliers */
 	void refineChainMults(AnchorPtr anch);
 
-	static double compareChainMults(void *obj, Parameter &p1, Parameter &p2);
-
 	/** Get current value of the magnitude of trial kick set */
 	double getShift()
 	{
 		return _shift;
-	}
-	
-	/** Sets what the flexibility parameter is focusing on for refinement -
-	 * default is to use kicks, but usually updated to using Whacks */
-	void setGetterSetter(Getter getter, Setter setter)
-	{
-		_getter = getter;
-		_setter = setter;
 	}
 	
 	bool didChange()
@@ -83,24 +67,17 @@ public:
 		return _polymer;
 	}
 	
-	void refineMagic(bool magic = true)
-	{
-		_magic = magic;
-	}
-
-	void findAtomsAndBonds();
-	void svd();
-	
 	SVDBond *getSVD()
 	{
 		return _svd;
 	}
 private:
+	void svd();
+	void findAtomsAndBonds();
 	void refineClusters();
 	void scanBondParams();
 	void clear();
 	void propagateWhack();
-	double correlPositions(int m, int n);
 	void setBondParam(BondPtr b, double w, double k);
 	
 	PolymerPtr _polymer;
@@ -109,21 +86,12 @@ private:
 	BondEffects _bondEffects;
 	
 	std::vector<AtomPtr> _atoms;
-	std::vector<BondPtr> _bonds, _ramas;
+	std::vector<BondPtr> _bonds;
 	SVDBond *_svd;
 	
 	FlexGlobal *_flexGlobal;
-	bool _useTarget;
-	bool _magic;
-	double _startB;
-	double _threshold;
-	double _increment;
-	double _anchorB;
-	double _negMult;
 	int _run;
 	double _shift;
-	Getter _getter;
-	Setter _setter;
 
 	bool _prepared;
 	bool _changed;

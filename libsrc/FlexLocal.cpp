@@ -26,19 +26,10 @@
 
 FlexLocal::FlexLocal()
 {
-	_magic = false;
 	_prepared = false;
-	_startB = 0;
 	_shift = 0.05;
 	_run = 0;
-	_negMult = 1;
-	_anchorB = 0;
-	_threshold = 0.80;
-	_increment = 5;
-	_useTarget = true;
-	_getter = Bond::getKick;
 	_flexGlobal = NULL;
-	_setter = Bond::setKick;
 	_svd = NULL;
 	_changed = false;
 }
@@ -101,24 +92,10 @@ void FlexLocal::refineClusters()
 
 	CrystalPtr crystal = Options::getActiveCrystal();
 
-	_svd->addToStrategy(nelder, _negMult, _magic);
+	_svd->addToStrategy(nelder, 1, false);
 	AnchorPtr anch = _polymer->getAnchorModel();
 	anch->addChainMultsToStrategy(nelder);
 	
-	/*
-	if (_polymer->getAnchorModel()->motionCount() > 0)
-	{
-		AnchorPtr anch = _polymer->getAnchorModel();
-		MotionPtr mot = anch->getMotion(0);
-		
-		if (mot->moleculeCount() == 1)
-		{
-			mot->addLibrationParameters(nelder, -1);
-		}
-
-	}
-	*/
-
 	nelder->refine();
 	nelder->reportResult();
 
@@ -151,62 +128,6 @@ void FlexLocal::refine()
 	}
 }
 
-double FlexLocal::correlPositions(int m, int n)
-{
-	_bb->refreshPositions();
-	CorrelData cd = empty_CD();
-
-	for (size_t i = 0; i < _bb->atomCount(); i++)
-	{
-		AtomPtr a = _bb->atom(i);
-		if (!a->getModel()->isBond())
-		{
-			continue;
-		}
-		
-		std::vector<BondSample> *samplePtr;
-		ExplicitModelPtr e = a->getExplicitModel();
-		samplePtr = e->getManyPositions(NULL);
-		vec3 ave = e->getAbsolutePosition();
-		
-		vec3 v = samplePtr->at(m).start;
-		vec3_subtract_from_vec3(&v, ave);
-		vec3 w = samplePtr->at(n).start;
-		vec3_subtract_from_vec3(&w, ave);
-		
-		add_to_CD(&cd, v.x, w.x);
-		add_to_CD(&cd, v.y, w.y);
-		add_to_CD(&cd, v.z, w.z);
-	}
-	
-	double correl = evaluate_CD(cd);
-	return correl;
-}
-
-double FlexLocal::compareChainMults(void *obj, Parameter &p1, Parameter &p2)
-{
-	FlexLocal *local = static_cast<FlexLocal *>(obj);
-
-	void *obj1 = p1.object;
-	void *obj2 = p2.object;
-	double start1 = p1.start_value;
-	double start2 = p2.start_value;
-	double inc1 = p1.step_size / 10.;
-	double inc2 = p2.step_size / 10.;
-	int m = atoi(p1.tag.c_str());
-	int n = atoi(p2.tag.c_str());
-
-	(*p1.setter)(obj1, start1 + inc1); 
-	(*p2.setter)(obj2, start2 + inc2); 
-	
-	double correl = local->correlPositions(m, n);
-
-	(*p1.setter)(obj1, start1); 
-	(*p2.setter)(obj2, start2); 
-	
-	return correl;
-}
-
 void FlexLocal::refineChainMults(AnchorPtr anch)
 {
 	Timer timer;
@@ -218,12 +139,6 @@ void FlexLocal::refineChainMults(AnchorPtr anch)
 	ref->setVerbose(true);	
 	ref->setSilent(true);
 	anch->addChainMultsToStrategy(ref);
-	
-	/*
-	Converter conv;
-	conv.setCompareFunction(this, compareChainMults);
-	conv.setStrategy(ref);
-	*/
 
 	ref->refine();
 	ref->reportResult();
@@ -266,7 +181,6 @@ void FlexLocal::findAtomsAndBonds()
 			continue;
 		}
 
-		_ramas.push_back(Bond::getRamachandranBond(b, true));
 		_bonds.push_back(b);
 		_atoms.push_back(a);
 	}
