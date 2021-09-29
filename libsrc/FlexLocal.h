@@ -9,9 +9,7 @@
 #ifndef FlexLocal_h
 #define FlexLocal_h
 
-class FlexLocal;
 #include "shared_ptrs.h"
-#include <hcsrc/RefinementStrategy.h>
 #include "MapScoreWorkspace.h"
 #include <map>
 
@@ -19,10 +17,6 @@ typedef std::map<AtomPtr, double> AtomTarget;
 typedef std::map<BondPtr, AtomTarget> BondEffects;
 typedef std::map<BondPtr, double> BondCorrel;
 typedef std::map<BondPtr, BondCorrel> BondBondCC;
-
-#include "SVDBond.h"
-
-class FlexGlobal;
 
 /**
  * \class FlexLocal
@@ -41,6 +35,17 @@ public:
 	 * and the applicable magnitude of trial kick to worry about (not too
 	 * much, not too small */
 	void setPolymer(PolymerPtr pol, double shift);
+	
+	void setCrystal(CrystalPtr crystal)
+	{
+		_crystal = crystal;
+	}
+	
+	/** Set custom atom group for custom refinement processes */
+	void setAtomGroup(AtomGroupPtr group)
+	{
+		_bb = group;
+	}
 
 	/** Evaluates target function of bond kicking parameters against data */
 	static double getScore(void *object);
@@ -71,6 +76,14 @@ public:
 	{
 		return _svd;
 	}
+	
+	MapScoreWorkspace *getWorkspace()
+	{
+		return &_workspace;
+	}
+
+	void recalculateConstant();
+	void reportTimings();
 private:
 	void svd();
 	void findAtomsAndBonds();
@@ -82,6 +95,7 @@ private:
 	
 	PolymerPtr _polymer;
 	AtomGroupPtr _bb;
+	CrystalPtr _crystal;
 
 	BondEffects _bondEffects;
 	
@@ -89,7 +103,6 @@ private:
 	std::vector<BondPtr> _bonds;
 	SVDBond *_svd;
 	
-	FlexGlobal *_flexGlobal;
 	int _run;
 	double _shift;
 

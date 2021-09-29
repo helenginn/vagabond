@@ -43,7 +43,6 @@ using namespace Vagabond;
 #include "Absolute.h"
 #include "Scaler.h"
 #include "Anchor.h"
-#include "FlexGlobal.h"
 #include <hcsrc/RefinementGridSearch.h>
 #include <hcsrc/RefinementNelderMead.h>
 #include "Bucket.h"

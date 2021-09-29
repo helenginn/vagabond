@@ -682,13 +682,13 @@ void Selected2GL::manualRefine()
 
 		group->clearParams();
 		group->addParamType(ParamOptionMaxTries, 1.0);
+		group->addParamType(ParamOptionCycles, 80);
 		group->addParamType(ParamOptionNumBonds, 4.0);
-		group->addParamType(ParamOptionTorsion, 0.3);
-//		group->convertToSVD(true);
+		group->addParamType(ParamOptionTorsion, 0.2);
 
 		if (kicking && !mousey)
 		{
-			group->addParamType(ParamOptionKick, 0.2);
+			group->addParamType(ParamOptionKick, 0.1);
 		}
 		
 		if (!refining)

@@ -12,7 +12,6 @@
 #include "Anchor.h"
 #include <hcsrc/Any.h>
 #include "Motion.h"
-#include "FlexGlobal.h"
 #include "Absolute.h"
 #include "Atom.h"
 #include "Anisotropicator.h"

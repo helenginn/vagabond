@@ -16,7 +16,6 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#include "SpaceWarp.h"
 #include "WeightedMap.h"
 #include <hcsrc/mat3x3.h>
 #include "Diffraction.h"

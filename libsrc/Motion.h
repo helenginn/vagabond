@@ -22,7 +22,7 @@
 #include <hcsrc/RefineMat3x3.h>
 #include "ExplicitModel.h"
 
-class FlexGlobal;
+class FlexLocal;
 
 /**
  * \class Motion
@@ -113,7 +113,7 @@ public:
 	}
 
 	void attachTargetToRefinement(RefinementStrategyPtr strategy,
-	                              FlexGlobal &target, bool recip = false);
+	                              FlexLocal *target, bool recip = false);
 protected:
 	virtual void addProperties();
 	virtual void postParseTidy();

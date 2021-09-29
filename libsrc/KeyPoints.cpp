@@ -22,7 +22,7 @@
 #include "Atom.h"
 #include <hcsrc/RefinementNelderMead.h>
 #include "Options.h"
-#include "FlexGlobal.h"
+#include "FlexLocal.h"
 #include "Anchor.h"
 #include "Bond.h"
 #include "Polymer.h"
@@ -170,7 +170,7 @@ bool KeyPoints::refineKeyPoints()
 {
 	CrystalPtr crystal = Options::getActiveCrystal();
 	AtomGroupPtr backbone = _polymer->getAllBackbone();
-	_global = FlexGlobal();
+	_global = FlexLocal();
 	_global.setAtomGroup(backbone);
 	_global.setCrystal(crystal);
 	
@@ -238,7 +238,7 @@ double KeyPoints::score(void *object)
 	PolymerPtr pol = me->_polymer;
 	pol->getAnchorModel()->forceRefresh();
 
-	return me->_global.score(&me->_global);
+	return me->_global.getScore(&me->_global);
 }
 
 void KeyPoints::addProperties()

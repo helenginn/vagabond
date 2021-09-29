@@ -21,7 +21,7 @@
 
 #include <vector>
 #include "shared_ptrs.h"
-#include "FlexGlobal.h"
+#include "FlexLocal.h"
 #include "Param.h"
 #include "Parser.h"
 
@@ -88,7 +88,7 @@ private:
 	std::vector<WayPoint> _points;
 
 	PolymerPtr _polymer;
-	FlexGlobal _global;
+	FlexLocal _global;
 	std::vector<vec3> _tmpWays;
 	std::vector<vec3> _tmpKicks;
 };

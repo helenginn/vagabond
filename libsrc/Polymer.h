@@ -32,8 +32,6 @@
  * forming a polymer chain.
  */
 
-class FlexGlobal;
-
 class Polymer : public Molecule
 {
 public:
@@ -53,9 +51,6 @@ public:
 	void scaleSidechainsToBFactor();
 	void refineBackbone();
 	
-	void attachTargetToRefinement(RefinementStrategyPtr strategy,
-	                              FlexGlobal &target, bool isotropy = false);
-
 	virtual std::string makePDB(PDBType pdbType, CrystalPtr crystal,
 	                            int conformer = -1);
 

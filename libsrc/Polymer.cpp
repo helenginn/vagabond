@@ -42,7 +42,6 @@
 #include <float.h>
 #include <hcsrc/FileReader.h>
 #include "Options.h"
-#include "FlexGlobal.h"
 #include "FlexLocal.h"
 #include "Refitter.h"
 #include <hcsrc/RefinementNelderMead.h>
@@ -1386,18 +1385,6 @@ AtomGroupPtr Polymer::getAllBackbone()
 	
 	_allBackbones->setName(_name + "_backbone");
 	return _allBackbones;
-}
-
-void Polymer::attachTargetToRefinement(RefinementStrategyPtr strategy,
-                                       FlexGlobal &target, bool isotropy)
-{
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	AtomGroupPtr allBackbone = getAllBackbone();
-	target.setAtomGroup(allBackbone);
-	target.setCrystal(crystal);
-	
-	strategy->setEvaluationFunction(FlexGlobal::score, &target);
-	FlexGlobal::score(&target);
 }
 
 void Polymer::addProperties()

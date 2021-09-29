@@ -12,14 +12,10 @@
 #include "Polymer.h"
 #include <svdcmp.h>
 #include "Monomer.h"
+#include "SVDBond.h"
 #include "Anchor.h"
-#include "Whack.h"
-#include <hcsrc/RefinementGridSearch.h>
 #include <hcsrc/RefinementNelderMead.h>
-#include <hcsrc/RefinementLBFGS.h>
-#include <hcsrc/Converter.h>
 #include "ParamBand.h"
-#include "FlexGlobal.h"
 #include <hcsrc/Timer.h>
 #include <map>
 #include <iomanip>
@@ -29,19 +25,12 @@ FlexLocal::FlexLocal()
 	_prepared = false;
 	_shift = 0.05;
 	_run = 0;
-	_flexGlobal = NULL;
 	_svd = NULL;
 	_changed = false;
 }
 
 FlexLocal::~FlexLocal()
 {
-	if (_flexGlobal)
-	{
-		delete _flexGlobal;
-		_flexGlobal = NULL;
-	}
-	
 	if (_svd)
 	{
 		delete _svd;
@@ -192,7 +181,11 @@ double FlexLocal::getScore(void *object)
 
 	if (!local->_prepared)
 	{
-		AtomGroupPtr bb = local->_polymer->getAllBackbone();
+		AtomGroupPtr bb = local->_bb;
+		if (!bb || bb->atomCount() == 0)
+		{
+			bb = local->_polymer->getAllBackbone();
+		}
 		setup_space(&local->_workspace);
 		local->_workspace.crystal = Options::getActiveCrystal();
 		local->_workspace.selectAtoms = bb;
@@ -200,16 +193,38 @@ double FlexLocal::getScore(void *object)
 		local->_prepared = true;
 		AtomGroup::scoreWithMapGeneral(&local->_workspace);
 	}
+
+	local->_workspace.tBonds->setFine(true);
+	local->_workspace.tMap->setFine(true);
+	local->_workspace.tScore->setFine(true);
 	
 	if (local->_svd)
 	{
 		local->_svd->applyParameters();
 	}
 
+	local->_workspace.tBonds->start();
 	local->_bb->refreshPositions();
+	local->_workspace.tBonds->stop();
 	
 	double score = AtomGroup::scoreWithMapGeneral(&local->_workspace);
 	return score;
-	
+}
+
+void FlexLocal::recalculateConstant()
+{
+	_workspace.recalc = true;
+}
+
+void FlexLocal::reportTimings()
+{
+	std::cout << std::endl;
+	_workspace.tBonds->report();
+	_workspace.tMap->report();
+	_workspace.tScore->report();
+
+	_workspace.selectAtoms->_t1->report();
+	_workspace.selectAtoms->_t2->report();
+	_workspace.selectAtoms->_t3->report();
 }
 
