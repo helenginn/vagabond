@@ -70,7 +70,6 @@ public:
 	int _whacked;
 	void whack();
 	void whackMonomer(MonomerPtr mon);
-	void refineAnchorPosition();
 	AtomGroupPtr monomerRange(int start, int end, bool side = false);
 	void ramachandranPlot();
 	virtual void removeAtom(AtomPtr atom);
@@ -186,8 +185,6 @@ private:
 	                   RefinementType rType);
 
 	std::map<long, MonomerPtr> _monomers;
-	void refineShiftModel(CrystalPtr target, ExplicitModelPtr e,
-	                      AtomGroupPtr atoms);
 
 	int _anchorNum;
 	double _startB;

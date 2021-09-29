@@ -372,11 +372,22 @@ void Polymer::summary()
 
 void Polymer::refineBackbone()
 {
+	CrystalPtr target = Options::getActiveCrystal();
+	_fullScore = scoreWithMap(ScoreTypeCorrel, target);
+
 	std::cout << "Refining backbone of " << getChainID() << std::endl;
 	int anchor = getAnchor();
 	clearParams();
 	
-	refineAnchorPosition();
+	vec3 centre = getAnchorModel()->getAbsolutePosition();
+	Options::getRuntimeOptions()->focusOnPosition(centre, 100);
+
+	FlexLocal local;
+	makeBackboneTwists(getAnchorModel());
+	local.setPolymer(shared_from_this());
+	local.setShift(0.2);
+	local.setTorsionMode(true);
+	local.refine();
 
 	double change = scoreWithMap(ScoreTypeCorrel, Options::getActiveCrystal());
 	std::cout << " CC across whole polymer ";
@@ -394,14 +405,6 @@ void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
 	}
 	
 	monomer->refine(target, rType);
-}
-
-void refineRegion(AtomGroupPtr region, CrystalPtr target, double light)
-{
-	region->addParamType(ParamOptionTorsion, light);
-	region->addParamType(ParamOptionBondAngle, light);
-	region->addParamType(ParamOptionNumBonds, 4);
-	region->refine(target, RefinementSavedPos);
 }
 
 void Polymer::refineToEnd(int monNum, CrystalPtr target, RefinementType rType)
@@ -574,28 +577,6 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 	return -endCCAve + ccAve;
 }
 
-void Polymer::refineShiftModel(CrystalPtr target, ExplicitModelPtr e,
-                               AtomGroupPtr atoms)
-{
-	if (e->isAnchor())
-	{
-		return;
-	}
-
-	setupNelderMead();
-	setCrystal(target);
-	setCycles(100);
-	setScoreType(ScoreTypeCorrel);
-
-	setSilent(true);
-	addParamType(ParamOptionShift, 1);
-	addSampledAtoms(atoms);
-
-	addTwistShift(e, atoms);
-
-	sample();
-}
-
 void Polymer::scoreMonomers()
 {
 	int count = 0;
@@ -626,77 +607,6 @@ void Polymer::scoreMonomers()
 		_scores[monomer] = scores;
 		count++;
 	}
-}
-
-void Polymer::refineAnchorPosition()
-{
-	CrystalPtr target = Options::getActiveCrystal();
-	_fullScore = scoreWithMap(ScoreTypeCorrel, target);
-	
-	AtomPtr n = getAnchorModel()->getNAtom();
-	AtomPtr c = getAnchorModel()->getCAtom();
-	
-	BondPtr n_next = ToBondPtr(n->getModel());
-	BondPtr c_next = ToBondPtr(c->getModel());
-	makeBackboneTwists(getAnchorModel());
-
-	vec3 centre = getAnchorModel()->getAbsolutePosition();
-	Options::getRuntimeOptions()->focusOnPosition(centre, 100);
-
-	setupNelderMead();
-	setCrystal(target);
-	setScoreType(ScoreTypeCorrel);
-	
-	int num = monomerCount() * 3;
-
-	setSilent(true);
-	setVerbose();
-	addParamType(ParamOptionMaxTries, 1.0);
-	addParamType(ParamOptionTorsion, 0.5);
-	addParamType(ParamOptionNumBonds, num);
-	addParamType(ParamOptionCycles, 200);
-	addParamType(ParamOptionStep, 1);
-	addParamType(ParamOptionSVD, 1);
-	addParamType(ParamOptionThorough, 0);
-
-//	addAnchorParams(getAnchorModel());
-	setupThoroughSet(n_next, true);
-	setupThoroughSet(c_next, true);
-	
-	sample();
-	return;
-
-	setupNelderMead();
-	setCrystal(target);
-	setScoreType(ScoreTypeCorrel);
-	setSilent(true);
-	setVerbose();
-
-	addParamType(ParamOptionMaxTries, 1.0);
-	addParamType(ParamOptionTorsion, 5.0);
-	addParamType(ParamOptionNumBonds, num);
-	addParamType(ParamOptionCycles, 20);
-	addParamType(ParamOptionStep, 2);
-	addParamType(ParamOptionSVD, 1);
-	addParamType(ParamOptionThorough, 0);
-
-	for (int i = monomerBegin(); i < monomerEnd(); i++)
-	{
-		if (!getMonomer(i))
-		{
-			continue;
-		}
-		
-		SidechainPtr sd = getMonomer(i)->getSidechain();
-		
-		AtomPtr cb = sd->findAtom("CB");
-		if (cb != NULL)
-		{
-			setupThoroughSet(ToBondPtr(cb->getModel()), false);
-		}
-	}
-	
-	sample();
 }
 
 void Polymer::refine(CrystalPtr target, RefinementType rType)
@@ -1021,71 +931,6 @@ std::string Polymer::makePDB(PDBType pdbType, CrystalPtr crystal,
 
 	return stream.str();
 	
-}
-
-void Polymer::refitBackbone(int start_, int end_)
-{
-	std::cout << "Refit backbone function" << std::endl;
-	
-	/* We can't straddle the anchor */
-	if (start_ < _anchorNum && end_ > _anchorNum ||
-	    end_ > _anchorNum && start_ < _anchorNum)
-	{
-		warn_user("We cannot straddle the anchor.");
-		return;
-	}
-
-	downWeightResidues(start_, end_, 0);
-	
-	AtomPtr endAtom = getMonomer(end_)->findAtom("C");
-	AtomPtr stAtom = getMonomer(start_)->findAtom("N");
-
-	vec3 pos = stAtom->getAbsolutePosition();
-	Options::getRuntimeOptions()->focusOnPosition(pos, 24);
-	
-	/* Get new map for this */
-	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
-	crystal->wrapUpRefinement();
-	
-	/* Lower the number of samples */
-	int samples = getAnchorModel()->getFinalPositions().size();
-	Options::setNSamples(NULL, 0);
-	refreshPositions();
-	
-	int start = start_;
-	int end = end_;
-	
-	/* Swap if in wrong order */
-	if ((start > _anchorNum && end < start)	||
-	    (start < _anchorNum && end > start))
-	{
-		int tmp = start;
-		start = end;
-		end = tmp;
-	}
-	
-	/* Split the bond */
-	if (start < _anchorNum)
-	{
-		endAtom = getMonomer(end)->findAtom("N");
-		stAtom = getMonomer(start)->findAtom("C");
-	}
-	
-	BondPtr endBond = ToBondPtr(endAtom->getModel());
-	BondPtr stBond = ToBondPtr(stAtom->getModel());
-	
-	endBond->setSplitBlock();
-	BondPtr dupl = stBond->splitBond();
-
-	Refitter fit(dupl, endBond, start > _anchorNum);
-	fit.refit();
-
-	downWeightResidues(start_, end_, 1);
-
-	std::cout << "Return number of samples" << std::endl;
-	/* Repair the number of samples */
-	Options::setNSamples(NULL, samples);
-	refreshPositions();
 }
 
 void Polymer::findAnchorNearestCentroid()

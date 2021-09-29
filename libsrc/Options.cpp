@@ -1097,26 +1097,6 @@ void Options::chelate()
 	getActiveCrystal()->chelate();
 }
 
-
-void Options::changeSamplesAndFit(void *, double n)
-{
-	int old = getNSamples();
-
-	std::cout << "Called setting N samples" << std::endl;
-
-//	getActiveCrystal()->savePositions();
-	setNSamples(NULL, n);
-	getActiveCrystal()->refreshAnchors();
-	getActiveCrystal()->refreshPositions();
-	
-	if (old < 80 || n < 80)
-	{
-//		getActiveCrystal()->refitToSavedPositions();
-	}
-
-	std::cout << "Done" << std::endl;
-}
-
 void Options::clear()
 {
 	objects.clear();

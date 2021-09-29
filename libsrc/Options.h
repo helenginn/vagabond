@@ -163,8 +163,6 @@ public:
 		return _fitBucket;
 	}
 	
-	static void changeSamplesAndFit(void *object, double n);
-
 	static void setNSamples(void *, int n)
 	{
 		_nSamples = n;
