@@ -1097,19 +1097,6 @@ void Options::chelate()
 	getActiveCrystal()->chelate();
 }
 
-void Options::refitBackbone(int start, int end)
-{
-	MoleculePtr molecule = getActiveCrystal()->molecule(2);
-	
-	if (!molecule || !molecule->isPolymer())
-	{
-		molecule = getActiveCrystal()->molecule(0);
-	}
-	
-	PolymerPtr poly = ToPolymerPtr(molecule);
-	poly->refitBackbone(start, end);
-}
-
 
 void Options::changeSamplesAndFit(void *, double n)
 {

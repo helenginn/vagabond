@@ -190,18 +190,6 @@ void VagWindow::makeMenu()
 			[=]{ setShouldCancel(); });
 }
 
-void VagWindow::refitBackbone()
-{
-	delete _myDialogue;
-	_myDialogue = new Dialogue(this, "Specify backbone region", 
-	                           "Two limiting residues", 
-	                           "795 805",
-	                           "Refit");
-	_myDialogue->setWindow(this);
-	_myDialogue->setTag(DialogueRefit);
-	_myDialogue->show();
-}
-
 void VagWindow::gotoResidueDialogue()
 {
 	delete _myDialogue;
@@ -529,10 +517,6 @@ int VagWindow::waitForInstructions()
 				
 				case InstructionTypeAdjustBFactor:
 				options->adjustBFactor();
-				break;
-				
-				case InstructionTypeRefitBackbone:
-				options->refitBackbone(_rangeStart, _rangeEnd);
 				break;
 
 				case InstructionTypeManualRefine:

@@ -102,7 +102,6 @@ private slots:
 
 	void toggleScaling(ScalingType type);
 	void adjustBFactor();
-	void refitBackbone();
 	void fixErroneousZones();
 	void addWater();
 	void addBlob();

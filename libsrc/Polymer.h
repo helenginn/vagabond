@@ -44,8 +44,6 @@ public:
 	virtual void tieAtomsUp();
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	
-	void refitBackbone(int start, int end);
-	
 	virtual void graph(std::string graphName);
 
 	void scaleSidechainsToBFactor();
