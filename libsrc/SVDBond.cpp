@@ -37,7 +37,6 @@ SVDBond::SVDBond(std::vector<BondPtr> &bonds, std::vector<AtomPtr> &atoms)
 	_bonds = bonds;
 	_atoms = atoms;
 	_svd = NULL;
-	_rama = false;
 }
 
 SVDBond::SVDBond(std::vector<AtomPtr> &atoms)
@@ -47,7 +46,6 @@ SVDBond::SVDBond(std::vector<AtomPtr> &atoms)
 	_doTorsion = false;
 	_atoms = atoms;
 	_svd = NULL;
-	_rama = false;
 }
 
 vec3 angle_effect_on_pos(vec3 atom_pos, mat3x3 &bond_basis, vec3 &bond_pos)
@@ -132,12 +130,6 @@ double SVDBond::compareForKicks(BondPtr a, BondPtr b, bool kickmod)
 	
 	BondPtr a_axis = a;
 	BondPtr b_axis = b;
-
-	if (_rama)
-	{
-		a_axis = Bond::getRamachandranBond(b, false);
-		b_axis = Bond::getRamachandranBond(a, false);
-	}
 
 	a_axis->getAverageBasisPos(&aBasis, &aPos);
 	b_axis->getAverageBasisPos(&bBasis, &bPos);

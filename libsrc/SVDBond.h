@@ -72,11 +72,6 @@ public:
 		_doTorsion = t;
 	}
 	
-	void setRamachandran(bool rama)
-	{
-		_rama = rama;
-	}
-
 	void bondsFromStrategy(RefinementStrategyPtr strategy);
 	void convertStrategyTorsions(RefinementStrategyPtr strategy, double t);
 	void addToStrategy(RefinementStrategyPtr strategy, double mult,
@@ -120,7 +115,6 @@ private:
 	bool _doTorsion;
 	bool _silent;
 	bool _writeMatrix;
-	bool _rama;
 };
 
 vec3 bond_effect_on_pos(vec3 atom_pos, mat3x3 &bond_basis, vec3 &bond_pos);
