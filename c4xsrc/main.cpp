@@ -42,7 +42,6 @@ int main(int argc, char * argv[])
 	global->create();
 
 	setlocale(LC_NUMERIC, "C");
-	srand(time(NULL));
 	
 	std::cout << "Vagabond version: " << VAGABOND_VERSION_COMMIT_ID << std::endl;
 	
