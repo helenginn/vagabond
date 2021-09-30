@@ -79,6 +79,8 @@ public:
 	}
 
 	static void loadBlobInGUI(Blob *b);
+	
+	static void changeSamplesAndFit(void *object, double n);
 
 	static CrystalPtr getActiveCrystal()
 	{

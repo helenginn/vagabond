@@ -1116,3 +1116,10 @@ OptionsPtr Options::getRuntimeOptions(bool make)
 
 	return options;
 }
+
+void Options::changeSamplesAndFit(void *, double n)
+{
+       setNSamples(NULL, n);
+       getActiveCrystal()->refreshAnchors();
+       getActiveCrystal()->refreshPositions();
+}
