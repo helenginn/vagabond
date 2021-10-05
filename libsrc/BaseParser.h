@@ -136,6 +136,18 @@ public:
 	{
 		return _top->shared_from_this();
 	}
+	
+	void outputStream();
+
+	virtual void setStream(std::ostream *str)
+	{
+		_stream = str;
+	}
+
+	std::ostream *getStream()
+	{
+		return _stream;
+	}
 protected:
 	/**
 	* 	Implementation of the parser identifier should return a name of the
@@ -251,6 +263,8 @@ friend class Thing;
 	
 	void privateRestoreState(int num);
 	virtual void postRestoreState();
+
+	std::ostream *_stream;
 private:
 	std::string _className;
 	std::string _identifier;

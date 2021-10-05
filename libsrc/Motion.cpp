@@ -174,6 +174,7 @@ void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
 {
 	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
 	target->setCrystal(crystal);
+	strategy->setStream(_stream);
 	
 	target->setAtomGroup(_allBackbone);
 
@@ -187,7 +188,7 @@ void Motion::attachTargetToRefinement(RefinementStrategyPtr strategy,
 void Motion::rigidRefine()
 {
 	_centre = _allAtoms->centroid();
-	std::cout << "\nRefining rigid body: " << _name << std::endl;
+	*_stream << "\nRefining rigid body: " << _name << std::endl;
 	FlexLocal target;
 	NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 	attachTargetToRefinement(neld, &target, false);
@@ -195,13 +196,14 @@ void Motion::rigidRefine()
 	neld->setJobName("rigid");
 	_rotation->addVecToStrategy(neld, deg2rad(4), deg2rad(0.04), "rotation");
 	_displacement->addVecToStrategy(neld, 0.1, 0.001, "displacement");
+	neld->setStream(_stream);
 	neld->refine();
 }
 
 void Motion::refine(bool reciprocal)
 {
 	_centre = _allAtoms->centroid();
-	std::cout << "\nRefining motion: " << _name << std::endl;
+	*_stream << "\nRefining motion: " << _name << std::endl;
 	
 	int maxRot = Options::getMaxRotations();
 	bool maxed = false;
@@ -216,8 +218,8 @@ void Motion::refine(bool reciprocal)
 	{
 		if (j >= librationCount())
 		{
-			std::cout << std::endl;
-			std::cout << "Introducing rotation #" << j << std::endl;
+			*_stream << std::endl;
+			*_stream << "Introducing rotation #" << j << std::endl;
 			
 			RefinementListPtr list = RefinementListPtr(new RefinementList());
 			list->setJobName("rot_search");
@@ -240,10 +242,11 @@ void Motion::refine(bool reciprocal)
 			list->refine();
 			_allAtoms->refreshPositions();
 			target.recalculateConstant();
+			list->outputStream();
 			
 			if (!list->didChange())
 			{
-				std::cout << "Nevermind, no demand for a rotation." << std::endl;
+				*_stream << "Nevermind, no demand for a rotation." << std::endl;
 				deleteLastScrew();
 				maxed = true;
 			}
@@ -285,6 +288,7 @@ void Motion::refine(bool reciprocal)
 		}
 		
 		neld->refine();
+		neld->outputStream();
 		
 		if (!_refined)
 		{
@@ -304,6 +308,7 @@ void Motion::refine(bool reciprocal)
 		addLibrationParameters(neld, -1);
 		
 		neld->refine();
+		neld->outputStream();
 		_allAtoms->refreshPositions();
 
 		if (Options::getScrew())
@@ -315,6 +320,7 @@ void Motion::refine(bool reciprocal)
 			neld->setCycles((i + 1) * 50);
 			addScrewParameters(neld, -1);
 			neld->refine();
+			neld->outputStream();
 			_allAtoms->refreshPositions();
 		}
 	}

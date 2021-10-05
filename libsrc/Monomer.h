@@ -82,6 +82,8 @@ public:
 
 	virtual void addAtom(AtomPtr atom);
 
+	virtual void setStream(std::ostream *str);
+
 	void addModel(ModelPtr model)
 	{
 		_models.push_back(model);

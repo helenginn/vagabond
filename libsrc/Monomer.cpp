@@ -222,3 +222,11 @@ void Monomer::setPolymer(PolymerPtr pol)
 		_sidechain->setPolymer(pol);
 	}
 }
+
+void Monomer::setStream(std::ostream *str)
+{
+	BaseParser::setStream(str);
+
+	_backbone->setStream(str);
+	_sidechain->setStream(str);
+}

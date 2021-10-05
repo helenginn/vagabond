@@ -28,6 +28,7 @@ FlexLocal::FlexLocal()
 	_svd = NULL;
 	_changed = false;
 	_torsionMode = false;
+	_stream = &std::cout;
 }
 
 FlexLocal::~FlexLocal()
@@ -42,12 +43,13 @@ FlexLocal::~FlexLocal()
 void FlexLocal::setPolymer(PolymerPtr pol)
 {
 	_polymer = pol;
+	_stream = pol->getStream();
 	_bb = _polymer->getAllBackbone();
 }
 
 void FlexLocal::svd()
 {
-	std::cout << "| 0. Performing SVD... " << std::flush;
+	*_stream << "| 0. Performing SVD... " << std::flush;
 	Timer timer;
 	
 	if (_svd)
@@ -66,15 +68,15 @@ void FlexLocal::svd()
 
 	_svd->performSVD();
 	
-	std::cout << _svd->numClusters() << " clusters.";
-	std::cout << "              ... done. ";
+	*_stream << _svd->numClusters() << " clusters.";
+	*_stream << "              ... done. ";
 	timer.quickReport();
-	std::cout << std::endl;
+	*_stream << std::endl;
 }
 
 void FlexLocal::refineClusters()
 {
-	std::cout << "| 1. Refining bond clusters... " << std::endl;
+	*_stream << "| 1. Refining bond clusters... " << std::endl;
 	Timer timer;
 
 	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
@@ -83,6 +85,10 @@ void FlexLocal::refineClusters()
 	nelder->setSilent(true);
 
 	nelder->setEvaluationFunction(getScore, this);
+	if (_polymer)
+	{
+		nelder->setStream(_polymer->getStream());
+	}
 
 	CrystalPtr crystal = Options::getActiveCrystal();
 
@@ -94,7 +100,7 @@ void FlexLocal::refineClusters()
 	nelder->reportResult();
 
 	timer.quickReport();
-	std::cout << std::endl;
+	*_stream << std::endl;
 	_changed = nelder->changedSignificantly();
 }
 
@@ -102,19 +108,19 @@ void FlexLocal::refine()
 {
 	for (int i = 0; i < 1; i++)
 	{
-		std::cout << "---------------------------------------------------------"
+		*_stream << "---------------------------------------------------------"
 		<< std::endl;
-		std::cout << "|  Refining flexibility for chain " 
+		*_stream << "|  Refining flexibility for chain " 
 		<< _polymer->getChainID() << " (cycle " << _run << ")";
-		std::cout << std::endl;
-		std::cout << "---------------------------------------------------------"
+		*_stream << std::endl;
+		*_stream << "---------------------------------------------------------"
 		<< std::endl;
 
 		findAtomsAndBonds();
 		svd();
 		refineClusters();
 		
-		std::cout << "---------------------------------------------------------"
+		*_stream << "---------------------------------------------------------"
 		<< std::endl;
 
 		clear();
@@ -125,7 +131,7 @@ void FlexLocal::refine()
 void FlexLocal::refineChainMults(AnchorPtr anch)
 {
 	Timer timer;
-	std::cout << "| 1a. Refining kick spread... " 
+	*_stream << "| 1a. Refining kick spread... " 
 	<< std::flush;
 	NelderMeadPtr ref = NelderMeadPtr(new RefinementNelderMead());
 	ref->setCycles(200);
@@ -139,7 +145,7 @@ void FlexLocal::refineChainMults(AnchorPtr anch)
 
 
 	timer.quickReport();
-	std::cout << std::endl;
+	*_stream << std::endl;
 }
 
 void FlexLocal::clear()
@@ -226,12 +232,12 @@ double FlexLocal::getScore(void *object)
 
 void FlexLocal::recalculateConstant()
 {
-	_workspace.recalc = true;
+//	_workspace.recalc = true;
 }
 
 void FlexLocal::reportTimings()
 {
-	std::cout << std::endl;
+	*_stream << std::endl;
 	_workspace.tBonds->report();
 	_workspace.tMap->report();
 	_workspace.tScore->report();

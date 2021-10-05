@@ -43,6 +43,7 @@ public:
 	virtual void summary();
 	virtual void tieAtomsUp();
 	virtual void refine(CrystalPtr target, RefinementType rType);
+	virtual void setStream(std::ostream *str);
 	
 	virtual void graph(std::string graphName);
 

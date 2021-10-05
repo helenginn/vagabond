@@ -120,6 +120,7 @@ private:
 	bool _changed;
 	bool _torsionMode;
 	MapScoreWorkspace _workspace;
+	std::ostream *_stream;
 };
 
 #endif

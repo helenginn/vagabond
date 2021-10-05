@@ -32,7 +32,7 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 		return;
 	}
 
-	std::cout << getMonomer()->getResCode() << std::flush;
+	*_stream << getMonomer()->getResCode() << std::flush;
 	
 	if (_timesRefined == 0)
 	{

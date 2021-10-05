@@ -133,6 +133,13 @@ bool Polymer::refineLocalFlexibility(bool magic)
 		ch |= _keyPoints->refineKeyPoints();
 //		local.refineChainMults(getAnchorModel());
 	}
+	
+	std::ostringstream *o = dynamic_cast<std::ostringstream *>(_stream);
+	if (o)
+	{
+		std::cout << o->str();
+		o->str("");
+	}
 
 	return ch;
 }
@@ -629,10 +636,10 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 	Timer timer = Timer("refinement", true);
 	
-	std::cout << std::endl;
-	std::cout << "Refining chain " << getChainID() << 
+	*_stream << std::endl;
+	*_stream << "Refining chain " << getChainID() << 
 	" from anchor to N-terminus... (" << monomerBegin() << ")";
-	std::cout << std::endl << std::endl << "\t";
+	*_stream << std::endl << std::endl << "\t";
 
 	int count = 0;
 
@@ -644,16 +651,16 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 		if (monomer && count % 30 == 30 - 1)
 		{
-			std::cout << " - " << i << "\n\t" << std::flush;
+			*_stream << " - " << i << "\n\t" << std::flush;
 		}
 
 		count++;
 	}
 
-	std::cout << std::endl << std::endl;
-	std::cout << "Refining chain " << getChainID() << 
+	*_stream << std::endl << std::endl;
+	*_stream << "Refining chain " << getChainID() << 
 	" from anchor to C-terminus... (" << monomerEnd() << ")";
-	std::cout << std::endl << std::endl << "\t";
+	*_stream << std::endl << std::endl << "\t";
 
 	count = 0;
 
@@ -664,13 +671,13 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 
 		if (monomer && count % 30 == 30 - 1)
 		{
-			std::cout << " - " << i << "\n\t" << std::flush;
+			*_stream << " - " << i << "\n\t" << std::flush;
 		}
 
 		count++;
 	}
 
-	std::cout << std::endl << std::endl;
+	*_stream << std::endl << std::endl;
 
 	timer.report();
 }
@@ -1041,10 +1048,10 @@ void Polymer::closenessSummary()
 	posSum /= count;
 	bSum /= count;
 
-	std::cout << "Across all Chain " << getChainID() << " atoms:\n";
-	std::cout << "\tDerived B equivalent (Å^2): " << std::setprecision(4) <<
+	*_stream << "Across all Chain " << getChainID() << " atoms:\n";
+	*_stream << "\tDerived B equivalent (Å^2): " << std::setprecision(4) <<
 	bSum << std::endl;
-	std::cout << "\tPositional displacement from PDB (Å): " << posSum << std::endl;
+	*_stream << "\tPositional displacement from PDB (Å): " << posSum << std::endl;
 }
 
 void Polymer::downWeightResidues(int start, int end, double value) // inclusive
@@ -1357,4 +1364,17 @@ void Polymer::resetSidechains()
 	}
 
 	refreshPositions();
+}
+
+void Polymer::setStream(std::ostream *str)
+{
+	BaseParser::setStream(str);
+	
+	for (size_t i = monomerBegin(); i < monomerEnd(); i++)
+	{
+		if (getMonomer(i))
+		{
+			getMonomer(i)->setStream(str);
+		}
+	}
 }

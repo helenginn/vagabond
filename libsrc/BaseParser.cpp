@@ -32,6 +32,7 @@ BaseParser::BaseParser()
 	_restored = false;
 	_setup = false;
 	_parent = NULL;
+	_stream = &std::cout;
 }
 
 void BaseParser::setup(bool isNew)

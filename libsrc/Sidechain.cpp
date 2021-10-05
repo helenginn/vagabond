@@ -110,7 +110,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 	if (rType == RefinementSidechain || rType == RefinementSidePos)
 	{
-		std::cout << getMonomer()->getResCode() << std::flush;
+		*_stream << getMonomer()->getResCode() << std::flush;
 		rType = RefinementFine;
 	}
 	
