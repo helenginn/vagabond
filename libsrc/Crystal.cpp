@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include <sstream>
+#include <thread>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
@@ -133,10 +134,10 @@ void Crystal::refinePolymers(RefinementType type)
 			continue;
 		}
 
-		std::cout << std::endl;
+//		std::cout << std::endl;
 		pol->refine(shared_from_this(), type);
-		pol->closenessSummary();
-		std::cout << std::endl;
+//		pol->closenessSummary();
+//		std::cout << std::endl;
 	}
 }
 
@@ -155,18 +156,158 @@ void Crystal::closenessSummary()
 
 void Crystal::refineCrude()
 {
-	refinePolymers(RefinementCrude);
+	refineThreaded(JobBackbone);
+//	refinePolymers(RefinementCrude);
 }
 
-void Crystal::refinePositions()
+void Crystal::saveAtomsForThreading()
 {
-	refinePolymers(RefinementModelPos);
+	for (size_t i = 0; i < atomCount(); i++)
+	{
+		if (!atom(i)->getModel()->hasExplicitPositions())
+		{
+			continue;
+		}
+
+		atom(i)->getExplicitModel()->getFinalPositions();
+		atom(i)->getExplicitModel()->savePositions();
+	}
+}
+
+typedef struct
+{
+	PolymerPtr pol;
+	MotionPtr mot;
+	CrystalPtr cryst;
+	std::ostringstream o;
+	bool served;
+	int total;
+	std::mutex mut;
+} ThreadPolymer;
+
+void serveNextPolymer(std::vector<ThreadPolymer *> *pols, JobType type)
+{
+	bool finished = false;
+
+	while (!finished)
+	{
+		finished = true;
+		for (size_t i = 0; i < pols->size(); i++)
+		{
+			if (!pols->at(i)->mut.try_lock())
+			{
+				continue;
+			}
+
+			if (pols->at(i)->served)
+			{
+				pols->at(i)->mut.unlock();
+				continue;
+			}
+
+			finished = false;
+			pols->at(i)->served = true;
+			if (type == JobPositions)
+			{
+				pols->at(i)->pol->refinePositions(pols->at(i)->cryst, 
+				                                  pols->at(i)->pol, 
+				                                  pols->at(i)->total);
+			}
+			else if (type == JobWholeMol)
+			{
+				pols->at(i)->mot->refine(false);
+			}
+			else if (type == JobIntraMol)
+			{
+				pols->at(i)->pol->refineLocalFlexibility(false);
+			}
+			else if (type == JobBackbone)
+			{
+				pols->at(i)->pol->refineBackbone();
+			}
+			else if (type == JobSidechain)
+			{
+				pols->at(i)->pol->clearParams();
+				pols->at(i)->pol->refine(pols->at(i)->cryst, 
+				                         RefinementSidechain);
+			}
+
+			pols->at(i)->mut.unlock();
+		}
+	}
+
+}
+
+void Crystal::refinePositions(int total)
+{
+	refineThreaded(JobPositions, total);
+	return;
+
+	std::cout << "Beginning refinement..." << std::endl;
+	std::cout << std::endl;
+	
+	std::vector<ThreadPolymer *> pols;
+	std::vector<std::thread *> threads;
+	int max_threads = std::min(Options::threads(), (int)moleculeCount());
+	
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+		
+		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		pol->clearParams();
+		
+		ThreadPolymer *thrp = new ThreadPolymer();
+		thrp->served = false;
+		thrp->total = total;
+		thrp->cryst = shared_from_this();
+		thrp->pol = pol;
+		pol->setStream(&thrp->o);
+
+		pols.push_back(thrp);
+	}
+
+	for (size_t i = 0; i < max_threads; i++)
+	{
+		std::thread *thr = new std::thread(serveNextPolymer, &pols, 
+		                                   JobPositions);
+		threads.push_back(thr);
+	}
+	
+	for (size_t i = 0; i < threads.size(); i++)
+	{
+		threads[i]->join();
+	}
+	
+	for (size_t i = 0; i < threads.size(); i++)
+	{
+		delete threads[i];
+	}
+	
+	std::cout << std::endl;
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+		
+		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		pol->closenessSummary();
+	}
+
+	threads.clear();
 }
 
 void Crystal::refineSidechains()
 {
 	VagFFT::quickFFTs();
-	refinePolymers(RefinementSidechain);
+//	refinePolymers(RefinementSidechain);
+	refineThreaded(JobSidechain);
 	VagFFT::patientFFTs();
 }
 
@@ -177,9 +318,14 @@ void Crystal::refineSidechainPositions()
 	VagFFT::patientFFTs();
 }
 
-bool Crystal::refineIntraMovements(bool magic)
+bool Crystal::refineThreaded(JobType type, int total)
 {
 	bool changed = false;
+
+	std::vector<ThreadPolymer *> pols;
+	std::vector<std::thread *> threads;
+	int max_threads = std::min(Options::threads(), (int)moleculeCount());
+	saveAtomsForThreading();
 
 	for (int i = 0; i < moleculeCount(); i++)
 	{
@@ -189,11 +335,39 @@ bool Crystal::refineIntraMovements(bool magic)
 		}
 		
 		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		pol->clearParams();
 
-		changed |= pol->refineLocalFlexibility(magic);
+		ThreadPolymer *thrp = new ThreadPolymer();
+		thrp->served = false;
+		thrp->total = total;
+		thrp->cryst = shared_from_this();
+		thrp->pol = pol;
+		pol->setStream(&thrp->o);
+		pols.push_back(thrp);
 	}
 	
-	return changed;
+	std::cout << "Starting threaded job on " << max_threads << 
+	" threads." << std::endl;
+
+	for (size_t i = 0; i < max_threads; i++)
+	{
+		std::thread *thr = new std::thread(serveNextPolymer, &pols, type);
+		threads.push_back(thr);
+	}
+	
+	for (size_t i = 0; i < threads.size(); i++)
+	{
+		threads[i]->join();
+	}
+	
+	for (size_t i = 0; i < threads.size(); i++)
+	{
+		delete threads[i];
+	}
+	
+	std::cout << std::endl;
+	
+	return true;
 }
 
 void Crystal::realSpaceClutter()
@@ -1248,9 +1422,12 @@ size_t Crystal::polymerCount()
 
 void Crystal::fitWholeMolecules(bool recip)
 {
-	std::cout << "Refining in " << 
-	(recip ? "reciprocal " : "real ") << 
-	"space." << std::endl;
+	std::cout << "Refining in real space." << std::endl;
+
+	std::vector<ThreadPolymer *> pols;
+	std::vector<std::thread *> threads;
+	int max_threads = std::min(Options::threads(), (int)motionCount());
+	saveAtomsForThreading();
 
 	for (int i = 0; i < _motions.size(); i++)
 	{
@@ -1259,7 +1436,29 @@ void Crystal::fitWholeMolecules(bool recip)
 			continue;
 		}
 
-		_motions[i]->refine(recip);
+		ThreadPolymer *thrp = new ThreadPolymer();
+		thrp->served = false;
+		thrp->cryst = shared_from_this();
+		thrp->mot = _motions[i];
+		_motions[i]->setStream(&thrp->o);
+		pols.push_back(thrp);
+	}
+
+	for (size_t i = 0; i < max_threads; i++)
+	{
+		std::thread *thr = new std::thread(serveNextPolymer, &pols, 
+		                                   JobWholeMol);
+		threads.push_back(thr);
+	}
+	
+	for (size_t i = 0; i < threads.size(); i++)
+	{
+		threads[i]->join();
+	}
+	
+	for (size_t i = 0; i < threads.size(); i++)
+	{
+		delete threads[i];
 	}
 }
 
@@ -1358,6 +1557,12 @@ void Crystal::postParseTidy()
 	else
 	{
 		_spaceGroup = CSym::ccp4spg_load_by_spgname(_spgString.c_str());
+	}
+
+	for (int i = 0; i < motionCount(); i++)
+	{
+		_motions[i]->updateAtoms();
+		_motions[i]->absorbScale();
 	}
 
 	setupSymmetry();
@@ -1878,7 +2083,7 @@ void Crystal::updatePDBContents(std::string pdbName)
 		addMissingAtoms(missedAtoms);
 
 		fusePolymers();
-		refinePositions();
+		refinePositions(1);
 		
 		for (int i = 0; i < moleculeCount(); i++)
 		{

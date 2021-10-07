@@ -45,6 +45,8 @@ public:
 	virtual void refine(CrystalPtr target, RefinementType rType);
 	virtual void setStream(std::ostream *str);
 	
+	static void refinePositions(CrystalPtr cryst, PolymerPtr pol, int total);
+	
 	virtual void graph(std::string graphName);
 
 	void scaleSidechainsToBFactor();
@@ -200,6 +202,7 @@ private:
 	double _fullScore;
 	KeyPointsPtr _keyPoints;
 
+	AnchorPtr _anchor;
 	AtomGroupPtr _allBackbones;
 
 };

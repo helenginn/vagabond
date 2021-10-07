@@ -42,6 +42,15 @@
  * DiffractionData conceptually.
  */
 
+typedef enum
+{
+	JobPositions,
+	JobWholeMol,
+	JobIntraMol,
+	JobBackbone,
+	JobSidechain,
+} JobType;
+
 typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
 typedef double (*option_getter)();
@@ -408,8 +417,8 @@ public:
 	* 	\param rotation if true, will refine rotation parameters. */
 	void fitWholeMolecules(bool recip = false);
 	void refinePolymers(RefinementType type);
-	void refinePositions();
-	bool refineIntraMovements(bool magic = false);
+	void refinePositions(int total = 15);
+	bool refineThreaded(JobType type, int total = 15);
 	void refineSidechainPositions();
 	void refineSidechains();
 	void refineCrude();
@@ -530,6 +539,7 @@ protected:
 	virtual void postParseTidy();
 private:
 	void addMissingAtoms(std::vector<AtomPtr> atoms);
+	void saveAtomsForThreading();
 	void fusePolymers();
 
 	MoleculeMap _molecules;

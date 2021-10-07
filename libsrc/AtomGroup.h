@@ -132,12 +132,12 @@ public:
 		return _elements[which];
 	}
 	
-	void addToMap(VagFFTPtr fft);
+	void addToMap(VagFFTPtr fft, bool saved = false);
 
 	/** Adds atoms to a map where the voxel morphology is cubic, with a
 	  * given offset specified which is subtracted from each atom
 	  * position. */
-	void addToCubicMap(VagFFTPtr scratchFull);
+	void addToCubicMap(VagFFTPtr scratchFull, bool saved = false);
 
 	/** Prepares a cubic map to add the AtomGroup to, including adjustment
 	 *  of the offset to place midpoint of the group of atoms at the midpoint 

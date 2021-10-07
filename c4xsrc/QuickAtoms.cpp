@@ -169,6 +169,7 @@ void QuickAtoms::collapseOnTarget(vec3 target)
 
 void QuickAtoms::addSequentialAtom(std::string chain, vec3 pos)
 {
+	_loadedAtoms = true;
 	_chainMap[chain].push_back(pos);
 }
 

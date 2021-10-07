@@ -54,6 +54,16 @@ public:
 	/** Positions and associated data including whole-molecule deviations.
 	* 	Will return from cache if not flagged to recalculate. */
 	virtual const std::vector<BondSample> &getFinalPositions();
+	
+	/** call to copy stored sample information temporarily for future
+	 *  read-only recall.Oonly call in single-threaded mode as this 
+	 * 	will not lock a mutex */
+	void savePositions();
+
+	const std::vector<BondSample> &savedPositions()
+	{
+		return _savedSamples;
+	}
 
 	vec3 *samplePointer(int i)
 	{
@@ -164,6 +174,8 @@ protected:
 	virtual void getAnisotropy(bool withKabsch = false);
 	virtual double anisotropyExtent(bool withKabsch = false);
 	std::vector<BondSample> _storedSamples;
+	std::vector<BondSample> _savedSamples;
+
 	vec3 meanOfManyPositions(std::vector<BondSample> *positions);
 
 	/** Will define torsion basis as:

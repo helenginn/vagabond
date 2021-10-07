@@ -17,6 +17,10 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Group.h"
+#include "KeeperGL.h"
+#include "ClusterPlot.h"
+#include "PlotView.h"
+#include "AutoCluster.h"
 #include "ColumnChooser.h"
 #include "FileReader.h"
 #include "AveDiffraction.h"
@@ -32,6 +36,7 @@
 #include "Input.h"
 #include "QuickAtoms.h"
 
+#include <h3dsrc/Dialogue.h>
 #include <QTreeWidget>
 #include <QApplication>
 #include <QMessageBox>
@@ -103,6 +108,10 @@ void ClusterList::prepareMenu(const QPoint &p)
 			connect(act, &QAction::triggered, _screen, &Screen::removeCluster);
 			altered = true;
 		}
+
+		QAction *act = m->addAction("Auto-cluster");
+		connect(act, &QAction::triggered, this, &ClusterList::autoCluster);
+		altered = true;
 
 		if (AveVectors::hasVectorData())
 		{
@@ -1017,5 +1026,32 @@ void ClusterList::enableAllColumns()
 	{
 		AveVectors::setEnabled(i, true);
 	}
+}
 
+void ClusterList::exportCoordinates()
+{
+	Group *g = _lastAverage;
+	std::string filename = openDialogue(_screen, "Export coordinates", "*.csv");
+	g->exportCoordinates(filename);
+}
+
+void ClusterList::autoCluster()
+{
+	PlotView *svdView = _screen->svdView();
+	if (svdView == NULL)
+	{
+		return;
+	}
+	
+	KeeperGL *keeper = svdView->keeper();
+	ClusterPlot *plot = keeper->getPlot();
+	int a, b, c;
+	plot->getAxes(&a, &b, &c);
+	std::cout << a << " " << b << " " << c << std::endl;
+
+	AutoCluster *cluster = new AutoCluster(_lastAverage);
+	cluster->setAxes(a, b, c);
+	cluster->setList(this);
+	cluster->cluster();
+	cluster->colour();
 }

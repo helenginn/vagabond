@@ -36,6 +36,7 @@
 #include "libccp4/ccp4_spg.h"
 #include "libccp4/ccp4_general.h"
 
+std::mutex VagFFT::_planMutex;
 std::vector<FFTDim *> VagFFT::_dimensions;
 unsigned VagFFT::_many_flags = FFTW_MEASURE;
 int VagFFT::_num_threads = 4;
@@ -343,8 +344,8 @@ void VagFFT::makePlans()
 		}
 	}
 	
-	Timer timer;
-
+	_planMutex.lock();
+	
 	FFTDim *dims = (FFTDim *)malloc(sizeof(FFTDim));
 	dims->nx = _nx; dims->ny = _ny; dims->nz = _nz; dims->nele = _nele;
 	dims->nscratch = _nscratch;
@@ -356,7 +357,7 @@ void VagFFT::makePlans()
 	/* destroying input should do nothing though */
 
 	fftwf_set_timelimit(16);
-	fftwf_plan_with_nthreads(_num_threads);
+//	fftwf_plan_with_nthreads(_num_threads);
 
 	fftwf_plan plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, 
 	                                      _stride, 2, _data, 
@@ -381,6 +382,8 @@ void VagFFT::makePlans()
 	                           _stride, 2, -1, _many_flags); 
 
 	_myDims->recip_to_real = plan;
+	
+	_planMutex.unlock();
 }
 
 void VagFFT::multiplyDotty(float val)
@@ -920,10 +923,11 @@ void VagFFT::printSlice(double zVal, double scale)
 
 }
 
-void VagFFT::addExplicitAtom(AtomPtr atom)
+void VagFFT::addExplicitAtom(AtomPtr atom, bool saved)
 {
 	const std::vector<BondSample> &positions = 
-	atom->getExplicitModel()->getFinalPositions();
+	(saved ?  atom->getExplicitModel()->savedPositions() :
+	 atom->getExplicitModel()->getFinalPositions());
 
 	for (int i = 0; i < positions.size(); i++)
 	{
@@ -945,11 +949,11 @@ void VagFFT::addExplicitAtom(AtomPtr atom)
 	}
 }
 
-void VagFFT::addAtom(AtomPtr atom)
+void VagFFT::addAtom(AtomPtr atom, bool saved)
 {
 	if (atom->getModel()->hasExplicitPositions())
 	{
-		addExplicitAtom(atom);
+		addExplicitAtom(atom, saved);
 	}
 	else
 	{

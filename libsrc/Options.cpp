@@ -33,6 +33,7 @@
 OptionsPtr Options::options;
 double Options::_kick = 0.000;
 int Options::_solvent = 2;
+int Options::_threads = 4;
 int Options::_nCycles = -1;
 int Options::_pCycles = -1;
 double Options::_unmodelled = 0.0;
@@ -281,12 +282,10 @@ void Options::executeProtocol()
 		{
 			total = _pCycles;
 		}
-
-		for (int i = 0; i < total && _rPosition; i++)
+		
+		if (_rPosition)
 		{
-			std::cout << "Refining positions to PDB (" << 
-			i + 1 << " / " << total << ")" << std::endl;
-			crystal->refinePositions();
+			crystal->refinePositions(total);
 			crystal->refreshAnchors();
 		}
 
@@ -397,7 +396,7 @@ void Options::executeProtocol()
 			bool last = (i == maxIntra - 1);
 			std::cout << "Intramolecular flex microcycle (" << 
 			i + 1 << " / " << maxIntra << ")" << std::endl;
-			bool changed = crystal->refineIntraMovements(last);
+			bool changed = crystal->refineThreaded(JobIntraMol);
 			recalculateFFT();
 			
 			if (!changed)
@@ -661,6 +660,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "--probe-radius=", &_probeRadius);
 		understood |= parseParameter(arg, "--shrink=", &_shrink);
 		understood |= parseParameter(arg, "--ncycles=", &_nCycles);
+		understood |= parseParameter(arg, "--threads=", &_threads);
 		understood |= parseParameter(arg, "--pcycles=", &_pCycles);
 		understood |= parseParameter(arg, "--global-b=", &_bReal);
 		understood |= parseParameter(arg, "--sampling=", &_sampling);

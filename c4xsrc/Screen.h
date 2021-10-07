@@ -72,6 +72,11 @@ public:
 	{
 		return _list;
 	}
+	
+	PlotView *svdView()
+	{
+		return _svdView;
+	}
 
 	void displayResults(Group *ave);
 	void displaySingle(MtzFFTPtr fft);

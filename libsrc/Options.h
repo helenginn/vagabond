@@ -364,6 +364,11 @@ public:
 		_bReal = -1;
 	}
 	
+	static int threads()
+	{
+		return _threads;
+	}
+	
 	static void flagDensityChanged()
 	{
 		Options::getRuntimeOptions()->renderDensity();
@@ -441,6 +446,7 @@ private:
 	static int _bondAngles;
 	static int _nCycles;
 	static int _pCycles;
+	static int _threads;
 	static bool _peptideMovement;
 	static double _unmodelled;
 	static double _bMult;

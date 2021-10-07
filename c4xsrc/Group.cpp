@@ -775,3 +775,21 @@ void Group::writeHKL(std::string filename)
 {
 	_mySet.recip->writeHKL(filename);
 }
+
+void Group::exportCoordinates(std::string filename)
+{
+	std::ofstream file;
+	file.open(filename);
+
+	for (size_t i = 0; i < mtzCount(); i++)
+	{
+		file << getMtzFile(i)->metadata() << ", ";
+		for (size_t j = 0; j < 3; j++)
+		{
+			file << _svdPtrs[i][j] << ", ";
+		}
+		file << std::endl;
+	}
+
+	file.close();
+}

@@ -225,6 +225,7 @@ protected:
 	virtual double getScore();
 	void setupCloseAtoms();
 	void setupScoreWithMap();
+	double constraint();
 	void addAtomsForBond(BondPtr bond);
 
 	double getParameter(ParamOptionType type)
@@ -249,7 +250,6 @@ protected:
 
 	std::vector<AtomGroupPtr> _includeForRefine;
 private:
-	double constraint();
 	void addParamsForBond(BondPtr bond, bool even = true);
 	CrystalPtr _crystal;
 	std::vector<BalancePtr> _balances;

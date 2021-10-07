@@ -263,6 +263,7 @@ headers = [
 'c4xsrc/ClusterList.h', 
 'c4xsrc/CorrelLabel.h',
 'c4xsrc/MtzOptions.h', 
+'c4xsrc/AutoCluster.h', 
 ]
 
 install_headers([
@@ -447,6 +448,7 @@ install_headers([
 
 c4xsrc = [
 'c4xsrc/Arbitrary.cpp', 
+'c4xsrc/AutoCluster.cpp', 
 'c4xsrc/AveCAlpha.cpp', 
 'c4xsrc/AveDiffraction.cpp', 
 'c4xsrc/AveUnitCell.cpp', 

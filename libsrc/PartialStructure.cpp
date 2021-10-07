@@ -169,6 +169,13 @@ double PartialStructure::scaleOrScore(bool score)
 						continue;
 					}
 
+					int asu = CSym::ccp4spg_is_in_asu(spg, i, j, k);
+					if (!asu)
+					{
+						continue;
+					}
+
+					/*
 					int m, n, o;
 					int asu = CSym::ccp4spg_put_in_asu(spg, i, j, k, 
 					                                   &m, &n, &o);
@@ -177,6 +184,7 @@ double PartialStructure::scaleOrScore(bool score)
 					{
 						continue;
 					}
+					*/
 				}
 
 				long fi = fftData->element(i, j, k);

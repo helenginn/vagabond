@@ -1122,7 +1122,7 @@ void VagWindow::refineIntramolecule()
 
 	if (getObject() == NULL)
 	{
-		crystal->refineIntraMovements();
+		crystal->refineThreaded(JobIntraMol);
 		options->recalculateFFT();
 		return;
 	}

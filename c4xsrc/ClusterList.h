@@ -145,11 +145,13 @@ public slots:
 	void displayResults();
 	void selectedResults();
 	void originalAverage();
+	void exportCoordinates();
 	void topAverage();
 	void myAverage();
 
 	void chooseColumns();
 	void enableAllColumns();
+	void autoCluster();
 
 	void unitCellAverage();
 	void recipAverage();
@@ -183,8 +185,10 @@ private:
 	bool _csvInput;
 	bool _contextMenu;
 	bool _mustClearSelection;
+
 	int _max;
 	int _skip;
+
 	std::string _pdb;
 	std::string _compType;
 	std::string _preload;

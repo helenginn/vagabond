@@ -976,7 +976,7 @@ void AtomGroup::prepareComparisonMap(MapScoreWorkspace *ws, vec3 min, vec3 max)
 	ws->comparison = vag;
 }
 
-void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
+void AtomGroup::addToCubicMap(VagFFTPtr scratchFull, bool saved)
 {
 	size_t nElements = totalElements();
 	scratchFull->prepareAtomSpace();
@@ -1000,7 +1000,7 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull)
 			}
 
 			count++;
-			scratchFull->addAtom(a);
+			scratchFull->addAtom(a, saved);
 		}
 
 		_t1->stop();
@@ -1084,7 +1084,7 @@ void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max,
 	(*scratchFull)->makePlans();
 }
 
-void AtomGroup::addToMap(VagFFTPtr fft)
+void AtomGroup::addToMap(VagFFTPtr fft, bool saved)
 {
 	size_t nElements = totalElements();
 	
@@ -1106,7 +1106,7 @@ void AtomGroup::addToMap(VagFFTPtr fft)
 
 	prepareCubicMap(&scratchFull, min, max);
 
-	addToCubicMap(scratchFull);
+	addToCubicMap(scratchFull, saved);
 
 	VagFFT::operation(fft, scratchFull, MapScoreTypeNone, NULL, false);
 }
@@ -1256,7 +1256,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 	if (first || workspace->recalc)
 	{
 		/* Add the acceptable atoms to the map */
-		workspace->extra->addToCubicMap(workspace->segment);
+		workspace->extra->addToCubicMap(workspace->segment, true);
 		/* copy the constant fraction into the scratch */
 		workspace->segment->copyToScratch(0);
 		

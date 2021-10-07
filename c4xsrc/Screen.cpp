@@ -946,6 +946,8 @@ void Screen::addSideButtons()
 	connect(a1, &QAction::triggered, this, &Screen::exportText);
 	QAction *a2 = m->addAction("Prepare directories");
 	connect(a2, &QAction::triggered, _list, &ClusterList::prepDirs);
+	QAction *a3 = m->addAction("Export coordinates");
+	connect(a3, &QAction::triggered, _list, &ClusterList::exportCoordinates);
 
 	_export->setMenu(m);
 	

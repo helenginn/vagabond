@@ -232,6 +232,13 @@ public:
 	
 	void copyFromOriginal(Group *ave);
 	
+	void exportCoordinates(std::string filename);
+	
+	double getSvdValue(int i, int j)
+	{
+		return _svdPtrs[i][j];
+	}
+	
 	double **getRawPtr()
 	{
 		return _origPtrs;

@@ -23,6 +23,7 @@
 
 #include "../libccp4/csymlib.h"
 #include <fftw3.h>
+#include <mutex>
 #include "MapScoreWorkspace.h"
 #include "shared_ptrs.h"
 #include <hcsrc/mat3x3.h>
@@ -97,7 +98,7 @@ public:
 	void multiplyAll(float val);
 
 	void prepareAtomSpace();
-	void addAtom(AtomPtr atom);
+	void addAtom(AtomPtr atom, bool saved = false);
 	double resolution(int i, int j, int k);
 	
 	/** Applies symmetry operations. If topRes > 0 then resolution is
@@ -489,7 +490,7 @@ protected:
 	double getAmplitude(ElementPtr ele, int i, int j, int k);
 	int whichColumn(ElementPtr ele);
 	void calculateAdjustmentVolumes();
-	void addExplicitAtom(AtomPtr atom);
+	void addExplicitAtom(AtomPtr atom, bool saved);
 	void addImplicitAtom(AtomPtr atom);
 	/** returns true if sane */
 	bool sanityCheck();
@@ -556,6 +557,8 @@ protected:
 	bool _lowResMode;
 	bool _setMatrices;
 	bool _isCubic;
+	
+	static std::mutex _planMutex;
 };
 
 

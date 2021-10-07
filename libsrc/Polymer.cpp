@@ -52,7 +52,7 @@
 Polymer::Polymer()
 {
 	_kick = Options::getKick();
-	_kickShift = 0.05;
+	_kickShift = 0.50;
 	_anchorNum = -1;
 	_totalMonomers = 0;
 	_startB = Options::getBStart();
@@ -196,7 +196,7 @@ void Polymer::whackMonomer(MonomerPtr mon)
 
 void Polymer::whack()
 {
-	std::cout << "Whacking chain " << getChainID() << std::endl;
+	*_stream << "Whacking chain " << getChainID() << std::endl;
 	
 	for (int i = getAnchor(); i < monomerEnd(); i++)
 	{
@@ -382,7 +382,7 @@ void Polymer::refineBackbone()
 	CrystalPtr target = Options::getActiveCrystal();
 	_fullScore = scoreWithMap(ScoreTypeCorrel, target);
 
-	std::cout << "Refining backbone of " << getChainID() << std::endl;
+	*_stream << "Refining backbone of " << getChainID() << std::endl;
 	int anchor = getAnchor();
 	clearParams();
 	
@@ -397,10 +397,10 @@ void Polymer::refineBackbone()
 	local.refine();
 
 	double change = scoreWithMap(ScoreTypeCorrel, Options::getActiveCrystal());
-	std::cout << " CC across whole polymer ";
-	std::cout << ((change < _fullScore) ? "up " : "down ");
-	std::cout << "from " << -_fullScore * 100 << " to " << -change * 100;
-	std::cout << "." << std::endl;
+	*_stream << " CC across whole polymer ";
+	*_stream << ((change < _fullScore) ? "up " : "down ");
+	*_stream << "from " << -_fullScore * 100 << " to " << -change * 100;
+	*_stream << "." << std::endl;
 }
 
 void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
@@ -501,15 +501,15 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 
 //	scorehere
 
-	std::cout << "Refining chain " << getChainID();
-	std::cout  << " from residue " << start << " towards ";
-	std::cout << (skip > 0 ? "C" : "N");
-	std::cout <<  "-terminus (residue " << end << ") ..." << std::endl;
+	*_stream << "Refining chain " << getChainID();
+	*_stream  << " from residue " << start << " towards ";
+	*_stream << (skip > 0 ? "C" : "N");
+	*_stream <<  "-terminus (residue " << end << ") ..." << std::endl;
 
 	double endCCAve = 0;
 	double ccAve = 0;
 	
-	std::cout << "\t  Backbone             | Sidechain" << std::endl;
+	*_stream << "\t  Backbone             | Sidechain" << std::endl;
 	bool changed = true;
 
 	int count = 0;
@@ -517,11 +517,11 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 	{
 		if (i % 10 == 0 && changed == true)
 		{
-			std::cout << i;
+			*_stream << i;
 			changed = false;
 		}
 
-		std::cout << "\t";
+		*_stream << "\t";
 		MonomerPtr monomer = getMonomer(i);
 		
 		if (!monomer) continue;
@@ -559,10 +559,10 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		double backdiff = (backScore - preBack) * 100.;
 		double sidediff = (sideScore - preSide) * 100.;
 		
-		print_cc_diff(backdiff, 20);
-		std::cout << "| " << std::flush;
-		print_cc_diff(sidediff, -1);
-		std::cout << std::endl;
+		print_cc_diff(_stream, backdiff, 20);
+		*_stream << "| " << std::flush;
+		print_cc_diff(_stream, sidediff, -1);
+		*_stream << std::endl;
 
 		ccAve += pre;
 		endCCAve += score;
@@ -572,10 +572,10 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 	endCCAve /= (double)count;
 	ccAve /= (double)count;
 
-	std::cout << "Average CC of monomers went ";
-	std::cout << ((endCCAve < ccAve) ? "up " : "down ");
-	std::cout << "from " << -ccAve * 100 << " to " << -endCCAve * 100;
-	std::cout << "." << std::endl;
+	*_stream << "Average CC of monomers went ";
+	*_stream << ((endCCAve < ccAve) ? "up " : "down ");
+	*_stream << "from " << -ccAve * 100 << " to " << -endCCAve * 100;
+	*_stream << "." << std::endl;
 	
 	timer.report();
 
@@ -616,6 +616,26 @@ void Polymer::scoreMonomers()
 	}
 }
 
+void Polymer::refinePositions(CrystalPtr cryst, PolymerPtr pol, int total)
+{
+	for (size_t i = 0; i < total; i++)
+	{
+		*pol->_stream << "Refining " << pol->getChainID() << 
+		" positions to PDB (" << i + 1 << " / " << total << ")" << std::endl;
+
+		pol->refine(cryst, RefinementModelPos);
+		*pol->_stream << std::endl;
+		pol->closenessSummary();
+		*pol->_stream << std::endl;
+
+		std::ostringstream *o = static_cast<std::ostringstream *>(pol->_stream);
+		std::cout << o->str();
+		o->str("");
+	}
+
+	pol->_stream = &std::cout;
+}
+
 void Polymer::refine(CrystalPtr target, RefinementType rType)
 {
 	if (_anchorNum == -INT_MAX)
@@ -623,9 +643,6 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 		return;
 	}
 	
-	
-	target->addComment("Refining against " + Options::rTypeString(rType));
-
 	if (rType == RefinementSidechain || rType == RefinementSidePos)
 	{
 		scoreMonomers();
@@ -1012,6 +1029,11 @@ void Polymer::hydrogenateContents()
 
 AnchorPtr Polymer::getAnchorModel()
 {
+	if (_anchor)
+	{
+		return _anchor;
+	}
+
 	MonomerPtr anchoredRes = getMonomer(getAnchor());
 	if (!anchoredRes)
 	{
@@ -1019,8 +1041,9 @@ AnchorPtr Polymer::getAnchorModel()
 	}
 
 	ModelPtr model = anchoredRes->findAtom("N")->getModel();
+	_anchor = ToAnchorPtr(model);
 
-	return ToAnchorPtr(model);
+	return _anchor;
 }
 
 void Polymer::closenessSummary()
