@@ -21,6 +21,7 @@
 
 #include "shared_ptrs.h"
 #include "Crystal.h"
+#include <mutex>
 
 class WeightedMap
 {
