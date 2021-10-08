@@ -124,7 +124,8 @@ bool Polymer::refineLocalFlexibility(bool magic)
 	local.setShift(_kickShift);
 	local.refine();
 	_kickShift = local.getShift();
-	timer.report();
+	timer.report(_stream);
+	local.reportTimings();
 	
 	bool ch = local.didChange();
 	
