@@ -238,12 +238,8 @@ void FlexLocal::recalculateConstant()
 void FlexLocal::reportTimings()
 {
 	*_stream << std::endl;
-	_workspace.tBonds->report();
-	_workspace.tMap->report();
-	_workspace.tScore->report();
-
-	_workspace.selectAtoms->_t1->report();
-	_workspace.selectAtoms->_t2->report();
-	_workspace.selectAtoms->_t3->report();
+	_workspace.tBonds->report(_stream);
+	_workspace.tMap->report(_stream);
+	_workspace.tScore->report(_stream);
 }
 
