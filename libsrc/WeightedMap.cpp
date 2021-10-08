@@ -272,7 +272,8 @@ double WeightedMap::stdevForReflection(double fobs, double fcalc,
 	return combined;
 }
 
-double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
+double WeightedMap::oneMap(VagFFTPtr scratch, std::vector<unsigned long> &idxs,
+                           int slice, bool diff)
 {
 	VagFFTPtr fftData = _data->getFFT();
 	double lowRes = Options::minRes();
@@ -302,10 +303,20 @@ double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 					continue;
 				}
 				
-				int _h, _k, _l;
-				CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
+				long dataidx = 0;
+				if (idxs[index] == 0)
+				{
+					int _h, _k, _l;
+					CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
 
-				long dataidx = fftData->element(_h, _k, _l);
+					dataidx = fftData->element(_h, _k, _l);
+					idxs[index] = dataidx;
+				}
+				else
+				{
+					dataidx = idxs[index];
+				}
+
 				double fobs = fftData->getReal(dataidx);
 				double sigfobs = fftData->getImag(dataidx);
 
@@ -552,13 +563,14 @@ void WeightedMap::createVagaCoefficients()
 	duplicate->setStatus(FFTRealSpace);
 	VagFFTPtr scratch = VagFFTPtr(new VagFFT(*duplicate, 1));
 	_allWeights = 0;
+	std::vector<unsigned long> idxs(duplicate->nn(), 0);
 	
 	scratch->makePlans();
 	scratch->wipe();
 	
 	for (int i = 0; i <= MAX_SLICES; i++)
 	{
-		double weight = oneMap(scratch, i, false);
+		double weight = oneMap(scratch, idxs, i, false);
 		scratch->multiplyAll(weight);
 		_allWeights += weight;
 		scratch->fft(FFTReciprocalToReal); /* to real space */
@@ -572,7 +584,7 @@ void WeightedMap::createVagaCoefficients()
 	
 	for (int i = 0; i <= MAX_SLICES; i++)
 	{
-		double weight = oneMap(scratch, i, true);
+		double weight = oneMap(scratch, idxs, i, true);
 		scratch->fft(FFTReciprocalToReal);
 		scratch->multiplyAll(weight);
 		_difft->addSimple(scratch);
@@ -580,6 +592,8 @@ void WeightedMap::createVagaCoefficients()
 		scratch->multiplyAll(0);
 		scratch->setStatus(FFTEmpty);
 	}
+	
+	idxs.clear();
 	
 	double normalise = 1 / _allWeights;
 	_difft->multiplyAll(normalise);
