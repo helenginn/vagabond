@@ -1048,7 +1048,11 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 	std::vector<BondSample> myTorsions;
 
 	bool whacked = hasWhack();
-	correctTorsionAngles(&_storedSamples, whacked);
+	
+	if (_storedSamples.size() > 1)
+	{
+		correctTorsionAngles(&_storedSamples, whacked);
+	}
 
 	double occTotal = 0;
 	/* vec3 to be ignored */
