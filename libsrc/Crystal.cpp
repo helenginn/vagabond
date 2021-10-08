@@ -1382,7 +1382,15 @@ void Crystal::fitWholeMolecules(bool recip)
 		thrp->served = false;
 		thrp->cryst = shared_from_this();
 		thrp->mot = _motions[i];
-		_motions[i]->setStream(&thrp->o);
+		if (max_threads > 1)
+		{
+			_motions[i]->setStream(&thrp->o);
+		}
+		else
+		{
+			_motions[i]->setStream(&std::cout);
+		}
+
 		pols.push_back(thrp);
 	}
 
