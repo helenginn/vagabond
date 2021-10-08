@@ -241,66 +241,6 @@ void serveNextPolymer(std::vector<ThreadPolymer *> *pols, JobType type)
 void Crystal::refinePositions(int total)
 {
 	refineThreaded(JobPositions, total);
-	return;
-
-	std::cout << "Beginning refinement..." << std::endl;
-	std::cout << std::endl;
-	
-	std::vector<ThreadPolymer *> pols;
-	std::vector<std::thread *> threads;
-	int max_threads = std::min(Options::threads(), (int)moleculeCount());
-	
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isPolymer())
-		{
-			continue;
-		}
-		
-		PolymerPtr pol = ToPolymerPtr(molecule(i));
-		pol->clearParams();
-		
-		ThreadPolymer *thrp = new ThreadPolymer();
-		thrp->served = false;
-		thrp->total = total;
-		thrp->cryst = shared_from_this();
-		thrp->pol = pol;
-		pol->setStream(&thrp->o);
-
-		pols.push_back(thrp);
-	}
-
-	for (size_t i = 0; i < max_threads; i++)
-	{
-		std::thread *thr = new std::thread(serveNextPolymer, &pols, 
-		                                   JobPositions);
-		threads.push_back(thr);
-	}
-	
-	for (size_t i = 0; i < threads.size(); i++)
-	{
-		threads[i]->join();
-	}
-	
-	for (size_t i = 0; i < threads.size(); i++)
-	{
-		delete threads[i];
-	}
-	
-	std::cout << std::endl;
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isPolymer())
-		{
-			continue;
-		}
-		
-		PolymerPtr pol = ToPolymerPtr(molecule(i));
-		pol->closenessSummary();
-	}
-
-	threads.clear();
 }
 
 void Crystal::refineSidechains()
