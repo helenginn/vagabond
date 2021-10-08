@@ -61,7 +61,7 @@ void CompareFFT::prepare()
 				/* grab indices for each compared FFT */
 				long pi = _primary->element(i, j, k);
 				long si = _secondary->element(i, j, k);
-				long ti = _tertiary->element(i, j, k);
+				long ti = (_tertiary ? _tertiary->element(i, j, k) : 0);
 				pair.id1 = pi;
 				pair.id2 = si;
 				pair.id3 = si;
@@ -76,15 +76,18 @@ void CompareFFT::prepare()
 				pair.data1[0] = real;
 				pair.data1[1] = imag;
 				
-				real = _tertiary->getReal(ti);
-				imag = _tertiary->getImag(ti);
-				if (real != real || imag != imag)
+				if (_tertiary)
 				{
-					pair.skip_score = true;
-				}
+					real = _tertiary->getReal(ti);
+					imag = _tertiary->getImag(ti);
+					if (real != real || imag != imag)
+					{
+						pair.skip_score = true;
+					}
 
-				pair.data3[0] = real;
-				pair.data3[1] = imag;
+					pair.data3[0] = real;
+					pair.data3[1] = imag;
+				}
 
 				if (_setupResolutions || _resCutoff > 0)
 				{
