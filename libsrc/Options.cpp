@@ -321,14 +321,14 @@ void Options::executeProtocol()
 		}
 	}
 
-	if (wilson)
-	{
-		recalculateFFT();
-	}
-
 	if (_convertWaters)
 	{
 		crystal->convertWaters();
+	}
+
+	if (wilson)
+	{
+		recalculateFFT();
 	}
 
 	/* If we should have a flexible number of cycles which continues
