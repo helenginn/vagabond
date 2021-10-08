@@ -35,7 +35,14 @@ void CompareFFT::prepare()
 	}
 	
 	CSym::CCP4SPG *spg = _primary->getSpaceGroup();
-	vec3 nLimits = getNLimits(_primary, _secondary);
+
+	VagFFTPtr other = _secondary;
+	if (_tertiary)
+	{
+		other = _tertiary;
+	}
+
+	vec3 nLimits = getNLimits(_primary, other);
 	_pairs.clear();
 
 	for (int k = -nLimits.z; k < nLimits.z; k++)
