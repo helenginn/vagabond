@@ -56,9 +56,14 @@ public:
 	
 	void prepare();
 	
+	void setResolutionCutoff(double resol)
+	{
+		_resCutoff = resol;
+	}
+	
 	void setupResolutions(bool calc)
 	{
-		_setupResolutions = false;
+		_setupResolutions = calc;
 	}
 	
 	size_t pairCount()
@@ -70,14 +75,26 @@ public:
 	{
 		return _pairs[i];
 	}
+	
+	size_t allPairCount()
+	{
+		return _all.size();
+	}
+
+	FFTPair &allPair(int i)
+	{
+		return _all[i];
+	}
 private:
 	VagFFTPtr _primary;
 	VagFFTPtr _secondary;
 	VagFFTPtr _tertiary;
 	
 	bool _setupResolutions;
+	double _resCutoff;
 
 	std::vector<FFTPair> _pairs;
+	std::vector<FFTPair> _all;
 };
 
 #endif

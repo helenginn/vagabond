@@ -23,6 +23,7 @@
 CompareFFT::CompareFFT()
 {
 	_setupResolutions = false;
+	_resCutoff = -1;
 }
 
 void CompareFFT::prepare()
@@ -43,20 +44,20 @@ void CompareFFT::prepare()
 		{
 			for (int i = -nLimits.x; i < nLimits.x; i++)
 			{
+				FFTPair pair;
+				memset(&pair, '\0', sizeof(FFTPair));
+
 				int asu = CSym::ccp4spg_is_in_asu(spg, i, j, k);
 				if (!asu)
 				{
-					continue;
+					pair.skip_score = true;
 				}
 
 				if (!_primary->withinBounds(i, j, k))
 				{
-					continue;
+					pair.skip_score = true;
 				}
 				
-				FFTPair pair;
-				memset(&pair, '\0', sizeof(FFTPair));
-
 				/* grab indices for each compared FFT */
 				long pi = _primary->element(i, j, k);
 				long si = _secondary->element(i, j, k);
@@ -71,6 +72,7 @@ void CompareFFT::prepare()
 				{
 					pair.skip_score = true;
 				}
+
 				pair.data1[0] = real;
 				pair.data1[1] = imag;
 				
@@ -84,10 +86,15 @@ void CompareFFT::prepare()
 				pair.data3[0] = real;
 				pair.data3[1] = imag;
 
-				if (_setupResolutions)
+				if (_setupResolutions || _resCutoff > 0)
 				{
-					double d = _tertiary->resolution(i, j, k);
+					double d = _primary->resolution(i, j, k);
 					pair.resolution = d;
+					
+					if (_resCutoff > 0 && d < _resCutoff)
+					{
+						pair.skip_score = true;
+					}
 				}
 
 				pair.isFree = _primary->getScratchComponent(pi, 0, 0) < 0.5;
@@ -96,7 +103,13 @@ void CompareFFT::prepare()
 				{
 					pair.skip_score = true;
 				}
-				_pairs.push_back(pair);
+
+				_all.push_back(pair);
+				
+				if (!pair.skip_score)
+				{
+					_pairs.push_back(pair);
+				}
 			}
 		}
 	}

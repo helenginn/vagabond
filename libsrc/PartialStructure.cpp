@@ -124,6 +124,7 @@ void PartialStructure::scalePartialStructure()
 	_compare->setSecondaryFFT(fft);
 	_compare->setTertiaryFFT(_partial);
 	_compare->setupResolutions(true);
+//	_compare->setResolutionCutoff(2.0);
 	_compare->prepare();
 
 	setSolvScale(this, 0);
@@ -170,14 +171,16 @@ double PartialStructure::scaleOrScore(bool score)
 	double adjB = _solvBFac;
 	double adjS = _solvScale;
 	if (adjS < 0) { adjS = 0; }
+	
+	bool found = false;
+	
+	long num = score ? _compare->pairCount() : _compare->allPairCount();
 
-	for (size_t i = 0; i < _compare->pairCount(); i++)
+	for (size_t i = 0; i < num; i++)
 	{
-		CompareFFT::FFTPair &pair = _compare->pair(i);
-		if (score && pair.skip_score)
-		{ 
-			continue;
-		}
+		CompareFFT::FFTPair &pair = (score ? _compare->pair(i) : 
+		                             _compare->allPair(i));
+
 
 		long fi = pair.id1;
 		float ref = sqrt(pair.data1[0]* pair.data1[0] + 
@@ -187,7 +190,6 @@ double PartialStructure::scaleOrScore(bool score)
 		float realProtein = calculated->getReal(nModel);
 		float imagProtein = calculated->getImag(nModel);
 
-		long nPart = pair.id3;
 		float realPartial = pair.data3[0];
 		float imagPartial = pair.data3[1];
 
@@ -197,18 +199,28 @@ double PartialStructure::scaleOrScore(bool score)
 
 		realPartial *= adjS * bFacMod;
 		imagPartial *= adjS * bFacMod;
-
+		
 		float real = realProtein + realPartial;
 		float imag = imagProtein + imagPartial;
 
 		if (score)
 		{
 			float amp = sqrt(real * real + imag * imag);
+			if (real != real || imag != imag)
+			{
+				continue;
+			}
+			
+			if (i > 4000 && !found)
+			{
+				found = true;
+			}
 
 			add_to_CD(&cd, ref, amp);
 		}
 		else
 		{
+			long nPart = pair.id3;
 			_partial->setComponent(nPart, 0, realPartial);
 			_partial->setComponent(nPart, 1, imagPartial);
 
@@ -221,7 +233,7 @@ double PartialStructure::scaleOrScore(bool score)
 			calculated->setComponent(nModel, 1, imag);
 		}
 	}
-
+	
 	if (!score)
 	{
 		return 0;
