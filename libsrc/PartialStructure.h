@@ -27,10 +27,12 @@
  *   command line or created by Vagabond (e.g. solvent models).
  */
 
+class CompareFFT;
+
 class PartialStructure
 {
 public:
-	PartialStructure() {};
+	PartialStructure();
 	
 	void setStructure(VagFFTPtr refPart);
 	void scalePartialStructure();
@@ -82,6 +84,7 @@ protected:
 	}
 private:
 	DiffractionPtr _data;
+	CompareFFT *_compare;
 	double scaleAndAddPartialScore();
 	double scaleOrScore(bool score);
 	static double scalePartialScore(void *object);
