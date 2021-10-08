@@ -34,6 +34,10 @@ BucketPtr Bucket::chosenBucket()
 	{
 		bucket = BucketPtr(new BucketPerStrand());
 	}
+	else if (Options::getAddSolvent() == 0)
+	{
+
+	}
 	else
 	{
 		shout_at_user("Invalid choice of solvent model");
