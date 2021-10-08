@@ -121,6 +121,7 @@ protected:
 	virtual void linkReference(BaseParserPtr object, std::string category);
 private:
 	void deleteQuats();
+	void outputStream();
 
 	mat3x3 getOverallRotation();
 

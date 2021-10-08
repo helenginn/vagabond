@@ -204,6 +204,7 @@ void Motion::refine(bool reciprocal)
 {
 	_centre = _allAtoms->centroid();
 	*_stream << "\nRefining motion: " << _name << std::endl;
+	outputStream();
 	
 	int maxRot = Options::getMaxRotations();
 	bool maxed = false;
@@ -644,4 +645,11 @@ mat3x3 Motion::getOverallRotation()
 	vec3 rot = _rotation->getVec3();
 	mat3x3 mat = mat3x3_rotate(rot.x, rot.y, rot.z);
 	return mat;
+}
+
+void Motion::outputStream()
+{
+	std::ostringstream *o = static_cast<std::ostringstream *>(_stream);
+	std::cout << o->str();
+	o->str("");
 }
