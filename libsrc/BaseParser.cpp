@@ -71,7 +71,7 @@ void BaseParser::makePath()
 {
 	std::string path;
 
-	if (_parent && _parent != _top)
+	if (_parent && this != _top)
 	{
 		path = _parent->getAbsolutePath();
 	}
