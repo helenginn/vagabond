@@ -1368,6 +1368,7 @@ void Crystal::fitWholeMolecules(bool recip)
 	std::vector<ThreadPolymer *> pols;
 	std::vector<std::thread *> threads;
 	int max_threads = std::min(Options::threads(), (int)motionCount());
+	if (max_threads <= 0) max_threads = 1;
 	saveAtomsForThreading();
 
 	for (int i = 0; i < _motions.size(); i++)
