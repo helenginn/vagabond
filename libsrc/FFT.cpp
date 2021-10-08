@@ -65,7 +65,7 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	_bFactor = fft._bFactor;
 	_nn = fft._nn;
 	_status = fft._status;
-	_stride = fft._stride;
+	_nmap = fft._nmap;
 	_total = fft._total;
 	_origin = fft._origin;
 	_toReal = fft._toReal;
@@ -86,8 +86,8 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	if (scratch >= 0 && scratch != fft._nscratch)
 	{
 		_nscratch = scratch; 
-		_stride = 2 * (_nele) + 1 + _nscratch;
-		_total = _nn * _stride * sizeof(fftwf_complex);
+		_nmap = 2 * (_nele) + 1 + _nscratch;
+		_total = _nn * _nmap * sizeof(fftwf_complex);
 		_data = (fftwf_complex *)fftwf_malloc(_total);
 		int start = finalIndex(0);
 		_lastData = &_data[start];
@@ -145,8 +145,8 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
 	_nn = _nx * _ny * _nz;
 	_status = FFTEmpty;
 
-	_stride = 2 * (_nele) + 1 + _nscratch;
-	_total = _nn * _stride * sizeof(fftwf_complex);
+	_nmap = 2 * (_nele) + 1 + _nscratch;
+	_total = _nn * _nmap * sizeof(fftwf_complex);
 	_data = (fftwf_complex *)fftwf_malloc(_total);
 	checkDataPtr(_data, _nn);
 
@@ -305,7 +305,7 @@ void VagFFT::adjustNs()
 	
 	_nn = _nx * _ny * _nz;
 	
-	_total = _nn * _stride * sizeof(fftwf_complex);
+	_total = _nn * _nmap * sizeof(fftwf_complex);
 	
 	if (_data != NULL)
 	{
@@ -357,32 +357,45 @@ void VagFFT::makePlans()
 	/* destroying input should do nothing though */
 
 	fftwf_set_timelimit(16);
-//	fftwf_plan_with_nthreads(_num_threads);
+	fftwf_plan_with_nthreads(1);
 
-	fftwf_plan plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, 
-	                                      _stride, 2, _data, 
-	                                      NULL, _stride, 2, 
-	                                      1, _many_flags); 
-	_myDims->atom_real_to_recip = plan;
+	{
+		/*
+		fftwf_plan plan = fftwf_plan_many_dft(3, ns, 1, 
+		                                      _data, NULL, 2, 1,
+		                                      _data, NULL, 2, 1,
+		                                      1, _many_flags); 
+		fftwf_plan plan = fftwf_plan_dft_3d(_nz, _ny, _nx, 
+		                                    _lastData, _lastData,
+		                                    1, _many_flags); 
 
-	plan = fftwf_plan_many_dft(3, ns, _nele, _data, NULL, _stride, 
-	                                      2, _data, 
-	                                      NULL, _stride, 2, 
-	                                      -1, _many_flags); 
-	_myDims->atom_recip_to_real = plan;
+		fftwf_plan iplan = fftwf_plan_many_dft(3, ns, 1,
+		                                       _data, NULL, 2, 1,
+		                                       _data, NULL, 2, 1,
+		                                       -1, _many_flags); 
 
-	plan = fftwf_plan_many_dft(3, ns, 1, _lastData, NULL, /*null=embed*/
-	                           _stride, 2, _lastData, NULL, 
-	                           _stride, 2, 1, _many_flags); 
+		_myDims->ele_real_to_recip = plan;
+		_myDims->ele_recip_to_real = iplan;
+		*/
+	}
 
-	_myDims->real_to_recip = plan;
+	{
+		fftwf_plan plan = fftwf_plan_dft_3d(_nz, _ny, _nx, 
+		                                    _lastData, _lastData,
+		                                    1, _many_flags); 
 
-	plan = fftwf_plan_many_dft(3, ns, 1, _lastData, NULL, 
-	                           _stride, 2, _lastData, NULL,
-	                           _stride, 2, -1, _many_flags); 
+		_myDims->real_to_recip = plan;
 
-	_myDims->recip_to_real = plan;
-	
+		fftwf_plan iplan = fftwf_plan_dft_3d(_nz, _ny, _nx,
+		                                     &_data[finalIndex(0)],
+		                                     &_data[finalIndex(0)],
+		                                     -1, _many_flags); 
+
+		_myDims->recip_to_real = iplan;
+		_myDims->ele_real_to_recip = plan;
+		_myDims->ele_recip_to_real = iplan;
+	}
+
 	_planMutex.unlock();
 }
 
@@ -449,7 +462,7 @@ void VagFFT::setupElements(bool wipe)
 					
 					if (wipe)
 					{
-						long dotty_index = ele_index - 1;
+						long dotty_index = dottyIndex(ele, j);
 						_data[dotty_index][0] = 0; 
 						_data[dotty_index][1] = 0;
 					}
@@ -457,28 +470,6 @@ void VagFFT::setupElements(bool wipe)
 			}
 		}
 	}
-}
-
-void VagFFT::addScratchElementToFinal()
-{
-	for (int i = 0; i < _nn; i++)
-	{
-		_data[finalIndex(i)][0] += _shortScratch[i]; 
-	}
-
-	memset(_shortScratch, '\0', _nn * sizeof(float));
-}
-
-void VagFFT::copyScratchElementToPosition(ElementPtr ele)
-{
-	int column = whichColumn(ele);
-
-	for (int i = 0; i < _nn; i++)
-	{
-		_data[i * _stride + column][0] = _shortScratch[i]; 
-	}
-
-	memset(_shortScratch, '\0', _nn * sizeof(float));
 }
 
 void VagFFT::prepareAtomSpace()
@@ -494,7 +485,12 @@ void VagFFT::prepareAtomSpace()
 
 void VagFFT::separateAtomTransform()
 {
-	fftwf_execute_dft(_myDims->atom_real_to_recip, _data, _data);
+	fftwf_plan &plan = _myDims->ele_real_to_recip;
+	for (size_t i = 0; i < _nele; i++)
+	{
+		long idx = dottyIndex(0, i);
+		fftwf_execute_dft(plan, &_data[idx], &_data[idx]);
+	}
 	
 	/* go through and multiply transform of atoms by element factor */
 	for (int i = 0; i < _nn; i++)
@@ -506,7 +502,7 @@ void VagFFT::separateAtomTransform()
 		for (int j = 0; j < _nele; j++)
 		{
 			long dotty_idx = dottyIndex(i, j);
-			long ele_idx = dotty_idx + 1;
+			long ele_idx = eleIndex(i, j);
 
 			_data[final_idx][0] += _data[dotty_idx][0] * _data[ele_idx][0];
 			_data[final_idx][1] += _data[dotty_idx][1] * _data[ele_idx][0];
@@ -645,12 +641,12 @@ void VagFFT::addImplicitAtom(AtomPtr atom)
 	int column = whichColumn(ele);
 	
 	double occ = atom->getModel()->getEffectiveOccupancy();
-	populateImplicit(centre, maxVals, tensor, ellipsoid, occ);
+	populateImplicit(centre, maxVals, tensor, ellipsoid, occ, column);
 }
 
 double VagFFT::populateImplicit(vec3 centre, vec3 maxVals,
                                 mat3x3 tensor, mat3x3 ellipsoid, 
-                                double scale)
+                                double scale, int ele)
 {
 	double total = 0;
 	double count = 0;
@@ -702,7 +698,7 @@ double VagFFT::populateImplicit(vec3 centre, vec3 maxVals,
 				dens *= squash * scale * vol;
 
 				addInterpolatedToReal(x + centre.x, y + centre.y, 
-				                      z + centre.z, dens);
+				                      z + centre.z, dens, ele);
 			}
 		}
 	}
@@ -714,7 +710,7 @@ int VagFFT::whichColumn(ElementPtr ele)
 {
 	if (_elementMap.count(ele))
 	{
-		return _elementMap[ele] * 2;
+		return _elementMap[ele];
 	}
 
 	return -1;
@@ -735,7 +731,7 @@ void VagFFT::calculateAdjustmentVolumes()
 }
 
 void VagFFT::addInterpolatedToReal(double sx, double sy, 
-                                   double sz, double val)
+                                   double sz, double val, int ele)
 {
 	collapse(&sx, &sy, &sz);
 
@@ -787,8 +783,19 @@ void VagFFT::addInterpolatedToReal(double sx, double sy,
 
 				long index = element(sx1, sy1, sz1);
 				double prop = xProps[p] * yProps[q] * zProps[r];
+				long findex = 0;
 				
-				_shortScratch[index] += prop * val;
+				if (ele >= 0)
+				{
+					findex = dottyIndex(index, ele);
+				}
+				else
+				{
+					findex = finalIndex(index);
+				}
+				
+				_data[findex][0] += prop * val;
+//				_shortScratch[index] += prop * val;
 			}	
 		}
 	}
@@ -826,7 +833,8 @@ double VagFFT::getPhase(int x, int y, int z)
 double VagFFT::getAmplitude(ElementPtr ele, int x, int y, int z)
 {
 	int col = whichColumn(ele);
-	long index = element(x, y, z) * _stride + col + 1;
+	long simple = element(x, y, z);
+	long index = dottyIndex(simple, col);
 
 	double val =  (_data[index][0] * _data[index][0] + 
 	               _data[index][1] * _data[index][1]);
@@ -928,6 +936,8 @@ void VagFFT::addExplicitAtom(AtomPtr atom, bool saved)
 	const std::vector<BondSample> &positions = 
 	(saved ?  atom->getExplicitModel()->savedPositions() :
 	 atom->getExplicitModel()->getFinalPositions());
+	ElementPtr ele = atom->getElement();
+	int column = whichColumn(ele);
 
 	for (int i = 0; i < positions.size(); i++)
 	{
@@ -945,7 +955,7 @@ void VagFFT::addExplicitAtom(AtomPtr atom, bool saved)
 
 		double occ = positions[i].occupancy;
 
-		addInterpolatedToReal(start.x, start.y, start.z, occ);
+		addInterpolatedToReal(start.x, start.y, start.z, occ, column);
 	}
 }
 

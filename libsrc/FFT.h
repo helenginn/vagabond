@@ -53,8 +53,8 @@ typedef struct
 	int nz;
 	int nele;
 	int nscratch;
-	fftwf_plan atom_real_to_recip;
-	fftwf_plan atom_recip_to_real;
+	fftwf_plan ele_real_to_recip;
+	fftwf_plan ele_recip_to_real;
 	fftwf_plan real_to_recip;
 	fftwf_plan recip_to_real;
 } FFTDim;
@@ -72,7 +72,6 @@ public:
 	VagFFTPtr subFFT(int x0, int x1, int y0, int y1, int z0, int z1);
 	void prepareShortScratch();
 	void addElement(ElementPtr ele);
-	void copyScratchElementToPosition(ElementPtr ele);
 	
 	void wipe();
 	void makePlans();
@@ -204,24 +203,24 @@ public:
 	/** i = index of nn, j = scratch map number */
 	long scratchIndex(int i, int j)
 	{
-		return i * _stride + _nele * 2 + j + 1;
+		return i + (j + 1 * _nn) + (_nele * _nn * 2);
 	}
 	
 	long finalIndex(int i)
 	{
-		return i * _stride + _nele * 2;
+		return i + (_nele * 2) * _nn;
 	}
 	
 	/** i = index of nn, j = element number */
 	long dottyIndex(int i, int j)
 	{
-		return i * _stride + (j * 2);
+		return i + (j * 2 * _nn);
 	}
 	
 	/** i = index of nn, j = element number */
 	long eleIndex(int i, int j)
 	{
-		return i * _stride + (j * 2) + 1;
+		return i + ((j * 2 + 1) * _nn);
 	}
 
 	/** Returns the length of the vector described by the real
@@ -422,9 +421,8 @@ public:
 	vec3 fracFromElement(long int element);
 	void printStatus();
 
-	void addScratchElementToFinal();
 	void addInterpolatedToReal(double sx, double sy, 
-	                           double sz, double val);
+	                           double sz, double val, int ele);
 
 	void switchToComplex();
 	void switchToAmplitudePhase();
@@ -498,7 +496,8 @@ protected:
 	void addLessSimple(VagFFTPtr v2);
 
 	double populateImplicit(vec3 centre, vec3 maxVals,
-	                        mat3x3 tensor, mat3x3 ellipsoid, double scale);
+	                        mat3x3 tensor, mat3x3 ellipsoid, 
+	                        double scale, int ele);
 
 	/** pre-loaded atom distributions converted to real space in final
 	 *  column */
@@ -514,6 +513,8 @@ protected:
 
 	double _bFactor;
 	int _nx, _ny, _nz;
+	
+	/* number of voxels in a single map */
 	long _nn;
 	
 	/* individual adjustment volumes for the eight voxel segments when
@@ -524,7 +525,8 @@ protected:
 	int _nele;
 	int _nscratch;
 	int _activeScratch;
-	int _stride;
+	int _nmap;
+	
 
 	long _total;
 	fftwf_complex *_data;

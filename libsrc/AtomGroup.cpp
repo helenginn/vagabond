@@ -1004,13 +1004,6 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull, bool saved)
 		}
 
 		_t1->stop();
-		
-		if (count > 0)
-		{
-			_t2->start();
-			scratchFull->copyScratchElementToPosition(_elements[i]);
-			_t2->stop();
-		}
 	}
 
 	_t3->start();
@@ -1020,11 +1013,6 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull, bool saved)
 	for (size_t i = 0; i < _blobs.size(); i++)
 	{
 		_blobs[i]->addToCubicMap(scratchFull);
-	}
-	
-	if (_blobs.size() > 0)
-	{
-		scratchFull->addScratchElementToFinal();
 	}
 }
 

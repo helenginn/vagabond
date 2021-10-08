@@ -348,7 +348,8 @@ void Blob::addToCubicMap(VagFFTPtr fft)
 				vec3_subtract_from_vec3(&point, origin);
 
 				mat3x3_mult_vec(recip, &point);
-				fft->addInterpolatedToReal(point.x, point.y, point.z, density);
+				fft->addInterpolatedToReal(point.x, point.y, point.z, 
+				                           density, -1);
 			}
 		}
 	}
