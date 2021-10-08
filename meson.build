@@ -18,6 +18,7 @@ png_dep = dependency('libpng')
 boost_dep = dependency('boost')
 fftw_dep = dependency('fftw3f')
 thread_fft_dep = dependency('fftw3f')
+thread_dep = dependency('threads')
 maria_dep = dependency('libmariadb', required: false)
 crystfel_dep = dependency('crystfel', required: false)
 
@@ -152,7 +153,7 @@ base_files = files('libsrc/Absolute.cpp',
 lib_vag = library('vag', gen_src, base_files,
 include_directories: 'subprojects/helencore',
 install_rpath: '$ORIGIN/.',
-dependencies: [png_dep, fftw_dep, thread_fft_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep,
+dependencies: [png_dep, fftw_dep, thread_dep, thread_fft_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep,
 helencore_dep], cpp_args: ['-w', '-std=c++11'], link_args: arg_list, install: true)
 inc_vag = include_directories('libsrc')
 dep_vag = declare_dependency(link_with: lib_vag, include_directories: inc_vag)
@@ -213,13 +214,13 @@ files = [
 
 executable('vagabond-gui', base_files, files,
 moc_files, dependencies: [qt5_dep, dep_ica, helen3d_dep, helencore_dep,
-dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_fft_dep, boost_dep], 
+dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_dep, thread_fft_dep, boost_dep], 
 include_directories: subincludes,
 install: true, cpp_args: ['-w', '-std=c++11'])
 
 lib_vgui = library('vgui', base_files, files, moc_files,
 dependencies: [qt5_dep, dep_ica, helen3d_dep, helencore_dep,
-dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_fft_dep, boost_dep], 
+dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_dep, thread_fft_dep, boost_dep], 
 install_rpath: '$ORIGIN/.',
 include_directories: subincludes,
 cpp_args: ['-w', '-std=c++11'], install: true)
