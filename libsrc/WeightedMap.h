@@ -32,6 +32,18 @@ public:
 
 	void createWeightedMaps();
 private:
+	typedef struct
+	{
+		VagFFTPtr addTo;
+		int mapIdx;
+		bool diff;
+		bool served;
+		std::mutex mut;
+
+	} ThreadMap;
+
+	static void serveNextMap(std::vector<ThreadMap *> *maps, VagFFTPtr scratch,
+	                         WeightedMap *me);
 	void calculateFiguresOfMerit();
 	void writeCalculatedSlice();
 	void writeObservedSlice();
@@ -47,12 +59,12 @@ private:
 	double _overallStdev;
 	double _overallFo;
 	double _allWeights;
+	std::mutex _incrementSum;
 	double _minZ;
 	double _maxZ;
 
 	int shellForResolution(double res);
-	double oneMap(VagFFTPtr scratch, std::vector<unsigned long> &idxs,
-	              int slice, bool diff);
+	double oneMap(VagFFTPtr scratch, int slice, bool diff);
 	void createVagaCoefficients();
 	void create2FoFcCoefficients(VagFFTPtr copy = VagFFTPtr(),
 	                             bool patt = false);

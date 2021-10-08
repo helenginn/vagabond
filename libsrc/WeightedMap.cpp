@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "WeightedMap.h"
+#include <thread>
 #include <hcsrc/mat3x3.h>
 #include "Diffraction.h"
 #include "Bucket.h"
@@ -272,8 +273,57 @@ double WeightedMap::stdevForReflection(double fobs, double fcalc,
 	return combined;
 }
 
-double WeightedMap::oneMap(VagFFTPtr scratch, std::vector<unsigned long> &idxs,
-                           int slice, bool diff)
+void WeightedMap::serveNextMap(std::vector<ThreadMap *> *maps, VagFFTPtr scratch,
+                               WeightedMap *me)
+{
+	bool finished = false;
+
+	while (!finished)
+	{
+		finished = true;
+		for (size_t i = 0; i < maps->size(); i++)
+		{
+			if (!maps->at(i)->mut.try_lock())
+			{
+				continue;
+			}
+
+			if (maps->at(i)->served)
+			{
+				maps->at(i)->mut.unlock();
+				continue;
+			}
+
+			finished = false;
+			maps->at(i)->served = true;
+
+			double weight = me->oneMap(scratch, maps->at(i)->mapIdx, 
+			                           maps->at(i)->diff);
+			scratch->multiplyAll(weight);
+			scratch->fft(FFTReciprocalToReal); /* to real space */
+
+			me->_incrementSum.lock();
+
+			if (maps->at(i)->diff == false)
+			{
+				me->_allWeights += weight;
+			}
+
+			maps->at(i)->addTo->addSimple(scratch);
+
+			me->_incrementSum.unlock();
+
+			scratch->multiplyAll(0);
+			scratch->wipe();
+			scratch->setStatus(FFTEmpty);
+
+			maps->at(i)->mut.unlock();
+		}
+	}
+
+}
+
+double WeightedMap::oneMap(VagFFTPtr scratch, int slice, bool diff)
 {
 	VagFFTPtr fftData = _data->getFFT();
 	double lowRes = Options::minRes();
@@ -303,19 +353,10 @@ double WeightedMap::oneMap(VagFFTPtr scratch, std::vector<unsigned long> &idxs,
 					continue;
 				}
 				
-				long dataidx = 0;
-				if (idxs[index] == 0)
-				{
-					int _h, _k, _l;
-					CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
+				int _h, _k, _l;
+				CSym::ccp4spg_put_in_asu(spg, i, j, k, &_h, &_k, &_l);
 
-					dataidx = fftData->element(_h, _k, _l);
-					idxs[index] = dataidx;
-				}
-				else
-				{
-					dataidx = idxs[index];
-				}
+				long dataidx = fftData->element(_h, _k, _l);
 
 				double fobs = fftData->getReal(dataidx);
 				double sigfobs = fftData->getImag(dataidx);
@@ -355,20 +396,10 @@ double WeightedMap::oneMap(VagFFTPtr scratch, std::vector<unsigned long> &idxs,
 				double fcalc = sqrt(complex.x * complex.x +
 				                      complex.y * complex.y);
 
-				double phaseDev = 0;
-				if (slice == 0)
-				{
-					double stdev = stdevForReflection(fobs, fcalc, sigfobs,
-					                                  1 / length);
-					double downweight = exp(-(stdev * stdev));
-					phaseDev = stdev;
-
-					scratch->setScratchComponent(index, 0, 0, phaseDev);
-				}
-				else
-				{
-					phaseDev = scratch->getScratchComponent(index, 0, 0);
-				}
+				double stdev = stdevForReflection(fobs, fcalc, sigfobs,
+				                                  1 / length);
+				double downweight = exp(-(stdev * stdev));
+				double phaseDev = stdev;
 
 				/* in radians */
 				double phi = phaseDev * prop;
@@ -554,6 +585,12 @@ void WeightedMap::createSimmishCoefficients()
 	writeFile(_fft);
 }
 
+typedef struct
+{
+	VagFFTPtr scratch;
+	std::thread *thr;
+} ThreadScratch;
+
 void WeightedMap::createVagaCoefficients()
 {
 	std::cout << "Creating Vagamap density..." << std::endl;
@@ -561,27 +598,47 @@ void WeightedMap::createVagaCoefficients()
 	VagFFTPtr duplicate = VagFFTPtr(new VagFFT(*_fft));
 	duplicate->wipe();
 	duplicate->setStatus(FFTRealSpace);
-	VagFFTPtr scratch = VagFFTPtr(new VagFFT(*duplicate, 1));
-	_allWeights = 0;
-	std::vector<unsigned long> idxs(duplicate->nn(), 0);
-	
-	scratch->makePlans();
-	scratch->wipe();
-	
-	for (int i = 0; i <= MAX_SLICES; i++)
-	{
-		double weight = oneMap(scratch, idxs, i, false);
-		scratch->multiplyAll(weight);
-		_allWeights += weight;
-		scratch->fft(FFTReciprocalToReal); /* to real space */
-		duplicate->addSimple(scratch);
-		scratch->multiplyAll(0);
-		scratch->setStatus(FFTEmpty);
-	}
+
+	std::vector<ThreadMap *> maps;
+	std::vector<ThreadScratch *> threads;
+	int max_threads = std::min((int)Options::threads(), (int)MAX_SLICES);
 
 	_difft->wipe();
 	_difft->setStatus(FFTRealSpace);
 	
+	for (size_t i = 0; i < MAX_SLICES; i++)
+	{
+		for (size_t j = 0; j < 2; j++)
+		{
+			ThreadMap *thrm = new ThreadMap();
+			thrm->addTo = (j == 0 ? duplicate : _difft);
+			thrm->mapIdx = i;
+			thrm->diff = (j == 1);
+			thrm->served = false;
+
+			maps.push_back(thrm);
+		}
+	}
+
+	_allWeights = 0;
+	
+	for (size_t i = 0; i < max_threads; i++)
+	{
+		ThreadScratch *scr = new ThreadScratch();
+		scr->scratch = VagFFTPtr(new VagFFT(*duplicate));
+		scr->scratch->makePlans();
+		scr->scratch->wipe();
+		std::thread *thr = new std::thread(serveNextMap, &maps, scr->scratch, this);
+		scr->thr = thr;
+		threads.push_back(scr);
+	}
+	
+	for (int i = 0; i < max_threads; i++)
+	{
+		threads[i]->thr->join();
+	}
+	
+	/*
 	for (int i = 0; i <= MAX_SLICES; i++)
 	{
 		double weight = oneMap(scratch, idxs, i, true);
@@ -592,8 +649,7 @@ void WeightedMap::createVagaCoefficients()
 		scratch->multiplyAll(0);
 		scratch->setStatus(FFTEmpty);
 	}
-	
-	idxs.clear();
+	*/
 	
 	double normalise = 1 / _allWeights;
 	_difft->multiplyAll(normalise);
