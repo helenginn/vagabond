@@ -93,6 +93,8 @@ void Hydrogenator::setNewGeometry(AtomList group, double bondAngle,
 			Bond::setCirclePortion(&*bond, portion * 2 * M_PI);
 			portion = Bond::getCirclePortion(&*bond);
 		}
+
+		adjustBond(bond);
 		
 		ModelPtr mod = bond->getParentModel();
 		
@@ -111,7 +113,6 @@ void Hydrogenator::setNewGeometry(AtomList group, double bondAngle,
 		}
 		
 		Bond::setTorsion(&*bond, deg2rad(torsion));
-
 	}
 }
 
@@ -131,6 +132,86 @@ void Hydrogenator::addHydrogens(AtomList group, int hNum, ...)
 	{
 		addHydrogens(group[i], hNames);
 	}
+}
+
+void Hydrogenator::adjustBond(BondPtr newBond)
+{
+	AtomPtr minor = newBond->getMajor();
+	BondPtr nBond = ToBondPtr(minor->getModel());
+	AtomPtr major = nBond->getMajor();
+	double current = rad2deg(Bond::getBendAngle(&*newBond));
+	
+//	std::cout << minor->shortDesc() << " " << major->shortDesc() << std::endl;
+
+	if ((minor->getAtomName() == "N") &&
+	    (major->getAtomName() == "CA"))
+	{
+		Bond::setBendAngle(&*newBond, deg2rad(114.3));
+	}
+	else if ((minor->getAtomName() == "N") &&
+	    (major->getAtomName() == "C"))
+	{
+		Bond::setBendAngle(&*newBond, deg2rad(123.9));
+	}
+	else if ((minor->getAtomName() == "CA") &&
+	         (major->getAtomName() == "C"))
+	{
+		Bond::setBendAngle(&*newBond, deg2rad(108.0));
+	}
+	else if (((newBond->getMinor()->getAtomName() == "HD2") ||
+	          (newBond->getMinor()->getAtomName() == "HD3")) &&
+	         (minor->getAtomName() == "CD") &&
+	         (minor->getMonomer()->getResCode() == "P"))
+	{
+		AtomPtr n = minor->getMonomer()->findAtom("N");
+		AtomPtr cg = major;
+		AtomPtr cb = ToBondPtr(major->getModel())->getMajor();
+		AtomPtr cd = minor;
+		vec3 pos_n = n->getInitialPosition();
+		vec3 pos_cd = cd->getInitialPosition();
+		vec3 pos_cg = cg->getInitialPosition();
+		vec3 pos_cb = cb->getInitialPosition();
+
+		double ratio = newBond->getGeomRatio();
+		double angleh2, angleh3;
+		mat3x3 m = ExplicitModel::makeTorsionBasis(pos_cg, pos_n, 
+		                                           pos_cd, empty_vec3());
+		vec3 pos_h2 = Bond::positionFromTorsion(m, deg2rad(-120),
+		                                       0.968, ratio, pos_cd);
+		ExplicitModel::makeTorsionBasis(pos_cb, pos_cg, pos_cd, pos_h2, 
+		                                &angleh2);
+
+		vec3 pos_h3 = Bond::positionFromTorsion(m, deg2rad(120),
+		                                       0.968, ratio, pos_cd);
+		ExplicitModel::makeTorsionBasis(pos_cb, pos_cg, pos_cd, pos_h3, 
+		                                &angleh3);
+
+		std::cout << "Current angle: " << rad2deg(angleh2) << std::endl;
+		std::cout << "Current angle: " << rad2deg(angleh3) << std::endl;
+		if (newBond->getMinor()->getAtomName() == "HD2")
+		{
+			Bond::setTorsion(&*newBond, angleh2);
+		}
+		if (newBond->getMinor()->getAtomName() == "HD3")
+		{
+			Bond::setCirclePortion(&*newBond, angleh3 - angleh2);
+		}
+	}
+
+}
+
+double Hydrogenator::getHBondLength(AtomPtr minor)
+{
+	if (minor->getElement()->getSymbol() == "N")
+	{
+		return 0.86;
+	}
+	else if (minor->getElement()->getSymbol() == "O")
+	{
+		return 0.84;
+	}
+	
+	return 0.968;
 }
 
 void Hydrogenator::addHydrogens(AtomPtr minor, std::vector<std::string> hNames)
@@ -228,7 +309,8 @@ void Hydrogenator::addHydrogens(AtomPtr minor, std::vector<std::string> hNames)
 		/* Set the bond length for the new hydrogen */
 		BondPtr newBond = BondPtr(new Bond(minor, hydrogen, 0));
 		newBond->activate();
-		Bond::setBondLength(&*newBond, 0.968);
+		double length = getHBondLength(minor);
+		Bond::setBondLength(&*newBond, length);
 
 		/* Bond angle... no idea so just going for a tetrahedral thingy */
 		Bond::setBendAngle(&*newBond, bondAngle);
@@ -262,7 +344,10 @@ void Hydrogenator::hydrogenate()
 	}
 	
 	AtomList nitrogen = bone->findAtoms("N");
-	addHydrogens(nitrogen, 1, "H");
+	if (_monomer->getIdentifier() != "pro")
+	{
+		addHydrogens(nitrogen, 1, "H");
+	}
 	
 	/* If anchored to C-terminus, required angle is different */
 	AtomPtr prevMajor = bone->betaCarbonTorsionAtom();
@@ -281,18 +366,18 @@ void Hydrogenator::hydrogenate()
 	
 	setHBonds(carbonyls);
 
-	if (_monomer->getIdentifier() != "pro")
-	{
-		setHBonds(nitrogens);
-	}
+	setHBonds(nitrogens);
 	
 	if (_monomer->getIdentifier() == "gly")
 	{
 		addHydrogens(cAlpha, 2, "HA2", "HA3");
+		setNewGeometry(_monomer->findAtoms("HA2"), 109.5);
+		setNewGeometry(_monomer->findAtoms("HA3"), 109.5);
 	}
 	else
 	{
 		addHydrogens(cAlpha, 1, "HA");
+		setNewGeometry(_monomer->findAtoms("HA"), 109.5);
 	}
 	
 	SidechainPtr side = _monomer->getSidechain();
@@ -339,8 +424,8 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(side->findAtoms("CB"), 2, "HB2", "HB3");
 		addHydrogens(side->findAtoms("CG"), 2, "HG2", "HG3");
 		addHydrogens(side->findAtoms("CD"), 2, "HD2", "HD3");
-		setNewGeometry(_monomer->findAtoms("HD2"), 109.5, 140., 0.);
-		setNewGeometry(_monomer->findAtoms("HD3"), 109.5, 0., 1./3.);
+		setNewGeometry(_monomer->findAtoms("HD2"), 112.5, -1, 0.);
+		setNewGeometry(_monomer->findAtoms("HD3"), 112.5, 0., 1./3.);
 	}
 	
 	if (_monomer->getIdentifier() == "ser")
@@ -349,7 +434,7 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(side->findAtoms("OG"), 1, "HG");
 		setHBonds(side->findAtoms("OG"));
 		
-		setNewGeometry(_monomer->findAtoms("HG"), 120., 180.);
+		setNewGeometry(_monomer->findAtoms("HG"), 109.5, 180.);
 		setSpin(_monomer->findAtoms("HG"));
 	}
 
@@ -366,10 +451,10 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(side->findAtoms("CB"), 1, "HB");
 		addHydrogens(side->findAtoms("CG1"), 3, "HG11", "HG12", "HG13");
 		addHydrogens(side->findAtoms("CG2"), 3, "HG21", "HG22", "HG23");
-		setNewGeometry(_monomer->findAtoms("HG11"), 109.5, 0., 0.);
+		setNewGeometry(_monomer->findAtoms("HG11"), 109.5, 60., 0.);
 		setNewGeometry(_monomer->findAtoms("HG12"), 109.5, 0., 1./3.);
 		setNewGeometry(_monomer->findAtoms("HG13"), 109.5, 0., 2./3.);
-		setNewGeometry(_monomer->findAtoms("HG21"), 109.5, 0., 0.);
+		setNewGeometry(_monomer->findAtoms("HG21"), 109.5, 60., 0.);
 		setNewGeometry(_monomer->findAtoms("HG22"), 109.5, 0., 1./3.);
 		setNewGeometry(_monomer->findAtoms("HG23"), 109.5, 0., 2./3.);
 	}
@@ -388,10 +473,10 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(side->findAtoms("ND1"), 1, "HD1");
 		addHydrogens(side->findAtoms("CE1"), 1, "HE1");
 		addHydrogens(side->findAtoms("CD2"), 1, "HD2");
-		addHydrogens(side->findAtoms("NE2"), 1, "HE2");
 		
-		setNewGeometry(_monomer->findAtoms("HE1"), 120., 180.);
-		setNewGeometry(_monomer->findAtoms("HE2"), 120., 180.);
+		setNewGeometry(_monomer->findAtoms("HD1"), 126.0, 180.);
+		setNewGeometry(_monomer->findAtoms("HD2"), 125.4, 180.);
+		setNewGeometry(_monomer->findAtoms("HE1"), 124.8, 180.);
 	}
 
 	if (_monomer->getIdentifier() == "tyr")
@@ -444,10 +529,10 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(side->findAtoms("CG1"), 2, "HG12", "HG13");
 		addHydrogens(side->findAtoms("CD1"), 3, "HD11", "HD12", "HD13");
 		addHydrogens(side->findAtoms("CG2"), 3, "HG21", "HG22", "HG23");
-		setNewGeometry(_monomer->findAtoms("HG21"), 109.5, 0., 0.);
+		setNewGeometry(_monomer->findAtoms("HG21"), 109.5, 60., 0.);
 		setNewGeometry(_monomer->findAtoms("HG22"), 109.5, 0., 1./3.);
 		setNewGeometry(_monomer->findAtoms("HG23"), 109.5, 0., 2./3.);
-		setNewGeometry(_monomer->findAtoms("HD11"), 109.5, 0., 0.);
+		setNewGeometry(_monomer->findAtoms("HD11"), 109.5, 60., 0.);
 		setNewGeometry(_monomer->findAtoms("HD12"), 109.5, 0., 1./3.);
 		setNewGeometry(_monomer->findAtoms("HD13"), 109.5, 0., 2./3.);
 	}
@@ -458,10 +543,10 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(side->findAtoms("CG"), 1, "HG");
 		addHydrogens(side->findAtoms("CD1"), 3, "HD11", "HD12", "HD13");
 		addHydrogens(side->findAtoms("CD2"), 3, "HD21", "HD22", "HD23");
-		setNewGeometry(_monomer->findAtoms("HD11"), 109.5, 0., 0.);
+		setNewGeometry(_monomer->findAtoms("HD11"), 109.5, 60., 0.);
 		setNewGeometry(_monomer->findAtoms("HD12"), 109.5, 0., 1./3.);
 		setNewGeometry(_monomer->findAtoms("HD13"), 109.5, 0., 2./3.);
-		setNewGeometry(_monomer->findAtoms("HD21"), 109.5, 0., 0.);
+		setNewGeometry(_monomer->findAtoms("HD21"), 109.5, 60., 0.);
 		setNewGeometry(_monomer->findAtoms("HD22"), 109.5, 0., 1./3.);
 		setNewGeometry(_monomer->findAtoms("HD23"), 109.5, 0., 2./3.);
 	}
@@ -510,7 +595,7 @@ void Hydrogenator::hydrogenate()
 		addHydrogens(side->findAtoms("CG2"), 3, "HG21", "HG22", "HG23");
 		setHBonds(side->findAtoms("OG1"));
 
-		setNewGeometry(_monomer->findAtoms("HG1"), 120, 180., 0.);
+		setNewGeometry(_monomer->findAtoms("HG1"), 109.5, 180., 0.);
 		setNewGeometry(_monomer->findAtoms("HG21"), 109.5, 0., 0.);
 		setNewGeometry(_monomer->findAtoms("HG22"), 109.5, 0., 1./3.);
 		setNewGeometry(_monomer->findAtoms("HG23"), 109.5, 0., 2./3.);

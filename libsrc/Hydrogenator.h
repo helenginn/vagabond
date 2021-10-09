@@ -39,6 +39,9 @@ private:
 	void addHydrogens(AtomPtr minor, std::vector<std::string> hNames);
 	bool hasHydrogens(BondPtr bond);
 	void setSpin(AtomList group);
+	
+	void adjustBond(BondPtr newBond);
+	double getHBondLength(AtomPtr minor);
 
 	AtomPtr prepareNewHydrogen(AtomPtr parent);
 };

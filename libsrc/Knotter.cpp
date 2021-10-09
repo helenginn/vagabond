@@ -899,21 +899,27 @@ void Knotter::makeTyrosine()
 	cg2cd2->setFixed(true);
 	cg2cd2->setRefineFlexibility(false);
 	cg2cd2->activate();
+	Bond::setCirclePortion(&*cg2cd2, M_PI);
 
 	BondPtr cd22ce2 = BondPtr(new Bond(cDelta2, cEpsilon2));
 	cd22ce2->setFixed(true);
 	cd22ce2->activate();
+	Bond::setTorsion(&*cd22ce2, deg2rad(180.0));
 
 	BondPtr cd12ce1 = BondPtr(new Bond(cDelta1, cEpsilon1));
 	cd12ce1->setFixed(true);
 	cd12ce1->activate();
+	Bond::setTorsion(&*cd12ce1, deg2rad(180.0));
+
 	BondPtr ce22cz = BondPtr(new Bond(cEpsilon2, cOmega));
 	ce22cz->setFixed(true);
 	ce22cz->activate();
+	Bond::setTorsion(&*ce22cz, deg2rad(0.0));
 
 	BondPtr cz2oh = BondPtr(new Bond(cOmega, oxygen));
 	cz2oh->setFixed(true);
 	cz2oh->activate();
+	Bond::setTorsion(&*cz2oh, deg2rad(180.0));
 
 	GhostBondPtr ghost = GhostBondPtr(new GhostBond());
 	ghost->setAtoms(cEpsilon1, cOmega);
@@ -960,18 +966,22 @@ void Knotter::makePhenylalanine()
 	BondPtr cg2cd2 = BondPtr(new Bond(cGamma, cDelta2));
 	cg2cd1->setRefineFlexibility(false);
 	cg2cd2->activate();
+	Bond::setCirclePortion(&*cg2cd2, M_PI);
 
 	BondPtr cd22ce2 = BondPtr(new Bond(cDelta2, cEpsilon2));
 	cd22ce2->setFixed(true);
 	cd22ce2->activate();
+	Bond::setTorsion(&*cd22ce2, deg2rad(180.0));
 
 	BondPtr cd12ce1 = BondPtr(new Bond(cDelta1, cEpsilon1));
 	cd12ce1->setFixed(true);
 	cd12ce1->activate();
+	Bond::setTorsion(&*cd12ce1, deg2rad(180.0));
 
 	BondPtr ce22cz = BondPtr(new Bond(cEpsilon2, cOmega));
 	ce22cz->setFixed(true);
 	ce22cz->activate();
+	Bond::setTorsion(&*ce22cz, deg2rad(0.0));
 
 	BondPtr cz2hz = BondPtr(new Bond(cOmega, hOmega));
 	cz2hz->activate();

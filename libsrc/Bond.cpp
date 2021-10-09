@@ -609,11 +609,9 @@ void Bond::activate()
 }
 
 /* start = major */
-vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
-                               double ratio, vec3 start)
+vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle, 
+                               double myLength, double ratio, vec3 start)
 {
-	double myLength = getBondLength(this);     // my bond length!
-
 	/* Calculate the right ratio of x-to-z from the major atom. */
 	vec3 atomWrtMajor = make_vec3(1, 0, ratio);
 
@@ -1069,6 +1067,7 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 		mat3x3 oldBasis = _storedSamples[i].basis;
 
 		vec3 myCurrentPos = positionFromTorsion(oldBasis, currentTorsion,
+		                                        getBondLength(this),
 		                                        ratio, prevMinorPos);
 
 		/* New basis for the next bond */

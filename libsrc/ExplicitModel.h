@@ -165,6 +165,15 @@ public:
 	static std::vector<vec3> makeCloud(double totalPoints, 
 	                                   double b, double fallOff,
 	                                   std::vector<double> &occs);
+
+	/** Will define torsion basis as:
+	 * x: along line of 0º torsion angle.
+	 * y: completes the right-handed coordinate system
+	 * z: along bond direction, from heavy-to-light alignment atoms.
+	 */
+	static mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
+	                               vec3 miPos, vec3 lPos, 
+	                               double *newAngle = NULL);
 protected:
 	bool _changedSamples;
 	virtual void sanityCheck();
@@ -178,13 +187,6 @@ protected:
 
 	vec3 meanOfManyPositions(std::vector<BondSample> *positions);
 
-	/** Will define torsion basis as:
-	* x: along line of 0º torsion angle.
-	* y: completes the right-handed coordinate system
-	* z: along bond direction, from heavy-to-light alignment atoms.
-	*/
-	mat3x3 makeTorsionBasis(vec3 hPos, vec3 maPos,
-	                        vec3 miPos, vec3 lPos, double *newAngle = NULL);
 	std::mutex guiLock;
 	
 	/* lowest Z value for re-ordering */
