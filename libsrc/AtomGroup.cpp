@@ -11,6 +11,9 @@
 #include <hcsrc/Timer.h>
 #include "vagmaths.h"
 #include "Twist.h"
+#include "Hydrogenator.h"
+#include "Monomer.h"
+#include "Element.h"
 #include "ExplicitModel.h"
 #include "AtomGroup.h"
 #include <climits>
@@ -348,14 +351,23 @@ void AtomGroup::refreshPositions(bool quick)
 {
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		if (!atom(i)) continue;
-
 		atom(i)->getModel()->propagateChange(0);
 	}
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		if (!atom(i)) continue;
+		if (atom(i)->getMonomer() && 
+		    atom(i)->getMonomer()->getIdentifier() == "pro")
+		{
+			if (atom(i)->getElement()->getSymbol() == "H")
+			{
+				if (atom(i)->getModel()->isBond())
+				{
+					BondPtr b = ToBondPtr(atom(i)->getModel());
+					Hydrogenator::adjustProlineHydrogens(b, true);
+				}
+			}
+		}
 
 		atom(i)->getModel()->refreshPositions();
 	}
