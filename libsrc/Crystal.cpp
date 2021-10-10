@@ -280,6 +280,10 @@ bool Crystal::refineThreaded(JobType type, int total)
 		
 		PolymerPtr pol = ToPolymerPtr(molecule(i));
 		pol->clearParams();
+		if (type != JobPositions)
+		{
+			pol->scoreMonomers();
+		}
 
 		ThreadPolymer *thrp = new ThreadPolymer();
 		thrp->served = false;

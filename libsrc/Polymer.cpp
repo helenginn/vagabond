@@ -644,9 +644,9 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 		return;
 	}
 	
-	if (rType == RefinementSidechain || rType == RefinementSidePos)
+	if (rType == RefinementSidechain || rType == RefinementSidePos
+	    || rType == RefinementCrude)
 	{
-		scoreMonomers();
 		refineToEnd(getAnchor() - 1, target, rType);
 		refineToEnd(getAnchor(), target, rType);
 		return;

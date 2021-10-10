@@ -174,6 +174,7 @@ public:
 		*pos += _positionalParams;
 		*flex += _flexibilityParams;
 	}
+	void scoreMonomers();
 protected:
 	virtual double getScore()
 	{
@@ -182,7 +183,6 @@ protected:
 	}
 
 private:
-	void scoreMonomers();
 	void setupKeyPoints();
 	void refineMonomer(MonomerPtr monomer, CrystalPtr target,
 	                   RefinementType rType);
