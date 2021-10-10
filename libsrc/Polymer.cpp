@@ -629,9 +629,13 @@ void Polymer::refinePositions(CrystalPtr cryst, PolymerPtr pol, int total)
 		pol->closenessSummary();
 		*pol->_stream << std::endl;
 
-		std::ostringstream *o = static_cast<std::ostringstream *>(pol->_stream);
-		std::cout << o->str();
-		o->str("");
+		std::ostringstream *o = dynamic_cast<std::ostringstream *>(pol->_stream);
+		
+		if (o)
+		{
+			std::cout << o->str();
+			o->str("");
+		}
 	}
 
 	pol->_stream = &std::cout;
