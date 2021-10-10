@@ -290,7 +290,14 @@ bool Crystal::refineThreaded(JobType type, int total)
 		thrp->total = total;
 		thrp->cryst = shared_from_this();
 		thrp->pol = pol;
-		pol->setStream(&thrp->o);
+		if (max_threads > 1)
+		{
+			pol->setStream(&thrp->o);
+		}
+		else
+		{
+			pol->setStream(&std::cout);
+		}
 		pols.push_back(thrp);
 	}
 	
