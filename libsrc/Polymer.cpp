@@ -1392,6 +1392,13 @@ void Polymer::resetSidechains()
 
 void Polymer::setStream(std::ostream *str)
 {
+	std::ostringstream *o = dynamic_cast<std::ostringstream *>(_stream);
+	if (o)
+	{
+		std::cout << o->str();
+		o->str("");
+	}
+
 	BaseParser::setStream(str);
 	
 	for (size_t i = monomerBegin(); i < monomerEnd(); i++)
