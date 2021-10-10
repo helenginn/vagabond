@@ -223,7 +223,10 @@ void serveNextPolymer(std::vector<ThreadPolymer *> *pols, JobType type)
 			}
 			else if (type == JobBackbone)
 			{
-				pols->at(i)->pol->refineBackbone();
+//				pols->at(i)->pol->refineBackbone();
+				pols->at(i)->pol->refine(pols->at(i)->cryst, 
+				                         RefinementCrude);
+				pols->at(i)->pol->setStream(&std::cout);
 			}
 			else if (type == JobSidechain)
 			{
