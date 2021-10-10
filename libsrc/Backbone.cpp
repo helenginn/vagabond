@@ -68,9 +68,11 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			break;
 			
 			case RefinementCrude:
-			addParamType(ParamOptionTorsion, range);
-			addParamType(ParamOptionTwist, range);
-			addParamType(ParamOptionNumBonds, 5);
+			addParamType(ParamOptionTorsion, 0.3);
+			addParamType(ParamOptionSVD, 1);
+			addParamType(ParamOptionCycles, 120);
+			addParamType(ParamOptionNumBonds, 12);
+			addParamType(ParamOptionExtraAtoms, 2);
 			break;
 			
 			case RefinementFine:
