@@ -34,13 +34,15 @@ public:
 	void setNewGeometry(AtomList group, double bondAngle, 
 	                    double torsion = -1,
 	                    double portion = -1);
+
+	static void adjustProlineHydrogens(BondPtr newBond, bool current);
 private:
 	MonomerPtr _monomer;
 	void addHydrogens(AtomPtr minor, std::vector<std::string> hNames);
 	bool hasHydrogens(BondPtr bond);
 	void setSpin(AtomList group);
-	
 	void adjustBond(BondPtr newBond);
+	
 	double getHBondLength(AtomPtr minor);
 
 	AtomPtr prepareNewHydrogen(AtomPtr parent);

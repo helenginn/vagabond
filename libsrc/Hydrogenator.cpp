@@ -134,34 +134,16 @@ void Hydrogenator::addHydrogens(AtomList group, int hNum, ...)
 	}
 }
 
-void Hydrogenator::adjustBond(BondPtr newBond)
+void Hydrogenator::adjustProlineHydrogens(BondPtr newBond, bool current)
 {
 	AtomPtr minor = newBond->getMajor();
 	BondPtr nBond = ToBondPtr(minor->getModel());
 	AtomPtr major = nBond->getMajor();
-	double current = rad2deg(Bond::getBendAngle(&*newBond));
-	
-//	std::cout << minor->shortDesc() << " " << major->shortDesc() << std::endl;
 
-	if ((minor->getAtomName() == "N") &&
-	    (major->getAtomName() == "CA"))
-	{
-		Bond::setBendAngle(&*newBond, deg2rad(114.3));
-	}
-	else if ((minor->getAtomName() == "N") &&
-	    (major->getAtomName() == "C"))
-	{
-		Bond::setBendAngle(&*newBond, deg2rad(123.9));
-	}
-	else if ((minor->getAtomName() == "CA") &&
-	         (major->getAtomName() == "C"))
-	{
-		Bond::setBendAngle(&*newBond, deg2rad(108.0));
-	}
-	else if (((newBond->getMinor()->getAtomName() == "HD2") ||
-	          (newBond->getMinor()->getAtomName() == "HD3")) &&
-	         (minor->getAtomName() == "CD") &&
-	         (minor->getMonomer()->getResCode() == "P"))
+	if (((newBond->getMinor()->getAtomName() == "HD2") ||
+	     (newBond->getMinor()->getAtomName() == "HD3")) &&
+		(minor->getAtomName() == "CD") &&
+		(minor->getMonomer()->getResCode() == "P"))
 	{
 		AtomPtr n = minor->getMonomer()->findAtom("N");
 		AtomPtr cg = major;
@@ -171,6 +153,14 @@ void Hydrogenator::adjustBond(BondPtr newBond)
 		vec3 pos_cd = cd->getInitialPosition();
 		vec3 pos_cg = cg->getInitialPosition();
 		vec3 pos_cb = cb->getInitialPosition();
+		
+		if (current)
+		{
+			pos_n = n->getAbsolutePosition();
+			pos_cd = cd->getAbsolutePosition();
+			pos_cg = cg->getAbsolutePosition();
+			pos_cb = cb->getAbsolutePosition();
+		}
 
 		double ratio = newBond->getGeomRatio();
 		double angleh2, angleh3;
@@ -186,8 +176,6 @@ void Hydrogenator::adjustBond(BondPtr newBond)
 		ExplicitModel::makeTorsionBasis(pos_cb, pos_cg, pos_cd, pos_h3, 
 		                                &angleh3);
 
-		std::cout << "Current angle: " << rad2deg(angleh2) << std::endl;
-		std::cout << "Current angle: " << rad2deg(angleh3) << std::endl;
 		if (newBond->getMinor()->getAtomName() == "HD2")
 		{
 			Bond::setTorsion(&*newBond, angleh2);
@@ -197,7 +185,31 @@ void Hydrogenator::adjustBond(BondPtr newBond)
 			Bond::setCirclePortion(&*newBond, angleh3 - angleh2);
 		}
 	}
+}
 
+void Hydrogenator::adjustBond(BondPtr newBond)
+{
+	AtomPtr minor = newBond->getMajor();
+	BondPtr nBond = ToBondPtr(minor->getModel());
+	AtomPtr major = nBond->getMajor();
+
+	if ((minor->getAtomName() == "N") &&
+	    (major->getAtomName() == "CA"))
+	{
+		Bond::setBendAngle(&*newBond, deg2rad(114.0));
+	}
+	else if ((minor->getAtomName() == "N") &&
+	    (major->getAtomName() == "C"))
+	{
+		Bond::setBendAngle(&*newBond, deg2rad(123.9));
+	}
+	else if ((minor->getAtomName() == "CA") &&
+	         (major->getAtomName() == "C"))
+	{
+		Bond::setBendAngle(&*newBond, deg2rad(108.0));
+	}
+
+	adjustProlineHydrogens(newBond, false);
 }
 
 double Hydrogenator::getHBondLength(AtomPtr minor)
