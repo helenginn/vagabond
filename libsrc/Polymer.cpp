@@ -534,7 +534,7 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		{
 			BackbonePtr second = getMonomer(i + skip * 2)->getBackbone();
 			vec3 centre = second->centroid();
-			Options::getRuntimeOptions()->focusOnPosition(centre, 50);
+//			Options::getRuntimeOptions()->focusOnPosition(centre, 100);
 		}
 
 		changed = true;
