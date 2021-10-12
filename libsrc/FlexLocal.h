@@ -52,6 +52,9 @@ public:
 		_bb = group;
 	}
 
+	void attachToStrategy(RefinementStrategyPtr strategy,
+	                      AtomGroupPtr group);
+
 	/** Evaluates target function of bond kicking parameters against data */
 	static double getScore(void *object);
 	

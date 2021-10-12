@@ -112,8 +112,6 @@ public:
 		return _refined;
 	}
 
-	void attachTargetToRefinement(RefinementStrategyPtr strategy,
-	                              FlexLocal *target, bool recip = false);
 protected:
 	virtual void addProperties();
 	virtual void postParseTidy();

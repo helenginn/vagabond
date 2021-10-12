@@ -128,6 +128,23 @@ void FlexLocal::refine()
 	}
 }
 
+void FlexLocal::attachToStrategy(RefinementStrategyPtr strategy,
+                                 AtomGroupPtr group)
+{
+	CrystalPtr crystal = Options::getRuntimeOptions()->getActiveCrystal();
+	setCrystal(crystal);
+	strategy->setStream(_stream);
+	
+	setAtomGroup(group);
+
+	strategy->setVerbose(true);
+	strategy->setCycles(60);
+
+	strategy->setEvaluationFunction(FlexLocal::getScore, this);
+	FlexLocal::getScore(this);
+
+}
+
 void FlexLocal::refineChainMults(AnchorPtr anch)
 {
 	Timer timer;
