@@ -145,7 +145,7 @@ public:
 	 *  \return offset which should be applied to each atom when calling
 	 *  AtomGroup::addToCubicMap */
 	void prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max, 
-	                     bool cc = false);
+	                     int scratches = 0);
 	
 	void prepareComparisonMap(MapScoreWorkspace *ws, vec3 min, vec3 max);
 
