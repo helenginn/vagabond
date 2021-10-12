@@ -48,11 +48,6 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			range = 0.5;
 		}
 
-		if (_timesRefined >= 16)
-		{
-			range = 0.5;
-		}
-
 		switch (rType)
 		{
 			case RefinementModelPos:
