@@ -222,6 +222,7 @@ public:
 
 	void reset();
 	void resetKicks();
+	void resetWeights();
 	bool isFullyTied();
 
 	Timer *_t1;
