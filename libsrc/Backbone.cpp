@@ -63,16 +63,22 @@ void Backbone::refine(CrystalPtr target, RefinementType rType)
 			break;
 			
 			case RefinementCrude:
-			addParamType(ParamOptionTorsion, 0.3);
+			addParamType(ParamOptionTorsion, 2.0);
+			addParamType(ParamOptionTopLevelOnly, 2.0);
+			addParamType(ParamOptionFirstOccupancy, 2.0);
 			addParamType(ParamOptionSVD, 1);
 			addParamType(ParamOptionCycles, 120);
-			addParamType(ParamOptionNumBonds, 12);
+			addParamType(ParamOptionNumBonds, 10);
 			addParamType(ParamOptionExtraAtoms, 2);
 			break;
 			
 			case RefinementFine:
-			addParamType(ParamOptionTorsion, range);
-			addParamType(ParamOptionNumBonds, 4);
+			addParamType(ParamOptionTorsion, 12.0);
+			addParamType(ParamOptionTopLevelOnly, 2.0);
+			addParamType(ParamOptionFirstOccupancy, 2.0);
+			addParamType(ParamOptionCycles, 20);
+			addParamType(ParamOptionNumBonds, 2);
+			addParamType(ParamOptionMaxTries, 5);
 			break;
 
 			default:
