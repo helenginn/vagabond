@@ -221,6 +221,7 @@ public:
 	}
 
 	void reset();
+	void resetKicks();
 	bool isFullyTied();
 
 	Timer *_t1;
