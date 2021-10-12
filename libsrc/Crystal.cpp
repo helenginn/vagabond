@@ -233,6 +233,7 @@ void serveNextPolymer(std::vector<ThreadPolymer *> *pols, JobType type)
 				pols->at(i)->pol->clearParams();
 				pols->at(i)->pol->refine(pols->at(i)->cryst, 
 				                         RefinementSidechain);
+				pols->at(i)->pol->setStream(&std::cout);
 			}
 
 			pols->at(i)->mut.unlock();
