@@ -492,15 +492,20 @@ void VagFFT::separateAtomTransform()
 		fftwf_execute_dft(plan, &_data[idx], &_data[idx]);
 	}
 	
-	/* go through and multiply transform of atoms by element factor */
-	for (int i = 0; i < _nn; i++)
+	for (size_t i = 0; i < _nn; i++)
 	{
 		long final_idx = finalIndex(i);
 		_data[final_idx][0] = 0;
 		_data[final_idx][1] = 0;
-
-		for (int j = 0; j < _nele; j++)
+	}
+	
+	/* go through and multiply transform of atoms by element factor */
+	for (int j = 0; j < _nele; j++)
+	{
+		for (int i = 0; i < _nn; i++)
 		{
+			long final_idx = finalIndex(i);
+
 			long dotty_idx = dottyIndex(i, j);
 			long ele_idx = eleIndex(i, j);
 
