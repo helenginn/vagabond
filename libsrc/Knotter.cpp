@@ -74,7 +74,7 @@ BondPtr Knotter::tieBetaCarbon(AtomPtr torsionAtom)
 
 	if (_bondAngles > 0)
 	{
-		ca2cb->setRefineBondAngle();
+//		ca2cb->setRefineBondAngle();
 	}
 	
 	return ca2cb;
@@ -242,7 +242,7 @@ void Knotter::tieTowardsNTerminus()
 	BondPtr carbonyl2oxy = BondPtr(new Bond(carbonylCarbon, carbonylOxygen));
 	if (_bondAngles > 0)
 	{
-		carbonyl2oxy->setRefineBondAngle();
+//		carbonyl2oxy->setRefineBondAngle();
 	}
 	carbonyl2oxy->activate();
 
@@ -252,8 +252,8 @@ void Knotter::tieTowardsNTerminus()
 	
 	if (isGlycine && _bondAngles >= 3)
 	{
-		carbonyl2CAlpha->setRefineBondAngle();
-		cAlpha2NSpine->setRefineBondAngle();
+//		carbonyl2CAlpha->setRefineBondAngle();
+//		cAlpha2NSpine->setRefineBondAngle();
 	}
 
 	if (nSpine && nSpine->getModel()->isBond())
@@ -343,7 +343,7 @@ void Knotter::tieTowardsCTerminus()
 
 	if (isGlycine && _bondAngles >= 3)
 	{
-		cAlpha2Carbonyl->setRefineBondAngle(true);
+//		cAlpha2Carbonyl->setRefineBondAngle(true);
 	}
 
 	if (nSpine && nSpine->getModel()->isBond())
@@ -361,14 +361,14 @@ void Knotter::tieTowardsCTerminus()
 
 		if (isGlycine && _bondAngles >= 3)
 		{
-			carbonyl2nextN->setRefineBondAngle(true);
+//			carbonyl2nextN->setRefineBondAngle(true);
 		}
 	}
 
 	BondPtr carbonyl2oxy = BondPtr(new Bond(carbonylCarbon, carbonylOxygen));
 	if (_bondAngles > 0)
 	{
-		carbonyl2oxy->setRefineBondAngle();
+//		carbonyl2oxy->setRefineBondAngle();
 	}
 	carbonyl2oxy->activate();
 	
