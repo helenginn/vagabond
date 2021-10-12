@@ -1289,8 +1289,6 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot,
 	CrystalPtr crystal = ws->crystal;
 	double cutoff = MAP_VALUE_CUTOFF;
 
-	std::vector<double> xs, ys, weights;
-
 	VagFFTPtr map = ws->crystal->getFFT();
 	bool difference = (ws->flag & MapScoreFlagDifference);
 	
