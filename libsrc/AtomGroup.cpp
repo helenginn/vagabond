@@ -1038,7 +1038,7 @@ void AtomGroup::addToCubicMap(VagFFTPtr scratchFull, bool saved)
 }
 
 void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max, 
-                                bool addScratch)
+                                int addScratch)
 {
 	double cubeDim = Options::getActiveCrystal()->getProteinSampling();
 	
@@ -1074,11 +1074,9 @@ void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max,
 	
 	CrystalPtr cryst = Options::getActiveCrystal();
 	size_t nEle = cryst->totalElements();
-	/* two scratches: first will be "constant" FFT and second will
-	 * store observed values */
-	int scratch = (addScratch ? 1 : 0);
+	/* one scratch for "constant" FFT */
 	(*scratchFull) = VagFFTPtr(new VagFFT(extent.x, extent.y, extent.z, 
-	                                      nEle, scratch));
+	                                      nEle, addScratch));
 
 	double bFac = cryst->getRealBFactor();
 
@@ -1252,7 +1250,7 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		selected->xyzLimits(&min, &max);
 
 		/* prepare the size of the maps */
-		selected->prepareCubicMap(&workspace->segment, min, max, true);
+		selected->prepareCubicMap(&workspace->segment, min, max, 1);
 
 		/* find all the non-moving atoms */
 		createConstantFraction(workspace, min, max);
