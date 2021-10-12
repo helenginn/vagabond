@@ -37,8 +37,8 @@ Atom::Atom()
 	_initialB = 0;
 	_geomType = AtomUnassigned;
 	_weighting = 1;
-	_targetWeight = 0;
 	_targetPos = empty_vec3();
+	_targetWeight = 1.0;
 	_origOccupancy = 1.0;
 	_fromPDB = true;
 	_isWater = 0;

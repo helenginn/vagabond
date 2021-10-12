@@ -911,7 +911,16 @@ void AtomGroup::refine(CrystalPtr target, RefinementType rType)
 	}
 
 	_includeForRefine.clear();
+
 	refreshPositions(true);
+}
+
+void AtomGroup::resetWeights()
+{
+	for (size_t i = 0; i < atomCount(); i++)
+	{
+		atom(i)->setTargetWeight(1);
+	}
 }
 
 double AtomGroup::scoreWithMap(ScoreType scoreType, CrystalPtr crystal, 

@@ -296,6 +296,11 @@ public:
 		_targetPos = pos;
 		_targetWeight = weight;
 	}
+
+	void setTargetWeight(double weight)
+	{
+		_targetWeight = weight;
+	}
 	
 	bool isAtom(std::string atomName, int resNum);
 	
