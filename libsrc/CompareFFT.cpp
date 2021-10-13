@@ -42,7 +42,7 @@ void CompareFFT::prepare()
 		other = _tertiary;
 	}
 
-	vec3 nLimits = getNLimits(_primary, other);
+	vec3 nLimits = getNLimits(other, other);
 	_pairs.clear();
 
 	for (int k = -nLimits.z; k < nLimits.z; k++)
