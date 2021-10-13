@@ -144,6 +144,8 @@ public:
 	void drawSlice(int zVal, std::string filename);
 	void printSlice(double zVal = -1, double scale = 1);
 
+	void addFromBigger(VagFFTPtr fft);
+
 	static double operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	                        MapScoreType mapScoreType, 
 	                        std::vector<CoordVal> *vals = NULL,

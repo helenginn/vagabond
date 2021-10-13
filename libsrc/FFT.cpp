@@ -1267,6 +1267,41 @@ double VagFFT::operation(VagFFTPtr fftCrystal, VagFFTPtr fftAtom,
 	return 0;
 }
 
+void VagFFT::addFromBigger(VagFFTPtr other)
+{
+	if (!other)
+	{
+		return;
+	}
+
+	vec3 diff = _origin - other->_origin;
+
+	for (int k = 0; k < nz(); k++)
+	{
+		for (int j = 0; j < ny(); j++)
+		{
+			for (int i = 0; i < nx(); i++)
+			{
+				long mine = element(i, j, k);
+
+				vec3 ijk = make_vec3(i, j, k); /* in Voxels */
+				mat3x3_mult_vec(_realBasis, &ijk); /* to Angstroms */
+				ijk += diff; /* in Angstroms */
+
+				mat3x3_mult_vec(other->_recipBasis, &ijk); /* to Voxels */
+				other->collapse(&ijk.x, &ijk.y, &ijk.z);
+				
+				double real = other->cubic_interpolate(ijk, 0);
+				double imag = other->cubic_interpolate(ijk, 1);
+				
+				addToReal(mine, real);
+				addToImag(mine, imag);
+			}
+		}
+	}
+
+}
+
 void VagFFT::setScale(double cubeDim)
 {
 	mat3x3 real = make_mat3x3();
