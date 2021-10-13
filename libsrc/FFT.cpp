@@ -317,9 +317,11 @@ void VagFFT::adjustNs()
 		_lastData = &_data[start];
 	}
 
+	/*
 	_realBasis.vals[0] *= _nx / xtmp;
 	_realBasis.vals[4] *= _ny / ytmp;
 	_realBasis.vals[8] *= _nz / ztmp;
+	*/
 }
 
 void VagFFT::makePlans()
