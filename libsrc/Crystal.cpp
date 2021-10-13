@@ -589,10 +589,10 @@ void Crystal::scaleAndBFactor(DiffractionPtr data, double *scale,
 	*bFactor = b;
 }
 
-void Crystal::applyShellFactors(DiffractionPtr data)
+void Crystal::applyShellFactors(VagFFTPtr target)
 {
-	VagFFTPtr fftData = data->getFFT();	
-	vec3 nLimits = getNLimits(fftData, _fft);
+	VagFFTPtr fftData = _data->getFFT();	
+	vec3 nLimits = getNLimits(fftData, target);
 
 	for (int k = -nLimits.z; k < nLimits.z; k++)
 	{
@@ -602,9 +602,9 @@ void Crystal::applyShellFactors(DiffractionPtr data)
 			{
 				int _i = 0; int _j = 0; int _k = 0;
 				vec3 ijk = make_vec3(i, j, k);
-				long element = _fft->element(i, j, k);
+				long element = target->element(i, j, k);
 
-				double length = _fft->resolution(i, j, k);
+				double length = target->resolution(i, j, k);
 
 				int index = -1;
 				
@@ -615,8 +615,8 @@ void Crystal::applyShellFactors(DiffractionPtr data)
 					continue;
 				}
 
-				double real = _fft->getReal(element);
-				double imag = _fft->getImag(element);
+				double real = target->getReal(element);
+				double imag = target->getImag(element);
 				
 				double scale = _shells[index].scale;
 				
@@ -628,7 +628,7 @@ void Crystal::applyShellFactors(DiffractionPtr data)
 				real /= scale;
 				imag /= scale;
 
-				_fft->setElement(element, real, imag);
+				target->setElement(element, real, imag);
 			}
 		}
 	}
@@ -798,12 +798,13 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 	return _rWork;
 }
 
-void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
+void Crystal::applyScaleFactor(VagFFTPtr target, double scale, 
+                               double lowRes, double highRes,
                                double bFactor)
 {
-	double xLimit = _fft->nx() / 2;
-	double yLimit = _fft->ny() / 2;
-	double zLimit = _fft->nz() / 2;
+	double xLimit = target->nx() / 2;
+	double yLimit = target->ny() / 2;
+	double zLimit = target->nz() / 2;
 
 	std::vector<double> set1, set2, free1, free2;
 
@@ -819,16 +820,16 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 			{
 				vec3 ijk = make_vec3(i, j, k);
 
-				double length = _fft->resolution(i, j, k);
-				long element = _fft->element(i, j, k);
+				double length = target->resolution(i, j, k);
+				long element = target->element(i, j, k);
 
 				if (length < minRes || length > maxRes)
 				{
 					continue;
 				}
 
-				double real = _fft->getReal(element);
-				double imag = _fft->getImag(element);
+				double real = target->getReal(element);
+				double imag = target->getImag(element);
 
 				double d = 1 / length;
 				double four_d_sq = (4 * d * d);
@@ -842,7 +843,7 @@ void Crystal::applyScaleFactor(double scale, double lowRes, double highRes,
 				real *= scale * bFacMod;
 				imag *= scale * bFacMod;
 
-				_fft->setElement(element, real, imag);
+				target->setElement(element, real, imag);
 			}
 		}
 	}
@@ -977,7 +978,7 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 	double ratio = valueWithDiffraction(data, &scale_factor_by_sum, 
 	                                    true, false);
 
-	applyScaleFactor(totalFc / ratio, 0, 0);
+	applyScaleFactor(_fft, totalFc / ratio, 0, 0);
 	
 	if (_bucket)
 	{
@@ -1011,7 +1012,7 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 		std::cout << "Absolute scale: " << scale << " and global B factor: ";
 		std::cout << bFactor << std::endl;
 		
-		applyScaleFactor(totalFc * scale, 0, 0, bFactor);
+		applyScaleFactor(_fft, totalFc * scale, 0, 0, bFactor);
 		
 	}
 	else if (scaleType == ScalingTypeShell)
@@ -1021,7 +1022,7 @@ void Crystal::scaleToDiffraction(DiffractionPtr data, bool full)
 
 		valueWithDiffraction(data, &scale_factor_by_sum, false, false);
 		reportScaling();
-		applyShellFactors(data);
+		applyShellFactors(_fft);
 	}
 	else
 	{

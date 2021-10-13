@@ -302,10 +302,11 @@ public:
 	* 	\param lowRes low resolution in Angstroms, 0 ignores this
 	* 	\param highRes high resolution in Angstroms, 0 ignores this
 	*/
-	void applyScaleFactor(double scale, double lowRes = 0, double highRes = 0,
+	void applyScaleFactor(VagFFTPtr target, double scale, 
+	                      double lowRes = 0, double highRes = 0,
 	                      double bFactor = 0);
 
-	void applyShellFactors(DiffractionPtr data);
+	void applyShellFactors(VagFFTPtr target);
 	double getAdjustBFactor();
 	
 	void undo();
