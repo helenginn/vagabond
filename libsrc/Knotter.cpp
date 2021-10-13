@@ -707,7 +707,6 @@ void Knotter::makeProline()
 	AtomPtr cDelta = _sidechain->findAtom("CD");
 
 	BondPtr ca2cb = tieBetaCarbon(cGamma);
-	ca2cb->setRefineBondAngle(false);
 	ca2cb->setRefineFlexibility(false);
 
 	BondPtr cb2cg = BondPtr(new Bond(cBeta, cGamma));
