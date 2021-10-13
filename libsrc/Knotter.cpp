@@ -366,6 +366,7 @@ void Knotter::tieTowardsCTerminus()
 	}
 
 	BondPtr carbonyl2oxy = BondPtr(new Bond(carbonylCarbon, carbonylOxygen));
+
 	if (_bondAngles > 0)
 	{
 //		carbonyl2oxy->setRefineBondAngle();
