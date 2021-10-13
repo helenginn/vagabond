@@ -840,8 +840,9 @@ double Sampler::getScore()
 				break;
 			}
 
-			score += oneScore;
-			count += 1;
+			double weight = (_sampled[i]->getElectronCount());
+			score += oneScore * weight;
+			count += weight;
 		}
 		
 		return score / count;
