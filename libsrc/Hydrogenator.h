@@ -37,15 +37,19 @@ public:
 
 	static void adjustProlineHydrogens(BondPtr newBond, bool current);
 private:
-	MonomerPtr _monomer;
+
+	void getHydrogenBonds(AtomGroupPtr group);
 	void addHydrogens(AtomPtr minor, std::vector<std::string> hNames);
 	bool hasHydrogens(BondPtr bond);
 	void setSpin(AtomList group);
 	void adjustBond(BondPtr newBond);
+	AtomPtr prepareNewHydrogen(AtomPtr parent);
 	
 	double getHBondLength(AtomPtr minor);
+	
+	double _cAlpha2H;
+	MonomerPtr _monomer;
 
-	AtomPtr prepareNewHydrogen(AtomPtr parent);
 };
 
 

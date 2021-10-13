@@ -18,6 +18,7 @@
 
 Hydrogenator::Hydrogenator()
 {
+	_cAlpha2H = 0.94;
 	
 }
 
@@ -214,13 +215,31 @@ void Hydrogenator::adjustBond(BondPtr newBond)
 
 double Hydrogenator::getHBondLength(AtomPtr minor)
 {
+	std::string id = minor->getMonomer()->getIdentifier();
+	std::string name = minor->getAtomName();
+
+	if ((id == "tyr" || id == "phe" || id == "his") && 
+	    (name == "CD1" || name == "CD2" || name == "CE1" || name == "CE2"
+	    || name == "CZ"))
+	{
+		return 0.94;
+	}
+
 	if (minor->getElement()->getSymbol() == "N")
 	{
+		if (minor->getAtomName() == "N")
+		{
+//			return 0.911;
+		}
 		return 0.86;
 	}
 	else if (minor->getElement()->getSymbol() == "O")
 	{
-		return 0.84;
+		return 0.846;
+	}
+	else if (name == "CA")
+	{
+		return _cAlpha2H;
 	}
 	
 	return 0.968;
@@ -613,17 +632,4 @@ void Hydrogenator::hydrogenate()
 		setNewGeometry(_monomer->findAtoms("HG23"), 109.5, 0., 2./3.);
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
