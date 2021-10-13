@@ -25,7 +25,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 
 	if (rType == RefinementCrude)
 	{
-		return;
+//		return;
 	}
 
 	bool medRes = (target->getMaxResolution() > 2.5);
@@ -45,6 +45,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 	{
 		case RefinementModelPos:
 		addParamType(ParamOptionTorsion, range);
+		addParamType(ParamOptionBondAngle, range);
 		addParamType(ParamOptionNumBonds, 3);
 		addParamType(ParamOptionCycles, 40);
 		addParamType(ParamOptionMaxTries, 60);
@@ -61,14 +62,15 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 		break;
 
 		case RefinementCrude:
-		addParamType(ParamOptionTorsion, range);
-		addParamType(ParamOptionThorough, 1);
-		addParamType(ParamOptionCycles, 80);
+		addParamType(ParamOptionTorsion, 0.05);
+		addParamType(ParamOptionBondAngle, 0.05);
+//		addParamType(ParamOptionKick, 0.05);
 		addParamType(ParamOptionNumBonds, 5);
 		break;
 
 		case RefinementSidechain:
 		addParamType(ParamOptionTorsion, 0.05);
+		addParamType(ParamOptionBondAngle, 0.05);
 		addParamType(ParamOptionKick, 0.1);
 		addParamType(ParamOptionNumBonds, 4);
 
@@ -97,7 +99,7 @@ void Sidechain::refine(CrystalPtr target, RefinementType rType)
 			case RefinementModelPos:
 			addParamType(ParamOptionTorsion, range);
 			addParamType(ParamOptionNumBonds, 4);
-			addParamType(ParamOptionSVD, 1);
+//			addParamType(ParamOptionSVD, 1);
 			addParamType(ParamOptionCycles, 100);
 			addParamType(ParamOptionMaxTries, 60);
 			addParamType(ParamOptionThorough, 1);
