@@ -74,7 +74,7 @@ void WeightedMap::writeCalculatedSlice()
 	}
 
 	_fft->fft(FFTReciprocalToReal);
-	_fft->drawSlice(0, "calculated_slice" + cycle);
+	_fft->drawSlice(-1, "calculated_slice" + cycle);
 	for (int i = 0; i < _fft->nz() && Options::makeDiagnostics(); i++)
 	{
 //		_fft->drawSlice(i, "calculated_slice_s" + i_to_str(i));
@@ -87,7 +87,7 @@ void WeightedMap::writeObservedSlice()
 {
 	std::string cycle = "_" + i_to_str(_crystal->getCycleNum());
 	
-	_fft->drawSlice(0, "observed_slices" + cycle);
+	_fft->drawSlice(-1, "observed_slices" + cycle);
 	for (int i = 0; i < _fft->nz() && Options::makeDiagnostics(); i++)
 	{
 //		_fft->drawSlice(i, "observed_slice_" + i_to_str(i));
