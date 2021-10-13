@@ -533,6 +533,7 @@ public:
 
 	void applySymOps();
 	void fourierTransform(int dir, double res = -1);
+	double totalToScale();
 protected:
 	virtual void postRestoreState();
 	virtual void addObject(ParserPtr object, std::string category);
@@ -562,7 +563,6 @@ private:
 
 	double _maxResolution;
 	std::vector<int> _anchorResidues;
-	double totalToScale();
 	double _calcElec;
 
 	void reportScaling();
