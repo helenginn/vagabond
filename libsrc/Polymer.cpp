@@ -580,6 +580,12 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 	*_stream << ((endCCAve < ccAve) ? "up " : "down ");
 	*_stream << "from " << -ccAve * 100 << " to " << -endCCAve * 100;
 	*_stream << "." << std::endl;
+
+	double change = scoreWithMap(ScoreTypeCorrel, Options::getActiveCrystal());
+	*_stream << " CC across whole polymer ";
+	*_stream << ((change < _fullScore) ? "up " : "down ");
+	*_stream << "from " << -_fullScore * 100 << " to " << -change * 100;
+	*_stream << "." << std::endl;
 	
 	timer.report();
 
