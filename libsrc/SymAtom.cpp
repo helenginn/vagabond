@@ -37,12 +37,14 @@ SymAtom::~SymAtom()
 
 vec3 SymAtom::transformVec(vec3 pos)
 {
+	mat3x3 real2Frac = _crystal->getReal2Frac();
+	mat3x3 frac2Real = _crystal->getFrac2Real();
+
 	vec3 v = _parent->getSymRelatedPosition(_symop, pos);
-	vec3 ucDims = _ucShift;
-	ucDims.x *= _shift.x;
-	ucDims.y *= _shift.y;
-	ucDims.z *= _shift.z;
-	vec3_add_to_vec3(&v, ucDims);
+	mat3x3_mult_vec(real2Frac, &v); /* Angstroms to frac */
+	v += _shift;
+	mat3x3_mult_vec(frac2Real, &v);
+
 	return v;
 }
 

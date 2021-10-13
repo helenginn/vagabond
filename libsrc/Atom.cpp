@@ -222,7 +222,7 @@ vec3 Atom::getSymRelatedPosition(int i, vec3 pos)
 	CSym::CCP4SPG *spg = crystal->getSpaceGroup();
 	
 	mat3x3 real2Frac = crystal->getReal2Frac();
-	mat3x3_mult_vec(real2Frac, &pos);
+	mat3x3_mult_vec(real2Frac, &pos); /* Angstroms to frac */
 
 	float *rot = &spg->symop[i].rot[0][0];
 	float *trn = spg->symop[i].trn;
@@ -235,9 +235,7 @@ vec3 Atom::getSymRelatedPosition(int i, vec3 pos)
 	mod.y += trn[1];
 	mod.z += trn[2];
 	
-	fmod(mod.x, 1);
-	fmod(mod.y, 1);
-	fmod(mod.z, 1);
+	VagFFT::collapseFrac(&mod.x, &mod.y, &mod.z);
 	
 	mat3x3 frac2Real = crystal->getFrac2Real();
 	mat3x3_mult_vec(frac2Real, &mod);

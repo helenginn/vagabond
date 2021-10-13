@@ -634,9 +634,33 @@ AtomGroupPtr AtomGroup::getAtomsInBox(vec3 target, double tolx,
 	
 	if (!crystal) addSyms = false;
 
+	vec3 tolerance = make_vec3(fabs(tolx), fabs(toly), fabs(tolz));
+
 	mat3x3 real2Frac = crystal->getReal2Frac();
 	mat3x3 frac2Real = crystal->getFrac2Real();
-	vec3 frac = mat3x3_mult_vec(real2Frac, target);
+	vec3 maxFrac = mat3x3_mult_vec(real2Frac, target + tolerance);
+	vec3 minFrac = mat3x3_mult_vec(real2Frac, target - tolerance);
+	
+	std::vector<vec3> shifts;
+	
+	shifts.push_back(empty_vec3());
+
+	for (int k = -1; k < 1 && addSyms; k++)
+	{
+		for (int j = -1; j < 1; j++)
+		{
+			for (size_t i = -1; i < 1; i++)
+			{
+				if (!(i == 0 && j == 0 && k == 0))
+				{
+					shifts.push_back(make_vec3(i, j, k));
+				}
+			}
+		}
+	}
+	
+	int count = 0;
+	int symcount = 0;
 
 	if (addSyms)
 	{
@@ -645,46 +669,59 @@ AtomGroupPtr AtomGroup::getAtomsInBox(vec3 target, double tolx,
 
 	for (int j = 0; j < atomCount(); j++)
 	{
-		for (int i = 0; i < symopTry; i++)
+		AtomPtr anAtom = atom(j);
+		vec3 pos = anAtom->getAbsolutePosition();
+		
+		for (int k = 0; k < shifts.size(); k++)
 		{
-			AtomPtr anAtom = atom(j);
-			vec3 pos = anAtom->getAbsolutePosition();
-			vec3 next = anAtom->getSymRelatedPosition(i, pos);
-			mat3x3_mult_vec(real2Frac, &next);
-			vec3 copy_next = next;
-			
-			while (frac.x - next.x > 1) { next.x += 1; }
-			while (frac.x - next.x <= -1) { next.x -= 1; }
-
-			while (frac.y - next.y > 1)   { next.y += 1; }
-			while (frac.y - next.y <= -1) { next.y -= 1; }
-
-			while (frac.z - next.z > 1)   { next.z += 1; }
-			while (frac.z - next.z <= -1) { next.z -= 1; }
-			
-			vec3 shift = vec3_subtract_vec3(next, copy_next);
-			pos = mat3x3_mult_vec(frac2Real, next);
-
-			vec3 diff = vec3_subtract_vec3(pos, target);
-
-			if (fabs(diff.x) > tolx || fabs(diff.y) > toly
-			    || fabs(diff.z) > tolz)
+			for (int i = 0; i < symopTry; i++)
 			{
-				continue;
+				vec3 next = anAtom->getSymRelatedPosition(i, pos);
+				mat3x3_mult_vec(real2Frac, &next);
+				next += shifts[k];
+				vec3 copy_next = next;
+
+				while (minFrac.x - next.x > 0) { next.x += 1; }
+				while (maxFrac.x - next.x <= 0) { next.x -= 1; }
+
+				while (minFrac.y - next.y > 0)   { next.y += 1; }
+				while (maxFrac.y - next.y <= 0) { next.y -= 1; }
+
+				while (minFrac.z - next.z > 0)   { next.z += 1; }
+				while (maxFrac.z - next.z <= 0) { next.z -= 1; }
+
+				vec3 shift = vec3_subtract_vec3(next, copy_next);
+				pos = mat3x3_mult_vec(frac2Real, next);
+
+				vec3 diff = vec3_subtract_vec3(pos, target);
+
+				if (fabs(diff.x) > tolx || fabs(diff.y) > toly
+				    || fabs(diff.z) > tolz)
+				{
+					continue;
+				}
+
+				if (i == 0)
+				{
+					atoms->addAtom(anAtom);
+					count++;
+				}
+				else
+				{
+					SymAtomPtr satom = SymAtomPtr(new SymAtom(*anAtom));
+					satom->setUnitCellShift(shift);
+					satom->setSymop(i);
+					atoms->addAtom(satom);
+					symcount++;
+				}
 			}
 
-			if (i == 0)
-			{
-				atoms->addAtom(anAtom);
-			}
-			else
-			{
-				SymAtomPtr satom = SymAtomPtr(new SymAtom(*anAtom));
-				satom->setUnitCellShift(shift);
-				satom->setSymop(i);
-				atoms->addAtom(satom);
-			}
 		}
+	}
+
+	if (addSyms)
+	{
+		std::cout << count << " " << symcount << std::endl;
 	}
 
 	return atoms;
