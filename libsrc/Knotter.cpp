@@ -375,6 +375,7 @@ void Knotter::tieTowardsCTerminus()
 	
 	if (finalOxygen)
 	{
+		Bond::setBendAngle(&*carbonyl2oxy, deg2rad(117.3));
 		BondPtr carbonyl2oxt = BondPtr(new Bond(carbonylCarbon, finalOxygen));
 		carbonyl2oxt->activate();
 	}
