@@ -174,6 +174,7 @@ void Motion::rigidRefine()
 	*_stream << "\nRefining rigid body: " << _name << std::endl;
 	FlexLocal target;
 	NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
+	target.setStream(_stream);
 	target.attachToStrategy(neld, _allBackbone);
 	target.setAtomGroup(_allAtoms);
 	neld->setJobName("rigid");
@@ -207,6 +208,7 @@ void Motion::refine(bool reciprocal)
 			
 			RefinementListPtr list = RefinementListPtr(new RefinementList());
 			list->setJobName("rot_search");
+			target.setStream(_stream);
 			target.attachToStrategy(list, _allBackbone);
 			target.recalculateConstant();
 			addLibrationParameters(list, j);
@@ -256,6 +258,7 @@ void Motion::refine(bool reciprocal)
 	for (int i = 0; i < 1; i++)
 	{
 		NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
+		target.setStream(_stream);
 		target.attachToStrategy(neld, _allBackbone);
 		target.recalculateConstant();
 		neld->setJobName("translation");
@@ -285,6 +288,7 @@ void Motion::refine(bool reciprocal)
 	{
 		NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 		neld->setJobName("rots_only");
+		target.setStream(_stream);
 		target.attachToStrategy(neld, _allBackbone);
 		target.recalculateConstant();
 		neld->setCycles((i + 1) * 50);
@@ -299,6 +303,7 @@ void Motion::refine(bool reciprocal)
 		{
 			NelderMeadPtr neld = NelderMeadPtr(new RefinementNelderMead());
 			neld->setJobName("screws_only");
+			target.setStream(_stream);
 			target.attachToStrategy(neld, _allBackbone);
 			target.recalculateConstant();
 			neld->setCycles((i + 1) * 50);
