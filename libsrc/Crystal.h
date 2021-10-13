@@ -400,6 +400,11 @@ public:
 	
 	void makeBucket();
 	
+	VagFFTPtr getSymopsOnly()
+	{
+		return _symOpsOnly;
+	}
+	
 	BucketPtr getBucket()
 	{
 		return _bucket;
@@ -598,6 +603,7 @@ private:
 
 	VagFFTPtr _fft;
 	VagFFTPtr _difft;
+	VagFFTPtr _symOpsOnly;
 	
 	/* imag component may contain (weighted map - original) */
 	VagFFTPtr _original;
