@@ -281,7 +281,7 @@ bool Crystal::refineThreaded(JobType type, int total)
 		
 		PolymerPtr pol = ToPolymerPtr(molecule(i));
 		pol->clearParams();
-		if (type != JobPositions)
+		if (type != JobPositions && type != JobIntraMol)
 		{
 			pol->scoreMonomers();
 		}
