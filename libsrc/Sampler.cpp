@@ -267,6 +267,10 @@ BondPtr Sampler::setupThoroughSet(BondPtr fbond, bool addBranches)
 				}
 			}
 			
+			if (hasParameter(ParamOptionFirstOccupancy))
+			{
+				break;
+			}
 		}
 	}
 	
