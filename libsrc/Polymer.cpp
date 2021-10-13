@@ -538,12 +538,15 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		}
 
 		changed = true;
+		
+		if (rType == RefinementCrude)
+		{
+			bone->refine(target, RefinementFine); 
+			bone->clearParams();
+		}
 
-		copyParams(side);
-		copyParams(bone);
-		copyParams(monomer);
-		side->refine(target, rType); 
 		bone->refine(target, rType); 
+		side->refine(target, rType); 
 
 		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);	
 		double backScore = bone->scoreWithMap(ScoreTypeCorrel, target);	
