@@ -1024,13 +1024,13 @@ void AtomGroup::xyzLimits(vec3 *min, vec3 *max)
 void AtomGroup::prepareComparisonMap(MapScoreWorkspace *ws, vec3 min, vec3 max)
 {
 	VagFFTPtr obs = ws->crystal->getFFT();
-	mat3x3 m = obs->getRecipBasis();
-	mat3x3_mult_vec(m, &min);
-	mat3x3_mult_vec(m, &max);
-	min -= make_vec3(1, 1, 1);
-	max += make_vec3(1, 1, 1);
+//	obs->drawSlice(-1, "observed_all");
 
-	VagFFTPtr vag = obs->subFFT(min.x, max.x, min.y, max.y, min.z, max.z);
+	VagFFTPtr vag;
+	ws->selectAtoms->prepareCubicMap(&vag, min, max, 0);
+	vag->addFromBigger(obs);
+//	vag->drawSlice(-1, "observed");
+
 	ws->comparison = vag;
 }
 
@@ -1083,7 +1083,7 @@ void AtomGroup::prepareCubicMap(VagFFTPtr *scratchFull, vec3 min, vec3 max,
 	{
 		cubeDim = getParameter(ParamOptionProteinSampling);
 	}
-	
+
 	/* 2 Angstroms buffer region on either side of the protein */
 	double buff = BUFFER_REGION;
 	
@@ -1168,7 +1168,8 @@ void AtomGroup::createConstantFraction(MapScoreWorkspace *ws,
 	vec3_mult(&half, 0.5);
 
 	CrystalPtr crystal = ws->crystal;
-	ws->extra = crystal->getAtomsInBox(minmax, half.x, half.y, half.z);
+	ws->extra = crystal->getAtomsInBox(minmax, half.x, half.y, half.z, 
+	                                   false);
 
 	AtomGroupPtr added = AtomGroupPtr(new AtomGroup());
 
@@ -1261,24 +1262,24 @@ double AtomGroup::scoreWithReciprocal(MapScoreWorkspace *ws)
 	return -cc;
 }
 
-double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
+double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *ws,
                                       bool plot)
 {
-	workspace->tMap->start();
+	ws->tMap->start();
 
-	if (plot && workspace->filename == "")
+	if (plot && ws->filename == "")
 	{
-		workspace->filename = "cc_score.png";
+		ws->filename = "cc_score";
 	}
 
-	if (!workspace->selectAtoms->atomCount())
+	if (!ws->selectAtoms->atomCount())
 	{
 		return 0;
 	}
 
-	AtomGroupPtr selected = workspace->selectAtoms;
+	AtomGroupPtr selected = ws->selectAtoms;
 
-	bool first = (workspace->segment == VagFFTPtr());
+	bool first = (ws->segment == VagFFTPtr());
 	
 	/* this is the first time we are running the comparison */
 	if (first)
@@ -1287,33 +1288,47 @@ double AtomGroup::scoreWithMapGeneral(MapScoreWorkspace *workspace,
 		selected->xyzLimits(&min, &max);
 
 		/* prepare the size of the maps */
-		selected->prepareCubicMap(&workspace->segment, min, max, 1);
+		selected->prepareCubicMap(&ws->segment, min, max, 1);
 
 		/* find all the non-moving atoms */
-		createConstantFraction(workspace, min, max);
+		createConstantFraction(ws, min, max);
 
 		/* prepare the selection to be compared */
-		selected->prepareComparisonMap(workspace, min, max);
+		selected->prepareComparisonMap(ws, min, max);
 	}
 			
 	/* in the case where we wish to recalculate constant atom positions */
-	if (first || workspace->recalc)
+	if (first || ws->recalc)
 	{
 		/* Add the acceptable atoms to the map */
-		workspace->extra->addToCubicMap(workspace->segment, true);
-		/* copy the constant fraction into the scratch */
-		workspace->segment->copyToScratch(0);
+		ws->extra->addToCubicMap(ws->segment, true);
 		
-		workspace->recalc = false;
+		if (ws->crystal->getBucket())
+		{
+			VagFFTPtr solv = ws->crystal->getBucket()->getSolvent();
+			ws->segment->addFromBigger(solv);
+//			ws->segment->drawSlice(-1, "after_solvent");
+		}
+
+		VagFFTPtr symops = ws->crystal->getSymopsOnly();
+		// need to fix scaling
+//		ws->segment->addFromBigger(symops);
+//		ws->segment->drawSlice(-1, "after_symops");
+
+		/* copy the constant fraction into the scratch */
+		ws->segment->copyToScratch(0);
+		
+		ws->recalc = false;
 	}
 	
 	/* add our moving fraction, updated elsewhere */
-	workspace->selectAtoms->addToCubicMap(workspace->segment);
-	workspace->tMap->stop();
+	ws->selectAtoms->addToCubicMap(ws->segment);
 	
-	workspace->tScore->start();
-	double score = scoreFinalMap(workspace, plot, first);
-	workspace->tScore->stop();
+	ws->tMap->stop();
+	
+	ws->tScore->start();
+	double score = scoreFinalMap(ws, plot, first);
+	ws->tScore->stop();
 
 	return score;
 }
@@ -1335,11 +1350,21 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot,
 	}
 	
 	MapScoreType mapType = MapScoreTypeCorrel;
+
+	if (first)
+	{
+//		ws->segment->drawSlice(-1, "with_atoms_alone");
+	}
 	
 	/* Actual variables to compare, correlation calculations */
 	ws->segment->copyRealToImaginary();
 	/* Add constant fraction to model map */
 	ws->segment->addScratchBack(0);
+
+	if (first)
+	{
+//		ws->segment->drawSlice(-1, "with_atoms_plus_constant");
+	}
 	
 	if (first)
 	{
@@ -1355,8 +1380,12 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot,
 		if (step <= 0) step = 1;
 	}
 
-	VagFFT::operation(ws->comparison, ws->segment, mapType, &ws->vals, 
-	                  false, !first, step);
+
+	if (ws->scoreType != ScoreTypeCorrel || plot)
+	{
+		VagFFT::operation(ws->comparison, ws->segment, mapType, &ws->vals, 
+		                  true, !first, step);
+	}
 
 	/* Debugging ... writes cc_score.csv and cc_score.png, csv can be
 	* looked at with gnuplot quite nicely.*/
@@ -1366,7 +1395,8 @@ double AtomGroup::scoreFinalMap(MapScoreWorkspace *ws, bool plot,
 	
 	if (ws->scoreType == ScoreTypeCorrel)
 	{
-		score = -correlation(ws->vals);
+		score = -ws->comparison->correlateMaps(ws->segment);
+//		score = -correlation(ws->vals);
 	}
 	
 	if (ws->scoreType == ScoreTypeRFactor)
@@ -1403,9 +1433,9 @@ void AtomGroup::plotCoordVals(std::vector<CoordVal> &vals,
 		pos = vals[i].pos;
 		#endif
 
-		if (!difference && fc < cutoff) continue;
+//		if (!difference && fc < cutoff) continue;
 		
-		if (vals[i].weight < cutoff) continue;
+//		if (vals[i].weight < cutoff) continue;
 
 		csv->addEntry(5, pos.x, pos.y, pos.z, fo, fc);
 	}
