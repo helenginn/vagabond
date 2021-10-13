@@ -2650,3 +2650,23 @@ void VagFFT::meanSigma(double *mean, double *sigma)
 	*mean = xm;
 	*sigma = xs;
 }
+
+double VagFFT::correlateMaps(VagFFTPtr other)
+{
+	CorrelData cd = empty_CD();
+	
+	for (long i = 0; i < nn(); i++)
+	{
+		double weight = other->getImag(i);
+		if (weight < 1e-6)
+		{
+			continue;
+		}
+
+		add_to_CD(&cd, getReal(i), other->getReal(i), weight);
+	}
+	
+	double correl = evaluate_CD(cd);
+
+	return correl;
+}

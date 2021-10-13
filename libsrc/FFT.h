@@ -99,6 +99,8 @@ public:
 	void prepareAtomSpace();
 	void addAtom(AtomPtr atom, bool saved = false);
 	double resolution(int i, int j, int k);
+
+	double correlateMaps(VagFFTPtr other);
 	
 	/** Applies symmetry operations. If topRes > 0 then resolution is
 	 * cut and symmetry application only applies to asymmetric unit,
