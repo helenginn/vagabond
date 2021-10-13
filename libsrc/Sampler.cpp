@@ -64,6 +64,11 @@ void Sampler::addAtomsForBond(BondPtr bond)
 				addSampled(downAtom);
 				count++;
 			}
+
+			if (hasParameter(ParamOptionFirstOccupancy))
+			{
+				break;
+			}
 		}
 	}
 

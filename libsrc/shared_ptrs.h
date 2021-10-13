@@ -269,6 +269,7 @@ typedef enum
 	ParamOptionCycles,
 	ParamOptionExtraAtoms,
 	ParamOptionPadding,
+	ParamOptionFirstOccupancy,
 	ParamOptionMaxTries,
 	ParamOptionFlip,
 	ParamOptionStep,
