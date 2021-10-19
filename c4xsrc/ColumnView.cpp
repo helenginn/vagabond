@@ -37,6 +37,7 @@ ColumnView::ColumnView(QWidget *parent, Group *ave) : QWidget(parent)
 	vout->addWidget(view);
 	
 	QStringList labels;
+	labels.push_back("");
 	for (size_t i = 0; i < _vectors->titleCount(); i++)
 	{
 		std::string title = _vectors->title(i);
@@ -54,13 +55,14 @@ ColumnView::ColumnView(QWidget *parent, Group *ave) : QWidget(parent)
 	
 	for (size_t i = 0; i < _vectors->vectorCount(); i++)
 	{
-		std::vector<double> v = _vectors->vector(i);
+		std::vector<double> v = _vectors->adjustedVector(i);
 		QTreeWidgetItem *item = new QTreeWidgetItem(view);
+		item->setText(0, QString::fromStdString(_vectors->name(i)));
 		
 		for (size_t j = 0; j < v.size(); j++)
 		{
 			std::string f = f_to_str(v[j], 3);
-			item->setText(j, QString::fromStdString(f));
+			item->setText(j + 1, QString::fromStdString(f));
 		}
 		
 		view->addTopLevelItem(item);
