@@ -97,6 +97,11 @@ public:
 
 	void recalculateConstant();
 	void reportTimings();
+	
+	void setStream(std::ostream *str)
+	{
+		_stream = str;
+	}
 private:
 	void svd();
 	void findAtomsAndBonds();
