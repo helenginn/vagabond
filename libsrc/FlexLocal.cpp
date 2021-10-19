@@ -255,8 +255,14 @@ void FlexLocal::recalculateConstant()
 void FlexLocal::reportTimings()
 {
 	*_stream << std::endl;
-	_workspace.tBonds->report(_stream);
-	_workspace.tMap->report(_stream);
-	_workspace.tScore->report(_stream);
+	if (_workspace.tBonds) _workspace.tBonds->report(_stream);
+	if (_workspace.tMap) _workspace.tMap->report(_stream);
+	if (_workspace.tScore) _workspace.tScore->report(_stream);
+	delete _workspace.tBonds;
+	_workspace.tBonds = NULL;
+	delete _workspace.tMap;
+	_workspace.tMap = NULL;
+	delete _workspace.tScore;
+	_workspace.tScore = NULL;
 }
 
