@@ -205,7 +205,37 @@ void AveVectors::calculate()
 
 		_sigVec[j] = sqrt(sq - sum * sum / counts[j]);
 		_averageVec[j] /= counts[j];
+
+		if (MyDictator::valueForKey("stdev") != "true")
+		{
+			_sigVec[j] = 1;
+		}
+
+		if (MyDictator::valueForKey("average") == "false")
+		{
+			_averageVec[j] = 0;
+		}
 	}
+}
+
+std::vector<double> AveVectors::adjustedVector(int j)
+{
+	if (_averageVec.size() == 0)
+	{
+		calculate();
+	}
+	std::vector<double> v = vector(j);
+	
+	std::cout << _averageVec.size() << std::endl;
+	std::cout << _sigVec.size() << std::endl;
+	for (size_t i = 0; i < v.size(); i++)
+	{
+		std::cout << i << " " << v[i] << std::endl;
+		v[i] -= _averageVec[i];
+		v[i] /= _sigVec[i];
+	}
+
+	return v;
 }
 
 double AveVectors::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
@@ -252,5 +282,7 @@ double AveVectors::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 		add_to_CD(&cd, x, y);
 	}
 
+	cd.sum_x = 0;
+	cd.sum_y = 0;
 	return evaluate_CD(cd);
 }
