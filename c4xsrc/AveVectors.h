@@ -91,10 +91,17 @@ public:
 		return _enabled[i];
 	}
 	
+	std::string &name(int i)
+	{
+		return _names[i];
+	}
+	
 	std::vector<double> &vector(int i)
 	{
 		return _vectors[_names[i]];
 	}
+	
+	std::vector<double> adjustedVector(int i);
 
 	void load();
 	void preparePaths();
