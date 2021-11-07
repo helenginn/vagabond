@@ -26,15 +26,15 @@
 #include <hcsrc/mat3x3.h>
 #include <string>
 #include <map>
-#include <hcsrc/maths.h>
 #include "TotalModel.h"
+#include "Shell.h"
 #include "../libccp4/csymlib.h"
 #include <iostream>
 
 /**
  * \class Crystal
- * \brief The concept of a crystal arranged in a certain lattice containing
- * various molecules and solvent.
+ * \brief The concept of a crystal arranged in a certain lattice that
+ * can be compared with a Diffraction event.
  *
  * Crystal looks after the calculation of Fcs and also compares against a
  * separate DiffractionData object, but it endeavours to be separate from the
@@ -52,95 +52,6 @@ typedef enum
 } JobType;
 
 typedef double (*option_getter)();
-
-typedef struct
-{
-	double minRes;
-	double maxRes;
-	double rFactor;
-	double scale;
-	double std_err;
-	double aveFo;
-	double phi_spread;
-	double count;
-	std::vector<double> work1;
-	std::vector<double> work2;
-	std::vector<double> free1;
-	std::vector<double> free2;
-} ShellInfo;
-
-inline ShellInfo makeShellInfo(double min, double max)
-{
-	ShellInfo shell;
-	shell.minRes = min;
-	shell.maxRes = max;
-	shell.rFactor = 0;
-	shell.scale = 1;
-	shell.std_err = 0;
-	shell.aveFo = 0;
-	shell.phi_spread = 0;
-	shell.count = 0;
-	
-	return shell;
-}
-
-/* resolutions are in real space */
-inline int findShell(std::vector<ShellInfo> &shells, double res)
-{
-	if (res < shells.back().maxRes || 
-	    res > shells.front().minRes)
-	{
-		return -1;
-	}
-	
-	int size = shells.size();
-	int min = 0;
-	int max = size - 1;
-	
-	if (res >= shells[min].maxRes) return min;
-	if (res <= shells[max].minRes) return max;
-	
-	while (true)
-	{
-		int chop = (max + min) / 2;
-		int higher = (res <= shells[chop].maxRes);
-		if (higher) 
-		{
-			min = chop;
-		}
-		else 
-		{
-			max = chop;
-		}
-		
-		if (max - min == 1)
-		{
-			return max;
-		}
-	}
-}
-
-inline void makeShells(std::vector<ShellInfo> *shells, double min, double max,
-                       int number = 20)
-{
-	/* Then apply to individual resolution bins */
-	std::vector<double> bins;
-	generateResolutionBins(min, max, number, &bins);
-
-	/* Extend the final bin by a little bit, so as not to lose any
-	 * stragglers. */
-	bins[bins.size() - 1] *= 0.95;
-
-	/* Make the series of shells */
-	shells->clear();
-
-	for (size_t i = 0; i < bins.size() - 1; i++)
-	{
-		ShellInfo shell = makeShellInfo(bins[i], bins[i + 1]);
-		shells->push_back(shell);
-	}
-
-}
 
 
 namespace Vagabond
@@ -235,10 +146,6 @@ public:
 	 *  total difference density */
 	void differenceAttribution();
 	
-	/** Prints scattering proportion in this crystal determined by bonds. */
-	void tiedUpScattering();
-	
-	double averageBFactor();
 	void scaleAnchorBs(double ratio);
 	
 	/** Loops through all molecules and places them in the map.
@@ -370,12 +277,8 @@ public:
 	void refineSidechainPositions();
 	void refineSidechains();
 	void refineCrude();
-	void pruneWaters();
-	void resetMotions();
 	void savePositions();
 	void closenessSummary();
-	void makeOverallMotion();
-	MotionPtr getOverallMotion();
 	void reindexAtoms(mat3x3 reindex, vec3 trans);
 
 	void addPDBContents(std::string pdb);
@@ -408,13 +311,7 @@ public:
 		_comments += "\n";
 	}
 	
-	WaterNetworkPtr getWaterNetwork();
-	
 	void openInCoot();
-	
-	/** Obtain the current number of samples, i.e. number of conformers
-	 * in the ensemble. */
-	int getSampleNum();
 	
 	/** Obtain the current B factor applied to any many-positioned models of
 	 * atoms. */
@@ -491,7 +388,6 @@ private:
 	CSym::CCP4SPG *_spaceGroup;
 	int _spgNum;
 	std::string _spgString;
-	bool _tied;
 
 	double _maxResolution;
 	std::vector<int> _anchorResidues;
@@ -525,7 +421,6 @@ private:
 	int _sinceBestNum;
 	int _bestState;
 	int _cycleNum;
-	int _sampleNum;
 	bool _silent;
 	
 	double _bFacFit;

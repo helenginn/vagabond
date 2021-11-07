@@ -20,8 +20,8 @@
 #define __vagabond__weighted_map__
 
 #include "shared_ptrs.h"
-#include "Crystal.h"
 #include <mutex>
+#include "Shell.h"
 
 class WeightedMap
 {

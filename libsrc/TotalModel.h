@@ -100,10 +100,27 @@ public:
 	{
 		return _filename;
 	}
+
 	size_t motionCount()
 	{
 		return _motions.size();
 	}
+
+	void makeOverallMotion();
+	MotionPtr getOverallMotion();
+	void resetMotions();
+
+	/** Obtain the current number of samples, i.e. number of conformers
+	 * in the ensemble. */
+	int getSampleNum();
+
+	/** Total average B factor across model derived from Vagabond model */
+	double averageBFactor();
+
+	/** Prints scattering proportion in this crystal determined by bonds. */
+	void tiedUpScattering();
+	
+	WaterNetworkPtr getWaterNetwork();
 protected:
 
 	virtual void addProperties();
@@ -113,6 +130,8 @@ protected:
 	MoleculeMap _molecules;
 	std::vector<MotionPtr> _motions;
 	std::string _filename;
+	bool _tied;
+	int _sampleNum;
 private:
 
 };

@@ -43,7 +43,6 @@
 #include <hcsrc/FileReader.h>
 #include "Options.h"
 #include "FlexLocal.h"
-#include "Refitter.h"
 #include <hcsrc/RefinementNelderMead.h>
 #include <hcsrc/RefinementLBFGS.h>
 #include <hcsrc/RefinementGridSearch.h>

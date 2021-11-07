@@ -20,6 +20,7 @@
 #include <thread>
 #include <hcsrc/mat3x3.h>
 #include "Diffraction.h"
+#include "Crystal.h"
 #include "Bucket.h"
 #include "Atom.h"
 #include "Options.h"

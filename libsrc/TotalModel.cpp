@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "TotalModel.h"
+#include "WaterNetwork.h"
 #include "Options.h"
 #include "Shouter.h"
 #include "Polymer.h"
@@ -26,6 +27,8 @@
 
 TotalModel::TotalModel()
 {
+	_tied = false;
+	_sampleNum = -1;
 
 }
 
@@ -172,6 +175,8 @@ void TotalModel::postParseTidy()
 
 void TotalModel::addProperties()
 {
+	addIntProperty("sample_num", &_sampleNum);
+	addBoolProperty("tied", &_tied);
 	addStringProperty("filename", &_filename);
 
 	for (int i = 0; i < moleculeCount(); i++)
@@ -241,3 +246,139 @@ void TotalModel::addMolecule(MoleculePtr molecule)
 
 	_molecules[molecule->getChainID()] = molecule;
 }
+
+MotionPtr TotalModel::getOverallMotion()
+{
+	if (_motions.size())
+	{
+		for (int i = 0; i < motionCount(); i++)
+		{
+			if (_motions[i]->getName() == "all")
+			{
+				return _motions[i];
+			}
+		}
+	}
+
+	return MotionPtr();
+}
+
+void TotalModel::makeOverallMotion()
+{
+	if (!_tied)
+	{
+		return;
+	}
+
+	if (getOverallMotion() != MotionPtr())
+	{
+		return;
+	}
+	
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer() ||
+		    !ToPolymerPtr(molecule(i))->getAnchorModel())
+		{
+			continue;
+		}
+
+		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		pol->getAnchorModel()->atLeastOneMotion();
+	}
+}
+
+int TotalModel::getSampleNum()
+{
+	if (Options::getNSamples() >= 0)
+	{
+		_sampleNum = Options::getNSamples();
+		Options::setNSamples(NULL, -1);
+	}
+
+	if (_sampleNum < 0) 
+	{
+		_sampleNum = 120;
+	}
+
+	double totalPoints = _sampleNum;
+	
+	if (totalPoints < 0)
+	{
+		totalPoints = 0;
+	}
+	
+	return totalPoints;
+}
+
+void TotalModel::tiedUpScattering()
+{
+	double tied = 0;
+	double total = 0;
+	int flex = 0;
+	int pos = 0;
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		molecule(i)->tiedUpScattering(&tied, &total);
+		molecule(i)->reportParameters();
+		molecule(i)->addParamCounts(&pos, &flex);
+	}
+	
+	std::cout << "Total positional params: " << pos << std::endl;
+	std::cout << "Total flexibility params: " << flex << std::endl;
+	std::cout << "Total params: " << pos + flex << std::endl;
+
+	std::cout << std::fixed << std::setprecision(0);
+	std::cout << "Tied up " << 100. * sqrt(tied / total) << "% of"\
+	" the scattering electrons." << std::endl;
+	std::cout << std::endl;
+}
+
+double TotalModel::averageBFactor()
+{
+	double ave = 0;
+	double count = 0;
+
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		MoleculePtr mole = molecule(i);
+
+		if (!mole->isPolymer())
+		{
+			continue;
+		}
+		
+		ave += ToPolymerPtr(mole)->getAverageBFactor();
+		count++;
+	}
+	
+	return ave/count;
+}
+
+WaterNetworkPtr TotalModel::getWaterNetwork()
+{
+	for (int i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isWaterNetwork())
+		{
+			continue;
+		}
+		
+		WaterNetworkPtr wat = ToWaterNetworkPtr(molecule(i));
+		return wat;
+	}
+
+	return WaterNetworkPtr();
+}
+
+void TotalModel::resetMotions()
+{
+	for (int i = 0; i < _motions.size(); i++)
+	{
+		_motions[i]->reset();
+	}
+	
+	refreshPositions();
+}
+

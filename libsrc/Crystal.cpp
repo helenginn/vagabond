@@ -1068,30 +1068,6 @@ double Crystal::rFactorWithDiffraction(DiffractionPtr data, bool verbose)
 	return rFactor;
 }
 
-void Crystal::tiedUpScattering()
-{
-	double tied = 0;
-	double total = 0;
-	int flex = 0;
-	int pos = 0;
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		molecule(i)->tiedUpScattering(&tied, &total);
-		molecule(i)->reportParameters();
-		molecule(i)->addParamCounts(&pos, &flex);
-	}
-	
-	std::cout << "Total positional params: " << pos << std::endl;
-	std::cout << "Total flexibility params: " << flex << std::endl;
-	std::cout << "Total params: " << pos + flex << std::endl;
-
-	std::cout << std::fixed << std::setprecision(0);
-	std::cout << "Tied up " << 100. * sqrt(tied / total) << "% of"\
-	" the scattering electrons." << std::endl;
-	std::cout << std::endl;
-}
-
 Crystal::Crystal() : TotalModel()
 {
 	_dataWilsonB = 0;
@@ -1102,13 +1078,11 @@ Crystal::Crystal() : TotalModel()
 	_silent = false;
 	_largestNum = -INT_MAX;
 	_realBFactor = -1;
-	_sampleNum = -1;
 	_cycleNum = 0;
 	_lastMetric = FLT_MAX;
 	_bestMetric = FLT_MAX;
 	_sinceBestNum = 0;
 	_correlPlotNum = 0;
-	_tied = false;
 	_spaceGroup = NULL;
 	_spgNum = 0;
 	_spgString = "";
@@ -1255,47 +1229,6 @@ void Crystal::hydrogenateContents()
 	}
 }
 
-MotionPtr Crystal::getOverallMotion()
-{
-	if (_motions.size())
-	{
-		for (int i = 0; i < motionCount(); i++)
-		{
-			if (_motions[i]->getName() == "all")
-			{
-				return _motions[i];
-			}
-		}
-	}
-
-	return MotionPtr();
-}
-
-void Crystal::makeOverallMotion()
-{
-	if (!_tied)
-	{
-		return;
-	}
-
-	if (getOverallMotion() != MotionPtr())
-	{
-		return;
-	}
-	
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isPolymer() ||
-		    !ToPolymerPtr(molecule(i))->getAnchorModel())
-		{
-			continue;
-		}
-
-		PolymerPtr pol = ToPolymerPtr(molecule(i));
-		pol->getAnchorModel()->atLeastOneMotion();
-	}
-}
-
 void Crystal::fitWholeMolecules(bool recip)
 {
 	std::cout << "Refining in real space." << std::endl;
@@ -1379,9 +1312,7 @@ void Crystal::addProperties()
 	addDoubleProperty("real_b_factor", &_realBFactor);
 	addDoubleProperty("probe_radius", &_probeRadius);
 	addIntProperty("cycles_since_best", &_sinceBestNum);
-	addIntProperty("sample_num", &_sampleNum);
 	addDoubleProperty("grid_size", &_sampling);
-	addBoolProperty("tied", &_tied);
 
 	_spgNum = 0;
 	_spgString = "";
@@ -1501,29 +1432,6 @@ std::vector<AtomPtr> Crystal::getHydrogenBonders()
 	}
 	
 	return returns;
-}
-
-int Crystal::getSampleNum()
-{
-	if (Options::getNSamples() >= 0)
-	{
-		_sampleNum = Options::getNSamples();
-		Options::setNSamples(NULL, -1);
-	}
-
-	if (_sampleNum < 0) 
-	{
-		_sampleNum = 120;
-	}
-
-	double totalPoints = _sampleNum;
-	
-	if (totalPoints < 0)
-	{
-		totalPoints = 0;
-	}
-	
-	return totalPoints;
 }
 
 void Crystal::differenceAttribution()
@@ -1757,27 +1665,6 @@ void Crystal::scaleAnchorBs(double ratio)
 	}
 }
 
-double Crystal::averageBFactor()
-{
-	double ave = 0;
-	double count = 0;
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		MoleculePtr mole = molecule(i);
-
-		if (!mole->isPolymer())
-		{
-			continue;
-		}
-		
-		ave += ToPolymerPtr(mole)->getAverageBFactor();
-		count++;
-	}
-	
-	return ave/count;
-}
-
 void Crystal::savePositions()
 {
 	for (int i = 0; i < moleculeCount(); i++)
@@ -1979,29 +1866,6 @@ void Crystal::addPDBContents(std::string pdbName)
 	}
 }
 
-void Crystal::resetMotions()
-{
-	for (int i = 0; i < _motions.size(); i++)
-	{
-		_motions[i]->reset();
-	}
-	
-	refreshPositions();
-}
-
-void Crystal::pruneWaters()
-{
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isWaterNetwork())
-		{
-			continue;
-		}
-
-		ToWaterNetworkPtr(molecule(i))->prune();
-	}
-}
-
 void Crystal::addMissingAtoms(std::vector<AtomPtr> atoms)
 {
 	refreshAnchors();
@@ -2192,22 +2056,6 @@ void Crystal::reindexAtoms(mat3x3 reindex, vec3 trans)
 			ToAbsolutePtr(atom(i)->getModel())->setPosition(init);
 		}
 	}
-}
-
-WaterNetworkPtr Crystal::getWaterNetwork()
-{
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isWaterNetwork())
-		{
-			continue;
-		}
-		
-		WaterNetworkPtr wat = ToWaterNetworkPtr(molecule(i));
-		return wat;
-	}
-
-	return WaterNetworkPtr();
 }
 
 void Crystal::addBlob(BlobPtr blob)
