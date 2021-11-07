@@ -62,8 +62,8 @@ void Scaler::run()
 		scaleToData();
 		tidyUp();
 
-		makeMaps();
 		_crystal->writeVagabondFile(_cycleNum);
+		makeMaps();
 	}
 	
 	if (_full && _analysis)

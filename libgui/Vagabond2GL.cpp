@@ -10,6 +10,7 @@
 #include "Vagabond2GL.h"
 #include "../libsrc/Options.h"
 #include "../libsrc/Crystal.h"
+#include "../libsrc/Molecule.h"
 #include "../libsrc/Bond.h"
 #include "../libsrc/Atom.h"
 #include "../libsrc/Element.h"

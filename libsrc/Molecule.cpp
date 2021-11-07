@@ -12,6 +12,7 @@
 #include "Atom.h"
 #include "Absolute.h"
 #include "Bond.h"
+#include "Crystal.h"
 #include <float.h>
 #include <iostream>
 #include <fstream>

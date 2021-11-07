@@ -70,7 +70,6 @@ public:
 	virtual ~VagFFT();
 	
 	VagFFTPtr subFFT(int x0, int x1, int y0, int y1, int z0, int z1);
-	void prepareShortScratch();
 	void addElement(ElementPtr ele);
 	
 	void wipe();
@@ -535,7 +534,6 @@ protected:
 	long _total;
 	fftwf_complex *_data;
 	fftwf_complex *_lastData;
-	float *_shortScratch;
 	
 	static std::vector<FFTDim *> _dimensions;
 	FFTDim *_myDims;

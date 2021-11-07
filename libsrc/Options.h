@@ -14,7 +14,6 @@
 #include <string>
 #include "shared_ptrs.h"
 #include "vagcout.h"
-#include "Crystal.h"
 #include "Notifiable.h"
 
 typedef enum
@@ -72,11 +71,7 @@ public:
 		return crystals[i];
 	}
 	
-	void addCrystal(ParserPtr cryst)
-	{
-		CrystalPtr crystal = ToCrystalPtr(cryst);
-		crystals.push_back(crystal);
-	}
+	void addCrystal(ParserPtr cryst);
 
 	static void loadBlobInGUI(Blob *b);
 	
@@ -384,6 +379,11 @@ public:
 		return _usePartial;
 	}
 	
+	static bool swapValines()
+	{
+		return _swapVals;
+	}
+	
 	static void pauseGUIFishing(bool on);
 	virtual void focusOnPosition(vec3 pos, double dist = 25);
 	void chelate();
@@ -418,7 +418,7 @@ private:
 
 	std::vector<std::string> arguments;
 
-	std::vector<ObjectPtr> objects;
+	std::vector<TotalModelPtr> objects;
 	std::vector<CrystalPtr> crystals;
 	std::vector<DatasetPtr> datasets;
 	std::vector<DiffractionPtr> diffractions;
@@ -483,6 +483,7 @@ private:
 	static bool _screw;
 	static bool _angling;
 	static bool _refineGlobalParams;
+	static bool _swapVals;
 
 	/*crystal*/
 	static int _active;

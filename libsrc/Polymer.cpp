@@ -122,7 +122,11 @@ bool Polymer::refineLocalFlexibility(bool magic)
 	whack();
 	local.setPolymer(shared_from_this());
 	local.setShift(_kickShift);
-	local.refine();
+	
+	if (!magic)
+	{
+		local.refine();
+	}
 	_kickShift = local.getShift();
 	timer.report(_stream);
 	local.reportTimings();
@@ -132,7 +136,6 @@ bool Polymer::refineLocalFlexibility(bool magic)
 	if (magic)
 	{
 		ch |= _keyPoints->refineKeyPoints();
-//		local.refineChainMults(getAnchorModel());
 	}
 	
 	std::ostringstream *o = dynamic_cast<std::ostringstream *>(_stream);
@@ -1405,13 +1408,6 @@ void Polymer::resetSidechains()
 
 void Polymer::setStream(std::ostream *str)
 {
-	std::ostringstream *o = dynamic_cast<std::ostringstream *>(_stream);
-	if (o)
-	{
-		std::cout << o->str();
-		o->str("");
-	}
-
 	BaseParser::setStream(str);
 	
 	for (size_t i = monomerBegin(); i < monomerEnd(); i++)

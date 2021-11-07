@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "ExplicitModel.h"
+#include <float.h>
 #include "Twist.h"
 #include <hcsrc/Fibonacci.h>
 #include "Options.h"

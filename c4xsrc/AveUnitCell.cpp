@@ -68,10 +68,13 @@ void AveUnitCell::calculate()
 		count = 1;
 	}
 
+	std::cout << "Average unit cell: " << std::endl;
 	for (int j = 0; j < 6; j++)
 	{
 		_ucs[j] /= (double)count;
+		std::cout << _ucs[j] << " ";
 	}
+	std::cout << std::endl;
 }
 
 double AveUnitCell::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
@@ -89,6 +92,8 @@ double AveUnitCell::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 		add_to_CD(&cd, uc1[j], uc2[j]);
 	}
 	
+	cd.sum_x = 0;
+	cd.sum_y = 0;
 	double correl = evaluate_CD(cd);
 	return correl;
 }

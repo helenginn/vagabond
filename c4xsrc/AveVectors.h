@@ -66,6 +66,8 @@ public:
 		return _vectors.size();
 	}
 	
+	static void clearVectors();
+	
 	static void setEnabled(int i, bool e)
 	{
 		_enabled[i] = e;

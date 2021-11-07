@@ -24,11 +24,10 @@
 #include <vector>
 #include "shared_ptrs.h"
 #include <hcsrc/mat3x3.h>
-#include "Object.h"
 #include <string>
 #include <map>
 #include <hcsrc/maths.h>
-#include "Molecule.h"
+#include "TotalModel.h"
 #include "../libccp4/csymlib.h"
 #include <iostream>
 
@@ -47,11 +46,10 @@ typedef enum
 	JobPositions,
 	JobWholeMol,
 	JobIntraMol,
+	JobKeyPoints,
 	JobBackbone,
 	JobSidechain,
 } JobType;
-
-typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
 typedef double (*option_getter)();
 
@@ -147,7 +145,7 @@ inline void makeShells(std::vector<ShellInfo> *shells, double min, double max,
 
 namespace Vagabond
 {
-class Crystal : public Object, public AtomGroup
+class Crystal : public TotalModel
 {
 public:
 	CrystalPtr shared_from_this()
@@ -157,7 +155,6 @@ public:
 	
 	Crystal();
 	virtual ~Crystal() {};
-	void addMolecule(MoleculePtr molecule);
 	
 	/**
 	* 	Conclude refinement finishes a round of refinement and triggesr an
@@ -184,41 +181,8 @@ public:
 	{
 		_silent = silent;
 	}
-	
-	/**
-	* How many molecules are included in a Crystal.
-	*/
-	size_t moleculeCount()
-	{
-		return _molecules.size();
-	}
 
-	/**
-	* 	get the stored molecule. Cannot guarantee order of molecules will be
-	* 	the same as in the PDB file, but adequate for looping over molecules.
-	*   \param i molecule number to obtain.
-	* 	*/
-	MoleculePtr molecule(long int i)
-	{
-		MoleculeMap::iterator it = _molecules.begin();
-		std::advance(it, i);
-		return it->second;
-	}
-
-	/**
-	* 	get the stored molecule by chain name.
-	*/
-	MoleculePtr molecule(std::string chain)
-	{
-		if (_molecules.count(chain))
-		{
-			return _molecules[chain];
-		}
-
-		return MoleculePtr();
-	}
-
-	void recalculateAtoms();
+	AtomPtr getClosestAtom(vec3 pos);
 
 	void setReal2Frac(mat3x3 mat);
 
@@ -271,14 +235,6 @@ public:
 	 *  total difference density */
 	void differenceAttribution();
 	
-	void removeAtom(AtomPtr atom);
-	void removeMolecule(MoleculePtr mol);
-
-	/** Calculates the anchor residue for each Polymer and assigns to each. */
-	void setAnchors();
-	
-	size_t polymerCount();
-	
 	/** Prints scattering proportion in this crystal determined by bonds. */
 	void tiedUpScattering();
 	
@@ -329,21 +285,7 @@ public:
 	}
 	
 	void hydrogenateContents();
-	
-	/**
-	* 	
-	*/
-	AtomPtr getClosestAtom(vec3 pos);
 
-	void setFilename(std::string file)
-	{
-		_filename = file;
-	}
-
-	std::string getFilename()
-	{
-		return _filename;
-	}
 
 	void setSpaceGroup(CSym::CCP4SPG *spg)
 	{
@@ -431,7 +373,6 @@ public:
 	void pruneWaters();
 	void resetMotions();
 	void savePositions();
-	void refreshAnchors();
 	void closenessSummary();
 	void makeOverallMotion();
 	MotionPtr getOverallMotion();
@@ -439,13 +380,6 @@ public:
 
 	void addPDBContents(std::string pdb);
 	void updatePDBContents(std::string pdbName);
-	
-	void addMotion(MotionPtr mot, PolymerPtr pol = PolymerPtr());
-	
-	size_t motionCount()
-	{
-		return _motions.size();
-	}
 	
 	double getRWork()
 	{
@@ -549,8 +483,6 @@ private:
 	void saveAtomsForThreading();
 	void fusePolymers();
 
-	MoleculeMap _molecules;
-	std::string _filename;
 	std::string _vbondFile;
 
 	std::vector<double> _unitCell;
@@ -575,7 +507,6 @@ private:
 	
 	std::map<double, double> _resBinAves;
 	std::vector<ShellInfo> _shells;
-	std::vector<MotionPtr> _motions;
 
 	double _rWork;
 	double _rFree;

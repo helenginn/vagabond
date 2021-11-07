@@ -29,6 +29,7 @@ bool QuickAtoms::_loadedAtoms = false;
 QuickAtoms::QuickAtoms(CrystalPtr crystal)
 {
 	_crystal = crystal;
+	_fetch = true;
 }
 
 void QuickAtoms::addFromChain(QuickAtoms *other, std::string chain)
@@ -115,7 +116,7 @@ void QuickAtoms::divideThrough()
 
 void QuickAtoms::fetchAtoms()
 {
-	if (_crystal == NULL)
+	if (_crystal == NULL || !_fetch)
 	{
 		return;
 	}
@@ -171,6 +172,7 @@ void QuickAtoms::addSequentialAtom(std::string chain, vec3 pos)
 {
 	_loadedAtoms = true;
 	_chainMap[chain].push_back(pos);
+	_countMap[chain].push_back(1);
 }
 
 void QuickAtoms::populatePolymer(PolymerPtr p)

@@ -19,6 +19,7 @@
 #include "ccp4_mat.h"
 #include "SymAtom.h"
 #include "Options.h"
+#include "Crystal.h"
 
 SymAtom::SymAtom(Atom &parent) : Atom(parent)
 {

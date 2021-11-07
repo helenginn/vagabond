@@ -41,6 +41,7 @@ typedef enum
 	InstructionTypeResetIntra,
 	InstructionTypeFindDisulphides,
 	InstructionTypeRefineIntramolecule,
+	InstructionTypeRefineKeyPoints,
 	InstructionTypeSplitBond,
 	InstructionTypeAdjustBFactor,
 	InstructionTypeRefitBackbone,

@@ -77,7 +77,7 @@ vec3 Anisotropicator::longestAxis()
 void Anisotropicator::findPrincipleAxes()
 {
 	mat matrix = NULL;
-	double w[3];
+	double w[3] = {0, 0, 0};
 	mat3x3_to_2d_array(_tensor, &matrix);
 	mat v = NULL;
 	mat3x3_to_2d_array(_tensor, &v);

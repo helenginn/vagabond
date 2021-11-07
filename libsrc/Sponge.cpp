@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include "Sponge.h"
+#include "Crystal.h"
 #include "Atom.h"
 #include <hcsrc/Any.h>
 #include "Options.h"

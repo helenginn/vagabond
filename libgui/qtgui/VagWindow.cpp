@@ -178,6 +178,8 @@ void VagWindow::makeMenu()
 	         InstructionTypeFitTranslation);
 	menuItem(mRefine, "Intramolecule movements",
 	         InstructionTypeRefineIntramolecule);
+	menuItem(mRefine, "Keypoint movements",
+	         InstructionTypeRefineKeyPoints);
 	menuItem(mRefine, "Sidechain positions to density", 
 	         InstructionTypeRefineSidePos);
 	menuItem(mRefine, "Sidechains to density",
@@ -440,6 +442,12 @@ int VagWindow::waitForInstructions()
 				disable();
 				crystal->refineSidechainPositions();
 				options->recalculateFFT();
+				enable();
+				break;
+
+				case InstructionTypeRefineKeyPoints:
+				disable();
+				refineKeyPoints();
 				enable();
 				break;
 
@@ -1043,7 +1051,8 @@ void VagWindow::refineBackbone()
 	}
 
 	Polymer *p = static_cast<Polymer *>(getObject());
-	p->refineBackbone();
+	p->scoreMonomers();
+	p->refine(Options::getActiveCrystal(), RefinementCrude);
 	
 	setMessage("Refined backbone for chain " + p->getChainID());
 }
@@ -1113,6 +1122,22 @@ void VagWindow::resetIntramolecule()
 
 	Polymer *p = static_cast<Polymer *>(getObject());
 	p->removeIntramolecularMotion();
+}
+
+void VagWindow::refineKeyPoints()
+{
+	OptionsPtr options = Options::getRuntimeOptions();
+	CrystalPtr crystal = options->getActiveCrystal();
+
+	if (getObject() == NULL)
+	{
+		crystal->refineThreaded(JobKeyPoints);
+		options->recalculateFFT();
+		return;
+	}
+
+	Polymer *p = static_cast<Polymer *>(getObject());
+	p->refineLocalFlexibility(true);
 }
 
 void VagWindow::refineIntramolecule()

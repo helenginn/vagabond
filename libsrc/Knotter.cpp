@@ -785,6 +785,12 @@ void Knotter::makeValine()
 	AtomPtr cBeta = _sidechain->findAtom("CB");
 	AtomPtr cGamma1 = _sidechain->findAtom("CG1");
 	AtomPtr cGamma2 = _sidechain->findAtom("CG2");
+	
+	if (Options::swapValines())
+	{
+		cGamma1->setAtomName("CG2");
+		cGamma2->setAtomName("CG1");
+	}
 
 	tieBetaCarbon(cGamma1);
 

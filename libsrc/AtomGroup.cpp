@@ -26,6 +26,7 @@
 #include "Bond.h"
 #include <sstream>
 #include "Crystal.h"
+#include "Molecule.h"
 #include <iomanip>
 #include "CSV.h"
 #include "Bucket.h"

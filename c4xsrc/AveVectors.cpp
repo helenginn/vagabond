@@ -122,6 +122,14 @@ void AveVectors::load()
 
 void AveVectors::setVector(std::string name, std::vector<double> vec)
 {
+	std::cout << name << ": ";
+	
+	for (size_t i = 0; i < vec.size(); i++)
+	{
+		std::cout << vec[i] << " ";
+	}
+	std::cout << std::endl;
+	
 	_ids[name]++;
 	_vectors[name] = vec;
 	_names.push_back(name);
@@ -220,11 +228,12 @@ void AveVectors::calculate()
 
 std::vector<double> AveVectors::adjustedVector(int j)
 {
-	if (_averageVec.size() == 0)
+	std::vector<double> v = vector(j);
+
+	if (_averageVec.size() < v.size() || _sigVec.size() < v.size())
 	{
 		calculate();
 	}
-	std::vector<double> v = vector(j);
 	
 	std::cout << _averageVec.size() << std::endl;
 	std::cout << _sigVec.size() << std::endl;
@@ -285,4 +294,13 @@ double AveVectors::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 	cd.sum_x = 0;
 	cd.sum_y = 0;
 	return evaluate_CD(cd);
+}
+
+void AveVectors::clearVectors()
+{
+	_names.clear();
+	_titles.clear();
+	_enabled.clear();
+	_ids.clear();
+	_vectors.clear();
 }

@@ -19,6 +19,7 @@
 #include "Blob.h"
 #include "FFT.h"
 #include "Options.h"
+#include "Crystal.h"
 #include <cfloat>
 #include <iostream>
 

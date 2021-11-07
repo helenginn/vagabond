@@ -106,12 +106,6 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	}
 }
 
-void VagFFT::prepareShortScratch()
-{
-	_shortScratch = (float *)fftwf_malloc(_nn * sizeof(float));
-	memset(_shortScratch, '\0', _nn * sizeof(float));
-}
-
 VagFFT::~VagFFT()
 {
 	if (_data != NULL)
@@ -126,7 +120,6 @@ VagFFT::VagFFT(int nx, int ny, int nz, int nele, int scratches)
 {
 	_isCubic = false;
 	_bFactor = 0;
-	_shortScratch = NULL;
 	_nx = nx;
 	_ny = ny;
 	_nz = nz;
@@ -479,7 +472,6 @@ void VagFFT::prepareAtomSpace()
 	if (_status == FFTEmpty)
 	{
 		setupElements();
-		prepareShortScratch();
 	}
 
 	_status = FFTSeparateAtoms;
@@ -802,7 +794,6 @@ void VagFFT::addInterpolatedToReal(double sx, double sy,
 				}
 				
 				_data[findex][0] += prop * val;
-//				_shortScratch[index] += prop * val;
 			}	
 		}
 	}

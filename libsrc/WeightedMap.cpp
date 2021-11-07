@@ -602,6 +602,12 @@ void WeightedMap::createVagaCoefficients()
 	std::vector<ThreadMap *> maps;
 	std::vector<ThreadScratch *> threads;
 	int max_threads = std::min((int)Options::threads(), (int)MAX_SLICES);
+	
+	if (max_threads > 2)
+	{
+		max_threads = 2;
+	}
+	std::cout << "Max threads: " << max_threads << std::endl;
 
 	_difft->wipe();
 	_difft->setStatus(FFTRealSpace);
@@ -638,18 +644,16 @@ void WeightedMap::createVagaCoefficients()
 		threads[i]->thr->join();
 	}
 	
-	/*
-	for (int i = 0; i <= MAX_SLICES; i++)
+	for (int i = 0; i < max_threads; i++)
 	{
-		double weight = oneMap(scratch, idxs, i, true);
-		scratch->fft(FFTReciprocalToReal);
-		scratch->multiplyAll(weight);
-		_difft->addSimple(scratch);
-		scratch->wipe();
-		scratch->multiplyAll(0);
-		scratch->setStatus(FFTEmpty);
+		delete threads[i]->thr;
+		delete threads[i];
 	}
-	*/
+
+	for (int i = 0; i < MAX_SLICES * 2; i++)
+	{
+		delete maps[i];
+	}
 	
 	double normalise = 1 / _allWeights;
 	_difft->multiplyAll(normalise);

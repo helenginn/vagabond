@@ -12,6 +12,7 @@
 #include "../Selected2GL.h"
 #include "../../libsrc/shared_ptrs.h"
 #include "../../libsrc/Options.h"
+#include "../../libsrc/Crystal.h"
 #include <QCursor>
 #include "../BlobMesh.h"
 #include <cfloat>

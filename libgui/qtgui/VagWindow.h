@@ -138,6 +138,7 @@ private:
 	void refineSponges();
 	void modelPosToEnd();
 	void refineBackbone();
+	void refineKeyPoints();
 	void sidechainsToEnd();
 	void refineSidechains();
 	void fitWholeMolecules();

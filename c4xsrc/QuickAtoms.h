@@ -70,6 +70,12 @@ public:
 		return _crystal;
 	}
 	
+	void setCrystal(CrystalPtr crystal, bool fetch)
+	{
+		_crystal = crystal;
+		_fetch = fetch;
+	}
+	
 	static bool loadedAtoms()
 	{
 		return _loadedAtoms;
@@ -80,6 +86,7 @@ private:
 	void addFromChain(QuickAtoms *other, std::string chain);
 	void populatePolymer(PolymerPtr p);
 	CrystalPtr _crystal;
+	bool _fetch;
 
 	std::map<std::string, Vec3Vec> _chainMap;
 	std::map<std::string, Counts> _countMap;

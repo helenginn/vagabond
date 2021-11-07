@@ -48,6 +48,7 @@
 #define ToSidechainPtr(a) (boost::static_pointer_cast<Sidechain>((a)))
 #define ToBackbonePtr(a) (boost::static_pointer_cast<Backbone>((a)))
 #define ToCrystalPtr(a) (boost::static_pointer_cast<Vagabond::Crystal>((a)))
+#define ToTotalModelPtr(a) (boost::static_pointer_cast<TotalModel>((a)))
 #define DynCrystalPtr(a) (boost::dynamic_pointer_cast<Vagabond::Crystal>((a)))
 #define ToKeyGroupPtr(a) (boost::static_pointer_cast<KeyPoints>((a)))
 #define ToAtomPtr(a) (boost::static_pointer_cast<Atom>((a)))
@@ -85,6 +86,8 @@ class SpaceWarp;
 typedef boost::shared_ptr<VagFFT> VagFFTPtr;
 typedef boost::shared_ptr<SpaceWarp> SpaceWarpPtr;
 
+
+class TotalModel;
 namespace Vagabond
 {
 	class Crystal;
@@ -92,6 +95,7 @@ namespace Vagabond
 
 typedef boost::shared_ptr<Vagabond::Crystal> CrystalPtr;
 typedef boost::weak_ptr<Vagabond::Crystal> CrystalWkr;
+typedef boost::shared_ptr<TotalModel> TotalModelPtr;
 
 class Chromosomal;
 typedef boost::shared_ptr<Chromosomal> ChromosomalPtr;

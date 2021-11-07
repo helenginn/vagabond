@@ -63,6 +63,7 @@
 
 Screen::Screen(QWidget *widget) : QMainWindow(widget)
 {
+	_columnView = NULL;
 	_returnJourney = NULL;
 	setGeometry(0, 0, 900, 600);
 

@@ -21,6 +21,7 @@
 #include "Anchor.h"
 #include "Options.h"
 #include "Crystal.h"
+#include "Molecule.h"
 #include "Atom.h"
 
 void Novalent::initialise()

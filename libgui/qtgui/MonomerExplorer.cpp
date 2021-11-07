@@ -6,6 +6,7 @@
 #include "../../libsrc/Atom.h"
 #include "../../libsrc/Bond.h"
 #include "../../libsrc/Whack.h"
+#include "../../libsrc/Crystal.h"
 #include <hcsrc/FileReader.h>
 #include "../../libsrc/Notifiable.h"
 #include "../../libsrc/Options.h"

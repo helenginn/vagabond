@@ -23,6 +23,7 @@
 #include "Monomer.h"
 #include "Polymer.h"
 #include "Options.h"
+#include "Crystal.h"
 
 Bond::~Bond()
 {
@@ -780,6 +781,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 			double mult = *(prevs->at(i).mult);
 
 			kickValue = sinAlpha;
+			kickValue = thisDeviation.z;
 			kickValue *= mult;
 
 			if (kickValue != kickValue)
@@ -1171,6 +1173,7 @@ void Bond::propagateChange(int depth, bool refresh)
 
 	/* Iterative now */
 	std::vector<BondInt> propagateBonds;
+	propagateBonds.reserve(10);
 	BondInt pair;
 	pair.bond = shared_from_this();
 	pair.bondNum = depth;

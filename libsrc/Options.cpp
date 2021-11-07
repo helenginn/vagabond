@@ -24,6 +24,7 @@
 #include "Shouter.h"
 #include <iomanip>
 #include "Polymer.h"
+#include "Crystal.h"
 #include <hcsrc/Timer.h>
 #include "WaterNetwork.h"
 #include <hcsrc/FileReader.h>
@@ -56,6 +57,7 @@ int Options::_maxRot = 3;
 bool Options::_diagnostics = false;
 bool Options::_usePartial = false;
 bool Options::_convertWaters = false;
+bool Options::_swapVals = false;
 
 bool Options::_refine = false;
 bool Options::_screw = false;
@@ -167,7 +169,6 @@ void Options::run()
 		diffraction->setFilename(_mtzFile);
 		diffraction->load();
 
-		objects.push_back(diffraction);
 		datasets.push_back(diffraction);
 		diffractions.push_back(diffraction);
 	}
@@ -353,7 +354,7 @@ void Options::executeProtocol()
 
 		if (_rInter)
 		{
-			int total = (i == 0 ? 2 : 1);
+			int total = (i == 0 ? 1 : 1);
 				
 			for (int j = 0; j < total; j++)
 			{
@@ -709,6 +710,7 @@ void Options::parse()
 		understood |= parseParameter(arg, "rfree", &_useRFree);
 		understood |= parseParameter(arg, "diagnostics", &_diagnostics);
 		understood |= parseParameter(arg, "convert-waters", &_convertWaters);
+		understood |= parseParameter(arg, "swap-valines", &_swapVals);
 		understood |= parseParameter(arg, "partial", &_usePartial);
 		understood |= parseParameter(arg, "fit-solvent", &_fitBucket);
 		understood |= parseParameter(arg, "hydrogens", &_hydrogens);
@@ -911,7 +913,6 @@ void Options::openMTZ(std::string mtzName)
 	diffraction->setFilename(mtzName);
 	diffraction->load();
 
-	objects.push_back(diffraction);
 	datasets.push_back(diffraction);
 	diffractions.push_back(diffraction);
 
@@ -1122,4 +1123,10 @@ void Options::changeSamplesAndFit(void *, double n)
        setNSamples(NULL, n);
        getActiveCrystal()->refreshAnchors();
        getActiveCrystal()->refreshPositions();
+}
+
+void Options::addCrystal(ParserPtr cryst)
+{
+	CrystalPtr crystal = ToCrystalPtr(cryst);
+	crystals.push_back(crystal);
 }

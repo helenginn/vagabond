@@ -88,22 +88,6 @@ void Crystal::tieAtomsUp()
 	_tied = true;
 }
 
-void Crystal::addMolecule(MoleculePtr molecule)
-{
-	if (!molecule)
-	{
-		return;
-	}
-
-	if (molecule->getChainID().length() <= 0)
-	{
-		shout_at_helen("Polymer chain ID is missing while trying\n"\
-		               "to interpret PDB file.");
-	}
-
-	_molecules[molecule->getChainID()] = molecule;
-}
-
 void Crystal::setReal2Frac(mat3x3 mat)
 {
 	_real2frac = mat;
@@ -221,6 +205,10 @@ void serveNextPolymer(std::vector<ThreadPolymer *> *pols, JobType type)
 			{
 				pols->at(i)->pol->refineLocalFlexibility(false);
 			}
+			else if (type == JobKeyPoints)
+			{
+				pols->at(i)->pol->refineLocalFlexibility(true);
+			}
 			else if (type == JobBackbone)
 			{
 //				pols->at(i)->pol->refineBackbone();
@@ -281,7 +269,7 @@ bool Crystal::refineThreaded(JobType type, int total)
 		
 		PolymerPtr pol = ToPolymerPtr(molecule(i));
 		pol->clearParams();
-		if (type != JobPositions && type != JobIntraMol)
+		if (type == JobSidechain || type == JobBackbone)
 		{
 			pol->scoreMonomers();
 		}
@@ -299,6 +287,7 @@ bool Crystal::refineThreaded(JobType type, int total)
 		{
 			pol->setStream(&std::cout);
 		}
+
 		pols.push_back(thrp);
 	}
 	
@@ -319,6 +308,13 @@ bool Crystal::refineThreaded(JobType type, int total)
 	for (size_t i = 0; i < threads.size(); i++)
 	{
 		delete threads[i];
+	}
+	
+	for (size_t i = 0; i < pols.size(); i++)
+	{
+		std::cout << pols[i]->o.str();
+		pols[i]->pol->setStream(&std::cout);
+		delete pols[i];
 	}
 	
 	std::cout << std::endl;
@@ -385,15 +381,6 @@ void Crystal::realSpaceClutter()
 	addToMap(_fft);
 }
 
-void Crystal::recalculateAtoms()
-{
-	empty();
-	
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		addAtomsFrom(molecule(i));
-	}
-}
 
 void Crystal::prepareFFT(VagFFTPtr ft)
 {
@@ -709,8 +696,11 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 				}
 				else
 				{
-					csv->addEntry(3, (double)i, (double)j, (double)k, 
-					              amp1, amp2);
+					if (Options::makeDiagnostics())
+					{
+						csv->addEntry(3, (double)i, (double)j, (double)k, 
+						              amp1, amp2);
+					}
 
 					if (!isFree)
 					{
@@ -726,29 +716,29 @@ double Crystal::valueWithDiffraction(DiffractionPtr data, two_dataset_op op,
 			}
 		}
 	}
-	
+
 	if (op == r_factor && allShells)
 	{
 		_correlPlotNum++;
 		std::string correlName = "correlplot_" + i_to_str(_correlPlotNum);
 		csv->setSubDirectory("correlation_plots");
-		
+
 		if (Options::makeDiagnostics())
 		{
 			csv->writeToFile(correlName + ".csv");
+			std::map<std::string, std::string> plotMap;
+			plotMap["filename"] = correlName;
+			plotMap["xHeader0"] = "fo";
+			plotMap["yHeader0"] = "fc";
+			plotMap["colour0"] = "black";
+
+			plotMap["xTitle0"] = "Fo amplitude";
+			plotMap["yTitle0"] = "Fc amplitude";
+			plotMap["style0"] = "scatter";
+			csv->plotPNG(plotMap);
 		}
-
-		std::map<std::string, std::string> plotMap;
-		plotMap["filename"] = correlName;
-		plotMap["xHeader0"] = "fo";
-		plotMap["yHeader0"] = "fc";
-		plotMap["colour0"] = "black";
-
-		plotMap["xTitle0"] = "Fo amplitude";
-		plotMap["yTitle0"] = "Fc amplitude";
-		plotMap["style0"] = "scatter";
-		csv->plotPNG(plotMap);
 	}
+
 
 	if (allShells && !_silent)
 	{
@@ -1102,61 +1092,7 @@ void Crystal::tiedUpScattering()
 	std::cout << std::endl;
 }
 
-void Crystal::setAnchors()
-{
-	std::string anchor = Options::anchorString();
-	std::vector<std::string> components = split(anchor, ',');
-	
-	for (int i = 0; i < components.size(); i++)
-	{
-		std::string chain = "";
-		std::string number = "";
-
-		for (int j = 0; j < components[i].length(); j++)
-		{
-			if (components[i][j] >= '0' && components[i][j] <= '9')
-			{
-				number.push_back(components[i][j]);
-			}
-			else
-			{
-				chain.push_back(components[i][j]);
-			}
-		}
-		
-		int anchorPoint = atoi(number.c_str());
-		
-		for (int i = 0; i < moleculeCount(); i++)
-		{
-			std::string thisChain = molecule(i)->getChainID();
-			std::string truncated = thisChain.substr(0, chain.length());
-			
-			if (molecule(i)->isPolymer() && 
-			    chain == truncated)
-			{
-				PolymerPtr polymer = ToPolymerPtr(molecule(i));
-				polymer->setAnchor(anchorPoint);
-				std::cout << "Setting custom anchor " << anchorPoint;
-				std::cout << " for chain " << chain << std::endl;
-			}
-		}
-
-	}
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (molecule(i)->getClassName() == "Polymer")
-		{
-			PolymerPtr polymer = ToPolymerPtr(molecule(i));
-			if (polymer->getAnchor() < 0)
-			{
-				polymer->findAnchorNearestCentroid();
-			}
-		}
-	}
-}
-
-Crystal::Crystal()
+Crystal::Crystal() : TotalModel()
 {
 	_dataWilsonB = 0;
 	_lastLocalCC = 0;
@@ -1360,23 +1296,6 @@ void Crystal::makeOverallMotion()
 	}
 }
 
-size_t Crystal::polymerCount()
-{
-	size_t count = 0;
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isPolymer())
-		{
-			continue;
-		}
-
-		count++;
-	}
-
-	return count;
-}
-
 void Crystal::fitWholeMolecules(bool recip)
 {
 	std::cout << "Refining in real space." << std::endl;
@@ -1426,6 +1345,11 @@ void Crystal::fitWholeMolecules(bool recip)
 	{
 		delete threads[i];
 	}
+
+	for (size_t i = 0; i < pols.size(); i++)
+	{
+		delete pols[i];
+	}
 }
 
 void Crystal::rigidBodyRefinement()
@@ -1439,7 +1363,8 @@ void Crystal::rigidBodyRefinement()
 
 void Crystal::addProperties()
 {
-	addStringProperty("filename", &_filename);
+	TotalModel::addProperties();
+
 	addDoubleProperty("uc_a", &_unitCell[0]);
 	addDoubleProperty("uc_b", &_unitCell[1]);
 	addDoubleProperty("uc_c", &_unitCell[2]);
@@ -1456,6 +1381,7 @@ void Crystal::addProperties()
 	addIntProperty("cycles_since_best", &_sinceBestNum);
 	addIntProperty("sample_num", &_sampleNum);
 	addDoubleProperty("grid_size", &_sampling);
+	addBoolProperty("tied", &_tied);
 
 	_spgNum = 0;
 	_spgString = "";
@@ -1468,11 +1394,6 @@ void Crystal::addProperties()
 
 	addIntProperty("spacegroup", &(_spgNum));
 	addStringProperty("spg_symbol", &(_spgString));
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		addChild("molecule", molecule(i));
-	}
 	
 	for (size_t i = 0; i < motionCount(); i++)
 	{
@@ -1495,17 +1416,7 @@ void Crystal::vsRestoreState(void *object, double val)
 
 void Crystal::addObject(ParserPtr object, std::string category)
 {
-	if (category == "molecule")
-	{
-		MoleculePtr molecule = ToMoleculePtr(object);
-		addMolecule(molecule);
-	}
-
-	if (category == "motion")
-	{
-		MotionPtr motion = ToMotionPtr(object);
-		addMotion(motion);
-	}
+	TotalModel::addObject(object, category);
 
 	if (category == "blob")
 	{
@@ -1525,39 +1436,10 @@ void Crystal::postParseTidy()
 		_spaceGroup = CSym::ccp4spg_load_by_spgname(_spgString.c_str());
 	}
 
-	for (int i = 0; i < motionCount(); i++)
-	{
-		_motions[i]->updateAtoms();
-		_motions[i]->absorbScale();
-	}
-
 	setupSymmetry();
-	recalculateAtoms();
 	_tied = true;
-}
-
-AtomPtr Crystal::getClosestAtom(vec3 pos)
-{
-	AtomPtr atom;
-	double small_dist = FLT_MAX;
-
-	CrystalPtr me = shared_from_this();
-	for (size_t i = 0; i < moleculeCount(); i++)
-	{
-		AtomPtr tmp = molecule(i)->getClosestAtom(me, pos);
-		vec3 tmp_pos = tmp->getPositionInAsu();
-
-		vec3 diff = vec3_subtract_vec3(pos, tmp_pos);
-		double dist = vec3_length(diff);
-		
-		if (tmp && dist < small_dist)
-		{
-			small_dist = dist;
-			atom = tmp;
-		}
-	}
 	
-	return atom;
+	TotalModel::postParseTidy();
 }
 
 void Crystal::wrapUpRefinement()
@@ -1904,55 +1786,6 @@ void Crystal::savePositions()
 	}
 }
 
-void Crystal::removeMolecule(MoleculePtr mol)
-{
-	std::cout << "Removing molecule " << mol->getChainID() << std::endl;
-
-	for (int i = 0; i < mol->atomCount(); i++)
-	{
-		if (mol->isPolymer())
-		{
-			PolymerPtr pol = ToPolymerPtr(mol);
-			pol->removeAtom(mol->atom(i));
-		}
-
-		removeAtom(mol->atom(i));
-		i--;
-	}
-	
-	_molecules.erase(mol->getChainID());
-}
-
-void Crystal::removeAtom(AtomPtr atom)
-{
-	std::cout << "Removing atom " << atom->longDesc() << std::endl;
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		molecule(i)->removeAtom(atom);
-	}
-	
-	AtomGroup::removeAtom(atom);
-}
-
-void Crystal::refreshAnchors()
-{
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (molecule(i)->isPolymer())
-		{
-			PolymerPtr pol = ToPolymerPtr(molecule(i));
-
-			if (pol->getAnchorModel())
-			{
-				pol->getAnchorModel()->forceRefresh();
-			}
-		}
-	}
-
-	refreshPositions();
-}
-
 void Crystal::updatePDBContents(std::string pdbName)
 {
 	int missed = 0;
@@ -2154,36 +1987,6 @@ void Crystal::resetMotions()
 	}
 	
 	refreshPositions();
-}
-
-void Crystal::addMotion(MotionPtr mot, PolymerPtr origPol)
-{
-	_motions.push_back(mot);
-	
-	if (!origPol)
-	{
-		return;
-	}
-	
-	char first = origPol->getChainID()[0];
-
-	for (int i = 0; i < moleculeCount(); i++)
-	{
-		if (!molecule(i)->isPolymer() || molecule(i) == origPol)
-		{
-			continue;
-		}
-		
-		if (!ToPolymerPtr(molecule(i))->isFullyTied())
-		{
-			continue;
-		}
-		
-		if (molecule(i)->getChainID()[0] == first)
-		{
-			mot->addToPolymer(ToPolymerPtr(molecule(i)));
-		}
-	}
 }
 
 void Crystal::pruneWaters()
@@ -2432,4 +2235,28 @@ void Crystal::bestGlobalParameters()
 	scaler.findHetatmBSub();
 	scaler.findBestProbeRadius();
 	scaler.findProteinSampling();
+}
+
+AtomPtr Crystal::getClosestAtom(vec3 pos)
+{
+	AtomPtr atom;
+	double small_dist = FLT_MAX;
+
+	CrystalPtr me = shared_from_this();
+	for (size_t i = 0; i < moleculeCount(); i++)
+	{
+		AtomPtr tmp = molecule(i)->getClosestAtom(me, pos);
+		vec3 tmp_pos = tmp->getPositionInAsu();
+
+		vec3 diff = vec3_subtract_vec3(pos, tmp_pos);
+		double dist = vec3_length(diff);
+		
+		if (tmp && dist < small_dist)
+		{
+			small_dist = dist;
+			atom = tmp;
+		}
+	}
+	
+	return atom;
 }

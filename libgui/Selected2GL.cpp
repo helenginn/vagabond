@@ -20,6 +20,7 @@
 #include "Selected.h"
 #include "Selected2GL.h"
 #include "Density2GL.h"
+#include "../libsrc/Crystal.h"
 #include "qtgui/VagabondGLWidget.h"
 #include "../libsrc/Monomer.h"
 #include "../libsrc/Absolute.h"
