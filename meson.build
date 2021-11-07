@@ -213,8 +213,8 @@ files = [
 'libgui/qtgui/VagWindow.cpp'
 ]
 
-executable('vagabond-gui', base_files, files,
-moc_files, dependencies: [qt5_dep, dep_ica, helen3d_dep, helencore_dep,
+executable('vagabond-gui', files,
+moc_files, dependencies: [dep_vag, qt5_dep, dep_ica, helen3d_dep, helencore_dep,
 dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_dep, thread_fft_dep, boost_dep], 
 include_directories: subincludes,
 install: true, cpp_args: ['-w', '-std=c++11'])
