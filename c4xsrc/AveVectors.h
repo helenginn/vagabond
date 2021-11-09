@@ -105,11 +105,15 @@ public:
 	
 	std::vector<double> adjustedVector(int i);
 
+	void incorporateAverages();
 	void load();
 	void preparePaths();
+	void setAveDev(bool ave, bool dev);
 	void setVector(std::string name, std::vector<double> vec);
 	virtual double findCorrelation(MtzFFTPtr one, MtzFFTPtr two);
 	virtual void calculate();
+	void transpose();
+	void exportValues(std::string filename);
 private:
 	void loadTitles(std::string line);
 	std::string _csv;

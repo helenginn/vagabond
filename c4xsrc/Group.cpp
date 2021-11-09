@@ -784,7 +784,7 @@ void Group::exportCoordinates(std::string filename)
 	for (size_t i = 0; i < mtzCount(); i++)
 	{
 		file << getMtzFile(i)->metadata() << ", ";
-		for (size_t j = 0; j < 3; j++)
+		for (size_t j = 0; j < mtzCount(); j++)
 		{
 			file << _svdPtrs[i][j] << ", ";
 		}
@@ -793,3 +793,12 @@ void Group::exportCoordinates(std::string filename)
 
 	file.close();
 }
+
+void Group::exportValues(std::string filename)
+{
+	if (getWorkingSet()->vectors != NULL)
+	{
+		getWorkingSet()->vectors->exportValues(filename);
+	}
+}
+

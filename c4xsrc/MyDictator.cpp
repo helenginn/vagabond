@@ -46,6 +46,11 @@ bool MyDictator::processRequest(std::string first, std::string last)
 		to_lower(last);
 		_properties["average"] = last;
 	}
+	else if (first == "transpose")
+	{
+		to_lower(last);
+		_properties["transpose"] = last;
+	}
 	else if (first == "load-vectors")
 	{
 		_list->loadFromVectorList(last);

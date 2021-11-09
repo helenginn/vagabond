@@ -83,6 +83,7 @@ public:
 	void clearSelection();
 	void invertSelection();
 	void exportAll(ExportType type);
+	void exportVectors();
 	
 	std::string valueForKey(std::string key)
 	{

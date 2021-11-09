@@ -122,6 +122,12 @@ void ClusterList::prepareMenu(const QPoint &p)
 			act = n->addAction("Enable all columns");
 			connect(act, &QAction::triggered, this, 
 			        &ClusterList::enableAllColumns);
+			act = m->addAction("Write vector file");
+			connect(act, &QAction::triggered, this, 
+			        &ClusterList::exportVectors);
+			act = m->addAction("Write cluster membership");
+			connect(act, &QAction::triggered, this, 
+			        &ClusterList::exportCoordinates);
 			altered = true;
 		}
 
@@ -1054,4 +1060,12 @@ void ClusterList::autoCluster()
 	cluster->setList(this);
 	cluster->cluster();
 	cluster->colour();
+}
+
+void ClusterList::exportVectors()
+{
+	Group *g = _lastAverage;
+	std::string filename = openDialogue(_screen, "Export coordinates", "*.csv");
+	g->exportValues(filename);
+
 }

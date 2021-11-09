@@ -122,14 +122,6 @@ void AveVectors::load()
 
 void AveVectors::setVector(std::string name, std::vector<double> vec)
 {
-	std::cout << name << ": ";
-	
-	for (size_t i = 0; i < vec.size(); i++)
-	{
-		std::cout << vec[i] << " ";
-	}
-	std::cout << std::endl;
-	
 	_ids[name]++;
 	_vectors[name] = vec;
 	_names.push_back(name);
@@ -137,6 +129,11 @@ void AveVectors::setVector(std::string name, std::vector<double> vec)
 
 void AveVectors::preparePaths()
 {
+	if (MyDictator::valueForKey("transpose") == "true")
+	{
+		transpose();
+	}
+
 	std::vector<DatasetPath> paths;
 	for (std::map<std::string, int>::iterator it = _ids.begin(); 
 	     it != _ids.end(); it++)
@@ -166,10 +163,26 @@ void AveVectors::calculate()
 	_averageVec.clear();
 	_sigVec.clear();
 	
-	for (size_t i = 0; i < group()->mtzCount(); i++)
+	std::vector<std::string> currentNames;
+
+	if (group())
 	{
-		MtzFFTPtr one = group()->getMtz(i);
-		std::string name = one->getMtzFile()->metadata();
+		for (size_t i = 0; i < group()->mtzCount(); i++)
+		{
+			MtzFFTPtr one = group()->getMtz(i);
+			std::string name = one->getMtzFile()->metadata();
+
+			currentNames.push_back(name);
+		}
+	}
+	else
+	{
+		currentNames = _names;
+	}
+
+	for (size_t i = 0; i < currentNames.size(); i++)
+	{
+		std::string name = currentNames[i];
 
 		if (_vectors.count(name) == 0)
 		{
@@ -235,16 +248,45 @@ std::vector<double> AveVectors::adjustedVector(int j)
 		calculate();
 	}
 	
-	std::cout << _averageVec.size() << std::endl;
-	std::cout << _sigVec.size() << std::endl;
 	for (size_t i = 0; i < v.size(); i++)
 	{
-		std::cout << i << " " << v[i] << std::endl;
 		v[i] -= _averageVec[i];
 		v[i] /= _sigVec[i];
 	}
 
 	return v;
+}
+
+void AveVectors::incorporateAverages()
+{
+	if (_averageVec.size() == 0)
+	{
+		calculate();
+	}
+
+	for (size_t i = 0; i < _names.size(); i++)
+	{
+		std::vector<double> vec = _vectors[_names[i]];
+		
+		for (size_t j = 0; j < _titles.size(); j++)
+		{
+			double mean = _averageVec[j];
+			double stdev = _sigVec[j];
+			if (MyDictator::valueForKey("average") == "false")
+			{
+				mean = 0;
+			}
+
+			if (MyDictator::valueForKey("stdev") != "true")
+			{
+				stdev = 1;
+			}
+
+			double x = (vec[j] - mean) / stdev;
+			std::cout << vec[j] << " becomes " << x << std::endl;
+			_vectors[_names[i]][j] = x;
+		}
+	}
 }
 
 double AveVectors::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
@@ -293,6 +335,13 @@ double AveVectors::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 
 	cd.sum_x = 0;
 	cd.sum_y = 0;
+	
+	if (MyDictator::valueForKey("stdev") != "true")
+	{
+		double top = cd.sum_w * cd.sum_xy - cd.sum_x * cd.sum_y;
+		return top;
+	}
+
 	return evaluate_CD(cd);
 }
 
@@ -303,4 +352,99 @@ void AveVectors::clearVectors()
 	_enabled.clear();
 	_ids.clear();
 	_vectors.clear();
+}
+
+void AveVectors::transpose()
+{
+	_averageVec.clear();
+	_sigVec.clear();
+	incorporateAverages();
+	std::vector<std::string> newNames, newTitles;
+	std::map<std::string, int> newIds;
+	std::map<int, bool> newEnabled;
+	newNames = _titles;
+	newTitles = _names;
+	std::map<std::string, std::vector<double> > newVectors;
+
+	for (size_t i = 0; i < _titles.size(); i++)
+	{
+		newIds[_titles[i]]++;
+		
+		std::vector<double> newVec;
+		
+		for (size_t j = 0; j < _names.size(); j++)
+		{
+			std::vector<double> oldVec = _vectors[_names[j]];
+			newVec.push_back(oldVec[i]);
+		}
+
+		newVectors[_titles[i]] = newVec;
+		newEnabled[i] = true;
+	}
+	
+	_names = newNames;
+	_titles = newTitles;
+	_ids = newIds;
+	_enabled = newEnabled;
+	_vectors = newVectors;
+
+	_averageVec.clear();
+	_sigVec.clear();
+}
+
+void AveVectors::exportValues(std::string filename)	
+{
+	if (_averageVec.size() == 0)
+	{
+		calculate();
+	}
+
+	std::ofstream file;
+	file.open(filename);
+	
+	file << ",";
+
+	for (size_t j = 0; j < _titles.size(); j++)
+	{
+		file << _titles[j] << ",";
+	}
+	
+	file << std::endl;
+
+	for (size_t i = 0; i < _names.size(); i++)
+	{
+		std::vector<double> vec = _vectors[_names[i]];
+		file << _names[i] << ",";
+		
+		for (size_t j = 0; j < _titles.size(); j++)
+		{
+			double mean = _averageVec[j];
+			double stdev = _sigVec[j];
+			if (MyDictator::valueForKey("average") == "false")
+			{
+				mean = 0;
+			}
+
+			if (MyDictator::valueForKey("stdev") != "true")
+			{
+				stdev = 1;
+			}
+
+			double x = (vec[j] - mean) / stdev;
+			file << x << ",";
+		}
+
+		file << std::endl;
+	}
+
+	file.close();
+}
+
+void AveVectors::setAveDev(bool ave, bool dev)
+{
+	std::string aveStr = ave ? "true" : "false";
+	std::string devStr = dev ? "true" : "false";
+	MyDictator::setValueForKey("average", aveStr);
+	MyDictator::setValueForKey("stdev", devStr);
+
 }
