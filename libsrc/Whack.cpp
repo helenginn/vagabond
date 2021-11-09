@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Whack.h"
+#include "SpaceSample.h"
 #include "KeyPoints.h"
 #include <iomanip>
 #include "Bond.h"
@@ -138,7 +139,7 @@ void Whack::addToAnchor(AnchorPtr anchor)
 
 void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 {
-	if (fabs(_whack) < 1e-6 || !_enabled)
+	if (!_enabled)
 	{
 		return;
 	}
@@ -147,6 +148,7 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 	
 	AtomPtr anchAtom = anchor->getAtom();
 	AtomPtr bondAtom = _bond->getAtom();
+	int resi = bondAtom->getResidueNum();
 	
 	double check = 0;
 
@@ -154,8 +156,14 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 	{
 		double kickvalue = _samples[i].kickValue;
 		double mag = kickvalue * fullWhack();
-		anchSamp[i].kickValue = mag;
 		check += mag;
+		
+		if (_samples[i].space != NULL)
+		{
+			mag	+= _samples[i].space->getWhackDeviation(resi, i);
+		}
+
+		anchSamp[i].kickValue = mag;
 	}
 
 	check /= (double)anchSamp.size();

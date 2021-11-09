@@ -32,6 +32,8 @@
 
 typedef std::map<std::string, MoleculePtr> MoleculeMap;
 
+class ConfSpace;
+
 class TotalModel : public AtomGroup
 {
 public:
@@ -121,6 +123,7 @@ public:
 	void tiedUpScattering();
 	
 	WaterNetworkPtr getWaterNetwork();
+	void setupConformationalSpace();
 protected:
 
 	virtual void addProperties();
@@ -132,6 +135,7 @@ protected:
 	std::string _filename;
 	bool _tied;
 	int _sampleNum;
+	ConfSpace *_confSpace;
 private:
 
 };

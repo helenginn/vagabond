@@ -17,6 +17,8 @@
 
 class RefineMat3x3;
 class Quat4Refine;
+class SpaceSample;
+class ConfSpace;
 
 typedef struct
 {
@@ -239,6 +241,13 @@ public:
 	{
 		return _sampleNum;
 	}
+	
+	void makeSpaceSample(ConfSpace *c);
+
+	SpaceSample *spaceSample()
+	{
+		return _spaceSample;
+	}
 
 	void addChainMultsToStrategy(RefinementStrategyPtr str, int n = -1);
 protected:
@@ -276,6 +285,7 @@ private:
 	void deleteQuats();
 	void calculateDistanceMultipliers();
 
+	SpaceSample *_spaceSample;
 	mat3x3 getAnchorRotation();
 	
 	vec3 _nDir, _nDir2;

@@ -78,11 +78,17 @@ void Crystal::summary()
 
 void Crystal::tieAtomsUp()
 {
-	if (_tied) return;
-
 	for (int i = 0; i < moleculeCount(); i++)
 	{
-		molecule(i)->tieAtomsUp();
+		if (!_tied)
+		{
+			molecule(i)->tieAtomsUp();
+		}
+		
+		if (molecule(i)->isPolymer())
+		{
+			ToPolymerPtr(molecule(i))->whack();
+		}
 	}
 
 	_tied = true;
@@ -211,9 +217,9 @@ void serveNextPolymer(std::vector<ThreadPolymer *> *pols, JobType type)
 			}
 			else if (type == JobBackbone)
 			{
-//				pols->at(i)->pol->refineBackbone();
-				pols->at(i)->pol->refine(pols->at(i)->cryst, 
-				                         RefinementCrude);
+				pols->at(i)->pol->refineBackbone();
+//				pols->at(i)->pol->refine(pols->at(i)->cryst, 
+//				                         RefinementCrude);
 				pols->at(i)->pol->setStream(&std::cout);
 			}
 			else if (type == JobSidechain)
@@ -1393,6 +1399,19 @@ void Crystal::wrapUpRefinement()
 		_bestMetric = _ccWork;
 		_bestState = stateCount() - 1;
 	}
+	
+	if (Options::makeDiagnostics())
+	{
+		std::string filename = "bfactor_" + i_to_str(_cycleNum);
+		for (size_t i = 0; i < moleculeCount(); i++)
+		{
+			if (molecule(i)->isPolymer())
+			{
+				ToPolymerPtr(molecule(i))->graph(filename);
+			}
+		}
+
+	}
 
 	Options::getRuntimeOptions()->agreementSummary();
 	Options::getRuntimeOptions()->flagDensityChanged();
@@ -2108,3 +2127,4 @@ AtomPtr Crystal::getClosestAtom(vec3 pos)
 	
 	return atom;
 }
+

@@ -227,6 +227,8 @@ void Options::run()
 			{
 				crystal->hydrogenateContents();
 			}
+			
+			crystal->setupConformationalSpace();
 		}
 
 		crystal->tiedUpScattering();

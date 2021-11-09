@@ -60,6 +60,8 @@ public:
 	
 	/** Go button. Performs preliminary work and refinement */
 	void refine();
+
+	void refineSpace(bool average = false);
 	
 	/** Refines chain-dependent multipliers */
 	void refineChainMults(AnchorPtr anch);

@@ -16,8 +16,10 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#include <hcsrc/FileReader.h>
 #include "TotalModel.h"
 #include "WaterNetwork.h"
+#include "ConfSpace.h"
 #include "Options.h"
 #include "Shouter.h"
 #include "Polymer.h"
@@ -29,7 +31,7 @@ TotalModel::TotalModel()
 {
 	_tied = false;
 	_sampleNum = -1;
-
+	_confSpace = NULL;
 }
 
 void TotalModel::removeMolecule(MoleculePtr mol)
@@ -382,3 +384,33 @@ void TotalModel::resetMotions()
 	refreshPositions();
 }
 
+void TotalModel::setupConformationalSpace()
+{
+	if (_confSpace != NULL)
+	{
+		return;
+	}
+	
+	std::string filename = "membership.csv";
+	
+	if (!file_exists(filename))
+	{
+		return;
+	}
+
+	_confSpace = new ConfSpace(12);
+	_confSpace->readFromFile(filename);
+	
+	for (size_t i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+		
+		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		AnchorPtr anchor = pol->getAnchorModel();
+
+		anchor->makeSpaceSample(_confSpace);
+	}
+}

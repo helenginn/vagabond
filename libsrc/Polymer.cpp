@@ -134,7 +134,8 @@ bool Polymer::refineLocalFlexibility(bool magic)
 	
 	if (magic)
 	{
-		ch |= _keyPoints->refineKeyPoints();
+		local.refineSpace();
+//		ch |= _keyPoints->refineKeyPoints();
 	}
 	
 	std::ostringstream *o = dynamic_cast<std::ostringstream *>(_stream);
@@ -382,6 +383,25 @@ void Polymer::summary()
 
 void Polymer::refineBackbone()
 {
+	Timer timer("positional refinement", true);
+	FlexLocal local;
+	whack();
+	local.setPolymer(shared_from_this());
+	local.setShift(_kickShift);
+	local.refineSpace(true);
+	timer.report(_stream);
+	local.reportTimings();
+	
+	std::ostringstream *o = dynamic_cast<std::ostringstream *>(_stream);
+	if (o)
+	{
+		std::cout << o->str();
+		o->str("");
+	}
+
+	return;
+
+	/*
 	CrystalPtr target = Options::getActiveCrystal();
 	_fullScore = scoreWithMap(ScoreTypeCorrel, target);
 
@@ -404,6 +424,7 @@ void Polymer::refineBackbone()
 	*_stream << ((change < _fullScore) ? "up " : "down ");
 	*_stream << "from " << -_fullScore * 100 << " to " << -change * 100;
 	*_stream << "." << std::endl;
+	*/
 }
 
 void Polymer::refineMonomer(MonomerPtr monomer, CrystalPtr target,
@@ -793,7 +814,7 @@ void Polymer::graph(std::string graphName)
 	
 
 	std::map<std::string, std::string> plotMap;
-	plotMap["filename"] = "mainchain_" + graphName;
+	plotMap["filename"] = "mainchain_" + graphName + getChainID();
 	plotMap["height"] = "700";
 	plotMap["width"] = "1200";
 	plotMap["xHeader0"] = "resnum";
@@ -820,7 +841,7 @@ void Polymer::graph(std::string graphName)
 	if (extra)
 	{
 		std::map<std::string, std::string> plotMap;
-		plotMap["filename"] = "sidechain_" + graphName;
+		plotMap["filename"] = "sidechain_" + graphName + getChainID();
 		plotMap["height"] = "700";
 		plotMap["width"] = "1200";
 		plotMap["xHeader0"] = "resnum";

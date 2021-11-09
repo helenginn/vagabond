@@ -12,6 +12,8 @@
 #include "Model.h"
 #include "Quat4Refine.h"
 
+class SpaceSample;
+
 /**
  * \class ExplicitModel
 * \brief Abstract class providing a template for models which rely on
@@ -33,6 +35,7 @@ typedef struct
 	double kickValue; /**< Contains number between 0 and 1, kick multiplier */
 	double occupancy; /**< Relative occupancy (usually 1) */
 	double *mult;     /**< Pointer to chain-dependent multiplier */
+	SpaceSample *space; /**< Pointer to conformational sampling */
 } BondSample;
 
 class ExplicitModel : public Model

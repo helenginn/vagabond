@@ -15,7 +15,6 @@
 #include "Angler.h"
 #include "Atom.h"
 #include "Shouter.h"
-#include "AtomGroup.h"
 #include "Whack.h"
 #include "Twist.h"
 #include "Anchor.h"
@@ -24,6 +23,7 @@
 #include "Polymer.h"
 #include "Options.h"
 #include "Crystal.h"
+#include "SpaceSample.h"
 
 Bond::~Bond()
 {
@@ -793,11 +793,20 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 		{
 			kickValue = sis->at(i).kickValue;
 		}
+		
+		double addSpace = 0;
+		if (prevs->at(i).space != NULL)
+		{
+			int resi = getMinor()->getResidueNum();
+			SpaceSample *sp = prevs->at(i).space;
+
+			addSpace = sp->getTorsionDeviation(resi, i);
+		}
 
 		/* Baseline kick multiplied by kickValue */
 		double addBlur = baseKick * kickValue;
 
-		prevs->at(i).torsion = addBlur;	
+		prevs->at(i).torsion = addBlur + addSpace;	
 		prevs->at(i).kickValue = kickValue;
 		
 		averageModulation += addBlur;

@@ -424,6 +424,7 @@ std::vector<vec3> ExplicitModel::makeCloud(double totalPoints,
 		for (int i = 0; i < points.size(); i++)
 		{
 			double add = exp(-frac * frac);
+//			add = 1;
 			occs.push_back(add);
 			addTotal += add;
 			

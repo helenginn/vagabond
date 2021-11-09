@@ -7,6 +7,7 @@
 //
 
 #include <hcsrc/RefineMat3x3.h>
+#include "ConfSpace.h"
 #include "Quat4Refine.h"
 #include <hcsrc/RefinementNelderMead.h>
 #include "Anchor.h"
@@ -21,6 +22,7 @@
 #include "Whack.h"
 #include "Twist.h"
 #include <sstream>
+#include "SpaceSample.h"
 
 int Anchor::_sampleNum = 0;
 
@@ -38,6 +40,7 @@ void Anchor::initialise()
 	_cDir2 = empty_vec3();
 	_disableWhacks = false;
 	_lastCount = -1;
+	_spaceSample = NULL;
 }
 
 Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
@@ -186,8 +189,14 @@ void Anchor::createStartPositions(Atom *callAtom)
 		sample.old_start = prev; // used instead of atom
 		sample.start = full;
 		sample.mult = &_chainMults[i];
+		sample.space = _spaceSample; 
 
 		_storedSamples.push_back(sample);
+	}
+	
+	if (_spaceSample && !_spaceSample->hasPoints())
+	{
+		_spaceSample->generatePoints(crystal, _storedSamples.size());
 	}
 
 	calculateDistanceMultipliers();
@@ -203,7 +212,7 @@ void Anchor::createStartPositions(Atom *callAtom)
 			_storedSamples[i].occupancy /= occTotal;
 		}
 	}
-
+	
 	fixCentroid();
 }
 
@@ -670,4 +679,10 @@ void Anchor::calculateDistanceMultipliers()
 		double mult = exp(_distMut * l);
 		_chainMults[i] = mult;
 	}
+}
+
+void Anchor::makeSpaceSample(ConfSpace *c)
+{
+	_spaceSample = new SpaceSample(c);
+
 }

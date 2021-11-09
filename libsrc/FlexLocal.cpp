@@ -9,6 +9,7 @@
 #include "FlexLocal.h"
 #include "CSV.h"
 #include "Bond.h"
+#include "SpaceSample.h"
 #include "Polymer.h"
 #include <svdcmp.h>
 #include "Monomer.h"
@@ -128,6 +129,47 @@ void FlexLocal::refine()
 	}
 }
 
+void FlexLocal::refineSpace(bool average)
+{
+	Timer timer;
+	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
+	nelder->setCycles(100);
+	nelder->setVerbose(true);	
+//	nelder->setSilent(true);
+
+	nelder->setEvaluationFunction(getScore, this);
+	if (_polymer)
+	{
+		nelder->setStream(_polymer->getStream());
+	}
+
+	CrystalPtr crystal = Options::getActiveCrystal();
+	AnchorPtr anch = _polymer->getAnchorModel();
+
+	SpaceSample *space = anch->spaceSample();
+	if (space == NULL)
+	{
+		return;
+	}
+
+	if (average)
+	{
+		space->addAverageParameters(nelder);
+	}
+	else
+	{
+		space->addDiagonalParameters(nelder);
+	}
+
+	nelder->refine();
+	nelder->reportResult();
+
+	timer.quickReport();
+	*_stream << std::endl;
+	_changed = nelder->changedSignificantly();
+
+}
+
 void FlexLocal::attachToStrategy(RefinementStrategyPtr strategy,
                                  AtomGroupPtr group)
 {
@@ -213,6 +255,17 @@ void FlexLocal::findAtomsAndBonds()
 double FlexLocal::getScore(void *object)
 {
 	FlexLocal *local = static_cast<FlexLocal *>(object);
+
+	if (local->_polymer)
+	{
+		AnchorPtr anch = local->_polymer->getAnchorModel();
+		
+		if (anch->spaceSample() != NULL)
+		{
+			anch->spaceSample()->generatePoints(Options::getActiveCrystal());
+		}
+
+	}
 
 	if (!local->_prepared)
 	{
