@@ -211,21 +211,9 @@ protected:
 	                         std::vector<unsigned long> *ptr,
 	                          bool receiveOnly = false);
 	void addMat3x3ArrayProperty(std::string className, std::vector<mat3x3> *ptr);
-	void exposeFunction(std::string funcName, Getter func);
-	void exposeFunction(std::string funcName, Setter func);
-	void exposeFunction(std::string funcName, TwoDouble func);
 	/**@}*/
 
-	bool hasFunction(std::string funcName)
-	{
-		return (_functionList.count(funcName) > 0);		
-	}
-	
-	Getter getFunction(std::string funcName)
-	{
-		return _functionList[funcName];
-	}
-	
+
 	bool hasSetter(std::string funcName)
 	{
 		return (_setterList.count(funcName) > 0);		

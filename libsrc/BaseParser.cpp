@@ -234,21 +234,6 @@ ParserPtr BaseParser::getChild(std::string className, int num)
 	return _parserList[className][num];
 }
 
-void BaseParser::exposeFunction(std::string funcName, TwoDouble func)
-{
-	_twoDoubleList[funcName] = func;
-}
-
-void BaseParser::exposeFunction(std::string funcName, Getter func)
-{
-	_functionList[funcName] = func;
-}
-
-void BaseParser::exposeFunction(std::string funcName, Setter func)
-{
-	_setterList[funcName] = func;
-}
-
 int BaseParser::getChildCount(std::string className)
 {
 	if (!_parserList.count(className))

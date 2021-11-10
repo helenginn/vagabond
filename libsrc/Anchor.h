@@ -266,13 +266,6 @@ protected:
 	
 	/* Euler angles for modifying _nAtom and _cAtom */
 	double _alpha, _beta, _gamma;
-	mat3x3 _trans;
-	
-	std::vector<Quat4Refine *> _quats;
-	std::vector<Quat4Refine *> _screws;
-	
-	bool _changedN;
-	bool _changedC;
 	
 	mat3x3 _rotation;
 	vec3 _position;
@@ -282,7 +275,6 @@ private:
 	void initialise();
 	void applyWholeMotions();
 	void fixCentroid();
-	void deleteQuats();
 	void calculateDistanceMultipliers();
 
 	SpaceSample *_spaceSample;
@@ -296,8 +288,6 @@ private:
 	std::vector<double> _occupancies;
 	std::vector<WhackPtr> _whacks;
 	
-	std::vector<vec3> _tmpQuats;
-	std::vector<vec3> _tmpScrews;
 	std::vector<MotionPtr> _motions;
 	std::vector<double> _chainMults;
 	

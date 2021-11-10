@@ -52,24 +52,9 @@ Anchor::Anchor(AbsolutePtr absolute) : ExplicitModel()
 	_atom = absolute->getAtom();
 }
 
-void Anchor::deleteQuats()
-{
-	for (int i = 0; i < _quats.size(); i++)
-	{
-		delete _quats[i];
-		_quats[i] = NULL;
-
-		delete _screws[i];
-		_screws[i] = NULL;
-	}
-	
-	_quats.clear();
-	_screws.clear();
-}
-
 Anchor::~Anchor()
 {
-	deleteQuats();
+
 }
 
 void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom, 
@@ -484,7 +469,6 @@ void Anchor::addProperties()
 	addVec3Property("c_dir", &_cDir);
 	addVec3Property("pre_n", &_nDir2);
 	addVec3Property("post_c", &_cDir2);
-	addMat3x3Property("translation", &_trans, true);
 	addReference("c_atom", _cAtom.lock());
 	
 	for (int i = 0; i < whackCount(); i++)
@@ -497,42 +481,11 @@ void Anchor::addProperties()
 		addReference("motion", _motions[i]);
 	}
 	
-	_tmpQuats.clear();
-	_tmpScrews.clear();
-	
-	for (int i = 0; i < _quats.size(); i++)
-	{
-		vec3 v = _quats[i]->getVec3();
-		vec3 s = _screws[i]->getVec3();
-		_tmpQuats.push_back(v);
-		_tmpScrews.push_back(s);
-	}
-	
-	addVec3ArrayProperty("rots", &_tmpQuats, true);
-	addVec3ArrayProperty("screws", &_tmpScrews, true);
-	
 	Model::addProperties();
 }
 
 void Anchor::postParseTidy()
 {
-	deleteQuats();
-	
-	for (int i = 0; i < _tmpQuats.size(); i++)
-	{
-		Quat4Refine *q = new Quat4Refine();
-		Quat4Refine *s = new Quat4Refine();
-		
-		Quat4Refine::setX(q, _tmpQuats[i].x);
-		Quat4Refine::setY(q, _tmpQuats[i].y);
-		Quat4Refine::setZ(q, _tmpQuats[i].z);
-
-		Quat4Refine::setX(s, _tmpScrews[i].x);
-		Quat4Refine::setY(s, _tmpScrews[i].y);
-		
-		_quats.push_back(q);
-		_screws.push_back(s);
-	}
 }
 
 std::string Anchor::getParserIdentifier()
