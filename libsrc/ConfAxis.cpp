@@ -16,6 +16,7 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#include <climits>
 #include "ConfAxis.h"
 #include "Bond.h"
 #include "Atom.h"

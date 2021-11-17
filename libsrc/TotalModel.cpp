@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include <hcsrc/FileReader.h>
+#include <iomanip>
 #include "TotalModel.h"
 #include "SpaceSample.h"
 #include "WaterNetwork.h"
