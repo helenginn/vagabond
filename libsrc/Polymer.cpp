@@ -35,6 +35,7 @@
 #include "Absolute.h"
 #include "Bond.h"
 #include "Anisotropicator.h"
+#include "ConfSpace.h"
 #include "CSV.h"
 #include <sstream>
 #include <iomanip>
@@ -126,6 +127,10 @@ bool Polymer::refineLocalFlexibility(bool magic)
 	{
 		local.refine();
 	}
+	else
+	{
+		local.refineSpace();
+	}
 	_kickShift = local.getShift();
 	timer.report(_stream);
 	local.reportTimings();
@@ -134,7 +139,6 @@ bool Polymer::refineLocalFlexibility(bool magic)
 	
 	if (magic)
 	{
-		local.refineSpace();
 //		ch |= _keyPoints->refineKeyPoints();
 	}
 	
@@ -260,9 +264,9 @@ void Polymer::tieAtomsUp()
 	{
 		AnchorPtr newAnchor = AnchorPtr(new Anchor(ToAbsolutePtr(nModel)));
 		newAnchor->setBFactor(_startB);
-		newAnchor->setNeighbouringAtoms(prev_ca, prev_c, ca, c);
-		n->setModel(newAnchor);
 		newly_tied = true;
+		n->setModel(newAnchor);
+		rigAnchor();
 	}
 
 	for (int i = _anchorNum; i < monomerEnd(); i++)
@@ -570,6 +574,11 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 
 		bone->refine(target, rType); 
 		side->refine(target, rType); 
+		
+		if (rType == RefinementSidePos)
+		{
+			continue;
+		}
 
 		double score = monomer->scoreWithMap(ScoreTypeCorrel, target);	
 		double backScore = bone->scoreWithMap(ScoreTypeCorrel, target);	
@@ -596,19 +605,23 @@ double Polymer::refineRange(int start, int end, CrystalPtr target,
 		count++;
 	}
 
-	endCCAve /= (double)count;
-	ccAve /= (double)count;
+	if (rType != RefinementSidePos)
+	{
+		endCCAve /= (double)count;
+		ccAve /= (double)count;
 
-	*_stream << "Average CC of monomers went ";
-	*_stream << ((endCCAve < ccAve) ? "up " : "down ");
-	*_stream << "from " << -ccAve * 100 << " to " << -endCCAve * 100;
-	*_stream << "." << std::endl;
+		*_stream << "Average CC of monomers went ";
+		 *_stream << ((endCCAve < ccAve) ? "up " : "down ");
+		 *_stream << "from " << -ccAve * 100 << " to " << -endCCAve * 100;
+		 *_stream << "." << std::endl;
 
-	double change = scoreWithMap(ScoreTypeCorrel, Options::getActiveCrystal());
-	*_stream << " CC across whole polymer ";
-	*_stream << ((change < _fullScore) ? "up " : "down ");
-	*_stream << "from " << -_fullScore * 100 << " to " << -change * 100;
-	*_stream << "." << std::endl;
+		double change = scoreWithMap(ScoreTypeCorrel,
+		                             Options::getActiveCrystal());
+		*_stream << " CC across whole polymer ";
+		 *_stream << ((change < _fullScore) ? "up " : "down ");
+		 *_stream << "from " << -_fullScore * 100 << " to " << -change * 100;
+		 *_stream << "." << std::endl;
+	}
 	
 	timer.report();
 
@@ -680,8 +693,7 @@ void Polymer::refine(CrystalPtr target, RefinementType rType)
 		return;
 	}
 	
-	if (rType == RefinementSidechain || rType == RefinementSidePos
-	    || rType == RefinementCrude)
+	if (rType == RefinementSidechain || rType == RefinementCrude)
 	{
 		refineToEnd(getAnchor() - 1, target, rType);
 		refineToEnd(getAnchor(), target, rType);
@@ -919,18 +931,18 @@ void Polymer::graph(std::string graphName)
 
 void Polymer::ramachandranPlot()
 {
-	CSVPtr csv = CSVPtr(new CSV(3, "res", "phi", "psi"));
+	CSVPtr csv = CSVPtr(new CSV(4, "res", "phi", "psi", "freedom"));
 	CSVPtr kicks = CSVPtr(new CSV(3, "res", "whack", "kick"));
 
 	for (int i = monomerBegin(); i < monomerEnd(); i++)
 	{
-		if (!getMonomer(i))
+		if (!getMonomer(i) || !getMonomer(i + 1))
 		{
 			continue;
 		}
 		
-		AtomList phiAtoms = getMonomer(i)->findAtoms("N");
-		AtomList psiAtoms = getMonomer(i)->findAtoms("C");
+		AtomList phiAtoms = getMonomer(i)->getPhiAtoms();
+		AtomList psiAtoms = getMonomer(i)->getPsiAtoms();
 		AtomList caAtoms = getMonomer(i)->findAtoms("CA");
 		
 		if (phiAtoms.size() != psiAtoms.size())
@@ -942,6 +954,7 @@ void Polymer::ramachandranPlot()
 		{
 			ModelPtr mPhi = phiAtoms[j]->getModel();
 			ModelPtr mPsi = psiAtoms[j]->getModel();
+			int resi = caAtoms[j]->getResidueNum();
 			
 			if (!mPhi->isBond() || !mPsi->isBond())
 			{
@@ -951,7 +964,16 @@ void Polymer::ramachandranPlot()
 			double tPhi = Bond::getTorsion(&*ToBondPtr(mPhi));
 			double tPsi = Bond::getTorsion(&*ToBondPtr(mPsi));
 			
-			csv->addEntry(3, (double)i, rad2deg(tPhi), rad2deg(tPsi));
+			PolymerPtr me = shared_from_this();
+			ConfSpace *cs = Options::getActiveCrystal()->confSpace(me);
+			double freedom = 0;
+			
+			if (cs)
+			{
+				freedom = cs->totalMotionForResidue(resi);
+			}
+			
+			csv->addEntry(4, (double)resi, rad2deg(tPhi), rad2deg(tPsi), freedom);
 		}
 		
 		for (int j = 0; j < caAtoms.size() && j < 1; j++)
@@ -1338,6 +1360,7 @@ void Polymer::postParseTidy()
 	//applyTranslationTensor();
 	
 	_name = "polymer_" + getChainID();
+	
 }
 
 bool Polymer::hasResidue(int resNum)
@@ -1437,4 +1460,13 @@ void Polymer::setStream(std::ostream *str)
 			getMonomer(i)->setStream(str);
 		}
 	}
+}
+
+void Polymer::rigAnchor()
+{
+	AtomPtr prev_c = getMonomer(_anchorNum - 1)->findAtom("C");
+	AtomPtr prev_ca = getMonomer(_anchorNum - 1)->findAtom("CA");
+	AtomPtr ca = getMonomer(_anchorNum)->findAtom("CA");
+	AtomPtr c = getMonomer(_anchorNum)->findAtom("C");
+	getAnchorModel()->setNeighbouringAtoms(prev_ca, prev_c, ca, c);
 }

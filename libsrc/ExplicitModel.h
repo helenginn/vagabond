@@ -43,6 +43,8 @@ class ExplicitModel : public Model
 public:
 	ExplicitModel();
 	virtual ~ExplicitModel() {};
+	
+	virtual AnchorPtr getAnchor() = 0;
 
 	virtual bool hasExplicitPositions()
 	{
@@ -62,6 +64,7 @@ public:
 	 *  read-only recall.Oonly call in single-threaded mode as this 
 	 * 	will not lock a mutex */
 	void savePositions();
+
 
 	const std::vector<BondSample> &savedPositions()
 	{
@@ -195,6 +198,7 @@ protected:
 	/* lowest Z value for re-ordering */
 	double _lowestZ;
 private:
+	AnchorPtr _anchor;
 	std::vector<BondSample> _finalSamples;
 	int _modifySample;
 	vec3 _centre;

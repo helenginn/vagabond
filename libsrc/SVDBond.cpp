@@ -46,6 +46,14 @@ SVDBond::SVDBond(std::vector<AtomPtr> &atoms)
 	_doTorsion = false;
 	_atoms = atoms;
 	_svd = NULL;
+	
+	for (size_t i = 0; i < _atoms.size(); i++)
+	{
+		if (_atoms[i]->getModel()->isBond())
+		{
+			_bonds.push_back(ToBondPtr(_atoms[i]->getModel()));
+		}
+	}
 }
 
 vec3 angle_effect_on_pos(vec3 atom_pos, mat3x3 &bond_basis, vec3 &bond_pos)
@@ -305,6 +313,21 @@ void SVDBond::copyMatrix(double **from, double **to)
 void SVDBond::svdMagic()
 {
 	size_t dims = _bonds.size();
+	for (size_t i = 0; i < dims; i++)
+	{
+		double total = 0;
+		for (size_t j = 0; j < dims; j++)
+		{
+			double val = _svd[i][j];
+			total += val * val;
+		}
+		total = sqrt(total);
+
+		for (size_t j = 0; j < dims; j++)
+		{
+			_svd[i][j] /= total;
+		}
+	}
 	int success = svdcmp((mat)_svd, dims, dims, (vect)_w, (mat)_v);
 	
 	if (!success)

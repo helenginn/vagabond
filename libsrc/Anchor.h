@@ -35,6 +35,11 @@ public:
 	
 	/* Substantiate a default Anchor, to be used by Parser */
 	Anchor();
+	
+	virtual AnchorPtr getAnchor()
+	{
+		return ToAnchorPtr(shared_from_this());
+	}
 
 	virtual ~Anchor();
 
@@ -115,6 +120,11 @@ public:
 		_bFactor = b;
 	}
 	
+	double getRMSD()
+	{
+		return (_bFactor / (M_PI * M_PI * 8));
+	}
+	
 	AtomPtr getAtom()
 	{
 		return _atom.lock();
@@ -142,8 +152,6 @@ public:
 //		static_cast<Anchor *>(object)->propagateChange(-1, true);
 	}
 
-	void applyRotation(mat3x3 rot);
-	void applyOffset(vec3 offset);
 	void recalculateWhacks();
 	virtual void propagateChange(int depth = -1, bool refresh = false);
 	virtual std::string shortDesc();
@@ -248,8 +256,11 @@ public:
 	{
 		return _spaceSample;
 	}
+	
+	void addParams(RefinementStrategyPtr str);
 
 	void addChainMultsToStrategy(RefinementStrategyPtr str, int n = -1);
+	void applyWholeMotions(std::vector<BondSample> &samples);
 protected:
 	
 	virtual std::string getParserIdentifier();
@@ -267,21 +278,29 @@ protected:
 	/* Euler angles for modifying _nAtom and _cAtom */
 	double _alpha, _beta, _gamma;
 	
-	mat3x3 _rotation;
-	vec3 _position;
+	/* central atom */
 	AtomWkr _atom;
+
+	/* position of central atom */
+	vec3 _position;
+	
+	/* atoms on either side of central atom */
 	AtomWkr _nAtom, _cAtom;
 private:
 	void initialise();
-	void applyWholeMotions();
 	void fixCentroid();
 	void calculateDistanceMultipliers();
 
 	SpaceSample *_spaceSample;
-	mat3x3 getAnchorRotation();
+	mat3x3 getRotationNudge();
 	
 	vec3 _nDir, _nDir2;
 	vec3 _cDir, _cDir2;
+	
+	double _nTorsion, _cTorsion;
+	double _ratio;
+	double _nLength, _cLength;
+	mat3x3 _nBasis, _cBasis;
 
 	std::map<Atom *, SamplePair> _samples;
 	std::vector<vec3> _sphereAngles;

@@ -67,24 +67,24 @@ std::vector<BondSample> *Novalent::getManyPositions(void *object)
 	msq *= sqrt(2);
 	points = ExplicitModel::makeCloud(totalPoints, msq, 0, occs);
 	_storedSamples.clear();
+	SpaceSample *sp = NULL;
+	if (getAnchor())
+	{
+		sp = getAnchor()->spaceSample();
+	}
 	
+	vec3 finished = _abs;
 	for (int i = 0; i < points.size(); i++)
 	{
 		BondSample sample;
 		sample.basis = make_mat3x3();
 		sample.occupancy = occs[i];
 		sample.torsion = 0;
-		vec3 finished = _abs;
 		vec3_add_to_vec3(&finished, points[i]);
 		sample.start = finished;
+		sample.space = sp;
 		
 		_storedSamples.push_back(sample);
-	}
-	
-	AnchorPtr anch = getAnchor();
-	if (anch && anch->motionCount() > 0)
-	{
-		MotionPtr mot = anch->getMotion(0);
 	}
 	
 	_changedSamples = false;
@@ -103,9 +103,9 @@ AnchorPtr Novalent::getAnchor()
 
 	for (size_t i = 0; i < chosen.size(); i++)
 	{
-		if (chosen[i]->getModel()->isBond())
+		if (chosen[i]->getModel()->hasExplicitPositions())
 		{
-			_anch = ToBondPtr(chosen[i]->getModel())->getAnchor();
+			_anch = ToExplicitModelPtr(chosen[i]->getModel())->getAnchor();
 			return _anch;
 		}
 	}

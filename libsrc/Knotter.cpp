@@ -788,8 +788,26 @@ void Knotter::makeValine()
 	
 	if (Options::swapValines())
 	{
-		cGamma1->setAtomName("CG2");
-		cGamma2->setAtomName("CG1");
+		vec3 ca = cAlpha->getInitialPosition();
+		vec3 cb = cBeta->getInitialPosition();
+		vec3 g1 = cGamma1->getInitialPosition();
+		vec3 g2 = cGamma2->getInitialPosition();
+		vec3 ca2g1 = g1 - ca;
+		vec3 ca2g2 = g2 - ca;
+		vec3 ca2cb = cb - ca;
+		vec3 cross = vec3_cross_vec3(ca2g1, ca2g2);
+		double dot = vec3_dot_vec3(cross, ca2cb);
+		
+		if (dot < 0)
+		{
+			cGamma1->setAtomName("CG2");
+			cGamma1->getGeomType(true);
+			cGamma1->setInitialPosition(g2);
+			cGamma2->setAtomName("CG1");
+			cGamma2->getGeomType(true);
+			cGamma2->setInitialPosition(g1);
+		}
+
 	}
 
 	tieBetaCarbon(cGamma1);

@@ -20,8 +20,13 @@
 #define __vagabond__ConfSpace__
 
 #include "shared_ptrs.h"
+#include <vector>
+#include <map>
+
+typedef std::vector<double> SpacePoint;
 
 class ConfAxis;
+class SVDBond;
 
 class ConfSpace
 {
@@ -40,11 +45,18 @@ public:
 	}
 
 	void addMolecule(MoleculePtr mol);
+	void calculateFrom(PolymerPtr pol);
 	void readFromFile(std::string filename);
+	double totalMotionForResidue(int i);
+	double weightedTorsion(int resi, bool phi, SpacePoint &sp);
 private:
+	void assembleContributions();
+	std::map<int, std::vector<double> > _phis;
+	std::map<int, std::vector<double> > _psis;
 
 	std::vector<ConfAxis *> _axes;
 	std::vector<MoleculePtr> _molecules;
+	SVDBond *_svd;
 };
 
 #endif

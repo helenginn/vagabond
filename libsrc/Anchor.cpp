@@ -11,6 +11,7 @@
 #include "Quat4Refine.h"
 #include <hcsrc/RefinementNelderMead.h>
 #include "Anchor.h"
+#include "../libinfo/GeomTable.h"
 #include <hcsrc/Any.h>
 #include "Motion.h"
 #include "Absolute.h"
@@ -38,6 +39,9 @@ void Anchor::initialise()
 	_nDir2 = empty_vec3();
 	_cDir = empty_vec3();
 	_cDir2 = empty_vec3();
+	_nTorsion = NAN;
+	_cTorsion = 0;
+	_ratio = 0;
 	_disableWhacks = false;
 	_lastCount = -1;
 	_spaceSample = NULL;
@@ -73,6 +77,22 @@ void Anchor::setNeighbouringAtoms(AtomPtr nPre, AtomPtr nAtom,
 	_nDir2 = vec3_subtract_vec3(nPrePos, myPos);
 	_cDir = vec3_subtract_vec3(cAtomPos, myPos);
 	_cDir2 = vec3_subtract_vec3(cPostPos, myPos);
+	
+	_nBasis = makeTorsionBasis(cPostPos, cAtomPos, myPos, nAtomPos, &_nTorsion);
+	_cBasis = makeTorsionBasis(nPrePos, nAtomPos, myPos, cAtomPos, &_cTorsion);
+
+	GeomTable *table = GeomTable::getGeomTable();
+
+	AtomType myType = _atom.lock()->getGeomType();
+	AtomType nType = _nAtom.lock()->getGeomType();
+	AtomType cType = _cAtom.lock()->getGeomType();
+
+	_nLength = table->getBondLength(myType, nType);
+	_cLength = table->getBondLength(myType, cType);
+
+	double angle = table->getBondAngle(nType, myType, cType);
+	_ratio = tan(angle - M_PI / 2);
+
 }
 
 Anchor::Anchor() : ExplicitModel()
@@ -138,31 +158,62 @@ void Anchor::createStartPositions(Atom *callAtom)
 	int totalPoints = crystal->getSampleNum();
 	
 	/* Get the rotation matrix for alpha, beta, gamma modifications */
-	mat3x3 rot = getAnchorRotation();
+	mat3x3 rot = getRotationNudge();
 
 	/* Want the direction to be the opposite of the calling bond */
 	vec3 direction = isN ? _cDir : _nDir;
 	vec3 other = isN ? _cDir2 : _nDir2;
-	
 	mat3x3_mult_vec(rot, &direction);
 	mat3x3_mult_vec(rot, &other);
 	
 	vec3 empty = empty_vec3();
 	double occTotal = 0;
+	int resi = getAtom()->getResidueNum();
 	
 	if (_chainMults.size() == 0)
 	{
 		_chainMults.resize(_sphereAngles.size(), 1);
+	}
+	
+	if (_spaceSample && !_spaceSample->hasPoints())
+	{
+		_spaceSample->generatePoints(crystal);
 	}
 
 	for (size_t i = 0; i < _sphereAngles.size(); i++)
 	{
 		vec3 usedPoint = _sphereAngles[i];
 
-		vec3 full = vec3_add_vec3(usedPoint, _position);
-		vec3 next = vec3_add_vec3(full, direction);
-		vec3 prev = vec3_add_vec3(full, other);
-	
+		vec3 direction = empty_vec3();
+		vec3 newPos = empty_vec3();
+
+		double addSpace = 0;
+		if (isN && _spaceSample != NULL)
+		{
+			addSpace = _spaceSample->getDeviation(resi, i, false);
+		}
+		else if (_spaceSample != NULL)
+		{
+			addSpace = _spaceSample->getDeviation(resi, i, true);
+		}
+
+		if (!isN)
+		{
+			newPos = Bond::positionFromTorsion(_nBasis, _nTorsion + addSpace,
+			                                    _nLength, _ratio, _position);
+		}
+		else
+		{
+			newPos = Bond::positionFromTorsion(_cBasis, _cTorsion + addSpace,
+			                                    _cLength, _ratio, _position);
+		}
+
+		direction = newPos - _position;
+
+		vec3 full = usedPoint + _position;
+		vec3 next = full + direction;
+		vec3 prev = full + other;
+
 		double occ = 1;
 		occTotal += occ;
 		mat3x3 basis = makeTorsionBasis(prev, next, full, empty);
@@ -177,11 +228,6 @@ void Anchor::createStartPositions(Atom *callAtom)
 		sample.space = _spaceSample; 
 
 		_storedSamples.push_back(sample);
-	}
-	
-	if (_spaceSample && !_spaceSample->hasPoints())
-	{
-		_spaceSample->generatePoints(crystal, _storedSamples.size());
 	}
 
 	calculateDistanceMultipliers();
@@ -228,18 +274,18 @@ void Anchor::atLeastOneMotion()
 	mot->setName(pol->getName() + "_" + getAtom()->shortDesc());
 }
 
-mat3x3 Anchor::getAnchorRotation()
+mat3x3 Anchor::getRotationNudge()
 {
 	mat3x3 rot = mat3x3_rotate(_alpha, _beta, _gamma);
 	
 	return rot;
 }
 
-void Anchor::applyWholeMotions()
+void Anchor::applyWholeMotions(std::vector<BondSample> &samples)
 {
 	for (int i = 0; i < _motions.size(); i++)
 	{
-		_motions[i]->applyMotions(_storedSamples);
+		_motions[i]->applyMotions(samples, getRMSD() * 2);
 	}
 }
 
@@ -430,8 +476,6 @@ std::vector<BondSample> *Anchor::getManyPositions(void *caller, bool force)
 	
 	if (!_disableWhacks)
 	{
-		applyWholeMotions();
-
 		/* Apply whacks as normal, if we are not re-caching Whacks. */
 		for (int i = 0; i < _whacks.size(); i++)
 		{
@@ -461,7 +505,15 @@ void Anchor::addProperties()
 	addDoubleProperty("alpha", &_alpha);
 	addDoubleProperty("beta", &_beta);
 	addDoubleProperty("gamma", &_gamma);
-	addDoubleProperty("distmut", &_distMut);
+
+	addDoubleProperty("nTorsion", &_nTorsion);
+	addDoubleProperty("cTorsion", &_cTorsion);
+	addDoubleProperty("ratio", &_ratio);
+	addDoubleProperty("nLength", &_nLength);
+	addDoubleProperty("cLength", &_cLength);
+	addMat3x3Property("nBasis", &_nBasis);
+	addMat3x3Property("cBasis", &_cBasis);
+
 	addVec3Property("position", &_position);
 	addReference("atom", _atom.lock());
 	addReference("n_atom", _nAtom.lock());
@@ -486,6 +538,11 @@ void Anchor::addProperties()
 
 void Anchor::postParseTidy()
 {
+	if (_nTorsion != _nTorsion)
+	{
+		PolymerPtr pol = ToPolymerPtr(getMolecule());
+		pol->rigAnchor();
+	}
 }
 
 std::string Anchor::getParserIdentifier()
@@ -579,17 +636,6 @@ void Anchor::removeWhack(WhackPtr whack)
 	}
 }
 
-void Anchor::applyRotation(mat3x3 rot)
-{
-	mat3x3 tmp = mat3x3_mult_mat3x3(rot, _rotation);
-	_rotation = tmp;
-}
-
-void Anchor::applyOffset(vec3 offset)
-{
-	vec3_subtract_from_vec3(&_position, offset);
-}
-
 void Anchor::addChainMultsToStrategy(RefinementStrategyPtr str, int n)
 {
 	_tmpAnys.clear();
@@ -638,4 +684,31 @@ void Anchor::makeSpaceSample(ConfSpace *c)
 {
 	_spaceSample = new SpaceSample(c);
 
+	for (size_t i = 0; i < motionCount(); i++)
+	{
+		_spaceSample->addMotion(getAnchor(), getMotion(i));
+	}
+}
+
+
+void Anchor::addParams(RefinementStrategyPtr str)
+{
+	double range = 0.02;
+	double interval = 0.002;
+
+	str->addParameter(this, Anchor::getPosX, Anchor::setPosX,
+	                  range, interval, "pos_x");
+	str->addParameter(this, Anchor::getPosY, Anchor::setPosY,
+	                  range, interval, "pos_y");
+	str->addParameter(this, Anchor::getPosZ, Anchor::setPosZ,
+	                  range, interval, "pos_z");
+	
+	range = deg2rad(0.5);
+	interval = deg2rad(0.005);
+	str->addParameter(this, Anchor::getAlpha, Anchor::setAlpha,
+	                  range, interval, "alpha");
+	str->addParameter(this, Anchor::getBeta, Anchor::setBeta,
+	                  range, interval, "beta");
+	str->addParameter(this, Anchor::getGamma, Anchor::setGamma,
+	                  range, interval, "gamma");
 }

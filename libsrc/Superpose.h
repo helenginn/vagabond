@@ -16,31 +16,45 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
-#include "ConfAxis.h"
-#include "Bond.h"
-#include "Atom.h"
-#include "SVDBond.h"
+#ifndef __vagabond__Superpose__
+#define __vagabond__Superpose__
 
-ConfAxis::ConfAxis()
+#include <hcsrc/mat3x3.h>
+#include <hcsrc/vec3.h>
+#include "shared_ptrs.h"
+#include "ExplicitModel.h"
+#include <map>
+#include <vector>
+
+class Superpose
 {
-	_min = INT_MAX;
-	_max = -INT_MAX;
+public:
+	Superpose();
 
-}
-
-void ConfAxis::getAxis(SVDBond *svd, int axis)
-{
-	for (size_t i = 0; i < svd->bondCount(); i++)
+	void savePositions();
+	void calculateDeviations();
+	
+	void applyDeviations(std::vector<BondSample> &samples);
+	
+	void setAtoms(AtomList full)
 	{
-		BondPtr b = svd->bond(i);
-		AtomPtr a = b->getAtom();
-		int resi = a->getResidueNum();
-		
-		double val = svd->svdValue(axis, i);
-		val *= 2;
-
-		setPhiDeviation(resi, val);
-		setPsiDeviation(resi, -val);
+		_full = full;
 	}
+	
+	size_t atomCount()
+	{
+		return _atoms.size();
+	}
+private:
+	std::vector<AtomPtr> _atoms;
+	std::vector<AtomPtr> _full;
+	std::map<AtomPtr, std::vector<vec3> > _saved;
+	
+	std::vector<vec3> _remove;
+	std::vector<vec3> _add;
+	std::vector<mat3x3> _rotations;
 
-}
+	size_t _sampleSize;
+};
+
+#endif

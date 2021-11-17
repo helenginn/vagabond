@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "Motion.h"
+#include "SpaceSample.h"
 #include <hcsrc/Converter.h>
 #include "Anchor.h"
 #include "Options.h"
@@ -31,7 +32,7 @@ Motion::Motion()
 {
 	_scale = 1;
 	_trans = RefineMat3x3Ptr(new RefineMat3x3(this, NULL));
-	_transScale = 1;
+	_transScale = 1.0;
 	_refined = false;
 	_allAtoms = AtomGroupPtr(new AtomGroup());
 	_allAtoms->setName("motion_all");
@@ -112,7 +113,7 @@ void Motion::removeFromPolymer(PolymerPtr pol)
 }
 
 void Motion::applyTranslations(std::vector<BondSample> &stored,
-                               bool isomorphous)
+                               double scale)
 {
 	mat3x3 translation = _trans->getMat3x3();
 	Anisotropicator tropicator;
@@ -127,15 +128,8 @@ void Motion::applyTranslations(std::vector<BondSample> &stored,
 		mat3x3_set_axis(&iso, i, col);
 	}
 
-	if (isomorphous)
-	{
-		trans = iso;
-	}
-	else
-	{
-		iso = mat3x3_transpose(iso);
-		trans = mat3x3_mult_mat3x3(trans, iso);
-	}
+	iso = mat3x3_transpose(iso);
+	trans = mat3x3_mult_mat3x3(trans, iso);
 
 	vec3 sum_start = empty_vec3();
 	vec3 sum_old = empty_vec3();
@@ -148,24 +142,55 @@ void Motion::applyTranslations(std::vector<BondSample> &stored,
 	
 	vec3_mult(&sum_start, 1 / (double)stored.size());
 	vec3_mult(&sum_old, 1 / (double)stored.size());
+	
+	vec3 offset = empty_vec3();
+	double count = 0;
 
 	for (int i = 0; i < stored.size(); i++)
 	{
 		vec3 start = stored[i].start;
 		vec3 diff = vec3_subtract_vec3(start, sum_start);
+		
+		if (stored[i].space != NULL && stored[i].space->hasPoints())
+		{
+			diff = stored[i].space->point3D(i);
+			vec3_mult(&diff, scale);
+		}
+
+
 		mat3x3_mult_vec(trans, &diff);
 		vec3_mult(&diff, _transScale);
-		vec3 new_start = vec3_add_vec3(sum_start, diff);
-		vec3 old_start = vec3_add_vec3(sum_old, diff);
+//		vec3 new_start = vec3_add_vec3(sum_start, diff);
+//		vec3 old_start = vec3_add_vec3(sum_old, diff);
 
-		stored[i].start = new_start;
-		stored[i].old_start = old_start;
+		offset += diff;
+		count++;
+
+		stored[i].start = start + diff;
+		stored[i].old_start += diff;
+	}
+	
+	vec3_mult(&offset, 1 / count);
+
+	for (int i = 0; i < stored.size(); i++)
+	{
+		stored[i].start -= offset;
+		stored[i].old_start -= offset;
+
 	}
 }
 
 void Motion::addTranslationParameters(RefinementStrategyPtr strategy)
 {
 	_trans->addTensorToStrategy(strategy, 0.1, 0.0001, "tr");
+}
+
+void Motion::addRigidParameters(RefinementStrategyPtr strategy)
+{
+	_rotation->addVecToStrategy(strategy, deg2rad(1), deg2rad(0.005), 
+	                            "rotation");
+	_displacement->addVecToStrategy(strategy, 0.01, 0.001, "displacement");
+
 }
 
 void Motion::rigidRefine()
@@ -178,8 +203,7 @@ void Motion::rigidRefine()
 	target.attachToStrategy(neld, _allBackbone);
 	target.setAtomGroup(_allAtoms);
 	neld->setJobName("rigid");
-	_rotation->addVecToStrategy(neld, deg2rad(4), deg2rad(0.04), "rotation");
-	_displacement->addVecToStrategy(neld, 0.1, 0.001, "displacement");
+	addRigidParameters(neld);
 	neld->setStream(_stream);
 	neld->refine();
 }
@@ -194,6 +218,7 @@ void Motion::refine(bool reciprocal)
 	bool maxed = false;
 
 	FlexLocal target;
+	target.setQuick(true);
 
 	Fibonacci fib;
 	fib.generateLattice(31, 0.02);
@@ -319,36 +344,127 @@ void Motion::refine(bool reciprocal)
 	_refined = true;
 }
 
-void Motion::applyMotions(std::vector<BondSample> &stored)
+void Motion::prepareMotions(std::vector<SpacePoint> &hyperpoints, double scale)
 {
-	vec3 before = empty_vec3();
-	for (int i = 0; i < stored.size(); i++)
-	{
-		vec3_add_to_vec3(&before, stored[i].start);
-	}
-	vec3_mult(&before, 1 / (double)stored.size());
-
-	applyTranslations(stored);
-	applyRotations(stored);
-
-	vec3 after = empty_vec3();
-	for (int i = 0; i < stored.size(); i++)
-	{
-		vec3_add_to_vec3(&after, stored[i].start);
-	}
-	vec3_mult(&after, 1 / (double)stored.size());
+	_sOffsets.clear();
+	_sRots.clear();
+	mat3x3 translation = _trans->getMat3x3();
+	Anisotropicator tropicator;
+	tropicator.setTensor(translation);
+	mat3x3 trans = tropicator.basis();
+	mat3x3 iso = trans;
 	
-	vec3_subtract_from_vec3(&after, before);
-	vec3_mult(&after, -1);
-
-	for (int i = 0; i < stored.size(); i++)
+	for (int i = 0; i < 3; i++)
 	{
-		vec3_subtract_from_vec3(&stored[i].start, after);
-		vec3_subtract_from_vec3(&stored[i].old_start, after);
+		vec3 col = mat3x3_axis(iso, i);
+		vec3_set_length(&col, 1);
+		mat3x3_set_axis(&iso, i, col);
+	}
+
+	iso = mat3x3_transpose(iso);
+	trans = mat3x3_mult_mat3x3(trans, iso);
+
+	vec3 offset = empty_vec3();
+	double count = 0;
+
+	for (size_t i = 0; i < hyperpoints.size(); i++)
+	{
+		vec3 diff = make_vec3(hyperpoints[i][0], hyperpoints[i][1],
+		                      hyperpoints[i][2]);
+		vec3_mult(&diff, scale);
+		mat3x3_mult_vec(trans, &diff);
+		vec3_mult(&diff, _transScale);
+		offset += diff;
+		count++;
+
+		_sOffsets.push_back(diff);
+	}
+	
+	offset /= count;
+
+	mat3x3 basis_rot = getOverallRotation();
+	mat3x3 all_rots = make_mat3x3();
+	
+	for (size_t i = 0; i < _sOffsets.size(); i++)
+	{
+		vec3 diff = _sOffsets[i] + offset;
+		mat3x3 rot_only = basis_rot;
+
+		for (int j = 0; j < _quats.size(); j++)
+		{
+			vec3 quat = _quats[j]->getVec3();
+			vec3_mult(&quat, _scale);
+			vec3 bVec = make_vec3(1, 0, quat.x / quat.z);
+			mat3x3 rotbasis = mat3x3_rhbasis(bVec, quat);
+			
+			vec3 rot_vec = quat;
+			vec3_set_length(&rot_vec, 1);
+			double dot = vec3_dot_vec3(diff, quat);
+			
+			if (rot_vec.x != rot_vec.x || dot != dot)
+			{
+				continue;
+			}
+
+			mat3x3 rot_mat = mat3x3_unit_vec_rotation(rot_vec, dot);
+			rot_only = mat3x3_mult_mat3x3(rot_mat, rot_only);
+		}
+
+	//	all_rots = mat3x3_mult_mat3x3(rot_only, all_rots);
+
+		diff += _displacement->getVec3();
+		_sRots.push_back(rot_only);
+		_sOffsets[i] = diff;
+	}
+
+	for (size_t i = 0; i < _sRots.size(); i++)
+	{
+	//	_sRots[i] = mat3x3_mult_mat3x3(reverse, _sRots[i]);
 	}
 }
 
-void Motion::applyRotations(std::vector<BondSample> &stored)
+void Motion::applyMotions(std::vector<BondSample> &stored, double scale)
+{
+	if (_sRots.size() == 0)
+	{
+		vec3 before = empty_vec3();
+		for (int i = 0; i < stored.size(); i++)
+		{
+			vec3_add_to_vec3(&before, stored[i].start);
+		}
+		vec3_mult(&before, 1 / (double)stored.size());
+
+		applyTranslations(stored, scale);
+		applyRotations(stored, scale);
+
+		vec3 after = empty_vec3();
+		for (int i = 0; i < stored.size(); i++)
+		{
+			vec3_add_to_vec3(&after, stored[i].start);
+		}
+		vec3_mult(&after, 1 / (double)stored.size());
+
+		vec3_subtract_from_vec3(&after, before);
+
+		for (int i = 0; i < stored.size(); i++)
+		{
+			vec3_add_to_vec3(&stored[i].start, after);
+			vec3_add_to_vec3(&stored[i].old_start, after);
+		}
+		return;
+	}
+	
+	for (size_t i = 0; i < stored.size() && i < _sRots.size(); i++)
+	{
+		vec3 dir = stored[i].start - _centre;
+		mat3x3_mult_vec(_sRots[i], &dir);
+		stored[i].basis = mat3x3_mult_mat3x3(_sRots[i], stored[i].basis);
+		dir += _centre + _sOffsets[i];
+		stored[i].start = dir;
+	}
+}
+
+void Motion::applyRotations(std::vector<BondSample> &stored, double scale)
 {
 	vec3 position = empty_vec3();
 

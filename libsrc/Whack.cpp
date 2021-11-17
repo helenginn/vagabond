@@ -160,7 +160,15 @@ void Whack::applyToAnchorSamples(std::vector<BondSample> &anchSamp)
 		
 		if (_samples[i].space != NULL)
 		{
-			mag	+= _samples[i].space->getWhackDeviation(resi, i);
+			if (_bond->isLeftOfAnchor())
+			{
+				mag	+= _samples[i].space->getDeviation(resi, i, false);
+			}
+			else
+			{
+				double val = _samples[i].space->getDeviation(resi, i, true);
+				mag	+= val;
+			}
 		}
 
 		anchSamp[i].kickValue = mag;

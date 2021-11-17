@@ -174,7 +174,10 @@ public:
 		*pos += _positionalParams;
 		*flex += _flexibilityParams;
 	}
+
 	void scoreMonomers();
+	
+	void rigAnchor();
 protected:
 	virtual double getScore()
 	{

@@ -84,9 +84,9 @@ int Atom::getResidueNum()
 	return 0;
 }
 
-AtomType Atom::getGeomType()
+AtomType Atom::getGeomType(bool force)
 {
-	if (_geomType == AtomUnassigned)
+	if (_geomType == AtomUnassigned || force)
 	{
 		if (!getMonomer())
 		{

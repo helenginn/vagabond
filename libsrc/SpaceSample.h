@@ -20,10 +20,12 @@
 #define __vagabond__SpaceSample__
 
 #include <hcsrc/Matrix.h>
+#include <hcsrc/vec3.h>
 #include "shared_ptrs.h"
 #include <vector>
 
 class ConfSpace;
+class Superpose;
 
 typedef std::vector<double> SpacePoint;
 
@@ -35,25 +37,58 @@ public:
 	void addDiagonalParameters(RefinementStrategyPtr strategy);
 	void addTensorParameters(RefinementStrategyPtr strategy);
 	void addAverageParameters(RefinementStrategyPtr strategy);
-	void generatePoints(CrystalPtr cryst, int m = 0);
-	double getTorsionDeviation(int resi, int sample);
-	double getWhackDeviation(int resi, int sample);
+	void generatePoints(TotalModelPtr total, bool use = true);
+	double getDeviation(int resi, int sample, bool phi);
+
+	void savePositions();
+	
+	void calculateSuperpositions();
 	
 	bool hasPoints()
 	{
 		return _points.size() > 0;
 	}
 	
+	vec3 point3D(int i);
+	
 	~SpaceSample();
+	
+	void setAtoms(AtomList atoms);
+	
+	Superpose *superpose()
+	{
+		return _superpose;
+	}
 
+	size_t motionCount()
+	{
+		return _motions.size();
+	}
+	
+	MotionPtr getMotion(int i)
+	{
+		return _motions[i];
+	}
+	
+	void addMotion(AnchorPtr a, MotionPtr mot)
+	{
+		_anchors.push_back(a);
+		_motions.push_back(mot);
+	}
 private:
+	void fillInTensorGaps();
 	ConfSpace *_space;
+	int _used;
 
 	double *_average;
 	double *_stdev;
 	HelenCore::Matrix _tensor;
+	Superpose *_superpose;
 	
+	std::vector<MotionPtr> _motions;
+	std::vector<AnchorPtr> _anchors;
 	std::vector<SpacePoint> _points;
+	std::vector<SpacePoint> _original;
 	std::vector<AnyPtr> _anys;
 };
 

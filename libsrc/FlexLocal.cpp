@@ -7,6 +7,8 @@
 //
 
 #include "FlexLocal.h"
+#include "Superpose.h"
+#include "Motion.h"
 #include "CSV.h"
 #include "Bond.h"
 #include "SpaceSample.h"
@@ -16,6 +18,7 @@
 #include "SVDBond.h"
 #include "Anchor.h"
 #include <hcsrc/RefinementNelderMead.h>
+#include <hcsrc/RefinementLBFGS.h>
 #include "ParamBand.h"
 #include <hcsrc/Timer.h>
 #include <map>
@@ -107,6 +110,13 @@ void FlexLocal::refineClusters()
 
 void FlexLocal::refine()
 {
+	AnchorPtr anch = _polymer->getAnchorModel();
+	if (anch && anch->spaceSample() != NULL)
+	{
+		refineSpace(false);
+		return;
+	}
+
 	for (int i = 0; i < 1; i++)
 	{
 		*_stream << "---------------------------------------------------------"
@@ -135,7 +145,6 @@ void FlexLocal::refineSpace(bool average)
 	NelderMeadPtr nelder = NelderMeadPtr(new RefinementNelderMead());
 	nelder->setCycles(100);
 	nelder->setVerbose(true);	
-//	nelder->setSilent(true);
 
 	nelder->setEvaluationFunction(getScore, this);
 	if (_polymer)
@@ -154,11 +163,20 @@ void FlexLocal::refineSpace(bool average)
 
 	if (average)
 	{
+		for (size_t i = 0; i < anch->motionCount(); i++)
+		{
+			MotionPtr mot = anch->getMotion(i);
+			mot->addRigidParameters(nelder);
+		}
 		space->addAverageParameters(nelder);
 	}
 	else
 	{
-		space->addDiagonalParameters(nelder);
+		space->addTensorParameters(nelder);
+//		anch->getMotion(0)->addTranslationParameters(nelder);
+//		anch->getMotion(0)->addLibrationParameters(nelder);
+//		anch->addParams(nelder);
+//		space->addAverageParameters(nelder);
 	}
 
 	nelder->refine();
@@ -252,52 +270,47 @@ void FlexLocal::findAtomsAndBonds()
 	}
 }	
 
+double FlexLocal::score()
+{
+	if (!_prepared)
+	{
+		AtomGroupPtr bb = _bb;
+		if (!bb || bb->atomCount() == 0)
+		{
+			bb = _polymer->getAllBackbone();
+		}
+
+		setup_space(&_workspace);
+		_workspace.crystal = Options::getActiveCrystal();
+		_workspace.selectAtoms = bb;
+		_workspace.selectAtoms->addParamType(ParamOptionStep, 2);
+		_prepared = true;
+		AtomGroup::scoreWithMapGeneral(&_workspace);
+	}
+
+	_workspace.tBonds->setFine(true);
+	_workspace.tMap->setFine(true);
+	_workspace.tScore->setFine(true);
+	
+	if (_svd)
+	{
+		_svd->applyParameters();
+	}
+
+	_workspace.tBonds->start();
+	_bb->refreshPositions(_quick);
+	_workspace.tBonds->stop();
+	
+	double score = AtomGroup::scoreWithMapGeneral(&_workspace);
+	return score;
+
+}
+
 double FlexLocal::getScore(void *object)
 {
 	FlexLocal *local = static_cast<FlexLocal *>(object);
 
-	if (local->_polymer)
-	{
-		AnchorPtr anch = local->_polymer->getAnchorModel();
-		
-		if (anch->spaceSample() != NULL)
-		{
-			anch->spaceSample()->generatePoints(Options::getActiveCrystal());
-		}
-
-	}
-
-	if (!local->_prepared)
-	{
-		AtomGroupPtr bb = local->_bb;
-		if (!bb || bb->atomCount() == 0)
-		{
-			bb = local->_polymer->getAllBackbone();
-		}
-
-		setup_space(&local->_workspace);
-		local->_workspace.crystal = Options::getActiveCrystal();
-		local->_workspace.selectAtoms = bb;
-		local->_workspace.selectAtoms->addParamType(ParamOptionStep, 2);
-		local->_prepared = true;
-		AtomGroup::scoreWithMapGeneral(&local->_workspace);
-	}
-
-	local->_workspace.tBonds->setFine(true);
-	local->_workspace.tMap->setFine(true);
-	local->_workspace.tScore->setFine(true);
-	
-	if (local->_svd)
-	{
-		local->_svd->applyParameters();
-	}
-
-	local->_workspace.tBonds->start();
-	local->_bb->refreshPositions();
-	local->_workspace.tBonds->stop();
-	
-	double score = AtomGroup::scoreWithMapGeneral(&local->_workspace);
-	return score;
+	return local->score();
 }
 
 void FlexLocal::recalculateConstant()

@@ -230,3 +230,20 @@ void Monomer::setStream(std::ostream *str)
 	_backbone->setStream(str);
 	_sidechain->setStream(str);
 }
+
+AtomList Monomer::getPhiAtoms()
+{
+	return findAtoms("C");
+}
+
+AtomList Monomer::getPsiAtoms()
+{
+	MonomerPtr next = getPolymer()->getMonomer(_residueNum + 1);
+	
+	if (next)
+	{
+		return next->findAtoms("N");
+	}
+	
+	else return AtomList();
+}

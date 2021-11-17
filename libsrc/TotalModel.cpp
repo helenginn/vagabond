@@ -18,6 +18,7 @@
 
 #include <hcsrc/FileReader.h>
 #include "TotalModel.h"
+#include "SpaceSample.h"
 #include "WaterNetwork.h"
 #include "ConfSpace.h"
 #include "Options.h"
@@ -65,7 +66,7 @@ void TotalModel::removeAtom(AtomPtr atom)
 	AtomGroup::removeAtom(atom);
 }
 
-void TotalModel::refreshAnchors()
+void TotalModel::refreshAnchors(bool space)
 {
 	for (int i = 0; i < moleculeCount(); i++)
 	{
@@ -76,6 +77,11 @@ void TotalModel::refreshAnchors()
 			if (pol->getAnchorModel())
 			{
 				pol->getAnchorModel()->forceRefresh();
+				SpaceSample *sp = pol->getAnchorModel()->spaceSample();
+				if (sp && space)
+				{
+					sp->generatePoints(shared_from_this(), true);
+				}
 			}
 		}
 	}
@@ -392,14 +398,36 @@ void TotalModel::setupConformationalSpace()
 	}
 	
 	std::string filename = "membership.csv";
-	
-	if (!file_exists(filename))
-	{
-		return;
-	}
 
-	_confSpace = new ConfSpace(12);
-	_confSpace->readFromFile(filename);
+	_confSpace = new ConfSpace(16);
+
+	for (size_t i = 0; i < moleculeCount(); i++)
+	{
+		if (!molecule(i)->isPolymer())
+		{
+			continue;
+		}
+
+		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		ConfSpace *confSpace = new ConfSpace(16);
+		_spaces[pol] = confSpace;
+
+		if (file_exists(filename))
+		{
+			confSpace->readFromFile(filename);
+		}
+		else
+		{
+			confSpace->calculateFrom(pol);
+		}
+		
+		AnchorPtr anchor = pol->getAnchorModel();
+
+		anchor->makeSpaceSample(confSpace);
+		SpaceSample *sp = anchor->spaceSample();
+		AtomList cas = pol->findAtoms("CA");
+		sp->setAtoms(cas);
+	}
 	
 	for (size_t i = 0; i < moleculeCount(); i++)
 	{
@@ -410,7 +438,5 @@ void TotalModel::setupConformationalSpace()
 		
 		PolymerPtr pol = ToPolymerPtr(molecule(i));
 		AnchorPtr anchor = pol->getAnchorModel();
-
-		anchor->makeSpaceSample(_confSpace);
 	}
 }

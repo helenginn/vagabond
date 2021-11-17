@@ -21,6 +21,7 @@
 
 #include <hcsrc/RefineMat3x3.h>
 #include "ExplicitModel.h"
+#include "SpaceSample.h"
 
 class FlexLocal;
 
@@ -40,9 +41,10 @@ public:
 	void updateAtoms();
 
 	void applyTranslations(std::vector<BondSample> &stored,
-	                       bool isomorphous = false);
-	void applyRotations(std::vector<BondSample> &stored);
-	void applyMotions(std::vector<BondSample> &stored);
+	                       double scale = 1);
+	void applyRotations(std::vector<BondSample> &stored, double scale = 1);
+	void applyMotions(std::vector<BondSample> &stored, double scale = 1);
+	void addRigidParameters(RefinementStrategyPtr strategy);
 
 	void addTranslationParameters(RefinementStrategyPtr strategy);
 	void refine(bool reciprocal = false);
@@ -112,6 +114,7 @@ public:
 		return _refined;
 	}
 
+	void prepareMotions(std::vector<SpacePoint> &hyperpoints, double scale);
 protected:
 	virtual void addProperties();
 	virtual void postParseTidy();
@@ -139,6 +142,9 @@ private:
 	vec3 _r;
 	Quat4Refine *_displacement;
 	vec3 _d;
+	
+	std::vector<mat3x3> _sRots;
+	std::vector<vec3> _sOffsets;
 
 	double _scale;
 	double _transScale;

@@ -73,6 +73,9 @@ void Bond::initialize()
 	_expectedAngle = 0;
 	_magicMat = make_mat3x3();
 	_baseMagic = make_mat3x3();
+	_resi = 0;
+	_usePhi = 0;
+	_spaceSet = false;
 }
 
 Bond::Bond()
@@ -609,9 +612,9 @@ void Bond::activate()
 	deriveCirclePortion();
 }
 
-/* start = major */
-vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle, 
-                               double myLength, double ratio, vec3 start)
+vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double torsion, 
+                                        double myLength, double ratio, 
+                                        vec3 start)
 {
 	/* Calculate the right ratio of x-to-z from the major atom. */
 	vec3 atomWrtMajor = make_vec3(1, 0, ratio);
@@ -621,7 +624,7 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 
 	/* Rotate the bond so it lines up with the torsion angle. */
 	vec3 zAxis = make_vec3(0, 0, 1);
-	mat3x3 torsion_turn = mat3x3_unit_vec_rotation(zAxis, -angle);
+	mat3x3 torsion_turn = mat3x3_unit_vec_rotation(zAxis, -torsion);
 	mat3x3_mult_vec(torsion_turn, &atomWrtMajor);
 
 	/* Reset the basis vectors so that they line up with the previous
@@ -629,9 +632,9 @@ vec3 Bond::positionFromTorsion(mat3x3 torsionBasis, double angle,
 	mat3x3_mult_vec(torsionBasis, &atomWrtMajor);
 
 	/* Add this to the major atom position! */
-	vec3 final = vec3_add_vec3(start, atomWrtMajor);
+	vec3 fin = vec3_add_vec3(start, atomWrtMajor);
 
-	return final;
+	return fin;
 }
 
 mat3x3 Bond::getRotatedMagicMat()
@@ -714,6 +717,33 @@ BondPtr Bond::getClosestSister()
 	return BondPtr();
 }
 
+void Bond::findSpace()
+{
+	_resi = getMinor()->getResidueNum();
+	std::string type = getMinor()->getAtomName();
+
+	if (type == "C" && !_leftOfAnchor)
+	{
+		_usePhi = false;
+	}
+	else if (type == "C" && _leftOfAnchor)
+	{
+		_resi++;
+		_usePhi = false;
+	}
+	else if (type == "N" && !_leftOfAnchor)
+	{
+		_resi--;
+		_usePhi = true;
+	}
+	else if (type == "N" && _leftOfAnchor)
+	{
+		_usePhi = true;
+	}
+
+	_spaceSet = true;
+}
+
 void Bond::correctTorsionAngles()
 {
 	correctTorsionAngles(&_storedSamples, false);
@@ -724,6 +754,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 	const vec3 none = make_vec3(0, 0, 0);
 	double samples = prevs->size();
 
+	/*
 	vec3 aveStart;
 	mat3x3 aveBasis;
 	getAverageBasisPos(&aveBasis, &aveStart, prevs);
@@ -732,9 +763,11 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 	vec3 crossDir = mat3x3_axis(aveBasis, 1);
 	
 	mat3x3 magicMat = getRotatedMagicMat();
+	*/
 	
 	/* Track overall change in order to readjust torsion
 	 * at the end */
+	/*
 	double averageModulation = 0;
 	double baseKick = getBaseKick();
 
@@ -742,7 +775,9 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 	int myGroup = -1;
 	int torsionNumber = model->downstreamBondNum(this, &myGroup);
 
+	*/
 	/* May be myself */
+	/*
 	BondPtr sisBond;
 	std::vector<BondSample> *sis = NULL;
 
@@ -752,21 +787,21 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 		sisBond = parent->downstreamBond(myGroup, 0);
 		sis = sisBond->getManyPositions();
 	}
+	*/
 	
 	/* Assume torsion of 0, as real torsion added later */
 	for (size_t i = 0; i < prevs->size(); i++)
 	{
-		double kickValue = prevs->at(i).kickValue;
-
-		if (!quick && !sisBond)
+		/*
+		if (!quick && !sisBond && false)
 		{
 			mat3x3 thisBasis = (*prevs)[i].basis;
 			vec3 thisPos = prevs->at(i).start;
 
-			/* Difference between perfect and deviant position of major atom */
+			// Difference between perfect and deviant position of major atom //
 			vec3 thisDeviation = vec3_subtract_vec3(thisPos, aveStart);
 
-			/* Find out what this deviation is if sensitive axis is set to z */
+			// Find out what this deviation is if sensitive axis is set to z //
 			mat3x3_mult_vec(magicMat, &thisDeviation);
 
 			double notZ = (thisDeviation.y * thisDeviation.y +
@@ -781,7 +816,7 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 			double mult = *(prevs->at(i).mult);
 
 			kickValue = sinAlpha;
-			kickValue = thisDeviation.z;
+			kickValue = thisDeviation.y;
 			kickValue *= mult;
 
 			if (kickValue != kickValue)
@@ -789,35 +824,42 @@ void Bond::correctTorsionAngles(std::vector<BondSample> *prevs, bool quick)
 				kickValue = 0;
 			}
 		}
-		else if (!quick && sisBond)
+		else if (!quick && sisBond && false)
 		{
 			kickValue = sis->at(i).kickValue;
 		}
+		*/
 		
 		double addSpace = 0;
 		if (prevs->at(i).space != NULL)
 		{
-			int resi = getMinor()->getResidueNum();
-			SpaceSample *sp = prevs->at(i).space;
+			if (!_spaceSet)
+			{
+				findSpace();
+			}
 
-			addSpace = sp->getTorsionDeviation(resi, i);
+			SpaceSample *sp = prevs->at(i).space;
+			addSpace = sp->getDeviation(_resi, i, _usePhi);
 		}
 
 		/* Baseline kick multiplied by kickValue */
-		double addBlur = baseKick * kickValue;
+//		double addBlur = baseKick * kickValue;
+		double kickValue = 0;
 
-		prevs->at(i).torsion = addBlur + addSpace;	
+		prevs->at(i).torsion = addSpace;	
 		prevs->at(i).kickValue = kickValue;
 		
-		averageModulation += addBlur;
+//		averageModulation += addBlur;
 	}
 
+	/*
 	averageModulation /= (double)samples;
 
 	for (size_t i = 0; i < prevs->size(); i++)
 	{
 		prevs->at(i).torsion -= averageModulation;
 	}
+	*/
 
 }
 
@@ -864,6 +906,11 @@ double Bond::getBaseKick()
 
 double Bond::getBaseTorsion()
 {
+	if (_sisBond)
+	{
+		return _sisBond->_torsion;
+	}
+
 	ExplicitModelPtr model = getParentModel();
 	int myGroup = -1;
 	double torsionNumber = model->downstreamBondNum(this, &myGroup);
@@ -876,6 +923,10 @@ double Bond::getBaseTorsion()
 		BondPtr parent = ToBondPtr(getParentModel());
 		sisBond = parent->downstreamBond(myGroup, 0);
 	}
+	
+	_sisBond = sisBond;
+
+	return _sisBond->_torsion;
 
 	double baseTorsion = sisBond->_torsion;
 	
@@ -1014,7 +1065,7 @@ std::vector<BondSample> *Bond::getManyPositionsPrivate()
 
 	double totalAtoms = prevBond->downstreamBondCount(myGroup);
 
-	std::vector<BondSample> tmp = *prevBond->getManyPositions(&*getMinor());
+	std::vector<BondSample> &tmp = *prevBond->getManyPositions(&*getMinor());
 	
 	if (_storedSamples.size() != tmp.size())
 	{

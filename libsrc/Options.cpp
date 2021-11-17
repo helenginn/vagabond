@@ -61,7 +61,7 @@ bool Options::_swapVals = false;
 
 bool Options::_refine = false;
 bool Options::_screw = false;
-bool Options::_far = false;
+bool Options::_far = true;
 bool Options::_rRigidBody = false;
 bool Options::_rPosition = true;
 bool Options::_rSidechains = true;
@@ -227,7 +227,7 @@ void Options::run()
 			{
 				crystal->hydrogenateContents();
 			}
-			
+
 			crystal->setupConformationalSpace();
 		}
 
@@ -380,10 +380,10 @@ void Options::executeProtocol()
 			crystal->bestGlobalParameters();
 		}
 
-		for (int j = 0; j < 1 && _far && i >= 1; j++)
+		for (int j = 0; j < 2 && _far; j++)
 		{
 			std::cout << "Refining positions to density (" << 
-			j + 1 << " / 1)" << std::endl;
+			j + 1 << " / 2)" << std::endl;
 			crystal->refineCrude();
 
 			recalculateFFT();
@@ -392,7 +392,7 @@ void Options::executeProtocol()
 		/* In case we need to do remedial work */
 		double oldWork = crystal->getWorkValue();
 		
-		int maxIntra = 3;
+		int maxIntra = 2;
 
 		for (int i = 0; i < maxIntra && _rIntra; i++)
 		{

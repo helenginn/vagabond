@@ -23,44 +23,62 @@
 #include <map>
 #include <iostream>
 
+class SVDBond;
+
 class ConfAxis
 {
 public:
 	ConfAxis();
 	
-	void setWhackDeviation(int resi, double val)
+	void getAxis(SVDBond *svd, int i);
+	
+	void setPhiDeviation(int resi, double val)
 	{
-		_residueWhacks[resi] = val;
+		_residuePhis[resi] = val;
+		if (_max < resi)
+		{
+			_max = resi;
+		}
 	}
 	
-	void setTorsionDeviation(int resi, double val)
+	void setPsiDeviation(int resi, double val)
 	{
-		_residueTorsions[resi] = val;
+		_residuePsis[resi] = val;
+		if (_min > resi)
+		{
+			_min = resi;
+		}
 	}
 
-	double getTorsionDeviationForResidue(int i)
+	double getPsiDeviationForResidue(int i)
 	{
-		if (_residueTorsions.count(i))
-		{
-			return _residueTorsions[i];
-		}
-		
-		return 0.0;
+		return _residuePsis[i];
 	}
 
-	double getWhackDeviationForResidue(int i)
+	double getPhiDeviationForResidue(int i)
 	{
-		if (_residueWhacks.count(i))
-		{
-			return _residueWhacks[i];
-		}
-		
-		return 0.0;
+		return _residuePhis[i];
 	}
 	
+	int residueBegin()
+	{
+		return _min;
+	}
+
+	int residueEnd()
+	{
+		return _max;
+	}
+	
+	int count()
+	{
+		return _residuePsis.size();
+	}
 private:
-	std::map<int, double> _residueTorsions;
-	std::map<int, double> _residueWhacks;
+	std::map<int, double> _residuePsis;
+	std::map<int, double> _residuePhis;
+	int _min;
+	int _max;
 
 };
 

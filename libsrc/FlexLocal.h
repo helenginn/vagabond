@@ -57,6 +57,8 @@ public:
 
 	/** Evaluates target function of bond kicking parameters against data */
 	static double getScore(void *object);
+
+	double score();
 	
 	/** Go button. Performs preliminary work and refinement */
 	void refine();
@@ -100,6 +102,11 @@ public:
 	void recalculateConstant();
 	void reportTimings();
 	
+	void setQuick(bool quick)
+	{
+		_quick = quick;
+	}
+	
 	void setStream(std::ostream *str)
 	{
 		_stream = str;
@@ -126,6 +133,7 @@ private:
 	int _run;
 	double _shift;
 
+	bool _quick;
 	bool _prepared;
 	bool _changed;
 	bool _torsionMode;

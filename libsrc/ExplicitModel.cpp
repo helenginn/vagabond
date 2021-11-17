@@ -17,6 +17,9 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "ExplicitModel.h"
+#include "Anchor.h"
+#include "SpaceSample.h"
+#include "Superpose.h"
 #include <float.h>
 #include "Twist.h"
 #include <hcsrc/Fibonacci.h>
@@ -118,7 +121,7 @@ const std::vector<BondSample> &ExplicitModel::getFinalPositions()
 {
 	if (!_recalcFinal && _storedSamples.size())
 	{
-		return _storedSamples;	
+		return _finalSamples;	
 	}
 	
 	/* Recalculate final positions */
@@ -154,20 +157,31 @@ const std::vector<BondSample> &ExplicitModel::getFinalPositions()
 			_storedSamples[i].basis = tmp;
 		}
 	}
+	
+	SpaceSample *space = _storedSamples[0].space;
+	_finalSamples = _storedSamples;
+	if (space != NULL)
+	{
+		space->superpose()->applyDeviations(_finalSamples);
+		if (getAnchor() && _storedSamples.size() > 1)
+		{
+			getAnchor()->applyWholeMotions(_finalSamples);
+		}
+	}
 
 	std::vector<vec3> posOnly;
-	posOnly.reserve(_storedSamples.size());
+	posOnly.reserve(_finalSamples.size());
 
-	for (int i = 0; i < _storedSamples.size(); i++)
+	for (int i = 0; i < _finalSamples.size(); i++)
 	{
-		posOnly.push_back(_storedSamples[i].start);
+		posOnly.push_back(_finalSamples[i].start);
 	}
 	
 	if (_useMutex)
 	{
 		std::lock_guard<std::mutex> lock(guiLock);
 
-		_absolute = meanOfManyPositions(&_storedSamples);
+		_absolute = meanOfManyPositions(&_finalSamples);
 
 		if (canFish() || _finalPositions.size() == 0)
 		{
@@ -178,14 +192,14 @@ const std::vector<BondSample> &ExplicitModel::getFinalPositions()
 	else
 	{
 		_finalPositions = posOnly;
-		_absolute = meanOfManyPositions(&_storedSamples);
+		_absolute = meanOfManyPositions(&_finalSamples);
 	}
 	
 	/* Deset flag to allow caching */
 	
 	_recalcFinal = false;
 
-	return _storedSamples;
+	return _finalSamples;
 }
 
 mat3x3 ExplicitModel::makeTorsionBasis(vec3 hPos, vec3 maPos,
@@ -430,7 +444,8 @@ std::vector<vec3> ExplicitModel::makeCloud(double totalPoints,
 			
 			mat3x3_mult_vec(mat, &points[i]);
 
-			sphereAngles.push_back(points[i]);
+			sphereAngles.push_back(empty_vec3());
+//			sphereAngles.push_back(points[i]);
 		}
 	}
 	
@@ -466,4 +481,3 @@ void ExplicitModel::getAverageBasisPos(mat3x3 *aveBasis,
 	vec3_mult(aveStart, 1 / samples);
 	mat3x3_vectors_to_unity(aveBasis);
 }
-

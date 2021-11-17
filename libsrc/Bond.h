@@ -421,7 +421,7 @@ public:
 		return _extraTorsionSamples.size();
 	}
 
-	AnchorPtr getAnchor();
+	virtual AnchorPtr getAnchor();
 
 	AtomPtr extraTorsionSample(int i)
 	{
@@ -683,9 +683,12 @@ private:
 	                          bool quick = false);
 
 	void copyParamsFromFirstGroup(BondPtr copyFrom, int groupNum);
+	BondPtr _sisBond;
 	BondPtr duplicateDownstream(BondPtr newBranch, int groupNum,
 	                            bool onlyExisting = false);
 
+
+	void findSpace();
 	mat3x3 _magicMat;
 	mat3x3 _baseMagic;
 	
@@ -693,6 +696,9 @@ private:
 	AnglerPtr _angler;
 	std::vector<AnglerPtr> _otherAnglers;
 	
+	bool _spaceSet;
+	int _resi;
+	bool _usePhi;
 	bool _fish;
 };
 

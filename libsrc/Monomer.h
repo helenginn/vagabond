@@ -98,6 +98,9 @@ public:
 	{
 		return _models[i];
 	}
+	
+	AtomList getPhiAtoms();
+	AtomList getPsiAtoms();
 
 	std::string getResCode();
 

@@ -275,7 +275,7 @@ bool Crystal::refineThreaded(JobType type, int total)
 		
 		PolymerPtr pol = ToPolymerPtr(molecule(i));
 		pol->clearParams();
-		if (type == JobSidechain || type == JobBackbone)
+		if (type == JobSidechain)
 		{
 			pol->scoreMonomers();
 		}
@@ -1402,7 +1402,7 @@ void Crystal::wrapUpRefinement()
 	
 	if (Options::makeDiagnostics())
 	{
-		std::string filename = "bfactor_" + i_to_str(_cycleNum);
+		std::string filename = "bfactor_" + i_to_str(_cycleNum) + "_";
 		for (size_t i = 0; i < moleculeCount(); i++)
 		{
 			if (molecule(i)->isPolymer())
@@ -2019,6 +2019,7 @@ void Crystal::fusePolymers()
 bool Crystal::applyWilsonToAnchors()
 {
 	double b = getDataWilsonB();
+	b /= 2;
 	if (b < 40)
 	{
 		return false;

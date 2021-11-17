@@ -159,7 +159,8 @@ public:
 	/** Instructs the models of all the atoms inside to propagate a change of
 	* parameters. See also: Model::propagateChange(). */
 	void propagateChange();
-	void refreshPositions(bool quick = true);
+	void regenerateSpaces(bool superpose);
+	void refreshPositions(bool quick = false);
 
 	void printList();
 	virtual void empty();

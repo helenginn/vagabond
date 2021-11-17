@@ -85,7 +85,7 @@ public:
 	
 	size_t polymerCount();
 
-	void refreshAnchors();
+	void refreshAnchors(bool space = true);
 	void removeMolecule(MoleculePtr mol);
 	void removeAtom(AtomPtr atom);
 
@@ -124,6 +124,11 @@ public:
 	
 	WaterNetworkPtr getWaterNetwork();
 	void setupConformationalSpace();
+	
+	ConfSpace *confSpace(PolymerPtr pol)
+	{
+		return _spaces[pol];
+	}
 protected:
 
 	virtual void addProperties();
@@ -136,6 +141,7 @@ protected:
 	bool _tied;
 	int _sampleNum;
 	ConfSpace *_confSpace;
+	std::map<PolymerPtr, ConfSpace *> _spaces;
 private:
 
 };

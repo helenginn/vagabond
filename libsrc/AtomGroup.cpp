@@ -36,6 +36,7 @@
 #include "Options.h"
 #include "FFT.h"
 #include <time.h>
+#include "SpaceSample.h"
 
 AtomPtr AtomGroup::findAtom(std::string atomType)
 {
@@ -348,39 +349,83 @@ void AtomGroup::propagateChange()
 	}
 }
 
-void AtomGroup::refreshPositions(bool quick)
+void AtomGroup::regenerateSpaces(bool superpose)
 {
-	for (size_t i = 0; i < atomCount(); i++)
-	{
-		atom(i)->getModel()->propagateChange(0);
-	}
+	std::vector<SpaceSample *> spaces;
+	SpaceSample *sp = NULL;
 
 	for (size_t i = 0; i < atomCount(); i++)
 	{
-		if (atom(i)->getMonomer() && 
-		    atom(i)->getMonomer()->getIdentifier() == "pro")
+		if (atom(i)->getModel()->isBond())
 		{
-			if (atom(i)->getElement()->getSymbol() == "H")
+			BondPtr bond = ToBondPtr(atom(i)->getModel());
+			AnchorPtr anch = bond->getAnchor();
+			if (anch->spaceSample() != NULL && sp != anch->spaceSample())
 			{
-				if (atom(i)->getModel()->isBond())
+				sp = anch->spaceSample();
+				
+				bool found = std::find(spaces.begin(), spaces.end(),
+				                       sp) != spaces.end();
+				
+				if (!found)
 				{
-					BondPtr b = ToBondPtr(atom(i)->getModel());
-					Hydrogenator::adjustProlineHydrogens(b, true);
+					spaces.push_back(sp);
 				}
 			}
 		}
+	}
+	
+	for (size_t i = 0; i < spaces.size(); i++)
+	{
+		if (superpose)
+		{
+			spaces[i]->calculateSuperpositions();
+		}
+		else
+		{
+			spaces[i]->generatePoints(Options::getActiveCrystal(), true);
+		}
+	}
+}
 
-		atom(i)->getModel()->refreshPositions();
+void AtomGroup::refreshPositions(bool motions)
+{
+	regenerateSpaces(false);
+
+	for (size_t i = 0; i < atomCount(); i++)
+	{
+		if (motions)
+		{
+			atom(i)->getModel()->Model::propagateChange(0);
+		}
+		else
+		{
+			atom(i)->getModel()->propagateChange(0);
+
+			if (atom(i)->getMonomer() && 
+			    atom(i)->getMonomer()->getIdentifier() == "pro")
+			{
+				if (atom(i)->getElement()->getSymbol() == "H")
+				{
+					if (atom(i)->getModel()->isBond())
+					{
+						BondPtr b = ToBondPtr(atom(i)->getModel());
+						Hydrogenator::adjustProlineHydrogens(b, true);
+					}
+				}
+			}
+		}
 	}
 
-	if (quick) return;
-
-	AtomList list = topLevelAtoms();
-
-	for (size_t i = 0; i < list.size(); i++)
+	if (!motions)
 	{
-		AtomPtr atom = list[i];
-		atom->getModel()->propagateChange(-1, true);
+		regenerateSpaces(true);
+
+		for (size_t i = 0; i < atomCount(); i++)
+		{
+			atom(i)->getModel()->propagateChange(0);
+			atom(i)->getModel()->refreshPositions();
+		}
 	}
 }
 

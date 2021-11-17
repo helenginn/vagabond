@@ -72,6 +72,21 @@ public:
 		_doTorsion = t;
 	}
 	
+	size_t bondCount()
+	{
+		return _bonds.size();
+	}
+	
+	BondPtr bond(int i)
+	{
+		return _bonds[i];
+	}
+	
+	double svdValue(int i, int j)
+	{
+		return _svd[i][j];
+	}
+	
 	void bondsFromStrategy(RefinementStrategyPtr strategy);
 	void convertStrategyTorsions(RefinementStrategyPtr strategy, double t);
 	void addToStrategy(RefinementStrategyPtr strategy, double mult,

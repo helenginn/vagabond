@@ -204,7 +204,7 @@ public:
 	std::string pdbLineBeginning(std::string start = "ATOM  ");
 	void writePositionsToFile(std::string suffix = "");
 
-	AtomType getGeomType();
+	AtomType getGeomType(bool force = false);
 	void convertToDisulphide();
 	void refreshBondAngles();
 
