@@ -16,6 +16,9 @@
 // 
 // Please email: vagabond @ hginn.co.uk for more details.
 
+#include "Anchor.h"
+#include "SpaceSample.h"
+
 #include "Options.h"
 #include <iostream>
 #include "PDBReader.h"
@@ -264,6 +267,24 @@ void Options::executeProtocol()
 	{
 		crystal->updatePDBContents(_updatePDB);
 		return;
+	}
+
+	crystal->refreshAnchors();
+	
+	for (size_t i = 0; i < crystal->moleculeCount() && false; i++)
+	{
+		if (!crystal->molecule(i)->isPolymer())
+		{
+			continue;
+		}
+		
+		PolymerPtr pol = ToPolymerPtr(crystal->molecule(i));
+		AnchorPtr anchor = pol->getAnchorModel();
+		SpaceSample *space = anchor->spaceSample();
+		space->setAverage(0, +0.25);
+		space->setAverage(1, -0.25);
+		space->setAverage(2, -0.25);
+		space->setAverage(3, -0.25);
 	}
 
 	if (!_refine)

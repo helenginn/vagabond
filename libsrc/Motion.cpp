@@ -459,7 +459,7 @@ void Motion::applyMotions(std::vector<BondSample> &stored, double scale)
 		vec3 dir = stored[i].start - _centre;
 		mat3x3_mult_vec(_sRots[i], &dir);
 		stored[i].basis = mat3x3_mult_mat3x3(_sRots[i], stored[i].basis);
-		dir += _centre + _sOffsets[i];
+		dir += _centre - _sOffsets[i];
 		stored[i].start = dir;
 	}
 }

@@ -410,6 +410,11 @@ void TotalModel::setupConformationalSpace()
 		}
 
 		PolymerPtr pol = ToPolymerPtr(molecule(i));
+		if (!pol->isFullyTied())
+		{
+			continue;
+		}
+
 		ConfSpace *confSpace = new ConfSpace(16);
 		_spaces[pol] = confSpace;
 

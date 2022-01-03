@@ -31,6 +31,11 @@ ConfAxis::ConfAxis()
 
 void ConfAxis::getAxis(SVDBond *svd, int axis)
 {
+	if (axis >= svd->bondCount())
+	{
+		return;
+	}
+
 	for (size_t i = 0; i < svd->bondCount(); i++)
 	{
 		BondPtr b = svd->bond(i);

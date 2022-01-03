@@ -75,6 +75,11 @@ public:
 		_anchors.push_back(a);
 		_motions.push_back(mot);
 	}
+	
+	void setAverage(int dim, double val)
+	{
+		_average[dim] = val;
+	}
 private:
 	void fillInTensorGaps();
 	ConfSpace *_space;
