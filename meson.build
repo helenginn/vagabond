@@ -234,6 +234,12 @@ else
 endif
 
 
+executable('lysozyme_type', gen_src, 
+'lysozyme_type/main.cpp', 
+cpp_args: ['-std=c++11'], 
+include_directories: 'subprojects/helencore',
+dependencies : [ helencore_dep, boost_dep, dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
+
 executable('force_down', gen_src, 
 'force_down/main.cpp', 
 'force_down/Wilson.cpp', 
@@ -270,6 +276,7 @@ headers = [
 'c4xsrc/CorrelLabel.h',
 'c4xsrc/MtzOptions.h', 
 'c4xsrc/AutoCluster.h', 
+'c4xsrc/DimReduction.h', 
 ]
 
 install_headers([
@@ -467,6 +474,7 @@ c4xsrc = [
 'c4xsrc/ColumnView.cpp', 
 'c4xsrc/ColumnChooser.cpp', 
 'c4xsrc/CorrelLabel.cpp', 
+'c4xsrc/DimReduction.cpp', 
 'c4xsrc/DisplaySettings.cpp', 
 'c4xsrc/AveCSV.cpp', 
 'c4xsrc/AveVectors.cpp', 
@@ -504,9 +512,9 @@ helen3d_dep
 ]
 
 if (crystfel_dep.found())
-c4xsrc += ['c4xsrc/CrystFELInput.cpp', ]
-c4xsrc += ['c4xsrc/ClusterListCrystFEL.cpp', ]
-c4xdeps += crystfel_dep
+#c4xsrc += ['c4xsrc/CrystFELInput.cpp', ]
+#c4xsrc += ['c4xsrc/ClusterListCrystFEL.cpp', ]
+#c4xdeps += crystfel_dep
 
 else
 c4xsrc += ['c4xsrc/ClusterListNoCrystFEL.cpp', ]
