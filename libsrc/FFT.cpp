@@ -1463,6 +1463,11 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 	/* For writing MTZ files */
 
 	int columns = 12;
+	
+	if (&*data == this)
+	{
+		columns = 6;
+	}
 
 	float cell[6], wavelength;
 	float *fdata = new float[columns];
@@ -1476,6 +1481,11 @@ void VagFFT::writeToFile(std::string filename, double maxResolution,
 	CMtz::MTZXTAL *xtal;
 	CMtz::MTZSET *set;
 	CMtz::MTZCOL *colout[columns + 1];
+	
+	for (size_t i = 0; i < columns + 1; i++)
+	{
+		colout[i] = nullptr;
+	}
 
 	double unitCell[6];
 	unit_cell_from_mat3x3(_toReal, unitCell);
