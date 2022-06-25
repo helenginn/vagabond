@@ -500,6 +500,7 @@ c4xsrc = [
 'c4xsrc/UCPlot.cpp'
 ]
 
+c4xsrc += ['c4xsrc/ClusterListNoCrystFEL.cpp', ]
 
 c4xdeps = [
 qt5_dep,
@@ -511,15 +512,14 @@ helencore_dep,
 helen3d_dep
 ]
 
-if (crystfel_dep.found())
+#if (crystfel_dep.found())
 #c4xsrc += ['c4xsrc/CrystFELInput.cpp', ]
 #c4xsrc += ['c4xsrc/ClusterListCrystFEL.cpp', ]
 #c4xdeps += crystfel_dep
 
-else
-c4xsrc += ['c4xsrc/ClusterListNoCrystFEL.cpp', ]
+#else
 
-endif
+#endif
 
 if (maria_dep.found())
 c4xsrc += ['c4xsrc/ClusterListSQL.cpp',
