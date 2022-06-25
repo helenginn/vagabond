@@ -29,6 +29,7 @@
 #include "Output.h"
 #include "AveCSV.h"
 #include "AveVectors.h"
+#include "DimReduction.h"
 #include "MtzFile.h"
 #include "MtzFFT.h"
 #include "Screen.h"
@@ -111,6 +112,8 @@ void ClusterList::prepareMenu(const QPoint &p)
 
 		QAction *act = m->addAction("Auto-cluster");
 		connect(act, &QAction::triggered, this, &ClusterList::autoCluster);
+		act = m->addAction("Reduce dimensions");
+		connect(act, &QAction::triggered, this, &ClusterList::reduceDims);
 		altered = true;
 
 		if (AveVectors::hasVectorData())
@@ -354,6 +357,7 @@ bool ClusterList::loadFiles(bool force)
 		}
 		catch (Shouter *s)
 		{
+			s->shoutToStdOut();
 			std::cout << "Ignoring mtz " << _paths[i].mtz_path << 
 			" due to problems" << std::endl;
 			continue;
@@ -1039,6 +1043,20 @@ void ClusterList::exportCoordinates()
 	Group *g = _lastAverage;
 	std::string filename = openDialogue(_screen, "Export coordinates", "*.csv");
 	g->exportCoordinates(filename);
+}
+
+void ClusterList::reduceDims()
+{
+	PlotView *svdView = _screen->svdView();
+	if (svdView == NULL)
+	{
+		return;
+	}
+
+	DimReduction *dimReduction = new DimReduction(_lastAverage);
+	dimReduction->setList(this);
+	dimReduction->reduce();
+
 }
 
 void ClusterList::autoCluster()

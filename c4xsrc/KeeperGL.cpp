@@ -80,7 +80,7 @@ void KeeperGL::finishCAlphaView()
 {
 	_cAlphaView->setKeeper(this);
 	_cAlphaView->repopulate();
-	addObject(_cAlphaView, true);
+	addObject(_cAlphaView, false);
 	std::string str = _cAlphaView->getRworkRfree();
 	
 	delete _rValues;

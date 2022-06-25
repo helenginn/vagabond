@@ -338,8 +338,8 @@ double AveVectors::findCorrelation(MtzFFTPtr one, MtzFFTPtr two)
 	
 	if (MyDictator::valueForKey("stdev") != "true")
 	{
-		double top = cd.sum_w * cd.sum_xy - cd.sum_x * cd.sum_y;
-		return top;
+//		double top = cd.sum_w * cd.sum_xy - cd.sum_x * cd.sum_y;
+//		return top;
 	}
 
 	return evaluate_CD(cd);

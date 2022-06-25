@@ -106,6 +106,7 @@ void AutoCluster::getPoints()
 		point.pos.x = _group->getSvdValue(i, _a);
 		point.pos.y = _group->getSvdValue(i, _a);
 		point.pos.z = _group->getSvdValue(i, _b);
+		vec3_mult(point.pos, _group->getDiagW(i));
 		point.group = -1;
 		_points.push_back(point);
 	}

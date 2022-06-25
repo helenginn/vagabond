@@ -88,9 +88,9 @@ double Element::getVoxelValue(void *object, double x, double y, double z)
 		if ((dist >= ScatterFactors::dScatter[i] &&
 		     dist < ScatterFactors::dScatter[i + 1]))
 		{
-			double interpolateToNext = (ScatterFactors::dScatter[i] - dist);
+			double interpolateToNext = (dist - ScatterFactors::dScatter[i]);
 			interpolateToNext /= fabs(ScatterFactors::dScatter[i + 1] - ScatterFactors::dScatter[i]);
-			val = (me->_scattering[i] + interpolateToNext * (me->_scattering[i] - me->_scattering[i + 1]));
+			val = (me->_scattering[i] + interpolateToNext * (me->_scattering[i + 1] - me->_scattering[i]));
 			break;
 		}
 	}

@@ -191,7 +191,7 @@ void FolderInput::load()
 	std::vector<std::string> results;
 	try
 	{
-		results = glob(folderGlob);
+		results = glob_pattern(folderGlob);
 	}
 	catch (std::runtime_error &err)
 	{
@@ -233,7 +233,7 @@ void FolderInput::load()
 		try
 		{
 			std::string search = results[i] + "/" + mtzGlob;
-			findMtz = glob(search);
+			findMtz = glob_pattern(search);
 		}
 		catch (std::runtime_error &err)
 		{
@@ -254,7 +254,7 @@ void FolderInput::load()
 		try
 		{
 			std::string search = results[i] + "/" + pdbGlob;
-			findPdb = glob(search);
+			findPdb = glob_pattern(search);
 		}
 		catch (std::runtime_error &err)
 		{
@@ -264,7 +264,7 @@ void FolderInput::load()
 		try
 		{
 			std::string search = results[i] + "/" + ligGlob;
-			findLig = glob(search);
+			findLig = glob_pattern(search);
 		}
 		catch (std::runtime_error &err)
 		{
@@ -274,7 +274,7 @@ void FolderInput::load()
 		try
 		{
 			std::string search = results[i] + "/" + cifGlob;
-			findCif = glob(search);
+			findCif = glob_pattern(search);
 		}
 		catch (std::runtime_error &err)
 		{

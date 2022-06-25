@@ -153,6 +153,7 @@ public slots:
 	void chooseColumns();
 	void enableAllColumns();
 	void autoCluster();
+	void reduceDims();
 
 	void unitCellAverage();
 	void recipAverage();

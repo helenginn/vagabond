@@ -832,7 +832,7 @@ void Screen::plotSpin()
 	}
 
 	std::string pattern = folder + "/fr*.png";
-	std::vector<std::string> files = glob(pattern);
+	std::vector<std::string> files = glob_pattern(pattern);
 
 	for (size_t i = 0; i < files.size(); i++)
 	{
