@@ -19,13 +19,13 @@
 #ifndef __cluster4x__KeeperGL__
 #define __cluster4x__KeeperGL__
 
-#include <QtWidgets/qopenglwidget.h>
+#include <QOpenGLWidget>
 #include <iostream>
 #include <QtGui/qopengl.h>
 #include <QtGui/qopenglfunctions.h>
 #include "MtzFFT.h"
 #include "Group.h"
-#include <SlipGL.h>
+#include <h3dsrc/SlipGL.h>
 #include <mat4x4.h>
 
 class GLAxis;

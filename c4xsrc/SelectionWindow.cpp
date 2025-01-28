@@ -19,7 +19,7 @@
 #include <QKeyEvent>
 #include <iostream>
 #include "SelectionWindow.h"
-#include <Plot3D.h>
+#include <h3dsrc/Plot3D.h>
 #include "KeeperGL.h"
 
 SelectionWindow::SelectionWindow(QWidget *parent, KeeperGL *keeper)

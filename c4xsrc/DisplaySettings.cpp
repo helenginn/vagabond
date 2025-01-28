@@ -17,7 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include "DisplaySettings.h"
-#include "Plot3D.h"
+#include <h3dsrc/Plot3D.h>
 #include "ClusterList.h"
 #include <hcsrc/FileReader.h>
 #include <QCheckBox>

@@ -11,7 +11,7 @@
 
 #include <h3dsrc/SlipGL.h>
 #include <QtCore/qtimer.h>
-#include <QtWidgets/qopenglwidget.h>
+#include <QOpenGLWidget>
 #include <QMouseEvent>
 #include "VagWindow.h"
 #include "../Bonds2GL.h"

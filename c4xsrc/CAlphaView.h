@@ -20,7 +20,7 @@
 #define __cluster__calphaview__
 
 #include <hcsrc/vec3.h>
-#include "SlipObject.h"
+#include <h3dsrc/SlipObject.h>
 
 class Group;
 class MtzFile;
