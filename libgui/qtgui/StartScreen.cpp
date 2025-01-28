@@ -402,7 +402,7 @@ void StartScreen::getFile(std::string title, QString types,
 	}
 	else
 	{
-		_fileDialogue->setFileMode(QFileDialog::DirectoryOnly);
+		_fileDialogue->setFileMode(QFileDialog::Directory);
 	}
 
 	_fileDialogue->show();

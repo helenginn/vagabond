@@ -4,14 +4,11 @@ cxx = meson.get_compiler('cpp')
 arg_list = []
 
 if (host_machine.system() == 'darwin')
-  arg_list += '-mmacosx-version-min=10.14'
+  arg_list += '-mmacosx-version-min=10.15'
 endif
 
 add_global_arguments(arg_list, language : ['cpp', 'c'])
 add_global_arguments('-std=c++17', language : ['cpp'])
-
-qt6_dep = dependency('qt6', modules: ['Core', 'Gui', 'Widgets', 'Sql', 'OpenGLWidgets'], required : false)
-dep_gl = dependency('gl', required : false)
 
 png_dep = dependency('libpng')
 boost_dep = dependency('boost')
@@ -28,6 +25,10 @@ if (sp_helen3d.get_variable('helen3d_scs'))
 endif
 
 helencore_dep = sp_helen3d.get_variable('helencore_dep')
+
+qt6_dep = dependency('qt6', modules: ['Core', 'Gui', 'Widgets', 'Sql', 'OpenGLWidgets'], required : false)
+dep_gl = dependency('gl', required : false)
+
 
 # Geometry and/or rotamer lookup madness
 
