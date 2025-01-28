@@ -352,7 +352,7 @@ void VagFFT::makePlans()
 	/* destroying input should do nothing though */
 
 	fftwf_set_timelimit(16);
-	fftwf_plan_with_nthreads(1);
+	fftwf_plan(1);
 
 	{
 		/*
