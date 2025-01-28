@@ -81,7 +81,6 @@ VagFFT::VagFFT(VagFFT &fft, int scratch)
 	_lowResMode = fft._lowResMode;
 	_unitCell = fft._unitCell;
 	_data = NULL;
-	fftwf_init_threads();
 	
 	if (scratch >= 0 && scratch != fft._nscratch)
 	{
