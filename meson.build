@@ -1,5 +1,5 @@
 project('vagabond', 'cpp', 'c')
-qt5 = import('qt5')
+qt6 = import('qt6')
 cxx = meson.get_compiler('cpp')
 arg_list = []
 
@@ -8,31 +8,17 @@ if (host_machine.system() == 'darwin')
 endif
 
 add_global_arguments(arg_list, language : ['cpp', 'c'])
-add_global_arguments('-std=c++11', language : ['cpp'])
+add_global_arguments('-std=c++17', language : ['cpp'])
 
-
-qt5_dep = dependency('qt5', modules: ['Core', 'Gui', 'Widgets', 'Sql'], required : false)
+qt6_dep = dependency('qt6', modules: ['Core', 'Gui', 'Widgets', 'Sql', 'OpenGLWidgets'], required : false)
 dep_gl = dependency('gl', required : false)
 
 png_dep = dependency('libpng')
 boost_dep = dependency('boost')
 fftw_dep = dependency('fftw3f')
-thread_fft_dep = dependency('fftw3f')
 thread_dep = dependency('threads')
 maria_dep = dependency('libmariadb', required: false)
 crystfel_dep = dependency('crystfel', required: false)
-
-test_fftwf_threads = '''
-#include <fftw3.h>
-int main() {
-    fftwf_init_threads();
-    return 0;
-}
-'''
-if not cxx.links(test_fftwf_threads, dependencies: fftw_dep)
-  thread_fft_dep = cxx.find_library('fftw3f_threads')
-  message('find_library')
-endif
 
 sp_helen3d = subproject('helen3d')
 helen3d_dep = dependency('', required: false)
@@ -158,14 +144,14 @@ base_files = files('libsrc/Absolute.cpp',
 lib_vag = library('vag', gen_src, base_files,
 include_directories: 'subprojects/helencore',
 install_rpath: '$ORIGIN/.',
-dependencies: [png_dep, fftw_dep, thread_dep, thread_fft_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep,
-helencore_dep], cpp_args: ['-w', '-std=c++11'], link_args: arg_list, install: true)
+dependencies: [png_dep, fftw_dep, thread_dep, fftw_dep, dep_vgeom, dep_ica, dep_ccp4, boost_dep,
+helencore_dep], cpp_args: ['-w'], link_args: arg_list, install: true)
 inc_vag = include_directories('libsrc')
 dep_vag = declare_dependency(link_with: lib_vag, include_directories: inc_vag)
 
 # Command line interface
 
-executable('vagabond', 'libsrc/main.cpp', include_directories: 'subprojects/helencore', dependencies: [dep_vag, boost_dep], cpp_args: ['-std=c++11'], install: true)
+executable('vagabond', 'libsrc/main.cpp', include_directories: 'subprojects/helencore', dependencies: [dep_vag, boost_dep], install: true)
 #executable('vagabond', 'libsrc/main.cpp', base_files, dependencies: [boost_dep, dep_ica, png_dep, fftw_dep, dep_vgeom, dep_ccp4], cpp_args: ['-std=c++11', '-pg'], link_args: ['-pg'], install: true)
 
 # Graphical user interface
@@ -173,8 +159,8 @@ executable('vagabond', 'libsrc/main.cpp', include_directories: 'subprojects/hele
 
 # Pre-processing by Qt5
 
-if qt5_dep.found() and dep_gl.found()
-	moc_files = qt5.preprocess(moc_headers : ['libgui/qtgui/CrystalExplorer.h',
+if qt6_dep.found() and dep_gl.found()
+	moc_files = qt6.preprocess(moc_headers : ['libgui/qtgui/CrystalExplorer.h',
 'libgui/qtgui/Dialogue.h',
 'libgui/qtgui/DropDown.h',
 'libgui/qtgui/MoleculeExplorer.h',
@@ -218,43 +204,42 @@ files = [
 ]
 
 executable('vagabond-gui', files,
-moc_files, dependencies: [dep_vag, qt5_dep, dep_ica, helen3d_dep, helencore_dep,
-dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_dep, thread_fft_dep, boost_dep], 
+moc_files, dependencies: [dep_vag, qt6_dep, dep_ica, helen3d_dep, helencore_dep,
+dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_dep, fftw_dep, boost_dep], 
 include_directories: subincludes,
-install: true, cpp_args: ['-w', '-std=c++11'])
+install: true)
 
 lib_vgui = library('vgui', base_files, files, moc_files,
-dependencies: [qt5_dep, dep_ica, helen3d_dep, helencore_dep,
-dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_dep, thread_fft_dep, boost_dep], 
+dependencies: [qt6_dep, dep_ica, helen3d_dep, helencore_dep,
+dep_ccp4, dep_vgeom, png_dep, fftw_dep, thread_dep, fftw_dep, boost_dep], 
 install_rpath: '$ORIGIN/.',
 include_directories: subincludes,
-cpp_args: ['-w', '-std=c++11'], install: true)
+cpp_args: ['-w'])
 else
-	message('QT5 not found, so not building vagabond-gui.')
+	message('QT6 not found, so not building vagabond-gui.')
 endif
 
 
 executable('lysozyme_type', gen_src, 
 'lysozyme_type/main.cpp', 
-cpp_args: ['-std=c++11'], 
+cpp_args: [], 
 include_directories: 'subprojects/helencore',
 dependencies : [ helencore_dep, boost_dep, dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
 
 executable('force_down', gen_src, 
 'force_down/main.cpp', 
 'force_down/Wilson.cpp', 
-cpp_args: ['-std=c++11'], 
+cpp_args: [], 
 include_directories: 'subprojects/helencore',
 dependencies : [ helencore_dep, boost_dep, dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
 
 
 executable('shell_scale', gen_src, 
 'shell_scale/main.cpp', 
-cpp_args: ['-std=c++11'],
 include_directories: 'subprojects/helencore',
 dependencies : [ helencore_dep, boost_dep, dep_vag, png_dep, dep_ica, dep_ccp4  ], install: true)
 
-if qt5_dep.found() and dep_gl.found()
+if qt6_dep.found() and dep_gl.found()
 
 headers = [
 'c4xsrc/Arbitrary.h', 
@@ -503,7 +488,8 @@ c4xsrc = [
 c4xsrc += ['c4xsrc/ClusterListNoCrystFEL.cpp', ]
 
 c4xdeps = [
-qt5_dep,
+qt6_dep,
+dep_gl,
 dep_vag,
 dep_ica,
 png_dep,
@@ -541,18 +527,18 @@ c4xsrc += 'c4xsrc/ClusterListNoSQL.cpp'
 c4xsrc += 'c4xsrc/OutputNoSQL.cpp'
 endif
 
-moc_cluster4x = qt5.preprocess(moc_headers : headers,
+moc_cluster4x = qt6.preprocess(moc_headers : headers,
 		moc_extra_arguments: ['-DMAKES_MY_MOC_HEADER_COMPILE'])
 
 lib_c4x = library('cluster4x', c4xsrc, moc_cluster4x,
 include_directories: subincludes,
 install_rpath: '$ORIGIN/.',
-dependencies: c4xdeps, cpp_args: ['-Wall', '-std=c++11'], link_args: arg_list, install: true)
+dependencies: c4xdeps, cpp_args: ['-Wall'], link_args: arg_list, install: true)
 inc_c4x = include_directories('c4xsrc')
 dep_c4x = declare_dependency(link_with: lib_c4x, include_directories: [inc_c4x])
 
 executable('cluster4x', ['c4xsrc/main.cpp'], 
-cpp_args: ['-std=c++11', '-Wall'], 
+cpp_args: ['-Wall'], 
 include_directories : subincludes,
 dependencies : [helencore_dep, c4xdeps, dep_c4x], link_args: arg_list, install: true)
 else
@@ -568,7 +554,7 @@ pkg.generate([lib_vag],
              name : 'libvag',
              filebase : 'libvag',
              description : 'Library for vagabond')
-if qt5_dep.found() and dep_gl.found()
+if qt6_dep.found() and dep_gl.found()
 pkg.generate([lib_vgui],
              subdirs : ['libgui'],
              version : '1.0',
