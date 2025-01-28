@@ -241,7 +241,9 @@
 #endif
 
 #ifndef NATIVEFT
-#  error "Can't determine machine number format"
+//#  error "Can't determine machine number format"
+#  define NATIVEIT DFNTI_IBO
+#  define NATIVEFT DFNTF_LEIEEE
 #endif
 
 #define DFNT_UINT       0       /**< unsigned int */
