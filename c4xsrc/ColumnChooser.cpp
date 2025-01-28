@@ -22,6 +22,7 @@
 #include "AveVectors.h"
 #include <QMessageBox>
 #include <algorithm>
+#include <random>
 
 ColumnChooser::ColumnChooser()
 {
@@ -127,7 +128,9 @@ void ColumnChooser::randomFree(double prop)
 		shuffled.push_back(i);
 	}
 
-	std::random_shuffle(shuffled.begin(), shuffled.end());
+	std::random_device rd;
+    std::mt19937 g(rd());
+	std::shuffle(shuffled.begin(), shuffled.end(), g);
 
 	for (size_t i = 0; i < expect && i < _mtzs.size(); i++)
 	{

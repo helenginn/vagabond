@@ -23,6 +23,7 @@
 #include <hcsrc/maths.h>
 #include <hcsrc/FileReader.h>
 #include "Group.h"
+#include <random>
 #include <iostream>
 #include <QVBoxLayout>
 #include <QCheckBox>
@@ -111,7 +112,9 @@ void AutoCluster::getPoints()
 		_points.push_back(point);
 	}
 
-	std::random_shuffle(_points.begin(), _points.end());
+	std::random_device rd;
+    std::mt19937 g(rd());
+	std::shuffle(_points.begin(), _points.end(), g);
 }
 
 void AutoCluster::assignCorePoints()

@@ -17,6 +17,7 @@
 // Please email: vagabond @ hginn.co.uk for more details.
 
 #include <algorithm>
+#include <random>
 #include "Sponge.h"
 #include "Crystal.h"
 #include "Atom.h"
@@ -119,7 +120,10 @@ void Sponge::randomConnections()
 {
 	_restraints.clear();
 	_close = AtomGroupPtr(new AtomGroup());
-	std::random_shuffle(_candidates.begin(), _candidates.end());
+
+	std::random_device rd;
+    std::mt19937 g(rd());
+	std::shuffle(_candidates.begin(), _candidates.end(), g);
 
 	for (int i = 0; i < _candidates.size(); i++)
 	{
