@@ -305,7 +305,7 @@ void Screen::addCorrelImage(Group *ave)
 	if (!ave->getCorrelMatrix())
 	{
 		_tabs->removeTab(_tabs->indexOf(_correlLabel));
-		_correlLabel->deleteLater();
+//		_correlLabel->deleteLater();
 		_correlLabel = NULL;
 		return;
 	}
@@ -389,11 +389,11 @@ void Screen::addHKLView(VagFFTPtr fft, std::string filename)
 		if (_hkl)
 		{
 			_tabs->removeTab(_tabs->indexOf(_hkl));
-			_hkl->deleteLater();
-			_hklKeeper->deleteLater();
+//			_hkl->deleteLater();
+//			_hklKeeper->deleteLater();
 			_hkl = NULL;
 			_hklKeeper = NULL;
-			_ucLabel->deleteLater();
+//			_ucLabel->deleteLater();
 			_ucLabel = NULL;
 		}
 
@@ -444,15 +444,15 @@ void Screen::addHKLView(VagFFTPtr fft, std::string filename)
 void Screen::removeGroupTabs()
 {
 	_tabs->removeTab(_tabs->indexOf(_ucView));
-	_ucView->deleteLater();
+//	_ucView->deleteLater();
 	_ucView = NULL;
 
 	_tabs->removeTab(_tabs->indexOf(_svdView));
-	_svdView->deleteLater();
+//	_svdView->deleteLater();
 	_svdView = NULL;
 
 	_tabs->removeTab(_tabs->indexOf(_correlLabel));
-	_correlLabel->deleteLater();
+//	_correlLabel->deleteLater();
 	_correlLabel = NULL;
 }
 
@@ -492,7 +492,7 @@ void Screen::displayResults(Group *ave)
 	else
 	{
 		_tabs->removeTab(_tabs->indexOf(_svdView));
-		_svdView->deleteLater();
+//		_svdView->deleteLater();
 		_svdView = NULL;
 	}
 
@@ -512,7 +512,7 @@ void Screen::displayResults(Group *ave)
 	else
 	{
 		_tabs->removeTab(_tabs->indexOf(_ucView));
-		_ucView->deleteLater();
+//		_ucView->deleteLater();
 		_ucView = NULL;
 	}
 	
@@ -781,7 +781,7 @@ void Screen::reorderByFile()
 		return;
     }
 
-	f->deleteLater();
+//	f->deleteLater();
 	std::string filename = fileNames[0].toStdString();
 	std::string contents = get_file_contents(filename);
 	_list->loadClusters(contents);
